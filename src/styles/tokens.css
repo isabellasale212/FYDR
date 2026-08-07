@@ -1,0 +1,221 @@
+/* Fydr design tokens.
+ *
+ * Ported from 06-design-system.md. Section numbers below refer to that file.
+ * This is the ONLY file in the application that may contain a hex value.
+ *
+ *   §2.2  brand and semantic, single valued, identical in both themes
+ *   §2.3  theme tokens, light and dark
+ *   §3.7  the derived *-text, *-pill-text and --border-strong sets
+ *   §4.5  the *-rgb triplets, so an alpha tint never restates a hex
+ *   §14   focus, disabled, skeleton
+ *
+ * Light is the base at :root. Dark arrives three ways, per §2.4:
+ *   1. .dark-tokens on a subtree
+ *   2. prefers-color-scheme, only where the user has made no choice
+ *   3. :root[data-theme="dark"], the explicit choice
+ */
+
+/* ---------------------------------------------------------------------------
+   Brand and semantic. §2.2. Not theme split: the same value in light and dark.
+   --highlight is decorative and never encodes status, §4.2 change 3.
+   --------------------------------------------------------------------------- */
+:root {
+  --accent: #1f6fea;
+  --accent2: #33b6ff;
+  --good: #4dcbb2;
+  --warn: #f6ab2f;
+  --bad: #f15a4a;
+  --highlight: #f5c518;
+  --highlight-text: #3a2e00;
+  /* Text on a solid --accent fill. 4.66:1 in both themes, so it is single valued
+     like the fill it sits on. Derived, §14 has no entry for it. */
+  --on-accent: #ffffff;
+  --avatar-bg: #1a2340;
+  --avatar-text: #6f9bff;
+  --tab-active: #6f9bff;
+  --tab-inactive: #4a5578;
+  --node-empty-border: #313c60;
+
+  /* §4.5 and §14.6. Channel triplets so a tint reads rgb(var(--x-rgb) / a). */
+  --accent-rgb: 31, 111, 234;
+  --accent2-rgb: 51, 182, 255;
+  --good-rgb: 77, 203, 178;
+  --warn-rgb: 246, 171, 47;
+  --bad-rgb: 241, 90, 74;
+  --highlight-rgb: 245, 197, 24;
+
+  /* §4.4. The status pill fill alpha. Raised from 0.16 so the fill separates
+     under dichromacy; the text tokens in §3.7 are derived against this value. */
+  --pill-fill-alpha: 0.22;
+
+  /* §2.6 radius, §2.7 spacing, §2.8 motion. */
+  --r-toggle: 9px;
+  --r-field: 12px;
+  --r-tab: 14px;
+  --r-stat: 16px;
+  --r-card: 18px;
+  --r-pill: 20px;
+  --gap-stack: 14px;
+  --gap-grid: 12px;
+  --pad-card: 16px;
+  --pad-field: 12px 14px;
+  --t-state: 0.15s ease;
+  --t-press: 0.08s ease;
+}
+
+/* ---------------------------------------------------------------------------
+   Light theme. §2.3 surfaces, §3.7 derived text.
+   --------------------------------------------------------------------------- */
+:root,
+:root[data-theme='light'] {
+  --bg: #eaedf1;
+  --surf: #ffffff;
+  --surf2: #f3f5f8;
+  --elev: #ffffff;
+  --text: #13161c;
+  --muted: #5b636e;
+  --faint: #929aa5;
+  --border: rgba(16, 18, 23, 0.085);
+  --border-strong: rgba(16, 18, 23, 0.52);
+  --hair: rgba(16, 18, 23, 0.05);
+  --track: rgba(16, 18, 23, 0.07);
+  --barfill: rgba(16, 18, 23, 0.155);
+  --field: #f0f2f5;
+  --shadow: 0 1px 3px rgba(16, 18, 23, 0.08);
+
+  /* §3.7, a coloured label on a plain surface, 4.5:1 against --bg. */
+  --accent-text: #0065de;
+  --accent2-text: #0070b3;
+  --good-text: #007967;
+  --warn-text: #995d00;
+  --bad-text: #c6332b;
+  --highlight-fg: #876600;
+  --avatar-text-fg: #2a68c6;
+
+  /* §3.7, text on that colour's own 22% tint. */
+  --accent-pill-text: #0051c6;
+  --accent2-pill-text: #0064a6;
+  --good-pill-text: #00705c;
+  --warn-pill-text: #905600;
+  --bad-pill-text: #b31e1e;
+  --highlight-pill-text: #7f6000;
+
+  /* §14.1 focus, §14.4 skeleton. */
+  --focus: #1f6fea;
+  --skeleton: #eeeeef;
+
+  /* screens/groups.md palette. Ten of the twelve documented slots: Amber and
+     Brown are excluded because the spec's own contrast measurements show
+     both failing 3:1 against --warn and --highlight in dark theme (O-247,
+     unresolved) — not a colour a picker should knowingly offer. */
+  --group-blue: #1246c8;
+  --group-green: #007b3f;
+  --group-purple: #7a2fa8;
+  --group-slate: #41505e;
+  --group-indigo: #3b3baf;
+  --group-cyan: #0f6c87;
+  --group-olive: #5a6b12;
+  --group-magenta: #96256e;
+  --group-steel: #2f5a6b;
+  --group-plum: #5d2e6b;
+}
+
+/* ---------------------------------------------------------------------------
+   Dark theme. One block, delivered three ways per §2.4.
+   In dark, --surf2, --elev, --field and --avatar-bg are all #1a2340: there is
+   one raised surface, not a scale.
+   --------------------------------------------------------------------------- */
+.dark-tokens,
+:root[data-theme='dark'] {
+  --bg: #182241;
+  --surf: #171e36;
+  --surf2: #1a2340;
+  --elev: #1a2340;
+  --text: #e9edfa;
+  --muted: #a6b3d2;
+  --faint: #6472a0;
+  --border: #232c4a;
+  --border-strong: #657199;
+  --hair: rgba(255, 255, 255, 0.055);
+  --track: rgba(255, 255, 255, 0.12);
+  --barfill: rgba(255, 255, 255, 0.19);
+  --field: #1a2340;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+
+  --accent-text: #4f85ff;
+  --accent2-text: #33b6ff;
+  --good-text: #4dcbb2;
+  --warn-text: #f6ab2f;
+  --bad-text: #f15a4a;
+  --highlight-fg: #f5c518;
+  --avatar-text-fg: #6f9bff;
+
+  --accent-pill-text: #699bff;
+  --accent2-pill-text: #33b6ff;
+  --good-pill-text: #4dcbb2;
+  --warn-pill-text: #f6ab2f;
+  --bad-pill-text: #ff7460;
+  --highlight-pill-text: #f5c518;
+
+  --focus: #33b6ff;
+  --skeleton: #33394e;
+
+  --group-blue: #5aa8ff;
+  --group-green: #22ab60;
+  --group-purple: #ee9fe6;
+  --group-slate: #6e7f91;
+  --group-indigo: #8c8cf5;
+  --group-cyan: #4fc3e8;
+  --group-olive: #b4c64a;
+  --group-magenta: #f08cc8;
+  --group-steel: #7fb4c8;
+  --group-plum: #c08fd2;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --bg: #182241;
+    --surf: #171e36;
+    --surf2: #1a2340;
+    --elev: #1a2340;
+    --text: #e9edfa;
+    --muted: #a6b3d2;
+    --faint: #6472a0;
+    --border: #232c4a;
+    --border-strong: #657199;
+    --hair: rgba(255, 255, 255, 0.055);
+    --track: rgba(255, 255, 255, 0.12);
+    --barfill: rgba(255, 255, 255, 0.19);
+    --field: #1a2340;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+
+    --accent-text: #4f85ff;
+    --accent2-text: #33b6ff;
+    --good-text: #4dcbb2;
+    --warn-text: #f6ab2f;
+    --bad-text: #f15a4a;
+    --highlight-fg: #f5c518;
+    --avatar-text-fg: #6f9bff;
+
+    --accent-pill-text: #699bff;
+    --accent2-pill-text: #33b6ff;
+    --good-pill-text: #4dcbb2;
+    --warn-pill-text: #f6ab2f;
+    --bad-pill-text: #ff7460;
+    --highlight-pill-text: #f5c518;
+
+    --focus: #33b6ff;
+    --skeleton: #33394e;
+
+    --group-blue: #5aa8ff;
+    --group-green: #22ab60;
+    --group-purple: #ee9fe6;
+    --group-slate: #6e7f91;
+    --group-indigo: #8c8cf5;
+    --group-cyan: #4fc3e8;
+    --group-olive: #b4c64a;
+    --group-magenta: #f08cc8;
+    --group-steel: #7fb4c8;
+    --group-plum: #c08fd2;
+  }
+}

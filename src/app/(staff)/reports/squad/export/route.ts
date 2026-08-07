@@ -1,0 +1,96 @@
+import { csvResponse, toCsv } from '@/lib/csv';
+import { fetchSquadWeeklyReport } from '@/lib/queries/squadWeeklyReport';
+import { recordReportView } from '@/lib/queries/reports';
+import { parseGroupParam } from '@/lib/groupFilter';
+import { formatNumber } from '@/lib/format';
+import { requireReportAccess } from '@/lib/session';
+import type { AppRole } from '@/lib/types/database';
+
+/** CSV only, see lib/csv.ts's header. Four small tables, one per section
+ *  that's naturally a row-per-athlete grid — load, gym, testing and
+ *  availability — each with its own `#` heading line, same technique
+ *  reports/athlete/[athleteId]/export/route.ts already uses. The headline
+ *  tiles and the attention list aren't tabular data and stay on the page. */
+export async function GET(request: Request) {
+  const { db, orgId, claims, timezone } = await requireReportAccess();
+  const url = new URL(request.url);
+  const groupIds = parseGroupParam(url.searchParams.get('groups') ?? undefined);
+
+  const report = await fetchSquadWeeklyReport(db, orgId, groupIds, timezone);
+
+  const loadCsv = toCsv(
+    report.load.map((r) => ({
+      name: `${r.last_name}, ${r.first_name}`,
+      acute: r.acute === null ? '' : formatNumber(r.acute, 0),
+      chronic: r.chronic === null ? '' : formatNumber(r.chronic, 0),
+      acwr: r.acwr === null ? '' : formatNumber(r.acwr, 2),
+      suppressed: r.suppressed ? 'yes' : '',
+    })),
+    [
+      ['name', 'Athlete'],
+      ['acute', 'Acute (7 day)'],
+      ['chronic', 'Chronic (28 day, weekly)'],
+      ['acwr', 'ACWR'],
+      ['suppressed', 'Suppressed'],
+    ],
+  );
+
+  const gymCsv = toCsv(
+    report.gymByAthlete.map((g) => ({ name: g.name, logged: g.sessionsLogged, completed: g.sessionsCompleted })),
+    [
+      ['name', 'Athlete'],
+      ['logged', 'Sessions logged'],
+      ['completed', 'Sessions completed'],
+    ],
+  );
+
+  const testsCsv = toCsv(
+    report.testsThisWeek.map((t) => ({ name: t.name, test: t.test_name, value: formatNumber(t.value, 1), unit: t.unit, date: t.test_date })),
+    [
+      ['name', 'Athlete'],
+      ['test', 'Test'],
+      ['value', 'Value'],
+      ['unit', 'Unit'],
+      ['date', 'Date'],
+    ],
+  );
+
+  const availabilityCsv = toCsv(
+    report.availability.map((a) => ({
+      name: a.name,
+      status: a.status,
+      restrictions: a.restrictions.join('; '),
+      body_area: a.body_area ?? '',
+      expected_return: a.expected_return ?? '',
+    })),
+    [
+      ['name', 'Athlete'],
+      ['status', 'Status'],
+      ['restrictions', 'Restrictions'],
+      ['body_area', 'Body area'],
+      ['expected_return', 'Expected return'],
+    ],
+  );
+
+  const caption =
+    `# Squad weekly report, ${report.from} to ${report.to}. ${report.athleteCount} athletes. ` +
+    `Compliance ${report.tiles.compliancePct === null ? 'n/a' : `${report.tiles.compliancePct}%`}, ` +
+    `available ${report.tiles.availablePct === null ? 'n/a' : `${report.tiles.availablePct}%`}, ` +
+    `${report.tiles.openFlagCount} open flags, ${report.tiles.acwrFlaggedCount} outside the 0.8-1.5 ACWR band.\r\n\r\n` +
+    `# Load\r\n`;
+
+  const csv = caption + loadCsv + `\r\n# Gym sessions\r\n` + gymCsv + `\r\n# Testing\r\n` + testsCsv + `\r\n# Availability\r\n` + availabilityCsv;
+
+  const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
+  await recordReportView(
+    db,
+    orgId,
+    claims.userId,
+    actorRole,
+    'squad_weekly',
+    { from: report.from, to: report.to, group_ids: groupIds, format: 'csv' },
+    'export',
+  );
+
+  return csvResponse(csv, `squad-weekly-${report.from}-to-${report.to}.csv`);
+}

@@ -1,0 +1,94 @@
+# Supabase CLI configuration for local development.
+#
+# The hosted project lives in the London region, which is irreversible and is recorded in
+# 09-security-and-compliance.md §5. This file configures the LOCAL stack only.
+
+project_id = "fydr"
+
+[api]
+enabled = true
+port = 54321
+# Only public is exposed through PostgREST. auth_hooks holds the access token hook and is
+# reachable by supabase_auth_admin alone, never by an API caller. tests holds the pgTAP
+# fixtures and must never be exposed at all.
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+# Pinned to match the hosted project. Postgres 15 is what Phase 0 targets.
+major_version = 15
+
+[db.pooler]
+enabled = false
+port = 54329
+pool_mode = "transaction"
+default_pool_size = 20
+max_client_conn = 100
+
+[db.seed]
+enabled = true
+# Applied by `supabase db reset` after every migration in supabase/migrations.
+sql_paths = ["./seed.sql"]
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:3000"
+additional_redirect_urls = ["http://127.0.0.1:3000"]
+# 05-architecture.md §5: a 30 minute access token is the worst case window of stale
+# authority after a role is revoked. Do not raise it without reading that section.
+jwt_expiry = 1800
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = false          # accounts are created by invite only, screens/onboarding.md
+enable_anonymous_sign_ins = false
+
+[auth.email]
+enable_signup = false
+double_confirm_changes = true
+enable_confirmations = true
+# 09-security-and-compliance.md §8.1
+max_frequency = "1m"
+
+[auth.email.template.invite]
+subject = "You have been invited to Fydr"
+
+[auth.sessions]
+# A signed out session cannot be revived. Role removal forces sign out through the
+# admin-set-role Edge Function, 05-architecture.md §5.
+inactivity_timeout = "72h"
+
+# ---------------------------------------------------------------------------
+# The custom access token hook.
+#
+# This is what puts org_id, athlete_id and roles into the JWT. Without it every helper in
+# 0010 returns null, every policy predicate is false, and the application reads nothing at
+# all. That is the correct failure mode, and it is also a confusing one, so if a freshly
+# reset local stack shows empty screens this is the first setting to check.
+#
+# 05-architecture.md §5.
+# ---------------------------------------------------------------------------
+[auth.hook.custom_access_token]
+enabled = true
+uri = "pg-functions://postgres/auth_hooks/custom_access_token_hook"
+
+[analytics]
+enabled = false
+
+[edge_runtime]
+enabled = true
+policy = "oneshot"

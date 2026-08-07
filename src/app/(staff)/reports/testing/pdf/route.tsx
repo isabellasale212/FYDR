@@ -1,0 +1,82 @@
+import { renderToBuffer } from '@react-pdf/renderer';
+import { fetchTestByTest, fetchTestingByAthlete } from '@/lib/queries/testingReport';
+import { recordReportView } from '@/lib/queries/reports';
+import { parseGroupParam } from '@/lib/groupFilter';
+import { formatDate, formatNumber, todayIso } from '@/lib/format';
+import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
+import { requireReportAccess } from '@/lib/session';
+import type { AppRole } from '@/lib/types/database';
+
+/** lib/pdf.tsx has the "this was actually buildable" story. Fifth and last
+ *  report to get a PDF — every report this build ships now has one. The
+ *  "By athlete" grid can run wide with many tests; PdfTable's percentage
+ *  widths shrink to fit rather than overflow the page, same trade-off the
+ *  on-screen table's own horizontal scroll makes differently. */
+export async function GET(request: Request) {
+  const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
+  const url = new URL(request.url);
+  const groupIds = parseGroupParam(url.searchParams.get('groups') ?? undefined);
+
+  const byAthlete = await fetchTestingByAthlete(db, orgId, groupIds);
+  const requestedTestId = url.searchParams.get('test');
+  const selectedTestId = byAthlete.definitions.find((d) => d.id === requestedTestId)?.id ?? byAthlete.definitions[0]?.id ?? null;
+  const byTest = selectedTestId ? await fetchTestByTest(db, orgId, groupIds, selectedTestId) : null;
+
+  const athleteColWidth = `${Math.max(20, 100 - byAthlete.definitions.length * 15)}%`;
+  const testColWidth = byAthlete.definitions.length > 0 ? `${Math.min(15, 80 / byAthlete.definitions.length)}%` : '15%';
+
+  const buffer = await renderToBuffer(
+    <PdfReport footer={`${orgName} · Fydr · generated ${formatDate(todayIso(timezone))} · not for redistribution without the club's own policy`}>
+      <PdfHeader
+        eyebrow={`Testing · ${orgName}`}
+        title="Testing report"
+        meta={`${byAthlete.rows.length} athletes · ${byAthlete.definitions.length} tests`}
+      />
+
+      <PdfSectionTitle title="By athlete" caption="Every athlete, every test, current personal best." />
+      <PdfTable
+        emptyText="No athlete in this filter."
+        rows={byAthlete.rows}
+        columns={[
+          { key: 'name', label: 'Athlete', width: athleteColWidth, render: (r) => r.name },
+          ...byAthlete.definitions.map((d) => ({
+            key: d.id,
+            label: d.name,
+            width: testColWidth,
+            align: 'right' as const,
+            render: (r: (typeof byAthlete.rows)[number]) => {
+              const cell = r.cells.get(d.id);
+              return cell?.value === null || cell?.value === undefined ? '—' : formatNumber(cell.value, d.decimal_places);
+            },
+          })),
+        ]}
+      />
+
+      {byTest ? (
+        <>
+          <PdfSectionTitle title={`${byTest.definition.name} — ranked`} caption="Current best attempt per athlete." />
+          <PdfTileRow>
+            <PdfTile label="Median" value={byTest.median === null ? '—' : `${formatNumber(byTest.median, byTest.definition.decimal_places)} ${byTest.definition.unit}`} />
+            <PdfTile label="Q1" value={byTest.q1 === null ? '—' : formatNumber(byTest.q1, byTest.definition.decimal_places)} />
+            <PdfTile label="Q3" value={byTest.q3 === null ? '—' : formatNumber(byTest.q3, byTest.definition.decimal_places)} />
+          </PdfTileRow>
+          <PdfTable
+            emptyText="No result recorded for this test in this filter."
+            rows={byTest.rows}
+            columns={[
+              { key: 'rank', label: 'Rank', width: '10%', render: (r) => String(r.rank) },
+              { key: 'name', label: 'Athlete', width: '50%', render: (r) => r.name },
+              { key: 'side', label: 'Side', width: '15%', render: (r) => r.side ?? '' },
+              { key: 'value', label: 'Value', width: '25%', align: 'right', render: (r) => `${formatNumber(r.value, byTest.definition.decimal_places)} ${byTest.definition.unit}` },
+            ]}
+          />
+        </>
+      ) : null}
+    </PdfReport>,
+  );
+
+  const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
+  await recordReportView(db, orgId, claims.userId, actorRole, 'testing', { group_ids: groupIds, test_definition_id: selectedTestId, format: 'pdf' }, 'export');
+
+  return pdfResponse(buffer, 'testing-report.pdf');
+}

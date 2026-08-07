@@ -1,0 +1,279 @@
+
+ Fydr — Design System 
+ Color 
+ Type 
+ Space 
+ Components 
+ Motion 
+ Replicate 
+ ◐ 
+ Theme 
+ Athlete-management platform · for professional rugby 
+ The 
+ Fydr Blue system — built to be replicated. 
+ Every colour, type role and component the app is built from, pulled straight from the source. One swappable token block drives the whole identity; the semantic palette carries state; a dark navy ground with a first-class light theme. Toggle the theme, top right — everything on this page is live. 
+ 28 design tokens 
+ Sora + DM Mono 
+ Light + Dark 
+ Hand-written CSS 
+ 01 
+ Colour 
+ Swap ~7 brand values to reskin the whole app. 
+ Brand &amp; semantic 
+ Single values (not theme-split). Accent is the one action/data colour; good / warn / bad carry state and are kept separate from the accent. Yellow highlight is used sparingly — Ready, PB, the logo dot. 
+ accent 
+ #1f6fea 
+ Primary action &amp; data 
+ accent2 
+ #33b6ff 
+ Bright — "now", progress 
+ good 
+ #4fd6ff 
+ Positive / done 
+ warn 
+ #f6ab2f 
+ Caution / behind 
+ bad 
+ #f15a4a 
+ Critical / at risk 
+ highlight 
+ #f5c518 
+ Sparing accent only 
+ avatar-text 
+ #6f9bff 
+ Avatar / tab active 
+ Theme tokens · light ↔ dark 
+ Every surface and text colour is a token with two values. Style through the token, never a raw hex — that is what makes the light and dark themes free. 
+ Token 
+ Light 
+ Dark 
+ Role 
+ --bg 
+ #eaedf1 
+ #182241 
+ App background 
+ --surf 
+ #ffffff 
+ #171e36 
+ Card surface 
+ --surf2 
+ #f3f5f8 
+ #1a2340 
+ Row hover / inset 
+ --elev 
+ #ffffff 
+ #1a2340 
+ Raised control 
+ --text 
+ #13161c 
+ #e9edfa 
+ Primary text 
+ --muted 
+ #5b636e 
+ #a6b3d2 
+ Secondary text 
+ --faint 
+ #929aa5 
+ #6472a0 
+ Labels / hints 
+ --border 
+ rgba(16,18,23,.085) 
+ #232c4a 
+ Hairline border 
+ --field 
+ #f0f2f5 
+ #1a2340 
+ Input fill 
+ 02 
+ Typography 
+ Sora carries the UI; DM Mono every number. 
+ Ag 
+ Sora 
+ UI / display · 400–800 
+ Regular 
+ Semibold 
+ Bold 
+ Extrabold 
+ 04 
+ DM Mono 
+ Data / labels · 400–500 
+ 1.85 s 
+ ACWR 1.24 
+ MD-2 
+ Type scale 
+ There is no bare 
+ h1 /
+ h2 — headings are semantic classes. Page titles bump to 30px on desktop. 
+ Squad overview 
+ .page-head h1 · 22→30 / 800 
+ Section title 
+ display · 24 / 800 
+ Card title 
+ .card-title · 15 / 700 
+ Body — how each stream relates across the squad. 
+ body · 15 / 400 
+ Caption / sub-line under a title 
+ .import-sub · 12.5 / muted 
+ Eyebrow label 
+ .eyebrow · 11 / .12em / up 
+ 1.85 s · 92.4 kg · +0.27 
+ .mono · tabular data 
+ 03 
+ Radius, elevation &amp; space 
+ Rounded, soft-shadowed, generously spaced. 
+ Corner radius 
+ Scales with the element's size — pills round fully, cards softly. 
+ 9 · toggle 
+ 12 · button / field 
+ 14 · tab / tile 
+ 16 · stat 
+ 18 · card 
+ 20 · pill / chip 
+ Elevation 
+ One soft shadow token — cards sit just off the ground. 
+ 1.24 
+ ACWR 
+ --shadow light: 0 1px 3px rgba(16,18,23,.08) dark: 0 1px 2px rgba(0,0,0,.4) 
+ Spacing rhythm 
+ Layout drives spacing via 
+ gap , not margins. 
+ stack gap &nbsp; 14px 
+ card padding &nbsp; 16px 
+ field padding &nbsp; 12 / 14px 
+ two-col grid gap &nbsp; 12px 
+ 04 
+ Components 
+ Live specimens — the real classes, copy the code. 
+ Buttons 
+ Save programme 
+ Cancel 
+ Sign out 
+ Copy 
+ &lt;button class=
+ "btn-primary" 
+ &gt; Save programme
+ &lt;/button&gt; 
+ &lt;button class=
+ "btn-ghost" 
+ &gt; Cancel
+ &lt;/button&gt; 
+ &lt;button class=
+ "signout-btn" 
+ &gt; Sign out
+ &lt;/button&gt; 
+ .btn-primary { background: var(--accent); color:#fff; border-radius:12px;
+ padding:13px; font-weight:700; } 
+ :active { transform: scale(.97) }
+ .signout-btn { background: var(--elev); border:1px solid var(--border);
+ border-radius:20px; padding:7px 14px; font-weight:600 } 
+ Chips &amp; filters — the one filled chip marks the selection 
+ All squads 
+ Forwards 
+ Backs 
+ Half backs 
+ Copy 
+ &lt;a class=
+ "squad-chip active" 
+ &gt; All squads
+ &lt;/a&gt; 
+ &lt;a class=
+ "squad-chip" 
+ &gt; Forwards
+ &lt;/a&gt; 
+ .squad-chip { padding:6px 14px; border-radius:20px; border:1px solid var(--border);
+ color: var(--muted); background: transparent }
+ .squad-chip.active { background: var(--accent); border-color: var(--accent); color:#fff } 
+ Status pills — the same shape, coloured by state 
+ On track 
+ Needs attention 
+ At risk 
+ Ready 
+ Premium 
+ Copy 
+ .pill { font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px }
+ /* colour applied by state — tinted fill + solid text */ 
+ &lt;span class=
+ "pill" style=
+ "background:rgba(241,90,74,.16);color:var(--bad)" 
+ &gt; At risk
+ &lt;/span&gt; 
+ Form field 
+ Window goal 
+ Shown on the athlete's development snapshot. 
+ Stat tile 
+ 1.24 
+ ACWR (load ratio) 
+ 82 
+ Wellness today 
+ Card + data board — the workhorse layout 
+ Sports science 
+ Squad workload · last 28 days 
+ EWMA acute:chronic ratio. ⚠ flags a spike; ▽ marks undertraining. 
+ Athlete 
+ ACWR 
+ Load 
+ A. Grant 
+ Scrum-half · gym 412 
+ 1.18 
+ 640 
+ J. Barnes 
+ Hooker · gym 980 
+ 1.62 ⚠ 
+ 1,204 
+ L. Fox 
+ No. 8 · gym 300 
+ 0.74 ▽ 
+ 388 
+ Copy 
+ .card { background: var(--surf); border:1px solid var(--border);
+ border-radius:18px; padding:16px; box-shadow: var(--shadow) }
+ .load-row { display:grid; grid-template-columns:1fr 62px 66px; gap:8px;
+ border-top:1px solid var(--border) }
+ .load-row.flag-high { background: rgba(241,90,74,.06) } 
+ /* severity stripe */ 
+ .load-val { text-align:right; font-weight:700; font-variant-numeric: tabular-nums } 
+ 05 
+ Motion 
+ Restrained — micro-transitions, one draw-in. 
+ Micro-interactions 
+ Two timings do almost all the work. Tap the button. 
+ Press me 
+ state &nbsp; 0.15s ease press &nbsp; transform 0.08s → scale(.97) 
+ Draw-in · 
+ ring-in 
+ The one keyframe — a score ring sweeps to value on mount. 
+ 0.9s cubic-bezier(.22,.8,.36,1) 
+ 06 
+ Replicate it 
+ Four moves to stand up the whole look. 
+ Drop in the token block 
+ Paste the two 
+ :root blocks (light base + 
+ [data-theme="dark"] ) and the brand values. Everything downstream reads these variables. 
+ Load the type 
+ Wire 
+ Sora and 
+ DM_Mono from 
+ next/font/google to 
+ --font-sora / 
+ --font-mono . Body uses Sora; add 
+ .mono to any number. 
+ Build on the primitives 
+ Compose from 
+ .card , 
+ .btn-primary , 
+ .squad-chip , 
+ .pill , 
+ .field , 
+ .stat . Style through tokens, never raw hex — that keeps both themes free. 
+ Reskin by swapping ~7 values 
+ To pivot the identity, change only the brand block — 
+ --accent , 
+ --accent2 , 
+ --good , 
+ --highlight , 
+ --avatar-text , 
+ --tab-active . The navy Blue → a green/pink variant in one edit. 
+ Fydr Design System · extracted from 
+ web/src/app/globals.css 
+ Sora + DM Mono · Blue theme · live in both modes 

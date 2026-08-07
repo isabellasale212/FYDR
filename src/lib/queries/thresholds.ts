@@ -1,0 +1,178 @@
+import type { AppRole, BaselineTypeEnum, FlagDomain, FlagSeverity, ThresholdComparisonEnum } from '@/lib/types/database';
+import { METRIC_REGISTRY, metricLabel } from '@/lib/metrics';
+import type { Db } from './groups';
+
+/* Thresholds. screens/thresholds.md, screen 30. Coach only — 01-roles-and-
+ * permissions.md §2, "Set thresholds" is Y for coach and blank for medical,
+ * admin and athlete, confirmed against the real RLS grant (0012: "grant
+ * select, insert, update", no delete grant at all, so "delete" in the spec's
+ * own interactions table is the soft delete this file implements).
+ *
+ * Simplified against the full spec: no recalibration engine (a second
+ * feature in its own right, already cut from Flags for the same reason), no
+ * "test this threshold against real data" preview, no group-specific
+ * targeting in the editor (applies_to_group_id stays null, "all squad",
+ * which is what every seeded threshold already uses). What is built is the
+ * actual job: read the rules, write new ones, turn one off, retire one for
+ * good without losing the flags it already raised. */
+
+export type ThresholdComparison = ThresholdComparisonEnum;
+export type BaselineType = BaselineTypeEnum;
+
+export type Threshold = {
+  id: string;
+  name: string;
+  description: string | null;
+  domain: FlagDomain;
+  metric: string;
+  comparison: ThresholdComparison;
+  value: number;
+  baseline_type: BaselineType;
+  baseline_days: number | null;
+  consecutive_days: number;
+  severity: FlagSeverity;
+  notify_roles: AppRole[];
+  is_active: boolean;
+};
+
+const COLUMNS =
+  'id, name, description, domain, metric, comparison, value, baseline_type, baseline_days, consecutive_days, severity, notify_roles, is_active';
+
+export async function fetchThresholds(
+  db: Db,
+  orgId: string,
+  includeInactive = true,
+): Promise<Threshold[]> {
+  let query = db.from('thresholds').select(COLUMNS).eq('org_id', orgId).is('deleted_at', null);
+
+  if (!includeInactive) query = query.eq('is_active', true);
+
+  const { data, error } = await query.order('domain').order('name');
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Threshold[];
+}
+
+export type ThresholdInput = {
+  name: string;
+  description: string | null;
+  domain: FlagDomain;
+  metric: string;
+  comparison: ThresholdComparison;
+  value: number;
+  baseline_type: BaselineType;
+  baseline_days: number | null;
+  consecutive_days: number;
+  severity: FlagSeverity;
+  notify_roles: AppRole[];
+};
+
+export async function createThreshold(
+  db: Db,
+  orgId: string,
+  userId: string,
+  input: ThresholdInput,
+): Promise<{ error: string | null }> {
+  const { error } = await db.from('thresholds').insert({
+    org_id: orgId,
+    created_by: userId,
+    name: input.name.trim(),
+    description: input.description,
+    domain: input.domain,
+    metric: input.metric,
+    comparison: input.comparison,
+    value: input.value,
+    baseline_type: input.baseline_type,
+    baseline_days: input.baseline_type === 'absolute' ? null : input.baseline_days,
+    consecutive_days: input.consecutive_days,
+    severity: input.severity,
+    notify_roles: input.notify_roles,
+    source: 'custom',
+  });
+
+  if (error) {
+    if (error.code === '23505') {
+      return { error: `A threshold called "${input.name.trim()}" already exists.` };
+    }
+    return { error: error.message };
+  }
+  return { error: null };
+}
+
+export async function setThresholdActive(
+  db: Db,
+  id: string,
+  orgId: string,
+  isActive: boolean,
+): Promise<void> {
+  const { error } = await db
+    .from('thresholds')
+    .update({ is_active: isActive })
+    .eq('id', id)
+    .eq('org_id', orgId);
+  if (error) throw new Error(error.message);
+}
+
+/** screens/thresholds.md job 1: "make the rules legible... the UI renders it
+ *  as one sentence". */
+export function describeThreshold(t: Pick<Threshold, 'metric' | 'comparison' | 'value' | 'baseline_type' | 'baseline_days' | 'consecutive_days'>): string {
+  const label = metricLabel(t.metric);
+  const unit = METRIC_REGISTRY[t.metric]?.unit ?? '';
+  const days = t.consecutive_days === 1 ? '1 day' : `${t.consecutive_days} consecutive days`;
+
+  let rule: string;
+  switch (t.comparison) {
+    case 'below':
+      rule = `${label} is below ${t.value}${unit}`;
+      break;
+    case 'above':
+      rule = `${label} is above ${t.value}${unit}`;
+      break;
+    case 'pct_change_below':
+      rule = `${label} drops by more than ${t.value}%`;
+      break;
+    case 'pct_change_above':
+      rule = `${label} rises by more than ${t.value}%`;
+      break;
+    case 'z_score':
+      rule = `${label} is ${Math.abs(t.value)} standard deviations ${t.value < 0 ? 'below' : 'above'}`;
+      break;
+    default:
+      rule = `${label} crosses ${t.value}${unit}`;
+  }
+
+  const baselineFragment =
+    t.baseline_type === 'personal_rolling'
+      ? `the athlete's own ${t.baseline_days ?? 28}-day average`
+      : t.baseline_type === 'squad_mean'
+        ? "the squad's average that day"
+        : null;
+
+  /* z_score is inherently relative to a distribution, so the baseline reads
+   * naturally appended straight after "below"/"above" with no connector:
+   * "1.5 standard deviations below the athlete's own 28-day average". Every
+   * other comparison names a value first ("above 1.3", "drops by 20%") and
+   * needs an explicit "against" to avoid reading as two unrelated clauses
+   * mashed together — the bug this replaced: "above 1.3 the athlete's own
+   * 28-day average" is not a sentence. */
+  const baseline =
+    baselineFragment === null
+      ? ''
+      : t.comparison === 'z_score'
+        ? ` ${baselineFragment}`
+        : `, against ${baselineFragment}`;
+
+  return `Fires when ${rule}${baseline}, for ${days} running.`;
+}
+
+/** Soft delete: deleted_at, never a row removal — there is no delete grant
+ *  on this table at all (migration 0012), and the spec's own edge case says
+ *  flags keep their threshold_id and render "threshold no longer exists"
+ *  rather than losing what a coach was told at the time. */
+export async function archiveThreshold(db: Db, id: string, orgId: string): Promise<void> {
+  const { error } = await db
+    .from('thresholds')
+    .update({ deleted_at: new Date().toISOString(), is_active: false })
+    .eq('id', id)
+    .eq('org_id', orgId);
+  if (error) throw new Error(error.message);
+}

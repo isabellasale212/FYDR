@@ -205,10 +205,16 @@ function CreateUserForm({
     return (
       <div className="card" style={{ borderColor: 'var(--good)' }}>
         <h2 className="card-title">Account created</h2>
-        <p className="import-sub" style={{ marginBottom: 10 }}>
-          Share this password with {fullName} directly &mdash; there is no invite email in this build. They can change it once
-          signed in.
-        </p>
+        {result.emailDelivered ? (
+          <p className="import-sub" style={{ marginBottom: 10 }}>
+            An invite email has also been sent to {fullName}. Keep the password below too, in case it doesn&apos;t arrive.
+          </p>
+        ) : (
+          <p className="import-sub" style={{ marginBottom: 10 }}>
+            Share this password with {fullName} directly &mdash; no email provider is configured in this environment, so no
+            invite email went out. They can change it once signed in.
+          </p>
+        )}
         <p className="mono nm" style={{ fontSize: 18, padding: '10px 14px', background: 'var(--surf2)', borderRadius: 8 }}>
           {result.temporaryPassword}
         </p>
@@ -226,8 +232,8 @@ function CreateUserForm({
     <form onSubmit={onSubmit} className="card" noValidate>
       <h2 className="card-title">Invite people</h2>
       <p className="import-sub" style={{ marginBottom: 12 }}>
-        Creates a real account with a temporary password to share yourself &mdash; there&apos;s no invite email or SMS in this
-        build.
+        Creates a real account and tries to send an invite email; no SMS. Without an email provider configured, you&apos;ll
+        get a temporary password to share yourself instead.
       </p>
 
       {result && !result.ok ? (

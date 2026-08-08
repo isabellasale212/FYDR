@@ -1,5 +1,5 @@
 import type { BodySide, SideMode, TestCategory } from '@/lib/types/database';
-import { type Db } from './groups';
+import { fetchGroupAthleteIds, type Db } from './groups';
 
 /* screens/testing.md, cut down hard — see migration 0024's header for the
  * full list of what this pass does and does not build (no batteries, no
@@ -75,14 +75,24 @@ export type AthleteForLogging = {
   pbValue: number | null;
 };
 
+/* CLAUDE.md §3: every screen showing more than one athlete is filterable by
+ * group, and screens/testing.md's own query-key spec for this exact grid —
+ * `qk.testing.grid(orgId, sessionId, testDefinitionId, groupIds)` — names
+ * groupIds as one of its parameters. This was the one real gap in an
+ * otherwise-honestly-cut file: not a documented simplification (the header
+ * above lists what this pass cut, and group filtering isn't among them),
+ * just missing. groupIds defaults to [] (no filter) so every existing
+ * caller keeps working unchanged. */
 export async function fetchResultsForLogging(
   db: Db,
   orgId: string,
   testDefinitionId: string,
   testDate: string,
+  groupIds: readonly string[] = [],
 ): Promise<AthleteForLogging[]> {
-  const [athletesRes, todayRes, pbRes, defRes] = await Promise.all([
+  const [athletesRes, scope, todayRes, pbRes, defRes] = await Promise.all([
     db.from('athletes').select('id, first_name, last_name, squad_number').eq('org_id', orgId).is('deleted_at', null).neq('status', 'left_club'),
+    fetchGroupAthleteIds(db, orgId, groupIds),
     db
       .from('test_results')
       .select('id, athlete_id, attempt_number, side, value, is_best')
@@ -104,6 +114,9 @@ export async function fetchResultsForLogging(
   if (pbRes.error) throw new Error(pbRes.error.message);
   if (defRes.error) throw new Error(defRes.error.message);
 
+  const inScope = scope ? new Set(scope) : null;
+  const scopedAthletes = (athletesRes.data ?? []).filter((a) => !inScope || inScope.has(a.id));
+
   const higherIsBetter = defRes.data.higher_is_better;
   const pbByAthlete = new Map<string, number>();
   for (const r of pbRes.data ?? []) {
@@ -118,7 +131,7 @@ export async function fetchResultsForLogging(
     attemptsByAthlete.set(r.athlete_id, list);
   }
 
-  return (athletesRes.data ?? [])
+  return scopedAthletes
     .map((a) => ({
       athlete_id: a.id,
       first_name: a.first_name,

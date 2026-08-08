@@ -1,0 +1,23 @@
+-- 0034_retention_revoke_public_execute.sql
+--
+-- What this does, and why it exists as its own migration
+--   Postgres grants execute on a newly created function to PUBLIC by
+--   default, unlike a table, which starts with no such grant at all —
+--   easy to forget precisely because most of this schema's own functions
+--   (migration 0010's auth_* helpers) are deliberately public, so nothing
+--   about writing one more function reads as suspicious on its own.
+--   Found immediately after applying 0033, by checking
+--   information_schema.routine_privileges the same way every RLS policy
+--   in this build gets checked before being trusted — retention.
+--   nightly_preview() is SECURITY DEFINER and writes an audit_log row for
+--   every organisation on this project in one call, not just the
+--   caller's own. Left with a PUBLIC execute grant, any authenticated
+--   user in any club — reachable through Supabase's own PostgREST RPC
+--   surface, `rpc('nightly_preview')`, no special access needed — could
+--   trigger it at will, including against a club they have no membership
+--   in at all. Nothing it writes is sensitive (aggregate counts, no
+--   names), but the capability itself is real and the fix is a one-line
+--   revoke, not a redesign: this function should only ever run as
+--   whatever role pg_cron itself invokes it as.
+
+revoke execute on function retention.nightly_preview() from public;

@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { RetentionPanel } from '@/components/RetentionPanel/RetentionPanel';
 import { RETENTION_SCHEDULE } from '@/lib/retention/schedule';
+import { fetchRetentionNightlyReports } from '@/lib/retention/history';
+import { formatDateTime } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Data retention · Fydr' };
@@ -15,10 +17,19 @@ export const metadata = { title: 'Data retention · Fydr' };
  *  category the schedule names (see lib/retention/schedule.ts's own
  *  per-row notes for exactly which categories this pass can act on for
  *  real and which are preview-only, and why). Admin only, same gate as
- *  the rest of Settings' admin-only sections. */
+ *  the rest of Settings' admin-only sections.
+ *
+ *  §7 also asks for "a nightly Edge Function" — migration 0033 is that
+ *  piece, a real pg_cron job rather than an Edge Function (this build has
+ *  no Edge Function deployment, pg_cron needs none), deliberately
+ *  read-only rather than destructive, per §7's own caution a few
+ *  paragraphs later ("run it in report-only mode... read the reports").
+ *  The table below is where an admin actually reads them. */
 export default async function RetentionPage() {
-  const { claims } = await requireStaff();
+  const { db, orgId, claims } = await requireStaff();
   if (!claims.roles.includes('admin')) redirect('/settings');
+
+  const nightlyReports = await fetchRetentionNightlyReports(db, orgId);
 
   return (
     <>
@@ -65,6 +76,43 @@ export default async function RetentionPage() {
             ))}
           </tbody>
         </table>
+      </section>
+
+      <section className="card" aria-labelledby="nightly-title">
+        <h2 className="card-title" id="nightly-title">
+          Nightly reports
+        </h2>
+        <p className="import-sub" style={{ marginBottom: 10 }}>
+          Runs automatically every night at 02:15 UTC, read-only — the same two counts the preview above shows,
+          recorded whether or not anyone opens this page.
+        </p>
+        {nightlyReports.length === 0 ? (
+          <p className="cap">No nightly report has run yet. The next one runs at 02:15 UTC.</p>
+        ) : (
+          <table className="tbl">
+            <caption className="visually-hidden">Nightly retention reports</caption>
+            <thead>
+              <tr>
+                <th scope="col">When</th>
+                <th scope="col" className="r">
+                  Import files eligible
+                </th>
+                <th scope="col" className="r">
+                  Injuries eligible
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {nightlyReports.map((r) => (
+                <tr key={r.occurredAt}>
+                  <td className="mono sub">{formatDateTime(r.occurredAt)}</td>
+                  <td className="r mono">{r.importBatchesEligible}</td>
+                  <td className="r mono">{r.injuriesEligible}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </section>
 
       <RetentionPanel />

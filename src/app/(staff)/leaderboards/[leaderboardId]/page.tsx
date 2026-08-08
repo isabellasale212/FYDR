@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { EmptyState } from '@/components/EmptyState/EmptyState';
+import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { LeaderboardStaffActions } from '@/components/LeaderboardStaffActions/LeaderboardStaffActions';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import {
@@ -7,7 +9,9 @@ import {
   fetchBoardRanking,
   fetchMetricCatalogue,
 } from '@/lib/queries/leaderboards';
+import { fetchGroupAthleteIds, fetchGroups } from '@/lib/queries/groups';
 import { formatNumber } from '@/lib/format';
+import { parseGroupParam } from '@/lib/groupFilter';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Leaderboard · Fydr' };
@@ -15,22 +19,43 @@ export const metadata = { title: 'Leaderboard · Fydr' };
 /** screens/leaderboards.md's staff board view, simplified: no movement column (no
  *  snapshots table), no "Not ranked" names list (needs a second query resolving the
  *  full population against the ranking; the count omission is a real cut, tracked
- *  here rather than silently dropped). Route per 20-route-map.md line 123. */
+ *  here rather than silently dropped). Route per 20-route-map.md line 123.
+ *
+ *  CLAUDE.md §3: this screen displays every ranked athlete at once, so it needs the
+ *  group filter — screens/leaderboards.md §"Staff filtering" (line 831) is explicit
+ *  about the shape that filter takes here, and it's not the obvious one. The filter
+ *  narrows what's *shown*, never what's *ranked*: fetchBoardRanking() is called once,
+ *  unfiltered, and the result is filtered client-side-of-the-request after the fact.
+ *  Filtering at the RPC level would silently re-rank within the filtered set, so a
+ *  forward ranked 7th squad-wide would show as 2nd when viewed through the Forwards
+ *  filter — two coaches would then quote different positions for the same athlete on
+ *  the same board, exactly the confusion the doc calls out by name. */
 export default async function LeaderboardDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ leaderboardId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { leaderboardId } = await params;
   const { db, orgId, claims } = await requireStaff();
+  const sp = await searchParams;
+  const groupIds = parseGroupParam(sp.groups);
 
   const board = await fetchBoard(db, orgId, leaderboardId);
   if (!board) notFound();
 
-  const [ranking, catalogue] = await Promise.all([
+  const [fullRanking, catalogue, groups] = await Promise.all([
     fetchBoardRanking(db, leaderboardId),
     fetchMetricCatalogue(db),
+    fetchGroups(db, orgId),
   ]);
+
+  const filterAthleteIds = groupIds.length > 0 ? await fetchGroupAthleteIds(db, orgId, groupIds) : null;
+  const ranking = filterAthleteIds ? fullRanking.filter((row) => filterAthleteIds.includes(row.athlete_id)) : fullRanking;
+  const isFiltered = groupIds.length > 0;
+  const activeGroupNames = groups.filter((g) => groupIds.includes(g.id)).map((g) => g.name);
+
   const metric = catalogue.find((m) => m.key === board.metric_key);
   const isMedical = claims.roles.includes('medical');
 
@@ -65,28 +90,37 @@ export default async function LeaderboardDetailPage({
         </p>
       </div>
 
-      <div style={{ marginTop: 14 }}>
+      <div style={{ margin: '14px 0' }}>
+        <GroupFilter groups={groups} selected={groupIds} />
+      </div>
+
+      <div style={{ marginBottom: 14 }}>
         <LeaderboardStaffActions
           orgId={orgId}
           userId={claims.userId}
           boardId={board.id}
           visibility={board.visibility}
           isMedical={isMedical}
-          ranking={ranking}
+          ranking={fullRanking}
         />
       </div>
 
-      <section style={{ marginTop: 14 }} aria-labelledby="ranking-title">
+      <section aria-labelledby="ranking-title">
         <p className="sect" id="ranking-title" style={{ marginBottom: 8 }}>
           Ranking
         </p>
-        {ranking.length === 0 ? (
+        {fullRanking.length === 0 ? (
           <div className="card">
             <p style={{ margin: 0 }}>
               Not enough results to rank. This board needs at least{' '}
               {metric?.min_population ?? 3} athletes with a qualifying result.
             </p>
           </div>
+        ) : ranking.length === 0 ? (
+          <EmptyState
+            title="No ranked athletes in this filter"
+            body={`No athletes in ${activeGroupNames.join(', ') || 'the selected group'} appear on this board. Clear the filter to see everyone.`}
+          />
         ) : (
           <div className="card flush">
             <div style={{ overflowX: 'auto' }}>
@@ -123,7 +157,10 @@ export default async function LeaderboardDetailPage({
           </div>
         )}
         <p className="cap">
-          {ranking.length} athlete{ranking.length === 1 ? '' : 's'} ranked ·{' '}
+          {isFiltered
+            ? `Showing ${ranking.length} of ${fullRanking.length} ranked athletes. Positions are squad-wide.`
+            : `${ranking.length} athlete${ranking.length === 1 ? '' : 's'} ranked`}
+          {' · '}
           {board.window_type === 'days'
             ? `last ${board.window_days} days`
             : board.window_type === 'season'

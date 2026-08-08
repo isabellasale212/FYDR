@@ -50,6 +50,26 @@ export async function createTestDefinition(
     defaultAttempts: number;
   },
 ): Promise<{ error: string | null }> {
+  // test_definitions.sort_order defaults to 0 at the table level (migration
+  // 0024), same shape as groups.sort_order, which this session found left
+  // every new group tied at 0 (lib/queries/groups.ts's createGroup, since
+  // fixed). No reorder UI exists for test definitions — fetchTestDefinitions
+  // orders by sort_order then name, and with every row tied at 0 that's
+  // functionally name-only ordering today — so this isn't a broken control
+  // the way the groups one was, only a latent inconsistency with the one
+  // other place this exact pattern lives in this codebase. Fixed the same
+  // way, for the same reason: if a reorder control is ever added here,
+  // "every existing row already collides at 0" shouldn't be what it inherits.
+  const { data: siblings, error: siblingsError } = await db
+    .from('test_definitions')
+    .select('sort_order')
+    .eq('org_id', orgId)
+    .is('deleted_at', null)
+    .order('sort_order', { ascending: false })
+    .limit(1);
+  if (siblingsError) return { error: siblingsError.message };
+  const nextSortOrder = (siblings?.[0]?.sort_order ?? -1) + 1;
+
   const { error } = await db.from('test_definitions').insert({
     org_id: orgId,
     name: input.name.trim(),
@@ -62,6 +82,7 @@ export async function createTestDefinition(
     // constraint enforces this regardless, this just avoids a round trip
     // that is always going to fail for that one category.
     leaderboard_eligible: input.testCategory !== 'body_comp',
+    sort_order: nextSortOrder,
   });
   return { error: error?.message ?? null };
 }

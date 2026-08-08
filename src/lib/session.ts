@@ -10,6 +10,15 @@ export type StaffContext = {
   orgName: string;
   timezone: string;
   fullName: string;
+  /** organisations.tier, the real column migration 0002 created and
+   *  nothing read until SETTINGS-SPEC.md's Plan card and gate screen gave
+   *  it a reason to. Raw DB values ('core' | 'performance') on purpose —
+   *  lib/tier.ts maps them to the spec's "Basic"/"Premium" labels at the
+   *  UI edge, the same enumLabel()-style split this app already uses
+   *  everywhere else, rather than renaming the enum. 12-product-tiers.md
+   *  §2 does recommend renaming the enum itself to club/premium; that's a
+   *  separate, larger, cross-cutting migration this pass didn't take on. */
+  tier: 'core' | 'performance';
 };
 
 export type AthleteContext = {
@@ -39,7 +48,7 @@ export async function requireStaff(): Promise<StaffContext> {
   const [org, user] = await Promise.all([
     supabase
       .from('organisations')
-      .select('name, timezone')
+      .select('name, timezone, tier')
       .eq('id', orgId)
       .maybeSingle(),
     supabase.from('users').select('full_name').eq('id', claims.userId).maybeSingle(),
@@ -52,6 +61,7 @@ export async function requireStaff(): Promise<StaffContext> {
     orgName: org.data?.name ?? 'Your club',
     timezone: org.data?.timezone ?? 'Europe/London',
     fullName: user.data?.full_name ?? '',
+    tier: org.data?.tier ?? 'core',
   };
 }
 

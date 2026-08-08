@@ -1,18 +1,33 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { GpsImportForm } from '@/components/GpsImportForm/GpsImportForm';
+import { PlanGate } from '@/components/PlanGate/PlanGate';
 import { fetchRecentImportBatches } from '@/lib/queries/gpsImport';
 import { requireStaff } from '@/lib/session';
+import { isPremium } from '@/lib/tier';
 
 export const metadata = { title: 'Import GPS · Fydr' };
 
 /** screens/imports.md, screen 34, cut down hard — lib/queries/gpsImport.ts's
  *  header has the full list of what this build does and does not attempt.
  *  Coach and medical only, matching migration 0026's role table; nobody else
- *  gets a write path onto gps_records, so nobody else gets this screen. */
+ *  gets a write path onto gps_records, so nobody else gets this screen.
+ *  SETTINGS-SPEC.md §6's "GPS exports" gate: role check first (a Basic-tier
+ *  admin gets the existing role redirect, not a gate screen naming a
+ *  feature they couldn't use either way), tier check second. */
 export default async function ImportsPage() {
-  const { db, orgId, claims } = await requireStaff();
+  const { db, orgId, claims, tier } = await requireStaff();
   if (!claims.roles.includes('coach') && !claims.roles.includes('medical')) redirect('/settings');
+
+  if (!isPremium(tier)) {
+    return (
+      <PlanGate
+        featureName="GPS exports"
+        body="Importing vendor GPS files and exporting the parsed records is a Premium feature. Basic clubs work from wellness, gym and nutrition entries."
+        metadata="Premium · Catapult, STATSports, Polar CSV · audited exports"
+      />
+    );
+  }
 
   const batches = await fetchRecentImportBatches(db, orgId);
 

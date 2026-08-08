@@ -1,9 +1,18 @@
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { requireStaff } from '@/lib/session';
+import { isPremium } from '@/lib/tier';
 
 export const metadata = { title: 'Reports · Fydr' };
 
+// SETTINGS-SPEC.md §7.6: gated destinations "gain a Premium badge and 62%
+// opacity" in the sidebar. This app's real sidebar has one generic
+// "Reports" entry, not six — five of the six reports here are free, so
+// badging the sidebar item itself would misrepresent the other five. This
+// card grid, where the app actually enumerates reports individually, is
+// the honest real equivalent. Still a real link either way: a Basic club
+// sees this card and can click through to the real gate at
+// /reports/training, never a dead end.
 const REPORTS = [
   {
     key: 'compliance',
@@ -11,6 +20,7 @@ const REPORTS = [
     body: 'Who is submitting, and who is not.',
     href: '/reports/compliance',
     available: true,
+    premiumGated: false,
   },
   {
     key: 'injuries',
@@ -18,6 +28,7 @@ const REPORTS = [
     body: 'Who is out, for how long, and what it is costing.',
     href: '/reports/injuries',
     available: true,
+    premiumGated: false,
   },
   {
     key: 'training',
@@ -25,6 +36,7 @@ const REPORTS = [
     body: 'One session, every athlete, every GPS metric, on one board.',
     href: '/reports/training',
     available: true,
+    premiumGated: true,
   },
   {
     key: 'athlete',
@@ -32,6 +44,7 @@ const REPORTS = [
     body: 'One athlete, every domain, one period.',
     href: '/reports/athlete',
     available: true,
+    premiumGated: false,
   },
   {
     key: 'squad',
@@ -39,6 +52,7 @@ const REPORTS = [
     body: 'The week in one document.',
     href: '/reports/squad',
     available: true,
+    premiumGated: false,
   },
   {
     key: 'testing',
@@ -46,6 +60,7 @@ const REPORTS = [
     body: 'A testing session, or a test over time.',
     href: '/reports/testing',
     available: true,
+    premiumGated: false,
   },
 ] as const;
 
@@ -71,8 +86,9 @@ const REPORTS = [
  *  reports feature exists at all, which is worse than naming the real
  *  reason it's closed to this role. */
 export default async function ReportsPage() {
-  const { orgName, claims } = await requireStaff();
+  const { orgName, claims, tier } = await requireStaff();
   const hasReportAccess = claims.roles.includes('coach') || claims.roles.includes('medical');
+  const onPremium = isPremium(tier);
 
   return (
     <>
@@ -96,11 +112,38 @@ export default async function ReportsPage() {
       ) : null}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14 }}>
-        {REPORTS.map((r) =>
-          r.available && r.href && hasReportAccess ? (
-            <Link key={r.key} href={r.href} className="card" style={{ textDecoration: 'none', color: 'inherit' }}>
-              <p className="card-title">{r.title}</p>
-              <p className="tiny">{r.body}</p>
+        {REPORTS.map((r) => {
+          const locked = r.premiumGated && !onPremium;
+          return r.available && r.href && hasReportAccess ? (
+            <Link
+              key={r.key}
+              href={r.href}
+              className="card"
+              style={{ textDecoration: 'none', color: 'inherit', opacity: locked ? 0.62 : 1 }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <p className="card-title" style={{ margin: 0 }}>
+                  {r.title}
+                </p>
+                {locked ? (
+                  <span
+                    className="mono"
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      padding: '2px 9px',
+                      borderRadius: 20,
+                      background: 'rgb(var(--highlight-rgb) / 0.22)',
+                      color: 'var(--highlight-text)',
+                    }}
+                  >
+                    Premium
+                  </span>
+                ) : null}
+              </div>
+              <p className="tiny" style={{ marginTop: 6 }}>
+                {r.body}
+              </p>
             </Link>
           ) : (
             <div key={r.key} className="card" style={{ opacity: 0.55 }}>
@@ -110,8 +153,8 @@ export default async function ReportsPage() {
                 {hasReportAccess ? 'Not built yet.' : 'Not available to admin.'}
               </p>
             </div>
-          ),
-        )}
+          );
+        })}
       </div>
 
       <p className="cap">

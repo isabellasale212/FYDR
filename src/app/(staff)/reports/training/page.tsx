@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { HeatCell } from '@/components/HeatCell/HeatCell';
+import { PlanGate } from '@/components/PlanGate/PlanGate';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchGroups } from '@/lib/queries/groups';
 import {
@@ -14,6 +15,7 @@ import { recordReportView } from '@/lib/queries/reports';
 import { parseGroupParam } from '@/lib/groupFilter';
 import { formatDate } from '@/lib/format';
 import { requireReportAccess } from '@/lib/session';
+import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
 
 export const metadata = { title: 'Training report · Fydr' };
@@ -31,7 +33,18 @@ export default async function TrainingReportPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, orgId, orgName, claims } = await requireReportAccess();
+  const { db, orgId, orgName, claims, tier } = await requireReportAccess();
+
+  if (!isPremium(tier)) {
+    return (
+      <PlanGate
+        featureName="Training report"
+        body="The per-athlete GPS board for one session. It needs GPS records, which arrive through the Premium import."
+        metadata="Premium · GPS data import · heat-mapped session board"
+      />
+    );
+  }
+
   const params = await searchParams;
   const groupIds = parseGroupParam(params.groups);
 

@@ -243,6 +243,65 @@ export async function updateGroup(
   return { error: null };
 }
 
+/** screens/groups.md's role table names "reorder" among the four writable
+ *  operations, and GroupsPage's own header comment already narrows the cut
+ *  precisely: "no drag reorder" — not "no reorder". A step control moving
+ *  one group at a time is real reorder, just not the drag interaction that
+ *  comment specifically excludes (which would mean a real drag-and-drop
+ *  dependency, per CLAUDE.md §4's "don't add a dependency without stating
+ *  what it does" — this needs none).
+ *
+ *  Ordering is scoped to the group's own group_type, matching exactly what
+ *  the Groups list page already renders as one section per type
+ *  (fetchGroupsWithCounts's own GROUP_TYPE_ORDER) — "move up" inside
+ *  Positional groups has no meaning against a Rehab group sitting in a
+ *  different section entirely. Swaps sort_order with the immediate
+ *  neighbour in that type, computed from a fresh read each call rather
+ *  than trusting a client-held index, so two staff reordering the same
+ *  section at once can't desync it. */
+export async function moveGroup(
+  db: Db,
+  orgId: string,
+  groupId: string,
+  direction: 'up' | 'down',
+): Promise<{ error: string | null }> {
+  const { data: target, error: targetError } = await db
+    .from('groups')
+    .select('id, group_type, sort_order')
+    .eq('org_id', orgId)
+    .eq('id', groupId)
+    .maybeSingle();
+  if (targetError) return { error: targetError.message };
+  if (!target) return { error: 'That group no longer exists.' };
+
+  const { data: siblings, error: siblingsError } = await db
+    .from('groups')
+    .select('id, sort_order, name')
+    .eq('org_id', orgId)
+    .eq('group_type', target.group_type)
+    .is('deleted_at', null)
+    .order('sort_order', { ascending: true })
+    .order('name', { ascending: true });
+  if (siblingsError) return { error: siblingsError.message };
+
+  const ordered = siblings ?? [];
+  const index = ordered.findIndex((g) => g.id === groupId);
+  if (index === -1) return { error: 'That group no longer exists.' };
+
+  const neighbourIndex = direction === 'up' ? index - 1 : index + 1;
+  const neighbour = ordered[neighbourIndex];
+  if (!neighbour) return { error: null }; // already first/last — a no-op, not an error
+
+  const [a, b] = await Promise.all([
+    db.from('groups').update({ sort_order: neighbour.sort_order }).eq('id', target.id).eq('org_id', orgId),
+    db.from('groups').update({ sort_order: target.sort_order }).eq('id', neighbour.id).eq('org_id', orgId),
+  ]);
+
+  if (a.error) return { error: a.error.message };
+  if (b.error) return { error: b.error.message };
+  return { error: null };
+}
+
 export async function archiveGroup(db: Db, id: string, orgId: string): Promise<void> {
   const { error } = await db
     .from('groups')

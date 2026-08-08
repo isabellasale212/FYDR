@@ -2023,6 +2023,33 @@ table.tbl tbody tr:hover {
   }
 }
 
+/* ---------- group reorder, GroupReorderButtons.tsx ---------- */
+.reorder-btn {
+  width: 28px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: none;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color var(--t-state), color var(--t-state), background var(--t-state);
+}
+.reorder-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--text);
+  background: var(--surf2);
+}
+.reorder-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
 /* ---------- Print, 06-design-system.md §14.7 ----------
  * "A print stylesheet forcing the light theme, removing shadows, and
  * keeping glyphs." The theme half lives in tokens.css (the only file

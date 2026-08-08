@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { GroupSwatch } from '@/components/GroupSwatch/GroupSwatch';
+import { GroupReorderButtons } from '@/components/GroupReorderButtons/GroupReorderButtons';
 import { fetchAthletesInNoGroup, fetchGroupsWithCounts } from '@/lib/queries/groups';
 import { enumLabel } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
@@ -9,9 +10,11 @@ import { requireStaff } from '@/lib/session';
 export const metadata = { title: 'Groups · Fydr' };
 
 /** screens/groups.md, screen 21. Simplified for this pass: no membership
- *  timeline, no as-at date, no merge, no drag reorder. What the whole app's
- *  group filter depends on — creating groups, and adding or removing members
- *  without ever losing history — is built and works. */
+ *  timeline, no as-at date, no merge, no drag reorder specifically (a step
+ *  reorder is built instead — GroupReorderButtons, moveGroup()'s own
+ *  comment explains the distinction). What the whole app's group filter
+ *  depends on — creating groups, and adding or removing members without
+ *  ever losing history — is built and works. */
 export default async function GroupsPage() {
   const { db, orgId, orgName } = await requireStaff();
 
@@ -66,30 +69,45 @@ export default async function GroupsPage() {
                 {enumLabel(type)} groups
                 <span className="tiny mono">{rows.length}</span>
               </h2>
-              {rows.map((g) => (
-                <Link
+              {rows.map((g, index) => (
+                <div
                   key={g.id}
-                  href={`/settings/groups/${g.id}`}
-                  className="todo"
-                  style={{ borderTop: '1px solid var(--hair)' }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    borderTop: '1px solid var(--hair)',
+                    paddingInlineEnd: 10,
+                  }}
                 >
-                  <GroupSwatch colour={g.colour} />
-                  <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ fontSize: 14.5, fontWeight: 700 }}>{g.name}</span>
-                    {g.description ? (
-                      <span
-                        className="tiny"
-                        style={{ display: 'block', marginTop: 2 }}
-                      >
-                        {g.description}
-                      </span>
-                    ) : null}
-                  </span>
-                  <span className="tiny mono">{g.member_count}</span>
-                  <span className="chev" aria-hidden="true">
-                    ›
-                  </span>
-                </Link>
+                  {rows.length > 1 ? (
+                    <GroupReorderButtons
+                      orgId={orgId}
+                      groupId={g.id}
+                      groupName={g.name}
+                      canMoveUp={index > 0}
+                      canMoveDown={index < rows.length - 1}
+                    />
+                  ) : null}
+                  <Link href={`/settings/groups/${g.id}`} className="todo" style={{ flex: 1, minWidth: 0 }}>
+                    <GroupSwatch colour={g.colour} />
+                    <span style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ fontSize: 14.5, fontWeight: 700 }}>{g.name}</span>
+                      {g.description ? (
+                        <span
+                          className="tiny"
+                          style={{ display: 'block', marginTop: 2 }}
+                        >
+                          {g.description}
+                        </span>
+                      ) : null}
+                    </span>
+                    <span className="tiny mono">{g.member_count}</span>
+                    <span className="chev" aria-hidden="true">
+                      ›
+                    </span>
+                  </Link>
+                </div>
               ))}
             </section>
           ))}

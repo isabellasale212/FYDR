@@ -192,12 +192,36 @@ export async function createGroup(
     groupType: string;
   },
 ): Promise<{ error: string | null }> {
+  // groups.sort_order defaults to 0 at the table level (migration 0009),
+  // and this insert used to leave it at that default for every new group —
+  // meaning the second group ever created of a given type collided with
+  // the first at sort_order 0. Harmless for display (fetchGroupsWithCounts
+  // ties on name), but a real bug for moveGroup() (GroupReorderButtons):
+  // swapping two identical sort_order values changes nothing, so the
+  // reorder buttons would silently do nothing for exactly the groups most
+  // likely to need reordering — two just created in the same section.
+  // Computed here rather than left to a DB default or trigger because
+  // sort_order's own scope (per org *and* group_type, matching how the
+  // Groups list page and moveGroup both already section by type) isn't
+  // expressible as a single-column default.
+  const { data: siblings, error: siblingsError } = await db
+    .from('groups')
+    .select('sort_order')
+    .eq('org_id', input.orgId)
+    .eq('group_type', input.groupType as Group['group_type'])
+    .is('deleted_at', null)
+    .order('sort_order', { ascending: false })
+    .limit(1);
+  if (siblingsError) return { error: siblingsError.message };
+  const nextSortOrder = (siblings?.[0]?.sort_order ?? -1) + 1;
+
   const { error } = await db.from('groups').insert({
     org_id: input.orgId,
     name: input.name.trim(),
     description: input.description,
     colour: input.colour,
     group_type: input.groupType as Group['group_type'],
+    sort_order: nextSortOrder,
   });
 
   if (error) {

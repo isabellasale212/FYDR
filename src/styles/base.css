@@ -2228,6 +2228,72 @@ table.tbl tbody tr:hover {
   cursor: default;
 }
 
+/* ---------- Gym programme, GYM-PROGRAMME-SPEC.md ----------
+ * .prog-body's minmax(0, 1fr) on the second column is load-bearing, not
+ * decoration: a bare 1fr lets the exercise tables' own content (the
+ * min-width:430px scroll wrapper inside .prog-day) push the column wider
+ * than the viewport, which pushes Duplicate/Assign in the detail header
+ * off-screen to the right. minmax(0, 1fr) caps the column at the
+ * available space and makes the table scroll internally instead — this
+ * was a real bug in an earlier pass of this exact layout, not a
+ * hypothetical one, which is why it's called out here instead of just
+ * silently written correctly. .prog-detail also needs min-width: 0 for
+ * the same reason — without it, a flex/grid child defaults to the width
+ * of its own content, which is exactly what minmax(0, 1fr) is trying to
+ * prevent one level up. */
+.prog-body {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+.prog-detail {
+  min-width: 0;
+}
+.prog-item {
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 11px 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--t-state), background var(--t-state);
+}
+.prog-item[data-selected='true'] {
+  border-color: rgb(var(--accent-rgb) / 0.35);
+  background: rgb(var(--accent-rgb) / 0.08);
+}
+.prog-day {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.prog-day-head {
+  background: var(--surf2);
+  padding: 9px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.prog-ex-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 58px 62px 84px 88px;
+  gap: 8px;
+  padding: 9px 12px;
+  border-top: 1px solid var(--hair);
+  align-items: center;
+}
+.prog-ex-head {
+  border-top: none;
+  font-weight: 700;
+  color: var(--muted);
+}
+@media (max-width: 1100px) {
+  .prog-body {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ---------- Print, 06-design-system.md §14.7 ----------
  * "A print stylesheet forcing the light theme, removing shadows, and
  * keeping glyphs." The theme half lives in tokens.css (the only file

@@ -84,6 +84,87 @@ export async function fetchProgrammes(db: Db, orgId: string): Promise<ProgrammeS
   return (programmesRes.data ?? []).map((p) => ({ ...p, assignment_count: counts.get(p.id) ?? 0 }));
 }
 
+export type ProgrammeListItem = ProgrammeSummary & {
+  session_count: number;
+  assigned_athlete_count: number;
+};
+
+/** GYM-PROGRAMME-SPEC.md's list panel wants "{assigned} · {n} days" per
+ *  programme — two real counts fetchProgrammes doesn't give. session_count
+ *  is every programme_sessions row under the programme's blocks.
+ *  assigned_athlete_count is a de-duplicated athlete count: an athlete can
+ *  be assigned individually and through a group at once (a real state —
+ *  Pre-season strength below has both James Barnes individually and the
+ *  whole Forwards group), and should only count once. Everything here is
+ *  one batched query per data source, not one query per programme — four
+ *  programmes exist today, but this should not degrade if a club adds
+ *  forty. */
+export async function fetchProgrammeListDetails(db: Db, orgId: string): Promise<ProgrammeListItem[]> {
+  const programmes = await fetchProgrammes(db, orgId);
+  const programmeIds = programmes.map((p) => p.id);
+  if (programmeIds.length === 0) return [];
+
+  const [blocksRes, assignRes] = await Promise.all([
+    db.from('programme_blocks').select('id, programme_id').in('programme_id', programmeIds),
+    db
+      .from('programme_assignments')
+      .select('programme_id, athlete_id, group_id')
+      .eq('org_id', orgId)
+      .eq('status', 'active')
+      .in('programme_id', programmeIds),
+  ]);
+  if (blocksRes.error) throw new Error(blocksRes.error.message);
+  if (assignRes.error) throw new Error(assignRes.error.message);
+
+  const blockIds = (blocksRes.data ?? []).map((b) => b.id);
+  const blockToProgramme = new Map((blocksRes.data ?? []).map((b) => [b.id, b.programme_id]));
+
+  const sessionsRes =
+    blockIds.length === 0
+      ? { data: [], error: null }
+      : await db.from('programme_sessions').select('id, block_id').in('block_id', blockIds);
+  if (sessionsRes.error) throw new Error(sessionsRes.error.message);
+
+  const sessionCountByProgramme = new Map<string, number>();
+  for (const s of sessionsRes.data ?? []) {
+    const pid = blockToProgramme.get(s.block_id);
+    if (pid) sessionCountByProgramme.set(pid, (sessionCountByProgramme.get(pid) ?? 0) + 1);
+  }
+
+  const groupIds = [...new Set((assignRes.data ?? []).map((a) => a.group_id).filter((g): g is string => g !== null))];
+  const membershipRes =
+    groupIds.length === 0
+      ? { data: [], error: null }
+      : await db
+          .from('group_memberships')
+          .select('group_id, athlete_id')
+          .eq('org_id', orgId)
+          .in('group_id', groupIds)
+          .is('removed_at', null);
+  if (membershipRes.error) throw new Error(membershipRes.error.message);
+
+  const athletesByGroup = new Map<string, string[]>();
+  for (const m of membershipRes.data ?? []) {
+    const list = athletesByGroup.get(m.group_id) ?? [];
+    list.push(m.athlete_id);
+    athletesByGroup.set(m.group_id, list);
+  }
+
+  const athleteSetByProgramme = new Map<string, Set<string>>();
+  for (const a of assignRes.data ?? []) {
+    const set = athleteSetByProgramme.get(a.programme_id) ?? new Set<string>();
+    if (a.athlete_id) set.add(a.athlete_id);
+    if (a.group_id) for (const id of athletesByGroup.get(a.group_id) ?? []) set.add(id);
+    athleteSetByProgramme.set(a.programme_id, set);
+  }
+
+  return programmes.map((p) => ({
+    ...p,
+    session_count: sessionCountByProgramme.get(p.id) ?? 0,
+    assigned_athlete_count: athleteSetByProgramme.get(p.id)?.size ?? 0,
+  }));
+}
+
 /** Only coach may create a gym/conditioning/nutrition programme; only medical
  *  may create a rehab one — enforced for real by migration 0022's RLS, this
  *  function just picks the right message when the database refuses. */

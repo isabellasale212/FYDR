@@ -2065,9 +2065,14 @@ table.tbl tbody tr:hover {
  * glyphs" — this stylesheet's job is only to get everything else out of
  * the way of what's already correct.
  *
- * Deliberately not attempted: screens/injury-dashboard.md's literal "9pt,
- * one A4 portrait page for up to 45 athletes" sizing target for that one
- * screen specifically. Its "clinical columns never print" requirement is
+ * screens/injury-dashboard.md's own literal target for that one screen —
+ * "9pt, one A4 portrait page for up to 45 athletes" — is only partly
+ * attempted: .injuries-board below tightens the row font size and spacing
+ * toward that 9pt figure, a real, bounded change. The "one A4 page for 45
+ * athletes" half is not verified — this environment has no way to render
+ * an actual paginated print preview to confirm it, only to simulate the
+ * on-screen styles, so that specific claim is left unmade rather than
+ * asserted untested. Its "clinical columns never print" requirement is
  * satisfied structurally rather than by a print rule — injuries.ts's own
  * header confirms this page never fetches injury_clinical at all, coach
  * or medical, so there is no clinical column here for any stylesheet to
@@ -2090,6 +2095,24 @@ table.tbl tbody tr:hover {
   .main {
     max-width: none !important;
     padding: 0 !important;
+  }
+
+  /* screens/injury-dashboard.md's own print row: shared columns at 9pt.
+   * Scoped to .injuries-board specifically, not .load-row itself — that
+   * class is reused across a dozen other screens (testing, programmes,
+   * reports, the athlete app), and none of them asked for this. */
+  .injuries-board .load-row {
+    padding: 4pt 0 !important;
+  }
+  .injuries-board .nm {
+    font-size: 9pt !important;
+  }
+  .injuries-board .tiny {
+    font-size: 8pt !important;
+  }
+  .injuries-board .pill {
+    font-size: 8pt !important;
+    padding: 1pt 6pt !important;
   }
 
   .card,

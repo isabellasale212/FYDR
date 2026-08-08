@@ -77,7 +77,7 @@ export default async function InjuriesPage({
           body="Every injury in this filter has been closed, or none has been recorded."
         />
       ) : (
-        <div className="card flush">
+        <div className="card flush injuries-board">
           {injuries.map((i) => (
             <Link key={i.id} href={`/injuries/${i.id}`} className="load-row" style={{ gridTemplateColumns: '1fr auto auto', textDecoration: 'none', color: 'inherit' }}>
               <div>

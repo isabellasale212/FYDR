@@ -35,6 +35,13 @@ const icon = (paths: React.ReactNode) => (
   </svg>
 );
 
+const SIGN_OUT_ICON = icon(
+  <>
+    <path d="M6.6 1.8H3.4a1 1 0 0 0-1 1v10.4a1 1 0 0 0 1 1h3.2" />
+    <path d="M10.8 11.2 14.2 8l-3.4-3.2M14.2 8H5.8" />
+  </>,
+);
+
 export const SIDEBAR: readonly Row[] = [
   {
     id: 'staff.dashboard',
@@ -193,8 +200,18 @@ export function Sidebar({ roles, fullName, orgName }: Props) {
   return (
     <aside className="sidebar">
       <div className="brand">
+        {/* 06-design-system.md §10.2: sidebarCollapsedWidth 64 at the md
+         * (768px) tablet tier, "sidebar collapses to icons". The full
+         * wordmark doesn't fit a 64px rail — .wm-mono is the icon-tier
+         * fallback, a bare "F", visually-hidden at every other width the
+         * same way the nav labels below are, not a second, different
+         * component. */}
         <div className="wm">
-          Fydr<i>.</i>
+          <span className="wm-full">Fydr</span>
+          <span className="wm-mono" aria-hidden="true">
+            F
+          </span>
+          <i>.</i>
         </div>
       </div>
       <nav className="nav" aria-label="Main">
@@ -207,9 +224,10 @@ export function Sidebar({ roles, fullName, orgName }: Props) {
               href={row.route}
               className="nav-item"
               aria-current={active ? 'page' : undefined}
+              title={row.label}
             >
               {row.icon}
-              {row.label}
+              <span className="nav-label">{row.label}</span>
             </Link>
           );
         })}
@@ -220,8 +238,9 @@ export function Sidebar({ roles, fullName, orgName }: Props) {
           {orgName} · {roles.join(', ')}
         </div>
         <form action="/auth/sign-out" method="post">
-          <button type="submit" className="nav-item">
-            Sign out
+          <button type="submit" className="nav-item" title="Sign out">
+            {SIGN_OUT_ICON}
+            <span className="nav-label">Sign out</span>
           </button>
         </form>
       </div>

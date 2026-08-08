@@ -111,7 +111,19 @@ a {
   }
 }
 
-/* ---------- staff shell ---------- */
+/* ---------- staff shell ----------
+ * Three tiers, matching 06-design-system.md §10.2's own named breakpoints
+ * exactly (webBreakpoints.md=768, .lg=1024) rather than the single ad hoc
+ * 860px this shell used to switch on:
+ *   >=1024px (lg and up)  full sidebar, 236px, icon + label
+ *   768-1023px (md, "tablet") icon-collapsed sidebar, 64px
+ *     (webGrid.sidebarCollapsedWidth) — icons only, labels kept in the DOM
+ *     for screen readers via the same .visually-hidden technique used
+ *     elsewhere, not display:none, and available as a native title=
+ *     tooltip on hover
+ *   <768px (sm and below, doc's own "not a supported dashboard size,
+ *     renders the mobile layout") the sidebar stacks full-width above the
+ *     page content, as before */
 .app {
   display: grid;
   grid-template-columns: 236px minmax(0, 1fr);
@@ -123,7 +135,13 @@ a {
     var(--bg) 236px
   );
 }
-@media (max-width: 860px) {
+@media (min-width: 768px) and (max-width: 1023px) {
+  .app {
+    grid-template-columns: 64px minmax(0, 1fr);
+    background: linear-gradient(to right, var(--surf) 0, var(--surf) 64px, var(--bg) 64px);
+  }
+}
+@media (max-width: 767px) {
   .app {
     grid-template-columns: minmax(0, 1fr);
     background: var(--bg);
@@ -141,7 +159,12 @@ a {
   display: flex;
   flex-direction: column;
 }
-@media (max-width: 860px) {
+@media (min-width: 768px) and (max-width: 1023px) {
+  .sidebar {
+    padding: 20px 8px;
+  }
+}
+@media (max-width: 767px) {
   .sidebar {
     position: static;
     height: auto;
@@ -164,6 +187,46 @@ a {
 .brand .wm i {
   color: var(--accent);
   font-style: normal;
+}
+/* .wm-mono (a bare "F") is the icon-tier fallback for the full wordmark —
+ * hidden everywhere except the 64px collapsed rail, where .wm-full is
+ * hidden instead. Same visually-hidden clip as .nav-label below, not
+ * display:none, so the full club name is still there for a screen reader
+ * regardless of viewport. */
+.wm-mono {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .brand {
+    justify-content: center;
+    padding: 0 0 20px;
+  }
+  .wm-full {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+  .wm-mono {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    clip-path: none;
+  }
 }
 
 .nav {
@@ -206,6 +269,30 @@ a {
 .nav-item[aria-current='page'] .ic {
   opacity: 1;
 }
+@media (min-width: 768px) and (max-width: 1023px) {
+  .nav-item {
+    justify-content: center;
+    padding: 10px;
+    gap: 0;
+  }
+  /* Same clip-based visually-hidden technique as .visually-hidden
+   * (base.css's own general utility, kept local here rather than sharing
+   * that class so the label's normal, non-collapsed layout — an inline
+   * flex child with no positioning of its own — is untouched at every
+   * other width). The row's real accessible name survives; title= above
+   * gives sighted users the same word back on hover. */
+  .nav-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}
 .nav-foot {
   margin-top: auto;
   padding-top: 14px;
@@ -221,13 +308,23 @@ a {
   font-weight: 600;
   display: block;
 }
+@media (min-width: 768px) and (max-width: 1023px) {
+  .nav-who {
+    display: none;
+  }
+}
 
 .main {
   padding: 26px 28px 64px;
   max-width: 1240px;
   min-width: 0;
 }
-@media (max-width: 860px) {
+@media (min-width: 768px) and (max-width: 1023px) {
+  .main {
+    padding: 22px 20px 56px;
+  }
+}
+@media (max-width: 767px) {
   .main {
     padding: 18px 16px 48px;
   }

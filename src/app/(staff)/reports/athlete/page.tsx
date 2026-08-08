@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { Pill } from '@/components/Pill/Pill';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
-import { parseGroupParam } from '@/lib/groupFilter';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchSquadList } from '@/lib/queries/squad';
 import { BLANK } from '@/lib/format';
@@ -21,7 +21,7 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 export default async function AthleteReportPickerPage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, orgName } = await requireReportAccess();
   const params = await searchParams;
-  const groupIds = parseGroupParam(params.groups);
+  const groupIds = await resolveGroupFilter(params.groups);
 
   const [groups, rows] = await Promise.all([fetchGroups(db, orgId), fetchSquadList(db, orgId, groupIds)]);
 

@@ -7,7 +7,7 @@ import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchSquadWeeklyReport } from '@/lib/queries/squadWeeklyReport';
 import { recordReportView } from '@/lib/queries/reports';
-import { parseGroupParam } from '@/lib/groupFilter';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { BLANK, enumLabel, formatDate, formatNumber } from '@/lib/format';
 import { availabilityStatus } from '@/lib/status';
 import { requireReportAccess } from '@/lib/session';
@@ -31,7 +31,7 @@ function acwrTone(acwr: number | null): 'good' | 'warn' | 'bad' | 'neutral' {
 export default async function SquadWeeklyReportPage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
   const params = await searchParams;
-  const groupIds = parseGroupParam(params.groups);
+  const groupIds = await resolveGroupFilter(params.groups);
 
   const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchSquadWeeklyReport(db, orgId, groupIds, timezone)]);
 

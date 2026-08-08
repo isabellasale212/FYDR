@@ -12,7 +12,7 @@ import {
   fetchTrainingReportBoard,
 } from '@/lib/queries/trainingReport';
 import { recordReportView } from '@/lib/queries/reports';
-import { parseGroupParam } from '@/lib/groupFilter';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate } from '@/lib/format';
 import { requireReportAccess } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
@@ -46,7 +46,7 @@ export default async function TrainingReportPage({
   }
 
   const params = await searchParams;
-  const groupIds = parseGroupParam(params.groups);
+  const groupIds = await resolveGroupFilter(params.groups);
 
   const sessions = await fetchRecentGpsSessions(db, orgId);
   const requestedSession = typeof params.session === 'string' ? params.session : null;

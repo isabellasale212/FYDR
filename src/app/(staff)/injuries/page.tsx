@@ -6,7 +6,7 @@ import { PrintButton } from '@/components/PrintButton/PrintButton';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchInjuriesList } from '@/lib/queries/injuries';
 import { enumLabel, formatDate } from '@/lib/format';
-import { parseGroupParam } from '@/lib/groupFilter';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Injuries · Fydr' };
@@ -32,7 +32,7 @@ export default async function InjuriesPage({
 }) {
   const { db, orgId, orgName, claims } = await requireStaff();
   const params = await searchParams;
-  const groupIds = parseGroupParam(params.groups);
+  const groupIds = await resolveGroupFilter(params.groups);
   const isMedical = claims.roles.includes('medical');
 
   const [groups, injuries] = await Promise.all([

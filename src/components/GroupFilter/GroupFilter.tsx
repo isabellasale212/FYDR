@@ -9,6 +9,8 @@ type Props = {
   selected: readonly string[];
 };
 
+const GROUP_FILTER_COOKIE = 'fydr-group-filter';
+
 /**
  * The group filter, held in the URL.
  *
@@ -17,6 +19,17 @@ type Props = {
  * survives a refresh, can be sent to a colleague, and is readable by the server
  * component that runs the query, so the filter is applied in the database and
  * not after the rows have already been fetched.
+ *
+ * docs/06-design-system.md §7.9 additionally wants the choice to "persist
+ * across navigation" even when the destination has no `?groups=` of its own —
+ * a plain sidebar link, for instance. apply() below mirrors every change into
+ * a `fydr-group-filter` cookie, which lib/groupFilter.server.ts's
+ * resolveGroupFilter() reads as a fallback whenever a page's own URL doesn't
+ * specify a filter at all. Clearing to "All squad" clears the cookie in the
+ * same call — that's deliberate: this component deletes the `groups` param
+ * entirely rather than setting it empty, so "no param in the URL" has to mean
+ * the same thing whether the user never chose a filter or just cleared one,
+ * and an empty cookie is what makes those two cases resolve identically.
  */
 export function GroupFilter({ groups, selected }: Props) {
   const router = useRouter();
@@ -26,8 +39,15 @@ export function GroupFilter({ groups, selected }: Props) {
   const apply = useCallback(
     (next: string[]) => {
       const search = new URLSearchParams(params.toString());
-      if (next.length === 0) search.delete('groups');
-      else search.set('groups', next.join(','));
+      if (next.length === 0) {
+        search.delete('groups');
+        document.cookie = `${GROUP_FILTER_COOKIE}=; path=/; max-age=0`;
+      } else {
+        search.set('groups', next.join(','));
+        // 180 days: a squad-filter preference, not a session-scoped value —
+        // no reason to make a coach re-pick it every time they sign back in.
+        document.cookie = `${GROUP_FILTER_COOKIE}=${encodeURIComponent(next.join(','))}; path=/; max-age=${60 * 60 * 24 * 180}`;
+      }
       const query = search.toString();
       router.push(query ? `${pathname}?${query}` : pathname);
     },

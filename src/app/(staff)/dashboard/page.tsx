@@ -7,7 +7,7 @@ import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { SessionCard } from '@/components/SessionCard/SessionCard';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { PrintButton } from '@/components/PrintButton/PrintButton';
-import { parseGroupParam } from '@/lib/groupFilter';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import {
   fetchAvailabilityCounts,
   fetchNotFullyAvailable,
@@ -50,7 +50,7 @@ export default async function DashboardPage({
 }) {
   const { db, orgId, orgName, timezone } = await requireStaff();
   const params = await searchParams;
-  const groupIds = parseGroupParam(params.groups);
+  const groupIds = await resolveGroupFilter(params.groups);
   const today = todayIso(timezone);
 
   const [groups, counts, notAvailable, attention, sessions, compliance, fixture] =

@@ -5,7 +5,7 @@ import { SessionCard } from '@/components/SessionCard/SessionCard';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchWeekSessions, mondayOf } from '@/lib/queries/schedule';
-import { parseGroupParam } from '@/lib/groupFilter';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { addDays, enumLabel, formatDate, formatLongDate, todayIso } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 
@@ -24,7 +24,7 @@ export default async function SchedulePage({
 }) {
   const { db, orgId, orgName, timezone } = await requireStaff();
   const params = await searchParams;
-  const groupIds = parseGroupParam(params.groups);
+  const groupIds = await resolveGroupFilter(params.groups);
 
   const today = todayIso(timezone);
   const requestedDate = typeof params.date === 'string' ? params.date : today;

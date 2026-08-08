@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { fetchResultsForLogging, fetchTestDefinitions } from '@/lib/queries/testing';
 import { fetchGroups } from '@/lib/queries/groups';
 import { addDays, formatDate, todayIso } from '@/lib/format';
-import { parseGroupParam } from '@/lib/groupFilter';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Log results · Fydr' };
@@ -24,7 +24,7 @@ export default async function TestLogPage({
   const { testDefId } = await params;
   const { db, orgId, orgName, claims, timezone } = await requireStaff();
   const sp = await searchParams;
-  const groupIds = parseGroupParam(sp.groups);
+  const groupIds = await resolveGroupFilter(sp.groups);
 
   const today = todayIso(timezone);
   const testDate = typeof sp.date === 'string' ? sp.date : today;

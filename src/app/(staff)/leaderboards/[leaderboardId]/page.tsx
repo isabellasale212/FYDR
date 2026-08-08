@@ -11,7 +11,7 @@ import {
 } from '@/lib/queries/leaderboards';
 import { fetchGroupAthleteIds, fetchGroups } from '@/lib/queries/groups';
 import { formatNumber } from '@/lib/format';
-import { parseGroupParam } from '@/lib/groupFilter';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Leaderboard · Fydr' };
@@ -40,7 +40,7 @@ export default async function LeaderboardDetailPage({
   const { leaderboardId } = await params;
   const { db, orgId, claims } = await requireStaff();
   const sp = await searchParams;
-  const groupIds = parseGroupParam(sp.groups);
+  const groupIds = await resolveGroupFilter(sp.groups);
 
   const board = await fetchBoard(db, orgId, leaderboardId);
   if (!board) notFound();

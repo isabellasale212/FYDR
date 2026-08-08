@@ -6,7 +6,7 @@ import { RehabGroupBoard } from '@/components/RehabGroupBoard/RehabGroupBoard';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchRehabBoard, fetchRehabGroups } from '@/lib/queries/rehabGroups';
 import { fetchGroupAthleteIds, fetchGroups } from '@/lib/queries/groups';
-import { parseGroupParam } from '@/lib/groupFilter';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Rehab groups · Fydr' };
@@ -34,7 +34,7 @@ export default async function RehabGroupsPage({ searchParams }: { searchParams: 
   }
   const isMedical = claims.roles.includes('medical');
   const params = await searchParams;
-  const groupIds = parseGroupParam(params.groups);
+  const groupIds = await resolveGroupFilter(params.groups);
 
   const [rehabGroups, board, squadGroups] = await Promise.all([
     fetchRehabGroups(db, orgId),

@@ -8,7 +8,7 @@ import { fetchTeams, fetchWeekBoard } from '@/lib/queries/teamAllocation';
 import { fetchGroupAthleteIds, fetchGroups } from '@/lib/queries/groups';
 import { mondayOf } from '@/lib/queries/schedule';
 import { addDays, formatDate, todayIso } from '@/lib/format';
-import { parseGroupParam } from '@/lib/groupFilter';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Team allocation · Fydr' };
@@ -40,7 +40,7 @@ export default async function TeamAllocationPage({
   const isCoach = claims.roles.includes('coach');
 
   const params = await searchParams;
-  const groupIds = parseGroupParam(params.groups);
+  const groupIds = await resolveGroupFilter(params.groups);
   const today = todayIso(timezone);
   const requestedDate = typeof params.week === 'string' ? params.week : today;
   const weekStart = mondayOf(requestedDate);

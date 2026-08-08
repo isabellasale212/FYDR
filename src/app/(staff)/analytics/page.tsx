@@ -2,7 +2,7 @@ import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchAcwr, fetchWellnessTrend } from '@/lib/queries/analytics';
-import { parseGroupParam } from '@/lib/groupFilter';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatNumber } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 
@@ -20,7 +20,7 @@ export default async function AnalyticsPage({
 }) {
   const { db, orgId, orgName, timezone } = await requireStaff();
   const params = await searchParams;
-  const groupIds = parseGroupParam(params.groups);
+  const groupIds = await resolveGroupFilter(params.groups);
 
   const [groups, acwr, wellness] = await Promise.all([
     fetchGroups(db, orgId),

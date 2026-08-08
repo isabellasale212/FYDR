@@ -4,7 +4,7 @@ import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchFlagsList } from '@/lib/queries/flags';
 import { fetchGroups } from '@/lib/queries/groups';
-import { parseGroupParam } from '@/lib/groupFilter';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, todayIso } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 
@@ -19,7 +19,7 @@ export default async function FlagsPage({
 }) {
   const { db, orgId, orgName, timezone, claims } = await requireStaff();
   const params = await searchParams;
-  const groupIds = parseGroupParam(params.groups);
+  const groupIds = await resolveGroupFilter(params.groups);
   const today = todayIso(timezone);
 
   const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medical');

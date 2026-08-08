@@ -2581,6 +2581,375 @@ table.tbl tbody tr:hover {
   }
 }
 
+/* ---------- Dashboard, DASHBOARD-SPEC.md ----------
+ * Colour mapping against the spec's own table, since every value already
+ * exists as a token except one: Accent→--accent, Warn→--warn (text uses
+ * the existing --warn-text, already a safe-contrast amber close enough to
+ * the spec's literal #b07d0a that a second near-duplicate token would be
+ * noise), Bad→--bad, and Good (#4fd6ff) is close enough to the existing
+ * --accent2 (#33b6ff) — already this design system's "cool/calm" role on
+ * both the training report and player profile — that adding a second
+ * near-identical cyan token would fight the one this file already has,
+ * not add real distinction. Gold is the one genuine addition: tokens.css
+ * itself documents --highlight as "decorative, never encodes status", and
+ * this spec's gym-session pip is a real status use, so --gym is a new,
+ * same-value token rather than a quiet reuse that undoes that rule. */
+.dash-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+.dash-stats {
+  display: flex;
+  flex-wrap: wrap;
+}
+.dash-stat {
+  flex: 1 1 168px;
+  padding: 18px 22px;
+  border-left: 1px solid var(--hair);
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+.dash-stat:first-child {
+  border-left: none;
+}
+.dash-stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.dash-stat-value {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-top: 7px;
+  font-variant-numeric: tabular-nums;
+}
+.dash-stat-value .unit {
+  font-size: 14px;
+  color: var(--muted);
+}
+.dash-stat-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.dash-stat-foot {
+  font-size: 11px;
+  color: var(--faint);
+  margin-top: 5px;
+}
+
+.dash-week-strip {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.dash-day {
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 13px 14px;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  box-shadow: var(--shadow);
+  transition: border-color var(--t-state), box-shadow var(--t-state), opacity var(--t-state);
+}
+.dash-day[data-past='true'] {
+  opacity: 0.72;
+}
+.dash-day[data-today='true'] {
+  border-color: rgb(var(--accent-rgb) / 0.3);
+}
+.dash-day[data-selected='true'] {
+  border-color: rgb(var(--accent-rgb) / 0.55);
+  box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / 0.14), var(--shadow);
+  opacity: 1;
+}
+.dash-day-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 6px;
+}
+.dash-day-name {
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.dash-day-md {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--faint);
+}
+.dash-day-summary {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dash-day-pips {
+  display: flex;
+  gap: 4px;
+  margin-top: 10px;
+}
+.dash-day-pip {
+  height: 4px;
+  border-radius: 20px;
+  flex: 1;
+}
+.dash-day-alert {
+  font-size: 10.5px;
+  font-weight: 700;
+  margin-top: 8px;
+}
+@media (max-width: 1000px) {
+  .dash-week-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.dash-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.dash-timeline-entry {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr);
+  gap: 14px;
+}
+.dash-timeline-time {
+  text-align: right;
+  padding-top: 18px;
+}
+.dash-timeline-clock {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 500;
+}
+.dash-timeline-clock[data-past='true'] {
+  color: var(--faint);
+}
+.dash-timeline-rel {
+  font-size: 10.5px;
+  color: var(--faint);
+  margin-top: 2px;
+}
+.dash-session-card {
+  border-left: 3px solid var(--accent);
+}
+.dash-session-card[data-past='true'] {
+  opacity: 0.72;
+  border-left-color: rgba(16, 18, 23, 0.14);
+}
+.dash-session-card[data-severe='true'] {
+  border-color: rgb(var(--bad-rgb) / 0.3);
+}
+.dash-session-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 12px;
+  align-items: start;
+  gap: 8px;
+}
+.dash-session-name {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.dash-session-meta {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.dash-session-count {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 500;
+  text-align: right;
+}
+.dash-session-count-label {
+  font-size: 10.5px;
+  color: var(--faint);
+  text-align: right;
+  margin-top: 1px;
+}
+.dash-session-chevron {
+  font-size: 15px;
+  color: var(--faint);
+  padding-top: 2px;
+}
+.dash-affected {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--hair);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dash-affected-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto 10px;
+  gap: 10px;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+}
+.dash-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: var(--avatar-bg);
+  color: var(--avatar-text);
+  display: grid;
+  place-items: center;
+  font-size: 9.5px;
+  font-weight: 700;
+  flex: none;
+}
+.dash-affected-name {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.dash-affected-why {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.dash-affected-value {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+.dash-clean {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--hair);
+}
+.dash-clean-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent2);
+  color: var(--on-accent);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  flex: none;
+}
+
+.dash-ready-card {
+  border: 1px solid rgb(var(--accent-rgb) / 0.3);
+}
+.dash-ready-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+}
+.dash-ready-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 10px;
+  gap: 8px;
+  align-items: baseline;
+  padding: 11px 0;
+  border-top: 1px solid var(--hair);
+  cursor: pointer;
+}
+.dash-ready-row:first-of-type {
+  border-top: none;
+}
+.dash-load-track {
+  position: absolute;
+  inset: 2px 0;
+  border-radius: 20px;
+  background: var(--track);
+}
+.dash-load-fill {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 0;
+  border-radius: 20px;
+}
+.dash-load-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(16, 18, 23, 0.35);
+}
+
+.dash-squad-bar {
+  display: flex;
+  height: 12px;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-top: 14px;
+}
+.dash-squad-row {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+.dash-squad-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.dash-untied-row {
+  padding: 12px 0;
+  border-top: 1px solid var(--hair);
+  cursor: pointer;
+}
+.dash-untied-row:first-of-type {
+  border-top: none;
+}
+
+.dash-track {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+}
+.dash-track-bar-outer {
+  position: relative;
+  height: 6px;
+  border-radius: 20px;
+  background: var(--track);
+  margin-top: 6px;
+}
+.dash-track-bar-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+}
+
+@media (max-width: 1200px) {
+  /* Timeline stays first; the rail's four cards move below it, in their
+     existing DOM order — page.tsx puts Ready for Saturday first in that
+     column already, so no reorder trick is needed here, just the column
+     collapse. */
+  .dash-body {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ---------- Print, 06-design-system.md §14.7 ----------
  * "A print stylesheet forcing the light theme, removing shadows, and
  * keeping glyphs." The theme half lives in tokens.css (the only file

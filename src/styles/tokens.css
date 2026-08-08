@@ -27,6 +27,14 @@
   --bad: #f15a4a;
   --highlight: #f5c518;
   --highlight-text: #3a2e00;
+  /* Same literal value as --highlight, deliberately a separate token: §4.2
+     change 3 fixed --highlight to be decorative only, never a status
+     colour, and DASHBOARD-SPEC.md's gym-session pip is a real status use
+     (training=accent, gym=gold, rehab=warn, testing=good, match=bad — one
+     colour per session type, gold genuinely means "this is a gym session").
+     Reusing --highlight itself for that would quietly undo the fix; a
+     same-value, differently-named token keeps both true at once. */
+  --gym: #f5c518;
   /* Text on a solid --accent fill. 4.66:1 in both themes, so it is single valued
      like the fill it sits on. Derived, §14 has no entry for it. */
   --on-accent: #ffffff;
@@ -43,6 +51,7 @@
   --warn-rgb: 246, 171, 47;
   --bad-rgb: 241, 90, 74;
   --highlight-rgb: 245, 197, 24;
+  --gym-rgb: 245, 197, 24;
 
   /* §4.4. The status pill fill alpha. Raised from 0.16 so the fill separates
      under dichromacy; the text tokens in §3.7 are derived against this value. */

@@ -209,6 +209,40 @@ export async function createGroup(
   return { error: null };
 }
 
+/** screens/groups.md's role table: "Create, rename, recolour, reorder,
+ *  archive groups" — this is the rename/recolour/redescribe operation the
+ *  doc names explicitly ("Rename, recolour, redescribe | `update groups
+ *  set ...`") that this codebase had a create form and an archive button
+ *  for, but no edit path at all until now. group_type is deliberately not
+ *  editable here: the doc's own list of writable fields is name, colour
+ *  and description, not type — a group's positional/rehab/age/custom
+ *  category is closer to an identity than an attribute the same "Edit"
+ *  flow should casually reassign. */
+export async function updateGroup(
+  db: Db,
+  id: string,
+  orgId: string,
+  input: { name: string; description: string | null; colour: string | null },
+): Promise<{ error: string | null }> {
+  const { error } = await db
+    .from('groups')
+    .update({
+      name: input.name.trim(),
+      description: input.description,
+      colour: input.colour,
+    })
+    .eq('id', id)
+    .eq('org_id', orgId);
+
+  if (error) {
+    if (error.code === '23505') {
+      return { error: `A group called "${input.name.trim()}" already exists.` };
+    }
+    return { error: error.message };
+  }
+  return { error: null };
+}
+
 export async function archiveGroup(db: Db, id: string, orgId: string): Promise<void> {
   const { error } = await db
     .from('groups')

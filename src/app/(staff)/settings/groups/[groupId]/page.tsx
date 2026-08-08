@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { GroupMemberManager } from '@/components/GroupMemberManager/GroupMemberManager';
 import { GroupArchiveButton } from '@/components/GroupArchiveButton/GroupArchiveButton';
+import { GroupEditForm } from '@/components/GroupEditForm/GroupEditForm';
 import { GroupSwatch } from '@/components/GroupSwatch/GroupSwatch';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import {
@@ -53,6 +54,13 @@ export default async function GroupDetailPage({
           </h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <GroupEditForm
+            orgId={orgId}
+            groupId={group.id}
+            initialName={group.name}
+            initialDescription={group.description}
+            initialColour={group.colour}
+          />
           <GroupArchiveButton orgId={orgId} groupId={group.id} archived={group.archived} />
           <ThemeToggle />
         </div>

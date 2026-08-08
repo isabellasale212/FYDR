@@ -18,8 +18,10 @@ const GROUP_TYPES = [
 type Props = { orgId: string };
 
 /** screens/groups.md's create form: name, type, description, a constrained
- *  colour picker (never a free colour wheel — see GROUP_COLOURS). Edit and
- *  recolour are not built in this pass; archive is, from the detail page. */
+ *  colour picker (never a free colour wheel — see GROUP_COLOURS). The
+ *  sibling edit form (name, description, colour — no type field, see
+ *  updateGroup()'s own comment for why) lives on the group detail page,
+ *  GroupEditForm.tsx. */
 export function GroupEditorForm({ orgId }: Props) {
   const router = useRouter();
   const [name, setName] = useState('');

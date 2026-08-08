@@ -1,0 +1,281 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useMutation } from '@tanstack/react-query';
+import { createClient } from '@/lib/supabase/client';
+import {
+  bulkMarkPresent,
+  recordAttendance,
+  type AttendanceStatus,
+  type TimetableSession,
+} from '@/lib/queries/timetable';
+import { enumLabel, formatTime, mdLabel } from '@/lib/format';
+
+type Props = {
+  orgId: string;
+  userId: string;
+  actorRole: 'coach' | 'medical';
+  session: TimetableSession;
+  defaultExpanded: boolean;
+};
+
+const SEGMENTS: { value: AttendanceStatus; label: string }[] = [
+  { value: 'full', label: 'Full' },
+  { value: 'modified', label: 'Mod' },
+  { value: 'absent', label: 'Abs' },
+  { value: 'excused', label: 'Exc' },
+];
+
+/** screens/timetable.md's AttendanceControl + RestrictionWarning, reduced to
+ *  this app's existing web patterns (no BottomSheet/ConfirmSheet component
+ *  exists here) — an inline override panel stands in for the doc's
+ *  ConfirmSheet. Every write goes through lib/queries/timetable.ts's real
+ *  recordAttendance/bulkMarkPresent against the real session_attendance
+ *  table; router.refresh() re-pulls server state after each mutation,
+ *  same pattern as GymSessionLogger.tsx rather than a hand-rolled
+ *  optimistic cache. */
+export function TimetableSessionCard({ orgId, userId, actorRole, session, defaultExpanded }: Props) {
+  const router = useRouter();
+  const [expanded, setExpanded] = useState(defaultExpanded);
+  const [reasonDrafts, setReasonDrafts] = useState<Record<string, string>>({});
+  const [overrideFor, setOverrideFor] = useState<string | null>(null);
+  const [overrideReason, setOverrideReason] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const markMutation = useMutation({
+    mutationFn: (input: { athleteId: string; status: AttendanceStatus; modifiedReason: string | null; overrideReason?: string }) =>
+      recordAttendance(createClient(), orgId, userId, actorRole, { sessionId: session.id, ...input }),
+    onSuccess: (result) => {
+      if (result.error) return setError(result.error);
+      setError(null);
+      setOverrideFor(null);
+      setOverrideReason('');
+      router.refresh();
+    },
+  });
+
+  const bulkMutation = useMutation({
+    mutationFn: (athleteIds: string[]) => bulkMarkPresent(createClient(), orgId, userId, session.id, athleteIds),
+    onSuccess: (result) => {
+      if (result.error) return setError(result.error);
+      setError(null);
+      router.refresh();
+    },
+  });
+
+  const marked = session.participants.filter((p) => p.attendance !== null).length;
+  const counts = {
+    full: session.participants.filter((p) => p.attendance === 'full').length,
+    modified: session.participants.filter((p) => p.attendance === 'modified').length,
+    absent: session.participants.filter((p) => p.attendance === 'absent').length,
+    excused: session.participants.filter((p) => p.attendance === 'excused').length,
+  };
+  const conflictCount = session.participants.filter((p) => p.conflicts.length > 0).length;
+  const md = mdLabel(session.md_offset);
+
+  function selectSegment(athleteId: string, status: AttendanceStatus, hasConflict: boolean, current: AttendanceStatus | null) {
+    if (status === 'full' && hasConflict && current !== 'full') {
+      setOverrideFor(athleteId);
+      setOverrideReason('');
+      return;
+    }
+    markMutation.mutate({
+      athleteId,
+      status,
+      modifiedReason: status === 'modified' ? (reasonDrafts[athleteId] ?? null) : null,
+    });
+  }
+
+  return (
+    <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        style={{
+          width: '100%',
+          textAlign: 'left',
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: '14px 18px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          flexWrap: 'wrap',
+        }}
+      >
+        <span className="nm mono">{formatTime(session.starts_at)}</span>
+        <span className="nm">{session.title}</span>
+        <span className="tiny">
+          {enumLabel(session.session_type)}
+          {session.location ? ` · ${session.location}` : ''}
+        </span>
+        {md ? <span className="pill pill-accent">{md}</span> : null}
+        <span className="tiny" style={{ marginLeft: 'auto' }}>
+          {session.participants.length} expected · {marked} marked
+        </span>
+        <span aria-hidden="true">{expanded ? '⌃' : '⌄'}</span>
+      </button>
+
+      {expanded ? (
+        <div style={{ borderTop: '1px solid var(--hair)' }}>
+          {session.participants.length === 0 ? (
+            <p className="tiny" style={{ padding: '12px 18px' }}>
+              No athletes expected in this filter.
+            </p>
+          ) : (
+            <>
+              <div
+                style={{
+                  padding: '10px 18px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  flexWrap: 'wrap',
+                  borderBottom: '1px solid var(--hair)',
+                }}
+              >
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  disabled={bulkMutation.isPending}
+                  onClick={() => bulkMutation.mutate(session.participants.map((p) => p.athlete_id))}
+                >
+                  Mark all present
+                </button>
+                <span className="tiny">
+                  {counts.full} full · {counts.modified} modified · {counts.absent} absent · {counts.excused} excused
+                </span>
+              </div>
+
+              {conflictCount > 0 ? (
+                <div className="note" style={{ margin: '10px 18px', borderColor: 'var(--warn)' }}>
+                  <div className="note-glyph">⚠</div>
+                  <p className="note-text">
+                    {conflictCount} athlete{conflictCount === 1 ? '' : 's'} have restrictions this session may conflict with —
+                    marked below.
+                  </p>
+                </div>
+              ) : null}
+
+              {error ? (
+                <p className="form-error" role="alert" style={{ margin: '0 18px 10px' }}>
+                  {error}
+                </p>
+              ) : null}
+
+              <div style={{ overflowX: 'auto' }}>
+                <div style={{ minWidth: 560 }}>
+                  {session.participants.map((p, index) => (
+                    <div key={p.athlete_id}>
+                      {index > 0 ? <div className="hair" /> : null}
+                      <div style={{ padding: '10px 18px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                          <span className="nm">
+                            {p.first_name} {p.last_name}
+                          </span>
+                          {p.squad_number !== null ? <span className="tiny mono">#{p.squad_number}</span> : null}
+                          <span
+                            className={`pill ${
+                              p.availability_status === 'available'
+                                ? 'pill-good'
+                                : p.availability_status === 'unavailable'
+                                  ? 'pill-bad'
+                                  : p.availability_status === 'modified'
+                                    ? 'pill-warn'
+                                    : 'pill-neutral'
+                            }`}
+                          >
+                            {p.availability_status === 'unknown' ? 'No record' : enumLabel(p.availability_status)}
+                          </span>
+                          {p.conflicts.length > 0 ? (
+                            <span className="pill pill-warn">⚠ {p.conflicts.join(', ')}</span>
+                          ) : null}
+                          <div className="chiprow" style={{ marginLeft: 'auto' }} role="group" aria-label={`Attendance for ${p.first_name} ${p.last_name}`}>
+                            {SEGMENTS.map((seg) => (
+                              <button
+                                key={seg.value}
+                                type="button"
+                                className="squad-chip"
+                                aria-pressed={p.attendance === seg.value}
+                                disabled={markMutation.isPending}
+                                onClick={() => selectSegment(p.athlete_id, seg.value, p.conflicts.length > 0, p.attendance)}
+                              >
+                                {seg.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        {p.restrictions.length > 0 ? (
+                          <p className="tiny" style={{ marginTop: 4 }}>
+                            {p.restrictions.join(' · ')}
+                          </p>
+                        ) : null}
+                        {p.attendance === 'modified' ? (
+                          <input
+                            className="field"
+                            style={{ marginTop: 6, maxWidth: 380 }}
+                            placeholder="Reason (required — left early, family, etc.)"
+                            defaultValue={p.modified_reason ?? ''}
+                            onChange={(e) => setReasonDrafts((d) => ({ ...d, [p.athlete_id]: e.target.value }))}
+                            onBlur={(e) =>
+                              markMutation.mutate({ athleteId: p.athlete_id, status: 'modified', modifiedReason: e.target.value })
+                            }
+                          />
+                        ) : null}
+                        {!p.modified_reason && p.attendance === 'modified' ? (
+                          <p className="tiny" style={{ color: 'var(--warn-text)', marginTop: 4 }}>
+                            A reason is needed — unreadable a week from now without one.
+                          </p>
+                        ) : null}
+
+                        {overrideFor === p.athlete_id ? (
+                          <div className="note" style={{ marginTop: 8, borderColor: 'var(--warn)' }}>
+                            <div className="note-glyph">⚠</div>
+                            <div style={{ flex: 1 }}>
+                              <p className="note-text">
+                                Marking full despite {p.conflicts.join(', ')}. This is logged, not blocked — say why.
+                              </p>
+                              <input
+                                className="field"
+                                style={{ marginTop: 6 }}
+                                placeholder="Reason for overriding the restriction"
+                                value={overrideReason}
+                                onChange={(e) => setOverrideReason(e.target.value)}
+                              />
+                              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                                <button
+                                  type="button"
+                                  className="btn-primary"
+                                  disabled={overrideReason.trim() === '' || markMutation.isPending}
+                                  onClick={() =>
+                                    markMutation.mutate({
+                                      athleteId: p.athlete_id,
+                                      status: 'full',
+                                      modifiedReason: null,
+                                      overrideReason: overrideReason.trim(),
+                                    })
+                                  }
+                                >
+                                  Mark full anyway
+                                </button>
+                                <button type="button" className="btn-ghost" onClick={() => setOverrideFor(null)}>
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}

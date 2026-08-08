@@ -110,6 +110,23 @@ export const SIDEBAR: readonly Row[] = [
     ),
   },
   {
+    // screens/timetable.md's own scope table: Schedule plans the next three
+    // weeks, Timetable is the day-level read-and-capture face of the same
+    // spine — adjacent here for the same reason. roles matches the doc's
+    // table exactly: admin has no access by default.
+    id: 'staff.timetable',
+    label: 'Timetable',
+    route: '/timetable',
+    roles: ['coach', 'medical'],
+    icon: icon(
+      <>
+        <rect x="1.8" y="2.2" width="12.4" height="11.6" rx="1.4" />
+        <path d="M1.8 5.8h12.4M4.6 1.4v2M11.4 1.4v2" />
+        <path d="M4.8 9.2l1.6 1.6 3.2-3.4" />
+      </>,
+    ),
+  },
+  {
     id: 'staff.reports',
     label: 'Reports',
     route: '/reports',

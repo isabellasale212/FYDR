@@ -235,6 +235,12 @@ const ENUM_LABELS: Record<string, string> = {
   hand: 'Hand',
   load_management: 'Load management',
   training_rpe: 'Session RPE',
+  // Acronyms the generic title-case fallback below can't get right on its
+  // own — found live on the Flags screen ("Gps" instead of "GPS", a
+  // flag_domain value) and the gym programme builder's own Load basis
+  // dropdown ("Rpe" instead of "RPE", a load_basis value).
+  gps: 'GPS',
+  rpe: 'RPE',
 };
 
 /** Enum values are rendered from a fixed label set, never as free text. */

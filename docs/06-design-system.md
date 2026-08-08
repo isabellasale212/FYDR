@@ -2703,12 +2703,12 @@ the difference between the seven-value reskin working and half-working.
 
 | Gap | Consequence | Proposed |
 |---|---|---|
-| `--field` and `--surf2` are the same colour in dark | An input on an inset row has no fill contrast at all, only a 1.20:1 border | `--border-strong` on `.field`, per §3.7 |
-| No `prefers-reduced-transparency` fallback | The sticky header's `backdrop-filter: blur(14px)` is a motion and legibility problem for some readers | Solid `--bg` fallback |
+| `--field` and `--surf2` are the same colour in dark | An input on an inset row has no fill contrast at all, only a 1.20:1 border | **Checked, not a gap.** `.field`'s border is already `--border-strong` (base.css), and the token collision itself is deliberate: tokens.css's own dark-theme block says so directly — "there is one raised surface, not a scale." A later session may still disagree, but it would be overturning a recorded decision, not filling a silent gap. |
+| No `prefers-reduced-transparency` fallback | The sticky header's `backdrop-filter: blur(14px)` is a motion and legibility problem for some readers | **Checked, does not apply.** No `backdrop-filter` exists anywhere in the shipped CSS — `.topbar` isn't even `position: sticky`. This describes the source mockup, not this build; there is nothing here for a fallback to guard. |
 | No RTL handling | The source uses `text-align: right` and left-edge bars directly | Logical properties: `text-align: end`, `border-inline-start` |
-| No print styles | Clubs print the availability board | A print stylesheet forcing the light theme, removing shadows, and keeping glyphs |
+| No print styles | Clubs print the availability board | **Built.** `@media print` in tokens.css (theme-forcing) and base.css (layout — hides nav/chrome, drops the shadow token), triggered by `PrintButton` on Dashboard and Injuries, the two screens `screens/dashboard.md` and `screens/injury-dashboard.md` name explicitly. `screens/injury-dashboard.md`'s own further "9pt, one A4 page for 45 athletes" sizing target for that screen specifically is partly done (row sizing) and partly unverified (page-count fit — no way to render real pagination to check it here). |
 | `.load-row` fixed 62px and 66px columns | Clips at large type sizes | `minmax(62px, auto)` above 130% |
-| No selected-row treatment | Multi-select for group allocation has no visual | `--surf2` fill plus a 2 px `--accent` inline-start bar, matching `SetLogRow` active |
+| No selected-row treatment | Multi-select for group allocation has no visual | **Checked, not applicable.** The shipped team-allocation board isn't a multi-select grid — it's a one-team-picker-per-athlete row (`TeamAllocationBoard.tsx`), a deliberate simplification that also makes double-allocation structurally impossible. There is no selected-row state in that interaction model for a treatment to apply to. |
 
 ---
 

@@ -1981,3 +1981,44 @@ table.tbl tbody tr:hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* The real "+ Log weigh-in" / "Edit entries" panels, BodyWeightPanel.tsx.
+ * Not part of the visual spec (which only shows the three closed buttons) —
+ * this is the write path those buttons implied, opened inline below them
+ * rather than in a modal, consistent with this app's existing forms (see
+ * FlagCard's own inline dismiss-reason panel for the same pattern). */
+.pp-weight-form {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hair);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pp-weight-form-row .field {
+  margin-top: 4px;
+}
+.pp-weight-edit-list {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hair);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pp-weight-edit-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+.pp-weight-edit-row .field {
+  padding: 8px 10px;
+  min-height: 0;
+  font-size: 12.5px;
+}
+@media (max-width: 700px) {
+  .pp-weight-edit-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}

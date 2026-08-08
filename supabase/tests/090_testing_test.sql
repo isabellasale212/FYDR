@@ -5,6 +5,12 @@
 -- access (no type split, unlike programmes or rehab groups), the athlete
 -- read-own boundary, and the mark_best_attempt trigger — including the
 -- manual-override gap 0025 closed, tested here the same way it was found.
+--
+-- Section 4, body_composition, was added when the player profile page
+-- (docs/screens elsewhere) gave that table its first real write path —
+-- the table and its RLS policies shipped with migration 0024 but nothing
+-- in the application ever inserted into it until then, and this file
+-- never covered it either.
 
 begin;
 select * from no_plan();
@@ -202,6 +208,73 @@ select is(
       and is_best = true),
   1.72,
   'lower-is-better: the FASTER (lower) time is marked best, not the higher number'
+);
+
+-- ===========================================================================
+-- 4. body_composition: staff write for any athlete, athlete reads only
+--    their own, same shape as test_results — plus the update path
+--    playerProfile.ts's "Edit entries" panel actually uses, which
+--    test_results above never exercises (it only ever inserts).
+-- ===========================================================================
+
+select tests.set_jwt(tests.uid('orga', 'user_athlete_1'));
+select throws_ok(
+  format($q$insert into body_composition (org_id, athlete_id, measured_on, body_mass_kg, recorded_by)
+            values (%L, %L, current_date, 82.4, %L)$q$,
+         tests.uid('orga','org'), tests.uid('orga','athlete_1'), tests.uid('orga','user_athlete_1')),
+  '42501', null,
+  'an athlete cannot log their own weigh-in — staff-entered, same rule as test_results'
+);
+
+select tests.set_jwt(tests.uid('orga', 'user_coach'));
+select lives_ok(
+  format($q$insert into body_composition (id, org_id, athlete_id, measured_on, body_mass_kg, body_fat_pct, method, recorded_by)
+            values (%L, %L, %L, current_date - 14, 82.4, 14.1, 'skinfold', %L)$q$,
+         tests.uid('orga','bc_1'), tests.uid('orga','org'), tests.uid('orga','athlete_1'),
+         tests.uid('orga','user_coach')),
+  'a coach logs a weigh-in for athlete_1'
+);
+
+select tests.set_jwt(tests.uid('orga', 'user_athlete_2'));
+select is(
+  (select count(*) from body_composition where org_id = tests.uid('orga','org')),
+  0::bigint,
+  'athlete_2 reads zero of athlete_1''s weigh-ins'
+);
+
+select tests.set_jwt(tests.uid('orga', 'user_athlete_1'));
+select is(
+  (select body_mass_kg from body_composition where id = tests.uid('orga','bc_1')),
+  82.4,
+  'athlete_1 reads their own weigh-in'
+);
+
+-- The update path: BodyWeightPanel's "Edit entries" corrects an existing
+-- row in place rather than writing a revision — body_composition is not one
+-- of CLAUDE.md rule 6's immutable-once-submitted domains (wellness, gym,
+-- nutrition), and this table's own RLS grants UPDATE outright, which is
+-- the schema's own answer.
+select tests.set_jwt(tests.uid('orga', 'user_medical'));
+select lives_ok(
+  format($q$update body_composition set body_mass_kg = 82.9, method = 'bioimpedance' where id = %L$q$,
+         tests.uid('orga','bc_1')),
+  'medical corrects the same weigh-in — the shared staff role, no coach/medical split here either'
+);
+select is(
+  (select body_mass_kg from body_composition where id = tests.uid('orga','bc_1')),
+  82.9,
+  'the correction really did land'
+);
+
+select tests.set_jwt(tests.uid('orga', 'user_athlete_1'));
+select lives_ok(
+  format($q$update body_composition set body_mass_kg = 999 where id = %L$q$, tests.uid('orga','bc_1')),
+  'the statement itself does not error — the staff-only USING clause just filters the row to zero matches, same as any other row-scoped update'
+);
+select is(
+  (select body_mass_kg from body_composition where id = tests.uid('orga','bc_1')),
+  82.9,
+  'the athlete''s update matched zero rows under RLS — reading their own weigh-in is not the same as writing it'
 );
 
 select * from finish();

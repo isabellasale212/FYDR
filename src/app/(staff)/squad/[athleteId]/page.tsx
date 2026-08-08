@@ -6,7 +6,9 @@ import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { Dial } from '@/components/Dial/Dial';
 import { DomainChips } from '@/components/DomainChips/DomainChips';
 import { PlayerProfileFlags } from '@/components/PlayerProfileFlags/PlayerProfileFlags';
+import { BodyWeightPanel } from '@/components/BodyWeightPanel/BodyWeightPanel';
 import { fetchPlayerProfile, bandTone, type Tone } from '@/lib/queries/playerProfile';
+import { fetchBodyCompositionEntries } from '@/lib/queries/bodyComposition';
 import { enumLabel, formatDate, formatNumber, initials, todayIso } from '@/lib/format';
 import { availabilityStatus } from '@/lib/status';
 import { requireStaff } from '@/lib/session';
@@ -107,6 +109,13 @@ export default async function AthletePage({
 
   const profile = await fetchPlayerProfile(db, orgId, athleteId, timezone);
   if (!profile) notFound();
+
+  // body_composition's own RLS (migration 0024) grants insert/update to
+  // coach and medical only, same as the query functions this button calls —
+  // gating the control on the same two roles means it never offers an
+  // action RLS is just going to reject.
+  const canLogWeighIn = claims.roles.includes('coach') || claims.roles.includes('medical');
+  const weighIns = canLogWeighIn ? await fetchBodyCompositionEntries(db, orgId, athleteId) : [];
 
   const { athlete, athleticism, acwr, wellnessRating, headerWellness, programme, nutrition, bodyWeight } = profile;
   const spark = sparklinePaths(bodyWeight.history);
@@ -480,17 +489,14 @@ export default async function AthletePage({
                 </svg>
               ) : null}
 
-              <div className="pp-weight-actions">
-                <button type="button" className="btn-ghost" disabled aria-disabled="true" title="Not wired this pass — body_composition has no write path yet.">
-                  + Log weigh-in
-                </button>
-                <button type="button" className="btn-ghost" disabled aria-disabled="true" title="No target-range column exists in this schema yet.">
-                  Set target range
-                </button>
-                <button type="button" className="btn-ghost" disabled aria-disabled="true" title="Not wired this pass — body_composition has no write path yet.">
-                  Edit entries
-                </button>
-              </div>
+              <BodyWeightPanel
+                orgId={orgId}
+                athleteId={athleteId}
+                userId={claims.userId}
+                timezone={timezone}
+                entries={weighIns}
+                canLog={canLogWeighIn}
+              />
             </section>
           </div>
         </div>

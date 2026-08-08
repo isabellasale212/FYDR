@@ -301,6 +301,18 @@ export default async function SettingsPage() {
             </Link>
           ) : null}
 
+          {isAdmin ? (
+            <Link href="/settings/audit" className="set-list-row">
+              <span>
+                <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block' }}>Audit log</span>
+                <span style={{ fontSize: 12, color: 'var(--faint)' }}>Who did what, and to what, across the club</span>
+              </span>
+              <span aria-hidden="true" style={{ fontSize: 16, color: 'var(--faint)' }}>
+                ›
+              </span>
+            </Link>
+          ) : null}
+
           <form action="/auth/sign-out" method="post" className="set-list-row" style={{ width: '100%' }}>
             <span>
               <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block', color: 'var(--bad-text)' }}>Log out</span>

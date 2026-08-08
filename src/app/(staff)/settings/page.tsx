@@ -24,12 +24,16 @@ export const metadata = { title: 'Settings · Fydr' };
  *  write paths — see orgDetails.ts's header for what's still cut (season
  *  dates, subscription tier) — and a real photo upload for the signed-in
  *  person, added once migration 0030 gave avatar_url a Storage bucket to
- *  point at (see lib/queries/avatar.ts), and Subject access requests
+ *  point at (see lib/queries/avatar.ts), Subject access requests
  *  (admin and medical), added once lib/queries/sarPack.ts gave
  *  09-security-and-compliance.md §6's Article 15 pack a real, if
- *  synchronous rather than worker-queued, shape — see that file's header
- *  for the reduced scope. Exports, billing and retention are named
- *  honestly as not built rather than left to look finished. */
+ *  synchronous rather than worker-queued, shape, and Data retention
+ *  (admin), added once lib/retention/compute.ts gave §7's schedule a
+ *  real, if partial, shape — see that file's header for exactly which
+ *  categories it can act on for real. Exports and billing are still
+ *  named honestly as not built — billing doubly so, since
+ *  12-product-tiers.md §7.2 says this product is sold, not self-served,
+ *  so there is no billing screen to build at all, by design. */
 export default async function SettingsPage() {
   const { db, orgId, orgName, timezone, fullName, claims } = await requireStaff();
   const isAdmin = claims.roles.includes('admin');
@@ -157,6 +161,21 @@ export default async function SettingsPage() {
           </section>
         ) : null}
 
+        {isAdmin ? (
+          <section className="card" aria-labelledby="retention-title">
+            <h2 className="card-title" id="retention-title">
+              Data retention
+            </h2>
+            <p className="import-sub" style={{ marginBottom: 10 }}>
+              The club&apos;s retention schedule, what&apos;s eligible right now, and the two categories this build
+              can actually run.
+            </p>
+            <Link href="/settings/retention" className="btn-ghost">
+              Manage retention →
+            </Link>
+          </section>
+        ) : null}
+
         {isAdmin && orgRow.data ? (
           <ClubDetailsEditForm
             orgId={orgId}
@@ -174,7 +193,7 @@ export default async function SettingsPage() {
           <h2 className="card-title" id="more-title">
             Not built yet
           </h2>
-          <p className="cap">Exports, billing and data retention. Each gets its own pass.</p>
+          <p className="cap">Exports and billing. Billing is out of scope by design — see Data retention above for why.</p>
         </section>
       </div>
     </>

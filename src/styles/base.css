@@ -83,13 +83,22 @@ a {
   border: 0;
 }
 
+/* PLAYER-PROFILE-SPEC.md §1, verbatim — only a `from` frame on purpose:
+ * the implicit `to` is the element's own inline stroke-dashoffset (the
+ * Dial component's computed offset), so this one keyframe animates every
+ * dial from fully-open to whatever value it's actually showing, not to a
+ * fixed endpoint. This name existed before with a different `to: 0`
+ * always-closes shape, but nothing in the codebase referenced it — dead
+ * CSS from an earlier design-system extraction pass, now given the
+ * correct, real behaviour the spec asks for instead of two same-named
+ * keyframes with different meanings. */
 @keyframes ring-in {
   from {
-    stroke-dashoffset: var(--dash, 1200);
+    stroke-dashoffset: 251;
   }
-  to {
-    stroke-dashoffset: 0;
-  }
+}
+.dial-arc {
+  animation: ring-in 0.9s cubic-bezier(0.22, 0.8, 0.36, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1294,4 +1303,584 @@ table.tbl tbody tr:hover {
   font-size: 12.5px;
   font-weight: 600;
   margin-bottom: 14px;
+}
+
+/* ---------- Player profile, PLAYER-PROFILE-SPEC.md ----------
+ *
+ * Reuses this file's existing primitives everywhere they already cover a
+ * spec requirement — .card, .pill/.pill-*, .squad-chip, .btn-ghost, .mono,
+ * the Pill component's status vocabulary — rather than parallel one-off
+ * classes, so this page looks like it belongs to the same app as every
+ * other screen rather than a mockup dropped in beside it. The classes below
+ * are only the pieces nothing existing already covered.
+ *
+ * A handful of literal spec colours are deliberately NOT reproduced, each
+ * noted at its site: the "Good" pill (spec's own one-off cyan tint) uses
+ * this file's existing --good/--good-pill-text instead, the avatar uses
+ * --accent/--on-accent instead of the spec's one-off green (nothing else in
+ * this app renders an avatar in that green, and it is not a token), and
+ * benchmark band *text* uses the --accent2-text/--warn-text/--bad-text
+ * pairing tokens.css already derived for exactly this — a coloured label on
+ * a plain surface at 4.5:1 — rather than the spec's raw --accent2, which is
+ * a decorative-only value not contrast-checked for text. Flag domain pills
+ * use .pill-neutral rather than the spec's two example per-domain tints:
+ * flag_domain has seven real values in this schema (wellness, gym, gps,
+ * nutrition, compliance, testing, training), the spec only colours two of
+ * them, and severity — already colour-coded on this same card via the
+ * left border, per §8 — is the one colour signal a flag card needs, not
+ * two competing ones. */
+
+.pp-col {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pp-card {
+  padding: 18px 20px;
+}
+
+.pp-card-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+.pp-card-row .card-title {
+  margin: 0;
+}
+
+.pp-link {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--accent-text);
+  white-space: nowrap;
+}
+.pp-link:hover {
+  text-decoration: underline;
+}
+
+/* Pill-shaped ghost button: Squad back, Edit, Change plan, + Log injury.
+ * .btn-ghost already covers the spec's rect-shaped ghost buttons (Show
+ * acknowledged, the three weight actions) — same colours, and its
+ * var(--r-field) radius is the spec's own literal 12px for that shape.
+ * This is the pill-radius sibling nothing existing already had. */
+.btn-ghost-pill {
+  background: none;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  padding: 7px 16px;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  transition: border-color var(--t-state), color var(--t-state), background var(--t-state);
+}
+.btn-ghost-pill:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+.btn-ghost-pill.accent {
+  border-color: rgb(var(--accent-rgb) / 0.35);
+  color: var(--accent-text);
+  font-weight: 700;
+}
+.btn-ghost-pill:disabled,
+.btn-ghost-pill[aria-disabled='true'] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.btn-ghost-pill:disabled:hover,
+.btn-ghost-pill[aria-disabled='true']:hover {
+  border-color: var(--border);
+  color: var(--muted);
+}
+
+/* -------- §3 Development plan banner -------- */
+.pp-banner {
+  background: rgb(var(--accent-rgb) / 0.07);
+  border: 1px solid rgb(var(--accent-rgb) / 0.3);
+  border-radius: var(--r-card);
+  padding: 14px 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 18px;
+  align-items: center;
+}
+.pp-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.pp-banner-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+.pp-banner-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+@media (max-width: 700px) {
+  .pp-banner {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+}
+
+/* -------- §4 Profile header card -------- */
+/* §4's own table describes this row as a 6-column grid (auto 56px
+ * minmax(0,1fr) auto auto auto), and that's what it is at generous widths.
+ * It is built as a wrapping FLEX row instead of that literal grid, because
+ * CSS grid tracks don't reflow: a real, measured bug came from exactly that
+ * mismatch. This shell carries a persistent sidebar (§8 of CLAUDE.md — not
+ * part of the spec's own standalone 1240px mockup), so the six items here
+ * run out of row width earlier than the spec's own page ever would. With a
+ * fixed grid template, "earlier than expected" meant the name column
+ * (nominally minmax(0,1fr)) got squeezed toward zero and the athlete's name
+ * overlapped the domain chips next to it — confirmed at a perfectly
+ * ordinary 945px window, not an edge case. Flex-wrap doesn't need a pixel
+ * threshold guessed in advance: each item keeps its natural width, the name
+ * block gets a min-width floor so it wraps onto its own line as a whole
+ * unit rather than being crushed character by character, and the row
+ * itself wraps wherever it genuinely runs out of space, at any viewport,
+ * with any athlete's name. */
+.pp-header-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+.pp-header-top > .pp-name-block {
+  flex: 1 1 220px;
+  min-width: 220px;
+}
+.pp-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 18px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.pp-name-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.pp-name {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.pp-domain-chips {
+  display: flex;
+  gap: 7px;
+}
+.pp-wellness-mini {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex: none;
+}
+.pp-wellness-mini .v {
+  font-size: 15px;
+  color: var(--faint);
+  line-height: 1;
+}
+.pp-wellness-mini .l {
+  font-size: 9px;
+  color: var(--faint);
+  margin-top: 2px;
+}
+
+.pp-detail-row {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--hair);
+}
+@media (max-width: 900px) {
+  .pp-detail-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 16px;
+  }
+}
+@media (max-width: 560px) {
+  .pp-detail-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.pp-detail-cell .l {
+  font-size: 11.5px;
+  color: var(--faint);
+}
+.pp-detail-cell .v {
+  font-size: 15px;
+  font-weight: 700;
+  margin-top: 3px;
+}
+
+/* -------- §2 Two-column body -------- */
+.pp-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .pp-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.pp-grid-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* -------- §5 Athleticism + Position benchmarks -------- */
+.pp-card-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.pp-card-head .s {
+  font-size: 12.5px;
+  color: var(--faint);
+}
+.pp-athleticism-row {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  margin-top: 14px;
+}
+.pp-dial-value {
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1;
+}
+.pp-dial-unit {
+  font-size: 9px;
+  color: var(--faint);
+  margin-top: 3px;
+}
+.pp-athleticism-band {
+  font-size: 14.5px;
+  font-weight: 700;
+}
+.pp-athleticism-desc {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.pp-bench-head {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.pp-bench-head .t {
+  font-size: 13px;
+  font-weight: 700;
+}
+.pp-bench-head .s {
+  font-size: 11.5px;
+  color: var(--faint);
+}
+.pp-bench-row {
+  border-top: 1px solid var(--hair);
+  padding: 14px 0 12px;
+}
+.pp-bench-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 10px;
+}
+.pp-bench-name {
+  font-size: 14.5px;
+  font-weight: 700;
+}
+.pp-bench-value {
+  font-size: 16px;
+  font-weight: 500;
+}
+.pp-bench-bar {
+  height: 7px;
+  border-radius: var(--r-pill);
+  background: var(--track);
+  overflow: hidden;
+  margin-top: 8px;
+}
+.pp-bench-fill {
+  height: 100%;
+}
+.pp-bench-bottom {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  margin-top: 6px;
+}
+.pp-bench-band {
+  font-size: 12px;
+  font-weight: 700;
+}
+.pp-bench-meta {
+  font-size: 11.5px;
+  color: var(--faint);
+}
+
+/* -------- §8 Flags card -------- */
+.pp-flags-card {
+  border-color: rgb(var(--warn-rgb) / 0.55);
+}
+.pp-flags-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+.pp-flag-item {
+  padding-inline-start: 14px;
+}
+.pp-flag-item.ack {
+  opacity: 0.5;
+}
+.pp-flag-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pp-flag-value {
+  font-size: 14px;
+  font-weight: 500;
+}
+.pp-flag-threshold {
+  font-size: 11.5px;
+  color: var(--faint);
+}
+.pp-flag-rule {
+  font-size: 14px;
+  margin-top: 6px;
+}
+.pp-flag-evidence {
+  font-size: 11.5px;
+  color: var(--faint);
+  margin-top: 4px;
+}
+.pp-flag-bottom {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+.pp-flag-raised {
+  font-size: 11.5px;
+  color: var(--faint);
+}
+.pp-ack-btn {
+  border-radius: var(--r-field);
+  padding: 6px 13px;
+  font-size: 12.5px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+  transition: border-color var(--t-state), color var(--t-state), background var(--t-state);
+}
+.pp-ack-btn[data-acked='true'] {
+  background: none;
+  border-color: var(--border);
+  color: var(--muted);
+}
+
+/* -------- §9 ACWR + Wellness dials card -------- */
+.pp-dials {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+}
+.pp-dial-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.pp-dial-col-head {
+  align-self: flex-start;
+}
+.pp-dial-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+.pp-dial-window {
+  font-size: 11.5px;
+  color: var(--faint);
+}
+.pp-dial-status {
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 10px;
+}
+.pp-dial-meta {
+  font-size: 11px;
+  color: var(--faint);
+  margin-top: 3px;
+}
+.pp-big-dial {
+  margin-top: 12px;
+}
+.pp-big-dial-value {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1;
+}
+.pp-big-dial-unit {
+  font-size: 10px;
+  color: var(--faint);
+  margin-top: 3px;
+}
+
+/* -------- §10 Goals -------- */
+.pp-goal-line {
+  font-size: 13.5px;
+  margin-top: 12px;
+}
+.pp-goal-label {
+  font-weight: 700;
+}
+.pp-goal-label.next-window {
+  color: var(--warn-text);
+}
+.pp-goal-note {
+  font-size: 12.5px;
+  color: var(--faint);
+  margin-top: 6px;
+}
+
+/* -------- §10 Nutrition plan -------- */
+.pp-macro-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+@media (max-width: 700px) {
+  .pp-macro-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.pp-macro-tile {
+  background: var(--surf2);
+  border-radius: var(--r-tab);
+  padding: 14px 10px;
+  text-align: center;
+}
+.pp-macro-value {
+  font-size: 22px;
+  font-weight: 500;
+}
+.pp-macro-label {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* -------- §10 Body weight -------- */
+.pp-injuries-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+}
+.pp-injury-list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pp-weight-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 14px;
+}
+.pp-weight-value {
+  font-size: 34px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+.pp-weight-value .u {
+  font-size: 15px;
+  color: var(--muted);
+  font-weight: 400;
+  letter-spacing: normal;
+}
+.pp-weight-note {
+  font-size: 12.5px;
+  color: var(--faint);
+  margin-top: 4px;
+}
+.pp-weight-right {
+  text-align: right;
+}
+.pp-weight-trend {
+  font-size: 12px;
+  color: var(--faint);
+  margin-top: 8px;
+}
+.pp-sparkline {
+  display: block;
+  width: 100%;
+  height: 84px;
+  margin-top: 12px;
+}
+.pp-weight-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.pp-weight-actions .btn-ghost {
+  padding: 11px;
+  text-align: center;
+  justify-content: center;
+}
+@media (max-width: 700px) {
+  .pp-weight-actions {
+    grid-template-columns: 1fr;
+  }
 }

@@ -3,69 +3,114 @@ import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { Pill } from '@/components/Pill/Pill';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
-import { WellnessChart } from '@/components/WellnessChart/WellnessChart';
-import { fetchAthlete } from '@/lib/queries/squad';
-import { fetchAthleteInjuries } from '@/lib/queries/injuries';
-import { fetchAthleteRecentSessions } from '@/lib/queries/schedule';
-import { fetchWellnessByAthlete, wellnessSeries } from '@/lib/queries/wellness';
-import {
-  BLANK,
-  addDays,
-  ageFrom,
-  enumLabel,
-  formatDate,
-  formatNumber,
-  formatTime,
-  todayIso,
-} from '@/lib/format';
-import { bandPosition } from '@/lib/stats';
+import { Dial } from '@/components/Dial/Dial';
+import { DomainChips } from '@/components/DomainChips/DomainChips';
+import { PlayerProfileFlags } from '@/components/PlayerProfileFlags/PlayerProfileFlags';
+import { fetchPlayerProfile, bandTone, type Tone } from '@/lib/queries/playerProfile';
+import { enumLabel, formatDate, formatNumber, initials, todayIso } from '@/lib/format';
 import { availabilityStatus } from '@/lib/status';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Athlete · Fydr' };
 
-const WINDOW_DAYS = 42;
-const ROLLING_DAYS = 14;
+/* PLAYER-PROFILE-SPEC.md, built to spec section by section — see
+ * lib/queries/playerProfile.ts's own header for what is real data and what
+ * is an honest, documented cut. Four things the brief flagged explicitly:
+ *
+ *   §2 — every two-column grid on this page uses minmax(0, 1fr), never
+ *   bare 1fr: with .mono's tabular numbers throughout, a bare 1fr lets that
+ *   content set the column's minimum width and the grid overflows. Athleticism
+ *   and Position benchmarks are one card below, not two — the composite score
+ *   is computed from the benchmark rows, so splitting them would separate a
+ *   number from its own working.
+ *
+ *   §5 — the dial geometry lives in one place, components/Dial/Dial.tsx, not
+ *   copied three times. offset = round(251 × (1 − pct/100)), verbatim.
+ *
+ *   §9 — ACWR is a ratio, not a percentage. Plotting it raw against an
+ *   unbounded scale would mean the ring never means the same thing twice; it
+ *   is instead plotted as a percentage of 1.50, the flag ceiling itself
+ *   (playerProfile.ts's own ACWR_FLAG_CEILING), so a full ring always means
+ *   "at the threshold" and the ACWR and Wellness dials share one visual
+ *   scale. The centre text still shows the real, unscaled ratio.
+ *
+ *   §11 — a missing value is an em dash, never a zero, everywhere on this
+ *   page (this file's own EM_DASH/emDash(), not lib/format.ts's usual
+ *   BLANK — see that constant's own comment below for why). Every
+ *   aggregate states its sample
+ *   (n=, "of 7 days", "players"). Benchmark percentiles are computed
+ *   against the athlete's real positional group, never the whole squad.
+ *   Nutrition is read-only here, and says so. ACWR's dial ring is the 1.50
+ *   ceiling, not an arbitrary maximum. */
 
-function dateRange(from: string, days: number): string[] {
-  return Array.from({ length: days }, (_, i) => addDays(from, i));
+const TONE_VAR: Record<Tone, string> = {
+  accent: 'var(--accent)',
+  accent2: 'var(--accent2)',
+  warn: 'var(--warn)',
+  bad: 'var(--bad)',
+  faint: 'var(--faint)',
+};
+const TONE_TEXT_VAR: Record<Tone, string> = {
+  accent: 'var(--accent-text)',
+  accent2: 'var(--accent2-text)',
+  warn: 'var(--warn-text)',
+  bad: 'var(--bad-text)',
+  faint: 'var(--faint)',
+};
+
+const HAND_LABEL: Record<string, string> = { left: 'L', right: 'R', both: 'A' };
+
+/* §11 rule 1, verbatim: "a missing value is an em dash, never a zero." This
+ * page's own missing-value glyph, deliberately not this app's usual
+ * lib/format.ts BLANK (a middle dot, chosen elsewhere for the athlete
+ * mockup this app was built from) — the brief singled out "em dash" by
+ * name as a rule to preserve exactly, so this page follows the spec's own
+ * glyph rather than folding it into the app-wide convention. */
+const EM_DASH = '—';
+function emDash(value: string | number | null | undefined): string {
+  if (value === null || value === undefined || value === '') return EM_DASH;
+  return String(value);
+}
+
+/** §10's sparkline is "real SVG, not a placeholder": the same fill-under-
+ *  line shape the spec's own markup shows, built from the athlete's real
+ *  body_composition history rather than the spec's literal example points.
+ *  A flat line at mid-height when every reading is identical (n≥2, zero
+ *  spread) rather than a division by zero. */
+function sparklinePaths(history: { kg: number }[]): { line: string; fill: string } | null {
+  if (history.length < 2) return null;
+  const values = history.map((h) => h.kg);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = max - min;
+  const points = history.map((h, i) => {
+    const x = (i / (history.length - 1)) * 600;
+    const norm = span === 0 ? 0.5 : (h.kg - min) / span;
+    const y = 82 - norm * 74; // 4px top/bottom margin inside the 90-tall viewBox
+    return { x, y };
+  });
+  const line = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+  const last = points[points.length - 1];
+  const first = points[0];
+  const fill = `${line} L${last?.x.toFixed(1)} 90 L${first?.x.toFixed(1)} 90 Z`;
+  return { line, fill };
 }
 
 export default async function AthletePage({
   params,
-  searchParams,
 }: {
   params: Promise<{ athleteId: string }>;
-  searchParams: Promise<{ error?: string }>;
 }) {
   const { athleteId } = await params;
-  const { error: sarError } = await searchParams;
   const { db, orgId, timezone, claims } = await requireStaff();
-
   const today = todayIso(timezone);
-  const from = addDays(today, -(WINDOW_DAYS - 1));
 
-  const athlete = await fetchAthlete(db, orgId, athleteId);
-  if (!athlete) notFound();
+  const profile = await fetchPlayerProfile(db, orgId, athleteId, timezone);
+  if (!profile) notFound();
 
-  const [entries, injuries, sessions] = await Promise.all([
-    fetchWellnessByAthlete(db, athleteId, { from, to: today }),
-    fetchAthleteInjuries(db, orgId, athleteId),
-    fetchAthleteRecentSessions(db, orgId, athleteId, from, today),
-  ]);
-
-  const dates = dateRange(from, WINDOW_DAYS);
-  const series = wellnessSeries(entries, dates, 'readiness', ROLLING_DAYS);
-  const submitted = series.filter((s) => s.value !== null).length;
-  const outside = series.filter((s) => {
-    const p = bandPosition(s);
-    return p === 'above' || p === 'below';
-  }).length;
-
-  const status = availabilityStatus(athlete.availability?.status ?? null);
-  const restrictions = athlete.availability?.restrictions ?? [];
-  const age = ageFrom(athlete.date_of_birth);
-  const openInjury = athlete.open_injuries[0];
+  const { athlete, athleticism, acwr, wellnessRating, headerWellness, programme, nutrition, bodyWeight } = profile;
+  const spark = sparklinePaths(bodyWeight.history);
+  const openInjuries = profile.injuries.filter((i) => i.status !== 'closed');
 
   return (
     <>
@@ -81,301 +126,393 @@ export default async function AthletePage({
         <ThemeToggle />
       </div>
 
-      <div className="pbar">
-        <div className="l1">
-          <span className="nmx">
-            {athlete.first_name} {athlete.last_name}
-          </span>
-          <span className="sub">
-            {athlete.position ?? BLANK}
-            {age !== null ? ` · ${age}` : ''}
-            {athlete.team_name ? ` · ${athlete.team_name}` : ''}
-          </span>
-          <Pill status={status} />
-          {restrictions.length > 0 ? (
-            <span className="sub">{restrictions.map(enumLabel).join(' · ')}</span>
-          ) : null}
-        </div>
-        <div className="l2">
-          <span>
-            Squad no.{' '}
-            <b className="mono">{athlete.squad_number ?? BLANK}</b>
-          </span>
-          <span className="dot">·</span>
-          <span>
-            Height{' '}
-            <b className="mono">
-              {athlete.height_cm !== null ? `${athlete.height_cm} cm` : BLANK}
-            </b>
-          </span>
-          <span className="dot">·</span>
-          <span>
-            Groups{' '}
-            <b>{athlete.group_names.length > 0 ? athlete.group_names.join(', ') : BLANK}</b>
-          </span>
-          {openInjury ? (
-            <>
-              <span className="dot">·</span>
-              <span>
-                {enumLabel(openInjury.body_area)}
-                {openInjury.side ? ` (${enumLabel(openInjury.side)})` : ''}, back{' '}
-                <b className="mono">
-                  {openInjury.expected_return
-                    ? formatDate(openInjury.expected_return)
-                    : 'not set'}
-                </b>
-              </span>
-            </>
-          ) : null}
-        </div>
-      </div>
-
-      <div className="profile-grid">
-        <div className="stack">
-          <section className="card" aria-labelledby="wellness-title">
-            <h2 className="card-title" id="wellness-title">
-              Wellness
-            </h2>
-            <p className="import-sub">
-              Composite readiness against his own {ROLLING_DAYS} day rolling mean
-              and &plusmn;1SD band. The question is never what he scored, it is
-              whether this is normal for him.
-            </p>
-            <div className="legend">
-              <span>
-                <i style={{ background: 'var(--accent)' }} /> {ROLLING_DAYS} day
-                rolling mean
-              </span>
-              <span>
-                <i
-                  className="sq"
-                  style={{ background: 'rgb(var(--accent-rgb) / 0.14)' }}
-                />{' '}
-                his own &plusmn;1 SD
-              </span>
-              <span>
-                <i
-                  className="sq"
-                  style={{ background: 'var(--muted)', borderRadius: '50%' }}
-                />{' '}
-                daily value
-              </span>
-              <span className="g-warn">△ above band</span>
-              <span className="g-bad">▽ below band</span>
+      <div className="pp-col">
+        {programme ? (
+          <div className="pp-banner">
+            <div className="pp-banner-left">
+              <span className="pp-banner-eyebrow">Development plan</span>
+              <span className="pp-banner-title">{programme.name}</span>
             </div>
+            <span className="mono sub">
+              {programme.weekTotal !== null
+                ? `week ${programme.weekNow} of ${programme.weekTotal}`
+                : `week ${programme.weekNow}`}
+              {programme.endsOn ? ` · ends ${formatDate(programme.endsOn)}` : ''}
+            </span>
+            <Link href={`/programmes/${programme.programmeId}`} className="btn-ghost-pill accent">
+              Change plan
+            </Link>
+          </div>
+        ) : null}
 
-            {submitted === 0 ? (
-              <EmptyState
-                headingLevel={3}
-                title="No wellness entries in this window"
-                body="Nothing has been submitted in the last 42 days. That is an absence of data, not a low score."
-              />
-            ) : (
-              <WellnessChart
-                series={series}
-                min={0}
-                max={100}
-                ticks={[0, 25, 50, 75, 100]}
-                title={`Readiness for ${athlete.first_name} ${athlete.last_name}`}
-              />
-            )}
-
-            <p className="cap">
-              Self-reported, morning form.{' '}
-              <b>
-                {submitted} of {WINDOW_DAYS}
-              </b>{' '}
-              days submitted; the {WINDOW_DAYS - submitted} missing days are drawn
-              as gaps, never as zero. {outside} day
-              {outside === 1 ? '' : 's'} fell outside his own band.
-            </p>
-          </section>
-
-          <section className="card" aria-labelledby="sessions-title">
-            <h2 className="card-title" id="sessions-title">
-              Recent sessions
-            </h2>
-            <p className="import-sub">
-              What he was scheduled for and what he reported afterwards. A blank
-              RPE means no entry, which is not the same as an easy session.
-            </p>
-            {sessions.length === 0 ? (
-              <EmptyState
-                headingLevel={3}
-                title="No sessions in this window"
-                body="He is not named in any session in the last 42 days, directly or through a group."
-              />
-            ) : (
-              <table className="tbl">
-                <caption className="visually-hidden">
-                  Recent sessions with reported RPE
-                </caption>
-                <thead>
-                  <tr>
-                    <th scope="col">Date</th>
-                    <th scope="col">Session</th>
-                    <th scope="col">Type</th>
-                    <th scope="col" className="r">
-                      Minutes
-                    </th>
-                    <th scope="col" className="r">
-                      RPE
-                    </th>
-                    <th scope="col" className="r">
-                      Load
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sessions.map((session) => (
-                    <tr key={session.id} style={{ opacity: session.status === 'cancelled' ? 0.55 : 1 }}>
-                      <td className="mono sub">
-                        {formatDate(session.starts_at)}{' '}
-                        {formatTime(session.starts_at)}
-                      </td>
-                      <td className="nm">{session.title}</td>
-                      <td className="sub">
-                        {enumLabel(session.session_type)}
-                        {session.status === 'cancelled' ? (
-                          <span className="pill pill-bad" style={{ marginInlineStart: 6 }}>
-                            Cancelled
-                          </span>
-                        ) : null}
-                      </td>
-                      <td className="r mono">
-                        {session.duration_min ?? BLANK}
-                      </td>
-                      <td className="r mono">
-                        {formatNumber(session.rpe, 1)}
-                      </td>
-                      <td className="r mono">
-                        {formatNumber(session.session_load, 0)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </section>
-
-          <section className="card" aria-labelledby="injury-title">
-            <h2 className="card-title" id="injury-title">
-              Injury and availability
-            </h2>
-            <p className="import-sub">
-              Body area, side, onset and expected return. Diagnosis, mechanism
-              and treatment are medical only and are not fetched here.
-            </p>
-            {injuries.length === 0 ? (
-              <EmptyState
-                headingLevel={3}
-                title="No injury recorded"
-                body="Nothing has been logged against this athlete."
-              />
-            ) : (
-              <table className="tbl">
-                <caption className="visually-hidden">Injury history</caption>
-                <thead>
-                  <tr>
-                    <th scope="col">Body area</th>
-                    <th scope="col">Side</th>
-                    <th scope="col">Onset</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Expected return</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {injuries.map((injury) => (
-                    <tr key={injury.id}>
-                      <td className="nm">{enumLabel(injury.body_area)}</td>
-                      <td className="sub">{enumLabel(injury.side)}</td>
-                      <td className="mono sub">{formatDate(injury.onset_date)}</td>
-                      <td className="sub">{enumLabel(injury.status)}</td>
-                      <td className="mono sub">
-                        {injury.actual_return
-                          ? `Returned ${formatDate(injury.actual_return)}`
-                          : injury.expected_return
-                            ? formatDate(injury.expected_return)
-                            : BLANK}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </section>
-        </div>
-
-        <div className="stack">
-          <section className="card" aria-labelledby="availability-title">
-            <h2 className="card-title" id="availability-title">
-              Availability
-            </h2>
-            <div className="kv">
-              <span className="sub">Status</span>
-              <Pill status={status} />
-            </div>
-            <div className="kv">
-              <span className="sub">Reason</span>
-              <span className="sub">
-                {enumLabel(athlete.availability?.reason_category ?? null)}
+        <section className="card pp-card" aria-labelledby="pp-name">
+          <div className="pp-header-top">
+            <Link href="/squad" className="btn-ghost-pill">
+              <span aria-hidden="true" style={{ fontSize: 14, lineHeight: 1 }}>
+                ‹
               </span>
+              Squad
+            </Link>
+            <div className="pp-avatar" aria-hidden="true">
+              {initials(athlete)}
             </div>
-            <div className="kv">
-              <span className="sub">Set</span>
-              <span className="mono sub">
-                {athlete.availability
-                  ? formatDate(athlete.availability.effective_from)
-                  : BLANK}
+            <div className="pp-name-block">
+              <span className="pp-name" id="pp-name">
+                {athlete.first_name} {athlete.last_name}
               </span>
+              <Pill status={availabilityStatus(athlete.availability?.status ?? null)} />
             </div>
-            <p className="cap">
-              Set by medical staff. A coach sees no control at all, here or
-              anywhere.
-            </p>
-          </section>
+            <DomainChips />
+            <button type="button" className="btn-ghost-pill" disabled aria-disabled="true" title="Staff-side profile editing isn't built in this pass.">
+              Edit
+            </button>
+            <div className="pp-wellness-mini" aria-label="Today's wellness entry">
+              <div>
+                <div className="v mono">{headerWellness.pct !== null ? Math.round(headerWellness.pct) : EM_DASH}</div>
+                <div className="l">wellness</div>
+              </div>
+            </div>
+          </div>
 
-          <section className="card" aria-labelledby="restrictions-title">
-            <h2 className="card-title" id="restrictions-title">
-              Restrictions
-            </h2>
-            {restrictions.length === 0 ? (
-              <p className="cap">No restriction recorded.</p>
-            ) : (
-              restrictions.map((restriction) => (
-                <div className="kv" key={restriction}>
-                  <span className="sub">{enumLabel(restriction)}</span>
-                  <Pill
-                    status={availabilityStatus('modified')}
-                    label="In force"
-                  />
+          <div className="pp-detail-row">
+            <div className="pp-detail-cell">
+              <div className="l">Position</div>
+              <div className="v">{emDash(athlete.position)}</div>
+            </div>
+            <div className="pp-detail-cell">
+              <div className="l">Jersey</div>
+              <div className="v">{athlete.squad_number !== null ? `#${athlete.squad_number}` : EM_DASH}</div>
+            </div>
+            <div className="pp-detail-cell">
+              <div className="l">Height</div>
+              <div className="v">{athlete.height_cm !== null ? `${athlete.height_cm} cm` : EM_DASH}</div>
+            </div>
+            <div className="pp-detail-cell">
+              <div className="l">Age</div>
+              <div className="v">{emDash(profile.age)}</div>
+            </div>
+            <div className="pp-detail-cell">
+              <div className="l">Hand</div>
+              <div className="v">{athlete.dominant_side ? (HAND_LABEL[athlete.dominant_side] ?? EM_DASH) : EM_DASH}</div>
+            </div>
+            <div className="pp-detail-cell">
+              <div className="l">Weight</div>
+              <div className="v">{bodyWeight.latestKg !== null ? `${formatNumber(bodyWeight.latestKg, 1)} kg` : EM_DASH}</div>
+            </div>
+          </div>
+        </section>
+
+        <div className="pp-grid">
+          <div className="pp-grid-col">
+            {/* §5: Athleticism and Position benchmarks are one card. */}
+            <section className="card pp-card" aria-labelledby="pp-athleticism-title">
+              <div className="pp-card-head">
+                <h2 className="card-title" id="pp-athleticism-title" style={{ margin: 0 }}>
+                  Athleticism
+                </h2>
+                <span className="mono s">
+                  {athleticism.positionGroupName
+                    ? `vs ${athleticism.positionGroupName} · ${athleticism.positionGroupSize} player${athleticism.positionGroupSize === 1 ? '' : 's'}`
+                    : 'not in a positional group'}
+                </span>
+              </div>
+
+              <div className="pp-athleticism-row">
+                <Dial size={88} pct={athleticism.compositePct} tone={TONE_VAR[athleticism.band.tone]}>
+                  <div>
+                    <div className="mono pp-dial-value">{athleticism.compositePct ?? EM_DASH}</div>
+                    <div className="pp-dial-unit">athleticism</div>
+                  </div>
+                </Dial>
+                <div>
+                  <p className="pp-athleticism-band" style={{ color: TONE_TEXT_VAR[athleticism.band.tone], margin: 0 }}>
+                    {athleticism.band.label}
+                  </p>
+                  <p className="pp-athleticism-desc">
+                    Composite of the position-relative percentiles below.
+                    {athleticism.positionGroupName ? ` 50 ≈ average for a ${athlete.position ?? athleticism.positionGroupName} player.` : ''}
+                  </p>
                 </div>
-              ))
-            )}
-          </section>
+              </div>
 
-          {claims.roles.includes('admin') ? (
-            <section className="card" aria-labelledby="sar-title">
-              <h2 className="card-title" id="sar-title">
-                Subject access request
-              </h2>
-              <p className="cap" style={{ marginBottom: 10 }}>
-                Article 15, UK GDPR. Generates every row referencing {athlete.first_name} across every table, once
-                medical has reviewed any clinical detail.
-              </p>
-              {sarError ? (
-                <p className="form-error" role="alert" style={{ marginBottom: 10 }}>
-                  {sarError}
+              <div className="pp-bench-head">
+                <p className="t" style={{ margin: 0 }}>
+                  Position benchmarks
                 </p>
-              ) : null}
-              <form action={`/squad/${athleteId}/subject-access`} method="post">
-                <button type="submit" className="btn-ghost">
-                  Generate subject access pack →
-                </button>
-              </form>
+                <p className="mono s" style={{ margin: 0 }}>
+                  {athleticism.rows.length === 0
+                    ? 'no tests defined for this club'
+                    : `the ${athleticism.rows.length} measure${athleticism.rows.length === 1 ? '' : 's'} behind the score`}
+                </p>
+              </div>
+
+              {athleticism.rows.map((row) => (
+                <div className="pp-bench-row" key={row.testDefinitionId}>
+                  <div className="pp-bench-top">
+                    <span className="pp-bench-name">{row.name}</span>
+                    <span className="mono pp-bench-value">
+                      {row.value !== null ? `${formatNumber(row.value, row.decimals)} ${row.unit}` : EM_DASH}
+                    </span>
+                  </div>
+                  <div className="pp-bench-bar">
+                    <div
+                      className="pp-bench-fill"
+                      style={{
+                        width: `${row.pct ?? 0}%`,
+                        background: TONE_VAR[row.pct !== null ? bandTone(row.pct) : 'faint'],
+                      }}
+                    />
+                  </div>
+                  <div className="pp-bench-bottom">
+                    <span
+                      className="pp-bench-band"
+                      style={{ color: row.pct !== null ? TONE_TEXT_VAR[bandTone(row.pct)] : 'var(--faint)' }}
+                    >
+                      {row.pct !== null ? `${row.pct}th percentile` : 'No data'}
+                    </span>
+                    <span className="mono pp-bench-meta">
+                      {row.n > 0
+                        ? `median ${formatNumber(row.median, row.decimals)} · best ${formatNumber(row.best, row.decimals)} · n=${row.n}`
+                        : 'n=0'}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </section>
-          ) : null}
+
+            <section className="card pp-card" aria-labelledby="pp-sc-title">
+              <h2 className="card-title" id="pp-sc-title">
+                S&amp;C history log
+              </h2>
+              <p className="import-sub" style={{ margin: '4px 0 0' }}>
+                Injury history and training adaptations — a reminder of how to adjust this athlete&apos;s
+                sessions.
+              </p>
+              <EmptyState
+                headingLevel={3}
+                title="No adaptation log entries"
+                body="This is a real, planned feature with no backing table in this schema yet, so there is nowhere to write an entry to and nothing fabricated here to show instead."
+              />
+            </section>
+
+            <section className="card pp-card pp-injuries-card" aria-labelledby="pp-injuries-title">
+              <div>
+                <h2 className="card-title" id="pp-injuries-title">
+                  Injuries
+                </h2>
+                {profile.injuries.length === 0 ? (
+                  <p className="import-sub" style={{ margin: '4px 0 0' }}>
+                    No injuries on record.
+                  </p>
+                ) : (
+                  <>
+                    <p className="import-sub" style={{ margin: '4px 0 0' }}>
+                      {openInjuries.length} open of {profile.injuries.length} on record.
+                    </p>
+                    <div className="pp-injury-list">
+                      {profile.injuries.map((injury) => (
+                        <p className="sub" key={injury.id} style={{ margin: 0 }}>
+                          <b className="nm" style={{ fontSize: 13 }}>
+                            {enumLabel(injury.body_area)}
+                          </b>
+                          {injury.side ? ` (${enumLabel(injury.side)})` : ''} — {enumLabel(injury.status)}
+                          {injury.actual_return
+                            ? `, returned ${formatDate(injury.actual_return)}`
+                            : injury.expected_return
+                              ? `, back ${formatDate(injury.expected_return)}`
+                              : ''}
+                        </p>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+              {claims.roles.includes('medical') ? (
+                <Link href="/injuries/new" className="btn-ghost-pill" style={{ padding: '8px 16px' }}>
+                  + Log injury
+                </Link>
+              ) : null}
+            </section>
+          </div>
+
+          <div className="pp-grid-col">
+            <PlayerProfileFlags flags={profile.flags} orgId={orgId} userId={claims.userId} today={today} />
+
+            <section className="card pp-card" aria-label="ACWR and wellness rating">
+              <div className="pp-dials">
+                <div className="pp-dial-col">
+                  <p className="pp-dial-title pp-dial-col-head">ACWR</p>
+                  <p className="mono pp-dial-window pp-dial-col-head">acute 7d over chronic 28d</p>
+                  <div className="pp-big-dial">
+                    <Dial size={116} pct={acwr.pct} tone={TONE_VAR[acwr.status.tone]}>
+                      <div>
+                        <div className="mono pp-big-dial-value">{acwr.value !== null ? acwr.value.toFixed(2) : EM_DASH}</div>
+                        <div className="pp-big-dial-unit">ratio</div>
+                      </div>
+                    </Dial>
+                  </div>
+                  <p className="pp-dial-status" style={{ color: TONE_TEXT_VAR[acwr.status.tone] }}>
+                    {acwr.status.label}
+                  </p>
+                  <p className="mono pp-dial-meta">flags above 1.50 · n = {acwr.sessionsN} sessions</p>
+                </div>
+                <div className="pp-dial-col">
+                  <p className="pp-dial-title pp-dial-col-head">Wellness rating</p>
+                  <p className="mono pp-dial-window pp-dial-col-head">mean readiness, last 7 days</p>
+                  <div className="pp-big-dial">
+                    <Dial size={116} pct={wellnessRating.meanPct} tone="var(--accent)">
+                      <div>
+                        <div className="mono pp-big-dial-value">
+                          {wellnessRating.meanPct !== null ? `${wellnessRating.meanPct}%` : EM_DASH}
+                        </div>
+                        <div className="pp-big-dial-unit">of 100</div>
+                      </div>
+                    </Dial>
+                  </div>
+                  <p className="pp-dial-status" style={{ color: TONE_TEXT_VAR[wellnessRating.status.tone] }}>
+                    {wellnessRating.status.label}
+                  </p>
+                  <p className="mono pp-dial-meta">{wellnessRating.submittedN} of 7 days submitted</p>
+                </div>
+              </div>
+            </section>
+
+            <section className="card pp-card" aria-labelledby="pp-goals-title">
+              <div className="pp-card-row">
+                <h2 className="card-title" id="pp-goals-title">
+                  Goals
+                </h2>
+                {programme ? (
+                  <Link href={`/programmes/${programme.programmeId}`} className="pp-link">
+                    Edit ›
+                  </Link>
+                ) : null}
+              </div>
+              <p className="pp-goal-line">
+                <span className="pp-goal-label">Goal:</span> {programme?.goal ?? 'No active programme goal on record.'}
+              </p>
+              <p className="pp-goal-note">
+                No freeform &ldquo;Next window&rdquo; coaching note on record — there is no schema field for
+                one yet; only the programme&apos;s own stated goal is wired this pass.
+              </p>
+            </section>
+
+            <section className="card pp-card" aria-labelledby="pp-nutrition-title">
+              <div className="pp-card-row">
+                <h2 className="card-title" id="pp-nutrition-title">
+                  Nutrition plan
+                </h2>
+                <Link href="/nutrition" className="btn-ghost">
+                  Edit
+                </Link>
+              </div>
+              <div className="pp-macro-tiles">
+                <div className="pp-macro-tile">
+                  <p className="mono pp-macro-value" style={{ margin: 0 }}>
+                    {nutrition?.energy_kcal !== null && nutrition?.energy_kcal !== undefined ? formatNumber(nutrition.energy_kcal, 0) : EM_DASH}
+                  </p>
+                  <p className="pp-macro-label" style={{ margin: 0 }}>
+                    kcal
+                  </p>
+                </div>
+                <div className="pp-macro-tile">
+                  <p className="mono pp-macro-value" style={{ margin: 0 }}>
+                    {nutrition?.protein_g !== null && nutrition?.protein_g !== undefined ? formatNumber(nutrition.protein_g, 0) : EM_DASH}
+                  </p>
+                  <p className="pp-macro-label" style={{ margin: 0 }}>
+                    protein g
+                  </p>
+                </div>
+                <div className="pp-macro-tile">
+                  <p className="mono pp-macro-value" style={{ margin: 0 }}>
+                    {nutrition?.carbs_g !== null && nutrition?.carbs_g !== undefined ? formatNumber(nutrition.carbs_g, 0) : EM_DASH}
+                  </p>
+                  <p className="pp-macro-label" style={{ margin: 0 }}>
+                    carbs g
+                  </p>
+                </div>
+                <div className="pp-macro-tile">
+                  <p className="mono pp-macro-value" style={{ margin: 0 }}>
+                    {nutrition?.fat_g !== null && nutrition?.fat_g !== undefined ? formatNumber(nutrition.fat_g, 0) : EM_DASH}
+                  </p>
+                  <p className="pp-macro-label" style={{ margin: 0 }}>
+                    fat g
+                  </p>
+                </div>
+              </div>
+              <p className="cap" style={{ marginTop: 14 }}>
+                View only — plans are managed by the nutritionist.
+              </p>
+            </section>
+
+            <section className="card pp-card" aria-labelledby="pp-weight-title">
+              <div className="pp-weight-top">
+                <div>
+                  <h2 className="card-title" id="pp-weight-title">
+                    Body weight
+                  </h2>
+                  {bodyWeight.latestKg !== null ? (
+                    <p className="pp-weight-value mono" style={{ margin: '2px 0 0' }}>
+                      {formatNumber(bodyWeight.latestKg, 1)}
+                      <span className="u"> kg</span>
+                    </p>
+                  ) : (
+                    <p className="cap" style={{ marginTop: 8 }}>
+                      No weigh-in recorded.
+                    </p>
+                  )}
+                  <p className="pp-weight-note">No target range on record — there is no target-weight column in this schema.</p>
+                </div>
+                {bodyWeight.deltaKg !== null && bodyWeight.deltaDays !== null ? (
+                  <div className="pp-weight-right">
+                    <p className="mono pp-weight-trend" style={{ margin: 0 }}>
+                      {bodyWeight.deltaKg === 0 ? '▬' : bodyWeight.deltaKg > 0 ? '▲' : '▼'}{' '}
+                      {Math.abs(bodyWeight.deltaKg).toFixed(1)} kg · {bodyWeight.deltaDays}d
+                    </p>
+                  </div>
+                ) : null}
+              </div>
+
+              {spark ? (
+                <svg className="pp-sparkline" viewBox="0 0 600 90" preserveAspectRatio="none" aria-hidden="true">
+                  <path d={spark.fill} fill="rgb(var(--accent2-rgb) / 0.14)" />
+                  <path d={spark.line} fill="none" stroke="var(--accent2)" strokeWidth="2.4" strokeLinejoin="round" />
+                </svg>
+              ) : null}
+
+              <div className="pp-weight-actions">
+                <button type="button" className="btn-ghost" disabled aria-disabled="true" title="Not wired this pass — body_composition has no write path yet.">
+                  + Log weigh-in
+                </button>
+                <button type="button" className="btn-ghost" disabled aria-disabled="true" title="No target-range column exists in this schema yet.">
+                  Set target range
+                </button>
+                <button type="button" className="btn-ghost" disabled aria-disabled="true" title="Not wired this pass — body_composition has no write path yet.">
+                  Edit entries
+                </button>
+              </div>
+            </section>
+          </div>
         </div>
+
+        {claims.roles.includes('admin') ? (
+          <section className="card pp-card" aria-labelledby="sar-title">
+            <h2 className="card-title" id="sar-title">
+              Subject access request
+            </h2>
+            <p className="cap" style={{ marginBottom: 10 }}>
+              Article 15, UK GDPR. Generates every row referencing {athlete.first_name} across every
+              table, once medical has reviewed any clinical detail. Not part of the visual spec above —
+              kept here because it is real, working compliance functionality with no other home on this
+              page.
+            </p>
+            <form action={`/squad/${athleteId}/subject-access`} method="post">
+              <button type="submit" className="btn-ghost">
+                Generate subject access pack →
+              </button>
+            </form>
+          </section>
+        ) : null}
       </div>
     </>
   );

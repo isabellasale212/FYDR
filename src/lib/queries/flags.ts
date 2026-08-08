@@ -205,6 +205,14 @@ export type FlagListRow = {
   flag_date: string;
   raised_at: string;
   escalated: boolean;
+  /** thresholds.id — null when the flag predates thresholds (there is none
+   *  seeded that old, but the column itself is nullable) or the threshold
+   *  was hard to resolve. Added for the player profile's Flags card, which
+   *  needs the real rule sentence (describeThreshold(), thresholds.ts) a
+   *  flag was raised under — every other consumer of this row already
+   *  ignores fields it doesn't use, so this is additive, not a shape
+   *  change anything existing has to react to. */
+  threshold_id: string | null;
 };
 
 const SEVERITY_RANK_LOCAL: Record<FlagSeverity, number> = { low: 0, medium: 1, high: 2 };
@@ -219,7 +227,7 @@ export async function fetchFlagsList(
   let query = db
     .from('flags')
     .select(
-      'id, athlete_id, domain, metric, observed_value, expected_value, flag_date, severity, status, raised_at',
+      'id, athlete_id, domain, metric, observed_value, expected_value, flag_date, severity, status, raised_at, threshold_id',
     )
     .eq('org_id', orgId)
     .in('status', OPEN_STATUSES)
@@ -273,6 +281,7 @@ export async function fetchFlagsList(
         flag_date: f.flag_date,
         raised_at: f.raised_at,
         escalated,
+        threshold_id: f.threshold_id,
       };
       return row;
     })

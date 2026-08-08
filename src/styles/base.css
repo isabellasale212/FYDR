@@ -2022,3 +2022,63 @@ table.tbl tbody tr:hover {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* ---------- Print, 06-design-system.md §14.7 ----------
+ * "A print stylesheet forcing the light theme, removing shadows, and
+ * keeping glyphs." The theme half lives in tokens.css (the only file
+ * allowed a literal hex value); this is the layout half — global, not
+ * per-page, because every staff screen shares .sidebar/.topbar/.card, and
+ * screens/dashboard.md and screens/injury-dashboard.md both cite the same
+ * real workflow (a physio prints the availability board and pins it on a
+ * wall) as the reason this matters, not just those two screens.
+ *
+ * Glyphs need nothing here: lib/status.ts's status vocabulary already
+ * pairs every colour with a distinct glyph (●, ◐, ⊘, ◌) specifically so
+ * meaning survives greyscale, which is the other half of "keeping
+ * glyphs" — this stylesheet's job is only to get everything else out of
+ * the way of what's already correct.
+ *
+ * Deliberately not attempted: screens/injury-dashboard.md's literal "9pt,
+ * one A4 portrait page for up to 45 athletes" sizing target for that one
+ * screen specifically. Its "clinical columns never print" requirement is
+ * satisfied structurally rather than by a print rule — injuries.ts's own
+ * header confirms this page never fetches injury_clinical at all, coach
+ * or medical, so there is no clinical column here for any stylesheet to
+ * strip. */
+@media print {
+  .sidebar,
+  .no-print,
+  button,
+  a.btn-primary,
+  a.btn-ghost,
+  a.btn-ghost-pill,
+  form {
+    display: none !important;
+  }
+
+  .app {
+    display: block !important;
+    background: none !important;
+  }
+  .main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .card,
+  .banner,
+  .pp-card,
+  .pp-banner {
+    box-shadow: none !important;
+    border: 1px solid var(--border-strong) !important;
+    break-inside: avoid;
+  }
+
+  a {
+    text-decoration: none !important;
+  }
+
+  @page {
+    margin: 12mm;
+  }
+}

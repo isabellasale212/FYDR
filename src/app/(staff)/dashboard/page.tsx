@@ -6,6 +6,7 @@ import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { SessionCard } from '@/components/SessionCard/SessionCard';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
+import { PrintButton } from '@/components/PrintButton/PrintButton';
 import { parseGroupParam } from '@/lib/groupFilter';
 import {
   fetchAvailabilityCounts,
@@ -87,7 +88,10 @@ export default async function DashboardPage({
           </p>
           <h1>Dashboard</h1>
         </div>
-        <ThemeToggle />
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <PrintButton />
+          <ThemeToggle />
+        </div>
       </div>
 
       <div style={{ marginBottom: 14 }}>

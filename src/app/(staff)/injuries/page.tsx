@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
+import { PrintButton } from '@/components/PrintButton/PrintButton';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchInjuriesList } from '@/lib/queries/injuries';
 import { enumLabel, formatDate } from '@/lib/format';
@@ -52,6 +53,7 @@ export default async function InjuriesPage({
               + Injury
             </Link>
           ) : null}
+          <PrintButton />
           <ThemeToggle />
         </div>
       </div>

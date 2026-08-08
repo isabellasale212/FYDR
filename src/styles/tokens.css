@@ -219,3 +219,57 @@
     --group-plum: #c08fd2;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Print. §14.7's "Smaller gaps" table: "A print stylesheet forcing the light
+   theme, removing shadows, and keeping glyphs." The layout half of that (no
+   shadows, hidden nav chrome) lives in base.css's own `@media print` block;
+   this is the theme half, and it belongs here specifically because it's the
+   one piece that has to repeat literal hex values, which only this file may
+   contain.
+
+   Repeats every selector dark theme can arrive through, matched at equal or
+   higher specificity than the dark rule it needs to beat in each case —
+   this was tried once at a plain `:root` and verified wrong: an OS dark
+   preference with no explicit choice delivers dark tokens through
+   `:root:not([data-theme])` (§2.4 above), and `:not()`'s specificity is its
+   argument's, so that selector outranks a bare `:root` and would have kept
+   printing dark regardless of source order. `:root[data-theme='dark']` and
+   `.dark-tokens` both already match or exceed a bare `:root` on their own,
+   but are listed explicitly rather than relied on implicitly. Only the
+   tokens that actually appear in the surfaces clubs print (cards, pills,
+   text) are repeated here, not the full set — --focus, --skeleton and the
+   group/tab/avatar palette don't render on a printed availability board.
+   --------------------------------------------------------------------------- */
+@media print {
+  :root:not([data-theme]),
+  :root[data-theme='dark'],
+  :root[data-theme='light'],
+  .dark-tokens {
+    --bg: #eaedf1;
+    --surf: #ffffff;
+    --surf2: #f3f5f8;
+    --elev: #ffffff;
+    --text: #13161c;
+    --muted: #5b636e;
+    --faint: #929aa5;
+    --border: rgba(16, 18, 23, 0.085);
+    --border-strong: rgba(16, 18, 23, 0.52);
+    --hair: rgba(16, 18, 23, 0.05);
+    --track: rgba(16, 18, 23, 0.07);
+    --barfill: rgba(16, 18, 23, 0.155);
+    --shadow: none;
+
+    --accent-text: #0065de;
+    --accent2-text: #0070b3;
+    --good-text: #007967;
+    --warn-text: #995d00;
+    --bad-text: #c6332b;
+
+    --accent-pill-text: #0051c6;
+    --accent2-pill-text: #0064a6;
+    --good-pill-text: #00705c;
+    --warn-pill-text: #905600;
+    --bad-pill-text: #b31e1e;
+  }
+}

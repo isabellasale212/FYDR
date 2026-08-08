@@ -69,6 +69,26 @@ export function formatTime(iso: string | null | undefined): string {
   }).format(d);
 }
 
+/** "8 Aug 2026 09:14" — the audit-trail timestamp shape
+ *  screens/user-management.md's own role-history wireframe uses, distinct
+ *  from formatDate (no time) and formatTime (no date): a role-history row
+ *  needs both, the same way an audit event needs to say not just which
+ *  day something happened but when in it. */
+export function formatDateTime(iso: string | null | undefined): string {
+  if (!iso) return BLANK;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return BLANK;
+  return new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: DATE_TZ,
+  }).format(d);
+}
+
 export function formatNumber(
   value: number | null | undefined,
   decimals = 0,

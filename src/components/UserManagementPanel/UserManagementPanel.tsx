@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { linkAthleteToUser, setUserRoles, setUserStatus, type UnlinkedAthlete, type UserWithRoles } from '@/lib/queries/userManagement';
@@ -46,9 +47,9 @@ export function UserManagementPanel({ orgId, currentUserId, currentActorRole, in
           </p>
         </div>
         <div className="chiprow">
-          <a href="/settings/users/bulk-invite" className="btn-ghost">
+          <Link href="/settings/users/bulk-invite" className="btn-ghost">
             Bulk invite athletes →
-          </a>
+          </Link>
           <button
             type="button"
             className="btn-primary"
@@ -93,6 +94,7 @@ export function UserManagementPanel({ orgId, currentUserId, currentActorRole, in
               orgId={orgId}
               user={u}
               isSelf={u.id === currentUserId}
+              currentUserId={currentUserId}
               currentActorRole={currentActorRole}
               divider={index > 0}
               unlinkedAthletes={unlinked}
@@ -299,6 +301,7 @@ function UserRow({
   orgId,
   user,
   isSelf,
+  currentUserId,
   currentActorRole,
   divider,
   unlinkedAthletes,
@@ -308,6 +311,7 @@ function UserRow({
   orgId: string;
   user: UserWithRoles;
   isSelf: boolean;
+  currentUserId: string;
   currentActorRole: AppRole;
   divider: boolean;
   unlinkedAthletes: UnlinkedAthlete[];
@@ -325,12 +329,10 @@ function UserRow({
     const db = createClient();
     setBusyLink(true);
     setError(null);
-    const { error: err } = await linkAthleteToUser(db, orgId, user.id, currentActorRole, user.id, linkChoice);
+    const { error: err, primaryOk } = await linkAthleteToUser(db, orgId, currentUserId, currentActorRole, user.id, linkChoice);
     setBusyLink(false);
-    if (err) {
-      setError(err);
-      return;
-    }
+    if (err) setError(err);
+    if (!primaryOk) return;
     const athlete = unlinkedAthletes.find((a) => a.id === linkChoice);
     onLinked(linkChoice);
     onChanged({ ...user, athlete_id: linkChoice, athlete_name: athlete ? `${athlete.first_name} ${athlete.last_name}` : null });
@@ -342,12 +344,10 @@ function UserRow({
     const next = user.roles.includes(role) ? user.roles.filter((r) => r !== role) : [...user.roles, role];
     setBusyRole(role);
     setError(null);
-    const { error: err } = await setUserRoles(db, orgId, user.id, currentActorRole, user.id, next);
+    const { error: err, primaryOk } = await setUserRoles(db, orgId, currentUserId, currentActorRole, user.id, next);
     setBusyRole(null);
-    if (err) {
-      setError(err);
-      return;
-    }
+    if (err) setError(err);
+    if (!primaryOk) return;
     onChanged({ ...user, roles: next.sort() });
   }
 
@@ -356,12 +356,10 @@ function UserRow({
     const nextStatus = user.status === 'deactivated' ? 'active' : 'deactivated';
     setBusyStatus(true);
     setError(null);
-    const { error: err } = await setUserStatus(db, orgId, user.id, currentActorRole, user.id, nextStatus);
+    const { error: err, primaryOk } = await setUserStatus(db, orgId, currentUserId, currentActorRole, user.id, nextStatus);
     setBusyStatus(false);
-    if (err) {
-      setError(err);
-      return;
-    }
+    if (err) setError(err);
+    if (!primaryOk) return;
     onChanged({ ...user, status: nextStatus });
   }
 
@@ -372,7 +370,7 @@ function UserRow({
         <div className="load-row" style={{ gridTemplateColumns: '1fr auto auto' }}>
           <div>
             <p className="nm">
-              {user.full_name} {isSelf ? <span className="tiny">(you)</span> : null}
+              <Link href={`/settings/users/${user.id}`}>{user.full_name}</Link> {isSelf ? <span className="tiny">(you)</span> : null}
             </p>
             <p className="tiny">
               {user.email}

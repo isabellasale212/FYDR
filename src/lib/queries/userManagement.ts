@@ -22,19 +22,25 @@ import type { Db } from './groups';
  *     row with a real temporary password, shown once to the admin to share
  *     directly — there is no email service or SMS provider anywhere in
  *     this project to send either automatically. Same category of gap as
- *     scheduled report delivery and push/email notifications.
- *   - A dedicated user-detail page, resend invite, invite revocation, and
- *     the Declined/invited-lifecycle states the spec's onboarding-consent
- *     flow would drive — none of that flow exists in this build, so every
+ *     scheduled report delivery and push/email notifications. Resend
+ *     invite and invite revocation are the same gap wearing a different
+ *     name — there is no invite to resend or revoke, only a password
+ *     already handed over once.
+ *   - The Declined/invited-lifecycle states the spec's onboarding-consent
+ *     flow would drive — that flow doesn't exist in this build, so every
  *     account created here starts life 'active', not 'invited'.
- *   - Role history read back from audit_log on a detail screen. The write
- *     happens; a dedicated reader for it doesn't yet.
- *   - MFA, passkeys, "what this user can see" plain-language summary.
+ *   - MFA, passkeys. Neither exists anywhere in this build's auth layer.
  *   - Forced sign-out on role removal (the spec's own admin-set-role Edge
  *     Function). users.claims_version still bumps on every user_roles
  *     change (migration 0010's trigger, unrelated to this pass), which is
  *     what a stale-token check downstream would compare against — this
  *     pass doesn't add a check that reads it for that purpose.
+ *
+ * The dedicated user-detail page, its role history read from audit_log,
+ * and the "what this user can see" plain-language summary all followed
+ * once the rest of this file existed to build them on top of — see
+ * fetchUserDetail/fetchUserAuditHistory below and
+ * settings/users/[userId]/page.tsx.
  */
 
 export type UserWithRoles = {
@@ -107,6 +113,20 @@ export async function fetchUnlinkedAthletes(db: Db, orgId: string): Promise<Unli
   return data ?? [];
 }
 
+/** Returns its own error rather than swallowing one, on purpose: a caller
+ *  that awaits this without checking the result once did exactly that —
+ *  audit_authenticated_insert (migration 0012) requires actor_id to match
+ *  the real signed-in caller's own auth_user_id(), and every write from
+ *  this file's three exported functions was passing the *target* user's
+ *  id as actorId instead, whenever an admin acted on someone else's row.
+ *  Every one of those inserts was silently RLS-rejected — a "mandatory
+ *  audit event", this file's own header's words, quietly not happening
+ *  for as long as that bug stood. Found live: fetchUserAuditHistory came
+ *  back empty for actions this session had definitely just taken. Fixed
+ *  at the call sites (UserManagementPanel now threads the real
+ *  currentUserId down instead of reusing the row's own user.id), and
+ *  fixed here too, so a caller that stops checking this again fails
+ *  loudly instead of quietly. */
 async function recordUserAudit(
   db: Db,
   orgId: string,
@@ -115,8 +135,8 @@ async function recordUserAudit(
   action: string,
   targetUserId: string,
   metadata: Json,
-): Promise<void> {
-  await db.from('audit_log').insert({
+): Promise<{ error: string | null }> {
+  const { error } = await db.from('audit_log').insert({
     org_id: orgId,
     actor_id: actorId,
     actor_role: actorRole,
@@ -125,6 +145,7 @@ async function recordUserAudit(
     entity_id: targetUserId,
     metadata,
   });
+  return { error: error?.message ?? null };
 }
 
 /** Sets a user's roles to exactly `roles` (additive set, not a toggle) —
@@ -139,9 +160,9 @@ export async function setUserRoles(
   actorRole: AppRole,
   targetUserId: string,
   nextRoles: readonly AppRole[],
-): Promise<{ error: string | null }> {
+): Promise<{ error: string | null; primaryOk: boolean }> {
   const { data: currentRows, error: currentErr } = await db.from('user_roles').select('role').eq('org_id', orgId).eq('user_id', targetUserId);
-  if (currentErr) return { error: currentErr.message };
+  if (currentErr) return { error: currentErr.message, primaryOk: false };
   const current = new Set((currentRows ?? []).map((r) => r.role));
   const next = new Set(nextRoles);
 
@@ -152,9 +173,9 @@ export async function setUserRoles(
       .select('user_id', { count: 'exact', head: true })
       .eq('org_id', orgId)
       .eq('role', 'admin');
-    if (countErr) return { error: countErr.message };
+    if (countErr) return { error: countErr.message, primaryOk: false };
     if ((count ?? 0) <= 1) {
-      return { error: 'This is the only admin in the club — remove the role from someone else first, or grant it to another user before removing it here.' };
+      return { error: 'This is the only admin in the club — remove the role from someone else first, or grant it to another user before removing it here.', primaryOk: false };
     }
   }
 
@@ -163,18 +184,24 @@ export async function setUserRoles(
 
   if (toAdd.length > 0) {
     const { error } = await db.from('user_roles').insert(toAdd.map((role) => ({ org_id: orgId, user_id: targetUserId, role, granted_by: actorId })));
-    if (error) return { error: error.message };
+    if (error) return { error: error.message, primaryOk: false };
   }
   for (const role of toRemove) {
     const { error } = await db.from('user_roles').delete().eq('org_id', orgId).eq('user_id', targetUserId).eq('role', role);
-    if (error) return { error: error.message };
+    if (error) return { error: error.message, primaryOk: false };
   }
 
+  // The role change itself has already committed by this point — an
+  // audit-write failure below is real and worth surfacing, but it must
+  // never be confused with the role change itself having failed. primaryOk
+  // is how a caller tells the two apart, so a UI never discards a change
+  // that genuinely happened just because its audit row didn't save.
   if (toAdd.length > 0 || toRemove.length > 0) {
-    await recordUserAudit(db, orgId, actorId, actorRole, 'user_roles.changed', targetUserId, { added: toAdd, removed: toRemove });
+    const { error: auditErr } = await recordUserAudit(db, orgId, actorId, actorRole, 'user_roles.changed', targetUserId, { added: toAdd, removed: toRemove });
+    if (auditErr) return { error: `Roles were changed, but the audit log entry failed to save: ${auditErr}`, primaryOk: true };
   }
 
-  return { error: null };
+  return { error: null, primaryOk: true };
 }
 
 export async function setUserStatus(
@@ -184,16 +211,100 @@ export async function setUserStatus(
   actorRole: AppRole,
   targetUserId: string,
   status: Extract<UserStatus, 'active' | 'deactivated'>,
-): Promise<{ error: string | null }> {
+): Promise<{ error: string | null; primaryOk: boolean }> {
   const { error } = await db.from('users').update({ status }).eq('org_id', orgId).eq('id', targetUserId);
-  if (error) return { error: error.message };
-  await recordUserAudit(db, orgId, actorId, actorRole, status === 'deactivated' ? 'user.deactivated' : 'user.reactivated', targetUserId, {});
-  return { error: null };
+  if (error) return { error: error.message, primaryOk: false };
+  const { error: auditErr } = await recordUserAudit(db, orgId, actorId, actorRole, status === 'deactivated' ? 'user.deactivated' : 'user.reactivated', targetUserId, {});
+  if (auditErr) return { error: `Status was changed, but the audit log entry failed to save: ${auditErr}`, primaryOk: true };
+  return { error: null, primaryOk: true };
 }
 
-export async function linkAthleteToUser(db: Db, orgId: string, actorId: string, actorRole: AppRole, userId: string, athleteId: string): Promise<{ error: string | null }> {
+export async function linkAthleteToUser(db: Db, orgId: string, actorId: string, actorRole: AppRole, userId: string, athleteId: string): Promise<{ error: string | null; primaryOk: boolean }> {
   const { error } = await db.from('athletes').update({ user_id: userId }).eq('org_id', orgId).eq('id', athleteId).is('user_id', null);
-  if (error) return { error: error.message };
-  await recordUserAudit(db, orgId, actorId, actorRole, 'user.athlete_linked', userId, { athlete_id: athleteId });
-  return { error: null };
+  if (error) return { error: error.message, primaryOk: false };
+  const { error: auditErr } = await recordUserAudit(db, orgId, actorId, actorRole, 'user.athlete_linked', userId, { athlete_id: athleteId });
+  if (auditErr) return { error: `The athlete was linked, but the audit log entry failed to save: ${auditErr}`, primaryOk: true };
+  return { error: null, primaryOk: true };
+}
+
+export type UserRoleGrant = {
+  role: AppRole;
+  granted_at: string;
+  granted_by_name: string | null;
+};
+
+export type UserDetail = {
+  id: string;
+  email: string;
+  full_name: string;
+  phone: string | null;
+  status: UserStatus;
+  last_seen_at: string | null;
+  created_at: string;
+  roleGrants: UserRoleGrant[];
+  athlete_id: string | null;
+  athlete_name: string | null;
+};
+
+/** The detail screen's own top and left panels — user_roles' own
+ *  granted_at/granted_by columns are exactly the "granted 12 Jul, A Bell"
+ *  provenance the wireframe shows beside each role, already written by
+ *  setUserRoles above; this is the first reader for them. */
+export async function fetchUserDetail(db: Db, orgId: string, userId: string): Promise<UserDetail | null> {
+  const [userRes, rolesRes, athleteRes] = await Promise.all([
+    db.from('users').select('id, email, full_name, phone, status, last_seen_at, created_at').eq('org_id', orgId).eq('id', userId).is('deleted_at', null).maybeSingle(),
+    db
+      .from('user_roles')
+      .select('role, granted_at, users!user_roles_granted_by_fkey(full_name)')
+      .eq('org_id', orgId)
+      .eq('user_id', userId)
+      .order('granted_at', { ascending: false }),
+    db.from('athletes').select('id, first_name, last_name').eq('org_id', orgId).eq('user_id', userId).is('deleted_at', null).maybeSingle(),
+  ]);
+  if (userRes.error) throw new Error(userRes.error.message);
+  if (rolesRes.error) throw new Error(rolesRes.error.message);
+  if (athleteRes.error) throw new Error(athleteRes.error.message);
+  if (!userRes.data) return null;
+
+  return {
+    id: userRes.data.id,
+    email: userRes.data.email,
+    full_name: userRes.data.full_name,
+    phone: userRes.data.phone,
+    status: userRes.data.status,
+    last_seen_at: userRes.data.last_seen_at,
+    created_at: userRes.data.created_at,
+    roleGrants: (rolesRes.data ?? []).map((r) => ({ role: r.role, granted_at: r.granted_at, granted_by_name: r.users?.full_name ?? null })),
+    athlete_id: athleteRes.data?.id ?? null,
+    athlete_name: athleteRes.data ? `${athleteRes.data.first_name} ${athleteRes.data.last_name}` : null,
+  };
+}
+
+export type UserAuditRow = {
+  id: number;
+  action: string;
+  occurred_at: string;
+  actor_name: string | null;
+  metadata: Json;
+};
+
+/** The "ROLE HISTORY" panel — every recordUserAudit call above writes
+ *  entity_type='user', entity_id=<the affected user>, so this is a plain
+ *  filter on that, not a new write path. audit_log's own RLS
+ *  (audit_admin_select, migration 0012) is what actually restricts this
+ *  to admins; this page is admin-only anyway, the same gate the rest of
+ *  Users already has. bulk_invite events don't appear here — entity_id is
+ *  null for a whole-batch event, a real, small, documented gap rather
+ *  than a per-row entity_id that would misrepresent one audit row as
+ *  describing a single account's history. */
+export async function fetchUserAuditHistory(db: Db, orgId: string, userId: string): Promise<UserAuditRow[]> {
+  const { data, error } = await db
+    .from('audit_log')
+    .select('id, action, occurred_at, metadata, users!audit_log_actor_id_fkey(full_name)')
+    .eq('org_id', orgId)
+    .eq('entity_type', 'user')
+    .eq('entity_id', userId)
+    .order('occurred_at', { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => ({ id: r.id, action: r.action, occurred_at: r.occurred_at, actor_name: r.users?.full_name ?? null, metadata: r.metadata }));
 }

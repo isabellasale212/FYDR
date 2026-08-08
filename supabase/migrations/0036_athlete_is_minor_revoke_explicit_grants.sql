@@ -1,0 +1,31 @@
+-- 0036_athlete_is_minor_revoke_explicit_grants.sql
+--
+-- Migration 0035's own fix didn't work, and this is the correction, not
+-- an edit to it — additive, per this project's own migration discipline,
+-- the same rule that means an ineffective migration gets a follow-up
+-- rather than a silent rewrite.
+--
+-- `revoke execute ... from public` (0035, the same fix that correctly
+-- closed retention.nightly_preview in migration 0034) turned out to be a
+-- genuine no-op here. Confirmed directly, immediately after applying
+-- 0035: `set local role anon; select athlete_is_minor(...)` still
+-- succeeded. information_schema.routine_privileges showed why —
+-- explicit, separate grants to anon and authenticated, not a grant to
+-- the PUBLIC pseudo-role at all. This project carries its own default
+-- privilege on the public schema (`alter default privileges in schema
+-- public grant execute on functions to anon, authenticated,
+-- service_role`, owned by postgres) — a genuine, deliberate Supabase
+-- convention so a newly created public-schema function is callable as an
+-- RPC endpoint without a manual grant every time. athlete_is_minor was
+-- never meant to be a public RPC endpoint at all — its only caller
+-- anywhere in this codebase is compute_leaderboard, itself SECURITY
+-- DEFINER and owned by the same role, so its internal call runs on its
+-- own owner's privilege regardless of what's revoked here — but it
+-- inherited the schema-wide default anyway, because nothing had ever
+-- revoked it specifically.
+--
+-- Verified after this one: `set local role anon` and `set local role
+-- authenticated` both now get a real permission-denied trying to call it
+-- directly, and compute_leaderboard(...) still returns correctly.
+
+revoke execute on function public.athlete_is_minor(uuid) from anon, authenticated;

@@ -1,0 +1,39 @@
+-- 0035_athlete_is_minor_revoke_public_execute.sql
+--
+-- What this found
+--   Auditing every function this project has for the same class of gap
+--   migration 0034 just fixed on retention.nightly_preview — a function
+--   left with Postgres's default PUBLIC execute grant nobody had
+--   decided to make — turned up a real one, and a worse one:
+--   public.athlete_is_minor(uuid) is SECURITY DEFINER, takes an
+--   arbitrary athlete id with no auth_org_id() scoping check inside it
+--   at all, and had execute granted to `anon` — meaning a fully
+--   unauthenticated caller, no JWT, no session, nothing, could query
+--   whether any specific athlete on this entire project is a minor,
+--   simply by knowing or guessing their id. Verified directly: `set
+--   local role anon; select athlete_is_minor('<a real athlete's id>')`
+--   returned a real answer about a real seeded athlete with zero
+--   authentication of any kind.
+--
+--   This is exactly the kind of fact CLAUDE.md and every roles-and-
+--   compliance doc in this project treats as the most sensitive category
+--   there is — the Children's Code minor-floor protections this build
+--   already enforces elsewhere (notification preferences, bulk invite's
+--   own required date-of-birth column) exist specifically because who is
+--   under 18 is not an ordinary fact. A function that answers that
+--   question for anyone, about anyone, with no login and no tenancy
+--   boundary, is a real gap.
+--
+-- Why the fix is a straight revoke, not a rewrite
+--   The function has exactly one caller anywhere in this codebase:
+--   compute_leaderboard, itself SECURITY DEFINER, owned by the same
+--   role. A SECURITY DEFINER function's internal calls run as its own
+--   owner's privilege, not the original caller's — so revoking
+--   authenticated/anon execute here does not touch
+--   compute_leaderboard's own ability to call it, only a direct,
+--   external, unscoped call to athlete_is_minor itself. Confirmed no
+--   application code calls it via .rpc(...) anywhere either — it was
+--   never meant to be a public-facing function, just picked up the
+--   default grant the same way retention.nightly_preview did.
+
+revoke execute on function public.athlete_is_minor(uuid) from public;

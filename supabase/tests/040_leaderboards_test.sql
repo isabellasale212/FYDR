@@ -314,5 +314,28 @@ select ok(
 );
 
 
+-- ===========================================================================
+-- 10. athlete_is_minor is an internal helper, not a public RPC — migrations
+-- 0035/0036's own finding: it had no scoping check inside it at all, so the
+-- only real protection is that nothing outside compute_leaderboard (whose
+-- own scoping this whole file already tests) may call it directly at all.
+-- ===========================================================================
+
+select tests.clear_jwt();
+set local role anon;
+select throws_ok(
+  format($q$select athlete_is_minor(%L)$q$, tests.uid('orga','athlete_4_minor')),
+  '42501', null,
+  'a fully unauthenticated caller cannot ask whether a specific real athlete is a minor'
+);
+
+set local role authenticated;
+select tests.set_jwt(tests.uid('orga', 'user_admin'));
+select throws_ok(
+  format($q$select athlete_is_minor(%L)$q$, tests.uid('orga','athlete_4_minor')),
+  '42501', null,
+  'nor can a signed-in admin — this was never meant to be callable directly by anyone, only from inside compute_leaderboard''s own, already-scoped query'
+);
+
 select * from finish();
 rollback;

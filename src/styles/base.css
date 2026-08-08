@@ -2294,6 +2294,293 @@ table.tbl tbody tr:hover {
   }
 }
 
+/* ---------- Training report, TRAINING-REPORT-SPEC.md ----------
+ * Every colour named in the spec's own §1 table already exists as a token
+ * in tokens.css at an identical value (checked before writing a single
+ * rule here — --bg/--surf/--surf2/--text/--muted/--faint/--border/--hair/
+ * --track/--accent/--accent2/--warn/--bad are all exact matches), so
+ * nothing here is a new literal colour. What's new is layout: dials,
+ * scatter plot, sparkline, comparison table and board are all shapes this
+ * app didn't have before this screen. */
+.tr-bg {
+  background: radial-gradient(900px 480px at 88% -12%, rgb(var(--accent2-rgb) / 0.1), transparent 62%);
+}
+.tr-mode-switch {
+  display: inline-flex;
+  background: var(--hair);
+  border-radius: 20px;
+  padding: 4px;
+  gap: 2px;
+}
+.tr-mode-switch a {
+  padding: 7px 18px;
+  font-size: 12.5px;
+  font-weight: 700;
+  border-radius: 20px;
+  text-decoration: none;
+  color: var(--muted);
+}
+.tr-mode-switch a[aria-current='true'] {
+  background: var(--surf);
+  color: var(--accent);
+}
+.tr-session-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surf);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.tr-session-chip[aria-current='true'] {
+  background: rgb(var(--accent-rgb) / 0.1);
+  color: var(--accent);
+  border-color: rgb(var(--accent-rgb) / 0.55);
+}
+.tr-session-chip .suffix {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  opacity: 0.65;
+}
+
+.tr-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 28px;
+  align-items: center;
+  padding: 20px 22px;
+}
+.tr-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  margin-top: 12px;
+}
+.tr-fact-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--faint);
+}
+.tr-fact-value {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 500;
+  margin-top: 2px;
+}
+.tr-read {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hair);
+}
+.tr-dials {
+  display: flex;
+  gap: 18px;
+  padding-left: 26px;
+  border-left: 1px solid var(--hair);
+}
+.tr-dial-value {
+  font-family: var(--font-mono);
+  font-size: 23px;
+  font-weight: 500;
+}
+.tr-dial-pct {
+  font-size: 12px;
+  color: var(--muted);
+}
+.tr-dial-of {
+  font-size: 9px;
+  color: var(--faint);
+  margin-top: 1px;
+}
+
+.tr-scope-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.tr-scope-chip {
+  padding: 7px 16px;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--surf);
+  color: var(--text);
+  text-decoration: none;
+}
+.tr-scope-chip[aria-current='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+.tr-table {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 720px;
+}
+.tr-table-row {
+  display: grid;
+  gap: 10px;
+  align-items: center;
+  padding: 11px 6px;
+  border-top: 1px solid var(--hair);
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+}
+.tr-table-row:first-child {
+  border-top: none;
+}
+.tr-table-row.highlighted {
+  background: rgb(var(--accent-rgb) / 0.06);
+}
+.tr-table-cell {
+  text-align: right;
+}
+.tr-bar-track {
+  height: 4px;
+  border-radius: 20px;
+  background: var(--track);
+  margin-top: 4px;
+  overflow: hidden;
+}
+.tr-bar-fill {
+  height: 100%;
+  border-radius: 20px;
+}
+
+.tr-scatter-grid {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  gap: 10px;
+}
+.tr-scatter-yaxis {
+  height: 320px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--faint);
+}
+.tr-scatter-plot {
+  position: relative;
+  height: 320px;
+  border-left: 1px solid rgba(16, 18, 23, 0.14);
+  border-bottom: 1px solid rgba(16, 18, 23, 0.14);
+  background-image:
+    linear-gradient(to top, rgba(16, 18, 23, 0.045) 1px, transparent 1px),
+    linear-gradient(to right, rgba(16, 18, 23, 0.045) 1px, transparent 1px);
+  background-size: 100% 25%, 20% 100%;
+}
+.tr-scatter-dot {
+  position: absolute;
+  border-radius: 50%;
+  transform: translate(-50%, 50%);
+  border-width: 2px;
+  border-style: solid;
+  text-decoration: none;
+  display: block;
+}
+.tr-scatter-dot.selected {
+  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 0.22);
+  z-index: 5;
+}
+.tr-scatter-label {
+  position: absolute;
+  font-size: 11px;
+  font-weight: 700;
+  pointer-events: none;
+  white-space: nowrap;
+  transform: translateY(50%);
+}
+.tr-scatter-legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--hair);
+  font-size: 11px;
+}
+.tr-scatter-legend-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: -1px;
+}
+
+.tr-selected-panel-table {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px 66px 66px;
+  gap: 6px;
+  font-size: 12.5px;
+}
+.tr-sparkline-wrap svg {
+  display: block;
+  width: 100%;
+  height: 62px;
+}
+
+.tr-board {
+  overflow-x: auto;
+}
+.tr-board-inner {
+  min-width: 880px;
+}
+.tr-board-inner.match {
+  min-width: 980px;
+}
+.tr-board-row {
+  display: grid;
+  gap: 6px;
+  padding: 8px 6px;
+  border-radius: 8px;
+  align-items: center;
+}
+.tr-board-row.selected {
+  background: rgb(var(--accent-rgb) / 0.07);
+  font-weight: 700;
+}
+.tr-board-unit-header {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  padding: 10px 6px 4px;
+  display: flex;
+  justify-content: space-between;
+}
+
+@media (max-width: 1200px) {
+  .tr-scatter-selected-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+@media (max-width: 1000px) {
+  .tr-overview {
+    grid-template-columns: 1fr !important;
+  }
+  .tr-dials {
+    border-left: none;
+    padding-left: 0;
+    border-top: 1px solid var(--hair);
+    padding-top: 16px;
+  }
+}
+
 /* ---------- Print, 06-design-system.md §14.7 ----------
  * "A print stylesheet forcing the light theme, removing shadows, and
  * keeping glyphs." The theme half lives in tokens.css (the only file

@@ -22,19 +22,33 @@
  * (88px), and ACWR + Wellness rating (116px each). The header's small 62px
  * wellness indicator (§4) is NOT one of these — its own spec is "1px
  * border, no arc", a plain bordered circle, not this component's 9px track
- * ring — so it is a plain div in the page, not a fourth Dial instance. */
+ * ring — so it is a plain div in the page, not a fourth Dial instance.
+ *
+ * TRAINING-REPORT-SPEC.md §4 needs a real variant of this same geometry: a
+ * ring scaled to 130% of typical rather than a flat 0–100%, plus a tick
+ * mark at the 100% position so 108% and 128% read as visibly different
+ * arcs rather than two rings that both look "nearly full". scaleMax and
+ * tick are both optional and both default to the player-profile behaviour
+ * (scaleMax 100, no tick) — extending the one shared component rather than
+ * forking a second copy of this same SVG, per this file's own opening
+ * line. Every existing caller is unaffected: scaleMax=100 makes
+ * pct/scaleMax identical to the original pct/100. */
 
 type Props = {
   size: number;
   pct: number | null;
   tone: string; // a CSS color value — a var(--token) reference, not a literal hex, at every call site
   children: React.ReactNode; // the centre overlay content
+  scaleMax?: number; // ring closes fully at this pct value, not always 100
+  tick?: number; // draws a proud tick mark at this pct value along the same scale, e.g. the 100% reference point on a 130-scaled ring
 };
 
 const CIRCUMFERENCE = 251;
 
-export function Dial({ size, pct, tone, children }: Props) {
-  const offset = pct === null ? CIRCUMFERENCE : Math.round(CIRCUMFERENCE * (1 - pct / 100));
+export function Dial({ size, pct, tone, children, scaleMax = 100, tick }: Props) {
+  const clamped = pct === null ? null : Math.min(Math.max(pct / scaleMax, 0), 1);
+  const offset = clamped === null ? CIRCUMFERENCE : Math.round(CIRCUMFERENCE * (1 - clamped));
+  const tickOffset = tick !== undefined ? -Math.round(CIRCUMFERENCE * (tick / scaleMax)) : null;
 
   return (
     <div style={{ position: 'relative', width: size, height: size, flex: 'none' }}>
@@ -58,6 +72,18 @@ export function Dial({ size, pct, tone, children }: Props) {
             strokeDasharray={CIRCUMFERENCE}
             className="dial-arc"
             style={{ strokeDashoffset: offset }}
+          />
+        ) : null}
+        {tickOffset !== null ? (
+          <circle
+            cx="50"
+            cy="50"
+            r="40"
+            fill="none"
+            stroke="rgba(16,18,23,0.4)"
+            strokeWidth="11"
+            strokeDasharray="2 249"
+            style={{ strokeDashoffset: tickOffset }}
           />
         ) : null}
       </svg>

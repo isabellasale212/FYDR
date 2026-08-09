@@ -260,6 +260,14 @@ export function Sidebar({ roles, fullName, orgName }: Props) {
             <span className="nav-label">Sign out</span>
           </button>
         </form>
+        {/* 13-legal-and-trademark.md §3: the Fydr trademark is unregistered
+         * as of this build, so this uses no ® anywhere — a criminal
+         * offence under s.95 of the Trade Marks Act 1994 before
+         * registration. Copyright is a separate right that exists
+         * automatically on creation, with no registration step, so a
+         * plain © notice is safe today; the year is computed, never
+         * hardcoded, so this doesn't go stale. */}
+        <p className="nav-copyright">© {new Date().getFullYear()} Fydr</p>
       </div>
     </aside>
   );

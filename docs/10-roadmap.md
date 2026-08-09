@@ -274,16 +274,16 @@ pilot runs*, informed by what the pilot tells you. Do not build it in advance.
 | Item | Why it was not in 1a |
 |---|---|
 | Week templates and the MD-n planner | Compliance expectations in 1a run off a simple weekly pattern. Templates are the productivity feature, not the correctness feature. |
-| Timetable view | Folded into the dashboard in 1a. |
+| Timetable view | Folded into the dashboard in 1a. **Built as both**: `/timetable` is its own full screen (real attendance capture, `session_attendance`) and the Dashboard's own timeline draws on the same real session/roster data — not a contradiction, the dashboard's timeline is a summarised read, `/timetable` is where attendance is actually recorded. |
 | Availability status and the availability board | See the note below. |
 | Athlete "report a problem" (new screen 36) | Route into medical, needed before the injury work in Phase 2. |
 | Flag escalation, dismissal reason capture, threshold recalibration suggestion | `03-flows.md` §5 in full. 1a ships raise, notify, acknowledge, resolve only. |
 | Compliance waivers | `04-data-model.md` §11. |
 | Support access role (`platform_support`) | `01-roles-and-permissions.md` O-4 defers it to Phase 3. Move it to 1b: by the time a real club is live you will need to debug their data, and if this does not exist you will do it with the service role key and no audit trail. That is a worse outcome than building it. |
-| Audit log viewer (new screen 35) | `01-roles-and-permissions.md` §2 grants admins access to the audit log and no screen exists. |
+| Audit log viewer (new screen 35) | **Built ahead of this phase.** `01-roles-and-permissions.md` §2 grants admins access to the audit log and no screen existed — closed directly (`/settings/audit`) rather than waiting on 1b, the same call made for Timetable above. |
 
-**Screens**: 11 Timetable, 12 Injury dashboard (availability board only), 18 MD-n planner,
-35 Audit log, 36 Report a problem.
+**Screens**: 11 Timetable (built), 12 Injury dashboard (availability board only), 18 MD-n planner,
+35 Audit log (built), 36 Report a problem.
 
 **A deviation from the phase definition, flagged deliberately.** The brief for this document
 placed injury and availability in neither Phase 1 nor Phase 2. That is a gap. Availability

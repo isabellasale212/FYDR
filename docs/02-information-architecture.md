@@ -434,7 +434,7 @@ exists today and no staff phone app does. See O-725.
 | 32 | User management | X | `user-management.md` | |
 | 33 | Onboarding | all | `onboarding.md` | |
 | 34 | GPS data import | C M | `imports.md` | |
-| 35 | Audit log viewer | X | *(none)* | **RESERVED** (`10-roadmap.md` §4) |
+| 35 | Audit log viewer | X | *(none)* | **BUILT**, ahead of its reserved phase — `/settings/audit`, `lib/queries/auditLog.ts`. `01-roles-and-permissions.md` §2 already granted admins access with no screen; this closed that gap directly rather than waiting on the phase it was filed against. |
 | 36 | Athlete report a problem | A | *(none)* | **RESERVED** (`10-roadmap.md` §4) |
 | 37 | Training report | C M | `training-report.md` | **NEW** |
 | ~~38~~ | ~~Flight control~~ | n/a | *(none)* | **REMOVED** at client instruction, 5 Aug 2026. Do not build. |
@@ -443,7 +443,7 @@ exists today and no staff phone app does. See O-725.
 | 41 | Fixtures list | C M | *(none)* | **UNSPEC**. Sidebar item 3. Only `fixture-detail.md` exists; the list it is reached from was never specified. |
 | 42 | Rehabilitation grouping | M C | `rehab-groups.md` | Medical-owned. Not the whiteboard item, but a real feature backed by `rehab_assignments.rehab_group_id` |
 | 43 | Privacy and my data | A | *(none, or `settings.md` §"Privacy and my data")* | **RESERVED** (`10-roadmap.md` §12). Athlete rights surface: consent state, export, erasure, account deletion. Phase 1a. |
-| 44 | Data requests | X | *(none)* | **RESERVED** (`10-roadmap.md` §12). Admin queue for subject access, erasure and objection requests. Phase 1a. |
+| 44 | Data requests | X | *(none)* | **PARTLY BUILT**, ahead of its reserved phase — `/settings/subject-access` is a real admin queue for the subject-access half (request → medical review → admin release, real `sar_request` status tracking). Erasure and objection requests are not built; this is Article 15 only, not the full row. |
 | 45 | Nutrition weekly check-in | A | `nutrition-checkin.md` | Bottom sheet over Today. O-890 resolved 5 Aug 2026: one question, once a week. Not an entry screen for meals or macros. Phase 2. |
 
 ---

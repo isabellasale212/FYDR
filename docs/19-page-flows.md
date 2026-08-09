@@ -1674,7 +1674,7 @@ Eight rows of the screen list are missing from §3, and here is why.
 
 | # | Screen | Why it is not here |
 |---|---|---|
-| 35 | Audit log viewer | Held back for a later phase. No specification exists, so there is nothing to draw |
+| 35 | Audit log viewer | **Built**, ahead of its reserved phase — `/settings/audit`. No flow diagram exists for it here because it was built directly from the real table and its RLS rather than from a drawing, the same route `training-report.md` took |
 | 36 | Report a problem, athlete | Held back for a later phase. The way in exists on Today, the page it opens does not yet |
 | 38 | Flight control | Removed from the product at the client's instruction on 5 August 2026. The sidebar entry and the page are to be deleted |
 | 39 | My dashboard | Not a separate page. It is the sidebar name for the staff dashboard, drawn in §3.8 |

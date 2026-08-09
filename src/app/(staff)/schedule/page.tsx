@@ -74,10 +74,18 @@ export default async function SchedulePage({
         <span className="nm mono">
           {formatDate(weekStart)} to {formatDate(weekEnd)}
         </span>
-        <Link href={`/schedule?date=${nextWeek}${groupQuery}`} className="btn-ghost" aria-label="Next week">
-          Next ›
-        </Link>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <Link href={`/schedule/planner/apply?week=${weekStart}`} className="btn-ghost">
+            Apply template
+          </Link>
+          <Link href={`/schedule?date=${nextWeek}${groupQuery}`} className="btn-ghost" aria-label="Next week">
+            Next ›
+          </Link>
+        </div>
       </div>
+      <p className="cap" style={{ marginTop: 8 }}>
+        <Link href="/schedule/planner">MD-n planner →</Link> — define a week&apos;s shape once, apply it here.
+      </p>
 
       {sessions.length === 0 ? (
         <EmptyState

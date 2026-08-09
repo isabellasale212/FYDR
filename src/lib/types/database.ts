@@ -2566,6 +2566,8 @@ export type Database = {
         requires_rpe: boolean
         requires_nutrition: boolean
         status: Database["public"]["Enums"]["session_status"]
+        template_key: string | null
+        applied_template_id: string | null
         created_by: string | null
         created_at: string
         updated_at: string
@@ -2589,6 +2591,8 @@ export type Database = {
         requires_rpe?: boolean
         requires_nutrition?: boolean
         status?: Database["public"]["Enums"]["session_status"]
+        template_key?: string | null
+        applied_template_id?: string | null
         created_by?: string | null
         created_at?: string
         updated_at?: string
@@ -2612,6 +2616,8 @@ export type Database = {
         requires_rpe?: boolean
         requires_nutrition?: boolean
         status?: Database["public"]["Enums"]["session_status"]
+        template_key?: string | null
+        applied_template_id?: string | null
         created_by?: string | null
         created_at?: string
         updated_at?: string
@@ -2644,6 +2650,13 @@ export type Database = {
           columns: ["season_id"]
           isOneToOne: false
           referencedRelation: "seasons"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "sessions_applied_template_id_fkey"
+          columns: ["applied_template_id"]
+          isOneToOne: false
+          referencedRelation: "week_templates"
           referencedColumns: ["id"]
         }
       ]

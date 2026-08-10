@@ -187,8 +187,25 @@ where you keep annual jobs. Two options that keep the nine rows: put an import a
 **Reports** page next to the training report it feeds, or surface it on the **Dashboard** on
 days a pitch session has GPS data expected and none imported. I recommend the first. O-1100.
 
-**Flags and the injury board still have no row.** They did not have one before either
-(O-723), and with nine rows it now matters more, not less. See §4.2.
+**Built to exactly this nine-row target, plus the three rows this section didn't yet account
+for.** The client's own list above stopped at nine and left Flags, Groups and Timetable
+unplaced. All three are resolved now, the same "moves, doesn't delete" way as the five above:
+
+| Was a sidebar row | Now lives in | Why that is the right home |
+|---|---|---|
+| Groups | **Squad overview**'s own "Manage groups" link (still `/settings/groups`) | Row 2 above already said Squad overview holds "every player, groups" — this makes that literally true. Settings keeps a second link in, since admin manages groups but has no Squad overview row to find one in. |
+| Timetable | **Schedule**, via a "Week plan / Today" toggle on both pages | Same spine, screens/schedule.md's own words: Schedule plans, Timetable captures attendance pitch-side. Two real routes and write surfaces stay separate; only the sidebar entry merges. |
+| Flags | **Dashboard**, a panel at the top (`DashboardFlagsPanel`) | Resolves O-723 below — not a new row, a summary that expands in place and deep-links into the athlete's own real Flags card. |
+
+**O-723 resolved: Flags has no row, on purpose, not by omission.** The open question this
+section used to leave unanswered — where do flags live with nine rows and no room for a
+tenth — is answered by not needing a row at all. `DashboardFlagsPanel` sits above the stat
+tiles, closed by default (a "N open flags · N high · N medium" line is the whole collapsed
+state), and expands into `fetchDashboardAttention`'s real severity-ranked rows, each linking
+to `/squad/{athleteId}#pp-flags-title` — the athlete's own Flags card, already real, already
+where Acknowledge lives. `/flags` (the full, unranked list) is unchanged and still linked from
+the panel and the "Open flags" stat tile. The injury board genuinely still has no row —
+that half of O-723 stays open.
 
 ---
 

@@ -605,12 +605,19 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                     </p>
                   </div>
 
+                  {/* "Raise a flag" used to sit here (`/flags?athlete=`),
+                   * found dead while surveying flag-related nav for the
+                   * dashboard panel: /flags never reads that param, and
+                   * there is no manual-raise mutation anywhere in
+                   * lib/queries/flags.ts — flags are only ever raised
+                   * automatically by threshold logic (screens/flags.md's
+                   * own model). A button that looked like it worked but
+                   * silently landed on an unfiltered list is worse than
+                   * no button; removed rather than wired to a manual-raise
+                   * feature this pass has no spec authority to invent. */}
                   <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
                     <Link href={`/squad/${athletePanel.athleteId}`} className="btn-ghost">
                       Open profile
-                    </Link>
-                    <Link href={`/flags?athlete=${athletePanel.athleteId}`} className="btn-primary">
-                      Raise a flag
                     </Link>
                   </div>
                 </>

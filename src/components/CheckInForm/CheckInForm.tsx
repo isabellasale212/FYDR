@@ -78,6 +78,9 @@ export function CheckInForm({
   const [sleepHours, setSleepHours] = useState(
     correction ? Math.round((correction.initial.sleep_hours ?? 7) * 2) / 2 : 7,
   );
+  const [restingHr, setRestingHr] = useState('');
+  const [bodyMassKg, setBodyMassKg] = useState('');
+  const [comment, setComment] = useState('');
   const [scales, setScales] = useState<Scales>(
     correction
       ? {
@@ -156,6 +159,9 @@ export function CheckInForm({
       entry_date: entryDate,
       sleep_hours: sleepHours,
       ...scales,
+      resting_hr: restingHr.trim() === '' ? null : Number(restingHr),
+      body_mass_kg: bodyMassKg.trim() === '' ? null : Number(bodyMassKg),
+      comment: comment.trim() ? comment.trim() : null,
       revision_of: correction?.originalId,
     };
 
@@ -192,45 +198,51 @@ export function CheckInForm({
         On every scale, <b>5 is the best you can feel.</b>
       </p>
 
-      <div className="sc-h" style={{ paddingTop: 2 }}>
-        <span className="sc-l" id="sleep-hours-label">
-          Sleep
-        </span>
+      <div className="sleep-panel">
+        <div className="sp-head">
+          <span className="k" id="sleep-hours-label">
+            Sleep
+          </span>
+          <span className="mono" style={{ fontSize: 14, fontWeight: 700 }}>
+            {sleepHours.toFixed(1)} h
+          </span>
+        </div>
+
+        <div className="step">
+          <button
+            type="button"
+            className="btnc"
+            onClick={() => setSleepHours((h) => Math.max(0, h - 0.5))}
+            aria-label="Half an hour less sleep"
+          >
+            &minus;
+          </button>
+          <div className="val">
+            <div
+              className="v mono"
+              role="status"
+              aria-live="polite"
+              aria-labelledby="sleep-hours-label"
+            >
+              {sleepHours.toFixed(1)}
+            </div>
+            <div className="u">hours</div>
+          </div>
+          <button
+            type="button"
+            className="btnc"
+            onClick={() => setSleepHours((h) => Math.min(14, h + 0.5))}
+            aria-label="Half an hour more sleep"
+          >
+            +
+          </button>
+        </div>
+
         {lastNightSleepHours !== null ? (
-          <span className="tiny">
-            Last time <span className="mono">{lastNightSleepHours}</span> h
+          <span className="sleep-ref">
+            Last night&rsquo;s entry: <span className="mono">{lastNightSleepHours}</span>
           </span>
         ) : null}
-      </div>
-
-      <div className="step">
-        <button
-          type="button"
-          className="btnc"
-          onClick={() => setSleepHours((h) => Math.max(0, h - 0.5))}
-          aria-label="Half an hour less sleep"
-        >
-          &minus;
-        </button>
-        <div className="val">
-          <div
-            className="v mono"
-            role="status"
-            aria-live="polite"
-            aria-labelledby="sleep-hours-label"
-          >
-            {sleepHours.toFixed(1)}
-          </div>
-          <div className="u">HOURS</div>
-        </div>
-        <button
-          type="button"
-          className="btnc"
-          onClick={() => setSleepHours((h) => Math.min(14, h + 0.5))}
-          aria-label="Half an hour more sleep"
-        >
-          +
-        </button>
       </div>
 
       {WELLNESS_SCALES.map((scale) => (
@@ -244,6 +256,45 @@ export function CheckInForm({
         />
       ))}
 
+      <details className="disclose">
+        <summary>Add heart rate, weight or a note</summary>
+        <div className="disclose-body">
+          <label>
+            <span className="label">Resting heart rate (bpm)</span>
+            <input
+              className="field"
+              type="number"
+              min={25}
+              max={120}
+              value={restingHr}
+              onChange={(e) => setRestingHr(e.target.value)}
+            />
+          </label>
+          <label>
+            <span className="label">Body mass (kg)</span>
+            <input
+              className="field"
+              type="number"
+              step="0.1"
+              min={30}
+              max={200}
+              value={bodyMassKg}
+              onChange={(e) => setBodyMassKg(e.target.value)}
+            />
+          </label>
+          <label>
+            <span className="label">Note</span>
+            <textarea
+              className="field"
+              rows={2}
+              maxLength={500}
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+            />
+          </label>
+        </div>
+      </details>
+
       {invalid ? (
         <p className="form-error" role="alert" style={{ marginTop: 14 }}>
           {invalid}
@@ -254,27 +305,21 @@ export function CheckInForm({
         <button
           className="btn-primary"
           type="submit"
-          disabled={correction ? correctionMutation.isPending : false}
-          style={{ width: '100%', minHeight: 56 }}
+          disabled={correction ? correctionMutation.isPending : remaining > 0}
+          style={{ width: '100%' }}
         >
           {correction
             ? correctionMutation.isPending
               ? 'Saving correction…'
               : 'Submit correction'
-            : 'Submit entry'}
-          {remaining > 0 ? (
-            <span
-              className="tiny"
-              style={{ fontWeight: 600, marginInlineStart: 8 }}
-            >
-              · <span className="mono">{remaining}</span> to go
-            </span>
-          ) : null}
+            : remaining > 0
+              ? `Submit entry · ${remaining} to go`
+              : 'Submit entry'}
         </button>
         <p className="tiny" style={{ textAlign: 'center', marginTop: 8 }}>
           {correction
             ? `For ${formatDate(entryDate)}. This needs a connection: corrections are not queued offline yet.`
-            : `For ${formatDate(entryDate)}. Saved on this phone first, sent when you have signal.`}
+            : 'Submitted entries cannot be edited. A correction creates a new revision.'}
         </p>
       </div>
     </form>

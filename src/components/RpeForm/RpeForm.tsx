@@ -22,6 +22,11 @@ type Props = {
   sessionId: string;
   entryDate: string;
   scheduledDurationMin: number | null;
+  /** For the toast on Today after a fresh submit — ATHLETE-APP-SPEC.md
+   *  §13's literal copy names the session ("RPE 6.0 submitted for Team
+   *  run"), which needs the title, not just the id this form otherwise
+   *  only needs for the mutation. */
+  sessionTitle: string;
   /** Present only when reached via "Correct this entry" — see
    *  CheckInForm's identical prop for the reasoning, which applies
    *  unchanged here. */
@@ -51,6 +56,7 @@ export function RpeForm({
   sessionId,
   entryDate,
   scheduledDurationMin,
+  sessionTitle,
   correction,
 }: Props) {
   const router = useRouter();
@@ -147,7 +153,9 @@ export function RpeForm({
       return;
     }
     submitMutation.mutate(parsed.data);
-    router.push('/today?submitted=rpe');
+    router.push(
+      `/today?submitted=rpe&rpe=${rpe}&session=${encodeURIComponent(sessionTitle)}`,
+    );
   }
 
   const submitLabel =

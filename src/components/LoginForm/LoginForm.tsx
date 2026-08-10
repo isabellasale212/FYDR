@@ -46,46 +46,48 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate>
-      {error ? (
-        <p className="form-error" role="alert">
-          {error}
-        </p>
-      ) : null}
+    <form onSubmit={onSubmit} noValidate className="signin-form">
+      <div className="signin-fields">
+        {error ? (
+          <p className="form-error" role="alert" style={{ margin: 0 }}>
+            {error}
+          </p>
+        ) : null}
 
-      <div className="form-row">
-        <label className="label" htmlFor="email">
-          Email
-        </label>
-        <input
-          id="email"
-          className="field"
-          type="email"
-          name="email"
-          autoComplete="username"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        <div className="form-row" style={{ margin: 0 }}>
+          <label className="label" htmlFor="email">
+            Email
+          </label>
+          <input
+            id="email"
+            className="field"
+            type="email"
+            name="email"
+            autoComplete="username"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+
+        <div className="form-row" style={{ margin: 0 }}>
+          <label className="label" htmlFor="password">
+            Password
+          </label>
+          <input
+            id="password"
+            className="field"
+            type="password"
+            name="password"
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
       </div>
 
-      <div className="form-row">
-        <label className="label" htmlFor="password">
-          Password
-        </label>
-        <input
-          id="password"
-          className="field"
-          type="password"
-          name="password"
-          autoComplete="current-password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </div>
-
-      <button className="btn-primary" type="submit" disabled={busy}>
+      <button className="btn-primary signin-submit" type="submit" disabled={busy}>
         {busy ? 'Signing in' : 'Sign in'}
       </button>
     </form>

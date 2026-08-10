@@ -40,18 +40,37 @@
   --on-accent: #ffffff;
   --avatar-bg: #1a2340;
   --avatar-text: #6f9bff;
+  /* ATHLETE-APP-SPEC.md §13's toast: a fixed near-black chip in both
+     themes, same reasoning as --avatar-bg/--avatar-text just above it —
+     a small always-dark surface that isn't the theme background, so it
+     stays legible and reads as "the same toast" whichever theme the rest
+     of the page is in. */
+  --toast-bg: #13161c;
+  --toast-text: #ffffff;
+  --toast-link: #6f9bff;
   --tab-active: #6f9bff;
   --tab-inactive: #4a5578;
   --node-empty-border: #313c60;
 
-  /* §4.5 and §14.6. Channel triplets so a tint reads rgb(var(--x-rgb) / a). */
-  --accent-rgb: 31, 111, 234;
-  --accent2-rgb: 51, 182, 255;
-  --good-rgb: 77, 203, 178;
-  --warn-rgb: 246, 171, 47;
-  --bad-rgb: 241, 90, 74;
-  --highlight-rgb: 245, 197, 24;
-  --gym-rgb: 245, 197, 24;
+  /* §4.5 and §14.6. Channel triplets so a tint reads rgb(var(--x-rgb) / a).
+     Space-separated, not comma-separated: modern rgb()'s slash-alpha form
+     (`rgb(R G B / A)`) cannot mix with the legacy comma form, and a comma
+     triplet substituted in front of a slash — `rgb(31, 111, 234 / .2)` —
+     is invalid CSS. It was comma-separated before this comment, which
+     silently invalidated every `rgb(var(--x-rgb) / alpha)` declaration in
+     the app: background fell back to transparent, border fell back to
+     0px none. Confirmed live (a wellness-scale dot rendering with no
+     border at all, an availability card with no tint) before tracing it
+     to this line — every visible tint anywhere in this app was riding on
+     a plain solid colour or a token used without the slash, never on this
+     triplet-plus-alpha pattern actually working. */
+  --accent-rgb: 31 111 234;
+  --accent2-rgb: 51 182 255;
+  --good-rgb: 77 203 178;
+  --warn-rgb: 246 171 47;
+  --bad-rgb: 241 90 74;
+  --highlight-rgb: 245 197 24;
+  --gym-rgb: 245 197 24;
 
   /* §4.4. The status pill fill alpha. Raised from 0.16 so the fill separates
      under dichromacy; the text tokens in §3.7 are derived against this value. */
@@ -179,6 +198,39 @@
   --group-magenta: #f08cc8;
   --group-steel: #7fb4c8;
   --group-plum: #c08fd2;
+}
+
+/* ---------------------------------------------------------------------------
+   Athlete app override. ATHLETE-APP-SPEC.md §1 states a "Good" tint of
+   #4fd6ff, a paler cyan, and calls it out by name as distinct from the
+   staff --good (#4dcbb2, teal) — deliberate, not a typo: this app's phone
+   surface and its desk surface never render side by side, so there is no
+   inconsistency for anyone to spot between them. Scoped to .phone (the
+   athlete shell's own root) the same way .dark-tokens scopes a whole
+   theme, per §2.4's own pattern, rather than changing the site-wide value.
+   Light's derived text/pill-text (#0d5f75) is the literal value the spec
+   uses everywhere it shows Good as a foreground — the pill fg, the done
+   checkmark, the session "✓ submitted" lines — so both derived tokens
+   share it rather than being computed separately. Dark has no literal
+   spec value to match (the spec renders one theme only); it follows this
+   file's own existing convention for the other four semantic colours,
+   where a bright fill reads directly as its own dark-theme text colour. */
+.phone {
+  --good: #4fd6ff;
+  --good-rgb: 79 214 255;
+  --good-text: #0d5f75;
+  --good-pill-text: #0d5f75;
+}
+:root[data-theme='dark'] .phone,
+.dark-tokens .phone {
+  --good-text: #4fd6ff;
+  --good-pill-text: #4fd6ff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .phone {
+    --good-text: #4fd6ff;
+    --good-pill-text: #4fd6ff;
+  }
 }
 
 @media (prefers-color-scheme: dark) {

@@ -2,14 +2,16 @@ import Link from 'next/link';
 import { AvailabilityBanner } from '@/components/AvailabilityBanner/AvailabilityBanner';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { OutboxFlusher } from '@/components/OutboxFlusher/OutboxFlusher';
-import { Pill } from '@/components/Pill/Pill';
+import { Toast } from '@/components/Toast/Toast';
 import { fetchAthleteAvailability } from '@/lib/queries/availability';
 import { fetchMyOutstanding } from '@/lib/queries/compliance';
-import { fetchAthleteDaySessions, mondayOf } from '@/lib/queries/schedule';
+import {
+  fetchAthleteDaySessions,
+  fetchWeekMdLabels,
+  mondayOf,
+} from '@/lib/queries/schedule';
 import { fetchCheckinForWeek } from '@/lib/queries/nutrition';
-import { resolveTargetForDate } from '@/lib/queries/nutritionTargets';
 import { fetchMyAllocation } from '@/lib/queries/teamAllocation';
-import { COMPLIANCE_STATUS } from '@/lib/status';
 import {
   BLANK,
   addDays,
@@ -26,6 +28,44 @@ export const metadata = { title: 'Today · Fydr' };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
+const WEEKDAY_INITIAL = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+/** ATHLETE-APP-SPEC.md §13's literal toast copy, built from whatever the
+ *  redirecting form actually knew. The gym message drops the spec's "· RPE
+ *  prompt at 18:00" clause: nothing in this build schedules that prompt at
+ *  a real time (see notifications/page.tsx's own "nothing sends a push
+ *  yet" note), so stating one would be inventing a time this app cannot
+ *  keep. */
+function toastMessageFor(params: Record<string, string | string[] | undefined>): string | null {
+  const submitted = typeof params.submitted === 'string' ? params.submitted : null;
+  if (submitted === '1') return 'Wellness submitted · queued, syncs on signal';
+  if (submitted === 'rpe') {
+    const rpe = typeof params.rpe === 'string' ? params.rpe : null;
+    const session = typeof params.session === 'string' ? params.session : null;
+    return rpe && session ? `RPE ${rpe} submitted for ${session}` : 'RPE submitted';
+  }
+  if (submitted === 'nutrition') {
+    const week = typeof params.week === 'string' ? params.week : null;
+    return week ? `Nutrition check-in submitted for week of ${formatDate(week)}` : 'Nutrition check-in submitted';
+  }
+  if (submitted === 'gym') return 'Gym session logged.';
+  return null;
+}
+
+/**
+ * The compliance surface, ATHLETE-APP-SPEC.md §5. Six blocks in the spec's
+ * own order: week strip, availability, to do, today's sessions, "something
+ * not right", plus the done state that replaces to-do once nothing is
+ * outstanding. "Fuelling today" — a card this page carried before this
+ * pass — moved to Programme, which now has the spec's own dedicated
+ * nutrition-targets card (§11); showing standing targets in both places
+ * was two homes for one real number.
+ *
+ * Gym never appears in "to do" here: fetchMyOutstanding only resolves
+ * wellness and training_rpe (see its own header), and detecting "today has
+ * an unfinished gym session" is a real, separate query this pass doesn't
+ * add — Programme and the session itself are still the real entry points.
+ */
 export default async function TodayPage({
   searchParams,
 }: {
@@ -35,28 +75,45 @@ export default async function TodayPage({
     await requireAthlete();
   const params = await searchParams;
   const today = todayIso(timezone);
-
-  const nutritionWeekStart = addDays(mondayOf(today), -7);
   const weekStart = mondayOf(today);
+  const nutritionWeekStart = addDays(weekStart, -7);
 
-  const [availability, outstanding, sessions, nutritionCheckin, myAllocation, nutritionTarget] =
+  const [availability, outstanding, sessions, nutritionCheckin, myAllocation, weekMd] =
     await Promise.all([
       fetchAthleteAvailability(db, orgId, athleteId),
       fetchMyOutstanding(db, athleteId, today),
       fetchAthleteDaySessions(db, orgId, athleteId, today),
       fetchCheckinForWeek(db, athleteId, nutritionWeekStart),
       fetchMyAllocation(db, athleteId, weekStart),
-      resolveTargetForDate(db, athleteId, today),
+      fetchWeekMdLabels(db, orgId, weekStart),
     ]);
 
-  const submittedKind =
-    params.submitted === '1'
-      ? 'wellness'
-      : params.submitted === 'rpe'
-        ? 'rpe'
-        : params.submitted === 'nutrition'
-          ? 'nutrition'
-          : null;
+  const todoItems = [
+    ...outstanding.map((item) => ({
+      domain: item.domain,
+      href: item.href,
+      name: item.domain === 'wellness' ? 'Wellness' : 'Training',
+      sub:
+        item.domain === 'wellness'
+          ? 'About 45 seconds'
+          : `${item.label} · about 20 seconds`,
+    })),
+    ...(!nutritionCheckin
+      ? [
+          {
+            domain: 'nutrition' as const,
+            href: '/nutrition-check-in',
+            name: 'Weekly check-in',
+            sub: 'Did you hit your protein target most days? · about 10 seconds',
+          },
+        ]
+      : []),
+  ];
+  const outstandingCount = todoItems.length;
+
+  const toastMessage = toastMessageFor(params);
+
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
   return (
     <>
@@ -65,42 +122,37 @@ export default async function TodayPage({
           {initials({ first_name: firstName, last_name: lastName })}
         </span>
         <h1 className="d">{formatDate(today)}</h1>
+        <span className={`pill status-pill ${outstandingCount > 0 ? 'pill-warn' : 'pill-good'}`}>
+          {outstandingCount > 0 ? (
+            <>
+              <span className="mono">{outstandingCount}</span> to do
+            </>
+          ) : (
+            'Up to date'
+          )}
+        </span>
       </div>
 
-      <OutboxFlusher
-        orgId={orgId}
-        athleteId={athleteId}
-        userId={claims.userId}
-      />
+      <OutboxFlusher orgId={orgId} athleteId={athleteId} userId={claims.userId} />
 
-      {submittedKind === 'wellness' ? (
-        <p className="banner" role="status">
-          <span className="g g-good" aria-hidden="true">
-            ✓
-          </span>
-          <span>
-            <b>Check-in saved.</b> Thanks. You are done for the morning.
-          </span>
-        </p>
-      ) : submittedKind === 'rpe' ? (
-        <p className="banner" role="status">
-          <span className="g g-good" aria-hidden="true">
-            ✓
-          </span>
-          <span>
-            <b>Rating saved.</b> Thanks.
-          </span>
-        </p>
-      ) : submittedKind === 'nutrition' ? (
-        <p className="banner" role="status">
-          <span className="g g-good" aria-hidden="true">
-            ✓
-          </span>
-          <span>
-            <b>Nutrition check-in done.</b> Thanks.
-          </span>
-        </p>
-      ) : null}
+      {toastMessage ? <Toast message={toastMessage} clearHref="/today" /> : null}
+
+      <div className="card wk-strip" aria-label="This week">
+        {weekDays.map((date, i) => {
+          const isToday = date === today;
+          const md = mdLabel(weekMd.get(date) ?? null);
+          const tone = md === 'MD' ? 'md' : md === 'MD-1' ? 'md-1' : undefined;
+          return (
+            <div key={date} className="wk-day" data-today={isToday}>
+              <span className="wi">{WEEKDAY_INITIAL[i]}</span>
+              <span className="wn mono">{Number(date.slice(8, 10))}</span>
+              <span className="wo mono" data-tone={tone}>
+                {md ?? ''}
+              </span>
+            </div>
+          );
+        })}
+      </div>
 
       <AvailabilityBanner
         status={availability.current?.status ?? null}
@@ -118,108 +170,30 @@ export default async function TodayPage({
         </p>
       ) : null}
 
-      {nutritionTarget ? (
-        <section aria-labelledby="fuelling-title">
-          <h2 className="sect" id="fuelling-title">
-            Fuelling today
+      {todoItems.length > 0 ? (
+        <section aria-labelledby="todo-title">
+          <h2 className="sect" id="todo-title">
+            To do <span className="mono">{todoItems.length}</span>
           </h2>
-          <div className="card">
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))',
-                gap: 12,
-              }}
-            >
-              {nutritionTarget.protein_g !== null ? (
-                <div>
-                  <div className="mono" style={{ fontSize: 18, fontWeight: 700 }}>
-                    {nutritionTarget.protein_g}g
-                  </div>
-                  <div className="tiny">Protein</div>
-                </div>
-              ) : null}
-              {nutritionTarget.carbs_g !== null ? (
-                <div>
-                  <div className="mono" style={{ fontSize: 18, fontWeight: 700 }}>
-                    {nutritionTarget.carbs_g}g
-                  </div>
-                  <div className="tiny">Carbs</div>
-                </div>
-              ) : null}
-              {nutritionTarget.fat_g !== null ? (
-                <div>
-                  <div className="mono" style={{ fontSize: 18, fontWeight: 700 }}>
-                    {nutritionTarget.fat_g}g
-                  </div>
-                  <div className="tiny">Fat</div>
-                </div>
-              ) : null}
-              {nutritionTarget.fluid_ml !== null ? (
-                <div>
-                  <div className="mono" style={{ fontSize: 18, fontWeight: 700 }}>
-                    {(nutritionTarget.fluid_ml / 1000).toFixed(1)}L
-                  </div>
-                  <div className="tiny">Fluid</div>
-                </div>
-              ) : null}
-              {nutritionTarget.energy_kcal !== null ? (
-                <div>
-                  <div className="mono" style={{ fontSize: 18, fontWeight: 700 }}>
-                    {nutritionTarget.energy_kcal}
-                  </div>
-                  <div className="tiny">kcal</div>
-                </div>
-              ) : null}
-            </div>
-            <p className="tiny" style={{ marginTop: 10 }}>
-              {nutritionTarget.md_specific
-                ? `Set for ${mdLabel(nutritionTarget.md_offset) ?? 'today'}.`
-                : 'Your standing target.'}{' '}
-              Guidance only &mdash; nothing to log here.
-            </p>
-          </div>
-        </section>
-      ) : null}
-
-      <section aria-labelledby="todo-title">
-        <h2 className="sect" id="todo-title">
-          To do{' '}
-          <span className="mono" style={{ color: 'var(--faint)' }}>
-            {outstanding.length}
-          </span>
-        </h2>
-        {outstanding.length === 0 ? (
-          <div className="card">
-            <p className="sub" style={{ margin: 0 }}>
-              <span className="g-good" aria-hidden="true">
-                ✓{' '}
-              </span>
-              Nothing outstanding. Everything expected of you today is in.
-            </p>
-          </div>
-        ) : (
           <div className="card flush">
-            {outstanding.map((item, index) => (
-              <div key={`${item.domain}-${item.session_id ?? index}`}>
+            {todoItems.map((item, index) => (
+              <div key={`${item.domain}-${index}`}>
                 {index > 0 ? <div className="hair" /> : null}
                 <Link href={item.href} className="todo">
-                  <span className="gl" aria-hidden="true">
-                    ♥
+                  <span className="gl" data-domain={item.domain} aria-hidden="true">
+                    {item.domain === 'wellness' ? 'WEL' : item.domain === 'training_rpe' ? 'RPE' : 'NUT'}
                   </span>
-                  <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ fontSize: 15, fontWeight: 700 }}>
-                      {item.label}
-                    </span>
-                    <span
-                      className="tiny"
-                      style={{ display: 'block', marginTop: 2 }}
-                    >
-                      {enumLabel(item.domain)} · about{' '}
-                      <span className="mono">30</span> seconds
+                  <span style={{ minWidth: 0 }}>
+                    <span style={{ fontSize: 15, fontWeight: 600 }}>{item.name}</span>
+                    <span className="tiny" style={{ display: 'block', marginTop: 2 }}>
+                      {item.sub}
                     </span>
                   </span>
-                  <Pill status={COMPLIANCE_STATUS.pending} />
+                  {item.domain === 'nutrition' ? (
+                    <span className="pill-optional">Optional</span>
+                  ) : (
+                    <span className="pill pill-warn">Due</span>
+                  )}
                   <span className="chev" aria-hidden="true">
                     ›
                   </span>
@@ -227,34 +201,23 @@ export default async function TodayPage({
               </div>
             ))}
           </div>
-        )}
-      </section>
-
-      {!nutritionCheckin ? (
-        <section aria-labelledby="nutrition-title">
-          <h2 className="sect" id="nutrition-title">
-            This week
-          </h2>
-          <div className="card flush">
-            <Link href="/nutrition-check-in" className="todo">
-              <span className="gl" aria-hidden="true">
-                ♥
-              </span>
-              <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ fontSize: 15, fontWeight: 700 }}>
-                  Did you hit your protein target most days this week?
-                </span>
-                <span className="tiny" style={{ display: 'block', marginTop: 2 }}>
-                  Weekly check-in · about 10 seconds
-                </span>
-              </span>
-              <span className="chev" aria-hidden="true">
-                ›
-              </span>
-            </Link>
-          </div>
         </section>
-      ) : null}
+      ) : (
+        <div className="card done-card">
+          <div className="done-check" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path
+                d="M4 10.5l4 4 8-9"
+                stroke="var(--good-text)"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+          <p className="done-title">You&rsquo;re up to date.</p>
+          <p className="done-sub">Nothing expected of you today is outstanding.</p>
+        </div>
+      )}
 
       <section aria-labelledby="today-title">
         <h2 className="sect" id="today-title">
@@ -275,21 +238,13 @@ export default async function TodayPage({
                 <div key={session.id}>
                   {index > 0 ? <div className="hair" /> : null}
                   <div className="sess" style={{ opacity: cancelled ? 0.55 : 1 }}>
-                    <span className="tm mono">
-                      {formatTime(session.starts_at)}
-                    </span>
+                    <span className="tm mono">{formatTime(session.starts_at)}</span>
                     <div>
                       <div className="ti">
-                        <span
-                          style={{
-                            textDecoration: cancelled ? 'line-through' : 'none',
-                          }}
-                        >
+                        <span style={{ textDecoration: cancelled ? 'line-through' : 'none' }}>
                           {session.title}
                         </span>
-                        <span className="pill pill-neutral">
-                          {enumLabel(session.session_type)}
-                        </span>
+                        <span className="pill pill-neutral">{enumLabel(session.session_type)}</span>
                         {/* screens/schedule.md's realtime broadcast on
                          * cancellation is not built here — see
                          * lib/queries/schedule.ts's header comment. An
@@ -297,21 +252,14 @@ export default async function TodayPage({
                          * this screen, not the moment it happens, which is
                          * a real, documented gap for the case the spec
                          * calls out as the one to get right. */}
-                        {cancelled ? (
-                          <span className="pill pill-bad">Cancelled</span>
-                        ) : null}
+                        {cancelled ? <span className="pill pill-bad">Cancelled</span> : null}
                       </div>
                       <div className="lo">
                         {session.location ?? 'Location not set'} ·{' '}
-                        <span className="mono">
-                          {session.duration_min ?? BLANK}
-                        </span>{' '}
-                        min
+                        <span className="mono">{session.duration_min ?? BLANK}</span> min
                       </div>
                     </div>
-                    {md ? (
-                      <span className="pill pill-neutral mono">{md}</span>
-                    ) : null}
+                    {md ? <span className="pill pill-neutral mono">{md}</span> : null}
                   </div>
                 </div>
               );
@@ -319,6 +267,18 @@ export default async function TodayPage({
           </div>
         )}
       </section>
+
+      {/* "Something not right?" — §5's always-available report route. No
+       * report-a-problem table or write path exists anywhere in this
+       * schema (checked live: no problem/report/issue/feedback/support
+       * table), so this links to Me's own honestly-labelled entry point
+       * rather than pretending to submit somewhere real. */}
+      <Link href="/me#report" className="report-card">
+        <span className="k">Something not right?</span>
+        <span className="chev" aria-hidden="true">
+          ›
+        </span>
+      </Link>
     </>
   );
 }

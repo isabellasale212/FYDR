@@ -43,7 +43,7 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, weekStart, corr
     mutationFn: async (input: NutritionCheckinInput) => {
       await submitCheckin(createClient(), input, { orgId, athleteId, userId });
     },
-    onSuccess: () => router.push('/today?submitted=nutrition'),
+    onSuccess: () => router.push(`/today?submitted=nutrition&week=${weekStart}`),
     onError: (err: Error) => setError(err.message),
   });
 
@@ -108,15 +108,14 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, weekStart, corr
         Did you hit your protein target most days this week?
       </p>
 
-      <div className="stack" style={{ marginTop: 14, gap: 12 }}>
+      <div className="stack" style={{ marginTop: 14, gap: 10 }}>
         {ANSWERS.map((a) => (
           <button
             key={a.value}
             type="button"
-            className="squad-chip"
+            className="nut-answer"
             aria-pressed={answer === a.value}
             onClick={() => setAnswer(a.value)}
-            style={{ minHeight: 64, fontSize: 16, width: '100%', justifyContent: 'center' }}
           >
             {a.label}
           </button>

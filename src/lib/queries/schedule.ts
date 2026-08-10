@@ -278,6 +278,30 @@ export function mondayOf(dateIso: string): string {
   return d.toISOString().slice(0, 10);
 }
 
+/** One md_offset per date in a 7-day window, keyed on the ISO date string —
+ *  ATHLETE-APP-SPEC.md §5's week strip needs a matchday label per day,
+ *  which is a property of that day's own scheduled session(s), not a
+ *  formula on the date. Org-wide, no participant filtering: the week strip
+ *  labels the day, not "does this athlete train that day", and two
+ *  sessions landing on the same real date always carry the same md_offset
+ *  by construction, so the last one written per day is as good as any. */
+export async function fetchWeekMdLabels(
+  db: Db,
+  orgId: string,
+  weekStart: string,
+): Promise<Map<string, number | null>> {
+  const weekEndDate = new Date(`${weekStart}T12:00:00Z`);
+  weekEndDate.setUTCDate(weekEndDate.getUTCDate() + 6);
+  const to = `${weekEndDate.toISOString().slice(0, 10)}T23:59:59.999Z`;
+
+  const sessions = await fetchSessionsBetween(db, orgId, `${weekStart}T00:00:00Z`, to);
+  const byDate = new Map<string, number | null>();
+  for (const s of sessions) {
+    byDate.set(s.starts_at.slice(0, 10), s.md_offset);
+  }
+  return byDate;
+}
+
 export async function fetchWeekSessions(
   db: Db,
   orgId: string,

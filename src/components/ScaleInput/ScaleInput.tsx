@@ -16,11 +16,16 @@ type Props = {
  * the numeral for the same reason. Real radio inputs, so the keyboard, the
  * screen reader and the browser's own group semantics come free; the dot is the
  * label, at a 44px target.
+ *
+ * ATHLETE-APP-SPEC.md §6 adds a "+ Where?" chip on soreness for body-site
+ * marking. wellness_entries.soreness_areas is a real column and this app's
+ * own wellness-entry.md even anticipates a chip-grid fallback for exactly
+ * this case (no silhouette artwork to mark a body outline against), but
+ * the spec itself lists that picker's contents under "Not designed" — left
+ * out here rather than shipping a chip that opens onto nothing.
  */
 export function ScaleInput({ name, value, onChange }: Props) {
   const copy = SCALE_COPY[name];
-  const filledWidth =
-    value === null ? 0 : ((value - 1) / 4) * 100;
 
   return (
     <fieldset className="sc">
@@ -36,12 +41,6 @@ export function ScaleInput({ name, value, onChange }: Props) {
       </div>
 
       <div className="dots">
-        <span className="trk" aria-hidden="true" />
-        <span
-          className="fil"
-          aria-hidden="true"
-          style={{ width: `calc((100% - 44px) * ${filledWidth / 100})` }}
-        />
         {[1, 2, 3, 4, 5].map((step) => (
           <span
             className="opt"

@@ -913,8 +913,24 @@ table.tbl tbody tr:hover {
   border-radius: 2px;
 }
 
-/* ---------- athlete, mobile web ---------- */
+/* ---------- athlete, mobile web ----------
+ * ATHLETE-APP-SPEC.md, replicated onto this app's own real architecture
+ * rather than the design file's prototype scaffolding — §2 says so
+ * explicitly ("Both are prototype scaffolding. Do not port either — build
+ * the app as a real app"). .phone is this app's real equivalent of the
+ * device frame: a centred, max-width column so a phone-shaped layout still
+ * reads correctly in a desktop browser tab, no bezel, no chip row.
+ *
+ * §2's safe-area table bakes in one physical iPhone's notch and home-
+ * indicator heights as literal padding. Those numbers describe a device
+ * this app never renders inside, so real inset APIs stand in, per the
+ * spec's own line right above the table: "In production use the real inset
+ * APIs." env(safe-area-inset-*) adds the actual device inset on top of a
+ * comfortable browser-tab base, and is a no-op everywhere but a real
+ * installed-to-home-screen device — the literal 62px/36px/30px/60px never
+ * appear here because they are not real numbers for this surface. */
 .phone {
+  position: relative;
   max-width: 480px;
   margin-inline: auto;
   min-height: 100dvh;
@@ -925,44 +941,29 @@ table.tbl tbody tr:hover {
 .phone-body {
   flex: 1;
   min-height: 0;
-  padding: 6px 16px 18px;
+  overflow-y: auto;
+  padding: 0 18px 18px;
   display: flex;
   flex-direction: column;
   gap: var(--gap-stack);
 }
-.athlete-tabbar {
-  display: flex;
-  border-top: 1px solid var(--hair);
-  padding: 4px 16px;
-  flex: none;
-}
-.athlete-tab {
-  flex: 1;
-  text-align: center;
-  padding: 8px 4px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--muted);
-  border-radius: var(--r-field);
-}
-.athlete-tab[aria-current='page'] {
-  color: var(--accent-text);
-  background: rgb(var(--accent-rgb) / 0.1);
-}
+
+/* -------- tab header, §4 -------- */
 .hd {
+  flex: none;
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 10px 0 0;
+  gap: 10px;
+  padding: calc(22px + env(safe-area-inset-top, 0px)) 0 10px;
   min-height: 44px;
 }
 .av {
-  width: 34px;
-  height: 34px;
-  border-radius: var(--r-pill);
-  background: rgb(var(--accent-rgb) / 0.13);
-  color: var(--accent-text);
-  font-size: 12px;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: var(--avatar-bg);
+  color: var(--avatar-text);
+  font-size: 11px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -970,12 +971,303 @@ table.tbl tbody tr:hover {
   flex: none;
 }
 .hd .d {
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: -0.022em;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   flex: 1;
   min-width: 0;
   margin: 0;
+}
+.hd .status-pill {
+  margin-left: auto;
+}
+
+/* -------- tab bar, §4 --------
+ * The spec's rgba(255,255,255,0.94) translucent bar is light-theme only.
+ * color-mix() against --elev gives the same 94%-opaque-over-blur effect in
+ * both themes from one rule, with no new token needed for a value nothing
+ * else in the app reuses. */
+.athlete-tabbar {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: color-mix(in srgb, var(--elev) 94%, transparent);
+  border-top: 1px solid var(--border);
+  padding: 8px 6px calc(10px + env(safe-area-inset-bottom, 0px));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.athlete-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--tab-inactive);
+  text-decoration: none;
+  transition: color var(--t-state);
+}
+.athlete-tab-glyph {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  border: 2px solid var(--tab-inactive);
+  transition: border-color var(--t-state), background var(--t-state);
+}
+.athlete-tab[aria-current='page'] {
+  color: var(--accent-text);
+}
+.athlete-tab[aria-current='page'] .athlete-tab-glyph {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+/* -------- week strip, §5 -------- */
+.wk-strip {
+  padding: 12px 6px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.wk-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 0;
+  border-radius: var(--r-field);
+}
+.wk-day[data-today='true'] {
+  background: rgb(var(--accent-rgb) / 0.06);
+}
+.wk-day .wi {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--faint);
+}
+.wk-day .wn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  border: 1px solid transparent;
+  color: var(--text);
+}
+.wk-day[data-today='true'] .wn {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+}
+.wk-day .wo {
+  font-size: 9.5px;
+  color: var(--faint);
+}
+.wk-day .wo[data-tone='md'] {
+  color: var(--bad-text);
+}
+.wk-day .wo[data-tone='md-1'] {
+  color: var(--accent-text);
+}
+
+/* -------- to do / sessions row list, §5 --------
+ * Shared .todo/.sess row shapes, restyled to the spec's exact grid and
+ * spacing but keeping the class names every athlete page already renders,
+ * so this is a CSS-only change at every call site. */
+.todo {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto 12px;
+  gap: 12px;
+  align-items: center;
+  padding: 15px 14px;
+  min-height: 44px;
+  width: 100%;
+  background: none;
+  border: none;
+  font-family: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+.todo:hover {
+  background: var(--surf2);
+}
+.gl {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-field);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  font-size: 13px;
+  font-weight: 500;
+  background: rgb(var(--accent-rgb) / 0.1);
+  color: var(--accent-text);
+}
+/* Per-domain tints, §5's to-do row table: RPE and Nutrition share the same
+   dark-cyan glyph colour on two different tints, a literal spec detail. */
+.gl[data-domain='training_rpe'] {
+  background: rgb(var(--accent2-rgb) / 0.16);
+  color: var(--good-text);
+}
+.gl[data-domain='nutrition'] {
+  background: rgb(var(--good-rgb) / 0.16);
+  color: var(--good-text);
+}
+.gl[data-domain='gym'] {
+  background: rgb(var(--gym-rgb) / 0.22);
+  color: var(--highlight-fg);
+}
+.pill-optional {
+  background: none;
+  border: none;
+  color: var(--faint);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 2px;
+}
+.chev {
+  color: var(--faint);
+  font-size: 16px;
+  line-height: 1;
+  flex: none;
+}
+.sess {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
+  gap: 12px;
+  padding: 14px;
+  align-items: start;
+  min-height: 44px;
+}
+.sess .tm {
+  font-size: 13px;
+  padding-top: 1px;
+}
+.sess .ti {
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.sess .lo {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.sess .state {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* -------- done state, §5 -------- */
+.done-card {
+  padding: 28px 18px;
+  text-align: center;
+}
+.done-check {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgb(var(--good-rgb) / 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+.done-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 12px 0 0;
+}
+.done-sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 6px 0 0;
+}
+.next-up {
+  padding: 14px;
+}
+.next-up .eyebrow {
+  margin-bottom: 4px;
+}
+.next-up .when {
+  font-size: 14px;
+  font-weight: 600;
+}
+.next-up .what {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* -------- availability card, §5 --------
+ * The spec's glyph is a bare decorative ring; this app's real one is
+ * status.ts's own glyph vocabulary (◐ for modified, ⊘ for unavailable),
+ * which already carries meaning as a redundant channel to colour per that
+ * file's own header comment — a real accessibility property worth keeping
+ * over a pixel-exact but meaningless ring. The spec's card also carries a
+ * trailing chevron implying it opens something; there is no availability
+ * detail screen in this build to open, so the chevron is dropped rather
+ * than promising a tap that goes nowhere — plain flex, not the spec's
+ * `1fr 14px` grid built to hold one. */
+.avail-banner {
+  border-radius: var(--r-card);
+  padding: 14px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: rgb(var(--state-rgb) / 0.12);
+  border: 1px solid rgb(var(--state-rgb) / 0.4);
+}
+.avail-banner .g {
+  font-size: 15px;
+  line-height: 1.3;
+  flex: none;
+}
+.avail-banner .k {
+  font-size: 14px;
+  font-weight: 700;
+}
+.avail-banner .v {
+  font-size: 13px;
+  margin-top: 3px;
+}
+.avail-banner .s {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 5px;
+}
+
+/* -------- "Something not right?" card, §5 -------- */
+.report-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 12px;
+  align-items: center;
+  gap: 8px;
+  padding: 15px 14px;
+  width: 100%;
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow);
+  font-family: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+.report-card .k {
+  font-size: 14px;
+  font-weight: 600;
 }
 .sect {
   font-size: 11px;
@@ -992,119 +1284,40 @@ table.tbl tbody tr:hover {
   padding: 0;
   overflow: hidden;
 }
-.todo {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  padding: 10px 14px;
-  min-height: 58px;
-  width: 100%;
-  background: none;
-  border: none;
-  font-family: inherit;
-  text-align: left;
-  color: inherit;
-  cursor: pointer;
-}
-.todo:hover {
-  background: var(--surf2);
-}
-.gl {
-  width: 34px;
-  height: 34px;
-  border-radius: var(--r-stat);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  font-size: 15px;
-  background: rgb(var(--accent-rgb) / 0.12);
-  color: var(--accent-text);
-}
-.chev {
-  color: var(--faint);
-  font-size: 16px;
-  line-height: 1;
-  flex: none;
-}
-.sess {
-  display: grid;
-  grid-template-columns: 54px minmax(0, 1fr) auto;
-  gap: 10px;
-  padding: 10px 14px;
-  align-items: start;
-  min-height: 44px;
-}
-.sess .tm {
-  font-size: 14px;
-  font-weight: 700;
-}
-.sess .ti {
-  font-size: 14.5px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  flex-wrap: wrap;
-}
-.sess .lo {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 3px;
-}
-
-.avail-banner {
-  border-radius: var(--r-card);
-  padding: 11px 14px;
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  background: rgb(var(--state-rgb) / 0.13);
-  border: 1px solid rgb(var(--state-rgb) / 0.34);
-}
-.avail-banner .g {
-  font-size: 17px;
-  line-height: 1.2;
-  flex: none;
-}
-.avail-banner .k {
-  font-size: 13.5px;
-  font-weight: 700;
-}
-.avail-banner .v {
-  font-size: 13.5px;
-  font-weight: 700;
-  margin-top: 3px;
-}
-.avail-banner .s {
-  font-size: 11.5px;
-  color: var(--muted);
-  margin-top: 5px;
-}
-
-/* ---------- check-in form ---------- */
+/* ---------- check-in form, §6 ----------
+ * The spec presents Wellness/RPE/Nutrition as bottom sheets over Today:
+ * position:absolute overlay, rgba(16,18,23,0.35) backdrop, 22px-radius
+ * rounded top, a drag handle. This app already made the real call here —
+ * see the "not built as a bottom sheet" comments on check-in/rpe/
+ * nutrition-check-in's own page files — a routed page instead, so back
+ * works, a refresh doesn't lose place, and there is a real URL to link a
+ * push notification or a "Correct this entry" row at. A drag handle
+ * implies a swipe-to-dismiss gesture this build does not have, so it is
+ * left out rather than faked; .sheet-head keeps the spec's literal
+ * internal proportions (the 30px/1fr/auto grid, the centred 16px/700
+ * title, the mono date) without the card-over-backdrop chrome around it. */
 .sheet-head {
-  display: flex;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
-  padding: 12px 0 10px;
+  gap: 8px;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) 0 12px;
 }
 .sheet-head .t {
-  font-size: 17px;
-  font-weight: 800;
+  font-size: 16px;
+  font-weight: 700;
   letter-spacing: -0.02em;
-  flex: 1;
   text-align: center;
   margin: 0;
 }
 .sheet-x {
-  width: 44px;
+  width: 30px;
   height: 44px;
-  border-radius: var(--r-field);
-  border: 1px solid var(--border);
-  background: var(--surf);
+  margin: -12px 0;
+  border: none;
+  background: none;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 19px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1116,27 +1329,46 @@ table.tbl tbody tr:hover {
   font-size: 12.5px;
   color: var(--muted);
   text-align: center;
-  padding: 0 16px 8px;
-  margin: 0;
+  padding: 0 0 12px;
+  margin: 0 0 14px;
+  border-bottom: 1px solid var(--hair);
 }
 .dir b {
   color: var(--text);
   font-weight: 700;
 }
-.step {
+
+/* -------- inset sleep panel, §6 -------- */
+.sleep-panel {
+  background: var(--surf2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-stat);
+  padding: 14px;
+}
+.sleep-panel .sp-head {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  padding: 8px 0 2px;
+}
+.sleep-panel .sp-head .k {
+  font-size: 14px;
+  font-weight: 700;
+}
+.step {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 46px;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
 }
 .step .btnc {
-  width: 44px;
-  height: 44px;
-  border-radius: 22px;
-  border: 1px solid var(--border-strong);
+  width: 46px;
+  height: 46px;
+  border-radius: var(--r-field);
+  border: 1px solid var(--border);
   background: var(--surf);
-  color: var(--accent-text);
-  font-size: 21px;
+  color: var(--accent);
+  font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1150,25 +1382,36 @@ table.tbl tbody tr:hover {
 }
 .step .val {
   text-align: center;
-  line-height: 1;
+  line-height: 1.1;
 }
 .step .val .v {
-  font-size: 34px;
+  font-size: 30px;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
 .step .val .u {
-  font-size: 11px;
-  color: var(--muted);
-  font-weight: 600;
+  font-size: 11.5px;
+  color: var(--faint);
   margin-top: 4px;
-  letter-spacing: 0.04em;
+}
+.sleep-ref {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 11px;
+  border-radius: var(--r-pill);
+  background: var(--surf);
+  border: 1px solid var(--border);
+  color: var(--muted);
 }
 
+/* -------- the five scales, §6 -------- */
 .sc {
-  padding-top: 9px;
+  margin-top: 18px;
   border: none;
-  margin: 0;
+  padding: 0;
   min-inline-size: 0;
 }
 .sc-h {
@@ -1184,52 +1427,27 @@ table.tbl tbody tr:hover {
   font-weight: 700;
 }
 .sc-v {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--accent-text);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
 }
 .sc-v .n {
-  font-size: 11.5px;
-  color: var(--muted);
-  font-weight: 500;
-}
-.sc-v.un {
-  font-size: 12px;
-  color: var(--faint);
+  font-size: 12.5px;
+  color: inherit;
   font-weight: 600;
 }
+.sc-v.un {
+  color: var(--faint);
+}
 .dots {
-  position: relative;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 2px;
-}
-.dots .trk {
-  position: absolute;
-  inset-inline: 22px;
-  top: 50%;
-  height: 2px;
-  margin-top: -1px;
-  background: var(--track);
-  border-radius: 2px;
-}
-.dots .fil {
-  position: absolute;
-  inset-inline-start: 22px;
-  top: 50%;
-  height: 2px;
-  margin-top: -1px;
-  background: var(--accent);
-  border-radius: 2px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  margin-top: 10px;
 }
 .dots .opt {
   position: relative;
-  z-index: 1;
-  width: 44px;
   height: 44px;
-  flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1244,11 +1462,11 @@ table.tbl tbody tr:hover {
   cursor: pointer;
 }
 .dots .opt > span {
-  width: 34px;
-  height: 34px;
-  border-radius: 18px;
-  border: 1.5px solid var(--border-strong);
-  background: var(--surf);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgb(var(--accent-rgb) / 0.2);
+  background: transparent;
   display: block;
   pointer-events: none;
   transition: background var(--t-state), border-color var(--t-state);
@@ -1256,9 +1474,6 @@ table.tbl tbody tr:hover {
 .dots .opt[data-filled='true'] > span {
   background: var(--accent);
   border-color: var(--accent);
-}
-.dots .opt input:checked + span {
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 0.16);
 }
 .dots .opt input:focus-visible + span {
   outline: 2px solid var(--focus);
@@ -1268,42 +1483,109 @@ table.tbl tbody tr:hover {
   display: flex;
   justify-content: space-between;
   font-size: 11px;
-  color: var(--muted);
-  margin-top: 1px;
+  color: var(--faint);
+  margin-top: 4px;
 }
+.sc-where {
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 13px;
+  min-height: 32px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--accent);
+  color: var(--accent-text);
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* -------- optional disclosure, §6 --------
+ * A native <details>: no drag/animation to fake, the browser's own
+ * disclosure triangle and keyboard behaviour come free. Resting HR, body
+ * mass and a comment are real WellnessEntryInput fields already (see
+ * lib/validation/wellness.ts) — the spec lists this row's *contents*
+ * under "Not designed", but the schema underneath it already exists, so
+ * this is a real field, not an invented one. */
+.disclose {
+  border-bottom: 1px solid var(--hair);
+  padding-bottom: 12px;
+  margin-top: 18px;
+}
+.disclose summary {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+}
+.disclose summary::-webkit-details-marker {
+  display: none;
+}
+.disclose summary::after {
+  content: '⌄';
+  color: var(--faint);
+  font-size: 14px;
+  transition: transform var(--t-state);
+}
+.disclose[open] summary::after {
+  transform: rotate(180deg);
+}
+.disclose-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 4px;
+}
+
 .subm {
-  padding: 10px 0 12px;
+  padding: 12px 0 0;
   position: sticky;
   bottom: 0;
   background: var(--surf);
-  border-top: 1px solid var(--hair);
+}
+.subm .btn-primary[disabled] {
+  background: rgb(var(--accent-rgb) / 0.35);
+  color: var(--on-accent);
 }
 
-/* ---------- RPE / CR10 rating list ----------
- * screens/training-entry.md "Why not a slider": ten stops need a 48px tap
- * target each, which a slider on a phone-width track cannot give, so this is
- * a vertical list tapped directly instead. Real radio inputs stacked full
- * width, one divider between rows, no gap, so a mis-tap lands on the
- * adjacent value rather than nothing. */
+/* ---------- RPE / CR10 rating grid, §7 ----------
+ * ATHLETE-APP-SPEC.md's own 5x2 button grid replaces the vertical list this
+ * screen used to render. The vertical list's original reasoning ("ten stops
+ * need a 48px tap target each, which a slider on a phone-width track cannot
+ * give") was an argument against a single-row slider, not against a 5x2
+ * grid — at 402pt wide, five 58px-tall buttons across still leave each one
+ * comfortably over the 44px floor (roughly 68px wide), so the grid keeps
+ * the same real target-size guarantee the list was protecting. Anchor
+ * wording follows the spec's literal table, which resolves O-410
+ * (training.ts's own "wants a sports science review" note) in favour of
+ * 4=Somewhat hard/5=Hard/7=Very hard rather than the pre-spec placement. */
 .cr10 {
-  border: 1px solid var(--border);
-  border-radius: var(--r-card);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
   margin: 10px 0 0;
+  border: none;
   padding: 0;
-  overflow: hidden;
 }
 .cr10-row {
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  min-height: 48px;
-  padding: 0 14px;
-  border-bottom: 1px solid var(--hair);
+  justify-content: center;
+  gap: 2px;
+  height: 58px;
+  border-radius: var(--r-stat);
+  border: 1px solid var(--border);
+  background: var(--surf);
   cursor: pointer;
-}
-.cr10-row:last-child {
-  border-bottom: none;
 }
 .cr10-row input {
   position: absolute;
@@ -1316,34 +1598,32 @@ table.tbl tbody tr:hover {
 }
 .cr10-row input:focus-visible {
   outline: 2px solid var(--focus);
-  outline-offset: -2px;
+  outline-offset: 2px;
 }
 .cr10-n {
-  flex: none;
-  width: 20px;
-  text-align: right;
-  font-size: 14px;
+  font-size: 17px;
   font-weight: 700;
-  color: var(--muted);
-}
-.cr10-a {
-  flex: 1;
-  font-size: 14px;
   color: var(--text);
 }
-.cr10-tick {
-  flex: none;
-  width: 18px;
+.cr10-a {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--faint);
   text-align: center;
-  font-weight: 700;
-  color: var(--accent-text);
+  line-height: 1.15;
+}
+.cr10-tick {
+  display: none;
 }
 .cr10-row[data-selected='true'] {
-  background: rgb(var(--accent-rgb) / 0.13);
-  box-shadow: inset 0 0 0 1.5px var(--accent);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 .cr10-row[data-selected='true'] .cr10-n {
-  color: var(--accent-text);
+  color: var(--on-accent);
+}
+.cr10-row[data-selected='true'] .cr10-a {
+  color: rgb(255 255 255 / 0.8);
 }
 
 /* ---------- flag card, screens/flags.md ---------- */
@@ -1387,17 +1667,99 @@ table.tbl tbody tr:hover {
   border-top: 1px solid var(--hair);
 }
 
-/* ---------- login ---------- */
+/* ---------- sign-in, §3 ----------
+ * The spec's sign-in is a six-digit emailed code: no password, a separate
+ * club-code field, "Send my code". This app's real auth is Supabase email +
+ * password (LoginForm.tsx) — there is no OTP infrastructure anywhere in
+ * this codebase, and the org is resolved from the account server-side, not
+ * typed in as a club code. The visual language (logo row, heading block,
+ * field styling, bottom-pinned button, privacy line) is reproduced exactly;
+ * the fields themselves are the two this app actually asks for, and the
+ * "We send a six digit code" helper line is dropped rather than left in
+ * place describing a mechanism that doesn't exist. */
 .login-wrap {
   min-height: 100dvh;
+  max-width: 480px;
+  margin-inline: auto;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
+  flex-direction: column;
+  background: var(--surf);
+  padding: calc(40px + env(safe-area-inset-top, 0px)) 24px
+    calc(30px + env(safe-area-inset-bottom, 0px));
 }
 .login-card {
   width: 100%;
-  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.signin-logo {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.signin-mark {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: linear-gradient(150deg, var(--accent), var(--accent2));
+  box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / 0.14);
+  flex: none;
+}
+.signin-word {
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.signin-word i {
+  color: var(--accent);
+  font-style: normal;
+}
+.signin-head {
+  margin-top: 40px;
+}
+.signin-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+.signin-title {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin: 8px 0 0;
+}
+.signin-sub {
+  font-size: 15px;
+  color: var(--muted);
+  margin: 10px 0 0;
+}
+.signin-fields {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.signin-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.signin-submit {
+  margin-top: auto;
+  width: 100%;
+}
+.signin-privacy {
+  font-size: 11.5px;
+  color: var(--faint);
+  text-align: center;
+  margin: 14px 0 0;
 }
 .form-row {
   margin-bottom: 14px;
@@ -1411,6 +1773,266 @@ table.tbl tbody tr:hover {
   font-size: 12.5px;
   font-weight: 600;
   margin-bottom: 14px;
+}
+
+/* ---------- nutrition check-in, §8 ----------
+ * CLAUDE.md rule 8: no daily nutrition entry, no per-meal macros, no
+ * nutrition compliance domain. The spec's Nutrition sheet is a 4-meal
+ * checklist against a plan with kcal per meal — that domain does not
+ * exist in this schema (confirmed live: no meal_plans table, no per-meal
+ * column anywhere) and building it would re-introduce exactly the daily
+ * logging habit rule 8 rules out. NutritionCheckinForm already asks the
+ * one real question this app has — the weekly protein check-in — and
+ * these two classes give its three Yes/Roughly/No rows the spec's own
+ * "ticked" visual language (16px radius, the same accent tint and border
+ * the spec uses for a ticked meal card) rather than the generic chip
+ * style, without pretending there is a meal to tick against. */
+.nut-answer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 64px;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-stat);
+  background: var(--surf);
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color var(--t-state), background var(--t-state), color var(--t-state);
+}
+.nut-answer[aria-pressed='true'] {
+  background: rgb(var(--accent-rgb) / 0.06);
+  border-color: rgb(var(--accent-rgb) / 0.35);
+  color: var(--accent-text);
+}
+
+/* ---------- gym logging, full screen, §9 ----------
+ * Real: gym_session_logs/gym_set_logs are plain inserts and an UPDATE, not
+ * the revision-chain pattern wellness/RPE/nutrition use (see
+ * GymSessionLogger.tsx), and there is no offline outbox for this screen —
+ * so the footer caption says what actually happens ("Sets save as you log
+ * them"), not the spec's "Saved on this phone. Syncs when you have
+ * signal.", which is only true for the three screens that really queue. */
+.gym-head {
+  flex: none;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 12px;
+  border-bottom: 1px solid var(--hair);
+}
+.gym-head-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 68px;
+  align-items: center;
+  gap: 8px;
+}
+.gym-close {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent-text);
+  text-decoration: none;
+}
+.gym-head-mid {
+  text-align: center;
+  min-width: 0;
+}
+.gym-head-mid .nm {
+  font-size: 16px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gym-head-mid .prog {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.gym-clock {
+  font-size: 13px;
+  text-align: end;
+}
+.gym-progress-track {
+  height: 5px;
+  border-radius: var(--r-pill);
+  background: var(--track);
+  margin-top: 12px;
+  overflow: hidden;
+}
+.gym-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: var(--r-pill);
+  transition: width var(--t-state);
+}
+.gym-body {
+  padding-top: 14px;
+}
+.gym-ex-card {
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.gym-ex-head {
+  background: var(--surf2);
+  border-bottom: 1px solid var(--hair);
+  padding: 12px 14px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.gym-ex-head .nm {
+  font-size: 14.5px;
+  font-weight: 700;
+}
+.gym-ex-head .scheme {
+  font-size: 11.5px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.gym-ex-adjust {
+  padding: 8px 14px 0;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--accent-text);
+}
+.gym-set-row {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) minmax(0, 1fr) 30px;
+  gap: 10px;
+  align-items: center;
+  padding: 13px 14px;
+  border-top: 1px solid var(--hair);
+}
+.gym-set-row .n {
+  font-size: 12px;
+  color: var(--faint);
+}
+.gym-set-row[data-done='true'] {
+  background: rgb(var(--accent-rgb) / 0.05);
+}
+.gym-footer {
+  padding: 12px 0 calc(14px + env(safe-area-inset-bottom, 0px));
+  position: sticky;
+  bottom: 0;
+  background: var(--surf);
+}
+
+/* ---------- Programme, §11 ---------- */
+.prog-header h1 {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 4px 0 0;
+}
+.target-bar + .target-bar {
+  margin-top: 12px;
+}
+.target-bar .th {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.target-bar .th .k {
+  font-size: 13px;
+  font-weight: 600;
+}
+.target-bar .th .v {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+/* ---------- Me, §12 ---------- */
+.me-profile {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.me-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--r-stat);
+  background: var(--avatar-bg);
+  color: var(--avatar-text);
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.me-profile .nm {
+  font-size: 17px;
+  font-weight: 700;
+}
+.me-profile .sub {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.me-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 12px;
+  gap: 8px;
+  align-items: center;
+  padding: 15px 14px;
+  text-decoration: none;
+  color: inherit;
+}
+.me-row .k {
+  font-size: 14.5px;
+  font-weight: 600;
+}
+.me-row .v {
+  font-size: 12.5px;
+  color: var(--faint);
+}
+.me-row.bad .k {
+  color: var(--bad-text);
+}
+.me-footer {
+  font-size: 11.5px;
+  color: var(--faint);
+  margin-top: 14px;
+  padding: 0 4px;
+}
+
+/* ---------- toast, §13 ---------- */
+.toast {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: calc(106px + env(safe-area-inset-bottom, 0px));
+  background: var(--toast-bg);
+  color: var(--toast-text);
+  border-radius: var(--r-stat);
+  padding: 13px 15px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.25);
+  z-index: 20;
+}
+.toast .msg {
+  font-size: 13px;
+  font-weight: 600;
+}
+.toast .dismiss {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--toast-link);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 6px;
+  margin: -6px;
 }
 
 /* ---------- Player profile, PLAYER-PROFILE-SPEC.md ----------

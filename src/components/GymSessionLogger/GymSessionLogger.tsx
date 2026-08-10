@@ -1,15 +1,18 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { completeSessionLog, logSet, type LoggedSet, type ResolvedExercise } from '@/lib/queries/programmes';
-import { enumLabel } from '@/lib/format';
 
 type Props = {
   orgId: string;
   gymSessionLogId: string;
+  sessionName: string;
+  startedAt: string | null;
+  totalSets: number;
   exercises: readonly ResolvedExercise[];
   loggedSets: readonly LoggedSet[];
   alreadyComplete: boolean;
@@ -25,11 +28,55 @@ function loadLabel(ex: ResolvedExercise): string {
   return 'No one rep max on file. Log the load you lift.';
 }
 
-export function GymSessionLogger({ orgId, gymSessionLogId, exercises, loggedSets, alreadyComplete }: Props) {
+function schemeLabel(ex: ResolvedExercise): string {
+  const reps =
+    ex.reps_max !== null && ex.reps_max !== ex.reps_min ? `${ex.reps_min}–${ex.reps_max}` : `${ex.reps_min ?? '?'}`;
+  return `${ex.sets} × ${reps}`;
+}
+
+function elapsed(startedAt: string | null, now: number): string {
+  if (!startedAt) return '00:00';
+  const ms = Math.max(0, now - new Date(startedAt).getTime());
+  const totalMin = Math.floor(ms / 60_000);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:00` : `${String(m).padStart(2, '0')}:${String(Math.floor((ms % 60_000) / 1000)).padStart(2, '0')}`;
+}
+
+/**
+ * Full screen, not a sheet — ATHLETE-APP-SPEC.md §9 is explicit this is a
+ * place used repeatedly through a session, not a task that opens and
+ * closes once. Kept real over pixel-literal in one place: the spec's set
+ * rows read as fixed prescribed values ticked off; this app lets an
+ * athlete log the reps and load they actually did (prefilled from the
+ * prescription, editable), because a gym log that can't record "I only
+ * got 6 of the 8 reps" is not a useful one. Per-set RPE, which the schema
+ * supports, is dropped from this quick-log row to keep it to the spec's
+ * own 4-column grid — session RPE at the end still covers the whole
+ * session, which is what §9's own footer asks for.
+ */
+export function GymSessionLogger({
+  orgId,
+  gymSessionLogId,
+  sessionName,
+  startedAt,
+  totalSets,
+  exercises,
+  loggedSets,
+  alreadyComplete,
+}: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
-  const [drafts, setDrafts] = useState<Record<string, { reps: string; load: string; rpe: string }>>({});
+  const [drafts, setDrafts] = useState<Record<string, { reps: string; load: string }>>({});
   const [sessionRpe, setSessionRpe] = useState('');
+  const [now, setNow] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (alreadyComplete || !startedAt) return;
+    setNow(Date.now());
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [alreadyComplete, startedAt]);
 
   const setsByExercise = useMemo(() => {
     const map = new Map<string, LoggedSet[]>();
@@ -42,8 +89,11 @@ export function GymSessionLogger({ orgId, gymSessionLogId, exercises, loggedSets
     return map;
   }, [loggedSets]);
 
+  const doneCount = loggedSets.length;
+  const pct = totalSets > 0 ? Math.round((doneCount / totalSets) * 100) : 0;
+
   const logMutation = useMutation({
-    mutationFn: (input: { programmeExerciseId: string; exerciseId: string; setNumber: number; reps: string; load: string; rpe: string }) =>
+    mutationFn: (input: { programmeExerciseId: string; exerciseId: string; setNumber: number; reps: string; load: string }) =>
       logSet(createClient(), orgId, {
         gymSessionLogId,
         programmeExerciseId: input.programmeExerciseId,
@@ -51,7 +101,7 @@ export function GymSessionLogger({ orgId, gymSessionLogId, exercises, loggedSets
         setNumber: input.setNumber,
         repsCompleted: input.reps.trim() === '' ? null : Number(input.reps),
         loadKg: input.load.trim() === '' ? null : Number(input.load),
-        rpe: input.rpe.trim() === '' ? null : Number(input.rpe),
+        rpe: null,
       }),
     onSuccess: (result) => {
       if (result.error) return setError(result.error);
@@ -65,127 +115,192 @@ export function GymSessionLogger({ orgId, gymSessionLogId, exercises, loggedSets
     onSuccess: (result) => {
       if (result.error) return setError(result.error);
       setError(null);
-      router.push('/programme');
+      router.push('/programme?submitted=gym');
       router.refresh();
     },
   });
 
-  function draftFor(exerciseId: string) {
-    return drafts[exerciseId] ?? { reps: '', load: '', rpe: '' };
+  function draftFor(exerciseId: string, prefillReps: string, prefillLoad: string) {
+    return drafts[exerciseId] ?? { reps: prefillReps, load: prefillLoad };
   }
 
   return (
-    <div className="stack">
-      {error ? (
-        <p className="form-error" role="alert">
-          {error}
-        </p>
-      ) : null}
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        background: 'var(--surf)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <div className="gym-head">
+        <div className="gym-head-row">
+          <Link href="/programme" className="gym-close" aria-label="Close">
+            Close
+          </Link>
+          <div className="gym-head-mid">
+            <div className="nm">{sessionName}</div>
+            <div className="prog mono">
+              {doneCount} of {totalSets} sets
+            </div>
+          </div>
+          <span className="gym-clock mono">{now !== null ? elapsed(startedAt, now) : '·'}</span>
+        </div>
+        <div className="gym-progress-track">
+          <div className="gym-progress-fill" style={{ width: `${pct}%` }} />
+        </div>
+      </div>
 
-      {exercises.map((ex) => {
-        const done = setsByExercise.get(ex.programme_exercise_id) ?? [];
-        const draft = draftFor(ex.programme_exercise_id);
-        const nextSet = done.length + 1;
-        return (
-          <section key={ex.programme_exercise_id} className="card">
-            <h2 className="card-title">{ex.exercise_name}</h2>
-            <p className="tiny">
-              {ex.sets} sets × {ex.reps_min ?? '?'}
-              {ex.reps_max && ex.reps_max !== ex.reps_min ? `–${ex.reps_max}` : ''} reps · {loadLabel(ex)}
-              {ex.rest_seconds ? ` · ${ex.rest_seconds}s rest` : ''}
+      <div className="phone-body" style={{ paddingTop: 0 }}>
+        <div className="gym-body">
+          {error ? (
+            <p className="form-error" role="alert">
+              {error}
             </p>
-            {ex.notes ? <p className="tiny">{ex.notes}</p> : null}
+          ) : null}
 
-            {done.length > 0 ? (
-              <div className="stack" style={{ gap: 4, marginTop: 8 }}>
-                {done.map((s) => (
-                  <div key={s.id} className="tiny mono">
-                    Set {s.set_number}: {s.reps_completed ?? '—'} reps
-                    {s.load_kg !== null ? ` @ ${s.load_kg}kg` : ''}
-                    {s.rpe !== null ? ` RPE ${s.rpe}` : ''}
-                  </div>
-                ))}
-              </div>
-            ) : null}
+          {exercises.map((ex) => {
+            const done = setsByExercise.get(ex.programme_exercise_id) ?? [];
+            const prefillReps = ex.reps_min !== null ? String(ex.reps_min) : '';
+            const prefillLoad = ex.load_basis === 'absolute' && ex.load_value !== null ? String(ex.load_value) : '';
+            const draft = draftFor(ex.programme_exercise_id, prefillReps, prefillLoad);
+            const nextSetNumber = done.length + 1;
 
-            {!alreadyComplete && nextSet <= ex.sets ? (
-              <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'flex-end' }}>
-                <label style={{ flex: 1 }}>
-                  <span className="label">Reps</span>
-                  <input
-                    className="field"
-                    type="number"
-                    value={draft.reps}
-                    onChange={(e) => setDrafts((d) => ({ ...d, [ex.programme_exercise_id]: { ...draft, reps: e.target.value } }))}
-                  />
-                </label>
-                <label style={{ flex: 1 }}>
-                  <span className="label">Load (kg)</span>
-                  <input
-                    className="field"
-                    type="number"
-                    step="0.5"
-                    value={draft.load}
-                    onChange={(e) => setDrafts((d) => ({ ...d, [ex.programme_exercise_id]: { ...draft, load: e.target.value } }))}
-                  />
-                </label>
-                <label style={{ flex: 1 }}>
-                  <span className="label">RPE</span>
-                  <input
-                    className="field"
-                    type="number"
-                    min="1"
-                    max="10"
-                    value={draft.rpe}
-                    onChange={(e) => setDrafts((d) => ({ ...d, [ex.programme_exercise_id]: { ...draft, rpe: e.target.value } }))}
-                  />
-                </label>
-                <button
-                  type="button"
-                  className="btn-primary"
-                  disabled={logMutation.isPending}
-                  onClick={() =>
-                    logMutation.mutate({
-                      programmeExerciseId: ex.programme_exercise_id,
-                      exerciseId: ex.exercise_id,
-                      setNumber: nextSet,
-                      reps: draft.reps,
-                      load: draft.load,
-                      rpe: draft.rpe,
-                    })
-                  }
-                >
-                  Set {nextSet}
-                </button>
+            return (
+              <div key={ex.programme_exercise_id} className="gym-ex-card">
+                <div className="gym-ex-head">
+                  <span className="nm">{ex.exercise_name}</span>
+                  <span className="scheme mono">
+                    {schemeLabel(ex)} @ {loadLabel(ex)}
+                    {ex.rest_seconds ? ` · ${ex.rest_seconds}s rest` : ''}
+                  </span>
+                </div>
+
+                {Array.from({ length: ex.sets }, (_, i) => {
+                  const setNumber = i + 1;
+                  const loggedRow = done.find((s) => s.set_number === setNumber);
+                  const isNext = !alreadyComplete && setNumber === nextSetNumber;
+
+                  return (
+                    <div key={setNumber} className="gym-set-row" data-done={!!loggedRow}>
+                      <span className="n mono">{setNumber}</span>
+                      {loggedRow ? (
+                        <>
+                          <span className="mono">{loggedRow.reps_completed ?? '—'} reps</span>
+                          <span className="mono">{loggedRow.load_kg !== null ? `${loggedRow.load_kg} kg` : '—'}</span>
+                        </>
+                      ) : isNext ? (
+                        <>
+                          <input
+                            className="field"
+                            type="number"
+                            aria-label={`Set ${setNumber} reps`}
+                            value={draft.reps}
+                            onChange={(e) =>
+                              setDrafts((d) => ({
+                                ...d,
+                                [ex.programme_exercise_id]: { ...draft, reps: e.target.value },
+                              }))
+                            }
+                          />
+                          <input
+                            className="field"
+                            type="number"
+                            step="0.5"
+                            aria-label={`Set ${setNumber} load in kg`}
+                            value={draft.load}
+                            onChange={(e) =>
+                              setDrafts((d) => ({
+                                ...d,
+                                [ex.programme_exercise_id]: { ...draft, load: e.target.value },
+                              }))
+                            }
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <span className="mono" style={{ color: 'var(--faint)' }}>
+                            ·
+                          </span>
+                          <span className="mono" style={{ color: 'var(--faint)' }}>
+                            ·
+                          </span>
+                        </>
+                      )}
+                      <button
+                        type="button"
+                        aria-label={loggedRow ? `Set ${setNumber} logged` : `Log set ${setNumber}`}
+                        disabled={!isNext || logMutation.isPending}
+                        onClick={() =>
+                          logMutation.mutate({
+                            programmeExerciseId: ex.programme_exercise_id,
+                            exerciseId: ex.exercise_id,
+                            setNumber,
+                            reps: draft.reps,
+                            load: draft.load,
+                          })
+                        }
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: 8,
+                          border: `2px solid ${loggedRow ? 'var(--accent)' : 'var(--border-strong)'}`,
+                          background: loggedRow ? 'var(--accent)' : 'transparent',
+                          color: 'var(--on-accent)',
+                          fontSize: 13,
+                          fontFamily: 'inherit',
+                          cursor: isNext ? 'pointer' : 'default',
+                          justifySelf: 'center',
+                        }}
+                      >
+                        {loggedRow ? '✓' : ''}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
-            ) : !alreadyComplete ? (
-              <p className="tiny" style={{ marginTop: 8 }}>
-                All {ex.sets} sets logged.
-              </p>
-            ) : null}
-          </section>
-        );
-      })}
+            );
+          })}
+
+          {!alreadyComplete ? (
+            <div className="card" style={{ marginTop: 4 }}>
+              <label>
+                <span className="label">Session RPE (optional)</span>
+                <input
+                  className="field"
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={sessionRpe}
+                  onChange={(e) => setSessionRpe(e.target.value)}
+                />
+              </label>
+            </div>
+          ) : (
+            <p className="cap">This session is done.</p>
+          )}
+        </div>
+      </div>
 
       {!alreadyComplete ? (
-        <section className="card">
-          <label>
-            <span className="label">Session RPE (optional)</span>
-            <input className="field" type="number" min="1" max="10" value={sessionRpe} onChange={(e) => setSessionRpe(e.target.value)} />
-          </label>
+        <div className="gym-footer">
           <button
             type="button"
             className="btn-primary"
-            style={{ marginTop: 10 }}
+            style={{ width: '100%' }}
             disabled={completeMutation.isPending}
             onClick={() => completeMutation.mutate()}
           >
-            {completeMutation.isPending ? 'Finishing…' : 'Finish session'}
+            {doneCount >= totalSets
+              ? 'Finish session'
+              : `Finish early · ${doneCount} of ${totalSets}`}
           </button>
-        </section>
-      ) : (
-        <p className="cap">{enumLabel('complete')} — this session is done.</p>
-      )}
+          <p className="tiny" style={{ textAlign: 'center', marginTop: 8 }}>
+            Sets save as you log them.
+          </p>
+        </div>
+      ) : null}
     </div>
   );
 }

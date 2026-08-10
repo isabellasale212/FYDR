@@ -496,26 +496,37 @@ export async function fetchSessionExercises(db: Db, programmeSessionId: string):
 
 /** Finds today's open (in_progress) log for this session if one exists, else
  *  creates one. A session log is updated in place through its lifecycle, per
- *  migration 0021's own comment — this is the "open or start" half of that. */
+ *  migration 0021's own comment — this is the "open or start" half of that.
+ *  Returns started_at too — ATHLETE-APP-SPEC.md §9's head shows a live
+ *  clock next to the set progress, and the row already carries the one
+ *  real timestamp that clock can honestly count up from. */
 export async function startOrGetSessionLog(
   db: Db,
   orgId: string,
   athleteId: string,
   programmeSessionId: string,
-): Promise<{ id: string | null; status: GymLogStatus | null; error: string | null }> {
+): Promise<{
+  id: string | null;
+  status: GymLogStatus | null;
+  startedAt: string | null;
+  error: string | null;
+}> {
   const today = new Date().toISOString().slice(0, 10);
   const { data: existing, error: findErr } = await db
     .from('gym_session_logs')
-    .select('id, status')
+    .select('id, status, started_at')
     .eq('org_id', orgId)
     .eq('athlete_id', athleteId)
     .eq('programme_session_id', programmeSessionId)
     .eq('entry_date', today)
     .neq('status', 'abandoned')
     .maybeSingle();
-  if (findErr) return { id: null, status: null, error: findErr.message };
-  if (existing) return { id: existing.id, status: existing.status, error: null };
+  if (findErr) return { id: null, status: null, startedAt: null, error: findErr.message };
+  if (existing) {
+    return { id: existing.id, status: existing.status, startedAt: existing.started_at, error: null };
+  }
 
+  const startedAt = new Date().toISOString();
   const { data, error } = await db
     .from('gym_session_logs')
     .insert({
@@ -523,14 +534,14 @@ export async function startOrGetSessionLog(
       athlete_id: athleteId,
       programme_session_id: programmeSessionId,
       entry_date: today,
-      started_at: new Date().toISOString(),
+      started_at: startedAt,
       status: 'in_progress',
       source: 'self_report',
     })
     .select('id, status')
     .single();
-  if (error) return { id: null, status: null, error: error.message };
-  return { id: data.id, status: data.status, error: null };
+  if (error) return { id: null, status: null, startedAt: null, error: error.message };
+  return { id: data.id, status: data.status, startedAt, error: null };
 }
 
 export type LoggedSet = {

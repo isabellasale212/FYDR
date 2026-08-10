@@ -144,3 +144,20 @@ export async function fetchMyOutstanding(
 
   return out;
 }
+
+/** The count behind every tab header's status pill, ATHLETE-APP-SPEC.md
+ *  §4: "{n} to do" in the warn tint, "Up to date" in the good tint. Same
+ *  wellness/RPE-outstanding count Today's own to-do list uses, plus the
+ *  weekly nutrition check-in if the athlete hasn't answered it yet — mirrors
+ *  §14's own rule ("wellness + rpe + nutrition not done"), minus gym for
+ *  the same reason Today's to-do list leaves it out (see that page's own
+ *  header comment). */
+export async function fetchOutstandingCount(
+  db: Db,
+  athleteId: string,
+  today: string,
+  nutritionAnswered: boolean,
+): Promise<number> {
+  const outstanding = await fetchMyOutstanding(db, athleteId, today);
+  return outstanding.length + (nutritionAnswered ? 0 : 1);
+}

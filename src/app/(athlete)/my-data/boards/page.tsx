@@ -27,6 +27,8 @@ export default async function MyBoardsPage() {
         <h1 className="d">Leaderboards</h1>
       </div>
 
+      <p className="tiny">Opted in · leave any board from Me.</p>
+
       {mine.length === 0 ? (
         <EmptyState
           title="No leaderboards yet"

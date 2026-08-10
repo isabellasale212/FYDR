@@ -106,6 +106,7 @@ export default async function RpePage({
           sessionId={session.id}
           entryDate={entryDate}
           scheduledDurationMin={session.duration_min}
+          sessionTitle={session.title}
           correction={{
             originalId: existing.id,
             initial: { rpe: existing.rpe, duration_min: existing.duration_min },
@@ -155,6 +156,7 @@ export default async function RpePage({
           sessionId={session.id}
           entryDate={entryDate}
           scheduledDurationMin={session.duration_min}
+          sessionTitle={session.title}
         />
       )}
     </>

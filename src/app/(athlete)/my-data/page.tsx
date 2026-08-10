@@ -2,9 +2,10 @@ import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { WellnessChart } from '@/components/WellnessChart/WellnessChart';
 import { fetchWellnessByAthlete, wellnessSeries } from '@/lib/queries/wellness';
-import { fetchAthleteRecentSessions } from '@/lib/queries/schedule';
-import { fetchRecentCheckins } from '@/lib/queries/nutrition';
+import { fetchAthleteRecentSessions, mondayOf } from '@/lib/queries/schedule';
+import { fetchCheckinForWeek, fetchRecentCheckins } from '@/lib/queries/nutrition';
 import { fetchMyTestSummary } from '@/lib/queries/testing';
+import { fetchOutstandingCount } from '@/lib/queries/compliance';
 import {
   BLANK,
   addDays,
@@ -64,13 +65,31 @@ export default async function MyDataPage({
   const today = todayIso(timezone);
   const from = addDays(today, -(WINDOW_DAYS - 1));
   const dates = dateRange(from, WINDOW_DAYS);
+  const nutritionWeekStart = addDays(mondayOf(today), -7);
+  const nutritionCheckin = await fetchCheckinForWeek(db, athleteId, nutritionWeekStart);
+  const outstanding = await fetchOutstandingCount(db, athleteId, today, !!nutritionCheckin);
 
   return (
     <>
       <div className="hd">
         <h1 className="d">My data</h1>
+        <span className={`pill status-pill ${outstanding > 0 ? 'pill-warn' : 'pill-good'}`}>
+          {outstanding > 0 ? (
+            <>
+              <span className="mono">{outstanding}</span> to do
+            </>
+          ) : (
+            'Up to date'
+          )}
+        </span>
       </div>
 
+      {/* Five chips, §10: the four history segments this build has real
+       * data for, plus Leaderboards as a fifth — a real navigational chip
+       * to /my-data/boards rather than a fifth ?tab= segment, since its
+       * content isn't a history list the same shape as the other four
+       * (see fetchMyBoards's own header comment for why that's a real
+       * distinction, not just a styling one). */}
       <div className="chiprow" role="tablist" aria-label="Data segment" style={{ marginTop: 4 }}>
         <Link
           href="/my-data?tab=wellness"
@@ -104,11 +123,10 @@ export default async function MyDataPage({
         >
           Testing
         </Link>
+        <Link href="/my-data/boards" className="squad-chip">
+          Leaderboards
+        </Link>
       </div>
-
-      <p className="cap" style={{ marginTop: 10 }}>
-        <Link href="/my-data/boards">Leaderboards →</Link>
-      </p>
 
       {tab === 'wellness' ? (
         <WellnessTab db={db} athleteId={athleteId} from={from} today={today} dates={dates} />

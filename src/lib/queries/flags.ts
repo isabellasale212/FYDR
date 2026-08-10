@@ -37,6 +37,12 @@ export type AttentionRow = {
   position: string | null;
   availability: AvailabilityStatus | 'unknown';
   severity: FlagSeverity;
+  /** The top (most severe/oldest) flag's own domain — DashboardFlagsPanel
+   *  doesn't use this to pick a section to scroll to (the profile has one
+   *  Flags card, not one per domain; see PlayerProfileFlags.tsx's own
+   *  #pp-flags-title), only to label the row honestly with what kind of
+   *  flag it is. */
+  domain: string;
   flag_count: number;
   score: number;
   /** The sentence, split so the row can style the value and the baseline. */
@@ -158,6 +164,7 @@ export async function fetchDashboardAttention(
       position: athlete.position,
       availability: availByAthlete.get(athleteId) ?? 'unknown',
       severity: top.severity,
+      domain: top.domain,
       flag_count: sorted.length,
       score,
       what: copy.what,

@@ -50,14 +50,23 @@ export default async function TimetablePage({ searchParams }: { searchParams: Se
           <h1>Timetable</h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <Link href="/schedule" className="btn-ghost">
-            Open schedule
-          </Link>
           <ThemeToggle />
         </div>
       </div>
 
-      <div style={{ margin: '10px 0 14px' }}>
+      {/* Mirrors the toggle on /schedule — one sidebar entry, two real
+       * routes (this page's write surface, attendance capture, has no
+       * equivalent on the week-plan page). */}
+      <div className="chiprow" style={{ margin: '10px 0 14px' }}>
+        <Link href="/schedule" className="squad-chip">
+          Week plan
+        </Link>
+        <span className="squad-chip" aria-current="page">
+          Today
+        </span>
+      </div>
+
+      <div style={{ marginBottom: 14 }}>
         <GroupFilter groups={groups} selected={groupIds} />
       </div>
 

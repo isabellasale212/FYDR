@@ -49,6 +49,16 @@ export default async function TestingReportPage({ searchParams }: { searchParams
           <h1>Testing report</h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          {/* Testing's own sidebar row is gone — recording a result and
+           * defining a new test both live here now, one tap from the
+           * report they land in. logAttempt (lib/queries/testing.ts) is
+           * always scoped to one test definition and one date, so "+ Log
+           * a result" opens that same real grid rather than a new flat
+           * form; per-column "+" below jumps straight to today's grid for
+           * that test. */}
+          <Link href={selectedTestId ? `/testing/${selectedTestId}` : '/testing'} className="btn-primary">
+            + Log a result
+          </Link>
           <a href={`/reports/testing/export?${selectedTestId ? `test=${selectedTestId}${groupQuery}` : groupQuery.replace('&', '')}`} className="btn-ghost">
             Export CSV
           </a>
@@ -70,7 +80,10 @@ export default async function TestingReportPage({ searchParams }: { searchParams
       {byAthlete.definitions.length === 0 ? (
         <div className="empty">
           <h2>No test defined yet</h2>
-          <p>Define a test in Testing before a report has anything to show.</p>
+          <p>
+            <Link href="/testing">Define a test</Link> before a report has anything to
+            show.
+          </p>
         </div>
       ) : (
         <ReportPager
@@ -97,7 +110,15 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                             <th scope="col">Athlete</th>
                             {byAthlete.definitions.map((d) => (
                               <th key={d.id} scope="col" className="r">
-                                {d.name}
+                                {d.name}{' '}
+                                <Link
+                                  href={`/testing/${d.id}`}
+                                  className="tiny"
+                                  aria-label={`Log a ${d.name} result`}
+                                  title="Log a result"
+                                >
+                                  +
+                                </Link>
                               </th>
                             ))}
                           </tr>

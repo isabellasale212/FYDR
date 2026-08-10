@@ -4,15 +4,27 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { AppRole } from '@/lib/types/database';
 
-/* The sidebar rows, from 20-route-map.md §3 plus Testing, added the same way
- * Gym programme and Leaderboard were: a top-level destination this build's
- * route map nests differently (under /schedule/testing, a session-scheduling
- * model this pass cuts — see lib/queries/testing.ts's header) but which
- * every other major feature this session has made a direct sidebar entry.
+/* The sidebar rows, from 20-route-map.md §3, since narrowed from that map's
+ * count: Groups, Timetable and Testing each used to have their own row and
+ * don't any more, each folded into a screen it belongs to instead of
+ * standing beside it —
+ *   - Groups → Squad overview's own "Manage groups" link (still the real
+ *     /settings/groups screen; Settings keeps a second way in for admin,
+ *     who can't reach Squad overview at all).
+ *   - Timetable → merged at the navigation level into Schedule: one row,
+ *     "Schedule", and a "Week plan / Today" toggle on both real pages
+ *     (still two routes — screens/schedule.md and screens/timetable.md
+ *     still draw a real distinction, planning vs pitch-side attendance
+ *     capture, that a single page would lose).
+ *   - Testing → its report (Reports → Testing) is now the entry point:
+ *     "+ Log a result" and a per-test "+" in the by-athlete table link
+ *     into the real /testing/:testDefId grid; /testing itself (the
+ *     definition library) is still reachable from there.
+ *   - Flags → replaced entirely by a summary on the Dashboard itself
+ *     (DashboardFlagsPanel) rather than folded into another sidebar row;
+ *     /flags is still the real full list, linked from that panel.
  * Flat, nothing indented, one top-level segment each. Roles here hide a row;
- * they never grant access, which is RLS plus the middleware. A user holding
- * only admin sees four rows, and that is the deliberate friction in
- * 01-roles-and-permissions.md §1. */
+ * they never grant access, which is RLS plus the middleware. */
 
 type Row = {
   id: string;
@@ -58,17 +70,6 @@ export const SIDEBAR: readonly Row[] = [
     ),
   },
   {
-    id: 'staff.flags',
-    label: 'Flags',
-    route: '/flags',
-    roles: ['coach', 'medical'],
-    icon: icon(
-      <>
-        <path d="M3.6 1.8v12.4M3.6 2.4h8l-1.6 3 1.6 3h-8" />
-      </>,
-    ),
-  },
-  {
     id: 'staff.squad',
     label: 'Squad overview',
     route: '/squad',
@@ -81,23 +82,6 @@ export const SIDEBAR: readonly Row[] = [
     ),
   },
   {
-    id: 'staff.groups',
-    label: 'Groups',
-    route: '/settings/groups',
-    // 01-roles-and-permissions.md §2, "Manage groups": Y for coach, medical
-    // and admin. Its own row, not nested under Squad overview, because admin
-    // cannot reach that screen at all but does manage squad structure
-    // (screens/groups.md, roles table).
-    roles: ['coach', 'medical', 'admin'],
-    icon: icon(
-      <>
-        <circle cx="5.4" cy="5.4" r="2.2" />
-        <circle cx="11.2" cy="5.4" r="2.2" />
-        <path d="M1.8 14c0-2.6 1.9-4 3.6-4s3.6 1.4 3.6 4M8.6 10.3c1.5.2 2.6 1.5 2.6 3.7" />
-      </>,
-    ),
-  },
-  {
     id: 'staff.schedule',
     label: 'Schedule',
     route: '/schedule',
@@ -106,23 +90,6 @@ export const SIDEBAR: readonly Row[] = [
       <>
         <circle cx="8" cy="8" r="6.2" />
         <path d="M8 4.4V8l2.4 1.6" />
-      </>,
-    ),
-  },
-  {
-    // screens/timetable.md's own scope table: Schedule plans the next three
-    // weeks, Timetable is the day-level read-and-capture face of the same
-    // spine — adjacent here for the same reason. roles matches the doc's
-    // table exactly: admin has no access by default.
-    id: 'staff.timetable',
-    label: 'Timetable',
-    route: '/timetable',
-    roles: ['coach', 'medical'],
-    icon: icon(
-      <>
-        <rect x="1.8" y="2.2" width="12.4" height="11.6" rx="1.4" />
-        <path d="M1.8 5.8h12.4M4.6 1.4v2M11.4 1.4v2" />
-        <path d="M4.8 9.2l1.6 1.6 3.2-3.4" />
       </>,
     ),
   },
@@ -173,18 +140,6 @@ export const SIDEBAR: readonly Row[] = [
       <>
         <rect x="1.6" y="2.4" width="12.8" height="11.2" rx="1.4" />
         <path d="M1.6 6h12.8M6 6v7.6" />
-      </>,
-    ),
-  },
-  {
-    id: 'staff.testing',
-    label: 'Testing',
-    route: '/testing',
-    roles: ['coach', 'medical'],
-    icon: icon(
-      <>
-        <circle cx="8" cy="8" r="6.2" />
-        <circle cx="8" cy="8" r="2.4" />
       </>,
     ),
   },

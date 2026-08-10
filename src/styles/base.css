@@ -539,7 +539,8 @@ a {
   color: var(--text);
 }
 .squad-chip[aria-pressed='true'],
-.squad-chip[aria-selected='true'] {
+.squad-chip[aria-selected='true'],
+.squad-chip[aria-current='page'] {
   border-color: var(--accent);
   color: var(--on-accent);
   background: var(--accent);
@@ -3227,6 +3228,101 @@ table.tbl tbody tr:hover {
  * itself documents --highlight as "decorative, never encodes status", and
  * this spec's gym-session pip is a real status use, so --gym is a new,
  * same-value token rather than a quiet reuse that undoes that rule. */
+/* -------- flags panel, replaces the old standalone Flags sidebar row --------
+ * Sits above .dash-stats, the first thing on the page after the group
+ * filter — "clearly at the top" was the literal ask. Closed by default:
+ * the toggle row alone is the "small summaries" state (total plus a
+ * severity breakdown), expanding into fetchDashboardAttention's real
+ * per-athlete rows. */
+.dash-flags-panel {
+  background: var(--surf);
+  border: 1px solid rgb(var(--bad-rgb) / 0.3);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.dash-flags-panel[data-empty='true'] {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-color: var(--border);
+}
+.dash-flags-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+.dash-flags-summary {
+  font-size: 13.5px;
+  flex: 1;
+}
+.dash-flags-summary b {
+  font-size: 15px;
+}
+.dash-flags-chevron {
+  color: var(--faint);
+  font-size: 14px;
+  transition: transform var(--t-state);
+}
+.dash-flags-chevron[data-open='true'] {
+  transform: rotate(180deg);
+}
+.dash-flags-list {
+  border-top: 1px solid var(--hair);
+}
+.dash-flags-row {
+  display: grid;
+  grid-template-columns: 8px auto minmax(0, 1fr) auto auto auto 12px;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--hair);
+  text-decoration: none;
+  color: inherit;
+}
+.dash-flags-row:first-child {
+  border-top: none;
+}
+.dash-flags-row:hover {
+  background: var(--surf2);
+}
+.dash-flags-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.dash-flags-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.dash-flags-what {
+  font-size: 12.5px;
+  color: var(--muted);
+  min-width: 0;
+}
+.dash-flags-duration {
+  white-space: nowrap;
+}
+.dash-flags-all {
+  display: block;
+  padding: 12px 18px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--accent-text);
+  border-top: 1px solid var(--hair);
+  text-decoration: none;
+}
+
 .dash-body {
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);

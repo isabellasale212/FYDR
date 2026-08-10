@@ -63,6 +63,22 @@ export default async function SchedulePage({
         </div>
       </div>
 
+      {/* One sidebar entry now covers both the plan (this page, the next
+       * three weeks) and the pitch-side day (Timetable's read-and-capture
+       * attendance view) — screens/schedule.md and screens/timetable.md
+       * still draw the real distinction the sidebar comment used to
+       * (schedule.md: "not an analysis screen"; timetable.md: "does not
+       * create or edit sessions"), so this is a navigation merge, not a
+       * page merge: two routes, two write surfaces, one way in. */}
+      <div className="chiprow" style={{ marginBottom: 14 }}>
+        <span className="squad-chip" aria-current="page">
+          Week plan
+        </span>
+        <Link href="/timetable" className="squad-chip">
+          Today
+        </Link>
+      </div>
+
       <div style={{ marginBottom: 14 }}>
         <GroupFilter groups={groups} selected={groupIds} />
       </div>

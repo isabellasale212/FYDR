@@ -1,5 +1,5 @@
 import { fetchCurrentAvailability, fetchNotFullyAvailable } from './availability';
-import { fetchDashboardAttention } from './flags';
+import { fetchDashboardAttention, type AttentionRow } from './flags';
 import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchNextFixture, fetchWeekSessions, mondayOf, type WeekSession } from './schedule';
 import { fetchTimetableDay } from './timetable';
@@ -195,6 +195,12 @@ export type HeadlineStats = {
   modifiedCount: number;
   unavailableCount: number;
   openFlags: number;
+  /** DashboardFlagsPanel's own real data — the same severity-ranked,
+   *  athlete-aggregated rows fetchDashboardAttention already computed for
+   *  openFlags below, at its real limit (5) rather than the 1 openFlags
+   *  alone needed, so the panel costs nothing this function wasn't already
+   *  paying for. */
+  attentionRows: AttentionRow[];
   toMatchdayDays: number | null;
   opponent: string | null;
   sessionsLeft: number;
@@ -231,7 +237,7 @@ export async function fetchHeadlineStats(
         return { expected: expected.length, submitted: entries.length };
       }),
     fetchFlagsByDateRange(db, orgId, groupIds, effectiveToday, effectiveToday),
-    fetchDashboardAttention(db, orgId, effectiveToday, groupIds, 1),
+    fetchDashboardAttention(db, orgId, effectiveToday, groupIds),
     fetchNextFixture(db, orgId, `${effectiveToday}T00:00:00Z`),
     fetchWeekSessions(db, orgId, mondayOf(effectiveToday), groupIds),
   ]);
@@ -258,6 +264,7 @@ export async function fetchHeadlineStats(
     modifiedCount: modified,
     unavailableCount: unavailable,
     openFlags: attention.openTotal,
+    attentionRows: attention.rows,
     toMatchdayDays,
     opponent: fixture?.opponent ?? null,
     sessionsLeft,

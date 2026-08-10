@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { DashboardFlagsPanel } from '@/components/DashboardFlagsPanel/DashboardFlagsPanel';
 import { Dial } from '@/components/Dial/Dial';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { PrintButton } from '@/components/PrintButton/PrintButton';
@@ -107,6 +108,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
 
       <div style={{ margin: '10px 0 14px' }}>
         <GroupFilter groups={groups} selected={groupIds} />
+      </div>
+
+      {/* Flags has no sidebar row of its own any more — this is the
+       * replacement: closed by default, the toggle row is the "small
+       * summaries" state, and each expanded row jumps straight to the
+       * flag's real, actionable home on the athlete's own profile. */}
+      <div style={{ marginBottom: 14 }}>
+        <DashboardFlagsPanel rows={stats.attentionRows} openTotal={stats.openFlags} />
       </div>
 
       <div className="card dash-stats">

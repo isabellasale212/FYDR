@@ -71,6 +71,15 @@
   --bad-rgb: 241 90 74;
   --highlight-rgb: 245 197 24;
   --gym-rgb: 245 197 24;
+  /* SCHEDULE-SPEC.md §5 and §10: the "meeting" session type's tone is a bare
+     neutral-ink alpha (rgba(16,18,23,0.3)), matching no existing named
+     token. 16/18/23 is not new to this file — it is already the literal
+     channel triplet baked into --border (0.085), --hair (0.05) and
+     --border-strong (0.52) above, just never exposed as a reusable triplet
+     the way --accent-rgb etc. are. Adding it here is a pure exposure, not a
+     new colour: every existing rgba(16,18,23,X) constant in this file is
+     unchanged. */
+  --ink-rgb: 16 18 23;
 
   /* §4.4. The status pill fill alpha. Raised from 0.16 so the fill separates
      under dichromacy; the text tokens in §3.7 are derived against this value. */
@@ -271,20 +280,34 @@
  * the workspace grid's own root class, not the whole /nutrition page (the topbar and
  * group filter above it stay on the ordinary staff palette). Space-separated rgb
  * triplet, not comma-separated — see --accent-rgb's own comment above for why a
- * comma here silently turns every tint on this screen transparent. */
-.nutrition-workspace {
+ * comma here silently turns every tint on this screen transparent.
+ *
+ * SCHEDULE-SPEC.md §1 makes the identical override for the identical reason,
+ * scoped to .sg (that screen's own root) instead — not a coincidence: §6 of that
+ * spec embeds the real athlete Today-tab row inside the selected-session panel,
+ * so one token value most honestly represents that the schedule grid's Testing/
+ * Recovery blocks and the athlete app's own Good tint are the same colour by
+ * design. Both screens were built independently and reached the same scoped-
+ * override pattern .phone set first; kept as two sibling blocks rather than
+ * merged into one selector so each stays self-contained and removable on its
+ * own. */
+.nutrition-workspace,
+.sg {
   --good: #4fd6ff;
   --good-rgb: 79 214 255;
   --good-text: #0d5f75;
   --good-pill-text: #0d5f75;
 }
 :root[data-theme='dark'] .nutrition-workspace,
-.dark-tokens .nutrition-workspace {
+.dark-tokens .nutrition-workspace,
+:root[data-theme='dark'] .sg,
+.dark-tokens .sg {
   --good-text: #4fd6ff;
   --good-pill-text: #4fd6ff;
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .nutrition-workspace {
+  :root:not([data-theme]) .nutrition-workspace,
+  :root:not([data-theme]) .sg {
     --good-text: #4fd6ff;
     --good-pill-text: #4fd6ff;
   }

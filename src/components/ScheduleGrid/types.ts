@@ -1,0 +1,63 @@
+import type { DbSessionType, GridSession, NormalWeek } from '@/lib/queries/schedule';
+
+export type { DbSessionType, NormalWeek };
+
+export type GroupOption = { id: string; name: string; group_type: string };
+
+export type TemplateOption = { id: string; name: string };
+
+/** A day-column entry the client works with — `start`/`mins` are decimal
+ *  hours so scheduleGeometry.ts's port of §5 can consume them directly,
+ *  same shape the spec's own fixture rows use. */
+export type BaseSession = {
+  id: string;
+  dow: string; // ISO date of the day column, e.g. '2026-08-05'
+  start: number; // decimal hour
+  mins: number;
+  title: string;
+  type: DbSessionType;
+  location: string | null;
+  mdOffset: number | null;
+  groupIds: string[];
+  groupNames: string[];
+  athleteIds: string[];
+  status: 'planned' | 'completed' | 'cancelled';
+};
+
+/** SCHEDULE-SPEC.md §9's `edits` overlay — only start, duration and group
+ *  are ever real overrides; location/type/name are read-only for an
+ *  existing session (see ScheduleWorkspace's own header for why). Keyed by
+ *  the session's real id, not the spec's mockup `dow|name` composite —
+ *  real sessions have stable UUIDs, which is strictly safer than a name
+ *  key when two sessions on the same day happen to share a title (this
+ *  org's real seed data does: 'Fixture', 'Recovery' repeat weekly). */
+export type EditOverlay = { start?: number; mins?: number; groupIds?: string[] };
+
+export type DraftSession = {
+  id: string; // synthetic 'new-<uuid>'
+  dow: string;
+  start: number;
+  mins: number;
+  title: string;
+  type: DbSessionType;
+  location: string | null;
+  mdOffset: number | null;
+  groupIds: string[];
+};
+
+export function toBaseSession(s: GridSession, timezone: string, decimalHourInTz: (iso: string, tz: string) => number): BaseSession {
+  return {
+    id: s.id,
+    dow: s.entry_date,
+    start: decimalHourInTz(s.starts_at, timezone),
+    mins: s.duration_min ?? 30,
+    title: s.title,
+    type: s.session_type,
+    location: s.location,
+    mdOffset: s.md_offset,
+    groupIds: s.groupIds,
+    groupNames: s.groupNames,
+    athleteIds: s.athleteIds,
+    status: s.status,
+  };
+}

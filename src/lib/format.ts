@@ -189,6 +189,17 @@ export function timeInTz(instant: Date, timeZone: string = DATE_TZ): string {
   return `${hour}:${get('minute')}`;
 }
 
+/** An instant as a decimal hour ("09:30" → 9.5) in a given timezone —
+ *  SCHEDULE-SPEC.md §5's grid positions blocks on real clock time, so both
+ *  a session's `starts_at` and "now" (for the now-line) need the same
+ *  wall-clock-in-this-timezone conversion `timeInTz` already provides,
+ *  just expressed as the number the grid's geometry math wants instead of
+ *  an "HH:MM" string. */
+export function decimalHourInTz(instant: Date, timeZone: string = DATE_TZ): number {
+  const [hh = 0, mm = 0] = timeInTz(instant, timeZone).split(':').map(Number);
+  return hh + mm / 60;
+}
+
 /** The ISO 8601 (year, week) for a date, matching Postgres's own
  *  `extract(isoyear from d)` / `extract(week from d)` exactly — the check
  *  constraint on nutrition_checkins requires the two to agree, so this has

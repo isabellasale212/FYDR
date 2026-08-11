@@ -358,6 +358,243 @@ export async function fetchWeekSessions(
   });
 }
 
+/* ---------------------------------------------------------------------------
+ * SCHEDULE-SPEC.md's grid rebuild. Real, additive to everything above — the
+ * existing fetchWeekSessions stays exactly as it is (dashboard.ts depends on
+ * its exact return shape in three places), and this is a second, richer
+ * fetch for the one screen that needs per-session group names and the real
+ * resolved athlete-ID set, not just a headcount.
+ *
+ * The spec's own fixture data (§10) gives every session a single literal
+ * `group` string, including two values — 'Staff' and 'Matchday 23' — that
+ * have no real backing anywhere in this schema: `groups.group_type` is a
+ * closed enum (positional/training/rehab/age/custom, and 04-data-model.md
+ * §17.13 is explicit it does not gain a 'team' value either), and there is
+ * no matchday-squad-selection table (schedule.ts's own fixture-detail
+ * header already documents that gap: "needs a fixture_selections table that
+ * does not exist anywhere in the schema"). A real session can carry zero,
+ * one, or several real groups (session_participants), never a single fixed
+ * label. So this build does not offer 'Staff' or 'Matchday 23' as
+ * assignable groups anywhere in the UI — only the org's real groups plus
+ * "whole squad" (zero groups named) are real, assignable states — and the
+ * spec's 'Staff never clashes / never counts toward contact time' rule is
+ * reimplemented on real data instead: a session with zero real athlete
+ * participants (the honest proxy for "nobody named is an athlete") is
+ * excluded from clash detection and every contact-minute total, which
+ * produces the same real outcome without inventing a fake group. See
+ * scheduleGeometry.ts's own header for the clash-detection half of this. */
+
+export type GridSession = Session & {
+  entry_date: string;
+  groupIds: string[];
+  groupNames: string[];
+  athleteIds: string[];
+};
+
+export async function fetchWeekSessionsDetailed(
+  db: Db,
+  orgId: string,
+  weekStart: string,
+  groupIds: readonly string[],
+  allGroups: readonly { id: string; name: string }[],
+): Promise<GridSession[]> {
+  const from = `${weekStart}T00:00:00Z`;
+  const weekEndDate = new Date(`${weekStart}T12:00:00Z`);
+  weekEndDate.setUTCDate(weekEndDate.getUTCDate() + 6);
+  const to = `${weekEndDate.toISOString().slice(0, 10)}T23:59:59.999Z`;
+
+  const sessions = await fetchSessionsBetween(db, orgId, from, to);
+  if (sessions.length === 0) return [];
+
+  const [participants, memberships, scope] = await Promise.all([
+    db
+      .from('session_participants')
+      .select('session_id, athlete_id, group_id')
+      .eq('org_id', orgId)
+      .in('session_id', sessions.map((s) => s.id)),
+    db
+      .from('group_memberships')
+      .select('group_id, athlete_id')
+      .eq('org_id', orgId)
+      .is('removed_at', null),
+    fetchGroupAthleteIds(db, orgId, groupIds),
+  ]);
+
+  if (participants.error) throw new Error(participants.error.message);
+  if (memberships.error) throw new Error(memberships.error.message);
+
+  const groupMembers = new Map<string, string[]>();
+  for (const m of memberships.data ?? []) {
+    const list = groupMembers.get(m.group_id) ?? [];
+    list.push(m.athlete_id);
+    groupMembers.set(m.group_id, list);
+  }
+  const groupNameById = new Map(allGroups.map((g) => [g.id, g.name]));
+  const inScope = scope ? new Set(scope) : null;
+
+  return sessions.map((session) => {
+    const athleteIds = new Set<string>();
+    const groupIdsForSession = new Set<string>();
+    for (const p of participants.data ?? []) {
+      if (p.session_id !== session.id) continue;
+      if (p.athlete_id) athleteIds.add(p.athlete_id);
+      if (p.group_id) {
+        groupIdsForSession.add(p.group_id);
+        for (const id of groupMembers.get(p.group_id) ?? []) athleteIds.add(id);
+      }
+    }
+    const counted = inScope ? [...athleteIds].filter((id) => inScope.has(id)) : [...athleteIds];
+    const groupIdList = [...groupIdsForSession];
+
+    return {
+      ...session,
+      entry_date: session.starts_at.slice(0, 10),
+      groupIds: groupIdList,
+      groupNames: groupIdList.map((id) => groupNameById.get(id) ?? 'Unnamed group'),
+      athleteIds: counted,
+    };
+  });
+}
+
+/** Real group → athlete-id membership, org-wide. The schedule workspace
+ *  needs this client-side so that changing a session's assigned groups via
+ *  the edit-mode chips (a local, unpublished overlay — see §9) can
+ *  recompute that session's real attendee set live, for clash detection
+ *  and contact-minute totals that stay honest while the coach is still
+ *  editing, not just after publish. Small table, org-scoped, fetched once
+ *  per page load. */
+export async function fetchGroupMembership(db: Db, orgId: string): Promise<Record<string, string[]>> {
+  const { data, error } = await db
+    .from('group_memberships')
+    .select('group_id, athlete_id')
+    .eq('org_id', orgId)
+    .is('removed_at', null);
+  if (error) throw new Error(error.message);
+
+  const out: Record<string, string[]> = {};
+  for (const m of data ?? []) {
+    (out[m.group_id] ??= []).push(m.athlete_id);
+  }
+  return out;
+}
+
+export type DbSessionType = Session['session_type'];
+
+export type TypicalStats = { count: number; mins: number };
+
+const emptyTypical = (): Record<DbSessionType, TypicalStats> => ({
+  training: { count: 0, mins: 0 },
+  gym: { count: 0, mins: 0 },
+  match: { count: 0, mins: 0 },
+  testing: { count: 0, mins: 0 },
+  recovery: { count: 0, mins: 0 },
+  meeting: { count: 0, mins: 0 },
+  rehab: { count: 0, mins: 0 },
+});
+
+export type NormalWeek = {
+  weeksUsed: number;
+  byType: Record<DbSessionType, TypicalStats>;
+  totalMins: number;
+  totalCount: number;
+};
+
+/** SCHEDULE-SPEC.md §7: "Typical is the mean of the last eight weeks with a
+ *  Saturday fixture." This org's real history (checked live against
+ *  SUPABASE_DB_URL before writing this) spans about five weeks, not eight,
+ *  and a real fixture here isn't always a Saturday (one real fixture in
+ *  this data kicks off on a Sunday) — so the real, honest version of the
+ *  rule is "the mean of the real weeks on record that contain a fixture,
+ *  capped at eight," and the UI states however many weeks that actually
+ *  was rather than asserting eight. `weeksUsed` is what the caller must
+ *  render, not a hardcoded "eight-week mean". Degrades gracefully: as real
+ *  history accumulates past eight fixture weeks, this starts capping at the
+ *  spec's literal number on its own. */
+export async function fetchNormalWeek(
+  db: Db,
+  orgId: string,
+  allGroups: readonly { id: string; name: string }[],
+  weekStart: string,
+  groupIds: readonly string[],
+  maxWeeks = 8,
+): Promise<NormalWeek> {
+  const { data: matches, error } = await db
+    .from('sessions')
+    .select('starts_at')
+    .eq('org_id', orgId)
+    .eq('session_type', 'match')
+    .is('deleted_at', null)
+    .lt('starts_at', `${weekStart}T00:00:00Z`)
+    .order('starts_at', { ascending: false });
+  if (error) throw new Error(error.message);
+
+  const seenWeeks = new Set<string>();
+  const weeks: string[] = [];
+  for (const m of matches ?? []) {
+    const wk = mondayOf(m.starts_at.slice(0, 10));
+    if (!seenWeeks.has(wk)) {
+      seenWeeks.add(wk);
+      weeks.push(wk);
+      if (weeks.length >= maxWeeks) break;
+    }
+  }
+
+  if (weeks.length === 0) {
+    return { weeksUsed: 0, byType: emptyTypical(), totalMins: 0, totalCount: 0 };
+  }
+
+  const weekSessions = await Promise.all(
+    weeks.map((wk) => fetchWeekSessionsDetailed(db, orgId, wk, groupIds, allGroups)),
+  );
+
+  const byType = emptyTypical();
+  let totalMins = 0;
+  let totalCount = 0;
+
+  for (const sessions of weekSessions) {
+    for (const s of sessions) {
+      // Staff-only proxy (no real athlete named) — excluded wherever
+      // minutes are totalled, same rule "this week" applies. §11 rule 6.
+      if (s.athleteIds.length === 0) continue;
+      const mins = s.duration_min ?? 0;
+      byType[s.session_type].count += 1;
+      byType[s.session_type].mins += mins;
+      totalMins += mins;
+      totalCount += 1;
+    }
+  }
+
+  const weeksUsed = weeks.length;
+  (Object.keys(byType) as DbSessionType[]).forEach((t) => {
+    byType[t] = { count: byType[t].count / weeksUsed, mins: byType[t].mins / weeksUsed };
+  });
+
+  return { weeksUsed, byType, totalMins: totalMins / weeksUsed, totalCount: totalCount / weeksUsed };
+}
+
+export type WeekFixture = { opponent: string; kickoff_at: string; home_away: string };
+
+/** Real fixtures kicking off inside one Monday-to-Sunday week, for the
+ *  grid header's eyebrow line (SCHEDULE-SPEC.md §2: "MD SATURDAY 8 · V
+ *  ASHFIELD RFC" in the mockup) — this build composes that clause from a
+ *  real fixture instead of the spec's fictional opponent name. */
+export async function fetchWeekFixtures(db: Db, orgId: string, weekStart: string): Promise<WeekFixture[]> {
+  const weekEndDate = new Date(`${weekStart}T12:00:00Z`);
+  weekEndDate.setUTCDate(weekEndDate.getUTCDate() + 6);
+  const to = `${weekEndDate.toISOString().slice(0, 10)}T23:59:59.999Z`;
+
+  const { data, error } = await db
+    .from('fixtures')
+    .select('opponent, kickoff_at, home_away')
+    .eq('org_id', orgId)
+    .gte('kickoff_at', `${weekStart}T00:00:00Z`)
+    .lte('kickoff_at', to)
+    .is('deleted_at', null)
+    .order('kickoff_at');
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
 export async function fetchCurrentSeasonId(db: Db, orgId: string): Promise<string | null> {
   const { data, error } = await db
     .from('seasons')

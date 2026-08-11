@@ -71,6 +71,15 @@
   --bad-rgb: 241 90 74;
   --highlight-rgb: 245 197 24;
   --gym-rgb: 245 197 24;
+  /* SCHEDULE-SPEC.md §5 and §10: the "meeting" session type's tone is a bare
+     neutral-ink alpha (rgba(16,18,23,0.3)), matching no existing named
+     token. 16/18/23 is not new to this file — it is already the literal
+     channel triplet baked into --border (0.085), --hair (0.05) and
+     --border-strong (0.52) above, just never exposed as a reusable triplet
+     the way --accent-rgb etc. are. Adding it here is a pure exposure, not a
+     new colour: every existing rgba(16,18,23,X) constant in this file is
+     unchanged. */
+  --ink-rgb: 16 18 23;
 
   /* §4.4. The status pill fill alpha. Raised from 0.16 so the fill separates
      under dichromacy; the text tokens in §3.7 are derived against this value. */
@@ -228,6 +237,36 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) .phone {
+    --good-text: #4fd6ff;
+    --good-pill-text: #4fd6ff;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   SCHEDULE-SPEC.md §1: this screen's own "Good" is #4fd6ff, "Testing,
+   recovery, published state" — the identical literal value to .phone's own
+   override two blocks up, not a coincidence: §6 of the spec embeds the real
+   athlete Today-tab row inside this screen's selected-session panel, so one
+   token value most honestly represents that the schedule grid's Testing/
+   Recovery blocks and the athlete app's own Good tint are the same colour
+   by design. Scoped to .sg (this screen's own root, mirroring .phone's
+   pattern per §2.4) rather than changing the site-wide --good, for the same
+   reason .phone doesn't: no other staff screen renders this tint, and nothing
+   here should quietly recolour Testing pills elsewhere in the app.
+   --------------------------------------------------------------------------- */
+.sg {
+  --good: #4fd6ff;
+  --good-rgb: 79 214 255;
+  --good-text: #0d5f75;
+  --good-pill-text: #0d5f75;
+}
+:root[data-theme='dark'] .sg,
+.dark-tokens .sg {
+  --good-text: #4fd6ff;
+  --good-pill-text: #4fd6ff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .sg {
     --good-text: #4fd6ff;
     --good-pill-text: #4fd6ff;
   }

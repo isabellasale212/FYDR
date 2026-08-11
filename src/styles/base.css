@@ -3679,6 +3679,726 @@ table.tbl tbody tr:hover {
   }
 }
 
+/* ---------- Nutrition workspace, NUTRITION-SPEC.md ----------
+ * Real deviations from the literal spec are documented at the source (see
+ * src/lib/nutritionRules.ts, src/lib/nutritionWorkspace.ts and
+ * src/app/(staff)/nutrition/page.tsx's own header comments) — this block is pixel
+ * values only, no data decisions. `.nutr-mono` is a thin alias of the existing
+ * `.mono` (DM Mono, tabular numerals) rather than a rename across every component,
+ * so nutrition-specific markup reads clearly as "this screen's own class" at a
+ * glance without duplicating the font stack. Pills, chips, cards, buttons and fields
+ * are the same house classes as everywhere else in this app (`.pill`, `.card`,
+ * `.btn-primary`, `.field`) per NUTRITION-SPEC.md §1's own "Pills follow the house
+ * set" — the Good colour swap that makes them render the spec's cyan instead of the
+ * staff-wide teal lives in tokens.css, scoped to `.nutrition-workspace`.
+ */
+
+.nutr-mono {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+.nutr-intro {
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 68ch;
+  margin: 6px 0 0;
+}
+
+/* ---------- Layout skeleton, §2 ---------- */
+.nutr-layout {
+  display: grid;
+  grid-template-columns: 268px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+.nutr-rail,
+.nutr-main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+@media (max-width: 1150px) {
+  .nutr-layout {
+    grid-template-columns: 1fr;
+  }
+  .nutr-rail {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+  .nutr-rail > .nutr-rail-card {
+    flex: 1 1 240px;
+  }
+  .nutr-rail > .nutr-needs-word {
+    flex: 1 1 100%;
+  }
+}
+
+/* ---------- Left rail, §3 ---------- */
+.nutr-plan-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.nutr-plan-item,
+.nutr-daytype-item {
+  display: grid;
+  border-radius: 14px;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--t-state), background var(--t-state), color var(--t-state);
+  font-family: inherit;
+  color: inherit;
+  width: 100%;
+}
+.nutr-daytype-item {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+.nutr-plan-item.is-selected,
+.nutr-daytype-item.is-selected {
+  background: rgb(var(--accent-rgb) / 0.08);
+  border-color: rgb(var(--accent-rgb) / 0.35);
+}
+.nutr-plan-name {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.nutr-plan-sub {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.nutr-daytype-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+.nutr-daytype-carb {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.nutr-new-plan-btn {
+  width: 100%;
+  margin-top: 10px;
+  border-radius: 12px;
+  padding: 11px 18px;
+  font-size: 13px;
+  min-height: 0;
+}
+.nutr-new-plan-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.nutr-new-plan-form select {
+  min-height: 0;
+  padding: 8px 10px;
+}
+
+.nutr-needs-word {
+  border: 1px solid rgb(var(--bad-rgb) / 0.4) !important;
+}
+.nutr-needs-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+.nutr-chase-row {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--hair);
+  padding: 11px 0;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+}
+.nutr-chase-row:first-of-type {
+  border-top: none;
+}
+.nutr-chase-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.nutr-chase-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+.nutr-chase-value {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.nutr-chase-bad {
+  color: var(--bad);
+}
+.nutr-chase-warn {
+  color: var(--warn-text);
+}
+.nutr-chase-reason {
+  font-size: 11px;
+  color: var(--faint);
+  margin-top: 2px;
+}
+
+/* ---------- Plan rules card, §4 ---------- */
+.nutr-plan-rules-card,
+.nutr-day-food-card {
+  padding: 18px 20px !important;
+}
+.nutr-card-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: flex-start;
+  gap: 12px;
+}
+.nutr-plan-rules-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+.nutr-plan-rules-sub {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.nutr-rule-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+@media (max-width: 900px) {
+  .nutr-rule-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.nutr-rule-tile {
+  background: var(--surf2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+}
+.nutr-rule-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--faint);
+}
+.nutr-rule-stepper {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+.nutr-stepper-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surf);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color var(--t-state), color var(--t-state);
+}
+.nutr-stepper-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+.nutr-stepper-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.nutr-rule-value {
+  text-align: center;
+}
+.nutr-rule-value span {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 20px;
+  font-weight: 500;
+}
+.nutr-rule-unit {
+  font-size: 10px;
+  color: var(--faint);
+  margin-top: 2px;
+}
+.nutr-rule-footnote {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10.5px;
+  color: var(--faint);
+  margin-top: 8px;
+}
+
+.nutr-read-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hair);
+}
+.nutr-read-text {
+  font-size: 13px;
+  color: var(--text);
+  margin: 0;
+}
+.nutr-read-mean {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 22px;
+  font-weight: 500;
+  text-align: right;
+}
+.nutr-read-mean-label {
+  font-size: 10.5px;
+  color: var(--faint);
+  text-align: right;
+  margin-top: 2px;
+}
+
+/* ---------- The day, as food, §5 ---------- */
+.nutr-totals-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+@media (max-width: 700px) {
+  .nutr-totals-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.nutr-totals-baseline {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.nutr-totals-label {
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.nutr-totals-delta {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+.nutr-totals-delta.is-off {
+  color: var(--warn-text);
+}
+.nutr-totals-track {
+  position: relative;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--track);
+  margin-top: 6px;
+}
+.nutr-totals-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--accent);
+}
+.nutr-totals-fill.is-off {
+  background: var(--warn);
+}
+.nutr-totals-tick {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--border-strong);
+}
+.nutr-totals-detail {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10.5px;
+  color: var(--faint);
+  margin-top: 6px;
+}
+
+.nutr-meal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+.nutr-meal-card {
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  background: var(--surf);
+}
+.nutr-meal-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  background: var(--surf2);
+  border-bottom: 1px solid var(--hair);
+  padding: 11px 13px;
+}
+.nutr-meal-name {
+  font-size: 13px;
+  font-weight: 700;
+}
+.nutr-meal-time {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+.nutr-meal-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 13px;
+  border-top: 1px solid var(--hair);
+}
+.nutr-meal-item-name {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nutr-meal-item-qty {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11.5px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.nutr-meal-macros {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 9px 13px;
+  background: rgba(16, 18, 23, 0.02);
+}
+.nutr-meal-macro-value {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11.5px;
+  font-weight: 500;
+}
+.nutr-meal-macro-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--faint);
+  margin-top: 1px;
+}
+.nutr-meal-caption {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11.5px;
+  color: var(--faint);
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--hair);
+}
+
+/* ---------- Targets and body mass, §6 ---------- */
+.nutr-table-head {
+  display: grid;
+  gap: 8px;
+  padding: 0 6px 10px;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--faint);
+}
+.nutr-col-num {
+  text-align: right;
+}
+.nutr-group-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 12px 6px 6px;
+}
+.nutr-group-name {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent-text);
+}
+.nutr-group-meta {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--faint);
+}
+.nutr-athlete-row {
+  display: grid;
+  width: 100%;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 6px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+  text-align: left;
+  transition: background var(--t-state);
+}
+.nutr-athlete-name {
+  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.nutr-set-pill {
+  font-size: 9px;
+  padding: 1px 7px 1px 6px;
+  line-height: 1.5;
+}
+.nutr-range-track {
+  position: relative;
+  height: 12px;
+}
+.nutr-range-track::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  top: 5px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--track);
+}
+.nutr-range-band {
+  position: absolute;
+  top: 3px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgb(var(--accent-rgb) / 0.16);
+}
+.nutr-range-marker {
+  position: absolute;
+  top: 0;
+  width: 3px;
+  height: 12px;
+  border-radius: 1.5px;
+  transform: translateX(-50%);
+}
+.nutr-range-caption {
+  font-size: 10px;
+  color: var(--faint);
+  margin-top: 2px;
+}
+.nutr-range-empty {
+  font-size: 10px;
+  color: var(--faint);
+}
+.nutr-table-caption {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11.5px;
+  color: var(--faint);
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--hair);
+}
+
+@media (max-width: 1100px) {
+  .nutr-table-head > :first-child,
+  .nutr-athlete-row .nutr-athlete-name {
+    position: sticky;
+    left: 0;
+    background: var(--surf);
+  }
+}
+
+/* ---------- Selected athlete, §7 ---------- */
+.nutr-selected-head {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.nutr-selected-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  background: var(--avatar-bg);
+  color: var(--avatar-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+.nutr-selected-name {
+  font-size: 16px;
+  font-weight: 700;
+}
+.nutr-selected-sub {
+  font-size: 11.5px;
+  color: var(--faint);
+  margin-top: 2px;
+}
+.nutr-profile-link {
+  font-size: 12px;
+  color: var(--muted);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.nutr-profile-link:hover {
+  color: var(--accent-text);
+}
+
+.nutr-selected-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .nutr-selected-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+.nutr-mass-baseline {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.nutr-mass-value {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+.nutr-mass-unit {
+  font-size: 14px;
+  color: var(--muted);
+}
+.nutr-mass-detail {
+  font-size: 12px;
+  color: var(--faint);
+  margin-top: 4px;
+}
+.nutr-sparkline {
+  width: 100%;
+  height: 62px;
+  margin-top: 10px;
+  display: block;
+}
+.nutr-sparkline-axis {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10.5px;
+  color: var(--faint);
+  margin-top: 4px;
+}
+.nutr-sparkline-empty {
+  padding: 20px 0;
+  color: var(--faint);
+}
+
+.nutr-logging-strip {
+  display: flex;
+  gap: 6px;
+  margin-top: 16px;
+}
+.nutr-logging-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.nutr-logging-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  background: transparent;
+  border: 1px solid rgb(var(--bad-rgb) / 0.35);
+}
+.nutr-logging-cell.is-logged .nutr-logging-swatch {
+  background: rgb(var(--good-rgb) / 0.35);
+  border-color: rgb(var(--good-rgb) / 0.5);
+}
+.nutr-logging-initial {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 9.5px;
+  color: var(--faint);
+}
+.nutr-logging-caption {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--faint);
+  margin-top: 8px;
+}
+
+.nutr-checkin-title {
+  font-size: 12px;
+  font-weight: 700;
+}
+.nutr-checkin-footnote {
+  font-size: 11px;
+  color: var(--faint);
+  margin: 4px 0 12px;
+}
+.nutr-checkin-strip {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.nutr-checkin-cell {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+.nutr-checkin-yes {
+  background: rgb(var(--good-rgb) / 0.22);
+  color: var(--good-pill-text);
+  border-color: rgb(var(--good-rgb) / 0.4);
+}
+.nutr-checkin-roughly {
+  background: rgb(var(--warn-rgb) / 0.2);
+  color: var(--warn-pill-text);
+  border-color: rgb(var(--warn-rgb) / 0.4);
+}
+.nutr-checkin-no {
+  background: rgb(var(--bad-rgb) / 0.16);
+  color: var(--bad-pill-text);
+  border-color: rgb(var(--bad-rgb) / 0.4);
+}
+.nutr-override-note {
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: rgb(var(--accent-rgb) / 0.08);
+  border: 1px solid rgb(var(--accent-rgb) / 0.25);
+  border-radius: 10px;
+  font-size: 12px;
+  color: var(--accent-text);
+}
+
 /* ---------- Print, 06-design-system.md §14.7 ----------
  * "A print stylesheet forcing the light theme, removing shadows, and
  * keeping glyphs." The theme half lives in tokens.css (the only file

@@ -263,6 +263,33 @@
   }
 }
 
+/* NUTRITION-SPEC.md §1's colour table states Good as #4fd6ff, the same paler cyan
+ * as .phone above and by the same reasoning: this is a staff screen, but its own
+ * spec calls the value out explicitly as distinct from the staff-wide --good
+ * (#4dcbb2, teal), and — like .phone — this workspace never renders beside another
+ * screen that would make the inconsistency visible. Scoped to .nutrition-workspace,
+ * the workspace grid's own root class, not the whole /nutrition page (the topbar and
+ * group filter above it stay on the ordinary staff palette). Space-separated rgb
+ * triplet, not comma-separated — see --accent-rgb's own comment above for why a
+ * comma here silently turns every tint on this screen transparent. */
+.nutrition-workspace {
+  --good: #4fd6ff;
+  --good-rgb: 79 214 255;
+  --good-text: #0d5f75;
+  --good-pill-text: #0d5f75;
+}
+:root[data-theme='dark'] .nutrition-workspace,
+.dark-tokens .nutrition-workspace {
+  --good-text: #4fd6ff;
+  --good-pill-text: #4fd6ff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .nutrition-workspace {
+    --good-text: #4fd6ff;
+    --good-pill-text: #4fd6ff;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     --bg: #182241;

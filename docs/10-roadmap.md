@@ -1,7 +1,29 @@
 # 10: Roadmap
 
-> **Current phase: Phase 0, not started.** Update this line when a phase opens or closes.
-> CLAUDE.md §8 requires this file to be checked before starting work.
+> **Current phase line, corrected: this document's "Phase 0, not started" banner is stale
+> and, per CLAUDE.md §8, the code is the fact here, not the doc.** A real, running,
+> deployed product exists — Next.js staff web app and a real athlete web app (both live on
+> Vercel, real Supabase Postgres/Auth/RLS in the London region, a passing cross-tenant
+> suite in CI-equivalent form) — that covers most of what this document schedules across
+> Phase 0 through Phase 2, plus pieces of Phase 3 (the training report is GPS-derived
+> already, per the GPS note directly below). Concretely, as of this note: wellness and RPE
+> entry with immutable-plus-revision, the weekly nutrition check-in, staff dashboard with a
+> flags summary, thresholds, groups and the global group filter, schedule and a real
+> MD-n/week-template planner, availability and injury/rehab records, gym programme
+> builder and logging, a testing module, leaderboards, CSV/PDF reports, an audit log,
+> subject-access and retention tooling, and athlete data export all exist and are wired to
+> real RLS-scoped queries — not a mockup, not a design file. What genuinely has **not**
+> been done: no formal Phase 0→1a gate was ever run against this document's own exit
+> criteria (no dynamically-enumerated cross-tenant suite proven to catch a deliberately
+> broken policy, no timed database restore on record), no pilot club, no App Store/Play
+> submission (this is web-only for both shells so far, not the React Native/Expo mobile
+> apps §4 of `CLAUDE.md` describes), and none of the business-track items (pilot pricing,
+> DPA/solicitor review, compliance pack) have been done or even started — those are the
+> user's call, not something inferable from the code, and this note does not attempt to
+> resolve them. Treat every phase gate, timeline and effort estimate below as written for a
+> build that has not started, because they were, and re-derive them against the real state
+> before trusting any date on the gantt chart in §8. This note follows the same pattern as
+> the GPS note directly below it: flagged, not silently rewritten.
 
 > ### Note: the phase ordering predates the evidence and needs revisiting
 >

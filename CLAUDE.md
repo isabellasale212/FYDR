@@ -168,15 +168,16 @@ If a request implies one of these, flag it before building.
 
 ## 8. Current state
 
-**A Next.js staff web application already exists and is running.** This section previously
-said Fydr was a fresh build with no legacy code. That was written before the client supplied
-evidence and it is **false for the staff web app**. Correct position:
+**Both the staff and athlete surfaces exist and are running, live, in production.** This
+section has been wrong twice now, in opposite directions: it first said Fydr was a fresh
+build with no legacy code (false for staff web), then said the athlete app was greenfield
+(false too — it existed the whole time, just hadn't been inspected). Correct position:
 
 | Surface | State |
 |---|---|
-| **Staff web app** | **Exists.** Next.js. Working. Has a left sidebar with fifteen destinations and at least one fully built data screen (the training report). Source of the design system. **Not greenfield.** |
-| **Athlete mobile app** | No evidence of any code. Treat as greenfield until told otherwise. |
-| **Backend and schema** | Unknown. The existing web app reads from something. Whether that something matches `docs/04-data-model.md` has not been verified and should not be assumed. |
+| **Staff web app** | **Exists.** Next.js, deployed on Vercel. A left sidebar, consolidated to **nine** destinations (Groups, Timetable and Testing were their own rows and were folded into Squad overview/Schedule/Reports respectively; Flags has no row at all — see `02-information-architecture.md` §4.1, which records exactly where each went and resolves the O-723 question this file used to leave open). Covers dashboard, squad, schedule, reports, nutrition, gym programmes, leaderboards, analytics and settings, each backed by real RLS-scoped queries, not placeholders. Source of the design system (`src/styles/tokens.css`, `src/styles/base.css`). **Not greenfield, and further along than "exists and is running" suggests** — most of what `10-roadmap.md` schedules across its Phase 0–2 (and pieces of Phase 3: the training report is GPS-derived already) is real and shipped. See that file's own corrected banner.
+| **Athlete mobile app** | **Exists, is not mobile, and is not greenfield.** A full real experience — sign-in, a 4-tab shell, wellness/RPE/nutrition entry, gym logging, My Data, Programme, Me — lives at `src/app/(athlete)/`, sharing this same Next.js app and deployment with the staff surface. It is **responsive mobile web, not the React Native/Expo app §4 describes** — that native shell has not been started. Real divergence from §4, recorded here rather than silently followed: do not assume an Expo/React Native codebase exists anywhere in this repo. |
+| **Backend and schema** | **Known and real.** Supabase Postgres, real migrations, real RLS, a passing cross-tenant test suite (`npm run test:tenancy`). Broadly matches `04-data-model.md`, with real, individually-documented deviations found along the way (check the query file for the table you're touching — its own header comment usually says what's been simplified or cut against the doc, and why). |
 
 **Before assuming a greenfield build, inspect the existing code.** Specifically:
 

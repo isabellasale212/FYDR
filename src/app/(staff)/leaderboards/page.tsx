@@ -1,80 +1,70 @@
 import Link from 'next/link';
-import { EmptyState } from '@/components/EmptyState/EmptyState';
+import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
+import { LeaderboardWall } from '@/components/LeaderboardWall/LeaderboardWall';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
-import { fetchStaffBoards, fetchMetricCatalogue } from '@/lib/queries/leaderboards';
+import { fetchGroups } from '@/lib/queries/groups';
+import { fetchLeaderboardWall } from '@/lib/queries/leaderboardWall';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Leaderboard · Fydr' };
 
-/** screens/leaderboards.md, screen 26, simplified — see
- *  lib/queries/leaderboards.ts and the migration file for the exact cuts. Route per
- *  20-route-map.md line 122. */
-export default async function LeaderboardsPage() {
-  const { db, orgId, orgName } = await requireStaff();
-  const [boards, catalogue] = await Promise.all([
-    fetchStaffBoards(db, orgId),
-    fetchMetricCatalogue(db),
+/** LEADERBOARD-SPEC.md's testing wall — the real content of the bare /leaderboards
+ *  route now. A different feature from the real, staff-configured, consent-gated
+ *  single-metric board system (moved to /leaderboards/manage, untouched in
+ *  substance): this is staff-only, read-only, no opt-out, and never reaches an
+ *  athlete. See src/lib/queries/leaderboardWall.ts's own header for exactly what's
+ *  real, what's cut, and what's a documented placeholder in the nine boards below.
+ *
+ *  CLAUDE.md §3: this screen ranks the whole squad at once, so it needs the real,
+ *  global group filter — and per LEADERBOARD-SPEC.md §2, unlike the older board
+ *  detail page, the filter here genuinely re-ranks every board inside the filtered
+ *  pool rather than hiding rows after an unfiltered rank, because the wall computes
+ *  every rank fresh on every request instead of reading a persisted squad-wide
+ *  position. */
+export default async function LeaderboardWallPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const { db, orgId, timezone } = await requireStaff();
+  const sp = await searchParams;
+  const groupIds = await resolveGroupFilter(sp.groups);
+
+  const [groups, wall] = await Promise.all([
+    fetchGroups(db, orgId),
+    fetchLeaderboardWall(db, orgId, timezone, groupIds),
   ]);
-  const labelByKey = new Map(catalogue.map((m) => [m.key, m]));
+
+  const activeGroupNames = groups.filter((g) => groupIds.includes(g.id)).map((g) => g.name);
+  const activeGroupLabel = activeGroupNames.length > 0 ? activeGroupNames.join(' + ') : 'All squads';
 
   return (
     <>
       <div className="topbar">
         <div className="page-head">
-          <p className="eyebrow">Squad · {orgName}</p>
+          <p className="eyebrow">TESTING · LATEST RESULT PER ATHLETE · {activeGroupLabel.toUpperCase()}</p>
           <h1>Leaderboard</h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <Link href="/leaderboards/new" className="btn-primary">
-            + New leaderboard
+          <Link href="/leaderboards/manage" className="btn-ghost">
+            Manage published boards →
           </Link>
           <ThemeToggle />
         </div>
       </div>
 
-      {boards.length === 0 ? (
-        <EmptyState
-          title="No leaderboards yet"
-          body="Any eligible metric can be ranked. Wellness and body composition never can — see the builder for why."
-        />
-      ) : (
-        <div className="stack">
-          {boards.map((board) => {
-            const metric = labelByKey.get(board.metric_key);
-            return (
-              <Link key={board.id} href={`/leaderboards/${board.id}`} className="card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <p className="nm" style={{ marginBottom: 2 }}>
-                      {board.name}
-                    </p>
-                    <p className="tiny">
-                      {metric?.label ?? board.metric_key}
-                      {metric?.unit ? metric.unit : ''} · {board.population_type} ·{' '}
-                      {board.window_type === 'days'
-                        ? `last ${board.window_days} days`
-                        : board.window_type === 'season'
-                          ? 'this season'
-                          : 'all time'}
-                    </p>
-                  </div>
-                  <span
-                    className={`pill ${board.visibility === 'published' ? 'pill-good' : 'pill-neutral'}`}
-                  >
-                    {board.visibility === 'published' ? 'Published' : 'Draft'}
-                  </span>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      )}
-
-      <p className="cap">
-        Wellness and body composition can never be ranked here, by design &mdash; see any
-        ineligible metric in the builder for the reason. Boards render only once at least
-        three athletes qualify.
+      <p className="lbw-intro">
+        Every athlete, every test, one screen. Ranked inside their own positional unit by
+        default, because a hooker who is 24th in the squad on sprint speed might be the
+        fastest front row you have.
       </p>
+
+      <div style={{ marginBottom: 14 }}>
+        <GroupFilter groups={groups} selected={groupIds} />
+      </div>
+
+      <LeaderboardWall data={wall} activeGroupLabel={activeGroupLabel} />
     </>
   );
 }

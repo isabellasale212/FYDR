@@ -64,7 +64,7 @@ export default async function LeaderboardDetailPage({
       <div className="topbar">
         <div className="page-head">
           <p className="eyebrow">
-            <Link href="/leaderboards">Leaderboard</Link> · {board.name}
+            <Link href="/leaderboards/manage">Leaderboard</Link> · {board.name}
           </p>
           <h1>{board.name}</h1>
         </div>

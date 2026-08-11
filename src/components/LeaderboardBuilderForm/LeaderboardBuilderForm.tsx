@@ -254,7 +254,7 @@ export function LeaderboardBuilderForm({ orgId, userId, catalogue, groups }: Pro
         <button type="submit" className="btn-primary" disabled={mutation.isPending}>
           {mutation.isPending ? 'Saving…' : 'Save'}
         </button>
-        <button type="button" className="btn-ghost" onClick={() => router.push('/leaderboards')}>
+        <button type="button" className="btn-ghost" onClick={() => router.push('/leaderboards/manage')}>
           Cancel
         </button>
       </div>

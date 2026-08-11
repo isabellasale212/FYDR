@@ -11,7 +11,7 @@ export const metadata = { title: 'New leaderboard · Fydr' };
 export default async function NewLeaderboardPage() {
   const { db, orgId, claims } = await requireStaff();
   if (!claims.roles.some((r) => r === 'coach' || r === 'medical')) {
-    redirect('/leaderboards');
+    redirect('/leaderboards/manage');
   }
 
   const [catalogue, groups] = await Promise.all([fetchMetricCatalogue(db), fetchGroups(db, orgId)]);
@@ -21,7 +21,7 @@ export default async function NewLeaderboardPage() {
       <div className="topbar">
         <div className="page-head">
           <p className="eyebrow">
-            <Link href="/leaderboards">Leaderboard</Link> · New
+            <Link href="/leaderboards/manage">Leaderboard</Link> · New
           </p>
           <h1>New leaderboard</h1>
         </div>

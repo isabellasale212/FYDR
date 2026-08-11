@@ -119,8 +119,20 @@ Deep links arriving from push are shell namespaced (`/staff/...`, `/athlete/...`
 | 23 | Gym programme | `/programmes` | `screens/gym-programmes.md` | staff web, staff phone | coach, medical | none |
 | 22 | Programme builder | `/programmes/:programmeId` | `screens/programme-builder.md` | staff web | coach, medical | `/programmes` |
 | 22 | Exercise library | `/programmes/exercises` | `screens/programme-builder.md` | staff web | coach, medical | `/programmes` |
-| 26 | Leaderboard | `/leaderboards` | `screens/leaderboards.md` | staff web, staff phone | coach, medical, admin (aggregate) | none |
-| 26 | Board detail | `/leaderboards/:leaderboardId` | `screens/leaderboards.md` | staff web, staff phone | coach, medical | `/leaderboards` |
+| 26 | Leaderboard (testing wall) | `/leaderboards` | `LEADERBOARD-SPEC.md` | staff web | coach, medical, admin | none |
+| 26 | Manage leaderboards | `/leaderboards/manage` | `screens/leaderboards.md` | staff web, staff phone | coach, medical, admin (aggregate) | `/leaderboards` |
+| 26 | New leaderboard | `/leaderboards/new` | `screens/leaderboards.md` | staff web, staff phone | coach, medical | `/leaderboards/manage` |
+| 26 | Board detail | `/leaderboards/:leaderboardId` | `screens/leaderboards.md` | staff web, staff phone | coach, medical | `/leaderboards/manage` |
+
+Real divergence recorded here, not silently followed: `/leaderboards` itself moved from the
+consent-gated, staff-configured single-metric board list to a different, staff-only "testing
+wall" (LEADERBOARD-SPEC.md) — a read-only ranking of real `test_definitions`/`test_results`
+plus two real wellness/compliance metrics, never opt-out, never shown to an athlete. The real,
+consent-gated board system this row used to point at (create/publish/suppress, and the boards
+real athletes see at `/me/leaderboards` and `/my-data/boards`, both unaffected) moved to
+`/leaderboards/manage`, linked from the wall's own header. `screens/leaderboards.md` still
+describes that moved system accurately; it does not describe the wall, which has no screens/
+doc of its own yet — LEADERBOARD-SPEC.md is the only spec for it today.
 | 27 | Analytics | `/analytics` | `screens/analytics.md` | staff web, staff phone | coach, medical | none |
 | 27 | One preset | `/analytics/:presetId` | `screens/analytics.md` | staff web, staff phone | coach, medical | `/analytics` |
 | 27 | Query builder | `/analytics/builder` | `screens/analytics.md` | staff web | coach, medical | `/analytics` |

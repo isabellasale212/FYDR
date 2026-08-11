@@ -46,7 +46,7 @@ export function LeaderboardStaffActions({ orgId, userId, boardId, visibility, is
         setConfirmingDelete(false);
         return;
       }
-      router.push('/leaderboards');
+      router.push('/leaderboards/manage');
     },
   });
 

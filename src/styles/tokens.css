@@ -149,6 +149,36 @@
 }
 
 /* ---------------------------------------------------------------------------
+   LEADERBOARD-SPEC.md §1. Four literal colours the testing wall needs that
+   don't already exist as a token — checked --accent/--accent2/--good/--warn/
+   --bad and their -rgb triplets first; everything else in that spec's colour
+   table (the tints, the avatar pair, the gold pill) already matches an
+   existing token exactly. Single-valued like --gym above: the spec renders
+   one theme, so there is no separate dark-theme measurement to diverge from.
+   --------------------------------------------------------------------------- */
+:root {
+  /* "Two text colours exist only for contrast on tint... never #f6ab2f as
+     text": a rank-1 marker sitting on its own coloured band, and a warn-toned
+     shortfall sitting on plain white — both darker than the existing
+     --warn-text/--warn-pill-text derivations, which are for a different
+     surface (a status pill's own tint, or plain body text). */
+  --lb-rank1: #7a6205;
+  --lb-warn-on-white: #b07d0a;
+  /* The Standard lens's "met" checkmark. Coincidentally the same literal
+     value as ATHLETE-APP-SPEC.md's .phone --good-text override in this same
+     file — declared independently here since this is the staff surface, not
+     a reason to reach into that scoped block. */
+  --lb-standard-met: #0d5f75;
+  /* "Meets the standard" tint, rgba(79,214,255,0.2) — the spec's own #4fd6ff
+     cyan, distinct from the staff --good (#4dcbb2 teal) it would otherwise be
+     tempting to reuse. */
+  --lb-standard-met-rgb: 79 214 255;
+  /* The selected wall row's sticky name-cell background, a flat literal the
+     spec gives directly rather than as a computed alpha-over-white tint. */
+  --lb-row-selected: rgb(243 247 254);
+}
+
+/* ---------------------------------------------------------------------------
    Dark theme. One block, delivered three ways per §2.4.
    In dark, --surf2, --elev, --field and --avatar-bg are all #1a2340: there is
    one raised surface, not a scale.

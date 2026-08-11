@@ -3761,3 +3761,516 @@ table.tbl tbody tr:hover {
     margin: 12mm;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Leaderboard wall, LEADERBOARD-SPEC.md. The real content of /leaderboards —
+   see src/lib/queries/leaderboardWall.ts's own header for what's real, what's
+   cut, and what's a documented placeholder.
+
+   Foundations already match this app's design system with zero new colour
+   literals beyond the four added to tokens.css (checked --accent/--accent2/
+   --good/--warn/--bad/--highlight and their -rgb triplets first): the page
+   background gradient (.tr-bg, already shipped for the training report),
+   the stats card (.dash-stats/.dash-stat*, already shipped for the
+   dashboard — reused verbatim in the JSX, no new class), the chip styling
+   (.squad-chip, active solid accent / inactive outlined), and the pill
+   family (.pill-accent already existed; .pill-gold is added below,
+   completing that family the same way .pill-good/.pill-warn/.pill-bad do).
+
+   Rail and sticky group-filter bar are deliberately NOT rebuilt: this app's
+   real staff shell already has a working 236px/64px sidebar
+   (src/components/Sidebar/Sidebar.tsx) and a real GroupFilter component used
+   plainly, the same way every other staff screen uses it — building the
+   spec's own bespoke 64px icon rail and blurred sticky filter bar would be a
+   second, competing shell, which CLAUDE.md's whole "the real code is the
+   source of truth" §8 stance rules out.
+   --------------------------------------------------------------------------- */
+
+.lbw-intro {
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 68ch;
+  margin: 6px 0 18px;
+}
+
+/* ---------- Moved the most ---------- */
+
+.lbw-movers-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 26px 2px 12px;
+}
+.lbw-movers-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.lbw-movers-caption {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-left: auto;
+}
+.lbw-movers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+@media (max-width: 1150px) {
+  .lbw-movers-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 800px) {
+  .lbw-movers-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lbw-mover-card {
+  cursor: pointer;
+  transition: border-color var(--t-state);
+}
+.lbw-mover-card.is-top {
+  border-color: rgb(var(--highlight-rgb) / 0.5);
+}
+.lbw-mover-card.is-selected {
+  border-color: var(--accent);
+}
+.lbw-mover-head {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+.lbw-mover-name {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lbw-mover-unit {
+  font-size: 11.5px;
+  color: var(--faint);
+  margin: 0;
+}
+.lbw-mover-delta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 14px;
+}
+.lbw-mover-delta-value {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+}
+.lbw-mover-delta-board {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.lbw-mover-range {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  margin-top: 6px;
+}
+.lbw-mover-spark {
+  margin-top: 12px;
+}
+.lbw-mover-spark svg {
+  display: block;
+  width: 100%;
+  height: 42px;
+}
+.lbw-mover-foot {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--faint);
+  margin: 10px 0 0;
+}
+
+.pill-gold {
+  --pill-rgb: var(--highlight-rgb);
+  --pill-text: var(--highlight-text);
+}
+
+/* ---------- Controls ---------- */
+
+.lbw-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+}
+
+.lbw-segmented {
+  display: inline-flex;
+  background: var(--hair);
+  border-radius: 20px;
+  padding: 4px;
+  gap: 4px;
+}
+.lbw-segmented button {
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background var(--t-state), color var(--t-state);
+}
+.lbw-segmented button[aria-selected='true'] {
+  background: var(--surf);
+  color: var(--accent);
+}
+
+.lbw-ranked-in {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.lbw-chip-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  opacity: 0.65;
+}
+.lbw-chip-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.lbw-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.lbw-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.lbw-swatch {
+  display: inline-block;
+  width: 22px;
+  height: 12px;
+  border-radius: 4px;
+}
+
+/* ---------- The wall ---------- */
+
+.lbw-wall-card {
+  margin-top: 14px;
+}
+.lbw-wall-scroll {
+  overflow-x: auto;
+}
+
+.lbw-wall-header {
+  padding: 0 6px 10px;
+}
+.lbw-wall-head-name {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+  position: sticky;
+  left: 0;
+  background: var(--surf);
+  z-index: 2;
+  align-self: end;
+}
+.lbw-wall-head-board {
+  text-align: right;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.lbw-wall-head-sub {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--faint);
+  text-transform: none;
+  letter-spacing: normal;
+  margin-top: 2px;
+  font-weight: 400;
+}
+
+.lbw-group-row {
+  padding: 13px 6px 7px;
+  border-top: 1px solid var(--hair);
+}
+.lbw-group-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  position: sticky;
+  left: 0;
+  background: var(--surf);
+}
+.lbw-group-cell {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--faint);
+  text-align: right;
+}
+
+.lbw-athlete-row {
+  padding: 7px 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background var(--t-state);
+}
+.lbw-athlete-row:hover {
+  background: var(--hair);
+}
+.lbw-athlete-row.is-selected {
+  background: rgb(var(--accent-rgb) / 0.07);
+}
+.lbw-name-cell {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--surf);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+.lbw-athlete-row.is-selected .lbw-name-cell {
+  background: var(--lb-row-selected);
+}
+.lbw-name {
+  font-size: 13.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lbw-athlete-row.is-selected .lbw-name {
+  font-weight: 700;
+}
+.lbw-age {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--faint);
+  flex: none;
+}
+
+.lbw-value-cell {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 8px;
+  border-radius: 7px;
+  font-variant-numeric: tabular-nums;
+}
+.lbw-value-marker {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+}
+.lbw-value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.lbw-wall-caption {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--muted);
+  margin: 14px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+/* ---------- Selected athlete + unit leaders ---------- */
+
+.lbw-lower-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  margin-top: 14px;
+}
+@media (max-width: 1000px) {
+  .lbw-lower-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lbw-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  background: var(--avatar-bg);
+  color: var(--avatar-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex: none;
+}
+
+.lbw-sel-head {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+.lbw-sel-name {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+.lbw-sel-meta {
+  font-size: 11.5px;
+  color: var(--faint);
+  margin: 2px 0 0;
+}
+.lbw-profile-link {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.lbw-sel-table {
+  margin-top: 4px;
+}
+.lbw-sel-thead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 76px 58px 58px 72px;
+  gap: 8px;
+  padding: 16px 0 8px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.lbw-sel-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 76px 58px 58px 72px;
+  gap: 8px;
+  padding: 9px 0;
+  border-top: 1px solid var(--hair);
+  align-items: center;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.lbw-sel-table .r {
+  text-align: right;
+}
+.lbw-sel-thead .r {
+  text-align: right;
+}
+.lbw-sel-test {
+  font-family: var(--font-sora), sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin: 0;
+}
+.lbw-sel-std {
+  font-size: 10.5px;
+  color: var(--faint);
+  margin: 1px 0 0;
+}
+.lbw-sel-result {
+  font-size: 13px;
+}
+.lbw-sel-squad {
+  color: var(--faint);
+}
+.lbw-sel-foot {
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.lbw-leaders-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+}
+.lbw-leaders-sub {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+.lbw-leaders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(184px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.lbw-leader-tile {
+  background: var(--surf2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+}
+.lbw-leader-board {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin: 0 0 8px;
+}
+.lbw-leader-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 5px;
+}
+.lbw-leader-unit {
+  font-size: 11px;
+  color: var(--faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lbw-leader-value {
+  font-size: 11.5px;
+  font-weight: 600;
+  flex: none;
+}
+
+@media (max-width: 800px) {
+  .lbw-controls-row {
+    align-items: flex-start;
+  }
+  .lbw-legend {
+    margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lbw-segmented button,
+  .lbw-athlete-row,
+  .squad-chip {
+    transition: none;
+  }
+}

@@ -1671,6 +1671,95 @@ export type Database = {
         }
       ]
     }
+    nutrition_rules: {
+      Row: {
+        id: string
+        org_id: string
+        athlete_id: string | null
+        group_id: string | null
+        org_default: boolean
+        protein_g_per_kg: number
+        carb_g_per_kg: number
+        fat_g_per_kg: number
+        fluid_ml_per_kg: number
+        energy_kcal_cap: number | null
+        reason: string | null
+        effective_from: string
+        effective_to: string | null
+        created_by: string | null
+        created_at: string
+        updated_at: string
+        deleted_at: string | null
+      }
+      Insert: {
+        id?: string
+        org_id: string
+        athlete_id?: string | null
+        group_id?: string | null
+        org_default?: boolean
+        protein_g_per_kg: number
+        carb_g_per_kg: number
+        fat_g_per_kg: number
+        fluid_ml_per_kg: number
+        energy_kcal_cap?: number | null
+        reason?: string | null
+        effective_from?: string
+        effective_to?: string | null
+        created_by?: string | null
+        created_at?: string
+        updated_at?: string
+        deleted_at?: string | null
+      }
+      Update: {
+        id?: string
+        org_id?: string
+        athlete_id?: string | null
+        group_id?: string | null
+        org_default?: boolean
+        protein_g_per_kg?: number
+        carb_g_per_kg?: number
+        fat_g_per_kg?: number
+        fluid_ml_per_kg?: number
+        energy_kcal_cap?: number | null
+        reason?: string | null
+        effective_from?: string
+        effective_to?: string | null
+        created_by?: string | null
+        created_at?: string
+        updated_at?: string
+        deleted_at?: string | null
+      }
+      Relationships: [
+        {
+          foreignKeyName: "nutrition_rules_athlete_id_fkey"
+          columns: ["athlete_id"]
+          isOneToOne: false
+          referencedRelation: "athletes"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "nutrition_rules_created_by_fkey"
+          columns: ["created_by"]
+          isOneToOne: false
+          referencedRelation: "users"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "nutrition_rules_group_id_fkey"
+          columns: ["group_id"]
+          isOneToOne: false
+          referencedRelation: "groups"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "nutrition_rules_org_id_fkey"
+          columns: ["org_id"]
+          isOneToOne: false
+          referencedRelation: "organisations"
+          referencedColumns: ["id"]
+        }
+      ]
+    }
     nutrition_targets: {
       Row: {
         id: string

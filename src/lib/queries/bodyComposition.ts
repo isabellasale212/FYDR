@@ -25,6 +25,44 @@ export type BodyCompositionEntry = {
   method: string | null;
 };
 
+/** Bulk read for /nutrition: every in-scope athlete's weigh-in history in one query,
+ *  rather than one round trip per athlete on a screen that can show 25+ of them at
+ *  once. Used for three real things at once: the latest mass (targets, the range bar),
+ *  the trailing weekly readings (the mean +/- SD band and the sparkline), and "days
+ *  logged this week" (the week's-logging strip and the "Logged {n} of 7" chase-list
+ *  reason) — see lib/nutritionRules.ts's header for why those are real substitutes for
+ *  the spec's fabricated target range and its undefined "meal logging" respectively. */
+export async function fetchBodyCompositionForAthletes(
+  db: Db,
+  orgId: string,
+  athleteIds: readonly string[],
+  sinceIso: string,
+): Promise<Map<string, BodyCompositionEntry[]>> {
+  if (athleteIds.length === 0) return new Map();
+  const { data, error } = await db
+    .from('body_composition')
+    .select('id, athlete_id, measured_on, body_mass_kg, body_fat_pct, method')
+    .eq('org_id', orgId)
+    .in('athlete_id', [...athleteIds])
+    .gte('measured_on', sinceIso)
+    .order('measured_on', { ascending: false });
+  if (error) throw new Error(error.message);
+
+  const byAthlete = new Map<string, BodyCompositionEntry[]>();
+  for (const row of data ?? []) {
+    const list = byAthlete.get(row.athlete_id) ?? [];
+    list.push({
+      id: row.id,
+      measured_on: row.measured_on,
+      body_mass_kg: row.body_mass_kg,
+      body_fat_pct: row.body_fat_pct,
+      method: row.method,
+    });
+    byAthlete.set(row.athlete_id, list);
+  }
+  return byAthlete;
+}
+
 export async function fetchBodyCompositionEntries(
   db: Db,
   orgId: string,

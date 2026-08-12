@@ -127,7 +127,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           <div className="dash-stat-sub">athletes today</div>
           <div className="dash-stat-foot">across wellness and GPS</div>
         </Link>
-        <Link href="/compliance" className="dash-stat">
+        <Link href="/reports/compliance" className="dash-stat">
           <div className="dash-stat-label">Wellness in</div>
           <div className="dash-stat-value">
             {stats.wellnessPct !== null ? (
@@ -431,7 +431,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                 <h2 className="card-title" style={{ margin: 0 }}>
                   Outstanding entries
                 </h2>
-                <Link href="/compliance" className="tiny" style={{ color: 'var(--accent)', fontWeight: 600 }}>
+                <Link href="/reports/compliance" className="tiny" style={{ color: 'var(--accent)', fontWeight: 600 }}>
                   Compliance ›
                 </Link>
               </div>

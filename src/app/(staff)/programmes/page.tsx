@@ -147,19 +147,12 @@ export default async function ProgrammesPage({
                   <span className="pill pill-accent">
                     {selected.assigned_athlete_count} athlete{selected.assigned_athlete_count === 1 ? '' : 's'}
                   </span>
-                  <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-                    <button type="button" className="btn-ghost" disabled title="Not built yet — see the caption below.">
-                      Duplicate
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-primary"
-                      disabled
-                      title="Not built yet — assign athletes from the programme builder instead."
-                    >
-                      Assign
-                    </button>
-                  </div>
+                  {/* Duplicate and Assign used to sit here as disabled
+                   *  buttons with no write path behind them — an audit
+                   *  finding: dead controls in the header teach a coach
+                   *  that buttons on this screen might not work. Hidden
+                   *  until they do something real; assignment happens in
+                   *  the programme builder, linked below. */}
                 </div>
                 {selected.goal ? (
                   <p className="tiny" style={{ marginTop: 6 }}>
@@ -232,10 +225,9 @@ export default async function ProgrammesPage({
                 )}
 
                 <p className="cap mono" style={{ marginTop: 14 }}>
-                  Overrides are per athlete and never rewrite the general programme — this build has no
-                  exercise_overrides table yet, so Override reads &ldquo;&mdash;&rdquo; for every row rather than guessing.
-                  Duplicate and Assign are real buttons with no write path behind them yet; assign a group or
-                  athlete from the programme builder linked above instead.
+                  Overrides are per athlete and never rewrite the general programme. Per-athlete
+                  overrides aren&rsquo;t available yet, so Override reads &ldquo;&mdash;&rdquo; for
+                  every row. Assign a group or athlete from the programme builder linked above.
                 </p>
               </div>
             )}

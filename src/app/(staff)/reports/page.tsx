@@ -158,10 +158,9 @@ export default async function ReportsPage() {
       </div>
 
       <p className="cap">
-        Live pages, recomputed each time you open them, each with a CSV and a PDF export &mdash;
-        see lib/pdf.tsx for why PDF turned out to be buildable after all, once actually checked.
-        No XLSX format and no scheduled delivery in this build &mdash; both still real, documented
-        gaps, not oversights.
+        Live pages, recomputed each time you open them. Every report exports to CSV, and all but
+        the training report also export to PDF. XLSX and scheduled email delivery aren&rsquo;t
+        available yet.
       </p>
     </>
   );

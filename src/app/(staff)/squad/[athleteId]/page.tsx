@@ -172,7 +172,7 @@ export default async function AthletePage({
               <Pill status={availabilityStatus(athlete.availability?.status ?? null)} />
             </div>
             <DomainChips />
-            <button type="button" className="btn-ghost-pill" disabled aria-disabled="true" title="Staff-side profile editing isn't built in this pass.">
+            <button type="button" className="btn-ghost-pill" disabled aria-disabled="true" title="Staff-side profile editing isn't available yet.">
               Edit
             </button>
             <div className="pp-wellness-mini" aria-label="Today's wellness entry">
@@ -300,7 +300,7 @@ export default async function AthletePage({
               <EmptyState
                 headingLevel={3}
                 title="No adaptation log entries"
-                body="This is a real, planned feature with no backing table in this schema yet, so there is nowhere to write an entry to and nothing fabricated here to show instead."
+                body="Adaptation notes are planned but not available yet. Nothing has been recorded here."
               />
             </section>
 
@@ -401,8 +401,8 @@ export default async function AthletePage({
                 <span className="pp-goal-label">Goal:</span> {programme?.goal ?? 'No active programme goal on record.'}
               </p>
               <p className="pp-goal-note">
-                No freeform &ldquo;Next window&rdquo; coaching note on record — there is no schema field for
-                one yet; only the programme&apos;s own stated goal is wired this pass.
+                No coaching note on record — only the programme&apos;s own stated goal is shown
+                here.
               </p>
             </section>
 
@@ -470,7 +470,7 @@ export default async function AthletePage({
                       No weigh-in recorded.
                     </p>
                   )}
-                  <p className="pp-weight-note">No target range on record — there is no target-weight column in this schema.</p>
+                  <p className="pp-weight-note">No target range on record.</p>
                 </div>
                 {bodyWeight.deltaKg !== null && bodyWeight.deltaDays !== null ? (
                   <div className="pp-weight-right">

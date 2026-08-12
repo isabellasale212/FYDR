@@ -126,9 +126,9 @@ export default async function MePage() {
 
         <section className="card" aria-labelledby="more-title">
           <h2 className="card-title" id="more-title">
-            Not built yet
+            Coming soon
           </h2>
-          <p className="cap">Privacy controls. Gets its own pass.</p>
+          <p className="cap">Privacy controls are planned for a future update.</p>
         </section>
       </div>
 

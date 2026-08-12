@@ -165,8 +165,15 @@ export function TimetableSessionCard({ orgId, userId, actorRole, session, defaul
                 </p>
               ) : null}
 
-              <div style={{ overflowX: 'auto' }}>
-                <div style={{ minWidth: 560 }}>
+              {/* No fixed min-width and no horizontal scroll: the row is a
+               *  wrapping flex, so on a phone the attendance buttons wrap
+               *  onto their own line below the name instead of sitting
+               *  off-screen — a real audit blocker: at 375px the controls
+               *  rendered up to ~184px past the right edge with no way to
+               *  reach them, on the one screen built for pitch-side phone
+               *  use. */}
+              <div>
+                <div>
                   {session.participants.map((p, index) => (
                     <div key={p.athlete_id}>
                       {index > 0 ? <div className="hair" /> : null}

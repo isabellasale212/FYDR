@@ -105,8 +105,7 @@ export default async function InjuryDetailPage({
           <p className="note-text">
             <b>This is what coaching staff see.</b> Diagnosis, clinical notes and
             treatment plan are medical only and are not shown here, by design &mdash;
-            not because they were left out of this page, but because this build has no
-            path that would ever put them in front of a coach.
+            no screen ever puts them in front of a coach.
           </p>
         </div>
       )}

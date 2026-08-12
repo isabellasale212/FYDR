@@ -152,7 +152,7 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
             Load, weekly per athlete
           </h2>
           <p className="import-sub" style={{ padding: '0 16px' }}>
-            ACWR distribution, worst first. 0.8 and 1.5 are the reference lines this build uses everywhere the ratio appears.
+            ACWR distribution, worst first. 0.8 and 1.5 are the reference lines used everywhere the ratio appears.
           </p>
           {report.load.length === 0 ? (
             <p className="tiny" style={{ padding: 16 }}>

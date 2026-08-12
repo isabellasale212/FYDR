@@ -162,8 +162,9 @@ export function NotificationPreferencesForm({ orgId, userId, entries, initialPre
       </section>
 
       <p className="cap">
-        In-app notifications are always on and can&apos;t be turned off here. Saved instantly, per device &mdash; nothing here
-        actually sends a push or an email yet in this build; see the club&apos;s own roadmap for when that lands.
+        In-app notifications are always on and can&apos;t be turned off here. Preferences save
+        instantly. Push and email delivery aren&apos;t live yet &mdash; these settings will
+        apply as soon as they are.
       </p>
     </div>
   );

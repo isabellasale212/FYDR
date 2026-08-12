@@ -217,8 +217,8 @@ export default async function AthleteReportPage({
                 </div>
                 {report.load.suppressed ? (
                   <p className="cap">
-                    Suppressed — only {report.load.daysWithData} of the trailing 28 days have a load entry, below the 21 day
-                    guard this build uses everywhere ACWR appears.
+                    Suppressed — only {report.load.daysWithData} of the trailing 28 days have a load entry, below the
+                    21-day minimum needed for a reliable ratio.
                   </p>
                 ) : null}
 
@@ -333,8 +333,8 @@ export default async function AthleteReportPage({
                     </table>
                   )}
                   <p className="cap" style={{ padding: 16 }}>
-                    No squad percentile in this build &mdash; that needs every athlete&apos;s results in the same query, a
-                    squad-level report rather than this one.
+                    Squad percentiles aren&apos;t shown on this one-athlete report &mdash; see the
+                    Testing report for squad-wide comparisons.
                   </p>
                 </section>
               </div>

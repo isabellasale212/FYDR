@@ -54,7 +54,7 @@ export async function GET(request: Request) {
     ]);
     const withCaption =
       `# Match day GPS report, v ${selected.opponent}, ${selected.date}. Whole-match totals only — ` +
-      `this schema has no first-half/second-half split.\r\n` + csv;
+      `GPS is not recorded as a first-half/second-half split.\r\n` + csv;
 
     await recordReportView(db, orgId, claims.userId, actorRole, 'training', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, format: 'csv', mode }, 'export');
     return csvResponse(withCaption, `match-report-${selected.date}.csv`);

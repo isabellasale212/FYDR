@@ -121,8 +121,8 @@ export default async function TeamAllocationPage({
 
       <p className="cap">
         Availability, restrictions and body area only &mdash; the same boundary as every
-        other screen in this build. No diagnosis, no clinical notes, not even for
-        medical, on this screen.
+        other screen. No diagnosis, no clinical notes, not even for medical, on this
+        screen.
       </p>
     </>
   );

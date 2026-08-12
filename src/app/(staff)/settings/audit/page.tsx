@@ -86,8 +86,8 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Sea
       )}
 
       <p className="cap" style={{ marginTop: 10 }}>
-        The most recent {rows.length} entries for this filter · no pagination or search in this build,
-        both real, documented gaps.
+        The most recent {rows.length} entries for this filter. Pagination and search aren&rsquo;t
+        available yet.
       </p>
     </>
   );

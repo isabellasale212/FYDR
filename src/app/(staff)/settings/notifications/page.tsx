@@ -35,7 +35,7 @@ export default async function StaffNotificationsPage() {
       {entries.length === 0 ? (
         <div className="empty">
           <h2>Nothing to configure</h2>
-          <p>None of this build&apos;s staff notifications apply to your role yet.</p>
+          <p>No staff notifications apply to your role yet.</p>
         </div>
       ) : (
         <NotificationPreferencesForm orgId={orgId} userId={claims.userId} entries={entries} initialPreferences={initialPreferences} showMuteAll={false} isMinor={false} />

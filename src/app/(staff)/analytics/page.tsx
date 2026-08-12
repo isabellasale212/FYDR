@@ -180,10 +180,8 @@ export default async function AnalyticsPage({
       </section>
 
       <p className="cap">
-        Two of the five presets this screen specifies. Compliance needs a working
-        expectations pipeline this build doesn&rsquo;t generate yet; load distribution by
-        matchday and the nutrition check-in trend are each a real screen of their own,
-        left for a pass with room for them.
+        More presets are planned &mdash; compliance trends, load distribution by matchday, and
+        the nutrition check-in trend &mdash; and aren&rsquo;t available yet.
       </p>
     </>
   );

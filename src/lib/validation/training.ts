@@ -18,10 +18,15 @@ export const TrainingEntryInput = z.object({
 
 export type TrainingEntryInput = z.infer<typeof TrainingEntryInput>;
 
-/** Modified Borg CR10, 10 at the top descending to 1, matching the printed
- * chart every athlete has already seen. O-410: the anchor wording wants a
- * sports science review before this ships past a thin slice. */
-export const CR10_SCALE = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1] as const;
+/** Modified Borg CR10, ascending 1 to 10. The 5×2 grid reads left-to-right,
+ * top-to-bottom, so ascending order puts 1 (Very easy) top-left and 10
+ * (Maximal) bottom-right — matching the screen's own "Session rating, 1 to
+ * 10" heading and the direction of every 1–10 control an athlete has ever
+ * used. (The old 10-first order came from the vertical Borg-chart list this
+ * screen used to be; kept there it made sense, in a grid it read backwards —
+ * a real audit finding.) O-410: the anchor wording wants a sports science
+ * review before this ships past a thin slice. */
+export const CR10_SCALE = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
 export const CR10_ANCHORS: Record<(typeof CR10_SCALE)[number], string | null> = {
   10: 'Maximal',

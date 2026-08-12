@@ -79,8 +79,8 @@ export default async function ImportsPage() {
             </div>
           )}
           <p className="cap">
-            No revert and no duplicate detection in this build — re-uploading the same file makes a second batch of the same
-            rows. See <b>Import GPS data</b> above for the rest of what this pass does and does not do.
+            There is no revert and no duplicate detection yet — re-uploading the same file makes
+            a second batch of the same rows. Check the batch list above before re-uploading.
           </p>
         </section>
       </div>

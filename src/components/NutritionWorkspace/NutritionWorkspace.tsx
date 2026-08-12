@@ -306,7 +306,7 @@ export function NutritionWorkspace({
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button type="button" className="btn-ghost" disabled title="Not implemented in this pass">
+              <button type="button" className="btn-ghost" disabled title="Not available yet">
                 Duplicate
               </button>
               <button
@@ -406,10 +406,10 @@ export function NutritionWorkspace({
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button type="button" className="btn-ghost" disabled title="Not implemented in this pass">
+              <button type="button" className="btn-ghost" disabled title="Not available yet">
                 Food library
               </button>
-              <button type="button" className="btn-ghost" disabled title="Not implemented in this pass">
+              <button type="button" className="btn-ghost" disabled title="Not available yet">
                 + Meal
               </button>
             </div>

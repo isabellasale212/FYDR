@@ -108,10 +108,8 @@ export default async function TimetablePage({ searchParams }: { searchParams: Se
       )}
 
       <p className="cap">
-        Job 4 of screens/timetable.md, the restriction warning, uses only real
-        session_type and planned_rpe columns — the doc&rsquo;s fuller version also matches
-        session tags, which this schema has no column for. Every restriction still shows on
-        the athlete&rsquo;s own row regardless; only the automated conflict banner is reduced.
+        Every restricted athlete&rsquo;s restrictions are shown on their own row. Check them
+        before marking anyone as full participation.
       </p>
     </>
   );

@@ -77,13 +77,26 @@ export async function fetchTestingByAthlete(db: Db, orgId: string, groupIds: rea
   const { data: results, error } = await resultsQuery;
   if (error) throw new Error(error.message);
 
+  const higherIsBetterByDef = new Map(definitions.map((d) => [d.id, d.higher_is_better]));
+
   const cellByAthleteTest = new Map<string, TestingByAthleteCell>();
   for (const r of results ?? []) {
     const key = `${r.athlete_id}:${r.test_definition_id}`;
     const existing = cellByAthleteTest.get(key);
-    // Multiple is_best rows can exist across sides (side_mode tests); keep
-    // the most recent one per test per athlete for this grid.
-    if (!existing || (existing.date !== null && r.test_date > existing.date)) {
+    // is_best marks the best attempt WITHIN a session, so an athlete has one
+    // is_best row per session (and per side). The grid's header says
+    // "current personal best", so the winner across sessions must be picked
+    // by the test's own direction — this previously kept the most RECENT
+    // session's best instead, which showed phantom PB regressions the
+    // moment anyone posted a result worse than their true best (a real,
+    // verified audit finding: an athlete with a 41.6 all-time best showed
+    // 31.0 because that was the latest session).
+    const higherIsBetter = higherIsBetterByDef.get(r.test_definition_id) ?? true;
+    const beatsExisting =
+      !existing ||
+      existing.value === null ||
+      (higherIsBetter ? r.value > existing.value : r.value < existing.value);
+    if (beatsExisting) {
       cellByAthleteTest.set(key, { test_definition_id: r.test_definition_id, value: r.value, date: r.test_date, isPb: true });
     }
   }

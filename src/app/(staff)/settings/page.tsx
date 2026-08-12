@@ -167,7 +167,7 @@ export default async function SettingsPage() {
                 </p>
               </div>
               {onPremium ? (
-                <button type="button" className="set-row-btn" data-variant="connect" disabled aria-disabled="true" title="No HealthKit connect flow exists in this build yet — the athlete mobile app this integration depends on hasn't been built.">
+                <button type="button" className="set-row-btn" data-variant="connect" disabled aria-disabled="true" title="HealthKit connection requires the athlete mobile app, which isn't available yet.">
                   Connect
                 </button>
               ) : (
@@ -221,7 +221,7 @@ export default async function SettingsPage() {
             </span>
           </a>
 
-          <div className="set-list-row" data-disabled="true" aria-disabled="true" title="Not built this pass.">
+          <div className="set-list-row" data-disabled="true" aria-disabled="true" title="Not available yet.">
             <span>
               <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block', color: 'var(--faint)' }}>Exports</span>
               <span style={{ fontSize: 12, color: 'var(--faint)' }}>Not built yet</span>

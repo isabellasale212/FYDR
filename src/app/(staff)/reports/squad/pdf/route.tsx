@@ -55,7 +55,7 @@ export async function GET(request: Request) {
 
       <PdfSectionTitle
         title="Load, weekly per athlete"
-        caption="ACWR distribution, worst first. 0.8 and 1.5 are the reference lines this build uses everywhere the ratio appears."
+        caption="ACWR distribution, worst first. 0.8 and 1.5 are the reference lines used everywhere the ratio appears."
       />
       <PdfTable
         emptyText="No athlete in this filter."

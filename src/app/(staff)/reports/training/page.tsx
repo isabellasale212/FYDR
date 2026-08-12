@@ -295,11 +295,11 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                 </h2>
               </div>
               <p className="tiny" style={{ marginTop: 8, maxWidth: '76ch' }}>
-                Not available. This schema records one cumulative GPS total per athlete per match, not a
-                first-half/second-half split — no table anywhere tracks which minute a substitution happened,
-                so there is nothing real to draw a first-half-vs-second-half comparison from. Building this
-                card would mean presenting an invented split as if a device had measured it, for real, named
-                athletes. The dials and comparison above use whole-match totals and per-minute rates, both
+                Not available. GPS is recorded as one whole-match total per athlete, with no
+                first-half/second-half split and no record of when substitutions happened, so
+                there is nothing real to draw a half-by-half comparison from. Showing one anyway
+                would mean presenting an invented split as if a device had measured it, for real,
+                named athletes. The dials and comparison above use whole-match totals and per-minute rates, both
                 real; only the half-by-half breakdown is a real, stated gap.
               </p>
             </div>

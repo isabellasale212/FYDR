@@ -1,6 +1,8 @@
 import { csvResponse, toCsv } from '@/lib/csv';
 import { fetchInjuryAvailabilityReport, recordReportView } from '@/lib/queries/reports';
-import { parseGroupParam } from '@/lib/groupFilter';
+import { fetchGroups } from '@/lib/queries/groups';
+import { groupScopeLabel } from '@/lib/groupFilter';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { addDays, todayIso } from '@/lib/format';
 import { requireReportAccess } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
@@ -8,18 +10,28 @@ import type { AppRole } from '@/lib/types/database';
 /** CSV only, see lib/csv.ts's header. The coach export and the medical
  *  export are two different queries, not one CSV with a column hidden after
  *  the fact — isMedical gates which fields fetchInjuryAvailabilityReport
- *  even reads, the same boundary the report page itself holds. */
+ *  even reads, the same boundary the report page itself holds.
+ *
+ *  Scoped through resolveGroupFilter (URL param, then the sticky filter
+ *  cookie), not parseGroupParam on the URL alone: the audit's S4 finding
+ *  (analysis findings 27/49) was a group filter that silently re-scoped
+ *  every screen while this export answered a bare URL with differently-
+ *  scoped rows and no hint either way. The export now resolves the scope
+ *  exactly as the page does, and the `# Scope:` caption line states it. */
 export async function GET(request: Request) {
   const { db, orgId, claims, timezone } = await requireReportAccess();
   const isMedical = claims.roles.includes('medical');
   const url = new URL(request.url);
-  const groupIds = parseGroupParam(url.searchParams.get('groups') ?? undefined);
+  const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
   const days = [28, 90].includes(Number(url.searchParams.get('days'))) ? Number(url.searchParams.get('days')) : 28;
 
   const today = todayIso(timezone);
   const fromDate = addDays(today, -(days - 1));
 
-  const report = await fetchInjuryAvailabilityReport(db, orgId, groupIds, fromDate, today, isMedical);
+  const [groups, report] = await Promise.all([
+    fetchGroups(db, orgId),
+    fetchInjuryAvailabilityReport(db, orgId, groupIds, fromDate, today, isMedical),
+  ]);
 
   const rows = report.current.map((r) => ({
     name: r.name,
@@ -60,5 +72,9 @@ export async function GET(request: Request) {
     'export',
   );
 
-  return csvResponse(csv, `injury-availability-${fromDate}-to-${today}.csv`);
+  const caption =
+    `# Injury & availability report, ${fromDate} to ${today}. ` +
+    `Scope: ${groupScopeLabel(groups, groupIds)} (${report.summary.athleteCount} athletes).\r\n`;
+
+  return csvResponse(caption + csv, `injury-availability-${fromDate}-to-${today}.csv`);
 }

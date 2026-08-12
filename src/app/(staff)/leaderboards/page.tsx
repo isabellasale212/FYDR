@@ -4,6 +4,7 @@ import { LeaderboardWall } from '@/components/LeaderboardWall/LeaderboardWall';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchLeaderboardWall } from '@/lib/queries/leaderboardWall';
+import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 
@@ -36,8 +37,7 @@ export default async function LeaderboardWallPage({
     fetchLeaderboardWall(db, orgId, timezone, groupIds),
   ]);
 
-  const activeGroupNames = groups.filter((g) => groupIds.includes(g.id)).map((g) => g.name);
-  const activeGroupLabel = activeGroupNames.length > 0 ? activeGroupNames.join(' + ') : 'All squads';
+  const activeGroupLabel = groupScopeLabel(groups, groupIds);
 
   return (
     <>

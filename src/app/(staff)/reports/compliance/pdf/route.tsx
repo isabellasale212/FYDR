@@ -1,6 +1,8 @@
 import { renderToBuffer } from '@react-pdf/renderer';
 import { fetchComplianceReport, recordReportView } from '@/lib/queries/reports';
-import { parseGroupParam } from '@/lib/groupFilter';
+import { fetchGroups } from '@/lib/queries/groups';
+import { groupScopeLabel } from '@/lib/groupFilter';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { addDays, enumLabel, formatDate, todayIso } from '@/lib/format';
 import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
 import { requireReportAccess } from '@/lib/session';
@@ -14,20 +16,23 @@ const PERIODS = [7, 14, 28] as const;
 export async function GET(request: Request) {
   const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
   const url = new URL(request.url);
-  const groupIds = parseGroupParam(url.searchParams.get('groups') ?? undefined);
+  // resolveGroupFilter, not parseGroupParam: the PDF resolves the sticky
+  // filter cookie exactly as the on-screen report does (audit S4), and the
+  // header meta names the resolved scope.
+  const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
   const days = PERIODS.includes(Number(url.searchParams.get('days')) as (typeof PERIODS)[number]) ? Number(url.searchParams.get('days')) : 7;
 
   const today = todayIso(timezone);
   const fromDate = addDays(today, -(days - 1));
 
-  const report = await fetchComplianceReport(db, orgId, groupIds, fromDate, today);
+  const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchComplianceReport(db, orgId, groupIds, fromDate, today)]);
 
   const buffer = await renderToBuffer(
     <PdfReport footer={`${orgName} · Fydr · generated ${formatDate(today)} · not for redistribution without the club's own policy`}>
       <PdfHeader
         eyebrow={`Compliance · ${orgName}`}
         title="Compliance report"
-        meta={`${formatDate(fromDate)} to ${formatDate(today)} · ${report.athleteCount} athletes`}
+        meta={`${formatDate(fromDate)} to ${formatDate(today)} · Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes)`}
       />
 
       <PdfTileRow>

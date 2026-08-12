@@ -7,6 +7,7 @@ import { TimetableSessionCard } from '@/components/TimetableSessionCard/Timetabl
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchTimetableDay } from '@/lib/queries/timetable';
 import { addDays, formatDate, todayIso } from '@/lib/format';
+import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 
@@ -46,7 +47,7 @@ export default async function TimetablePage({ searchParams }: { searchParams: Se
     <>
       <div className="topbar">
         <div className="page-head">
-          <p className="eyebrow">Squad · {orgName}</p>
+          <p className="eyebrow">{groupScopeLabel(groups, groupIds)} · {orgName}</p>
           <h1>Timetable</h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>

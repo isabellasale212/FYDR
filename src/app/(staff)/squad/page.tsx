@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { RosterTable } from '@/components/RosterTable/RosterTable';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
+import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchSquadList } from '@/lib/queries/squad';
@@ -29,7 +30,7 @@ export default async function SquadPage({
     <>
       <div className="topbar">
         <div className="page-head">
-          <p className="eyebrow">Squad · {orgName}</p>
+          <p className="eyebrow">{groupScopeLabel(groups, groupIds)} · {orgName}</p>
           <h1>Squad overview</h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>

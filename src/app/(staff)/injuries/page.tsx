@@ -6,6 +6,7 @@ import { PrintButton } from '@/components/PrintButton/PrintButton';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchInjuriesList } from '@/lib/queries/injuries';
 import { enumLabel, formatDate } from '@/lib/format';
+import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 
@@ -44,7 +45,7 @@ export default async function InjuriesPage({
     <>
       <div className="topbar">
         <div className="page-head">
-          <p className="eyebrow">Squad · {orgName}</p>
+          <p className="eyebrow">{groupScopeLabel(groups, groupIds)} · {orgName}</p>
           <h1>Injuries</h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>

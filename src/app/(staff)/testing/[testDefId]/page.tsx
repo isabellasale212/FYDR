@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { fetchResultsForLogging, fetchTestDefinitions } from '@/lib/queries/testing';
 import { fetchGroups } from '@/lib/queries/groups';
 import { addDays, formatDate, todayIso } from '@/lib/format';
+import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 
@@ -46,7 +47,6 @@ export default async function TestLogPage({
   const dayHref = (date: string) =>
     groupIds.length > 0 ? `/testing/${testDefId}?date=${date}&groups=${groupIds.join(',')}` : `/testing/${testDefId}?date=${date}`;
 
-  const activeGroupNames = groups.filter((g) => groupIds.includes(g.id)).map((g) => g.name);
 
   return (
     <>
@@ -61,7 +61,7 @@ export default async function TestLogPage({
       </div>
 
       <p className="eyebrow" style={{ marginBottom: 10 }}>
-        Squad · {orgName}
+        {groupScopeLabel(groups, groupIds)} · {orgName}
       </p>
 
       <div style={{ marginBottom: 14 }}>
@@ -81,7 +81,7 @@ export default async function TestLogPage({
       {athletes.length === 0 && groupIds.length > 0 ? (
         <EmptyState
           title="No athletes in this filter"
-          body={`No athletes in ${activeGroupNames.join(', ') || 'the selected group'} are in this squad. Clear the filter to see everyone.`}
+          body={`No athletes in the current scope (${groupScopeLabel(groups, groupIds)}). Clear the filter to see everyone.`}
         />
       ) : (
         <TestLogGrid

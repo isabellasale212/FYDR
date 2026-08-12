@@ -1427,11 +1427,20 @@ export type GroupFilterProps = {
 Behaviour:
 
 - Multi-select. Selecting nothing means `All squad`, and the source's "All squads" chip is
-  that state made explicit.
+  that state made explicit. Selected chips carry a ✓ glyph, because multi-select chips styled
+  identically to the app's single-select chip rows read as radios (2026 audit, coach finding 17).
 - Exactly one chip is filled when a single group is selected. With more than one selected,
-  every selected chip is filled and the header states the count.
+  every selected chip is filled and the header names the groups — "Forwards", "Backs + Academy",
+  joined with `+` to state the union — never a bare count like "2 groups" (2026 audit, S4 and
+  coach finding 16). The shared label is `groupScopeLabel()` in `lib/groupFilter.ts`; every
+  screen's scope line, every CSV caption and every PDF header meta uses it, saying "All squads"
+  explicitly when no filter is active. Exports resolve the filter exactly as screens do
+  (URL param, then the sticky cookie) and stamp the resolved scope into the file.
 - Selection persists across navigation and app restarts, via the global filter context backed
-  by storage. The component holds no state of its own.
+  by storage. The component holds no state of its own beyond optimistic pending feedback while
+  the server round-trip is in flight. Because the selection is sticky, any active filter also
+  renders a "Filtered to {groups} … Clear filter" caption directly under the chips — the
+  visible reminder plus the real clear affordance, on every screen the filter can scope.
 - Changing the filter never navigates and never clears an in-progress form.
 
 | State | Behaviour |

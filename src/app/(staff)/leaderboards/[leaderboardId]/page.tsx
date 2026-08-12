@@ -11,6 +11,7 @@ import {
 } from '@/lib/queries/leaderboards';
 import { fetchGroupAthleteIds, fetchGroups } from '@/lib/queries/groups';
 import { formatNumber } from '@/lib/format';
+import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 
@@ -54,7 +55,7 @@ export default async function LeaderboardDetailPage({
   const filterAthleteIds = groupIds.length > 0 ? await fetchGroupAthleteIds(db, orgId, groupIds) : null;
   const ranking = filterAthleteIds ? fullRanking.filter((row) => filterAthleteIds.includes(row.athlete_id)) : fullRanking;
   const isFiltered = groupIds.length > 0;
-  const activeGroupNames = groups.filter((g) => groupIds.includes(g.id)).map((g) => g.name);
+  const scopeLabel = groupScopeLabel(groups, groupIds);
 
   const metric = catalogue.find((m) => m.key === board.metric_key);
   const isMedical = claims.roles.includes('medical');
@@ -119,7 +120,7 @@ export default async function LeaderboardDetailPage({
         ) : ranking.length === 0 ? (
           <EmptyState
             title="No ranked athletes in this filter"
-            body={`No athletes in ${activeGroupNames.join(', ') || 'the selected group'} appear on this board. Clear the filter to see everyone.`}
+            body={`No athletes in the current scope (${scopeLabel}) appear on this board. Clear the filter to see everyone.`}
           />
         ) : (
           <div className="card flush">

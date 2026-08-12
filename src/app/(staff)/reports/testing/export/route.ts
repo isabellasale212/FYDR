@@ -1,7 +1,9 @@
 import { csvResponse, toCsv } from '@/lib/csv';
 import { fetchTestByTest, fetchTestingByAthlete } from '@/lib/queries/testingReport';
 import { recordReportView } from '@/lib/queries/reports';
-import { parseGroupParam } from '@/lib/groupFilter';
+import { fetchGroups } from '@/lib/queries/groups';
+import { groupScopeLabel } from '@/lib/groupFilter';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatNumber } from '@/lib/format';
 import { requireReportAccess } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
@@ -13,10 +15,13 @@ import type { AppRole } from '@/lib/types/database';
 export async function GET(request: Request) {
   const { db, orgId, claims } = await requireReportAccess();
   const url = new URL(request.url);
-  const groupIds = parseGroupParam(url.searchParams.get('groups') ?? undefined);
+  // resolveGroupFilter, not parseGroupParam: the export resolves the sticky
+  // filter cookie exactly as the on-screen report does (audit S4), and the
+  // caption below names the resolved scope.
+  const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
   const testId = url.searchParams.get('test');
 
-  const byAthlete = await fetchTestingByAthlete(db, orgId, groupIds);
+  const [groups, byAthlete] = await Promise.all([fetchGroups(db, orgId), fetchTestingByAthlete(db, orgId, groupIds)]);
 
   const athleteRows = byAthlete.rows.map((row) => {
     const record: Record<string, string> = { name: row.name };
@@ -54,7 +59,9 @@ export async function GET(request: Request) {
     }
   }
 
-  const caption = `# Testing report. ${byAthlete.rows.length} athletes, ${byAthlete.definitions.length} tests.\r\n\r\n# By athlete — personal bests\r\n`;
+  const caption =
+    `# Testing report. Scope: ${groupScopeLabel(groups, groupIds)} ` +
+    `(${byAthlete.rows.length} athletes), ${byAthlete.definitions.length} tests.\r\n\r\n# By athlete — personal bests\r\n`;
 
   const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   await recordReportView(db, orgId, claims.userId, actorRole, 'testing', { group_ids: groupIds, test_definition_id: testId, format: 'csv' }, 'export');

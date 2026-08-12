@@ -6,6 +6,7 @@ import { RehabGroupBoard } from '@/components/RehabGroupBoard/RehabGroupBoard';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchRehabBoard, fetchRehabGroups } from '@/lib/queries/rehabGroups';
 import { fetchGroupAthleteIds, fetchGroups } from '@/lib/queries/groups';
+import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 
@@ -59,7 +60,7 @@ export default async function RehabGroupsPage({ searchParams }: { searchParams: 
         <ThemeToggle />
       </div>
 
-      <p className="eyebrow">Squad · {orgName}</p>
+      <p className="eyebrow">{groupScopeLabel(squadGroups, groupIds)} · {orgName}</p>
 
       <div style={{ margin: '10px 0' }}>
         <GroupFilter groups={squadGroups} selected={groupIds} />

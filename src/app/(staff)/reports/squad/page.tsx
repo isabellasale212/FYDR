@@ -7,6 +7,7 @@ import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchSquadWeeklyReport } from '@/lib/queries/squadWeeklyReport';
 import { recordReportView } from '@/lib/queries/reports';
+import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { BLANK, enumLabel, formatDate, formatNumber } from '@/lib/format';
 import { availabilityStatus } from '@/lib/status';
@@ -63,7 +64,7 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
       </div>
 
       <p className="eyebrow" style={{ marginBottom: 10 }}>
-        Squad · {orgName} · {formatDate(report.from)} to {formatDate(report.to)} · {report.athleteCount} athletes
+        {groupScopeLabel(groups, groupIds)} · {orgName} · {formatDate(report.from)} to {formatDate(report.to)} · {report.athleteCount} athletes
       </p>
 
       <div style={{ marginBottom: 14 }}>

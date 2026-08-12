@@ -9,6 +9,7 @@ import {
   mondayOf,
 } from '@/lib/queries/schedule';
 import { fetchTemplates } from '@/lib/queries/weekTemplates';
+import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { addDays, decimalHourInTz, todayIso } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
@@ -75,6 +76,9 @@ export default async function SchedulePage({ searchParams }: { searchParams: Sea
       new Date(`${weekStart}T12:00:00Z`),
     ).toUpperCase()}`,
     matchDayLabel,
+    // The active scope by name — audit S4: the filter re-scopes this whole
+    // week view, so the header has to say so.
+    groupScopeLabel(groups, groupIds).toUpperCase(),
   ]
     .filter(Boolean)
     .join(' · ');

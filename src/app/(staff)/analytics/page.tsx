@@ -2,6 +2,7 @@ import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchAcwr, fetchWellnessTrend } from '@/lib/queries/analytics';
+import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatNumber } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
@@ -35,7 +36,7 @@ export default async function AnalyticsPage({
     <>
       <div className="topbar">
         <div className="page-head">
-          <p className="eyebrow">Squad · {orgName}</p>
+          <p className="eyebrow">{groupScopeLabel(groups, groupIds)} · {orgName}</p>
           <h1>Analytics</h1>
         </div>
         <ThemeToggle />

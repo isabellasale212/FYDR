@@ -1,6 +1,8 @@
 import { renderToBuffer } from '@react-pdf/renderer';
 import { fetchInjuryAvailabilityReport, recordReportView } from '@/lib/queries/reports';
-import { parseGroupParam } from '@/lib/groupFilter';
+import { fetchGroups } from '@/lib/queries/groups';
+import { groupScopeLabel } from '@/lib/groupFilter';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { addDays, enumLabel, formatDate, todayIso } from '@/lib/format';
 import { PdfHeader, PdfMedicalBanner, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
 import { requireReportAccess } from '@/lib/session';
@@ -20,13 +22,21 @@ export async function GET(request: Request) {
   const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
   const isMedical = claims.roles.includes('medical');
   const url = new URL(request.url);
-  const groupIds = parseGroupParam(url.searchParams.get('groups') ?? undefined);
+  // resolveGroupFilter, not parseGroupParam: a PDF handed to someone else is
+  // the exact artefact the audit's S4 finding warned about — it must resolve
+  // the sticky filter cookie exactly as the on-screen report does, and its
+  // header meta names the resolved scope.
+  const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
   const days = PERIODS.includes(Number(url.searchParams.get('days')) as (typeof PERIODS)[number]) ? Number(url.searchParams.get('days')) : 28;
 
   const today = todayIso(timezone);
   const fromDate = addDays(today, -(days - 1));
 
-  const report = await fetchInjuryAvailabilityReport(db, orgId, groupIds, fromDate, today, isMedical);
+  const [groups, report] = await Promise.all([
+    fetchGroups(db, orgId),
+    fetchInjuryAvailabilityReport(db, orgId, groupIds, fromDate, today, isMedical),
+  ]);
+  const scopeLabel = groupScopeLabel(groups, groupIds);
 
   const footer = isMedical
     ? `MEDICAL IN CONFIDENCE · ${orgName} · Fydr · generated ${formatDate(today)}`
@@ -38,7 +48,7 @@ export async function GET(request: Request) {
       <PdfHeader
         eyebrow={isMedical ? `MEDICAL IN CONFIDENCE · Injury & availability · ${orgName}` : `Injury & availability · ${orgName}`}
         title="Injury & availability report"
-        meta={`${formatDate(fromDate)} to ${formatDate(today)} · ${report.summary.athleteCount} athletes`}
+        meta={`${formatDate(fromDate)} to ${formatDate(today)} · Scope: ${scopeLabel} (${report.summary.athleteCount} athletes)`}
       />
 
       <PdfTileRow>
@@ -63,7 +73,13 @@ export async function GET(request: Request) {
 
       <PdfSectionTitle title="Current" caption="Availability status right now, not a historical snapshot for this period." />
       <PdfTable
-        emptyText="Everyone is available."
+        emptyText={
+          // Never make the categorical claim over a filtered subset — the
+          // audit's worst S4 case (analysis finding 27).
+          groupIds.length > 0
+            ? `No unavailable or modified athletes in the current scope (${scopeLabel}).`
+            : 'Everyone is available.'
+        }
         rows={report.current}
         columns={[
           { key: 'name', label: 'Athlete', width: '30%', render: (r) => r.name },

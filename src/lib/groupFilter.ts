@@ -31,3 +31,34 @@ export function parseGroupParam(value: string | string[] | undefined): string[] 
     .map((s) => s.trim())
     .filter((s) => UUID_RE.test(s));
 }
+
+/** The active scope, by name — "All squads", "Forwards", "Backs + Academy".
+ *
+ *  The audit's S4 finding: this filter re-scopes every screen, report and
+ *  export, yet no scope line ever named it — headers said "Squad · <club>"
+ *  (or "1 GROUP", coach finding 16) whether or not a filter was silently
+ *  narrowing the data underneath, and the worst observed case was an injury
+ *  report declaring "Everyone is available." over a filtered subset. One
+ *  shared function, used by every header eyebrow, CSV caption and PDF meta
+ *  line, so the label can never drift per-screen.
+ *
+ *  " + " as the separator is deliberate (coach finding 17): the chips are
+ *  multi-select but styled like radios, and "Backs + Academy" states the
+ *  union where "Backs, Academy" would not.
+ *
+ *  Selected ids with no matching group (a stale cookie surviving an archive,
+ *  a hand-edited URL) still filter the query downstream — fetchGroupAthleteIds
+ *  does not re-validate against live groups — so they must not be silently
+ *  dropped from the label: that would print "All squads" over filtered data,
+ *  the exact lie this function exists to end. */
+export function groupScopeLabel(
+  groups: readonly { id: string; name: string }[],
+  selectedIds: readonly string[],
+): string {
+  if (selectedIds.length === 0) return 'All squads';
+  const selected = new Set(selectedIds);
+  const named = groups.filter((g) => selected.has(g.id)).map((g) => g.name);
+  const unknown = selectedIds.filter((id) => !groups.some((g) => g.id === id)).length;
+  if (unknown > 0) named.push(unknown === 1 ? '1 unknown group' : `${unknown} unknown groups`);
+  return named.join(' + ');
+}

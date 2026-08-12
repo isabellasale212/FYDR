@@ -1,7 +1,9 @@
 import { renderToBuffer } from '@react-pdf/renderer';
 import { fetchSquadWeeklyReport } from '@/lib/queries/squadWeeklyReport';
 import { recordReportView } from '@/lib/queries/reports';
-import { parseGroupParam } from '@/lib/groupFilter';
+import { fetchGroups } from '@/lib/queries/groups';
+import { groupScopeLabel } from '@/lib/groupFilter';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, formatNumber } from '@/lib/format';
 import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
 import { requireReportAccess } from '@/lib/session';
@@ -18,16 +20,19 @@ import type { AppRole } from '@/lib/types/database';
 export async function GET(request: Request) {
   const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
   const url = new URL(request.url);
-  const groupIds = parseGroupParam(url.searchParams.get('groups') ?? undefined);
+  // resolveGroupFilter, not parseGroupParam: the PDF resolves the sticky
+  // filter cookie exactly as the on-screen report does (audit S4), and the
+  // header meta names the resolved scope.
+  const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
 
-  const report = await fetchSquadWeeklyReport(db, orgId, groupIds, timezone);
+  const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchSquadWeeklyReport(db, orgId, groupIds, timezone)]);
 
   const buffer = await renderToBuffer(
     <PdfReport footer={`${orgName} · Fydr · generated ${formatDate(report.to)} · not for redistribution without the club's own policy`}>
       <PdfHeader
         eyebrow={`Squad weekly · ${orgName}`}
         title="Squad weekly report"
-        meta={`${formatDate(report.from)} to ${formatDate(report.to)} · ${report.athleteCount} athletes`}
+        meta={`${formatDate(report.from)} to ${formatDate(report.to)} · Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes)`}
       />
 
       <PdfTileRow>

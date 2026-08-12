@@ -1,7 +1,9 @@
 import { renderToBuffer } from '@react-pdf/renderer';
 import { fetchTestByTest, fetchTestingByAthlete } from '@/lib/queries/testingReport';
 import { recordReportView } from '@/lib/queries/reports';
-import { parseGroupParam } from '@/lib/groupFilter';
+import { fetchGroups } from '@/lib/queries/groups';
+import { groupScopeLabel } from '@/lib/groupFilter';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, formatNumber, todayIso } from '@/lib/format';
 import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
 import { requireReportAccess } from '@/lib/session';
@@ -15,9 +17,13 @@ import type { AppRole } from '@/lib/types/database';
 export async function GET(request: Request) {
   const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
   const url = new URL(request.url);
-  const groupIds = parseGroupParam(url.searchParams.get('groups') ?? undefined);
+  // resolveGroupFilter, not parseGroupParam: the PDF resolves the sticky
+  // filter cookie exactly as the on-screen report does (audit S4), and the
+  // header meta names the resolved scope.
+  const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
 
-  const byAthlete = await fetchTestingByAthlete(db, orgId, groupIds);
+  const [groups, byAthlete] = await Promise.all([fetchGroups(db, orgId), fetchTestingByAthlete(db, orgId, groupIds)]);
+  const scopeLabel = groupScopeLabel(groups, groupIds);
   const requestedTestId = url.searchParams.get('test');
   const selectedTestId = byAthlete.definitions.find((d) => d.id === requestedTestId)?.id ?? byAthlete.definitions[0]?.id ?? null;
   const byTest = selectedTestId ? await fetchTestByTest(db, orgId, groupIds, selectedTestId) : null;
@@ -30,12 +36,12 @@ export async function GET(request: Request) {
       <PdfHeader
         eyebrow={`Testing · ${orgName}`}
         title="Testing report"
-        meta={`${byAthlete.rows.length} athletes · ${byAthlete.definitions.length} tests`}
+        meta={`Scope: ${scopeLabel} (${byAthlete.rows.length} athletes) · ${byAthlete.definitions.length} tests`}
       />
 
       <PdfSectionTitle title="By athlete" caption="Every athlete, every test, current personal best." />
       <PdfTable
-        emptyText="No athlete in this filter."
+        emptyText={groupIds.length > 0 ? `No athletes in the current scope (${scopeLabel}).` : 'No athletes in this squad yet.'}
         rows={byAthlete.rows}
         columns={[
           { key: 'name', label: 'Athlete', width: athleteColWidth, render: (r) => r.name },

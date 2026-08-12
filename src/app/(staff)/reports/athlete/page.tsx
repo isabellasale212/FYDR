@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { Pill } from '@/components/Pill/Pill';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
+import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchSquadList } from '@/lib/queries/squad';
@@ -38,7 +39,7 @@ export default async function AthleteReportPickerPage({ searchParams }: { search
       </div>
 
       <p className="eyebrow" style={{ marginBottom: 10 }}>
-        Squad · {orgName} · {rows.length} athletes
+        {groupScopeLabel(groups, groupIds)} · {orgName} · {rows.length} athletes
       </p>
 
       <div style={{ marginBottom: 14 }}>

@@ -5,6 +5,7 @@ import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchTestByTest, fetchTestLongitudinal, fetchTestingByAthlete } from '@/lib/queries/testingReport';
 import { recordReportView } from '@/lib/queries/reports';
+import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { BLANK, formatDate, formatNumber } from '@/lib/format';
 import { requireReportAccess } from '@/lib/session';
@@ -70,7 +71,7 @@ export default async function TestingReportPage({ searchParams }: { searchParams
       </div>
 
       <p className="eyebrow" style={{ marginBottom: 10 }}>
-        Squad · {orgName} · {byAthlete.rows.length} athletes · {byAthlete.definitions.length} tests
+        {groupScopeLabel(groups, groupIds)} · {orgName} · {byAthlete.rows.length} athletes · {byAthlete.definitions.length} tests
       </p>
 
       <div style={{ marginBottom: 14 }}>
@@ -100,7 +101,9 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                   </p>
                   {byAthlete.rows.length === 0 ? (
                     <p className="tiny" style={{ padding: 16 }}>
-                      No athlete in this filter.
+                      {groupIds.length > 0
+                        ? `No athletes in the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter to see all squads.`
+                        : 'No athletes in this squad yet.'}
                     </p>
                   ) : (
                     <div style={{ overflowX: 'auto' }}>
@@ -194,7 +197,9 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                         </h2>
                         {byTest.rows.length === 0 ? (
                           <p className="tiny" style={{ padding: 16 }}>
-                            No result recorded for this test in this filter.
+                            {groupIds.length > 0
+                              ? `No result recorded for this test in the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter to check all squads.`
+                              : 'No result recorded for this test yet.'}
                           </p>
                         ) : (
                           byTest.rows.map((r, i) => (

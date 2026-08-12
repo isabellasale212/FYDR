@@ -5,16 +5,44 @@ export type Db = SupabaseClient<Database>;
 
 export type Group = Pick<GroupRow, 'id' | 'name' | 'group_type' | 'sort_order'>;
 
+/** One canonical group ordering for the whole app: type section first
+ *  (positional, training, rehab, age, custom — the same sectioning the
+ *  Groups settings page renders), then sort_order, then name.
+ *
+ *  This used to exist only inside fetchGroupsWithCounts, while fetchGroups
+ *  ordered by raw sort_order alone — but sort_order is scoped per group_type
+ *  (see createGroup below), so ordering by it across types interleaves
+ *  sections in whatever tie-break the database happens to pick. The audit
+ *  caught the symptom (coach finding 17): /schedule, the one filter-bar
+ *  consumer of fetchGroupsWithCounts, showed its chips as "…Rehab, Academy"
+ *  while every fetchGroups page showed "…Academy, Rehab". Both fetchers now
+ *  sort through this comparator, so the chip row reads identically on every
+ *  screen. */
+const GROUP_TYPE_ORDER: Record<string, number> = {
+  positional: 0,
+  training: 1,
+  rehab: 2,
+  age: 3,
+  custom: 4,
+};
+
+function compareGroups(a: Pick<GroupRow, 'name' | 'group_type' | 'sort_order'>, b: Pick<GroupRow, 'name' | 'group_type' | 'sort_order'>): number {
+  return (
+    (GROUP_TYPE_ORDER[a.group_type] ?? 99) - (GROUP_TYPE_ORDER[b.group_type] ?? 99) ||
+    a.sort_order - b.sort_order ||
+    a.name.localeCompare(b.name)
+  );
+}
+
 export async function fetchGroups(db: Db, orgId: string): Promise<Group[]> {
   const { data, error } = await db
     .from('groups')
     .select('id, name, group_type, sort_order')
     .eq('org_id', orgId)
-    .is('deleted_at', null)
-    .order('sort_order');
+    .is('deleted_at', null);
 
   if (error) throw new Error(error.message);
-  return data ?? [];
+  return (data ?? []).sort(compareGroups);
 }
 
 /**
@@ -101,14 +129,6 @@ export type GroupWithCount = Group & {
   archived: boolean;
 };
 
-const GROUP_TYPE_ORDER: Record<string, number> = {
-  positional: 0,
-  training: 1,
-  rehab: 2,
-  age: 3,
-  custom: 4,
-};
-
 export async function fetchGroupsWithCounts(
   db: Db,
   orgId: string,
@@ -151,12 +171,7 @@ export async function fetchGroupsWithCounts(
       member_count: counts.get(g.id) ?? 0,
       archived: g.deleted_at !== null,
     }))
-    .sort(
-      (a, b) =>
-        (GROUP_TYPE_ORDER[a.group_type] ?? 99) - (GROUP_TYPE_ORDER[b.group_type] ?? 99) ||
-        a.sort_order - b.sort_order ||
-        a.name.localeCompare(b.name),
-    );
+    .sort(compareGroups);
 }
 
 export async function fetchAthletesInNoGroup(

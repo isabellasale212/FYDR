@@ -1,7 +1,9 @@
 import { csvResponse, toCsv } from '@/lib/csv';
 import { fetchSquadWeeklyReport } from '@/lib/queries/squadWeeklyReport';
 import { recordReportView } from '@/lib/queries/reports';
-import { parseGroupParam } from '@/lib/groupFilter';
+import { fetchGroups } from '@/lib/queries/groups';
+import { groupScopeLabel } from '@/lib/groupFilter';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatNumber } from '@/lib/format';
 import { requireReportAccess } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
@@ -14,9 +16,12 @@ import type { AppRole } from '@/lib/types/database';
 export async function GET(request: Request) {
   const { db, orgId, claims, timezone } = await requireReportAccess();
   const url = new URL(request.url);
-  const groupIds = parseGroupParam(url.searchParams.get('groups') ?? undefined);
+  // resolveGroupFilter, not parseGroupParam: the export resolves the sticky
+  // filter cookie exactly as the on-screen report does (audit S4), and the
+  // caption below names the resolved scope.
+  const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
 
-  const report = await fetchSquadWeeklyReport(db, orgId, groupIds, timezone);
+  const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchSquadWeeklyReport(db, orgId, groupIds, timezone)]);
 
   const loadCsv = toCsv(
     report.load.map((r) => ({
@@ -73,7 +78,8 @@ export async function GET(request: Request) {
   );
 
   const caption =
-    `# Squad weekly report, ${report.from} to ${report.to}. ${report.athleteCount} athletes. ` +
+    `# Squad weekly report, ${report.from} to ${report.to}. ` +
+    `Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes). ` +
     `Compliance ${report.tiles.compliancePct === null ? 'n/a' : `${report.tiles.compliancePct}%`}, ` +
     `available ${report.tiles.availablePct === null ? 'n/a' : `${report.tiles.availablePct}%`}, ` +
     `${report.tiles.openFlagCount} open flags, ${report.tiles.acwrFlaggedCount} outside the 0.8-1.5 ACWR band.\r\n\r\n` +

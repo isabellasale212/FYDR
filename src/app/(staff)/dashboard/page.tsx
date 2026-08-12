@@ -18,6 +18,7 @@ import {
 import { fetchGroups } from '@/lib/queries/groups';
 import { mondayOf } from '@/lib/queries/schedule';
 import { formatDate, formatLongDate, todayIso } from '@/lib/format';
+import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 
@@ -96,7 +97,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         <div className="page-head">
           <p className="eyebrow">
             WEEK OF {formatLongDate(weekStart).toUpperCase()} · {readiness.opponent ? `MD SATURDAY · V ${readiness.opponent.toUpperCase()}` : 'MD SATURDAY'} ·{' '}
-            {groupIds.length > 0 ? `${groupIds.length} GROUP${groupIds.length === 1 ? '' : 'S'}` : 'ALL SQUADS'}
+            {/* The scope by name, not "1 GROUP" — audit S4 / coach finding 16. */}
+            {groupScopeLabel(groups, groupIds).toUpperCase()}
           </p>
           <h1>Dashboard</h1>
         </div>
@@ -348,7 +350,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
               </Link>
             </div>
             <p className="tiny" style={{ color: 'var(--muted)' }}>
-              {squad.total} athletes · {groupIds.length > 0 ? `${groupIds.length} group${groupIds.length === 1 ? '' : 's'}` : 'all squads'}
+              {squad.total} athletes · {groupScopeLabel(groups, groupIds)}
             </p>
             <div className="dash-squad-bar">
               <div style={{ flex: squad.available, background: 'var(--accent2)' }} />

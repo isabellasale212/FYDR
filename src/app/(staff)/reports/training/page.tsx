@@ -29,6 +29,7 @@ import {
 } from '@/lib/queries/trainingReport';
 import { recordReportView } from '@/lib/queries/reports';
 import { formatDate, mdLabel } from '@/lib/format';
+import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireReportAccess } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
@@ -169,7 +170,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
     <div className="topbar">
       <div className="page-head">
         <p className="eyebrow">
-          {orgName} · {mode === 'training' ? 'TRAINING' : 'MATCH DAY'} · {groupIds.length > 0 ? `${groupIds.length} group${groupIds.length === 1 ? '' : 's'}` : 'ALL SQUADS'}
+          {orgName} · {mode === 'training' ? 'TRAINING' : 'MATCH DAY'} · {groupScopeLabel(groups, groupIds).toUpperCase()}
         </p>
         <h1>{mode === 'training' ? 'Training report' : 'Match day GPS report'}</h1>
       </div>

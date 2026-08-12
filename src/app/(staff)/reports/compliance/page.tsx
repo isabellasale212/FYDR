@@ -4,6 +4,7 @@ import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchComplianceReport, recordReportView } from '@/lib/queries/reports';
+import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { addDays, enumLabel, formatDate, todayIso } from '@/lib/format';
 import { requireReportAccess } from '@/lib/session';
@@ -64,7 +65,7 @@ export default async function ComplianceReportPage({
       </div>
 
       <p className="eyebrow" style={{ marginBottom: 10 }}>
-        Squad · {orgName} · {formatDate(fromDate)} to {formatDate(today)} · {report.athleteCount} athletes
+        {groupScopeLabel(groups, groupIds)} · {orgName} · {formatDate(fromDate)} to {formatDate(today)} · {report.athleteCount} athletes
       </p>
 
       <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>

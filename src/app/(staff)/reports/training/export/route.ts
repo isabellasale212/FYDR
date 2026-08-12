@@ -6,7 +6,9 @@ import {
   fetchTrainingBoard,
   fetchTrainingSessions,
 } from '@/lib/queries/trainingReport';
-import { parseGroupParam } from '@/lib/groupFilter';
+import { fetchGroups } from '@/lib/queries/groups';
+import { groupScopeLabel } from '@/lib/groupFilter';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireReportAccess } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
@@ -20,9 +22,15 @@ import type { AppRole } from '@/lib/types/database';
 export async function GET(request: Request) {
   const { db, orgId, claims } = await requireReportAccess();
   const url = new URL(request.url);
-  const groupIds = parseGroupParam(url.searchParams.get('groups') ?? undefined);
+  // resolveGroupFilter, not parseGroupParam: the export resolves the sticky
+  // filter cookie exactly as the on-screen report does (audit S4), and each
+  // branch's caption names the resolved scope.
+  const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
   const mode = url.searchParams.get('mode') === 'match' ? 'match' : 'training';
   const requested = url.searchParams.get('session');
+
+  const groups = await fetchGroups(db, orgId);
+  const scopeLabel = groupScopeLabel(groups, groupIds);
 
   const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
 
@@ -53,7 +61,7 @@ export async function GET(request: Request) {
       ['maxv_kmh', 'MAXV (km/h)'],
     ]);
     const withCaption =
-      `# Match day GPS report, v ${selected.opponent}, ${selected.date}. Whole-match totals only — ` +
+      `# Match day GPS report, v ${selected.opponent}, ${selected.date}. Scope: ${scopeLabel}. Whole-match totals only — ` +
       `GPS is not recorded as a first-half/second-half split.\r\n` + csv;
 
     await recordReportView(db, orgId, claims.userId, actorRole, 'training', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, format: 'csv', mode }, 'export');
@@ -87,7 +95,7 @@ export async function GET(request: Request) {
     ['vs_self', 'vs self'],
     ['vs_unit', 'vs unit'],
   ]);
-  const withCaption = `# Training report, ${selected.title}, ${selected.date}.\r\n` + csv;
+  const withCaption = `# Training report, ${selected.title}, ${selected.date}. Scope: ${scopeLabel}.\r\n` + csv;
 
   await recordReportView(db, orgId, claims.userId, actorRole, 'training', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, format: 'csv', mode }, 'export');
   return csvResponse(withCaption, `training-report-${selected.date}.csv`);

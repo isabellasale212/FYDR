@@ -4,6 +4,7 @@ import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchInjuryAvailabilityReport, recordReportView } from '@/lib/queries/reports';
+import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { addDays, enumLabel, formatDate, todayIso } from '@/lib/format';
 import { requireReportAccess } from '@/lib/session';
@@ -89,7 +90,7 @@ export default async function InjuryAvailabilityReportPage({
       ) : null}
 
       <p className="eyebrow" style={{ marginBottom: 10 }}>
-        Squad · {orgName} · {formatDate(fromDate)} to {formatDate(today)} · {report.summary.athleteCount} athletes
+        {groupScopeLabel(groups, groupIds)} · {orgName} · {formatDate(fromDate)} to {formatDate(today)} · {report.summary.athleteCount} athletes
       </p>
 
       <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
@@ -115,8 +116,15 @@ export default async function InjuryAvailabilityReportPage({
             content: (
               <div className="card flush">
                 {report.current.length === 0 ? (
+                  /* The audit's worst S4 case (analysis finding 27): this said
+                   * "Everyone is available." while a forgotten group filter hid
+                   * two unavailable and three modified players. An empty list
+                   * under an active filter proves something about the scope,
+                   * never about the squad — so say which. */
                   <p className="tiny" style={{ padding: 16 }}>
-                    Everyone is available.
+                    {groupIds.length > 0
+                      ? `No unavailable or modified athletes in the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter to check all squads.`
+                      : 'Everyone is available.'}
                   </p>
                 ) : (
                   report.current.map((row, index) => (

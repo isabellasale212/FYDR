@@ -1,7 +1,8 @@
 import { csvResponse, toCsv } from '@/lib/csv';
 import { fetchComplianceReport, recordReportView } from '@/lib/queries/reports';
 import { fetchGroups } from '@/lib/queries/groups';
-import { parseGroupParam } from '@/lib/groupFilter';
+import { groupScopeLabel } from '@/lib/groupFilter';
+import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { addDays, todayIso } from '@/lib/format';
 import { requireReportAccess } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
@@ -16,7 +17,10 @@ import type { AppRole } from '@/lib/types/database';
 export async function GET(request: Request) {
   const { db, orgId, claims, timezone } = await requireReportAccess();
   const url = new URL(request.url);
-  const groupIds = parseGroupParam(url.searchParams.get('groups') ?? undefined);
+  // resolveGroupFilter, not parseGroupParam: the export must resolve the
+  // sticky filter cookie exactly as the on-screen report does (audit S4),
+  // and the caption below states the resolved scope by name.
+  const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
   const days = [7, 14, 28].includes(Number(url.searchParams.get('days'))) ? Number(url.searchParams.get('days')) : 7;
 
   const today = todayIso(timezone);
@@ -64,5 +68,9 @@ export async function GET(request: Request) {
     'export',
   );
 
-  return csvResponse(csv, `compliance-${fromDate}-to-${today}.csv`);
+  const caption =
+    `# Compliance report, ${fromDate} to ${today}. ` +
+    `Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes).\r\n`;
+
+  return csvResponse(caption + csv, `compliance-${fromDate}-to-${today}.csv`);
 }

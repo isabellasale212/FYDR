@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { NutritionWorkspace } from '@/components/NutritionWorkspace/NutritionWorkspace';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
+import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { addDays, todayIso } from '@/lib/format';
 import { fetchBodyCompositionForAthletes } from '@/lib/queries/bodyComposition';
@@ -122,7 +123,7 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
       <div className="topbar">
         <div className="page-head">
           <p className="eyebrow">
-            Nutrition · {plans.length} plan{plans.length === 1 ? '' : 's'} · {assignedAthleteCount} athletes assigned
+            Nutrition · {groupScopeLabel(groups, groupIds)} · {plans.length} plan{plans.length === 1 ? '' : 's'} · {assignedAthleteCount} athletes assigned
           </p>
           <h1>Nutrition</h1>
           <p className="nutr-intro">

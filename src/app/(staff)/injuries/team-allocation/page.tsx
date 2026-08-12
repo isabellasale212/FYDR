@@ -8,6 +8,7 @@ import { fetchTeams, fetchWeekBoard } from '@/lib/queries/teamAllocation';
 import { fetchGroupAthleteIds, fetchGroups } from '@/lib/queries/groups';
 import { mondayOf } from '@/lib/queries/schedule';
 import { addDays, formatDate, todayIso } from '@/lib/format';
+import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 
@@ -79,7 +80,7 @@ export default async function TeamAllocationPage({
         </div>
       </div>
 
-      <p className="eyebrow">Squad · {orgName}</p>
+      <p className="eyebrow">{groupScopeLabel(groups, groupIds)} · {orgName}</p>
 
       <div style={{ margin: '10px 0' }}>
         <GroupFilter groups={groups} selected={groupIds} />

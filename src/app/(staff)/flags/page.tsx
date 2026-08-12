@@ -4,6 +4,7 @@ import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchFlagsList } from '@/lib/queries/flags';
 import { fetchGroups } from '@/lib/queries/groups';
+import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, todayIso } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
@@ -56,7 +57,7 @@ export default async function FlagsPage({
       <div className="topbar">
         <div className="page-head">
           <p className="eyebrow">
-            Squad · {orgName} · {formatDate(today)}
+            {groupScopeLabel(groups, groupIds)} · {orgName} · {formatDate(today)}
           </p>
           <h1>Flags</h1>
         </div>
@@ -77,7 +78,11 @@ export default async function FlagsPage({
         {flags.length === 0 ? (
           <EmptyState
             title="No open flags"
-            body="The squad is within thresholds in this filter. That is the result, not a failure to load."
+            body={
+              groupIds.length > 0
+                ? `No open flags in the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter to check all squads.`
+                : 'The squad is within thresholds. That is the result, not a failure to load.'
+            }
           />
         ) : (
           flags.map((flag) => (

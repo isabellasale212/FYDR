@@ -5842,3 +5842,79 @@ table.tbl tbody tr:hover {
 .linklike:hover {
   color: var(--text);
 }
+
+/* =====================================================================
+ * Password recovery + show-password toggle (audit S9, gameplan 2.2).
+ * Appended at EOF per the parallel-agent CSS ownership rule: base.css is
+ * append-only this phase.
+ *
+ * .pw-wrap/.pw-toggle: the eye button inside a password .field. The input
+ * keeps its full 44px row and gains trailing padding; the button overlays
+ * the trailing 44px square (a real 44px hit target), icon in currentColor
+ * so no new hex enters the file.
+ * .signin-forgot: the "Forgot your password?" line under the sign-in
+ * password field. .signin-return: the centred "Back to sign in" line on
+ * both reset pages. .reset-actions: the action column shown on
+ * /login/reset/confirm when the link is missing, expired or spent.
+ * ===================================================================== */
+.pw-wrap {
+  position: relative;
+}
+.pw-wrap .field {
+  padding-inline-end: 52px;
+}
+.pw-toggle {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  width: 44px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  border-radius: var(--r-field);
+  color: var(--faint);
+  cursor: pointer;
+  transition: color var(--t-state);
+}
+.pw-toggle:hover {
+  color: var(--text);
+}
+.pw-toggle[aria-pressed='true'] {
+  color: var(--muted);
+}
+.signin-forgot {
+  margin: 0;
+  text-align: end;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.signin-return {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.signin-forgot a,
+.signin-return a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.signin-forgot a:hover,
+.signin-return a:hover {
+  color: var(--text);
+}
+.reset-actions {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.reset-actions .btn-primary {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+}

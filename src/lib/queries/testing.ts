@@ -24,12 +24,13 @@ export type TestDefinition = {
   default_attempts: number;
   decimal_places: number;
   leaderboard_eligible: boolean;
+  protocol: string | null;
 };
 
 export async function fetchTestDefinitions(db: Db, orgId: string): Promise<TestDefinition[]> {
   const { data, error } = await db
     .from('test_definitions')
-    .select('id, name, test_category, unit, higher_is_better, side_mode, default_attempts, decimal_places, leaderboard_eligible')
+    .select('id, name, test_category, unit, higher_is_better, side_mode, default_attempts, decimal_places, leaderboard_eligible, protocol')
     .eq('org_id', orgId)
     .is('deleted_at', null)
     .order('sort_order')
@@ -48,6 +49,8 @@ export async function createTestDefinition(
     higherIsBetter: boolean;
     sideMode: SideMode;
     defaultAttempts: number;
+    decimalPlaces: number;
+    protocol: string;
   },
 ): Promise<{ error: string | null }> {
   // test_definitions.sort_order defaults to 0 at the table level (migration
@@ -78,6 +81,8 @@ export async function createTestDefinition(
     higher_is_better: input.higherIsBetter,
     side_mode: input.sideMode,
     default_attempts: input.defaultAttempts,
+    decimal_places: input.decimalPlaces,
+    protocol: input.protocol.trim() || null,
     // A body-composition test can never be leaderboard eligible — the check
     // constraint enforces this regardless, this just avoids a round trip
     // that is always going to fail for that one category.
@@ -162,6 +167,61 @@ export async function fetchResultsForLogging(
       pbValue: pbByAthlete.get(a.id) ?? null,
     }))
     .sort((a, b) => (a.squad_number ?? 999) - (b.squad_number ?? 999) || a.last_name.localeCompare(b.last_name));
+}
+
+export type TestSessionDate = { date: string; resultCount: number };
+
+/** Audit finding 36: the logging grid only offered "Previous day / Next
+ *  day" — arrow-by-arrow through the calendar, ~25 clicks to reach an old
+ *  session. This returns the actual dates this test has results on (most
+ *  recent first) so the page can offer a direct jump instead of a walk.
+ *  Org-wide, not group-filtered: a testing *session* happened on a date
+ *  regardless of which group is currently selected, and the list is for
+ *  navigation, not a scoped report. */
+export async function fetchTestDates(db: Db, orgId: string, testDefinitionId: string): Promise<TestSessionDate[]> {
+  const { data, error } = await db
+    .from('test_results')
+    .select('test_date')
+    .eq('org_id', orgId)
+    .eq('test_definition_id', testDefinitionId)
+    .is('deleted_at', null);
+  if (error) throw new Error(error.message);
+
+  const counts = new Map<string, number>();
+  for (const r of data ?? []) counts.set(r.test_date, (counts.get(r.test_date) ?? 0) + 1);
+  return [...counts.entries()]
+    .map(([date, resultCount]) => ({ date, resultCount }))
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
+export type NextTestingSession = {
+  id: string;
+  title: string;
+  starts_at: string;
+  md_offset: number | null;
+};
+
+/** Audit finding 36: nothing on this screen pointed at the Schedule's
+ *  `session_type = 'testing'` sessions, so a coach had no way to see a
+ *  testing session was already booked without leaving Testing entirely.
+ *  Mirrors fetchNextFixture in lib/queries/schedule.ts: nearest upcoming,
+ *  not-cancelled session of the type, org-scoped. Kept deliberately small
+ *  per the gameplan — a pointer into the existing Schedule, not a new
+ *  surface. */
+export async function fetchNextTestingSession(db: Db, orgId: string, fromIso: string): Promise<NextTestingSession | null> {
+  const { data, error } = await db
+    .from('sessions')
+    .select('id, title, starts_at, md_offset')
+    .eq('org_id', orgId)
+    .eq('session_type', 'testing')
+    .eq('status', 'planned')
+    .gte('starts_at', fromIso)
+    .is('deleted_at', null)
+    .order('starts_at')
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ?? null;
 }
 
 export async function logAttempt(

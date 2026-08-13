@@ -272,12 +272,11 @@ export default async function TodayPage({
         )}
       </section>
 
-      {/* "Something not right?" — §5's always-available report route. No
-       * report-a-problem table or write path exists anywhere in this
-       * schema (checked live: no problem/report/issue/feedback/support
-       * table), so this links to Me's own honestly-labelled entry point
-       * rather than pretending to submit somewhere real. */}
-      <Link href="/me#report" className="report-card">
+      {/* "Something not right?" — §5's always-available report route, now
+       * wired to the real thing: migration 0040's problem_reports table,
+       * 03-flows.md §6 ("Athlete reports a problem from Today tab ->
+       * notification to Medical"). */}
+      <Link href="/report-problem" className="report-card">
         <span className="k">Something not right?</span>
         <span className="chev" aria-hidden="true">
           ›

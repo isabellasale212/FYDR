@@ -104,14 +104,14 @@ export default async function MePage() {
             </span>
           </Link>
           <div className="hair" />
-          {/* No report-a-problem table or write path exists anywhere in
-           * this schema (checked live) — this row states that honestly
-           * rather than submitting to nowhere. Today's own "Something not
-           * right?" card links here via #report. */}
-          <div id="report" className="me-row" style={{ cursor: 'default' }}>
+          {/* Migration 0040's problem_reports table, 03-flows.md §6. Today's
+           * own "Something not right?" card links to the same route. */}
+          <Link href="/report-problem" className="me-row">
             <span className="k">Report a problem</span>
-            <span className="v">Not built yet — email your club</span>
-          </div>
+            <span className="chev" aria-hidden="true">
+              ›
+            </span>
+          </Link>
           <div className="hair" />
           <form action="/auth/sign-out" method="post">
             <button

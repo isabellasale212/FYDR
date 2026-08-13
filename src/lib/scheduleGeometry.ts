@@ -20,10 +20,45 @@
  * name it — the same outcome the spec's literal exception produced, now
  * derived from real membership data instead of asserted by string. */
 
-export const H0 = 8;
-export const H1 = 18;
+/* UX audit finding 1: this grid used to hard-bound H0/H1 to a literal 8–18
+ * constant with a comment arguing that was deliberate. It was not correct —
+ * screens/schedule.md §"Layout" is explicit the web time grid runs "07:00 to
+ * 21:00 by default... The time grid start and end adapt: it always covers
+ * 07:00 to 21:00, and extends to include any session outside that range in
+ * the visible week" (repeated in the Edge cases table: "Session outside the
+ * 07:00 to 21:00 grid | The grid extends for that week"). The fixed 8–18
+ * constant instead clamped an out-of-range session (a real Saturday evening
+ * kickoff, 20:30 local) to a 24px sliver pinned to the grid's edge, so the
+ * block's visual position contradicted its own printed time — the exact
+ * defect the spec's adaptive rule exists to prevent. computeHourRange below
+ * is the real fix: it always shows the DEFAULT_H0–DEFAULT_H1 baseline the
+ * spec names, and only extends outward, with one hour of padding, for a week
+ * that genuinely has something earlier or later. */
+export const DEFAULT_H0 = 7;
+export const DEFAULT_H1 = 21;
 export const PXH = 68;
 export const STAGGER = 14;
+
+export type HourRangeInput = { start: number; mins: number };
+
+/** Computes this week's grid hour boundaries. Baseline is the spec's own
+ *  07:00–21:00 default; a session starting before `h0` or ending after `h1`
+ *  pushes the boundary out to cover it, floored/ceiled to the hour, plus one
+ *  hour of padding so the block is never flush against the grid's own edge.
+ *  Clamped to a real day, 0–24. Sessions with non-finite/garbage input are
+ *  ignored rather than allowed to blow the range out arbitrarily. */
+export function computeHourRange(sessions: readonly HourRangeInput[]): { h0: number; h1: number } {
+  let h0 = DEFAULT_H0;
+  let h1 = DEFAULT_H1;
+  for (const s of sessions) {
+    if (!Number.isFinite(s.start) || !Number.isFinite(s.mins)) continue;
+    const start = Math.floor(s.start);
+    const end = Math.ceil(s.start + s.mins / 60);
+    if (start < h0) h0 = Math.max(0, start - 1);
+    if (end > h1) h1 = Math.min(24, end + 1);
+  }
+  return { h0, h1 };
+}
 
 export type DbSessionType =
   | 'training'

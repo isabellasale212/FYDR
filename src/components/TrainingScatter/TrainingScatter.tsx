@@ -57,76 +57,95 @@ export function TrainingScatter({ points, selectedAthleteId, lens, hrefFor }: Pr
   const labelSet = new Set(ranked);
 
   const yTicks = [yHi, yHi - (yHi - yLo) * 0.25, yHi - (yHi - yLo) * 0.5, yHi - (yHi - yLo) * 0.75, yLo];
+  const xTicks = [xLo, xLo + (xHi - xLo) * 0.25, xLo + (xHi - xLo) * 0.5, xLo + (xHi - xLo) * 0.75, xHi];
 
+  /* Gameplan 4.2 / audit S8: the y-axis had tick numbers but no name or
+   * unit, and there was no x-axis at all — a coach could read relative
+   * position but not what either axis measured. Real tick values (already
+   * computed above from the real min/max, TRAINING-REPORT-SPEC.md §8) plus
+   * one caption naming both axes and their unit, matching how
+   * WeekLoadChart/TestTrendChart state a chart's meaning once in text
+   * around the chart rather than as a rotated axis title — additive only,
+   * the plot's own layout and colour logic are untouched. */
   return (
     <div>
+      <p className="tiny" style={{ marginBottom: 8, color: 'var(--faint)' }}>
+        Y-axis: high speed running (HSR), metres. X-axis: total distance (TD), metres.
+      </p>
       <div className="tr-scatter-grid">
         <div className="tr-scatter-yaxis">
           {yTicks.map((t) => (
             <span key={t}>{Math.round(t)}</span>
           ))}
         </div>
-        <div className="tr-scatter-plot">
-          <div
-            style={{ position: 'absolute', left: `${px(medianTd)}%`, top: 0, bottom: 0, width: 1, background: 'rgba(16,18,23,0.22)' }}
-            aria-hidden="true"
-          />
-          <div
-            style={{ position: 'absolute', bottom: `${py(medianHsr)}%`, left: 0, right: 0, height: 1, background: 'rgba(16,18,23,0.22)' }}
-            aria-hidden="true"
-          />
-          <span
-            className="tiny mono"
-            style={{
-              position: 'absolute',
-              left: `${px(medianTd)}%`,
-              bottom: `${py(medianHsr)}%`,
-              transform: 'translate(6px, 6px)',
-              background: 'var(--surf)',
-              padding: '1px 6px',
-              borderRadius: 20,
-              border: '1px solid var(--border)',
-            }}
-          >
-            squad median
-          </span>
+        <div>
+          <div className="tr-scatter-plot">
+            <div
+              style={{ position: 'absolute', left: `${px(medianTd)}%`, top: 0, bottom: 0, width: 1, background: 'rgba(16,18,23,0.22)' }}
+              aria-hidden="true"
+            />
+            <div
+              style={{ position: 'absolute', bottom: `${py(medianHsr)}%`, left: 0, right: 0, height: 1, background: 'rgba(16,18,23,0.22)' }}
+              aria-hidden="true"
+            />
+            <span
+              className="tiny mono"
+              style={{
+                position: 'absolute',
+                left: `${px(medianTd)}%`,
+                bottom: `${py(medianHsr)}%`,
+                transform: 'translate(6px, 6px)',
+                background: 'var(--surf)',
+                padding: '1px 6px',
+                borderRadius: 20,
+                border: '1px solid var(--border)',
+              }}
+            >
+              squad median
+            </span>
 
-          {points.map((p) => {
-            const size = 12 + Math.min(20, p.hie / 9);
-            const style = BAND_STYLE[p.band];
-            const isSelected = p.athleteId === selectedAthleteId;
-            const leftPct = px(p.td);
-            return (
-              <Link
-                key={p.athleteId}
-                href={hrefFor(p.athleteId)}
-                className={`tr-scatter-dot${isSelected ? ' selected' : ''}`}
-                style={{
-                  left: `${leftPct}%`,
-                  bottom: `${py(p.hsr)}%`,
-                  width: size,
-                  height: size,
-                  background: style.fill,
-                  borderColor: style.stroke,
-                }}
-                aria-label={`${p.name}, ${p.unit}. Total distance ${Math.round(p.td)}m, high speed running ${Math.round(p.hsr)}m.`}
-                title={p.name}
-              >
-                {labelSet.has(p.athleteId) ? (
-                  <span
-                    className="tr-scatter-label"
-                    style={{
-                      color: style.stroke,
-                      left: leftPct > 70 ? undefined : 14,
-                      right: leftPct > 70 ? 'calc(100% + 14px)' : undefined,
-                    }}
-                  >
-                    {p.name.split(',')[0]}
-                  </span>
-                ) : null}
-              </Link>
-            );
-          })}
+            {points.map((p) => {
+              const size = 12 + Math.min(20, p.hie / 9);
+              const style = BAND_STYLE[p.band];
+              const isSelected = p.athleteId === selectedAthleteId;
+              const leftPct = px(p.td);
+              return (
+                <Link
+                  key={p.athleteId}
+                  href={hrefFor(p.athleteId)}
+                  className={`tr-scatter-dot${isSelected ? ' selected' : ''}`}
+                  style={{
+                    left: `${leftPct}%`,
+                    bottom: `${py(p.hsr)}%`,
+                    width: size,
+                    height: size,
+                    background: style.fill,
+                    borderColor: style.stroke,
+                  }}
+                  aria-label={`${p.name}, ${p.unit}. Total distance ${Math.round(p.td)}m, high speed running ${Math.round(p.hsr)}m.`}
+                  title={p.name}
+                >
+                  {labelSet.has(p.athleteId) ? (
+                    <span
+                      className="tr-scatter-label"
+                      style={{
+                        color: style.stroke,
+                        left: leftPct > 70 ? undefined : 14,
+                        right: leftPct > 70 ? 'calc(100% + 14px)' : undefined,
+                      }}
+                    >
+                      {p.name.split(',')[0]}
+                    </span>
+                  ) : null}
+                </Link>
+              );
+            })}
+          </div>
+          <div className="tr-scatter-xaxis">
+            {xTicks.map((t) => (
+              <span key={t}>{Math.round(t).toLocaleString()}</span>
+            ))}
+          </div>
         </div>
       </div>
 

@@ -42,6 +42,26 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 const TONE: Record<string, string> = { bad: 'var(--bad)', warn: 'var(--warn)', accent: 'var(--accent)', accent2: 'var(--accent2)' };
 const BAND_TONE: Record<'far' | 'near' | 'mid' | 'low', string> = { far: 'var(--bad)', near: 'var(--warn)', mid: 'rgb(var(--accent-rgb) / 0.55)', low: 'var(--accent2)' };
 
+/** Gameplan 4.2 / audit S8: TD/RUN/HSR/HIE/MAXV render on this board with no
+ *  explanation anywhere. Definitions sourced from this build's own record of
+ *  what each column means, not guessed from general rugby knowledge:
+ *  screens/training-report.md's column table (§"Data requirements") and
+ *  migration 0023_gps_records.sql's own comment, which is explicit that
+ *  RUN and HIE have no fixed threshold in this build — vendor-defined
+ *  bands, not a number Fydr enforces. MAXV's km/h display is confirmed in
+ *  lib/queries/trainingReport.ts (`max_speed_ms * 3.6`). A lightweight
+ *  `title` attribute, not a new component — none existed anywhere in this
+ *  codebase (checked before writing this). */
+const GPS_TERM_TITLE: Record<string, string> = {
+  td: 'TD — Total distance: total metres covered in the session.',
+  run: 'RUN — Running distance: metres covered at a running pace, between jogging and the high-speed running band. Exact speed threshold is set per GPS vendor.',
+  hsr: 'HSR — High speed running: metres covered above the high-speed running threshold. Threshold is club-configurable.',
+  'hsr/min': 'HSR/min — High speed running per minute of time on the pitch.',
+  hie: 'HIE — High intensity efforts: count of sharp accelerations and decelerations above the effort threshold. Threshold is club-configurable.',
+  'hie/min': 'HIE/min — High intensity efforts per minute of time on the pitch. Threshold is club-configurable.',
+  maxv: 'MAXV — Maximum velocity: the fastest speed reached in the session, shown here in km/h.',
+};
+
 function qs(params: Record<string, string | undefined>): string {
   const s = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) if (v) s.set(k, v);
@@ -83,11 +103,19 @@ function ComparisonTableView({ table }: { table: ComparisonTable }) {
     <div style={{ overflowX: 'auto' }}>
       <div className="tr-table">
         <div className="tr-table-row" style={{ gridTemplateColumns: gridCols, borderTop: 'none' }}>
-          {table.columns.map((c, i) => (
-            <span key={c.key} className="tiny" style={{ textAlign: i === 0 ? 'left' : 'right', textTransform: 'uppercase', fontWeight: 700 }}>
-              {c.label}
-            </span>
-          ))}
+          {table.columns.map((c, i) => {
+            const lookupKey = c.label.toLowerCase().includes('/min') ? `${c.key}/min` : c.key;
+            return (
+              <span
+                key={c.key}
+                className="tiny"
+                style={{ textAlign: i === 0 ? 'left' : 'right', textTransform: 'uppercase', fontWeight: 700 }}
+                title={GPS_TERM_TITLE[lookupKey]}
+              >
+                {c.label}
+              </span>
+            );
+          })}
         </div>
         {table.rows.map((row) => {
           const content = (
@@ -332,10 +360,10 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                   >
                     <span>Player</span>
                     <span className="r">Mins</span>
-                    <span className="r">TD</span>
-                    <span className="r">HSR</span>
-                    <span className="r">HSR/min</span>
-                    <span className="r">HIE</span>
+                    <span className="r" title={GPS_TERM_TITLE.td}>TD</span>
+                    <span className="r" title={GPS_TERM_TITLE.hsr}>HSR</span>
+                    <span className="r" title={GPS_TERM_TITLE['hsr/min']}>HSR/min</span>
+                    <span className="r" title={GPS_TERM_TITLE.hie}>HIE</span>
                   </div>
                   {board.unitOrder.map((unit) => (
                     <div key={unit}>
@@ -639,11 +667,11 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                   style={{ gridTemplateColumns: 'minmax(180px, 1.4fr) repeat(5, minmax(66px, 1fr)) 84px 84px', fontWeight: 700, color: 'var(--faint)', fontSize: 11, textTransform: 'uppercase' }}
                 >
                   <span>Player</span>
-                  <span className="r">TD</span>
-                  <span className="r">Run</span>
-                  <span className="r">HSR</span>
-                  <span className="r">HIE</span>
-                  <span className="r">MaxV</span>
+                  <span className="r" title={GPS_TERM_TITLE.td}>TD</span>
+                  <span className="r" title={GPS_TERM_TITLE.run}>Run</span>
+                  <span className="r" title={GPS_TERM_TITLE.hsr}>HSR</span>
+                  <span className="r" title={GPS_TERM_TITLE.hie}>HIE</span>
+                  <span className="r" title={GPS_TERM_TITLE.maxv}>MaxV</span>
                   <span className="r">vs self</span>
                   <span className="r">vs unit</span>
                 </div>

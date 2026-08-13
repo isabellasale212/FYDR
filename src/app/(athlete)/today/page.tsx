@@ -19,6 +19,7 @@ import {
   formatDate,
   formatTime,
   initials,
+  mdExplainer,
   mdLabel,
   todayIso,
 } from '@/lib/format';
@@ -144,13 +145,15 @@ export default async function TodayPage({
       <div className="card wk-strip" aria-label="This week">
         {weekDays.map((date, i) => {
           const isToday = date === today;
-          const md = mdLabel(weekMd.get(date) ?? null);
+          const offset = weekMd.get(date) ?? null;
+          const md = mdLabel(offset);
           const tone = md === 'MD' ? 'md' : md === 'MD-1' ? 'md-1' : undefined;
+          const explainer = mdExplainer(offset);
           return (
             <div key={date} className="wk-day" data-today={isToday}>
               <span className="wi">{WEEKDAY_INITIAL[i]}</span>
               <span className="wn mono">{Number(date.slice(8, 10))}</span>
-              <span className="wo mono" data-tone={tone}>
+              <span className="wo mono" data-tone={tone} title={explainer ?? undefined}>
                 {md ?? ''}
               </span>
             </div>
@@ -265,7 +268,11 @@ export default async function TodayPage({
                         <span className="mono">{session.duration_min ?? BLANK}</span> min
                       </div>
                     </div>
-                    {md ? <span className="pill pill-neutral mono">{md}</span> : null}
+                    {md ? (
+                      <span className="pill pill-neutral mono" title={mdExplainer(session.md_offset) ?? undefined}>
+                        {md}
+                      </span>
+                    ) : null}
                   </div>
                 </div>
               );

@@ -5997,3 +5997,16 @@ table.tbl tbody tr:hover {
   font-weight: 700;
   color: var(--warn-text);
 }
+
+/* Gameplan 4.2 / audit S8: TrainingScatter had a y-axis with no unit and no
+ * x-axis at all. Real tick row mirroring .tr-scatter-yaxis's own style,
+ * placed under .tr-scatter-plot rather than inside it — additive only, the
+ * plot's own sizing and colour rules are untouched. */
+.tr-scatter-xaxis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--faint);
+}

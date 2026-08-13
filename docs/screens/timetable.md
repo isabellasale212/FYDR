@@ -255,7 +255,7 @@ default:
 
 | Restriction | Conflicts with |
 |---|---|
-| `no contact` | `session_type in ('match')`, session tagged `contact` |
+| `no contact` | `session_type in ('match', 'training')`, session tagged `contact` |
 | `no sprinting` | session tagged `speed`, `conditioning` with `planned_rpe >= 7` |
 | `upper body only` | `session_type = 'training'`, session tagged `lower_body` |
 | `no jumping` | session tagged `plyometric` |
@@ -265,6 +265,15 @@ default:
 The tags come from a `sessions.tags text[]` column. **This column does not exist in
 `04-data-model.md` §4 and is required by this screen.** It is added by this screen's migration
 and the data model document must be updated in the same commit, per `CLAUDE.md` §5.
+
+**Coach audit finding 8, corrected here.** `no contact` originally read as `session_type in
+('match')` only, on the reasoning that a session tagged `contact` would catch contact training.
+Without the tags column, that tag half of the OR can never evaluate true, which left the whole
+`no contact` check firing on matches (roughly one session a week) and silent on training, where
+most contact work in fact happens. `training` is now in scope directly, as the proxy for the
+missing tag until `sessions.tags` ships. `gym`, `rehab`, `testing`, `meeting` and `recovery`
+are deliberately still out of scope — none of them are contact work by the session type alone,
+and flagging them would train coaches to dismiss the warning rather than read it.
 
 The warning **warns, it never blocks**. Coaches overrule physios constantly and a hard block
 gets the product uninstalled. Proceeding requires a typed or picked reason and writes an

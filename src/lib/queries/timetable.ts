@@ -25,15 +25,24 @@ type SessionType = Database['public']['Enums']['session_type'];
  * eligible metric source — a leaderboard type nothing could ever have
  * populated results for until this file existed.
  *
- * Restriction conflict detection uses only the doc's own literal default
- * table (no contact → match sessions; no sprinting → high-RPE non-match,
- * non-recovery sessions), matched against real session_type/planned_rpe
+ * Restriction conflict detection uses the doc's own default table (see
+ * computeConflicts below), matched against real session_type/planned_rpe
  * columns. The doc's fuller version also matches session *tags*, which
  * this schema's sessions table does not have a column for at all — not
  * cut for convenience, there is nothing to read. Every restriction still
  * displays as plain text on the athlete's row regardless of whether it
  * trips the automated conflict banner; only the banner itself is reduced,
- * never the underlying information a coach sees. */
+ * never the underlying information a coach sees.
+ *
+ * Coach audit finding 8 (fixed here): "no contact" originally checked
+ * `session_type === 'match'` only, the doc's literal `session_type in
+ * ('match')` half of its OR — the other half, a session tagged `contact`,
+ * can never fire without the tags column above. That made the whole safety
+ * net silent for training, where contact work actually happens most weeks.
+ * `no contact` now also checks `session_type === 'training'`, the
+ * plausible proxy until tags exist. `no sprinting` was already broader
+ * than just match (any non-match, non-meeting, non-recovery session at
+ * planned_rpe >= 7) and did not need this fix. */
 
 export type TimetableParticipant = {
   athlete_id: string;
@@ -56,11 +65,29 @@ export type TimetableSession = Session & {
  *  screen writes that key yet, so there is nothing there to diverge from
  *  the default), applied directly. Substring match, case-insensitive: real
  *  restriction text in this org includes phrases like "no contact" inside
- *  a longer string ("no contact, no scrummaging"), never an exact token. */
+ *  a longer string ("no contact, no scrummaging"), never an exact token.
+ *
+ *  Coach audit finding 8, fixed here: `screens/timetable.md`'s documented
+ *  default is `no contact` conflicts with `session_type in ('match')` *or*
+ *  a session tagged `contact`. The tag half never fires — `sessions.tags`
+ *  is O-403, undocumented in `04-data-model.md` and never built, same gap
+ *  this file's own top-of-file note already flags — which left `no contact`
+ *  checking match sessions only. Matches are roughly one session a week;
+ *  contact conditioning happens inside `training` sessions on every other
+ *  day, so the safety net was live on paper and silent in practice: a
+ *  no-contact athlete marked Full on a contact training session produced no
+ *  warning at all. Fixed by treating `training` as contact-relevant
+ *  alongside `match`, the plausible proxy for the missing tag until
+ *  `sessions.tags` ships. `gym`, `rehab`, `testing`, `meeting` and
+ *  `recovery` stay excluded — none of them are contact work by definition,
+ *  and adding them would just be noise the coach starts ignoring. */
 function computeConflicts(sessionType: SessionType, plannedRpe: number | null, restrictions: string[]): string[] {
   const lower = restrictions.map((r) => r.toLowerCase());
   const conflicts: string[] = [];
-  if (sessionType === 'match' && lower.some((r) => r.includes('no contact'))) {
+  if (
+    (sessionType === 'match' || sessionType === 'training') &&
+    lower.some((r) => r.includes('no contact'))
+  ) {
     conflicts.push('no contact');
   }
   if (

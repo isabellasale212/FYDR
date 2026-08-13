@@ -1,3 +1,4 @@
+import { acwrWithinBand } from '@/lib/acwr';
 import { fetchAcwr, fetchWellnessTrend, type AcwrRow, type WellnessTrendRow } from './analytics';
 import { fetchComplianceReport, type ComplianceDomainSummary } from './reports';
 import { fetchDashboardAttention, type AttentionRow } from './flags';
@@ -45,7 +46,11 @@ export type SquadWeeklyTiles = {
   compliancePct: number | null;
   availablePct: number | null;
   openFlagCount: number;
-  acwrFlaggedCount: number;
+  /** The honest ACWR headline: how many were computable at all, how many
+   *  were suppressed under the 21-day guard, and of the computable, how
+   *  many sit outside the display band. "Outside band: 0" over an
+   *  all-suppressed table was the audit's false-reassurance case (S1/B4). */
+  acwr: { outsideBand: number; computable: number; suppressed: number };
 };
 
 export type GymByAthleteRow = {
@@ -177,7 +182,12 @@ export async function fetchSquadWeeklyReport(
   const availableCount = athletes.filter((a) => a.availability === 'available').length;
   const availablePct = athletes.length > 0 ? Math.round((100 * availableCount) / athletes.length) : null;
 
-  const acwrFlaggedCount = acwr.filter((r) => r.acwr !== null && (r.acwr < 0.8 || r.acwr > 1.5)).length;
+  const acwrComputable = acwr.filter((r) => r.acwr !== null);
+  const acwrTile = {
+    outsideBand: acwrComputable.filter((r) => r.acwr !== null && !acwrWithinBand(r.acwr)).length,
+    computable: acwrComputable.length,
+    suppressed: acwr.filter((r) => r.suppressed).length,
+  };
 
   const medianReadiness = median(wellness.map((w) => w.readiness).filter((v): v is number => v !== null));
   const outliers = wellness.filter((w) => w.outlier);
@@ -190,7 +200,7 @@ export async function fetchSquadWeeklyReport(
       compliancePct,
       availablePct,
       openFlagCount: attentionResult.openTotal,
-      acwrFlaggedCount,
+      acwr: acwrTile,
     },
     attention: attentionResult.rows,
     wellness: {

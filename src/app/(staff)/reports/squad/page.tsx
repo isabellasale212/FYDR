@@ -9,6 +9,7 @@ import { fetchSquadWeeklyReport } from '@/lib/queries/squadWeeklyReport';
 import { recordReportView } from '@/lib/queries/reports';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
+import { ACWR_BAND_TEXT, acwrBandTone, acwrInsufficiencyNote, acwrSuppressedLabel } from '@/lib/acwr';
 import { BLANK, enumLabel, formatDate, formatNumber } from '@/lib/format';
 import { availabilityStatus } from '@/lib/status';
 import { requireReportAccess } from '@/lib/session';
@@ -18,12 +19,8 @@ export const metadata = { title: 'Squad weekly report · Fydr' };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-function acwrTone(acwr: number | null): 'good' | 'warn' | 'bad' | 'neutral' {
-  if (acwr === null) return 'neutral';
-  if (acwr < 0.8 || acwr > 1.5) return 'bad';
-  if (acwr < 0.9 || acwr > 1.3) return 'warn';
-  return 'good';
-}
+// Band, tone and suppression copy all from lib/acwr.ts — the one shared
+// ACWR definition (audit S1).
 
 /** screens/reports.md, report 2 of 5 — see lib/queries/squadWeeklyReport.ts's
  *  header for the full scope reasoning. Always the trailing 7 days; no
@@ -92,9 +89,15 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
             </p>
           </div>
           <div className="card">
-            <p className="tiny">ACWR outside 0.8&ndash;1.5</p>
+            {/* Never "0 outside the band" over an all-suppressed table —
+                the headline names how many were computable at all
+                (audit S1/B4's false reassurance). */}
+            <p className="tiny">ACWR outside {ACWR_BAND_TEXT}</p>
             <p className="mono" style={{ fontSize: 24, fontWeight: 800 }}>
-              {report.tiles.acwrFlaggedCount}
+              {report.tiles.acwr.computable === 0 ? '—' : report.tiles.acwr.outsideBand}
+            </p>
+            <p className="tiny">
+              {report.tiles.acwr.computable} computable · {report.tiles.acwr.suppressed} suppressed
             </p>
           </div>
         </div>
@@ -153,7 +156,8 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
             Load, weekly per athlete
           </h2>
           <p className="import-sub" style={{ padding: '0 16px' }}>
-            ACWR distribution, worst first. 0.8 and 1.5 are the reference lines used everywhere the ratio appears.
+            ACWR distribution, worst first. {ACWR_BAND_TEXT} is the descriptive band used everywhere the ratio
+            appears; the flag rule itself is set on the Thresholds screen. {acwrInsufficiencyNote()}
           </p>
           {report.load.length === 0 ? (
             <p className="tiny" style={{ padding: 16 }}>
@@ -187,9 +191,9 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
                     <td className="r mono">{r.chronic === null ? BLANK : formatNumber(r.chronic, 0)}</td>
                     <td className="r">
                       {r.acwr === null ? (
-                        <span className="tiny">{r.suppressed ? 'suppressed' : BLANK}</span>
+                        <span className="tiny">{r.suppressed ? acwrSuppressedLabel(r.days_with_data) : BLANK}</span>
                       ) : (
-                        <span className={`pill pill-${acwrTone(r.acwr)}`}>{formatNumber(r.acwr, 2)}</span>
+                        <span className={`pill pill-${acwrBandTone(r.acwr)}`}>{formatNumber(r.acwr, 2)}</span>
                       )}
                     </td>
                   </tr>

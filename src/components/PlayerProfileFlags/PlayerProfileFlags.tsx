@@ -7,7 +7,7 @@ import { useMutation } from '@tanstack/react-query';
 import type { ProfileFlag } from '@/lib/queries/playerProfile';
 import { acknowledgeFlag } from '@/lib/queries/flags';
 import { createClient } from '@/lib/supabase/client';
-import { enumLabel, formatDate, formatTime } from '@/lib/format';
+import { enumLabel, formatDate, formatDateTime, formatTime } from '@/lib/format';
 
 type Props = {
   flags: ProfileFlag[];
@@ -60,7 +60,15 @@ export function PlayerProfileFlags({ flags, orgId, userId, today }: Props) {
           <h2 className="card-title" id="pp-flags-title">
             Flags
           </h2>
-          <span className="pill pill-warn">{unacknowledged.length} open</span>
+          {/* "Open" means what it means on the dashboard and /flags — every
+              flag not yet dismissed/resolved, acknowledged ones included
+              (this pill used to count only unacknowledged as "open", so the
+              profile said "0 open" for athletes the dashboard flagged —
+              audit coach finding 3). */}
+          <span className="pill pill-warn">
+            {flags.length} open
+            {unacknowledged.length > 0 ? ` · ${unacknowledged.length} awaiting acknowledgement` : ''}
+          </span>
         </div>
         <Link href="/settings/thresholds" className="pp-link">
           Thresholds ›
@@ -79,7 +87,9 @@ export function PlayerProfileFlags({ flags, orgId, userId, today }: Props) {
 
       {visible.length === 0 ? (
         <p className="cap" style={{ marginTop: 16 }}>
-          No open flags for this athlete.
+          {acknowledged.length > 0
+            ? 'Nothing awaiting acknowledgement — every open flag has been seen.'
+            : 'No open flags for this athlete.'}
         </p>
       ) : (
         <div className="pp-flags-list">
@@ -99,6 +109,11 @@ export function PlayerProfileFlags({ flags, orgId, userId, today }: Props) {
                   <span className="pill pill-neutral" style={{ fontSize: 10.5, padding: '2px 9px' }}>
                     {enumLabel(flag.domain)}
                   </span>
+                  {flag.escalated ? (
+                    <span className={`pill ${canAck ? 'pill-bad' : 'pill-warn'}`} style={{ fontSize: 10.5, padding: '2px 9px' }}>
+                      {canAck ? 'Escalated' : 'Was escalated'}
+                    </span>
+                  ) : null}
                   {flag.observed ? (
                     <span className="mono pp-flag-value" style={{ color: TONE_VAR[flag.severity] }}>
                       {flag.observed}
@@ -124,7 +139,11 @@ export function PlayerProfileFlags({ flags, orgId, userId, today }: Props) {
                     </button>
                   ) : (
                     <span className="pp-ack-btn" data-acked="true">
+                      {/* The card's own copy promises "records who saw it
+                          and when" — so show exactly that. */}
                       Acknowledged
+                      {flag.acknowledged_by_name ? ` by ${flag.acknowledged_by_name}` : ''}
+                      {flag.acknowledged_at ? ` · ${formatDateTime(flag.acknowledged_at)}` : ''}
                     </span>
                   )}
                 </div>

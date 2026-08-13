@@ -1,5 +1,12 @@
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
+import {
+  ACWR_BAND_TEXT,
+  ACWR_CHRONIC_WINDOW_DAYS,
+  ACWR_MIN_DAYS_WITH_DATA,
+  acwrInsufficiencyNote,
+  acwrWithinBand,
+} from '@/lib/acwr';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchAcwr, fetchWellnessTrend } from '@/lib/queries/analytics';
 import { groupScopeLabel } from '@/lib/groupFilter';
@@ -57,8 +64,7 @@ export default async function AnalyticsPage({
 
         {acwr.every((r) => r.suppressed) ? (
           <p className="cap">
-            Not enough training history yet. ACWR needs at least 21 of the last 28 days
-            to carry a training entry for any athlete, squad-wide.
+            Not enough training history yet for any athlete, squad-wide. {acwrInsufficiencyNote()}
           </p>
         ) : (
           <div style={{ overflowX: 'auto' }}>
@@ -82,7 +88,7 @@ export default async function AnalyticsPage({
                 {acwr
                   .filter((r) => !r.suppressed)
                   .map((r) => {
-                    const flagged = r.acwr !== null && (r.acwr < 0.8 || r.acwr > 1.5);
+                    const flagged = r.acwr !== null && !acwrWithinBand(r.acwr);
                     return (
                       <tr key={r.athlete_id}>
                         <td className="nm">
@@ -106,8 +112,8 @@ export default async function AnalyticsPage({
         {acwrSuppressedCount > 0 ? (
           <p className="cap">
             {acwrSuppressedCount} athlete{acwrSuppressedCount === 1 ? '' : 's'} suppressed:
-            fewer than 21 of the last 28 days have a training entry. Not estimated from
-            what exists.
+            fewer than {ACWR_MIN_DAYS_WITH_DATA} of the last {ACWR_CHRONIC_WINDOW_DAYS} days have a training
+            entry. Not estimated from what exists.
           </p>
         ) : null}
 
@@ -115,9 +121,10 @@ export default async function AnalyticsPage({
           <div className="note-glyph">i</div>
           <p className="note-text">
             <b>ACWR is a descriptive ratio.</b> The evidence linking specific ACWR values
-            to injury risk is contested, and the 0.8 to 1.5 band is a convention rather
+            to injury risk is contested, and the {ACWR_BAND_TEXT} band is a convention rather
             than a validated threshold. Use it to find athletes whose load changed
-            sharply, not to predict injury.
+            sharply, not to predict injury. The rule that actually raises flags is set on
+            the Thresholds screen.
           </p>
         </div>
       </section>

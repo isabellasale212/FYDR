@@ -1,3 +1,4 @@
+import { ACWR_ACUTE_WINDOW_DAYS, ACWR_CHRONIC_WINDOW_DAYS, computeAcwr } from '@/lib/acwr';
 import { readiness, rollingBand, zScore, type Band } from '@/lib/stats';
 import { addDays, todayIso } from '@/lib/format';
 import { fetchGroupAthleteIds, type Db } from './groups';
@@ -26,11 +27,9 @@ export type AcwrRow = {
   days_with_data: number;
 };
 
-/** Acute:chronic workload ratio. Acute is the trailing 7-day sum of session_load,
- *  chronic is the trailing 28-day sum normalised to a weekly figure (divided by 4)
- *  so the two are on the same footing. screens/analytics.md's own guard: suppressed
- *  below 21 of the 28 chronic days having any record at all, not estimated from
- *  what exists. */
+/** Acute:chronic workload ratio — computation, windows and the 21-of-28
+ *  suppression guard all from lib/acwr.ts, the one shared definition every
+ *  ACWR surface uses (audit S1). */
 export async function fetchAcwr(
   db: Db,
   orgId: string,
@@ -38,8 +37,8 @@ export async function fetchAcwr(
   groupIds: readonly string[],
 ): Promise<AcwrRow[]> {
   const today = todayIso(timezone);
-  const from = addDays(today, -27);
-  const acuteFrom = addDays(today, -6);
+  const from = addDays(today, -(ACWR_CHRONIC_WINDOW_DAYS - 1));
+  const acuteFrom = addDays(today, -(ACWR_ACUTE_WINDOW_DAYS - 1));
 
   const [athletesRes, scope, entriesRes] = await Promise.all([
     db
@@ -76,23 +75,19 @@ export async function fetchAcwr(
   return athletes
     .map((a) => {
       const rows = byAthlete.get(a.id) ?? [];
-      const daysWithData = new Set(rows.map((r) => r.date)).size;
-      const suppressed = daysWithData < 21;
-
-      const chronic = rows.reduce((sum, r) => sum + r.load, 0) / 4;
-      const acute = rows
-        .filter((r) => r.date >= acuteFrom)
-        .reduce((sum, r) => sum + r.load, 0);
+      const loadByDate = new Map<string, number>();
+      for (const r of rows) loadByDate.set(r.date, (loadByDate.get(r.date) ?? 0) + r.load);
+      const computed = computeAcwr(loadByDate, acuteFrom);
 
       return {
         athlete_id: a.id,
         first_name: a.first_name,
         last_name: a.last_name,
-        acute: suppressed ? null : acute,
-        chronic: suppressed ? null : chronic,
-        acwr: suppressed || chronic === 0 ? null : acute / chronic,
-        suppressed,
-        days_with_data: daysWithData,
+        acute: computed.acute,
+        chronic: computed.chronic,
+        acwr: computed.acwr,
+        suppressed: computed.suppressed,
+        days_with_data: computed.daysWithData,
       };
     })
     .sort((a, b) => (b.acwr ?? -Infinity) - (a.acwr ?? -Infinity));

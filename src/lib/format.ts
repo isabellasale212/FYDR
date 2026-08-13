@@ -238,6 +238,41 @@ export function mdLabel(offset: number | null | undefined): string | null {
   return offset < 0 ? `MD${offset}` : `MD+${offset}`;
 }
 
+/** Per-week MD-n re-anchoring for week strips and week grids.
+ *
+ *  Stored `md_offset` counts toward whichever fixture a session was created
+ *  against, which for historical weeks can be a fixture in a LATER week —
+ *  the audit caught a real matchday labelled "MD-7" because its stored
+ *  offset targeted the following week's fixture. A week strip labels days
+ *  relative to that week's OWN matchday, so: if any day in the window holds
+ *  a match (or a session stored as MD, offset 0), every day is re-anchored
+ *  to its nearest such matchday; only a window with no matchday of its own
+ *  falls back to the stored countdown toward the next fixture, which is
+ *  then genuinely what MD-n means for that week. */
+export function anchorMdOffsetsToWeek(
+  days: readonly { date: string; isMatch: boolean; storedMdOffset: number | null }[],
+): Map<string, number | null> {
+  const matchDates = days.filter((d) => d.isMatch || d.storedMdOffset === 0).map((d) => d.date);
+  const out = new Map<string, number | null>();
+  if (matchDates.length === 0) {
+    for (const d of days) out.set(d.date, d.storedMdOffset);
+    return out;
+  }
+  for (const d of days) {
+    let best: number | null = null;
+    for (const m of matchDates) {
+      const offset = daysBetween(m, d.date);
+      // Nearest matchday wins; on a tie, the upcoming one (negative offset,
+      // "building toward Saturday") reads better than the one just played.
+      if (best === null || Math.abs(offset) < Math.abs(best) || (Math.abs(offset) === Math.abs(best) && offset < best)) {
+        best = offset;
+      }
+    }
+    out.set(d.date, best);
+  }
+  return out;
+}
+
 const ENUM_LABELS: Record<string, string> = {
   lower_back: 'Lower back',
   upper_back: 'Upper back',

@@ -44,7 +44,11 @@ export type AttentionRow = {
    *  flag it is. */
   domain: string;
   flag_count: number;
-  score: number;
+  /** True when ANY of this athlete's open flags has escalated — the row's
+   *  sentence still narrates the top flag, but an escalated athlete must
+   *  never be invisible on the dashboard (audit coach finding 4: a real
+   *  Escalated flag never appeared in the top 5). */
+  escalated: boolean;
   /** The sentence, split so the row can style the value and the baseline. */
   what: string;
   value: string;
@@ -52,13 +56,57 @@ export type AttentionRow = {
   duration: string;
 };
 
-const SEVERITY_WEIGHT: Record<FlagSeverity, number> = {
-  low: 1,
-  medium: 2.5,
-  high: 5,
-};
-
 const SEVERITY_RANK: Record<FlagSeverity, number> = { low: 0, medium: 1, high: 2 };
+
+/* ---------------------------------------------------------------------------
+ * The shared vocabulary of flag state. The dashboard tile, the dashboard
+ * panel, /flags and the profile Flags card were each counting and ordering
+ * flags their own way (audit coach findings 3 and 4: "8 unacknowledged"
+ * with 5 acknowledged, profiles saying "0 open" for athletes the dashboard
+ * flagged, an escalated athlete missing from the top 5). These four
+ * definitions are what every surface now shares:
+ *   - OPEN  = raised | notified | acknowledged | monitoring
+ *   - AWAITING ACKNOWLEDGEMENT = raised | notified
+ *   - ESCALATED = went more than 24h without acknowledgement — and stays
+ *     true as history once acknowledged (acknowledged_at − raised_at > 24h),
+ *     because acknowledging a flag records that it was seen late, it does
+ *     not un-happen the escalation (audit coach finding 21).
+ *   - PRIORITY ORDER = severity desc, escalated first, raised_at asc,
+ *     name asc (screens/flags.md "Grouping and ordering").
+ * ------------------------------------------------------------------------ */
+
+export const OPEN_FLAG_STATUSES = ['raised', 'notified', 'acknowledged', 'monitoring'] as const;
+
+export function isAwaitingAcknowledgement(status: string): boolean {
+  return status === 'raised' || status === 'notified';
+}
+
+const ESCALATION_MS = 24 * 60 * 60 * 1000;
+
+export function isEscalated(
+  flag: { status: string; raised_at: string; acknowledged_at?: string | null },
+  nowMs: number,
+): boolean {
+  const raisedMs = new Date(flag.raised_at).getTime();
+  if (isAwaitingAcknowledgement(flag.status)) return nowMs - raisedMs > ESCALATION_MS;
+  if (flag.acknowledged_at) return new Date(flag.acknowledged_at).getTime() - raisedMs > ESCALATION_MS;
+  return false;
+}
+
+/** The one ordering. /flags sorts its rows with this, and the dashboard's
+ *  top-5 panel ranks athletes by their first flag under this same order —
+ *  never a second, parallel scoring scheme. */
+export function compareFlagPriority(
+  a: { severity: FlagSeverity; escalated: boolean; raised_at: string; name: string },
+  b: { severity: FlagSeverity; escalated: boolean; raised_at: string; name: string },
+): number {
+  return (
+    SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity] ||
+    Number(b.escalated) - Number(a.escalated) ||
+    a.raised_at.localeCompare(b.raised_at) ||
+    a.name.localeCompare(b.name)
+  );
+}
 
 type MetricCopy = { what: string; decimals: number; unit: string };
 
@@ -84,36 +132,61 @@ export function metricCopy(metric: string): MetricCopy {
   );
 }
 
-function durationLabel(flagDate: string, today: string): string {
-  const age = daysBetween(flagDate, today);
-  if (age <= 0) return 'raised this morning';
+/** How long a flag has been open, computed against WALL-CLOCK today, never
+ *  a data-anchored "effective today" — the audit (S2) caught flags dated
+ *  the 6th labelled "raised this morning" on a dashboard whose today was
+ *  the 5th. A relative phrase that can't be certain is replaced by the
+ *  date itself. */
+function durationLabel(flagDate: string, wallClockToday: string): string {
+  const age = daysBetween(flagDate, wallClockToday);
+  if (age < 0) return `dated ${flagDate}`; // ahead of the clock: never claim recency
+  if (age === 0) return 'raised today';
   if (age === 1) return 'open since yesterday';
   return `open ${age} days`;
 }
 
+export type DashboardAttention = {
+  rows: AttentionRow[];
+  /** All open flags in scope (OPEN_FLAG_STATUSES) — the same number /flags
+   *  reports as its list length. */
+  openTotal: number;
+  /** Of those, still raised/notified — the number that actually needs a
+   *  coach's click this morning. */
+  awaitingAck: number;
+  /** Severity breakdown across ALL open flags (not just the top rows), so
+   *  the panel's summary line and /flags can never disagree. */
+  bySeverity: Record<FlagSeverity, number>;
+};
+
 export async function fetchDashboardAttention(
   db: Db,
   orgId: string,
-  date: string,
+  wallClockToday: string,
   groupIds: readonly string[],
   limit = 5,
-): Promise<{ rows: AttentionRow[]; openTotal: number }> {
+): Promise<DashboardAttention> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
 
   let flagQuery = db
     .from('flags')
     .select(
-      'id, athlete_id, domain, metric, observed_value, expected_value, flag_date, severity, status, raised_at',
+      'id, athlete_id, domain, metric, observed_value, expected_value, flag_date, severity, status, raised_at, acknowledged_at',
     )
     .eq('org_id', orgId)
-    .in('status', ['raised', 'notified', 'acknowledged', 'monitoring'])
+    .in('status', [...OPEN_FLAG_STATUSES])
     .order('raised_at', { ascending: false });
 
   if (scope) flagQuery = flagQuery.in('athlete_id', scope);
 
   const { data: flags, error } = await flagQuery;
   if (error) throw new Error(error.message);
-  if (!flags || flags.length === 0) return { rows: [], openTotal: 0 };
+  const empty: DashboardAttention = {
+    rows: [],
+    openTotal: 0,
+    awaitingAck: 0,
+    bySeverity: { low: 0, medium: 0, high: 0 },
+  };
+  if (!flags || flags.length === 0) return empty;
 
   const athleteIds = [...new Set(flags.map((f) => f.athlete_id))];
 
@@ -130,72 +203,73 @@ export async function fetchDashboardAttention(
 
   const athleteById = new Map((athletes.data ?? []).map((a) => [a.id, a]));
   const availByAthlete = new Map(availability.map((a) => [a.athlete_id, a.status]));
+  const now = Date.now();
 
-  const grouped = new Map<string, typeof flags>();
-  for (const flag of flags) {
-    const list = grouped.get(flag.athlete_id) ?? [];
-    list.push(flag);
-    grouped.set(flag.athlete_id, list);
+  // Every open flag, in the ONE shared priority order /flags itself uses —
+  // then athletes rank by their first appearance in that order, so the
+  // panel's top 5 is exactly the top of the /flags list, aggregated.
+  const prioritised = flags
+    .map((f) => {
+      const athlete = athleteById.get(f.athlete_id);
+      if (!athlete) return null;
+      return {
+        ...f,
+        name: `${athlete.first_name} ${athlete.last_name}`,
+        escalated: isEscalated(f, now),
+      };
+    })
+    .filter((f): f is NonNullable<typeof f> => f !== null)
+    .sort(compareFlagPriority);
+
+  const bySeverity: Record<FlagSeverity, number> = { low: 0, medium: 0, high: 0 };
+  for (const f of prioritised) bySeverity[f.severity] += 1;
+  const awaitingAck = prioritised.filter((f) => isAwaitingAcknowledgement(f.status)).length;
+
+  const flagsByAthlete = new Map<string, typeof prioritised>();
+  for (const f of prioritised) {
+    const list = flagsByAthlete.get(f.athlete_id) ?? [];
+    list.push(f);
+    flagsByAthlete.set(f.athlete_id, list);
   }
 
   const rows: AttentionRow[] = [];
-
-  for (const [athleteId, athleteFlags] of grouped) {
-    const athlete = athleteById.get(athleteId);
+  for (const f of prioritised) {
+    if (rows.length >= limit) break;
+    if (rows.some((r) => r.athlete_id === f.athlete_id)) continue;
+    const athlete = athleteById.get(f.athlete_id);
     if (!athlete) continue;
-
-    const sorted = [...athleteFlags].sort(
-      (a, b) =>
-        SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity] ||
-        a.flag_date.localeCompare(b.flag_date),
-    );
-    const top = sorted[0];
-    if (!top) continue;
-
-    const copy = metricCopy(top.metric);
-    const score = sorted.reduce(
-      (acc, f) => acc + SEVERITY_WEIGHT[f.severity],
-      0,
-    );
+    const athleteFlags = flagsByAthlete.get(f.athlete_id) ?? [];
+    const copy = metricCopy(f.metric);
 
     rows.push({
-      athlete_id: athleteId,
-      name: `${athlete.first_name} ${athlete.last_name}`,
+      athlete_id: f.athlete_id,
+      name: f.name,
       position: athlete.position,
-      availability: availByAthlete.get(athleteId) ?? 'unknown',
-      severity: top.severity,
-      domain: top.domain,
-      flag_count: sorted.length,
-      score,
+      availability: availByAthlete.get(f.athlete_id) ?? 'unknown',
+      severity: f.severity,
+      domain: f.domain,
+      flag_count: athleteFlags.length,
+      escalated: athleteFlags.some((af) => af.escalated),
       what: copy.what,
       value:
-        top.observed_value === null
+        f.observed_value === null
           ? ''
-          : `${formatNumber(top.observed_value, copy.decimals)}${copy.unit}`,
+          : `${formatNumber(f.observed_value, copy.decimals)}${copy.unit}`,
       baseline:
-        top.expected_value === null
+        f.expected_value === null
           ? ''
-          : `${formatNumber(top.expected_value, copy.decimals)}${copy.unit}`,
-      duration: durationLabel(top.flag_date, date),
+          : `${formatNumber(f.expected_value, copy.decimals)}${copy.unit}`,
+      duration: durationLabel(f.flag_date, wallClockToday),
     });
   }
 
-  rows.sort(
-    (a, b) =>
-      b.score - a.score ||
-      SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity] ||
-      a.name.localeCompare(b.name),
-  );
-
-  return { rows: rows.slice(0, limit), openTotal: flags.length };
+  return { rows, openTotal: prioritised.length, awaitingAck, bySeverity };
 }
 
 /* ---------------------------------------------------------------------------
  * The Flags screen. One row per flag, not aggregated by athlete: a coach
  * working through a morning's exceptions needs to act on each one.
  * ------------------------------------------------------------------------ */
-
-const OPEN_STATUSES = ['raised', 'notified', 'acknowledged', 'monitoring'] as const;
 
 export type FlagListRow = {
   id: string;
@@ -211,6 +285,12 @@ export type FlagListRow = {
   expected: string;
   flag_date: string;
   raised_at: string;
+  /** Who saw it and when — the columns have always existed; the UI promised
+   *  them ("Acknowledging one records who saw it and when") without ever
+   *  showing them (audit coach finding 21). Name is null when the user row
+   *  can't be resolved; the timestamp still renders alone. */
+  acknowledged_at: string | null;
+  acknowledged_by_name: string | null;
   escalated: boolean;
   /** thresholds.id — null when the flag predates thresholds (there is none
    *  seeded that old, but the column itself is nullable) or the threshold
@@ -222,8 +302,6 @@ export type FlagListRow = {
   threshold_id: string | null;
 };
 
-const SEVERITY_RANK_LOCAL: Record<FlagSeverity, number> = { low: 0, medium: 1, high: 2 };
-
 export async function fetchFlagsList(
   db: Db,
   orgId: string,
@@ -234,10 +312,10 @@ export async function fetchFlagsList(
   let query = db
     .from('flags')
     .select(
-      'id, athlete_id, domain, metric, observed_value, expected_value, flag_date, severity, status, raised_at, threshold_id',
+      'id, athlete_id, domain, metric, observed_value, expected_value, flag_date, severity, status, raised_at, acknowledged_at, acknowledged_by, threshold_id',
     )
     .eq('org_id', orgId)
-    .in('status', OPEN_STATUSES)
+    .in('status', [...OPEN_FLAG_STATUSES])
     .order('raised_at', { ascending: true });
 
   if (scope) query = query.in('athlete_id', scope);
@@ -247,15 +325,27 @@ export async function fetchFlagsList(
   if (!flags || flags.length === 0) return [];
 
   const athleteIds = [...new Set(flags.map((f) => f.athlete_id))];
-  const { data: athletes, error: athleteError } = await db
-    .from('athletes')
-    .select('id, first_name, last_name, squad_number')
-    .eq('org_id', orgId)
-    .in('id', athleteIds);
+  const ackUserIds = [...new Set(flags.map((f) => f.acknowledged_by).filter((v): v is string => v !== null))];
 
-  if (athleteError) throw new Error(athleteError.message);
+  const [athletesRes, ackUsersRes] = await Promise.all([
+    db
+      .from('athletes')
+      .select('id, first_name, last_name, squad_number')
+      .eq('org_id', orgId)
+      .in('id', athleteIds),
+    ackUserIds.length > 0
+      ? db.from('users').select('id, full_name').eq('org_id', orgId).in('id', ackUserIds)
+      : Promise.resolve({ data: [] as { id: string; full_name: string | null }[], error: null }),
+  ]);
 
-  const athleteById = new Map((athletes ?? []).map((a) => [a.id, a]));
+  if (athletesRes.error) throw new Error(athletesRes.error.message);
+  // A failed name lookup must not sink the whole flags list — the timestamp
+  // alone still answers "when was this seen"; the name is best-effort.
+  const ackNameById = new Map(
+    (ackUsersRes.error ? [] : (ackUsersRes.data ?? [])).map((u) => [u.id, u.full_name]),
+  );
+
+  const athleteById = new Map((athletesRes.data ?? []).map((a) => [a.id, a]));
   const now = Date.now();
 
   const rows: FlagListRow[] = flags
@@ -263,9 +353,6 @@ export async function fetchFlagsList(
       const athlete = athleteById.get(f.athlete_id);
       if (!athlete) return null;
       const copy = metricCopy(f.metric);
-      const escalated =
-        (f.status === 'raised' || f.status === 'notified') &&
-        now - new Date(f.raised_at).getTime() > 24 * 60 * 60 * 1000;
 
       const row: FlagListRow = {
         id: f.id,
@@ -287,7 +374,9 @@ export async function fetchFlagsList(
             : `${formatNumber(f.expected_value, copy.decimals)}${copy.unit}`,
         flag_date: f.flag_date,
         raised_at: f.raised_at,
-        escalated,
+        acknowledged_at: f.acknowledged_at,
+        acknowledged_by_name: f.acknowledged_by ? (ackNameById.get(f.acknowledged_by) ?? null) : null,
+        escalated: isEscalated(f, now),
         threshold_id: f.threshold_id,
       };
       return row;
@@ -295,14 +384,9 @@ export async function fetchFlagsList(
     .filter((r): r is FlagListRow => r !== null);
 
   /* screens/flags.md "Grouping and ordering": severity desc, escalated
-   * before not, raised_at asc, surname asc. */
-  rows.sort(
-    (a, b) =>
-      SEVERITY_RANK_LOCAL[b.severity] - SEVERITY_RANK_LOCAL[a.severity] ||
-      Number(b.escalated) - Number(a.escalated) ||
-      a.raised_at.localeCompare(b.raised_at) ||
-      a.name.localeCompare(b.name),
-  );
+   * before not, raised_at asc, surname asc — via the ONE shared comparator
+   * the dashboard panel also ranks by. */
+  rows.sort(compareFlagPriority);
 
   return rows;
 }
@@ -357,7 +441,7 @@ export async function dismissFlag(
     .update({ status: 'dismissed', resolved_at: new Date().toISOString() })
     .eq('id', flagId)
     .eq('org_id', orgId)
-    .in('status', OPEN_STATUSES);
+    .in('status', [...OPEN_FLAG_STATUSES]);
 
   if (error) throw new Error(error.message);
 }

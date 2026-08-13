@@ -45,8 +45,11 @@ function qs(params: Record<string, string | undefined>): string {
   return str ? `?${str}` : '';
 }
 
-function dayTitle(date: string, effectiveToday: string): string {
-  if (date === effectiveToday) return 'Today';
+/** "Today" only when the date IS wall-clock today — a dashboard anchored to
+ *  the latest day with data (see the banner) titles that day by its real
+ *  name, never "Today" (audit S2). */
+function dayTitle(date: string, wallClockToday: string): string {
+  if (date === wallClockToday) return 'Today';
   const d = new Date(`${date}T12:00:00Z`);
   return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
 }
@@ -72,14 +75,18 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
 
   const [groups, stats, week, timeline, readiness, squad, untied, outstanding] = await Promise.all([
     fetchGroups(db, orgId),
-    fetchHeadlineStats(db, orgId, groupIds, effectiveToday),
+    fetchHeadlineStats(db, orgId, groupIds, effectiveToday, wallClockToday),
     fetchWeekStrip(db, orgId, groupIds, weekStart, effectiveToday),
-    fetchTimeline(db, orgId, groupIds, selectedDay, `${wallClockToday}T23:59:59Z`),
+    // "now" is the real instant — a session is "passed" against the real
+    // clock, never against an end-of-day stand-in (audit S2).
+    fetchTimeline(db, orgId, groupIds, selectedDay, new Date().toISOString()),
     fetchSaturdayReadiness(db, orgId, groupIds, effectiveToday),
     fetchSquadState(db, orgId, groupIds),
     fetchUntiedFlags(db, orgId, groupIds),
     fetchOutstandingTracks(db, orgId, groupIds, effectiveToday),
   ]);
+
+  const isAnchoredToPast = effectiveToday !== wallClockToday;
 
   const groupsQs = groupIds.length > 0 ? groupIds.join(',') : undefined;
   const isSelectedToday = selectedDay === effectiveToday;
@@ -112,12 +119,39 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         <GroupFilter groups={groups} selected={groupIds} />
       </div>
 
+      {isAnchoredToPast ? (
+        <div
+          className="card"
+          role="status"
+          style={{
+            marginBottom: 14,
+            padding: '10px 16px',
+            borderInlineStart: '3px solid var(--accent)',
+            display: 'flex',
+            gap: 8,
+            alignItems: 'baseline',
+            flexWrap: 'wrap',
+          }}
+        >
+          <b style={{ fontSize: 13.5 }}>Showing {formatDate(effectiveToday)} — the latest day with data.</b>
+          <span className="tiny" style={{ color: 'var(--muted)' }}>
+            Nothing has been recorded for today ({formatDate(wallClockToday)}) yet. Schedule, Flags and Reports run
+            on the real date.
+          </span>
+        </div>
+      ) : null}
+
       {/* Flags has no sidebar row of its own any more — this is the
        * replacement: closed by default, the toggle row is the "small
        * summaries" state, and each expanded row jumps straight to the
        * flag's real, actionable home on the athlete's own profile. */}
       <div style={{ marginBottom: 14 }}>
-        <DashboardFlagsPanel rows={stats.attentionRows} openTotal={stats.openFlags} />
+        <DashboardFlagsPanel
+          rows={stats.attentionRows}
+          openTotal={stats.openFlags}
+          awaitingAck={stats.awaitingAckFlags}
+          bySeverity={stats.flagsBySeverity}
+        />
       </div>
 
       <div className="card dash-stats">
@@ -142,7 +176,13 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
             )}
           </div>
           <div className="dash-stat-sub">{stats.wellnessSub}</div>
-          <div className="dash-stat-foot">{stats.wellnessPct !== null ? 'window closes 09:00' : 'not expected today'}</div>
+          <div className="dash-stat-foot">
+            {stats.wellnessPct === null
+              ? 'not expected today'
+              : isAnchoredToPast
+                ? 'window closed 09:00 that day'
+                : 'window closes 09:00'}
+          </div>
         </Link>
         <Link href="/squad" className="dash-stat">
           <div className="dash-stat-label">Available</div>
@@ -159,7 +199,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           <div className="dash-stat-value" style={{ color: stats.openFlags > 0 ? 'var(--warn-text)' : undefined }}>
             {stats.openFlags}
           </div>
-          <div className="dash-stat-sub">unacknowledged</div>
+          <div className="dash-stat-sub">
+            {stats.awaitingAckFlags === 0 ? 'all acknowledged' : `${stats.awaitingAckFlags} awaiting acknowledgement`}
+          </div>
           <div className="dash-stat-foot">wellness, gym, GPS</div>
         </Link>
         <Link href={`/dashboard${qs({ groups: groupsQs, day: week[5]?.date })}`} className="dash-stat">
@@ -208,7 +250,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       <div className="dash-body" style={{ marginTop: 14 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 12 }}>
-            <h2 style={{ fontSize: 17, fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>{dayTitle(selectedDay, effectiveToday)}</h2>
+            <h2 style={{ fontSize: 17, fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>{dayTitle(selectedDay, wallClockToday)}</h2>
             <span className="tiny mono" style={{ color: 'var(--muted)', marginLeft: 'auto' }}>
               {selectedDayMd && selectedDayMd !== 'MD' ? `${selectedDayMd} · ` : ''}
               {dayCaption}

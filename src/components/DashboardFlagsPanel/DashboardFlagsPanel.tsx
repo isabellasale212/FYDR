@@ -8,6 +8,12 @@ import { enumLabel } from '@/lib/format';
 type Props = {
   rows: AttentionRow[];
   openTotal: number;
+  /** Still raised/notified — the count that actually needs a click. */
+  awaitingAck: number;
+  /** Severity counts across ALL open flags (not just the top rows), from
+   *  the same query /flags reads — the summary line and the flags list can
+   *  never disagree (audit coach findings 3/14). */
+  bySeverity: Record<AttentionRow['severity'], number>;
 };
 
 const SEVERITY_COLOR: Record<AttentionRow['severity'], string> = {
@@ -42,11 +48,11 @@ function FlagIcon({ size = 20 }: { size?: number }) {
  *  (PlayerProfileFlags.tsx's #pp-flags-title) — the exact place on the
  *  profile a flag lives, already real, already actionable (acknowledge is
  *  right there), not a new destination invented for this panel. */
-export function DashboardFlagsPanel({ rows, openTotal }: Props) {
+export function DashboardFlagsPanel({ rows, openTotal, awaitingAck, bySeverity }: Props) {
   const [open, setOpen] = useState(false);
 
-  const high = rows.filter((r) => r.severity === 'high').length;
-  const medium = rows.filter((r) => r.severity === 'medium').length;
+  const high = bySeverity.high;
+  const medium = bySeverity.medium;
 
   if (openTotal === 0) {
     return (
@@ -74,8 +80,12 @@ export function DashboardFlagsPanel({ rows, openTotal }: Props) {
           {medium > 0 ? (
             <span style={{ color: 'var(--warn-text)' }}> · {medium} medium</span>
           ) : null}
+          <span className="tiny">
+            {' '}
+            · {awaitingAck === 0 ? 'all acknowledged' : `${awaitingAck} awaiting acknowledgement`}
+          </span>
           {rows.length < openTotal ? (
-            <span className="tiny"> · top {rows.length} shown</span>
+            <span className="tiny"> · top {rows.length} athletes shown</span>
           ) : null}
         </span>
         <span className="dash-flags-chevron" data-open={open} aria-hidden="true">
@@ -93,6 +103,7 @@ export function DashboardFlagsPanel({ rows, openTotal }: Props) {
                 aria-hidden="true"
               />
               <span className="dash-flags-name">{r.name}</span>
+              {r.escalated ? <span className="pill pill-bad">Escalated</span> : null}
               <span className="pill pill-neutral">{enumLabel(r.domain)}</span>
               <span className="dash-flags-what">
                 {r.what} <span className="mono">{r.value}</span>

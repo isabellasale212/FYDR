@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { massState } from '@/lib/nutritionRules';
+import { MASS_FLAG_PCT_7D, massState } from '@/lib/nutritionRules';
+import type { MacroRule } from '@/lib/nutritionRules';
 import { initials } from '@/lib/format';
 import type { AthleteWithTargets } from './TargetsTable';
 
@@ -11,7 +12,22 @@ type Props = {
   weekStart: string;
   weekEnd: string;
   overrideReason: string | null;
+  /** Finding 42: the raw per-kg rule behind a personal override, so the note below can
+   *  say what changed instead of showing free-text (or nothing) on its own. */
+  overrideRule: MacroRule | null;
+  /** Finding 40: needed to spell out the "why this number" sentence for energy. */
+  dayTypeLabel: string;
 };
+
+function describeOverride(reason: string | null, rule: MacroRule | null): string | null {
+  const numbers = rule
+    ? `${rule.proteinGPerKg} g/kg protein · ${rule.carbGPerKg} g/kg carb · ${rule.fatGPerKg} g/kg fat · ${rule.fluidMlPerKg} ml/kg fluid`
+    : null;
+  if (reason && numbers) return `Personal override — ${reason} (${numbers})`;
+  if (reason) return `Personal override — ${reason}`;
+  if (numbers) return `Personal override — ${numbers}`;
+  return null;
+}
 
 const DAY_INITIALS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
@@ -22,7 +38,15 @@ const DAY_INITIALS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
  *   - the right column is a real "Weekly check-in" panel (nutrition_checkins),
  *     replacing the spec's "target against what was eaten" bars, which need a daily
  *     intake number CLAUDE.md rule 8 says will never exist. */
-export function SelectedAthleteCard({ athlete, planLabel, weekStart, weekEnd, overrideReason }: Props) {
+export function SelectedAthleteCard({
+  athlete,
+  planLabel,
+  weekStart,
+  weekEnd,
+  overrideReason,
+  overrideRule,
+  dayTypeLabel,
+}: Props) {
   if (!athlete) {
     return (
       <div className="card" style={{ padding: '18px 20px' }}>
@@ -37,6 +61,15 @@ export function SelectedAthleteCard({ athlete, planLabel, weekStart, weekEnd, ov
 
   const weekDates = Array.from({ length: 7 }, (_, i) => addDaysIso(weekStart, i));
 
+  // Finding 40: "why this number" for the one figure a coach is most likely to ask
+  // about — same shape as the plan card's illustrative example, but this athlete's
+  // own real mass and target rather than a stand-in 100 kg athlete.
+  const energyBreakdown =
+    athlete.targets && athlete.massKg !== null
+      ? `${Math.round(athlete.targets.energyKcal).toLocaleString('en-GB')} kcal because ${athlete.massKg.toFixed(1)} kg × ${(athlete.targets.energyKcal / athlete.massKg).toFixed(0)} kcal/kg, ${dayTypeLabel.toLowerCase()}`
+      : null;
+  const overrideNote = describeOverride(overrideReason, overrideRule);
+
   return (
     <div className="card" style={{ padding: '18px 20px' }}>
       <div className="nutr-selected-head">
@@ -46,6 +79,7 @@ export function SelectedAthleteCard({ athlete, planLabel, weekStart, weekEnd, ov
           <div className="nutr-selected-sub">
             {athlete.unit} · {planLabel}
           </div>
+          {energyBreakdown ? <div className="nutr-selected-energy">{energyBreakdown}</div> : null}
         </div>
         <Link href={`/squad/${athlete.id}`} className="nutr-profile-link">
           Profile ›
@@ -73,6 +107,7 @@ export function SelectedAthleteCard({ athlete, planLabel, weekStart, weekEnd, ov
                 {athlete.change12wk !== null
                   ? ` · ${athlete.change12wk >= 0 ? '+' : ''}${athlete.change12wk.toFixed(1)}% over 12 weeks`
                   : ''}
+                {athlete.change7d !== null ? ` · flags at ${MASS_FLAG_PCT_7D}%+ in 7 days` : ''}
               </div>
               <Sparkline history={athlete.massHistory} band={athlete.massBand} stateColour={state} />
             </>
@@ -103,7 +138,7 @@ export function SelectedAthleteCard({ athlete, planLabel, weekStart, weekEnd, ov
             asked once a week, not a daily log · a missed week is not counted against them
           </p>
           <CheckinStrip checkins={athlete.recentCheckins} />
-          {overrideReason ? <p className="nutr-override-note">{overrideReason}</p> : null}
+          {overrideNote ? <p className="nutr-override-note">{overrideNote}</p> : null}
         </div>
       </div>
     </div>

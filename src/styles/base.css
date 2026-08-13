@@ -5918,3 +5918,63 @@ table.tbl tbody tr:hover {
   text-align: center;
   text-decoration: none;
 }
+
+/* ---------- Nutrition workspace fixes, audit findings 40/41/42/43/44 ----------
+ * Appended at EOF per this repo's own CSS-merge rule (no mid-file edits from a
+ * parallel pass). See src/components/NutritionWorkspace/ for what each class is for. */
+
+/* Finding 41: a small, honest sign-off disclaimer on both places a target gets
+ * written — the rule-engine Assign flow and the manual target form. */
+.nutr-disclaimer {
+  margin: 10px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--faint);
+}
+
+/* Finding 40: the selected athlete's own real "N kcal because mass x kcal/kg" line,
+ * next to their name rather than only the plan card's illustrative 100 kg example. */
+.nutr-selected-energy {
+  margin-top: 3px;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Finding 43: an explicit banner naming which macros broke the day's own ±5% rule,
+ * instead of relying on a small colour change across up to four thin bars. */
+.nutr-totals-warning {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: var(--r-field);
+  background: rgb(var(--warn-rgb) / 0.14);
+  border-inline-start: 2px solid rgb(var(--warn-rgb));
+  color: var(--warn-text);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Finding 43: direction-specific colour (over vs under) replacing the single
+ * one-colour .is-off treatment, so a red bar always means "short" and an amber bar
+ * always means "over", instead of one colour doing both jobs. */
+.nutr-totals-delta.is-over {
+  color: var(--warn-text);
+}
+.nutr-totals-delta.is-under {
+  color: var(--bad-text);
+}
+.nutr-totals-fill.is-over {
+  background: var(--warn);
+}
+.nutr-totals-fill.is-under {
+  background: var(--bad);
+}
+.nutr-totals-overflow {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--warn-text);
+}

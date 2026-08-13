@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { EXPECTS, TYPE_STYLE, clockLabel, type DbSessionType } from '@/lib/scheduleGeometry';
 import { enumLabel, mdLabel } from '@/lib/format';
 import type { GroupOption } from './types';
@@ -31,45 +32,64 @@ export type PanelSession = {
   isPast: boolean;
 };
 
+type DayOption = { date: string; weekday: string; domLabel: string };
+
 type Props = {
   mode: 'read' | 'edit';
   session: PanelSession | null;
-  isNew: boolean;
   groups: readonly GroupOption[];
+  dayOptions: readonly DayOption[];
+  hourRange: { h0: number; h1: number };
   onStart: (deltaMin: number) => void;
   onDuration: (deltaMin: number) => void;
   onToggleGroup: (groupId: string) => void;
+  onDayChange: (date: string) => void;
   onNameChange: (title: string) => void;
   onTypeChange: (type: DbSessionType) => void;
   onLocationChange: (location: string) => void;
   onAddToDay: () => void;
+  onCancelDraft: () => void;
   onRemove: () => void;
   onDuplicate: () => void;
 };
 
 /** SCHEDULE-SPEC.md §6, "Selected session panel". Read mode shows four
- *  facts; Edit mode is a real form — but only Start, Duration and Group are
- *  ever real overrides for an *existing* session (§9's `edits` shape has
- *  exactly those three fields), so Location/Type stay read-only boxes for
- *  one already on the schedule, same as the spec. A brand-new draft
- *  (isNew) needs Name/Type/Location to actually be choosable — the spec
- *  doesn't show that variant's field set explicitly, so this is the one
- *  real gap this file fills in, not a contradiction of anything stated. */
+ *  facts; Edit mode is a real form. Start, Duration and Group are real
+ *  overrides for an *existing* session (§9's `edits` shape). A draft —
+ *  `isPrecommit` (the in-progress `'__new'` form, before "Add to Day") or
+ *  `isDraft` more broadly (that same session once staged, still carrying
+ *  its synthetic `new-` id right up until Publish) — additionally gets
+ *  Name/Type/Location/Day as real, live-editable fields for its whole
+ *  unpublished life, not just the instant before it is staged (UX audit
+ *  finding 11: these used to go read-only the moment "Add to Day" was
+ *  clicked, which is the opposite of what a draft should do). Derived from
+ *  `session.id` rather than a parent-supplied flag, so the two facts (is
+ *  this a draft; is it the not-yet-staged form) can never drift apart. */
 export function SelectedSessionPanel({
   mode,
   session,
-  isNew,
   groups,
+  dayOptions,
+  hourRange,
   onStart,
   onDuration,
   onToggleGroup,
+  onDayChange,
   onNameChange,
   onTypeChange,
   onLocationChange,
   onAddToDay,
+  onCancelDraft,
   onRemove,
   onDuplicate,
 }: Props) {
+  const [confirmingRemove, setConfirmingRemove] = useState(false);
+  // A fresh selection should never inherit a stale confirmation from
+  // whatever was selected before it.
+  useEffect(() => {
+    setConfirmingRemove(false);
+  }, [session?.id]);
+
   if (!session) {
     return (
       <div className="card sg-panel-card">
@@ -79,6 +99,9 @@ export function SelectedSessionPanel({
       </div>
     );
   }
+
+  const isPrecommit = session.id === '__new';
+  const isDraft = isPrecommit || session.id.startsWith('new-');
 
   const style = TYPE_STYLE[session.type];
   const end = session.start + session.mins / 60;
@@ -92,7 +115,7 @@ export function SelectedSessionPanel({
     <div className="card sg-panel-card">
       <div className="sg-panel-head">
         <div style={{ minWidth: 0 }}>
-          {isNew && mode === 'edit' ? (
+          {isDraft && mode === 'edit' ? (
             <input
               className="field"
               value={session.title}
@@ -142,6 +165,25 @@ export function SelectedSessionPanel({
         </div>
       ) : (
         <>
+          {isDraft ? (
+            <div style={{ marginTop: 0, marginBottom: 14 }}>
+              <span className="label">Day</span>
+              <div className="chiprow" style={{ marginTop: 6 }}>
+                {dayOptions.map((d) => (
+                  <button
+                    key={d.date}
+                    type="button"
+                    className="squad-chip"
+                    aria-pressed={session.dow === d.date}
+                    onClick={() => onDayChange(d.date)}
+                  >
+                    {d.weekday} {d.domLabel}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           <div className="sg-edit-row">
             <div className="sg-edit-field">
               <span className="label">Start</span>
@@ -154,7 +196,9 @@ export function SelectedSessionPanel({
                   +
                 </button>
               </div>
-              <p className="sg-helper">Steps 15 minutes, 08:00–18:00</p>
+              <p className="sg-helper">
+                Steps 15 minutes, {clockLabel(hourRange.h0)}–{clockLabel(hourRange.h1)}
+              </p>
             </div>
             <div className="sg-edit-field">
               <span className="label">Duration</span>
@@ -192,14 +236,25 @@ export function SelectedSessionPanel({
               ))}
             </div>
             <p className="cap" style={{ marginTop: 6 }}>
-              Nobody selected means the whole squad.
+              {/* UX audit finding 12: this used to read "Nobody selected
+                  means the whole squad", which contradicts the preview
+                  footer below and, more importantly, contradicts what
+                  actually happens — an athlete's Today view
+                  (fetchAthleteDaySessions, lib/queries/schedule.ts) only
+                  returns a session it can match to an explicit
+                  session_participants row. A session with no group named
+                  has no such row, so no athlete's app ever shows it: it
+                  really is staff-only, never "the whole squad" the way a
+                  coach would read that phrase. The copy now says the real
+                  thing instead of the aspirational one. */}
+              Nobody selected means staff only — no athlete will see this in their app.
             </p>
           </div>
 
           <div className="sg-edit-row">
             <div className="sg-edit-field">
               <span className="label">Location</span>
-              {isNew ? (
+              {isDraft ? (
                 <input
                   className="field"
                   style={{ marginTop: 6, height: 40 }}
@@ -213,7 +268,7 @@ export function SelectedSessionPanel({
             </div>
             <div className="sg-edit-field">
               <span className="label">Type</span>
-              {isNew ? (
+              {isDraft ? (
                 <div className="chiprow" style={{ marginTop: 6 }}>
                   {SESSION_TYPES.map((t) => (
                     <button
@@ -234,14 +289,42 @@ export function SelectedSessionPanel({
           </div>
 
           <div className="sg-panel-actions">
-            {isNew ? (
-              <button type="button" className="sg-btn-add" onClick={onAddToDay} disabled={!session.title.trim()}>
-                Add to {weekday}
-              </button>
+            {isPrecommit ? (
+              <>
+                <button type="button" className="sg-btn-add" onClick={onAddToDay} disabled={!session.title.trim()}>
+                  Add to {weekday}
+                </button>
+                <button type="button" className="btn-ghost" onClick={onCancelDraft}>
+                  Cancel
+                </button>
+              </>
+            ) : confirmingRemove ? (
+              <>
+                <span className="tiny" style={{ color: 'var(--bad-text)' }}>
+                  Remove this session? You can undo with Discard, until you publish.
+                </span>
+                <button
+                  type="button"
+                  className="sg-btn-remove"
+                  onClick={() => {
+                    onRemove();
+                    setConfirmingRemove(false);
+                  }}
+                >
+                  Yes, remove
+                </button>
+                <button type="button" className="btn-ghost" onClick={() => setConfirmingRemove(false)}>
+                  Never mind
+                </button>
+              </>
             ) : (
               <>
-                {!session.isPast ? (
-                  <button type="button" className="sg-btn-remove" onClick={onRemove}>
+                {/* A staged draft (isDraft) was never committed to the
+                    database, so the "past session" server rule that blocks
+                    deleting a committed session never applies to it — only
+                    a real, already-published session needs that guard. */}
+                {isDraft || !session.isPast ? (
+                  <button type="button" className="sg-btn-remove" onClick={() => setConfirmingRemove(true)}>
                     Remove session
                   </button>
                 ) : null}

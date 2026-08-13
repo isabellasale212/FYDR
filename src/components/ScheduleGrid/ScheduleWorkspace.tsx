@@ -15,9 +15,9 @@ import {
 } from '@/lib/queries/schedule';
 import { anchorMdOffsetsToWeek, decimalHourInTz, zonedTimeToUtcIso } from '@/lib/format';
 import {
-  H0,
-  H1,
+  PXH,
   clockLabel,
+  computeHourRange,
   detectClashes,
   placeBlocks,
   computeBlockDisplay,
@@ -96,6 +96,7 @@ export function ScheduleWorkspace({
   const [removed, setRemoved] = useState<Record<string, true>>({});
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
+  const [confirmingDiscard, setConfirmingDiscard] = useState(false);
 
   const base: BaseSession[] = useMemo(
     () => initialSessions.map((s) => toBaseSession(s, timezone, (iso, tz) => decimalHourInTz(new Date(iso), tz))),
@@ -184,6 +185,13 @@ export function ScheduleWorkspace({
     }),
   );
 
+  // UX audit finding 1: the grid's hour range is computed from this week's
+  // own sessions (see computeHourRange's own header for why), not a fixed
+  // 08:00–18:00 constant. One shared range for the whole week, since all
+  // seven day columns share one time axis.
+  const { h0, h1 } = computeHourRange(effective.map((s) => ({ start: s.start, mins: s.mins })));
+  const gridHeightPx = (h1 - h0) * PXH;
+
   const dayColumns: DayColumn[] = [];
   let clashPairLabels: string[] = [];
   const clashedIds = new Set<string>();
@@ -200,35 +208,14 @@ export function ScheduleWorkspace({
     const blocks: RenderedBlock[] = placed.map((p) => {
       const s = effectiveById.get(p.x.id)!;
       const display = computeBlockDisplay(p, placed, s.edited);
-      // Real seed data has sessions starting before H0 and, for a Saturday
-      // fixture with a real evening kickoff (19:30 UTC — 20:30 local in
-      // August), a session almost entirely after H1. The spec's own worked
-      // example never needed either case (earliest session 09:00, its own
-      // fixture at 14:00) because it's a single frozen mockup day, not a
-      // real club's actual week. The 08:00–18:00 grid is a deliberate,
-      // literal §5 constant, not something to widen for one early gym
-      // session or a floodlit kickoff, so a block outside it is clamped to
-      // the visible 0–680px band — and, when the real time is entirely
-      // outside that band, pinned to a minimum visible sliver at the near
-      // edge rather than collapsed to nothing, so a real Saturday fixture
-      // is still a clickable block instead of a silently empty column
-      // under a day header that still (correctly) says "80m". Found live
-      // on this org's real data, not hypothesised.
-      const rawTop = (p.x.start - H0) * 68;
-      const rawBottom = rawTop + display.h;
-      const MIN_SLIVER = 24;
-      let top: number;
-      let height: number;
-      if (rawBottom <= 0) {
-        top = 0;
-        height = Math.min(display.h, MIN_SLIVER);
-      } else if (rawTop >= 680) {
-        height = Math.min(display.h, MIN_SLIVER);
-        top = 680 - height;
-      } else {
-        top = Math.max(0, rawTop);
-        height = Math.min(680, rawBottom) - top;
-      }
+      // The grid's hour range (h0/h1, above) is computed from this week's
+      // own sessions, so every block's real start time already falls inside
+      // it — no clamping to a fixed band needed. A real Saturday evening
+      // kickoff (20:30 local) now genuinely extends the grid rather than
+      // being pinned to a misleading sliver at its edge (UX audit finding
+      // 1; see scheduleGeometry.ts's computeHourRange for the full account).
+      const top = (p.x.start - h0) * PXH;
+      const height = display.h;
       return {
         id: s.id,
         title: s.title,
@@ -319,13 +306,17 @@ export function ScheduleWorkspace({
   // pending state, batched or not.
   function handleStart(deltaMin: number) {
     if (sel === '__new') {
-      setNewDraft((cur) => (cur ? { ...cur, start: clamp(cur.start + deltaMin / 60, H0, H1 - cur.mins / 60) } : cur));
+      setNewDraft((cur) => (cur ? { ...cur, start: clamp(cur.start + deltaMin / 60, h0, h1 - cur.mins / 60) } : cur));
       return;
     }
     if (!sel) return;
     const eff = effectiveById.get(sel);
     if (!eff) return;
-    const next = clamp(eff.start + deltaMin / 60, H0, H1 - eff.mins / 60);
+    const next = clamp(eff.start + deltaMin / 60, h0, h1 - eff.mins / 60);
+    if (sel.startsWith('new-')) {
+      setAdded((cur) => cur.map((d) => (d.id === sel ? { ...d, start: next } : d)));
+      return;
+    }
     patchEdit(sel, { start: next });
   }
 
@@ -333,7 +324,7 @@ export function ScheduleWorkspace({
     if (sel === '__new') {
       setNewDraft((cur) => {
         if (!cur) return cur;
-        const maxByClock = (H1 - cur.start) * 60;
+        const maxByClock = (h1 - cur.start) * 60;
         return { ...cur, mins: Math.min(180, maxByClock, Math.max(15, cur.mins + deltaMin)) };
       });
       return;
@@ -341,8 +332,12 @@ export function ScheduleWorkspace({
     if (!sel) return;
     const eff = effectiveById.get(sel);
     if (!eff) return;
-    const maxByClock = (H1 - eff.start) * 60;
+    const maxByClock = (h1 - eff.start) * 60;
     const next = Math.min(180, maxByClock, Math.max(15, eff.mins + deltaMin));
+    if (sel.startsWith('new-')) {
+      setAdded((cur) => cur.map((d) => (d.id === sel ? { ...d, mins: next } : d)));
+      return;
+    }
     patchEdit(sel, { mins: next });
   }
 
@@ -358,9 +353,46 @@ export function ScheduleWorkspace({
     if (!sel) return;
     const eff = effectiveById.get(sel);
     if (!eff) return;
+    if (sel.startsWith('new-')) {
+      // A staged (already-added) draft has no `edits` overlay of its own —
+      // it is not in `base`, so an overlay keyed to its synthetic id would
+      // never be read back (see the Start/Duration fix just above with the
+      // same root cause). Patch the staged draft directly.
+      const has = eff.groupIds.includes(groupId);
+      setAdded((cur) =>
+        cur.map((d) =>
+          d.id === sel
+            ? { ...d, groupIds: has ? d.groupIds.filter((id) => id !== groupId) : [...d.groupIds, groupId] }
+            : d,
+        ),
+      );
+      return;
+    }
     const current = edits[sel]?.groupIds ?? eff.groupIds;
     const has = current.includes(groupId);
     patchEdit(sel, { groupIds: has ? current.filter((id) => id !== groupId) : [...current, groupId] });
+  }
+
+  /** Draft fields (name, type, location, day) stay editable for the whole
+   *  life of an unpublished draft — both before it is staged (`sel ===
+   *  '__new'`, still in `newDraft`) and after (`sel` starting `new-`, now in
+   *  `added`) — not just in the instant before "Add to Day" is clicked. UX
+   *  audit finding 11. Uses the functional setState form throughout, same
+   *  reasoning as the newDraft-only comment above: two field edits can land
+   *  in the same React batch. */
+  function updateDraftField<K extends keyof DraftSession>(key: K, value: DraftSession[K]) {
+    if (sel === '__new') {
+      setNewDraft((cur) => (cur ? { ...cur, [key]: value } : cur));
+      return;
+    }
+    if (sel && sel.startsWith('new-')) {
+      setAdded((cur) => cur.map((d) => (d.id === sel ? { ...d, [key]: value } : d)));
+    }
+  }
+
+  function handleCancelDraft() {
+    setNewDraft(null);
+    setSel(null);
   }
 
   function handleRemove() {
@@ -470,9 +502,30 @@ export function ScheduleWorkspace({
     setNewDraft(null);
     setSel(null);
     setPublishError(null);
+    setConfirmingDiscard(false);
   }
 
+  // UX audit finding 17: Discard used to be a single unconfirmed click
+  // beside Publish. Nothing stages `confirmingDiscard` when there is
+  // nothing dirty — the button that opens it only renders when
+  // `dirtyCount > 0` (below) — so this never prompts for a no-op discard.
+  // Reset if a Publish (or anything else) clears dirtyCount while a
+  // confirmation happened to be open.
+  useEffect(() => {
+    if (dirtyCount === 0) setConfirmingDiscard(false);
+  }, [dirtyCount]);
+
+  // "Currently focused/visible day" has no separate meaning in this grid —
+  // all seven days are always visible as columns at once (no per-day
+  // scroll/paging state to read), so the real answer to "what day is in
+  // view" is: today, when today is one of the seven columns on screen;
+  // otherwise the first (Monday) column of whatever week is being viewed.
   const defaultDraftDay = days.includes(today) ? today : (days[0] ?? weekStart);
+  const dayOptions = days.map((d) => ({
+    date: d,
+    weekday: WEEKDAY_FMT.format(new Date(`${d}T12:00:00Z`)),
+    domLabel: DOM_FMT.format(new Date(`${d}T12:00:00Z`)),
+  }));
 
   return (
     <div className="sg">
@@ -536,14 +589,39 @@ export function ScheduleWorkspace({
         </div>
         <div className="sg-banner-actions">
           {dirtyCount > 0 ? (
-            <>
-              <button type="button" className="sg-btn-discard" onClick={handleDiscard} disabled={publishing}>
-                Discard
-              </button>
-              <button type="button" className="sg-btn-publish" onClick={handlePublish} disabled={publishing}>
-                {publishing ? 'Publishing…' : 'Publish to athletes'}
-              </button>
-            </>
+            confirmingDiscard ? (
+              <>
+                <span className="tiny" style={{ color: 'var(--bad-text)' }}>
+                  Discard {dirtyCount} change{dirtyCount === 1 ? '' : 's'}? This can&apos;t be undone.
+                </span>
+                <button
+                  type="button"
+                  className="sg-btn-discard"
+                  onClick={handleDiscard}
+                  disabled={publishing}
+                  style={{ color: 'var(--bad-text)', borderColor: 'var(--bad)' }}
+                >
+                  Yes, discard
+                </button>
+                <button type="button" className="btn-ghost" onClick={() => setConfirmingDiscard(false)}>
+                  Never mind
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="sg-btn-discard"
+                  onClick={() => setConfirmingDiscard(true)}
+                  disabled={publishing}
+                >
+                  Discard
+                </button>
+                <button type="button" className="sg-btn-publish" onClick={handlePublish} disabled={publishing}>
+                  {publishing ? 'Publishing…' : 'Publish to athletes'}
+                </button>
+              </>
+            )
           ) : (
             <button type="button" className="sg-btn-published" disabled>
               Published
@@ -603,6 +681,9 @@ export function ScheduleWorkspace({
         mode={mode}
         selectedId={sel}
         nowDecimalHour={nowDecimalHourToday}
+        h0={h0}
+        h1={h1}
+        gridHeightPx={gridHeightPx}
         onSelect={selectSession}
         onDayHeaderClick={startDraft}
       />
@@ -611,15 +692,18 @@ export function ScheduleWorkspace({
         <SelectedSessionPanel
           mode={mode}
           session={panelSession}
-          isNew={sel === '__new'}
           groups={groups}
+          dayOptions={dayOptions}
+          hourRange={{ h0, h1 }}
           onStart={handleStart}
           onDuration={handleDuration}
           onToggleGroup={handleToggleGroup}
-          onNameChange={(title) => setNewDraft((cur) => (cur ? { ...cur, title } : cur))}
-          onTypeChange={(type: DbSessionType) => setNewDraft((cur) => (cur ? { ...cur, type } : cur))}
-          onLocationChange={(location) => setNewDraft((cur) => (cur ? { ...cur, location } : cur))}
+          onDayChange={(date) => updateDraftField('dow', date)}
+          onNameChange={(title) => updateDraftField('title', title)}
+          onTypeChange={(type: DbSessionType) => updateDraftField('type', type)}
+          onLocationChange={(location) => updateDraftField('location', location)}
           onAddToDay={handleAddToDay}
+          onCancelDraft={handleCancelDraft}
           onRemove={handleRemove}
           onDuplicate={handleDuplicate}
         />

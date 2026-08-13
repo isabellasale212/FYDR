@@ -5283,12 +5283,31 @@ table.tbl tbody tr:hover {
   overflow-x: auto;
   margin-top: 14px;
 }
+/* UX audit finding 2: this used to force `.sg-grid-inner` to a flat
+   1440px, which is wider than the whole content column at both 1280px and
+   1100px viewport widths once the 236px sidebar and .main's own padding are
+   subtracted — Sat/Sun were pushed off-screen with only the OS scrollbar
+   (revealed by nothing more than a faint edge) as the affordance to find
+   them. Fixed by letting the 7 day columns actually shrink to fit the real
+   available width, down to a 76px per-column floor, instead of responsive
+   design being simulated by an oversized fixed canvas. Chosen over adding a
+   scroll affordance (arrows / day indicator / edge fade) because the block
+   content in this grid is already percentage-sized (scheduleGeometry.ts's
+   horizontalLayout works in %, not px), so shrinking the column is free —
+   no block-placement math changes — and because the print stylesheet
+   (screens/schedule.md, "Print (web)": "one page landscape... Clubs pin
+   this on a wall") already requires every day to render at once with no
+   scrolling at all; a scroll-to-see-Sunday pattern on screen would be a
+   second, inconsistent mental model from the one the printed version
+   enforces. `overflow-x: auto` on `.sg-grid-card` stays as a last-resort
+   fallback below the 76px floor (roughly a 700px window), not the primary
+   affordance it was before. */
 .sg-grid-inner {
-  min-width: 1440px;
+  width: 100%;
 }
 .sg-grid-header {
   display: grid;
-  grid-template-columns: 58px repeat(7, minmax(0, 1fr));
+  grid-template-columns: 58px repeat(7, minmax(76px, 1fr));
   gap: 8px;
   padding-bottom: 10px;
 }
@@ -5346,7 +5365,7 @@ table.tbl tbody tr:hover {
 
 .sg-grid-body {
   display: grid;
-  grid-template-columns: 58px repeat(7, minmax(0, 1fr));
+  grid-template-columns: 58px repeat(7, minmax(76px, 1fr));
   gap: 8px;
 }
 .sg-hour-gutter {

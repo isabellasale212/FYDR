@@ -17,7 +17,36 @@ export default async function SquadPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, orgId, orgName } = await requireStaff();
+  const { db, orgId, orgName, claims } = await requireStaff();
+
+  // 01-roles-and-permissions.md §2: admin gets `no` for "View squad
+  // dashboard", and docs/20-route-map.md §2.3 lists /squad's own roles as
+  // coach/medical only, no admin, no aggregate note. This page is the full
+  // named roster plus availability and restrictions — exactly the
+  // performance data §1 says admin doesn't read. Same pattern as /flags.
+  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medical');
+  if (!hasAccess) {
+    return (
+      <>
+        <div className="topbar">
+          <div className="page-head">
+            <p className="eyebrow">Squad · {orgName}</p>
+            <h1>Squad overview</h1>
+          </div>
+          <ThemeToggle />
+        </div>
+        <div className="empty">
+          <h2>Not part of this role</h2>
+          <p>
+            The squad overview is the full named roster, plus availability and
+            restrictions. Admin manages the club and does not read athlete performance
+            data &mdash; see 01-roles-and-permissions.md §1.
+          </p>
+        </div>
+      </>
+    );
+  }
+
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
 

@@ -26,7 +26,36 @@ export default async function AnalyticsPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, orgId, orgName, timezone } = await requireStaff();
+  const { db, orgId, orgName, timezone, claims } = await requireStaff();
+
+  // docs/20-route-map.md §2.3: /analytics' roles are coach/medical only,
+  // no admin, no aggregate note — and 01-roles-and-permissions.md §2 gives
+  // admin `no` for "Build custom analytics" outright (not even the `A` it
+  // gets for reports and leaderboards). Both tables below are named-athlete
+  // ACWR and wellness-outlier data. Same pattern as /flags.
+  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medical');
+  if (!hasAccess) {
+    return (
+      <>
+        <div className="topbar">
+          <div className="page-head">
+            <p className="eyebrow">{orgName}</p>
+            <h1>Analytics</h1>
+          </div>
+          <ThemeToggle />
+        </div>
+        <div className="empty">
+          <h2>Not part of this role</h2>
+          <p>
+            Analytics is named-athlete ACWR and wellness-trend data. Admin manages the
+            club and does not read athlete performance data &mdash; see
+            01-roles-and-permissions.md §1.
+          </p>
+        </div>
+      </>
+    );
+  }
+
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
 

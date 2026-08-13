@@ -35,6 +35,7 @@ export const metadata = { title: 'Settings · Fydr' };
 export default async function SettingsPage() {
   const { db, orgId, orgName, timezone, fullName, claims, tier } = await requireStaff();
   const isAdmin = claims.roles.includes('admin');
+  const isAdminOnly = isAdmin && !claims.roles.includes('coach') && !claims.roles.includes('medical');
   const onPremium = isPremium(tier);
 
   const [userRow, orgRow, athleteCount, activeThresholds] = await Promise.all([
@@ -64,6 +65,24 @@ export default async function SettingsPage() {
         </div>
         <ThemeToggle />
       </div>
+
+      {isAdminOnly ? (
+        // Governance finding 8 / lib/supabase/claims.ts homeRoute(): an
+        // admin-only sign-in lands here now instead of /dashboard, which
+        // isn't in this sidebar at all. Worth saying so in the same honest
+        // register /flags and /reports already use for the reverse case —
+        // this is the "here's why your nav is small" line, not an apology.
+        <div className="note" style={{ marginBottom: 14 }}>
+          <div className="note-glyph">i</div>
+          <p className="note-text">
+            <b>Your sidebar has three rows on purpose.</b> Admin manages the club — users,
+            billing, retention, the audit log — and deliberately does not read athlete
+            wellness, load, gym, nutrition or medical detail, see
+            01-roles-and-permissions.md §1. Reports and Leaderboard show what admin can see
+            of each; hold a coach or medical role as well to open the rest.
+          </p>
+        </div>
+      ) : null}
 
       <div className="set-body">
         {/* -------- §3 Plan card -------- */}

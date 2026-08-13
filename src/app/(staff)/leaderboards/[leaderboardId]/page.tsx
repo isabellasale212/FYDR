@@ -40,6 +40,38 @@ export default async function LeaderboardDetailPage({
 }) {
   const { leaderboardId } = await params;
   const { db, orgId, claims } = await requireStaff();
+
+  // docs/20-route-map.md §2.3: board detail's roles are `coach, medical`
+  // only — unlike the wall one level up, there's no admin row_note here at
+  // all, aggregate or otherwise. Checked before fetchBoard() runs, so an
+  // admin-only visitor gets the same denial regardless of whether the
+  // board id resolves, matching /flags and /squad/[athleteId].
+  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medical');
+  if (!hasAccess) {
+    return (
+      <>
+        <div className="topbar">
+          <div className="page-head">
+            <p className="eyebrow">
+              <Link href="/leaderboards/manage">Leaderboard</Link> · Board
+            </p>
+            <h1>Board detail</h1>
+          </div>
+          <ThemeToggle />
+        </div>
+        <div className="empty">
+          <h2>Not part of this role</h2>
+          <p>
+            A board&apos;s ranking is named-athlete data. Admin manages the club and does
+            not read athlete performance data &mdash; see 01-roles-and-permissions.md §1.
+            The board list at <Link href="/leaderboards/manage">Manage leaderboards</Link>{' '}
+            shows configuration only, with no ranking.
+          </p>
+        </div>
+      </>
+    );
+  }
+
   const sp = await searchParams;
   const groupIds = await resolveGroupFilter(sp.groups);
 

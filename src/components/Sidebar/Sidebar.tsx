@@ -120,6 +120,18 @@ export const SIDEBAR: readonly Row[] = [
     icon: icon(<path d="M9.2 1.8 3.4 9.2h3.6l-1 5 5.8-7.4H8.2z" />),
   },
   {
+    // Admin stays in this row's roles deliberately — 20-route-map.md's own
+    // sidebar array keeps it (`roles: ["coach", "medical", "admin"]`), and
+    // 01-roles-and-permissions.md §2 gives admin `A` (aggregate), not `no`,
+    // for "View leaderboards". /leaderboards/manage (board config, no named
+    // data) is genuinely admin's to use, and this row is the only door to
+    // it. The wall itself (/leaderboards, LeaderboardWall) still denies an
+    // admin-only visitor server-side with an explanation and a link
+    // straight to Manage — see that page's own header. The alternative,
+    // pointing this row at /leaderboards/manage directly per-role, was
+    // considered and rejected: a route swap keyed on role is a new kind of
+    // complexity this sidebar doesn't have anywhere else, for a click an
+    // admin only pays once.
     id: 'staff.leaderboards',
     label: 'Leaderboard',
     route: '/leaderboards',

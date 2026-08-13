@@ -107,7 +107,36 @@ export default async function AthletePage({
   params: Promise<{ athleteId: string }>;
 }) {
   const { athleteId } = await params;
-  const { db, orgId, timezone, claims } = await requireStaff();
+  const { db, orgId, orgName, timezone, claims } = await requireStaff();
+
+  // Same gate as /squad, applied before any per-athlete query runs: a
+  // direct link or a bookmark can reach this route without passing through
+  // the roster page's own check. 01-roles-and-permissions.md §1/§2 — an
+  // individual athlete profile is named performance, wellness, load and
+  // injury-availability detail, admin's clearest "cannot" case.
+  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medical');
+  if (!hasAccess) {
+    return (
+      <>
+        <div className="topbar">
+          <div className="page-head">
+            <p className="eyebrow">Squad · {orgName}</p>
+            <h1>Athlete</h1>
+          </div>
+          <ThemeToggle />
+        </div>
+        <div className="empty">
+          <h2>Not part of this role</h2>
+          <p>
+            An athlete profile is named performance, wellness, load and injury-availability
+            detail. Admin manages the club and does not read athlete performance data
+            &mdash; see 01-roles-and-permissions.md §1.
+          </p>
+        </div>
+      </>
+    );
+  }
+
   const today = todayIso(timezone);
 
   const profile = await fetchPlayerProfile(db, orgId, athleteId, timezone);

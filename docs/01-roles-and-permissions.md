@@ -48,6 +48,9 @@ flags.
   GPS, testing, and compliance
 - View the injury dashboard at **availability level**: available / modified / unavailable,
   expected return date, and any training restrictions
+- Set and change availability status for a **non-injury** reason — illness, personal,
+  academic, representative, other. See §4 and ADR-008. Cannot touch an injury-linked row
+  under any circumstances; that stays medical only
 - Create, edit, and assign programmes; create general programmes and tailor them per athlete
 - Create and manage groups
 - Create and manage the schedule, sessions, and fixtures
@@ -60,7 +63,9 @@ flags.
 
 **Cannot:**
 - View clinical diagnosis, treatment notes, or medical history
-- Set or change availability status (medical decision: see §4)
+- Set or change availability status for anything linked to an injury, or claim the
+  injury reason without one (medical decision: see §4). Setting a **non-injury**
+  status is allowed — see "Can", above
 - Manage billing or organisation settings
 - Invite, deactivate, or change the role of a user
 - See anything belonging to another organisation
@@ -74,7 +79,10 @@ and less in others.
 - Everything Coach / S&C can, in read-only form, for context
 - Create and edit injury records including diagnosis, mechanism, body area, severity,
   treatment notes, and rehabilitation plan
-- Set and change athlete availability status: the only role that can
+- Set and change athlete availability status for **any** reason, injury-linked or
+  not. A coach can also set a non-injury status directly since ADR-008 — medical is
+  no longer the only role that can, but is still the only role that can touch
+  anything an injury is behind
 - Assign rehabilitation programmes
 - Set return-to-play milestones and clearance
 - View the full clinical history of any athlete in the organisation
@@ -136,7 +144,8 @@ Manages the organisation. Deliberately has *less* data access than staff by defa
 | View injury, availability level | S | Y | Y | A |
 | View injury, clinical detail | no | no | Y | no |
 | Create/edit injury record | no | no | Y | no |
-| Set availability status | no | no | Y | no |
+| Set availability status (injury-linked) | no | no | Y | no |
+| Set availability status (non-injury: illness/personal/academic/representative/other) | no | Y | Y | no |
 | Create/edit schedule and sessions | no | Y | Y | no |
 | Create/edit programmes | no | Y | Y | no |
 | Assign programmes | no | Y | Y | no |
@@ -197,6 +206,13 @@ with distinct RLS policies. Do not put them in one table and filter columns in t
 application layer, that is one careless `select *` away from a breach. See
 `04-data-model.md` §9 for the authoritative table names and
 `decisions/adr-007-clinical-data-separation.md` for the reasoning.
+
+**A coach may also write `availability`, for a non-injury reason only.** This is a
+narrower, later decision (`decisions/adr-008-coach-non-injury-availability.md`) and does
+not touch the table above or ADR-007's boundary: it is about who may author an
+`availability` row that has no injury behind it — exam leave, a personal matter,
+representative honours, a disciplinary suspension. Any row with `injury_id` set, or
+`reason_category = 'injury'`, stays exactly as medical-only as it always was.
 
 ### The concussion exception, unresolved
 

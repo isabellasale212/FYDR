@@ -157,6 +157,8 @@ export default async function TodayPage({
       <AvailabilityBanner
         status={availability.current?.status ?? null}
         restrictions={availability.current?.restrictions ?? []}
+        reasonCategory={availability.current?.reason_category ?? null}
+        note={availability.current?.note ?? null}
       />
 
       {myAllocation ? (

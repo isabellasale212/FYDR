@@ -619,8 +619,8 @@ Specified in full in "The two views" above. Summarised:
 
 | Rule | Enforcement |
 |---|---|
-| Only medical may write availability | RLS on `availability` insert. The coach client does not render the control, and the policy is what enforces it. |
-| Availability is an event log | No update policy on `availability`. Changes insert a new row and close the previous in one transaction. |
+| Only medical may write availability linked to an injury | RLS on `availability` insert/update (migration 0012). A coach may write a non-injury row directly since ADR-008 (migration 0041); the injury-linked control still only renders for medical. |
+| Availability is an event log | The previous open row is closed (`effective_to` set) and a new one inserted, as two statements rather than one transaction — see `setAvailability`'s own comment in `lib/queries/injuries.ts` for why this is a documented, accepted gap, not the atomic single-transaction this row used to claim. |
 | An athlete has at most one open availability row | Partial unique index: `create unique index on availability (athlete_id) where effective_to is null`. This does not exist in `04-data-model.md` §15 and is required. Two open rows makes "current status" ambiguous and the dashboard's counts stop summing. |
 | `expected_return` cannot precede `onset_date` | Check constraint on `injuries`. |
 | Setting `unavailable` without a reason category is rejected | RPC-level. "Unavailable" with no reason is unreadable a month later. |

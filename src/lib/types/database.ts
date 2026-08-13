@@ -3940,7 +3940,7 @@ export type Database = {
     assignment_status: "active" | "suspended" | "completed" | "cancelled"
     athlete_status: "active" | "injured_long_term" | "left_club"
     attendance_status: "full" | "modified" | "absent" | "excused"
-    availability_reason: "injury" | "illness" | "personal" | "suspension" | "load_management"
+    availability_reason: "injury" | "illness" | "personal" | "suspension" | "load_management" | "academic" | "representative" | "other"
     availability_status: "available" | "modified" | "unavailable"
     baseline_type: "absolute" | "personal_rolling" | "squad_mean"
     body_area: "head" | "neck" | "shoulder" | "upper_arm" | "elbow" | "forearm" | "wrist" | "hand" | "chest" | "upper_back" | "lower_back" | "abdomen" | "hip" | "groin" | "quadriceps" | "hamstring" | "knee" | "calf" | "achilles" | "ankle" | "foot" | "other"

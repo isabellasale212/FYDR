@@ -91,7 +91,15 @@ select is((select count(*) from injury_clinical_athlete_view), 0::bigint,
 
 
 -- ===========================================================================
--- 3. Only medical may insert into availability. Coaches cannot, anywhere.
+-- 3. Only medical may insert an injury-linked row into availability. A coach
+-- cannot, anywhere.
+--
+-- Since ADR-008 / migration 0041 this is narrower than it used to read: a
+-- coach CAN now insert and later close a non-injury row (illness, personal,
+-- academic, representative, other) — see 200_coach_noninjury_availability_
+-- test.sql for that half of the rule in full. This section re-proves only
+-- the half that did not change: a coach still cannot open a bare row with no
+-- reason at all, and still cannot touch anything with an injury behind it.
 -- ===========================================================================
 
 select tests.set_jwt(tests.uid('orga', 'user_coach'));
@@ -102,14 +110,23 @@ select throws_ok(
          tests.uid('orga', 'user_coach')),
   '42501',
   null,
-  'a COACH cannot insert into availability, even in their own organisation'
+  'a COACH cannot insert into availability with no reason_category at all — '
+  'availability_coach_insert_noninjury (0041) requires a real, non-injury one'
 );
 
 select tests.set_jwt(tests.uid('orga', 'user_coach'));
 select is(
-  tests.rows_affected($q$update availability set status = 'available'$q$),
+  tests.rows_affected(
+    format($q$update availability set status = 'available' where athlete_id = %L$q$,
+           tests.uid('orga', 'athlete_1'))
+  ),
   0::bigint,
-  'a coach updating an availability row changes zero rows'
+  'a coach updating athlete_1''s injury-linked availability row changes zero '
+  'rows. Scoped to athlete_1 by id rather than a table-wide update with no '
+  'WHERE clause, as this assertion read before 0041 — the table now '
+  'legitimately contains rows a coach CAN write (200_coach_noninjury_'
+  'availability_test.sql), so a table-wide update is no longer a fair test of '
+  'this one row''s protection'
 );
 select is((select status::text from availability
             where athlete_id = tests.uid('orga', 'athlete_1')),

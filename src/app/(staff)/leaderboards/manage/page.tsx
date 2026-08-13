@@ -43,7 +43,7 @@ export default async function ManageLeaderboardsPage() {
       <div className="topbar">
         <div className="page-head">
           <p className="eyebrow">
-            <Link href="/leaderboards">Leaderboard</Link> · Manage
+            <Link href="/leaderboards">Testing wall</Link> · Manage
           </p>
           <h1>Manage leaderboards</h1>
         </div>
@@ -56,8 +56,8 @@ export default async function ManageLeaderboardsPage() {
       </div>
 
       <p className="cap" style={{ marginTop: -6, marginBottom: 14 }}>
-        The published, consent-gated boards real athletes can see and leave. For the
-        internal testing wall, go back to <Link href="/leaderboards">Leaderboard</Link>.
+        The published, consent-gated boards real athletes can see and leave. For
+        internal-only results, go back to the <Link href="/leaderboards">testing wall</Link>.
       </p>
 
       {boards.length === 0 ? (

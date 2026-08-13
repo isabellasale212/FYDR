@@ -17,7 +17,7 @@ import {
   type TemplateStructure,
 } from '@/lib/queries/weekTemplates';
 import { WeekLoadChart } from '@/components/WeekLoadChart/WeekLoadChart';
-import { mdLabel } from '@/lib/format';
+import { enumLabel, mdLabel } from '@/lib/format';
 
 type Props = { orgId: string; userId: string; templateId: string; name: string; structure: TemplateStructure; archived: boolean };
 
@@ -289,7 +289,7 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
                     <select className="field" value={draft.type} onChange={(e) => setDraft((d) => ({ ...d, type: e.target.value as TemplateSession['type'] }))}>
                       {SESSION_TYPES.map((t) => (
                         <option key={t} value={t}>
-                          {t}
+                          {enumLabel(t)}
                         </option>
                       ))}
                     </select>

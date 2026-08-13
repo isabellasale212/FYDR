@@ -32,7 +32,7 @@ export function parseGroupParam(value: string | string[] | undefined): string[] 
     .filter((s) => UUID_RE.test(s));
 }
 
-/** The active scope, by name — "All squads", "Forwards", "Backs + Academy".
+/** The active scope, by name — "Whole squad", "Forwards", "Backs + Academy".
  *
  *  The audit's S4 finding: this filter re-scopes every screen, report and
  *  export, yet no scope line ever named it — headers said "Squad · <club>"
@@ -49,13 +49,21 @@ export function parseGroupParam(value: string | string[] | undefined): string[] 
  *  Selected ids with no matching group (a stale cookie surviving an archive,
  *  a hand-edited URL) still filter the query downstream — fetchGroupAthleteIds
  *  does not re-validate against live groups — so they must not be silently
- *  dropped from the label: that would print "All squads" over filtered data,
- *  the exact lie this function exists to end. */
+ *  dropped from the label: that would print "Whole squad" over filtered data,
+ *  the exact lie this function exists to end.
+ *
+ *  "Whole squad", singular — CLAUDE.md §6: there is exactly one squad per
+ *  organisation, and this control picks among groups, never among squads.
+ *  "All squads" (plural) was live here despite this doc comment already
+ *  saying the singular two lines up — a typo, not a considered choice, and
+ *  the one outlier against the "Whole squad" wording every sibling scope
+ *  chip already uses (NutritionTargetForm, LeaderboardBuilderForm,
+ *  SelectedSessionPanel, NutritionTargetsList, LeaderboardWall). */
 export function groupScopeLabel(
   groups: readonly { id: string; name: string }[],
   selectedIds: readonly string[],
 ): string {
-  if (selectedIds.length === 0) return 'All squads';
+  if (selectedIds.length === 0) return 'Whole squad';
   const selected = new Set(selectedIds);
   const named = groups.filter((g) => selected.has(g.id)).map((g) => g.name);
   const unknown = selectedIds.filter((id) => !groups.some((g) => g.id === id)).length;

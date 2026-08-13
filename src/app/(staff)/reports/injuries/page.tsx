@@ -123,7 +123,7 @@ export default async function InjuryAvailabilityReportPage({
                    * never about the squad — so say which. */
                   <p className="tiny" style={{ padding: 16 }}>
                     {groupIds.length > 0
-                      ? `No unavailable or modified athletes in the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter to check all squads.`
+                      ? `No unavailable or modified athletes in the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter to check the whole squad.`
                       : 'Everyone is available.'}
                   </p>
                 ) : (

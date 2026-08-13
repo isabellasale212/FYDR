@@ -100,7 +100,7 @@ export function GroupFilter({ groups, selected }: Props) {
           onClick={() => apply([])}
         >
           {effective.length === 0 ? <span aria-hidden="true">✓ </span> : null}
-          All squads
+          Whole squad
         </button>
         {groups.map((group) => (
           <button

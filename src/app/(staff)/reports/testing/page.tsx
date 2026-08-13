@@ -114,7 +114,7 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                   {byAthlete.rows.length === 0 ? (
                     <p className="tiny" style={{ padding: 16 }}>
                       {groupIds.length > 0
-                        ? `No athletes in the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter to see all squads.`
+                        ? `No athletes in the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter to see the whole squad.`
                         : 'No athletes in this squad yet.'}
                     </p>
                   ) : (
@@ -210,7 +210,7 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                         {byTest.rows.length === 0 ? (
                           <p className="tiny" style={{ padding: 16 }}>
                             {groupIds.length > 0
-                              ? `No result recorded for this test in the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter to check all squads.`
+                              ? `No result recorded for this test in the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter to check the whole squad.`
                               : 'No result recorded for this test yet.'}
                           </p>
                         ) : (

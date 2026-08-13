@@ -300,6 +300,13 @@ const ENUM_LABELS: Record<string, string> = {
   // dropdown ("Rpe" instead of "RPE", a load_basis value).
   gps: 'GPS',
   rpe: 'RPE',
+  // CLAUDE.md §6: "Fixture: A match. A session with an opponent." The
+  // schema/session_type value stays 'match' (not renamed — see the fixture
+  // detail route and DbSessionType, which already say 'Fixture' throughout),
+  // but every session-type chip, legend and picker that renders this enum
+  // through enumLabel() now shows the same word the fixture detail page
+  // does, instead of "Match" in one place and "Fixture" one click away.
+  match: 'Fixture',
 };
 
 /** Enum values are rendered from a fixed label set, never as free text. */
@@ -309,6 +316,27 @@ export function enumLabel(value: string | null | undefined): string {
   if (mapped) return mapped;
   const spaced = value.replace(/_/g, ' ');
   return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
+
+/** English ordinal suffix — 1st/2nd/3rd/4th..., with the 11th/12th/13th
+ *  exception. Every percentile and rank label in the app should render
+ *  through this rather than hard-coding "th" (found live on the squad
+ *  profile page's position benchmarks: "73th percentile", "81th
+ *  percentile" — every value not ending in 0, 4-9, 11, 12 or 13 was
+ *  wrong). */
+export function ordinal(n: number): string {
+  const v = n % 100;
+  if (v >= 11 && v <= 13) return `${n}th`;
+  switch (n % 10) {
+    case 1:
+      return `${n}st`;
+    case 2:
+      return `${n}nd`;
+    case 3:
+      return `${n}rd`;
+    default:
+      return `${n}th`;
+  }
 }
 
 export function ageFrom(dob: string | null | undefined): number | null {

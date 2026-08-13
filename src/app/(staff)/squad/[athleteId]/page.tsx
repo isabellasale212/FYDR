@@ -10,7 +10,7 @@ import { BodyWeightPanel } from '@/components/BodyWeightPanel/BodyWeightPanel';
 import { SetAvailabilityFormCoach } from '@/components/SetAvailabilityFormCoach/SetAvailabilityFormCoach';
 import { fetchPlayerProfile, bandTone, type Tone } from '@/lib/queries/playerProfile';
 import { fetchBodyCompositionEntries } from '@/lib/queries/bodyComposition';
-import { enumLabel, formatDate, formatNumber, initials, todayIso } from '@/lib/format';
+import { enumLabel, formatDate, formatNumber, initials, ordinal, todayIso } from '@/lib/format';
 import { availabilityStatus } from '@/lib/status';
 import { requireStaff } from '@/lib/session';
 
@@ -321,7 +321,7 @@ export default async function AthletePage({
                       className="pp-bench-band"
                       style={{ color: row.pct !== null ? TONE_TEXT_VAR[bandTone(row.pct)] : 'var(--faint)' }}
                     >
-                      {row.pct !== null ? `${row.pct}th percentile` : 'No data'}
+                      {row.pct !== null ? `${ordinal(row.pct)} percentile` : 'No data'}
                     </span>
                     <span className="mono pp-bench-meta">
                       {row.n > 0

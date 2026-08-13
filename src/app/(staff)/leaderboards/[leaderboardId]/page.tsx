@@ -15,7 +15,7 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 
-export const metadata = { title: 'Leaderboard · Fydr' };
+export const metadata = { title: 'Board · Fydr' };
 
 /** screens/leaderboards.md's staff board view, simplified: no movement column (no
  *  snapshots table), no "Not ranked" names list (needs a second query resolving the

@@ -5,6 +5,7 @@ import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { TimetableSessionCard } from '@/components/TimetableSessionCard/TimetableSessionCard';
 import { fetchGroups } from '@/lib/queries/groups';
+import { fetchWeekMdLabels, mondayOf } from '@/lib/queries/schedule';
 import { fetchTimetableDay } from '@/lib/queries/timetable';
 import { addDays, formatDate, todayIso } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
@@ -36,10 +37,16 @@ export default async function TimetablePage({ searchParams }: { searchParams: Se
   const dayHref = (d: string) =>
     groupIds.length > 0 ? `/timetable?date=${d}&groups=${groupIds.join(',')}` : `/timetable?date=${d}`;
 
-  const [groups, sessions] = await Promise.all([
+  const [groups, sessions, weekMd] = await Promise.all([
     fetchGroups(db, orgId),
     fetchTimetableDay(db, orgId, date, groupIds),
+    fetchWeekMdLabels(db, orgId, mondayOf(date)),
   ]);
+  // Every session on this page shares `date` (fetchTimetableDay is bounded
+  // to one calendar day), so one anchored lookup applies to all of them —
+  // the same primitive the Schedule grid uses, so a session doesn't show a
+  // different MD-n here than one tab-click away on /schedule.
+  const anchoredMdOffset = weekMd.get(date) ?? null;
 
   const now = Date.now();
 
@@ -101,6 +108,7 @@ export default async function TimetablePage({ searchParams }: { searchParams: Se
                 userId={claims.userId}
                 actorRole={actorRole}
                 session={session}
+                anchoredMdOffset={anchoredMdOffset}
                 defaultExpanded={isLive}
               />
             );

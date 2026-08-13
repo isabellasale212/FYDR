@@ -18,6 +18,12 @@ type Props = {
   userId: string;
   actorRole: 'coach' | 'medical';
   session: TimetableSession;
+  // The session's md_offset re-anchored to its real calendar week (see
+  // anchorMdOffsetsToWeek, format.ts) — computed once by the page for the
+  // whole day and passed down, rather than read raw off `session`, so this
+  // card can't show a different MD-n than the Schedule grid for the same
+  // session (audit blocker B2).
+  anchoredMdOffset: number | null;
   defaultExpanded: boolean;
 };
 
@@ -52,7 +58,7 @@ type WriteFailure =
  *  table; router.refresh() re-pulls server state after each mutation,
  *  same pattern as GymSessionLogger.tsx rather than a hand-rolled
  *  optimistic cache. */
-export function TimetableSessionCard({ orgId, userId, actorRole, session, defaultExpanded }: Props) {
+export function TimetableSessionCard({ orgId, userId, actorRole, session, anchoredMdOffset, defaultExpanded }: Props) {
   const router = useRouter();
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [reasonDrafts, setReasonDrafts] = useState<Record<string, string>>({});
@@ -104,7 +110,7 @@ export function TimetableSessionCard({ orgId, userId, actorRole, session, defaul
     excused: session.participants.filter((p) => p.attendance === 'excused').length,
   };
   const conflictCount = session.participants.filter((p) => p.conflicts.length > 0).length;
-  const md = mdLabel(session.md_offset);
+  const md = mdLabel(anchoredMdOffset);
 
   function selectSegment(athleteId: string, status: AttendanceStatus, hasConflict: boolean, current: AttendanceStatus | null) {
     if (status === 'full' && hasConflict && current !== 'full') {

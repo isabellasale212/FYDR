@@ -1,5 +1,6 @@
 import { fetchGroupAthleteIds, type Db } from './groups';
-import { mondayOf } from './schedule';
+import { fetchWeekMdLabels, mondayOf } from './schedule';
+import { mdLabel } from '../format';
 
 /* TRAINING-REPORT-SPEC.md, a full rebuild of the previous heat-mapped
  * board (screens/training-report.md) into the two-mode scoring model the
@@ -64,14 +65,33 @@ export async function fetchTrainingSessions(db: Db, orgId: string, limit = 8): P
   if (error) throw new Error(error.message);
 
   const seen = new Set<string>();
-  const out: TrainingSessionOption[] = [];
+  const picked: { id: string; date: string; title: string; durationMin: number | null; location: string | null }[] = [];
   for (const s of data ?? []) {
     if (seen.has(s.id)) continue;
     seen.add(s.id);
-    out.push({ sessionId: s.id, date: s.starts_at.slice(0, 10), title: s.title, mdOffset: s.md_offset, durationMin: s.duration_min, location: s.location });
-    if (out.length >= limit) break;
+    picked.push({ id: s.id, date: s.starts_at.slice(0, 10), title: s.title, durationMin: s.duration_min, location: s.location });
+    if (picked.length >= limit) break;
   }
-  return out;
+
+  /* MD-n re-anchored per session's own real calendar week — same shared
+   * primitive as every other view (audit blocker B2). Not in the plan's
+   * named site list, found alongside it in the same file: this session
+   * picker (and its selected-session header, reports/training/page.tsx)
+   * rendered the raw stored md_offset directly, same bug, same fix. These
+   * `limit` most recent sessions can span several different weeks, so
+   * fetch each distinct week once rather than one call per session. */
+  const weeks = [...new Set(picked.map((s) => mondayOf(s.date)))];
+  const weekMdByWeek = await Promise.all(weeks.map((w) => fetchWeekMdLabels(db, orgId, w)));
+  const weekMdLookup = new Map(weeks.map((w, i) => [w, weekMdByWeek[i]]));
+
+  return picked.map((s) => ({
+    sessionId: s.id,
+    date: s.date,
+    title: s.title,
+    mdOffset: weekMdLookup.get(mondayOf(s.date))?.get(s.date) ?? null,
+    durationMin: s.durationMin,
+    location: s.location,
+  }));
 }
 
 export type MatchSessionOption = {
@@ -362,15 +382,23 @@ export async function fetchRestOfWeekComparison(
   weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
   const weekEndIso = weekEnd.toISOString().slice(0, 10);
 
-  const { data: sessions, error: sessErr } = await db
-    .from('sessions')
-    .select('id, title, session_type, starts_at, md_offset, fixtures(opponent)')
-    .eq('org_id', orgId)
-    .gte('starts_at', `${weekStart}T00:00:00Z`)
-    .lte('starts_at', `${weekEndIso}T23:59:59Z`)
-    .in('session_type', ['training', 'match'])
-    .is('deleted_at', null)
-    .order('starts_at');
+  // MD-n for this row's own real calendar week, via the same shared
+  // primitive the week-level views use (fetchWeekMdLabels ->
+  // anchorMdOffsetsToWeek, format.ts) — not a hand-rolled re-derivation of
+  // that logic, which previously could disagree with it (audit blocker
+  // B2). Independent of the `sessions` query below, so fetched alongside it.
+  const [{ data: sessions, error: sessErr }, weekMd] = await Promise.all([
+    db
+      .from('sessions')
+      .select('id, title, session_type, starts_at, md_offset, fixtures(opponent)')
+      .eq('org_id', orgId)
+      .gte('starts_at', `${weekStart}T00:00:00Z`)
+      .lte('starts_at', `${weekEndIso}T23:59:59Z`)
+      .in('session_type', ['training', 'match'])
+      .is('deleted_at', null)
+      .order('starts_at'),
+    fetchWeekMdLabels(db, orgId, weekStart),
+  ]);
   if (sessErr) throw new Error(sessErr.message);
 
   const sessionIds = (sessions ?? []).map((s) => s.id);
@@ -398,7 +426,7 @@ export async function fetchRestOfWeekComparison(
     const hsr = mean(recs.map((r) => r.high_speed_distance_m));
     const hie = mean(recs.filter((r) => r.duration_s).map((r) => (r.high_intensity_efforts !== null && r.duration_s ? r.high_intensity_efforts / (r.duration_s / 60) : null)));
     if (td !== null) weekTd += td;
-    const md = s.md_offset !== null ? (s.md_offset === 0 ? 'MD' : s.md_offset < 0 ? `MD${s.md_offset}` : `MD+${s.md_offset}`) : '';
+    const md = mdLabel(weekMd.get(s.starts_at.slice(0, 10)) ?? null) ?? '';
     const label = s.session_type === 'match' ? `v ${s.fixtures?.opponent ?? 'opponent'}` : s.title;
     return {
       id: s.id,

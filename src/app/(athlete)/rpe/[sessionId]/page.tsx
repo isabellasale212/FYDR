@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { RpeForm } from '@/components/RpeForm/RpeForm';
 import { fetchSessionForRpe, fetchTrainingEntryForSession } from '@/lib/queries/training';
+import { fetchWeekMdLabels, mondayOf } from '@/lib/queries/schedule';
 import { dateInTz, enumLabel, formatDate, formatTime, mdExplainer, mdLabel } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
 
@@ -53,7 +54,14 @@ export default async function RpePage({
   }
 
   const entryDate = dateInTz(new Date(session.starts_at), timezone);
-  const md = mdLabel(session.md_offset);
+  const sessionDate = session.starts_at.slice(0, 10);
+  // MD-n re-anchored to this session's own real calendar week — the same
+  // primitive (fetchWeekMdLabels/anchorMdOffsetsToWeek) the week-level
+  // views use, so this raw single-session view can't disagree with them
+  // for the identical session (audit blocker B2).
+  const weekMd = await fetchWeekMdLabels(db, orgId, mondayOf(sessionDate));
+  const mdOffset = weekMd.get(sessionDate) ?? null;
+  const md = mdLabel(mdOffset);
 
   const dueAt =
     session.duration_min !== null
@@ -91,7 +99,7 @@ export default async function RpePage({
             {md ? (
               <>
                 {' · '}
-                <span className="mono" title={mdExplainer(session.md_offset) ?? undefined}>
+                <span className="mono" title={mdExplainer(mdOffset) ?? undefined}>
                   {md}
                 </span>
               </>

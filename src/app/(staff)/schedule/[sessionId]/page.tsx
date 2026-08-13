@@ -4,7 +4,7 @@ import { SessionEditForm } from '@/components/SessionEditForm/SessionEditForm';
 import { SessionActions } from '@/components/SessionActions/SessionActions';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchGroups } from '@/lib/queries/groups';
-import { fetchSessionDetail } from '@/lib/queries/schedule';
+import { fetchSessionDetail, fetchWeekMdLabels, mondayOf } from '@/lib/queries/schedule';
 import { enumLabel, formatLongDate, formatTime, mdLabel } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 
@@ -26,8 +26,18 @@ export default async function SessionDetailPage({
   const session = await fetchSessionDetail(db, orgId, sessionId);
   if (!session) notFound();
 
-  const groups = await fetchGroups(db, orgId);
-  const md = mdLabel(session.md_offset);
+  const sessionDate = session.starts_at.slice(0, 10);
+  // MD-n re-anchored to this session's own real calendar week (its stored
+  // md_offset can count toward a fixture in a later week — see
+  // anchorMdOffsetsToWeek, format.ts). fetchWeekMdLabels is the same
+  // primitive the week-level views (ScheduleWorkspace, dashboard, /today's
+  // week strip) already use, so this permalink page agrees with them for
+  // the identical session instead of showing the raw stored offset.
+  const [groups, weekMd] = await Promise.all([
+    fetchGroups(db, orgId),
+    fetchWeekMdLabels(db, orgId, mondayOf(sessionDate)),
+  ]);
+  const md = mdLabel(weekMd.get(sessionDate) ?? null);
   const cancelled = session.status === 'cancelled';
 
   return (

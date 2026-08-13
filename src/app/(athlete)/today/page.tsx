@@ -120,6 +120,13 @@ export default async function TodayPage({
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
+  // Every session in `sessions` falls on `today` (fetchAthleteDaySessions is
+  // bounded to that one calendar day), so the same anchored value the week
+  // strip below already uses for `today` applies uniformly to every pill in
+  // the day's session list — this replaces each session's raw, unanchored
+  // md_offset, which could disagree with the week strip on this very page.
+  const todayMdOffset = weekMd.get(today) ?? null;
+
   return (
     <>
       <div className="hd">
@@ -241,7 +248,7 @@ export default async function TodayPage({
         ) : (
           <div className="card flush">
             {sessions.map((session, index) => {
-              const md = mdLabel(session.md_offset);
+              const md = mdLabel(todayMdOffset);
               const cancelled = session.status === 'cancelled';
               return (
                 <div key={session.id}>
@@ -269,7 +276,7 @@ export default async function TodayPage({
                       </div>
                     </div>
                     {md ? (
-                      <span className="pill pill-neutral mono" title={mdExplainer(session.md_offset) ?? undefined}>
+                      <span className="pill pill-neutral mono" title={mdExplainer(todayMdOffset) ?? undefined}>
                         {md}
                       </span>
                     ) : null}

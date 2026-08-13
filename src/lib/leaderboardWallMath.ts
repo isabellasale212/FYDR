@@ -66,7 +66,16 @@ export type GainCell = { value: string; mark: string; fg: string | null; bg: str
  *  real dataset today have only one recorded session and render "first test on file"
  *  rather than a fabricated comparison. */
 export function gainCell(board: WallBoard, current: number | null, first: number | null): GainCell {
-  if (!board.gainable || current === null || first === null) {
+  // Audit finding 46: "no data at all" (never tested on this board) must look
+  // different from "data exists but there's nothing meaningful to report" —
+  // the Result and Standard lenses already render a missing value as a
+  // transparent dot (see the '·' cells in LeaderboardWall.tsx); Improvement
+  // was rendering both cases identically in grey, which is a real reading
+  // ambiguity for a coach scanning the wall, not just a style mismatch.
+  if (current === null) {
+    return { value: '·', mark: '', fg: 'var(--faint)', bg: 'transparent', sortValue: null };
+  }
+  if (!board.gainable || first === null) {
     return { value: BLANK, mark: '', fg: 'var(--faint)', bg: 'var(--hair)', sortValue: null };
   }
   const gain = board.lowerIsBetter ? first - current : current - first;

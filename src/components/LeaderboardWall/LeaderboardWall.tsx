@@ -27,31 +27,38 @@ type Props = {
 
 type WallGroup = { label: string; athletes: WallAthlete[] };
 
+/** Audit finding 44: rows within a group scan best-first on the board currently
+ *  shown, not age — you can't scan a column for the best athlete otherwise. Age
+ *  stays visible as the badge next to each name (`.lbw-age`); this only changes
+ *  row order. One comparator shared by all three scopes so "ranked by the first
+ *  column" means the same thing everywhere on the wall — 'Whole squad' already
+ *  sorted this way, 'Positional unit' and 'Age band' now match it. */
+function sortByRank(athletes: readonly WallAthlete[], board: WallBoard | undefined): WallAthlete[] {
+  return [...athletes].sort((a, b) => {
+    if (!board) return a.name.localeCompare(b.name);
+    const av = a.values[board.key]?.current ?? null;
+    const bv = b.values[board.key]?.current ?? null;
+    if (av === null && bv === null) return a.name.localeCompare(b.name);
+    if (av === null) return 1;
+    if (bv === null) return -1;
+    return board.lowerIsBetter ? av - bv : bv - av;
+  });
+}
+
 function buildGroups(athletes: readonly WallAthlete[], scope: Scope, activeGroupLabel: string, firstBoard: WallBoard | undefined): WallGroup[] {
   if (scope === 'Positional unit') {
     return UNITS.map((label, i) => ({
       label,
-      athletes: athletes.filter((a) => a.unitIndex === i).sort((a, b) => (a.age ?? 999) - (b.age ?? 999)),
+      athletes: sortByRank(athletes.filter((a) => a.unitIndex === i), firstBoard),
     })).filter((g) => g.athletes.length > 0);
   }
   if (scope === 'Age band') {
     return BANDS.map((label, i) => ({
       label,
-      athletes: athletes
-        .filter((a) => a.bandIndex === i)
-        .sort((a, b) => (a.age ?? 999) - (b.age ?? 999) || a.name.localeCompare(b.name)),
+      athletes: sortByRank(athletes.filter((a) => a.bandIndex === i), firstBoard),
     })).filter((g) => g.athletes.length > 0);
   }
-  const sorted = [...athletes].sort((a, b) => {
-    if (!firstBoard) return a.name.localeCompare(b.name);
-    const av = a.values[firstBoard.key]?.current ?? null;
-    const bv = b.values[firstBoard.key]?.current ?? null;
-    if (av === null && bv === null) return a.name.localeCompare(b.name);
-    if (av === null) return 1;
-    if (bv === null) return -1;
-    return firstBoard.lowerIsBetter ? av - bv : bv - av;
-  });
-  return [{ label: activeGroupLabel, athletes: sorted }];
+  return [{ label: activeGroupLabel, athletes: sortByRank(athletes, firstBoard) }];
 }
 
 function groupCellText(list: readonly WallAthlete[], board: WallBoard, isGain: boolean): string {
@@ -83,7 +90,7 @@ const LEGEND: Record<Lens, { label: string; bg: string }[]> = {
     { label: 'Clear gain', bg: 'rgb(var(--accent-rgb) / 0.22)' },
     { label: 'Small gain', bg: 'rgb(var(--accent-rgb) / 0.1)' },
     { label: 'Went backwards', bg: 'rgb(var(--bad-rgb) / 0.14)' },
-    { label: 'Inside measurement error', bg: 'var(--hair)' },
+    { label: 'No meaningful change', bg: 'var(--hair)' },
   ],
   Standard: [
     { label: 'Meets the standard', bg: 'rgb(var(--lb-standard-met-rgb) / 0.2)' },
@@ -95,8 +102,9 @@ const LEGEND: Record<Lens, { label: string; bg: string }[]> = {
 const CAPTIONS: Record<Lens, string> = {
   Result: 'Latest result per athlete, staff entered · tint is rank position inside the scope, not an absolute standard',
   Improvement:
-    'Change vs each athlete’s earliest result on file (2026-06-16 to 2026-08-10, this club’s real testing window) · a dash means the move is inside the typical error of the protocol, rounds to zero, or there is only one session on file · wellness streak and compliance are not differenced, so Habits is unavailable here',
-  Standard: 'Against the club standard for the athlete’s position · forwards and backs are held to different numbers',
+    'Change vs each athlete’s earliest result on file (2026-06-16 to 2026-08-10, this club’s real testing window) · a dash means the athlete has a result but nothing meaningful to report — inside the typical error of the protocol, exactly zero, or only one session on file so far · a plain dot means no result on file at all · wellness streak and compliance are not differenced, so Habits is unavailable here',
+  Standard:
+    'Against the club standard for the athlete’s position · forwards and backs are held to different numbers · these are Fydr-set placeholder standards, not club-specific norms, and there’s no way to change them yet',
 };
 
 function initials(name: string): string {
@@ -178,7 +186,9 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
             <span className="unit">%</span>
           </p>
           <p className="dash-stat-sub">of all athlete-board pairs</p>
-          <p className="dash-stat-foot">standards differ for forwards and backs</p>
+          <p className="dash-stat-foot" title="Fydr-set placeholder standard, not club-specific norms · not yet configurable">
+            standards differ for forwards and backs · Fydr placeholder, not yet configurable
+          </p>
         </div>
         <div className="dash-stat">
           <p className="dash-stat-label">Improved</p>
@@ -250,6 +260,11 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
                 className={`squad-chip${disabled ? ' lbw-chip-disabled' : ''}`}
                 aria-pressed={effectiveFamily === f}
                 disabled={disabled}
+                title={
+                  disabled
+                    ? 'Wellness streak and compliance aren’t differenced against a first test, so Habits has no meaningful improvement to show here.'
+                    : undefined
+                }
                 onClick={() => !disabled && setFamily(f)}
               >
                 {f} <span className="lbw-chip-count">{familyCounts[f] ?? 0}</span>
@@ -275,7 +290,10 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
               {familyBoards.map((b) => (
                 <div key={b.key} className="lbw-wall-head-board">
                   <div>{b.label}</div>
-                  <div className="lbw-wall-head-sub">
+                  <div
+                    className="lbw-wall-head-sub"
+                    title={lens === 'Standard' ? 'Fydr-set placeholder standard, not club-specific norms · not yet configurable' : undefined}
+                  >
                     {lens === 'Result' ? b.unit : lens === 'Improvement' ? `vs earliest · ${b.unit}` : `std ${fmt(b.standardFwd, b.decimals)}/${fmt(b.standardBack, b.decimals)}`}
                   </div>
                 </div>
@@ -389,7 +407,10 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
                     <div key={b.key} className="lbw-sel-row">
                       <div>
                         <p className="lbw-sel-test">{b.label}</p>
-                        <p className="lbw-sel-std">
+                        <p
+                          className="lbw-sel-std"
+                          title="Fydr-set placeholder standard, not club-specific norms · not yet configurable"
+                        >
                           standard {fmt(standardFor(b, selAthlete.unitIndex), b.decimals)} · {std ? (std.marker === '✓' ? 'met' : 'short') : '·'}
                         </p>
                       </div>

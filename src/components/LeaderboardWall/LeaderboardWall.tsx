@@ -83,19 +83,19 @@ const LEGEND: Record<Lens, { label: string; bg: string }[]> = {
   Result: [
     { label: 'Top of the group', bg: 'rgb(var(--accent-rgb) / 0.22)' },
     { label: 'Above the middle', bg: 'rgb(var(--accent-rgb) / 0.1)' },
-    { label: 'Below the middle', bg: 'rgb(var(--warn-rgb) / 0.14)' },
-    { label: 'Bottom of the group', bg: 'rgb(var(--bad-rgb) / 0.14)' },
+    { label: 'Below the middle', bg: 'rgb(var(--warn-rgb) / var(--lb-tint-alpha))' },
+    { label: 'Bottom of the group', bg: 'rgb(var(--bad-rgb) / var(--lb-tint-alpha))' },
   ],
   Improvement: [
     { label: 'Clear gain', bg: 'rgb(var(--accent-rgb) / 0.22)' },
     { label: 'Small gain', bg: 'rgb(var(--accent-rgb) / 0.1)' },
-    { label: 'Went backwards', bg: 'rgb(var(--bad-rgb) / 0.14)' },
+    { label: 'Went backwards', bg: 'rgb(var(--bad-rgb) / var(--lb-tint-alpha))' },
     { label: 'No meaningful change', bg: 'var(--hair)' },
   ],
   Standard: [
     { label: 'Meets the standard', bg: 'rgb(var(--lb-standard-met-rgb) / 0.2)' },
-    { label: 'Within 3%', bg: 'rgb(var(--warn-rgb) / 0.14)' },
-    { label: 'Short of it', bg: 'rgb(var(--bad-rgb) / 0.14)' },
+    { label: 'Within 3%', bg: 'rgb(var(--warn-rgb) / var(--lb-tint-alpha))' },
+    { label: 'Short of it', bg: 'rgb(var(--bad-rgb) / var(--lb-tint-alpha))' },
   ],
 };
 

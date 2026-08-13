@@ -2794,7 +2794,8 @@ table.tbl tbody tr:hover {
   padding: 2px 9px;
   border-radius: 20px;
   background: rgb(var(--highlight-rgb) / 0.22);
-  color: var(--highlight-text);
+  /* Same mispaired token as .pill-gold above, same fix — see its comment. */
+  color: var(--highlight-pill-text);
   white-space: nowrap;
 }
 
@@ -4621,7 +4622,15 @@ table.tbl tbody tr:hover {
 
 .pill-gold {
   --pill-rgb: var(--highlight-rgb);
-  --pill-text: var(--highlight-text);
+  /* Audit S7/finding 51: was --highlight-text, the text-on-a-SOLID-fill
+     token (§2.2, single-valued, near-black by design) — correct for nothing
+     that actually uses it, since every real usage (this pill included) sits
+     on the 22%-alpha *tint* below, not a solid fill. --highlight-pill-text
+     is the token every sibling .pill-* variant above already uses for
+     exactly that surface, and it's the one that's theme-split: light
+     #7f6000 legible on the pale tint, dark #f5c518 legible on the muddy
+     dark-olive one the old pairing rendered at ~1.2:1. */
+  --pill-text: var(--highlight-pill-text);
 }
 
 /* ---------- Controls ---------- */

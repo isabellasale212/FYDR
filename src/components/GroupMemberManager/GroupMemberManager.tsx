@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { addGroupMember, removeGroupMember, type MemberRow } from '@/lib/queries/groups';
 import { createClient } from '@/lib/supabase/client';
+import { withWriteTimeout } from '@/lib/writeErrors';
 import { formatDate } from '@/lib/format';
 
 type Candidate = { id: string; first_name: string; last_name: string; position: string | null };
@@ -31,7 +32,7 @@ export function GroupMemberManager({ orgId, groupId, current, candidates }: Prop
 
   const remove = useMutation({
     mutationFn: (athleteId: string) =>
-      removeGroupMember(createClient(), orgId, groupId, athleteId),
+      withWriteTimeout(removeGroupMember(createClient(), orgId, groupId, athleteId)),
     onSuccess: () => router.refresh(),
     onError: () => setError('Could not remove that athlete. Try again.'),
   });
@@ -41,7 +42,7 @@ export function GroupMemberManager({ orgId, groupId, current, candidates }: Prop
       const db = createClient();
       let skipped = 0;
       for (const athleteId of selected) {
-        const result = await addGroupMember(db, orgId, groupId, athleteId);
+        const result = await withWriteTimeout(addGroupMember(db, orgId, groupId, athleteId));
         if (result.skipped) skipped += 1;
       }
       return skipped;

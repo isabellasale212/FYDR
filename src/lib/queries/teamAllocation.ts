@@ -1,4 +1,5 @@
 import type { AvailabilityStatus } from '@/lib/types/database';
+import { humanizeDbError } from '@/lib/writeErrors';
 import { fetchCurrentAvailability } from './availability';
 import { fetchCurrentSeasonId } from './schedule';
 import type { Db } from './groups';
@@ -163,7 +164,8 @@ export async function setTeamAllocation(
     if (error.message.includes('check') || error.message.includes('constraint')) {
       return { error: 'This athlete is not available. Give a reason to allocate them anyway.' };
     }
-    return { error: error.message };
+    /* Raw driver strings never leave this file — audit S5. */
+    return { error: humanizeDbError(error.message, 'staff') };
   }
   return { error: null };
 }
@@ -174,7 +176,7 @@ export async function withdrawAllocation(db: Db, orgId: string, allocationId: st
     .update({ status: 'withdrawn' })
     .eq('id', allocationId)
     .eq('org_id', orgId);
-  return { error: error?.message ?? null };
+  return { error: error ? humanizeDbError(error.message, 'staff') : null };
 }
 
 /** Publish is a batch action: every draft row for this week becomes visible to the
@@ -188,7 +190,7 @@ export async function publishWeek(db: Db, orgId: string, userId: string, weekSta
     .eq('org_id', orgId)
     .eq('week_start', weekStart)
     .eq('status', 'draft');
-  return { error: error?.message ?? null };
+  return { error: error ? humanizeDbError(error.message, 'staff') : null };
 }
 
 export type MyAllocation = { team_name: string; week_start: string };

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { createTemplate, emptyStructure } from '@/lib/queries/weekTemplates';
+import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 
 type Props = { orgId: string; userId: string };
 
@@ -15,12 +16,14 @@ export function NewTemplateForm({ orgId, userId }: Props) {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const result = await createTemplate(createClient(), orgId, userId, { name, structure: emptyStructure() });
-      if (result.error || !result.id) throw new Error(result.error ?? 'Could not create the template.');
+      const result = await withWriteTimeout(
+        createTemplate(createClient(), orgId, userId, { name, structure: emptyStructure() }),
+      );
+      if (result.error || !result.id) throw new HumanError(result.error ?? 'Could not create the template.');
       return result.id;
     },
     onSuccess: (id) => router.push(`/schedule/planner/${id}`),
-    onError: (err: Error) => setError(err.message),
+    onError: (err: Error) => setError(toUserMessage(err, 'staff')),
   });
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {

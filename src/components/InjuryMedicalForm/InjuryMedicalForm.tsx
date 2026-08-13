@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
+import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import {
   updateInjuryFields,
   upsertClinical,
@@ -57,30 +58,34 @@ export function InjuryMedicalForm({ orgId, userId, injury, clinical }: Props) {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const fieldsResult = await updateInjuryFields(createClient(), orgId, injury.id, {
-        bodyArea: bodyArea as BodyArea,
-        side: (side || null) as BodySide | null,
-        status: status as InjuryStatus,
-        expectedReturn: expectedReturn || null,
-        actualReturn: actualReturn || null,
-        occurredIn: (occurredIn || null) as OccurrenceContext | null,
-      });
+      const fieldsResult = await withWriteTimeout(
+        updateInjuryFields(createClient(), orgId, injury.id, {
+          bodyArea: bodyArea as BodyArea,
+          side: (side || null) as BodySide | null,
+          status: status as InjuryStatus,
+          expectedReturn: expectedReturn || null,
+          actualReturn: actualReturn || null,
+          occurredIn: (occurredIn || null) as OccurrenceContext | null,
+        }),
+      );
       if (fieldsResult.error) throw new Error(fieldsResult.error);
 
-      const clinicalResult = await upsertClinical(createClient(), orgId, injury.id, userId, {
-        diagnosis: diagnosis.trim() || null,
-        mechanism: mechanism.trim() || null,
-        severity: (severity || null) as InjurySeverity | null,
-        tissueType: tissueType.trim() || null,
-        imaging: imaging.trim() || null,
-        referral: referral.trim() || null,
-        clinicalNotes: clinicalNotes.trim() || null,
-        treatmentPlan: treatmentPlan.trim() || null,
-      });
+      const clinicalResult = await withWriteTimeout(
+        upsertClinical(createClient(), orgId, injury.id, userId, {
+          diagnosis: diagnosis.trim() || null,
+          mechanism: mechanism.trim() || null,
+          severity: (severity || null) as InjurySeverity | null,
+          tissueType: tissueType.trim() || null,
+          imaging: imaging.trim() || null,
+          referral: referral.trim() || null,
+          clinicalNotes: clinicalNotes.trim() || null,
+          treatmentPlan: treatmentPlan.trim() || null,
+        }),
+      );
       if (clinicalResult.error) throw new Error(clinicalResult.error);
     },
     onSuccess: () => router.refresh(),
-    onError: (err: Error) => setError(err.message),
+    onError: (err: Error) => setError(toUserMessage(err, 'staff')),
   });
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {

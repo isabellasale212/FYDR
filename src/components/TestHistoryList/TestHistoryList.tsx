@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { markBestManual, type HistoryRow } from '@/lib/queries/testing';
+import { humanizeDbError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import type { BodySide } from '@/lib/types/database';
 import { formatDate } from '@/lib/format';
 
@@ -25,21 +26,24 @@ export function TestHistoryList({ orgId, testDefinitionId, athleteId, rows, unit
 
   const mutation = useMutation({
     mutationFn: (input: { resultId: string; testDate: string; side: BodySide | null }) =>
-      markBestManual(createClient(), orgId, {
-        resultId: input.resultId,
-        athleteId,
-        testDefinitionId,
-        testDate: input.testDate,
-        side: input.side,
-        conditions,
-      }),
+      withWriteTimeout(
+        markBestManual(createClient(), orgId, {
+          resultId: input.resultId,
+          athleteId,
+          testDefinitionId,
+          testDate: input.testDate,
+          side: input.side,
+          conditions,
+        }),
+      ),
     onSuccess: (result) => {
-      if (result.error) return setError(result.error);
+      if (result.error) return setError(humanizeDbError(result.error, 'staff'));
       setError(null);
       setMarkingId(null);
       setConditions('');
       router.refresh();
     },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   const byDate = new Map<string, HistoryRow[]>();

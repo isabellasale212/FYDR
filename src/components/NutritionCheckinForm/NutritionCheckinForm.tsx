@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { submitCheckin, reviseCheckin } from '@/lib/queries/nutrition';
+import { enqueueNutritionCheckin, dequeueNutritionCheckin } from '@/lib/outbox';
+import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { NutritionCheckinInput } from '@/lib/validation/nutrition';
 import { isoWeekInfo, formatDate, addDays } from '@/lib/format';
 
@@ -39,22 +41,43 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, weekStart, corr
   const [noteOpen, setNoteOpen] = useState(!!correction?.initialNote);
   const [error, setError] = useState<string | null>(null);
 
+  /* Same offline contract as the wellness check-in (audit S5 / athlete
+   * finding 18 was this exact form hanging on "Saving…" and losing the
+   * answer): the check-in is queued on the phone before the send, the
+   * athlete is on their way immediately, and if the send fails the entry
+   * stays queued and /today's OutboxFlusher retries it. The insert is
+   * idempotent under its client uuid, which is what makes the replay safe. */
   const submitMutation = useMutation({
     mutationFn: async (input: NutritionCheckinInput) => {
       await submitCheckin(createClient(), input, { orgId, athleteId, userId });
+      return input;
     },
-    onSuccess: () => router.push(`/today?submitted=nutrition&week=${weekStart}`),
-    onError: (err: Error) => setError(err.message),
+    onMutate: (input) => {
+      enqueueNutritionCheckin(input);
+    },
+    onSuccess: (input) => {
+      dequeueNutritionCheckin(input.id);
+    },
+    onError: () => {
+      /* Deliberately silent: the answer is in the outbox and /today retries
+         it. The athlete has already done the thing. */
+    },
   });
 
+  /* Corrections are online-only — a replayed revise cannot be told apart
+   * from "already corrected" (see lib/outbox.ts) — so this path is bounded
+   * instead: ten seconds to confirm, then a visible, human error with the
+   * answer still on screen and the button live again. */
   const correctionMutation = useMutation({
     mutationFn: async () => {
       if (!correction || !answer) return;
-      const result = await reviseCheckin(createClient(), correction.originalId, answer, note.trim());
-      if (result.error) throw new Error(result.error);
+      const result = await withWriteTimeout(
+        reviseCheckin(createClient(), correction.originalId, answer, note.trim()),
+      );
+      if (result.error) throw new HumanError(result.error);
     },
     onSuccess: () => router.push('/my-data?tab=nutrition'),
-    onError: (err: Error) => setError(err.message),
+    onError: (err: Error) => setError(toUserMessage(err, 'athlete')),
   });
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -82,9 +105,12 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, weekStart, corr
       return;
     }
     submitMutation.mutate(parsed.data);
+    /* On our way immediately, same as the wellness check-in: the answer is
+       queued on the phone whatever the network does next. */
+    router.push(`/today?submitted=nutrition&week=${weekStart}`);
   }
 
-  const pending = correction ? correctionMutation.isPending : submitMutation.isPending;
+  const pending = correction ? correctionMutation.isPending : false;
   const weekEnd = addDays(weekStart, 6);
 
   return (
@@ -166,6 +192,11 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, weekStart, corr
         >
           {pending ? 'Saving…' : answer ? 'Done' : 'Choose an answer'}
         </button>
+        <p className="tiny" style={{ textAlign: 'center', marginTop: 8 }}>
+          {correction
+            ? 'Corrections send straight away and need signal. If it can’t get through, you’ll see an error here and your answer stays put.'
+            : 'Saved on this phone first — it sends even if your signal drops.'}
+        </p>
       </div>
     </form>
   );

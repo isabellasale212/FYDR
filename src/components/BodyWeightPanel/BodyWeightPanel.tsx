@@ -9,6 +9,7 @@ import {
   type BodyCompositionEntry,
 } from '@/lib/queries/bodyComposition';
 import { createClient } from '@/lib/supabase/client';
+import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { formatDate, todayIso } from '@/lib/format';
 
 type Props = {
@@ -119,12 +120,14 @@ function LogForm({
 
   const submit = useMutation({
     mutationFn: () =>
-      logWeighIn(createClient(), orgId, athleteId, userId, {
-        measuredOn,
-        bodyMassKg: Number(bodyMassKg),
-        bodyFatPct: bodyFatPct === '' ? null : Number(bodyFatPct),
-        method: method.trim() === '' ? null : method.trim(),
-      }),
+      withWriteTimeout(
+        logWeighIn(createClient(), orgId, athleteId, userId, {
+          measuredOn,
+          bodyMassKg: Number(bodyMassKg),
+          bodyFatPct: bodyFatPct === '' ? null : Number(bodyFatPct),
+          method: method.trim() === '' ? null : method.trim(),
+        }),
+      ),
     onSuccess: (result) => {
       if (result.error) {
         setError(result.error);
@@ -132,7 +135,7 @@ function LogForm({
       }
       onDone();
     },
-    onError: () => setError('Could not log this weigh-in. Try again.'),
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   return (
@@ -249,13 +252,15 @@ function EditRow({
 
   const save = useMutation({
     mutationFn: () =>
-      updateWeighIn(createClient(), orgId, {
-        id: entry.id,
-        measuredOn,
-        bodyMassKg: Number(bodyMassKg),
-        bodyFatPct: bodyFatPct === '' ? null : Number(bodyFatPct),
-        method: method.trim() === '' ? null : method.trim(),
-      }),
+      withWriteTimeout(
+        updateWeighIn(createClient(), orgId, {
+          id: entry.id,
+          measuredOn,
+          bodyMassKg: Number(bodyMassKg),
+          bodyFatPct: bodyFatPct === '' ? null : Number(bodyFatPct),
+          method: method.trim() === '' ? null : method.trim(),
+        }),
+      ),
     onSuccess: (result) => {
       if (result.error) {
         setError(result.error);
@@ -264,7 +269,7 @@ function EditRow({
       setSaved(true);
       onDone();
     },
-    onError: () => setError('Could not save this edit. Try again.'),
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   return (

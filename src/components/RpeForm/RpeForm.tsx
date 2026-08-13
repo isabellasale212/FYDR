@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 import { reviseTrainingEntry, submitTrainingEntry } from '@/lib/queries/training';
 import { qk } from '@/lib/queries/keys';
 import { dequeueTraining, enqueueTraining } from '@/lib/outbox';
+import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { TrainingEntryInput } from '@/lib/validation/training';
 
 type Correction = {
@@ -100,15 +101,20 @@ export function RpeForm({
     },
   });
 
+  /* Online-only and bounded, exactly like CheckInForm's correctionMutation —
+   * see its comment for why corrections never queue and what the ten-second
+   * ceiling buys (audit S5 / athlete finding 11). */
   const correctionMutation = useMutation({
     mutationFn: async (input: TrainingEntryInput) => {
       if (!correction) throw new Error('Not in correction mode.');
-      const result = await reviseTrainingEntry(createClient(), correction.originalId, {
-        rpe: input.rpe,
-        duration_min: input.duration_min,
-        comment: input.comment,
-      });
-      if (result.error) throw new Error(result.error);
+      const result = await withWriteTimeout(
+        reviseTrainingEntry(createClient(), correction.originalId, {
+          rpe: input.rpe,
+          duration_min: input.duration_min,
+          comment: input.comment,
+        }),
+      );
+      if (result.error) throw new HumanError(result.error);
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({
@@ -116,7 +122,7 @@ export function RpeForm({
       });
       router.push('/my-data?tab=training');
     },
-    onError: (err: Error) => setInvalid(err.message),
+    onError: (err: Error) => setInvalid(toUserMessage(err, 'athlete')),
   });
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -269,6 +275,12 @@ export function RpeForm({
         >
           {submitLabel}
         </button>
+        {correction ? (
+          <p className="tiny" style={{ textAlign: 'center', marginTop: 8 }}>
+            Corrections send straight away and need signal. If it can&rsquo;t get
+            through, you&rsquo;ll see an error here and your answers stay put.
+          </p>
+        ) : null}
       </div>
     </form>
   );

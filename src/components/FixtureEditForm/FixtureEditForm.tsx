@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
+import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { updateFixture, type FixtureDetail } from '@/lib/queries/schedule';
 import { zonedTimeToUtcIso, dateInTz, timeInTz } from '@/lib/format';
 
@@ -38,19 +39,21 @@ export function FixtureEditForm({ orgId, fixture, timezone }: Props) {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const outcome = await updateFixture(createClient(), orgId, fixture.id, {
-        opponent,
-        kickoffAt: zonedTimeToUtcIso(date, time, timezone),
-        venue: venue.trim() ? venue.trim() : null,
-        homeAway,
-        competition: competition.trim() ? competition.trim() : null,
-        importance,
-        result: result.trim() ? result.trim() : null,
-      });
-      if (outcome.error) throw new Error(outcome.error);
+      const outcome = await withWriteTimeout(
+        updateFixture(createClient(), orgId, fixture.id, {
+          opponent,
+          kickoffAt: zonedTimeToUtcIso(date, time, timezone),
+          venue: venue.trim() ? venue.trim() : null,
+          homeAway,
+          competition: competition.trim() ? competition.trim() : null,
+          importance,
+          result: result.trim() ? result.trim() : null,
+        }),
+      );
+      if (outcome.error) throw new HumanError(outcome.error);
     },
     onSuccess: () => router.refresh(),
-    onError: (err: Error) => setError(err.message),
+    onError: (err: Error) => setError(toUserMessage(err, 'staff')),
   });
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {

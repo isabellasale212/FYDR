@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
+import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { createGroup, GROUP_COLOURS } from '@/lib/queries/groups';
 import { GroupSwatch } from '@/components/GroupSwatch/GroupSwatch';
 
@@ -32,20 +33,22 @@ export function GroupEditorForm({ orgId }: Props) {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const result = await createGroup(createClient(), {
-        orgId,
-        name,
-        description: description.trim() ? description.trim() : null,
-        colour,
-        groupType,
-      });
-      if (result.error) throw new Error(result.error);
+      const result = await withWriteTimeout(
+        createGroup(createClient(), {
+          orgId,
+          name,
+          description: description.trim() ? description.trim() : null,
+          colour,
+          groupType,
+        }),
+      );
+      if (result.error) throw new HumanError(result.error);
     },
     onSuccess: () => {
       router.push('/settings/groups');
       router.refresh();
     },
-    onError: (err: Error) => setError(err.message),
+    onError: (err: Error) => setError(toUserMessage(err, 'staff')),
   });
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {

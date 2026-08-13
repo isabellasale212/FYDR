@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { optOut } from '@/lib/queries/leaderboards';
+import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 
 type Props = { orgId: string; athleteId: string; userId: string; boardId: string; boardName: string };
 
@@ -16,11 +17,12 @@ export function LeaveLeaderboardButton({ orgId, athleteId, userId, boardId, boar
   const [error, setError] = useState<string | null>(null);
 
   const mutation = useMutation({
-    mutationFn: () => optOut(createClient(), orgId, athleteId, userId, boardId),
-    onSuccess: (result) => {
-      if (result.error) return setError(result.error);
-      router.push('/my-data/boards');
+    mutationFn: async () => {
+      const result = await withWriteTimeout(optOut(createClient(), orgId, athleteId, userId, boardId));
+      if (result.error) throw new Error(result.error);
     },
+    onSuccess: () => router.push('/my-data/boards'),
+    onError: (err) => setError(toUserMessage(err, 'athlete')),
   });
 
   return (

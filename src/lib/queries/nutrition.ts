@@ -1,4 +1,5 @@
 import type { NutritionCheckinInput } from '@/lib/validation/nutrition';
+import { humanizeDbError } from '@/lib/writeErrors';
 import type { Db } from './groups';
 
 /* screens/nutrition-checkin.md, screen 45. One question, three answers, once a
@@ -141,7 +142,8 @@ export async function reviseCheckin(
         error: 'This week has already been corrected once, or the window has closed.',
       };
     }
-    return { error: error.message };
+    /* Same rule as reviseWellnessEntry: never a raw driver string. */
+    return { error: humanizeDbError(error.message, 'athlete') };
   }
   return { error: null };
 }

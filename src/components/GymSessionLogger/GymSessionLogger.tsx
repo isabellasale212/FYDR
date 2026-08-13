@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { completeSessionLog, logSet, type LoggedSet, type ResolvedExercise } from '@/lib/queries/programmes';
+import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 
 type Props = {
   orgId: string;
@@ -92,32 +93,47 @@ export function GymSessionLogger({
   const doneCount = loggedSets.length;
   const pct = totalSets > 0 ? Math.round((doneCount / totalSets) * 100) : 0;
 
+  /* Both writes are bounded (ten seconds) and both have a real onError —
+   * before this, a thrown network failure showed nothing at all and a hung
+   * request pinned the tick button disabled forever (audit S5's shape,
+   * on the screen whose footer promises "sets save as you log them"). A
+   * failed set stays on screen as the next set to log: tapping the tick
+   * again is the retry. */
   const logMutation = useMutation({
-    mutationFn: (input: { programmeExerciseId: string; exerciseId: string; setNumber: number; reps: string; load: string }) =>
-      logSet(createClient(), orgId, {
-        gymSessionLogId,
-        programmeExerciseId: input.programmeExerciseId,
-        exerciseId: input.exerciseId,
-        setNumber: input.setNumber,
-        repsCompleted: input.reps.trim() === '' ? null : Number(input.reps),
-        loadKg: input.load.trim() === '' ? null : Number(input.load),
-        rpe: null,
-      }),
-    onSuccess: (result) => {
-      if (result.error) return setError(result.error);
+    mutationFn: async (input: { programmeExerciseId: string; exerciseId: string; setNumber: number; reps: string; load: string }) => {
+      const result = await withWriteTimeout(
+        logSet(createClient(), orgId, {
+          gymSessionLogId,
+          programmeExerciseId: input.programmeExerciseId,
+          exerciseId: input.exerciseId,
+          setNumber: input.setNumber,
+          repsCompleted: input.reps.trim() === '' ? null : Number(input.reps),
+          loadKg: input.load.trim() === '' ? null : Number(input.load),
+          rpe: null,
+        }),
+      );
+      if (result.error) throw new HumanError(result.error);
+    },
+    onSuccess: () => {
       setError(null);
       router.refresh();
     },
+    onError: (err) => setError(toUserMessage(err, 'athlete')),
   });
 
   const completeMutation = useMutation({
-    mutationFn: () => completeSessionLog(createClient(), gymSessionLogId, sessionRpe.trim() === '' ? null : Number(sessionRpe)),
-    onSuccess: (result) => {
-      if (result.error) return setError(result.error);
+    mutationFn: async () => {
+      const result = await withWriteTimeout(
+        completeSessionLog(createClient(), gymSessionLogId, sessionRpe.trim() === '' ? null : Number(sessionRpe)),
+      );
+      if (result.error) throw new HumanError(result.error);
+    },
+    onSuccess: () => {
       setError(null);
       router.push('/programme?submitted=gym');
       router.refresh();
     },
+    onError: (err) => setError(toUserMessage(err, 'athlete')),
   });
 
   function draftFor(exerciseId: string, prefillReps: string, prefillLoad: string) {

@@ -11,6 +11,7 @@ import {
   type RehabGroup,
   type RehabMember,
 } from '@/lib/queries/rehabGroups';
+import { humanizeDbError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { enumLabel, formatDate } from '@/lib/format';
 
 type Props = {
@@ -37,32 +38,35 @@ export function RehabGroupBoard({ orgId, userId, groups, members, canAllocate }:
 
   const allocMutation = useMutation({
     mutationFn: (input: { athleteId: string; groupId: string; phase: string | null }) =>
-      allocateToRehabGroup(createClient(), orgId, userId, input),
+      withWriteTimeout(allocateToRehabGroup(createClient(), orgId, userId, input)),
     onSuccess: (result) => {
-      if (result.error) return setError(result.error);
+      if (result.error) return setError(humanizeDbError(result.error, 'staff'));
       setError(null);
       router.refresh();
     },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   const removeMutation = useMutation({
-    mutationFn: (athleteId: string) => removeFromRehabGroup(createClient(), orgId, userId, athleteId),
+    mutationFn: (athleteId: string) => withWriteTimeout(removeFromRehabGroup(createClient(), orgId, userId, athleteId)),
     onSuccess: (result) => {
-      if (result.error) return setError(result.error);
+      if (result.error) return setError(humanizeDbError(result.error, 'staff'));
       setError(null);
       router.refresh();
     },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   const phaseMutation = useMutation({
     mutationFn: (input: { athleteId: string; phase: string | null }) =>
-      setRehabPhase(createClient(), orgId, userId, input.athleteId, input.phase),
+      withWriteTimeout(setRehabPhase(createClient(), orgId, userId, input.athleteId, input.phase)),
     onSuccess: (result) => {
-      if (result.error) return setError(result.error);
+      if (result.error) return setError(humanizeDbError(result.error, 'staff'));
       setError(null);
       setEditingPhaseFor(null);
       router.refresh();
     },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   function membersFor(groupId: string | null): RehabMember[] {

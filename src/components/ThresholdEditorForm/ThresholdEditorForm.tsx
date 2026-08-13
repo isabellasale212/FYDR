@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
+import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { createThreshold, type BaselineType, type ThresholdComparison } from '@/lib/queries/thresholds';
 import { METRIC_REGISTRY, getMetricInfo } from '@/lib/metrics';
 import type { AppRole } from '@/lib/types/database';
@@ -59,26 +60,28 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
       const magnitude = Number(value);
       const signedValue = comparison === 'z_score' && direction === 'below' ? -magnitude : magnitude;
 
-      const result = await createThreshold(createClient(), orgId, userId, {
-        name,
-        description: null,
-        domain: getMetricInfo(metric).domain,
-        metric,
-        comparison,
-        value: signedValue,
-        baseline_type: baselineType,
-        baseline_days: baselineType === 'absolute' ? null : Number(baselineDays),
-        consecutive_days: Number(consecutiveDays),
-        severity,
-        notify_roles: [...notifyRoles],
-      });
+      const result = await withWriteTimeout(
+        createThreshold(createClient(), orgId, userId, {
+          name,
+          description: null,
+          domain: getMetricInfo(metric).domain,
+          metric,
+          comparison,
+          value: signedValue,
+          baseline_type: baselineType,
+          baseline_days: baselineType === 'absolute' ? null : Number(baselineDays),
+          consecutive_days: Number(consecutiveDays),
+          severity,
+          notify_roles: [...notifyRoles],
+        }),
+      );
       if (result.error) throw new Error(result.error);
     },
     onSuccess: () => {
       router.push('/settings/thresholds');
       router.refresh();
     },
-    onError: (err: Error) => setError(err.message),
+    onError: (err: Error) => setError(toUserMessage(err, 'staff')),
   });
 
   function toggleRole(role: AppRole) {

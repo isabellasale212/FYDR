@@ -10,6 +10,7 @@ import {
   type AttendanceStatus,
   type TimetableSession,
 } from '@/lib/queries/timetable';
+import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { enumLabel, formatTime, mdLabel } from '@/lib/format';
 
 type Props = {
@@ -27,6 +28,22 @@ const SEGMENTS: { value: AttendanceStatus; label: string }[] = [
   { value: 'excused', label: 'Exc' },
 ];
 
+type MarkInput = {
+  athleteId: string;
+  status: AttendanceStatus;
+  modifiedReason: string | null;
+  overrideReason?: string;
+};
+
+/** A failed write, kept with everything needed to try it again. Audit S5 /
+ *  coach finding 11: an attendance write once failed with the control
+ *  silently snapping back and a raw Postgres string in a hidden region —
+ *  this state exists so the failure is instead shown in plain English next
+ *  to the exact control that snapped back, with a working retry. */
+type WriteFailure =
+  | { kind: 'mark'; input: MarkInput; message: string }
+  | { kind: 'bulk'; athleteIds: string[]; message: string };
+
 /** screens/timetable.md's AttendanceControl + RestrictionWarning, reduced to
  *  this app's existing web patterns (no BottomSheet/ConfirmSheet component
  *  exists here) — an inline override panel stands in for the doc's
@@ -41,27 +58,42 @@ export function TimetableSessionCard({ orgId, userId, actorRole, session, defaul
   const [reasonDrafts, setReasonDrafts] = useState<Record<string, string>>({});
   const [overrideFor, setOverrideFor] = useState<string | null>(null);
   const [overrideReason, setOverrideReason] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [failure, setFailure] = useState<WriteFailure | null>(null);
 
+  /* Both writes are bounded (ten seconds) and both have a real onError: a
+   * thrown network failure and a returned Postgres error end in the same
+   * place — a visible, human sentence with a retry — never a silent
+   * snap-back. */
   const markMutation = useMutation({
-    mutationFn: (input: { athleteId: string; status: AttendanceStatus; modifiedReason: string | null; overrideReason?: string }) =>
-      recordAttendance(createClient(), orgId, userId, actorRole, { sessionId: session.id, ...input }),
-    onSuccess: (result) => {
-      if (result.error) return setError(result.error);
-      setError(null);
+    mutationFn: async (input: MarkInput) => {
+      const result = await withWriteTimeout(
+        recordAttendance(createClient(), orgId, userId, actorRole, { sessionId: session.id, ...input }),
+      );
+      if (result.error) throw new HumanError(result.error);
+    },
+    onSuccess: () => {
+      setFailure(null);
       setOverrideFor(null);
       setOverrideReason('');
       router.refresh();
     },
+    onError: (err, input) =>
+      setFailure({ kind: 'mark', input, message: toUserMessage(err, 'staff') }),
   });
 
   const bulkMutation = useMutation({
-    mutationFn: (athleteIds: string[]) => bulkMarkPresent(createClient(), orgId, userId, session.id, athleteIds),
-    onSuccess: (result) => {
-      if (result.error) return setError(result.error);
-      setError(null);
+    mutationFn: async (athleteIds: string[]) => {
+      const result = await withWriteTimeout(
+        bulkMarkPresent(createClient(), orgId, userId, session.id, athleteIds),
+      );
+      if (result.error) throw new HumanError(result.error);
+    },
+    onSuccess: () => {
+      setFailure(null);
       router.refresh();
     },
+    onError: (err, athleteIds) =>
+      setFailure({ kind: 'bulk', athleteIds, message: toUserMessage(err, 'staff') }),
   });
 
   const marked = session.participants.filter((p) => p.attendance !== null).length;
@@ -159,9 +191,17 @@ export function TimetableSessionCard({ orgId, userId, actorRole, session, defaul
                 </div>
               ) : null}
 
-              {error ? (
+              {failure?.kind === 'bulk' ? (
                 <p className="form-error" role="alert" style={{ margin: '0 18px 10px' }}>
-                  {error}
+                  {failure.message}{' '}
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    disabled={bulkMutation.isPending}
+                    onClick={() => bulkMutation.mutate(failure.athleteIds)}
+                  >
+                    Try again
+                  </button>
                 </p>
               ) : null}
 
@@ -214,6 +254,19 @@ export function TimetableSessionCard({ orgId, userId, actorRole, session, defaul
                             ))}
                           </div>
                         </div>
+                        {failure?.kind === 'mark' && failure.input.athleteId === p.athlete_id ? (
+                          <p className="form-error" role="alert" style={{ marginTop: 6 }}>
+                            {failure.message}{' '}
+                            <button
+                              type="button"
+                              className="btn-ghost"
+                              disabled={markMutation.isPending}
+                              onClick={() => markMutation.mutate(failure.input)}
+                            >
+                              Try again
+                            </button>
+                          </p>
+                        ) : null}
                         {p.restrictions.length > 0 ? (
                           <p className="tiny" style={{ marginTop: 4 }}>
                             {p.restrictions.join(' · ')}

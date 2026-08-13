@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { createTestDefinition } from '@/lib/queries/testing';
+import { humanizeDbError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import type { SideMode, TestCategory } from '@/lib/types/database';
 import { enumLabel } from '@/lib/format';
 
@@ -22,21 +23,24 @@ export function TestDefinitionForm({ orgId }: { orgId: string }) {
 
   const mutation = useMutation({
     mutationFn: () =>
-      createTestDefinition(createClient(), orgId, {
-        name,
-        testCategory,
-        unit,
-        higherIsBetter,
-        sideMode,
-        defaultAttempts: Number(defaultAttempts) || 1,
-      }),
+      withWriteTimeout(
+        createTestDefinition(createClient(), orgId, {
+          name,
+          testCategory,
+          unit,
+          higherIsBetter,
+          sideMode,
+          defaultAttempts: Number(defaultAttempts) || 1,
+        }),
+      ),
     onSuccess: (result) => {
-      if (result.error) return setError(result.error);
+      if (result.error) return setError(humanizeDbError(result.error, 'staff'));
       setError(null);
       setName('');
       setUnit('');
       router.refresh();
     },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   return (

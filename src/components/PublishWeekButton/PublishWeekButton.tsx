@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { publishWeek } from '@/lib/queries/teamAllocation';
+import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 
 type Props = { orgId: string; userId: string; weekStart: string; draftCount: number };
 
@@ -15,12 +16,13 @@ export function PublishWeekButton({ orgId, userId, weekStart, draftCount }: Prop
   const [error, setError] = useState<string | null>(null);
 
   const mutation = useMutation({
-    mutationFn: () => publishWeek(createClient(), orgId, userId, weekStart),
+    mutationFn: () => withWriteTimeout(publishWeek(createClient(), orgId, userId, weekStart)),
     onSuccess: (result) => {
       if (result.error) return setError(result.error);
       setError(null);
       router.refresh();
     },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   if (draftCount === 0) return null;

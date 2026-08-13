@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
+import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { createLeaderboard, type MetricDefinition } from '@/lib/queries/leaderboards';
 import type { Group } from '@/lib/queries/groups';
 
@@ -52,23 +53,30 @@ export function LeaderboardBuilderForm({ orgId, userId, catalogue, groups }: Pro
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const result = await createLeaderboard(createClient(), orgId, userId, {
-        name,
-        metricKey,
-        aggregation,
-        populationType,
-        groupId: populationType === 'group' ? groupId : null,
-        windowType,
-        windowDays: windowType === 'days' ? 28 : null,
-        visibility,
-      });
+      const result = await withWriteTimeout(
+        createLeaderboard(createClient(), orgId, userId, {
+          name,
+          metricKey,
+          aggregation,
+          populationType,
+          groupId: populationType === 'group' ? groupId : null,
+          windowType,
+          windowDays: windowType === 'days' ? 28 : null,
+          visibility,
+        }),
+      );
       if (result.error) throw new Error(result.error);
       return result.id;
     },
     onSuccess: (id) => {
-      if (id) router.push(`/leaderboards/${id}`);
+      if (id) {
+        router.push(`/leaderboards/${id}`);
+        return;
+      }
+      /* No error and no id used to do nothing at all — a silent no-op. */
+      setError('That didn’t save. Try again in a moment.');
     },
-    onError: (err: Error) => setError(err.message),
+    onError: (err: Error) => setError(toUserMessage(err, 'staff')),
   });
 
   function selectMetric(key: string) {

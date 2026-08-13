@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { createProgramme } from '@/lib/queries/programmes';
+import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import type { ProgrammeType } from '@/lib/types/database';
 
 type Props = { orgId: string; userId: string; isCoach: boolean; isMedical: boolean };
@@ -20,19 +21,26 @@ export function ProgrammeForm({ orgId, userId, isCoach, isMedical }: Props) {
 
   const mutation = useMutation({
     mutationFn: () =>
-      createProgramme(createClient(), orgId, userId, {
-        name,
-        programmeType,
-        goal: goal.trim() || null,
-        durationWeeks: durationWeeks.trim() === '' ? null : Number(durationWeeks),
-      }),
+      withWriteTimeout(
+        createProgramme(createClient(), orgId, userId, {
+          name,
+          programmeType,
+          goal: goal.trim() || null,
+          durationWeeks: durationWeeks.trim() === '' ? null : Number(durationWeeks),
+        }),
+      ),
     onSuccess: (result) => {
       if (result.error) return setError(result.error);
       if (result.id) {
         router.push(`/programmes/${result.id}`);
         router.refresh();
+        return;
       }
+      /* Neither an error nor an id used to fall through to nothing at all —
+         a silent no-op success. Say something true instead. */
+      setError('That didn’t save. Try again in a moment.');
     },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   return (

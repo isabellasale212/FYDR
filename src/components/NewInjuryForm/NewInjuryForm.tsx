@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
+import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { createInjury } from '@/lib/queries/injuries';
 import { todayIso } from '@/lib/format';
 import type { BodySide, OccurrenceContext } from '@/lib/types/database';
@@ -36,21 +37,28 @@ export function NewInjuryForm({ orgId, userId, timezone, athletes }: Props) {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const result = await createInjury(createClient(), orgId, userId, {
-        athleteId,
-        bodyArea,
-        side: (side || null) as BodySide | null,
-        onsetDate,
-        occurredIn: (occurredIn || null) as OccurrenceContext | null,
-        expectedReturn: expectedReturn || null,
-      });
+      const result = await withWriteTimeout(
+        createInjury(createClient(), orgId, userId, {
+          athleteId,
+          bodyArea,
+          side: (side || null) as BodySide | null,
+          onsetDate,
+          occurredIn: (occurredIn || null) as OccurrenceContext | null,
+          expectedReturn: expectedReturn || null,
+        }),
+      );
       if (result.error) throw new Error(result.error);
       return result.id;
     },
     onSuccess: (id) => {
-      if (id) router.push(`/injuries/${id}`);
+      if (id) {
+        router.push(`/injuries/${id}`);
+        return;
+      }
+      /* No error and no id used to do nothing at all — a silent no-op. */
+      setError('That didn’t save. Try again in a moment.');
     },
-    onError: (err: Error) => setError(err.message),
+    onError: (err: Error) => setError(toUserMessage(err, 'staff')),
   });
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {

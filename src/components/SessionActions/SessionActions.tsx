@@ -10,6 +10,7 @@ import {
   deleteSession,
   type SessionDetail,
 } from '@/lib/queries/schedule';
+import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 
 type Props = { orgId: string; session: SessionDetail };
 
@@ -27,10 +28,15 @@ export function SessionActions({ orgId, session }: Props) {
 
   const toggleCancelled = useMutation({
     mutationFn: () =>
-      cancelled
-        ? reinstateSession(createClient(), orgId, session.id)
-        : cancelSession(createClient(), orgId, session.id),
+      withWriteTimeout(
+        cancelled
+          ? reinstateSession(createClient(), orgId, session.id)
+          : cancelSession(createClient(), orgId, session.id),
+      ),
     onSuccess: (result) => {
+      /* result.error is already written for the screen — schedule.ts
+         humanizes raw driver errors and keeps its own bespoke guidance
+         ("This session has recorded data. Cancel it instead."). */
       if (result.error) {
         setActionError(result.error);
         return;
@@ -38,10 +44,11 @@ export function SessionActions({ orgId, session }: Props) {
       setActionError(null);
       router.refresh();
     },
+    onError: (err) => setActionError(toUserMessage(err, 'staff')),
   });
 
   const remove = useMutation({
-    mutationFn: () => deleteSession(createClient(), orgId, session.id),
+    mutationFn: () => withWriteTimeout(deleteSession(createClient(), orgId, session.id)),
     onSuccess: (result) => {
       if (result.error) {
         setActionError(result.error);
@@ -49,6 +56,10 @@ export function SessionActions({ orgId, session }: Props) {
         return;
       }
       router.push('/schedule');
+    },
+    onError: (err) => {
+      setActionError(toUserMessage(err, 'staff'));
+      setConfirmingDelete(false);
     },
   });
 

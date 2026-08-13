@@ -1,5 +1,6 @@
 import type { WellnessEntryRow } from '@/lib/types/database';
 import type { WellnessEntryInput } from '@/lib/validation/wellness';
+import { humanizeDbError } from '@/lib/writeErrors';
 import { readiness, rollingBand, type Band, type Point } from '@/lib/stats';
 import type { Db } from './groups';
 
@@ -150,7 +151,9 @@ export async function reviseWellnessEntry(
           'This entry has already been corrected once, or no longer exists. Refresh to see the latest.',
       };
     }
-    return { error: error.message };
+    /* Anything else is humanized here so no caller can leak a raw driver
+       string to a screen (audit S5). */
+    return { error: humanizeDbError(error.message, 'athlete') };
   }
   return { error: null };
 }

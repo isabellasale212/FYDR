@@ -1,3 +1,4 @@
+import { humanizeDbError } from '@/lib/writeErrors';
 import type { Db } from './groups';
 
 /* screens/nutrition-plans.md and screens/nutrition-guidance.md, cut down hard to
@@ -168,7 +169,8 @@ export async function createTarget(
             : 'Only coaching staff can set a group or squad-wide target.',
       };
     }
-    return { error: error.message };
+    /* Raw driver strings never leave this file — audit S5. */
+    return { error: humanizeDbError(error.message, 'staff') };
   }
   return { error: null };
 }
@@ -182,7 +184,7 @@ export async function expireTarget(db: Db, orgId: string, id: string): Promise<{
     .eq('org_id', orgId)
     .eq('id', id)
     .is('effective_to', null);
-  return { error: error?.message ?? null };
+  return { error: error ? humanizeDbError(error.message, 'staff') : null };
 }
 
 export type ResolvedTarget = {

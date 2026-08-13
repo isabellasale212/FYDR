@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { createTarget, type TargetScope } from '@/lib/queries/nutritionTargets';
+import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { mdLabel, todayIso } from '@/lib/format';
 
 type Athlete = { id: string; first_name: string; last_name: string };
@@ -41,7 +42,8 @@ export function NutritionTargetForm({ orgId, userId, athletes, groups, canPickAn
 
   const mutation = useMutation({
     mutationFn: () =>
-      createTarget(createClient(), orgId, userId, {
+      withWriteTimeout(
+        createTarget(createClient(), orgId, userId, {
         scope,
         athleteId: scope === 'athlete' ? athleteId : null,
         groupId: scope === 'group' ? groupId : null,
@@ -51,14 +53,16 @@ export function NutritionTargetForm({ orgId, userId, athletes, groups, canPickAn
         carbsG: carbsG.trim() === '' ? null : Number(carbsG),
         fatG: fatG.trim() === '' ? null : Number(fatG),
         fluidMl: fluidMl.trim() === '' ? null : Number(fluidMl),
-        reason: reason.trim() || null,
-        effectiveFrom: todayIso(),
-      }),
+          reason: reason.trim() || null,
+          effectiveFrom: todayIso(),
+        }),
+      ),
     onSuccess: (result) => {
       if (result.error) return setError(result.error);
       router.push('/nutrition');
       router.refresh();
     },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   return (

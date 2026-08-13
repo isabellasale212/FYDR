@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { setFixtureStatus, type FixtureDetail } from '@/lib/queries/schedule';
+import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 
 type Props = { orgId: string; fixture: FixtureDetail };
 
@@ -25,16 +26,15 @@ export function FixtureActions({ orgId, fixture }: Props) {
   const [actionError, setActionError] = useState<string | null>(null);
 
   const mutation = useMutation({
-    mutationFn: (status: FixtureDetail['status']) =>
-      setFixtureStatus(createClient(), orgId, fixture.id, status),
-    onSuccess: (result) => {
-      if (result.error) {
-        setActionError(result.error);
-        return;
-      }
+    mutationFn: async (status: FixtureDetail['status']) => {
+      const result = await withWriteTimeout(setFixtureStatus(createClient(), orgId, fixture.id, status));
+      if (result.error) throw new HumanError(result.error);
+    },
+    onSuccess: () => {
       setActionError(null);
       router.refresh();
     },
+    onError: (err) => setActionError(toUserMessage(err, 'staff')),
   });
 
   const options: FixtureDetail['status'][] =

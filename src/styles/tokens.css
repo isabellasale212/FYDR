@@ -173,13 +173,10 @@
    it live, not against the spec's own (light-only) mockup.
    --------------------------------------------------------------------------- */
 :root {
-  /* "Two text colours exist only for contrast on tint... never #f6ab2f as
-     text": a rank-1 marker sitting on its own coloured band, and a warn-toned
-     shortfall sitting on plain white — both darker than the existing
-     --warn-text/--warn-pill-text derivations, which are for a different
-     surface (a status pill's own tint, or plain body text). */
+  /* Rank-1's marker sits on its own coloured band (the accent tint) — darker
+     than the existing --warn-text/--warn-pill-text derivations, which are
+     for a different surface (a status pill's own tint, or plain body text). */
   --lb-rank1: #7a6205;
-  --lb-warn-on-white: #b07d0a;
   /* The Standard lens's "met" checkmark. Coincidentally the same literal
      value as ATHLETE-APP-SPEC.md's .phone --good-text override in this same
      file — declared independently here since this is the staff surface, not
@@ -197,6 +194,24 @@
      and this component's own LEGEND) at the alpha the spec's light mockup
      used. Unchanged here — dark's override below is the fix, not this value. */
   --lb-tint-alpha: 0.14;
+  /* Marker text (the Result lens's "#N" rank number, the Standard lens's
+     shortfall figure) that renders directly on the warn/bad tints above, not
+     on a plain surface. Audit finding: --faint and the old single-valued
+     --lb-warn-on-white/--bad measured 2.4–3.5:1 against those tints in BOTH
+     themes — below WCAG's 4.5:1 — because none of them were derived for this
+     specific composited background. The generic --warn-pill-text/
+     --bad-pill-text pair (tuned for a status pill's own tint) happens to
+     clear AA here too, but dark's --bad-pill-text only by 4.58:1 — too thin a
+     margin to reuse blind, so these get their own values instead. Unlike
+     --lb-rank1/--lb-standard-met above, theme-split: the tint itself flips
+     character with --lb-tint-alpha, a near-white wash in light (0.14 over
+     white --surf) but a dark, muddy fill in dark (0.24 over #171e36 --surf),
+     so one literal colour can't sit on both. Verified with getComputedStyle
+     luminance math against the actual composited background, not the raw
+     --warn-rgb/--bad-rgb: light 5.08:1 / 5.08:1, dark 5.16:1 / 5.03:1 — all
+     comfortably over 4.5:1. */
+  --lb-warn-tint-text: #8a601a;
+  --lb-bad-tint-text: #ab4035;
 }
 
 /* ---------------------------------------------------------------------------
@@ -257,6 +272,8 @@
   --group-plum: #c08fd2;
 
   --lb-tint-alpha: 0.24;
+  --lb-warn-tint-text: #f6ab2f;
+  --lb-bad-tint-text: #f5887d;
 }
 
 /* ---------------------------------------------------------------------------
@@ -382,6 +399,8 @@
     --group-plum: #c08fd2;
 
     --lb-tint-alpha: 0.24;
+    --lb-warn-tint-text: #f6ab2f;
+    --lb-bad-tint-text: #f5887d;
   }
 }
 

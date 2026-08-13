@@ -11,6 +11,7 @@ import {
   gainCell,
   rankAthletesInPool,
   rankBandColor,
+  rankMarkerColor,
   sparklinePath,
   standardCell,
   standardFor,
@@ -340,7 +341,7 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
                             <ValueCell
                               key={b.key}
                               marker={`#${rank.rank}`}
-                              markerColor={rank.rank === 1 ? 'var(--lb-rank1)' : 'var(--faint)'}
+                              markerColor={rankMarkerColor(rank.rank, rank.n)}
                               value={fmt(current, b.decimals)}
                               bg={rankBandColor(rank.rank, rank.n)}
                             />

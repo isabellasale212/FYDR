@@ -54,6 +54,22 @@ export function rankBandColor(rank: number, n: number): string {
   return 'rgb(var(--bad-rgb) / var(--lb-tint-alpha))';
 }
 
+/** Marker colour for the "#N" rank number `rankBandColor` paints a band behind. Mirrors
+ *  its own thresholds so the two never drift apart. Audit S8: --faint (the marker's old,
+ *  single colour for every non-#1 rank) measured 2.4–3.5:1 against the warn/bad bands
+ *  below WCAG's 4.5:1 in both themes — it was only ever contrast-checked against the
+ *  accent bands and plain surfaces it was designed for. --faint stays for the accent
+ *  bands here (2 top bands, still a light wash in both themes); --lb-warn-tint-text/
+ *  --lb-bad-tint-text (see tokens.css) take over once the band itself turns warn/bad. */
+export function rankMarkerColor(rank: number, n: number): string {
+  if (rank === 1) return 'var(--lb-rank1)';
+  if (n < 3) return 'var(--faint)';
+  const p = (n - rank) / (n - 1);
+  if (p >= 0.5) return 'var(--faint)';
+  if (p >= 0.2) return 'var(--lb-warn-tint-text)';
+  return 'var(--lb-bad-tint-text)';
+}
+
 // ---------------------------------------------------------------------------
 // Improvement / gain.
 // ---------------------------------------------------------------------------
@@ -131,10 +147,14 @@ export function standardCell(board: WallBoard, value: number | null, unitIndex: 
   if (met) {
     return { marker: '✓', markerColor: 'var(--lb-standard-met)', bg: 'rgb(var(--lb-standard-met-rgb) / 0.2)' };
   }
+  // Audit S8: this marker sits directly on the warn/bad rank tint, not a plain
+  // surface — --lb-warn-on-white/--bad measured 2.4–3.5:1 there in both themes
+  // (below WCAG's 4.5:1). --lb-warn-tint-text/--lb-bad-tint-text are derived
+  // specifically for that composited tint background; see tokens.css.
   const shortfall = `${diff > 0 ? '+' : '−'}${fmt(Math.abs(diff), board.decimals)}`;
   return close
-    ? { marker: shortfall, markerColor: 'var(--lb-warn-on-white)', bg: 'rgb(var(--warn-rgb) / var(--lb-tint-alpha))' }
-    : { marker: shortfall, markerColor: 'var(--bad)', bg: 'rgb(var(--bad-rgb) / var(--lb-tint-alpha))' };
+    ? { marker: shortfall, markerColor: 'var(--lb-warn-tint-text)', bg: 'rgb(var(--warn-rgb) / var(--lb-tint-alpha))' }
+    : { marker: shortfall, markerColor: 'var(--lb-bad-tint-text)', bg: 'rgb(var(--bad-rgb) / var(--lb-tint-alpha))' };
 }
 
 // ---------------------------------------------------------------------------

@@ -49,7 +49,6 @@
   --toast-text: #ffffff;
   --toast-link: #6f9bff;
   --tab-active: #6f9bff;
-  --tab-inactive: #4a5578;
   --node-empty-border: #313c60;
 
   /* §4.5 and §14.6. Channel triplets so a tint reads rgb(var(--x-rgb) / a).
@@ -137,6 +136,12 @@
   --bad-pill-text: #b31e1e;
   --highlight-pill-text: #7f6000;
 
+  /* Audit S7/finding 22: was single-valued in §2.2 at #4a5578 — 6.25:1 here in
+     light, but only 2.13:1 once the same literal rendered against dark's --bg
+     (measured live, athlete-app bottom tab bar text + its glyph's 2px border).
+     Theme-split like every other on-surface colour in this block instead. */
+  --tab-inactive: #4a5578;
+
   /* §14.1 focus, §14.4 skeleton. */
   --focus: #1f6fea;
   --skeleton: #eeeeef;
@@ -164,6 +169,8 @@
    table (the tints, the avatar pair, the gold pill) already matches an
    existing token exactly. Single-valued like --gym above: the spec renders
    one theme, so there is no separate dark-theme measurement to diverge from.
+   --lb-tint-alpha below is the one exception — audit S7/finding 51 measured
+   it live, not against the spec's own (light-only) mockup.
    --------------------------------------------------------------------------- */
 :root {
   /* "Two text colours exist only for contrast on tint... never #f6ab2f as
@@ -185,6 +192,11 @@
   /* The selected wall row's sticky name-cell background, a flat literal the
      spec gives directly rather than as a computed alpha-over-white tint. */
   --lb-row-selected: rgb(243 247 254);
+  /* The Result/Improvement/Standard lenses' warn and bad rank tints
+     (rgb(var(--warn-rgb) / var(--lb-tint-alpha)) etc. in leaderboardWallMath.ts
+     and this component's own LEGEND) at the alpha the spec's light mockup
+     used. Unchanged here — dark's override below is the fix, not this value. */
+  --lb-tint-alpha: 0.14;
 }
 
 /* ---------------------------------------------------------------------------
@@ -224,6 +236,12 @@
   --bad-pill-text: #ff7460;
   --highlight-pill-text: #f5c518;
 
+  /* 4.99:1 vs --bg, 4.94:1 vs --elev (live-measured) — comfortably over the
+     4.5:1 this text (and the glyph border it doubles as) needs, dimmer than
+     --muted so the active/inactive tab hierarchy still reads, closer in hue
+     to the light value above than a bare reuse of --muted would be. */
+  --tab-inactive: #8590bb;
+
   --focus: #33b6ff;
   --skeleton: #33394e;
 
@@ -237,6 +255,8 @@
   --group-magenta: #f08cc8;
   --group-steel: #7fb4c8;
   --group-plum: #c08fd2;
+
+  --lb-tint-alpha: 0.24;
 }
 
 /* ---------------------------------------------------------------------------
@@ -345,6 +365,8 @@
     --bad-pill-text: #ff7460;
     --highlight-pill-text: #f5c518;
 
+    --tab-inactive: #8590bb;
+
     --focus: #33b6ff;
     --skeleton: #33394e;
 
@@ -358,6 +380,8 @@
     --group-magenta: #f08cc8;
     --group-steel: #7fb4c8;
     --group-plum: #c08fd2;
+
+    --lb-tint-alpha: 0.24;
   }
 }
 

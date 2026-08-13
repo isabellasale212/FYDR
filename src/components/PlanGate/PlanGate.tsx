@@ -49,7 +49,7 @@ export function PlanGate({ featureName, body, metadata }: Props) {
               flex: 'none',
             }}
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="var(--highlight-text)" strokeWidth="1.5">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="var(--highlight-pill-text)" strokeWidth="1.5">
               <rect x="2.4" y="6" width="9.2" height="7" rx="1.6" />
               <path d="M4.6 6V4.2a2.4 2.4 0 0 1 4.8 0V6" />
             </svg>

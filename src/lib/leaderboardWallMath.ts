@@ -50,8 +50,8 @@ export function rankBandColor(rank: number, n: number): string {
   const p = (n - rank) / (n - 1);
   if (p >= 0.8) return 'rgb(var(--accent-rgb) / 0.22)';
   if (p >= 0.5) return 'rgb(var(--accent-rgb) / 0.1)';
-  if (p >= 0.2) return 'rgb(var(--warn-rgb) / 0.14)';
-  return 'rgb(var(--bad-rgb) / 0.14)';
+  if (p >= 0.2) return 'rgb(var(--warn-rgb) / var(--lb-tint-alpha))';
+  return 'rgb(var(--bad-rgb) / var(--lb-tint-alpha))';
 }
 
 // ---------------------------------------------------------------------------
@@ -92,7 +92,7 @@ export function gainCell(board: WallBoard, current: number | null, first: number
     return { value, mark, fg: 'var(--faint)', bg: 'var(--hair)', sortValue: gain };
   }
   if (gain < 0) {
-    return { value, mark, fg: null, bg: 'rgb(var(--bad-rgb) / 0.14)', sortValue: gain };
+    return { value, mark, fg: null, bg: 'rgb(var(--bad-rgb) / var(--lb-tint-alpha))', sortValue: gain };
   }
   const clear = gain > board.typicalError * 2.5;
   return {
@@ -133,8 +133,8 @@ export function standardCell(board: WallBoard, value: number | null, unitIndex: 
   }
   const shortfall = `${diff > 0 ? '+' : '−'}${fmt(Math.abs(diff), board.decimals)}`;
   return close
-    ? { marker: shortfall, markerColor: 'var(--lb-warn-on-white)', bg: 'rgb(var(--warn-rgb) / 0.14)' }
-    : { marker: shortfall, markerColor: 'var(--bad)', bg: 'rgb(var(--bad-rgb) / 0.14)' };
+    ? { marker: shortfall, markerColor: 'var(--lb-warn-on-white)', bg: 'rgb(var(--warn-rgb) / var(--lb-tint-alpha))' }
+    : { marker: shortfall, markerColor: 'var(--bad)', bg: 'rgb(var(--bad-rgb) / var(--lb-tint-alpha))' };
 }
 
 // ---------------------------------------------------------------------------

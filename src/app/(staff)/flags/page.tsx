@@ -71,7 +71,9 @@ export default async function FlagsPage({
         <p className="sub" style={{ margin: 0 }}>
           {flags.length === 0
             ? 'No open flags.'
-            : `${flags.length} open flag${flags.length === 1 ? '' : 's'}, most severe first.`}
+            : `${flags.length} open flag${flags.length === 1 ? '' : 's'}, most severe first · ${
+                flags.filter((f) => f.status === 'raised' || f.status === 'notified').length
+              } awaiting acknowledgement.`}
         </p>
 
         {flags.length === 0 ? (

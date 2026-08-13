@@ -147,21 +147,40 @@ export function describeThreshold(t: Pick<Threshold, 'metric' | 'comparison' | '
         ? "the squad's average that day"
         : null;
 
-  /* z_score is inherently relative to a distribution, so the baseline reads
-   * naturally appended straight after "below"/"above" with no connector:
-   * "1.5 standard deviations below the athlete's own 28-day average". Every
-   * other comparison names a value first ("above 1.3", "drops by 20%") and
-   * needs an explicit "against" to avoid reading as two unrelated clauses
-   * mashed together — the bug this replaced: "above 1.3 the athlete's own
-   * 28-day average" is not a sentence. */
-  const baseline =
+  /* What the baseline actually does depends on the comparison — this
+   * sentence must render what the rule EVALUATES (screens/thresholds.md's
+   * own evaluation SQL), not decorate every rule with the same connector.
+   * The audit (S1, analysis finding 46) caught the previous version
+   * claiming "above 1.3, against the athlete's own 28-day average", which
+   * reads as a personal-relative trip condition when an `above`/`below`
+   * rule is an absolute cutoff whatever its baseline_type: per that SQL,
+   * `above` fires on `value > p_value`, full stop. For those comparisons a
+   * non-absolute baseline only (a) gates firing behind
+   * min_baseline_observations and (b) supplies the "vs his 28-day norm"
+   * context recorded on each flag — so the sentence now says exactly that.
+   * z_score and pct_change genuinely evaluate against the baseline, and
+   * keep it inside the trip clause. */
+  if (t.comparison === 'z_score') {
+    return `Fires when ${rule}${baselineFragment ? ` ${baselineFragment}` : ''}, for ${days} running.`;
+  }
+  if (t.comparison === 'pct_change_below' || t.comparison === 'pct_change_above') {
+    return `Fires when ${rule}${baselineFragment ? ` against ${baselineFragment}` : ''}, for ${days} running.`;
+  }
+  const context =
     baselineFragment === null
       ? ''
-      : t.comparison === 'z_score'
-        ? ` ${baselineFragment}`
-        : `, against ${baselineFragment}`;
+      : ` The cutoff is absolute; ${baselineFragment} is recorded on each flag for context.`;
+  return `Fires when ${rule}, for ${days} running.${context}`;
+}
 
-  return `Fires when ${rule}${baseline}, for ${days} running.`;
+/** The org's active ACWR flag rule, from an already-fetched threshold list —
+ *  the real "flags above X" number every surface must quote instead of a
+ *  hardcoded constant (audit S1: the profile said "flags above 1.50" while
+ *  the seeded rule fires above 1.30). Null when no active rule exists,
+ *  which callers must render as "no flag rule active", never as a made-up
+ *  number. */
+export function findActiveAcwrThreshold(thresholds: readonly Threshold[]): Threshold | null {
+  return thresholds.find((t) => t.metric === 'load.acwr' && t.is_active) ?? null;
 }
 
 /** Soft delete: deleted_at, never a row removal — there is no delete grant

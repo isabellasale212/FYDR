@@ -1,4 +1,5 @@
 import type { FixtureRow, SessionRow } from '@/lib/types/database';
+import { anchorMdOffsetsToWeek } from '@/lib/format';
 import { fetchGroupAthleteIds, type Db } from './groups';
 
 export type Session = Pick<
@@ -284,7 +285,13 @@ export function mondayOf(dateIso: string): string {
  *  formula on the date. Org-wide, no participant filtering: the week strip
  *  labels the day, not "does this athlete train that day", and two
  *  sessions landing on the same real date always carry the same md_offset
- *  by construction, so the last one written per day is as good as any. */
+ *  by construction, so the last one written per day is as good as any.
+ *
+ *  Offsets are re-anchored to this week's OWN matchday
+ *  (anchorMdOffsetsToWeek, format.ts): a stored md_offset counts toward
+ *  whichever fixture the session was created against, which for a
+ *  historical week can be a fixture in a later week — the audit caught an
+ *  actual matchday labelled "MD-7" that way. */
 export async function fetchWeekMdLabels(
   db: Db,
   orgId: string,
@@ -295,11 +302,18 @@ export async function fetchWeekMdLabels(
   const to = `${weekEndDate.toISOString().slice(0, 10)}T23:59:59.999Z`;
 
   const sessions = await fetchSessionsBetween(db, orgId, `${weekStart}T00:00:00Z`, to);
-  const byDate = new Map<string, number | null>();
+  const byDate = new Map<string, { isMatch: boolean; storedMdOffset: number | null }>();
   for (const s of sessions) {
-    byDate.set(s.starts_at.slice(0, 10), s.md_offset);
+    const date = s.starts_at.slice(0, 10);
+    const cur = byDate.get(date) ?? { isMatch: false, storedMdOffset: null };
+    byDate.set(date, {
+      isMatch: cur.isMatch || s.session_type === 'match',
+      storedMdOffset: s.md_offset ?? cur.storedMdOffset,
+    });
   }
-  return byDate;
+  return anchorMdOffsetsToWeek(
+    [...byDate.entries()].map(([date, v]) => ({ date, isMatch: v.isMatch, storedMdOffset: v.storedMdOffset })),
+  );
 }
 
 export async function fetchWeekSessions(

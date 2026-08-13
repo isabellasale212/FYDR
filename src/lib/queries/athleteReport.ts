@@ -1,3 +1,4 @@
+import { ACWR_ACUTE_WINDOW_DAYS, ACWR_CHRONIC_WINDOW_DAYS, computeAcwr, loadByDateFrom } from '@/lib/acwr';
 import type { Band } from '@/lib/stats';
 import { addDays, todayIso } from '@/lib/format';
 import { fetchAthlete, type AthleteProfile } from './squad';
@@ -112,9 +113,10 @@ export async function fetchAthleteReport(
   const from = addDays(today, -(periodDays - 1));
   // ACWR's chronic window is always a trailing 28 days regardless of the
   // report period selected, same as analytics.ts — a shorter view period
-  // would otherwise silently change what "chronic load" means.
-  const acwrFrom = addDays(today, -27);
-  const acuteFrom = addDays(today, -6);
+  // would otherwise silently change what "chronic load" means. Windows and
+  // computation are lib/acwr.ts's, the one shared definition.
+  const acwrFrom = addDays(today, -(ACWR_CHRONIC_WINDOW_DAYS - 1));
+  const acuteFrom = addDays(today, -(ACWR_ACUTE_WINDOW_DAYS - 1));
 
   const athlete = await fetchAthlete(db, orgId, athleteId);
   if (!athlete) return null;
@@ -165,17 +167,8 @@ export async function fetchAthleteReport(
   const dates = dateRange(from, periodDays);
   const wellness = wellnessSeries(wellnessEntries, dates, 'readiness', 14);
 
-  const loadByDate = new Map<string, number>();
-  for (const e of loadEntries.data ?? []) {
-    if (e.entry_date === null || e.session_load === null) continue;
-    loadByDate.set(e.entry_date, (loadByDate.get(e.entry_date) ?? 0) + e.session_load);
-  }
-  const daysWithData = loadByDate.size;
-  const suppressed = daysWithData < 21;
-  const chronic = suppressed ? null : [...loadByDate.values()].reduce((s, v) => s + v, 0) / 4;
-  const acute = suppressed
-    ? null
-    : [...loadByDate.entries()].filter(([d]) => d >= acuteFrom).reduce((s, [, v]) => s + v, 0);
+  const loadByDate = loadByDateFrom(loadEntries.data ?? []);
+  const { acute, chronic, acwr, suppressed, daysWithData } = computeAcwr(loadByDate, acuteFrom);
 
   const byDay: LoadDay[] = dates.map((d) => ({ date: d, load: loadByDate.get(d) ?? null }));
 
@@ -221,7 +214,7 @@ export async function fetchAthleteReport(
     load: {
       acute,
       chronic,
-      acwr: acute !== null && chronic !== null && chronic !== 0 ? acute / chronic : null,
+      acwr,
       suppressed,
       daysWithData,
       byDay,

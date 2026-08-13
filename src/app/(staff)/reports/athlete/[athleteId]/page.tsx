@@ -5,6 +5,7 @@ import { Pill } from '@/components/Pill/Pill';
 import { ReportPager } from '@/components/ReportPager/ReportPager';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { WellnessChart } from '@/components/WellnessChart/WellnessChart';
+import { acwrInsufficiencyNote, acwrSuppressedLabel } from '@/lib/acwr';
 import { fetchAthleteReport } from '@/lib/queries/athleteReport';
 import { recordReportView } from '@/lib/queries/reports';
 import { BLANK, ageFrom, enumLabel, formatDate, formatNumber, formatTime } from '@/lib/format';
@@ -217,8 +218,7 @@ export default async function AthleteReportPage({
                 </div>
                 {report.load.suppressed ? (
                   <p className="cap">
-                    Suppressed — only {report.load.daysWithData} of the trailing 28 days have a load entry, below the
-                    21-day minimum needed for a reliable ratio.
+                    {acwrSuppressedLabel(report.load.daysWithData)} — {acwrInsufficiencyNote(report.load.daysWithData)}
                   </p>
                 ) : null}
 

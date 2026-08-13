@@ -13,7 +13,7 @@ import {
   type GridSession,
   type NormalWeek,
 } from '@/lib/queries/schedule';
-import { decimalHourInTz, zonedTimeToUtcIso } from '@/lib/format';
+import { anchorMdOffsetsToWeek, decimalHourInTz, zonedTimeToUtcIso } from '@/lib/format';
 import {
   H0,
   H1,
@@ -167,6 +167,23 @@ export function ScheduleWorkspace({
   const effectiveById = useMemo(() => new Map(effective.map((s) => [s.id, s])), [effective]);
 
   // ---- per-day geometry (§5) ----
+  // MD labels re-anchored to this week's OWN matchday: a stored md_offset
+  // counts toward whichever fixture the session was created against, which
+  // for a historical week can be a later week's fixture — the audit caught
+  // an actual matchday header reading "MD-7" that way (see
+  // anchorMdOffsetsToWeek, format.ts — the same helper the dashboard and
+  // athlete week strips use, so all three agree).
+  const anchoredMd = anchorMdOffsetsToWeek(
+    days.map((date) => {
+      const daySessions = effective.filter((s) => s.dow === date);
+      return {
+        date,
+        isMatch: daySessions.some((s) => s.type === 'match'),
+        storedMdOffset: daySessions.find((s) => s.mdOffset !== null)?.mdOffset ?? null,
+      };
+    }),
+  );
+
   const dayColumns: DayColumn[] = [];
   let clashPairLabels: string[] = [];
   const clashedIds = new Set<string>();
@@ -232,7 +249,6 @@ export function ScheduleWorkspace({
     });
 
     const contactMins = daySessions.filter((s) => s.athleteIds.length > 0).reduce((sum, s) => sum + s.mins, 0);
-    const mdSession = daySessions.find((s) => s.mdOffset !== null);
     const dateObj = new Date(`${date}T12:00:00Z`);
 
     dayColumns.push({
@@ -242,7 +258,7 @@ export function ScheduleWorkspace({
       isToday: date === today,
       isPast: date < today,
       isMatch: daySessions.some((s) => s.type === 'match'),
-      mdOffset: mdSession?.mdOffset ?? null,
+      mdOffset: daySessions.length > 0 ? (anchoredMd.get(date) ?? null) : null,
       contactMins,
       blocks,
     });
@@ -267,7 +283,13 @@ export function ScheduleWorkspace({
           isPast: newDraft.dow < today,
         }
       : selectedEffective
-        ? { ...selectedEffective, isPast: selectedEffective.dow < today }
+        ? {
+            ...selectedEffective,
+            // Same per-week anchoring as the day header above it — the
+            // panel must never say "MD-7" under a column header saying "MD".
+            mdOffset: anchoredMd.get(selectedEffective.dow) ?? selectedEffective.mdOffset,
+            isPast: selectedEffective.dow < today,
+          }
         : null;
 
   function selectSession(id: string) {

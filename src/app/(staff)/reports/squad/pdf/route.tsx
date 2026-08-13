@@ -1,4 +1,5 @@
 import { renderToBuffer } from '@react-pdf/renderer';
+import { ACWR_BAND_TEXT, acwrInsufficiencyNote, acwrSquadHeadline, acwrSuppressedLabel } from '@/lib/acwr';
 import { fetchSquadWeeklyReport } from '@/lib/queries/squadWeeklyReport';
 import { recordReportView } from '@/lib/queries/reports';
 import { parseGroupParam } from '@/lib/groupFilter';
@@ -35,9 +36,9 @@ export async function GET(request: Request) {
         <PdfTile label="Available today" value={report.tiles.availablePct === null ? '—' : `${report.tiles.availablePct}%`} />
         <PdfTile label="Open flags" value={String(report.tiles.openFlagCount)} tone={report.tiles.openFlagCount > 0 ? 'warn' : undefined} />
         <PdfTile
-          label="ACWR outside 0.8–1.5"
-          value={String(report.tiles.acwrFlaggedCount)}
-          tone={report.tiles.acwrFlaggedCount > 0 ? 'bad' : undefined}
+          label={`ACWR outside ${ACWR_BAND_TEXT} (${acwrSquadHeadline(report.tiles.acwr.outsideBand, report.tiles.acwr.computable, report.tiles.acwr.suppressed)})`}
+          value={report.tiles.acwr.computable === 0 ? '—' : String(report.tiles.acwr.outsideBand)}
+          tone={report.tiles.acwr.outsideBand > 0 ? 'bad' : undefined}
         />
       </PdfTileRow>
 
@@ -55,7 +56,7 @@ export async function GET(request: Request) {
 
       <PdfSectionTitle
         title="Load, weekly per athlete"
-        caption="ACWR distribution, worst first. 0.8 and 1.5 are the reference lines used everywhere the ratio appears."
+        caption={`ACWR distribution, worst first. ${ACWR_BAND_TEXT} is the descriptive band used everywhere the ratio appears; the flag rule itself is set on the Thresholds screen. ${acwrInsufficiencyNote()}`}
       />
       <PdfTable
         emptyText="No athlete in this filter."
@@ -69,7 +70,7 @@ export async function GET(request: Request) {
             label: 'ACWR',
             width: '20%',
             align: 'right',
-            render: (r) => (r.acwr === null ? (r.suppressed ? 'suppressed' : '—') : formatNumber(r.acwr, 2)),
+            render: (r) => (r.acwr === null ? (r.suppressed ? acwrSuppressedLabel(r.days_with_data) : '—') : formatNumber(r.acwr, 2)),
           },
         ]}
       />

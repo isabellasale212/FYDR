@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { acwrSuppressedLabel } from '@/lib/acwr';
 import { csvResponse, toCsv } from '@/lib/csv';
 import { fetchAthleteReport } from '@/lib/queries/athleteReport';
 import { recordReportView } from '@/lib/queries/reports';
@@ -62,7 +63,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
   const caption =
     `# Athlete report, ${athlete.first_name} ${athlete.last_name}, ${report.from} to ${report.to}. ` +
     `Compliance ${compliancePct === null ? 'n/a' : `${compliancePct}%`}, ` +
-    `ACWR ${report.load.acwr === null ? 'suppressed' : formatNumber(report.load.acwr, 2)}, ` +
+    `ACWR ${report.load.acwr === null ? acwrSuppressedLabel(report.load.daysWithData) : formatNumber(report.load.acwr, 2)}, ` +
     `${openFlags.length} open flag${openFlags.length === 1 ? '' : 's'}, ` +
     `programme(s): ${currentProgrammes.length > 0 ? currentProgrammes.map((p) => p.name).join('; ') : 'none'}.\r\n\r\n` +
     `# Daily readiness and session load\r\n`;

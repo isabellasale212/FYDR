@@ -1,9 +1,9 @@
 import { fetchCurrentAvailability, fetchNotFullyAvailable } from './availability';
-import { fetchDashboardAttention, type AttentionRow } from './flags';
+import { fetchDashboardAttention, type AttentionRow, type DashboardAttention } from './flags';
 import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchNextFixture, fetchWeekSessions, mondayOf, type WeekSession } from './schedule';
 import { fetchTimetableDay } from './timetable';
-import { mdLabel } from '../format';
+import { anchorMdOffsetsToWeek, formatTime, mdLabel } from '../format';
 
 /* DASHBOARD-SPEC.md, the coach's 07:00 screen. Every section here composes
  * real, already-shipped query functions (schedule, availability,
@@ -114,6 +114,20 @@ export async function fetchWeekStrip(
     flagsByDate.set(f.flag_date, list);
   }
 
+  // MD labels re-anchored to this week's OWN matchday — stored md_offset can
+  // count toward a later week's fixture (see anchorMdOffsetsToWeek).
+  const anchoredMd = anchorMdOffsetsToWeek(
+    Array.from({ length: 6 }, (_, i) => {
+      const date = addDays(weekStart, i);
+      const daySessions = byDate.get(date) ?? [];
+      return {
+        date,
+        isMatch: daySessions.some((s) => s.session_type === 'match'),
+        storedMdOffset: daySessions.find((s) => s.md_offset !== null)?.md_offset ?? null,
+      };
+    }),
+  );
+
   const days: DayStripCard[] = [];
   for (let i = 0; i < 6; i++) {
     const date = addDays(weekStart, i);
@@ -121,7 +135,7 @@ export async function fetchWeekStrip(
     const pips = daySessions.map((s) => s.session_type as SessionPip);
     const summary = [...new Set(daySessions.map((s) => s.title))].join(' · ') || 'Nothing scheduled';
     const flagsToday = flagsByDate.get(date) ?? [];
-    const md = daySessions.find((s) => s.md_offset !== null)?.md_offset ?? null;
+    const md = daySessions.length > 0 ? (anchoredMd.get(date) ?? null) : null;
 
     let alert: DayStripCard['alert'] = null;
     if (flagsToday.length > 0) {
@@ -195,6 +209,11 @@ export type HeadlineStats = {
   modifiedCount: number;
   unavailableCount: number;
   openFlags: number;
+  /** Of openFlags, still raised/notified — what the tile's sub-label counts
+   *  now that "unacknowledged" must mean unacknowledged (audit finding 3). */
+  awaitingAckFlags: number;
+  /** Severity counts across all open flags, shared with the panel summary. */
+  flagsBySeverity: DashboardAttention['bySeverity'];
   /** DashboardFlagsPanel's own real data — the same severity-ranked,
    *  athlete-aggregated rows fetchDashboardAttention already computed for
    *  openFlags below, at its real limit (5) rather than the 1 openFlags
@@ -211,6 +230,9 @@ export async function fetchHeadlineStats(
   orgId: string,
   groupIds: readonly string[],
   effectiveToday: string,
+  /** Real today: flag ages ("open 6 days") are wall-clock facts even when
+   *  the rest of the screen is anchored to the latest day with data. */
+  wallClockToday: string,
 ): Promise<HeadlineStats> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
 
@@ -237,7 +259,7 @@ export async function fetchHeadlineStats(
         return { expected: expected.length, submitted: entries.length };
       }),
     fetchFlagsByDateRange(db, orgId, groupIds, effectiveToday, effectiveToday),
-    fetchDashboardAttention(db, orgId, effectiveToday, groupIds),
+    fetchDashboardAttention(db, orgId, wallClockToday, groupIds),
     fetchNextFixture(db, orgId, `${effectiveToday}T00:00:00Z`),
     fetchWeekSessions(db, orgId, mondayOf(effectiveToday), groupIds),
   ]);
@@ -258,12 +280,16 @@ export async function fetchHeadlineStats(
   return {
     needYouCount: flaggedTodayIds.size,
     wellnessPct: wellnessExp.expected > 0 ? Math.round((100 * wellnessExp.submitted) / wellnessExp.expected) : null,
-    wellnessSub: `${wellnessExp.submitted} of ${wellnessExp.expected} today`,
+    // "today" only when the anchored day IS the real day — otherwise the
+    // banner has already named the day this number belongs to (audit S2).
+    wellnessSub: `${wellnessExp.submitted} of ${wellnessExp.expected}${effectiveToday === wallClockToday ? ' today' : ' that day'}`,
     availableCount: available,
     availableTotal: availRes.length,
     modifiedCount: modified,
     unavailableCount: unavailable,
     openFlags: attention.openTotal,
+    awaitingAckFlags: attention.awaitingAck,
+    flagsBySeverity: attention.bySeverity,
     attentionRows: attention.rows,
     toMatchdayDays,
     opponent: fixture?.opponent ?? null,
@@ -377,7 +403,10 @@ export async function fetchTimeline(
 
     return {
       id: s.id,
-      time: new Date(s.starts_at).toISOString().slice(11, 16),
+      // The org's wall-clock time, same formatter the timetable uses — the
+      // audit (S2, coach finding 6) caught this rendering the raw UTC
+      // digits (10:30) while the timetable said 11:30 for the same session.
+      time: formatTime(s.starts_at),
       name: s.title,
       groupLabel: 'Squad',
       where: [s.location, s.duration_min ? `${s.duration_min} min` : null].filter(Boolean).join(' · '),
@@ -385,7 +414,9 @@ export async function fetchTimeline(
       countLabel: 'clean',
       countState,
       tone: s.session_type as SessionPip,
-      past: new Date(`${date}T${new Date(s.starts_at).toISOString().slice(11, 16)}:00Z`) < new Date(nowIso),
+      // Real instants, straight comparison: a session is past when its
+      // start has passed the real clock, never a re-composed wall time.
+      past: Date.parse(s.starts_at) < Date.parse(nowIso),
       affected,
     };
   });

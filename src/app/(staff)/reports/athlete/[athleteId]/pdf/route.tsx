@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { renderToBuffer } from '@react-pdf/renderer';
+import { acwrSuppressedLabel } from '@/lib/acwr';
 import { fetchAthleteReport } from '@/lib/queries/athleteReport';
 import { recordReportView } from '@/lib/queries/reports';
 import { enumLabel, formatDate, formatNumber } from '@/lib/format';
@@ -36,7 +37,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
       <PdfTileRow>
         <PdfTile label="Compliance, this period" value={compliancePct === null ? '—' : `${compliancePct}%`} />
         <PdfTile label="Open flags" value={String(openFlags.length)} tone={openFlags.length > 0 ? 'warn' : undefined} />
-        <PdfTile label="ACWR" value={report.load.acwr === null ? (report.load.suppressed ? 'suppressed' : '—') : formatNumber(report.load.acwr, 2)} />
+        <PdfTile label="ACWR" value={report.load.acwr === null ? (report.load.suppressed ? acwrSuppressedLabel(report.load.daysWithData) : '—') : formatNumber(report.load.acwr, 2)} />
         <PdfTile label="Programme" value={currentProgrammes.length === 0 ? '—' : currentProgrammes.map((p) => p.name).join(', ')} />
       </PdfTileRow>
 

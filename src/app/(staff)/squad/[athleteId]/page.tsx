@@ -31,10 +31,13 @@ export const metadata = { title: 'Athlete · Fydr' };
  *
  *   §9 — ACWR is a ratio, not a percentage. Plotting it raw against an
  *   unbounded scale would mean the ring never means the same thing twice; it
- *   is instead plotted as a percentage of 1.50, the flag ceiling itself
- *   (playerProfile.ts's own ACWR_FLAG_CEILING), so a full ring always means
- *   "at the threshold" and the ACWR and Wellness dials share one visual
- *   scale. The centre text still shows the real, unscaled ratio.
+ *   is instead plotted as a percentage of the shared display band's top
+ *   (lib/acwr.ts's ACWR_BAND_HIGH, 1.5), so a full ring always means "at
+ *   the top of the band" and the ACWR and Wellness dials share one visual
+ *   scale. The centre text still shows the real, unscaled ratio. The
+ *   "flags above X" meta line quotes the org's real active threshold row
+ *   (acwr.flagRuleValue), never a hardcoded number — the audit (S1) caught
+ *   this page claiming 1.50 while the seeded rule fires above 1.30.
  *
  *   §11 — a missing value is an em dash, never a zero, everywhere on this
  *   page (this file's own EM_DASH/emDash(), not lib/format.ts's usual
@@ -42,8 +45,8 @@ export const metadata = { title: 'Athlete · Fydr' };
  *   aggregate states its sample
  *   (n=, "of 7 days", "players"). Benchmark percentiles are computed
  *   against the athlete's real positional group, never the whole squad.
- *   Nutrition is read-only here, and says so. ACWR's dial ring is the 1.50
- *   ceiling, not an arbitrary maximum. */
+ *   Nutrition is read-only here, and says so. ACWR's dial ring is the
+ *   shared band top (1.5), not an arbitrary maximum. */
 
 const TONE_VAR: Record<Tone, string> = {
   accent: 'var(--accent)',
@@ -363,7 +366,12 @@ export default async function AthletePage({
                   <p className="pp-dial-status" style={{ color: TONE_TEXT_VAR[acwr.status.tone] }}>
                     {acwr.status.label}
                   </p>
-                  <p className="mono pp-dial-meta">flags above 1.50 · n = {acwr.sessionsN} sessions</p>
+                  <p className="mono pp-dial-meta">
+                    {acwr.flagRuleValue !== null
+                      ? `flags above ${acwr.flagRuleValue.toFixed(2)}`
+                      : 'no flag rule active'}
+                    {' · '}n = {acwr.sessionsN} sessions
+                  </p>
                 </div>
                 <div className="pp-dial-col">
                   <p className="pp-dial-title pp-dial-col-head">Wellness rating</p>

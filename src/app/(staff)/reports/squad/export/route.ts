@@ -1,3 +1,4 @@
+import { acwrInsufficiencyNote, acwrSquadHeadline } from '@/lib/acwr';
 import { csvResponse, toCsv } from '@/lib/csv';
 import { fetchSquadWeeklyReport } from '@/lib/queries/squadWeeklyReport';
 import { recordReportView } from '@/lib/queries/reports';
@@ -76,7 +77,9 @@ export async function GET(request: Request) {
     `# Squad weekly report, ${report.from} to ${report.to}. ${report.athleteCount} athletes. ` +
     `Compliance ${report.tiles.compliancePct === null ? 'n/a' : `${report.tiles.compliancePct}%`}, ` +
     `available ${report.tiles.availablePct === null ? 'n/a' : `${report.tiles.availablePct}%`}, ` +
-    `${report.tiles.openFlagCount} open flags, ${report.tiles.acwrFlaggedCount} outside the 0.8-1.5 ACWR band.\r\n\r\n` +
+    `${report.tiles.openFlagCount} open flags. ` +
+    `ACWR: ${acwrSquadHeadline(report.tiles.acwr.outsideBand, report.tiles.acwr.computable, report.tiles.acwr.suppressed)} ` +
+    `(${acwrInsufficiencyNote()})\r\n\r\n` +
     `# Load\r\n`;
 
   const csv = caption + loadCsv + `\r\n# Gym sessions\r\n` + gymCsv + `\r\n# Testing\r\n` + testsCsv + `\r\n# Availability\r\n` + availabilityCsv;

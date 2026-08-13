@@ -1,3 +1,12 @@
+import {
+  ACWR_ACUTE_WINDOW_DAYS,
+  ACWR_BAND_HIGH,
+  ACWR_BAND_LOW,
+  ACWR_CHRONIC_WINDOW_DAYS,
+  acwrSuppressedLabel,
+  computeAcwr,
+  loadByDateFrom,
+} from '@/lib/acwr';
 import { addDays, ageFrom, daysBetween, formatDate, todayIso } from '@/lib/format';
 import { bandPosition } from '@/lib/stats';
 import { fetchAthlete, type AthleteProfile } from './squad';
@@ -6,7 +15,7 @@ import { fetchFlagsList, type FlagListRow } from './flags';
 import { fetchWellnessByAthlete, wellnessSeries } from './wellness';
 import { fetchTestDefinitions } from './testing';
 import { resolveTargetForDate, type ResolvedTarget } from './nutritionTargets';
-import { describeThreshold, fetchThresholds } from './thresholds';
+import { describeThreshold, fetchThresholds, findActiveAcwrThreshold } from './thresholds';
 import type { Db } from './groups';
 
 /* PLAYER-PROFILE-SPEC.md, the query layer behind it. One function assembles
@@ -34,10 +43,12 @@ import type { Db } from './groups';
  * target_weight_kg anywhere in the schema), so those are cut too; the
  * value, history and trend delta are real. */
 
-const CHRONIC_WINDOW_DAYS = 28;
-const ACUTE_WINDOW_DAYS = 7;
-const ACWR_FLAG_CEILING = 1.5; // §9: the dial's full ring is this ceiling, not an arbitrary max
-const ACWR_LOW_THRESHOLD = 0.8; // squadWeeklyReport.ts's own existing flag boundary, reused here
+/* ACWR windows, band and computation all come from lib/acwr.ts now — this
+ * file used to carry its own copy of the maths and its own hardcoded 1.5
+ * "flag ceiling", which the audit (S1) caught contradicting the org's real
+ * flag rule (above 1.30, thresholds table). The dial's full ring is the
+ * top of the shared display band; the "flags above X" copy quotes the
+ * real threshold row. */
 const WELLNESS_ROLLING_WINDOW = 14; // matches wellnessSeries's use elsewhere (athleteReport.ts, the old profile page)
 const WEIGHT_HISTORY_DAYS = 120;
 const WEIGHT_TREND_LOOKBACK_DAYS = 14;
@@ -87,11 +98,15 @@ export type AthleticismSummary = {
 
 export type AcwrSummary = {
   value: number | null;
-  pct: number | null; // for the dial arc, §9: round(acwr / 1.5 * 100), clamped to [0,100]
+  pct: number | null; // for the dial arc, §9: round(acwr / band-top * 100), clamped to [0,100]
   suppressed: boolean;
   daysWithData: number;
   sessionsN: number;
   status: StatusLabel;
+  /** The org's real active flag rule value (thresholds table), quoted by
+   *  the dial's meta line — never a hardcoded number. Null when no ACWR
+   *  rule is active. */
+  flagRuleValue: number | null;
 };
 
 export type WellnessRatingSummary = {
@@ -294,20 +309,39 @@ async function fetchAthleticism(db: Db, orgId: string, athleteId: string): Promi
   };
 }
 
-function acwrStatus(acwr: number | null, suppressed: boolean, daysWithData: number): StatusLabel {
+function acwrStatus(
+  acwr: number | null,
+  suppressed: boolean,
+  daysWithData: number,
+  flagRuleValue: number | null,
+): StatusLabel {
   if (suppressed || acwr === null) {
-    return { label: `Building baseline · ${daysWithData} of 21 days`, tone: 'faint' };
+    return { label: acwrSuppressedLabel(daysWithData), tone: 'faint' };
   }
-  if (acwr > ACWR_FLAG_CEILING) return { label: 'Above the flag threshold', tone: 'bad' };
-  if (acwr < ACWR_LOW_THRESHOLD) return { label: 'Below the sweet spot', tone: 'warn' };
+  // The club's real flag rule outranks the descriptive band: a ratio the
+  // flag engine would fire on must never read "in the sweet spot" here.
+  if (flagRuleValue !== null && acwr > flagRuleValue) {
+    return { label: 'Above the flag threshold', tone: 'bad' };
+  }
+  if (acwr > ACWR_BAND_HIGH) return { label: 'Above the typical band', tone: 'bad' };
+  if (acwr < ACWR_BAND_LOW) return { label: 'Below the sweet spot', tone: 'warn' };
   return { label: 'In the sweet spot', tone: 'accent2' };
 }
 
 /* The window+baseline half of describeThreshold()'s own sentence, reused
  * as the evidence line's real content rather than restating the rule (row
- * 2 already shows the rule sentence in full). */
+ * 2 already shows the rule sentence in full). Comparison-aware for the
+ * same reason describeThreshold() is (see thresholds.ts): an above/below
+ * rule's baseline is context recorded on the flag, not the thing the
+ * value was compared against — "against" would contradict the rule
+ * sentence one line up. */
 function evidenceLine(
-  threshold: { consecutive_days: number; baseline_type: string; baseline_days: number | null } | null,
+  threshold: {
+    comparison: string;
+    consecutive_days: number;
+    baseline_type: string;
+    baseline_days: number | null;
+  } | null,
   flagDate: string,
 ): string {
   const flagged = `flagged ${formatDate(flagDate)}`;
@@ -318,8 +352,12 @@ function evidenceLine(
       ? `the athlete's own ${threshold.baseline_days ?? 28}-day average`
       : threshold.baseline_type === 'squad_mean'
         ? "the squad's average that day"
-        : 'a fixed value';
-  return `${days} against ${baseline} · ${flagged}`;
+        : null;
+  if (baseline === null) return `${days} against a fixed value · ${flagged}`;
+  const evaluatesAgainstBaseline = threshold.comparison !== 'above' && threshold.comparison !== 'below';
+  return evaluatesAgainstBaseline
+    ? `${days} against ${baseline} · ${flagged}`
+    : `${days} · expected shows ${baseline} · ${flagged}`;
 }
 
 function wellnessStatus(position: ReturnType<typeof bandPosition>): StatusLabel {
@@ -336,9 +374,9 @@ export async function fetchPlayerProfile(
   timezone: string,
 ): Promise<PlayerProfile | null> {
   const today = todayIso(timezone);
-  const chronicFrom = addDays(today, -(CHRONIC_WINDOW_DAYS - 1));
-  const acuteFrom = addDays(today, -(ACUTE_WINDOW_DAYS - 1));
-  const wellnessFrom = addDays(today, -(WELLNESS_ROLLING_WINDOW + ACUTE_WINDOW_DAYS - 1));
+  const chronicFrom = addDays(today, -(ACWR_CHRONIC_WINDOW_DAYS - 1));
+  const acuteFrom = addDays(today, -(ACWR_ACUTE_WINDOW_DAYS - 1));
+  const wellnessFrom = addDays(today, -(WELLNESS_ROLLING_WINDOW + ACWR_ACUTE_WINDOW_DAYS - 1));
   const weightFrom = addDays(today, -(WEIGHT_HISTORY_DAYS - 1));
 
   const athlete = await fetchAthlete(db, orgId, athleteId);
@@ -401,44 +439,35 @@ export async function fetchPlayerProfile(
       };
     });
 
-  // ACWR: the exact maths athleteReport.ts already uses (trailing 7/28 day
-  // sums, the 21-of-28 suppression guard), duplicated here rather than
-  // called through fetchAthleteReport because that function pulls in five
-  // other queries (GPS, gym logs, testing, programme sessions, compliance)
-  // this page doesn't need — but the arithmetic itself must match exactly,
-  // so it is the same three lines, not a rewrite.
-  const loadByDate = new Map<string, number>();
-  for (const e of loadEntries.data ?? []) {
-    if (e.entry_date === null || e.session_load === null) continue;
-    loadByDate.set(e.entry_date, (loadByDate.get(e.entry_date) ?? 0) + e.session_load);
-  }
-  const daysWithData = loadByDate.size;
-  const suppressed = daysWithData < 21;
-  const chronic = suppressed ? null : [...loadByDate.values()].reduce((s, v) => s + v, 0) / 4;
-  const acute = suppressed
-    ? null
-    : [...loadByDate.entries()].filter(([d]) => d >= acuteFrom).reduce((s, [, v]) => s + v, 0);
-  const acwrValue = acute !== null && chronic !== null && chronic !== 0 ? acute / chronic : null;
-  const acwrPct = acwrValue === null ? null : Math.min(100, Math.max(0, Math.round((acwrValue / ACWR_FLAG_CEILING) * 100)));
+  // ACWR: the one shared computation (lib/acwr.ts) every other surface
+  // uses — windows, suppression guard and band all come from there, so a
+  // coach never sees two different ACWR numbers for the same athlete on
+  // two screens.
+  const computed = computeAcwr(loadByDateFrom(loadEntries.data ?? []), acuteFrom);
+  const acwrRule = findActiveAcwrThreshold(thresholds);
+  const flagRuleValue = acwrRule?.value ?? null;
+  const acwrPct =
+    computed.acwr === null ? null : Math.min(100, Math.max(0, Math.round((computed.acwr / ACWR_BAND_HIGH) * 100)));
 
   const acwr: AcwrSummary = {
-    value: acwrValue,
+    value: computed.acwr,
     pct: acwrPct,
-    suppressed,
-    daysWithData,
+    suppressed: computed.suppressed,
+    daysWithData: computed.daysWithData,
     sessionsN: (loadEntries.data ?? []).length,
-    status: acwrStatus(acwrValue, suppressed, daysWithData),
+    status: acwrStatus(computed.acwr, computed.suppressed, computed.daysWithData, flagRuleValue),
+    flagRuleValue,
   };
 
   // Wellness rating: mean readiness over the last 7 days, and "is this
   // normal for him" from the same rolling-band machinery WellnessChart and
   // the old profile page both already use, so the header dial doesn't
   // invent a second opinion about what "steady" means.
-  const wellnessDates = Array.from({ length: WELLNESS_ROLLING_WINDOW + ACUTE_WINDOW_DAYS }, (_, i) =>
+  const wellnessDates = Array.from({ length: WELLNESS_ROLLING_WINDOW + ACWR_ACUTE_WINDOW_DAYS }, (_, i) =>
     addDays(wellnessFrom, i),
   );
   const band = wellnessSeries(wellnessEntries, wellnessDates, 'readiness', WELLNESS_ROLLING_WINDOW);
-  const last7 = band.slice(-ACUTE_WINDOW_DAYS);
+  const last7 = band.slice(-ACWR_ACUTE_WINDOW_DAYS);
   const last7Values = last7.map((b) => b.value).filter((v): v is number => v !== null);
   const meanPct = last7Values.length > 0 ? Math.round(last7Values.reduce((s, v) => s + v, 0) / last7Values.length) : null;
   // The most recent day with an actual submitted value, not just the most

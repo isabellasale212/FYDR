@@ -9,7 +9,7 @@ import { acknowledgeFlag, dismissFlag } from '@/lib/queries/flags';
 import { createClient } from '@/lib/supabase/client';
 import { Pill } from '@/components/Pill/Pill';
 import { SEVERITY_STATUS } from '@/lib/status';
-import { enumLabel, formatDate, formatTime } from '@/lib/format';
+import { enumLabel, formatDate, formatDateTime, formatTime } from '@/lib/format';
 
 const DISMISS_REASONS = [
   'Normal for this athlete',
@@ -87,7 +87,16 @@ export function FlagCard({ flag, orgId, userId, today }: Props) {
       <div className="flag-head">
         <Pill status={SEVERITY_STATUS[flag.severity]} />
         <span className="tiny">{enumLabel(flag.domain)}</span>
-        {flag.escalated ? <span className="pill pill-bad">Escalated</span> : null}
+        {/* Escalation is history, not a transient state: a flag that went
+            24h unseen stays marked after acknowledgement (the tag used to
+            vanish on acknowledge — audit coach finding 21). */}
+        {flag.escalated ? (
+          canAcknowledge ? (
+            <span className="pill pill-bad">Escalated</span>
+          ) : (
+            <span className="pill pill-warn">Was escalated</span>
+          )
+        ) : null}
         <span className="tiny mono" style={{ marginInlineStart: 'auto' }}>
           {raisedLabel}
         </span>
@@ -184,7 +193,12 @@ export function FlagCard({ flag, orgId, userId, today }: Props) {
               <span className="g-good" aria-hidden="true">
                 ✓{' '}
               </span>
+              {/* Who saw it and when — the promise the acknowledge action
+                  makes ("records who saw it and when"), now kept on the
+                  row itself (audit coach finding 21). */}
               Acknowledged
+              {flag.acknowledged_by_name ? ` by ${flag.acknowledged_by_name}` : ''}
+              {flag.acknowledged_at ? ` · ${formatDateTime(flag.acknowledged_at)}` : ''}
             </span>
           )}
           <button

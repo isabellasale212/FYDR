@@ -240,6 +240,7 @@ export function GymSessionLogger({
                           <input
                             className="field"
                             type="number"
+                            inputMode="numeric"
                             aria-label={`Set ${setNumber} reps`}
                             value={draft.reps}
                             onChange={(e) =>
@@ -253,6 +254,7 @@ export function GymSessionLogger({
                             className="field"
                             type="number"
                             step="0.5"
+                            inputMode="decimal"
                             aria-label={`Set ${setNumber} load in kg`}
                             value={draft.load}
                             onChange={(e) =>
@@ -276,6 +278,7 @@ export function GymSessionLogger({
                       <button
                         type="button"
                         aria-label={loggedRow ? `Set ${setNumber} logged` : `Log set ${setNumber}`}
+                        aria-pressed={!!loggedRow}
                         disabled={!isNext || logMutation.isPending}
                         onClick={() =>
                           logMutation.mutate({
@@ -315,6 +318,7 @@ export function GymSessionLogger({
                 <input
                   className="field"
                   type="number"
+                  inputMode="numeric"
                   min="1"
                   max="10"
                   value={sessionRpe}

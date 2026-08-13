@@ -180,6 +180,7 @@ export function NutritionTargetForm({ orgId, userId, athletes, groups, canPickAn
           <input
             className="field"
             type="number"
+            inputMode="numeric"
             min="0"
             max="400"
             value={proteinG}
@@ -191,6 +192,7 @@ export function NutritionTargetForm({ orgId, userId, athletes, groups, canPickAn
           <input
             className="field"
             type="number"
+            inputMode="numeric"
             min="0"
             max="1000"
             value={carbsG}
@@ -202,6 +204,7 @@ export function NutritionTargetForm({ orgId, userId, athletes, groups, canPickAn
           <input
             className="field"
             type="number"
+            inputMode="numeric"
             min="0"
             max="300"
             value={fatG}
@@ -213,6 +216,7 @@ export function NutritionTargetForm({ orgId, userId, athletes, groups, canPickAn
           <input
             className="field"
             type="number"
+            inputMode="numeric"
             min="0"
             max="10000"
             value={fluidMl}
@@ -224,6 +228,7 @@ export function NutritionTargetForm({ orgId, userId, athletes, groups, canPickAn
           <input
             className="field"
             type="number"
+            inputMode="numeric"
             min="0"
             max="8000"
             value={energyKcal}

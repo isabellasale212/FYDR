@@ -94,13 +94,13 @@ export function TestDefinitionForm({ orgId }: { orgId: string }) {
         </label>
         <label style={{ flex: 1 }}>
           <span className="label">Decimal places</span>
-          <input className="field" type="number" min="0" max="3" value={decimalPlaces} onChange={(e) => setDecimalPlaces(e.target.value)} />
+          <input className="field" type="number" inputMode="numeric" min="0" max="3" value={decimalPlaces} onChange={(e) => setDecimalPlaces(e.target.value)} />
         </label>
       </div>
       <div>
         <label>
           <span className="label">Attempts</span>
-          <input className="field" type="number" min="1" max="10" value={defaultAttempts} onChange={(e) => setDefaultAttempts(e.target.value)} />
+          <input className="field" type="number" inputMode="numeric" min="1" max="10" value={defaultAttempts} onChange={(e) => setDefaultAttempts(e.target.value)} />
         </label>
         {/* Audit finding 40: nowhere explained what logging N attempts
          * actually computes. It's real behaviour, not a guess — the

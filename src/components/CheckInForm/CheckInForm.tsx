@@ -269,6 +269,7 @@ export function CheckInForm({
             <input
               className="field"
               type="number"
+              inputMode="numeric"
               min={25}
               max={120}
               value={restingHr}
@@ -280,6 +281,7 @@ export function CheckInForm({
             <input
               className="field"
               type="number"
+              inputMode="decimal"
               step="0.1"
               min={30}
               max={200}

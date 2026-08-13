@@ -142,15 +142,15 @@ export function OverrideForm({ orgId, userId, athleteId, exerciseOptions, substi
         <div style={{ display: 'flex', gap: 8 }}>
           <label style={{ flex: 1 }}>
             <span className="label">Sets</span>
-            <input className="field" type="number" min="1" value={sets} onChange={(e) => setSets(e.target.value)} />
+            <input className="field" type="number" inputMode="numeric" min="1" value={sets} onChange={(e) => setSets(e.target.value)} />
           </label>
           <label style={{ flex: 1 }}>
             <span className="label">Reps min</span>
-            <input className="field" type="number" min="0" value={repsMin} onChange={(e) => setRepsMin(e.target.value)} />
+            <input className="field" type="number" inputMode="numeric" min="0" value={repsMin} onChange={(e) => setRepsMin(e.target.value)} />
           </label>
           <label style={{ flex: 1 }}>
             <span className="label">Reps max</span>
-            <input className="field" type="number" min="0" value={repsMax} onChange={(e) => setRepsMax(e.target.value)} />
+            <input className="field" type="number" inputMode="numeric" min="0" value={repsMax} onChange={(e) => setRepsMax(e.target.value)} />
           </label>
         </div>
       ) : null}
@@ -158,7 +158,7 @@ export function OverrideForm({ orgId, userId, athleteId, exerciseOptions, substi
       {overrideType === 'load_cap' ? (
         <label>
           <span className="label">Cap value, in the parent&rsquo;s own unit (kg, % or RPE)</span>
-          <input className="field" type="number" step="0.5" value={loadValue} onChange={(e) => setLoadValue(e.target.value)} />
+          <input className="field" type="number" step="0.5" inputMode="decimal" value={loadValue} onChange={(e) => setLoadValue(e.target.value)} />
         </label>
       ) : null}
 

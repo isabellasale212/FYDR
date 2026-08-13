@@ -70,6 +70,11 @@ export function DashboardFlagsPanel({ rows, openTotal, awaitingAck, bySeverity }
         className="dash-flags-toggle"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
+        aria-label={`${open ? 'Collapse' : 'Expand'} open flags summary: ${openTotal} open flag${openTotal === 1 ? '' : 's'}${
+          high > 0 ? `, ${high} high severity` : ''
+        }${medium > 0 ? `, ${medium} medium severity` : ''}, ${
+          awaitingAck === 0 ? 'all acknowledged' : `${awaitingAck} awaiting acknowledgement`
+        }`}
       >
         <FlagIcon />
         <span className="dash-flags-summary">
@@ -96,7 +101,16 @@ export function DashboardFlagsPanel({ rows, openTotal, awaitingAck, bySeverity }
       {open ? (
         <div className="dash-flags-list">
           {rows.map((r) => (
-            <Link key={r.athlete_id} href={`/squad/${r.athlete_id}#pp-flags-title`} className="dash-flags-row">
+            <Link
+              key={r.athlete_id}
+              href={`/squad/${r.athlete_id}#pp-flags-title`}
+              className="dash-flags-row"
+              aria-label={`View ${r.name}'s ${enumLabel(r.domain).toLowerCase()} flag, ${r.severity} severity${
+                r.escalated ? ', escalated' : ''
+              }. ${r.what} ${r.value}${r.baseline ? ` versus ${r.baseline} expected` : ''}, ${r.duration}${
+                r.flag_count > 1 ? `, plus ${r.flag_count - 1} more flag${r.flag_count - 1 === 1 ? '' : 's'} for this athlete` : ''
+              }`}
+            >
               <span
                 className="dash-flags-dot"
                 style={{ background: SEVERITY_COLOR[r.severity] }}

@@ -138,6 +138,7 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
           className="field"
           value={comparison}
           onChange={(event) => setComparison(event.target.value as ThresholdComparison)}
+          aria-label="Comparison rule"
         >
           {COMPARISONS.map((c) => (
             <option key={c.value} value={c.value}>
@@ -153,6 +154,7 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
               style={{ flex: 1 }}
               value={direction}
               onChange={(event) => setDirection(event.target.value as 'below' | 'above')}
+              aria-label="Direction"
             >
               <option value="below">Below</option>
               <option value="above">Above</option>
@@ -163,9 +165,11 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
             style={{ flex: 1 }}
             type="number"
             step="0.1"
+            inputMode="decimal"
             value={value}
             onChange={(event) => setValue(event.target.value)}
             placeholder={comparison === 'z_score' ? 'Standard deviations' : 'Value'}
+            aria-label={comparison === 'z_score' ? 'Threshold value in standard deviations' : 'Threshold value'}
           />
         </div>
       </fieldset>
@@ -201,6 +205,7 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
               id="th-baseline-days"
               className="field"
               type="number"
+              inputMode="numeric"
               min={7}
               max={90}
               value={baselineDays}
@@ -218,6 +223,7 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
         id="th-consecutive"
         className="field"
         type="number"
+        inputMode="numeric"
         min={1}
         max={14}
         value={consecutiveDays}

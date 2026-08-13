@@ -100,6 +100,7 @@ export function ProgrammeForm({ orgId, userId, isCoach, isMedical }: Props) {
         <input
           className="field"
           type="number"
+          inputMode="numeric"
           min="1"
           max="52"
           value={durationWeeks}

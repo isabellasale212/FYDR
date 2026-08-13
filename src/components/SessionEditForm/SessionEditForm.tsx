@@ -157,6 +157,7 @@ export function SessionEditForm({ orgId, session, groups, timezone }: Props) {
             id="e-duration"
             className="field"
             type="number"
+            inputMode="numeric"
             min={5}
             max={240}
             value={duration}
@@ -171,6 +172,7 @@ export function SessionEditForm({ orgId, session, groups, timezone }: Props) {
             id="e-md"
             className="field"
             type="number"
+            inputMode="numeric"
             placeholder="-2"
             value={mdOffset}
             onChange={(event) => setMdOffset(event.target.value)}

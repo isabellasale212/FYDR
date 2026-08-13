@@ -226,15 +226,15 @@ export function ProgrammeBuilder({
                           <div style={{ display: 'flex', gap: 8 }}>
                             <label style={{ flex: 1 }}>
                               <span className="label">Sets</span>
-                              <input className="field" type="number" min="1" value={sets} onChange={(e) => setSets(e.target.value)} />
+                              <input className="field" type="number" inputMode="numeric" min="1" value={sets} onChange={(e) => setSets(e.target.value)} />
                             </label>
                             <label style={{ flex: 1 }}>
                               <span className="label">Reps min</span>
-                              <input className="field" type="number" min="0" value={repsMin} onChange={(e) => setRepsMin(e.target.value)} />
+                              <input className="field" type="number" inputMode="numeric" min="0" value={repsMin} onChange={(e) => setRepsMin(e.target.value)} />
                             </label>
                             <label style={{ flex: 1 }}>
                               <span className="label">Reps max</span>
-                              <input className="field" type="number" min="0" value={repsMax} onChange={(e) => setRepsMax(e.target.value)} />
+                              <input className="field" type="number" inputMode="numeric" min="0" value={repsMax} onChange={(e) => setRepsMax(e.target.value)} />
                             </label>
                           </div>
                           <div style={{ display: 'flex', gap: 8 }}>
@@ -268,6 +268,7 @@ export function ProgrammeBuilder({
                                 className="field"
                                 type="number"
                                 step="0.5"
+                                inputMode="decimal"
                                 value={loadValue}
                                 onChange={(e) => setLoadValue(e.target.value)}
                                 disabled={loadBasis === 'none'}
@@ -278,6 +279,7 @@ export function ProgrammeBuilder({
                               <input
                                 className="field"
                                 type="number"
+                                inputMode="numeric"
                                 min="0"
                                 value={restSeconds}
                                 onChange={(e) => setRestSeconds(e.target.value)}
@@ -327,11 +329,11 @@ export function ProgrammeBuilder({
                   <div style={{ display: 'flex', gap: 8 }}>
                     <label style={{ flex: 1 }}>
                       <span className="label">Week</span>
-                      <input className="field" type="number" min="1" value={sessionWeek} onChange={(e) => setSessionWeek(e.target.value)} />
+                      <input className="field" type="number" inputMode="numeric" min="1" value={sessionWeek} onChange={(e) => setSessionWeek(e.target.value)} />
                     </label>
                     <label style={{ flex: 1 }}>
                       <span className="label">Day (optional)</span>
-                      <input className="field" type="number" min="1" max="7" value={sessionDay} onChange={(e) => setSessionDay(e.target.value)} />
+                      <input className="field" type="number" inputMode="numeric" min="1" max="7" value={sessionDay} onChange={(e) => setSessionDay(e.target.value)} />
                     </label>
                   </div>
                   <div style={{ display: 'flex', gap: 10 }}>
@@ -376,7 +378,7 @@ export function ProgrammeBuilder({
               </label>
               <label>
                 <span className="label">Duration, weeks</span>
-                <input className="field" type="number" min="1" max="20" value={blockWeeks} onChange={(e) => setBlockWeeks(e.target.value)} />
+                <input className="field" type="number" inputMode="numeric" min="1" max="20" value={blockWeeks} onChange={(e) => setBlockWeeks(e.target.value)} />
               </label>
               <div style={{ display: 'flex', gap: 10 }}>
                 <button

@@ -131,6 +131,9 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
                     data-edit={mode === 'edit'}
                     data-past={day.isPast}
                     data-stagger={b.stagger}
+                    aria-label={`${b.title}, ${enumLabel(b.type)}, ${b.timeText}${
+                      b.groupNames.length > 0 ? `, ${b.groupNames.join(' and ')}` : ''
+                    }${b.showBadge ? ', edited' : ''}${b.clashed ? ', clashes with another session' : ''}`}
                     style={
                       {
                         top: b.top,

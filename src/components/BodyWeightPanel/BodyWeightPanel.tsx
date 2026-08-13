@@ -171,6 +171,7 @@ function LogForm({
           type="number"
           step="0.1"
           min="0"
+          inputMode="decimal"
           value={bodyMassKg}
           onChange={(event) => setBodyMassKg(event.target.value)}
           required
@@ -187,6 +188,7 @@ function LogForm({
           step="0.1"
           min="0"
           max="99.9"
+          inputMode="decimal"
           value={bodyFatPct}
           onChange={(event) => setBodyFatPct(event.target.value)}
         />
@@ -292,6 +294,7 @@ function EditRow({
         type="number"
         step="0.1"
         min="0"
+        inputMode="decimal"
         value={bodyMassKg}
         onChange={(event) => {
           setBodyMassKg(event.target.value);
@@ -305,6 +308,7 @@ function EditRow({
         step="0.1"
         min="0"
         max="99.9"
+        inputMode="decimal"
         value={bodyFatPct}
         onChange={(event) => {
           setBodyFatPct(event.target.value);

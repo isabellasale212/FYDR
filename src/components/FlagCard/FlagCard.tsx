@@ -103,7 +103,7 @@ export function FlagCard({ flag, orgId, userId, today }: Props) {
       </div>
 
       <p className="flag-who">
-        <Link href={`/squad/${flag.athlete_id}`}>
+        <Link href={`/squad/${flag.athlete_id}`} aria-label={`View ${flag.name}'s player profile`}>
           <b>{flag.name}</b>
         </Link>
         {flag.squad_number !== null ? (

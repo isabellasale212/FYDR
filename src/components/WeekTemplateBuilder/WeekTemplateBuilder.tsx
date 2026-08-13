@@ -307,6 +307,7 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
                     <input
                       className="field"
                       type="number"
+                      inputMode="numeric"
                       min={5}
                       max={480}
                       value={draft.durationMin ?? ''}
@@ -319,6 +320,7 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
                     <input
                       className="field"
                       type="number"
+                      inputMode="decimal"
                       min={1}
                       max={10}
                       step={0.5}

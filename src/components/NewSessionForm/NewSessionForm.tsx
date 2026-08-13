@@ -145,6 +145,7 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone }:
             id="s-duration"
             className="field"
             type="number"
+            inputMode="numeric"
             min={5}
             max={240}
             value={duration}
@@ -159,6 +160,7 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone }:
             id="s-md"
             className="field"
             type="number"
+            inputMode="numeric"
             placeholder="-2"
             value={mdOffset}
             onChange={(event) => setMdOffset(event.target.value)}

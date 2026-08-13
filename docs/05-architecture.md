@@ -510,6 +510,24 @@ export function serviceClient() {
 }
 ```
 
+### Password recovery
+
+Self-serve, built on Supabase's email reset (added August 2026; audit S9 had found no
+recovery path at all). Two public routes, deliberately outside both shell prefixes so a
+signed-out — or freshly recovered — user is never redirected off them:
+
+| Route | Does |
+|---|---|
+| `/login/reset` | Email field → `resetPasswordForEmail`. The confirmation copy is identical whether or not the address has an account (non-enumeration, the same standard as the sign-in error). |
+| `/login/reset/confirm` | Where the emailed link lands. The link's one-time code becomes a signed-in recovery session; the page takes a new password (same 10-character minimum as the settings change-password form), calls `updateUser`, then routes to `/` for the middleware to resolve the shell from roles, as always. |
+
+Two operational dependencies live in the Supabase dashboard, not in this repo: the
+project's SMTP configuration (the default sender is rate-limited to a handful of emails an
+hour, fine for testing, not for a squad) and the redirect allow-list, which must include
+`/login/reset/confirm` on every deployed origin or the link falls back to the project's
+site URL. The reset link is PKCE-bound: it only completes in the browser that requested
+it, and the UI copy says so.
+
 ---
 
 ## 6. Offline sync engine

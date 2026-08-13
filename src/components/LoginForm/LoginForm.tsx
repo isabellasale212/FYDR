@@ -1,8 +1,10 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { PasswordField } from '@/components/PasswordField/PasswordField';
 
 /**
  * Email and password against Supabase Auth.
@@ -74,17 +76,19 @@ export function LoginForm() {
           <label className="label" htmlFor="password">
             Password
           </label>
-          <input
+          <PasswordField
             id="password"
-            className="field"
-            type="password"
             name="password"
             autoComplete="current-password"
             required
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={setPassword}
           />
         </div>
+
+        <p className="signin-forgot">
+          <Link href="/login/reset">Forgot your password?</Link>
+        </p>
       </div>
 
       <button className="btn-primary signin-submit" type="submit" disabled={busy}>

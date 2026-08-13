@@ -15,7 +15,21 @@ export const metadata = { title: 'Manage leaderboards · Fydr' };
  *  system: publish/unpublish, medical suppression, and the boards real opted-in
  *  athletes see at /me/leaderboards and /my-data/boards all still run through here
  *  unchanged. Route was 20-route-map.md line 122; that map is now stale on this one
- *  line pending its own update. */
+ *  line pending its own update.
+ *
+ *  Deliberately ungated for admin, the other half of the leaderboards split
+ *  (see /leaderboards' own header for the wall's side of it):
+ *  20-route-map.md lists this route's roles as `coach, medical, admin
+ *  (aggregate)`, and every row this page renders is board *configuration* —
+ *  name, metric, population type, window, publish state, participant
+ *  count — never a named result. fetchStaffBoards() selects no athlete
+ *  columns at all. That's what "aggregate" means for this screen in
+ *  practice, so unlike the wall (LeaderboardWall, a named ranking with no
+ *  aggregate-only rendering built) there's nothing here to deny. Board
+ *  *detail* (/leaderboards/:leaderboardId, a real named ranking) and
+ *  *creation* (/leaderboards/new) are each gated on their own page instead
+ *  — new leaderboard already redirects a non-coach/medical visitor back
+ *  here, and this list is exactly where they land. */
 export default async function ManageLeaderboardsPage() {
   const { db, orgId } = await requireStaff();
   const [boards, catalogue] = await Promise.all([

@@ -65,6 +65,41 @@ function dayTitle(date: string, wallClockToday: string): string {
  *  live there, not here. */
 export default async function DashboardPage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, orgName, claims, timezone } = await requireStaff();
+
+  // 01-roles-and-permissions.md §2: admin gets `no` for "View squad
+  // dashboard" — every panel below is named-athlete availability, load and
+  // flag detail. docs/20-route-map.md §11 G-1 resolves the one place the
+  // docs disagree (02-information-architecture.md §4.2 sketches an admin
+  // panel order for this same page) in the matrix's favour: "an admin-only
+  // user does not open /dashboard". Sidebar.tsx's staff.dashboard row is
+  // already coach/medical only, so this is the server-side lock behind
+  // that hidden row — homeRoute() in lib/supabase/claims.ts no longer
+  // lands an admin-only sign-in here, but a typed URL still could without
+  // this. Same pattern as /flags, /squad and /analytics.
+  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medical');
+  if (!hasAccess) {
+    return (
+      <>
+        <div className="topbar">
+          <div className="page-head">
+            <p className="eyebrow">Squad · {orgName}</p>
+            <h1>Dashboard</h1>
+          </div>
+          <ThemeToggle />
+        </div>
+        <div className="empty">
+          <h2>Not part of this role</h2>
+          <p>
+            The dashboard is availability, load and flag detail for every named athlete.
+            Admin manages the club and does not read athlete performance data &mdash; see
+            01-roles-and-permissions.md §1. Reports, Leaderboard and Settings are still open
+            from the sidebar.
+          </p>
+        </div>
+      </>
+    );
+  }
+
   const sp = await searchParams;
   const groupIds = await resolveGroupFilter(sp.groups);
 

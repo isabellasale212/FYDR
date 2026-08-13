@@ -98,9 +98,28 @@ export function isAthlete(claims: FydrClaims): boolean {
 }
 
 /** The landing route for a set of roles. Staff win when a user holds both,
- *  which is the case for a player-coach: the staff shell is the larger tool. */
+ *  which is the case for a player-coach: the staff shell is the larger tool.
+ *
+ *  `/dashboard`'s own route roles are `coach`/`medical` only — G-1 in
+ *  `docs/20-route-map.md` §11 resolves the contradiction between
+ *  `02-information-architecture.md` §4.2 (which sketches an admin panel
+ *  order for it) and `01-roles-and-permissions.md` §2 (`no` for "View squad
+ *  dashboard") in the matrix's favour: "an admin-only user does not open
+ *  /dashboard". This function used to send every staff member there
+ *  regardless, which put an admin-only sign-in on a page not in their own
+ *  sidebar (`Sidebar.tsx`'s `staff.dashboard` row is `['coach', 'medical']`,
+ *  no admin) full of the named-athlete panels §1 says admin doesn't read.
+ *  `/settings` is the one sidebar row that is entirely admin's own —
+ *  users, subject access, retention and the audit log are admin-exclusive
+ *  rows on that page, and 01-roles-and-permissions.md §1 lists exactly
+ *  those as what admin *can* do. An admin who also holds coach or medical
+ *  still lands on /dashboard: the squad-facing shell is the bigger tool for
+ *  them, same reasoning as the staff-vs-athlete choice above. */
 export function homeRoute(claims: FydrClaims): string {
-  if (isStaff(claims)) return '/dashboard';
+  if (isStaff(claims)) {
+    const hasSquadAccess = claims.roles.includes('coach') || claims.roles.includes('medical');
+    return hasSquadAccess ? '/dashboard' : '/settings';
+  }
   if (isAthlete(claims)) return '/today';
   return '/login?e=no-roles';
 }

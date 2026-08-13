@@ -12,10 +12,31 @@ import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Gym programme · Fydr' };
 
+/* 'kg' is only a safe assumption for absolute loads on genuinely loaded
+ * categories — audit finding 31's confirmed example is live data: Box jump
+ * is prescribed absolute=60 where 60 is a box height in cm, not a kg load,
+ * found while building this migration by querying the org's own programme_
+ * exercises rows. plyo/conditioning/mobility exercises show the bare number
+ * instead of asserting a unit the schema does not track; the exercise's own
+ * notes (already rendered under its name) carry the real unit until this
+ * domain has a measurement_type column (real, open gap, too large for this
+ * pass — see this page's own note below the table). */
 function loadLabel(ex: ResolvedExercise): string {
   if (ex.load_basis === 'none') return 'Bodyweight';
-  if (ex.load_basis === 'absolute') return ex.load_value !== null ? `${ex.load_value}kg` : '—';
-  if (ex.load_basis === 'percent_1rm') return ex.load_value !== null ? `${ex.load_value}% 1RM` : '—';
+  if (ex.load_basis === 'absolute') {
+    if (ex.load_value === null) return '—';
+    const bare = ex.category === 'plyo' || ex.category === 'conditioning' || ex.category === 'mobility';
+    return bare ? String(ex.load_value) : `${ex.load_value}kg`;
+  }
+  if (ex.load_basis === 'percent_1rm') {
+    if (ex.load_value === null) return '—';
+    // This is the squad-generic view — no athlete to resolve against, so it
+    // never fabricates a kilogram figure here (that only happens on the
+    // per-athlete view, /programmes/[id]/athlete/[athleteId]). What it CAN
+    // say honestly, with no athlete in scope, is whether resolution is even
+    // possible at all for anyone.
+    return ex.one_rm_linked ? `${ex.load_value}% 1RM` : `${ex.load_value}% 1RM — no 1RM test linked`;
+  }
   if (ex.load_basis === 'percent_bw') return ex.load_value !== null ? `${ex.load_value}% BW` : '—';
   return ex.load_value !== null ? `RPE ${ex.load_value}` : '—';
 }
@@ -40,17 +61,21 @@ function assignedLine(p: ProgrammeListItem): string {
  *  programme is shareable and survives a refresh — the same pattern already
  *  used for the testing log's ?groups= filter.
  *
- *  Three things the spec's own detail view assumes that this schema does
- *  not have, all documented once here rather than silently faked:
+ *  Two things the spec's own detail view assumes that this schema does not
+ *  have, all documented once here rather than silently faked:
  *   - No block start date, so no "week 3 of 8" — programme_blocks has a
  *     sequence and a duration in weeks, not a calendar anchor. The eyebrow
  *     shows block position ("Block 1 of 2"), not a week count.
  *   - No session duration or session "type" (strength/power) column — only
  *     a name, day_number, md_offset. The day header shows what's real.
- *   - No exercise_overrides table (migration 0021's own header says so
- *     explicitly, and GYM-PROGRAMME-SPEC.md §6 independently lists "the
- *     override editor" under "not designed") — so the Override column is
- *     always "—", captioned once, not fabricated per row.
+ *
+ *  exercise_overrides exists now (migration 0043, audit findings 29/32) but
+ *  this screen still cannot show it meaningfully: it has no athlete in
+ *  scope, so the Override column stays "—" here on purpose — showing
+ *  tailoring against a squad-generic row would either mean "at least one
+ *  assigned athlete has an override on this exercise" (loses who and what)
+ *  or nothing at all. The real answer lives one click away, per athlete, at
+ *  /programmes/[id]/athlete/[athleteId] — linked from the detail page below.
  *
  *  Duplicate and Assign are real buttons, honestly inert (disabled, with a
  *  title explaining why) — GYM-PROGRAMME-SPEC.md §6 names both as
@@ -225,9 +250,10 @@ export default async function ProgrammesPage({
                 )}
 
                 <p className="cap mono" style={{ marginTop: 14 }}>
-                  Overrides are per athlete and never rewrite the general programme. Per-athlete
-                  overrides aren&rsquo;t available yet, so Override reads &ldquo;&mdash;&rdquo; for
-                  every row. Assign a group or athlete from the programme builder linked above.
+                  This is the general programme, exactly as written — overrides are per athlete
+                  and never rewrite it, so Override reads &ldquo;&mdash;&rdquo; on this squad-wide
+                  view. See what one athlete actually gets, tailoring included, from &ldquo;View as
+                  an athlete&rdquo; on the programme&rsquo;s own page.
                 </p>
               </div>
             )}

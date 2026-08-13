@@ -19,11 +19,14 @@ import { addDays, todayIso } from '@/lib/format';
  *     headings on one scroll instead — there's less unique content per
  *     "page" here than the Athlete report has, so a tab per section would be
  *     four extra clicks for very little.
- *   - The week is always the trailing 7 days ending today, not a Monday-
- *     start week pinned to a fixture. "The fixture context is on every page
- *     header" (the spec's own words) needs a session-to-fixture mapping this
- *     report doesn't build; there is no MD-n row and no "planned against
- *     actual" load bar, both of which need that same mapping.
+ *   - The week is the trailing 7 days ending a navigable date (?to= on the
+ *     page, defaulting to real today) — not a Monday-start week pinned to a
+ *     fixture. "The fixture context is on every page header" (the spec's
+ *     own words) needs a session-to-fixture mapping this report doesn't
+ *     build; there is no MD-n row and no "planned against actual" load bar,
+ *     both of which need that same mapping. A fixed "always today" window
+ *     was audit finding B4: a blocker, because it could never show a week
+ *     that actually had data with no way to look back.
  *   - No week-on-week change on the headline tiles. That needs the same
  *     four numbers computed for the week before this one and diffed — real,
  *     mechanical work, left for a pass that also decides how to handle a
@@ -102,8 +105,14 @@ export async function fetchSquadWeeklyReport(
   orgId: string,
   groupIds: readonly string[],
   timezone: string,
+  /** The trailing window's last day. Defaults to real today; a caller can
+   *  pass an earlier date to look at a past week — added because a fixed
+   *  "always today" window could never show the week that actually had
+   *  data (audit B4: the seed clock lagging real-world "today" meant this
+   *  report was permanently empty with no way to look back). */
+  endDate?: string,
 ): Promise<SquadWeeklyReport> {
-  const today = todayIso(timezone);
+  const today = endDate ?? todayIso(timezone);
   const from = addDays(today, -6);
 
   const [athletes, acwr, wellness, compliance, attentionResult, availability, scope] = await Promise.all([

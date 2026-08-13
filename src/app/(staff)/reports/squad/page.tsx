@@ -10,7 +10,7 @@ import { recordReportView } from '@/lib/queries/reports';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { ACWR_BAND_TEXT, acwrBandTone, acwrInsufficiencyNote, acwrSuppressedLabel } from '@/lib/acwr';
-import { BLANK, enumLabel, formatDate, formatNumber } from '@/lib/format';
+import { BLANK, addDays, enumLabel, formatDate, formatNumber, todayIso } from '@/lib/format';
 import { availabilityStatus } from '@/lib/status';
 import { requireReportAccess } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
@@ -23,15 +23,34 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 // ACWR definition (audit S1).
 
 /** screens/reports.md, report 2 of 5 — see lib/queries/squadWeeklyReport.ts's
- *  header for the full scope reasoning. Always the trailing 7 days; no
- *  period selector, matching "what happened this week" being the report's
- *  own fixed question. */
+ *  header for the full scope reasoning. Trailing 7 days ending a navigable
+ *  ?to= date, defaulting to real today — not a Monday-start week pinned to
+ *  a fixture, matching "what happened in the 7 days up to this point" being
+ *  the report's own fixed question. Previous/next week just shift ?to= by
+ *  7 days, the same URL-state pattern the schedule grid's week nav uses.
+ *  Added because a permanently-"today" window could never show a week that
+ *  actually had data (audit B4). */
 export default async function SquadWeeklyReportPage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
 
-  const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchSquadWeeklyReport(db, orgId, groupIds, timezone)]);
+  const realToday = todayIso(timezone);
+  const requestedTo = typeof params.to === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(params.to) ? params.to : realToday;
+  // Never let a stray ?to= park the report in the future — clamp to today.
+  const endDate = requestedTo > realToday ? realToday : requestedTo;
+  const prevWeek = addDays(endDate, -7);
+  const nextWeek = addDays(endDate, 7);
+  const isCurrentWeek = endDate === realToday;
+
+  const [groups, report] = await Promise.all([
+    fetchGroups(db, orgId),
+    fetchSquadWeeklyReport(db, orgId, groupIds, timezone, endDate),
+  ]);
+
+  const groupQuery = groupIds.length > 0 ? `&groups=${groupIds.join(',')}` : '';
+  const toQuery = (d: string) => `/reports/squad?to=${d}${groupQuery}`;
+  const exportQuery = `${groupIds.length ? `groups=${groupIds.join(',')}&` : ''}to=${endDate}`;
 
   const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   await recordReportView(db, orgId, claims.userId, actorRole, 'squad_weekly', {
@@ -50,10 +69,10 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
           <h1>Squad weekly</h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <a href={`/reports/squad/export${groupIds.length ? `?groups=${groupIds.join(',')}` : ''}`} className="btn-ghost">
+          <a href={`/reports/squad/export?${exportQuery}`} className="btn-ghost">
             Export CSV
           </a>
-          <a href={`/reports/squad/pdf${groupIds.length ? `?groups=${groupIds.join(',')}` : ''}`} className="btn-ghost">
+          <a href={`/reports/squad/pdf?${exportQuery}`} className="btn-ghost">
             Export PDF
           </a>
           <ThemeToggle />
@@ -61,8 +80,27 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
       </div>
 
       <p className="eyebrow" style={{ marginBottom: 10 }}>
-        {groupScopeLabel(groups, groupIds)} · {orgName} · {formatDate(report.from)} to {formatDate(report.to)} · {report.athleteCount} athletes
+        {groupScopeLabel(groups, groupIds)} · {orgName} · {report.athleteCount} athletes
       </p>
+
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 14 }}>
+        <Link href={toQuery(prevWeek)} className="btn-ghost" aria-label="Previous week">
+          ‹ Previous week
+        </Link>
+        <p className="mono" style={{ fontWeight: 700, margin: 0, flex: 1, textAlign: 'center' }}>
+          {formatDate(report.from)} to {formatDate(report.to)}
+          {isCurrentWeek ? <span className="tiny" style={{ fontWeight: 400 }}> · current week</span> : null}
+        </p>
+        {isCurrentWeek ? (
+          <span className="btn-ghost" aria-disabled="true" style={{ opacity: 0.4, pointerEvents: 'none' }}>
+            Next week ›
+          </span>
+        ) : (
+          <Link href={toQuery(nextWeek)} className="btn-ghost" aria-label="Next week">
+            Next week ›
+          </Link>
+        )}
+      </div>
 
       <div style={{ marginBottom: 14 }}>
         <GroupFilter groups={groups} selected={groupIds} />

@@ -21,8 +21,12 @@ export async function GET(request: Request) {
   // filter cookie exactly as the on-screen report does (audit S4), and the
   // caption below names the resolved scope.
   const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
+  // Same ?to= the on-screen report's week nav sets, so an exported file
+  // matches whatever week the coach was actually looking at (audit B4).
+  const toParam = url.searchParams.get('to');
+  const endDate = toParam && /^\d{4}-\d{2}-\d{2}$/.test(toParam) ? toParam : undefined;
 
-  const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchSquadWeeklyReport(db, orgId, groupIds, timezone)]);
+  const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchSquadWeeklyReport(db, orgId, groupIds, timezone, endDate)]);
 
   const loadCsv = toCsv(
     report.load.map((r) => ({

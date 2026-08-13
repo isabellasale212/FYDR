@@ -199,3 +199,22 @@ export function pctChange(current: number, prior: number): number {
   if (prior === 0) return 0;
   return ((current - prior) / prior) * 100;
 }
+
+/** Audit finding 40: this number existed only as prose in the comment above and as a
+ *  bare `-2` literal at the one call site (lib/nutritionWorkspace.ts's buildChaseList)
+ *  — a coach had no way to see the rule that put an athlete on the chase list, only its
+ *  output. Exported so the UI can say "flags at 2%+ in 7 days" instead of just showing
+ *  a percentage with no stated threshold. This is a magnitude — buildChaseList decides
+ *  the direction (currently a fall only, not a rise; a rapid rise reads as normal
+ *  growth or hydration/food timing far more often than a rapid fall does for a growing
+ *  16-25 year old, which is why the asymmetry is real rather than an oversight — but it
+ *  is a product call, not a schema constraint, and someone should confirm it). No UI to
+ *  retune this yet: it is a code constant, not a column, on any table. */
+export const MASS_FLAG_PCT_7D = 2;
+
+/** Audit finding 43: the "day, as food" preview claims a plan is "close enough to
+ *  publish" within this tolerance (NutritionWorkspace.tsx's own caption) and the bar
+ *  colouring already keys off it — this just gives that number one real name instead of
+ *  a literal `5` repeated at each call site, so the claim and the enforcement can't
+ *  drift apart. */
+export const MACRO_TOLERANCE_PCT = 5;

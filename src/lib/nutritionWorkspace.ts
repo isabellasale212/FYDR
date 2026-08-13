@@ -3,7 +3,7 @@
  * and its client components render. No I/O — see nutritionRules.ts's header for why
  * that split matters here (server render and client re-render must agree exactly). */
 
-import { computeMassBand, massState, pctChange, positionToUnit, UNIT_ORDER, type MassBand } from './nutritionRules';
+import { computeMassBand, massState, MASS_FLAG_PCT_7D, pctChange, positionToUnit, UNIT_ORDER, type MassBand } from './nutritionRules';
 
 export type MassPoint = { date: string; kg: number };
 
@@ -130,12 +130,15 @@ export function buildChaseList(athletes: readonly WorkspaceAthlete[]): ChaseRow[
   const rows: ChaseRow[] = [];
 
   for (const a of athletes) {
-    if (a.change7d !== null && a.change7d <= -2) {
+    if (a.change7d !== null && a.change7d <= -MASS_FLAG_PCT_7D) {
       rows.push({
         athleteId: a.id,
         name: a.displayName,
         reason: 'mass_down',
-        label: 'Body mass down',
+        // Finding 40: state the rule, not just its output — a bare "Body mass down"
+        // next to a percentage forced a coach to guess why THIS number was the one
+        // that got flagged.
+        label: `Mass down ${MASS_FLAG_PCT_7D}%+ in 7 days`,
         value: `${a.change7d.toFixed(1)}%`,
         colour: 'bad',
       });

@@ -244,6 +244,12 @@ export function NutritionTargetForm({ orgId, userId, athletes, groups, canPickAn
         </label>
       ) : null}
 
+      <p className="nutr-disclaimer">
+        Coach- or medical-set guidance, not a clinical or dietetic prescription. For a diagnosed
+        condition, an eating concern, or return-to-play fuelling, involve a registered dietitian
+        before saving.
+      </p>
+
       <button type="submit" className="btn-primary" disabled={mutation.isPending}>
         {mutation.isPending ? 'Saving…' : 'Save target'}
       </button>

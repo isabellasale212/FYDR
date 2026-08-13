@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import {
   DAY_TYPES,
+  MACRO_TOLERANCE_PCT,
   RULE_BOUNDS,
   computeTargets,
   type ComputedTargets,
@@ -107,11 +108,16 @@ export function NutritionWorkspace({
     () =>
       athletes.map((a) => {
         const resolved = resolveRuleForAthlete(rules, a.id, a.groupIds);
-        if (!resolved) return { ...a, resolvedSource: null, targets: null };
+        if (!resolved) return { ...a, resolvedSource: null, targets: null, overrideRule: null };
         const isPreviewed = selectedPlan !== null && resolved.rule.id === selectedPlan.ruleId;
         const macroRule = isPreviewed ? currentRule : ruleToMacroRule(resolved.rule);
         const targets = a.massKg !== null ? computeTargets(macroRule, a.massKg, dayTypeInfo.multiplier) : null;
-        return { ...a, resolvedSource: resolved.source, targets };
+        // Finding 42: the raw per-kg rule behind a personal override, threaded through
+        // so the table can say what "Override" actually means instead of leaving it a
+        // bare pill. Only kept for athlete-scoped overrides — group/org rows show the
+        // same rule everyone else on that plan sees, so there's nothing to disclose.
+        const overrideRule = resolved.source === 'athlete' ? macroRule : null;
+        return { ...a, resolvedSource: resolved.source, targets, overrideRule };
       }),
     [athletes, rules, selectedPlan, currentRule, dayTypeInfo.multiplier],
   );
@@ -130,6 +136,7 @@ export function NutritionWorkspace({
     ? (plans.find((p) => p.ruleId === selectedResolved.rule.id)?.name ?? 'Personal rule')
     : 'No plan assigned';
   const selectedOverrideReason = selectedResolved?.source === 'athlete' ? selectedResolved.rule.reason : null;
+  const selectedOverrideRule = selectedAthlete?.overrideRule ?? null;
 
   const scaledMeals: ScaledMeal[] | null =
     selectedAthlete && selectedAthlete.massKg !== null ? scaleDay(selectedAthlete.massKg, dayTypeInfo.multiplier) : null;
@@ -185,6 +192,7 @@ export function NutritionWorkspace({
   });
 
   const exampleTargets = computeTargets(currentRule, 100, dayTypeInfo.multiplier);
+  const squadMeanN = athletesWithTargets.filter((a) => a.targets !== null).length;
   const squadMeanEnergy = (() => {
     const withTargets = athletesWithTargets.filter((a) => a.targets !== null);
     if (withTargets.length === 0) return null;
@@ -391,9 +399,17 @@ export function NutritionWorkspace({
               <div className="nutr-mono nutr-read-mean">
                 {squadMeanEnergy !== null ? squadMeanEnergy.toLocaleString('en-GB') : '·'}
               </div>
-              <div className="nutr-read-mean-label">squad mean energy</div>
+              <div className="nutr-read-mean-label">
+                squad mean energy {squadMeanEnergy !== null ? <span className="nutr-mono">· n={squadMeanN}</span> : null}
+              </div>
             </div>
           </div>
+
+          <p className="nutr-disclaimer">
+            Coach-set guidance from a body-mass rule, not a clinical or dietetic prescription. For a
+            diagnosed condition, an eating concern, or return-to-play fuelling, involve medical staff
+            or a registered dietitian before assigning.
+          </p>
         </div>
 
         <div className="card nutr-day-food-card">
@@ -428,8 +444,10 @@ export function NutritionWorkspace({
                 ))}
               </div>
               <p className="nutr-mono nutr-meal-caption">
-                Five meals · authored once for a 110 kg reference athlete · the tick on each bar is the
-                target, and a plan that lands within 5% is close enough to publish
+                Five meals · authored once for a 110 kg reference athlete, scaled to this athlete by mass
+                · the tick on each bar is the target · this fixed meal set is not re-tuned per athlete,
+                so it can land outside its own ±{MACRO_TOLERANCE_PCT}% rule — see the warning above the
+                bars if it has
               </p>
             </>
           ) : (
@@ -451,12 +469,23 @@ export function NutritionWorkspace({
           weekStart={weekStart}
           weekEnd={weekEnd}
           overrideReason={selectedOverrideReason}
+          overrideRule={selectedOverrideRule}
+          dayTypeLabel={dayTypeInfo.label}
         />
       </div>
     </div>
   );
 }
 
+/* Finding 43: this fixed meal set is scaled by mass but never re-tuned to any
+ * particular rule, so it routinely misses its own stated ±MACRO_TOLERANCE_PCT% rule —
+ * confirmed by hand against the default rule (protein +20%, carbs -22%, energy -8% at
+ * the reference mass). That was previously visible only as a small colour change on
+ * up to four small numbers, easy to miss and identical in colour whether a macro ran
+ * over or under. Two real fixes here: an explicit banner naming which macros are
+ * outside the rule, and a fill colour + arrow that differ by direction so a bar
+ * capped at the edge of its track (planned >= 1.25x target) doesn't read as "on
+ * track" just because it stopped growing. */
 function TotalsBars({
   dayTotals,
   targets,
@@ -469,34 +498,60 @@ function TotalsBars({
     { label: 'Protein', planned: dayTotals.proteinG, target: targets.proteinG, unit: 'g' },
     { label: 'Carbs', planned: dayTotals.carbG, target: targets.carbsG, unit: 'g' },
     { label: 'Fat', planned: dayTotals.fatG, target: targets.fatG, unit: 'g' },
-  ];
+  ].map((bar) => {
+    const ratio = bar.target > 0 ? bar.planned / bar.target : 0;
+    const pct = bar.target > 0 ? Math.min(100, ratio * 80) : 0;
+    const deltaPct = bar.target > 0 ? (ratio - 1) * 100 : 0;
+    const offTarget = Math.abs(deltaPct) > MACRO_TOLERANCE_PCT;
+    const direction: 'over' | 'under' | 'on' = deltaPct > 0.05 ? 'over' : deltaPct < -0.05 ? 'under' : 'on';
+    const capped = ratio >= 1.25; // the fill has nowhere left to go, but the real overshoot keeps climbing
+    return { ...bar, pct, deltaPct, offTarget, direction, capped };
+  });
+  const offBars = bars.filter((b) => b.offTarget);
+
   return (
-    <div className="nutr-totals-grid">
-      {bars.map((bar) => {
-        const pct = bar.target > 0 ? Math.min(100, (bar.planned / bar.target) * 80) : 0;
-        const deltaPct = bar.target > 0 ? ((bar.planned - bar.target) / bar.target) * 100 : 0;
-        const offTarget = Math.abs(deltaPct) > 5;
-        return (
+    <>
+      {offBars.length > 0 ? (
+        <p className="nutr-totals-warning" role="alert">
+          Outside the ±{MACRO_TOLERANCE_PCT}% rule this day is meant to hold:{' '}
+          {offBars
+            .map((b) => `${b.label} ${b.deltaPct >= 0 ? '+' : ''}${b.deltaPct.toFixed(0)}%`)
+            .join(', ')}
+          . This is the fixed reference meal set, not this athlete&rsquo;s own plan — reprice or swap
+          items rather than publishing it as-is.
+        </p>
+      ) : null}
+      <div className="nutr-totals-grid">
+        {bars.map((bar) => (
           <div key={bar.label}>
             <div className="nutr-totals-baseline">
               <span className="nutr-totals-label">{bar.label}</span>
-              <span className={`nutr-mono nutr-totals-delta ${offTarget ? 'is-off' : ''}`}>
-                {deltaPct >= 0 ? '+' : ''}
-                {deltaPct.toFixed(0)}%
+              <span className={`nutr-mono nutr-totals-delta ${bar.offTarget ? `is-${bar.direction}` : ''}`}>
+                {bar.direction === 'over' ? '▲' : bar.direction === 'under' ? '▼' : ''}
+                {bar.deltaPct >= 0 ? '+' : ''}
+                {bar.deltaPct.toFixed(0)}%
               </span>
             </div>
             <div className="nutr-totals-track">
-              <div className={`nutr-totals-fill ${offTarget ? 'is-off' : ''}`} style={{ width: `${pct}%` }} />
+              <div
+                className={`nutr-totals-fill ${bar.offTarget ? `is-${bar.direction}` : ''}`}
+                style={{ width: `${bar.pct}%` }}
+              />
               <div className="nutr-totals-tick" style={{ left: '80%' }} />
+              {bar.capped ? (
+                <span className="nutr-totals-overflow" title={`Still climbing past the edge of this bar — actually ${bar.deltaPct >= 0 ? '+' : ''}${bar.deltaPct.toFixed(0)}% of target`}>
+                  »
+                </span>
+              ) : null}
             </div>
             <div className="nutr-mono nutr-totals-detail">
               {Math.round(bar.planned).toLocaleString('en-GB')} of {Math.round(bar.target).toLocaleString('en-GB')}{' '}
               {bar.unit}
             </div>
           </div>
-        );
-      })}
-    </div>
+        ))}
+      </div>
+    </>
   );
 }
 

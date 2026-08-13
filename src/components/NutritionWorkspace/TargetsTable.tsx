@@ -1,12 +1,16 @@
 'use client';
 
-import { massState, rangeBarMark } from '@/lib/nutritionRules';
-import type { ComputedTargets } from '@/lib/nutritionRules';
+import { MASS_FLAG_PCT_7D, massState, rangeBarMark } from '@/lib/nutritionRules';
+import type { ComputedTargets, MacroRule } from '@/lib/nutritionRules';
 import type { WorkspaceAthlete } from '@/lib/nutritionWorkspace';
 
 export type AthleteWithTargets = WorkspaceAthlete & {
   resolvedSource: 'athlete' | 'group' | 'org_default' | null;
   targets: ComputedTargets | null;
+  /** Finding 42: the raw per-kg rule behind a personal override, non-null only when
+   *  resolvedSource is 'athlete'. Lets the row say what the override actually is
+   *  instead of a bare "set" pill. */
+  overrideRule: MacroRule | null;
 };
 
 type UnitGroup = { unit: string; athletes: AthleteWithTargets[] };
@@ -86,7 +90,8 @@ export function TargetsTable({ unitGroups, selectedAthleteId, onSelectAthlete }:
       </div>
       <p className="nutr-table-caption">
         Targets recompute on the next weigh-in · an athlete override replaces the rule for that
-        athlete only · a missing log is never counted as zero
+        athlete only · a missing log is never counted as zero · a {MASS_FLAG_PCT_7D}%+ drop in 7 days
+        moves an athlete onto the &ldquo;Needs a word&rdquo; chase list
       </p>
     </div>
   );
@@ -111,6 +116,21 @@ function AthleteRow({
   const logged = athlete.loggedDatesThisWeek.length;
   const loggedColour = logged <= 3 ? 'var(--bad-text)' : logged <= 5 ? 'var(--warn-text)' : 'var(--text)';
 
+  // Finding 42: "set" alone answered no question a coach would actually ask ("set to
+  // what? by whom?"). The pill now reads as a sentence fragment with a subject and an
+  // object — "Override — 2.2 g/kg protein" — and the full rule is one hover away.
+  const overrideTitle = athlete.overrideRule
+    ? `Personal override — ${athlete.overrideRule.proteinGPerKg} g/kg protein · ${athlete.overrideRule.carbGPerKg} g/kg carb · ${athlete.overrideRule.fatGPerKg} g/kg fat · ${athlete.overrideRule.fluidMlPerKg} ml/kg fluid`
+    : undefined;
+
+  // Finding 40: the resolved Energy figure was a number with no visible working. This
+  // reconstructs the one line of arithmetic that produced it — the same "N kcal
+  // because mass x kcal/kg" shape a coach would want to check by hand.
+  const energyTitle =
+    athlete.targets && athlete.massKg
+      ? `${Math.round(athlete.targets.energyKcal).toLocaleString('en-GB')} kcal because ${athlete.massKg.toFixed(1)} kg × ${(athlete.targets.energyKcal / athlete.massKg).toFixed(0)} kcal/kg`
+      : undefined;
+
   return (
     <button
       type="button"
@@ -120,7 +140,11 @@ function AthleteRow({
     >
       <span className="nutr-athlete-name" style={{ fontWeight: selected ? 700 : 400 }}>
         {athlete.displayName}
-        {athlete.resolvedSource === 'athlete' ? <span className="pill pill-accent nutr-set-pill">set</span> : null}
+        {athlete.resolvedSource === 'athlete' ? (
+          <span className="pill pill-accent nutr-set-pill" title={overrideTitle}>
+            Override
+          </span>
+        ) : null}
       </span>
       <span className="nutr-mono nutr-col-num" style={{ color: stateColour }}>
         {athlete.massKg !== null ? athlete.massKg.toFixed(1) : '·'}
@@ -132,7 +156,7 @@ function AthleteRow({
           <span className="nutr-mono nutr-range-empty">no history yet</span>
         )}
       </span>
-      <span className="nutr-mono nutr-col-num">
+      <span className="nutr-mono nutr-col-num" title={energyTitle}>
         {athlete.targets ? Math.round(athlete.targets.energyKcal).toLocaleString('en-GB') : '·'}
       </span>
       <span className="nutr-mono nutr-col-num">{athlete.targets ? Math.round(athlete.targets.proteinG) : '·'}</span>

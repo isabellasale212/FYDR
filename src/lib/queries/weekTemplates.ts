@@ -22,14 +22,16 @@ import { mondayOf } from './schedule';
  *    as the security boundary. applyTemplate() below does the same:
  *    fewer guarantees under concurrent edits (no 409 re-preview), same
  *    architecture as the rest of the app.
- *  - No compliance_expectations regeneration. The spec's own confirm copy
- *    promises it ("Compliance expectations will be regenerated for 24
- *    athletes..."), but no generate_expectations function or equivalent
- *    exists anywhere in this schema — nothing has ever written a fresh
- *    compliance_expectations row past initial seed. A template-created
- *    session's requires_wellness/requires_rpe/requires_nutrition columns
- *    are set for real; the expectations that would key off them are a
- *    real, separate, pre-existing gap this file does not paper over.
+ *  - No compliance_expectations regeneration triggered directly from applyTemplate()
+ *    itself. The spec's own confirm copy promises it ("Compliance expectations will be
+ *    regenerated for 24 athletes..."), and as of migration 0044 the generator this
+ *    promise needs now exists — public.generate_compliance_expectations(org, date),
+ *    idempotent, called nightly by pg_cron for every org's local today and tomorrow
+ *    (04-data-model.md §11, 05-architecture.md §7). What's still real and still cut
+ *    here: applyTemplate() does not call it inline after creating a week's sessions, so
+ *    a newly applied template's expectations land on the next nightly tick rather than
+ *    immediately. Wiring an inline call is a small, real follow-up now that the function
+ *    exists, not the schema-wide gap this comment used to describe.
  *  - No drag-and-drop, no monotony/strain warning threshold (O-289), no
  *    seeded starter templates (O-286).
  *  - Participants are always the whole squad (O-291's `all_squad` case

@@ -898,9 +898,31 @@ create table compliance_expectations (
 Expectations are generated nightly from the schedule and week template for the following
 day. Compliance is then `count(entries matched to expectations) / count(expectations)`.
 
+**Real implementation, `public.generate_compliance_expectations(org, date)`, migration
+0044**: `training_rpe` and `gym` follow this rule exactly — one row per resolved
+participant of a same-day, non-cancelled session with `requires_rpe = true`
+(`training_rpe`), plus one row per resolved participant of a same-day `gym`-type session
+(`gym`, checked against `gym_session_logs` rather than RPE). `wellness` diverges: one row
+per active athlete per organisation per day, unconditional on the schedule, rather than
+gated on a same-day session with `requires_wellness = true`. This matches
+`supabase/seed.sql`'s own §11 bulk insert (the reference implementation this migration
+was built against) rather than `03-flows.md`'s rest-day language, and is a deliberate,
+documented judgement call — see migration 0044's own header for the full reasoning,
+including why a session-gated rule would currently leave the whole compliance product
+dark (this build's live schedule has no sessions at all past its seed window for either
+organisation). A true week-template-aware rest-day rule for wellness is a real product
+decision this migration does not make. Scheduled via `pg_cron`
+(`generate-compliance-expectations`, hourly at :05, matching `05-architecture.md` §7's
+job table exactly) — not an Edge Function, and not Vercel Cron: `pg_cron` was already
+installed and already running a job in this project (migration 0033) before this one.
+
 **Waivers exist so absence is not punished as non-compliance.** An athlete on leave, or
 unavailable through injury with wellness not required, has the expectation waived with a
-reason rather than deleted.
+reason rather than deleted. Note that migration 0044's generation function does not
+itself perform this waiving — it inserts every row as `is_required = true` by default and
+leaves waiving to the existing coach-facing waive action (`squad-list.md`) and to
+session-cancellation (`session-detail.md`), both of which write `waived_reason` after the
+fact and are never overwritten by a later generation run.
 
 ---
 

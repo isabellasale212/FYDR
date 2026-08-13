@@ -1104,4 +1104,126 @@ values ('b0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-0000000
         'medical', 'injury_clinical.read', 'injury_clinical',
         'b71e0000-0000-4000-8000-000000000001', '{"reason":"weekly review"}'::jsonb);
 
+
+-- ===========================================================================
+-- 14. The under-18 athlete (added 2026-08-13, audit finding S6 / gameplan 2.1)
+--
+-- One real minor in organisation A — Kai Mercer, 16, academy fly-half — so the
+-- Children's Code leaderboard controls are demonstrable against live data, not
+-- only inside the pgTAP suite (tests/200_minor_leaderboard_test.sql proves the
+-- rule; this athlete makes it visible in the running product):
+--
+--   He has qualifying training entries, so he WOULD rank on the published
+--   "Total session load" board — and does not, because he is 16 and has no
+--   leaderboard_visibility consent. His absence there, and his opt-in framing
+--   at /me/leaderboards, and his U20 row on the staff testing wall (a separate
+--   internal, staff-only system that includes everyone by design) are the three
+--   surfaces a reviewer should check.
+--
+-- Deliberately placed AFTER §12, not with the squad in §3: §12's consent insert
+-- cross-joins every athlete that exists when it runs and would hand him a
+-- granted leaderboard_visibility row by formula. A minor must arrive with NO
+-- such consent — off every published board until he grants it himself — and on
+-- a fresh `db reset` this file runs top to bottom, so position is what keeps
+-- that true. Nothing here renumbers or edits an existing row; ids continue the
+-- §3 sequences (athlete n=29, user 100+n=129).
+--
+-- No wellness/checkin history on purpose: the block seeds exactly what the
+-- under-18 demonstration needs and nothing else. The auth login comes from
+-- `npm run seed:auth`, which sweeps public.users, same as every other athlete.
+-- ===========================================================================
+
+insert into users (id, org_id, email, full_name, status, claims_version) values
+  ('e5e20000-0000-4000-8000-000000000129', 'a0000000-0000-4000-8000-000000000001',
+   'k.mercer@ashcomberfc.example', 'Kai Mercer', 'active', 1);
+
+-- DOB 4 Feb 2010: 16 years old as of 13 Aug 2026, a minor until Feb 2028. The club
+-- asserted the date and recorded parental involvement at his July 2026 academy
+-- intake, per 09-security-and-compliance.md §4.7 — same shape as §3's two youngest.
+insert into athletes (
+  id, org_id, user_id, first_name, last_name, preferred_name, date_of_birth,
+  position, squad_number, dominant_side, height_cm, status, joined_at,
+  consent_given_at, consent_version, dob_asserted_by, dob_asserted_at,
+  parental_consent_recorded_at, parental_consent_recorded_by, parental_consent_method
+) values (
+  'a71e0000-0000-4000-8000-000000000029', 'a0000000-0000-4000-8000-000000000001',
+  'e5e20000-0000-4000-8000-000000000129', 'Kai', 'Mercer', 'Kai', date '2010-02-04',
+  'Fly-half', 29, 'right', 176.0, 'active', date '2026-07-01',
+  timestamptz '2026-07-04 09:12:00+01', '2026.1',
+  'e5e20000-0000-4000-8000-00000000000f', timestamptz '2026-07-02 11:00:00+01',
+  timestamptz '2026-07-03 17:30:00+01', 'e5e20000-0000-4000-8000-00000000000f',
+  'club_registration_form'
+);
+
+insert into user_roles (org_id, user_id, role) values
+  ('a0000000-0000-4000-8000-000000000001',
+   'e5e20000-0000-4000-8000-000000000129', 'athlete');
+
+-- Academy (the group the audit demonstration names) and Backs (every athlete is in
+-- a positional group, §4; a fly-half is a back, and Backs membership is what assigns
+-- him to sessions through session_participants).
+insert into group_memberships (org_id, group_id, athlete_id, added_at) values
+  ('a0000000-0000-4000-8000-000000000001', '9509000a-0000-4000-8000-000000000003',
+   'a71e0000-0000-4000-8000-000000000029', timestamptz '2026-07-01 09:00:00+01'),
+  ('a0000000-0000-4000-8000-000000000001', '9509000a-0000-4000-8000-000000000002',
+   'a71e0000-0000-4000-8000-000000000029', timestamptz '2026-07-01 09:00:00+01');
+
+-- Two RPE entries against the two most recent completed pitch sessions, so he holds
+-- a qualifying total on the published all-time session-load board. Looked up rather
+-- than hard-coded because §5 generates session ids from the run date.
+do $$
+declare
+  s1 record;
+  s2 record;
+begin
+  select id, starts_at, duration_min into s1
+  from sessions
+  where org_id = 'a0000000-0000-4000-8000-000000000001'
+    and status = 'completed' and session_type = 'training'
+  order by starts_at desc limit 1;
+
+  select id, starts_at, duration_min into s2
+  from sessions
+  where org_id = 'a0000000-0000-4000-8000-000000000001'
+    and status = 'completed' and session_type = 'training' and id <> s1.id
+  order by starts_at desc limit 1;
+
+  insert into training_entries (org_id, athlete_id, session_id, entry_date, rpe,
+                                duration_min, source, submitted_at, created_by) values
+    ('a0000000-0000-4000-8000-000000000001', 'a71e0000-0000-4000-8000-000000000029',
+     s1.id, s1.starts_at::date, 7.5, coalesce(s1.duration_min, 80), 'self_report',
+     s1.starts_at + (coalesce(s1.duration_min, 80) + 45) * interval '1 minute',
+     'e5e20000-0000-4000-8000-000000000129'),
+    ('a0000000-0000-4000-8000-000000000001', 'a71e0000-0000-4000-8000-000000000029',
+     s2.id, s2.starts_at::date, 8.0, coalesce(s2.duration_min, 80), 'self_report',
+     s2.starts_at + (coalesce(s2.duration_min, 80) + 45) * interval '1 minute',
+     'e5e20000-0000-4000-8000-000000000129');
+end $$;
+
+-- Two testing sessions' worth of results, so the staff testing wall has him in its
+-- U20 band. Joined on name because test_definitions are not created by this file
+-- (they exist on the live database only): on a database without them this inserts
+-- nothing, matching how the rest of the testing data is absent from a fresh reset.
+-- Values are ordinary for a 16-year-old back — off the wall's adult standards, and
+-- improving between sessions. Entered by the S&C lead; is_best is trigger-set.
+insert into test_results (org_id, athlete_id, test_definition_id, test_date, value,
+                          source, recorded_by)
+select 'a0000000-0000-4000-8000-000000000001', 'a71e0000-0000-4000-8000-000000000029',
+       td.id, v.test_date, v.value, 'staff_entered',
+       'e5e20000-0000-4000-8000-00000000000b'
+from (values
+  ('10m sprint', date '2026-07-21', 1.86),
+  ('10m sprint', date '2026-08-04', 1.83),
+  ('CMJ height', date '2026-07-21', 34.5),
+  ('CMJ height', date '2026-08-04', 36.0)
+) as v(name, test_date, value)
+join test_definitions td
+  on td.org_id = 'a0000000-0000-4000-8000-000000000001'
+ and td.name = v.name
+ and td.deleted_at is null;
+
+-- NO athlete_consents row for Kai, and none may be added here: the absence of a
+-- leaderboard_visibility grant IS the seeded state under demonstration. He appears
+-- on a published board only after granting it himself at /me/leaderboards.
+
 commit;

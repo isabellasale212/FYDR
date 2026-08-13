@@ -170,6 +170,11 @@ export default async function LeaderboardDetailPage({
           . Athletes who opted out or did not qualify are not shown, and are not
           distinguished from each other here.
         </p>
+        <p className="cap">
+          Athletes under 18 are never shown on a published board unless they choose to
+          opt in themselves &mdash; if one is missing here, that may be why, not a fault
+          with the board.
+        </p>
       </section>
     </>
   );

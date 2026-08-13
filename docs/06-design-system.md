@@ -163,7 +163,6 @@ see a blank frame. Raised as O-607.
 | `--avatar-bg` | `#1a2340` | Avatar plate |
 | `--avatar-text` | `#6f9bff` | Avatar initials and active tab |
 | `--tab-active` | `#6f9bff` | Active tab label |
-| `--tab-inactive` | `#4a5578` | Inactive tab label |
 | `--node-empty-border` | `#313c60` | Empty node outline |
 | `--accent-rgb` | `31,111,234` | Channel triplet for alpha tints |
 | `--accent2-rgb` | `51,182,255` | Channel triplet for alpha tints |
@@ -192,9 +191,17 @@ violates the system's own rule. See §14.
 | `--track` | `rgba(16,18,23,0.07)` | `rgba(255,255,255,0.12)` | Track, well |
 | `--field` | `#f0f2f5` | `#1a2340` | Input fill |
 | `--shadow` | `0 1px 3px rgba(16,18,23,.08)` | `0 1px 2px rgba(0,0,0,.4)` | The one elevation |
+| `--tab-inactive` | `#4a5578` | `#8590bb` | Inactive tab label |
 
 Note that in dark, `--surf2`, `--elev`, `--field` and `--avatar-bg` are all `#1a2340`. There
 is one raised surface in dark, not a scale.
+
+`--tab-inactive` moved here from §2.2 on 13 August 2026: it was single-valued at `#4a5578`,
+which is §3.3's own documented dark-theme failure (2.24:1 on `--surf`, "fails by a wide
+margin," inactive tab text, no disabled-control exemption). Live-measured against the running
+app rather than derived on paper like the rest of this section: `#8590bb`, 4.99:1 on `--bg`,
+4.94:1 on `--elev`. Dimmer than `--muted` so the active/inactive hierarchy still reads, closer
+in hue to the light value than a bare reuse of `--muted` would be. Light is unchanged.
 
 ### 2.4 How dark is delivered
 
@@ -411,17 +418,18 @@ Surfaces: `--bg` #182241, `--surf` #171e36, and `--surf2` / `--elev` / `--field`
 | `--bad` #f15a4a | 4.69 | 4.94 | 4.64 | AA |
 | `--highlight` #f5c518 | 9.59 | 10.10 | 9.48 | AAA |
 | `--avatar-text` / `--tab-active` #6f9bff | 5.81 | 6.12 | 5.75 | AA |
-| `--tab-inactive` #4a5578 | 2.13 | 2.24 | 2.11 | **Fails 4.5 and 3.0** |
+| `--tab-inactive` #8590bb (was #4a5578) | 4.99 | 5.24 | 4.94 | AA — fixed 13 August 2026 |
 
 **Reading of this table**: the palette was designed dark-first and it shows. Dark is broadly
-compliant. Two failures matter:
+compliant. One failure remains open:
 
 1. `--accent` as text on dark, at 3.54, is a body-text failure. Anything that renders an
    accent-coloured label, link or section number on a dark surface is non-compliant. The
    source page does exactly this with `.sec-num`.
-2. `--tab-inactive` #4a5578 at 2.24 is an inactive **tab label**, which is text, and it fails
-   by a wide margin. WCAG makes no exemption for inactive tabs: they are readable content, not
-   disabled controls.
+
+`--tab-inactive` #4a5578 at 2.24 — an inactive **tab label**, which is text, with no
+disabled-control exemption — was the other failure this table used to list. It is now
+theme-split (§2.3): light keeps the source's `#4a5578`, dark moved to `#8590bb`.
 
 ### 3.4 Tinted pills
 

@@ -382,7 +382,7 @@ action. This is the most common cause of "the app has lost a player".
 | Remove from group | `update group_memberships set removed_at = now() where removed_at is null` | Coach, medical, admin |
 | Assign programme | `insert into programme_assignments` per athlete | Coach (gym, conditioning), medical (rehab) |
 | Add to a session | `insert into session_participants` per athlete, with restriction checking per `session-detail.md` | Coach |
-| Set availability | `insert into availability` per athlete, and `update` the previous row's `effective_to` | **Medical only** |
+| Set availability | `insert into availability` per athlete, and `update` the previous row's `effective_to` | Medical (any reason, including injury-linked); coach (non-injury reason only — illness, personal, academic, representative, other. ADR-008, migration 0041) |
 | Send reminder | Enqueue notifications, subject to the budget rules in `08-notifications.md` §1 | Coach, medical |
 | Waive expectations | `update compliance_expectations set is_required = false, waived_reason = :reason` | Coach, medical |
 | Export selection | `report_runs` via the export pipeline, audited | Coach, medical, admin |

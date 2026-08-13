@@ -627,26 +627,39 @@ async function fetchWeekLoad(
 // Squad state
 // ---------------------------------------------------------------------------
 
+// Name plus the reason a coach or medical staff actually recorded, if any —
+// this tile used to show bare names (the audit's own S4 finding was about the
+// list disappearing under a filter, not about what the names lacked, but the
+// same rows already carried reason_category and it went unused). Non-injury
+// and injury-linked rows render identically here: this tile is squad state at
+// a glance, not the injury detail — see AvailabilityList and the injuries
+// report for where body area appears for the injury-linked case.
+export type SquadStateEntry = { name: string; reason: string | null };
+
 export type SquadState = {
   total: number;
   available: number;
   modified: number;
   unavailable: number;
-  modifiedNames: string[];
-  unavailableNames: string[];
+  modifiedNames: SquadStateEntry[];
+  unavailableNames: SquadStateEntry[];
 };
 
 export async function fetchSquadState(db: Db, orgId: string, groupIds: readonly string[]): Promise<SquadState> {
   const rows = await fetchNotFullyAvailable(db, orgId, groupIds);
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
   const availRows = await fetchCurrentAvailability(db, orgId, scope);
+  const toEntry = (r: (typeof rows)[number]): SquadStateEntry => ({
+    name: r.name,
+    reason: r.reason_category,
+  });
   return {
     total: availRows.length,
     available: availRows.filter((a) => a.status === 'available').length,
     modified: rows.filter((r) => r.status === 'modified').length,
     unavailable: rows.filter((r) => r.status === 'unavailable').length,
-    modifiedNames: rows.filter((r) => r.status === 'modified').map((r) => r.name),
-    unavailableNames: rows.filter((r) => r.status === 'unavailable').map((r) => r.name),
+    modifiedNames: rows.filter((r) => r.status === 'modified').map(toEntry),
+    unavailableNames: rows.filter((r) => r.status === 'unavailable').map(toEntry),
   };
 }
 

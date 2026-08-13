@@ -1,11 +1,13 @@
 import type { CSSProperties } from 'react';
-import type { AvailabilityStatus } from '@/lib/types/database';
+import type { AvailabilityReason, AvailabilityStatus } from '@/lib/types/database';
 import { availabilityStatus } from '@/lib/status';
 import { enumLabel } from '@/lib/format';
 
 type Props = {
   status: AvailabilityStatus | null;
   restrictions: readonly string[];
+  reasonCategory?: AvailabilityReason | null;
+  note?: string | null;
 };
 
 const TONE_RGB = {
@@ -26,8 +28,14 @@ const TONE_TEXT = {
 
 /** What the athlete may do today, stated first, in words he can act on. He is
  *  told the restriction and never the diagnosis, which is the same rule that
- *  applies to his coach. */
-export function AvailabilityBanner({ status, restrictions }: Props) {
+ *  applies to his coach.
+ *
+ *  reasonCategory and note render here too now (ADR-008 / gameplan 2.6) —
+ *  both were already fetched by fetchAthleteAvailability before this change
+ *  and simply had nowhere to show. A non-injury reason (exams, personal,
+ *  representative honours, illness) is exactly the kind of thing an athlete
+ *  should see stated plainly, not folded into "No restriction recorded." */
+export function AvailabilityBanner({ status, restrictions, reasonCategory, note }: Props) {
   const state = availabilityStatus(status);
 
   return (
@@ -43,14 +51,17 @@ export function AvailabilityBanner({ status, restrictions }: Props) {
         <div className="v">
           {restrictions.length > 0
             ? restrictions.map(enumLabel).join(' · ')
-            : status === 'available'
-              ? 'Everything is on.'
-              : 'No restriction recorded.'}
+            : reasonCategory
+              ? enumLabel(reasonCategory)
+              : status === 'available'
+                ? 'Everything is on.'
+                : 'No restriction recorded.'}
         </div>
+        {note ? <div className="s">{note}</div> : null}
         {status !== 'available' ? (
           <div className="s">
-            Everything else is on. Speak to medical staff before you change
-            anything.
+            Everything else is on. Speak to your coach or medical staff before
+            you change anything.
           </div>
         ) : null}
       </div>

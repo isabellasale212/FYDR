@@ -134,7 +134,10 @@ export default async function InjuryAvailabilityReportPage({
                         <div>
                           <span className="nm">{row.name}</span>
                           <div className="tiny">
-                            {row.body_area ? enumLabel(row.body_area) : row.restrictions.join(', ') || 'Restricted'}
+                            {row.body_area
+                              ? enumLabel(row.body_area)
+                              : row.restrictions.join(', ') ||
+                                (row.reason_category ? enumLabel(row.reason_category) : 'Restricted')}
                             {row.expected_return ? ` · back ${formatDate(row.expected_return)}` : ''}
                           </div>
                         </div>

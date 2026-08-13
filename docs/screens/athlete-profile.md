@@ -625,7 +625,7 @@ are limited rather than absent.
 | Staff-entered data carries `source = 'staff_entered'` | Forced in the RPC. The client cannot supply `data_source`. |
 | A staff entry cannot silently overwrite an athlete's entry | Rejected with `entry_exists`; the coach must explicitly create a revision. Entries are immutable once submitted (`CLAUDE.md` §2 rule 6). |
 | Corrections create revisions | `revision_of` set, original marked `superseded_by`. Both remain. |
-| Only medical sets availability | RLS. The coach client does not render the control. |
+| Only medical sets availability linked to an injury | RLS (`availability_medical_insert`/`_update`, migration 0012). A coach may set non-injury availability directly since ADR-008 (migration 0041) — illness, personal, academic, representative, other — and the coach client renders that control, not the injury-linked one. |
 | Coaches never receive clinical fields | Two tables, two policies, no join in any coach-facing query. |
 | Clinical reads are audited | Through the RPC, in the same statement. |
 | Every aggregate carries its sample size | `MetricTile` and `DomainChart` both fail unit tests without a footnote. |

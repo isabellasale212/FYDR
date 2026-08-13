@@ -7,6 +7,7 @@ import { Dial } from '@/components/Dial/Dial';
 import { DomainChips } from '@/components/DomainChips/DomainChips';
 import { PlayerProfileFlags } from '@/components/PlayerProfileFlags/PlayerProfileFlags';
 import { BodyWeightPanel } from '@/components/BodyWeightPanel/BodyWeightPanel';
+import { SetAvailabilityFormCoach } from '@/components/SetAvailabilityFormCoach/SetAvailabilityFormCoach';
 import { fetchPlayerProfile, bandTone, type Tone } from '@/lib/queries/playerProfile';
 import { fetchBodyCompositionEntries } from '@/lib/queries/bodyComposition';
 import { enumLabel, formatDate, formatNumber, initials, todayIso } from '@/lib/format';
@@ -148,6 +149,10 @@ export default async function AthletePage({
   // action RLS is just going to reject.
   const canLogWeighIn = claims.roles.includes('coach') || claims.roles.includes('medical');
   const weighIns = canLogWeighIn ? await fetchBodyCompositionEntries(db, orgId, athleteId) : [];
+  // Same two roles, for the same reason: availability_coach_insert_noninjury
+  // (0041) and availability_medical_insert (0012) between them cover exactly
+  // coach and medical, so this never offers an action RLS would reject.
+  const canSetAvailability = claims.roles.includes('coach') || claims.roles.includes('medical');
 
   const { athlete, athleticism, acwr, wellnessRating, headerWellness, programme, nutrition, bodyWeight } = profile;
   const spark = sparklinePaths(bodyWeight.history);
@@ -214,6 +219,13 @@ export default async function AthletePage({
               </div>
             </div>
           </div>
+
+          {athlete.availability && athlete.availability.status !== 'available' ? (
+            <p className="sub" style={{ margin: '2px 0 0' }}>
+              {athlete.availability.reason_category ? enumLabel(athlete.availability.reason_category) : 'No reason recorded'}
+              {athlete.availability.note ? ` — ${athlete.availability.note}` : ''}
+            </p>
+          ) : null}
 
           <div className="pp-detail-row">
             <div className="pp-detail-cell">
@@ -374,6 +386,21 @@ export default async function AthletePage({
                 </Link>
               ) : null}
             </section>
+
+            {/* ADR-008 / migration 0041: non-injury availability, reachable by
+             * coach or medical, without an injury record existing at all —
+             * the entry point the audit found missing (gameplan 2.6). Gated
+             * on the same two roles as the weigh-in button above, since
+             * availability_coach_insert_noninjury (0041) and
+             * availability_medical_insert (0012) are exactly those two roles. */}
+            {canSetAvailability ? (
+              <section className="card pp-card" aria-labelledby="pp-availability-title">
+                <h2 className="card-title" id="pp-availability-title">
+                  Availability
+                </h2>
+                <SetAvailabilityFormCoach orgId={orgId} userId={claims.userId} athleteId={athlete.id} />
+              </section>
+            ) : null}
           </div>
 
           <div className="pp-grid-col">

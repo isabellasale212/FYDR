@@ -756,7 +756,8 @@ create table availability (
   athlete_id     uuid not null references athletes(id),
   status         availability_status not null,   -- available|modified|unavailable
   restrictions   text[],                          -- 'no contact','no sprinting','upper body only'
-  reason_category availability_reason,            -- injury|illness|personal|suspension|load_management
+  reason_category availability_reason,            -- injury|illness|personal|suspension|
+                                                   -- load_management|academic|representative|other
   injury_id      uuid references injuries(id),
   effective_from timestamptz not null default now(),
   effective_to   timestamptz,
@@ -764,7 +765,19 @@ create table availability (
   note           text,                            -- non-clinical, coach-visible
   created_at     timestamptz not null default now()
 );
+```
 
+**Write access is split by whether a row is injury-linked, not by table.** Medical may
+insert or close any row. A coach may insert or close a row only when `injury_id is null`
+and `reason_category` is not `'injury'` — a non-injury absence (illness, personal,
+academic, representative, other), which needs no medical involvement at all.
+`academic`, `representative` and `other` were added to `availability_reason` for exactly
+this case (migration 0040). See `01-roles-and-permissions.md` §4 and
+`decisions/adr-008-coach-non-injury-availability.md` for the reasoning and the RLS
+policies (migration 0041). This does not change anything about `injuries` or
+`injury_clinical`; a coach still has no write access to either, under any circumstance.
+
+```sql
 create table rehab_assignments (
   id            uuid primary key default gen_random_uuid(),
   org_id        uuid not null references organisations(id),

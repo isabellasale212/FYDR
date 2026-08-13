@@ -14,15 +14,26 @@ import {
   fetchUntiedFlags,
   fetchWeekStrip,
   type SessionPip,
+  type SquadStateEntry,
 } from '@/lib/queries/dashboard';
 import { fetchGroups } from '@/lib/queries/groups';
 import { mondayOf } from '@/lib/queries/schedule';
-import { formatDate, formatLongDate, todayIso } from '@/lib/format';
+import { enumLabel, formatDate, formatLongDate, todayIso } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Dashboard · Fydr' };
+
+/** "James Barnes (Academic), Priya Shah" — the reason only where one was
+ *  actually recorded. An injury-linked row shows "(Injury)" here, generic on
+ *  purpose: body area and expected return already have their own home on
+ *  the injuries report, and this tile is squad state at a glance, not the
+ *  injury detail. ADR-008 / gameplan 2.6: this reason field went
+ *  unrendered entirely before this change, for medical-authored rows too. */
+function namedWithReason(entries: SquadStateEntry[]): string {
+  return entries.map((e) => (e.reason ? `${e.name} (${enumLabel(e.reason)})` : e.name)).join(', ');
+}
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -227,7 +238,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           <div className="dash-stat-sub">
             {stats.modifiedCount} modified, {stats.unavailableCount} out
           </div>
-          <div className="dash-stat-foot">status set by medical</div>
+          <div className="dash-stat-foot">injury status set by medical, other absences by coach</div>
         </Link>
         <Link href="/flags" className="dash-stat">
           <div className="dash-stat-label">Open flags</div>
@@ -452,7 +463,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 600 }}>Modified</div>
                   <div className="tiny" style={{ color: 'var(--faint)' }}>
-                    {squad.modifiedNames.join(', ') || 'nobody'}
+                    {namedWithReason(squad.modifiedNames) || 'nobody'}
                   </div>
                 </div>
                 <span className="mono" style={{ fontSize: 14 }}>
@@ -464,7 +475,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 600 }}>Unavailable</div>
                   <div className="tiny" style={{ color: 'var(--faint)' }}>
-                    {squad.unavailableNames.join(', ') || 'nobody'}
+                    {namedWithReason(squad.unavailableNames) || 'nobody'}
                   </div>
                 </div>
                 <span className="mono" style={{ fontSize: 14 }}>

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { RpeForm } from '@/components/RpeForm/RpeForm';
 import { fetchSessionForRpe, fetchTrainingEntryForSession } from '@/lib/queries/training';
-import { dateInTz, enumLabel, formatDate, formatTime, mdLabel } from '@/lib/format';
+import { dateInTz, enumLabel, formatDate, formatTime, mdExplainer, mdLabel } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
 
 export const metadata = { title: 'How hard was it? · Fydr' };
@@ -91,7 +91,9 @@ export default async function RpePage({
             {md ? (
               <>
                 {' · '}
-                <span className="mono">{md}</span>
+                <span className="mono" title={mdExplainer(session.md_offset) ?? undefined}>
+                  {md}
+                </span>
               </>
             ) : null}
           </div>

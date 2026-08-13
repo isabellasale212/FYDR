@@ -6,7 +6,7 @@ import { fetchCheckinForWeek } from '@/lib/queries/nutrition';
 import { resolveTargetForDate } from '@/lib/queries/nutritionTargets';
 import { mondayOf } from '@/lib/queries/schedule';
 import { Toast } from '@/components/Toast/Toast';
-import { addDays, mdLabel, todayIso } from '@/lib/format';
+import { addDays, mdExplainer, mdLabel, todayIso } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
 
 export const metadata = { title: 'My programme · Fydr' };
@@ -17,6 +17,17 @@ const TARGET_ROWS = [
   { key: 'carbs_g', label: 'Carbohydrate', unit: 'g', litres: false },
   { key: 'fluid_ml', label: 'Fluid', unit: 'L', litres: true },
 ] as const;
+
+/** Gameplan 4.2 / audit S8: block names are free text a coach types in
+ *  ProgrammeBuilder (no fixed list), so this can only explain the
+ *  well-known periodisation phase names, not every possible block name.
+ *  "Accumulation" is the one confirmed live in this build's own data
+ *  (`programme_blocks`); left as an exact, case-insensitive lookup rather
+ *  than a guess dressed up as a definition — an unrecognised block name
+ *  gets no tooltip rather than a wrong one. */
+const BLOCK_PHASE_EXPLAINER: Record<string, string> = {
+  accumulation: 'A training phase focused on building work volume and capacity, before the load intensifies.',
+};
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -89,7 +100,12 @@ export default async function MyProgrammePage({
           <div className="prog-header">
             <p className="eyebrow">
               {programmeType === 'rehab' ? 'Rehab' : 'Gym'}
-              {blockName ? ` · ${blockName}` : ''}
+              {blockName ? (
+                <>
+                  {' · '}
+                  <span title={BLOCK_PHASE_EXPLAINER[blockName.toLowerCase()]}>{blockName}</span>
+                </>
+              ) : null}
               {weekNumber ? ` · Week ${weekNumber}` : ''}
             </p>
             <h1>{programmeName}</h1>
@@ -109,9 +125,14 @@ export default async function MyProgrammePage({
                     <div>
                       <span className="nm">{s.session_name}</span>
                       <div className="tiny">
-                        {s.block_name} · Week {s.week_number}
+                        <span title={BLOCK_PHASE_EXPLAINER[s.block_name.toLowerCase()]}>{s.block_name}</span> · Week {s.week_number}
                         {s.day_number ? ` · Day ${s.day_number}` : ''}
-                        {mdLabel(s.md_offset) ? ` · ${mdLabel(s.md_offset)}` : ''}
+                        {mdLabel(s.md_offset) ? (
+                          <>
+                            {' · '}
+                            <span title={mdExplainer(s.md_offset) ?? undefined}>{mdLabel(s.md_offset)}</span>
+                          </>
+                        ) : null}
                       </div>
                     </div>
                     <span className="chev" aria-hidden="true">
@@ -129,7 +150,14 @@ export default async function MyProgrammePage({
         <div className="card">
           <h2 className="card-title">Nutrition targets</h2>
           <p className="import-sub">
-            {target.md_specific ? `Set for ${mdLabel(target.md_offset) ?? 'today'}.` : 'Your standing target.'}{' '}
+            {target.md_specific ? (
+              <>
+                Set for{' '}
+                <span title={mdExplainer(target.md_offset) ?? undefined}>{mdLabel(target.md_offset) ?? 'today'}</span>.
+              </>
+            ) : (
+              'Your standing target.'
+            )}{' '}
             Guidance only &mdash; nothing to log here.
           </p>
           {TARGET_ROWS.map((row) => {

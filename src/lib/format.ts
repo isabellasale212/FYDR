@@ -238,6 +238,19 @@ export function mdLabel(offset: number | null | undefined): string | null {
   return offset < 0 ? `MD${offset}` : `MD+${offset}`;
 }
 
+/** Gameplan 4.2 / audit S8: "MD-3" reads as scheduling shorthand to a coach
+ *  but is unexplained jargon to a 16-year-old academy athlete. Plain-English
+ *  companion to mdLabel, for a title attribute or subtext wherever an MD-n
+ *  label renders in the athlete app — CLAUDE.md §6's own definition
+ *  ("Matchday minus n days") spelled out, not reworded. */
+export function mdExplainer(offset: number | null | undefined): string | null {
+  if (offset === null || offset === undefined) return null;
+  if (offset === 0) return 'Matchday';
+  const n = Math.abs(offset);
+  const days = n === 1 ? '1 day' : `${n} days`;
+  return offset < 0 ? `${days} before matchday` : `${days} after matchday`;
+}
+
 /** Per-week MD-n re-anchoring for week strips and week grids.
  *
  *  Stored `md_offset` counts toward whichever fixture a session was created

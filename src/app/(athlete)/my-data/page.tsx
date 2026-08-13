@@ -170,8 +170,12 @@ async function WellnessTab({
           Readiness
         </h2>
         <p className="import-sub">
-          Against your own {ROLLING_DAYS} day rolling mean and &plusmn;1SD band.
-          What matters is whether today is normal for you, not the raw number.
+          Against your own {ROLLING_DAYS} day rolling mean and{' '}
+          <span title="The normal range for your own numbers, not anyone else's.">
+            &plusmn;1SD band
+          </span>{' '}
+          &mdash; the normal range for your own numbers. What matters is whether
+          today is normal for you, not the raw number.
         </p>
 
         {submitted === 0 ? (
@@ -416,6 +420,22 @@ async function NutritionTab({
   );
 }
 
+/** Gameplan 4.2 / audit S8: test names like "IMTP peak force" are standard
+ *  S&C field-test vocabulary a coach or physio knows, not a 16-year-old
+ *  reading their own results. Confirmed against this org's live
+ *  `test_definitions` (unit + higher_is_better) rather than assumed:
+ *  Bronco is timed in seconds, lower is better (a shuttle-run test);
+ *  IMTP peak force is in newtons, higher is better (a maximum-strength
+ *  test); Yo-Yo IR1 is in metres, higher is better (a shuttle-run test).
+ *  Exact-name lookup, case-insensitive — an unrecognised test name (this
+ *  org's freeform "10m sprint" etc. are already self-explanatory) gets no
+ *  tooltip rather than an invented one. */
+const TEST_NAME_EXPLAINER: Record<string, string> = {
+  'imtp peak force': 'Isometric mid-thigh pull: a maximum-strength test, measured in newtons of force. Higher is better.',
+  'yo-yo ir1': 'Yo-Yo Intermittent Recovery Test, level 1: a shuttle-run test of aerobic fitness, measured in metres covered. Higher is better.',
+  'bronco test': 'A repeated shuttle-run test of aerobic endurance, timed in seconds. Lower (faster) is better.',
+};
+
 /** screens/testing.md's own role table: "Athlete: Own results only: history,
  *  personal bests." RLS already scopes test_results to the caller's own
  *  rows; fetchMyTestSummary just shapes it per test, latest result plus PB. */
@@ -449,7 +469,7 @@ async function TestingTab({
           <div className="stack" style={{ gap: 6, marginTop: 10 }}>
             {summary.map((s) => (
               <div key={s.test_definition_id} className="load-row" style={{ gridTemplateColumns: '1fr auto auto' }}>
-                <span className="nm">{s.name}</span>
+                <span className="nm" title={TEST_NAME_EXPLAINER[s.name.toLowerCase()]}>{s.name}</span>
                 <span className="tiny">
                   {s.latestValue !== null ? `Latest ${s.latestValue.toFixed(s.decimal_places)}${s.unit}` : dash(null)}
                 </span>

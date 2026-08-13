@@ -53,6 +53,13 @@ export type ComplianceAthleteRow = {
   last_name: string;
   perDomain: Record<string, { expected: number; submitted: number }>;
   lastSubmission: string | null;
+  /** Expectations excluded from perDomain because they were waived (medical/
+   *  coach reason, e.g. injured all week) — tracked separately so a fully
+   *  waived athlete (expected: 0 everywhere) is never indistinguishable from
+   *  a genuinely 100%-compliant one, and never buried at the bottom of a
+   *  "worst first" chase list below athletes who are actually missing
+   *  entries (audit analysis findings 14/19). */
+  waivedCount: number;
 };
 
 /** One row per calendar day per domain, squad-wide — a rollup, not the full
@@ -71,6 +78,26 @@ export type ComplianceReport = {
 };
 
 const REPORT_DOMAINS: ComplianceDomain[] = ['wellness', 'training_rpe', 'gym'];
+
+/** The most recent day this org has a real compliance_expectations row for,
+ *  in scope. Used to default the report's window sensibly instead of a
+ *  rolling "last N days ending real today" that lands on empty real-clock
+ *  days when the seed data's own "today" lags behind it — the report
+ *  read "0 of 0" across the board with no way to tell that from an
+ *  org with nobody training (audit analysis finding 14). Null only for an
+ *  org with no compliance history at all. */
+export async function fetchLatestComplianceExpectationDate(
+  db: Db,
+  orgId: string,
+  groupIds: readonly string[],
+): Promise<string | null> {
+  const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
+  let query = db.from('compliance_expectations').select('expectation_date').eq('org_id', orgId);
+  if (scope) query = query.in('athlete_id', scope);
+  const { data, error } = await query.order('expectation_date', { ascending: false }).limit(1);
+  if (error) throw new Error(error.message);
+  return data?.[0]?.expectation_date ?? null;
+}
 
 export async function fetchComplianceReport(
   db: Db,
@@ -107,7 +134,19 @@ export async function fetchComplianceReport(
     .neq('domain', 'nutrition');
   if (expErr) throw new Error(expErr.message);
 
-  const required = (expectations ?? []).filter((e) => e.is_required);
+  // NOT filtered to is_required here. That used to happen — const required =
+  // expectations.filter(e => e.is_required) — and it was a real, pre-existing
+  // bug: in this schema is_required is false if and only if waived_reason is
+  // set (verified live: zero rows disagree), so that filter silently dropped
+  // every waived expectation before the loop below ever got to look at it.
+  // The loop's own `waived` branch already does the right thing with a waived
+  // row (excluded from expected/submitted, counted separately) — it just
+  // never ran. Concretely: the compliance summary's "N waived" text, the
+  // by-day "waived" counts, and every waived athlete's badge below were all
+  // silently always zero regardless of real data (audit analysis finding 19
+  // — "hides the waiver distinction it brags about" was literal). Iterating
+  // every expectation and trusting the loop's own waived check is the fix.
+  const required = expectations ?? [];
 
   const [wellness, training, gym] = await Promise.all([
     db
@@ -151,7 +190,7 @@ export async function fetchComplianceReport(
 
   const perAthlete = new Map<string, ComplianceAthleteRow>();
   for (const a of athletes ?? []) {
-    perAthlete.set(a.id, { athlete_id: a.id, first_name: a.first_name, last_name: a.last_name, perDomain: {}, lastSubmission: null });
+    perAthlete.set(a.id, { athlete_id: a.id, first_name: a.first_name, last_name: a.last_name, perDomain: {}, lastSubmission: null, waivedCount: 0 });
   }
 
   const dayByKey = new Map<string, ComplianceDayCell>();
@@ -174,12 +213,14 @@ export async function fetchComplianceReport(
 
     const athleteRow = perAthlete.get(exp.athlete_id);
     if (athleteRow) {
-      const cur = athleteRow.perDomain[domain] ?? { expected: 0, submitted: 0 };
-      if (!waived) {
+      if (waived) {
+        athleteRow.waivedCount += 1;
+      } else {
+        const cur = athleteRow.perDomain[domain] ?? { expected: 0, submitted: 0 };
         cur.expected += 1;
         if (submitted) cur.submitted += 1;
+        athleteRow.perDomain[domain] = cur;
       }
-      athleteRow.perDomain[domain] = cur;
       if (submitted && (!athleteRow.lastSubmission || exp.expectation_date > athleteRow.lastSubmission)) {
         athleteRow.lastSubmission = exp.expectation_date;
       }
@@ -200,15 +241,30 @@ export async function fetchComplianceReport(
     return { domain, expected: b.expected, submitted: b.submitted, waived: b.waived, pct: b.expected > 0 ? Math.round((100 * b.submitted) / b.expected) : null };
   });
 
+  // "Worst first" for the athletes who can actually be chased: real
+  // low-compliance rows always outrank a fully waived one, which used to
+  // read as a perfect 100% (totalPct's own zero-expected fallback) and sort
+  // to the very bottom next to genuinely compliant athletes — audit finding
+  // 19's "injured non-submitters sort below 100% athletes with no waiver
+  // marker". A fully waived row (nothing left to chase) sorts after every
+  // row that still has a real percentage, worst-waived-first among ties.
   const byAthlete = [...perAthlete.values()].sort((a, b) => {
-    const pctA = totalPct(a);
-    const pctB = totalPct(b);
-    return pctA - pctB;
+    const chaseableA = totalExpected(a) > 0;
+    const chaseableB = totalExpected(b) > 0;
+    if (chaseableA !== chaseableB) return chaseableA ? -1 : 1;
+    if (!chaseableA) return b.waivedCount - a.waivedCount;
+    return totalPct(a) - totalPct(b);
   });
 
   const byDay = [...dayByKey.values()].sort((a, b) => a.date.localeCompare(b.date) || a.domain.localeCompare(b.domain));
 
   return { summary, byAthlete, byDay, athleteCount: athleteIds.length, fromDate, toDate };
+}
+
+function totalExpected(row: ComplianceAthleteRow): number {
+  let expected = 0;
+  for (const v of Object.values(row.perDomain)) expected += v.expected;
+  return expected;
 }
 
 function totalPct(row: ComplianceAthleteRow): number {
@@ -219,6 +275,14 @@ function totalPct(row: ComplianceAthleteRow): number {
     submitted += v.submitted;
   }
   return expected > 0 ? (100 * submitted) / expected : 100;
+}
+
+/** The athlete-row percentage the page renders — null when there's nothing
+ *  left to chase (either no expectations at all, or every one was waived),
+ *  distinguished from each other by waivedCount so the UI never shows a
+ *  fully waived athlete as a bare, ambiguous "—". */
+export function complianceAthletePct(row: ComplianceAthleteRow): number | null {
+  return totalExpected(row) > 0 ? Math.round(totalPct(row)) : null;
 }
 
 /* ---------------------------------------------------------------------------

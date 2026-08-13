@@ -1,5 +1,5 @@
 import { csvResponse, toCsv } from '@/lib/csv';
-import { fetchComplianceReport, recordReportView } from '@/lib/queries/reports';
+import { fetchComplianceReport, fetchLatestComplianceExpectationDate, recordReportView } from '@/lib/queries/reports';
 import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
@@ -22,32 +22,63 @@ export async function GET(request: Request) {
   // and the caption below states the resolved scope by name.
   const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
   const days = [7, 14, 28].includes(Number(url.searchParams.get('days'))) ? Number(url.searchParams.get('days')) : 7;
-
-  const today = todayIso(timezone);
+  // Same ?to= the on-screen report's window picker sets (default: the most
+  // recent day with data, not real today — audit analysis finding 14), so
+  // an exported file matches whatever window the coach was actually
+  // looking at.
+  const toParam = url.searchParams.get('to');
+  const realToday = todayIso(timezone);
+  const today =
+    toParam && /^\d{4}-\d{2}-\d{2}$/.test(toParam)
+      ? toParam > realToday
+        ? realToday
+        : toParam
+      : (await fetchLatestComplianceExpectationDate(db, orgId, groupIds)) ?? realToday;
   const fromDate = addDays(today, -(days - 1));
 
   const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchComplianceReport(db, orgId, groupIds, fromDate, today)]);
   const groupNameById = new Map(groups.map((g) => [g.id, g.name]));
 
-  const rows = report.byAthlete.flatMap((a) =>
-    Object.entries(a.perDomain).map(([domain, v]) => ({
+  // One row per athlete, not per domain·athlete — waivedCount is a
+  // whole-window total across every domain, so a per-domain row would
+  // either duplicate or misattribute it. Per-domain expected/submitted
+  // stay as separate columns instead of separate rows.
+  const rows = report.byAthlete.map((a) => {
+    let expected = 0;
+    let submitted = 0;
+    for (const v of Object.values(a.perDomain)) {
+      expected += v.expected;
+      submitted += v.submitted;
+    }
+    return {
       first_name: a.first_name,
       last_name: a.last_name,
-      domain,
-      expected: v.expected,
-      submitted: v.submitted,
-      pct: v.expected > 0 ? Math.round((100 * v.submitted) / v.expected) : '',
+      wellness_expected: a.perDomain.wellness?.expected ?? 0,
+      wellness_submitted: a.perDomain.wellness?.submitted ?? 0,
+      training_rpe_expected: a.perDomain.training_rpe?.expected ?? 0,
+      training_rpe_submitted: a.perDomain.training_rpe?.submitted ?? 0,
+      gym_expected: a.perDomain.gym?.expected ?? 0,
+      gym_submitted: a.perDomain.gym?.submitted ?? 0,
+      pct: expected > 0 ? Math.round((100 * submitted) / expected) : '',
+      // "Waived, nothing to chase" reads distinctly from an empty pct —
+      // a fully waived athlete otherwise sorted and exported identically
+      // to a genuinely compliant one (audit analysis finding 19).
+      waived: a.waivedCount > 0 ? a.waivedCount : '',
       last_submission: a.lastSubmission ?? '',
-    })),
-  );
+    };
+  });
 
   const csv = toCsv(rows, [
     ['first_name', 'First name'],
     ['last_name', 'Last name'],
-    ['domain', 'Domain'],
-    ['expected', 'Expected'],
-    ['submitted', 'Submitted'],
+    ['wellness_expected', 'Wellness expected'],
+    ['wellness_submitted', 'Wellness submitted'],
+    ['training_rpe_expected', 'Training RPE expected'],
+    ['training_rpe_submitted', 'Training RPE submitted'],
+    ['gym_expected', 'Gym expected'],
+    ['gym_submitted', 'Gym submitted'],
     ['pct', 'Percent'],
+    ['waived', 'Waived (excluded above)'],
     ['last_submission', 'Last submission'],
   ]);
 
@@ -70,7 +101,8 @@ export async function GET(request: Request) {
 
   const caption =
     `# Compliance report, ${fromDate} to ${today}. ` +
-    `Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes).\r\n`;
+    `Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes). ` +
+    `Waived expectations are excluded from Expected/Submitted above and reported in their own column.\r\n`;
 
   return csvResponse(caption + csv, `compliance-${fromDate}-to-${today}.csv`);
 }

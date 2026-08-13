@@ -3,7 +3,7 @@ import { ReportPager } from '@/components/ReportPager/ReportPager';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchGroups } from '@/lib/queries/groups';
-import { fetchComplianceReport, recordReportView } from '@/lib/queries/reports';
+import { complianceAthletePct, fetchComplianceReport, fetchLatestComplianceExpectationDate, recordReportView } from '@/lib/queries/reports';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { addDays, enumLabel, formatDate, todayIso } from '@/lib/format';
@@ -28,14 +28,27 @@ export default async function ComplianceReportPage({
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
   const days = PERIODS.includes(Number(params.days) as (typeof PERIODS)[number]) ? Number(params.days) : 7;
+  const realToday = todayIso(timezone);
+  const requestedTo = typeof params.to === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(params.to) ? params.to : null;
 
-  const today = todayIso(timezone);
+  // No ?to= at all: default to the most recent day this org actually has
+  // expectations for, not real today — a rolling window ending real today
+  // was landing on "0 of 0" whenever the org's own data trails the wall
+  // clock (audit analysis finding 14). Once a coach has explicitly picked a
+  // date (via ?to=, including "today" itself), that choice is respected
+  // even if it's empty — this only changes what the report opens to.
+  const latestDataDate = requestedTo === null ? await fetchLatestComplianceExpectationDate(db, orgId, groupIds) : null;
+  const anchor = requestedTo ?? latestDataDate ?? realToday;
+  const today = anchor > realToday ? realToday : anchor; // never park in the future
   const fromDate = addDays(today, -(days - 1));
+  const usingLatestDataDefault = requestedTo === null && latestDataDate !== null && today !== realToday;
 
   const [groups, report] = await Promise.all([
     fetchGroups(db, orgId),
     fetchComplianceReport(db, orgId, groupIds, fromDate, today),
   ]);
+
+  const groupQuery = groupIds.length > 0 ? `&groups=${groupIds.join(',')}` : '';
 
   const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   await recordReportView(db, orgId, claims.userId, actorRole, 'compliance', {
@@ -54,10 +67,10 @@ export default async function ComplianceReportPage({
           <h1>Compliance</h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <a href={`/reports/compliance/export?days=${days}${groupIds.length ? `&groups=${groupIds.join(',')}` : ''}`} className="btn-ghost">
+          <a href={`/reports/compliance/export?days=${days}&to=${today}${groupQuery}`} className="btn-ghost">
             Export CSV
           </a>
-          <a href={`/reports/compliance/pdf?days=${days}${groupIds.length ? `&groups=${groupIds.join(',')}` : ''}`} className="btn-ghost">
+          <a href={`/reports/compliance/pdf?days=${days}&to=${today}${groupQuery}`} className="btn-ghost">
             Export PDF
           </a>
           <ThemeToggle />
@@ -68,13 +81,22 @@ export default async function ComplianceReportPage({
         {groupScopeLabel(groups, groupIds)} · {orgName} · {formatDate(fromDate)} to {formatDate(today)} · {report.athleteCount} athletes
       </p>
 
+      {usingLatestDataDefault ? (
+        <p className="sub" style={{ margin: '0 0 10px' }}>
+          Showing the most recent window with data, ending <b>{formatDate(today)}</b> — real today is{' '}
+          {formatDate(realToday)}. <Link href={`/reports/compliance?days=${days}&to=${realToday}${groupQuery}`} className="linklike">
+            Jump to today instead
+          </Link>
+        </p>
+      ) : null}
+
       <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
         <GroupFilter groups={groups} selected={groupIds} />
         <div className="chiprow">
           {PERIODS.map((d) => (
             <Link
               key={d}
-              href={`/reports/compliance?days=${d}${groupIds.length ? `&groups=${groupIds.join(',')}` : ''}`}
+              href={`/reports/compliance?days=${d}&to=${today}${groupQuery}`}
               className="squad-chip"
               aria-pressed={days === d}
             >
@@ -98,8 +120,13 @@ export default async function ComplianceReportPage({
                       </div>
                       <div className="tiny">{enumLabel(s.domain)}</div>
                       <div className="tiny" style={{ color: 'var(--faint)' }}>
-                        {s.submitted} of {s.expected} submitted
-                        {s.waived > 0 ? ` · ${s.waived} waived` : ''}
+                        {/* expected === 0 with no waivers either means nothing was ever
+                            expected — a permanent gap for this domain, not a compliance
+                            failure. "0 of 0 submitted" reads as an accusation; say what's
+                            actually true instead (audit analysis finding 20). */}
+                        {s.expected === 0 && s.waived === 0
+                          ? 'No expectations configured for this domain'
+                          : `${s.submitted} of ${s.expected} submitted${s.waived > 0 ? ` · ${s.waived} waived` : ''}`}
                       </div>
                     </div>
                   ))}
@@ -122,13 +149,12 @@ export default async function ComplianceReportPage({
                   </p>
                 ) : (
                   report.byAthlete.map((a, index) => {
-                    let expected = 0;
-                    let submitted = 0;
-                    for (const v of Object.values(a.perDomain)) {
-                      expected += v.expected;
-                      submitted += v.submitted;
-                    }
-                    const pct = expected > 0 ? Math.round((100 * submitted) / expected) : null;
+                    const pct = complianceAthletePct(a);
+                    // A fully waived athlete (nothing left to chase, every
+                    // expectation excused) reads distinctly from "no data" —
+                    // never a bare "—" that could be misread as either
+                    // perfect or unmeasured (audit analysis finding 19).
+                    const fullyWaived = pct === null && a.waivedCount > 0;
                     return (
                       <div key={a.athlete_id}>
                         {index > 0 ? <div className="hair" /> : null}
@@ -138,9 +164,14 @@ export default async function ComplianceReportPage({
                           </span>
                           <span className="tiny">
                             {a.lastSubmission ? `Last ${formatDate(a.lastSubmission)}` : 'No submissions'}
+                            {a.waivedCount > 0 ? ` · ${a.waivedCount} waived` : ''}
                           </span>
-                          <span className={`pill ${pct === null ? 'pill-neutral' : pct < 60 ? 'pill-bad' : pct < 85 ? 'pill-warn' : 'pill-good'}`}>
-                            {pct === null ? '—' : `${pct}%`}
+                          <span
+                            className={`pill ${
+                              fullyWaived ? 'pill-neutral' : pct === null ? 'pill-neutral' : pct < 60 ? 'pill-bad' : pct < 85 ? 'pill-warn' : 'pill-good'
+                            }`}
+                          >
+                            {fullyWaived ? 'Waived' : pct === null ? '—' : `${pct}%`}
                           </span>
                         </div>
                       </div>

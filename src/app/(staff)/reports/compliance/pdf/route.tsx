@@ -1,5 +1,5 @@
 import { renderToBuffer } from '@react-pdf/renderer';
-import { fetchComplianceReport, recordReportView } from '@/lib/queries/reports';
+import { complianceAthletePct, fetchComplianceReport, fetchLatestComplianceExpectationDate, recordReportView } from '@/lib/queries/reports';
 import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
@@ -21,8 +21,18 @@ export async function GET(request: Request) {
   // header meta names the resolved scope.
   const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
   const days = PERIODS.includes(Number(url.searchParams.get('days')) as (typeof PERIODS)[number]) ? Number(url.searchParams.get('days')) : 7;
-
-  const today = todayIso(timezone);
+  // Same ?to= the on-screen report's window picker sets (default: the most
+  // recent day with data, not real today — audit analysis finding 14), so
+  // an exported file matches whatever window the coach was actually
+  // looking at.
+  const toParam = url.searchParams.get('to');
+  const realToday = todayIso(timezone);
+  const today =
+    toParam && /^\d{4}-\d{2}-\d{2}$/.test(toParam)
+      ? toParam > realToday
+        ? realToday
+        : toParam
+      : (await fetchLatestComplianceExpectationDate(db, orgId, groupIds)) ?? realToday;
   const fromDate = addDays(today, -(days - 1));
 
   const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchComplianceReport(db, orgId, groupIds, fromDate, today)]);
@@ -41,23 +51,23 @@ export async function GET(request: Request) {
         ))}
       </PdfTileRow>
 
-      <PdfSectionTitle title="By athlete" caption="Worst first isn't applied here — see the on-screen report for sorted order; this table follows the roster." />
+      <PdfSectionTitle
+        title="By athlete"
+        caption="Worst first — athletes who still have something to chase come before anyone fully waived out of this window."
+      />
       <PdfTable
         emptyText="No athletes in this filter."
-        rows={report.byAthlete.map((a) => {
-          let expected = 0;
-          let submitted = 0;
-          for (const v of Object.values(a.perDomain)) {
-            expected += v.expected;
-            submitted += v.submitted;
-          }
-          const pct = expected > 0 ? Math.round((100 * submitted) / expected) : null;
-          return { ...a, pct };
-        })}
+        rows={report.byAthlete.map((a) => ({ ...a, pct: complianceAthletePct(a) }))}
         columns={[
-          { key: 'name', label: 'Athlete', width: '40%', render: (r) => `${r.first_name} ${r.last_name}` },
+          { key: 'name', label: 'Athlete', width: '35%', render: (r) => `${r.first_name} ${r.last_name}` },
           { key: 'last', label: 'Last submission', width: '30%', render: (r) => (r.lastSubmission ? formatDate(r.lastSubmission) : 'No submissions') },
-          { key: 'pct', label: 'Compliance', width: '30%', align: 'right', render: (r) => (r.pct === null ? '—' : `${r.pct}%`) },
+          {
+            key: 'pct',
+            label: 'Compliance',
+            width: '35%',
+            align: 'right',
+            render: (r) => (r.pct === null ? (r.waivedCount > 0 ? `Waived (${r.waivedCount})` : '—') : `${r.pct}%`),
+          },
         ]}
       />
 

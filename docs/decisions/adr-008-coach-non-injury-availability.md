@@ -219,8 +219,8 @@ label attached to the row asserting what it is.
 
 ## What changed, file by file
 
-- `supabase/migrations/0040_availability_reason_categories.sql` — three new enum values.
-- `supabase/migrations/0041_coach_noninjury_availability.sql` — the two policies above.
+- `supabase/migrations/0041_availability_reason_categories.sql` — three new enum values.
+- `supabase/migrations/0042_coach_noninjury_availability.sql` — the two policies above.
 - `supabase/tests/200_coach_noninjury_availability_test.sql` — new, the permission suite.
 - `supabase/tests/030_medical_and_entry_rules_test.sql` §3 — narrowed one assertion to
   match the new, correct scope; see the inline comment at the point of the edit.

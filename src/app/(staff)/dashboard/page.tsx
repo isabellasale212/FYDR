@@ -201,7 +201,15 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       </div>
 
       <div className="card dash-stats">
-        <Link href={`/dashboard${qs({ groups: groupsQs, day: effectiveToday })}`} className="dash-stat">
+        {/* Used to link to /dashboard — this page — so a coach who clicked
+         * it landed nowhere new (audit coach finding 13). needYouCount is
+         * flags raised on effectiveToday specifically (see fetchHeadlineStats'
+         * own comment); /flags now takes that same ?date= so this tile can
+         * point at the exact athletes it's counting, not just their number. */}
+        <Link
+          href={`/flags${qs({ groups: groupsQs, date: effectiveToday })}`}
+          className="dash-stat"
+        >
           <div className="dash-stat-label">Need you</div>
           <div className="dash-stat-value" style={{ color: stats.needYouCount > 0 ? 'var(--bad)' : undefined }}>
             {stats.needYouCount}

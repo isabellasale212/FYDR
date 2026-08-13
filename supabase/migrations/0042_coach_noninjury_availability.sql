@@ -1,4 +1,4 @@
--- 0041_coach_noninjury_availability.sql
+-- 0042_coach_noninjury_availability.sql
 --
 -- What this does
 --   Adds two narrow, additive RLS policies to availability: a coach may insert a

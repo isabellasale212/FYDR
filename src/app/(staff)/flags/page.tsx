@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { FlagCard } from '@/components/FlagCard/FlagCard';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
@@ -23,6 +24,13 @@ export default async function FlagsPage({
   const groupIds = await resolveGroupFilter(params.groups);
   const today = todayIso(timezone);
 
+  /* Optional ?date= filter — added so the dashboard's "Need you" tile (which
+   * counts flags raised on one specific day) has a real destination that
+   * shows exactly that set, instead of linking back to itself (audit coach
+   * finding 13). A plain YYYY-MM-DD string; anything else is ignored rather
+   * than thrown, since a malformed date here should just show everything. */
+  const dateParam = typeof params.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(params.date) ? params.date : null;
+
   const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medical');
 
   if (!hasAccess) {
@@ -47,10 +55,12 @@ export default async function FlagsPage({
     );
   }
 
-  const [groups, flags] = await Promise.all([
+  const [groups, allFlags] = await Promise.all([
     fetchGroups(db, orgId),
     fetchFlagsList(db, orgId, groupIds),
   ]);
+
+  const flags = dateParam ? allFlags.filter((f) => f.flag_date === dateParam) : allFlags;
 
   return (
     <>
@@ -68,10 +78,21 @@ export default async function FlagsPage({
         <GroupFilter groups={groups} selected={groupIds} />
       </div>
 
+      {dateParam ? (
+        <p className="sub" style={{ margin: '0 0 10px' }}>
+          Filtered to flags raised on <b>{formatDate(dateParam)}</b> —{' '}
+          <Link href={`/flags${groupIds.length > 0 ? `?groups=${groupIds.join(',')}` : ''}`} className="linklike">
+            show every open flag
+          </Link>
+        </p>
+      ) : null}
+
       <div className="stack">
         <p className="sub" style={{ margin: 0 }}>
           {flags.length === 0
-            ? 'No open flags.'
+            ? dateParam
+              ? `No flags raised on ${formatDate(dateParam)}.`
+              : 'No open flags.'
             : `${flags.length} open flag${flags.length === 1 ? '' : 's'}, most severe first · ${
                 flags.filter((f) => f.status === 'raised' || f.status === 'notified').length
               } awaiting acknowledgement.`}
@@ -79,11 +100,13 @@ export default async function FlagsPage({
 
         {flags.length === 0 ? (
           <EmptyState
-            title="No open flags"
+            title={dateParam ? 'No flags that day' : 'No open flags'}
             body={
-              groupIds.length > 0
-                ? `No open flags in the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter to check all squads.`
-                : 'The squad is within thresholds. That is the result, not a failure to load.'
+              dateParam
+                ? `Nothing was raised on ${formatDate(dateParam)} in the current scope — the count on the dashboard may be for a different day if you've since navigated. Show every open flag above to check.`
+                : groupIds.length > 0
+                  ? `No open flags in the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter to check all squads.`
+                  : 'The squad is within thresholds. That is the result, not a failure to load.'
             }
           />
         ) : (

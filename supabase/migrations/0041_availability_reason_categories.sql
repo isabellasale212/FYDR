@@ -1,4 +1,4 @@
--- 0040_availability_reason_categories.sql
+-- 0041_availability_reason_categories.sql
 --
 -- What this does
 --   Adds three values to availability_reason: 'academic', 'representative', 'other'.
@@ -13,7 +13,7 @@
 --   a personal or family matter — without a clinical record existing anywhere. The
 --   enum already had 'illness' and 'personal' (migration 0001); it had no category
 --   for education or representative call-ups, so 'personal' was the only fit and it
---   was a bad one. 0041 is the migration that actually lets a coach write these rows;
+--   was a bad one. 0042 is the migration that actually lets a coach write these rows;
 --   this one only widens the vocabulary they write.
 --
 --   'other' exists so the short, non-clinical reason picker

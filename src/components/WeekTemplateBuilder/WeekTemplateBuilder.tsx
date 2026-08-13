@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
+import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import {
   archiveTemplate,
   duplicateTemplate,
@@ -114,33 +115,35 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const result = await updateTemplate(createClient(), orgId, templateId, { name, structure });
-      if (result.error) throw new Error(result.error);
+      const result = await withWriteTimeout(updateTemplate(createClient(), orgId, templateId, { name, structure }));
+      if (result.error) throw new HumanError(result.error);
     },
     onSuccess: () => {
       setSaved(true);
       router.refresh();
     },
-    onError: (err: Error) => setError(err.message),
+    onError: (err: Error) => setError(toUserMessage(err, 'staff')),
   });
 
   const duplicateMutation = useMutation({
     mutationFn: async () => {
-      const result = await duplicateTemplate(createClient(), orgId, userId, templateId);
-      if (result.error || !result.id) throw new Error(result.error ?? 'Could not duplicate.');
+      const result = await withWriteTimeout(duplicateTemplate(createClient(), orgId, userId, templateId));
+      if (result.error || !result.id) throw new HumanError(result.error ?? 'Could not duplicate.');
       return result.id;
     },
     onSuccess: (id) => router.push(`/schedule/planner/${id}`),
-    onError: (err: Error) => setError(err.message),
+    onError: (err: Error) => setError(toUserMessage(err, 'staff')),
   });
 
   const archiveMutation = useMutation({
     mutationFn: async () => {
-      const result = archived ? await restoreTemplate(createClient(), orgId, templateId) : await archiveTemplate(createClient(), orgId, templateId);
-      if (result.error) throw new Error(result.error);
+      const result = await withWriteTimeout(
+        archived ? restoreTemplate(createClient(), orgId, templateId) : archiveTemplate(createClient(), orgId, templateId),
+      );
+      if (result.error) throw new HumanError(result.error);
     },
     onSuccess: () => router.refresh(),
-    onError: (err: Error) => setError(err.message),
+    onError: (err: Error) => setError(toUserMessage(err, 'staff')),
   });
 
   return (

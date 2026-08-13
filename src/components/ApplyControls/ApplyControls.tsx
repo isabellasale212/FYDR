@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
+import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { applyTemplate, type ApplyStrategy } from '@/lib/queries/weekTemplates';
 import { formatDate } from '@/lib/format';
 
@@ -44,9 +45,11 @@ export function ApplyControls({ orgId, userId, templates, selectedTemplateId, we
 
   const mutation = useMutation({
     mutationFn: async () => {
-      if (!selectedTemplateId) throw new Error('Choose a template first.');
-      const res = await applyTemplate(createClient(), orgId, userId, { templateId: selectedTemplateId, weekStart, strategy, fixtureId });
-      if (res.error) throw new Error(res.error);
+      if (!selectedTemplateId) throw new HumanError('Choose a template first.');
+      const res = await withWriteTimeout(
+        applyTemplate(createClient(), orgId, userId, { templateId: selectedTemplateId, weekStart, strategy, fixtureId }),
+      );
+      if (res.error) throw new HumanError(res.error);
       return res;
     },
     onSuccess: (res) => {
@@ -54,7 +57,7 @@ export function ApplyControls({ orgId, userId, templates, selectedTemplateId, we
       setError(null);
       router.refresh();
     },
-    onError: (err: Error) => setError(err.message),
+    onError: (err: Error) => setError(toUserMessage(err, 'staff')),
   });
 
   return (

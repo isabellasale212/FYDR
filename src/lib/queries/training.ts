@@ -1,5 +1,6 @@
 import type { SessionRow } from '@/lib/types/database';
 import type { TrainingEntryInput } from '@/lib/validation/training';
+import { humanizeDbError } from '@/lib/writeErrors';
 import type { Db } from './groups';
 
 export type RpeSession = Pick<
@@ -115,7 +116,8 @@ export async function reviseTrainingEntry(
           'This entry has already been corrected once, or no longer exists. Refresh to see the latest.',
       };
     }
-    return { error: error.message };
+    /* Same rule as reviseWellnessEntry: never a raw driver string. */
+    return { error: humanizeDbError(error.message, 'athlete') };
   }
   return { error: null };
 }

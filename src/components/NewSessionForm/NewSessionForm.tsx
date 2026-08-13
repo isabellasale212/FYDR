@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
+import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { createSession } from '@/lib/queries/schedule';
 import { zonedTimeToUtcIso } from '@/lib/format';
 import type { Group } from '@/lib/queries/groups';
@@ -40,22 +41,24 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone }:
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const result = await createSession(createClient(), orgId, userId, {
-        title,
-        sessionType,
-        startsAt: zonedTimeToUtcIso(date, time, timezone),
-        durationMin: duration ? Number(duration) : null,
-        location: location.trim() ? location.trim() : null,
-        mdOffset: mdOffset.trim() ? Number(mdOffset) : null,
-        groupIds: [...selectedGroups],
-      });
-      if (result.error) throw new Error(result.error);
+      const result = await withWriteTimeout(
+        createSession(createClient(), orgId, userId, {
+          title,
+          sessionType,
+          startsAt: zonedTimeToUtcIso(date, time, timezone),
+          durationMin: duration ? Number(duration) : null,
+          location: location.trim() ? location.trim() : null,
+          mdOffset: mdOffset.trim() ? Number(mdOffset) : null,
+          groupIds: [...selectedGroups],
+        }),
+      );
+      if (result.error) throw new HumanError(result.error);
     },
     onSuccess: () => {
       router.push(`/schedule?date=${date}`);
       router.refresh();
     },
-    onError: (err: Error) => setError(err.message),
+    onError: (err: Error) => setError(toUserMessage(err, 'staff')),
   });
 
   function toggleGroup(id: string) {

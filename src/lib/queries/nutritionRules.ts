@@ -1,4 +1,5 @@
 import { computeTargets, DAY_TYPES, mdOffsetForDayType, type DayTypeId, type MacroRule } from '@/lib/nutritionRules';
+import { humanizeDbError } from '@/lib/writeErrors';
 import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchBodyCompositionForAthletes } from './bodyComposition';
 import { todayIso } from '@/lib/format';
@@ -145,7 +146,8 @@ export async function versionRule(
         : existing.eq('org_default', true);
 
   const { data: existingRow, error: existingError } = await existing.maybeSingle();
-  if (existingError) return { id: null, error: existingError.message };
+  /* Raw driver strings never leave this file — audit S5. */
+  if (existingError) return { id: null, error: humanizeDbError(existingError.message, 'staff') };
 
   const values = {
     protein_g_per_kg: input.protein,
@@ -158,7 +160,7 @@ export async function versionRule(
 
   if (existingRow && existingRow.effective_from === today) {
     const { error } = await db.from('nutrition_rules').update(values).eq('id', existingRow.id).eq('org_id', orgId);
-    if (error) return { id: null, error: error.message };
+    if (error) return { id: null, error: humanizeDbError(error.message, 'staff') };
     return { id: existingRow.id, error: null };
   }
 
@@ -168,7 +170,7 @@ export async function versionRule(
       .update({ effective_to: today })
       .eq('id', existingRow.id)
       .eq('org_id', orgId);
-    if (expireError) return { id: null, error: expireError.message };
+    if (expireError) return { id: null, error: humanizeDbError(expireError.message, 'staff') };
   }
 
   const { data: inserted, error: insertError } = await db
@@ -198,7 +200,7 @@ export async function versionRule(
             : 'Only coaching staff can set a group or org-default rule.',
       };
     }
-    return { id: null, error: insertError.message };
+    return { id: null, error: humanizeDbError(insertError.message, 'staff') };
   }
   return { id: inserted.id, error: null };
 }

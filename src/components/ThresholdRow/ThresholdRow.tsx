@@ -6,6 +6,7 @@ import { useMutation } from '@tanstack/react-query';
 import type { Threshold } from '@/lib/queries/thresholds';
 import { archiveThreshold, setThresholdActive } from '@/lib/queries/thresholds';
 import { createClient } from '@/lib/supabase/client';
+import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { Pill } from '@/components/Pill/Pill';
 import { SEVERITY_STATUS } from '@/lib/status';
 import { enumLabel } from '@/lib/format';
@@ -15,15 +16,28 @@ type Props = { threshold: Threshold; orgId: string; sentence: string };
 export function ThresholdRow({ threshold, orgId, sentence }: Props) {
   const router = useRouter();
   const [confirmingArchive, setConfirmingArchive] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
+  /* Bounded writes (audit S5's rule): both helpers throw on failure and
+   * neither mutation had an onError — a failed retire silently collapsed
+   * the confirm row and left the threshold live. */
   const toggle = useMutation({
-    mutationFn: () => setThresholdActive(createClient(), threshold.id, orgId, !threshold.is_active),
-    onSuccess: () => router.refresh(),
+    mutationFn: () =>
+      withWriteTimeout(setThresholdActive(createClient(), threshold.id, orgId, !threshold.is_active)),
+    onSuccess: () => {
+      setError(null);
+      router.refresh();
+    },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   const archive = useMutation({
-    mutationFn: () => archiveThreshold(createClient(), threshold.id, orgId),
-    onSuccess: () => router.refresh(),
+    mutationFn: () => withWriteTimeout(archiveThreshold(createClient(), threshold.id, orgId)),
+    onSuccess: () => {
+      setError(null);
+      router.refresh();
+    },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   return (
@@ -55,6 +69,12 @@ export function ThresholdRow({ threshold, orgId, sentence }: Props) {
         <span className="tiny" style={{ display: 'block', marginTop: 3 }}>
           Notifies {threshold.notify_roles.map(enumLabel).join(', ')}
         </span>
+
+        {error ? (
+          <span className="form-error" role="alert" style={{ display: 'block', marginTop: 6 }}>
+            {error}
+          </span>
+        ) : null}
 
         {confirmingArchive ? (
           <span style={{ display: 'flex', gap: 8, marginTop: 8 }}>

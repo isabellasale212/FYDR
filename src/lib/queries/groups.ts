@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, GroupRow } from '@/lib/types/database';
+import { humanizeDbError } from '@/lib/writeErrors';
 
 export type Db = SupabaseClient<Database>;
 
@@ -227,7 +228,7 @@ export async function createGroup(
     .is('deleted_at', null)
     .order('sort_order', { ascending: false })
     .limit(1);
-  if (siblingsError) return { error: siblingsError.message };
+  if (siblingsError) return { error: humanizeDbError(siblingsError.message, 'staff') };
   const nextSortOrder = (siblings?.[0]?.sort_order ?? -1) + 1;
 
   const { error } = await db.from('groups').insert({
@@ -243,7 +244,8 @@ export async function createGroup(
     if (error.code === '23505') {
       return { error: `A group called "${input.name.trim()}" already exists.` };
     }
-    return { error: error.message };
+    /* Raw driver strings never leave this file — audit S5. */
+    return { error: humanizeDbError(error.message, 'staff') };
   }
   return { error: null };
 }
@@ -277,7 +279,7 @@ export async function updateGroup(
     if (error.code === '23505') {
       return { error: `A group called "${input.name.trim()}" already exists.` };
     }
-    return { error: error.message };
+    return { error: humanizeDbError(error.message, 'staff') };
   }
   return { error: null };
 }
@@ -310,7 +312,7 @@ export async function moveGroup(
     .eq('org_id', orgId)
     .eq('id', groupId)
     .maybeSingle();
-  if (targetError) return { error: targetError.message };
+  if (targetError) return { error: humanizeDbError(targetError.message, 'staff') };
   if (!target) return { error: 'That group no longer exists.' };
 
   const { data: siblings, error: siblingsError } = await db
@@ -321,7 +323,7 @@ export async function moveGroup(
     .is('deleted_at', null)
     .order('sort_order', { ascending: true })
     .order('name', { ascending: true });
-  if (siblingsError) return { error: siblingsError.message };
+  if (siblingsError) return { error: humanizeDbError(siblingsError.message, 'staff') };
 
   const ordered = siblings ?? [];
   const index = ordered.findIndex((g) => g.id === groupId);
@@ -336,8 +338,8 @@ export async function moveGroup(
     db.from('groups').update({ sort_order: target.sort_order }).eq('id', neighbour.id).eq('org_id', orgId),
   ]);
 
-  if (a.error) return { error: a.error.message };
-  if (b.error) return { error: b.error.message };
+  if (a.error) return { error: humanizeDbError(a.error.message, 'staff') };
+  if (b.error) return { error: humanizeDbError(b.error.message, 'staff') };
   return { error: null };
 }
 

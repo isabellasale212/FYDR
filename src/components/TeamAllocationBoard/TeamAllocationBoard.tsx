@@ -11,6 +11,7 @@ import {
   type Team,
   type WeekBoard,
 } from '@/lib/queries/teamAllocation';
+import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { enumLabel } from '@/lib/format';
 
 type Props = { orgId: string; userId: string; weekStart: string; teams: readonly Team[]; board: WeekBoard; canAllocate: boolean };
@@ -34,22 +35,27 @@ export function TeamAllocationBoard({ orgId, userId, weekStart, teams, board, ca
 
   const allocMutation = useMutation({
     mutationFn: (input: { athleteId: string; teamId: string; overrideReason: string | null }) =>
-      setTeamAllocation(createClient(), orgId, userId, { ...input, weekStart }),
+      withWriteTimeout(setTeamAllocation(createClient(), orgId, userId, { ...input, weekStart })),
     onSuccess: (result) => {
+      /* result.error is already written for the screen — teamAllocation.ts
+         humanizes raw driver errors and keeps its own bespoke guidance. */
       if (result.error) return setError(result.error);
       setError(null);
       setPendingReasonFor(null);
       setReason('');
       router.refresh();
     },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   const withdrawMutation = useMutation({
-    mutationFn: (allocationId: string) => withdrawAllocation(createClient(), orgId, allocationId),
+    mutationFn: (allocationId: string) => withWriteTimeout(withdrawAllocation(createClient(), orgId, allocationId)),
     onSuccess: (result) => {
       if (result.error) return setError(result.error);
+      setError(null);
       router.refresh();
     },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   function allocationsForTeam(teamId: string): AllocationRow[] {

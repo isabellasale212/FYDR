@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 import { reviseWellnessEntry, submitWellnessEntry } from '@/lib/queries/wellness';
 import { qk } from '@/lib/queries/keys';
 import { dequeueWellness, enqueueWellness } from '@/lib/outbox';
+import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import {
   WELLNESS_SCALES,
   WellnessEntryInput,
@@ -123,24 +124,28 @@ export function CheckInForm({
     },
   });
 
-  /* Corrections are online-only: unlike a fresh entry, there is no outbox
-   * "revise" operation for wellness yet (only submission is queued today),
-   * so this mutation is awaited and its result shown, rather than fired
-   * optimistically like submitMutation above. A real, documented gap, not a
-   * silent one — an athlete correcting an entry pitchside with no signal
-   * will see an error rather than a silently queued fix. */
+  /* Corrections are online-only, deliberately: a replayed revise cannot be
+   * told apart from "already corrected" (both raise entry_not_revisable),
+   * so queuing one in the outbox could silently swallow or double-report a
+   * fix — see lib/outbox.ts. The trade is that this path must be *bounded*
+   * (audit S5 / athlete finding 11: this exact button once hung on "Saving
+   * correction…" indefinitely): ten seconds to confirm, then a visible,
+   * human error, the athlete's values still on screen, and the button live
+   * again for a retry. */
   const correctionMutation = useMutation({
     mutationFn: async (input: WellnessEntryInput) => {
       if (!correction) throw new Error('Not in correction mode.');
-      const result = await reviseWellnessEntry(createClient(), correction.originalId, {
-        sleep_hours: input.sleep_hours,
-        sleep_quality: input.sleep_quality,
-        fatigue: input.fatigue,
-        soreness: input.soreness,
-        stress: input.stress,
-        mood: input.mood,
-      });
-      if (result.error) throw new Error(result.error);
+      const result = await withWriteTimeout(
+        reviseWellnessEntry(createClient(), correction.originalId, {
+          sleep_hours: input.sleep_hours,
+          sleep_quality: input.sleep_quality,
+          fatigue: input.fatigue,
+          soreness: input.soreness,
+          stress: input.stress,
+          mood: input.mood,
+        }),
+      );
+      if (result.error) throw new HumanError(result.error);
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({
@@ -148,7 +153,7 @@ export function CheckInForm({
       });
       router.push('/my-data?tab=wellness');
     },
-    onError: (err: Error) => setInvalid(err.message),
+    onError: (err: Error) => setInvalid(toUserMessage(err, 'athlete')),
   });
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -318,7 +323,7 @@ export function CheckInForm({
         </button>
         <p className="tiny" style={{ textAlign: 'center', marginTop: 8 }}>
           {correction
-            ? `For ${formatDate(entryDate)}. This needs a connection: corrections are not queued offline yet.`
+            ? `For ${formatDate(entryDate)}. Corrections send straight away and need signal. If it can’t get through, you’ll see an error here and your answers stay put.`
             : 'Submitted entries cannot be edited. A correction creates a new revision.'}
         </p>
       </div>

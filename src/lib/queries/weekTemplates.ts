@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { humanizeDbError } from '@/lib/writeErrors';
 import type { Db } from './groups';
 import type { Json } from '../types/database';
 import { mondayOf } from './schedule';
@@ -309,7 +310,8 @@ export async function createTemplate(
     .insert({ org_id: orgId, name: input.name.trim(), structure: serializeStructure(parsed.data), created_by: userId })
     .select('id')
     .single();
-  if (error) return { id: null, error: error.message };
+  /* Raw driver strings never leave this file — audit S5. */
+  if (error) return { id: null, error: humanizeDbError(error.message, 'staff') };
   return { id: data.id, error: null };
 }
 
@@ -328,17 +330,17 @@ export async function updateTemplate(
   }
 
   const { error } = await db.from('week_templates').update(patch).eq('org_id', orgId).eq('id', templateId);
-  return { error: error?.message ?? null };
+  return { error: error ? humanizeDbError(error.message, 'staff') : null };
 }
 
 export async function archiveTemplate(db: Db, orgId: string, templateId: string): Promise<{ error: string | null }> {
   const { error } = await db.from('week_templates').update({ deleted_at: new Date().toISOString() }).eq('org_id', orgId).eq('id', templateId);
-  return { error: error?.message ?? null };
+  return { error: error ? humanizeDbError(error.message, 'staff') : null };
 }
 
 export async function restoreTemplate(db: Db, orgId: string, templateId: string): Promise<{ error: string | null }> {
   const { error } = await db.from('week_templates').update({ deleted_at: null }).eq('org_id', orgId).eq('id', templateId);
-  return { error: error?.message ?? null };
+  return { error: error ? humanizeDbError(error.message, 'staff') : null };
 }
 
 export async function duplicateTemplate(db: Db, orgId: string, userId: string, templateId: string): Promise<{ id: string | null; error: string | null }> {
@@ -458,7 +460,7 @@ export async function applyTemplate(
     .gte('starts_at', `${weekDates[0]}T00:00:00Z`)
     .lte('starts_at', `${weekDates[6]}T23:59:59Z`)
     .is('deleted_at', null);
-  if (existErr) return { created: 0, softDeleted: 0, error: existErr.message };
+  if (existErr) return { created: 0, softDeleted: 0, error: humanizeDbError(existErr.message, 'staff') };
 
   // "Has recorded data" checks the calendar session's own two real
   // session_id-linked tables — session_attendance and training_entries.
@@ -488,7 +490,7 @@ export async function applyTemplate(
 
   if (plan.softDelete.length > 0) {
     const { error } = await db.from('sessions').update({ deleted_at: new Date().toISOString() }).in('id', plan.softDelete);
-    if (error) return { created: 0, softDeleted: 0, error: error.message };
+    if (error) return { created: 0, softDeleted: 0, error: humanizeDbError(error.message, 'staff') };
   }
 
   const rows = plan.create.map((item) => ({
@@ -512,7 +514,7 @@ export async function applyTemplate(
   }));
 
   const { data: created, error: insErr } = await db.from('sessions').insert(rows).select('id');
-  if (insErr) return { created: 0, softDeleted: plan.softDelete.length, error: insErr.message };
+  if (insErr) return { created: 0, softDeleted: plan.softDelete.length, error: humanizeDbError(insErr.message, 'staff') };
 
   // "All squad" participation is real, individual athlete_id rows, not a
   // group shortcut — createSession's own group-based path (schedule.ts)
@@ -522,10 +524,10 @@ export async function applyTemplate(
   // guarantees full coverage regardless of group membership gaps.
   if (created && created.length > 0) {
     const { data: athletes, error: athErr } = await db.from('athletes').select('id').eq('org_id', orgId).eq('status', 'active').is('deleted_at', null);
-    if (athErr) return { created: created.length, softDeleted: plan.softDelete.length, error: `Sessions created, but rostering failed: ${athErr.message}` };
+    if (athErr) return { created: created.length, softDeleted: plan.softDelete.length, error: `Sessions created, but rostering failed. ${humanizeDbError(athErr.message, 'staff')}` };
     const participantRows = created.flatMap((s) => (athletes ?? []).map((a) => ({ org_id: orgId, session_id: s.id, athlete_id: a.id, group_id: null })));
     const { error: partErr } = await db.from('session_participants').insert(participantRows);
-    if (partErr) return { created: created.length, softDeleted: plan.softDelete.length, error: `Sessions created, but rostering failed: ${partErr.message}` };
+    if (partErr) return { created: created.length, softDeleted: plan.softDelete.length, error: `Sessions created, but rostering failed. ${humanizeDbError(partErr.message, 'staff')}` };
   }
 
   await db.from('audit_log').insert({

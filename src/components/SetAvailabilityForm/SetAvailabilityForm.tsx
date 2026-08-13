@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { setAvailability } from '@/lib/queries/injuries';
+import { humanizeDbError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import type { AvailabilityReason } from '@/lib/types/database';
 
 const STATUSES = ['available', 'modified', 'unavailable'] as const;
@@ -31,18 +32,21 @@ export function SetAvailabilityForm({ orgId, userId, athleteId, injuryId }: Prop
 
   const mutation = useMutation({
     mutationFn: () =>
-      setAvailability(createClient(), orgId, athleteId, userId, {
-        status,
-        restrictions: [...restrictions],
-        reasonCategory: (reasonCategory || null) as AvailabilityReason | null,
-        note: note.trim() || null,
-        injuryId,
-      }),
+      withWriteTimeout(
+        setAvailability(createClient(), orgId, athleteId, userId, {
+          status,
+          restrictions: [...restrictions],
+          reasonCategory: (reasonCategory || null) as AvailabilityReason | null,
+          note: note.trim() || null,
+          injuryId,
+        }),
+      ),
     onSuccess: (result) => {
-      if (result.error) return setError(result.error);
+      if (result.error) return setError(humanizeDbError(result.error, 'staff'));
       setError(null);
       router.refresh();
     },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   function toggleRestriction(r: string) {

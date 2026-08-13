@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
+import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import {
   addExerciseToSession,
   assignProgramme,
@@ -76,12 +77,14 @@ export function ProgrammeBuilder({
 
   const blockMutation = useMutation({
     mutationFn: () =>
-      createBlock(createClient(), orgId, programmeId, {
-        name: blockName,
-        sequence: blocks.length + 1,
-        durationWeeks: Number(blockWeeks) || 4,
-        focus: null,
-      }),
+      withWriteTimeout(
+        createBlock(createClient(), orgId, programmeId, {
+          name: blockName,
+          sequence: blocks.length + 1,
+          durationWeeks: Number(blockWeeks) || 4,
+          focus: null,
+        }),
+      ),
     onSuccess: (result) => {
       if (result.error) return setError(result.error);
       setError(null);
@@ -89,16 +92,19 @@ export function ProgrammeBuilder({
       setBlockName('');
       router.refresh();
     },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   const sessionMutation = useMutation({
     mutationFn: (blockId: string) =>
-      createSession(createClient(), orgId, blockId, {
-        name: sessionName,
-        weekNumber: Number(sessionWeek) || 1,
-        dayNumber: sessionDay.trim() === '' ? null : Number(sessionDay),
-        sequence: (blocks.find((b) => b.id === blockId)?.sessions.length ?? 0) + 1,
-      }),
+      withWriteTimeout(
+        createSession(createClient(), orgId, blockId, {
+          name: sessionName,
+          weekNumber: Number(sessionWeek) || 1,
+          dayNumber: sessionDay.trim() === '' ? null : Number(sessionDay),
+          sequence: (blocks.find((b) => b.id === blockId)?.sessions.length ?? 0) + 1,
+        }),
+      ),
     onSuccess: (result) => {
       if (result.error) return setError(result.error);
       setError(null);
@@ -106,44 +112,51 @@ export function ProgrammeBuilder({
       setSessionName('');
       router.refresh();
     },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   const exerciseMutation = useMutation({
     mutationFn: (sessionId: string) =>
-      addExerciseToSession(createClient(), orgId, sessionId, {
-        exerciseId,
-        sequence:
-          (blocks.flatMap((b) => b.sessions).find((s) => s.id === sessionId)?.exercise_count ?? 0) + 1,
-        sets: Number(sets) || 1,
-        repsMin: repsMin.trim() === '' ? null : Number(repsMin),
-        repsMax: repsMax.trim() === '' ? null : Number(repsMax),
-        loadBasis,
-        loadValue: loadValue.trim() === '' ? null : Number(loadValue),
-        restSeconds: restSeconds.trim() === '' ? null : Number(restSeconds),
-        notes: null,
-      }),
+      withWriteTimeout(
+        addExerciseToSession(createClient(), orgId, sessionId, {
+          exerciseId,
+          sequence:
+            (blocks.flatMap((b) => b.sessions).find((s) => s.id === sessionId)?.exercise_count ?? 0) + 1,
+          sets: Number(sets) || 1,
+          repsMin: repsMin.trim() === '' ? null : Number(repsMin),
+          repsMax: repsMax.trim() === '' ? null : Number(repsMax),
+          loadBasis,
+          loadValue: loadValue.trim() === '' ? null : Number(loadValue),
+          restSeconds: restSeconds.trim() === '' ? null : Number(restSeconds),
+          notes: null,
+        }),
+      ),
     onSuccess: (result) => {
       if (result.error) return setError(result.error);
       setError(null);
       setAddingExerciseTo(null);
       router.refresh();
     },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   const assignMutation = useMutation({
     mutationFn: () =>
-      assignProgramme(createClient(), orgId, userId, {
-        programmeId,
-        athleteId: assignScope === 'athlete' ? assignAthleteId : null,
-        groupId: assignScope === 'group' ? assignGroupId : null,
-        programmeType,
-      }),
+      withWriteTimeout(
+        assignProgramme(createClient(), orgId, userId, {
+          programmeId,
+          athleteId: assignScope === 'athlete' ? assignAthleteId : null,
+          groupId: assignScope === 'group' ? assignGroupId : null,
+          programmeType,
+        }),
+      ),
     onSuccess: (result) => {
       if (result.error) return setError(result.error);
       setError(null);
       setAssigning(false);
       router.refresh();
     },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   return (

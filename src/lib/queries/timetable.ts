@@ -1,4 +1,5 @@
 import type { AvailabilityStatus, Database } from '@/lib/types/database';
+import { humanizeDbError } from '@/lib/writeErrors';
 import { fetchCurrentAvailability } from './availability';
 import { fetchGroupAthleteIds, type Db } from './groups';
 import type { Session } from './schedule';
@@ -222,7 +223,10 @@ export async function recordAttendance(
       },
       { onConflict: 'session_id,athlete_id' },
     );
-  if (error) return { error: error.message };
+  /* Never the raw driver string (audit S5 / coach finding 11: "permission
+   * denied for table session_attendance" reached a coach verbatim) —
+   * everything returned from here is written for the screen. */
+  if (error) return { error: humanizeDbError(error.message, 'staff') };
 
   if (input.overrideReason) {
     // Real audit_log columns (reports.ts's recordReportView is the existing
@@ -244,7 +248,10 @@ export async function recordAttendance(
     // because the paper trail failed would be strictly worse. Surfaced as
     // a soft error string instead of thrown, same reasoning as every other
     // best-effort write in this codebase.
-    if (auditErr) return { error: `Recorded, but the override note failed to save: ${auditErr.message}` };
+    if (auditErr)
+      return {
+        error: `The attendance mark saved, but the override note did not. ${humanizeDbError(auditErr.message, 'staff')}`,
+      };
   }
 
   return { error: null };
@@ -271,7 +278,7 @@ export async function bulkMarkPresent(
     .eq('org_id', orgId)
     .eq('session_id', sessionId)
     .in('athlete_id', [...athleteIds]);
-  if (existingErr) return { error: existingErr.message };
+  if (existingErr) return { error: humanizeDbError(existingErr.message, 'staff') };
 
   const already = new Set((existing ?? []).map((r) => r.athlete_id));
   const toMark = athleteIds.filter((id) => !already.has(id));
@@ -287,5 +294,5 @@ export async function bulkMarkPresent(
       recorded_at: new Date().toISOString(),
     })),
   );
-  return { error: error?.message ?? null };
+  return { error: error ? humanizeDbError(error.message, 'staff') : null };
 }

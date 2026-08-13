@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { setBoardVisibility, deleteBoard, suppressAthlete } from '@/lib/queries/leaderboards';
+import { humanizeDbError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import type { RankedRow } from '@/lib/queries/leaderboards';
 
 type Props = {
@@ -30,37 +31,47 @@ export function LeaderboardStaffActions({ orgId, userId, boardId, visibility, is
 
   const visibilityMutation = useMutation({
     mutationFn: () =>
-      setBoardVisibility(createClient(), orgId, boardId, visibility === 'published' ? 'staff' : 'published'),
+      withWriteTimeout(
+        setBoardVisibility(createClient(), orgId, boardId, visibility === 'published' ? 'staff' : 'published'),
+      ),
     onSuccess: (result) => {
-      if (result.error) return setError(result.error);
+      if (result.error) return setError(humanizeDbError(result.error, 'staff'));
       setError(null);
       router.refresh();
     },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: () => deleteBoard(createClient(), orgId, boardId),
+    mutationFn: () => withWriteTimeout(deleteBoard(createClient(), orgId, boardId)),
     onSuccess: (result) => {
       if (result.error) {
-        setError(result.error);
+        setError(humanizeDbError(result.error, 'staff'));
         setConfirmingDelete(false);
         return;
       }
       router.push('/leaderboards/manage');
     },
+    onError: (err) => {
+      setError(toUserMessage(err, 'staff'));
+      setConfirmingDelete(false);
+    },
   });
 
   const suppressMutation = useMutation({
     mutationFn: () =>
-      suppressAthlete(createClient(), orgId, suppressTarget, userId, boardId, suppressReason.trim()),
+      withWriteTimeout(
+        suppressAthlete(createClient(), orgId, suppressTarget, userId, boardId, suppressReason.trim()),
+      ),
     onSuccess: (result) => {
-      if (result.error) return setError(result.error);
+      if (result.error) return setError(humanizeDbError(result.error, 'staff'));
       setError(null);
       setSuppressing(false);
       setSuppressTarget('');
       setSuppressReason('');
       router.refresh();
     },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   return (

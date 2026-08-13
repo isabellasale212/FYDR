@@ -6,6 +6,7 @@ import type {
   ProgrammeStatus,
   ProgrammeType,
 } from '@/lib/types/database';
+import { humanizeDbError } from '@/lib/writeErrors';
 import type { Db } from './groups';
 
 /* screens/gym-programmes.md, screens/programme-builder.md, screens/my-programme.md
@@ -50,7 +51,8 @@ export async function createExercise(
     primary_muscle: input.primaryMuscle,
     cues: input.cues,
   });
-  return { error: error?.message ?? null };
+  /* Raw driver strings never leave this file — audit S5. */
+  return { error: error ? humanizeDbError(error.message, 'staff') : null };
 }
 
 export type ProgrammeSummary = {
@@ -198,7 +200,7 @@ export async function createProgramme(
             : 'Medical staff can only create rehab programmes, not gym, conditioning or nutrition ones.',
       };
     }
-    return { id: null, error: error.message };
+    return { id: null, error: humanizeDbError(error.message, 'staff') };
   }
   return { id: data.id, error: null };
 }
@@ -312,7 +314,7 @@ export async function createBlock(
     duration_weeks: input.durationWeeks,
     focus: input.focus,
   });
-  return { error: error?.message ?? null };
+  return { error: error ? humanizeDbError(error.message, 'staff') : null };
 }
 
 export async function createSession(
@@ -329,7 +331,7 @@ export async function createSession(
     day_number: input.dayNumber,
     sequence: input.sequence,
   });
-  return { error: error?.message ?? null };
+  return { error: error ? humanizeDbError(error.message, 'staff') : null };
 }
 
 export type PrescriptionInput = {
@@ -363,7 +365,7 @@ export async function addExerciseToSession(
     rest_seconds: input.restSeconds,
     notes: input.notes,
   });
-  return { error: error?.message ?? null };
+  return { error: error ? humanizeDbError(error.message, 'staff') : null };
 }
 
 export type Assignee = { athlete_id: string | null; group_id: string | null; athlete_name: string | null; group_name: string | null };
@@ -404,7 +406,7 @@ export async function assignProgramme(
       .eq('athlete_id', input.athleteId)
       .eq('status', 'active')
       .neq('programme_id', input.programmeId);
-    if (suspendErr) return { error: suspendErr.message };
+    if (suspendErr) return { error: humanizeDbError(suspendErr.message, 'staff') };
   }
 
   const { error } = await db.from('programme_assignments').insert({
@@ -418,7 +420,7 @@ export async function assignProgramme(
     if (error.message.toLowerCase().includes('row-level security') || error.message.toLowerCase().includes('policy')) {
       return { error: 'Only medical staff can assign a rehab programme.' };
     }
-    return { error: error.message };
+    return { error: humanizeDbError(error.message, 'staff') };
   }
   return { error: null };
 }
@@ -521,7 +523,7 @@ export async function startOrGetSessionLog(
     .eq('entry_date', today)
     .neq('status', 'abandoned')
     .maybeSingle();
-  if (findErr) return { id: null, status: null, startedAt: null, error: findErr.message };
+  if (findErr) return { id: null, status: null, startedAt: null, error: humanizeDbError(findErr.message, 'athlete') };
   if (existing) {
     return { id: existing.id, status: existing.status, startedAt: existing.started_at, error: null };
   }
@@ -540,7 +542,7 @@ export async function startOrGetSessionLog(
     })
     .select('id, status')
     .single();
-  if (error) return { id: null, status: null, startedAt: null, error: error.message };
+  if (error) return { id: null, status: null, startedAt: null, error: humanizeDbError(error.message, 'athlete') };
   return { id: data.id, status: data.status, startedAt, error: null };
 }
 
@@ -587,7 +589,7 @@ export async function logSet(
     load_kg: input.loadKg,
     rpe: input.rpe,
   });
-  return { error: error?.message ?? null };
+  return { error: error ? humanizeDbError(error.message, 'athlete') : null };
 }
 
 export async function completeSessionLog(
@@ -599,7 +601,7 @@ export async function completeSessionLog(
     .from('gym_session_logs')
     .update({ status: 'complete', completed_at: new Date().toISOString(), session_rpe: sessionRpe })
     .eq('id', gymSessionLogId);
-  return { error: error?.message ?? null };
+  return { error: error ? humanizeDbError(error.message, 'athlete') : null };
 }
 
 export type GymLogStatusFilter = GymLogStatus;

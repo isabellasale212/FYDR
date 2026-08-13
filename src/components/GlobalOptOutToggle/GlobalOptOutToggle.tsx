@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { optOut, optBackIn } from '@/lib/queries/leaderboards';
+import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 
 type Props = { orgId: string; athleteId: string; userId: string; initialOptedOut: boolean };
 
@@ -13,15 +14,19 @@ export function GlobalOptOutToggle({ orgId, athleteId, userId, initialOptedOut }
   const [error, setError] = useState<string | null>(null);
 
   const mutation = useMutation({
-    mutationFn: () =>
-      initialOptedOut
-        ? optBackIn(createClient(), orgId, athleteId, null)
-        : optOut(createClient(), orgId, athleteId, userId, null),
-    onSuccess: (result) => {
-      if (result.error) return setError(result.error);
+    mutationFn: async () => {
+      const result = await withWriteTimeout(
+        initialOptedOut
+          ? optBackIn(createClient(), orgId, athleteId, null)
+          : optOut(createClient(), orgId, athleteId, userId, null),
+      );
+      if (result.error) throw new Error(result.error);
+    },
+    onSuccess: () => {
       setError(null);
       router.refresh();
     },
+    onError: (err) => setError(toUserMessage(err, 'athlete')),
   });
 
   return (

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { createExercise } from '@/lib/queries/programmes';
+import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import type { ExerciseCategory } from '@/lib/types/database';
 import { enumLabel } from '@/lib/format';
 
@@ -31,12 +32,14 @@ export function ExerciseForm({ orgId }: { orgId: string }) {
 
   const mutation = useMutation({
     mutationFn: () =>
-      createExercise(createClient(), orgId, {
-        name,
-        category,
-        primaryMuscle: primaryMuscle.trim() || null,
-        cues: cues.trim() || null,
-      }),
+      withWriteTimeout(
+        createExercise(createClient(), orgId, {
+          name,
+          category,
+          primaryMuscle: primaryMuscle.trim() || null,
+          cues: cues.trim() || null,
+        }),
+      ),
     onSuccess: (result) => {
       if (result.error) return setError(result.error);
       setError(null);
@@ -45,6 +48,7 @@ export function ExerciseForm({ orgId }: { orgId: string }) {
       setCues('');
       router.refresh();
     },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   return (

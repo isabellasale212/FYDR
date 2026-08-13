@@ -1,9 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { moveGroup } from '@/lib/queries/groups';
 import { createClient } from '@/lib/supabase/client';
+import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 
 type Props = {
   orgId: string;
@@ -27,14 +29,30 @@ type Props = {
  *  papered over by an inflated size claim. */
 export function GroupReorderButtons({ orgId, groupId, groupName, canMoveUp, canMoveDown }: Props) {
   const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
 
+  /* Bounded write (audit S5's rule): this used to discard moveGroup's
+   * returned {error} entirely and had no onError — a failed reorder just
+   * didn't happen, with no explanation. */
   const move = useMutation({
-    mutationFn: (direction: 'up' | 'down') => moveGroup(createClient(), orgId, groupId, direction),
-    onSuccess: () => router.refresh(),
+    mutationFn: async (direction: 'up' | 'down') => {
+      const result = await withWriteTimeout(moveGroup(createClient(), orgId, groupId, direction));
+      if (result.error) throw new HumanError(result.error);
+    },
+    onSuccess: () => {
+      setError(null);
+      router.refresh();
+    },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      {error ? (
+        <span className="form-error" role="alert">
+          {error}
+        </span>
+      ) : null}
       <button
         type="button"
         className="reorder-btn"

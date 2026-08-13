@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { expireTarget, type TargetWithNames } from '@/lib/queries/nutritionTargets';
+import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { formatDate, mdLabel } from '@/lib/format';
 
 type Props = {
@@ -29,12 +30,13 @@ export function NutritionTargetsList({ orgId, targets, isCoach, isMedical }: Pro
   const [error, setError] = useState<string | null>(null);
 
   const mutation = useMutation({
-    mutationFn: (id: string) => expireTarget(createClient(), orgId, id),
+    mutationFn: (id: string) => withWriteTimeout(expireTarget(createClient(), orgId, id)),
     onSuccess: (result) => {
       if (result.error) return setError(result.error);
       setError(null);
       router.refresh();
     },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
   if (targets.length === 0) {

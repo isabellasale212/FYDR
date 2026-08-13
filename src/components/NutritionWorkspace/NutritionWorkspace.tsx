@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
+import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import {
   DAY_TYPES,
   RULE_BOUNDS,
@@ -148,8 +149,8 @@ export function NutritionWorkspace({
 
   const assignMutation = useMutation({
     mutationFn: async () => {
-      if (!selectedPlan) throw new Error('No plan selected.');
-      return assignPlan(createClient(), orgId, userId, {
+      if (!selectedPlan) throw new HumanError('No plan selected.');
+      return withWriteTimeout(assignPlan(createClient(), orgId, userId, {
         scope: selectedPlan.scope,
         athleteId: null,
         groupId: selectedPlan.groupId,
@@ -162,25 +163,25 @@ export function NutritionWorkspace({
         dayType,
         dayTypeLabel: dayTypeInfo.label,
         scopeLabel: selectedPlan.name,
-      });
+      }));
     },
     onSuccess: (result) => {
       if (result.error) return setAssignError(result.error);
       setAssignError(null);
       router.refresh();
     },
-    onError: (e: Error) => setAssignError(e.message),
+    onError: (e: Error) => setAssignError(toUserMessage(e, 'staff')),
   });
 
   const createPlanMutation = useMutation({
-    mutationFn: async () => createPlan(createClient(), orgId, userId, newPlanGroupId, rules),
+    mutationFn: async () => withWriteTimeout(createPlan(createClient(), orgId, userId, newPlanGroupId, rules)),
     onSuccess: (result) => {
       if (result.error) return setAssignError(result.error);
       setAssignError(null);
       setShowNewPlan(false);
       router.refresh();
     },
-    onError: (e: Error) => setAssignError(e.message),
+    onError: (e: Error) => setAssignError(toUserMessage(e, 'staff')),
   });
 
   const exampleTargets = computeTargets(currentRule, 100, dayTypeInfo.multiplier);

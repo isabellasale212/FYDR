@@ -1,5 +1,6 @@
 import type { FixtureRow, SessionRow } from '@/lib/types/database';
 import { anchorMdOffsetsToWeek } from '@/lib/format';
+import { humanizeDbError } from '@/lib/writeErrors';
 import { fetchGroupAthleteIds, type Db } from './groups';
 
 export type Session = Pick<
@@ -655,7 +656,8 @@ export async function createSession(
     .select('id')
     .single();
 
-  if (error || !session) return { error: error?.message ?? 'Could not create the session.' };
+  if (error || !session)
+    return { error: error ? humanizeDbError(error.message, 'staff') : 'Could not create the session.' };
 
   if (input.groupIds.length > 0) {
     const { error: participantsError } = await db.from('session_participants').insert(
@@ -665,7 +667,7 @@ export async function createSession(
         group_id: groupId,
       })),
     );
-    if (participantsError) return { error: participantsError.message };
+    if (participantsError) return { error: humanizeDbError(participantsError.message, 'staff') };
   }
 
   return { error: null };
@@ -759,7 +761,7 @@ export async function updateSession(
     .eq('id', sessionId)
     .eq('org_id', orgId);
 
-  if (error) return { error: error.message };
+  if (error) return { error: humanizeDbError(error.message, 'staff') };
 
   /* Group participants are reconciled by delete-then-insert, not a diff,
    * because this build only assigns whole groups (see NewSessionInput).
@@ -776,7 +778,7 @@ export async function updateSession(
     .eq('session_id', sessionId)
     .not('group_id', 'is', null);
 
-  if (deleteError) return { error: deleteError.message };
+  if (deleteError) return { error: humanizeDbError(deleteError.message, 'staff') };
 
   if (input.groupIds.length > 0) {
     const { error: insertError } = await db.from('session_participants').insert(
@@ -786,7 +788,7 @@ export async function updateSession(
         group_id: groupId,
       })),
     );
-    if (insertError) return { error: insertError.message };
+    if (insertError) return { error: humanizeDbError(insertError.message, 'staff') };
   }
 
   return { error: null };
@@ -807,7 +809,7 @@ export async function cancelSession(
     .update({ status: 'cancelled' })
     .eq('id', sessionId)
     .eq('org_id', orgId);
-  return { error: error?.message ?? null };
+  return { error: error ? humanizeDbError(error.message, 'staff') : null };
 }
 
 /** The reverse of cancelSession, per session-detail.md's lifecycle diagram:
@@ -822,7 +824,7 @@ export async function reinstateSession(
     .update({ status: 'planned' })
     .eq('id', sessionId)
     .eq('org_id', orgId);
-  return { error: error?.message ?? null };
+  return { error: error ? humanizeDbError(error.message, 'staff') : null };
 }
 
 /** Soft delete, and only when it is safe: screens/schedule.md's own rule is
@@ -851,9 +853,9 @@ export async function deleteSession(
       .limit(1),
   ]);
 
-  if (session.error) return { error: session.error.message };
-  if (attendance.error) return { error: attendance.error.message };
-  if (entries.error) return { error: entries.error.message };
+  if (session.error) return { error: humanizeDbError(session.error.message, 'staff') };
+  if (attendance.error) return { error: humanizeDbError(attendance.error.message, 'staff') };
+  if (entries.error) return { error: humanizeDbError(entries.error.message, 'staff') };
 
   if ((attendance.data?.length ?? 0) > 0 || (entries.data?.length ?? 0) > 0) {
     return { error: 'This session has recorded data. Cancel it instead.' };
@@ -867,7 +869,7 @@ export async function deleteSession(
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', sessionId)
     .eq('org_id', orgId);
-  return { error: error?.message ?? null };
+  return { error: error ? humanizeDbError(error.message, 'staff') : null };
 }
 
 export async function fetchNextFixture(
@@ -990,7 +992,7 @@ export async function updateFixture(
     })
     .eq('id', fixtureId)
     .eq('org_id', orgId);
-  return { error: error?.message ?? null };
+  return { error: error ? humanizeDbError(error.message, 'staff') : null };
 }
 
 /** One setter for every status a fixture can be in, rather than one
@@ -1008,5 +1010,5 @@ export async function setFixtureStatus(
     .update({ status })
     .eq('id', fixtureId)
     .eq('org_id', orgId);
-  return { error: error?.message ?? null };
+  return { error: error ? humanizeDbError(error.message, 'staff') : null };
 }

@@ -45,8 +45,12 @@ function toastMessageFor(params: Record<string, string | string[] | undefined>):
     return rpe && session ? `RPE ${rpe} submitted for ${session}` : 'RPE submitted';
   }
   if (submitted === 'nutrition') {
+    /* Same phrasing as wellness: the check-in is queued on the phone first
+       (lib/outbox.ts), so "submitted" is true even before the server has it. */
     const week = typeof params.week === 'string' ? params.week : null;
-    return week ? `Nutrition check-in submitted for week of ${formatDate(week)}` : 'Nutrition check-in submitted';
+    return week
+      ? `Nutrition check-in submitted for week of ${formatDate(week)} · queued, syncs on signal`
+      : 'Nutrition check-in submitted · queued, syncs on signal';
   }
   if (submitted === 'gym') return 'Gym session logged.';
   return null;

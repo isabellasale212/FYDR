@@ -1,3 +1,4 @@
+import { humanizeDbError } from '@/lib/writeErrors';
 import type { Db } from './groups';
 
 /* body_composition (migration 0024). Same shape as test_results: staff
@@ -124,7 +125,8 @@ export async function logWeighIn(
     if (error.message.toLowerCase().includes('row-level security') || error.message.toLowerCase().includes('policy')) {
       return { error: 'Only coaching or medical staff can log a weigh-in.' };
     }
-    return { error: error.message };
+    /* Raw driver strings never leave this file — audit S5. */
+    return { error: humanizeDbError(error.message, 'staff') };
   }
   return { error: null };
 }
@@ -164,7 +166,7 @@ export async function updateWeighIn(
     if (error.message.toLowerCase().includes('row-level security') || error.message.toLowerCase().includes('policy')) {
       return { error: 'Only coaching or medical staff can edit a weigh-in.' };
     }
-    return { error: error.message };
+    return { error: humanizeDbError(error.message, 'staff') };
   }
   return { error: null };
 }

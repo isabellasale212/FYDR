@@ -7,6 +7,7 @@ import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { completeSessionLog, logSet, type LoggedSet, type ResolvedExercise } from '@/lib/queries/programmes';
 import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
+import { formatDate } from '@/lib/format';
 
 type Props = {
   orgId: string;
@@ -19,13 +20,32 @@ type Props = {
   alreadyComplete: boolean;
 };
 
+/* 'kg' is only a safe assumption for absolute loads on genuinely loaded
+ * categories — audit finding 31's confirmed example is live data: Box jump
+ * is prescribed absolute=60 where 60 is a box height in cm, not a kg load.
+ * plyo/conditioning/mobility exercises show the bare number instead of
+ * asserting a unit the schema does not track; notes (shown separately by the
+ * caller, if present) carry the real unit until this domain has a
+ * measurement_type column — real, open gap, too large for this pass. */
 function loadLabel(ex: ResolvedExercise): string {
   if (ex.load_basis === 'none') return 'No prescribed load';
-  if (ex.load_basis === 'absolute') return ex.load_value !== null ? `${ex.load_value} kg` : 'Load not set';
+  if (ex.load_basis === 'absolute') {
+    if (ex.load_value === null) return 'Load not set';
+    const bare = ex.category === 'plyo' || ex.category === 'conditioning' || ex.category === 'mobility';
+    return bare ? String(ex.load_value) : `${ex.load_value} kg`;
+  }
   if (ex.load_basis === 'percent_bw') return ex.load_value !== null ? `${ex.load_value}% bodyweight` : 'Not set';
   if (ex.load_basis === 'rpe') return ex.load_value !== null ? `Target RPE ${ex.load_value}` : 'Target RPE not set';
-  // percent_1rm: this pass has no test_definitions/test_results to resolve against.
-  // Honest, not a guess — screens/gym-logging.md's own copy for this exact case.
+  // percent_1rm, resolved (migration 0043) against the athlete's own latest
+  // 1RM test result — a real number, never estimated (O-389 stays open on
+  // purpose). Missing means missing, in one of two distinct honest shapes:
+  // the exercise has no 1RM test linked at all, or it does and this athlete
+  // simply has no result on file yet. screens/gym-logging.md's own copy for
+  // the second case, kept verbatim.
+  if (ex.resolved_load_kg !== null) {
+    return `${ex.resolved_load_kg} kg (${ex.load_value}% of your 1RM${ex.one_rm_test_date ? `, tested ${formatDate(ex.one_rm_test_date)}` : ''})`;
+  }
+  if (!ex.one_rm_linked) return 'No 1RM test linked to this exercise yet.';
   return 'No one rep max on file. Log the load you lift.';
 }
 
@@ -179,7 +199,16 @@ export function GymSessionLogger({
           {exercises.map((ex) => {
             const done = setsByExercise.get(ex.programme_exercise_id) ?? [];
             const prefillReps = ex.reps_min !== null ? String(ex.reps_min) : '';
-            const prefillLoad = ex.load_basis === 'absolute' && ex.load_value !== null ? String(ex.load_value) : '';
+            // Prefilled from a real number in both cases: the prescribed
+            // absolute kg, or (migration 0043) the athlete's own resolved
+            // percent_1rm figure. Never prefilled from a guess — an
+            // unresolved percent_1rm leaves the field blank, same as before.
+            const prefillLoad =
+              ex.load_basis === 'absolute' && ex.load_value !== null
+                ? String(ex.load_value)
+                : ex.load_basis === 'percent_1rm' && ex.resolved_load_kg !== null
+                  ? String(ex.resolved_load_kg)
+                  : '';
             const draft = draftFor(ex.programme_exercise_id, prefillReps, prefillLoad);
             const nextSetNumber = done.length + 1;
 

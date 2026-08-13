@@ -448,6 +448,93 @@ export type Database = {
         }
       ]
     }
+    exercise_overrides: {
+      Row: {
+        id: string
+        org_id: string
+        programme_exercise_id: string
+        athlete_id: string
+        override_type: Database["public"]["Enums"]["override_type"]
+        substitute_exercise_id: string | null
+        sets: number | null
+        reps_min: number | null
+        reps_max: number | null
+        load_value: number | null
+        reason: string | null
+        created_by: string | null
+        created_at: string
+        expires_at: string | null
+      }
+      Insert: {
+        id?: string
+        org_id: string
+        programme_exercise_id: string
+        athlete_id: string
+        override_type: Database["public"]["Enums"]["override_type"]
+        substitute_exercise_id?: string | null
+        sets?: number | null
+        reps_min?: number | null
+        reps_max?: number | null
+        load_value?: number | null
+        reason?: string | null
+        created_by?: string | null
+        created_at?: string
+        expires_at?: string | null
+      }
+      Update: {
+        id?: string
+        org_id?: string
+        programme_exercise_id?: string
+        athlete_id?: string
+        override_type?: Database["public"]["Enums"]["override_type"]
+        substitute_exercise_id?: string | null
+        sets?: number | null
+        reps_min?: number | null
+        reps_max?: number | null
+        load_value?: number | null
+        reason?: string | null
+        created_by?: string | null
+        created_at?: string
+        expires_at?: string | null
+      }
+      Relationships: [
+        {
+          foreignKeyName: "exercise_overrides_athlete_id_fkey"
+          columns: ["athlete_id"]
+          isOneToOne: false
+          referencedRelation: "athletes"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "exercise_overrides_created_by_fkey"
+          columns: ["created_by"]
+          isOneToOne: false
+          referencedRelation: "users"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "exercise_overrides_org_id_fkey"
+          columns: ["org_id"]
+          isOneToOne: false
+          referencedRelation: "organisations"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "exercise_overrides_programme_exercise_id_fkey"
+          columns: ["programme_exercise_id"]
+          isOneToOne: false
+          referencedRelation: "programme_exercises"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "exercise_overrides_substitute_exercise_id_fkey"
+          columns: ["substitute_exercise_id"]
+          isOneToOne: false
+          referencedRelation: "exercises"
+          referencedColumns: ["id"]
+        }
+      ]
+    }
     exercises: {
       Row: {
         id: string
@@ -461,6 +548,7 @@ export type Database = {
         cues: string | null
         created_at: string
         deleted_at: string | null
+        one_rm_test_definition_id: string | null
       }
       Insert: {
         id?: string
@@ -474,6 +562,7 @@ export type Database = {
         cues?: string | null
         created_at?: string
         deleted_at?: string | null
+        one_rm_test_definition_id?: string | null
       }
       Update: {
         id?: string
@@ -487,8 +576,16 @@ export type Database = {
         cues?: string | null
         created_at?: string
         deleted_at?: string | null
+        one_rm_test_definition_id?: string | null
       }
       Relationships: [
+        {
+          foreignKeyName: "exercises_one_rm_test_definition_id_fkey"
+          columns: ["one_rm_test_definition_id"]
+          isOneToOne: false
+          referencedRelation: "test_definitions"
+          referencedColumns: ["id"]
+        },
         {
           foreignKeyName: "exercises_org_id_fkey"
           columns: ["org_id"]
@@ -3961,6 +4058,7 @@ export type Database = {
     resolve_programme_exercises: {
       Args: {
         p_programme_session_id: string
+        p_athlete_id?: string | null
       }
       Returns: {
           programme_exercise_id: string
@@ -3977,6 +4075,14 @@ export type Database = {
           tempo: string
           rest_seconds: number
           notes: string
+          is_overridden: boolean
+          is_exempt: boolean
+          override_types: Database["public"]["Enums"]["override_type"][]
+          override_reason: string
+          one_rm_linked: boolean
+          resolved_load_kg: number
+          one_rm_missing: boolean
+          one_rm_test_date: string
         }[]
     }
     revise_nutrition_checkin: {
@@ -3984,7 +4090,7 @@ export type Database = {
         p_original_id: string
         p_new_id: string
         p_answer: Database["public"]["Enums"]["nutrition_checkin_answer"]
-        p_note: string
+        p_note?: string | null
       }
       Returns: string
     }
@@ -4012,9 +4118,9 @@ export type Database = {
       Args: {
         p_action: string
         p_entity_type: string
-        p_entity_id: string
-        p_athlete_id: string
-        p_metadata: Json
+        p_entity_id?: string | null
+        p_athlete_id?: string | null
+        p_metadata?: Json | null
       }
       Returns: number
     }
@@ -4049,6 +4155,7 @@ export type Database = {
     nutrition_checkin_answer: "yes" | "roughly" | "no"
     occurrence_context: "training" | "match" | "gym" | "other" | "unknown"
     org_sport: "rugby_union" | "rugby_league" | "football" | "netball" | "hockey" | "cricket" | "basketball" | "athletics" | "other"
+    override_type: "exempt" | "substitute" | "volume" | "load_cap" | "note"
     parental_consent_method: "club_registration_form" | "written_confirmation" | "in_person" | "not_required"
     problem_report_category: "injury_or_pain" | "wellbeing" | "other"
     problem_report_status: "open" | "acknowledged" | "closed"
@@ -4098,6 +4205,7 @@ export type ProgrammeStatus = Database["public"]["Enums"]["programme_status"];
 export type LoadBasis = Database["public"]["Enums"]["load_basis"];
 export type AssignmentStatus = Database["public"]["Enums"]["assignment_status"];
 export type GymLogStatus = Database["public"]["Enums"]["gym_log_status"];
+export type OverrideType = Database["public"]["Enums"]["override_type"];
 export type TestCategory = Database["public"]["Enums"]["test_category"];
 export type SideMode = Database["public"]["Enums"]["side_mode"];
 export type UserStatus = Database["public"]["Enums"]["user_status"];

@@ -82,7 +82,8 @@ const functionRows = (
 
 const functionParamRows = (
   await client.query(`
-    select specific_name, parameter_name, parameter_mode, data_type, udt_name, ordinal_position
+    select specific_name, parameter_name, parameter_mode, data_type, udt_name, ordinal_position,
+           parameter_default
     from information_schema.parameters
     where specific_schema = 'public'
     order by specific_name, ordinal_position;
@@ -302,9 +303,20 @@ function emitFunction(fn) {
   const params = allParams.filter(
     (p) => (p.parameter_mode === 'IN' || p.parameter_mode === 'INOUT') && p.parameter_name !== null,
   );
-  const argLines = params.map(
-    (p) => `        ${p.parameter_name}: ${pgUdtToTs(p.udt_name)}`,
-  );
+  // A parameter with `default null` (resolve_programme_exercises' own
+  // p_athlete_id is the case that surfaced this: an optional "which athlete"
+  // argument, correct to omit AND correct to pass null explicitly) needs its
+  // TS type to accept both. Postgres records that default as the literal
+  // text "NULL::<type>" in parameter_default; anything else (a real default
+  // value, or no default at all) leaves the argument required and non-null,
+  // unchanged from before this was added.
+  const argLines = params.map((p) => {
+    const isNullDefault = typeof p.parameter_default === 'string' && /^null(::|$)/i.test(p.parameter_default.trim());
+    const tsType = pgUdtToTs(p.udt_name);
+    return isNullDefault
+      ? `        ${p.parameter_name}?: ${tsType} | null`
+      : `        ${p.parameter_name}: ${tsType}`;
+  });
   // A zero-arg function (several of the auth_* helpers) would otherwise emit
   // a bare `{}`, which is "any non-nullish value" to eslint's
   // no-empty-object-type rule, not "no arguments" — the same fix already
@@ -402,6 +414,7 @@ export type ProgrammeStatus = Database["public"]["Enums"]["programme_status"];
 export type LoadBasis = Database["public"]["Enums"]["load_basis"];
 export type AssignmentStatus = Database["public"]["Enums"]["assignment_status"];
 export type GymLogStatus = Database["public"]["Enums"]["gym_log_status"];
+export type OverrideType = Database["public"]["Enums"]["override_type"];
 export type TestCategory = Database["public"]["Enums"]["test_category"];
 export type SideMode = Database["public"]["Enums"]["side_mode"];
 export type UserStatus = Database["public"]["Enums"]["user_status"];

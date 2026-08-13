@@ -33,10 +33,14 @@ type Props = {
   groups: readonly Group[];
 };
 
-const LOAD_BASES: LoadBasis[] = ['absolute', 'percent_bw', 'rpe', 'none'];
-// percent_1rm is a valid value in the schema but nothing in this pass can
-// resolve it (no test_definitions/test_results yet) — left off this picker on
-// purpose, see lib/queries/programmes.ts's header.
+const LOAD_BASES: LoadBasis[] = ['absolute', 'percent_1rm', 'percent_bw', 'rpe', 'none'];
+// percent_1rm is back on this picker (migration 0043 — audit finding 29). It
+// only ever resolves for an exercise with exercises.one_rm_test_definition_id
+// set, so the option stays selectable here — the exercise picker just above
+// determines whether it can actually be prescribed, per
+// screens/programme-builder.md's own validation rule: "percent_1rm chosen and
+// exercises.one_rm_test_definition_id is null → Block". Link a test from the
+// exercise library (/programmes/exercises) first.
 
 export function ProgrammeBuilder({
   orgId,
@@ -250,7 +254,15 @@ export function ProgrammeBuilder({
                             </label>
                             <label style={{ flex: 1 }}>
                               <span className="label">
-                                {loadBasis === 'absolute' ? 'Load (kg)' : loadBasis === 'percent_bw' ? '% bodyweight' : loadBasis === 'rpe' ? 'Target RPE' : 'Load'}
+                                {loadBasis === 'absolute'
+                                  ? 'Load (kg)'
+                                  : loadBasis === 'percent_1rm'
+                                    ? '% of 1RM'
+                                    : loadBasis === 'percent_bw'
+                                      ? '% bodyweight'
+                                      : loadBasis === 'rpe'
+                                        ? 'Target RPE'
+                                        : 'Load'}
                               </span>
                               <input
                                 className="field"
@@ -272,12 +284,22 @@ export function ProgrammeBuilder({
                               />
                             </label>
                           </div>
+                          {loadBasis === 'percent_1rm' && !exercises.find((e) => e.id === exerciseId)?.one_rm_test_definition_id ? (
+                            <p className="form-error" role="alert">
+                              {exercises.find((e) => e.id === exerciseId)?.name ?? 'This exercise'} has no linked 1RM
+                              test — link one from the exercise library first, or choose a different load basis. A
+                              percentage with nothing to resolve against would show every athlete “1RM not on file”.
+                            </p>
+                          ) : null}
                           <div style={{ display: 'flex', gap: 10 }}>
                             <button
                               type="button"
                               className="btn-primary"
                               onClick={() => exerciseMutation.mutate(s.id)}
-                              disabled={exerciseMutation.isPending}
+                              disabled={
+                                exerciseMutation.isPending ||
+                                (loadBasis === 'percent_1rm' && !exercises.find((e) => e.id === exerciseId)?.one_rm_test_definition_id)
+                              }
                             >
                               {exerciseMutation.isPending ? 'Adding…' : 'Add to session'}
                             </button>

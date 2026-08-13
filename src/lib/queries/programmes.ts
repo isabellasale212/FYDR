@@ -3,6 +3,7 @@ import type {
   ExerciseCategory,
   GymLogStatus,
   LoadBasis,
+  OverrideType,
   ProgrammeStatus,
   ProgrammeType,
 } from '@/lib/types/database';
@@ -11,13 +12,17 @@ import type { Db } from './groups';
 
 /* screens/gym-programmes.md, screens/programme-builder.md, screens/my-programme.md
  * and screens/gym-logging.md, cut down hard. Migration 0021's own header has the
- * full list of what this pass does not build (exercise_overrides, the
- * change-events/divergence-tracking system, 1RM-based load resolution) and why.
- * This file covers: an exercise library, a programme built from blocks of
- * sessions of prescribed exercises, assigning it to an athlete or a group, an
- * athlete's own resolved session list and its exercises, and athlete-logged sets
- * against them. No staff-entered logging, no drag-and-drop reordering — sequence
- * is a plain integer set at creation time, reordering is a documented gap. */
+ * full list of what that first pass did not build; migration 0043 (audit findings
+ * 29/32, "gym-fix-gameplan" item 3.5) closes two of those real cuts —
+ * exercise_overrides and percent_1rm-to-kg resolution — and this file's
+ * resolve/override/status functions below were written or rewritten for it. Still
+ * not built, on purpose, both here and in 0043's own header: programme_change_events
+ * / programme_change_divergences (parent-edit propagation with divergence tracking —
+ * still the largest unbuilt part of the spec), the athlete-by-exercise tailoring
+ * matrix, drag-and-drop reordering (sequence is a plain integer set at creation
+ * time), and deleting programme structure (no DELETE grant anywhere in this domain,
+ * including on exercise_overrides — an override is retired by expiring it, see
+ * `expireOverride` below). */
 
 export type Exercise = {
   id: string;
@@ -26,12 +31,13 @@ export type Exercise = {
   primary_muscle: string | null;
   equipment: string[] | null;
   cues: string | null;
+  one_rm_test_definition_id: string | null;
 };
 
 export async function fetchExercises(db: Db, orgId: string): Promise<Exercise[]> {
   const { data, error } = await db
     .from('exercises')
-    .select('id, name, category, primary_muscle, equipment, cues')
+    .select('id, name, category, primary_muscle, equipment, cues, one_rm_test_definition_id')
     .eq('org_id', orgId)
     .is('deleted_at', null)
     .order('name');
@@ -42,7 +48,13 @@ export async function fetchExercises(db: Db, orgId: string): Promise<Exercise[]>
 export async function createExercise(
   db: Db,
   orgId: string,
-  input: { name: string; category: ExerciseCategory; primaryMuscle: string | null; cues: string | null },
+  input: {
+    name: string;
+    category: ExerciseCategory;
+    primaryMuscle: string | null;
+    cues: string | null;
+    oneRmTestDefinitionId: string | null;
+  },
 ): Promise<{ error: string | null }> {
   const { error } = await db.from('exercises').insert({
     org_id: orgId,
@@ -50,9 +62,30 @@ export async function createExercise(
     category: input.category,
     primary_muscle: input.primaryMuscle,
     cues: input.cues,
+    one_rm_test_definition_id: input.oneRmTestDefinitionId,
   });
   /* Raw driver strings never leave this file — audit S5. */
   return { error: error ? humanizeDbError(error.message, 'staff') : null };
+}
+
+/** The exercise library's "1RM test" picker only ever lists strength-category
+ *  test_definitions — O-254's policy question ("which exercises get a linked
+ *  test") is answered per exercise, by the coach, from this list; nothing
+ *  auto-links. A CMJ or a Bronco test is never offered here even though it is
+ *  a real test_definitions row, because it cannot answer "what is 80% of
+ *  this athlete's 1RM back squat". */
+export type StrengthTestDefinition = { id: string; name: string };
+
+export async function fetchStrengthTestDefinitions(db: Db, orgId: string): Promise<StrengthTestDefinition[]> {
+  const { data, error } = await db
+    .from('test_definitions')
+    .select('id, name')
+    .eq('org_id', orgId)
+    .eq('test_category', 'strength')
+    .is('deleted_at', null)
+    .order('name');
+  if (error) throw new Error(error.message);
+  return data ?? [];
 }
 
 export type ProgrammeSummary = {
@@ -203,6 +236,35 @@ export async function createProgramme(
     return { id: null, error: humanizeDbError(error.message, 'staff') };
   }
   return { id: data.id, error: null };
+}
+
+/** screens/programme-builder.md "Publishing": "A draft programme is invisible
+ *  to athletes... Publish sets status = 'active'". Migration 0043 made that
+ *  true for the first time — resolve_my_programme_sessions never checked
+ *  programmes.status before it — so this is the write half of a real, live
+ *  bug fix, not a new feature layered on working behaviour. No validation
+ *  set beyond RLS (name uniqueness, "at least one block" etc. from the fuller
+ *  spec are not enforced here — a real, documented cut, see the migration's
+ *  own header). 'archived' is reachable the same way; there is no separate
+ *  archive affordance in the UI, one control does both directions. */
+export async function updateProgrammeStatus(
+  db: Db,
+  orgId: string,
+  programmeId: string,
+  status: ProgrammeStatus,
+): Promise<{ error: string | null }> {
+  const { error } = await db
+    .from('programmes')
+    .update({ status })
+    .eq('org_id', orgId)
+    .eq('id', programmeId);
+  if (error) {
+    if (error.message.toLowerCase().includes('row-level security') || error.message.toLowerCase().includes('policy')) {
+      return { error: 'You do not have permission to change this programme’s status.' };
+    }
+    return { error: humanizeDbError(error.message, 'staff') };
+  }
+  return { error: null };
 }
 
 export type ProgrammeDetail = {
@@ -386,6 +448,48 @@ export async function fetchAssignments(db: Db, orgId: string, programmeId: strin
   }));
 }
 
+export type AssignedAthlete = { id: string; first_name: string; last_name: string };
+
+/** Direct assignments unioned with group assignments expanded through live
+ *  membership, de-duplicated — the same shape fetchProgrammeListDetails
+ *  already computes for the assigned-count badge, factored out here because
+ *  the per-athlete view (audit finding 29: "no per-athlete view exists") needs
+ *  the actual athlete rows, not just a count, to build its picker. */
+export async function fetchAssignedAthletes(db: Db, orgId: string, programmeId: string): Promise<AssignedAthlete[]> {
+  const { data: assignments, error: assignErr } = await db
+    .from('programme_assignments')
+    .select('athlete_id, group_id')
+    .eq('org_id', orgId)
+    .eq('programme_id', programmeId)
+    .eq('status', 'active');
+  if (assignErr) throw new Error(assignErr.message);
+
+  const athleteIds = new Set((assignments ?? []).map((a) => a.athlete_id).filter((id): id is string => id !== null));
+  const groupIds = [...new Set((assignments ?? []).map((a) => a.group_id).filter((id): id is string => id !== null))];
+
+  if (groupIds.length > 0) {
+    const { data: memberships, error: memErr } = await db
+      .from('group_memberships')
+      .select('athlete_id')
+      .eq('org_id', orgId)
+      .in('group_id', groupIds)
+      .is('removed_at', null);
+    if (memErr) throw new Error(memErr.message);
+    for (const m of memberships ?? []) athleteIds.add(m.athlete_id);
+  }
+
+  if (athleteIds.size === 0) return [];
+
+  const { data: athletes, error: athErr } = await db
+    .from('athletes')
+    .select('id, first_name, last_name')
+    .eq('org_id', orgId)
+    .in('id', [...athleteIds])
+    .order('last_name');
+  if (athErr) throw new Error(athErr.message);
+  return athletes ?? [];
+}
+
 /** CLAUDE.md §6, the rehab exception: assigning a rehab programme suspends the
  *  athlete's active gym assignment rather than cancelling it. Only reachable
  *  when assigning to a single athlete — a group-wide rehab assignment does not
@@ -471,11 +575,39 @@ export type ResolvedExercise = {
   load_value: number | null;
   rest_seconds: number | null;
   notes: string | null;
+  /* Added by migration 0043. All five are only ever populated when this was
+   * resolved for a specific athlete (fetchSessionExercises's athleteId
+   * argument); the squad-generic call (no athlete) leaves is_overridden/
+   * is_exempt false and the rest null — "no athlete asked, nothing to say" —
+   * per the resolve function's own header comment, not a display bug. */
+  is_overridden: boolean;
+  override_types: OverrideType[];
+  override_reason: string | null;
+  /* one_rm_linked is real in BOTH call shapes: whether exercises.one_rm_test_
+   * definition_id is set at all, independent of any athlete. resolved_load_kg
+   * and one_rm_missing are athlete-specific like the override fields above. */
+  one_rm_linked: boolean;
+  resolved_load_kg: number | null;
+  one_rm_missing: boolean;
+  one_rm_test_date: string | null;
 };
 
-export async function fetchSessionExercises(db: Db, programmeSessionId: string): Promise<ResolvedExercise[]> {
+/** athleteId is optional. Omitted (or undefined), this is the squad-generic
+ *  parent view the staff programme list has always shown. Passed, this
+ *  resolves that one athlete's active overrides and, for a percent_1rm
+ *  prescription, a real kilogram figure from their latest 1RM test result —
+ *  audit finding 29 ("gym can't answer 'what is athlete X lifting'"), and the
+ *  reason ProgrammeAthleteView exists. An athlete calling this always
+ *  resolves themselves regardless of what id is passed — enforced in the
+ *  function, not here; see migration 0043. */
+export async function fetchSessionExercises(
+  db: Db,
+  programmeSessionId: string,
+  athleteId?: string,
+): Promise<ResolvedExercise[]> {
   const { data, error } = await db.rpc('resolve_programme_exercises', {
     p_programme_session_id: programmeSessionId,
+    p_athlete_id: athleteId ?? null,
   });
   if (error) throw new Error(error.message);
   return (data ?? [])
@@ -492,8 +624,171 @@ export async function fetchSessionExercises(db: Db, programmeSessionId: string):
       load_value: r.load_value,
       rest_seconds: r.rest_seconds,
       notes: r.notes,
+      is_overridden: r.is_overridden ?? false,
+      override_types: r.override_types ?? [],
+      override_reason: r.override_reason,
+      one_rm_linked: r.one_rm_linked ?? false,
+      resolved_load_kg: r.resolved_load_kg,
+      one_rm_missing: r.one_rm_missing ?? false,
+      one_rm_test_date: r.one_rm_test_date,
     }))
     .sort((a, b) => a.sequence - b.sequence);
+}
+
+export type NewOverrideInput = {
+  programmeExerciseId: string;
+  athleteId: string;
+  overrideType: OverrideType;
+  substituteExerciseId: string | null;
+  sets: number | null;
+  repsMin: number | null;
+  repsMax: number | null;
+  loadValue: number | null;
+  reason: string | null;
+  expiresAt: string | null;
+};
+
+/** One row per athlete per element, per the table's unique key — a second
+ *  override of the same type on the same exercise for the same athlete is a
+ *  humanizeDbError'd conflict, not a silent overwrite; the coach edits the
+ *  existing one instead (screens/programme-builder.md "Tailoring": "Creating
+ *  a second of the same type edits the existing row and says so" — this pass
+ *  surfaces the conflict but does not yet do the auto-merge that sentence
+ *  describes; a real, small, documented gap). */
+export async function createOverride(
+  db: Db,
+  orgId: string,
+  userId: string,
+  input: NewOverrideInput,
+): Promise<{ error: string | null }> {
+  const { error } = await db.from('exercise_overrides').insert({
+    org_id: orgId,
+    programme_exercise_id: input.programmeExerciseId,
+    athlete_id: input.athleteId,
+    override_type: input.overrideType,
+    substitute_exercise_id: input.substituteExerciseId,
+    sets: input.sets,
+    reps_min: input.repsMin,
+    reps_max: input.repsMax,
+    load_value: input.loadValue,
+    reason: input.reason,
+    expires_at: input.expiresAt,
+    created_by: userId,
+  });
+  if (error) {
+    if (error.message.toLowerCase().includes('duplicate key') || error.message.toLowerCase().includes('unique')) {
+      return { error: `This athlete already has a ${enumLikeOverrideLabel(input.overrideType)} override on this exercise.` };
+    }
+    if (error.message.toLowerCase().includes('row-level security') || error.message.toLowerCase().includes('policy')) {
+      return { error: 'You do not have permission to tailor this programme.' };
+    }
+    return { error: humanizeDbError(error.message, 'staff') };
+  }
+  return { error: null };
+}
+
+function enumLikeOverrideLabel(t: OverrideType): string {
+  return t.replace('_', ' ');
+}
+
+/** Retirement, not deletion — migration 0043's own header explains why there
+ *  is no DELETE grant on this table. Setting expires_at to now makes
+ *  resolve_programme_exercises stop applying it on its very next call; the
+ *  row stays as a record of what once applied and to whom. */
+export async function expireOverride(db: Db, orgId: string, overrideId: string): Promise<{ error: string | null }> {
+  const { error } = await db
+    .from('exercise_overrides')
+    .update({ expires_at: new Date().toISOString() })
+    .eq('org_id', orgId)
+    .eq('id', overrideId);
+  return { error: error ? humanizeDbError(error.message, 'staff') : null };
+}
+
+export type ProgrammeExerciseOption = {
+  id: string;
+  exercise_id: string;
+  exercise_name: string;
+  session_name: string;
+};
+
+/** Every prescribed exercise across a set of sessions (a whole programme's
+ *  worth, sessionIds taken from fetchProgrammeDetail so this does not have to
+ *  re-derive them from programmeId itself), flattened with its exercise and
+ *  session name — the picker source for the "Add override" form and for
+ *  labelling exercise_overrides rows that only ever carry an id. */
+export async function fetchProgrammeExerciseIndex(
+  db: Db,
+  sessionIds: readonly string[],
+): Promise<ProgrammeExerciseOption[]> {
+  if (sessionIds.length === 0) return [];
+  const { data, error } = await db
+    .from('programme_exercises')
+    .select('id, exercise_id, sequence, exercises(name), programme_sessions(name)')
+    .in('programme_session_id', sessionIds);
+  if (error) throw new Error(error.message);
+  return (data ?? [])
+    .map((r) => ({
+      id: r.id,
+      exercise_id: r.exercise_id,
+      exercise_name: r.exercises?.name ?? '(unknown exercise)',
+      session_name: r.programme_sessions?.name ?? '',
+    }))
+    .sort((a, b) => (a.session_name + a.exercise_name).localeCompare(b.session_name + b.exercise_name));
+}
+
+export type AthleteOverride = {
+  id: string;
+  programme_exercise_id: string;
+  exercise_name: string;
+  session_name: string;
+  override_type: OverrideType;
+  substitute_exercise_id: string | null;
+  sets: number | null;
+  reps_min: number | null;
+  reps_max: number | null;
+  load_value: number | null;
+  reason: string | null;
+  expires_at: string | null;
+};
+
+/** Every active override for one athlete across a whole programme — the
+ *  "Tailoring for this athlete" card. Includes exempt overrides, unlike
+ *  fetchSessionExercises, which filters an exempt row out of the resolved
+ *  list entirely (correct for the athlete's own view; this is the staff
+ *  view that needs to see what was removed and why, so it reads the raw
+ *  table directly rather than going through the resolve function). */
+export async function fetchActiveOverridesForAthlete(
+  db: Db,
+  orgId: string,
+  programmeExerciseIds: readonly string[],
+  athleteId: string,
+): Promise<AthleteOverride[]> {
+  if (programmeExerciseIds.length === 0) return [];
+  const nowIso = new Date().toISOString();
+  const { data, error } = await db
+    .from('exercise_overrides')
+    .select(
+      'id, programme_exercise_id, override_type, substitute_exercise_id, sets, reps_min, reps_max, load_value, reason, expires_at, programme_exercises(exercises(name), programme_sessions(name))',
+    )
+    .eq('org_id', orgId)
+    .eq('athlete_id', athleteId)
+    .in('programme_exercise_id', programmeExerciseIds)
+    .or(`expires_at.is.null,expires_at.gt.${nowIso}`);
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => ({
+    id: r.id,
+    programme_exercise_id: r.programme_exercise_id,
+    exercise_name: r.programme_exercises?.exercises?.name ?? '(unknown exercise)',
+    session_name: r.programme_exercises?.programme_sessions?.name ?? '',
+    override_type: r.override_type,
+    substitute_exercise_id: r.substitute_exercise_id,
+    sets: r.sets,
+    reps_min: r.reps_min,
+    reps_max: r.reps_max,
+    load_value: r.load_value,
+    reason: r.reason,
+    expires_at: r.expires_at,
+  }));
 }
 
 /** Finds today's open (in_progress) log for this session if one exists, else

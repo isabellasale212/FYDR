@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { TestHistoryList } from '@/components/TestHistoryList/TestHistoryList';
+import { TestTrendChart } from '@/components/TestTrendChart/TestTrendChart';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchHistory, fetchTestDefinitions } from '@/lib/queries/testing';
 import { requireStaff } from '@/lib/session';
@@ -48,14 +49,22 @@ export default async function TestAthleteHistoryPage({
           <p className="tiny">No results logged yet.</p>
         </div>
       ) : (
-        <TestHistoryList
-          orgId={orgId}
-          testDefinitionId={testDefId}
-          athleteId={athleteId}
-          rows={history}
-          unit={definition.unit}
-          decimalPlaces={definition.decimal_places}
-        />
+        <div className="stack">
+          <TestTrendChart
+            rows={history}
+            unit={definition.unit}
+            decimalPlaces={definition.decimal_places}
+            higherIsBetter={definition.higher_is_better}
+          />
+          <TestHistoryList
+            orgId={orgId}
+            testDefinitionId={testDefId}
+            athleteId={athleteId}
+            rows={history}
+            unit={definition.unit}
+            decimalPlaces={definition.decimal_places}
+          />
+        </div>
       )}
     </>
   );

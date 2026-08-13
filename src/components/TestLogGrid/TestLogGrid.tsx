@@ -116,17 +116,24 @@ export function TestLogGrid({ orgId, userId, testDefinitionId, testDate, default
           <div key={a.athlete_id}>
             {index > 0 ? <div className="hair" /> : null}
             <div style={{ padding: '10px 16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                <Link href={`/testing/${testDefinitionId}/${a.athlete_id}`} className="nm" style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+                <Link href={`/testing/${testDefinitionId}/${a.athlete_id}`} className="nm">
                   {a.first_name} {a.last_name}
                 </Link>
                 {a.pbValue !== null ? (
-                  <span className="tiny mono">
+                  <span className="pill pill-good" title="Personal best">
                     PB {a.pbValue.toFixed(decimalPlaces)}
                     {unit}
                   </span>
-                ) : null}
+                ) : (
+                  <span className="tiny" style={{ color: 'var(--faint)' }}>
+                    no PB yet
+                  </span>
+                )}
               </div>
+              <p className="tiny" style={{ color: 'var(--muted)', marginBottom: 4 }}>
+                Attempts{unit ? ` (${unit})` : ''}
+              </p>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 {slots.map((slot) => {
                   const key = `${a.athlete_id}:${slot.attempt}:${slot.side ?? 'b'}`;

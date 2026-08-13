@@ -19,6 +19,8 @@ export function TestDefinitionForm({ orgId }: { orgId: string }) {
   const [higherIsBetter, setHigherIsBetter] = useState(true);
   const [sideMode, setSideMode] = useState<SideMode>('bilateral');
   const [defaultAttempts, setDefaultAttempts] = useState('3');
+  const [decimalPlaces, setDecimalPlaces] = useState('1');
+  const [protocol, setProtocol] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const mutation = useMutation({
@@ -31,6 +33,8 @@ export function TestDefinitionForm({ orgId }: { orgId: string }) {
           higherIsBetter,
           sideMode,
           defaultAttempts: Number(defaultAttempts) || 1,
+          decimalPlaces: Number(decimalPlaces) || 0,
+          protocol,
         }),
       ),
     onSuccess: (result) => {
@@ -38,6 +42,7 @@ export function TestDefinitionForm({ orgId }: { orgId: string }) {
       setError(null);
       setName('');
       setUnit('');
+      setProtocol('');
       router.refresh();
     },
     onError: (err) => setError(toUserMessage(err, 'staff')),
@@ -72,15 +77,42 @@ export function TestDefinitionForm({ orgId }: { orgId: string }) {
           ))}
         </select>
       </label>
+      <label>
+        <span className="label">Protocol (optional)</span>
+        <textarea
+          className="field"
+          rows={2}
+          value={protocol}
+          onChange={(e) => setProtocol(e.target.value)}
+          placeholder="How to run it — setup, equipment, what counts as a valid attempt. Shown to whoever logs results."
+        />
+      </label>
       <div style={{ display: 'flex', gap: 8 }}>
         <label style={{ flex: 1 }}>
           <span className="label">Unit</span>
           <input className="field" value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="cm" />
         </label>
         <label style={{ flex: 1 }}>
+          <span className="label">Decimal places</span>
+          <input className="field" type="number" min="0" max="3" value={decimalPlaces} onChange={(e) => setDecimalPlaces(e.target.value)} />
+        </label>
+      </div>
+      <div>
+        <label>
           <span className="label">Attempts</span>
           <input className="field" type="number" min="1" max="10" value={defaultAttempts} onChange={(e) => setDefaultAttempts(e.target.value)} />
         </label>
+        {/* Audit finding 40: nowhere explained what logging N attempts
+         * actually computes. It's real behaviour, not a guess — the
+         * server-side mark_best_attempt trigger (migration 0024, fixed in
+         * 0025) always keeps exactly one is_best = true row per athlete,
+         * date and side: whichever attempt is highest (or lowest, per
+         * "Direction" below), never a mean of the N. */}
+        <p className="tiny" style={{ color: 'var(--muted)', marginTop: 4 }}>
+          Athletes get up to this many tries per session. The best one (per
+          the direction below) is kept as that session&rsquo;s result —
+          attempts are never averaged.
+        </p>
       </div>
       <div>
         <p className="label">Direction</p>

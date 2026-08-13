@@ -26,7 +26,8 @@ export default async function TestingReportPage({ searchParams }: { searchParams
   const [groups, byAthlete] = await Promise.all([fetchGroups(db, orgId), fetchTestingByAthlete(db, orgId, groupIds)]);
 
   const requestedTestId = typeof params.test === 'string' ? params.test : undefined;
-  const selectedTestId = byAthlete.definitions.find((d) => d.id === requestedTestId)?.id ?? byAthlete.definitions[0]?.id ?? null;
+  const selectedDefinition = byAthlete.definitions.find((d) => d.id === requestedTestId) ?? byAthlete.definitions[0] ?? null;
+  const selectedTestId = selectedDefinition?.id ?? null;
 
   const [byTest, longitudinal] = selectedTestId
     ? await Promise.all([fetchTestByTest(db, orgId, groupIds, selectedTestId), fetchTestLongitudinal(db, orgId, groupIds, selectedTestId)])
@@ -56,9 +57,20 @@ export default async function TestingReportPage({ searchParams }: { searchParams
            * always scoped to one test definition and one date, so "+ Log
            * a result" opens that same real grid rather than a new flat
            * form; per-column "+" below jumps straight to today's grid for
-           * that test. */}
-          <Link href={selectedTestId ? `/testing/${selectedTestId}` : '/testing'} className="btn-primary">
-            + Log a result
+           * that test. Audit finding 39: the label used to just say "+ Log
+           * a result" with no indication of which test it would open —
+           * whichever test happened to be selected (or definitions[0], the
+           * first time). selectedDefinition is guaranteed non-null
+           * whenever this button renders (byAthlete.definitions.length===0
+           * is the only case it's null, and that takes the whole page down
+           * the empty-state branch below instead), so the label can always
+           * name the real destination test. */}
+          <Link
+            href={selectedTestId ? `/testing/${selectedTestId}` : '/testing'}
+            className="btn-primary"
+            aria-label={selectedDefinition ? `Log a ${selectedDefinition.name} result` : 'Log a result'}
+          >
+            {selectedDefinition ? `+ Log a ${selectedDefinition.name} result` : '+ Log a result'}
           </Link>
           <a href={`/reports/testing/export?${selectedTestId ? `test=${selectedTestId}${groupQuery}` : groupQuery.replace('&', '')}`} className="btn-ghost">
             Export CSV

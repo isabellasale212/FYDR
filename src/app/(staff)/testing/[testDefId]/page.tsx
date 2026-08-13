@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { TestLogGrid } from '@/components/TestLogGrid/TestLogGrid';
+import { TestDateNav } from '@/components/TestDateNav/TestDateNav';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
-import { fetchResultsForLogging, fetchTestDefinitions } from '@/lib/queries/testing';
+import { fetchResultsForLogging, fetchTestDates, fetchTestDefinitions } from '@/lib/queries/testing';
 import { fetchGroups } from '@/lib/queries/groups';
-import { addDays, formatDate, todayIso } from '@/lib/format';
+import { todayIso } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
@@ -34,19 +35,11 @@ export default async function TestLogPage({
   const definition = definitions.find((d) => d.id === testDefId);
   if (!definition) notFound();
 
-  const [groups, athletes] = await Promise.all([
+  const [groups, athletes, testDates] = await Promise.all([
     fetchGroups(db, orgId),
     fetchResultsForLogging(db, orgId, testDefId, testDate, groupIds),
+    fetchTestDates(db, orgId, testDefId),
   ]);
-
-  // Plain <Link href> for day navigation, same as before — but it has to
-  // carry the group filter forward too, or clicking "Next day" silently
-  // clears it. GroupFilter's own client-side apply() already preserves
-  // whatever's in the URL when *it's* the one changing; this is the other
-  // direction, changing the date while a filter is active.
-  const dayHref = (date: string) =>
-    groupIds.length > 0 ? `/testing/${testDefId}?date=${date}&groups=${groupIds.join(',')}` : `/testing/${testDefId}?date=${date}`;
-
 
   return (
     <>
@@ -68,15 +61,7 @@ export default async function TestLogPage({
         <GroupFilter groups={groups} selected={groupIds} />
       </div>
 
-      <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <Link href={dayHref(addDays(testDate, -1))} className="btn-ghost">
-          ‹ Previous day
-        </Link>
-        <span className="nm mono">{formatDate(testDate)}</span>
-        <Link href={dayHref(addDays(testDate, 1))} className="btn-ghost">
-          Next day ›
-        </Link>
-      </div>
+      <TestDateNav testDefinitionId={testDefId} testDate={testDate} groupIds={groupIds} dates={testDates} />
 
       {athletes.length === 0 && groupIds.length > 0 ? (
         <EmptyState

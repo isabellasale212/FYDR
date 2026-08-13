@@ -87,7 +87,8 @@ export default async function ManageLeaderboardsPage() {
       <p className="cap">
         Wellness and body composition can never be ranked here, by design &mdash; see any
         ineligible metric in the builder for the reason. Boards render only once at least
-        three athletes qualify.
+        three athletes qualify. Athletes under 18 appear only if they choose to opt in
+        themselves &mdash; nobody at the club can turn that on for them.
       </p>
     </>
   );

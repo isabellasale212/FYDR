@@ -1899,6 +1899,90 @@ export type Database = {
 
       ]
     }
+    problem_reports: {
+      Row: {
+        id: string
+        org_id: string
+        athlete_id: string
+        category: Database["public"]["Enums"]["problem_report_category"] | null
+        body: string
+        status: Database["public"]["Enums"]["problem_report_status"]
+        created_by: string
+        created_at: string
+        acknowledged_at: string | null
+        acknowledged_by: string | null
+        closed_at: string | null
+        closed_by: string | null
+        deleted_at: string | null
+      }
+      Insert: {
+        id?: string
+        org_id: string
+        athlete_id: string
+        category?: Database["public"]["Enums"]["problem_report_category"] | null
+        body: string
+        status?: Database["public"]["Enums"]["problem_report_status"]
+        created_by: string
+        created_at?: string
+        acknowledged_at?: string | null
+        acknowledged_by?: string | null
+        closed_at?: string | null
+        closed_by?: string | null
+        deleted_at?: string | null
+      }
+      Update: {
+        id?: string
+        org_id?: string
+        athlete_id?: string
+        category?: Database["public"]["Enums"]["problem_report_category"] | null
+        body?: string
+        status?: Database["public"]["Enums"]["problem_report_status"]
+        created_by?: string
+        created_at?: string
+        acknowledged_at?: string | null
+        acknowledged_by?: string | null
+        closed_at?: string | null
+        closed_by?: string | null
+        deleted_at?: string | null
+      }
+      Relationships: [
+        {
+          foreignKeyName: "problem_reports_acknowledged_by_fkey"
+          columns: ["acknowledged_by"]
+          isOneToOne: false
+          referencedRelation: "users"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "problem_reports_athlete_id_fkey"
+          columns: ["athlete_id"]
+          isOneToOne: false
+          referencedRelation: "athletes"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "problem_reports_closed_by_fkey"
+          columns: ["closed_by"]
+          isOneToOne: false
+          referencedRelation: "users"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "problem_reports_created_by_fkey"
+          columns: ["created_by"]
+          isOneToOne: false
+          referencedRelation: "users"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "problem_reports_org_id_fkey"
+          columns: ["org_id"]
+          isOneToOne: false
+          referencedRelation: "organisations"
+          referencedColumns: ["id"]
+        }
+      ]
+    }
     programme_assignments: {
       Row: {
         id: string
@@ -2655,12 +2739,12 @@ export type Database = {
         requires_rpe: boolean
         requires_nutrition: boolean
         status: Database["public"]["Enums"]["session_status"]
-        template_key: string | null
-        applied_template_id: string | null
         created_by: string | null
         created_at: string
         updated_at: string
         deleted_at: string | null
+        template_key: string | null
+        applied_template_id: string | null
       }
       Insert: {
         id?: string
@@ -2680,12 +2764,12 @@ export type Database = {
         requires_rpe?: boolean
         requires_nutrition?: boolean
         status?: Database["public"]["Enums"]["session_status"]
-        template_key?: string | null
-        applied_template_id?: string | null
         created_by?: string | null
         created_at?: string
         updated_at?: string
         deleted_at?: string | null
+        template_key?: string | null
+        applied_template_id?: string | null
       }
       Update: {
         id?: string
@@ -2705,14 +2789,21 @@ export type Database = {
         requires_rpe?: boolean
         requires_nutrition?: boolean
         status?: Database["public"]["Enums"]["session_status"]
-        template_key?: string | null
-        applied_template_id?: string | null
         created_by?: string | null
         created_at?: string
         updated_at?: string
         deleted_at?: string | null
+        template_key?: string | null
+        applied_template_id?: string | null
       }
       Relationships: [
+        {
+          foreignKeyName: "sessions_applied_template_id_fkey"
+          columns: ["applied_template_id"]
+          isOneToOne: false
+          referencedRelation: "week_templates"
+          referencedColumns: ["id"]
+        },
         {
           foreignKeyName: "sessions_created_by_fkey"
           columns: ["created_by"]
@@ -2739,13 +2830,6 @@ export type Database = {
           columns: ["season_id"]
           isOneToOne: false
           referencedRelation: "seasons"
-          referencedColumns: ["id"]
-        },
-        {
-          foreignKeyName: "sessions_applied_template_id_fkey"
-          columns: ["applied_template_id"]
-          isOneToOne: false
-          referencedRelation: "week_templates"
           referencedColumns: ["id"]
         }
       ]
@@ -3966,6 +4050,8 @@ export type Database = {
     occurrence_context: "training" | "match" | "gym" | "other" | "unknown"
     org_sport: "rugby_union" | "rugby_league" | "football" | "netball" | "hockey" | "cricket" | "basketball" | "athletics" | "other"
     parental_consent_method: "club_registration_form" | "written_confirmation" | "in_person" | "not_required"
+    problem_report_category: "injury_or_pain" | "wellbeing" | "other"
+    problem_report_status: "open" | "acknowledged" | "closed"
     programme_status: "draft" | "active" | "archived"
     programme_type: "gym" | "rehab" | "conditioning" | "nutrition"
     session_status: "planned" | "completed" | "cancelled"

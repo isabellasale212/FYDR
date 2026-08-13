@@ -126,7 +126,10 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Sea
       </p>
 
       {result.rows.length === 0 ? (
-        <EmptyState title="Nothing recorded yet" body="No audit entry matches this filter." />
+        <EmptyState
+          title="Nothing recorded yet"
+          body="No audit entry matches this filter. Try widening the date range or clearing a filter above."
+        />
       ) : (
         <>
           <div className="card" style={{ overflowX: 'auto' }}>

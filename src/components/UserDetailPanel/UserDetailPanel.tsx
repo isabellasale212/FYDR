@@ -164,7 +164,7 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, user, 
               ))}
             </ul>
             <p className="cap" style={{ marginTop: 8 }}>
-              Removing a role does not force a sign-out on other devices — if access must end
+              Removing a role does not force a log-out on other devices — if access must end
               immediately, deactivate the account instead.
             </p>
           </section>

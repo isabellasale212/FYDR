@@ -8,7 +8,7 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 
-export const metadata = { title: 'Leaderboard · Fydr' };
+export const metadata = { title: 'Testing wall · Fydr' };
 
 /** LEADERBOARD-SPEC.md's testing wall — the real content of the bare /leaderboards
  *  route now. A different feature from the real, staff-configured, consent-gated
@@ -51,7 +51,7 @@ export default async function LeaderboardWallPage({
         <div className="topbar">
           <div className="page-head">
             <p className="eyebrow">TESTING · {orgName}</p>
-            <h1>Leaderboard</h1>
+            <h1>Testing wall</h1>
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             <Link href="/leaderboards/manage" className="btn-ghost">
@@ -88,7 +88,7 @@ export default async function LeaderboardWallPage({
       <div className="topbar">
         <div className="page-head">
           <p className="eyebrow">TESTING · LATEST RESULT PER ATHLETE · {activeGroupLabel.toUpperCase()}</p>
-          <h1>Leaderboard</h1>
+          <h1>Testing wall</h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <Link href="/leaderboards/manage" className="btn-ghost">

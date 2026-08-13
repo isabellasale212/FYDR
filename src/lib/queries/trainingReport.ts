@@ -597,13 +597,13 @@ export async function fetchComparableSessionsComparison(
 
   return {
     columns: [
-      { key: 'name', label: mode === 'match' ? 'Match' : 'Session' },
+      { key: 'name', label: mode === 'match' ? 'Fixture' : 'Session' },
       { key: 'intensity', label: 'Intensity' },
       { key: 'highSpeed', label: 'High speed' },
       { key: 'endurance', label: 'Endurance' },
     ],
     rows,
-    caption: `n = ${relevant.length} ${mode === 'match' ? 'matches' : 'sessions of this type'} on record · each row scored against the mean of the others`,
+    caption: `n = ${relevant.length} ${mode === 'match' ? 'fixtures' : 'sessions of this type'} on record · each row scored against the mean of the others`,
   };
 }
 

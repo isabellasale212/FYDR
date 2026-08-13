@@ -8,7 +8,7 @@ import {
 import { formatNumber } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
 
-export const metadata = { title: 'Leaderboard · Fydr' };
+export const metadata = { title: 'Board · Fydr' };
 
 /** screens/leaderboards.md's athlete board view: top-N plus the athlete's own row if
  *  they fall outside it. compute_leaderboard already refuses to return this board at

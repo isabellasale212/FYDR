@@ -6,7 +6,7 @@ import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { createSession } from '@/lib/queries/schedule';
-import { zonedTimeToUtcIso } from '@/lib/format';
+import { enumLabel, zonedTimeToUtcIso } from '@/lib/format';
 import type { Group } from '@/lib/queries/groups';
 
 const SESSION_TYPES = [
@@ -103,7 +103,7 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone }:
               aria-pressed={sessionType === t}
               onClick={() => setSessionType(t)}
             >
-              {t.charAt(0).toUpperCase() + t.slice(1)}
+              {enumLabel(t)}
             </button>
           ))}
         </div>

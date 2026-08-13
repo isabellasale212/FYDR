@@ -222,9 +222,9 @@ export function Sidebar({ roles, fullName, orgName }: Props) {
           {orgName} · {roles.join(', ')}
         </div>
         <form action="/auth/sign-out" method="post">
-          <button type="submit" className="nav-item" title="Sign out">
+          <button type="submit" className="nav-item" title="Log out">
             {SIGN_OUT_ICON}
-            <span className="nav-label">Sign out</span>
+            <span className="nav-label">Log out</span>
           </button>
         </form>
         {/* 13-legal-and-trademark.md §3: the Fydr trademark is unregistered

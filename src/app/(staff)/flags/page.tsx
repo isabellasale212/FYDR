@@ -105,7 +105,7 @@ export default async function FlagsPage({
               dateParam
                 ? `Nothing was raised on ${formatDate(dateParam)} in the current scope — the count on the dashboard may be for a different day if you've since navigated. Show every open flag above to check.`
                 : groupIds.length > 0
-                  ? `No open flags in the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter to check all squads.`
+                  ? `No open flags in the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter to check the whole squad.`
                   : 'The squad is within thresholds. That is the result, not a failure to load.'
             }
           />

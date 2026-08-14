@@ -259,28 +259,31 @@ session outside that range in the visible week.
 
 ## Components
 
-| Component | Source | Purpose |
-|---|---|---|
-| `GroupFilter` | `06-design-system.md` §6.7 | The global group filter. Filters which sessions are shown. Required by `CLAUDE.md` §3. |
-| `DayWeekToggle` | §6.9, extended | Segmented control. Extended here to three options: Day, Week, Month. The two-option variant is unchanged elsewhere. |
-| `CalendarStrip` | §6.15 | Date navigation in day view. Consumes `markers` and `mdOffsets`. |
-| `SessionCard` | §6.14 | One session in the mobile list and in the month day sheet. |
-| `SessionBlock` | **New** | Absolutely positioned session block in the web and mobile time grid. Not `SessionCard`: it is sized by duration, not by content, and must render legibly at 22 px for a 30-minute session. |
-| `FixtureBanner` | **New** | Fixture in the all-day lane and at the top of a mobile day section. Heavier border, opponent, home or away, kickoff, importance, status. |
-| `MdChip` | **New** | The MD-n label. Uses the `md-marker` glyph from §12.1. Renders one or two labels. |
-| `LoadBar` | **New** | Single horizontal bar for one day's planned load, scaled to the week maximum. Column chart rules from §8.1 row "How does load vary by MD-n" apply. |
-| `RequiredEntriesRow` | **New** | Three glyph slots: wellness, RPE, nutrition. Present, absent, or mixed across the day's sessions. |
-| `PeriodSelector` | §6.8 | Not used on this screen. The date range is the view itself. Stated explicitly so nobody adds it. |
-| `EmptyState` | §6.16 | Empty week, no results after filtering, offline with no cache. |
-| `BottomSheet` | §6.19 | Mobile container for quick create, month day detail, and the template picker. |
-| `ConfirmSheet` | §6.18 | Cancelling a session, deleting a session, applying a template over existing sessions. |
-| `SyncStatusIndicator` | §6.17, `banner` variant | Offline banner. Editing is disabled while it shows. |
-| `AvailabilityPill` | §6.5 | In the participant summary popover only. Never on the session block itself. |
-| `SessionEditorSheet` | **New**, shared with `session-detail.md` | Create and edit form. Bottom sheet on mobile, right-hand drawer on web, 480 px. |
-| `TemplatePickerSheet` | **New**, shared with `md-planner.md` | Choose a `week_templates` row, preview the resulting week, choose a conflict strategy. |
+**As shipped, this table describes a screen that was never built.** The real Schedule
+week view is a full client-side rebuild against a separate, real spec file referenced
+directly in the component headers, `SCHEDULE-SPEC.md` (not tracked in `/docs` — check
+`src/components/ScheduleGrid/*.tsx`'s own header comments for the section numbers cited
+below). There is no day view, no month view, and no offline mode: per CLAUDE.md §8, the
+code is the fact here and the table below was corrected to match it rather than silently
+kept. The original per-component breakdown (`SessionBlock`, `FixtureBanner`, `MdChip`,
+`LoadBar`, `RequiredEntriesRow`, `BottomSheet`/`ConfirmSheet`/`SyncStatusIndicator`,
+`SessionEditorSheet`, `TemplatePickerSheet`) was never built as those separate pieces —
+their responsibilities live inside the components below instead.
 
-New components are specified here and must be added to the inventory in
-`06-design-system.md` §6 when built.
+| Component | Where | Purpose |
+|---|---|---|
+| `ScheduleWorkspace` | `components/ScheduleGrid/ScheduleWorkspace.tsx` | The whole screen's client-side orchestrator (`SCHEDULE-SPEC.md`, full rebuild). Squad-group filter chips, Read/Edit toggle, week navigation, publish status banner. Every edit (`edits`/`added`/`removed`) is held as client-only state until Publish — see the component's own header comment for why that stands in for the draft/publish column `sessions` does not have. |
+| `TimeGrid` | `components/ScheduleGrid/TimeGrid.tsx` | The time grid itself (`SCHEDULE-SPEC.md` §5) — this screen's version of the `SessionBlock` idea above, absolutely positioned `.sg-block` elements placed and clash-detected by `lib/scheduleGeometry.ts`, not a separate component. |
+| `SelectedSessionPanel` | `components/ScheduleGrid/SelectedSessionPanel.tsx` | The detail/edit panel for whichever block is selected (`SCHEDULE-SPEC.md` §6) — an inline panel in the page layout, not a bottom sheet or drawer. Read mode shows the session's facts, including the restriction-conflict banner from the integration audit's restriction-to-session-card linkage; Edit mode is a real form. |
+| `WeekStatsPanel` | `components/ScheduleGrid/WeekStatsPanel.tsx` | "This week against a normal week" — not in the original spec at all. Sessions and contact minutes per type, this week vs. the mean of the last 4–5 weeks with a fixture, plus contact time per group. |
+| `SessionCard` | `components/SessionCard/SessionCard.tsx` | **Not used on this screen.** Renders a session row on the Timetable page and the Fixture detail page's "Sessions anchored to this fixture" list — the mobile-list/month-day-sheet framing this table used to give it doesn't apply here. |
+| Group filter chips | inline in `ScheduleWorkspace` | Same role as `GroupFilter` (`06-design-system.md` §6.7, still required by `CLAUDE.md` §3) but built inline, not as a shared component. |
+| `ThemeToggle` | `components/ThemeToggle/ThemeToggle.tsx` | Light/dark toggle, top right. Real; not in the original spec. |
+
+The MD-n chip itself is inline JSX in `TimeGrid`/`SelectedSessionPanel` calling `mdLabel()`
+(`lib/format.ts`), not its own `MdChip` component — see the labelling rules below, also
+corrected. `06-design-system.md` §6's own component inventory has not been re-synced to
+this list; that is a further, still-open doc gap, noted here rather than fixed in this pass.
 
 ---
 
@@ -299,8 +302,8 @@ New components are specified here and must be added to the inventory in
 | Duration | `sessions.duration_min` | Block height = `duration_min / 60 * hourRowHeight`. Null duration renders a 30-minute block with a dashed lower edge. |
 | End time | derived | `starts_at + duration_min`. Not stored. |
 | Location | `sessions.location` | Truncated to one line in a block, full in the popover. |
-| Stored MD-n | `sessions.md_offset` | Displayed on the session block chip. **Never recomputed for display.** |
-| Computed day MD-n | derived from `fixtures` | `day - next_fixture_date`. See the labelling rules below. |
+| Stored MD-n | `sessions.md_offset` | The raw column. Only trusted for display when its own calendar week has no matchday to anchor against — corrected from what this row used to say ("never recomputed"); see the labelling rules below. |
+| Computed day MD-n | derived, `anchorMdOffsetsToWeek` (`lib/format.ts`) | Every day in a week that has a matchday is labelled by its distance from the *nearest* one, not by `day - next_fixture_date` against `fixtures` directly. See the labelling rules below. |
 | Planned RPE | `sessions.planned_rpe` | 1 decimal, per `metricFormats.rpe`. |
 | Planned load | `sessions.planned_load` | Stored. Equals `planned_rpe * duration_min`. Recomputed on write, never on read, so a hand-edited value survives. |
 | Required entries | `sessions.requires_wellness`, `requires_rpe`, `requires_nutrition` (dead, always false, see `04-data-model.md` §4) | Per day, the union across that day's sessions. A day is "wellness required" if any session requires it. |
@@ -318,32 +321,55 @@ New components are specified here and must be added to the inventory in
 
 ### MD-n labelling rules
 
-Implemented once in `packages/core/md-offset.ts` and mirrored by a Postgres function used by
-the nightly `recompute_md_offsets` job (`05-architecture.md` §7). Two implementations of this
-rule is the single most likely way for the product to start lying about its own spine.
+**As shipped, this differs from what this section originally specified** — there is no
+`packages/core/md-offset.ts`, no nightly `recompute_md_offsets` job, no 9-day horizon, no
+`D1`–`D7` training-week fallback, and no simultaneous primary/secondary MD-n/MD+n label.
+None of that was built. The real rule is implemented once, as `anchorMdOffsetsToWeek`
+(`lib/format.ts`), and called via `fetchWeekMdLabels`/`mondayOf` (`lib/queries/schedule.ts`)
+everywhere an MD-n label renders — the week grid, the Timetable page, the athlete's Today
+strip, every single-session detail page, and the Fixture detail page's anchored-sessions
+list. A live cross-tenant audit (finding "B2") once found 25 of 39 real sessions in one
+org's data disagreeing with their own week view because a render site used the raw stored
+offset instead of this rule; every such site has since been fixed to go through it.
 
-For a day `D` in the organisation's timezone:
+For the 7-day window being labelled (a calendar week, Monday to Sunday in the
+organisation's timezone):
 
-1. Consider only fixtures with `deleted_at is null` and `status in ('scheduled','played')`.
-   Postponed and cancelled fixtures anchor nothing.
-2. `next` is the earliest such fixture whose local kickoff date is `>= D`. `md_forward = D - next`.
-   Always `<= 0`.
-3. `prev` is the latest such fixture whose local kickoff date is `< D`. `md_back = D - prev`.
-   Always `> 0`.
-4. **Primary label**: `MD` when `md_forward = 0`, otherwise `MD{md_forward}` (which already
-   carries its minus sign), when `md_forward >= -9`.
-5. **Secondary label**: `MD+{md_back}` when `md_back <= 3`.
-6. When there is no next fixture within 9 days, or no next fixture at all, the primary label
-   falls back to the training-week position: `D1` through `D7`, counted from the organisation's
-   week start. The chip carries a tooltip and a screen reader label reading "Training week day
-   3. No fixture scheduled."
-7. When both a primary MD-n and a secondary MD+n exist, both are shown, primary first. This is
-   the two-fixtures-in-a-week case from `03-flows.md` §8 and it must be visible, not resolved.
+1. Find every day in the window that holds a match session (`session_type = 'match'`) or a
+   session whose own stored `md_offset` is `0`. These are that week's matchday(s).
+2. **If the window has no matchday of its own**, every day falls back to its **stored**
+   `md_offset` — the one case where the raw column is trusted for display, only because
+   there is nothing in that window to anchor to instead.
+3. **If the window has one or more matchdays**, every day in the window (matchdays
+   included) is re-labelled as its distance in days from the *nearest* matchday — never
+   from the stored offset, which may have been computed against a fixture in a different
+   week entirely. That drift is exactly what finding B2 caught: a stored offset points at
+   whichever fixture existed when the session was created, which for a historical week can
+   be a fixture the following week.
+4. On a tie (equidistant from two matchdays), the upcoming one wins — a negative offset
+   ("building toward Saturday") reads better than one counting away from a match just
+   played.
+5. There is no secondary label. A day gets an MD-n label from rule 3, or (only in the
+   no-matchday-in-window case) whatever rule 2 stored, or nothing.
 
-The 9-day horizon in rule 4 and the 3-day window in rule 5 are **assumptions**. They exist
-because "MD-13" is not information a coach uses. Raised as O-351.
+This is a real simplification against the original spec's two-fixtures-in-a-week rule
+(dropped along with the rest of the primary/secondary label mechanism above — the case
+itself is `03-flows.md` §8's "Weekly planning around MD-n") — raised as O-351 and still
+unresolved by this rebuild: a week with two matchdays gets one MD-n label per day from the
+nearer of the two (rule 4's tie-break only fires exactly on the midpoint), not the visible
+dual label the original spec called for.
 
 ### The primary query, week view
+
+**This SQL block is the original spec's reference query and was not built as written** —
+in particular, its `day_labels` CTE below is the same never-shipped `md_forward`/`md_back`
+next-fixture/prev-fixture rule the "MD-n labelling rules" section above already flags as
+replaced by `anchorMdOffsetsToWeek`. The real week view is not a single SQL round trip
+either: it's a small set of `.from(...)` calls in `lib/queries/schedule.ts`
+(`fetchWeekSessionsDetailed` for the grid's sessions, `fetchWeekMdLabels` for the MD-n map,
+`fetchWeekFixtures` for the all-day fixture lane), composed in JS rather than one CTE
+chain, then re-anchored client-side. Left as-is below rather than rewritten line by line —
+that's a larger doc-sync pass than this correction pass, not a small one.
 
 ```sql
 -- Week view. One round trip.

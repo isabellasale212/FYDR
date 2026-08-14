@@ -490,12 +490,19 @@ export async function fetchRestOfWeekComparison(
   });
 
   // Prior weeks' totals for the "typical week" reference — every other week
-  // with at least one training session on record, excluding this one.
+  // with at least one session on record, excluding this one. Same
+  // session_type set as the current week's own `sessions` query above
+  // (training AND match) — this used to be training-only, so a viewed
+  // week that included a fixture (weekTd below sums every row, match
+  // distance included) was compared against a reference that could never
+  // include a fixture's distance either, from any week. That made
+  // "weekVsTypical" structurally inflated on essentially every week with
+  // a match, not a real signal that the week was heavier than usual.
   const { data: allSessions, error: allErr } = await db
     .from('sessions')
     .select('id, starts_at')
     .eq('org_id', orgId)
-    .eq('session_type', 'training')
+    .in('session_type', ['training', 'match'])
     .is('deleted_at', null);
   if (allErr) throw new Error(allErr.message);
   const weeksSeen = new Map<string, string[]>();
@@ -1017,11 +1024,26 @@ export async function fetchSelectedAthletePanel(
       .eq('session_id', session.sessionId)
       .eq('athlete_id', athleteId)
       .maybeSingle(),
-    db.from('group_memberships').select('group_id, groups(name)').eq('org_id', orgId).eq('athlete_id', athleteId).is('removed_at', null).limit(1).maybeSingle(),
+    // Every membership, not just the first found — `groups.group_type` has
+    // to be filtered to 'positional' the same way playerProfile.ts's
+    // fetchPositionalGroup and this file's own fetchPositionalUnitByAthlete
+    // do, and the old `.limit(1).maybeSingle()` picked whatever membership
+    // Postgres happened to return first (age, training, rehab or custom
+    // group, just as easily as positional — CLAUDE.md: "an athlete may
+    // belong to several"), which fed both the "vs unit" peer group AND the
+    // unit name shown on screen.
+    db.from('group_memberships').select('group_id, groups!inner(name, group_type, deleted_at)').eq('org_id', orgId).eq('athlete_id', athleteId).is('removed_at', null),
   ]);
   if (athleteRes.error) throw new Error(athleteRes.error.message);
   if (curRes.error) throw new Error(curRes.error.message);
+  if (membershipRes.error) throw new Error(membershipRes.error.message);
   if (!athleteRes.data || !curRes.data) return null;
+
+  type MembershipGroup = { name: string; group_type: string; deleted_at: string | null };
+  const positionalMembership =
+    ((membershipRes.data ?? []) as unknown as { group_id: string; groups: MembershipGroup }[]).find(
+      (m) => m.groups.group_type === 'positional' && m.groups.deleted_at === null,
+    ) ?? null;
 
   const [ownHistRes, unitRes] = await Promise.all([
     db
@@ -1033,12 +1055,12 @@ export async function fetchSelectedAthletePanel(
       .eq('sessions.title', session.title)
       .order('record_date', { ascending: false })
       .limit(30),
-    membershipRes.data?.group_id
+    positionalMembership
       ? db
           .from('group_memberships')
           .select('athlete_id')
           .eq('org_id', orgId)
-          .eq('group_id', membershipRes.data.group_id)
+          .eq('group_id', positionalMembership.group_id)
           .is('removed_at', null)
       : Promise.resolve({ data: [], error: null }),
   ]);
@@ -1101,7 +1123,7 @@ export async function fetchSelectedAthletePanel(
   return {
     athleteId,
     name: `${athleteRes.data.last_name}, ${athleteRes.data.first_name}`,
-    unit: (membershipRes.data as { groups?: { name: string } } | null)?.groups?.name ?? 'Unassigned',
+    unit: positionalMembership?.groups.name ?? 'Unassigned',
     rows,
     sparkline,
     footnote:
@@ -1149,9 +1171,9 @@ export async function fetchTrainingBoard(
   if (!curRecords || curRecords.length === 0) return { rows: [], unitOrder: [] };
 
   const athleteIds = curRecords.map((r) => r.athlete_id);
-  const [athletesRes, membershipsRes, groupsRes, histRes] = await Promise.all([
+  const [athletesRes, unitByAthlete, groupsRes, histRes] = await Promise.all([
     db.from('athletes').select('id, first_name, last_name').eq('org_id', orgId).in('id', athleteIds),
-    db.from('group_memberships').select('athlete_id, group_id').eq('org_id', orgId).in('athlete_id', athleteIds).is('removed_at', null),
+    fetchPositionalUnitByAthlete(db, orgId, athleteIds),
     db.from('groups').select('id, name, sort_order').eq('org_id', orgId).eq('group_type', 'positional').is('deleted_at', null),
     db
       .from('gps_records')
@@ -1163,13 +1185,11 @@ export async function fetchTrainingBoard(
       .in('athlete_id', athleteIds),
   ]);
   if (athletesRes.error) throw new Error(athletesRes.error.message);
-  if (membershipsRes.error) throw new Error(membershipsRes.error.message);
   if (groupsRes.error) throw new Error(groupsRes.error.message);
   if (histRes.error) throw new Error(histRes.error.message);
 
   const athleteById = new Map((athletesRes.data ?? []).map((a) => [a.id, a]));
   const groupById = new Map((groupsRes.data ?? []).map((g) => [g.id, g]));
-  const unitByAthlete = new Map((membershipsRes.data ?? []).map((m) => [m.athlete_id, m.group_id]));
 
   const selfHistByAthlete = new Map<string, number[]>();
   for (const r of histRes.data ?? []) {
@@ -1262,18 +1282,16 @@ export async function fetchMatchBoard(
   if (!curRecords || curRecords.length === 0) return { rows: [], unitOrder: [] };
 
   const athleteIds = curRecords.map((r) => r.athlete_id);
-  const [athletesRes, membershipsRes, groupsRes] = await Promise.all([
+  const [athletesRes, unitByAthlete, groupsRes] = await Promise.all([
     db.from('athletes').select('id, first_name, last_name').eq('org_id', orgId).in('id', athleteIds),
-    db.from('group_memberships').select('athlete_id, group_id').eq('org_id', orgId).in('athlete_id', athleteIds).is('removed_at', null),
+    fetchPositionalUnitByAthlete(db, orgId, athleteIds),
     db.from('groups').select('id, name, sort_order').eq('org_id', orgId).eq('group_type', 'positional').is('deleted_at', null),
   ]);
   if (athletesRes.error) throw new Error(athletesRes.error.message);
-  if (membershipsRes.error) throw new Error(membershipsRes.error.message);
   if (groupsRes.error) throw new Error(groupsRes.error.message);
 
   const athleteById = new Map((athletesRes.data ?? []).map((a) => [a.id, a]));
   const groupById = new Map((groupsRes.data ?? []).map((g) => [g.id, g]));
-  const unitByAthlete = new Map((membershipsRes.data ?? []).map((m) => [m.athlete_id, m.group_id]));
 
   const rows: MatchBoardRow[] = curRecords
     .map((r) => {

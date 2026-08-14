@@ -1,4 +1,5 @@
 import type { Db } from './groups';
+import { rangeBounds } from './schedule';
 
 /* docs/10-roadmap.md's own gap list: "Audit log viewer (new screen 35) —
  * 01-roles-and-permissions.md §2 grants admins access to the audit log and
@@ -131,6 +132,7 @@ export async function fetchAuditLog(
    *  `athletes` relation (which only follows the real FK column). Pass the
    *  same roster fetchAthleteOptions already returned — no extra query. */
   athleteNameById: ReadonlyMap<string, string>,
+  timezone: string,
 ): Promise<AuditLogPage> {
   let query = db
     .from('audit_log')
@@ -142,8 +144,16 @@ export async function fetchAuditLog(
     .order('occurred_at', { ascending: false });
 
   if (filters.entityType) query = query.eq('entity_type', filters.entityType);
-  if (filters.from) query = query.gte('occurred_at', `${filters.from}T00:00:00Z`);
-  if (filters.to) query = query.lte('occurred_at', `${filters.to}T23:59:59.999Z`);
+  // Same fix as schedule.ts's own dayBounds()/rangeBounds() (integration-
+  // audit Batch 2): literal `${date}T00:00:00Z`/`T23:59:59.999Z` bounds are
+  // only correct for UTC+0 with no DST, so a filter of "8 Aug" could miss
+  // (or wrongly include) an event right at the edge of the org's local
+  // day. rangeBounds(date, date, timezone) is the same primitive schedule.ts
+  // uses for a single day, reused here for each independent from/to edge
+  // rather than reinvented (from and to are each optional and set
+  // independently, so this can't just call rangeBounds(from, to, tz) once).
+  if (filters.from) query = query.gte('occurred_at', rangeBounds(filters.from, filters.from, timezone).from);
+  if (filters.to) query = query.lte('occurred_at', rangeBounds(filters.to, filters.to, timezone).to);
   if (filters.actorId && UUID_RE.test(filters.actorId)) query = query.eq('actor_id', filters.actorId);
   if (filters.athleteId && UUID_RE.test(filters.athleteId)) {
     // Matches the real column (sar.request/release, restriction overrides,

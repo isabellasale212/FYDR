@@ -2,7 +2,7 @@ import type { AvailabilityStatus, Database } from '@/lib/types/database';
 import { humanizeDbError } from '@/lib/writeErrors';
 import { fetchCurrentAvailability } from './availability';
 import { fetchGroupAthleteIds, type Db } from './groups';
-import type { Session } from './schedule';
+import { dayBounds, type Session } from './schedule';
 
 // No dedicated exported alias for these two enums in lib/types/database.ts
 // (only a handful of enums get one) — same local-alias pattern lib/tier.ts
@@ -103,17 +103,21 @@ function computeConflicts(sessionType: SessionType, plannedRpe: number | null, r
   return conflicts;
 }
 
-function dayBounds(date: string): { from: string; to: string } {
-  return { from: `${date}T00:00:00Z`, to: `${date}T23:59:59.999Z` };
-}
-
+/** `dayBounds` used to be a local copy of schedule.ts's own function,
+ *  duplicating the same literal-UTC-day bug that file's header now
+ *  documents (only correct for UTC+0 with no DST — a session between
+ *  23:00-00:00 UTC lands on the wrong local calendar day whenever the
+ *  org's zone has a positive offset, e.g. Europe/London in BST). Now
+ *  imported from schedule.ts instead of re-duplicated, so there is one
+ *  timezone-aware implementation, not two that can drift apart. */
 export async function fetchTimetableDay(
   db: Db,
   orgId: string,
   date: string,
   groupIds: readonly string[],
+  timezone: string,
 ): Promise<TimetableSession[]> {
-  const bounds = dayBounds(date);
+  const bounds = dayBounds(date, timezone);
   const { data: sessions, error: sessErr } = await db
     .from('sessions')
     .select(

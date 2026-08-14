@@ -48,7 +48,7 @@ export function ApplyControls({ orgId, userId, templates, selectedTemplateId, we
     mutationFn: async () => {
       if (!selectedTemplateId) throw new HumanError('Choose a template first.');
       const res = await withWriteTimeout(
-        applyTemplate(createClient(), orgId, userId, { templateId: selectedTemplateId, weekStart, strategy, fixtureId }),
+        applyTemplate(createClient(), orgId, userId, { templateId: selectedTemplateId, weekStart, strategy, fixtureId }, timezone),
       );
       if (res.error) throw new HumanError(res.error);
       return res;

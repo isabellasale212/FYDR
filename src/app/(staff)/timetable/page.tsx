@@ -39,7 +39,7 @@ export default async function TimetablePage({ searchParams }: { searchParams: Se
 
   const [groups, sessions, weekMd] = await Promise.all([
     fetchGroups(db, orgId),
-    fetchTimetableDay(db, orgId, date, groupIds),
+    fetchTimetableDay(db, orgId, date, groupIds, timezone),
     fetchWeekMdLabels(db, orgId, mondayOf(date), timezone),
   ]);
   // Every session on this page shares `date` (fetchTimetableDay is bounded

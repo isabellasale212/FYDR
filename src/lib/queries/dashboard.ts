@@ -1,9 +1,9 @@
 import { fetchCurrentAvailability, fetchNotFullyAvailable } from './availability';
 import { fetchDashboardAttention, type AttentionRow, type DashboardAttention } from './flags';
 import { fetchGroupAthleteIds, type Db } from './groups';
-import { fetchNextFixture, fetchWeekSessions, mondayOf, type WeekSession } from './schedule';
+import { fetchNextFixture, fetchWeekSessions, mondayOf, rangeBounds, type WeekSession } from './schedule';
 import { fetchTimetableDay } from './timetable';
-import { anchorMdOffsetsToWeek, formatTime, mdLabel } from '../format';
+import { anchorMdOffsetsToWeek, daysBetween, dateInTz, formatTime, mdLabel, zonedTimeToUtcIso } from '../format';
 
 /* DASHBOARD-SPEC.md, the coach's 07:00 screen. Every section here composes
  * real, already-shipped query functions (schedule, availability,
@@ -340,7 +340,7 @@ export async function fetchTimeline(
   timezone: string,
 ): Promise<TimelineEntry[]> {
   const [sessions, flagsToday] = await Promise.all([
-    fetchTimetableDay(db, orgId, date, groupIds),
+    fetchTimetableDay(db, orgId, date, groupIds, timezone),
     fetchFlagsByDateRange(db, orgId, groupIds, date, date),
   ]);
 
@@ -519,7 +519,7 @@ export async function fetchSaturdayReadiness(
   // including effectiveToday) against a real "typical week" reference —
   // the mean of prior weeks, same pattern as trainingReport.ts's Rest of
   // the week comparison, excluding this week from its own reference.
-  const weekLoad = await fetchWeekLoad(db, orgId, groupIds, mondayOf(effectiveToday), effectiveToday);
+  const weekLoad = await fetchWeekLoad(db, orgId, groupIds, mondayOf(effectiveToday), effectiveToday, timezone);
 
   return {
     opponent: fixture?.opponent ?? null,
@@ -534,22 +534,32 @@ export async function fetchSaturdayReadiness(
   };
 }
 
+/** Bounds and date derivation here used to assume the org's local day
+ *  lines up with the UTC calendar day — the same dayBounds() bug
+ *  schedule.ts's own header documents, doubled: once in the query bounds
+ *  (literal `${date}T00:00:00Z`/`T23:59:59Z`) and again in
+ *  `s.starts_at.slice(0, 10)` reading a stored UTC timestamp's UTC date
+ *  instead of its local one. Both fixed the same way — `rangeBounds`
+ *  (schedule.ts) for the window, `dateInTz` (format.ts) for the
+ *  per-session date — rather than reinvented here a third time. */
 async function fetchWeekLoad(
   db: Db,
   orgId: string,
   groupIds: readonly string[],
   weekStart: string,
   upToDate: string,
+  timezone: string,
 ): Promise<SaturdayReadiness['weekLoad']> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
 
+  const weekBounds = rangeBounds(weekStart, upToDate, timezone);
   const { data: thisWeekSessions, error: sessErr } = await db
     .from('sessions')
     .select('id')
     .eq('org_id', orgId)
     .eq('session_type', 'training')
-    .gte('starts_at', `${weekStart}T00:00:00Z`)
-    .lte('starts_at', `${upToDate}T23:59:59Z`)
+    .gte('starts_at', weekBounds.from)
+    .lte('starts_at', weekBounds.to)
     .is('deleted_at', null);
   if (sessErr) throw new Error(sessErr.message);
   const sessionIds = (thisWeekSessions ?? []).map((s) => s.id);
@@ -578,16 +588,16 @@ async function fetchWeekLoad(
     .select('id, starts_at')
     .eq('org_id', orgId)
     .eq('session_type', 'training')
-    .lt('starts_at', `${weekStart}T00:00:00Z`)
+    .lt('starts_at', zonedTimeToUtcIso(weekStart, '00:00', timezone))
     .is('deleted_at', null);
   if (priorErr) throw new Error(priorErr.message);
 
-  const cutoffDayIndex = (Date.parse(`${upToDate}T00:00:00Z`) - Date.parse(`${weekStart}T00:00:00Z`)) / 86_400_000;
+  const cutoffDayIndex = daysBetween(weekStart, upToDate);
   const weeksSeen = new Map<string, string[]>();
   for (const s of priorSessions ?? []) {
-    const sDate = s.starts_at.slice(0, 10);
+    const sDate = dateInTz(new Date(s.starts_at), timezone);
     const wk = mondayOf(sDate);
-    const dayIndex = (Date.parse(`${sDate}T00:00:00Z`) - Date.parse(`${wk}T00:00:00Z`)) / 86_400_000;
+    const dayIndex = daysBetween(wk, sDate);
     if (dayIndex > cutoffDayIndex) continue;
     const list = weeksSeen.get(wk) ?? [];
     list.push(s.id);

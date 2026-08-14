@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { humanizeDbError } from '@/lib/writeErrors';
 import type { Db } from './groups';
 import type { Json } from '../types/database';
-import { mondayOf } from './schedule';
+import { mondayOf, rangeBounds } from './schedule';
 
 /* screens/md-planner.md, cut down hard from a screen the spec's own header
  * calls "provisional. Awaiting client design photographs" and closes with
@@ -430,6 +430,7 @@ export async function applyTemplate(
   orgId: string,
   userId: string,
   input: { templateId: string; weekStart: string; strategy: ApplyStrategy; fixtureId: string | null },
+  timezone: string,
 ): Promise<{ created: number; softDeleted: number; error: string | null }> {
   const template = await fetchTemplate(db, orgId, input.templateId);
   if (!template) return { created: 0, softDeleted: 0, error: 'Template not found.' };
@@ -455,12 +456,19 @@ export async function applyTemplate(
     mdOffset: fixtureDate ? Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${fixtureDate}T00:00:00Z`)) / 86_400_000) : null,
   }));
 
+  // Same fix as schedule.ts's own dayBounds()/rangeBounds() (integration-
+  // audit Batch 2): a literal `${date}T00:00:00Z`/`T23:59:59Z` window is
+  // only correct for UTC+0 with no DST — a session between 23:00-00:00 UTC
+  // would have been read as belonging to the wrong local day, which would
+  // have made this "what already exists this week" check miss or
+  // double-count a real session right at the edge of the week.
+  const weekBounds = rangeBounds(weekDates[0]!, weekDates[6]!, timezone);
   const { data: existingRows, error: existErr } = await db
     .from('sessions')
     .select('id, starts_at, status')
     .eq('org_id', orgId)
-    .gte('starts_at', `${weekDates[0]}T00:00:00Z`)
-    .lte('starts_at', `${weekDates[6]}T23:59:59Z`)
+    .gte('starts_at', weekBounds.from)
+    .lte('starts_at', weekBounds.to)
     .is('deleted_at', null);
   if (existErr) return { created: 0, softDeleted: 0, error: humanizeDbError(existErr.message, 'staff') };
 

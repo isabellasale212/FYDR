@@ -1,6 +1,6 @@
 import { fetchGroupAthleteIds, type Db } from './groups';
-import { fetchWeekMdLabels, mondayOf } from './schedule';
-import { mdLabel } from '../format';
+import { fetchWeekMdLabels, mondayOf, rangeBounds } from './schedule';
+import { addDays, mdLabel } from '../format';
 
 /* TRAINING-REPORT-SPEC.md, a full rebuild of the previous heat-mapped
  * board (screens/training-report.md) into the two-mode scoring model the
@@ -379,9 +379,12 @@ export async function fetchRestOfWeekComparison(
 ): Promise<ComparisonTable> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
   const weekStart = mondayOf(currentDate);
-  const weekEnd = new Date(`${weekStart}T00:00:00Z`);
-  weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
-  const weekEndIso = weekEnd.toISOString().slice(0, 10);
+  // Same fix as schedule.ts's own dayBounds()/rangeBounds() (integration-
+  // audit Batch 2): this used to build the week window from raw UTC Date
+  // math (`${weekStart}T00:00:00Z`..`${weekEndIso}T23:59:59Z`), correct
+  // only for UTC+0 with no DST. rangeBounds() is the same already-fixed,
+  // DST-correct primitive fetchWeekMdLabels just below already uses.
+  const bounds = rangeBounds(weekStart, addDays(weekStart, 6), timezone);
 
   // MD-n for this row's own real calendar week, via the same shared
   // primitive the week-level views use (fetchWeekMdLabels ->
@@ -393,8 +396,8 @@ export async function fetchRestOfWeekComparison(
       .from('sessions')
       .select('id, title, session_type, starts_at, md_offset, fixtures(opponent)')
       .eq('org_id', orgId)
-      .gte('starts_at', `${weekStart}T00:00:00Z`)
-      .lte('starts_at', `${weekEndIso}T23:59:59Z`)
+      .gte('starts_at', bounds.from)
+      .lte('starts_at', bounds.to)
       .in('session_type', ['training', 'match'])
       .is('deleted_at', null)
       .order('starts_at'),

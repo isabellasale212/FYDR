@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { ApplyControls } from '@/components/ApplyControls/ApplyControls';
 import { buildApplyPlan, fetchTemplates, type ApplyStrategy } from '@/lib/queries/weekTemplates';
-import { fetchNextFixture, mondayOf } from '@/lib/queries/schedule';
+import { fetchNextFixture, mondayOf, rangeBounds } from '@/lib/queries/schedule';
 import { formatDate, mdLabel, todayIso } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 
@@ -49,12 +49,18 @@ export default async function ApplyTemplatePage({ searchParams }: { searchParams
       mdOffset: fixtureDate ? Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${fixtureDate}T00:00:00Z`)) / 86_400_000) : null,
     }));
 
+    // Same fix as applyTemplate() itself (weekTemplates.ts) and
+    // schedule.ts's own dayBounds()/rangeBounds(): this preview must use
+    // the identical timezone-aware week window the real apply uses below,
+    // or the "what will happen" table shown here could disagree with what
+    // applyTemplate() actually does for a session near the DST edge.
+    const weekBounds = rangeBounds(weekDates[0]!, weekDates[6]!, timezone);
     const { data: existingRows } = await db
       .from('sessions')
       .select('id, title, starts_at, status')
       .eq('org_id', orgId)
-      .gte('starts_at', `${weekDates[0]}T00:00:00Z`)
-      .lte('starts_at', `${weekDates[6]}T23:59:59Z`)
+      .gte('starts_at', weekBounds.from)
+      .lte('starts_at', weekBounds.to)
       .is('deleted_at', null);
 
     const existing = (existingRows ?? []).map((r) => ({ id: r.id, date: r.starts_at.slice(0, 10), status: r.status, hasData: false }));

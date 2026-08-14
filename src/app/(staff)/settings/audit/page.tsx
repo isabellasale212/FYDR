@@ -71,7 +71,7 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Sea
   const athleteNameById = new Map(athleteOptions.map((a) => [a.id, a.name]));
 
   const filters: Filters = { entityType, from, to, actorId, athleteId, q };
-  const result = await fetchAuditLog(db, orgId, filters, page, PAGE_SIZE, athleteNameById);
+  const result = await fetchAuditLog(db, orgId, filters, page, PAGE_SIZE, athleteNameById, timezone);
 
   const otherParams = { type: entityType ?? undefined, from: explicitFrom ?? undefined, to: explicitTo ?? undefined, range: isAllTime ? 'all' : undefined, actor: actorId ?? undefined, athlete: athleteId ?? undefined, q: q ?? undefined };
 

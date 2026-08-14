@@ -5,6 +5,7 @@ import { fetchWellnessByAthlete, wellnessSeries } from '@/lib/queries/wellness';
 import { fetchAthleteRecentSessions, mondayOf } from '@/lib/queries/schedule';
 import { fetchCheckinForWeek, fetchRecentCheckins } from '@/lib/queries/nutrition';
 import { fetchMyTestSummary } from '@/lib/queries/testing';
+import { fetchRecentGymSessions } from '@/lib/queries/programmes';
 import { fetchOutstandingCount } from '@/lib/queries/compliance';
 import {
   BLANK,
@@ -36,15 +37,18 @@ function dateRange(from: string, days: number): string[] {
  * and materialised-view-backed aggregates; Phase 1a's own line in
  * 10-roadmap.md narrows that to "My data (wellness and training tabs only)",
  * extended here with a Nutrition tab once the weekly check-in existed to
- * show, and now a Testing tab now that the testing domain exists too — this
- * comment used to say both stayed out "until the domains behind them exist",
- * and testing's domain now does. Gym stays out a while longer: there is no
- * single "my gym history" read built yet, only my-programme.md's forward-
- * looking session list. Leaderboards are linked separately below the tabs
- * rather than folded in as a tab, since it isn't a history list the same
- * shape as the others. Fixed 42-day window, no custom period picker — same
- * simplifications as the rest of this pass, same reasoning: ship the read
- * path well, note what is cut.
+ * show, a Testing tab once the testing domain existed, and now a Gym tab
+ * (integration-audit blocker B3) — this comment used to say Gym stayed out
+ * because "there is no single 'my gym history' read built yet, only
+ * my-programme.md's forward-looking session list"; fetchRecentGymSessions is
+ * that read now. Deliberately minimal, matching the other tabs on this page:
+ * recent complete sessions, a set count, a "Correct" link through to a
+ * per-session detail page — no volume trend, no e1RM chart, no PR callouts,
+ * all real, larger, separately scoped features. Leaderboards are linked
+ * separately below the tabs rather than folded in as a tab, since it isn't a
+ * history list the same shape as the others. Fixed 42-day window, no custom
+ * period picker — same simplifications as the rest of this pass, same
+ * reasoning: ship the read path well, note what is cut.
  */
 export default async function MyDataPage({
   searchParams,
@@ -60,7 +64,9 @@ export default async function MyDataPage({
         ? 'nutrition'
         : params.tab === 'testing'
           ? 'testing'
-          : 'wellness';
+          : params.tab === 'gym'
+            ? 'gym'
+            : 'wellness';
 
   const today = todayIso(timezone);
   const from = addDays(today, -(WINDOW_DAYS - 1));
@@ -123,6 +129,14 @@ export default async function MyDataPage({
         >
           Testing
         </Link>
+        <Link
+          href="/my-data?tab=gym"
+          className="squad-chip"
+          role="tab"
+          aria-selected={tab === 'gym'}
+        >
+          Gym
+        </Link>
         <Link href="/my-data/boards" className="squad-chip">
           Leaderboards
         </Link>
@@ -134,8 +148,10 @@ export default async function MyDataPage({
         <TrainingTab db={db} orgId={orgId} athleteId={athleteId} from={from} today={today} />
       ) : tab === 'nutrition' ? (
         <NutritionTab db={db} athleteId={athleteId} from={from} today={today} />
-      ) : (
+      ) : tab === 'testing' ? (
         <TestingTab db={db} athleteId={athleteId} />
+      ) : (
+        <GymTab db={db} athleteId={athleteId} from={from} today={today} />
       )}
     </>
   );
@@ -478,6 +494,86 @@ async function TestingTab({
                 </span>
               </div>
             ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+/** Blocker B3 (integration audit): the one segment this page had no read for at all.
+ *  fetchRecentGymSessions is athlete-scoped by construction (gym_session_logs_current
+ *  RLS), complete sessions only — an in_progress or abandoned one has nothing submitted
+ *  yet to correct, same reasoning as revise_gym_session_log's own status gate. */
+async function GymTab({
+  db,
+  athleteId,
+  from,
+  today,
+}: {
+  db: Awaited<ReturnType<typeof requireAthlete>>['db'];
+  athleteId: string;
+  from: string;
+  today: string;
+}) {
+  const sessions = await fetchRecentGymSessions(db, athleteId, from, today);
+
+  return (
+    <div className="stack" style={{ marginTop: 14 }}>
+      <section className="card" aria-labelledby="gym-title">
+        <h2 className="card-title" id="gym-title">
+          Sessions
+        </h2>
+        <p className="import-sub">
+          Completed gym sessions in this window. Tap Correct on a session to fix a set
+          you mis-logged &mdash; the original is kept, never overwritten.
+        </p>
+
+        {sessions.length === 0 ? (
+          <EmptyState
+            headingLevel={3}
+            title="Nothing logged yet"
+            body="Completed gym sessions appear here."
+          />
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table className="tbl">
+              <caption className="visually-hidden">Recent completed gym sessions</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Session</th>
+                  <th scope="col" className="r">
+                    Sets
+                  </th>
+                  <th scope="col" className="r">
+                    Volume
+                  </th>
+                  <th scope="col" className="r">
+                    RPE
+                  </th>
+                  <th scope="col">
+                    <span className="visually-hidden">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {sessions.map((s) => (
+                  <tr key={s.id}>
+                    <td className="mono sub">{formatDate(s.entry_date)}</td>
+                    <td className="nm">{s.session_name ?? 'Gym session'}</td>
+                    <td className="r mono">{s.set_count}</td>
+                    <td className="r mono">
+                      {s.total_volume_kg !== null ? formatNumber(s.total_volume_kg, 0) : BLANK}
+                    </td>
+                    <td className="r mono">{formatNumber(s.session_rpe, 1)}</td>
+                    <td className="sub">
+                      <Link href={`/my-data/gym/${s.id}`}>Correct</Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </section>

@@ -5,7 +5,15 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
-import { completeSessionLog, logSet, type LoggedSet, type ResolvedExercise } from '@/lib/queries/programmes';
+import {
+  completeSessionLog,
+  reviseGymSetLog,
+  submitGymSetLog,
+  type LoggedSet,
+  type ResolvedExercise,
+} from '@/lib/queries/programmes';
+import { enqueueGymSetLog, dequeueGymSetLog } from '@/lib/outbox';
+import { GymSetLogInput } from '@/lib/validation/gym';
 import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { formatDate } from '@/lib/format';
 
@@ -91,6 +99,12 @@ export function GymSessionLogger({
   const [drafts, setDrafts] = useState<Record<string, { reps: string; load: string }>>({});
   const [sessionRpe, setSessionRpe] = useState('');
   const [now, setNow] = useState<number | null>(null);
+  /* screens/gym-logging.md: "Tap a completed set row: re-opens it as active for
+   * correction." correcting holds the LoggedSet.id currently open for correction, in
+   * place, mid-session or on the completed review — this build has no ConfirmSheet, so
+   * both cases behave the same way, a real, small simplification against the fuller spec. */
+  const [correcting, setCorrecting] = useState<string | null>(null);
+  const [correctionDrafts, setCorrectionDrafts] = useState<Record<string, { reps: string; load: string }>>({});
 
   useEffect(() => {
     if (alreadyComplete || !startedAt) return;
@@ -113,22 +127,64 @@ export function GymSessionLogger({
   const doneCount = loggedSets.length;
   const pct = totalSets > 0 ? Math.round((doneCount / totalSets) * 100) : 0;
 
-  /* Both writes are bounded (ten seconds) and both have a real onError —
-   * before this, a thrown network failure showed nothing at all and a hung
-   * request pinned the tick button disabled forever (audit S5's shape,
-   * on the screen whose footer promises "sets save as you log them"). A
-   * failed set stays on screen as the next set to log: tapping the tick
-   * again is the retry. */
+  /* Bounded (ten seconds) and has a real onError — before this, a thrown network failure
+   * showed nothing at all and a hung request pinned the tick button disabled forever
+   * (audit S5's shape, on the screen whose footer promises "sets save as you log them").
+   * A failed set stays on screen as the next set to log: tapping the tick again is the
+   * retry, now safely idempotent (migration 0044's gym_set_logs_one_live_per_slot index).
+   *
+   * Also enqueued into the offline outbox (blocker B4): onMutate queues it before the
+   * write is even attempted, onSuccess dequeues it. If the write fails, the item stays
+   * queued and OutboxFlusher (mounted on /today) retries it later even if the athlete
+   * never taps the tick again or the app is closed mid-set — the visible error and the
+   * tap-to-retry above are the fast path, the queue is the safety net underneath it, not
+   * a replacement for it: unlike a one-shot form (NutritionCheckinForm), this screen stays
+   * open for up to 45 minutes and the athlete needs to know, right now, whether the set
+   * they just tapped actually saved. */
   const logMutation = useMutation({
-    mutationFn: async (input: { programmeExerciseId: string; exerciseId: string; setNumber: number; reps: string; load: string }) => {
+    mutationFn: async (input: GymSetLogInput) => {
+      await withWriteTimeout(submitGymSetLog(createClient(), orgId, input));
+    },
+    onMutate: (input) => {
+      enqueueGymSetLog(input);
+    },
+    onSuccess: (_void, input) => {
+      dequeueGymSetLog(input.id);
+      setError(null);
+      router.refresh();
+    },
+    onError: (err) => setError(toUserMessage(err, 'athlete')),
+  });
+
+  function buildSetInput(
+    ex: ResolvedExercise,
+    setNumber: number,
+    reps: string,
+    load: string,
+  ): GymSetLogInput | null {
+    const candidate = {
+      id: crypto.randomUUID(),
+      gym_session_log_id: gymSessionLogId,
+      programme_exercise_id: ex.programme_exercise_id,
+      exercise_id: ex.exercise_id,
+      set_number: setNumber,
+      reps_completed: reps.trim() === '' ? null : Number(reps),
+      load_kg: load.trim() === '' ? null : Number(load),
+      rpe: null,
+    };
+    const parsed = GymSetLogInput.safeParse(candidate);
+    return parsed.success ? parsed.data : null;
+  }
+
+  /* The sanctioned correction path (ADR-005, migration 0044) — online only, not queued,
+   * same reasoning as every other revise_* call site: a replayed revise cannot be told
+   * apart from "already corrected" (lib/outbox.ts's own header). */
+  const correctionMutation = useMutation({
+    mutationFn: async (input: { id: string; reps: string; load: string }) => {
       const result = await withWriteTimeout(
-        logSet(createClient(), orgId, {
-          gymSessionLogId,
-          programmeExerciseId: input.programmeExerciseId,
-          exerciseId: input.exerciseId,
-          setNumber: input.setNumber,
-          repsCompleted: input.reps.trim() === '' ? null : Number(input.reps),
-          loadKg: input.load.trim() === '' ? null : Number(input.load),
+        reviseGymSetLog(createClient(), input.id, {
+          reps_completed: input.reps.trim() === '' ? null : Number(input.reps),
+          load_kg: input.load.trim() === '' ? null : Number(input.load),
           rpe: null,
         }),
       );
@@ -136,6 +192,7 @@ export function GymSessionLogger({
     },
     onSuccess: () => {
       setError(null);
+      setCorrecting(null);
       router.refresh();
     },
     onError: (err) => setError(toUserMessage(err, 'athlete')),
@@ -226,14 +283,119 @@ export function GymSessionLogger({
                   const setNumber = i + 1;
                   const loggedRow = done.find((s) => s.set_number === setNumber);
                   const isNext = !alreadyComplete && setNumber === nextSetNumber;
+                  const isCorrecting = !!loggedRow && correcting === loggedRow.id;
+                  const correctionDraft = loggedRow
+                    ? (correctionDrafts[loggedRow.id] ?? {
+                        reps: loggedRow.reps_completed !== null ? String(loggedRow.reps_completed) : '',
+                        load: loggedRow.load_kg !== null ? String(loggedRow.load_kg) : '',
+                      })
+                    : null;
+
+                  function openCorrection() {
+                    if (!loggedRow) return;
+                    setError(null);
+                    setCorrectionDrafts((d) => ({
+                      ...d,
+                      [loggedRow.id]: {
+                        reps: loggedRow.reps_completed !== null ? String(loggedRow.reps_completed) : '',
+                        load: loggedRow.load_kg !== null ? String(loggedRow.load_kg) : '',
+                      },
+                    }));
+                    setCorrecting(loggedRow.id);
+                  }
 
                   return (
                     <div key={setNumber} className="gym-set-row" data-done={!!loggedRow}>
-                      <span className="n mono">{setNumber}</span>
-                      {loggedRow ? (
+                      {isCorrecting ? (
+                        <button
+                          type="button"
+                          className="n mono"
+                          aria-label={`Cancel correcting set ${setNumber}`}
+                          onClick={() => setCorrecting(null)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            padding: 0,
+                            font: 'inherit',
+                            color: 'inherit',
+                            cursor: 'pointer',
+                            textDecoration: 'underline',
+                          }}
+                        >
+                          {setNumber}
+                        </button>
+                      ) : (
+                        <span className="n mono">{setNumber}</span>
+                      )}
+                      {loggedRow && isCorrecting ? (
                         <>
-                          <span className="mono">{loggedRow.reps_completed ?? '—'} reps</span>
-                          <span className="mono">{loggedRow.load_kg !== null ? `${loggedRow.load_kg} kg` : '—'}</span>
+                          <input
+                            className="field"
+                            type="number"
+                            inputMode="numeric"
+                            aria-label={`Set ${setNumber} corrected reps`}
+                            value={correctionDraft?.reps ?? ''}
+                            onChange={(e) =>
+                              setCorrectionDrafts((d) => ({
+                                ...d,
+                                [loggedRow.id]: { ...(correctionDraft ?? { reps: '', load: '' }), reps: e.target.value },
+                              }))
+                            }
+                          />
+                          <input
+                            className="field"
+                            type="number"
+                            step="0.5"
+                            inputMode="decimal"
+                            aria-label={`Set ${setNumber} corrected load in kg`}
+                            value={correctionDraft?.load ?? ''}
+                            onChange={(e) =>
+                              setCorrectionDrafts((d) => ({
+                                ...d,
+                                [loggedRow.id]: { ...(correctionDraft ?? { reps: '', load: '' }), load: e.target.value },
+                              }))
+                            }
+                          />
+                        </>
+                      ) : loggedRow ? (
+                        <>
+                          {/* screens/gym-logging.md: "Tapping [a completed set row]
+                           * re-opens it for correction." Buttons, not a click handler on
+                           * the display span alone, so this is reachable without a mouse. */}
+                          <button
+                            type="button"
+                            className="mono"
+                            onClick={openCorrection}
+                            aria-label={`Correct set ${setNumber}, logged ${loggedRow.reps_completed ?? 'no'} reps`}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              padding: 0,
+                              font: 'inherit',
+                              color: 'inherit',
+                              textAlign: 'left',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {loggedRow.reps_completed ?? '—'} reps
+                          </button>
+                          <button
+                            type="button"
+                            className="mono"
+                            onClick={openCorrection}
+                            aria-label={`Correct set ${setNumber}, logged ${loggedRow.load_kg !== null ? `${loggedRow.load_kg} kg` : 'no load'}`}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              padding: 0,
+                              font: 'inherit',
+                              color: 'inherit',
+                              textAlign: 'left',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {loggedRow.load_kg !== null ? `${loggedRow.load_kg} kg` : '—'}
+                          </button>
                         </>
                       ) : isNext ? (
                         <>
@@ -277,18 +439,31 @@ export function GymSessionLogger({
                       )}
                       <button
                         type="button"
-                        aria-label={loggedRow ? `Set ${setNumber} logged` : `Log set ${setNumber}`}
-                        aria-pressed={!!loggedRow}
-                        disabled={!isNext || logMutation.isPending}
-                        onClick={() =>
-                          logMutation.mutate({
-                            programmeExerciseId: ex.programme_exercise_id,
-                            exerciseId: ex.exercise_id,
-                            setNumber,
-                            reps: draft.reps,
-                            load: draft.load,
-                          })
+                        aria-label={
+                          isCorrecting
+                            ? `Save correction for set ${setNumber}`
+                            : loggedRow
+                              ? `Set ${setNumber} logged`
+                              : `Log set ${setNumber}`
                         }
+                        aria-pressed={!!loggedRow && !isCorrecting}
+                        disabled={isCorrecting ? correctionMutation.isPending : !isNext || logMutation.isPending}
+                        onClick={() => {
+                          if (isCorrecting && loggedRow) {
+                            correctionMutation.mutate({
+                              id: loggedRow.id,
+                              reps: correctionDraft?.reps ?? '',
+                              load: correctionDraft?.load ?? '',
+                            });
+                            return;
+                          }
+                          const input = buildSetInput(ex, setNumber, draft.reps, draft.load);
+                          if (!input) {
+                            setError('Something on this set did not check out. Try again.');
+                            return;
+                          }
+                          logMutation.mutate(input);
+                        }}
                         style={{
                           width: 24,
                           height: 24,
@@ -298,11 +473,11 @@ export function GymSessionLogger({
                           color: 'var(--on-accent)',
                           fontSize: 13,
                           fontFamily: 'inherit',
-                          cursor: isNext ? 'pointer' : 'default',
+                          cursor: isNext || isCorrecting ? 'pointer' : 'default',
                           justifySelf: 'center',
                         }}
                       >
-                        {loggedRow ? '✓' : ''}
+                        {isCorrecting ? '↵' : loggedRow ? '✓' : ''}
                       </button>
                     </div>
                   );

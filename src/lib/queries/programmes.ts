@@ -8,6 +8,7 @@ import type {
   ProgrammeType,
 } from '@/lib/types/database';
 import type { GymSetLogInput } from '@/lib/validation/gym';
+import { todayIso } from '@/lib/format';
 import { humanizeDbError } from '@/lib/writeErrors';
 import type { Db } from './groups';
 
@@ -803,13 +804,23 @@ export async function startOrGetSessionLog(
   orgId: string,
   athleteId: string,
   programmeSessionId: string,
+  timezone: string,
 ): Promise<{
   id: string | null;
   status: GymLogStatus | null;
   startedAt: string | null;
   error: string | null;
 }> {
-  const today = new Date().toISOString().slice(0, 10);
+  // The org's local today, not the server's UTC one — every sibling write
+  // path (submitWellnessEntry, submitTrainingEntry, submitCheckin) takes
+  // entry_date from todayIso(timezone) via its caller; this was the one
+  // that computed its own date off the server clock. For an org with a
+  // positive UTC offset, an early-morning local session logged before the
+  // UTC day rolls over would be written under yesterday's date, and could
+  // silently create a second in_progress row for the same real session if
+  // the athlete reopened this page after the UTC date DID roll over (the
+  // .eq('entry_date', today) lookup below would then miss the first row).
+  const today = todayIso(timezone);
   const { data: existing, error: findErr } = await db
     .from('gym_session_logs')
     .select('id, status, started_at')

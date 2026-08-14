@@ -43,7 +43,7 @@ export const metadata = { title: 'Nutrition · Fydr' };
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export default async function NutritionPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, claims } = await requireStaff();
+  const { db, orgId, claims, timezone } = await requireStaff();
   const isCoach = claims.roles.includes('coach');
   const isMedical = claims.roles.includes('medical');
   const params = await searchParams;
@@ -55,10 +55,10 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
     fetchSquadList(db, orgId, []), // unfiltered — plan metadata (assigned count, mean
     // mass) is a fact about the plan, not about the page's current group filter
     fetchRules(db, orgId),
-    fetchTargets(db, orgId),
+    fetchTargets(db, orgId, timezone),
   ]);
 
-  const today = todayIso();
+  const today = todayIso(timezone);
   const weekStart = mondayOf(today);
   const weekEnd = addDays(weekStart, 6);
   const massSince = addDays(today, -90); // trailing ~13 weeks, covers the spec's 12 weekly points

@@ -1,3 +1,4 @@
+import { todayIso } from '@/lib/format';
 import { humanizeDbError } from '@/lib/writeErrors';
 import type { Db } from './groups';
 
@@ -60,6 +61,7 @@ const SCOPE_ORDER: Record<TargetScope, number> = { org_default: 0, group: 1, ath
 export async function fetchTargets(
   db: Db,
   orgId: string,
+  timezone: string,
   includeExpired = false,
 ): Promise<TargetWithNames[]> {
   let query = db
@@ -71,7 +73,11 @@ export async function fetchTargets(
     .is('deleted_at', null);
 
   if (!includeExpired) {
-    const today = new Date().toISOString().slice(0, 10);
+    // The org's local today, not the server's UTC one — for an org with a
+    // non-UTC offset, a target whose effective_to is exactly today could be
+    // wrongly filtered out (or a newly-expired one wrongly kept) depending
+    // on the sign of the offset and time of day.
+    const today = todayIso(timezone);
     query = query.or(`effective_to.is.null,effective_to.gte.${today}`);
   }
 
@@ -176,11 +182,15 @@ export async function createTarget(
 }
 
 /** Sets effective_to to today rather than deleting — the table's own history is
- *  kept, matching every other interval-style table in this build. */
-export async function expireTarget(db: Db, orgId: string, id: string): Promise<{ error: string | null }> {
+ *  kept, matching every other interval-style table in this build. "Today" is
+ *  the org's local date (todayIso), not the server's UTC one — the same fix
+ *  as fetchTargets' own "not expired" filter just above, on the write side
+ *  this time: a server-UTC date here could set effective_to to a day the
+ *  coach doesn't recognise as "today" for an org with a non-UTC offset. */
+export async function expireTarget(db: Db, orgId: string, id: string, timezone: string): Promise<{ error: string | null }> {
   const { error } = await db
     .from('nutrition_targets')
-    .update({ effective_to: new Date().toISOString().slice(0, 10) })
+    .update({ effective_to: todayIso(timezone) })
     .eq('org_id', orgId)
     .eq('id', id)
     .is('effective_to', null);

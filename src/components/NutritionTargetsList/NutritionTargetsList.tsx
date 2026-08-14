@@ -31,7 +31,7 @@ export function NutritionTargetsList({ orgId, timezone, targets, isCoach, isMedi
   const [error, setError] = useState<string | null>(null);
 
   const mutation = useMutation({
-    mutationFn: (id: string) => withWriteTimeout(expireTarget(createClient(), orgId, id)),
+    mutationFn: (id: string) => withWriteTimeout(expireTarget(createClient(), orgId, id, timezone)),
     onSuccess: (result) => {
       if (result.error) return setError(result.error);
       setError(null);

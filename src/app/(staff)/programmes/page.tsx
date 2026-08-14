@@ -198,6 +198,12 @@ export default async function ProgrammesPage({
                   <div className="stack" style={{ marginTop: 14, gap: 12 }}>
                     {sessionsFlat.map((s) => {
                       const exercises = exercisesBySession.get(s.id) ?? [];
+                      // Not the audit-B2 bug class: programme_sessions.md_offset is an
+                      // authored template value ("this day sits at MD-2"), with no
+                      // fixture_id and no calendar date to drift against — unlike
+                      // sessions.md_offset (schedule), which is "computed, stored for
+                      // history" against a specific fixture_id and can go stale. There
+                      // is no real week to re-anchor this to via anchorMdOffsetsToWeek.
                       const md = mdLabel(s.md_offset);
                       return (
                         <div key={s.id} className="prog-day">

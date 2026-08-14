@@ -127,6 +127,10 @@ export default async function MyProgrammePage({
                       <div className="tiny">
                         <span title={BLOCK_PHASE_EXPLAINER[s.block_name.toLowerCase()]}>{s.block_name}</span> · Week {s.week_number}
                         {s.day_number ? ` · Day ${s.day_number}` : ''}
+                        {/* Not the audit-B2 bug class: fetchMyProgrammeSessions resolves
+                            programme_sessions.md_offset, an authored template value with
+                            no fixture_id and no starts_at — see programmes/page.tsx's
+                            identical note. Nothing to re-anchor via anchorMdOffsetsToWeek. */}
                         {mdLabel(s.md_offset) ? (
                           <>
                             {' · '}
@@ -152,6 +156,11 @@ export default async function MyProgrammePage({
           <p className="import-sub">
             {target.md_specific ? (
               <>
+                {/* Not the audit-B2 bug class: nutrition_targets.md_offset is an
+                    authored rule ("apply on MD-2"), resolved for `today` server-side
+                    by resolve_nutrition_targets — no fixture_id, nothing that could
+                    drift against a different week's fixture the way sessions.md_offset
+                    (schedule) can. */}
                 Set for{' '}
                 <span title={mdExplainer(target.md_offset) ?? undefined}>{mdLabel(target.md_offset) ?? 'today'}</span>.
               </>

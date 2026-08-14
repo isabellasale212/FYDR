@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { TestDefinitionForm } from '@/components/TestDefinitionForm/TestDefinitionForm';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchNextTestingSession, fetchTestDefinitions } from '@/lib/queries/testing';
+import { fetchWeekMdLabels, mondayOf } from '@/lib/queries/schedule';
 import { enumLabel, formatDateTime, mdLabel } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 
@@ -19,6 +20,14 @@ export default async function TestingPage() {
     fetchTestDefinitions(db, orgId),
     fetchNextTestingSession(db, orgId, new Date().toISOString()),
   ]);
+  // MD-n re-anchored to this session's own real calendar week (see
+  // anchorMdOffsetsToWeek, format.ts) rather than the raw stored md_offset —
+  // same primitive the week views and other single-session cards use
+  // (audit B2).
+  const nextSessionDate = nextSession?.starts_at.slice(0, 10) ?? null;
+  const nextSessionMd = nextSessionDate
+    ? mdLabel((await fetchWeekMdLabels(db, orgId, mondayOf(nextSessionDate))).get(nextSessionDate) ?? null)
+    : null;
 
   return (
     <>
@@ -50,7 +59,7 @@ export default async function TestingPage() {
             </p>
             <p className="nm">
               {nextSession.title} — {formatDateTime(nextSession.starts_at)}
-              {mdLabel(nextSession.md_offset) ? ` · ${mdLabel(nextSession.md_offset)}` : ''}
+              {nextSessionMd ? ` · ${nextSessionMd}` : ''}
             </p>
           </div>
           <span className="chev" aria-hidden="true">

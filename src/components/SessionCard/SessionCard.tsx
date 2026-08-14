@@ -2,14 +2,22 @@ import Link from 'next/link';
 import type { SessionWithHeadcount } from '@/lib/queries/schedule';
 import { BLANK, enumLabel, formatTime, mdLabel } from '@/lib/format';
 
-type Props = { session: SessionWithHeadcount };
+type Props = {
+  session: SessionWithHeadcount;
+  // The session's md_offset re-anchored to its own real calendar week (see
+  // anchorMdOffsetsToWeek, format.ts) — computed by the page via
+  // fetchWeekMdLabels and passed down, rather than read raw off `session`,
+  // so this card can't show a different MD-n than the Schedule grid for the
+  // same session (audit blocker B2).
+  anchoredMdOffset: number | null;
+};
 
 /** One row of today's timetable. The location is on every row because half the
  *  squad group chat is somebody asking which pitch. Links through to
  *  session-detail.md's screen, `/schedule/:sessionId`, from both places this
  *  card renders (the Schedule week view and the staff dashboard). */
-export function SessionCard({ session }: Props) {
-  const md = mdLabel(session.md_offset);
+export function SessionCard({ session, anchoredMdOffset }: Props) {
+  const md = mdLabel(anchoredMdOffset);
   const cancelled = session.status === 'cancelled';
 
   return (

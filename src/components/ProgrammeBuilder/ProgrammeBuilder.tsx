@@ -188,6 +188,9 @@ export function ProgrammeBuilder({
                       <div className="tiny">
                         Week {s.week_number}
                         {s.day_number ? ` · Day ${s.day_number}` : ''}
+                        {/* Not the audit-B2 bug class — see programmes/page.tsx's note:
+                            programme_sessions.md_offset is an authored template value,
+                            no fixture_id, nothing to re-anchor. */}
                         {mdLabel(s.md_offset) ? ` · ${mdLabel(s.md_offset)}` : ''} · {s.exercise_count}{' '}
                         exercise{s.exercise_count === 1 ? '' : 's'}
                       </div>

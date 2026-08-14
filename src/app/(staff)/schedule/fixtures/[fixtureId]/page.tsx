@@ -4,7 +4,7 @@ import { FixtureEditForm } from '@/components/FixtureEditForm/FixtureEditForm';
 import { FixtureActions } from '@/components/FixtureActions/FixtureActions';
 import { SessionCard } from '@/components/SessionCard/SessionCard';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
-import { fetchFixtureDetail } from '@/lib/queries/schedule';
+import { fetchFixtureDetail, fetchWeekMdLabels, mondayOf } from '@/lib/queries/schedule';
 import { enumLabel, formatLongDate, formatTime } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 
@@ -31,6 +31,16 @@ export default async function FixtureDetailPage({
 
   const fixture = await fetchFixtureDetail(db, orgId, fixtureId);
   if (!fixture) notFound();
+
+  // MD-n per session, re-anchored to EACH session's own real calendar week
+  // (anchorMdOffsetsToWeek, format.ts) rather than the raw stored md_offset
+  // — sessions anchored to this fixture aren't guaranteed to share one week,
+  // so this fetches fetchWeekMdLabels once per distinct week represented
+  // and merges the results, same primitive the week views use (audit B2).
+  const weeks = [...new Set(fixture.weekSessions.map((s) => mondayOf(s.entry_date)))];
+  const weekMdByWeek = await Promise.all(weeks.map((week) => fetchWeekMdLabels(db, orgId, week)));
+  const weekMd = new Map<string, number | null>();
+  for (const m of weekMdByWeek) for (const [date, offset] of m) weekMd.set(date, offset);
 
   return (
     <>
@@ -89,7 +99,11 @@ export default async function FixtureDetailPage({
         ) : (
           <div className="card flush">
             {fixture.weekSessions.map((session) => (
-              <SessionCard key={session.id} session={session} />
+              <SessionCard
+                key={session.id}
+                session={session}
+                anchoredMdOffset={weekMd.get(session.entry_date) ?? null}
+              />
             ))}
           </div>
         )}

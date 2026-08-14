@@ -65,6 +65,13 @@ export function NutritionTargetsList({ orgId, targets, isCoach, isMedical }: Pro
                 <div>
                   <span className="nm">{scopeLabel}</span>
                   <div className="tiny">
+                    {/* Not the audit-B2 bug class: nutrition_targets.md_offset is an
+                        authored rule a coach picks when defining the target ("apply on
+                        MD-2"), not a value computed against a specific fixture_id (the
+                        table has none) — unlike sessions.md_offset (schedule), which is
+                        "computed, stored for history" and can go stale relative to a
+                        later fixture. There's no calendar week here to re-anchor
+                        against via anchorMdOffsetsToWeek. */}
                     {mdLabel(t.md_offset) ?? 'Any day'} · {macroSummary(t)}
                     {t.reason ? ` · ${t.reason}` : ''}
                   </div>

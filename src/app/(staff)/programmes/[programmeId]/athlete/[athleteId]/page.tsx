@@ -139,6 +139,9 @@ export default async function ProgrammeAthletePage({
       <div className="stack" style={{ gap: 12 }}>
         {sessionsFlat.map((s) => {
           const exercises = exercisesBySession.get(s.id) ?? [];
+          // Not the audit-B2 bug class — see programmes/page.tsx's identical note:
+          // programme_sessions.md_offset is an authored template value, no fixture_id,
+          // no calendar date, nothing to re-anchor via anchorMdOffsetsToWeek.
           const md = mdLabel(s.md_offset);
           return (
             <div key={s.id} className="card">

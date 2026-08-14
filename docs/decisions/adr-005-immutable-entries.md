@@ -143,9 +143,14 @@ For clarity, because "everything is immutable" would be wrong and expensive:
 | `sessions`, `fixtures`, the schedule | `nutrition_checkins` (`nutrition_entries` is dormant, `CLAUDE.md` §2 rule 8) |
 | `programmes` and their structure (see ADR-006) | `training_entries` |
 | `thresholds` | `gym_session_logs`, `gym_set_logs` |
-| `flags` status transitions | `test_results` (correction is a new row flagged as such) |
-| `groups` and membership (history-preserving, `removed_at`) | `availability` (an event log, never updated) |
-| `injuries` clinical fields (updated, with `audit_log` capture) | `audit_log` (append-only) |
+| `flags` status transitions | `availability` (an event log, never updated) |
+| `groups` and membership (history-preserving, `removed_at`) | `audit_log` (append-only) |
+| `injuries` clinical fields (updated, with `audit_log` capture) | |
+| `test_results` (edited in place — exception to rule 6, see O-384 and `screens/testing.md`) | |
+
+Both `test_results` and `injuries` clinical fields are staff-entered corrections with their own
+audit trail rather than a `revision_of` chain; neither is an athlete revising a submission, which
+is the case this ADR governs.
 
 The line is: **anything an athlete reports about a moment in time is immutable. Anything staff
 plan for the future is editable.**

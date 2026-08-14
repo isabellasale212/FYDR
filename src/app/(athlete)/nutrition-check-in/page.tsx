@@ -25,7 +25,16 @@ export default async function NutritionCheckInPage({
   const params = await searchParams;
   const today = todayIso(timezone);
   const lastCompletedWeek = addDays(mondayOf(today), -7);
-  const weekStart = typeof params.week === 'string' ? params.week : lastCompletedWeek;
+  // Every real link into this page (the "Change this answer" / "Correct" links
+  // below, and check-in reminders elsewhere) only ever points at a week that
+  // has already completed. A crafted ?week= is the one way to reach a future
+  // week — the UI's own comment above already says it never offers one, so
+  // clamp rather than trust the param, same pattern check-in/page.tsx uses for
+  // its own ?date=. Minor gap, not a data leak: the server's insert policy
+  // would accept a future week anyway, this just keeps this page honest about
+  // what it actually offers.
+  const requestedWeek = typeof params.week === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(params.week) ? params.week : lastCompletedWeek;
+  const weekStart = requestedWeek > lastCompletedWeek ? lastCompletedWeek : requestedWeek;
   const correcting = params.correct === '1';
 
   const existing = await fetchCheckinForWeek(db, athleteId, weekStart);

@@ -507,8 +507,12 @@ Haptics:
     reacts. A threshold on RPE variability is a staff-side concern and belongs in
     `thresholds.md`, not in a nudge on an athlete's form.
 14. **The athlete corrects a rating a week later after a conversation with the coach.** Permitted
-    within 14 days, recorded as a revision, and visible as "Edited" in My Data. ADR-005 exists
-    because this is exactly the case where a silent edit would matter.
+    at any time — ADR-005 itself rejected a bounded correction window (its "Immutable with a
+    correction window" alternative, §4), specifically because offline entries can arrive hours
+    late and "within N minutes/days" has no unambiguous meaning once device time and server time
+    can disagree. Recorded as a revision, both rows kept. Not yet visible as "Edited" anywhere
+    staff-side — a real, separate, still-open gap (`ADR-005` open question O-28) this doc used to
+    describe as already built.
 15. **The 30-minute rule and a very short session.** A 20-minute recovery session prompts at
     50 minutes past its start. The rule is applied to session end, not to session length, so a
     short session is not treated differently.

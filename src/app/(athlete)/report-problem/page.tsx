@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ProblemReportForm } from '@/components/ProblemReportForm/ProblemReportForm';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { Toast } from '@/components/Toast/Toast';
-import { fetchMyProblemReports } from '@/lib/queries/problemReports';
+import { PROBLEM_REPORT_CATEGORY_LABEL, fetchMyProblemReports } from '@/lib/queries/problemReports';
 import { formatDateTime } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
 
@@ -20,12 +20,6 @@ const STATUS_LABEL: Record<string, string> = {
   open: 'Sent · not yet seen',
   acknowledged: 'Seen by medical',
   closed: 'Closed',
-};
-
-const CATEGORY_LABEL: Record<string, string> = {
-  injury_or_pain: 'Injury or pain',
-  wellbeing: 'Wellbeing',
-  other: 'Other',
 };
 
 /** 03-flows.md §6, roadmap screen 36. The real write path behind Today's
@@ -85,7 +79,7 @@ export default async function ReportProblemPage({
                   <div style={{ minWidth: 0 }}>
                     <div className="tiny" style={{ marginBottom: 3 }}>
                       {formatDateTime(r.created_at, timezone)}
-                      {r.category ? ` · ${CATEGORY_LABEL[r.category] ?? r.category}` : ''}
+                      {r.category ? ` · ${PROBLEM_REPORT_CATEGORY_LABEL[r.category] ?? r.category}` : ''}
                     </div>
                     <div style={{ fontSize: 14 }}>{r.body}</div>
                   </div>

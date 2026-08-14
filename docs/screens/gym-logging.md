@@ -505,7 +505,9 @@ should be unified.
 ### Review (completed session)
 
 Read-only, every set shown with its logged and prescribed values side by side. Each set carries a
-"Correct" action for 14 days, which creates a revision.
+"Correct" action, permitted at any time — matching wellness/RPE, ADR-005 rejected a bounded
+correction window on principle (§4: offline entries can arrive hours late, so "within N days" has
+no unambiguous meaning) — which creates a revision.
 
 ### Loading
 
@@ -649,7 +651,7 @@ prehab circuit.
 | Session RPE | 1 to 10, required to finish | Finish is disabled with "Rate the session" |
 | Session duration | Derived from `started_at` and `completed_at`, capped at 240 minutes | Above the cap, the athlete is asked to confirm the duration on the summary, with the elapsed value pre-filled and editable |
 | `comment` | 500 characters | Counter at 450 |
-| Correction | Within 14 days of `logged_at` | Beyond that the action is absent, with "Too old to correct" |
+| Correction | No bound — ADR-005 §4 rejected a time-limited correction window on principle | The action is always present; there is no "Too old to correct" state |
 
 Database guards, because sets also arrive by import and by staff entry:
 
@@ -718,8 +720,8 @@ alter table gym_set_logs
 19. **A set is logged with a load 10× the intended value (105 typed as 1050).** The 500 kg
     constraint rejects it in the stepper and the keypad, and the 30% confirmation catches
     plausible-but-wrong values below that.
-20. **The athlete corrects a set from three days ago.** Permitted within 14 days. A revision row
-    is created and `total_volume_kg` on the parent log is recomputed server-side.
+20. **The athlete corrects a set from three days ago.** Permitted — no time bound (ADR-005 §4). A
+    revision row is created and `total_volume_kg` on the parent log is recomputed server-side.
 21. **`close_stale_gym_logs` abandons a session the athlete is still in**, because they started
     it 25 hours ago and left the app open. On the next interaction the client detects the status
     change on pull, shows "This session was closed after 24 hours", and offers to start a new

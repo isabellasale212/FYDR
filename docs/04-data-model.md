@@ -1601,18 +1601,25 @@ and staff-facing screen, but never recorded here. Recorded now, because a schema
 omits the objects the application actually queries is incomplete.
 
 ```sql
-create view wellness_entries_current  with (security_invoker = true) as
-  select * from public.wellness_entries  where superseded_by is null;
+create view wellness_entries_current   with (security_invoker = true) as
+  select * from public.wellness_entries   where superseded_by is null;
 
-create view nutrition_entries_current with (security_invoker = true) as
-  select * from public.nutrition_entries where superseded_by is null;
+create view nutrition_checkins_current with (security_invoker = true) as
+  select * from public.nutrition_checkins where superseded_by is null;
 
-create view training_entries_current  with (security_invoker = true) as
-  select * from public.training_entries  where superseded_by is null;
+create view training_entries_current   with (security_invoker = true) as
+  select * from public.training_entries   where superseded_by is null;
 ```
 
 Every read of "current" data goes through these views rather than the base tables. They are
 `security_invoker`, so the base table policies in §14 apply unchanged.
+
+Nutrition's own current-revision view sits over `nutrition_checkins`, not `nutrition_entries` —
+this section used to name the latter, which was never actually built. `nutrition_entries` is
+dormant (rule 8, `CLAUDE.md` §2) and has no current-revision view because nothing ever writes to
+it; `nutrition_checkins` (the real weekly one-tap check-in) is what every screen actually reads.
+`adr-005-immutable-entries.md` rule 3 already draws this distinction correctly — this section had
+drifted from it.
 
 ---
 

@@ -15,14 +15,14 @@ export const metadata = { title: 'Notifications · Fydr' };
  *  athlete's own date_of_birth, already on file — a real age check, not a
  *  placeholder for one. */
 export default async function AthleteNotificationsPage() {
-  const { db, orgId, athleteId, claims } = await requireAthlete();
+  const { db, orgId, athleteId, claims, timezone } = await requireAthlete();
 
   const [athlete, preferences] = await Promise.all([
     fetchAthlete(db, orgId, athleteId),
     fetchMyNotificationPreferences(db, claims.userId),
   ]);
 
-  const age = ageFrom(athlete?.date_of_birth ?? null);
+  const age = ageFrom(athlete?.date_of_birth ?? null, timezone);
   const isMinor = age !== null && age < 18;
 
   const initialPreferences = Object.fromEntries(preferences);

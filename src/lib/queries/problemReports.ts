@@ -13,6 +13,15 @@ import type { Db } from './groups';
 export type ProblemReportCategory = 'injury_or_pain' | 'wellbeing' | 'other';
 export type ProblemReportStatus = 'open' | 'acknowledged' | 'closed';
 
+/** Shared between the athlete's own report-problem page and medical's triage
+ *  view — used to be defined twice, byte-for-byte identical, a real drift
+ *  risk (audit polish finding). One copy here instead. */
+export const PROBLEM_REPORT_CATEGORY_LABEL: Record<ProblemReportCategory, string> = {
+  injury_or_pain: 'Injury or pain',
+  wellbeing: 'Wellbeing',
+  other: 'Other',
+};
+
 export type ProblemReport = {
   id: string;
   category: ProblemReportCategory | null;

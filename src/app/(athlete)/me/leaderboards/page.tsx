@@ -10,7 +10,7 @@ export const metadata = { title: 'Leaderboards · Me · Fydr' };
 /** screens/leaderboards.md "Athletes under 18: opt-in, not opt-out" and the global
  *  opt-out in "Me → Privacy". Route per 20-route-map.md line 83, /me/leaderboards. */
 export default async function MyLeaderboardsSettingsPage() {
-  const { db, orgId, athleteId, claims } = await requireAthlete();
+  const { db, orgId, athleteId, claims, timezone } = await requireAthlete();
 
   const [dob, consent, optOuts] = await Promise.all([
     db.from('athletes').select('date_of_birth').eq('id', athleteId).maybeSingle(),
@@ -18,7 +18,7 @@ export default async function MyLeaderboardsSettingsPage() {
     fetchMyOptOuts(db, orgId, athleteId),
   ]);
 
-  const age = ageFrom(dob.data?.date_of_birth ?? null);
+  const age = ageFrom(dob.data?.date_of_birth ?? null, timezone);
   const isMinor = age === null || age < 18;
   const globallyOptedOut = optOuts.some((o) => o.leaderboard_id === null);
 

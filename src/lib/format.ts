@@ -351,13 +351,29 @@ export function ordinal(n: number): string {
   }
 }
 
-export function ageFrom(dob: string | null | undefined): number | null {
+/** Whole years old as of today in `timeZone` — an under-18 gate (leaderboard
+ *  consent, minor-specific notification defaults) needs the athlete's own
+ *  local "today", not the server's. Used to read raw UTC via `new Date()`
+ *  directly; the only real-world effect was a birthday landing on the wrong
+ *  side of the cutoff for the few hours each day UTC's date has already
+ *  advanced but the athlete's local date hasn't (or vice versa) — audit
+ *  minor finding, same anti-pattern class as the dayBounds() fix, just too
+ *  narrow a window to matter in practice for most timezones. Fixed the same
+ *  way: `dateInTz`, never a raw `Date` component read. */
+function ymdParts(iso: string): [number, number, number] | null {
+  const [year, month, day] = iso.split('-').map(Number);
+  if (!year || !month || !day) return null;
+  return [year, month, day];
+}
+
+export function ageFrom(dob: string | null | undefined, timeZone: string = DATE_TZ): number | null {
   if (!dob) return null;
-  const born = new Date(`${dob}T12:00:00Z`);
-  if (Number.isNaN(born.getTime())) return null;
-  const now = new Date();
-  let age = now.getUTCFullYear() - born.getUTCFullYear();
-  const m = now.getUTCMonth() - born.getUTCMonth();
-  if (m < 0 || (m === 0 && now.getUTCDate() < born.getUTCDate())) age -= 1;
+  const born = ymdParts(dob);
+  if (!born) return null;
+  const today = ymdParts(dateInTz(new Date(), timeZone));
+  if (!today) return null;
+  let age = today[0] - born[0];
+  const m = today[1] - born[1];
+  if (m < 0 || (m === 0 && today[2] < born[2])) age -= 1;
   return age;
 }

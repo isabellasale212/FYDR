@@ -4,14 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
-import { acknowledgeProblemReport, closeProblemReport, type OpenProblemReport } from '@/lib/queries/problemReports';
+import {
+  PROBLEM_REPORT_CATEGORY_LABEL,
+  acknowledgeProblemReport,
+  closeProblemReport,
+  type OpenProblemReport,
+} from '@/lib/queries/problemReports';
 import { formatDateTime } from '@/lib/format';
-
-const CATEGORY_LABEL: Record<string, string> = {
-  injury_or_pain: 'Injury or pain',
-  wellbeing: 'Wellbeing',
-  other: 'Other',
-};
 
 function ReportRow({ report, userId, timezone }: { report: OpenProblemReport; userId: string; timezone: string }) {
   const router = useRouter();
@@ -50,7 +49,7 @@ function ReportRow({ report, userId, timezone }: { report: OpenProblemReport; us
         </div>
         <div className="tiny" style={{ marginTop: 3 }}>
           {formatDateTime(report.created_at, timezone)}
-          {report.category ? ` · ${CATEGORY_LABEL[report.category] ?? report.category}` : ''}
+          {report.category ? ` · ${PROBLEM_REPORT_CATEGORY_LABEL[report.category] ?? report.category}` : ''}
         </div>
         <p style={{ fontSize: 14, marginTop: 6 }}>{report.body}</p>
         {error ? (

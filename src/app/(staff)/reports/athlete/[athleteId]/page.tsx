@@ -41,7 +41,7 @@ export default async function AthleteReportPage({
   const { athlete, compliancePct, openFlags, currentProgrammes } = report.summary;
   const status = availabilityStatus(athlete.availability?.status ?? null);
   const restrictions = athlete.availability?.restrictions ?? [];
-  const age = ageFrom(athlete.date_of_birth);
+  const age = ageFrom(athlete.date_of_birth, timezone);
   const openInjury = athlete.open_injuries[0];
 
   const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;

@@ -6,7 +6,7 @@ import { fetchCheckinForWeek } from '@/lib/queries/nutrition';
 import { resolveTargetForDate } from '@/lib/queries/nutritionTargets';
 import { mondayOf } from '@/lib/queries/schedule';
 import { Toast } from '@/components/Toast/Toast';
-import { addDays, mdExplainer, mdLabel, todayIso } from '@/lib/format';
+import { addDays, enumLabel, mdExplainer, mdLabel, todayIso } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
 
 export const metadata = { title: 'My programme · Fydr' };
@@ -99,7 +99,12 @@ export default async function MyProgrammePage({
         <>
           <div className="prog-header">
             <p className="eyebrow">
-              {programmeType === 'rehab' ? 'Rehab' : 'Gym'}
+              {/* enumLabel(), not a rehab/else ternary — the real programme_type
+                  enum also has conditioning/nutrition values (unreachable with
+                  real data today per migration 0021's own comment, since this
+                  build only ever writes gym or rehab, but a ternary would
+                  silently mislabel either as "Gym" if that ever changed). */}
+              {enumLabel(programmeType ?? 'gym')}
               {blockName ? (
                 <>
                   {' · '}

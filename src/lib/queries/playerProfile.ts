@@ -542,7 +542,7 @@ export async function fetchPlayerProfile(
 
   return {
     athlete,
-    age: ageFrom(athlete.date_of_birth),
+    age: ageFrom(athlete.date_of_birth, timezone),
     athleticism,
     injuries,
     flags: athleteFlags,

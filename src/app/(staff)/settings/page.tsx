@@ -21,8 +21,10 @@ export const metadata = { title: 'Settings · Fydr' };
  * form below, which now sits beside a real "Two-factor authentication" card
  * (MfaEnrollment) rather than the "2FA policy screen this build doesn't
  * have" this comment used to say — login-security checklist item 3;
- * Exports stays honestly not built, as the previous version of this page
- * already said in its own words).
+ * Exports now links to a real builder at /settings/exports — job 1 of
+ * docs/screens/exports.md, see that route's own header for scope. Coach or
+ * medical only, same gate as every report page: an admin-only row shows the
+ * reason rather than a dead link).
  *
  * The previous version of this page (screens/settings.md, screen 29) had
  * roughly ten real, working features this new design's three cards don't
@@ -245,16 +247,28 @@ export default async function SettingsPage() {
             </span>
           </a>
 
-          <div className="set-list-row" data-disabled="true" aria-disabled="true" title="Not available yet.">
-            <span>
-              <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block', color: 'var(--faint)' }}>Exports</span>
-              <span style={{ fontSize: 12, color: 'var(--faint)' }}>Not built yet</span>
-            </span>
-            <span className="mono" style={{ fontSize: 11.5, color: 'var(--faint)' }}>
-              —
-            </span>
-            <span aria-hidden="true" style={{ fontSize: 16, color: 'var(--faint)' }} />
-          </div>
+          {claims.roles.includes('coach') || claims.roles.includes('medical') ? (
+            <Link href="/settings/exports" className="set-list-row">
+              <span>
+                <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block' }}>Exports</span>
+                <span style={{ fontSize: 12, color: 'var(--faint)' }}>Pick what, pick who, pick when, get a CSV</span>
+              </span>
+              <span aria-hidden="true" style={{ fontSize: 16, color: 'var(--faint)' }}>
+                ›
+              </span>
+            </Link>
+          ) : (
+            <div className="set-list-row" data-disabled="true" aria-disabled="true" title="Requires the coach or medical role, per 01-roles-and-permissions.md §1.">
+              <span>
+                <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block', color: 'var(--faint)' }}>Exports</span>
+                <span style={{ fontSize: 12, color: 'var(--faint)' }}>Coach or medical role required</span>
+              </span>
+              <span className="mono" style={{ fontSize: 11.5, color: 'var(--faint)' }}>
+                —
+              </span>
+              <span aria-hidden="true" style={{ fontSize: 16, color: 'var(--faint)' }} />
+            </div>
+          )}
 
           <Link href="/settings/groups" className="set-list-row">
             <span>

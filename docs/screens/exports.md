@@ -2,6 +2,45 @@
 
 > **Layout status**: provisional. Awaiting client design photographs.
 
+> **Build status** (2026-08-14): of this screen's four jobs, three are real and one is a
+> deliberate, stated cut — the same "reduced but real" judgment call
+> `supabase/migrations/0024_testing.sql`'s own header makes for its domain.
+>
+> - **Job 1, the staff bulk export builder, is real.** `/settings/exports`
+>   (`src/app/(staff)/settings/exports/page.tsx`), posting to
+>   `src/app/(staff)/settings/exports/generate/route.ts`. Six domains, not the spec's full
+>   content table — `src/lib/exportDomains.ts` lists exactly which, and why the rest (GPS,
+>   attendance, injuries, programmes, users and roles, the audit log, and more) aren't
+>   offered: none of them had a real, working squad-wide, date-ranged query function in
+>   `lib/queries/*.ts` to point to. Reuses the global group filter
+>   (`resolveGroupFilter`/`GroupFilter`, same as every report) for "who", and the same
+>   `requireReportAccess()` gate every report page already uses for the role split — coach or
+>   medical only, so an admin without either role never reaches the six athlete-level
+>   performance domains here, matching `01-roles-and-permissions.md` §1. Generation is
+>   synchronous — see job 3 below.
+> - **Jobs 2, the athlete-side and admin-side halves of Article 20/15, already existed
+>   before this pass and are real.** The athlete portability export:
+>   `src/app/(athlete)/me/export/route.ts` +
+>   `src/lib/queries/myDataExport.ts`. The admin-initiated Article 15 subject access pack:
+>   `src/app/(staff)/settings/subject-access/page.tsx`,
+>   `[requestId]/review/page.tsx`, `[requestId]/release/route.ts`, and
+>   `src/lib/queries/sarPackAssembly.ts`. This pass didn't touch either.
+> - **Job 4, audit every export, is real for job 1**: one `audit_log` row per "Generate"
+>   click (not one per file), via `recordReportView(..., 'export')` — the same function every
+>   other export route in this codebase already calls. Metadata records the domains, the
+>   resolved group scope, the date range and the athlete count.
+> - **Job 3, asynchronous generation with notification, is not built, on purpose.** No
+>   `export_jobs` table, no worker, no export history, no expiry, no push/email
+>   notification. What ships instead is a real, synchronous, download-immediately export —
+>   the same shape every `/reports/*/export/route.ts` in this codebase already uses — CSV
+>   only, one file per selected domain (never a zip: no new dependency), returned straight
+>   from the request and downloaded client-side with no server-side retention at all. A real
+>   async job queue with object storage, expiry and a notification pipeline is a materially
+>   larger, separate infrastructure investment than this pass — the schema this section
+>   describes (`export_jobs`, `export_job_downloads`, `sar_clinical_reviews`) does not exist
+>   in this build. Fine for the data volumes this app's seed orgs actually have; a real gap
+>   against the spec's performance budget for "40 athletes, one season, 9 tables."
+
 Screen 31 in the inventory (`02-information-architecture.md` §5). Reached from
 `More → Settings → Exports` for staff and from `Me → Export my data` for athletes. The
 whiteboard drew `Settings ─► Exports`.

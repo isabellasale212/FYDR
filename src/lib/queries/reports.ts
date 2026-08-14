@@ -364,12 +364,21 @@ export async function fetchInjuryAvailabilityReport(
 
   const newInjuries = relevant.filter((i) => i.onset_date >= fromDate && i.onset_date <= toDate).length;
 
+  // Nothing in the schema stops one athlete having two concurrent open
+  // injuries (no unique/exclusion constraint on injuries), so summing
+  // daysOverlap() per injury row double-counted every day both injuries
+  // were open for the same athlete — found live: two concurrent injuries
+  // over a 10-day window could push daysLost above athleteDays for a
+  // single-athlete scope, and availabilityPct negative. seenAthleteDays
+  // dedupes to "was this athlete unavailable on this real calendar day",
+  // counted once no matter how many injuries overlap it — the per-day loop
+  // was already here for the week-burden split, so this reuses it rather
+  // than keeping a separate, ungated daysOverlap() sum alongside it.
   let daysLost = 0;
   const weekTotals = new Map<string, number>();
+  const seenAthleteDays = new Set<string>();
   for (const i of relevant) {
     const end = i.actual_return ?? today;
-    const overlap = daysOverlap(i.onset_date, end, fromDate, toDate);
-    daysLost += overlap;
 
     // Attribute overlap days to weeks within the period, one day at a time —
     // the population here is small (a club's injury list over a report
@@ -378,8 +387,13 @@ export async function fetchInjuryAvailabilityReport(
     let cursor = i.onset_date > fromDate ? i.onset_date : fromDate;
     const cursorEnd = end < toDate ? end : toDate;
     while (cursor <= cursorEnd) {
-      const week = mondayOfIso(cursor);
-      weekTotals.set(week, (weekTotals.get(week) ?? 0) + 1);
+      const athleteDayKey = `${i.athlete_id}:${cursor}`;
+      if (!seenAthleteDays.has(athleteDayKey)) {
+        seenAthleteDays.add(athleteDayKey);
+        daysLost += 1;
+        const week = mondayOfIso(cursor);
+        weekTotals.set(week, (weekTotals.get(week) ?? 0) + 1);
+      }
       const next = new Date(`${cursor}T00:00:00Z`);
       next.setUTCDate(next.getUTCDate() + 1);
       cursor = next.toISOString().slice(0, 10);

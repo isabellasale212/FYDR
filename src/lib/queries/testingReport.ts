@@ -164,8 +164,28 @@ export async function fetchTestByTest(db: Db, orgId: string, groupIds: readonly 
   if (error) throw new Error(error.message);
 
   const filtered = (results ?? []).filter((r) => scopedIds.has(r.athlete_id));
+
+  // is_best marks the best attempt WITHIN a session (the same fact
+  // fetchTestingByAthlete's own header documents and fixes for the "By
+  // athlete" grid, just above) — an athlete who has tested more than once
+  // has one is_best row per session, not one true personal best, so this
+  // used to rank and list the same athlete multiple times. Collapsed to
+  // one row per (athlete, side): side, not just athlete, because this
+  // file's own header says a per-side test (grip strength) is meant to
+  // contribute one row per side, both counted — a same-side/no-side test
+  // collapses to the athlete's single true best, decided by the same
+  // higher_is_better direction fetchTestingByAthlete uses.
+  const bestBySlot = new Map<string, (typeof filtered)[number]>();
+  for (const r of filtered) {
+    const key = `${r.athlete_id}:${r.side ?? ''}`;
+    const existing = bestBySlot.get(key);
+    const beatsExisting = !existing || (definition.higher_is_better ? r.value > existing.value : r.value < existing.value);
+    if (beatsExisting) bestBySlot.set(key, r);
+  }
+  const deduped = [...bestBySlot.values()];
+
   const sortDir = definition.higher_is_better ? -1 : 1;
-  const sorted = [...filtered].sort((a, b) => sortDir * (a.value - b.value));
+  const sorted = [...deduped].sort((a, b) => sortDir * (a.value - b.value));
 
   const rows: TestByTestRow[] = sorted.map((r, i) => ({
     athlete_id: r.athlete_id,
@@ -176,7 +196,7 @@ export async function fetchTestByTest(db: Db, orgId: string, groupIds: readonly 
     rank: i + 1,
   }));
 
-  const values = filtered.map((r) => r.value).sort((a, b) => a - b);
+  const values = deduped.map((r) => r.value).sort((a, b) => a - b);
   const median = quartile(values, 0.5);
   const q1 = quartile(values, 0.25);
   const q3 = quartile(values, 0.75);

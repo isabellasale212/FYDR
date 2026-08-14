@@ -35,12 +35,21 @@ export function PlayerProfileFlags({ flags, orgId, userId, today }: Props) {
   const [showAcked, setShowAcked] = useState(false);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Optional note at acknowledgement, additive to §11's own spec (see this file's own
+  // header comment) — migration 0046's flags.staff_note, surfaced athlete-side by
+  // my-data.md's "with the staff note, if any". One item open at a time, matching this
+  // card's existing single-pendingId pattern above rather than a per-row Set.
+  const [noteDraftId, setNoteDraftId] = useState<string | null>(null);
+  const [noteText, setNoteText] = useState('');
 
   const acknowledge = useMutation({
-    mutationFn: (flagId: string) => acknowledgeFlag(createClient(), flagId, orgId, userId),
-    onMutate: (flagId) => setPendingId(flagId),
+    mutationFn: ({ flagId, note }: { flagId: string; note?: string }) =>
+      acknowledgeFlag(createClient(), flagId, orgId, userId, note),
+    onMutate: ({ flagId }) => setPendingId(flagId),
     onSuccess: () => {
       setPendingId(null);
+      setNoteDraftId(null);
+      setNoteText('');
       router.refresh();
     },
     onError: () => {
@@ -125,28 +134,74 @@ export function PlayerProfileFlags({ flags, orgId, userId, today }: Props) {
                 </div>
                 <p className="pp-flag-rule">{flag.ruleSentence}</p>
                 <p className="mono pp-flag-evidence">{flag.evidence}</p>
-                <div className="pp-flag-bottom">
-                  <span className="mono pp-flag-raised">raised {raisedLabel}</span>
-                  {canAck ? (
-                    <button
-                      type="button"
-                      className="pp-ack-btn"
-                      onClick={() => acknowledge.mutate(flag.id)}
-                      disabled={acknowledge.isPending && pendingId === flag.id}
-                      aria-label={`Acknowledge flag for ${flag.name}`}
-                    >
-                      {acknowledge.isPending && pendingId === flag.id ? 'Acknowledging…' : 'Acknowledge'}
-                    </button>
-                  ) : (
-                    <span className="pp-ack-btn" data-acked="true">
-                      {/* The card's own copy promises "records who saw it
-                          and when" — so show exactly that. */}
-                      Acknowledged
-                      {flag.acknowledged_by_name ? ` by ${flag.acknowledged_by_name}` : ''}
-                      {flag.acknowledged_at ? ` · ${formatDateTime(flag.acknowledged_at)}` : ''}
-                    </span>
-                  )}
-                </div>
+                {noteDraftId === flag.id ? (
+                  <div className="flag-dismiss" style={{ marginTop: 8 }}>
+                    <label className="label" htmlFor={`pp-ack-note-${flag.id}`}>
+                      Note for {flag.name.split(' ')[0]} (optional)
+                    </label>
+                    <textarea
+                      id={`pp-ack-note-${flag.id}`}
+                      className="field"
+                      rows={2}
+                      placeholder="e.g. We've eased Tuesday's session — nothing to do on your end."
+                      value={noteText}
+                      onChange={(event) => setNoteText(event.target.value)}
+                    />
+                    <div className="flag-actions" style={{ marginTop: 8 }}>
+                      <button
+                        type="button"
+                        className="pp-ack-btn"
+                        onClick={() => acknowledge.mutate({ flagId: flag.id, note: noteText })}
+                        disabled={acknowledge.isPending && pendingId === flag.id}
+                      >
+                        {acknowledge.isPending && pendingId === flag.id ? 'Acknowledging…' : 'Acknowledge'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-ghost"
+                        onClick={() => {
+                          setNoteDraftId(null);
+                          setNoteText('');
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="pp-flag-bottom">
+                    <span className="mono pp-flag-raised">raised {raisedLabel}</span>
+                    {canAck ? (
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button
+                          type="button"
+                          className="pp-ack-btn"
+                          onClick={() => acknowledge.mutate({ flagId: flag.id })}
+                          disabled={acknowledge.isPending && pendingId === flag.id}
+                          aria-label={`Acknowledge flag for ${flag.name}`}
+                        >
+                          {acknowledge.isPending && pendingId === flag.id ? 'Acknowledging…' : 'Acknowledge'}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-ghost"
+                          onClick={() => setNoteDraftId(flag.id)}
+                          aria-label={`Acknowledge flag for ${flag.name} with a note`}
+                        >
+                          + Note
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="pp-ack-btn" data-acked="true">
+                        {/* The card's own copy promises "records who saw it
+                            and when" — so show exactly that. */}
+                        Acknowledged
+                        {flag.acknowledged_by_name ? ` by ${flag.acknowledged_by_name}` : ''}
+                        {flag.acknowledged_at ? ` · ${formatDateTime(flag.acknowledged_at)}` : ''}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}

@@ -2,6 +2,22 @@ import type { Band } from '@/lib/stats';
 import { bandPosition } from '@/lib/stats';
 import { formatDate } from '@/lib/format';
 
+/** One dated marker — integration-audit major finding, my-data.md line ~241: "flags
+ *  | ... | Dated markers on the chart with the staff note." `date` must match a
+ *  `series[].date` exactly (both are plain YYYY-MM-DD strings) or the marker is silently
+ *  skipped, same defensive behaviour as the rest of this component around a missing
+ *  point. `tooltip` carries the full sentence for the native SVG <title> a mouse hover
+ *  reveals; it is deliberately not the only place that text appears — see the caller
+ *  (WellnessTab, my-data/page.tsx) for the always-visible FlagNotice list underneath,
+ *  which is what actually makes this legible on a touch device. Native <title> tooltips
+ *  do not reveal on tap, and this component stays a plain server-rendered SVG with no
+ *  chart library and no client JS (this file's own top comment), so a hover-only
+ *  affordance can never be this feature's only surface. */
+export type FlagMarker = {
+  date: string;
+  tooltip: string;
+};
+
 type Props = {
   series: readonly Band[];
   min: number;
@@ -10,6 +26,7 @@ type Props = {
   ticks: readonly number[];
   title: string;
   decimals?: number;
+  flags?: readonly FlagMarker[];
 };
 
 const W = 880;
@@ -39,6 +56,7 @@ export function WellnessChart({
   ticks,
   title,
   decimals = 0,
+  flags = [],
 }: Props) {
   if (series.length < 2) {
     return (
@@ -77,6 +95,18 @@ export function WellnessChart({
     )
     .join(' ');
 
+  // Flag markers sit in the empty strip above the plot (0 to MT), a different vertical
+  // zone from the per-point above/below-band triangles drawn at the data value itself
+  // below, and a different colour (--accent2, never used elsewhere in this chart) — two
+  // channels an athlete could otherwise conflate: "this reading was outside your own
+  // range" versus "staff looked at something on this date". A date with no matching
+  // series entry (should not happen — the caller always passes flag_date values drawn
+  // from the same window) is dropped rather than thrown.
+  const dateIndex = new Map(series.map((b, i) => [b.date, i]));
+  const flagMarkers = flags
+    .map((f) => ({ ...f, i: dateIndex.get(f.date) }))
+    .filter((f): f is FlagMarker & { i: number } => f.i !== undefined);
+
   const first = series[0];
   const last = series[series.length - 1];
   const mid = series[Math.floor(series.length / 2)];
@@ -86,7 +116,7 @@ export function WellnessChart({
       <svg
         viewBox={`0 0 ${W} ${H}`}
         role="img"
-        aria-label={`${title}. ${series.filter((s) => s.value !== null).length} of ${series.length} days submitted.`}
+        aria-label={`${title}. ${series.filter((s) => s.value !== null).length} of ${series.length} days submitted.${flagMarkers.length > 0 ? ` ${flagMarkers.length} day${flagMarkers.length === 1 ? '' : 's'} with a note from staff, listed below the chart.` : ''}`}
       >
         {ticks.map((t) => (
           <g key={t}>
@@ -151,6 +181,30 @@ export function WellnessChart({
           }
           return (
             <circle key={b.date} cx={cx} cy={cy} r={2.6} fill="var(--muted)" />
+          );
+        })}
+
+        {flagMarkers.map((f) => {
+          const cx = x(f.i);
+          return (
+            <g key={`flag-${f.date}`}>
+              <line
+                x1={cx}
+                y1={MT}
+                x2={cx}
+                y2={H - MB + 6}
+                stroke="var(--accent2)"
+                strokeWidth={1}
+                strokeDasharray="2,3"
+                opacity={0.45}
+              />
+              <polygon
+                points={`${cx},${MT - 1} ${cx - 4.5},${MT - 9} ${cx + 4.5},${MT - 9}`}
+                fill="var(--accent2)"
+              >
+                <title>{f.tooltip}</title>
+              </polygon>
+            </g>
           );
         })}
 

@@ -1,4 +1,4 @@
-import type { AvailabilityStatus, FlagSeverity } from '@/lib/types/database';
+import type { AvailabilityStatus, FlagDomain, FlagSeverity } from '@/lib/types/database';
 import { daysBetween, formatNumber } from '@/lib/format';
 import { fetchCurrentAvailability } from './availability';
 import { fetchGroupAthleteIds, type Db } from './groups';
@@ -392,14 +392,24 @@ export async function fetchFlagsList(
 }
 
 /** Raised/notified → acknowledged. Sets athlete_visible_at, which is the only
- *  thing that lets the athlete themselves ever see this row (carve-out 2). */
+ *  thing that lets the athlete themselves ever see this row (carve-out 2).
+ *
+ *  `note` is optional (migration 0046, my-data.md's own "with the staff note, if any" —
+ *  "if any" is the reason this stays optional rather than a required field or its own
+ *  confirm step). screens/flags.md's Acknowledge action is specified as instant and
+ *  optimistic with a 5-second Undo; adding a required second step here would break that.
+ *  When given, it is trimmed and written to flags.staff_note in the same update as the
+ *  rest of the acknowledge write — not a separate flag_actions row, see 0046's header
+ *  comment for why. */
 export async function acknowledgeFlag(
   db: Db,
   flagId: string,
   orgId: string,
   userId: string,
+  note?: string,
 ): Promise<void> {
   const now = new Date().toISOString();
+  const trimmedNote = note?.trim();
   const { error } = await db
     .from('flags')
     .update({
@@ -407,12 +417,102 @@ export async function acknowledgeFlag(
       acknowledged_at: now,
       acknowledged_by: userId,
       athlete_visible_at: now,
+      ...(trimmedNote ? { staff_note: trimmedNote } : {}),
     })
     .eq('id', flagId)
     .eq('org_id', orgId)
     .in('status', ['raised', 'notified']);
 
   if (error) throw new Error(error.message);
+}
+
+/* ---------------------------------------------------------------------------
+ * The athlete's own visible flags. Integration-audit major finding: acknowledgeFlag
+ * above has set athlete_visible_at correctly since 0006/0012, flags_self_select (0012)
+ * has always returned the row instantly once it does, and nothing on the athlete side
+ * has ever called either. This is the read half.
+ *
+ * my-data.md line ~241: "flags | 'flags' where athlete_visible_at is not null | Dated
+ * markers on the chart with the staff note. Unacknowledged flags are not returned by the
+ * query at all." The `.not('athlete_visible_at', 'is', null)` filter below is redundant
+ * with flags_self_select's own predicate — RLS already guarantees it for an athlete's
+ * session — and is kept anyway so this query reads correctly on its own, the same
+ * defense-in-depth reasoning OPEN_FLAG_STATUSES filters are written out for above even
+ * though a staff RLS policy also scopes those rows by role.
+ * ------------------------------------------------------------------------ */
+
+export type VisibleFlag = {
+  id: string;
+  domain: FlagDomain;
+  metric: string;
+  /** The plain-language subject, from the shared METRIC_COPY table — "readiness",
+   *  "slept", "check-ins submitted" — never the raw metric key. */
+  what: string;
+  observed: string;
+  expected: string;
+  flag_date: string;
+  acknowledged_at: string;
+  /** First name only — see fetchMyVisibleFlags's own comment on why. */
+  acknowledged_by_name: string | null;
+  /** Optional (migration 0046). Athlete-facing copy renders "if any" per my-data.md,
+   *  never a placeholder like "No note added". */
+  staff_note: string | null;
+};
+
+export async function fetchMyVisibleFlags(
+  db: Db,
+  athleteId: string,
+  range: { from: string; to: string },
+): Promise<VisibleFlag[]> {
+  const { data: flags, error } = await db
+    .from('flags')
+    .select(
+      'id, domain, metric, observed_value, expected_value, flag_date, acknowledged_at, acknowledged_by, staff_note',
+    )
+    .eq('athlete_id', athleteId)
+    .not('athlete_visible_at', 'is', null)
+    .gte('flag_date', range.from)
+    .lte('flag_date', range.to)
+    .order('flag_date', { ascending: false });
+
+  if (error) throw new Error(error.message);
+  if (!flags || flags.length === 0) return [];
+
+  const ackUserIds = [...new Set(flags.map((f) => f.acknowledged_by).filter((v): v is string => v !== null))];
+
+  // users_org_select (0012) is org-wide, not role-gated, so an athlete can already
+  // resolve a staff colleague's name the same way fetchFlagsList does on the staff side
+  // — first name only here, though: "Seen by Jamie" reads as a colleague telling you
+  // something, "Seen by Jamie Ellis" reads like a case file. Task's own instruction:
+  // "clearly attributed to staff, not clinical/alarming language".
+  const ackUsersRes =
+    ackUserIds.length > 0
+      ? await db.from('users').select('id, full_name').in('id', ackUserIds)
+      : { data: [] as { id: string; full_name: string | null }[], error: null };
+  const ackNameById = new Map(
+    (ackUsersRes.error ? [] : (ackUsersRes.data ?? [])).map((u) => [u.id, u.full_name?.split(' ')[0] ?? null]),
+  );
+
+  return flags.map((f) => {
+    const copy = metricCopy(f.metric);
+    return {
+      id: f.id,
+      domain: f.domain,
+      metric: f.metric,
+      what: copy.what,
+      observed:
+        f.observed_value === null ? '' : `${formatNumber(f.observed_value, copy.decimals)}${copy.unit}`,
+      expected:
+        f.expected_value === null ? '' : `${formatNumber(f.expected_value, copy.decimals)}${copy.unit}`,
+      flag_date: f.flag_date,
+      // athlete_visible_at is only ever set alongside acknowledged_at (acknowledgeFlag
+      // above, and the trigger flags.md §"Invariants" describes), so this row cannot
+      // exist without one — the fallback is defensive, not an expected path.
+      acknowledged_at: f.acknowledged_at ?? f.flag_date,
+      acknowledged_by_name: f.acknowledged_by ? (ackNameById.get(f.acknowledged_by) ?? null) : null,
+      staff_note: f.staff_note,
+    };
+  });
 }
 
 /** Any open status → dismissed, with a mandatory reason recorded as a

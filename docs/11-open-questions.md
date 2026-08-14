@@ -458,7 +458,7 @@ seen the screen built.
 | **O-320** | Should there be a "decline" path at all? |
 | **O-321** | Invite delivery and identity. |
 | **O-322** | Should the guided first wellness entry be mandatory? |
-| **O-323** | Multi-factor for athletes. |
+| **O-323** | Multi-factor for athletes. Policy was already answered in `09-security-and-compliance.md` §8.1 ("optional, encouraged") before this question was resolved; what remained genuinely open was the build, and login-security checklist item 3 answered the staff half of it but deliberately not the athlete half — `MfaEnrollment.tsx` (the real TOTP enroll/verify/remove UI) is wired into staff Settings only. The sign-in challenge itself (`/login/mfa`) is role-agnostic and would work correctly for an athlete who somehow had a verified factor, because Supabase's `aal` claim doesn't carry a role — but nothing in this build gives an athlete a way to enrol one, so in practice no athlete can turn MFA on yet. Still open: build the equivalent optional enrollment surface somewhere in the athlete shell (`src/app/(athlete)/`), most likely `Me`. Also still open, and separate: `09-security-and-compliance.md`'s own new implementation-status note records that the RLS-level enforcement for the *staff* mandate (`auth_is_aal2()`, migration 0049) is deliberately not wired into any policy yet either — that follow-up is tracked there, not here, since it's a staff question, not an athlete one. |
 | **O-324** | Should staff onboarding be web-only? |
 | **O-325** | What happens to an athlete who acknowledges the notice and later objects to everything under Article 21? |
 | **O-965** | How does a club record parental involvement, and what counts as recording it? |

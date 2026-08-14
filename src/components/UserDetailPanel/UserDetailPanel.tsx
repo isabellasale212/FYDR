@@ -11,6 +11,7 @@ import {
   type UserAuditRow,
   type UserDetail,
 } from '@/lib/queries/userManagement';
+import type { RemoveMfaFactorResult } from '@/app/(staff)/settings/users/[userId]/mfa/route';
 import { Pill } from '@/components/Pill/Pill';
 import { USER_STATUS } from '@/lib/status';
 import { formatDate, formatDateTime, enumLabel } from '@/lib/format';
@@ -27,6 +28,10 @@ type Props = {
   history: UserAuditRow[];
   unlinkedAthletes: UnlinkedAthlete[];
   isSelf: boolean;
+  /** login-security checklist item 3: the real read this used to hardcode as "Not
+   *  enrolled" for everyone — see page.tsx's own header. null means genuinely not
+   *  enrolled, not "unknown". */
+  mfaFactor: { id: string; created_at: string } | null;
 };
 
 /** screens/user-management.md's own "WHAT THIS USER CAN SEE" panel, from
@@ -64,7 +69,7 @@ const AUDIT_ACTION_LABEL: Record<string, string> = {
  *  second, differently-timed edit pattern on the same data one click away
  *  would be a real inconsistency, not a faithful rendering of the
  *  wireframe's intent. */
-export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezone, user, history, unlinkedAthletes, isSelf }: Props) {
+export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezone, user, history, unlinkedAthletes, isSelf, mfaFactor }: Props) {
   const router = useRouter();
   const [roles, setRoles] = useState(user.roleGrants.map((g) => g.role).sort());
   const [status, setStatus] = useState(user.status);
@@ -74,6 +79,9 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezo
   const [busyStatus, setBusyStatus] = useState(false);
   const [busyLink, setBusyLink] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mfa, setMfa] = useState(mfaFactor);
+  const [busyMfa, setBusyMfa] = useState(false);
+  const [confirmingMfaRemove, setConfirmingMfaRemove] = useState(false);
 
   const invitedRow = [...history].reverse().find((h) => h.action === 'user.created');
 
@@ -115,6 +123,29 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezo
     const athlete = unlinkedAthletes.find((a) => a.id === linkChoice);
     setAthleteName(athlete ? `${athlete.first_name} ${athlete.last_name}` : null);
     setLinkChoice('');
+    router.refresh();
+  }
+
+  /** The one account-recovery path Supabase's MFA API leaves for a staff member who has
+   *  lost their authenticator — see the Route Handler's own header for why this needs the
+   *  service role key and can't be a plain RLS-scoped write like the actions above. */
+  async function removeMfaFactor() {
+    if (!mfa) return;
+    setBusyMfa(true);
+    setError(null);
+    const res = await fetch(`/settings/users/${user.id}/mfa`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ factorId: mfa.id }),
+    });
+    const data: RemoveMfaFactorResult = await res.json();
+    setBusyMfa(false);
+    setConfirmingMfaRemove(false);
+    if (!data.ok) {
+      setError(data.error ?? 'Could not remove the MFA factor.');
+      return;
+    }
+    setMfa(null);
     router.refresh();
   }
 
@@ -244,8 +275,34 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezo
             </div>
             <div className="kv">
               <span className="sub">MFA</span>
-              <span className="sub">Not enrolled</span>
+              <span className={mfa ? 'g-good' : 'sub'}>{mfa ? `Enrolled ${formatDate(mfa.created_at, timezone)}` : 'Not enrolled'}</span>
             </div>
+            {mfa ? (
+              !confirmingMfaRemove ? (
+                <button type="button" className="btn-ghost" style={{ marginTop: 8 }} disabled={busyMfa} onClick={() => setConfirmingMfaRemove(true)}>
+                  Remove MFA factor
+                </button>
+              ) : (
+                <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span className="tiny" style={{ color: 'var(--bad)' }}>
+                    Remove this user&apos;s MFA factor?
+                  </span>
+                  <button type="button" className="btn-ghost" style={{ color: 'var(--bad)', borderColor: 'var(--bad)' }} disabled={busyMfa} onClick={removeMfaFactor}>
+                    {busyMfa ? 'Removing…' : 'Yes, remove it'}
+                  </button>
+                  <button type="button" className="btn-ghost" onClick={() => setConfirmingMfaRemove(false)}>
+                    Never mind
+                  </button>
+                </div>
+              )
+            ) : null}
+            {mfa ? (
+              <p className="cap" style={{ marginTop: 8 }}>
+                There is no recovery-code system — this is the only way back in for someone
+                who has lost their authenticator. They will need to re-enrol from Settings
+                once they can sign in again.
+              </p>
+            ) : null}
           </section>
         </div>
       </div>

@@ -1012,6 +1012,45 @@ The result: a staff user who has not completed the second factor can authenticat
 cannot read squad data at the database level. That is a real control rather than a hidden
 button. `[high]`
 
+> **Implementation status (login-security checklist item 3, shipped in the same pass this
+> note was added).** Real, and split across a safe slice and a deliberately deferred one —
+> written up here rather than left implicit, because the gap between the two matters:
+>
+> - **Shipped**: real TOTP enrollment against Supabase Auth's own MFA API
+>   (`src/components/MfaEnrollment/MfaEnrollment.tsx`, in Settings), a real sign-in challenge
+>   step (`supabase.auth.mfa.challengeAndVerify()`, `/login/mfa`,
+>   `src/components/MfaChallengeForm/MfaChallengeForm.tsx`) that a password check redirects
+>   into whenever the account has a verified factor, and a real admin-facing read of
+>   enrollment state (`UserDetailPanel.tsx`, via `supabase.auth.admin.mfa.listFactors()`) —
+>   replacing what had been a hardcoded "Not enrolled" string for every user, unconditionally.
+>   `public.auth_is_aal2()` (migration 0049) exists, is tested
+>   (`supabase/tests/240_mfa_aal2_helper_test.sql`), and matches this section's own SQL sketch.
+> - **Deferred**: `auth_is_aal2()` is not yet added to any staff-scope RLS policy. Checked
+>   before deferring, not assumed: zero staff members in the live database had an enrolled
+>   factor at the moment enrollment first became possible, and the pgTAP fixture builder
+>   (`tests.set_jwt()`) had never set an `aal` claim at all. Wiring the check into
+>   `wellness_staff_select` and its siblings in the same pass that first makes enrollment
+>   possible would mean every coach, medical and admin account loses squad-data read access
+>   the instant the migration applied, with no grace period. The correct sequencing —
+>   ship enrollment, let staff actually enrol, confirm real coverage, THEN retrofit the RLS
+>   check as its own reviewed migration with a rollout plan — is recorded, not silently
+>   dropped. See migration 0049's own header and `docs/11-open-questions.md` O-323.
+> - **"Mandatory" for coach/medical/admin, in practice**: this pass could not make MFA
+>   actually block sign-in or app use for those roles, for the same reason the RLS layer is
+>   deferred — the real enforcement boundary (RLS) isn't wired in yet, and CLAUDE.md §2 rule
+>   2 / this section's own "do not enforce MFA in the UI, because the UI is not the security
+>   boundary" both rule out a client-side gate as a substitute. What shipped instead is a
+>   strong, undismissable prompt on Settings for coach/medical/admin accounts that have not
+>   enrolled (`MfaEnrollment.tsx`'s role banner) — real friction, not real enforcement.
+>   Treat "mandatory" as **prompted** until the RLS follow-up lands.
+> - **No recovery codes**: Supabase's TOTP MFA API (`@supabase/supabase-js` 2.112.2) has no
+>   recovery/backup-code concept anywhere in its shipped types — checked before writing any
+>   of this, not assumed. `docs/03-flows.md`'s onboarding flow (item 19) says "Recovery codes
+>   are the route back," which is not something this vendor's API can deliver; that line is
+>   wrong and needs its own fix, tracked in the same open question. The only account-recovery
+>   path this build offers is `UserDetailPanel.tsx`'s admin-only "Remove MFA factor" action —
+>   an audited, one-way-only reset, not a self-service recovery code.
+
 **Session lifetime.**
 
 | Client | Access token | Refresh token | Rationale |

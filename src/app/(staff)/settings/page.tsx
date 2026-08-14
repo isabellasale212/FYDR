@@ -2,9 +2,11 @@ import Link from 'next/link';
 import { AvatarUploadForm } from '@/components/AvatarUploadForm/AvatarUploadForm';
 import { ChangePasswordForm } from '@/components/ChangePasswordForm/ChangePasswordForm';
 import { ClubDetailsEditForm } from '@/components/ClubDetailsEditForm/ClubDetailsEditForm';
+import { MfaEnrollment } from '@/components/MfaEnrollment/MfaEnrollment';
 import { StaffProfileEditForm } from '@/components/StaffProfileEditForm/StaffProfileEditForm';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchThresholds } from '@/lib/queries/thresholds';
+import { mfaRequiredForRoles } from '@/lib/mfa';
 import { requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 
@@ -16,7 +18,9 @@ export const metadata = { title: 'Settings · Fydr' };
  * are real, linking to the GPS import screen this app already has; Apple
  * Health has no integration to connect to and says so), and the row list
  * (Thresholds and Log out are real; Passwords jumps to the real password
- * form below rather than a 2FA policy screen this build doesn't have;
+ * form below, which now sits beside a real "Two-factor authentication" card
+ * (MfaEnrollment) rather than the "2FA policy screen this build doesn't
+ * have" this comment used to say — login-security checklist item 3;
  * Exports stays honestly not built, as the previous version of this page
  * already said in its own words).
  *
@@ -38,7 +42,7 @@ export default async function SettingsPage() {
   const isAdminOnly = isAdmin && !claims.roles.includes('coach') && !claims.roles.includes('medical');
   const onPremium = isPremium(tier);
 
-  const [userRow, orgRow, athleteCount, activeThresholds] = await Promise.all([
+  const [userRow, orgRow, athleteCount, activeThresholds, mfaFactors] = await Promise.all([
     db.from('users').select('phone, avatar_url').eq('id', claims.userId).maybeSingle(),
     isAdmin
       ? db.from('organisations').select('name, sport, timezone, country_code, logo_url').eq('id', orgId).maybeSingle()
@@ -50,9 +54,11 @@ export default async function SettingsPage() {
       .is('deleted_at', null)
       .neq('status', 'left_club'),
     fetchThresholds(db, orgId, false),
+    db.auth.mfa.listFactors(),
   ]);
 
   const squadSize = athleteCount.count ?? 0;
+  const roleRequiresMfa = mfaRequiredForRoles(claims.roles);
 
   return (
     <>
@@ -229,11 +235,11 @@ export default async function SettingsPage() {
 
           <a href="#password" className="set-list-row">
             <span>
-              <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block' }}>Passwords</span>
-              <span style={{ fontSize: 12, color: 'var(--faint)' }}>Staff sign in — two-factor isn&apos;t built yet</span>
+              <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block' }}>Password and two-factor</span>
+              <span style={{ fontSize: 12, color: 'var(--faint)' }}>Staff sign in</span>
             </span>
             <span className="mono" style={{ fontSize: 11.5, color: 'var(--faint)' }}>
-              —
+              {(mfaFactors.data?.totp.length ?? 0) > 0 ? 'On' : roleRequiresMfa ? 'Required' : '—'}
             </span>
             <span aria-hidden="true" style={{ fontSize: 16, color: 'var(--faint)' }}>
               ›
@@ -388,8 +394,9 @@ export default async function SettingsPage() {
           />
         ) : null}
 
-        <div id="password">
+        <div id="password" className="stack">
           <ChangePasswordForm />
+          <MfaEnrollment timezone={timezone} roleRequiresMfa={roleRequiresMfa} initialFactors={mfaFactors.data?.totp ?? []} />
         </div>
       </div>
     </>

@@ -29,7 +29,12 @@ import type { Db } from './groups';
  *   - The Declined/invited-lifecycle states the spec's onboarding-consent
  *     flow would drive — that flow doesn't exist in this build, so every
  *     account created here starts life 'active', not 'invited'.
- *   - MFA, passkeys. Neither exists anywhere in this build's auth layer.
+ *   - Passkeys. Does not exist anywhere in this build's auth layer. MFA used to be listed
+ *     here too — it now does exist (login-security checklist item 3), but its reads and
+ *     writes go through Supabase's own Auth MFA API (supabase.auth.mfa.*, and, for an
+ *     admin reading or removing another user's factor, the service-role
+ *     supabase.auth.admin.mfa.* API), not this file's plain RLS-scoped `Db` queries — see
+ *     MfaEnrollment.tsx, settings/users/[userId]/page.tsx and its mfa/route.ts.
  *   - Forced sign-out on role removal (the spec's own admin-set-role Edge
  *     Function). users.claims_version still bumps on every user_roles
  *     change (migration 0010's trigger, unrelated to this pass), which is

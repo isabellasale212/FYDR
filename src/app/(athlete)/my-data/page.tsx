@@ -172,7 +172,7 @@ export default async function MyDataPage({
        * orphanFlags above) — shown here, above the tab content, so they stay visible no
        * matter which tab the athlete has open rather than living behind a tab that
        * doesn't describe them. */}
-      <FlagNotice flags={orphanFlags} heading="Also noted for you" />
+      <FlagNotice flags={orphanFlags} heading="Also noted for you" timezone={timezone} />
 
       {tab === 'wellness' ? (
         <WellnessTab
@@ -204,7 +204,7 @@ export default async function MyDataPage({
           flags={flagsByDomain.get('nutrition') ?? []}
         />
       ) : tab === 'testing' ? (
-        <TestingTab db={db} athleteId={athleteId} flags={flagsByDomain.get('testing') ?? []} />
+        <TestingTab db={db} athleteId={athleteId} flags={flagsByDomain.get('testing') ?? []} timezone={timezone} />
       ) : (
         <GymTab
           db={db}
@@ -288,7 +288,7 @@ async function WellnessTab({
           />
         )}
 
-        <FlagNotice flags={flags} />
+        <FlagNotice flags={flags} timezone={timezone} />
 
         <p className="cap">
           <b>
@@ -385,7 +385,7 @@ async function TrainingTab({
           session.
         </p>
 
-        <FlagNotice flags={flags} heading="Noted by staff" />
+        <FlagNotice flags={flags} heading="Noted by staff" timezone={timezone} />
 
         {sessions.length === 0 ? (
           <EmptyState
@@ -486,7 +486,7 @@ async function NutritionTab({
           answered once a week. No score, no streak, no comparison to anyone else.
         </p>
 
-        <FlagNotice flags={flags} heading="Noted by staff" />
+        <FlagNotice flags={flags} heading="Noted by staff" timezone={timezone} />
 
         {checkins.length === 0 ? (
           <EmptyState
@@ -551,10 +551,12 @@ async function TestingTab({
   db,
   athleteId,
   flags,
+  timezone,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
   athleteId: string;
   flags: VisibleFlag[];
+  timezone: string;
 }) {
   const summary = await fetchMyTestSummary(db, athleteId);
 
@@ -569,7 +571,7 @@ async function TestingTab({
           comparison here.
         </p>
 
-        <FlagNotice flags={flags} heading="Noted by staff" />
+        <FlagNotice flags={flags} heading="Noted by staff" timezone={timezone} />
 
         {summary.length === 0 ? (
           <EmptyState
@@ -629,7 +631,7 @@ async function GymTab({
           you mis-logged &mdash; the original is kept, never overwritten.
         </p>
 
-        <FlagNotice flags={flags} heading="Noted by staff" />
+        <FlagNotice flags={flags} heading="Noted by staff" timezone={timezone} />
 
         {sessions.length === 0 ? (
           <EmptyState

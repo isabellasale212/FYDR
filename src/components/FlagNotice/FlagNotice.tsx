@@ -7,6 +7,7 @@ type Props = {
    *  empty heading) when the caller already has its own section title, e.g. the wellness
    *  chart's own card heading. */
   heading?: string;
+  timezone: string;
 };
 
 /**
@@ -25,7 +26,7 @@ type Props = {
  * staff, not clinical/alarming language" — matching carve-out 2's own worked example,
  * "your sleep has dropped for four days, we've adjusted your load", not a red badge).
  */
-export function FlagNotice({ flags, heading }: Props) {
+export function FlagNotice({ flags, heading, timezone }: Props) {
   if (flags.length === 0) return null;
 
   return (
@@ -38,7 +39,7 @@ export function FlagNotice({ flags, heading }: Props) {
               <span className="pill pill-neutral" style={{ fontSize: 10.5, padding: '2px 9px' }}>
                 {enumLabel(f.domain)}
               </span>
-              <span className="tiny mono">{formatDate(f.flag_date)}</span>
+              <span className="tiny mono">{formatDate(f.flag_date, timezone)}</span>
             </div>
             <p className="flag-notice-line">
               {f.what}
@@ -53,7 +54,7 @@ export function FlagNotice({ flags, heading }: Props) {
             {f.staff_note ? <p className="flag-notice-note">&ldquo;{f.staff_note}&rdquo;</p> : null}
             <p className="flag-notice-attribution">
               {f.acknowledged_by_name ? `Seen by ${f.acknowledged_by_name}` : 'Seen by a staff member'} &middot;{' '}
-              {formatDate(f.acknowledged_at)}
+              {formatDate(f.acknowledged_at, timezone)}
             </p>
           </div>
         ))}

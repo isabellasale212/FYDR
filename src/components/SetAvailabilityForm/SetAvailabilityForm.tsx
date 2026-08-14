@@ -21,14 +21,36 @@ type Props = { orgId: string; userId: string; athleteId: string; injuryId: strin
 /** Medical only, per migration 0012's availability RLS: "there is no coach insert
  *  policy on this table. Not a restricted one, not one gated on a column: none." Sets
  *  a new interval rather than editing the last one, matching setAvailability's own
- *  comment on why. */
+ *  comment on why.
+ *
+ *  reasonCategory (and restrictions) are cleared back to null/empty the moment
+ *  status is set to 'available' (integration-audit majors, Bug 1) — both here
+ *  in local state, on the status button's own click, and again as the value
+ *  actually sent in the mutation, so a leftover selection from a previous
+ *  'modified'/'unavailable' choice can never ride along on the "clear" write.
+ *  Safe to null unconditionally for this form specifically: availability_
+ *  medical_insert (migration 0012) has no column-level check on reason_category
+ *  at all, unlike the coach-facing form's availability_coach_insert_noninjury
+ *  (0042), which requires it non-null on every insert regardless of status —
+ *  see SetAvailabilityFormCoach's own comment for why that form does the
+ *  opposite on purpose. */
 export function SetAvailabilityForm({ orgId, userId, athleteId, injuryId }: Props) {
   const router = useRouter();
   const [status, setStatus] = useState<(typeof STATUSES)[number]>('modified');
   const [restrictions, setRestrictions] = useState<Set<string>>(new Set());
-  const [reasonCategory, setReasonCategory] = useState<string>('injury');
+  const [reasonCategory, setReasonCategory] = useState<AvailabilityReason | null>('injury');
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  function handleStatusClick(s: (typeof STATUSES)[number]) {
+    setStatus(s);
+    if (s === 'available') {
+      setReasonCategory(null);
+      setRestrictions(new Set());
+    } else if (reasonCategory === null) {
+      setReasonCategory('injury');
+    }
+  }
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -36,7 +58,7 @@ export function SetAvailabilityForm({ orgId, userId, athleteId, injuryId }: Prop
         setAvailability(createClient(), orgId, athleteId, userId, {
           status,
           restrictions: [...restrictions],
-          reasonCategory: (reasonCategory || null) as AvailabilityReason | null,
+          reasonCategory: status === 'available' ? null : reasonCategory,
           note: note.trim() || null,
           injuryId,
         }),
@@ -68,7 +90,7 @@ export function SetAvailabilityForm({ orgId, userId, athleteId, injuryId }: Prop
             type="button"
             className="squad-chip"
             aria-pressed={status === s}
-            onClick={() => setStatus(s)}
+            onClick={() => handleStatusClick(s)}
           >
             {label(s)}
           </button>
@@ -100,8 +122,8 @@ export function SetAvailabilityForm({ orgId, userId, athleteId, injuryId }: Prop
           <select
             id="avail-reason"
             className="field"
-            value={reasonCategory}
-            onChange={(event) => setReasonCategory(event.target.value)}
+            value={reasonCategory ?? ''}
+            onChange={(event) => setReasonCategory(event.target.value as AvailabilityReason)}
           >
             {REASONS.map((r) => (
               <option key={r} value={r}>

@@ -148,7 +148,7 @@ export default async function TodayPage({
         </span>
       </div>
 
-      <OutboxFlusher orgId={orgId} athleteId={athleteId} userId={claims.userId} />
+      <OutboxFlusher orgId={orgId} athleteId={athleteId} userId={claims.userId} timezone={timezone} />
 
       {toastMessage ? <Toast message={toastMessage} clearHref="/today" /> : null}
 

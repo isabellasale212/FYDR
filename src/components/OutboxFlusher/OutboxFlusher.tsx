@@ -26,7 +26,7 @@ import { createClient } from '@/lib/supabase/client';
 import type { Db } from '@/lib/queries/groups';
 import { formatDate } from '@/lib/format';
 
-type Props = { orgId: string; athleteId: string; userId: string };
+type Props = { orgId: string; athleteId: string; userId: string; timezone: string };
 
 /** A duplicate-key hit on a plain insert has two causes a bare substring
  *  match cannot tell apart: (a) this exact id already landed on an earlier
@@ -111,7 +111,7 @@ type ConflictItem = { domain: ConflictDomain; id: string; label: string };
  *  reactive, so defining it once here keeps it a stable reference for both
  *  the flush effect and the discard handler below without an
  *  exhaustive-deps concern. */
-function snapshot(): { pendingCount: number; conflicts: ConflictItem[] } {
+function snapshot(timezone: string): { pendingCount: number; conflicts: ConflictItem[] } {
   const wellness = pendingWellness();
   const training = pendingTraining();
   const nutrition = pendingNutritionCheckins();
@@ -123,21 +123,21 @@ function snapshot(): { pendingCount: number; conflicts: ConflictItem[] } {
       .map((item) => ({
         domain: 'wellness' as const,
         id: item.input.id,
-        label: `your check-in for ${formatDate(item.input.entry_date)}`,
+        label: `your check-in for ${formatDate(item.input.entry_date, timezone)}`,
       })),
     ...training
       .filter((item) => item.conflictAt)
       .map((item) => ({
         domain: 'training' as const,
         id: item.input.id,
-        label: `your rating for ${formatDate(item.input.entry_date)}`,
+        label: `your rating for ${formatDate(item.input.entry_date, timezone)}`,
       })),
     ...nutrition
       .filter((item) => item.conflictAt)
       .map((item) => ({
         domain: 'nutrition' as const,
         id: item.input.id,
-        label: `your check-in for the week of ${formatDate(item.input.week_start)}`,
+        label: `your check-in for the week of ${formatDate(item.input.week_start, timezone)}`,
       })),
   ];
 
@@ -164,7 +164,7 @@ function discardConflict(domain: ConflictDomain, id: string): void {
  *  resolve*Conflict above) is the one queued-write outcome that IS shown,
  *  because unlike "no signal yet" it will never resolve itself by retrying —
  *  the athlete needs to know one of their entries did not actually save. */
-export function OutboxFlusher({ orgId, athleteId, userId }: Props) {
+export function OutboxFlusher({ orgId, athleteId, userId, timezone }: Props) {
   const router = useRouter();
   const [pending, setPending] = useState(0);
   const [conflicts, setConflicts] = useState<ConflictItem[]>([]);
@@ -173,7 +173,7 @@ export function OutboxFlusher({ orgId, athleteId, userId }: Props) {
     let cancelled = false;
 
     async function flush() {
-      const before = snapshot();
+      const before = snapshot(timezone);
       if (!cancelled) {
         setPending(before.pendingCount);
         setConflicts(before.conflicts);
@@ -286,7 +286,7 @@ export function OutboxFlusher({ orgId, athleteId, userId }: Props) {
       }
 
       if (cancelled) return;
-      const after = snapshot();
+      const after = snapshot(timezone);
       setPending(after.pendingCount);
       setConflicts(after.conflicts);
       if (sent > 0) router.refresh();
@@ -298,11 +298,11 @@ export function OutboxFlusher({ orgId, athleteId, userId }: Props) {
       cancelled = true;
       window.removeEventListener('online', flush);
     };
-  }, [orgId, athleteId, userId, router]);
+  }, [orgId, athleteId, userId, timezone, router]);
 
   function handleDiscard(domain: ConflictDomain, id: string) {
     discardConflict(domain, id);
-    const after = snapshot();
+    const after = snapshot(timezone);
     setPending(after.pendingCount);
     setConflicts(after.conflicts);
   }

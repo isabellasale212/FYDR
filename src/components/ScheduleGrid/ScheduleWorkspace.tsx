@@ -164,6 +164,10 @@ export function ScheduleWorkspace({
       // token at all, so this value is never read. Present only to satisfy
       // BaseSession's shape.
       updatedAt: '',
+      // Same reasoning: a draft has no session_participants row yet, so
+      // there is nothing for fetchWeekSessionsDetailed to have counted.
+      // Real once this session is published and the page refetches.
+      restrictionConflictCount: 0,
       edited: true,
       isNew: true,
     }));
@@ -273,6 +277,8 @@ export function ScheduleWorkspace({
           groupNames: newDraft.groupIds.map((id) => groupNameById.get(id) ?? 'Unnamed group'),
           athleteIds: [...new Set(newDraft.groupIds.flatMap((gid) => groupMembership[gid] ?? []))],
           isPast: newDraft.dow < today,
+          // Precommit form, no session_participants row yet — nothing to count.
+          restrictionConflictCount: 0,
         }
       : selectedEffective
         ? {
@@ -281,6 +287,13 @@ export function ScheduleWorkspace({
             // panel must never say "MD-7" under a column header saying "MD".
             mdOffset: anchoredMd.get(selectedEffective.dow) ?? selectedEffective.mdOffset,
             isPast: selectedEffective.dow < today,
+            // restrictionConflictCount rides through from `selectedEffective`
+            // as originally fetched — same known simplification as the
+            // athleteIds preview above it (see `effective`'s own comment): a
+            // local, unpublished group-membership edit doesn't recompute it,
+            // because doing so needs per-athlete restriction data this
+            // workspace never fetches. Correct again the moment this
+            // session is published and the page refetches.
           }
         : null;
 

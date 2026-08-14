@@ -2,13 +2,13 @@ import type { AvailabilityStatus, Database } from '@/lib/types/database';
 import { humanizeDbError } from '@/lib/writeErrors';
 import { fetchCurrentAvailability } from './availability';
 import { fetchGroupAthleteIds, type Db } from './groups';
+import { computeConflicts } from './restrictionConflicts';
 import { dayBounds, type Session } from './schedule';
 
 // No dedicated exported alias for these two enums in lib/types/database.ts
 // (only a handful of enums get one) — same local-alias pattern lib/tier.ts
 // already established for subscription_tier, not a new convention.
 export type AttendanceStatus = Database['public']['Enums']['attendance_status'];
-type SessionType = Database['public']['Enums']['session_type'];
 
 /* screens/timetable.md, screen 11 — read-and-capture, the day-level face of
  * the scheduling spine. This build cuts hard against the doc's own layout,
@@ -60,48 +60,11 @@ export type TimetableSession = Session & {
   participants: TimetableParticipant[];
 };
 
-/** The doc's own shipped default for `organisations.settings ->
- *  'restriction_conflicts'` — not read from settings in this pass (no
- *  screen writes that key yet, so there is nothing there to diverge from
- *  the default), applied directly. Substring match, case-insensitive: real
- *  restriction text in this org includes phrases like "no contact" inside
- *  a longer string ("no contact, no scrummaging"), never an exact token.
- *
- *  Coach audit finding 8, fixed here: `screens/timetable.md`'s documented
- *  default is `no contact` conflicts with `session_type in ('match')` *or*
- *  a session tagged `contact`. The tag half never fires — `sessions.tags`
- *  is O-403, undocumented in `04-data-model.md` and never built, same gap
- *  this file's own top-of-file note already flags — which left `no contact`
- *  checking match sessions only. Matches are roughly one session a week;
- *  contact conditioning happens inside `training` sessions on every other
- *  day, so the safety net was live on paper and silent in practice: a
- *  no-contact athlete marked Full on a contact training session produced no
- *  warning at all. Fixed by treating `training` as contact-relevant
- *  alongside `match`, the plausible proxy for the missing tag until
- *  `sessions.tags` ships. `gym`, `rehab`, `testing`, `meeting` and
- *  `recovery` stay excluded — none of them are contact work by definition,
- *  and adding them would just be noise the coach starts ignoring. */
-function computeConflicts(sessionType: SessionType, plannedRpe: number | null, restrictions: string[]): string[] {
-  const lower = restrictions.map((r) => r.toLowerCase());
-  const conflicts: string[] = [];
-  if (
-    (sessionType === 'match' || sessionType === 'training') &&
-    lower.some((r) => r.includes('no contact'))
-  ) {
-    conflicts.push('no contact');
-  }
-  if (
-    sessionType !== 'match' &&
-    sessionType !== 'meeting' &&
-    sessionType !== 'recovery' &&
-    plannedRpe !== null &&
-    plannedRpe >= 7 &&
-    lower.some((r) => r.includes('no sprinting'))
-  ) {
-    conflicts.push('no sprinting');
-  }
-  return conflicts;
-}
+// computeConflicts (coach audit finding 8's fix, and the doc's own
+// restriction_conflicts default) now lives in restrictionConflicts.ts —
+// schedule.ts's SelectedSessionPanel needs the identical heuristic and
+// importing it from here would cycle back through schedule.ts. See that
+// file's header for the full history and reasoning.
 
 /** `dayBounds` used to be a local copy of schedule.ts's own function,
  *  duplicating the same literal-UTC-day bug that file's header now

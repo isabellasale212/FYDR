@@ -30,6 +30,16 @@ export type PanelSession = {
   groupNames: string[];
   athleteIds: string[];
   isPast: boolean;
+  /** Restriction-to-session-card linkage (integration audit Batch 3): how
+   *  many participants have a restriction `computeConflicts` flags as
+   *  relevant to this session — see GridSession's own comment
+   *  (lib/queries/schedule.ts) for the full heuristic and its known
+   *  limits. Names never appear here — this panel has no participant
+   *  roster to name against, and `docs/screens/session-detail.md`'s own
+   *  clinical boundary is that a restriction warning names the
+   *  restriction, never a diagnosis; a coach who needs the who goes to
+   *  Timetable, which already shows conflicts per athlete. */
+  restrictionConflictCount: number;
 };
 
 type DayOption = { date: string; weekday: string; domLabel: string };
@@ -143,6 +153,16 @@ export function SelectedSessionPanel({
           {enumLabel(session.type)}
         </span>
       </div>
+
+      {session.restrictionConflictCount > 0 ? (
+        <div className="note" style={{ margin: '0 0 14px', borderColor: 'var(--warn)' }}>
+          <div className="note-glyph">⚠</div>
+          <p className="note-text">
+            {session.restrictionConflictCount} athlete{session.restrictionConflictCount === 1 ? ' has' : 's have'} a
+            restriction this session may conflict with. See Timetable for who.
+          </p>
+        </div>
+      ) : null}
 
       {mode === 'read' ? (
         <div className="sg-panel-facts">

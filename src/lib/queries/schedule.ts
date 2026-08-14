@@ -1,7 +1,9 @@
 import type { FixtureRow, SessionRow } from '@/lib/types/database';
 import { addDays, anchorMdOffsetsToWeek, zonedTimeToUtcIso } from '@/lib/format';
 import { humanizeDbError } from '@/lib/writeErrors';
+import { fetchCurrentAvailability } from './availability';
 import { fetchGroupAthleteIds, type Db } from './groups';
+import { computeConflicts } from './restrictionConflicts';
 
 export type Session = Pick<
   SessionRow,
@@ -433,6 +435,14 @@ export type GridSession = Session & {
   groupIds: string[];
   groupNames: string[];
   athleteIds: string[];
+  /** Restriction-to-session-card linkage (integration audit Batch 3): how
+   *  many of this session's participants have a currently-open restriction
+   *  that `computeConflicts` (restrictionConflicts.ts) flags as relevant to
+   *  this session's type/intensity — the same heuristic TimetableSessionCard
+   *  already surfaces per-athlete. SelectedSessionPanel has no participant
+   *  roster to name names against, so this is a count for a summary banner,
+   *  not a per-athlete list; a coach who needs the who goes to Timetable. */
+  restrictionConflictCount: number;
 };
 
 export async function fetchWeekSessionsDetailed(
@@ -474,19 +484,40 @@ export async function fetchWeekSessionsDetailed(
   const groupNameById = new Map(allGroups.map((g) => [g.id, g.name]));
   const inScope = scope ? new Set(scope) : null;
 
+  // Restriction-to-session-card linkage: resolve every in-scope athlete's
+  // current restrictions once, batched, same pattern fetchTimetableDay
+  // already uses — not a new query shape, and not one call per session.
+  const athleteIdsBySession = new Map<string, Set<string>>();
+  const allAthleteIds = new Set<string>();
+  for (const session of sessions) {
+    const set = new Set<string>();
+    for (const p of participants.data ?? []) {
+      if (p.session_id !== session.id) continue;
+      if (p.athlete_id) set.add(p.athlete_id);
+      if (p.group_id) for (const id of groupMembers.get(p.group_id) ?? []) set.add(id);
+    }
+    athleteIdsBySession.set(session.id, set);
+    for (const id of set) {
+      if (!inScope || inScope.has(id)) allAthleteIds.add(id);
+    }
+  }
+  const availability = allAthleteIds.size > 0 ? await fetchCurrentAvailability(db, orgId, [...allAthleteIds]) : [];
+  const availByAthlete = new Map(availability.map((a) => [a.athlete_id, a]));
+
   return sessions.map((session) => {
-    const athleteIds = new Set<string>();
+    const athleteIds = athleteIdsBySession.get(session.id) ?? new Set<string>();
     const groupIdsForSession = new Set<string>();
     for (const p of participants.data ?? []) {
       if (p.session_id !== session.id) continue;
-      if (p.athlete_id) athleteIds.add(p.athlete_id);
-      if (p.group_id) {
-        groupIdsForSession.add(p.group_id);
-        for (const id of groupMembers.get(p.group_id) ?? []) athleteIds.add(id);
-      }
+      if (p.group_id) groupIdsForSession.add(p.group_id);
     }
     const counted = inScope ? [...athleteIds].filter((id) => inScope.has(id)) : [...athleteIds];
     const groupIdList = [...groupIdsForSession];
+    const restrictionConflictCount = counted.filter((id) => {
+      const avail = availByAthlete.get(id);
+      if (!avail) return false;
+      return computeConflicts(session.session_type, session.planned_rpe, avail.restrictions ?? []).length > 0;
+    }).length;
 
     return {
       ...session,
@@ -494,6 +525,7 @@ export async function fetchWeekSessionsDetailed(
       groupIds: groupIdList,
       groupNames: groupIdList.map((id) => groupNameById.get(id) ?? 'Unnamed group'),
       athleteIds: counted,
+      restrictionConflictCount,
     };
   });
 }

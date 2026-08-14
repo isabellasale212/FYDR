@@ -387,13 +387,18 @@ export async function fetchTimeline(
           sev: 'bad',
         });
       }
-      if (p.availability_status === 'modified' && !flagsForAthlete.length) {
+      // Restriction-to-session-card linkage (integration audit, Batch 3): this used to
+      // fire for any 'modified' athlete on any session, which flags a knee restriction
+      // on a swim-recovery session as loudly as on a contact training session. p.conflicts
+      // is fetchTimetableDay's own session-type-relevance check (computeConflicts in
+      // timetable.ts) — reuse it instead of the broader, imprecise availability_status test.
+      if (p.conflicts.length > 0 && !flagsForAthlete.length) {
         affected.push({
           athleteId: p.athlete_id,
           name: `${p.last_name}, ${p.first_name}`,
           initials: initialsOf(p.first_name, p.last_name),
           kind: 'Modified',
-          why: p.restrictions[0] ?? 'Training modification in place',
+          why: p.conflicts.join(', '),
           value: '—',
           sev: 'warn',
         });

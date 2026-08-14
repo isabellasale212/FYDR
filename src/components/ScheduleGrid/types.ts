@@ -28,6 +28,10 @@ export type BaseSession = {
    *  conflict instead of silently overwritten. See that function's own
    *  comment for the full reasoning. */
   updatedAt: string;
+  /** Restriction-to-session-card linkage (integration audit Batch 3) — see
+   *  GridSession's own field for what this counts and why it's a count
+   *  rather than a per-athlete list. */
+  restrictionConflictCount: number;
 };
 
 /** SCHEDULE-SPEC.md §9's `edits` overlay — only start, duration and group
@@ -66,5 +70,6 @@ export function toBaseSession(s: GridSession, timezone: string, decimalHourInTz:
     athleteIds: s.athleteIds,
     status: s.status,
     updatedAt: s.updated_at,
+    restrictionConflictCount: s.restrictionConflictCount,
   };
 }

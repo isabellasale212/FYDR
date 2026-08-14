@@ -127,7 +127,19 @@ export type InjuryDetail = {
 
 /** Non-clinical detail, safe for coach and medical alike. Reads `injuries` and
  *  `availability` directly rather than through fetchOpenInjuries (which excludes a
- *  closed injury — a closed one must still open here, just read-only for a coach). */
+ *  closed injury — a closed one must still open here, just read-only for a coach).
+ *
+ *  The athlete's current open availability row is only attributed to THIS injury
+ *  when it is actually linked to it (availability.injury_id = this injury's id) —
+ *  integration-audit majors, Bug 3. Before this check, this function joined
+ *  whatever the athlete's current open availability row happened to be onto
+ *  every injury page unconditionally, which meant a closed, long-healed injury
+ *  showed the status and restrictions belonging to that athlete's separate,
+ *  current, unrelated injury — live-reproduced. If a closed injury has no
+ *  currently-linked availability row (the common case: it closed with the
+ *  injury and nothing has referenced it since), availability_status and
+ *  restrictions are both null here and the page shows nothing, correctly,
+ *  rather than someone else's — or some other injury's — live data. */
 export async function fetchInjuryDetail(db: Db, orgId: string, injuryId: string): Promise<InjuryDetail | null> {
   const { data, error } = await db
     .from('injuries')
@@ -142,7 +154,8 @@ export async function fetchInjuryDetail(db: Db, orgId: string, injuryId: string)
   if (!data) return null;
 
   const availability = await fetchCurrentAvailability(db, orgId, [data.athlete_id]);
-  const avail = availability[0] ?? null;
+  const current = availability[0] ?? null;
+  const avail = current && current.injury_id === data.id ? current : null;
 
   return {
     id: data.id,
@@ -300,7 +313,32 @@ export type SetAvailabilityInput = {
  *  in this build: close the currently-open row, then open a new one, rather than
  *  updating the status in place. Not atomic (two statements, not one RPC) — a real,
  *  documented gap the same shape as the one already noted for session participant
- *  edits in schedule.ts. */
+ *  edits in schedule.ts.
+ *
+ *  restrictions is forced to null here whenever status is 'available',
+ *  regardless of what the client sent (integration-audit majors, Bug 1) — an
+ *  athlete who is fully available has nothing to restrict, and this is safe to
+ *  enforce unconditionally because neither availability RLS insert policy
+ *  (availability_medical_insert, 0012; availability_coach_insert_noninjury,
+ *  0042) places any constraint on the restrictions column.
+ *
+ *  reason_category is deliberately NOT forced to null the same way here, even
+ *  though the equivalent bug applies to it too. availability_coach_insert_
+ *  noninjury (0042) requires reason_category IS NOT NULL on every coach
+ *  insert, with no exception for status = 'available' — confirmed by
+ *  200_coach_noninjury_availability_test.sql §3c, which asserts that exact
+ *  insert (status 'available', reason_category absent) throws 42501 for a
+ *  coach. Forcing it null here unconditionally would make this function
+ *  itself throw on every coach-authored "clear to available" write, which is
+ *  a functional break, not a fix. The two call sites handle this
+ *  independently instead: SetAvailabilityForm (medical, no such RLS
+ *  constraint) nulls reasonCategory client-side before calling this function;
+ *  SetAvailabilityFormCoach cannot safely do the same and does not, by design
+ *  — see that component's own comment. AvailabilityBanner is the actual,
+ *  unconditional defense for this one: it checks status === 'available'
+ *  first and never reads reasonCategory at all once it does, so a leftover
+ *  coach-authored value sitting in this column can never reach an athlete's
+ *  screen regardless of what is stored here. */
 export async function setAvailability(
   db: Db,
   orgId: string,
@@ -316,11 +354,12 @@ export async function setAvailability(
     .is('effective_to', null);
   if (closeError) return { error: closeError.message };
 
+  const isAvailable = input.status === 'available';
   const { error } = await db.from('availability').insert({
     org_id: orgId,
     athlete_id: athleteId,
     status: input.status,
-    restrictions: input.restrictions.length > 0 ? input.restrictions : null,
+    restrictions: !isAvailable && input.restrictions.length > 0 ? input.restrictions : null,
     reason_category: input.reasonCategory,
     injury_id: input.injuryId,
     set_by: userId,

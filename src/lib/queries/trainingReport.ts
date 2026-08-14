@@ -219,6 +219,39 @@ function mean(xs: readonly (number | null)[]): number | null {
   return v.length > 0 ? v.reduce((s, x) => s + x, 0) / v.length : null;
 }
 
+/** The athlete's positional unit, and only that — group_memberships has no
+ *  group_type of its own, and CLAUDE.md's own rule ("an athlete may belong
+ *  to several" groups) means an unfiltered join onto it can resolve to any
+ *  group the athlete happens to be in (age, training, rehab, custom), not
+ *  the positional one every "vs unit" caption in this file claims. Every
+ *  positional-unit lookup in this file used to build its own unitByAthlete
+ *  from an unfiltered query, independently and inconsistently (some kept
+ *  the first membership seen, some the last) — one shared, correctly-
+ *  filtered implementation instead, matching playerProfile.ts's own
+ *  `groups!inner(..., group_type, deleted_at)` pattern for the same
+ *  problem on a single athlete. First positional membership wins if an
+ *  athlete somehow has two (group_memberships has no DB constraint
+ *  enforcing "at most one positional group", even though the product
+ *  never intends more than one). */
+async function fetchPositionalUnitByAthlete(db: Db, orgId: string, athleteIds?: readonly string[]): Promise<Map<string, string>> {
+  let q = db
+    .from('group_memberships')
+    .select('athlete_id, group_id, groups!inner(group_type, deleted_at)')
+    .eq('org_id', orgId)
+    .is('removed_at', null);
+  if (athleteIds) q = q.in('athlete_id', athleteIds);
+  const { data, error } = await q;
+  if (error) throw new Error(error.message);
+
+  const unitByAthlete = new Map<string, string>();
+  for (const m of data ?? []) {
+    const g = m.groups as unknown as { group_type: string; deleted_at: string | null };
+    if (g.group_type !== 'positional' || g.deleted_at !== null) continue;
+    if (!unitByAthlete.has(m.athlete_id)) unitByAthlete.set(m.athlete_id, m.group_id);
+  }
+  return unitByAthlete;
+}
+
 export async function fetchTrainingOverview(
   db: Db,
   orgId: string,
@@ -672,24 +705,19 @@ export async function fetchPositionComparison(
   const relevantSessionIds = (sessionRows ?? []).filter((s) => mode === 'training' || s.fixtures).map((s) => s.id);
   if (relevantSessionIds.length === 0) return { columns: [], rows: [], caption: 'No sessions of this type yet.' };
 
-  const [recordsRes, groupsRes, membershipsRes] = await Promise.all([
+  const [recordsRes, groupsRes, unitByAthlete] = await Promise.all([
     db
       .from('gps_records')
       .select('session_id, athlete_id, total_distance_m, high_speed_distance_m, high_intensity_efforts, duration_s')
       .eq('org_id', orgId)
       .in('session_id', relevantSessionIds),
     db.from('groups').select('id, name, sort_order').eq('org_id', orgId).eq('group_type', 'positional').is('deleted_at', null).order('sort_order'),
-    db.from('group_memberships').select('athlete_id, group_id').eq('org_id', orgId).is('removed_at', null),
+    fetchPositionalUnitByAthlete(db, orgId),
   ]);
   if (recordsRes.error) throw new Error(recordsRes.error.message);
   if (groupsRes.error) throw new Error(groupsRes.error.message);
-  if (membershipsRes.error) throw new Error(membershipsRes.error.message);
 
   const scoped = scope ? (recordsRes.data ?? []).filter((r) => scope.includes(r.athlete_id)) : (recordsRes.data ?? []);
-  const unitByAthlete = new Map<string, string>();
-  for (const m of membershipsRes.data ?? []) {
-    if (!unitByAthlete.has(m.athlete_id)) unitByAthlete.set(m.athlete_id, m.group_id);
-  }
 
   function perMin(v: number | null, d: number | null) {
     return v !== null && d ? v / (d / 60) : null;
@@ -765,7 +793,7 @@ export async function fetchAthleteComparison(
   const relevantSessionIds = (sessionRows ?? []).filter((s) => mode === 'training' || s.fixtures).map((s) => s.id);
   if (relevantSessionIds.length === 0) return { columns: [], rows: [], caption: 'No sessions of this type yet.' };
 
-  const [recordsRes, athletesRes, membershipsRes, groupsRes] = await Promise.all([
+  const [recordsRes, athletesRes, unitByAthlete, groupsRes] = await Promise.all([
     db
       .from('gps_records')
       .select('session_id, athlete_id, total_distance_m, high_speed_distance_m, high_intensity_efforts, duration_s')
@@ -773,12 +801,11 @@ export async function fetchAthleteComparison(
       .in('session_id', relevantSessionIds)
       .eq('session_id', currentSessionId),
     db.from('athletes').select('id, first_name, last_name').eq('org_id', orgId).is('deleted_at', null),
-    db.from('group_memberships').select('athlete_id, group_id').eq('org_id', orgId).is('removed_at', null),
+    fetchPositionalUnitByAthlete(db, orgId),
     db.from('groups').select('id, name').eq('org_id', orgId).eq('group_type', 'positional').is('deleted_at', null),
   ]);
   if (recordsRes.error) throw new Error(recordsRes.error.message);
   if (athletesRes.error) throw new Error(athletesRes.error.message);
-  if (membershipsRes.error) throw new Error(membershipsRes.error.message);
   if (groupsRes.error) throw new Error(groupsRes.error.message);
 
   const { data: histRaw, error: histErr } = await db
@@ -789,10 +816,6 @@ export async function fetchAthleteComparison(
   if (histErr) throw new Error(histErr.message);
 
   const athleteById = new Map((athletesRes.data ?? []).map((a) => [a.id, a]));
-  const unitByAthlete = new Map<string, string>();
-  for (const m of membershipsRes.data ?? []) {
-    if (!unitByAthlete.has(m.athlete_id)) unitByAthlete.set(m.athlete_id, m.group_id);
-  }
   const groupById = new Map((groupsRes.data ?? []).map((g) => [g.id, g.name]));
 
   function perMin(v: number | null, d: number | null) {
@@ -902,9 +925,9 @@ export async function fetchScatterData(
   if (!curRecords || curRecords.length === 0) return [];
 
   const athleteIds = curRecords.map((r) => r.athlete_id);
-  const [athletesRes, membershipsRes, groupsRes, histRes] = await Promise.all([
+  const [athletesRes, unitByAthlete, groupsRes, histRes] = await Promise.all([
     db.from('athletes').select('id, first_name, last_name').eq('org_id', orgId).in('id', athleteIds),
-    db.from('group_memberships').select('athlete_id, group_id').eq('org_id', orgId).in('athlete_id', athleteIds).is('removed_at', null),
+    fetchPositionalUnitByAthlete(db, orgId, athleteIds),
     db.from('groups').select('id, name').eq('org_id', orgId).eq('group_type', 'positional').is('deleted_at', null),
     db
       .from('gps_records')
@@ -916,12 +939,10 @@ export async function fetchScatterData(
       .in('athlete_id', athleteIds),
   ]);
   if (athletesRes.error) throw new Error(athletesRes.error.message);
-  if (membershipsRes.error) throw new Error(membershipsRes.error.message);
   if (groupsRes.error) throw new Error(groupsRes.error.message);
   if (histRes.error) throw new Error(histRes.error.message);
 
   const athleteById = new Map((athletesRes.data ?? []).map((a) => [a.id, a]));
-  const unitByAthlete = new Map((membershipsRes.data ?? []).map((m) => [m.athlete_id, m.group_id]));
   const unitNameById = new Map((groupsRes.data ?? []).map((g) => [g.id, g.name]));
 
   const groupedHist = new Map<string, number[]>();

@@ -218,9 +218,15 @@ export async function fetchAthleteAvailability(
   ]);
 
   const current = availability[0] ?? null;
+  // Same fix as injuries.ts's fetchInjuryDetail (integration-audit majors,
+  // Bug 3): an athlete can be unavailable for a non-injury reason (illness,
+  // personal leave) while separately having an unrelated open injury on
+  // record — falling back to `injuries[0]` in that case attached the wrong
+  // injury's body_area/expected_return to an availability row it isn't
+  // linked to. Null, not an arbitrary guess, when there's no real link.
   const injury = current?.injury_id
     ? (injuries.find((i) => i.id === current.injury_id) ?? null)
-    : (injuries[0] ?? null);
+    : null;
 
   return { current, injury };
 }

@@ -164,7 +164,12 @@ export default async function ProgrammesPage({
               <div className="card">
                 <p className="eyebrow">
                   {enumLabel(selected.programme_type)}
-                  {detail.blocks.length > 0 ? ` · Block 1 of ${detail.blocks.length}` : ''}
+                  {/* sessionsFlat below shows every block's sessions together,
+                   *  not one block at a time — "Block 1 of N" falsely implied
+                   *  only the first block was on screen. An honest count,
+                   *  disambiguated per-session by blockName where it matters
+                   *  (below, when there's more than one block). */}
+                  {detail.blocks.length > 0 ? ` · ${detail.blocks.length} block${detail.blocks.length === 1 ? '' : 's'}` : ''}
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                   <h2 style={{ margin: 0, fontSize: 19 }}>{selected.name}</h2>
@@ -213,6 +218,10 @@ export default async function ProgrammesPage({
                               {s.day_number !== null ? `Day ${s.day_number}` : 'Not day-anchored'}
                             </span>
                             {md ? <span className="pill pill-accent">{md}</span> : null}
+                            {/* Which block this session belongs to — only shown
+                             *  when there's more than one, since every block's
+                             *  sessions render together in this one flat list. */}
+                            {detail.blocks.length > 1 ? <span className="tiny">{s.blockName}</span> : null}
                           </div>
                           {exercises.length === 0 ? (
                             <p className="tiny" style={{ padding: '10px 12px' }}>

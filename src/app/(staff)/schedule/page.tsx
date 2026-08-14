@@ -18,18 +18,33 @@ export const metadata = { title: 'Schedule · Fydr' };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-const RANGE_FMT = new Intl.DateTimeFormat('en-GB', { day: 'numeric', timeZone: 'Europe/London' });
-const RANGE_MONTH_FMT = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'Europe/London' });
-const WEEKDAY_LONG_FMT = new Intl.DateTimeFormat('en-GB', { weekday: 'long', timeZone: 'Europe/London' });
-const DAY_MONTH_FMT = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', timeZone: 'Europe/London' });
+// Built per call, from the org's real timezone (organisations.timezone),
+// not a hardcoded one — these used to construct once at module load with
+// a literal 'Europe/London', so a non-UK org's week header, fixture day
+// label and matchday line all rendered in UK local time regardless of the
+// org's own configured zone. Uncached, matching format.ts's own
+// formatDate/formatTime etc., which construct fresh per call rather than
+// memoise by timezone.
+function rangeFmt(timezone: string) {
+  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', timeZone: timezone });
+}
+function rangeMonthFmt(timezone: string) {
+  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: timezone });
+}
+function weekdayLongFmt(timezone: string) {
+  return new Intl.DateTimeFormat('en-GB', { weekday: 'long', timeZone: timezone });
+}
+function dayMonthFmt(timezone: string) {
+  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', timeZone: timezone });
+}
 
-function weekRangeLabel(weekStart: string, weekEnd: string): string {
+function weekRangeLabel(weekStart: string, weekEnd: string, timezone: string): string {
   const start = new Date(`${weekStart}T12:00:00Z`);
   const end = new Date(`${weekEnd}T12:00:00Z`);
   const sameMonth = start.getUTCMonth() === end.getUTCMonth();
   return sameMonth
-    ? `${RANGE_FMT.format(start)} – ${RANGE_MONTH_FMT.format(end)}`
-    : `${RANGE_MONTH_FMT.format(start)} – ${RANGE_MONTH_FMT.format(end)}`;
+    ? `${rangeFmt(timezone).format(start)} – ${rangeMonthFmt(timezone).format(end)}`
+    : `${rangeMonthFmt(timezone).format(start)} – ${rangeMonthFmt(timezone).format(end)}`;
 }
 
 /** SCHEDULE-SPEC.md, the grid rebuild of the week-plan half of what
@@ -67,12 +82,19 @@ export default async function SchedulePage({ searchParams }: { searchParams: Sea
   const timetableHref = groupIds.length > 0 ? `/timetable?groups=${groupIds.join(',')}` : '/timetable';
 
   const matchDayLabel = weekFixtures[0]
-    ? `MD ${WEEKDAY_LONG_FMT.format(new Date(weekFixtures[0].kickoff_at)).toUpperCase()} ${new Date(
-        weekFixtures[0].kickoff_at,
-      ).getUTCDate()} · ${weekFixtures[0].home_away === 'away' ? 'AT' : 'V'} ${weekFixtures[0].opponent.toUpperCase()}`
+    ? (() => {
+        // The fixture's real local calendar day/date, not the UTC one —
+        // kickoff_at is a stored UTC instant, and a kickoff between
+        // 23:00-00:00 UTC (00:00-01:00 local in BST) is the NEXT local
+        // day. getUTCDate() read the UTC day-of-month directly; both
+        // fields now go through the org's real timezone, like every
+        // other formatter here.
+        const kickoff = new Date(weekFixtures[0]!.kickoff_at);
+        return `MD ${weekdayLongFmt(timezone).format(kickoff).toUpperCase()} ${rangeFmt(timezone).format(kickoff)} · ${weekFixtures[0]!.home_away === 'away' ? 'AT' : 'V'} ${weekFixtures[0]!.opponent.toUpperCase()}`;
+      })()
     : null;
   const eyebrow = [
-    `WEEK OF ${WEEKDAY_LONG_FMT.format(new Date(`${weekStart}T12:00:00Z`)).toUpperCase()} ${DAY_MONTH_FMT.format(
+    `WEEK OF ${weekdayLongFmt(timezone).format(new Date(`${weekStart}T12:00:00Z`)).toUpperCase()} ${dayMonthFmt(timezone).format(
       new Date(`${weekStart}T12:00:00Z`),
     ).toUpperCase()}`,
     matchDayLabel,
@@ -98,7 +120,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Sea
         weekStart={weekStart}
         days={days}
         today={today}
-        weekRangeLabel={weekRangeLabel(weekStart, weekEnd)}
+        weekRangeLabel={weekRangeLabel(weekStart, weekEnd, timezone)}
         eyebrow={eyebrow}
         prevHref={dateQuery(prevWeek)}
         nextHref={dateQuery(nextWeek)}

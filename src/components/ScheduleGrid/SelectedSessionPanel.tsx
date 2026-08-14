@@ -5,7 +5,12 @@ import { EXPECTS, TYPE_STYLE, clockLabel, type DbSessionType } from '@/lib/sched
 import { enumLabel, mdLabel } from '@/lib/format';
 import type { GroupOption } from './types';
 
-const DOM_FMT = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'Europe/London' });
+// Built per call from the org's real timezone, not a hardcoded one — see
+// schedule/page.tsx's own weekdayLongFmt/dayMonthFmt for the same fix and
+// its reasoning.
+function domFmt(timezone: string) {
+  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: timezone });
+}
 
 const SESSION_TYPES: DbSessionType[] = [
   'training',
@@ -46,6 +51,7 @@ type DayOption = { date: string; weekday: string; domLabel: string };
 
 type Props = {
   mode: 'read' | 'edit';
+  timezone: string;
   session: PanelSession | null;
   groups: readonly GroupOption[];
   dayOptions: readonly DayOption[];
@@ -77,6 +83,7 @@ type Props = {
  *  this a draft; is it the not-yet-staged form) can never drift apart. */
 export function SelectedSessionPanel({
   mode,
+  timezone,
   session,
   groups,
   dayOptions,
@@ -117,7 +124,7 @@ export function SelectedSessionPanel({
   const end = session.start + session.mins / 60;
   const groupLabel = session.groupNames.length > 0 ? session.groupNames.join(' + ') : 'Whole squad';
   const isStaffOnly = session.athleteIds.length === 0;
-  const weekday = new Intl.DateTimeFormat('en-GB', { weekday: 'long', timeZone: 'Europe/London' }).format(
+  const weekday = new Intl.DateTimeFormat('en-GB', { weekday: 'long', timeZone: timezone }).format(
     new Date(`${session.dow}T12:00:00Z`),
   );
 
@@ -138,7 +145,7 @@ export function SelectedSessionPanel({
             <div className="sg-panel-name">{session.title}</div>
           )}
           <div className="sg-panel-meta mono">
-            {weekday} {DOM_FMT.format(new Date(`${session.dow}T12:00:00Z`))} · {clockLabel(session.start)} –{' '}
+            {weekday} {domFmt(timezone).format(new Date(`${session.dow}T12:00:00Z`))} · {clockLabel(session.start)} –{' '}
             {clockLabel(end)} · {session.location ?? 'Location not set'}
           </div>
         </div>
@@ -382,7 +389,7 @@ export function SelectedSessionPanel({
         <p className="sg-preview-foot">
           {isStaffOnly
             ? 'Staff only · this session is never published to the athlete app'
-            : `Publishes to ${groupLabel} · appears under Today on the morning of ${weekday} ${DOM_FMT.format(new Date(`${session.dow}T12:00:00Z`))}`}
+            : `Publishes to ${groupLabel} · appears under Today on the morning of ${weekday} ${domFmt(timezone).format(new Date(`${session.dow}T12:00:00Z`))}`}
         </p>
       </div>
     </div>

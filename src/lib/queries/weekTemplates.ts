@@ -3,7 +3,7 @@ import { humanizeDbError } from '@/lib/writeErrors';
 import type { Db } from './groups';
 import type { Json } from '../types/database';
 import { mondayOf, rangeBounds } from './schedule';
-import { dateInTz, daysBetween } from '../format';
+import { dateInTz, daysBetween, zonedTimeToUtcIso } from '../format';
 
 /* screens/md-planner.md, cut down hard from a screen the spec's own header
  * calls "provisional. Awaiting client design photographs" and closes with
@@ -522,7 +522,13 @@ export async function applyTemplate(
     fixture_id: item.mdOffset === 0 ? input.fixtureId : null,
     session_type: item.session.type,
     title: item.session.title,
-    starts_at: `${item.day}T${item.session.startTime}:00Z`,
+    // item.session.startTime is the template's local wall-clock time
+    // ("09:00" means 9am at the club, not 9am UTC) — appending a literal
+    // `Z` stored it as if the org's local time WERE UTC. zonedTimeToUtcIso
+    // is the real conversion, the same one NewSessionForm.tsx and
+    // ScheduleWorkspace.tsx already use for every other session write, and
+    // the one weekBounds just above already uses for this same timezone.
+    starts_at: zonedTimeToUtcIso(item.day, item.session.startTime, timezone),
     duration_min: item.session.durationMin,
     location: item.session.location,
     md_offset: item.mdOffset,

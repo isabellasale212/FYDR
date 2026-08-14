@@ -55,8 +55,15 @@ function clamp(n: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, n));
 }
 
-const WEEKDAY_FMT = new Intl.DateTimeFormat('en-GB', { weekday: 'short', timeZone: 'Europe/London' });
-const DOM_FMT = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'Europe/London' });
+// Built per call from the org's real timezone, not a hardcoded one — see
+// schedule/page.tsx's own weekdayLongFmt/dayMonthFmt for the same fix and
+// its reasoning.
+function weekdayFmt(timezone: string) {
+  return new Intl.DateTimeFormat('en-GB', { weekday: 'short', timeZone: timezone });
+}
+function domFmt(timezone: string) {
+  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: timezone });
+}
 
 /** SCHEDULE-SPEC.md, the full grid rebuild. §9's editing model, ported for
  *  real: `edits`/`added`/`removed` are held as genuine client-only state —
@@ -249,8 +256,8 @@ export function ScheduleWorkspace({
 
     dayColumns.push({
       date,
-      weekday: WEEKDAY_FMT.format(dateObj),
-      domLabel: DOM_FMT.format(dateObj),
+      weekday: weekdayFmt(timezone).format(dateObj),
+      domLabel: domFmt(timezone).format(dateObj),
       isToday: date === today,
       isPast: date < today,
       isMatch: daySessions.some((s) => s.type === 'match'),
@@ -548,8 +555,8 @@ export function ScheduleWorkspace({
   const defaultDraftDay = days.includes(today) ? today : (days[0] ?? weekStart);
   const dayOptions = days.map((d) => ({
     date: d,
-    weekday: WEEKDAY_FMT.format(new Date(`${d}T12:00:00Z`)),
-    domLabel: DOM_FMT.format(new Date(`${d}T12:00:00Z`)),
+    weekday: weekdayFmt(timezone).format(new Date(`${d}T12:00:00Z`)),
+    domLabel: domFmt(timezone).format(new Date(`${d}T12:00:00Z`)),
   }));
 
   return (
@@ -716,6 +723,7 @@ export function ScheduleWorkspace({
       <div className="sg-panels">
         <SelectedSessionPanel
           mode={mode}
+          timezone={timezone}
           session={panelSession}
           groups={groups}
           dayOptions={dayOptions}

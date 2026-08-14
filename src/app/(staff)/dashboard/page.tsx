@@ -18,7 +18,7 @@ import {
 } from '@/lib/queries/dashboard';
 import { fetchGroups } from '@/lib/queries/groups';
 import { mondayOf } from '@/lib/queries/schedule';
-import { enumLabel, formatDate, formatLongDate, todayIso } from '@/lib/format';
+import { addDays, enumLabel, formatDate, formatLongDate, todayIso } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
@@ -117,7 +117,16 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
   const wallClockToday = todayIso(timezone);
   const effectiveToday = await fetchEffectiveToday(db, orgId, wallClockToday);
   const weekStart = mondayOf(effectiveToday);
-  const selectedDay = typeof sp.day === 'string' && sp.day >= weekStart && sp.day <= weekStart ? sp.day : (typeof sp.day === 'string' ? sp.day : effectiveToday);
+  // fetchWeekStrip renders 6 days (Monday-Saturday, i = 0..5) — weekEnd here
+  // has to match that, not weekStart itself. The old bounds check compared
+  // sp.day against weekStart on both ends (`sp.day >= weekStart && sp.day <=
+  // weekStart`, equivalent to `sp.day === weekStart`), which is never true
+  // for a real ?day= value from later in the week, so it always fell
+  // through to the unconditional `typeof sp.day === 'string' ? sp.day :
+  // effectiveToday` — accepting any string, including a stale ?day= from a
+  // different week, with no bounds check at all.
+  const weekEnd = addDays(weekStart, 5);
+  const selectedDay = typeof sp.day === 'string' && sp.day >= weekStart && sp.day <= weekEnd ? sp.day : effectiveToday;
 
   const [groups, stats, week, timeline, readiness, squad, untied, outstanding] = await Promise.all([
     fetchGroups(db, orgId),

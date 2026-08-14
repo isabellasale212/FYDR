@@ -98,21 +98,18 @@ export async function computeRetentionPreview(orgId: string): Promise<RetentionP
   const currentSeasonRes = await admin.from('seasons').select('id, starts_on').eq('org_id', orgId).eq('is_current', true).is('deleted_at', null).maybeSingle();
   const completedSeasonsRes = await admin
     .from('seasons')
-    .select('id')
+    .select('id, starts_on')
     .eq('org_id', orgId)
     .eq('is_current', false)
     .is('deleted_at', null)
-    .lt('ends_on', currentSeasonRes.data?.starts_on ?? '9999-12-31');
-  const completedSeasonCount = completedSeasonsRes.data?.length ?? 0;
-
-  const [wellness, training, gymSessions, gps, testResultsCount, bodyComp] = await Promise.all([
-    admin.from('wellness_entries').select('id', { count: 'exact', head: true }).eq('org_id', orgId),
-    admin.from('training_entries').select('id', { count: 'exact', head: true }).eq('org_id', orgId),
-    admin.from('gym_session_logs').select('id', { count: 'exact', head: true }).eq('org_id', orgId),
-    admin.from('gps_records').select('id', { count: 'exact', head: true }).eq('org_id', orgId),
-    admin.from('test_results').select('id', { count: 'exact', head: true }).eq('org_id', orgId).is('deleted_at', null),
-    admin.from('body_composition').select('id', { count: 'exact', head: true }).eq('org_id', orgId),
-  ]);
+    .lt('ends_on', currentSeasonRes.data?.starts_on ?? '9999-12-31')
+    // Most-recent-first, so index N is "the (N+1)-th most recent completed
+    // season" — index 2 is the 3rd most recent (the last one kept
+    // alongside the current season for the 3-season categories), index 4
+    // the 5th most recent (same, for the 5-season categories).
+    .order('starts_on', { ascending: false });
+  const completedSeasons = completedSeasonsRes.data ?? [];
+  const completedSeasonCount = completedSeasons.length;
 
   // Performance-data categories need 3 (or 5) *completed* seasons to have
   // actually elapsed before anything is even theoretically eligible — a
@@ -121,6 +118,35 @@ export async function computeRetentionPreview(orgId: string): Promise<RetentionP
   // because the window genuinely hasn't closed on anything yet.
   const performanceEligible = completedSeasonCount > 3;
   const testEligible = completedSeasonCount > 5;
+  // The real cutoff date: anything on/after this date belongs to the
+  // current season or one of the N most recent completed ones, and stays
+  // out of the count. Below it is what "older than the Nth-most-recent
+  // completed season" actually means as a real date, not just a label —
+  // previously the counts below ran with no cutoff applied at all (every
+  // row in the table, regardless of season), while the label claimed one.
+  const performanceCutoff = performanceEligible ? completedSeasons[2]!.starts_on : null;
+  const testCutoff = testEligible ? completedSeasons[4]!.starts_on : null;
+
+  const [wellness, training, gymSessions, gps, testResultsCount, bodyComp] = await Promise.all([
+    performanceCutoff
+      ? admin.from('wellness_entries').select('id', { count: 'exact', head: true }).eq('org_id', orgId).lt('entry_date', performanceCutoff)
+      : { count: 0 },
+    performanceCutoff
+      ? admin.from('training_entries').select('id', { count: 'exact', head: true }).eq('org_id', orgId).lt('entry_date', performanceCutoff)
+      : { count: 0 },
+    performanceCutoff
+      ? admin.from('gym_session_logs').select('id', { count: 'exact', head: true }).eq('org_id', orgId).lt('entry_date', performanceCutoff)
+      : { count: 0 },
+    performanceCutoff
+      ? admin.from('gps_records').select('id', { count: 'exact', head: true }).eq('org_id', orgId).lt('record_date', performanceCutoff)
+      : { count: 0 },
+    testCutoff
+      ? admin.from('test_results').select('id', { count: 'exact', head: true }).eq('org_id', orgId).is('deleted_at', null).lt('test_date', testCutoff)
+      : { count: 0 },
+    testCutoff
+      ? admin.from('body_composition').select('id', { count: 'exact', head: true }).eq('org_id', orgId).lt('measured_on', testCutoff)
+      : { count: 0 },
+  ]);
 
   return {
     orgId,
@@ -140,20 +166,20 @@ export async function computeRetentionPreview(orgId: string): Promise<RetentionP
       },
       {
         category: 'Wellness, training, gym logs (current + 3 completed seasons)',
-        count: performanceEligible ? (wellness.count ?? 0) + (training.count ?? 0) + (gymSessions.count ?? 0) : 0,
-        cutoffDescription: performanceEligible ? 'Older than the 4th-most-recent completed season' : `Not yet eligible — this club has ${completedSeasonCount} completed season${completedSeasonCount === 1 ? '' : 's'} on record, needs more than 3`,
+        count: (wellness.count ?? 0) + (training.count ?? 0) + (gymSessions.count ?? 0),
+        cutoffDescription: performanceCutoff ? `Before ${performanceCutoff} (start of the 3rd-most-recent completed season)` : `Not yet eligible — this club has ${completedSeasonCount} completed season${completedSeasonCount === 1 ? '' : 's'} on record, needs more than 3`,
         automated: false,
       },
       {
         category: 'GPS records (current + 3 completed seasons)',
-        count: performanceEligible ? (gps.count ?? 0) : 0,
-        cutoffDescription: performanceEligible ? 'Older than the 4th-most-recent completed season' : `Not yet eligible — ${completedSeasonCount} completed season${completedSeasonCount === 1 ? '' : 's'} on record`,
+        count: gps.count ?? 0,
+        cutoffDescription: performanceCutoff ? `Before ${performanceCutoff} (start of the 3rd-most-recent completed season)` : `Not yet eligible — ${completedSeasonCount} completed season${completedSeasonCount === 1 ? '' : 's'} on record`,
         automated: false,
       },
       {
         category: 'Test results, body composition (current + 5 completed seasons)',
-        count: testEligible ? (testResultsCount.count ?? 0) + (bodyComp.count ?? 0) : 0,
-        cutoffDescription: testEligible ? 'Older than the 6th-most-recent completed season' : `Not yet eligible — ${completedSeasonCount} completed season${completedSeasonCount === 1 ? '' : 's'} on record`,
+        count: (testResultsCount.count ?? 0) + (bodyComp.count ?? 0),
+        cutoffDescription: testCutoff ? `Before ${testCutoff} (start of the 5th-most-recent completed season)` : `Not yet eligible — ${completedSeasonCount} completed season${completedSeasonCount === 1 ? '' : 's'} on record`,
         automated: false,
       },
     ],

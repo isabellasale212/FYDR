@@ -44,10 +44,16 @@ export default async function ClinicalReviewPage({ params }: { params: Promise<{
       </p>
 
       {injuries.length === 0 ? (
-        <p className="cap">This athlete has no clinical records — nothing to review. Return to the queue to release the pack.</p>
-      ) : (
-        <ClinicalReviewForm orgId={orgId} requestId={requestId} injuries={injuries} timezone={timezone} />
-      )}
+        // Deadlock fix: this used to be the only thing rendered here, with
+        // no way to actually reach 'reviewed' — release/route.ts refuses
+        // to release until status is 'reviewed', and markRequestReviewed
+        // was only ever called from the form below, which didn't render at
+        // all when there was nothing to review. The form still renders now
+        // (see its own header comment for the confirm button that unblocks
+        // this).
+        <p className="cap">This athlete has no clinical records — nothing to review. Confirm below to make the pack ready to release.</p>
+      ) : null}
+      <ClinicalReviewForm orgId={orgId} requestId={requestId} injuries={injuries} timezone={timezone} />
     </>
   );
 }

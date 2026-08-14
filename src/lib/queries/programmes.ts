@@ -8,8 +8,8 @@ import type {
   ProgrammeType,
 } from '@/lib/types/database';
 import type { GymSetLogInput } from '@/lib/validation/gym';
+import { todayIso } from '@/lib/format';
 import { humanizeDbError } from '@/lib/writeErrors';
-import { todayIso } from '../format';
 import type { Db } from './groups';
 
 /* screens/gym-programmes.md, screens/programme-builder.md, screens/my-programme.md
@@ -811,11 +811,15 @@ export async function startOrGetSessionLog(
   startedAt: string | null;
   error: string | null;
 }> {
-  // The org's real local today, not the server's UTC clock — an athlete
-  // logging a gym session just after midnight local time (but still
-  // "yesterday" in UTC, or vice versa) needs "today's" open log matched
-  // against their own local day, same bug class as schedule.ts's own
-  // dayBounds()/rangeBounds().
+  // The org's local today, not the server's UTC one — every sibling write
+  // path (submitWellnessEntry, submitTrainingEntry, submitCheckin) takes
+  // entry_date from todayIso(timezone) via its caller; this was the one
+  // that computed its own date off the server clock. For an org with a
+  // positive UTC offset, an early-morning local session logged before the
+  // UTC day rolls over would be written under yesterday's date, and could
+  // silently create a second in_progress row for the same real session if
+  // the athlete reopened this page after the UTC date DID roll over (the
+  // .eq('entry_date', today) lookup below would then miss the first row).
   const today = todayIso(timezone);
   const { data: existing, error: findErr } = await db
     .from('gym_session_logs')

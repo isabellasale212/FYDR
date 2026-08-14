@@ -170,6 +170,19 @@ export function ClinicalReviewForm({ orgId, requestId, timezone, injuries }: Pro
         <button className="btn-primary" type="submit" disabled={busy || !allDraftsComplete}>
           {busy ? 'Saving…' : 'Submit decisions'}
         </button>
+      ) : injuries.length === 0 ? (
+        // No clinical record exists for this athlete at all — there is
+        // nothing to decide, but the request still needs an explicit
+        // reviewer action to reach 'reviewed' (onSubmit's loop over
+        // `pending` already no-ops correctly here; markRequestReviewed
+        // still runs unconditionally after it). Without this button the
+        // request had no path off pending_review — release/route.ts
+        // refuses release until status is 'reviewed', and the only other
+        // writer of that status was this form's own submit, gated behind
+        // `pending.length > 0` above.
+        <button className="btn-primary" type="submit" disabled={busy}>
+          {busy ? 'Saving…' : 'Confirm — nothing to review'}
+        </button>
       ) : null}
     </form>
   );

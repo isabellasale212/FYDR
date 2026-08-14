@@ -110,6 +110,7 @@ export async function fetchMyOutstanding(
       .eq('entry_date', date),
   ]);
 
+  if (wellness.error) throw new Error(wellness.error.message);
   if (training.error) throw new Error(training.error.message);
 
   const ratedSessions = new Set(

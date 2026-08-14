@@ -82,7 +82,15 @@ export async function fetchInjuriesList(db: Db, orgId: string, groupIds: readonl
       .from('athletes')
       .select('id, first_name, last_name')
       .eq('org_id', orgId)
-      .is('deleted_at', null),
+      .is('deleted_at', null)
+      // docs/screens/injury-dashboard.md: "An athlete leaves the club with
+      // an open injury -> Excluded from the default board" — every sibling
+      // athlete query (fetchScopedAthletes, squad.ts, the rehab board) already
+      // excludes left_club; this one didn't, so a former athlete's still-open
+      // injury kept showing on the board indefinitely. No "include former
+      // athletes" toggle exists in this build (that's a real, separate
+      // feature gap, not invented here).
+      .neq('status', 'left_club'),
   ]);
   if (athletesRes.error) throw new Error(athletesRes.error.message);
 

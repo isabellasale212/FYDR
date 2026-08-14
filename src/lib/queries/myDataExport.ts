@@ -85,7 +85,7 @@ export type MyDataExport = {
 };
 
 export async function fetchMyDataExport(db: Db, orgId: string, athleteId: string): Promise<MyDataExport> {
-  const [profileRes, wellnessRes, trainingRes, gymSetsRes, checkins, targetsRes] = await Promise.all([
+  const [profileRes, wellnessRes, trainingRes, gymSessionLogsRes, checkins, targetsRes] = await Promise.all([
     db
       .from('athletes')
       .select('first_name, last_name, preferred_name, date_of_birth, position, squad_number, dominant_side, height_cm')
@@ -102,10 +102,9 @@ export async function fetchMyDataExport(db: Db, orgId: string, athleteId: string
       .eq('athlete_id', athleteId)
       .order('entry_date'),
     db
-      .from('gym_set_logs')
-      .select('set_number, reps_completed, load_kg, rpe, side, logged_at, exercises(name), gym_session_logs!inner(athlete_id, entry_date)')
-      .eq('gym_session_logs.athlete_id', athleteId)
-      .order('logged_at'),
+      .from('gym_session_logs')
+      .select('id, entry_date')
+      .eq('athlete_id', athleteId),
     fetchRecentCheckins(db, athleteId, '2000-01-01', '2100-01-01'),
     db
       .from('nutrition_targets')
@@ -117,13 +116,51 @@ export async function fetchMyDataExport(db: Db, orgId: string, athleteId: string
 
   if (wellnessRes.error) throw new Error(wellnessRes.error.message);
   if (trainingRes.error) throw new Error(trainingRes.error.message);
-  if (gymSetsRes.error) throw new Error(gymSetsRes.error.message);
+  if (gymSessionLogsRes.error) throw new Error(gymSessionLogsRes.error.message);
   if (targetsRes.error) throw new Error(targetsRes.error.message);
 
   const sessionIds = [...new Set((trainingRes.data ?? []).map((r) => r.session_id).filter((id): id is string => id !== null))];
   const sessionsRes = sessionIds.length > 0 ? await db.from('sessions').select('id, title').in('id', sessionIds) : { data: [], error: null };
   if (sessionsRes.error) throw new Error(sessionsRes.error.message);
   const sessionTitleById = new Map((sessionsRes.data ?? []).map((s) => [s.id, s.title]));
+
+  // gym_set_logs_current (ADR-005 rule 3), not the base table — a corrected
+  // set's superseded original must never appear alongside its live
+  // revision, the same discipline wellness/training already get from their
+  // own _current views. Looked up as gym_session_logs -> gym_set_logs_current
+  // -> exercises in three plain steps, not one embedded query: the view has
+  // no foreign keys of its own, so PostgREST's embedded-join detection
+  // against it is unreliable (same reasoning, same pattern, as
+  // programmes.ts's fetchGymSessionSetDetails).
+  const gymSessionLogIds = (gymSessionLogsRes.data ?? []).map((r) => r.id);
+  const entryDateByLogId = new Map((gymSessionLogsRes.data ?? []).map((r) => [r.id, r.entry_date]));
+
+  let gymSetLogRows: {
+    gym_session_log_id: string | null;
+    exercise_id: string | null;
+    set_number: number | null;
+    reps_completed: number | null;
+    load_kg: number | null;
+    rpe: number | null;
+    side: string | null;
+  }[] = [];
+  if (gymSessionLogIds.length > 0) {
+    const { data, error } = await db
+      .from('gym_set_logs_current')
+      .select('gym_session_log_id, exercise_id, set_number, reps_completed, load_kg, rpe, side, logged_at')
+      .in('gym_session_log_id', gymSessionLogIds)
+      .order('logged_at');
+    if (error) throw new Error(error.message);
+    gymSetLogRows = data ?? [];
+  }
+
+  const exerciseIds = [...new Set(gymSetLogRows.map((r) => r.exercise_id).filter((id): id is string => id !== null))];
+  let exerciseNameById = new Map<string, string>();
+  if (exerciseIds.length > 0) {
+    const { data, error } = await db.from('exercises').select('id, name').in('id', exerciseIds);
+    if (error) throw new Error(error.message);
+    exerciseNameById = new Map((data ?? []).map((e) => [e.id, e.name]));
+  }
 
   const wellness: MyWellnessRow[] = (wellnessRes.data ?? [])
     .filter((r): r is typeof r & { entry_date: string } => r.entry_date !== null)
@@ -150,15 +187,17 @@ export async function fetchMyDataExport(db: Db, orgId: string, athleteId: string
       submitted_at: r.submitted_at,
     }));
 
-  const gymSets: MyGymSetRow[] = (gymSetsRes.data ?? []).map((r) => ({
-    entry_date: (r.gym_session_logs as { entry_date: string }).entry_date,
-    exercise_name: (r.exercises as { name: string } | null)?.name ?? 'Unknown exercise',
-    set_number: r.set_number,
-    reps_completed: r.reps_completed,
-    load_kg: r.load_kg,
-    rpe: r.rpe,
-    side: r.side,
-  }));
+  const gymSets: MyGymSetRow[] = gymSetLogRows
+    .filter((r): r is typeof r & { gym_session_log_id: string; set_number: number } => r.gym_session_log_id !== null && r.set_number !== null)
+    .map((r) => ({
+      entry_date: entryDateByLogId.get(r.gym_session_log_id) ?? '',
+      exercise_name: (r.exercise_id && exerciseNameById.get(r.exercise_id)) ?? 'Unknown exercise',
+      set_number: r.set_number,
+      reps_completed: r.reps_completed,
+      load_kg: r.load_kg,
+      rpe: r.rpe,
+      side: r.side,
+    }));
 
   const nutritionTargets: MyNutritionTargetRow[] = targetsRes.data ?? [];
 

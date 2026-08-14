@@ -309,10 +309,25 @@ export function CheckInForm({
       ) : null}
 
       <div className="subm">
+        {/* submitMutation.isPending guards the plain path the same way
+         * correctionMutation.isPending already guards the correction path
+         * above: a fast double-tap fires two onSubmit calls, each minting its
+         * own crypto.randomUUID() and enqueuing a distinct outbox row (see
+         * lib/outbox.ts) before either network call resolves. Without this,
+         * both rows race wellness_entries_one_live_per_day; the loser's
+         * insert dies on the unique index and, before OutboxFlusher's
+         * disambiguation below, was dequeued as "delivered" anyway — a real
+         * submission silently dropped with no trace. Disabling on isPending
+         * makes the second tap impossible to register as a second attempt in
+         * the first place, same as the correction path's existing guard. */}
         <button
           className="btn-primary"
           type="submit"
-          disabled={correction ? correctionMutation.isPending : remaining > 0}
+          disabled={
+            correction
+              ? correctionMutation.isPending
+              : remaining > 0 || submitMutation.isPending
+          }
           style={{ width: '100%' }}
         >
           {correction

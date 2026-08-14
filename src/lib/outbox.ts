@@ -17,26 +17,49 @@ import type { GymSetLogInput } from '@/lib/validation/gym';
  * plain idempotent inserts. Corrections (the revise_* RPCs) are not queued —
  * a replayed revise cannot tell "my own first attempt landed" from "already
  * corrected by someone else" (both raise entry_not_revisable), so those go
- * through the bounded online path in lib/writeErrors.ts instead. */
+ * through the bounded online path in lib/writeErrors.ts instead.
+ *
+ * "Plain idempotent insert" is only true when this item's own id is the one
+ * that ends up live. Wellness/training/nutrition each carry a `conflictAt`
+ * (integration-audit majors fix) set when it is not: OutboxFlusher's
+ * disambiguation found a DIFFERENT id already holding this item's slot, so
+ * this exact content never landed anywhere. Every mutator here still treats
+ * that item like any other queued row — it is data, not a sentinel to prune —
+ * OutboxFlusher is what reads conflictAt to skip retrying it and to surface
+ * it to the athlete instead of silently discarding it. */
 
 const KEY = 'fydr-outbox-wellness';
 const TRAINING_KEY = 'fydr-outbox-training';
 const NUTRITION_KEY = 'fydr-outbox-nutrition';
 const GYM_SET_KEY = 'fydr-outbox-gym-set';
 
+/** conflictAt is set only by OutboxFlusher's disambiguation, never here: a
+ *  flush attempt hit a duplicate-key error AND a targeted lookup against the
+ *  live *_current row for this item's own (athlete_id, entry_date[, session/
+ *  week]) slot found a DIFFERENT id already live there — a genuine second
+ *  submission for the same slot, not a safe replay of this one (see
+ *  OutboxFlusher.tsx's resolve*Conflict functions). Once set, the item is
+ *  left in the queue — CLAUDE.md rule 6, this content must not be destroyed
+ *  silently — but excluded from automatic retry, since retrying would just
+ *  repeat the same collision on every flush. It is cleared only by the
+ *  athlete's own "Discard" action after seeing the visible conflict banner
+ *  (dequeue* doubles as that discard — same operation, different meaning). */
 export type PendingWellness = {
   input: WellnessEntryInput;
   queuedAt: string;
+  conflictAt?: string;
 };
 
 export type PendingTraining = {
   input: TrainingEntryInput;
   queuedAt: string;
+  conflictAt?: string;
 };
 
 export type PendingNutritionCheckin = {
   input: NutritionCheckinInput;
   queuedAt: string;
+  conflictAt?: string;
 };
 
 export type PendingGymSetLog = {
@@ -83,6 +106,20 @@ export function pendingWellness(): PendingWellness[] {
   return read<PendingWellness>(KEY);
 }
 
+/** See PendingWellness's own conflictAt comment. Idempotent: a repeat call
+ *  (the item's next flush attempt is skipped once flagged, but keeps this
+ *  cheap to call defensively) does not reset the timestamp. */
+export function markWellnessConflict(id: string): void {
+  write(
+    KEY,
+    read<PendingWellness>(KEY).map((item) =>
+      item.input.id === id
+        ? { ...item, conflictAt: item.conflictAt ?? new Date().toISOString() }
+        : item,
+    ),
+  );
+}
+
 export function enqueueTraining(input: TrainingEntryInput): void {
   const items = read<PendingTraining>(TRAINING_KEY).filter(
     (item) => item.input.id !== input.id,
@@ -100,6 +137,19 @@ export function dequeueTraining(id: string): void {
 
 export function pendingTraining(): PendingTraining[] {
   return read<PendingTraining>(TRAINING_KEY);
+}
+
+/** See PendingWellness's conflictAt comment; identical reasoning for the
+ *  (athlete_id, entry_date, session_id) slot. */
+export function markTrainingConflict(id: string): void {
+  write(
+    TRAINING_KEY,
+    read<PendingTraining>(TRAINING_KEY).map((item) =>
+      item.input.id === id
+        ? { ...item, conflictAt: item.conflictAt ?? new Date().toISOString() }
+        : item,
+    ),
+  );
 }
 
 /* The weekly nutrition check-in qualifies for the queue on the same grounds
@@ -126,6 +176,19 @@ export function dequeueNutritionCheckin(id: string): void {
 
 export function pendingNutritionCheckins(): PendingNutritionCheckin[] {
   return read<PendingNutritionCheckin>(NUTRITION_KEY);
+}
+
+/** See PendingWellness's conflictAt comment; identical reasoning for the
+ *  (athlete_id, week_start) slot. */
+export function markNutritionCheckinConflict(id: string): void {
+  write(
+    NUTRITION_KEY,
+    read<PendingNutritionCheckin>(NUTRITION_KEY).map((item) =>
+      item.input.id === id
+        ? { ...item, conflictAt: item.conflictAt ?? new Date().toISOString() }
+        : item,
+    ),
+  );
 }
 
 /* screens/gym-logging.md: "All set writes are local SQLite plus an outbox op" — the same

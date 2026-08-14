@@ -110,7 +110,16 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, weekStart, corr
     router.push(`/today?submitted=nutrition&week=${weekStart}`);
   }
 
-  const pending = correction ? correctionMutation.isPending : false;
+  /* submitMutation.isPending closes the same double-submit race the
+   * correction branch's correctionMutation.isPending already closed — see
+   * CheckInForm's identical guard for the full reasoning. Without it a fast
+   * double-tap enqueues two outbox rows for the same (athlete_id,
+   * week_start) slot and the loser's insert dies on
+   * nutrition_checkins_one_live_per_week. Reusing this same `pending` flag
+   * for both `disabled` and the button label is deliberate: it is exactly
+   * the same "Saving…" honesty the correction path already shows, now true
+   * for the plain path too. */
+  const pending = correction ? correctionMutation.isPending : submitMutation.isPending;
   const weekEnd = addDays(weekStart, 6);
 
   return (

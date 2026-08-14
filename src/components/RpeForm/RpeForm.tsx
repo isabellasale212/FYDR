@@ -267,10 +267,19 @@ export function RpeForm({
       ) : null}
 
       <div className="subm">
+        {/* submitMutation.isPending closes the same double-submit race the
+         * correction branch's correctionMutation.isPending already closed —
+         * see CheckInForm's identical guard for the full reasoning. Without
+         * it a fast double-tap enqueues two outbox rows for the same
+         * (athlete_id, entry_date, session_id) slot and the loser's insert
+         * dies on training_entries_one_live_per_session. */}
         <button
           className="btn-primary"
           type="submit"
-          disabled={rpe === null || (correction ? correctionMutation.isPending : false)}
+          disabled={
+            rpe === null ||
+            (correction ? correctionMutation.isPending : submitMutation.isPending)
+          }
           style={{ width: '100%', minHeight: 56 }}
         >
           {submitLabel}

@@ -131,11 +131,17 @@ select is(
 --    assignment already on that exact programme_id is excluded by construction.
 -- ===========================================================================
 
+-- This insert runs AFTER `set local role authenticated` (unlike the
+-- fixture setup above, which ran as the bypass-RLS superuser), so it is
+-- subject to programme_assignments_write for real — assigned_by =
+-- auth_user_id() is part of that policy's WITH CHECK, so it has to be set
+-- to the currently JWT'd medical user (still user_medical from sections
+-- 2/3 above), not left null.
 do $$
 begin
-  insert into programme_assignments (id, org_id, programme_id, athlete_id, starts_on, status)
+  insert into programme_assignments (id, org_id, programme_id, athlete_id, starts_on, status, assigned_by)
     values (tests.uid('orga','assign_a1_rehab'), tests.uid('orga','org'), tests.uid('orga','prog_rehab'),
-            tests.uid('orga','athlete_1'), current_date, 'active');
+            tests.uid('orga','athlete_1'), current_date, 'active', tests.uid('orga','user_medical'));
 end $$;
 
 select lives_ok(

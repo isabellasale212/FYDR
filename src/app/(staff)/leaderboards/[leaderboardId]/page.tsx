@@ -8,6 +8,8 @@ import {
   fetchBoard,
   fetchBoardRanking,
   fetchMetricCatalogue,
+  fetchAthleteNames,
+  populationLabel,
 } from '@/lib/queries/leaderboards';
 import { fetchGroupAthleteIds, fetchGroups } from '@/lib/queries/groups';
 import { formatNumber } from '@/lib/format';
@@ -78,11 +80,25 @@ export default async function LeaderboardDetailPage({
   const board = await fetchBoard(db, orgId, leaderboardId);
   if (!board) notFound();
 
-  const [fullRanking, catalogue, groups] = await Promise.all([
+  // The extra query only fires for a 'selected' board (rare — most boards are
+  // 'squad'/'group'), and only here on the single-board detail page, not the list —
+  // see fetchAthleteNames' own comment on why real names are staff-only in the first
+  // place, and leaderboards/manage/page.tsx for how the list batches this instead of
+  // one query per row.
+  const [fullRanking, catalogue, groups, selectedNamesById] = await Promise.all([
     fetchBoardRanking(db, leaderboardId),
     fetchMetricCatalogue(db),
     fetchGroups(db, orgId),
+    board.population_type === 'selected'
+      ? fetchAthleteNames(db, orgId, board.athlete_ids ?? [])
+      : Promise.resolve(new Map<string, string>()),
   ]);
+  const selectedNames =
+    board.population_type === 'selected'
+      ? (board.athlete_ids ?? [])
+          .map((id) => selectedNamesById.get(id))
+          .filter((n): n is string => !!n)
+      : null;
 
   const filterAthleteIds = groupIds.length > 0 ? await fetchGroupAthleteIds(db, orgId, groupIds) : null;
   const ranking = filterAthleteIds ? fullRanking.filter((row) => filterAthleteIds.includes(row.athlete_id)) : fullRanking;
@@ -109,7 +125,7 @@ export default async function LeaderboardDetailPage({
           <span className={`pill ${board.visibility === 'published' ? 'pill-good' : 'pill-neutral'}`}>
             {board.visibility === 'published' ? 'Published' : 'Draft'}
           </span>
-          <span className="pill pill-neutral">{board.population_type}</span>
+          <span className="pill pill-neutral">{populationLabel(board, selectedNames)}</span>
           <span className="pill pill-neutral">
             {board.window_type === 'days'
               ? `Last ${board.window_days} days`

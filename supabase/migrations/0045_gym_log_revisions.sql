@@ -1,4 +1,4 @@
--- 0044_gym_log_revisions.sql
+-- 0045_gym_log_revisions.sql
 --
 -- What this does
 --   Closes integration-audit blocker B3: gym logging was the one entry domain with no

@@ -1,7 +1,7 @@
--- 230_gym_log_revisions_test.sql
+-- 231_gym_log_revisions_test.sql
 --
 -- Integration-audit blocker B3: gym logging gets the same ADR-005 revision mechanism as
--- wellness/training/nutrition. Migration 0044's own header explains the full design,
+-- wellness/training/nutrition. Migration 0045's own header explains the full design,
 -- including why gym_set_logs (fully immutable) and gym_session_logs (a lifecycle envelope
 -- with exactly two locked-down submitted columns) are not treated identically.
 --

@@ -15,7 +15,7 @@ export const metadata = { title: 'Testing · Fydr' };
  *  "Medical / Physio: Full, identically. Return-to-play testing is a medical
  *  workflow and the same battery is used." */
 export default async function TestingPage() {
-  const { db, orgId, orgName } = await requireStaff();
+  const { db, orgId, orgName, timezone } = await requireStaff();
   const [definitions, nextSession] = await Promise.all([
     fetchTestDefinitions(db, orgId),
     fetchNextTestingSession(db, orgId, new Date().toISOString()),
@@ -58,7 +58,7 @@ export default async function TestingPage() {
               Next scheduled testing session
             </p>
             <p className="nm">
-              {nextSession.title} — {formatDateTime(nextSession.starts_at)}
+              {nextSession.title} — {formatDateTime(nextSession.starts_at, timezone)}
               {nextSessionMd ? ` · ${nextSessionMd}` : ''}
             </p>
           </div>

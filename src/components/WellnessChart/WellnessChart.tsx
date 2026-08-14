@@ -4,6 +4,8 @@ import { formatDate } from '@/lib/format';
 
 type Props = {
   series: readonly Band[];
+  /** IANA zone used to format the date labels on the x-axis. */
+  timezone: string;
   min: number;
   max: number;
   /** Gridline values, in the units of the series. */
@@ -34,6 +36,7 @@ const MB = 30;
  */
 export function WellnessChart({
   series,
+  timezone,
   min,
   max,
   ticks,
@@ -182,7 +185,7 @@ export function WellnessChart({
               fontSize={10}
               fill="var(--faint)"
             >
-              {formatDate(point.date)}
+              {formatDate(point.date, timezone)}
             </text>
           ) : null,
         )}

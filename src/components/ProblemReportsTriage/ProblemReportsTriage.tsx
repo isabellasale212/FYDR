@@ -13,7 +13,7 @@ const CATEGORY_LABEL: Record<string, string> = {
   other: 'Other',
 };
 
-function ReportRow({ report, userId }: { report: OpenProblemReport; userId: string }) {
+function ReportRow({ report, userId, timezone }: { report: OpenProblemReport; userId: string; timezone: string }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -49,7 +49,7 @@ function ReportRow({ report, userId }: { report: OpenProblemReport; userId: stri
           </span>
         </div>
         <div className="tiny" style={{ marginTop: 3 }}>
-          {formatDateTime(report.created_at)}
+          {formatDateTime(report.created_at, timezone)}
           {report.category ? ` · ${CATEGORY_LABEL[report.category] ?? report.category}` : ''}
         </div>
         <p style={{ fontSize: 14, marginTop: 6 }}>{report.body}</p>
@@ -86,7 +86,7 @@ function ReportRow({ report, userId }: { report: OpenProblemReport; userId: stri
  *  then Close, or Close directly for a duplicate/mis-tap; migration 0040's
  *  trigger is what actually enforces both the transition and the
  *  acting-user stamp, this only performs the update it expects. */
-export function ProblemReportsTriage({ reports, userId }: { reports: OpenProblemReport[]; userId: string }) {
+export function ProblemReportsTriage({ reports, userId, timezone }: { reports: OpenProblemReport[]; userId: string; timezone: string }) {
   if (reports.length === 0) {
     return <p className="cap">No open reports. Anything an athlete sends will show up here.</p>;
   }
@@ -96,7 +96,7 @@ export function ProblemReportsTriage({ reports, userId }: { reports: OpenProblem
       {reports.map((r, index) => (
         <div key={r.id}>
           {index > 0 ? <div className="hair" /> : null}
-          <ReportRow report={r} userId={userId} />
+          <ReportRow report={r} userId={userId} timezone={timezone} />
         </div>
       ))}
     </div>

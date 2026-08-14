@@ -143,15 +143,15 @@ export default async function MyDataPage({
       </div>
 
       {tab === 'wellness' ? (
-        <WellnessTab db={db} athleteId={athleteId} from={from} today={today} dates={dates} />
+        <WellnessTab db={db} athleteId={athleteId} from={from} today={today} dates={dates} timezone={timezone} />
       ) : tab === 'training' ? (
-        <TrainingTab db={db} orgId={orgId} athleteId={athleteId} from={from} today={today} />
+        <TrainingTab db={db} orgId={orgId} athleteId={athleteId} from={from} today={today} timezone={timezone} />
       ) : tab === 'nutrition' ? (
-        <NutritionTab db={db} athleteId={athleteId} from={from} today={today} />
+        <NutritionTab db={db} athleteId={athleteId} from={from} today={today} timezone={timezone} />
       ) : tab === 'testing' ? (
         <TestingTab db={db} athleteId={athleteId} />
       ) : (
-        <GymTab db={db} athleteId={athleteId} from={from} today={today} />
+        <GymTab db={db} athleteId={athleteId} from={from} today={today} timezone={timezone} />
       )}
     </>
   );
@@ -163,12 +163,14 @@ async function WellnessTab({
   from,
   today,
   dates,
+  timezone,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
   athleteId: string;
   from: string;
   today: string;
   dates: string[];
+  timezone: string;
 }) {
   const entries = await fetchWellnessByAthlete(db, athleteId, { from, to: today });
   const byDate = new Map(entries.map((e) => [e.entry_date, e]));
@@ -207,6 +209,7 @@ async function WellnessTab({
             max={100}
             ticks={[0, 25, 50, 75, 100]}
             title="Your readiness"
+            timezone={timezone}
           />
         )}
 
@@ -247,7 +250,7 @@ async function WellnessTab({
                 const entry = byDate.get(date);
                 return (
                   <tr key={date}>
-                    <td className="mono sub">{formatDate(date)}</td>
+                    <td className="mono sub">{formatDate(date, timezone)}</td>
                     <td className="r mono">
                       {entry ? formatNumber(entry.readiness_score, 0) : 'Missing'}
                     </td>
@@ -255,7 +258,7 @@ async function WellnessTab({
                       {entry ? `${dash(entry.sleep_hours)} h` : BLANK}
                     </td>
                     <td className="sub mono">
-                      {entry?.submitted_at ? formatTime(entry.submitted_at) : BLANK}
+                      {entry?.submitted_at ? formatTime(entry.submitted_at, timezone) : BLANK}
                     </td>
                     <td className="sub">
                       {entry ? (
@@ -279,12 +282,14 @@ async function TrainingTab({
   athleteId,
   from,
   today,
+  timezone,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
   orgId: string;
   athleteId: string;
   from: string;
   today: string;
+  timezone: string;
 }) {
   const sessions = await fetchAthleteRecentSessions(db, orgId, athleteId, from, today);
   const rated = sessions.filter((s) => s.rpe !== null).length;
@@ -335,7 +340,7 @@ async function TrainingTab({
                   {sessions.map((session) => (
                     <tr key={session.id} style={{ opacity: session.status === 'cancelled' ? 0.55 : 1 }}>
                       <td className="mono sub">
-                        {formatDate(session.starts_at)} {formatTime(session.starts_at)}
+                        {formatDate(session.starts_at, timezone)} {formatTime(session.starts_at, timezone)}
                       </td>
                       <td className="nm">{session.title}</td>
                       <td className="sub">
@@ -377,11 +382,13 @@ async function NutritionTab({
   athleteId,
   from,
   today,
+  timezone,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
   athleteId: string;
   from: string;
   today: string;
+  timezone: string;
 }) {
   const checkins = await fetchRecentCheckins(db, athleteId, from, today);
 
@@ -418,7 +425,7 @@ async function NutritionTab({
               <tbody>
                 {checkins.map((c) => (
                   <tr key={c.id}>
-                    <td className="mono sub">{formatDate(c.week_start)}</td>
+                    <td className="mono sub">{formatDate(c.week_start, timezone)}</td>
                     <td className="nm">{ANSWER_LABEL[c.answer] ?? c.answer}</td>
                     <td className="sub">
                       <Link href={`/nutrition-check-in?week=${c.week_start}&correct=1`}>
@@ -510,11 +517,13 @@ async function GymTab({
   athleteId,
   from,
   today,
+  timezone,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
   athleteId: string;
   from: string;
   today: string;
+  timezone: string;
 }) {
   const sessions = await fetchRecentGymSessions(db, athleteId, from, today);
 
@@ -560,7 +569,7 @@ async function GymTab({
               <tbody>
                 {sessions.map((s) => (
                   <tr key={s.id}>
-                    <td className="mono sub">{formatDate(s.entry_date)}</td>
+                    <td className="mono sub">{formatDate(s.entry_date, timezone)}</td>
                     <td className="nm">{s.session_name ?? 'Gym session'}</td>
                     <td className="r mono">{s.set_count}</td>
                     <td className="r mono">

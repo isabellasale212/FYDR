@@ -30,10 +30,12 @@ function summary(o: AthleteOverride): string {
  *  0043's own header explains why there is no DELETE grant on this table. */
 export function OverrideList({
   orgId,
+  timezone,
   overrides,
   canEdit,
 }: {
   orgId: string;
+  timezone: string;
   overrides: readonly AthleteOverride[];
   canEdit: boolean;
 }) {
@@ -72,7 +74,7 @@ export function OverrideList({
             <div className="tiny">
               {summary(o)}
               {o.reason ? ` · ${o.reason}` : ''}
-              {o.expires_at ? ` · expires ${formatDate(o.expires_at)}` : ''}
+              {o.expires_at ? ` · expires ${formatDate(o.expires_at, timezone)}` : ''}
             </div>
           </div>
           {canEdit ? (

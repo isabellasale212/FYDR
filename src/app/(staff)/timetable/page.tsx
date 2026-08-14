@@ -83,7 +83,7 @@ export default async function TimetablePage({ searchParams }: { searchParams: Se
           ‹ Previous
         </Link>
         <span className="nm mono">
-          {formatDate(date)} · {sessions.length} session{sessions.length === 1 ? '' : 's'}
+          {formatDate(date, timezone)} · {sessions.length} session{sessions.length === 1 ? '' : 's'}
         </span>
         <Link href={dayHref(addDays(date, 1))} className="btn-ghost" aria-label="Next day">
           Next ›
@@ -110,6 +110,7 @@ export default async function TimetablePage({ searchParams }: { searchParams: Se
                 session={session}
                 anchoredMdOffset={anchoredMdOffset}
                 defaultExpanded={isLive}
+                timezone={timezone}
               />
             );
           })}

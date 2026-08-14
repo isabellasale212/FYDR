@@ -16,7 +16,7 @@ export default async function GymSessionHistoryPage({
 }: {
   params: Promise<{ gymSessionLogId: string }>;
 }) {
-  const { db } = await requireAthlete();
+  const { db, timezone } = await requireAthlete();
   const { gymSessionLogId } = await params;
 
   const session = await fetchGymSessionLog(db, gymSessionLogId);
@@ -28,7 +28,7 @@ export default async function GymSessionHistoryPage({
   return (
     <>
       <div className="hd">
-        <h1 className="d">{formatDate(session.entry_date)}</h1>
+        <h1 className="d">{formatDate(session.entry_date, timezone)}</h1>
       </div>
       <p className="import-sub">
         {sets.length} set{sets.length === 1 ? '' : 's'} logged

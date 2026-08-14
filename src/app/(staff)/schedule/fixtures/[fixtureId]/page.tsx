@@ -65,8 +65,8 @@ export default async function FixtureDetailPage({
           <span className="pill pill-neutral">{enumLabel(fixture.importance)}</span>
         </div>
         <p style={{ marginTop: 10 }}>
-          {formatLongDate(fixture.kickoff_at.slice(0, 10))} &middot; kick off{' '}
-          {formatTime(fixture.kickoff_at)}
+          {formatLongDate(fixture.kickoff_at.slice(0, 10), timezone)} &middot; kick off{' '}
+          {formatTime(fixture.kickoff_at, timezone)}
         </p>
         <p className="tiny" style={{ marginTop: 4 }}>
           {fixture.venue ?? 'Venue not set'}
@@ -103,6 +103,7 @@ export default async function FixtureDetailPage({
                 key={session.id}
                 session={session}
                 anchoredMdOffset={weekMd.get(session.entry_date) ?? null}
+                timezone={timezone}
               />
             ))}
           </div>

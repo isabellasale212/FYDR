@@ -9,6 +9,7 @@ import { enumLabel, formatDate } from '@/lib/format';
 type Props = {
   orgId: string;
   requestId: string;
+  timezone: string;
   injuries: InjuryForReview[];
 };
 
@@ -23,7 +24,7 @@ type Draft = { decision: 'include' | 'withhold' | null; reason: string };
  *  injury has a decision — the same check assembleSarPack itself runs
  *  again, server-side, before release, so a client-side bug here can
  *  make release wait longer, never skip the review it protects. */
-export function ClinicalReviewForm({ orgId, requestId, injuries }: Props) {
+export function ClinicalReviewForm({ orgId, requestId, timezone, injuries }: Props) {
   const router = useRouter();
   const [drafts, setDrafts] = useState<Record<string, Draft>>(() =>
     Object.fromEntries(injuries.filter((i) => i.decision === null).map((i) => [i.injury_id, { decision: null, reason: '' }])),
@@ -88,7 +89,7 @@ export function ClinicalReviewForm({ orgId, requestId, injuries }: Props) {
       {decided.map((injury) => (
         <section className="card" key={injury.injury_id} aria-labelledby={`injury-${injury.injury_id}`}>
           <h2 className="card-title" id={`injury-${injury.injury_id}`}>
-            {enumLabel(injury.body_area)} · onset {formatDate(injury.onset_date)}
+            {enumLabel(injury.body_area)} · onset {formatDate(injury.onset_date, timezone)}
           </h2>
           <p className="cap">
             Already decided: <b>{injury.decision === 'include' ? 'Include' : 'Withhold'}</b>
@@ -102,7 +103,7 @@ export function ClinicalReviewForm({ orgId, requestId, injuries }: Props) {
         return (
           <section className="card" key={injury.injury_id} aria-labelledby={`injury-${injury.injury_id}`}>
             <h2 className="card-title" id={`injury-${injury.injury_id}`}>
-              {enumLabel(injury.body_area)} · onset {formatDate(injury.onset_date)}
+              {enumLabel(injury.body_area)} · onset {formatDate(injury.onset_date, timezone)}
             </h2>
             <div className="kv">
               <span className="sub">Diagnosis</span>

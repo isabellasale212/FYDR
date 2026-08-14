@@ -81,12 +81,12 @@ export default async function RpePage({
           className="tiny mono"
           style={{ width: 56, textAlign: 'end', whiteSpace: 'nowrap' }}
         >
-          {formatDate(entryDate)}
+          {formatDate(entryDate, timezone)}
         </span>
       </div>
 
       <div className="sess" style={{ padding: '0 0 14px' }}>
-        <span className="tm mono">{formatTime(session.starts_at)}</span>
+        <span className="tm mono">{formatTime(session.starts_at, timezone)}</span>
         <div>
           <div className="ti">
             {session.title}

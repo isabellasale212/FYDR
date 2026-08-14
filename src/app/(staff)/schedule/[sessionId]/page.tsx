@@ -66,7 +66,7 @@ export default async function SessionDetailPage({
       <div className="card" style={{ opacity: cancelled ? 0.7 : 1 }}>
         <p className="label">When and where</p>
         <p style={{ marginTop: 6 }}>
-          {formatLongDate(session.starts_at.slice(0, 10))} &middot; {formatTime(session.starts_at)}
+          {formatLongDate(session.starts_at.slice(0, 10), timezone)} &middot; {formatTime(session.starts_at, timezone)}
           {session.duration_min !== null ? ` for ${session.duration_min} min` : ''}
         </p>
         <p className="tiny" style={{ marginTop: 4 }}>

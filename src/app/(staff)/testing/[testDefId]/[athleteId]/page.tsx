@@ -14,7 +14,7 @@ export default async function TestAthleteHistoryPage({
   params: Promise<{ testDefId: string; athleteId: string }>;
 }) {
   const { testDefId, athleteId } = await params;
-  const { db, orgId, orgName } = await requireStaff();
+  const { db, orgId, orgName, timezone } = await requireStaff();
 
   const [definitions, history, athleteRes] = await Promise.all([
     fetchTestDefinitions(db, orgId),
@@ -55,6 +55,7 @@ export default async function TestAthleteHistoryPage({
             unit={definition.unit}
             decimalPlaces={definition.decimal_places}
             higherIsBetter={definition.higher_is_better}
+            timezone={timezone}
           />
           <TestHistoryList
             orgId={orgId}
@@ -63,6 +64,7 @@ export default async function TestAthleteHistoryPage({
             rows={history}
             unit={definition.unit}
             decimalPlaces={definition.decimal_places}
+            timezone={timezone}
           />
         </div>
       )}

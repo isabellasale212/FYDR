@@ -14,6 +14,7 @@ type Props = {
   orgId: string;
   userId: string;
   today: string;
+  timezone: string;
 };
 
 const TONE_VAR: Record<'high' | 'medium' | 'low', string> = {
@@ -30,7 +31,7 @@ const TONE_VAR: Record<'high' | 'medium' | 'low', string> = {
  * Acknowledge; Dismiss (with its mandatory reason) stays on the dedicated
  * Flags screen, which this card's "Thresholds ›" link's sibling nav already
  * reaches. */
-export function PlayerProfileFlags({ flags, orgId, userId, today }: Props) {
+export function PlayerProfileFlags({ flags, orgId, userId, today, timezone }: Props) {
   const router = useRouter();
   const [showAcked, setShowAcked] = useState(false);
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -97,7 +98,7 @@ export function PlayerProfileFlags({ flags, orgId, userId, today }: Props) {
             const isAcked = flag.status === 'acknowledged' || flag.status === 'monitoring';
             const canAck = flag.status === 'raised' || flag.status === 'notified';
             const raisedDate = flag.raised_at.slice(0, 10);
-            const raisedLabel = raisedDate === today ? formatTime(flag.raised_at) : formatDate(flag.raised_at);
+            const raisedLabel = raisedDate === today ? formatTime(flag.raised_at, timezone) : formatDate(flag.raised_at, timezone);
 
             return (
               <div
@@ -143,7 +144,7 @@ export function PlayerProfileFlags({ flags, orgId, userId, today }: Props) {
                           and when" — so show exactly that. */}
                       Acknowledged
                       {flag.acknowledged_by_name ? ` by ${flag.acknowledged_by_name}` : ''}
-                      {flag.acknowledged_at ? ` · ${formatDateTime(flag.acknowledged_at)}` : ''}
+                      {flag.acknowledged_at ? ` · ${formatDateTime(flag.acknowledged_at, timezone)}` : ''}
                     </span>
                   )}
                 </div>

@@ -7,6 +7,7 @@ import { addDays, formatDate } from '@/lib/format';
 type Props = {
   testDefinitionId: string;
   testDate: string;
+  timezone: string;
   groupIds: readonly string[];
   dates: readonly TestSessionDate[];
 };
@@ -20,7 +21,7 @@ type Props = {
  *  including one with no results yet (to start a new session), and the
  *  dropdown lists only the dates this test actually has results on — the
  *  direct one-click jump to an old session that was missing entirely. */
-export function TestDateNav({ testDefinitionId, testDate, groupIds, dates }: Props) {
+export function TestDateNav({ testDefinitionId, testDate, timezone, groupIds, dates }: Props) {
   const router = useRouter();
 
   function hrefFor(date: string): string {
@@ -40,7 +41,7 @@ export function TestDateNav({ testDefinitionId, testDate, groupIds, dates }: Pro
       </button>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
-        <span className="nm mono">{formatDate(testDate)}</span>
+        <span className="nm mono">{formatDate(testDate, timezone)}</span>
         <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span className="tiny" style={{ color: 'var(--muted)' }}>
             Jump to date
@@ -71,7 +72,7 @@ export function TestDateNav({ testDefinitionId, testDate, groupIds, dates }: Pro
               </option>
               {dates.map((d) => (
                 <option key={d.date} value={d.date}>
-                  {formatDate(d.date)} · {d.resultCount} {d.resultCount === 1 ? 'result' : 'results'}
+                  {formatDate(d.date, timezone)} · {d.resultCount} {d.resultCount === 1 ? 'result' : 'results'}
                 </option>
               ))}
             </select>

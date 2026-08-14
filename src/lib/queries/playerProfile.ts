@@ -343,8 +343,9 @@ function evidenceLine(
     baseline_days: number | null;
   } | null,
   flagDate: string,
+  timezone: string,
 ): string {
-  const flagged = `flagged ${formatDate(flagDate)}`;
+  const flagged = `flagged ${formatDate(flagDate, timezone)}`;
   if (!threshold) return `No threshold on record · ${flagged}.`;
   const days = threshold.consecutive_days === 1 ? '1 day' : `${threshold.consecutive_days} consecutive days`;
   const baseline =
@@ -435,7 +436,7 @@ export async function fetchPlayerProfile(
       return {
         ...f,
         ruleSentence: threshold ? describeThreshold(threshold) : 'The threshold this flag was raised under is no longer on record.',
-        evidence: evidenceLine(threshold, f.flag_date),
+        evidence: evidenceLine(threshold, f.flag_date, timezone),
       };
     });
 

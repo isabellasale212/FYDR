@@ -88,7 +88,7 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
           ‹ Previous week
         </Link>
         <p className="mono" style={{ fontWeight: 700, margin: 0, flex: 1, textAlign: 'center' }}>
-          {formatDate(report.from)} to {formatDate(report.to)}
+          {formatDate(report.from, timezone)} to {formatDate(report.to, timezone)}
           {isCurrentWeek ? <span className="tiny" style={{ fontWeight: 400 }}> · current week</span> : null}
         </p>
         {isCurrentWeek ? (

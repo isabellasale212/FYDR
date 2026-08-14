@@ -31,7 +31,7 @@ function repsLabel(ex: ResolvedExercise): string {
  * rendered under its name) is where the real unit lives until this domain
  * has a measurement_type column — a real, larger, still-open gap (see this
  * file's own note further down) than this one display fix closes. */
-function loadLabel(ex: ResolvedExercise, athleteName: string): string {
+function loadLabel(ex: ResolvedExercise, athleteName: string, timezone: string): string {
   if (ex.load_basis === 'none') return 'Bodyweight';
   if (ex.load_basis === 'absolute') {
     if (ex.load_value === null) return '—';
@@ -42,7 +42,7 @@ function loadLabel(ex: ResolvedExercise, athleteName: string): string {
   if (ex.load_basis === 'rpe') return ex.load_value !== null ? `RPE ${ex.load_value}` : '—';
   // percent_1rm
   if (ex.resolved_load_kg !== null) {
-    return `${ex.resolved_load_kg}kg (${ex.load_value}% 1RM${ex.one_rm_test_date ? `, tested ${formatDate(ex.one_rm_test_date)}` : ''})`;
+    return `${ex.resolved_load_kg}kg (${ex.load_value}% 1RM${ex.one_rm_test_date ? `, tested ${formatDate(ex.one_rm_test_date, timezone)}` : ''})`;
   }
   if (!ex.one_rm_linked) return `${ex.load_value}% 1RM — no 1RM test linked to this exercise`;
   return `${ex.load_value}% 1RM — 1RM not on file for ${athleteName}`;
@@ -62,7 +62,7 @@ export default async function ProgrammeAthletePage({
   params: Promise<{ programmeId: string; athleteId: string }>;
 }) {
   const { programmeId, athleteId } = await params;
-  const { db, orgId, orgName, claims } = await requireStaff();
+  const { db, orgId, orgName, claims, timezone } = await requireStaff();
   const isCoach = claims.roles.includes('coach');
   const isMedical = claims.roles.includes('medical');
 
@@ -119,7 +119,7 @@ export default async function ProgrammeAthletePage({
 
       <div className="card" style={{ marginBottom: 16 }}>
         <h2 className="card-title">Tailoring for {athleteName}</h2>
-        <OverrideList orgId={orgId} overrides={overrides} canEdit={canEdit} />
+        <OverrideList orgId={orgId} overrides={overrides} canEdit={canEdit} timezone={timezone} />
         {canEdit ? (
           <div style={{ marginTop: 14, borderTop: '1px solid var(--border)', paddingTop: 14 }}>
             <p className="label" style={{ marginBottom: 8 }}>
@@ -180,7 +180,7 @@ export default async function ProgrammeAthletePage({
                         </span>
                         <span className="tiny">{ex.sets}</span>
                         <span className="tiny">{repsLabel(ex)}</span>
-                        <span className="tiny">{loadLabel(ex, athleteName)}</span>
+                        <span className="tiny">{loadLabel(ex, athleteName, timezone)}</span>
                         <span className="tiny">
                           {ex.is_overridden ? ex.override_types.map((t) => t.replace('_', ' ')).join(', ') : '—'}
                         </span>

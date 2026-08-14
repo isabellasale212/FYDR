@@ -40,7 +40,7 @@ export default async function InjuriesPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, orgId, orgName, claims } = await requireStaff();
+  const { db, orgId, orgName, claims, timezone } = await requireStaff();
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
   const isMedical = claims.roles.includes('medical');
@@ -96,7 +96,7 @@ export default async function InjuriesPage({
               <span className="pill pill-warn mono">{problemReports.length}</span>
             ) : null}
           </h2>
-          <ProblemReportsTriage reports={problemReports} userId={claims.userId} />
+          <ProblemReportsTriage reports={problemReports} userId={claims.userId} timezone={timezone} />
         </section>
       ) : null}
 
@@ -119,8 +119,8 @@ export default async function InjuriesPage({
                 </span>
                 <div className="tiny">
                   {enumLabel(i.body_area)}
-                  {i.side ? ` · ${enumLabel(i.side)}` : ''} · since {formatDate(i.onset_date)}
-                  {i.expected_return ? ` · back ${formatDate(i.expected_return)}` : ''}
+                  {i.side ? ` · ${enumLabel(i.side)}` : ''} · since {formatDate(i.onset_date, timezone)}
+                  {i.expected_return ? ` · back ${formatDate(i.expected_return, timezone)}` : ''}
                 </div>
               </div>
               {i.availability_status ? (

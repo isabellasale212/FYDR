@@ -19,7 +19,7 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
  *  header for the full scope reasoning. The last of the five report types
  *  to get built, closing this build's Reports library out completely. */
 export default async function TestingReportPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, orgName, claims } = await requireReportAccess();
+  const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
 
@@ -245,7 +245,7 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                             <div key={p.date}>
                               {i > 0 ? <div className="hair" /> : null}
                               <div className="load-row" style={{ gridTemplateColumns: '1fr auto auto', padding: '9px 16px' }}>
-                                <span className="sub mono">{formatDate(p.date)}</span>
+                                <span className="sub mono">{formatDate(p.date, timezone)}</span>
                                 <span className="tiny">n={p.n}</span>
                                 <span className="mono nm">
                                   {p.median === null ? BLANK : formatNumber(p.median, byTest.definition.decimal_places)} {byTest.definition.unit}

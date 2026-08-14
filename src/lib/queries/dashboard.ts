@@ -335,6 +335,7 @@ export async function fetchTimeline(
   groupIds: readonly string[],
   date: string,
   nowIso: string,
+  timezone: string,
 ): Promise<TimelineEntry[]> {
   const [sessions, flagsToday] = await Promise.all([
     fetchTimetableDay(db, orgId, date, groupIds),
@@ -406,7 +407,7 @@ export async function fetchTimeline(
       // The org's wall-clock time, same formatter the timetable uses — the
       // audit (S2, coach finding 6) caught this rendering the raw UTC
       // digits (10:30) while the timetable said 11:30 for the same session.
-      time: formatTime(s.starts_at),
+      time: formatTime(s.starts_at, timezone),
       name: s.title,
       groupLabel: 'Squad',
       where: [s.location, s.duration_min ? `${s.duration_min} min` : null].filter(Boolean).join(' · '),

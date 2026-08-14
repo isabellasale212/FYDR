@@ -23,6 +23,7 @@ type Props = {
   sessionName: string;
   startedAt: string | null;
   totalSets: number;
+  timezone: string;
   exercises: readonly ResolvedExercise[];
   loggedSets: readonly LoggedSet[];
   alreadyComplete: boolean;
@@ -35,7 +36,7 @@ type Props = {
  * asserting a unit the schema does not track; notes (shown separately by the
  * caller, if present) carry the real unit until this domain has a
  * measurement_type column — real, open gap, too large for this pass. */
-function loadLabel(ex: ResolvedExercise): string {
+function loadLabel(ex: ResolvedExercise, timezone: string): string {
   if (ex.load_basis === 'none') return 'No prescribed load';
   if (ex.load_basis === 'absolute') {
     if (ex.load_value === null) return 'Load not set';
@@ -51,7 +52,7 @@ function loadLabel(ex: ResolvedExercise): string {
   // simply has no result on file yet. screens/gym-logging.md's own copy for
   // the second case, kept verbatim.
   if (ex.resolved_load_kg !== null) {
-    return `${ex.resolved_load_kg} kg (${ex.load_value}% of your 1RM${ex.one_rm_test_date ? `, tested ${formatDate(ex.one_rm_test_date)}` : ''})`;
+    return `${ex.resolved_load_kg} kg (${ex.load_value}% of your 1RM${ex.one_rm_test_date ? `, tested ${formatDate(ex.one_rm_test_date, timezone)}` : ''})`;
   }
   if (!ex.one_rm_linked) return 'No 1RM test linked to this exercise yet.';
   return 'No one rep max on file. Log the load you lift.';
@@ -90,6 +91,7 @@ export function GymSessionLogger({
   sessionName,
   startedAt,
   totalSets,
+  timezone,
   exercises,
   loggedSets,
   alreadyComplete,
@@ -274,7 +276,7 @@ export function GymSessionLogger({
                 <div className="gym-ex-head">
                   <span className="nm">{ex.exercise_name}</span>
                   <span className="scheme mono">
-                    {schemeLabel(ex)} @ {loadLabel(ex)}
+                    {schemeLabel(ex)} @ {loadLabel(ex, timezone)}
                     {ex.rest_seconds ? ` · ${ex.rest_seconds}s rest` : ''}
                   </span>
                 </div>

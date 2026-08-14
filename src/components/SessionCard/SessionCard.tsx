@@ -4,6 +4,8 @@ import { BLANK, enumLabel, formatTime, mdLabel } from '@/lib/format';
 
 type Props = {
   session: SessionWithHeadcount;
+  // IANA zone used to display session.starts_at in the organisation's local time.
+  timezone: string;
   // The session's md_offset re-anchored to its own real calendar week (see
   // anchorMdOffsetsToWeek, format.ts) — computed by the page via
   // fetchWeekMdLabels and passed down, rather than read raw off `session`,
@@ -16,7 +18,7 @@ type Props = {
  *  squad group chat is somebody asking which pitch. Links through to
  *  session-detail.md's screen, `/schedule/:sessionId`, from both places this
  *  card renders (the Schedule week view and the staff dashboard). */
-export function SessionCard({ session, anchoredMdOffset }: Props) {
+export function SessionCard({ session, timezone, anchoredMdOffset }: Props) {
   const md = mdLabel(anchoredMdOffset);
   const cancelled = session.status === 'cancelled';
 
@@ -31,7 +33,7 @@ export function SessionCard({ session, anchoredMdOffset }: Props) {
         opacity: cancelled ? 0.55 : 1,
       }}
     >
-      <div className="mono">{formatTime(session.starts_at)}</div>
+      <div className="mono">{formatTime(session.starts_at, timezone)}</div>
       <div>
         <span className="nm" style={{ textDecoration: cancelled ? 'line-through' : 'none' }}>
           {session.title}

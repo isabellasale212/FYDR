@@ -39,8 +39,8 @@ export async function GET(request: Request) {
   const scopeLabel = groupScopeLabel(groups, groupIds);
 
   const footer = isMedical
-    ? `MEDICAL IN CONFIDENCE · ${orgName} · Fydr · generated ${formatDate(today)}`
-    : `${orgName} · Fydr · generated ${formatDate(today)} · not for redistribution without the club's own policy`;
+    ? `MEDICAL IN CONFIDENCE · ${orgName} · Fydr · generated ${formatDate(today, timezone)}`
+    : `${orgName} · Fydr · generated ${formatDate(today, timezone)} · not for redistribution without the club's own policy`;
 
   const buffer = await renderToBuffer(
     <PdfReport footer={footer}>
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
       <PdfHeader
         eyebrow={isMedical ? `MEDICAL IN CONFIDENCE · Injury & availability · ${orgName}` : `Injury & availability · ${orgName}`}
         title="Injury & availability report"
-        meta={`${formatDate(fromDate)} to ${formatDate(today)} · Scope: ${scopeLabel} (${report.summary.athleteCount} athletes)`}
+        meta={`${formatDate(fromDate, timezone)} to ${formatDate(today, timezone)} · Scope: ${scopeLabel} (${report.summary.athleteCount} athletes)`}
       />
 
       <PdfTileRow>
@@ -90,7 +90,7 @@ export async function GET(request: Request) {
             width: '30%',
             render: (r) => (r.body_area ? enumLabel(r.body_area) : r.restrictions.map(enumLabel).join(', ') || 'Restricted'),
           },
-          { key: 'return', label: 'Expected return', width: '20%', render: (r) => (r.expected_return ? formatDate(r.expected_return) : '') },
+          { key: 'return', label: 'Expected return', width: '20%', render: (r) => (r.expected_return ? formatDate(r.expected_return, timezone) : '') },
         ]}
       />
 
@@ -99,7 +99,7 @@ export async function GET(request: Request) {
         emptyText="No days lost in this period."
         rows={report.burden}
         columns={[
-          { key: 'week', label: 'Week of', width: '60%', render: (r) => formatDate(r.weekStart) },
+          { key: 'week', label: 'Week of', width: '60%', render: (r) => formatDate(r.weekStart, timezone) },
           { key: 'days', label: 'Days lost', width: '40%', align: 'right', render: (r) => String(r.daysLost) },
         ]}
       />

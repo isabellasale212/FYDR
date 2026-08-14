@@ -37,7 +37,10 @@ const WEEKDAY_INITIAL = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
  *  a real time (see notifications/page.tsx's own "nothing sends a push
  *  yet" note), so stating one would be inventing a time this app cannot
  *  keep. */
-function toastMessageFor(params: Record<string, string | string[] | undefined>): string | null {
+function toastMessageFor(
+  params: Record<string, string | string[] | undefined>,
+  timezone: string,
+): string | null {
   const submitted = typeof params.submitted === 'string' ? params.submitted : null;
   if (submitted === '1') return 'Wellness submitted · queued, syncs on signal';
   if (submitted === 'rpe') {
@@ -50,7 +53,7 @@ function toastMessageFor(params: Record<string, string | string[] | undefined>):
        (lib/outbox.ts), so "submitted" is true even before the server has it. */
     const week = typeof params.week === 'string' ? params.week : null;
     return week
-      ? `Nutrition check-in submitted for week of ${formatDate(week)} · queued, syncs on signal`
+      ? `Nutrition check-in submitted for week of ${formatDate(week, timezone)} · queued, syncs on signal`
       : 'Nutrition check-in submitted · queued, syncs on signal';
   }
   if (submitted === 'gym') return 'Gym session logged.';
@@ -116,7 +119,7 @@ export default async function TodayPage({
   ];
   const outstandingCount = todoItems.length;
 
-  const toastMessage = toastMessageFor(params);
+  const toastMessage = toastMessageFor(params, timezone);
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
@@ -133,7 +136,7 @@ export default async function TodayPage({
         <span className="av" aria-hidden="true">
           {initials({ first_name: firstName, last_name: lastName })}
         </span>
-        <h1 className="d">{formatDate(today)}</h1>
+        <h1 className="d">{formatDate(today, timezone)}</h1>
         <span className={`pill status-pill ${outstandingCount > 0 ? 'pill-warn' : 'pill-good'}`}>
           {outstandingCount > 0 ? (
             <>
@@ -254,7 +257,7 @@ export default async function TodayPage({
                 <div key={session.id}>
                   {index > 0 ? <div className="hair" /> : null}
                   <div className="sess" style={{ opacity: cancelled ? 0.55 : 1 }}>
-                    <span className="tm mono">{formatTime(session.starts_at)}</span>
+                    <span className="tm mono">{formatTime(session.starts_at, timezone)}</span>
                     <div>
                       <div className="ti">
                         <span style={{ textDecoration: cancelled ? 'line-through' : 'none' }}>

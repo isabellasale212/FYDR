@@ -90,7 +90,7 @@ export default async function InjuryAvailabilityReportPage({
       ) : null}
 
       <p className="eyebrow" style={{ marginBottom: 10 }}>
-        {groupScopeLabel(groups, groupIds)} · {orgName} · {formatDate(fromDate)} to {formatDate(today)} · {report.summary.athleteCount} athletes
+        {groupScopeLabel(groups, groupIds)} · {orgName} · {formatDate(fromDate, timezone)} to {formatDate(today, timezone)} · {report.summary.athleteCount} athletes
       </p>
 
       <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
@@ -138,7 +138,7 @@ export default async function InjuryAvailabilityReportPage({
                               ? enumLabel(row.body_area)
                               : row.restrictions.join(', ') ||
                                 (row.reason_category ? enumLabel(row.reason_category) : 'Restricted')}
-                            {row.expected_return ? ` · back ${formatDate(row.expected_return)}` : ''}
+                            {row.expected_return ? ` · back ${formatDate(row.expected_return, timezone)}` : ''}
                           </div>
                         </div>
                         <span className={`pill ${AVAIL_PILL[row.status] ?? 'pill-neutral'}`}>{enumLabel(row.status)}</span>
@@ -209,7 +209,7 @@ export default async function InjuryAvailabilityReportPage({
                     <div key={w.weekStart}>
                       {index > 0 ? <div className="hair" /> : null}
                       <div className="load-row" style={{ gridTemplateColumns: '1fr auto' }}>
-                        <span className="nm">Week of {formatDate(w.weekStart)}</span>
+                        <span className="nm">Week of {formatDate(w.weekStart, timezone)}</span>
                         <span className="mono">{w.daysLost} days</span>
                       </div>
                     </div>

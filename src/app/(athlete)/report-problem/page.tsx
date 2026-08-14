@@ -44,7 +44,7 @@ export default async function ReportProblemPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, orgId, athleteId, claims } = await requireAthlete();
+  const { db, orgId, athleteId, claims, timezone } = await requireAthlete();
   const params = await searchParams;
 
   const reports = await fetchMyProblemReports(db, athleteId);
@@ -84,7 +84,7 @@ export default async function ReportProblemPage({
                 <div className="load-row" style={{ gridTemplateColumns: 'minmax(0, 1fr) auto', padding: '13px 14px' }}>
                   <div style={{ minWidth: 0 }}>
                     <div className="tiny" style={{ marginBottom: 3 }}>
-                      {formatDateTime(r.created_at)}
+                      {formatDateTime(r.created_at, timezone)}
                       {r.category ? ` · ${CATEGORY_LABEL[r.category] ?? r.category}` : ''}
                     </div>
                     <div style={{ fontSize: 14 }}>{r.body}</div>

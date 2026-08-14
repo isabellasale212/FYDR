@@ -38,11 +38,11 @@ export async function GET(request: Request) {
   const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchComplianceReport(db, orgId, groupIds, fromDate, today)]);
 
   const buffer = await renderToBuffer(
-    <PdfReport footer={`${orgName} · Fydr · generated ${formatDate(today)} · not for redistribution without the club's own policy`}>
+    <PdfReport footer={`${orgName} · Fydr · generated ${formatDate(today, timezone)} · not for redistribution without the club's own policy`}>
       <PdfHeader
         eyebrow={`Compliance · ${orgName}`}
         title="Compliance report"
-        meta={`${formatDate(fromDate)} to ${formatDate(today)} · Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes)`}
+        meta={`${formatDate(fromDate, timezone)} to ${formatDate(today, timezone)} · Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes)`}
       />
 
       <PdfTileRow>
@@ -60,7 +60,7 @@ export async function GET(request: Request) {
         rows={report.byAthlete.map((a) => ({ ...a, pct: complianceAthletePct(a) }))}
         columns={[
           { key: 'name', label: 'Athlete', width: '35%', render: (r) => `${r.first_name} ${r.last_name}` },
-          { key: 'last', label: 'Last submission', width: '30%', render: (r) => (r.lastSubmission ? formatDate(r.lastSubmission) : 'No submissions') },
+          { key: 'last', label: 'Last submission', width: '30%', render: (r) => (r.lastSubmission ? formatDate(r.lastSubmission, timezone) : 'No submissions') },
           {
             key: 'pct',
             label: 'Compliance',
@@ -76,7 +76,7 @@ export async function GET(request: Request) {
         emptyText="No expectations in this period."
         rows={report.byDay}
         columns={[
-          { key: 'date', label: 'Date', width: '30%', render: (r) => formatDate(r.date) },
+          { key: 'date', label: 'Date', width: '30%', render: (r) => formatDate(r.date, timezone) },
           { key: 'domain', label: 'Domain', width: '30%', render: (r) => enumLabel(r.domain) },
           {
             key: 'val',

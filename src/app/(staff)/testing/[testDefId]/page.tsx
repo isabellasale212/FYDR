@@ -61,7 +61,7 @@ export default async function TestLogPage({
         <GroupFilter groups={groups} selected={groupIds} />
       </div>
 
-      <TestDateNav testDefinitionId={testDefId} testDate={testDate} groupIds={groupIds} dates={testDates} />
+      <TestDateNav testDefinitionId={testDefId} testDate={testDate} groupIds={groupIds} dates={testDates} timezone={timezone} />
 
       {athletes.length === 0 && groupIds.length > 0 ? (
         <EmptyState

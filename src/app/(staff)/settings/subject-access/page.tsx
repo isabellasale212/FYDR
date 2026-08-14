@@ -24,7 +24,7 @@ function daysUntil(dueAtIso: string): number {
  *  this pass builds against the full async-worker spec. */
 export default async function SubjectAccessPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
-  const { db, orgId, claims } = await requireSubjectAccess();
+  const { db, orgId, claims, timezone } = await requireSubjectAccess();
   const requests = await fetchSarRequests(db, orgId);
   const isAdmin = claims.roles.includes('admin');
   const isMedical = claims.roles.includes('medical');
@@ -78,10 +78,10 @@ export default async function SubjectAccessPage({ searchParams }: { searchParams
                   <td className="nm">
                     {r.athlete_first_name} {r.athlete_last_name}
                   </td>
-                  <td className="mono sub">{formatLongDate(r.requested_at)}</td>
+                  <td className="mono sub">{formatLongDate(r.requested_at, timezone)}</td>
                   <td className="sub">{r.requested_by_name}</td>
                   <td className="mono sub">
-                    {formatLongDate(r.due_at)}
+                    {formatLongDate(r.due_at, timezone)}
                     {r.status !== 'released' ? (
                       <span className={`sub ${days <= 7 ? 'g-bad' : days <= 14 ? 'g-warn' : ''}`} style={{ marginInlineStart: 6 }}>
                         ({days} day{days === 1 ? '' : 's'})

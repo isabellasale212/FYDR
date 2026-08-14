@@ -109,7 +109,7 @@ export default async function ApplyTemplatePage({ searchParams }: { searchParams
             <Link href="/schedule/planner">Week templates</Link> · Apply
           </p>
           <h1>
-            Apply to {formatDate(weekStart)} – {formatDate(weekEnd)}
+            Apply to {formatDate(weekStart, timezone)} – {formatDate(weekEnd, timezone)}
           </h1>
         </div>
       </div>
@@ -119,7 +119,7 @@ export default async function ApplyTemplatePage({ searchParams }: { searchParams
           Anchor{' '}
           {fixtureInWeek ? (
             <>
-              v {fixtureInWeek.opponent}, {formatDate(fixtureInWeek.kickoff_at)}
+              v {fixtureInWeek.opponent}, {formatDate(fixtureInWeek.kickoff_at, timezone)}
             </>
           ) : (
             'No fixture this week — days are labelled by training-week position only.'
@@ -145,6 +145,7 @@ export default async function ApplyTemplatePage({ searchParams }: { searchParams
           fixtureId={fixtureInWeek?.id ?? null}
           previewRows={previewRows}
           planSummary={planSummary}
+          timezone={timezone}
         />
       )}
     </>

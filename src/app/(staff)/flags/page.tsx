@@ -67,7 +67,7 @@ export default async function FlagsPage({
       <div className="topbar">
         <div className="page-head">
           <p className="eyebrow">
-            {groupScopeLabel(groups, groupIds)} · {orgName} · {formatDate(today)}
+            {groupScopeLabel(groups, groupIds)} · {orgName} · {formatDate(today, timezone)}
           </p>
           <h1>Flags</h1>
         </div>
@@ -80,7 +80,7 @@ export default async function FlagsPage({
 
       {dateParam ? (
         <p className="sub" style={{ margin: '0 0 10px' }}>
-          Filtered to flags raised on <b>{formatDate(dateParam)}</b> —{' '}
+          Filtered to flags raised on <b>{formatDate(dateParam, timezone)}</b> —{' '}
           <Link href={`/flags${groupIds.length > 0 ? `?groups=${groupIds.join(',')}` : ''}`} className="linklike">
             show every open flag
           </Link>
@@ -91,7 +91,7 @@ export default async function FlagsPage({
         <p className="sub" style={{ margin: 0 }}>
           {flags.length === 0
             ? dateParam
-              ? `No flags raised on ${formatDate(dateParam)}.`
+              ? `No flags raised on ${formatDate(dateParam, timezone)}.`
               : 'No open flags.'
             : `${flags.length} open flag${flags.length === 1 ? '' : 's'}, most severe first · ${
                 flags.filter((f) => f.status === 'raised' || f.status === 'notified').length
@@ -103,7 +103,7 @@ export default async function FlagsPage({
             title={dateParam ? 'No flags that day' : 'No open flags'}
             body={
               dateParam
-                ? `Nothing was raised on ${formatDate(dateParam)} in the current scope — the count on the dashboard may be for a different day if you've since navigated. Show every open flag above to check.`
+                ? `Nothing was raised on ${formatDate(dateParam, timezone)} in the current scope — the count on the dashboard may be for a different day if you've since navigated. Show every open flag above to check.`
                 : groupIds.length > 0
                   ? `No open flags in the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter to check the whole squad.`
                   : 'The squad is within thresholds. That is the result, not a failure to load.'
@@ -117,6 +117,7 @@ export default async function FlagsPage({
               orgId={orgId}
               userId={claims.userId}
               today={today}
+              timezone={timezone}
             />
           ))
         )}

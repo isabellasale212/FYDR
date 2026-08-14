@@ -15,7 +15,7 @@ export const metadata = { title: 'Clinical review · Fydr' };
  *  opposite role. */
 export default async function ClinicalReviewPage({ params }: { params: Promise<{ requestId: string }> }) {
   const { requestId } = await params;
-  const { db, orgId, claims } = await requireStaff();
+  const { db, orgId, claims, timezone } = await requireStaff();
   if (!claims.roles.includes('medical')) redirect('/settings/subject-access?e=no-sar-access');
 
   const request = await fetchSarRequest(db, orgId, requestId);
@@ -46,7 +46,7 @@ export default async function ClinicalReviewPage({ params }: { params: Promise<{
       {injuries.length === 0 ? (
         <p className="cap">This athlete has no clinical records — nothing to review. Return to the queue to release the pack.</p>
       ) : (
-        <ClinicalReviewForm orgId={orgId} requestId={requestId} injuries={injuries} />
+        <ClinicalReviewForm orgId={orgId} requestId={requestId} injuries={injuries} timezone={timezone} />
       )}
     </>
   );

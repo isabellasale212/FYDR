@@ -18,6 +18,8 @@ type Props = {
   orgId: string;
   userId: string;
   groups: readonly RehabGroup[];
+  /** IANA zone used to display expected-return dates in the organisation's local time. */
+  timezone: string;
   members: readonly RehabMember[];
   /** false for coach: read only, per screens/rehab-groups.md's role table. */
   canAllocate: boolean;
@@ -30,7 +32,7 @@ const AVAIL_PILL: Record<string, string> = {
 
 /** Chip picker rather than drag and drop, the same trade team-allocation.md's own
  *  board made — see lib/queries/rehabGroups.ts's header for the full reasoning. */
-export function RehabGroupBoard({ orgId, userId, groups, members, canAllocate }: Props) {
+export function RehabGroupBoard({ orgId, userId, groups, timezone, members, canAllocate }: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [editingPhaseFor, setEditingPhaseFor] = useState<string | null>(null);
@@ -105,6 +107,7 @@ export function RehabGroupBoard({ orgId, userId, groups, members, canAllocate }:
                   <MemberRow
                     key={m.athlete_id}
                     member={m}
+                    timezone={timezone}
                     groupPhase={groupPhase}
                     canAllocate={canAllocate}
                     editing={editingPhaseFor === m.athlete_id}
@@ -136,7 +139,7 @@ export function RehabGroupBoard({ orgId, userId, groups, members, canAllocate }:
           <div className="stack" style={{ gap: 10 }}>
             {unallocated.map((m) => (
               <div key={m.athlete_id}>
-                <MemberSummary member={m} />
+                <MemberSummary member={m} timezone={timezone} />
                 {canAllocate && groups.length > 0 ? (
                   <div className="chiprow" style={{ marginTop: 6 }}>
                     {groups.map((group) => (
@@ -169,7 +172,7 @@ export function RehabGroupBoard({ orgId, userId, groups, members, canAllocate }:
   );
 }
 
-function MemberSummary({ member }: { member: RehabMember }) {
+function MemberSummary({ member, timezone }: { member: RehabMember; timezone: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
       <span className="nm">
@@ -184,13 +187,14 @@ function MemberSummary({ member }: { member: RehabMember }) {
           {member.side ? ` · ${enumLabel(member.side)}` : ''}
         </span>
       ) : null}
-      {member.expected_return ? <span className="tiny">Back {formatDate(member.expected_return)}</span> : null}
+      {member.expected_return ? <span className="tiny">Back {formatDate(member.expected_return, timezone)}</span> : null}
     </div>
   );
 }
 
 function MemberRow({
   member,
+  timezone,
   groupPhase,
   canAllocate,
   editing,
@@ -204,6 +208,7 @@ function MemberRow({
   removing,
 }: {
   member: RehabMember;
+  timezone: string;
   groupPhase: string | null;
   canAllocate: boolean;
   editing: boolean;
@@ -221,7 +226,7 @@ function MemberRow({
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-        <MemberSummary member={member} />
+        <MemberSummary member={member} timezone={timezone} />
         <span style={{ flex: 1 }} />
         {member.phase ? (
           <span className={`pill ${mismatch ? 'pill-warn' : 'pill-neutral'}`}>

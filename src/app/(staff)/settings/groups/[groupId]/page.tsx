@@ -21,7 +21,7 @@ export default async function GroupDetailPage({
   params: Promise<{ groupId: string }>;
 }) {
   const { groupId } = await params;
-  const { db, orgId } = await requireStaff();
+  const { db, orgId, timezone } = await requireStaff();
 
   const group = await fetchGroupDetail(db, orgId, groupId);
   if (!group) notFound();
@@ -87,6 +87,7 @@ export default async function GroupDetailPage({
           groupId={group.id}
           current={current}
           candidates={candidates}
+          timezone={timezone}
         />
 
         <section className="card flush" aria-labelledby="past-title">
@@ -112,7 +113,7 @@ export default async function GroupDetailPage({
                     {member.first_name} {member.last_name}
                   </span>
                   <span className="tiny" style={{ display: 'block', marginTop: 2 }}>
-                    {formatDate(member.added_at)} to {formatDate(member.removed_at)}
+                    {formatDate(member.added_at, timezone)} to {formatDate(member.removed_at, timezone)}
                   </span>
                 </span>
               </div>

@@ -17,7 +17,7 @@ export const metadata = { title: 'User · Fydr' };
  *  category list, which has no staff-consent row either). */
 export default async function UserDetailPage({ params }: { params: Promise<{ userId: string }> }) {
   const { userId } = await params;
-  const { db, orgId, claims } = await requireStaff();
+  const { db, orgId, claims, timezone } = await requireStaff();
   if (!claims.roles.includes('admin')) redirect('/settings');
 
   const [user, history, unlinked] = await Promise.all([fetchUserDetail(db, orgId, userId), fetchUserAuditHistory(db, orgId, userId), fetchUnlinkedAthletes(db, orgId)]);
@@ -34,7 +34,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ use
         </div>
       </div>
 
-      <UserDetailPanel orgId={orgId} currentUserId={claims.userId} currentActorRole="admin" user={user} history={history} unlinkedAthletes={unlinked} isSelf={user.id === claims.userId} />
+      <UserDetailPanel orgId={orgId} currentUserId={claims.userId} currentActorRole="admin" user={user} history={history} unlinkedAthletes={unlinked} isSelf={user.id === claims.userId} timezone={timezone} />
     </>
   );
 }

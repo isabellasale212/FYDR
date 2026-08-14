@@ -4,6 +4,7 @@ import {
   fetchBoard,
   fetchBoardRanking,
   fetchMetricCatalogue,
+  populationLabel,
 } from '@/lib/queries/leaderboards';
 import { formatNumber } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
@@ -66,7 +67,9 @@ export default async function MyBoardDetailPage({
       </div>
 
       <p className="tiny" style={{ marginBottom: 10 }}>
-        {board.population_type} ·{' '}
+        {/* No selectedNames arg here either — same RLS reasoning as the boards list
+            page; see fetchAthleteNames' own comment in leaderboards.ts. */}
+        {populationLabel(board)} ·{' '}
         {board.window_type === 'days'
           ? `last ${board.window_days} days`
           : board.window_type === 'season'

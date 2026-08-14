@@ -39,6 +39,13 @@ export type Leaderboard = {
   aggregation: string;
   population_type: string;
   group_id: string | null;
+  /** Resolved via the `groups(name)` embed below, same join shape as
+   *  nutritionTargets.ts's `t.groups?.name` (identical FK: `group_id references
+   *  groups(id)`, `isOneToOne: false` in the generated types either way). null
+   *  unless population_type === 'group'; groups are soft-deleted (deleted_at), never
+   *  hard-deleted, so an archived group still resolves a real name here rather than
+   *  going missing out from under an old board. */
+  group_name: string | null;
   athlete_ids: string[] | null;
   window_type: string;
   window_days: number | null;
@@ -49,7 +56,16 @@ export type Leaderboard = {
 };
 
 const BOARD_COLUMNS =
-  'id, name, metric_key, aggregation, population_type, group_id, athlete_ids, window_type, window_days, visibility, athlete_view, top_n, created_at';
+  'id, name, metric_key, aggregation, population_type, group_id, athlete_ids, window_type, window_days, visibility, athlete_view, top_n, created_at, groups(name)';
+
+/** BOARD_COLUMNS' `groups(name)` embed lands as `{ groups: { name: string } | null }`
+ *  on the raw row (postgrest-js, many-to-one) — this flattens it to `group_name` so
+ *  every caller of fetchStaffBoards/fetchBoard/fetchMyBoards gets the plain
+ *  `Leaderboard` shape instead of every display site re-doing `board.groups?.name`. */
+function mapBoardRow(row: Omit<Leaderboard, 'group_name'> & { groups: { name: string } | null }): Leaderboard {
+  const { groups, ...rest } = row;
+  return { ...rest, group_name: groups?.name ?? null };
+}
 
 /** Every board in the org, published or draft — the staff list. Coach and medical only;
  *  RLS itself refuses this select to anyone else, this is just the read. */
@@ -62,7 +78,7 @@ export async function fetchStaffBoards(db: Db, orgId: string): Promise<Leaderboa
     .order('visibility', { ascending: false })
     .order('name');
   if (error) throw new Error(error.message);
-  return data ?? [];
+  return (data ?? []).map(mapBoardRow);
 }
 
 export async function fetchBoard(db: Db, orgId: string, boardId: string): Promise<Leaderboard | null> {
@@ -74,7 +90,61 @@ export async function fetchBoard(db: Db, orgId: string, boardId: string): Promis
     .is('deleted_at', null)
     .maybeSingle();
   if (error) throw new Error(error.message);
-  return data ?? null;
+  return data ? mapBoardRow(data) : null;
+}
+
+/** Friendly copy for a board's population, replacing the four sites that used to
+ *  print the raw `population_type` check-constraint value ('squad' | 'group' |
+ *  'selected') straight into the UI. Deliberately its own function here rather than
+ *  folded into groupFilter.ts's `groupScopeLabel`: that one names the *global,
+ *  session-wide group filter* a screen is currently narrowed to (its own doc comment:
+ *  "every header eyebrow, CSV caption and PDF meta line"), a different concept from a
+ *  board's own *configured* population — conflating the two would mean a filtered
+ *  staff view of a squad-wide board could print the filter's group name where the
+ *  board's own scope belongs. One shared function per concept, same reasoning
+ *  groupScopeLabel itself gives for existing at all: "the label can never drift
+ *  per-screen" — four call sites needed exactly one definition, not four copies.
+ *
+ *  `selectedNames`, when supplied, must already be RLS-cleared for the caller (see
+ *  fetchAthleteNames below) — this function never queries. Without it, 'selected'
+ *  falls back to a real count ("3 selected athletes"), not a bare generic label:
+ *  athlete_ids is already fetched on every Leaderboard row, so the count costs
+ *  nothing extra even where names aren't available. */
+export function populationLabel(
+  board: Pick<Leaderboard, 'population_type' | 'group_name' | 'athlete_ids'>,
+  selectedNames?: readonly string[] | null,
+): string {
+  if (board.population_type === 'squad') return 'Whole squad';
+  if (board.population_type === 'group') return board.group_name ?? 'Unknown group';
+  // population_type === 'selected'
+  if (selectedNames && selectedNames.length > 0) return selectedNames.join(', ');
+  const count = board.athlete_ids?.length ?? 0;
+  return count === 1 ? '1 selected athlete' : `${count} selected athletes`;
+}
+
+/** Real names for a 'selected' board's athlete_ids, for the two staff display sites
+ *  only. Judgement call, not an oversight: an athlete-scoped `db` cannot use this —
+ *  `athletes_self_select` (migration 0012) restricts a non-staff caller's SELECT on
+ *  `athletes` to their own row (`id = auth_athlete_id()`), so this returns at most one
+ *  name for an athlete caller regardless of how many ids are passed in. Building a
+ *  security-definer RPC to give an athlete the real names of the rest of a 'selected'
+ *  population (compute_leaderboard's own pattern, migration 0016) is a real, larger
+ *  change deferred here; the two athlete-surface display sites call populationLabel()
+ *  with no `selectedNames` argument and get the count-only branch instead — see their
+ *  own comments. */
+export async function fetchAthleteNames(
+  db: Db,
+  orgId: string,
+  athleteIds: readonly string[],
+): Promise<Map<string, string>> {
+  if (athleteIds.length === 0) return new Map();
+  const { data, error } = await db
+    .from('athletes')
+    .select('id, first_name, last_name')
+    .eq('org_id', orgId)
+    .in('id', [...athleteIds]);
+  if (error) throw new Error(error.message);
+  return new Map((data ?? []).map((a) => [a.id, `${a.first_name} ${a.last_name}`]));
 }
 
 export type RankedRow = {
@@ -119,7 +189,7 @@ export async function fetchMyBoards(
   if (error) throw new Error(error.message);
 
   const results = await Promise.all(
-    (boards ?? []).map(async (board) => {
+    (boards ?? []).map(mapBoardRow).map(async (board) => {
       const rows = await fetchBoardRanking(db, board.id);
       const own = rows.find((r) => r.athlete_id === athleteId);
       return own ? { board, own } : null;

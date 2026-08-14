@@ -1,7 +1,12 @@
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
-import { fetchStaffBoards, fetchMetricCatalogue } from '@/lib/queries/leaderboards';
+import {
+  fetchStaffBoards,
+  fetchMetricCatalogue,
+  fetchAthleteNames,
+  populationLabel,
+} from '@/lib/queries/leaderboards';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Manage leaderboards · Fydr' };
@@ -38,6 +43,17 @@ export default async function ManageLeaderboardsPage() {
   ]);
   const labelByKey = new Map(catalogue.map((m) => [m.key, m]));
 
+  // One batched name lookup for every 'selected' board on the page, not one query
+  // per row — fetchAthleteNames takes a flat id list, so every board's athlete_ids
+  // are unioned first (Set dedupes an athlete selected on more than one board).
+  // Staff-only, same reasoning as the board detail page: see fetchAthleteNames'
+  // own comment in leaderboards.ts.
+  const selectedIds = new Set(
+    boards.filter((b) => b.population_type === 'selected').flatMap((b) => b.athlete_ids ?? []),
+  );
+  const selectedNamesById =
+    selectedIds.size > 0 ? await fetchAthleteNames(db, orgId, [...selectedIds]) : new Map<string, string>();
+
   return (
     <>
       <div className="topbar">
@@ -69,6 +85,12 @@ export default async function ManageLeaderboardsPage() {
         <div className="stack">
           {boards.map((board) => {
             const metric = labelByKey.get(board.metric_key);
+            const selectedNames =
+              board.population_type === 'selected'
+                ? (board.athlete_ids ?? [])
+                    .map((id) => selectedNamesById.get(id))
+                    .filter((n): n is string => !!n)
+                : null;
             return (
               <Link key={board.id} href={`/leaderboards/${board.id}`} className="card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -78,7 +100,7 @@ export default async function ManageLeaderboardsPage() {
                     </p>
                     <p className="tiny">
                       {metric?.label ?? board.metric_key}
-                      {metric?.unit ? metric.unit : ''} · {board.population_type} ·{' '}
+                      {metric?.unit ? metric.unit : ''} · {populationLabel(board, selectedNames)} ·{' '}
                       {board.window_type === 'days'
                         ? `last ${board.window_days} days`
                         : board.window_type === 'season'

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
-import { fetchMyBoards, fetchMetricCatalogue } from '@/lib/queries/leaderboards';
+import { fetchMyBoards, fetchMetricCatalogue, populationLabel } from '@/lib/queries/leaderboards';
 import { formatNumber } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
 
@@ -44,7 +44,11 @@ export default async function MyBoardsPage() {
                   {board.name}
                 </p>
                 <p className="tiny" style={{ marginBottom: 8 }}>
-                  {board.population_type} ·{' '}
+                  {/* No selectedNames arg: an athlete-scoped `db` can't resolve other
+                      athletes' names for a 'selected' board (RLS — see
+                      fetchAthleteNames' own comment in leaderboards.ts), so this falls
+                      back to populationLabel's count-only branch for that case. */}
+                  {populationLabel(board)} ·{' '}
                   {board.window_type === 'days'
                     ? `last ${board.window_days} days`
                     : board.window_type === 'season'

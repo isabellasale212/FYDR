@@ -149,7 +149,11 @@ export default async function ProgrammesPage({
               ))}
             </div>
             {isCoach || isMedical ? (
-              <Link href="/programmes/new" className="btn-primary" style={{ marginTop: 12, width: '100%', justifyContent: 'center' }}>
+              <Link
+                href="/programmes/new"
+                className="btn-primary"
+                style={{ marginTop: 12, width: '100%', display: 'inline-flex', justifyContent: 'center' }}
+              >
                 + New programme
               </Link>
             ) : null}

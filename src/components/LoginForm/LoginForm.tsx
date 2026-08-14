@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { PasswordField } from '@/components/PasswordField/PasswordField';
 import { createClient } from '@/lib/supabase/client';
+import { safeNextPath } from '@/lib/safeRedirect';
 import type { SignInResult } from '@/app/auth/sign-in/route';
 
 /** Formats a countdown in the same honest, specific register the rest of the app's
@@ -103,7 +104,9 @@ export function LoginForm() {
       return;
     }
 
-    const next = params.get('next') ?? '/';
+    // Open-redirect guard: `next` came off the URL, which anyone could have
+    // sent — see safeRedirect.ts's own header for the exact attack.
+    const next = safeNextPath(params.get('next'));
 
     // The password check just passed, so there is a real session — but if this account has
     // a verified TOTP factor, that session is only aal1 and is not the real sign-in yet.

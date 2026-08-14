@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { safeNextPath } from '@/lib/safeRedirect';
 
 type Status = 'loading' | 'ready' | 'error';
 
@@ -19,7 +20,9 @@ type Status = 'loading' | 'ready' | 'error';
 export function MfaChallengeForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get('next') ?? '/';
+  // Open-redirect guard: `next` came off the URL, which anyone could have
+  // sent — see safeRedirect.ts's own header for the exact attack.
+  const next = safeNextPath(params.get('next'));
 
   const [status, setStatus] = useState<Status>('loading');
   const [factorId, setFactorId] = useState<string | null>(null);

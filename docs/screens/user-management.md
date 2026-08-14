@@ -676,9 +676,19 @@ This is the join that makes `athletes.user_id` nullable worth the trouble.
   app, and making them switch to an admin account to add a player will be resented. An
   alternative is a coach-scoped "invite athlete" that cannot grant staff roles.
 - **O-423** Two-factor authentication for admins. `09-security-and-compliance.md` §8.1 covers
-  authentication generally. This screen shows an "MFA: not enrolled" line, but nothing requires
-  it. Given that an admin account can grant medical access to anyone, I recommend mandatory MFA
-  for the admin role. Confirm, because it adds friction to the account clubs sign up with.
+  authentication generally. This screen used to show an "MFA: not enrolled" line that was true
+  for every user unconditionally — a hardcoded string, not a read of anything — and nothing
+  required it. Login-security checklist item 3 made the line real (`UserDetailPanel.tsx` now
+  reads `supabase.auth.admin.mfa.listFactors()`) and added a "Remove MFA factor" admin action
+  for the no-recovery-codes case, but did not resolve this question's actual ask: the original
+  recommendation of mandatory MFA for admin is implemented as a strong, undismissable Settings
+  prompt (`MfaEnrollment.tsx`), not as something that blocks sign-in or app use — the RLS-level
+  enforcement (`auth_is_aal2()`, migration 0048) that would make it a real, unbypassable
+  requirement is deliberately not wired into any policy yet, for reasons recorded in that
+  migration's own header and in `09-security-and-compliance.md`'s implementation-status note.
+  Still open: whether "prompted" is an acceptable permanent answer for admin specifically,
+  given the same "can grant medical access to anyone" argument this question opened with, or
+  whether admin is where the RLS follow-up should land first, ahead of coach/medical.
 
 ---
 

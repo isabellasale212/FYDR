@@ -68,9 +68,26 @@ $$;
 -- security definer, because by the time it is called the session has already switched to
 -- the authenticated role and can no longer read users or user_roles freely.
 -- set_config with is_local = true, so the claim rolls back with the test's transaction.
+--
+-- p_aal (added migration 0048, login-security checklist item 3): the top-level `aal`
+-- Supabase Auth itself stamps on every token ('aal1' or 'aal2' — see JwtPayload's
+-- RequiredClaims in @supabase/auth-js), NOT something auth_hooks.custom_access_token_hook
+-- writes, which only ever touches the app_metadata branch above. Defaults to 'aal1', which
+-- is exactly what every caller of this function got before this parameter existed (the
+-- claim object had no `aal` key at all, and public.auth_is_aal2() treats a missing claim
+-- the same as 'aal1') — so every one of the ~30 existing test files that calls
+-- tests.set_jwt(uuid) with one argument is unaffected byte-for-byte. Only
+-- 240_mfa_aal2_helper_test.sql passes 'aal2' explicitly.
 -- ---------------------------------------------------------------------------
 
-create or replace function tests.set_jwt(p_user_id uuid)
+-- A true replace, not a second overload: without the drop, `tests.set_jwt(uuid, text
+-- default ...)` would coexist alongside the old `tests.set_jwt(uuid)` as a distinct
+-- signature rather than superseding it, since Postgres identifies a function by its
+-- parameter types, and a trailing default does not collapse two different arities into one
+-- function for `create or replace` purposes.
+drop function if exists tests.set_jwt(uuid);
+
+create or replace function tests.set_jwt(p_user_id uuid, p_aal text default 'aal1')
 returns void
 language plpgsql
 security definer
@@ -83,6 +100,7 @@ begin
            'sub',  u.id::text,
            'role', 'authenticated',
            'aud',  'authenticated',
+           'aal',  p_aal,
            'app_metadata', jsonb_build_object(
              'org_id', u.org_id,
              'roles', coalesce(
@@ -206,7 +224,7 @@ end;
 $$;
 
 grant execute on function tests.uid(text, text)              to public;
-grant execute on function tests.set_jwt(uuid)                to public;
+grant execute on function tests.set_jwt(uuid, text)          to public;
 grant execute on function tests.clear_jwt()                  to public;
 grant execute on function tests.club_tables()                to public;
 grant execute on function tests.all_public_tables()          to public;

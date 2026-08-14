@@ -121,6 +121,22 @@ for staff, `09-security-and-compliance.md` §8), role confirmation, done. Staff 
 screen because they are not the data subject of the performance data. They do get a privacy
 notice covering their own account data.
 
+> **Real divergence, recorded per CLAUDE.md §5 rather than silently followed** (login-security
+> checklist item 3): this build has no onboarding wizard at all — an admin-created account
+> starts `active` immediately (`lib/queries/userManagement.ts`'s own header has always said
+> so), and the person's first action is just signing in at the one real `/login` screen, not a
+> guided multi-step sequence with an "MFA enrolment" step 2b to hook into. MFA enrollment
+> instead lives in Settings (`MfaEnrollment.tsx`), reachable any time after first sign-in, and
+> is a strong, undismissable prompt for coach/medical/admin rather than something that blocks
+> progress the way this section's "mandatory" and the onboarding table below ("Staff without
+> MFA: Cannot proceed. Sign-out is the only exit.") describe — see
+> `09-security-and-compliance.md`'s implementation-status note for exactly why a hard block
+> wasn't safe to ship in this pass. Also wrong below, independent of that design choice:
+> item 19's "Recovery codes are the route back" — Supabase's TOTP MFA API has no recovery-code
+> concept at all, checked against the shipped SDK types before writing any of this, so no
+> implementation of this flow against this vendor could offer that. The real recovery path is
+> `UserDetailPanel.tsx`'s admin-only "Remove MFA factor" action.
+
 The shell they land in, athlete or staff, is resolved server-side from their roles. A user
 holding both roles gets the staff shell with their own athlete data inside it, never two apps.
 

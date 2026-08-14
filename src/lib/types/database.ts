@@ -4283,6 +4283,13 @@ export type Database = {
       Args: Record<string, never>
       Returns: unknown
     }
+    suspend_assignments_for_rehab: {
+      Args: {
+        p_athlete_id: string
+        p_rehab_programme_id: string
+      }
+      Returns: undefined
+    }
     write_audit_event: {
       Args: {
         p_action: string

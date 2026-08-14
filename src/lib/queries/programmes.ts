@@ -505,13 +505,19 @@ export async function assignProgramme(
   input: { programmeId: string; athleteId: string | null; groupId: string | null; programmeType: ProgrammeType },
 ): Promise<{ error: string | null }> {
   if (input.programmeType === 'rehab' && input.athleteId) {
-    const { error: suspendErr } = await db
-      .from('programme_assignments')
-      .update({ status: 'suspended', suspended_reason: 'Rehab programme assigned' })
-      .eq('org_id', orgId)
-      .eq('athlete_id', input.athleteId)
-      .eq('status', 'active')
-      .neq('programme_id', input.programmeId);
+    // suspend_assignments_for_rehab (migration 0050), not a plain client
+    // UPDATE: this used to fail RLS outright — programme_assignments_update's
+    // WITH CHECK (migration 0022) requires a medical actor's row to resolve
+    // to programme_type = 'rehab' via its OWN programme_id, but the row
+    // being suspended here is the athlete's EXISTING non-rehab assignment,
+    // unchanged by the suspend. That made this the one interaction this
+    // feature exists for that never actually worked. See the migration's
+    // own header for why a narrow SECURITY DEFINER function, not a looser
+    // policy.
+    const { error: suspendErr } = await db.rpc('suspend_assignments_for_rehab', {
+      p_athlete_id: input.athleteId,
+      p_rehab_programme_id: input.programmeId,
+    });
     if (suspendErr) return { error: humanizeDbError(suspendErr.message, 'staff') };
   }
 

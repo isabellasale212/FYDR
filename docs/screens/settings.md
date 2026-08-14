@@ -536,7 +536,7 @@ upwards makes the optional extras available and turns nothing on.
 
 | Control | Behaviour |
 |---|---|
-| Change password | Requires the current password. Zod-validated: 10 characters minimum, checked against a breached-password list, strength shown as feedback not as a gate |
+| Change password | Requires the current password. Zod-validated: 12 characters minimum (matching `09-security-and-compliance.md` §8), checked against a breached-password list, strength shown as feedback not as a gate |
 | Passkeys | List, add, remove. At least one other sign-in method must remain |
 | Two-factor | Enrol, view recovery codes, disable with re-authentication |
 | Active sessions | Device, approximate location, last seen, current session marked. "Sign out everywhere else" |
@@ -645,7 +645,7 @@ receive the previous user's notifications. That last one is easy to miss and is 
 | Display name 2 to 80 characters | Block | "Enter your name." |
 | Phone is a valid international number | Block | "Enter a valid phone number." |
 | Avatar under 5 MB, image type, stripped of EXIF | Block | "Images must be under 5 MB." |
-| Password 10 characters minimum | Block | "Use at least 10 characters." |
+| Password 12 characters minimum | Block | "Use at least 12 characters." |
 | Password not in the breached list | Block | "This password has appeared in a data breach. Choose another." |
 | New password differs from the current one | Block | "Choose a different password." |
 | Removing the last sign-in method | Block | "Keep at least one way to sign in." |

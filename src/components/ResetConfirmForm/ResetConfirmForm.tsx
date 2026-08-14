@@ -6,8 +6,9 @@ import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { PasswordField } from '@/components/PasswordField/PasswordField';
 
-/** Same rule and copy as ChangePasswordForm — the app's one password standard. */
-const MIN_LENGTH = 10;
+/** Same rule and copy as ChangePasswordForm — the app's one password standard.
+ *  12, matching docs/09-security-and-compliance.md §8 (audit: was 10). */
+const MIN_LENGTH = 12;
 
 type LinkPhase = 'checking' | 'ready' | 'no-link' | 'expired' | 'failed';
 

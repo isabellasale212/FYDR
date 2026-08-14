@@ -56,6 +56,13 @@ enable_refresh_token_rotation = true
 refresh_token_reuse_interval = 10
 enable_signup = false          # accounts are created by invite only, screens/onboarding.md
 enable_anonymous_sign_ins = false
+# 09-security-and-compliance.md §8 / screens/settings.md's own validation table.
+# The app's forms already enforce this client-side (ChangePasswordForm.tsx,
+# ResetConfirmForm.tsx) — this is the GoTrue-level backstop so a direct API
+# call bypassing the UI still can't set anything shorter. Local/CLI-linked
+# config only: the live hosted project's own Auth setting is managed via the
+# Supabase dashboard and is not something this file can push on its own.
+minimum_password_length = 12
 
 [auth.email]
 enable_signup = false

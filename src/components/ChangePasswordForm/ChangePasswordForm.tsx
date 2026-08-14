@@ -3,7 +3,12 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
-const MIN_LENGTH = 10;
+// docs/09-security-and-compliance.md §8's own spec: 12 characters, no forced
+// composition rules (deliberately — NCSC/NIST guidance is that length beats
+// mandatory symbols/numbers, which mostly just push people toward "Password1!"
+// patterns). This used to say 10, which undershot the app's own documented
+// minimum — audit finding, TikTok security-checklist item 5.
+const MIN_LENGTH = 12;
 
 /**
  * screens/settings.md: current, new, confirm. Requires the current password

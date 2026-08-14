@@ -1,4 +1,5 @@
 import type { WorkspaceAthlete } from '@/lib/nutritionWorkspace';
+import type { LibraryMeal } from '@/lib/queries/mealLibrary';
 import type { RuleWithNames } from '@/lib/queries/nutritionRules';
 
 export type PlanDTO = {
@@ -19,4 +20,4 @@ export type PlanDTO = {
 
 export type UnitGroupDTO = { unit: string; athleteIds: string[] };
 
-export type { WorkspaceAthlete, RuleWithNames };
+export type { WorkspaceAthlete, RuleWithNames, LibraryMeal };

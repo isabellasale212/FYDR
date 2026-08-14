@@ -21,11 +21,12 @@ type Props = {
    *  to the common case so the form doesn't offer a control that will always be
    *  refused. */
   canPickAnyScope: boolean;
+  timezone: string;
 };
 
 const MD_OPTIONS = [-5, -4, -3, -2, -1, 0, 1];
 
-export function NutritionTargetForm({ orgId, userId, athletes, groups, canPickAnyScope }: Props) {
+export function NutritionTargetForm({ orgId, userId, athletes, groups, canPickAnyScope, timezone }: Props) {
   const router = useRouter();
   const [scope, setScope] = useState<TargetScope>(canPickAnyScope ? 'org_default' : 'athlete');
   const [athleteId, setAthleteId] = useState(athletes[0]?.id ?? '');
@@ -54,7 +55,9 @@ export function NutritionTargetForm({ orgId, userId, athletes, groups, canPickAn
         fatG: fatG.trim() === '' ? null : Number(fatG),
         fluidMl: fluidMl.trim() === '' ? null : Number(fluidMl),
           reason: reason.trim() || null,
-          effectiveFrom: todayIso(),
+          // The org's real local today, not the server's UTC clock
+          // (todayIso's hardcoded Europe/London fallback).
+          effectiveFrom: todayIso(timezone),
         }),
       ),
     onSuccess: (result) => {

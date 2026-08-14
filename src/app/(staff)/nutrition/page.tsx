@@ -43,7 +43,7 @@ export const metadata = { title: 'Nutrition · Fydr' };
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export default async function NutritionPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, claims } = await requireStaff();
+  const { db, orgId, claims, timezone } = await requireStaff();
   const isCoach = claims.roles.includes('coach');
   const isMedical = claims.roles.includes('medical');
   const params = await searchParams;
@@ -55,10 +55,14 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
     fetchSquadList(db, orgId, []), // unfiltered — plan metadata (assigned count, mean
     // mass) is a fact about the plan, not about the page's current group filter
     fetchRules(db, orgId),
-    fetchTargets(db, orgId),
+    fetchTargets(db, orgId, timezone),
   ]);
 
-  const today = todayIso();
+  // The org's real local today, not the server's UTC clock (todayIso's
+  // hardcoded Europe/London fallback) — this page used to call todayIso()
+  // with no argument at all despite requireStaff() already having the real
+  // timezone, same bug class as schedule.ts's own dayBounds()/rangeBounds().
+  const today = todayIso(timezone);
   const weekStart = mondayOf(today);
   const weekEnd = addDays(weekStart, 6);
   const massSince = addDays(today, -90); // trailing ~13 weeks, covers the spec's 12 weekly points
@@ -173,6 +177,7 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
         unitGroups={unitGroups.map((g) => ({ unit: g.unit, athleteIds: g.athletes.map((a) => a.id) }))}
         weekStart={weekStart}
         weekEnd={weekEnd}
+        timezone={timezone}
       />
     </>
   );

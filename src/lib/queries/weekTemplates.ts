@@ -3,7 +3,7 @@ import { humanizeDbError } from '@/lib/writeErrors';
 import type { Db } from './groups';
 import type { Json } from '../types/database';
 import { mondayOf, rangeBounds } from './schedule';
-import { dateInTz } from '../format';
+import { dateInTz, daysBetween } from '../format';
 
 /* screens/md-planner.md, cut down hard from a screen the spec's own header
  * calls "provisional. Awaiting client design photographs" and closes with
@@ -461,7 +461,10 @@ export async function applyTemplate(
 
   const week: WeekDay[] = weekDates.map((date) => ({
     date,
-    mdOffset: fixtureDate ? Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${fixtureDate}T00:00:00Z`)) / 86_400_000) : null,
+    // daysBetween (format.ts), not a reinvented Date.parse diff — same
+    // primitive apply/page.tsx's own preview uses for the identical
+    // fixtureDate-anchored offset.
+    mdOffset: fixtureDate ? daysBetween(fixtureDate, date) : null,
   }));
 
   // Same fix as schedule.ts's own dayBounds()/rangeBounds() (integration-

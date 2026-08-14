@@ -35,6 +35,7 @@ export default async function GymSessionPage({
     orgId,
     athleteId,
     sessionId,
+    timezone,
   );
   if (error || !gymSessionLogId) {
     throw new Error(error ?? 'Could not start this session.');

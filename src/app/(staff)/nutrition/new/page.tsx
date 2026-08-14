@@ -9,7 +9,7 @@ import { requireStaff } from '@/lib/session';
 export const metadata = { title: 'New nutrition target · Fydr' };
 
 export default async function NewNutritionTargetPage() {
-  const { db, orgId, orgName, claims } = await requireStaff();
+  const { db, orgId, orgName, claims, timezone } = await requireStaff();
   const isCoach = claims.roles.includes('coach');
   const isMedical = claims.roles.includes('medical');
   if (!isCoach && !isMedical) {
@@ -44,6 +44,7 @@ export default async function NewNutritionTargetPage() {
           athletes={athletes}
           groups={groups}
           canPickAnyScope={isCoach}
+          timezone={timezone}
         />
       </div>
     </>

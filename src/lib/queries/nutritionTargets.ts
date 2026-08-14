@@ -1,4 +1,5 @@
 import { humanizeDbError } from '@/lib/writeErrors';
+import { todayIso } from '../format';
 import type { Db } from './groups';
 
 /* screens/nutrition-plans.md and screens/nutrition-guidance.md, cut down hard to
@@ -60,6 +61,7 @@ const SCOPE_ORDER: Record<TargetScope, number> = { org_default: 0, group: 1, ath
 export async function fetchTargets(
   db: Db,
   orgId: string,
+  timezone: string,
   includeExpired = false,
 ): Promise<TargetWithNames[]> {
   let query = db
@@ -71,7 +73,9 @@ export async function fetchTargets(
     .is('deleted_at', null);
 
   if (!includeExpired) {
-    const today = new Date().toISOString().slice(0, 10);
+    // The org's real local today, not the server's UTC clock — same bug
+    // class as schedule.ts's own dayBounds()/rangeBounds().
+    const today = todayIso(timezone);
     query = query.or(`effective_to.is.null,effective_to.gte.${today}`);
   }
 
@@ -177,10 +181,12 @@ export async function createTarget(
 
 /** Sets effective_to to today rather than deleting — the table's own history is
  *  kept, matching every other interval-style table in this build. */
-export async function expireTarget(db: Db, orgId: string, id: string): Promise<{ error: string | null }> {
+export async function expireTarget(db: Db, orgId: string, id: string, timezone: string): Promise<{ error: string | null }> {
   const { error } = await db
     .from('nutrition_targets')
-    .update({ effective_to: new Date().toISOString().slice(0, 10) })
+    // The org's real local today, not the server's UTC clock — same bug
+    // class as schedule.ts's own dayBounds()/rangeBounds().
+    .update({ effective_to: todayIso(timezone) })
     .eq('org_id', orgId)
     .eq('id', id)
     .is('effective_to', null);

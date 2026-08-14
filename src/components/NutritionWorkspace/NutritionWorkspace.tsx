@@ -40,6 +40,7 @@ type Props = {
   unitGroups: UnitGroupDTO[];
   weekStart: string;
   weekEnd: string;
+  timezone: string;
 };
 
 /* NUTRITION-SPEC.md §2's layout skeleton and §9's state model, adapted for real data.
@@ -68,6 +69,7 @@ export function NutritionWorkspace({
   unitGroups,
   weekStart,
   weekEnd,
+  timezone,
 }: Props) {
   const router = useRouter();
   const canEdit = isCoach || isMedical;
@@ -170,7 +172,7 @@ export function NutritionWorkspace({
         dayType,
         dayTypeLabel: dayTypeInfo.label,
         scopeLabel: selectedPlan.name,
-      }));
+      }, timezone));
     },
     onSuccess: (result) => {
       if (result.error) return setAssignError(result.error);
@@ -181,7 +183,7 @@ export function NutritionWorkspace({
   });
 
   const createPlanMutation = useMutation({
-    mutationFn: async () => withWriteTimeout(createPlan(createClient(), orgId, userId, newPlanGroupId, rules)),
+    mutationFn: async () => withWriteTimeout(createPlan(createClient(), orgId, userId, newPlanGroupId, rules, timezone)),
     onSuccess: (result) => {
       if (result.error) return setAssignError(result.error);
       setAssignError(null);

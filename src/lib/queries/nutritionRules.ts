@@ -129,8 +129,12 @@ export async function versionRule(
   orgId: string,
   userId: string,
   input: RuleInput,
+  timezone: string,
 ): Promise<{ id: string | null; error: string | null }> {
-  const today = todayIso();
+  // The org's real local today, not the server's UTC clock (todayIso's
+  // hardcoded Europe/London fallback) — same bug class as schedule.ts's
+  // own dayBounds()/rangeBounds().
+  const today = todayIso(timezone);
 
   let existing = db
     .from('nutrition_rules')
@@ -228,6 +232,7 @@ export async function syncComputedTarget(
   massKg: number,
   dayType: DayTypeId,
   dayTypeLabel: string,
+  timezone: string,
 ): Promise<TargetSyncResult> {
   const mdOffset = mdOffsetForDayType(dayType);
 
@@ -248,7 +253,9 @@ export async function syncComputedTarget(
 
   const multiplier = DAY_TYPES.find((d) => d.id === dayType)?.multiplier ?? 1;
   const computed = computeTargets(rule, massKg, multiplier);
-  const today = todayIso();
+  // The org's real local today, not the server's UTC clock — same bug
+  // class as versionRule above.
+  const today = todayIso(timezone);
   const reason = `Auto-computed from ${ruleLabel} (${dayTypeLabel}) at ${massKg.toFixed(1)} kg`;
 
   let existing = db
@@ -330,18 +337,25 @@ export async function assignPlan(
   orgId: string,
   userId: string,
   input: AssignPlanInput,
+  timezone: string,
 ): Promise<AssignPlanResult> {
-  const { id: ruleId, error } = await versionRule(db, orgId, userId, {
-    scope: input.scope,
-    athleteId: input.athleteId,
-    groupId: input.groupId,
-    protein: input.protein,
-    carb: input.carb,
-    fat: input.fat,
-    fluid: input.fluid,
-    energyCap: input.energyCap,
-    reason: input.reason,
-  });
+  const { id: ruleId, error } = await versionRule(
+    db,
+    orgId,
+    userId,
+    {
+      scope: input.scope,
+      athleteId: input.athleteId,
+      groupId: input.groupId,
+      protein: input.protein,
+      carb: input.carb,
+      fat: input.fat,
+      fluid: input.fluid,
+      energyCap: input.energyCap,
+      reason: input.reason,
+    },
+    timezone,
+  );
   if (error || !ruleId) return { error: error ?? 'Could not save the rule.', synced: 0, skipped: 0 };
 
   const athleteIds =
@@ -381,6 +395,7 @@ export async function assignPlan(
       latest.body_mass_kg,
       input.dayType,
       input.dayTypeLabel,
+      timezone,
     );
     if (result.skipped) skipped += 1;
     else synced += 1;
@@ -418,19 +433,26 @@ export async function createPlan(
   userId: string,
   groupId: string,
   existingRules: readonly RuleWithNames[],
+  timezone: string,
 ): Promise<CreatePlanResult> {
   if (existingRules.some((r) => r.group_id === groupId)) {
     return { error: 'That group already has a live plan.', ruleId: null };
   }
-  return versionRule(db, orgId, userId, {
-    scope: 'group',
-    athleteId: null,
-    groupId,
-    protein: 1.9,
-    carb: 6.0,
-    fat: 1.0,
-    fluid: 40,
-    energyCap: null,
-    reason: null,
-  }).then(({ id, error }) => ({ error, ruleId: id }));
+  return versionRule(
+    db,
+    orgId,
+    userId,
+    {
+      scope: 'group',
+      athleteId: null,
+      groupId,
+      protein: 1.9,
+      carb: 6.0,
+      fat: 1.0,
+      fluid: 40,
+      energyCap: null,
+      reason: null,
+    },
+    timezone,
+  ).then(({ id, error }) => ({ error, ruleId: id }));
 }

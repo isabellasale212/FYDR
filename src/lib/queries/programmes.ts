@@ -9,6 +9,7 @@ import type {
 } from '@/lib/types/database';
 import type { GymSetLogInput } from '@/lib/validation/gym';
 import { humanizeDbError } from '@/lib/writeErrors';
+import { todayIso } from '../format';
 import type { Db } from './groups';
 
 /* screens/gym-programmes.md, screens/programme-builder.md, screens/my-programme.md
@@ -803,13 +804,19 @@ export async function startOrGetSessionLog(
   orgId: string,
   athleteId: string,
   programmeSessionId: string,
+  timezone: string,
 ): Promise<{
   id: string | null;
   status: GymLogStatus | null;
   startedAt: string | null;
   error: string | null;
 }> {
-  const today = new Date().toISOString().slice(0, 10);
+  // The org's real local today, not the server's UTC clock — an athlete
+  // logging a gym session just after midnight local time (but still
+  // "yesterday" in UTC, or vice versa) needs "today's" open log matched
+  // against their own local day, same bug class as schedule.ts's own
+  // dayBounds()/rangeBounds().
+  const today = todayIso(timezone);
   const { data: existing, error: findErr } = await db
     .from('gym_session_logs')
     .select('id, status, started_at')

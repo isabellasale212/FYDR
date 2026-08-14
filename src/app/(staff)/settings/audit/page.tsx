@@ -57,8 +57,11 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Sea
   // explicitly; an explicit from/to (even a partial one) is honoured as
   // given rather than merged with the default.
   const usingDefaultWindow = !isAllTime && explicitFrom === null && explicitTo === null;
-  const from = isAllTime ? null : (explicitFrom ?? (usingDefaultWindow ? addDays(todayIso(), -(DEFAULT_WINDOW_DAYS - 1)) : null));
-  const to = isAllTime ? null : (explicitTo ?? (usingDefaultWindow ? todayIso() : null));
+  // The org's real local today, not the server's UTC clock (todayIso's
+  // hardcoded Europe/London fallback) — same bug class as schedule.ts's
+  // own dayBounds()/rangeBounds().
+  const from = isAllTime ? null : (explicitFrom ?? (usingDefaultWindow ? addDays(todayIso(timezone), -(DEFAULT_WINDOW_DAYS - 1)) : null));
+  const to = isAllTime ? null : (explicitTo ?? (usingDefaultWindow ? todayIso(timezone) : null));
 
   const pageParam = Number.parseInt(str(sp.page) ?? '1', 10);
   const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;

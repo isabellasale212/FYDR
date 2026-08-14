@@ -356,9 +356,15 @@ export async function fetchInjuryAvailabilityReport(
   const { data: injuries, error: injErr } = await injuriesQuery;
   if (injErr) throw new Error(injErr.message);
 
-  const today = new Date().toISOString().slice(0, 10);
+  // An injury with no actual_return yet is still open — "as of today" for
+  // this report's purposes. Every real caller already passes the org's own
+  // local today as `toDate` (todayIso(timezone)), so that's reused here
+  // rather than re-deriving a second, server-UTC-clock "today" of our own
+  // (`new Date().toISOString().slice(0, 10)`, which reads the wrong day for
+  // part of every day the org is ahead of UTC — same bug class as
+  // schedule.ts's own dayBounds()/rangeBounds()).
   const relevant = (injuries ?? []).filter((i) => {
-    const end = i.actual_return ?? today;
+    const end = i.actual_return ?? toDate;
     return end >= fromDate;
   });
 
@@ -367,7 +373,7 @@ export async function fetchInjuryAvailabilityReport(
   let daysLost = 0;
   const weekTotals = new Map<string, number>();
   for (const i of relevant) {
-    const end = i.actual_return ?? today;
+    const end = i.actual_return ?? toDate;
     const overlap = daysOverlap(i.onset_date, end, fromDate, toDate);
     daysLost += overlap;
 

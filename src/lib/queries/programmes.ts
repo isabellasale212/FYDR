@@ -7,6 +7,7 @@ import type {
   ProgrammeStatus,
   ProgrammeType,
 } from '@/lib/types/database';
+import type { GymSetLogInput } from '@/lib/validation/gym';
 import { humanizeDbError } from '@/lib/writeErrors';
 import type { Db } from './groups';
 
@@ -851,40 +852,105 @@ export type LoggedSet = {
   rpe: number | null;
 };
 
+/** Reads gym_set_logs_current (migration 0044), not the base table — ADR-005 rule 3: a
+ *  corrected set's superseded original must never double-count here, the same discipline
+ *  wellness_entries_current/training_entries_current already enforce for their domains. */
 export async function fetchLoggedSets(db: Db, gymSessionLogId: string): Promise<LoggedSet[]> {
   const { data, error } = await db
-    .from('gym_set_logs')
+    .from('gym_set_logs_current')
     .select('id, programme_exercise_id, exercise_id, set_number, reps_completed, load_kg, rpe')
     .eq('gym_session_log_id', gymSessionLogId)
     .order('logged_at');
   if (error) throw new Error(error.message);
-  return data ?? [];
+  return (data ?? []).filter(
+    (r): r is LoggedSet =>
+      r.id !== null && r.exercise_id !== null && r.set_number !== null,
+  );
 }
 
-export async function logSet(
+/** The plain insert half of the outbox contract (lib/outbox.ts, blocker B4): id is
+ *  client-generated so a queued retry lands once, matching submitWellnessEntry/
+ *  submitCheckin exactly — throws the raw driver error rather than humanizing it, because
+ *  OutboxFlusher's alreadyDelivered() pattern-matches "duplicate key" in the raw message,
+ *  which a humanized sentence no longer contains. Humanizing happens at the display layer,
+ *  in the caller's own onError. */
+export async function submitGymSetLog(
   db: Db,
   orgId: string,
-  input: {
-    gymSessionLogId: string;
-    programmeExerciseId: string;
-    exerciseId: string;
-    setNumber: number;
-    repsCompleted: number | null;
-    loadKg: number | null;
-    rpe: number | null;
-  },
-): Promise<{ error: string | null }> {
+  input: GymSetLogInput,
+): Promise<void> {
   const { error } = await db.from('gym_set_logs').insert({
+    id: input.id,
     org_id: orgId,
-    gym_session_log_id: input.gymSessionLogId,
-    programme_exercise_id: input.programmeExerciseId,
-    exercise_id: input.exerciseId,
-    set_number: input.setNumber,
-    reps_completed: input.repsCompleted,
-    load_kg: input.loadKg,
+    gym_session_log_id: input.gym_session_log_id,
+    programme_exercise_id: input.programme_exercise_id,
+    exercise_id: input.exercise_id,
+    set_number: input.set_number,
+    reps_completed: input.reps_completed,
+    load_kg: input.load_kg,
     rpe: input.rpe,
   });
-  return { error: error ? humanizeDbError(error.message, 'athlete') : null };
+  if (error) throw new Error(error.message);
+}
+
+export type GymSetCorrectionInput = {
+  reps_completed: number | null;
+  load_kg: number | null;
+  rpe: number | null;
+};
+
+/** The sanctioned correction path (ADR-005, migration 0044): calls revise_gym_set_log,
+ *  which closes the original row and inserts a linked revision in one transaction — same
+ *  shape as reviseWellnessEntry/reviseCheckin, same reasoning. Online only, not queued
+ *  (lib/outbox.ts's own header explains why no revise_* RPC is). */
+export async function reviseGymSetLog(
+  db: Db,
+  originalId: string,
+  payload: GymSetCorrectionInput,
+): Promise<{ error: string | null }> {
+  const { error } = await db.rpc('revise_gym_set_log', {
+    p_original_id: originalId,
+    p_new_id: crypto.randomUUID(),
+    p_payload: payload,
+  });
+  if (error) {
+    if (error.message.includes('entry_not_revisable')) {
+      return {
+        error: 'This set has already been corrected once, or no longer exists. Refresh to see the latest.',
+      };
+    }
+    return { error: humanizeDbError(error.message, 'athlete') };
+  }
+  return { error: null };
+}
+
+export type GymSessionCorrectionInput = {
+  session_rpe: number | null;
+  comment: string | null;
+};
+
+/** Corrects session_rpe/comment on a COMPLETE session only — migration 0044's own header
+ *  explains why the rest of a gym_session_logs row (status, started_at, completed_at,
+ *  total_volume_kg) stays an ordinary in-place update instead. */
+export async function reviseGymSessionLog(
+  db: Db,
+  originalId: string,
+  payload: GymSessionCorrectionInput,
+): Promise<{ error: string | null }> {
+  const { error } = await db.rpc('revise_gym_session_log', {
+    p_original_id: originalId,
+    p_new_id: crypto.randomUUID(),
+    p_payload: payload,
+  });
+  if (error) {
+    if (error.message.includes('entry_not_revisable')) {
+      return {
+        error: 'This session has already been corrected once, is not complete yet, or no longer exists. Refresh to see the latest.',
+      };
+    }
+    return { error: humanizeDbError(error.message, 'athlete') };
+  }
+  return { error: null };
 }
 
 export async function completeSessionLog(
@@ -897,6 +963,147 @@ export async function completeSessionLog(
     .update({ status: 'complete', completed_at: new Date().toISOString(), session_rpe: sessionRpe })
     .eq('id', gymSessionLogId);
   return { error: error ? humanizeDbError(error.message, 'athlete') : null };
+}
+
+/* ---------------------------------------------------------------------------
+ * My Data, gym tab (my-data/page.tsx). There was no "my gym history" read at all before
+ * this — that page's own header comment named it as the one segment still missing. Kept
+ * deliberately minimal, matching the wellness/training tabs on the same page: a list of
+ * recent sessions, a per-session set breakdown, a "Correct" link. No volume trend chart,
+ * no e1RM chart, no PR callouts — those are real, larger, separately scoped features.
+ * ------------------------------------------------------------------------- */
+
+export type GymSessionSummary = {
+  id: string;
+  entry_date: string;
+  session_name: string | null;
+  status: GymLogStatus;
+  session_rpe: number | null;
+  total_volume_kg: number | null;
+  set_count: number;
+};
+
+/** Session names come from resolve_my_programme_sessions (already athlete-safe, security
+ *  definer), not a direct read of programme_sessions — an athlete has no select on that
+ *  table at all (migration 0021: "Athlete: No access. Athletes see the resolved output").
+ *  Only covers the athlete's CURRENTLY active assignment, so a session from an ended or
+ *  reassigned programme falls back to the generic "Gym session" label rather than a name
+ *  — a real, small, honest gap rather than a wrong or guessed name. */
+export async function fetchRecentGymSessions(
+  db: Db,
+  athleteId: string,
+  from: string,
+  to: string,
+): Promise<GymSessionSummary[]> {
+  const { data, error } = await db
+    .from('gym_session_logs_current')
+    .select('id, entry_date, status, session_rpe, total_volume_kg, programme_session_id')
+    .eq('athlete_id', athleteId)
+    .eq('status', 'complete')
+    .gte('entry_date', from)
+    .lte('entry_date', to)
+    .order('entry_date', { ascending: false });
+  if (error) throw new Error(error.message);
+
+  const rows = (data ?? []).filter(
+    (r): r is typeof r & { id: string; entry_date: string; status: GymLogStatus } =>
+      r.id !== null && r.entry_date !== null && r.status !== null,
+  );
+  if (rows.length === 0) return [];
+
+  const [setsRes, sessions] = await Promise.all([
+    db
+      .from('gym_set_logs_current')
+      .select('gym_session_log_id')
+      .in('gym_session_log_id', rows.map((r) => r.id)),
+    fetchMyProgrammeSessions(db, athleteId),
+  ]);
+  if (setsRes.error) throw new Error(setsRes.error.message);
+
+  const countByLog = new Map<string, number>();
+  for (const s of setsRes.data ?? []) {
+    if (!s.gym_session_log_id) continue;
+    countByLog.set(s.gym_session_log_id, (countByLog.get(s.gym_session_log_id) ?? 0) + 1);
+  }
+  const nameBySessionId = new Map(sessions.map((s) => [s.session_id, s.session_name]));
+
+  return rows.map((r) => ({
+    id: r.id,
+    entry_date: r.entry_date,
+    session_name: r.programme_session_id ? (nameBySessionId.get(r.programme_session_id) ?? null) : null,
+    status: r.status,
+    session_rpe: r.session_rpe,
+    total_volume_kg: r.total_volume_kg,
+    set_count: countByLog.get(r.id) ?? 0,
+  }));
+}
+
+export type GymSessionSetDetail = {
+  id: string;
+  exercise_id: string;
+  exercise_name: string;
+  set_number: number;
+  reps_completed: number | null;
+  load_kg: number | null;
+  rpe: number | null;
+};
+
+/** The per-session set breakdown for the My Data gym detail view — reads
+ *  gym_set_logs_current (ADR-005 rule 3) and looks exercise names up separately rather
+ *  than embedding, since PostgREST's embedded-join detection is unreliable against a view
+ *  with no foreign keys of its own. exercises is a shared, org-wide read (migration 0021:
+ *  "a name is not squad data"), so this is a plain in() lookup, not a resolve function. */
+export async function fetchGymSessionSetDetails(
+  db: Db,
+  gymSessionLogId: string,
+): Promise<GymSessionSetDetail[]> {
+  const { data, error } = await db
+    .from('gym_set_logs_current')
+    .select('id, exercise_id, set_number, reps_completed, load_kg, rpe')
+    .eq('gym_session_log_id', gymSessionLogId)
+    .order('set_number');
+  if (error) throw new Error(error.message);
+
+  const rows = (data ?? []).filter(
+    (r): r is typeof r & { id: string; exercise_id: string; set_number: number } =>
+      r.id !== null && r.exercise_id !== null && r.set_number !== null,
+  );
+  if (rows.length === 0) return [];
+
+  const exerciseIds = [...new Set(rows.map((r) => r.exercise_id))];
+  const { data: exercisesData, error: exErr } = await db
+    .from('exercises')
+    .select('id, name')
+    .in('id', exerciseIds);
+  if (exErr) throw new Error(exErr.message);
+  const nameById = new Map((exercisesData ?? []).map((e) => [e.id, e.name]));
+
+  return rows.map((r) => ({
+    id: r.id,
+    exercise_id: r.exercise_id,
+    exercise_name: nameById.get(r.exercise_id) ?? 'Exercise',
+    set_number: r.set_number,
+    reps_completed: r.reps_completed,
+    load_kg: r.load_kg,
+    rpe: r.rpe,
+  }));
+}
+
+/** Just enough about the parent session for the detail page's header — entry_date and
+ *  whether it is actually the caller's own row (RLS already guarantees the second part;
+ *  this is a maybeSingle so a bad id renders notFound rather than throwing). */
+export async function fetchGymSessionLog(
+  db: Db,
+  gymSessionLogId: string,
+): Promise<{ id: string; entry_date: string; session_rpe: number | null; comment: string | null } | null> {
+  const { data, error } = await db
+    .from('gym_session_logs_current')
+    .select('id, entry_date, session_rpe, comment')
+    .eq('id', gymSessionLogId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data || data.id === null || data.entry_date === null) return null;
+  return { id: data.id, entry_date: data.entry_date, session_rpe: data.session_rpe, comment: data.comment };
 }
 
 export type GymLogStatusFilter = GymLogStatus;

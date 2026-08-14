@@ -1,11 +1,12 @@
 import type { WellnessEntryInput } from '@/lib/validation/wellness';
 import type { TrainingEntryInput } from '@/lib/validation/training';
 import type { NutritionCheckinInput } from '@/lib/validation/nutrition';
+import type { GymSetLogInput } from '@/lib/validation/gym';
 
 /* A one table outbox in localStorage, one key per domain.
  *
- * screens/wellness-entry.md, screens/training-entry.md and
- * screens/nutrition-checkin.md: the entry is saved on the phone first and
+ * screens/wellness-entry.md, screens/training-entry.md, screens/nutrition-checkin.md and
+ * screens/gym-logging.md: the entry is saved on the phone first and
  * sent when there is signal. An athlete standing in a gym with no bars must
  * never be shown a network error for something he has already done, so a
  * submission that cannot reach the server stays here and is retried on the
@@ -21,6 +22,7 @@ import type { NutritionCheckinInput } from '@/lib/validation/nutrition';
 const KEY = 'fydr-outbox-wellness';
 const TRAINING_KEY = 'fydr-outbox-training';
 const NUTRITION_KEY = 'fydr-outbox-nutrition';
+const GYM_SET_KEY = 'fydr-outbox-gym-set';
 
 export type PendingWellness = {
   input: WellnessEntryInput;
@@ -34,6 +36,11 @@ export type PendingTraining = {
 
 export type PendingNutritionCheckin = {
   input: NutritionCheckinInput;
+  queuedAt: string;
+};
+
+export type PendingGymSetLog = {
+  input: GymSetLogInput;
   queuedAt: string;
 };
 
@@ -119,4 +126,29 @@ export function dequeueNutritionCheckin(id: string): void {
 
 export function pendingNutritionCheckins(): PendingNutritionCheckin[] {
   return read<PendingNutritionCheckin>(NUTRITION_KEY);
+}
+
+/* screens/gym-logging.md: "All set writes are local SQLite plus an outbox op" — the same
+ * offline contract as the three above, added here for blocker B4 (integration audit).
+ * gym_set_logs_one_live_per_slot (migration 0044) is what makes a replayed set write safe:
+ * a retry under the same client-generated id collides on the primary key, and a retry that
+ * somehow mints a fresh id for the same session/exercise/set slot collides on that index
+ * instead. Corrections (revise_gym_set_log) are not queued here, same reasoning as every
+ * other revise_* RPC in this file's own header comment. */
+
+export function enqueueGymSetLog(input: GymSetLogInput): void {
+  const items = read<PendingGymSetLog>(GYM_SET_KEY).filter((item) => item.input.id !== input.id);
+  items.push({ input, queuedAt: new Date().toISOString() });
+  write(GYM_SET_KEY, items);
+}
+
+export function dequeueGymSetLog(id: string): void {
+  write(
+    GYM_SET_KEY,
+    read<PendingGymSetLog>(GYM_SET_KEY).filter((item) => item.input.id !== id),
+  );
+}
+
+export function pendingGymSetLogs(): PendingGymSetLog[] {
+  return read<PendingGymSetLog>(GYM_SET_KEY);
 }

@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
+  dequeueGymSetLog,
   dequeueNutritionCheckin,
   dequeueTraining,
   dequeueWellness,
+  pendingGymSetLogs,
   pendingNutritionCheckins,
   pendingTraining,
   pendingWellness,
@@ -13,6 +15,7 @@ import {
 import { submitWellnessEntry } from '@/lib/queries/wellness';
 import { submitTrainingEntry } from '@/lib/queries/training';
 import { submitCheckin } from '@/lib/queries/nutrition';
+import { submitGymSetLog } from '@/lib/queries/programmes';
 import { createClient } from '@/lib/supabase/client';
 
 type Props = { orgId: string; athleteId: string; userId: string };
@@ -41,12 +44,16 @@ export function OutboxFlusher({ orgId, athleteId, userId }: Props) {
       const wellnessItems = pendingWellness();
       const trainingItems = pendingTraining();
       const nutritionItems = pendingNutritionCheckins();
+      const gymSetItems = pendingGymSetLogs();
       if (!cancelled)
-        setPending(wellnessItems.length + trainingItems.length + nutritionItems.length);
+        setPending(
+          wellnessItems.length + trainingItems.length + nutritionItems.length + gymSetItems.length,
+        );
       if (
         wellnessItems.length === 0 &&
         trainingItems.length === 0 &&
-        nutritionItems.length === 0
+        nutritionItems.length === 0 &&
+        gymSetItems.length === 0
       )
         return;
 
@@ -104,11 +111,27 @@ export function OutboxFlusher({ orgId, athleteId, userId }: Props) {
         }
       }
 
+      for (const item of gymSetItems) {
+        try {
+          await submitGymSetLog(db, orgId, item.input);
+          dequeueGymSetLog(item.input.id);
+          sent += 1;
+        } catch (err) {
+          if (alreadyDelivered(err)) {
+            dequeueGymSetLog(item.input.id);
+            sent += 1;
+          }
+          /* Same reasoning again — a set retried into an already-occupied slot
+             (gym_set_logs_one_live_per_slot) is also "already delivered". */
+        }
+      }
+
       if (cancelled) return;
       setPending(
         pendingWellness().length +
           pendingTraining().length +
-          pendingNutritionCheckins().length,
+          pendingNutritionCheckins().length +
+          pendingGymSetLogs().length,
       );
       if (sent > 0) router.refresh();
     }

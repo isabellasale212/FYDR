@@ -66,6 +66,13 @@ export function SessionEditForm({ orgId, session, groups, timezone }: Props) {
           location: location.trim() ? location.trim() : null,
           mdOffset: mdOffset.trim() ? Number(mdOffset) : null,
           groupIds: [...selectedGroups],
+          // Optimistic lock — see updateSession's own comment (schedule.ts).
+          // Guards this form the same way it guards the schedule grid's
+          // publish flow: if this session changed elsewhere (the grid, or
+          // another tab on this same page) since this page loaded, the
+          // write is refused with a clear conflict error instead of
+          // silently overwriting whatever changed.
+          expectedUpdatedAt: session.updated_at,
         }),
       );
       if (result.error) throw new HumanError(result.error);

@@ -15,12 +15,13 @@ export type Session = Pick<
   | 'planned_rpe'
   | 'status'
   | 'fixture_id'
+  | 'updated_at'
 >;
 
 export type SessionWithHeadcount = Session & { expected: number | null };
 
 const COLUMNS =
-  'id, title, session_type, starts_at, duration_min, location, md_offset, planned_rpe, status, fixture_id';
+  'id, title, session_type, starts_at, duration_min, location, md_offset, planned_rpe, status, fixture_id, updated_at';
 
 /** The UTC instant range covering local midnight-to-midnight in `timezone`,
  *  for one date or an inclusive multi-day span (`fromDate`..`toDate`).
@@ -770,7 +771,16 @@ export async function fetchSessionDetail(
   };
 }
 
-export type UpdateSessionInput = NewSessionInput;
+/** `expectedUpdatedAt` is the session's `updated_at` as read at the moment
+ *  the caller last loaded it (ScheduleWorkspace's `baseById` snapshot, or
+ *  SessionEditForm's server-fetched `SessionDetail`) — the optimistic-lock
+ *  token for the conflict check below. */
+export type UpdateSessionInput = NewSessionInput & { expectedUpdatedAt: string };
+
+/** Conflict message shown verbatim (never humanized further — see the two
+ *  call sites, both of which pass it straight through). */
+export const SESSION_CHANGED_ELSEWHERE_ERROR =
+  'This session was changed elsewhere since this page loaded. Reload to see the latest version, then make your change again.';
 
 export async function updateSession(
   db: Db,
@@ -778,7 +788,41 @@ export async function updateSession(
   sessionId: string,
   input: UpdateSessionInput,
 ): Promise<{ error: string | null }> {
-  const { error } = await db
+  /* Optimistic concurrency lock. schedule.ts's own sessions table gets
+   * `updated_at` bumped on every UPDATE by the `set_updated_at` trigger
+   * (migration 0010) — already there, nothing new to add for this. The
+   * write is scoped `.eq('updated_at', input.expectedUpdatedAt)` in
+   * addition to id/org_id, so it only lands if nobody has touched this row
+   * since the caller last read it.
+   *
+   * Audit finding (Part A): ScheduleWorkspace.handlePublish resends every
+   * field from a `baseById` snapshot frozen at page load for whichever
+   * fields the local edit patch didn't touch (only start/duration/groups
+   * are ever in that patch — see ScheduleGrid/types.ts's EditOverlay
+   * comment). If another tab or another staff member (SessionEditForm on
+   * `/schedule/[sessionId]`, a genuinely concurrent live write) changed
+   * this session's title/location/type/mdOffset after this tab's page
+   * loaded, publishing an unrelated start-time change here would silently
+   * overwrite that other change back to the stale snapshot value — no
+   * error anywhere.
+   *
+   * Two fixes were on the table: (a) this lock, or (b) never resend a
+   * field the local patch didn't actually touch. (b) is cheaper but only
+   * protects the fields this particular UI happens not to expose for
+   * editing today — it is incidental, not structural, and it does nothing
+   * for a genuine race on a field this UI *does* let the user change
+   * (two coaches both nudging the same session's start time at once would
+   * still silently pick a winner with (b)). The lock here is strictly
+   * broader: it catches every concurrent change to the row, on any field,
+   * from either write path, and turns it into a clear, actionable error
+   * instead of a silent overwrite — which is also the app's established
+   * pattern for concurrent-write safety elsewhere (ADR-005's
+   * revise_wellness_entry / revise_training_entry: never silently clobber,
+   * always surface a "this changed, go look again" error). Chosen for that
+   * reason, at the cost of a bit more plumbing (`updated_at` now flows
+   * through `Session`/`BaseSession`/`SessionDetail` to reach this call).
+   */
+  const { data: updated, error } = await db
     .from('sessions')
     .update({
       session_type: input.sessionType as Session['session_type'],
@@ -789,9 +833,32 @@ export async function updateSession(
       md_offset: input.mdOffset,
     })
     .eq('id', sessionId)
-    .eq('org_id', orgId);
+    .eq('org_id', orgId)
+    .eq('updated_at', input.expectedUpdatedAt)
+    .is('deleted_at', null)
+    .select('id')
+    .maybeSingle();
 
   if (error) return { error: humanizeDbError(error.message, 'staff') };
+
+  if (!updated) {
+    // Zero rows matched the lock predicate. Either the row is gone (soft
+    // deleted since this page loaded) or — far more likely — someone else
+    // wrote to it, which moved `updated_at` out from under us. Tell them
+    // apart so the message is honest rather than generic.
+    const { data: stillExists, error: existsError } = await db
+      .from('sessions')
+      .select('id')
+      .eq('id', sessionId)
+      .eq('org_id', orgId)
+      .is('deleted_at', null)
+      .maybeSingle();
+    if (existsError) return { error: humanizeDbError(existsError.message, 'staff') };
+    if (!stillExists) {
+      return { error: 'This session no longer exists. It may have been deleted.' };
+    }
+    return { error: SESSION_CHANGED_ELSEWHERE_ERROR };
+  }
 
   /* Group participants are reconciled by delete-then-insert, not a diff,
    * because this build only assigns whole groups (see NewSessionInput).

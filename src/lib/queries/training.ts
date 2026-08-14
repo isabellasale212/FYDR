@@ -12,21 +12,76 @@ const SESSION_COLUMNS = 'id, title, session_type, starts_at, duration_min, locat
 
 /** The session context row. Org-scoped: RLS would refuse a cross-org id
  *  anyway, but the query says so too rather than relying on RLS alone to
- *  turn a wrong id into an empty result. */
+ *  turn a wrong id into an empty result.
+ *
+ *  Two more checks, added together (audit finding, Part B):
+ *
+ *  1. `deleted_at is null` — previously missing entirely, so a link to a
+ *     since-soft-deleted session stayed ratable if it was open (or
+ *     bookmarked) before the delete. One line, folded in here rather than
+ *     given its own query.
+ *
+ *  2. A real participant check. This used to be org_id + id only, which
+ *     means any athlete in the org could rate ANY session id in that org —
+ *     not just one they were actually scheduled into — by editing the URL.
+ *     `fetchAthleteRecentSessions` (this file's neighbour, schedule.ts)
+ *     already filters this way for the session list; this is the exact
+ *     same resolution (named individually, or via a group the athlete
+ *     currently belongs to) ported to the single-session case, so an
+ *     unscheduled session now returns null here — same as a cancelled or
+ *     wrong-org one — and the page's existing "isn't there... or is not
+ *     one of yours" copy (rpe/[sessionId]/page.tsx) already anticipated
+ *     exactly this case.
+ *
+ *  This is the application-layer half of a two-layer fix. The RLS policy
+ *  on training_entries (training_athlete_insert, migration 0012) is
+ *  tightened to match in migration 0046 — see that migration's comment for
+ *  why both layers are worth doing here (it turned out not to need a
+ *  nontrivial function: the same EXISTS-over-session_participants shape
+ *  the existing session_participants_self_select policy already uses).
+ *  This check stays regardless: it denies access before the RPE form even
+ *  renders, rather than letting the athlete fill it in and only fail on
+ *  submit. */
 export async function fetchSessionForRpe(
   db: Db,
   orgId: string,
+  athleteId: string,
   sessionId: string,
 ): Promise<RpeSession | null> {
-  const { data, error } = await db
+  const { data: session, error } = await db
     .from('sessions')
     .select(SESSION_COLUMNS)
     .eq('org_id', orgId)
     .eq('id', sessionId)
+    .is('deleted_at', null)
     .maybeSingle();
 
   if (error) throw new Error(error.message);
-  return data ?? null;
+  if (!session) return null;
+
+  const [participants, memberships] = await Promise.all([
+    db
+      .from('session_participants')
+      .select('athlete_id, group_id')
+      .eq('org_id', orgId)
+      .eq('session_id', sessionId),
+    db
+      .from('group_memberships')
+      .select('group_id')
+      .eq('org_id', orgId)
+      .eq('athlete_id', athleteId)
+      .is('removed_at', null),
+  ]);
+
+  if (participants.error) throw new Error(participants.error.message);
+  if (memberships.error) throw new Error(memberships.error.message);
+
+  const myGroups = new Set((memberships.data ?? []).map((m) => m.group_id));
+  const isParticipant = (participants.data ?? []).some(
+    (p) => p.athlete_id === athleteId || (p.group_id !== null && myGroups.has(p.group_id)),
+  );
+
+  return isParticipant ? session : null;
 }
 
 export type TrainingEntry = {

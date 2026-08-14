@@ -22,6 +22,12 @@ export type BaseSession = {
   groupNames: string[];
   athleteIds: string[];
   status: 'planned' | 'completed' | 'cancelled';
+  /** The optimistic-lock token — this session's `updated_at` as of this
+   *  page's load. Sent back on publish (schedule.ts's `updateSession`) so a
+   *  concurrent edit made elsewhere since this page loaded is caught as a
+   *  conflict instead of silently overwritten. See that function's own
+   *  comment for the full reasoning. */
+  updatedAt: string;
 };
 
 /** SCHEDULE-SPEC.md §9's `edits` overlay — only start, duration and group
@@ -59,5 +65,6 @@ export function toBaseSession(s: GridSession, timezone: string, decimalHourInTz:
     groupNames: s.groupNames,
     athleteIds: s.athleteIds,
     status: s.status,
+    updatedAt: s.updated_at,
   };
 }

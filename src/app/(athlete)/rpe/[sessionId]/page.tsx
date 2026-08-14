@@ -28,7 +28,7 @@ export default async function RpePage({
   const correcting = qp.correct === '1';
 
   const [session, existing] = await Promise.all([
-    fetchSessionForRpe(db, orgId, sessionId),
+    fetchSessionForRpe(db, orgId, athleteId, sessionId),
     fetchTrainingEntryForSession(db, athleteId, sessionId),
   ]);
 

@@ -159,6 +159,11 @@ export function ScheduleWorkspace({
       groupNames: d.groupIds.map((id) => groupNameById.get(id) ?? 'Unnamed group'),
       athleteIds: [...new Set(d.groupIds.flatMap((gid) => groupMembership[gid] ?? []))],
       status: 'planned',
+      // A staged draft has no row in the database yet — createSession (not
+      // updateSession) is what publishes it, which takes no optimistic-lock
+      // token at all, so this value is never read. Present only to satisfy
+      // BaseSession's shape.
+      updatedAt: '',
       edited: true,
       isNew: true,
     }));
@@ -466,6 +471,13 @@ export function ScheduleWorkspace({
         location: b.location,
         mdOffset: b.mdOffset,
         groupIds: patch.groupIds ?? b.groupIds,
+        // Optimistic lock: b.updatedAt is this session's updated_at as of
+        // this page's load. If it moved since — another tab, or a
+        // SessionEditForm edit on /schedule/[sessionId] — updateSession
+        // refuses the write and returns a clear conflict error instead of
+        // silently resending this stale snapshot's title/location/type/
+        // mdOffset over whatever changed. See that function's comment.
+        expectedUpdatedAt: b.updatedAt,
       });
       if (res.error) failures.push(`${b.title}: ${res.error}`);
       else

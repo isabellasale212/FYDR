@@ -3,6 +3,7 @@ import { humanizeDbError } from '@/lib/writeErrors';
 import type { Db } from './groups';
 import type { Json } from '../types/database';
 import { mondayOf, rangeBounds } from './schedule';
+import { dateInTz } from '../format';
 
 /* screens/md-planner.md, cut down hard from a screen the spec's own header
  * calls "provisional. Awaiting client design photographs" and closes with
@@ -236,7 +237,7 @@ export type TemplateSummary = {
   archived: boolean;
 };
 
-export async function fetchTemplates(db: Db, orgId: string, includeArchived = false): Promise<TemplateSummary[]> {
+export async function fetchTemplates(db: Db, orgId: string, timezone: string, includeArchived = false): Promise<TemplateSummary[]> {
   let q = db.from('week_templates').select('id, name, structure, deleted_at').eq('org_id', orgId);
   if (!includeArchived) q = q.is('deleted_at', null);
   const { data, error } = await q.order('name');
@@ -257,7 +258,11 @@ export async function fetchTemplates(db: Db, orgId: string, includeArchived = fa
       const tid = s.applied_template_id;
       if (!tid) continue;
       const weeks = weeksByTemplate.get(tid) ?? new Set<string>();
-      weeks.add(mondayOf(s.starts_at.slice(0, 10)));
+      // Local calendar date, not the UTC one — a session between 23:00-00:00
+      // UTC (00:00-01:00 local in BST) belongs to the next local week, not
+      // whatever week its raw UTC date falls in (same bug class as
+      // schedule.ts's own dayBounds()/rangeBounds() — see its header).
+      weeks.add(mondayOf(dateInTz(new Date(s.starts_at), timezone)));
       weeksByTemplate.set(tid, weeks);
       const cur = usage.get(tid);
       if (!cur || s.created_at > (cur.last ?? '')) usage.set(tid, { count: weeksByTemplate.get(tid)!.size, last: s.created_at });
@@ -448,7 +453,10 @@ export async function applyTemplate(
   let fixtureDate: string | null = null;
   if (input.fixtureId) {
     const { data: fx } = await db.from('fixtures').select('kickoff_at').eq('org_id', orgId).eq('id', input.fixtureId).maybeSingle();
-    fixtureDate = fx?.kickoff_at.slice(0, 10) ?? null;
+    // Local calendar date, not the UTC one — same bug class as this
+    // function's own week-window fix below (a late kickoff near the
+    // 23:00-00:00 UTC edge could otherwise anchor MD-n to the wrong day).
+    fixtureDate = fx ? dateInTz(new Date(fx.kickoff_at), timezone) : null;
   }
 
   const week: WeekDay[] = weekDates.map((date) => ({
@@ -488,7 +496,9 @@ export async function applyTemplate(
 
   const existing: ExistingSession[] = (existingRows ?? []).map((r) => ({
     id: r.id,
-    date: r.starts_at.slice(0, 10),
+    // Local calendar date, not the UTC one — same bug class as this
+    // function's own week-window fix above.
+    date: dateInTz(new Date(r.starts_at), timezone),
     status: r.status,
     hasData: idsWithData.has(r.id),
   }));

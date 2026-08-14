@@ -262,7 +262,11 @@ export async function fetchHeadlineStats(
       }),
     fetchFlagsByDateRange(db, orgId, groupIds, effectiveToday, effectiveToday),
     fetchDashboardAttention(db, orgId, wallClockToday, groupIds),
-    fetchNextFixture(db, orgId, `${effectiveToday}T00:00:00Z`),
+    // Real local midnight, not a literal UTC one — `${effectiveToday}T00:00:00Z`
+    // is up to an hour after this org's real local midnight in BST, which
+    // could wrongly miss a fixture kicking off in that gap (same bug class
+    // as schedule.ts's own dayBounds()/rangeBounds() — see its header).
+    fetchNextFixture(db, orgId, zonedTimeToUtcIso(effectiveToday, '00:00', timezone)),
     fetchWeekSessions(db, orgId, mondayOf(effectiveToday), groupIds, timezone),
   ]);
 
@@ -276,7 +280,11 @@ export async function fetchHeadlineStats(
   // in") — not folded in here too, or the same gap would be counted twice.
   const flaggedTodayIds = new Set(flagsToday.map((f) => f.athlete_id));
 
-  const toMatchdayDays = fixture ? Math.round((Date.parse(fixture.kickoff_at) - Date.parse(`${effectiveToday}T00:00:00Z`)) / 86_400_000) : null;
+  // Whole calendar days between two real local dates, not a millisecond
+  // division off a literal UTC midnight (which drifted by up to an hour in
+  // BST and could round to the wrong day count) — dateInTz resolves the
+  // fixture's own local day first, daysBetween does exact date-only math.
+  const toMatchdayDays = fixture ? daysBetween(effectiveToday, dateInTz(new Date(fixture.kickoff_at), timezone)) : null;
   const sessionsLeft = weekSessions.filter((s) => s.entry_date > effectiveToday && s.session_type !== 'match').length;
 
   return {
@@ -467,7 +475,9 @@ export async function fetchSaturdayReadiness(
 ): Promise<SaturdayReadiness> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
   const [fixture, availRows, notFully, weekSessions, flagsThisWeek] = await Promise.all([
-    fetchNextFixture(db, orgId, `${effectiveToday}T00:00:00Z`),
+    // Real local midnight, not a literal UTC one — see fetchHeadlineStats's
+    // own fetchNextFixture call above for the full explanation.
+    fetchNextFixture(db, orgId, zonedTimeToUtcIso(effectiveToday, '00:00', timezone)),
     fetchCurrentAvailability(db, orgId, scope),
     fetchNotFullyAvailable(db, orgId, groupIds),
     fetchWeekSessions(db, orgId, mondayOf(effectiveToday), groupIds, timezone),
@@ -480,7 +490,9 @@ export async function fetchSaturdayReadiness(
   const selectable = squad - unavailableRows.length;
   const offset = squad > 0 ? Math.round(CIRCUMFERENCE * (1 - selectable / squad)) : CIRCUMFERENCE;
 
-  const daysOut = fixture ? Math.round((Date.parse(fixture.kickoff_at) - Date.parse(`${effectiveToday}T00:00:00Z`)) / 86_400_000) : null;
+  // Whole calendar days between two real local dates — see
+  // fetchHeadlineStats's own toMatchdayDays above for the full explanation.
+  const daysOut = fixture ? daysBetween(effectiveToday, dateInTz(new Date(fixture.kickoff_at), timezone)) : null;
 
   const doubtfulNames = modifiedRows.map((r) => r.name).join(', ');
   const read =

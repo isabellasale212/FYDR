@@ -9,7 +9,7 @@ import { acknowledgeFlag, dismissFlag } from '@/lib/queries/flags';
 import { createClient } from '@/lib/supabase/client';
 import { Pill } from '@/components/Pill/Pill';
 import { SEVERITY_STATUS } from '@/lib/status';
-import { enumLabel, formatDate, formatDateTime, formatTime } from '@/lib/format';
+import { dateInTz, enumLabel, formatDate, formatDateTime, formatTime } from '@/lib/format';
 
 const DISMISS_REASONS = [
   'Normal for this athlete',
@@ -89,7 +89,10 @@ export function FlagCard({ flag, orgId, userId, today, timezone }: Props) {
     dismiss.mutate(finalReason);
   }
 
-  const raisedDate = flag.raised_at.slice(0, 10);
+  // Local calendar date, not the UTC one — a flag raised between
+  // 23:00-00:00 UTC (00:00-01:00 local in BST) is really "today", not
+  // "yesterday", so this must agree with `today` (already a local date).
+  const raisedDate = dateInTz(new Date(flag.raised_at), timezone);
   const raisedLabel =
     raisedDate === today ? formatTime(flag.raised_at, timezone) : formatDate(flag.raised_at, timezone);
 

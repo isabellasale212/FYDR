@@ -54,13 +54,15 @@ export default async function RpePage({
   }
 
   const entryDate = dateInTz(new Date(session.starts_at), timezone);
-  const sessionDate = session.starts_at.slice(0, 10);
   // MD-n re-anchored to this session's own real calendar week — the same
   // primitive (fetchWeekMdLabels/anchorMdOffsetsToWeek) the week-level
   // views use, so this raw single-session view can't disagree with them
-  // for the identical session (audit blocker B2).
-  const weekMd = await fetchWeekMdLabels(db, orgId, mondayOf(sessionDate), timezone);
-  const mdOffset = weekMd.get(sessionDate) ?? null;
+  // for the identical session (audit blocker B2). Reuses entryDate above
+  // (already the correct local calendar date) — a second, separately
+  // .slice(0, 10)-derived "sessionDate" used to sit right next to it,
+  // reading the UTC date instead for this one lookup.
+  const weekMd = await fetchWeekMdLabels(db, orgId, mondayOf(entryDate), timezone);
+  const mdOffset = weekMd.get(entryDate) ?? null;
   const md = mdLabel(mdOffset);
 
   const dueAt =

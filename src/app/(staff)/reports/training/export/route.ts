@@ -35,7 +35,7 @@ export async function GET(request: Request) {
   const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
 
   if (mode === 'match') {
-    const sessions = await fetchMatchSessions(db, orgId);
+    const sessions = await fetchMatchSessions(db, orgId, timezone);
     const selected = sessions.find((s) => s.sessionId === requested) ?? sessions[0] ?? null;
     if (!selected) return csvResponse(toCsv([], [['x', 'No match GPS data']]), 'training-report.csv');
 

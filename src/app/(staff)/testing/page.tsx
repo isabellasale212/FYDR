@@ -3,7 +3,7 @@ import { TestDefinitionForm } from '@/components/TestDefinitionForm/TestDefiniti
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchNextTestingSession, fetchTestDefinitions } from '@/lib/queries/testing';
 import { fetchWeekMdLabels, mondayOf } from '@/lib/queries/schedule';
-import { enumLabel, formatDateTime, mdLabel } from '@/lib/format';
+import { dateInTz, enumLabel, formatDateTime, mdLabel } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Testing · Fydr' };
@@ -24,7 +24,9 @@ export default async function TestingPage() {
   // anchorMdOffsetsToWeek, format.ts) rather than the raw stored md_offset —
   // same primitive the week views and other single-session cards use
   // (audit B2).
-  const nextSessionDate = nextSession?.starts_at.slice(0, 10) ?? null;
+  // Local calendar date, not the UTC one — same bug class as schedule.ts's
+  // own dayBounds()/rangeBounds() (see its header), one level down.
+  const nextSessionDate = nextSession ? dateInTz(new Date(nextSession.starts_at), timezone) : null;
   const nextSessionMd = nextSessionDate
     ? mdLabel((await fetchWeekMdLabels(db, orgId, mondayOf(nextSessionDate), timezone)).get(nextSessionDate) ?? null)
     : null;

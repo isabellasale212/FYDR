@@ -224,7 +224,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
 
   // -------------------------------------------------------------------------
   if (mode === 'match') {
-    const sessions = await fetchMatchSessions(db, orgId);
+    const sessions = await fetchMatchSessions(db, orgId, timezone);
     const selected = sessions.find((s) => s.sessionId === sp.session) ?? sessions[0] ?? null;
 
     if (!selected) {

@@ -18,9 +18,9 @@ export const metadata = { title: 'Week templates · Fydr' };
  *  read-only except rehab-only templates" rule is a UI courtesy applied
  *  in the builder, not a database restriction that exists yet. */
 export default async function WeekTemplatesPage() {
-  const { db, orgId, orgName, claims } = await requireStaff();
+  const { db, orgId, orgName, claims, timezone } = await requireStaff();
   const canWrite = claims.roles.includes('coach') || claims.roles.includes('medical');
-  const templates = await fetchTemplates(db, orgId);
+  const templates = await fetchTemplates(db, orgId, timezone);
 
   return (
     <>

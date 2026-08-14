@@ -1,5 +1,5 @@
 import type { FixtureRow, SessionRow } from '@/lib/types/database';
-import { addDays, anchorMdOffsetsToWeek, zonedTimeToUtcIso } from '@/lib/format';
+import { addDays, anchorMdOffsetsToWeek, dateInTz, zonedTimeToUtcIso } from '@/lib/format';
 import { humanizeDbError } from '@/lib/writeErrors';
 import { fetchCurrentAvailability } from './availability';
 import { fetchGroupAthleteIds, type Db } from './groups';
@@ -338,7 +338,13 @@ export async function fetchWeekMdLabels(
   const sessions = await fetchSessionsBetween(db, orgId, bounds.from, bounds.to);
   const byDate = new Map<string, { isMatch: boolean; storedMdOffset: number | null }>();
   for (const s of sessions) {
-    const date = s.starts_at.slice(0, 10);
+    // Same bug class as this file's own dayBounds()/rangeBounds() (audit
+    // Batch 2), a level down: `starts_at` is a stored UTC instant, and
+    // `.slice(0, 10)` reads its UTC calendar date, not the org's local
+    // one — a session between 23:00-00:00 UTC (00:00-01:00 local in BST)
+    // would be bucketed under the wrong day here. dateInTz (format.ts) is
+    // the shared primitive for this, same as every other fix below.
+    const date = dateInTz(new Date(s.starts_at), timezone);
     const cur = byDate.get(date) ?? { isMatch: false, storedMdOffset: null };
     byDate.set(date, {
       isMatch: cur.isMatch || s.session_type === 'match',
@@ -399,7 +405,9 @@ export async function fetchWeekSessions(
     return {
       ...session,
       expected: counted.length > 0 ? counted.length : null,
-      entry_date: session.starts_at.slice(0, 10),
+      // Local calendar date, not the UTC one — see fetchWeekMdLabels's
+      // byDate map above for the full explanation of this bug class.
+      entry_date: dateInTz(new Date(session.starts_at), timezone),
     };
   });
 }
@@ -521,7 +529,9 @@ export async function fetchWeekSessionsDetailed(
 
     return {
       ...session,
-      entry_date: session.starts_at.slice(0, 10),
+      // Local calendar date, not the UTC one — see fetchWeekMdLabels's
+      // byDate map above for the full explanation of this bug class.
+      entry_date: dateInTz(new Date(session.starts_at), timezone),
       groupIds: groupIdList,
       groupNames: groupIdList.map((id) => groupNameById.get(id) ?? 'Unnamed group'),
       athleteIds: counted,
@@ -606,7 +616,9 @@ export async function fetchNormalWeek(
   const seenWeeks = new Set<string>();
   const weeks: string[] = [];
   for (const m of matches ?? []) {
-    const wk = mondayOf(m.starts_at.slice(0, 10));
+    // Local calendar date, not the UTC one — see fetchWeekMdLabels's
+    // byDate map above for the full explanation of this bug class.
+    const wk = mondayOf(dateInTz(new Date(m.starts_at), timezone));
     if (!seenWeeks.has(wk)) {
       seenWeeks.add(wk);
       weeks.push(wk);
@@ -1061,6 +1073,7 @@ export async function fetchFixtureDetail(
   db: Db,
   orgId: string,
   fixtureId: string,
+  timezone: string,
 ): Promise<FixtureDetail | null> {
   const { data: fixture, error } = await db
     .from('fixtures')
@@ -1086,7 +1099,9 @@ export async function fetchFixtureDetail(
   const weekSessions: WeekSession[] = (sessions ?? []).map((s) => ({
     ...s,
     expected: null,
-    entry_date: s.starts_at.slice(0, 10),
+    // Local calendar date, not the UTC one — see fetchWeekMdLabels's
+    // byDate map above for the full explanation of this bug class.
+    entry_date: dateInTz(new Date(s.starts_at), timezone),
   }));
 
   return { ...fixture, weekSessions };

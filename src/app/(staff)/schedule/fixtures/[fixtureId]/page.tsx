@@ -29,7 +29,7 @@ export default async function FixtureDetailPage({
   const { fixtureId } = await params;
   const { db, orgId, timezone } = await requireStaff();
 
-  const fixture = await fetchFixtureDetail(db, orgId, fixtureId);
+  const fixture = await fetchFixtureDetail(db, orgId, fixtureId, timezone);
   if (!fixture) notFound();
 
   // MD-n per session, re-anchored to EACH session's own real calendar week
@@ -65,7 +65,11 @@ export default async function FixtureDetailPage({
           <span className="pill pill-neutral">{enumLabel(fixture.importance)}</span>
         </div>
         <p style={{ marginTop: 10 }}>
-          {formatLongDate(fixture.kickoff_at.slice(0, 10), timezone)} &middot; kick off{' '}
+          {/* formatLongDate/formatTime both resolve the real local calendar
+              date and time from the full instant via Intl + timeZone — no
+              need to (and previously buggy to) pre-slice kickoff_at down to
+              its UTC date first, which could read the wrong calendar day. */}
+          {formatLongDate(fixture.kickoff_at, timezone)} &middot; kick off{' '}
           {formatTime(fixture.kickoff_at, timezone)}
         </p>
         <p className="tiny" style={{ marginTop: 4 }}>

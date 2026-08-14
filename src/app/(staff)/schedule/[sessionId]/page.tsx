@@ -5,7 +5,7 @@ import { SessionActions } from '@/components/SessionActions/SessionActions';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchSessionDetail, fetchWeekMdLabels, mondayOf } from '@/lib/queries/schedule';
-import { enumLabel, formatLongDate, formatTime, mdLabel } from '@/lib/format';
+import { dateInTz, enumLabel, formatLongDate, formatTime, mdLabel } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Session · Fydr' };
@@ -26,7 +26,9 @@ export default async function SessionDetailPage({
   const session = await fetchSessionDetail(db, orgId, sessionId);
   if (!session) notFound();
 
-  const sessionDate = session.starts_at.slice(0, 10);
+  // Local calendar date, not the UTC one — same bug class as schedule.ts's
+  // own dayBounds()/rangeBounds() (see its header), one level down.
+  const sessionDate = dateInTz(new Date(session.starts_at), timezone);
   // MD-n re-anchored to this session's own real calendar week (its stored
   // md_offset can count toward a fixture in a later week — see
   // anchorMdOffsetsToWeek, format.ts). fetchWeekMdLabels is the same
@@ -66,7 +68,10 @@ export default async function SessionDetailPage({
       <div className="card" style={{ opacity: cancelled ? 0.7 : 1 }}>
         <p className="label">When and where</p>
         <p style={{ marginTop: 6 }}>
-          {formatLongDate(session.starts_at.slice(0, 10), timezone)} &middot; {formatTime(session.starts_at, timezone)}
+          {/* formatLongDate resolves the real local date from the full
+              instant itself via Intl + timeZone — no need to pre-slice
+              starts_at down to its UTC date first. */}
+          {formatLongDate(session.starts_at, timezone)} &middot; {formatTime(session.starts_at, timezone)}
           {session.duration_min !== null ? ` for ${session.duration_min} min` : ''}
         </p>
         <p className="tiny" style={{ marginTop: 4 }}>

@@ -57,7 +57,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Sea
   const [sessions, groupMembership, templates, typical, weekFixtures] = await Promise.all([
     fetchWeekSessionsDetailed(db, orgId, weekStart, groupIds, groups, timezone),
     fetchGroupMembership(db, orgId),
-    fetchTemplates(db, orgId),
+    fetchTemplates(db, orgId, timezone),
     fetchNormalWeek(db, orgId, groups, weekStart, groupIds, timezone),
     fetchWeekFixtures(db, orgId, weekStart, timezone),
   ]);

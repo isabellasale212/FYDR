@@ -7,7 +7,7 @@ import { useMutation } from '@tanstack/react-query';
 import type { ProfileFlag } from '@/lib/queries/playerProfile';
 import { acknowledgeFlag } from '@/lib/queries/flags';
 import { createClient } from '@/lib/supabase/client';
-import { enumLabel, formatDate, formatDateTime, formatTime } from '@/lib/format';
+import { dateInTz, enumLabel, formatDate, formatDateTime, formatTime } from '@/lib/format';
 
 type Props = {
   flags: ProfileFlag[];
@@ -106,7 +106,11 @@ export function PlayerProfileFlags({ flags, orgId, userId, today, timezone }: Pr
           {visible.map((flag) => {
             const isAcked = flag.status === 'acknowledged' || flag.status === 'monitoring';
             const canAck = flag.status === 'raised' || flag.status === 'notified';
-            const raisedDate = flag.raised_at.slice(0, 10);
+            // Local calendar date, not the UTC one — a flag raised between
+            // 23:00-00:00 UTC (00:00-01:00 local in BST) is really "today",
+            // not "yesterday", so this must agree with `today` (already a
+            // local date).
+            const raisedDate = dateInTz(new Date(flag.raised_at), timezone);
             const raisedLabel = raisedDate === today ? formatTime(flag.raised_at, timezone) : formatDate(flag.raised_at, timezone);
 
             return (

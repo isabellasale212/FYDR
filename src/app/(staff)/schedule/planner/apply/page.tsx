@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ApplyControls } from '@/components/ApplyControls/ApplyControls';
 import { buildApplyPlan, fetchTemplates, type ApplyStrategy } from '@/lib/queries/weekTemplates';
 import { fetchNextFixture, mondayOf, rangeBounds } from '@/lib/queries/schedule';
-import { formatDate, mdLabel, todayIso } from '@/lib/format';
+import { dateInTz, daysBetween, formatDate, mdLabel, todayIso, zonedTimeToUtcIso } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Apply a week template · Fydr' };
@@ -23,14 +23,28 @@ export default async function ApplyTemplatePage({ searchParams }: { searchParams
   const templateId = typeof sp.template === 'string' ? sp.template : null;
   const strategy: ApplyStrategy = sp.strategy === 'replace_planned' || sp.strategy === 'fill_gaps' ? sp.strategy : 'add';
 
-  const [templates, fixture] = await Promise.all([fetchTemplates(db, orgId), fetchNextFixture(db, orgId, `${weekStart}T00:00:00Z`)]);
+  // Real local midnight, not a literal UTC one — same bug class as
+  // dashboard.ts's fetchNextFixture calls (see that file for the full
+  // explanation): `${weekStart}T00:00:00Z` is up to an hour after this
+  // org's real local midnight in BST, which could wrongly skip past a
+  // fixture kicking off in that gap.
+  const [templates, fixture] = await Promise.all([
+    fetchTemplates(db, orgId, timezone),
+    fetchNextFixture(db, orgId, zonedTimeToUtcIso(weekStart, '00:00', timezone)),
+  ]);
   const usableTemplates = templates.filter((t) => !t.archived);
   const weekEnd = (() => {
     const d = new Date(`${weekStart}T12:00:00Z`);
     d.setUTCDate(d.getUTCDate() + 6);
     return d.toISOString().slice(0, 10);
   })();
-  const fixtureInWeek = fixture && fixture.kickoff_at.slice(0, 10) >= weekStart && fixture.kickoff_at.slice(0, 10) <= weekEnd ? fixture : null;
+  // Local calendar date, not the UTC one — a fixture kicking off between
+  // 23:00-00:00 UTC (00:00-01:00 local in BST) belongs to the next local
+  // day, so slicing kickoff_at's raw UTC digits could place it in the
+  // wrong week here (same bug class as schedule.ts's own
+  // dayBounds()/rangeBounds() — see its header).
+  const fixtureLocalDate = fixture ? dateInTz(new Date(fixture.kickoff_at), timezone) : null;
+  const fixtureInWeek = fixtureLocalDate && fixtureLocalDate >= weekStart && fixtureLocalDate <= weekEnd ? fixture : null;
 
   const selected = templateId ? usableTemplates.find((t) => t.id === templateId) : null;
 
@@ -43,10 +57,12 @@ export default async function ApplyTemplatePage({ searchParams }: { searchParams
       d.setUTCDate(d.getUTCDate() + i);
       return d.toISOString().slice(0, 10);
     });
-    const fixtureDate = fixtureInWeek?.kickoff_at.slice(0, 10) ?? null;
+    // fixtureLocalDate is already this fixture's real local calendar date
+    // (computed above) — reused rather than re-sliced from kickoff_at here.
+    const fixtureDate = fixtureInWeek ? fixtureLocalDate : null;
     const week = weekDates.map((date) => ({
       date,
-      mdOffset: fixtureDate ? Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${fixtureDate}T00:00:00Z`)) / 86_400_000) : null,
+      mdOffset: fixtureDate ? daysBetween(fixtureDate, date) : null,
     }));
 
     // Same fix as applyTemplate() itself (weekTemplates.ts) and
@@ -63,7 +79,8 @@ export default async function ApplyTemplatePage({ searchParams }: { searchParams
       .lte('starts_at', weekBounds.to)
       .is('deleted_at', null);
 
-    const existing = (existingRows ?? []).map((r) => ({ id: r.id, date: r.starts_at.slice(0, 10), status: r.status, hasData: false }));
+    // Local calendar date, not the UTC one — same bug class noted above.
+    const existing = (existingRows ?? []).map((r) => ({ id: r.id, date: dateInTz(new Date(r.starts_at), timezone), status: r.status, hasData: false }));
     const plan = buildApplyPlan(selected.structure, week, existing, strategy);
     planSummary = { create: plan.create.length, softDelete: plan.softDelete.length, keep: plan.keepCount, unmapped: plan.unmappedPositions };
 
@@ -75,7 +92,8 @@ export default async function ApplyTemplatePage({ searchParams }: { searchParams
     }
     const existingByDate = new Map<string, string[]>();
     for (const e of existingRows ?? []) {
-      const date = e.starts_at.slice(0, 10);
+      // Local calendar date, not the UTC one — same bug class noted above.
+      const date = dateInTz(new Date(e.starts_at), timezone);
       const list = existingByDate.get(date) ?? [];
       list.push(e.title);
       existingByDate.set(date, list);
@@ -84,7 +102,7 @@ export default async function ApplyTemplatePage({ searchParams }: { searchParams
     const removedByDate = new Map<string, number>();
     for (const e of existingRows ?? []) {
       if (softDeletedIds.has(e.id)) {
-        const date = e.starts_at.slice(0, 10);
+        const date = dateInTz(new Date(e.starts_at), timezone);
         removedByDate.set(date, (removedByDate.get(date) ?? 0) + 1);
       }
     }

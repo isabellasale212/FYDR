@@ -1,6 +1,6 @@
 import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchWeekMdLabels, mondayOf, rangeBounds } from './schedule';
-import { addDays, mdLabel } from '../format';
+import { addDays, dateInTz, mdLabel } from '../format';
 
 /* TRAINING-REPORT-SPEC.md, a full rebuild of the previous heat-mapped
  * board (screens/training-report.md) into the two-mode scoring model the
@@ -69,7 +69,11 @@ export async function fetchTrainingSessions(db: Db, orgId: string, timezone: str
   for (const s of data ?? []) {
     if (seen.has(s.id)) continue;
     seen.add(s.id);
-    picked.push({ id: s.id, date: s.starts_at.slice(0, 10), title: s.title, durationMin: s.duration_min, location: s.location });
+    // Local calendar date, not the UTC one — a session between 23:00-00:00
+    // UTC (00:00-01:00 local in BST) needs dateInTz, not a raw UTC slice
+    // (same bug class as schedule.ts's own dayBounds()/rangeBounds(), one
+    // level down — see its header for the full explanation).
+    picked.push({ id: s.id, date: dateInTz(new Date(s.starts_at), timezone), title: s.title, durationMin: s.duration_min, location: s.location });
     if (picked.length >= limit) break;
   }
 
@@ -104,7 +108,7 @@ export type MatchSessionOption = {
   homeAway: 'home' | 'away' | 'neutral' | null;
 };
 
-export async function fetchMatchSessions(db: Db, orgId: string, limit = 8): Promise<MatchSessionOption[]> {
+export async function fetchMatchSessions(db: Db, orgId: string, timezone: string, limit = 8): Promise<MatchSessionOption[]> {
   const { data, error } = await db
     .from('sessions')
     .select('id, starts_at, fixtures(opponent, result, competition, venue, home_away), gps_records!inner(id)')
@@ -121,7 +125,9 @@ export async function fetchMatchSessions(db: Db, orgId: string, limit = 8): Prom
     seen.add(s.id);
     out.push({
       sessionId: s.id,
-      date: s.starts_at.slice(0, 10),
+      // Local calendar date, not the UTC one — same bug class as
+      // fetchTrainingSessions above.
+      date: dateInTz(new Date(s.starts_at), timezone),
       opponent: s.fixtures.opponent,
       result: s.fixtures.result,
       competition: s.fixtures.competition,
@@ -430,7 +436,10 @@ export async function fetchRestOfWeekComparison(
     const hsr = mean(recs.map((r) => r.high_speed_distance_m));
     const hie = mean(recs.filter((r) => r.duration_s).map((r) => (r.high_intensity_efforts !== null && r.duration_s ? r.high_intensity_efforts / (r.duration_s / 60) : null)));
     if (td !== null) weekTd += td;
-    const md = mdLabel(weekMd.get(s.starts_at.slice(0, 10)) ?? null) ?? '';
+    // Local calendar date, not the UTC one — weekMd is keyed by
+    // fetchWeekMdLabels's own dateInTz-derived dates, so looking it up
+    // with a raw UTC slice of starts_at could miss it or hit the wrong day.
+    const md = mdLabel(weekMd.get(dateInTz(new Date(s.starts_at), timezone)) ?? null) ?? '';
     const label = s.session_type === 'match' ? `v ${s.fixtures?.opponent ?? 'opponent'}` : s.title;
     return {
       id: s.id,
@@ -458,7 +467,9 @@ export async function fetchRestOfWeekComparison(
   if (allErr) throw new Error(allErr.message);
   const weeksSeen = new Map<string, string[]>();
   for (const s of allSessions ?? []) {
-    const wk = mondayOf(s.starts_at.slice(0, 10));
+    // Local calendar date, not the UTC one — same bug class as this
+    // function's own week-window fix above.
+    const wk = mondayOf(dateInTz(new Date(s.starts_at), timezone));
     if (wk === weekStart) continue;
     const list = weeksSeen.get(wk) ?? [];
     list.push(s.id);

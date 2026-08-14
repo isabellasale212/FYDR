@@ -34,7 +34,22 @@ const TONE_TEXT = {
  *  both were already fetched by fetchAthleteAvailability before this change
  *  and simply had nowhere to show. A non-injury reason (exams, personal,
  *  representative honours, illness) is exactly the kind of thing an athlete
- *  should see stated plainly, not folded into "No restriction recorded." */
+ *  should see stated plainly, not folded into "No restriction recorded."
+ *
+ *  status === 'available' is checked FIRST, before restrictions or
+ *  reasonCategory are even looked at (integration-audit majors, Bug 1). This
+ *  is deliberate defense in depth, not just tidiness: setAvailability()
+ *  (lib/queries/injuries.ts) cannot safely be made to force reason_category
+ *  to null server-side for every 'available' row, because a COACH's insert
+ *  is required by RLS (availability_coach_insert_noninjury, migration 0042)
+ *  to always carry a non-null, non-injury reason_category, with no exception
+ *  for status — see that policy and 200_coach_noninjury_availability_test.sql
+ *  §3c, "a COACH cannot insert with no reason_category at all", which throws
+ *  42501 for exactly the 'available' + null case. So a coach-authored
+ *  'available' row can legitimately still carry a leftover, meaningless
+ *  reason_category value in the database, forever — this check order is what
+ *  makes that harmless: no matter what is stored, a status of 'available'
+ *  always reads as "Everything is on." here, never a stale reason. */
 export function AvailabilityBanner({ status, restrictions, reasonCategory, note }: Props) {
   const state = availabilityStatus(status);
 
@@ -49,12 +64,12 @@ export function AvailabilityBanner({ status, restrictions, reasonCategory, note 
       <div style={{ flex: 1, minWidth: 0 }}>
         <div className="k">{state.label} availability</div>
         <div className="v">
-          {restrictions.length > 0
-            ? restrictions.map(enumLabel).join(' · ')
-            : reasonCategory
-              ? enumLabel(reasonCategory)
-              : status === 'available'
-                ? 'Everything is on.'
+          {status === 'available'
+            ? 'Everything is on.'
+            : restrictions.length > 0
+              ? restrictions.map(enumLabel).join(' · ')
+              : reasonCategory
+                ? enumLabel(reasonCategory)
                 : 'No restriction recorded.'}
         </div>
         {note ? <div className="s">{note}</div> : null}

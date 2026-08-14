@@ -47,6 +47,25 @@ type Props = { orgId: string; userId: string; athleteId: string };
  * constraint (0005) — surfaced below as a plain-language message rather than
  * the raw Postgres error, since "duplicate key value violates constraint
  * availability_one_open_per_athlete" tells a coach nothing about why.
+ *
+ * reasonCategory is deliberately NEVER nulled here, including when status is
+ * set to 'available' (integration-audit majors, Bug 1) — the opposite of what
+ * SetAvailabilityForm (medical) does for the same case, and on purpose:
+ * availability_coach_insert_noninjury (migration 0042) requires reason_
+ * category IS NOT NULL on every coach insert, with no exception for status,
+ * confirmed by 200_coach_noninjury_availability_test.sql §3c ("a COACH cannot
+ * insert with no reason_category at all" throws 42501 for exactly the
+ * 'available' + null case). A coach without the medical role has no other way
+ * to write this table, so nulling this field here would leave that coach
+ * unable to ever clear an athlete back to Available — trading a cosmetic
+ * display bug for a hard functional dead end. The Reason field below is still
+ * hidden while 'available' is selected, so a coach is never invited to pick a
+ * reason that will not visibly apply, but the value already selected keeps
+ * riding along in the write to satisfy RLS. The actual fix for the observed
+ * bug (a stale reason showing on the athlete's own Today page) lives in
+ * AvailabilityBanner, which now checks status === 'available' first and never
+ * looks at reasonCategory at all once it does — see that component's own
+ * comment.
  */
 export function SetAvailabilityFormCoach({ orgId, userId, athleteId }: Props) {
   const router = useRouter();
@@ -100,21 +119,25 @@ export function SetAvailabilityFormCoach({ orgId, userId, athleteId }: Props) {
         ))}
       </div>
 
-      <label className="label" htmlFor="avail-coach-reason" style={{ marginTop: 14 }}>
-        Reason
-      </label>
-      <select
-        id="avail-coach-reason"
-        className="field"
-        value={reasonCategory}
-        onChange={(event) => setReasonCategory(event.target.value as AvailabilityReason)}
-      >
-        {NON_INJURY_REASONS.map((r) => (
-          <option key={r.value} value={r.value}>
-            {r.label}
-          </option>
-        ))}
-      </select>
+      {status !== 'available' ? (
+        <>
+          <label className="label" htmlFor="avail-coach-reason" style={{ marginTop: 14 }}>
+            Reason
+          </label>
+          <select
+            id="avail-coach-reason"
+            className="field"
+            value={reasonCategory}
+            onChange={(event) => setReasonCategory(event.target.value as AvailabilityReason)}
+          >
+            {NON_INJURY_REASONS.map((r) => (
+              <option key={r.value} value={r.value}>
+                {r.label}
+              </option>
+            ))}
+          </select>
+        </>
+      ) : null}
 
       <label className="label" htmlFor="avail-coach-note" style={{ marginTop: 14 }}>
         Note (coach visible &mdash; not a clinical field)

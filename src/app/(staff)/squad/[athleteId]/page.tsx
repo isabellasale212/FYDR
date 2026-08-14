@@ -222,7 +222,19 @@ export default async function AthletePage({
 
           {athlete.availability && athlete.availability.status !== 'available' ? (
             <p className="sub" style={{ margin: '2px 0 0' }}>
-              {athlete.availability.reason_category ? enumLabel(athlete.availability.reason_category) : 'No reason recorded'}
+              {/* Restrictions shown ahead of reason_category, same priority order and
+               * same enumLabel-joined format as AvailabilityBanner.tsx uses for the
+               * athlete's own Today page (integration-audit majors, Bug 2). Before this,
+               * this page rendered only reason_category + note and never the restriction
+               * list at all, even for real athletes with real restrictions (e.g. "no
+               * contact / no scrummaging / running 80% volume / gym lower modified") —
+               * a coach had to open the separate linked injury record to see what the
+               * athlete's own app already showed them front and centre. */}
+              {athlete.availability.restrictions && athlete.availability.restrictions.length > 0
+                ? athlete.availability.restrictions.map(enumLabel).join(' · ')
+                : athlete.availability.reason_category
+                  ? enumLabel(athlete.availability.reason_category)
+                  : 'No reason recorded'}
               {athlete.availability.note ? ` — ${athlete.availability.note}` : ''}
             </p>
           ) : null}

@@ -14,7 +14,14 @@ import {
   type DayTypeId,
   type MacroRule,
 } from '@/lib/nutritionRules';
-import { scaleDay, type ScaledMeal } from '@/lib/nutritionMeals';
+import { MEALS, scaleDay, scaleMeal, type Meal, type ScaledMeal } from '@/lib/nutritionMeals';
+import {
+  createLibraryMeal,
+  libraryMealToMeal,
+  newLibraryMealInputToMeal,
+  type LibraryMeal,
+  type NewLibraryMealInput,
+} from '@/lib/queries/mealLibrary';
 import {
   assignPlan,
   createPlan,
@@ -22,6 +29,8 @@ import {
   ruleToMacroRule,
 } from '@/lib/queries/nutritionRules';
 import type { ChaseRow } from '@/lib/nutritionWorkspace';
+import { MealLibraryPicker } from './MealLibraryPicker';
+import { NewMealForm } from './NewMealForm';
 import { RuleStepper } from './RuleStepper';
 import { SelectedAthleteCard } from './SelectedAthleteCard';
 import { TargetsTable, type AthleteWithTargets } from './TargetsTable';
@@ -41,6 +50,11 @@ type Props = {
   weekStart: string;
   weekEnd: string;
   timezone: string;
+  /** The org's real, persisted meal_library (migration 0051) — "Food library" picks
+   *  from it, "+ Meal" writes to it. Which of them, plus the fixed five, are actually
+   *  shown in "The day, as food" for this viewing session is local state below
+   *  (extraMeals), not persisted — see nutritionMeals.ts's own header. */
+  mealLibrary: LibraryMeal[];
 };
 
 /* NUTRITION-SPEC.md §2's layout skeleton and §9's state model, adapted for real data.
@@ -70,6 +84,7 @@ export function NutritionWorkspace({
   weekStart,
   weekEnd,
   timezone,
+  mealLibrary,
 }: Props) {
   const router = useRouter();
   const canEdit = isCoach || isMedical;
@@ -100,6 +115,15 @@ export function NutritionWorkspace({
   const [showNewPlan, setShowNewPlan] = useState(false);
   const [newPlanGroupId, setNewPlanGroupId] = useState(groupsWithoutPlan[0]?.id ?? '');
   const [assignError, setAssignError] = useState<string | null>(null);
+
+  // "Food library" / "+ Meal": which meals beyond the fixed five are shown in "The day,
+  // as food" for this viewing session — local UI state, never persisted (the library
+  // itself, mealLibrary above, is what's persisted). Keyed by meal_library.id so the
+  // picker can grey out a meal already added instead of allowing a silent duplicate.
+  const [extraMeals, setExtraMeals] = useState<{ id: string; meal: Meal }[]>([]);
+  const [showLibraryPicker, setShowLibraryPicker] = useState(false);
+  const [showMealForm, setShowMealForm] = useState(false);
+  const [mealFormError, setMealFormError] = useState<string | null>(null);
 
   const currentRule: MacroRule = useMemo(
     () => ({ proteinGPerKg: protein, carbGPerKg: carb, fatGPerKg: fat, fluidMlPerKg: fluid, energyKcalCap: selectedPlan?.energyCap ?? null }),
@@ -140,8 +164,19 @@ export function NutritionWorkspace({
   const selectedOverrideReason = selectedResolved?.source === 'athlete' ? selectedResolved.rule.reason : null;
   const selectedOverrideRule = selectedAthlete?.overrideRule ?? null;
 
-  const scaledMeals: ScaledMeal[] | null =
-    selectedAthlete && selectedAthlete.massKg !== null ? scaleDay(selectedAthlete.massKg, dayTypeInfo.multiplier) : null;
+  // The fixed five (scaleDay) plus whatever this session has picked from the library or
+  // just authored (extraMeals) — same scaleMeal/scaleDay math either way, unchanged.
+  // extraMeals is additive only: it never replaces or reorders the fixed five. Memoized
+  // (not a plain ternary) so dayTotals' own useMemo below sees a stable reference and
+  // does not recompute every render.
+  const massKg = selectedAthlete?.massKg ?? null;
+  const scaledMeals: ScaledMeal[] | null = useMemo(() => {
+    if (massKg === null) return null;
+    return [
+      ...scaleDay(massKg, dayTypeInfo.multiplier),
+      ...extraMeals.map((m) => scaleMeal(m.meal, massKg, dayTypeInfo.multiplier)),
+    ];
+  }, [massKg, dayTypeInfo.multiplier, extraMeals]);
 
   const dayTotals = useMemo(() => {
     if (!scaledMeals) return null;
@@ -192,6 +227,29 @@ export function NutritionWorkspace({
     },
     onError: (e: Error) => setAssignError(toUserMessage(e, 'staff')),
   });
+
+  const createMealMutation = useMutation({
+    mutationFn: async (input: NewLibraryMealInput) => {
+      const result = await withWriteTimeout(createLibraryMeal(createClient(), orgId, userId, input));
+      return { result, input };
+    },
+    onSuccess: ({ result, input }) => {
+      if (result.error || !result.id) {
+        setMealFormError(result.error ?? 'Could not save the meal.');
+        return;
+      }
+      setMealFormError(null);
+      setExtraMeals((prev) => [...prev, { id: result.id as string, meal: newLibraryMealInputToMeal(input) }]);
+      setShowMealForm(false);
+      router.refresh(); // re-pulls mealLibrary so the picker also has it, next time it opens
+    },
+    onError: (e: Error) => setMealFormError(toUserMessage(e, 'staff')),
+  });
+
+  function addLibraryMeal(meal: LibraryMeal) {
+    if (extraMeals.some((m) => m.id === meal.id)) return;
+    setExtraMeals((prev) => [...prev, { id: meal.id, meal: libraryMealToMeal(meal) }]);
+  }
 
   const exampleTargets = computeTargets(currentRule, 100, dayTypeInfo.multiplier);
   const squadMeanN = athletesWithTargets.filter((a) => a.targets !== null).length;
@@ -425,14 +483,51 @@ export function NutritionWorkspace({
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button type="button" className="btn-ghost" disabled title="Not available yet">
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => {
+                  setShowMealForm(false);
+                  setShowLibraryPicker((s) => !s);
+                }}
+              >
                 Food library
               </button>
-              <button type="button" className="btn-ghost" disabled title="Not available yet">
+              <button
+                type="button"
+                className="btn-ghost"
+                disabled={!isCoach}
+                title={isCoach ? undefined : 'Medical reads the meal library for context — only coaching staff author it'}
+                onClick={() => {
+                  setShowLibraryPicker(false);
+                  setShowMealForm((s) => !s);
+                }}
+              >
                 + Meal
               </button>
             </div>
           </div>
+
+          {showLibraryPicker ? (
+            <MealLibraryPicker
+              meals={mealLibrary}
+              addedIds={extraMeals.map((m) => m.id)}
+              onAdd={addLibraryMeal}
+              onClose={() => setShowLibraryPicker(false)}
+            />
+          ) : null}
+
+          {showMealForm ? (
+            <NewMealForm
+              onSubmit={(input) => createMealMutation.mutate(input)}
+              onCancel={() => {
+                setShowMealForm(false);
+                setMealFormError(null);
+              }}
+              isSubmitting={createMealMutation.isPending}
+              error={mealFormError}
+            />
+          ) : null}
 
           {selectedAthlete && dayTotals && selectedAthlete.targets ? (
             <TotalsBars dayTotals={dayTotals} targets={selectedAthlete.targets} />
@@ -441,15 +536,15 @@ export function NutritionWorkspace({
           {scaledMeals ? (
             <>
               <div className="nutr-meal-grid">
-                {scaledMeals.map((meal) => (
-                  <MealCard key={meal.name} meal={meal} />
+                {scaledMeals.map((meal, i) => (
+                  <MealCard key={`${meal.name}-${i}`} meal={meal} />
                 ))}
               </div>
               <p className="nutr-mono nutr-meal-caption">
-                Five meals · authored once for a 110 kg reference athlete, scaled to this athlete by mass
-                · the tick on each bar is the target · this fixed meal set is not re-tuned per athlete,
-                so it can land outside its own ±{MACRO_TOLERANCE_PCT}% rule — see the warning above the
-                bars if it has
+                {MEALS.length} fixed{extraMeals.length > 0 ? ` + ${extraMeals.length} from the library` : ''} ·
+                authored once for a 110 kg reference athlete, scaled to this athlete by mass · the tick on
+                each bar is the target · a meal not re-tuned per athlete can land outside its own ±
+                {MACRO_TOLERANCE_PCT}% rule — see the warning above the bars if it has
               </p>
             </>
           ) : (

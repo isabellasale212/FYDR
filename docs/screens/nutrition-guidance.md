@@ -43,6 +43,12 @@ product's durable differentiator.
 
 No athlete writes anything on this screen. There is no submit action.
 
+**The row above describes targets** (`nutrition_targets` / `nutrition_rules`), where medical's
+personal-scope, open-injury-gated write is real. The meal library resolved by O-892
+(`meal_library` / `meal_library_items`, migration 0051) is narrower: medical is read-only there,
+full stop — no rehab or injury carve-out, because a meal idea has no `athlete_id` to gate a
+personal override against. See O-892's own resolution note in §11 for why.
+
 ---
 
 ## Entry points
@@ -313,7 +319,7 @@ Fydr publishes nutrition guidance to athletes, some of whom compete in tested sp
 |---|---|
 | **O-890** | **RESOLVED, 5 August 2026. Yes.** The weekly one-tap check-in is commissioned. Specified in `nutrition-checkin.md`, schema `04-data-model.md` §17.15, notification `08-notifications.md` §3.7, analytics variable in `analytics.md`. Estimated at 1 week rather than the two days quoted here, because the two days costed the sheet and not the analytics guards. See §9 and `10-roadmap.md` §5. New questions raised by the decision run from O-970. |
 | **O-891** | Dietary restrictions, allergies and religious requirements are not modelled. Meal ideas cannot be safely personalised without them. Do you want them on the athlete profile, and if so, note they are health-adjacent data with their own consent implications. |
-| **O-892** | Who authors the meal ideas? A library you write once and ship to every club, a per-club library, or both with club overrides? This changes the schema and your content workload. |
+| **O-892** | **RESOLVED, 14 August 2026. Per-club library, no shared "write once, ship to every club" library.** `meal_library` / `meal_library_items` (migration 0051) are org-scoped only, no exceptions — `org_id` is `not null` on both tables, not nullable-and-unused. This follows precedent this codebase had already set twice independently for the identical question: `exercises` (migration 0021 — "No global exercise library... a shared cross-club library is a content decision for someone who runs the product, not a schema gap") and `test_definitions` (migration 0024 — "No global, org_id-null 'Fydr standard' test library... The same 'no shared library' call gym-programme's exercises made"). Authoring is coach-only (write); medical reads for context, the same split `programmes/page.tsx` states for the whole nutrition-programme domain; admin has no access, per `01-roles-and-permissions.md` §1's "no performance-domain detail by default." Query layer: `src/lib/queries/mealLibrary.ts`. UI: the "Food library" picker and "+ Meal" form in `NutritionWorkspace.tsx`, both previously permanently disabled. Not resolved by this change: the images and CDN transform `10-roadmap.md` §5's Phase 2 line item also names — still not built, tracked there, not reopened here. O-893's tiering question is separate and still open. |
 | **O-893** | Should guidance be tiered? `12-product-tiers.md` puts nutrition in both tiers. A prebuilt meal library is a plausible Premium hook. |
 | **O-894** | Does `nutrition_targets` still need per-meal granularity now that nothing is logged per meal, or do daily totals suffice? Daily totals would simplify the schema. |
 | **O-895** | Should read receipts (§9 option 1) be recorded at all, given they tell an athlete they are being monitored for reading a page? |

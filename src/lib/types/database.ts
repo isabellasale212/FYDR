@@ -1046,9 +1046,9 @@ export type Database = {
         status: Database["public"]["Enums"]["gym_log_status"]
         comment: string | null
         source: Database["public"]["Enums"]["data_source"]
+        created_at: string
         revision_of: string | null
         superseded_by: string | null
-        created_at: string
       }
       Insert: {
         id?: string
@@ -1064,9 +1064,9 @@ export type Database = {
         status?: Database["public"]["Enums"]["gym_log_status"]
         comment?: string | null
         source?: Database["public"]["Enums"]["data_source"]
+        created_at?: string
         revision_of?: string | null
         superseded_by?: string | null
-        created_at?: string
       }
       Update: {
         id?: string
@@ -1082,9 +1082,9 @@ export type Database = {
         status?: Database["public"]["Enums"]["gym_log_status"]
         comment?: string | null
         source?: Database["public"]["Enums"]["data_source"]
+        created_at?: string
         revision_of?: string | null
         superseded_by?: string | null
-        created_at?: string
       }
       Relationships: [
         {
@@ -1109,17 +1109,17 @@ export type Database = {
           referencedColumns: ["id"]
         },
         {
-          foreignKeyName: "gym_session_logs_session_id_fkey"
-          columns: ["session_id"]
-          isOneToOne: false
-          referencedRelation: "sessions"
-          referencedColumns: ["id"]
-        },
-        {
           foreignKeyName: "gym_session_logs_revision_of_fkey"
           columns: ["revision_of"]
           isOneToOne: false
           referencedRelation: "gym_session_logs"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "gym_session_logs_session_id_fkey"
+          columns: ["session_id"]
+          isOneToOne: false
+          referencedRelation: "sessions"
           referencedColumns: ["id"]
         },
         {
@@ -1645,6 +1645,105 @@ export type Database = {
       Relationships: [
         {
           foreignKeyName: "login_attempts_org_id_fkey"
+          columns: ["org_id"]
+          isOneToOne: false
+          referencedRelation: "organisations"
+          referencedColumns: ["id"]
+        }
+      ]
+    }
+    meal_library: {
+      Row: {
+        id: string
+        org_id: string
+        name: string
+        time_label: string
+        created_by: string | null
+        created_at: string
+        deleted_at: string | null
+      }
+      Insert: {
+        id?: string
+        org_id: string
+        name: string
+        time_label: string
+        created_by?: string | null
+        created_at?: string
+        deleted_at?: string | null
+      }
+      Update: {
+        id?: string
+        org_id?: string
+        name?: string
+        time_label?: string
+        created_by?: string | null
+        created_at?: string
+        deleted_at?: string | null
+      }
+      Relationships: [
+        {
+          foreignKeyName: "meal_library_created_by_fkey"
+          columns: ["created_by"]
+          isOneToOne: false
+          referencedRelation: "users"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "meal_library_org_id_fkey"
+          columns: ["org_id"]
+          isOneToOne: false
+          referencedRelation: "organisations"
+          referencedColumns: ["id"]
+        }
+      ]
+    }
+    meal_library_items: {
+      Row: {
+        id: string
+        org_id: string
+        meal_id: string
+        sequence: number
+        name: string
+        qty: number
+        unit: Database["public"]["Enums"]["meal_unit"]
+        protein_g: number
+        carb_g: number
+        fat_g: number
+      }
+      Insert: {
+        id?: string
+        org_id: string
+        meal_id: string
+        sequence?: number
+        name: string
+        qty: number
+        unit: Database["public"]["Enums"]["meal_unit"]
+        protein_g?: number
+        carb_g?: number
+        fat_g?: number
+      }
+      Update: {
+        id?: string
+        org_id?: string
+        meal_id?: string
+        sequence?: number
+        name?: string
+        qty?: number
+        unit?: Database["public"]["Enums"]["meal_unit"]
+        protein_g?: number
+        carb_g?: number
+        fat_g?: number
+      }
+      Relationships: [
+        {
+          foreignKeyName: "meal_library_items_meal_id_fkey"
+          columns: ["meal_id"]
+          isOneToOne: false
+          referencedRelation: "meal_library"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "meal_library_items_org_id_fkey"
           columns: ["org_id"]
           isOneToOne: false
           referencedRelation: "organisations"
@@ -3947,6 +4046,52 @@ export type Database = {
 
       ]
     }
+    gym_session_logs_current: {
+      Row: {
+        id: string | null
+        org_id: string | null
+        athlete_id: string | null
+        programme_session_id: string | null
+        session_id: string | null
+        entry_date: string | null
+        started_at: string | null
+        completed_at: string | null
+        session_rpe: number | null
+        total_volume_kg: number | null
+        status: Database["public"]["Enums"]["gym_log_status"] | null
+        comment: string | null
+        source: Database["public"]["Enums"]["data_source"] | null
+        created_at: string | null
+        revision_of: string | null
+        superseded_by: string | null
+      }
+      Relationships: [
+
+      ]
+    }
+    gym_set_logs_current: {
+      Row: {
+        id: string | null
+        org_id: string | null
+        gym_session_log_id: string | null
+        programme_exercise_id: string | null
+        exercise_id: string | null
+        set_number: number | null
+        reps_completed: number | null
+        load_kg: number | null
+        rpe: number | null
+        rir: number | null
+        side: Database["public"]["Enums"]["body_side"] | null
+        is_warmup: boolean | null
+        volume_kg: number | null
+        logged_at: string | null
+        revision_of: string | null
+        superseded_by: string | null
+      }
+      Relationships: [
+
+      ]
+    }
     injury_clinical_athlete_view: {
       Row: {
         injury_id: string | null
@@ -4040,52 +4185,6 @@ export type Database = {
 
       ]
     }
-    gym_set_logs_current: {
-      Row: {
-        id: string | null
-        org_id: string | null
-        gym_session_log_id: string | null
-        programme_exercise_id: string | null
-        exercise_id: string | null
-        set_number: number | null
-        reps_completed: number | null
-        load_kg: number | null
-        rpe: number | null
-        rir: number | null
-        side: Database["public"]["Enums"]["body_side"] | null
-        is_warmup: boolean | null
-        volume_kg: number | null
-        logged_at: string | null
-        revision_of: string | null
-        superseded_by: string | null
-      }
-      Relationships: [
-
-      ]
-    }
-    gym_session_logs_current: {
-      Row: {
-        id: string | null
-        org_id: string | null
-        athlete_id: string | null
-        programme_session_id: string | null
-        session_id: string | null
-        entry_date: string | null
-        started_at: string | null
-        completed_at: string | null
-        session_rpe: number | null
-        total_volume_kg: number | null
-        status: Database["public"]["Enums"]["gym_log_status"] | null
-        comment: string | null
-        source: Database["public"]["Enums"]["data_source"] | null
-        revision_of: string | null
-        superseded_by: string | null
-        created_at: string | null
-      }
-      Relationships: [
-
-      ]
-    }
     }
     Functions: {
     athlete_age_years: {
@@ -4113,6 +4212,10 @@ export type Database = {
       Args: {
         p: Database["public"]["Enums"]["app_role"][]
       }
+      Returns: boolean
+    }
+    auth_is_aal2: {
+      Args: Record<string, never>
       Returns: boolean
     }
     auth_org_id: {
@@ -4145,6 +4248,21 @@ export type Database = {
           is_tied: boolean
           previous_position: number
         }[]
+    }
+    generate_compliance_expectations: {
+      Args: {
+        p_org_id: string
+        p_date: string
+      }
+      Returns: number
+    }
+    generate_compliance_expectations_nightly: {
+      Args: Record<string, never>
+      Returns: unknown
+    }
+    gym_body_side_label: {
+      Args: Record<string, never>
+      Returns: string
     }
     login_attempt_gate: {
       Args: {
@@ -4238,7 +4356,7 @@ export type Database = {
           one_rm_test_date: string
         }[]
     }
-    revise_gym_set_log: {
+    revise_gym_session_log: {
       Args: {
         p_original_id: string
         p_new_id: string
@@ -4246,7 +4364,7 @@ export type Database = {
       }
       Returns: string
     }
-    revise_gym_session_log: {
+    revise_gym_set_log: {
       Args: {
         p_original_id: string
         p_new_id: string
@@ -4288,7 +4406,7 @@ export type Database = {
         p_athlete_id: string
         p_rehab_programme_id: string
       }
-      Returns: undefined
+      Returns: unknown
     }
     write_audit_event: {
       Args: {
@@ -4328,6 +4446,7 @@ export type Database = {
     injury_severity: "minor" | "moderate" | "severe"
     injury_status: "open" | "rehab" | "return_to_play" | "closed"
     load_basis: "absolute" | "percent_1rm" | "percent_bw" | "rpe" | "none"
+    meal_unit: "g" | "ml" | "ea"
     nutrition_checkin_answer: "yes" | "roughly" | "no"
     occurrence_context: "training" | "match" | "gym" | "other" | "unknown"
     org_sport: "rugby_union" | "rugby_league" | "football" | "netball" | "hockey" | "cricket" | "basketball" | "athletics" | "other"

@@ -5,20 +5,28 @@
  * table anywhere in this schema (checked against docs/04-data-model.md and every
  * migration). docs/10-roadmap.md §5's own Phase 2 line item, "a meal-idea library with
  * images served through a CDN transform", is the real, planned, not-yet-built home for
- * this — costed separately in that section as content work, not just engineering time,
- * and flagged unresolved at O-892 ("who authors the meal ideas... this changes the
- * schema and your content workload"). Building that library's schema and an authoring
- * UI is a materially larger, separately-scoped piece of work than the rest of this
- * screen, so this pass takes the same "reduced but real" position this session has
- * taken before (see: week templates before a real templates table existed) — the
- * FOOD DATA here is a fixed seed, exactly as literal as the spec's own array, but the
- * PORTION SCALING applied to it is real: it multiplies real numbers (the selected
- * athlete's real body_composition mass, the real day-type multiplier) through, so the
- * meal card in front of a nutritionist is always a true day of food for whichever real
- * athlete is currently selected, not a static mock. "Food library" and "+ Meal" stay
- * inert in the UI, matching the spec's own "Not designed" list (the food library
- * itself — searching, adding a food, editing macros per 100 g — is explicitly out of
- * scope), because there is nowhere real for either action to write to yet. */
+ * the IMAGES and the CDN transform specifically — those are still not built. The rest of
+ * that line item, the library itself, now is: migration 0051_meal_library.sql adds
+ * meal_library / meal_library_items (org-scoped only — see that migration's own header
+ * for how it resolves O-892), and lib/queries/mealLibrary.ts is the query layer a coach's
+ * real "Food library" picker and "+ Meal" form (NutritionWorkspace.tsx) write to and read
+ * from. Both buttons used to be permanently inert here because there was nowhere real for
+ * either action to write to; that is no longer true, and the FOOD DATA below is fixed
+ * seed data for exactly that reason — it predates the library and was never meant to be
+ * the only source of meals, just the always-present starting set.
+ *
+ * The FOOD DATA below is a fixed seed, exactly as literal as the spec's own array, and it
+ * stays exactly as it is: the five meals below are still the default, always-shown
+ * starting set for "the day, as food", never replaced by the library. What the library
+ * adds is more meals alongside them, picked or authored per org. The PORTION SCALING
+ * applied to any meal, seed or library, is real either way: scaleMeal/scaleDay multiply
+ * real numbers (the selected athlete's real body_composition mass, the real day-type
+ * multiplier) through, unchanged by the library's existence, so the meal card in front of
+ * a nutritionist is always a true day of food for whichever real athlete is currently
+ * selected, not a static mock. Which meals are shown in a given viewing session (seed plus
+ * whichever library meals were picked or just authored) is local UI state in
+ * NutritionWorkspace.tsx, same as before — only the library itself, not a session's
+ * on-screen selection, is persisted. */
 
 export type MealUnit = 'g' | 'ml' | 'ea';
 
@@ -43,7 +51,10 @@ export type Meal = {
   items: MealItem[];
 };
 
-const dominant = (p: number, c: number, f: number) => c > p + f;
+// Exported so lib/queries/mealLibrary.ts can compute the identical carbDominant flag for
+// a library-authored item — one formula, not a second copy of it — without changing what
+// it does for the fixed seed meals below.
+export const dominant = (p: number, c: number, f: number) => c > p + f;
 
 export const REFERENCE_MASS_KG = 110;
 

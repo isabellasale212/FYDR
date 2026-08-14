@@ -385,9 +385,19 @@ and editor for it, and a meal-idea library with images served through a CDN tran
 that nobody can author is not a feature. Anyone expecting this line to drop to half a week is
 costing the deletion and not the replacement.
 
-One thing sits outside this estimate. The **content workload** of writing the meal-idea library
-is not engineering time and is unresolved in O-892: a library you write once and ship to every
-club is a different commitment from a per-club library.
+**Update, 14 August 2026: the meal-idea library itself — the data and the authoring path — is
+now built**, ahead of Phase 2, in the Phase 1a nutrition-guidance screen that already exists
+(`meal_library` / `meal_library_items`, migration 0051; `src/lib/queries/mealLibrary.ts`; the
+"Food library" picker and "+ Meal" form in `NutritionWorkspace.tsx`). O-892 is resolved by that
+migration: org-scoped only, no shared cross-club library (see O-892's own resolution note,
+`nutrition-guidance.md` §11). **The images and the CDN transform this line item also names are
+not built** — meal items are name/qty/unit/macros only, no image field, no CDN anywhere in
+migration 0051. Do not read the line above as fully shipped: only the non-image half is.
+
+One thing sits outside this estimate regardless of the schema question above. The **content
+workload** of actually writing a club's meal ideas is not engineering time and is a per-club
+cost now that O-892 has settled on a per-club library, not a one-time "write once, ship to
+every club" cost.
 
 **The weekly check-in is 1 week in total, not two days, and it is split across two phases.**
 The two-day figure in `nutrition-guidance.md` §9 costed the sheet and the table, and that part

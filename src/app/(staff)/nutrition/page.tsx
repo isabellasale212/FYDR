@@ -8,6 +8,7 @@ import { addDays, todayIso } from '@/lib/format';
 import { fetchBodyCompositionForAthletes } from '@/lib/queries/bodyComposition';
 import { fetchGroupAthleteIds, fetchGroups, fetchGroupsWithCounts } from '@/lib/queries/groups';
 import { fetchCheckinsForAthletes } from '@/lib/queries/nutrition';
+import { fetchMealLibrary } from '@/lib/queries/mealLibrary';
 import { fetchRules } from '@/lib/queries/nutritionRules';
 import { fetchTargets } from '@/lib/queries/nutritionTargets';
 import { mondayOf } from '@/lib/queries/schedule';
@@ -49,13 +50,17 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
 
-  const [groups, groupsWithCounts, fullSquad, rules, allTargets] = await Promise.all([
+  const [groups, groupsWithCounts, fullSquad, rules, allTargets, mealLibrary] = await Promise.all([
     fetchGroups(db, orgId),
     fetchGroupsWithCounts(db, orgId),
     fetchSquadList(db, orgId, []), // unfiltered — plan metadata (assigned count, mean
     // mass) is a fact about the plan, not about the page's current group filter
     fetchRules(db, orgId),
     fetchTargets(db, orgId, timezone),
+    fetchMealLibrary(db, orgId), // org-scoped meal library, migration 0051 — read here
+    // (coach or medical both read fine) regardless of isCoach/isMedical below, same as
+    // every other data fetch on this page; write access is gated by RLS, not by what
+    // this page chooses to fetch.
   ]);
 
   // The org's real local today, not the server's UTC clock (todayIso's
@@ -178,6 +183,7 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
         weekStart={weekStart}
         weekEnd={weekEnd}
         timezone={timezone}
+        mealLibrary={mealLibrary}
       />
     </>
   );

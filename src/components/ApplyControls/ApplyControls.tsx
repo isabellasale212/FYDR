@@ -21,6 +21,7 @@ type Props = {
   weekStart: string;
   strategy: ApplyStrategy;
   fixtureId: string | null;
+  timezone: string;
   previewRows: PreviewRow[];
   planSummary: PlanSummary;
 };
@@ -38,7 +39,7 @@ function qs(params: Record<string, string | undefined>): string {
   return str ? `?${str}` : '';
 }
 
-export function ApplyControls({ orgId, userId, templates, selectedTemplateId, weekStart, strategy, fixtureId, previewRows, planSummary }: Props) {
+export function ApplyControls({ orgId, userId, templates, selectedTemplateId, weekStart, strategy, fixtureId, timezone, previewRows, planSummary }: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{ created: number; softDeleted: number } | null>(null);
@@ -111,7 +112,7 @@ export function ApplyControls({ orgId, userId, templates, selectedTemplateId, we
               {previewRows.map((r) => (
                 <tr key={r.date}>
                   <td className="sub mono">
-                    {formatDate(r.date)}
+                    {formatDate(r.date, timezone)}
                     {r.md ? ` · ${r.md}` : ''}
                   </td>
                   <td className="tiny">{r.existingTitles.join(', ') || '—'}</td>

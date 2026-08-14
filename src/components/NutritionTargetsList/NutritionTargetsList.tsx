@@ -10,6 +10,7 @@ import { formatDate, mdLabel } from '@/lib/format';
 
 type Props = {
   orgId: string;
+  timezone: string;
   targets: readonly TargetWithNames[];
   isCoach: boolean;
   isMedical: boolean;
@@ -25,7 +26,7 @@ function macroSummary(t: TargetWithNames): string {
   return parts.length > 0 ? parts.join(' · ') : 'No values set';
 }
 
-export function NutritionTargetsList({ orgId, targets, isCoach, isMedical }: Props) {
+export function NutritionTargetsList({ orgId, timezone, targets, isCoach, isMedical }: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -76,8 +77,8 @@ export function NutritionTargetsList({ orgId, targets, isCoach, isMedical }: Pro
                     {t.reason ? ` · ${t.reason}` : ''}
                   </div>
                   <div className="tiny" style={{ marginTop: 2 }}>
-                    From {formatDate(t.effective_from)}
-                    {t.effective_to ? ` to ${formatDate(t.effective_to)}` : ''}
+                    From {formatDate(t.effective_from, timezone)}
+                    {t.effective_to ? ` to ${formatDate(t.effective_to, timezone)}` : ''}
                   </div>
                 </div>
                 <span />

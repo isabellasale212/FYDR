@@ -32,7 +32,19 @@ export function initials(a: { first_name: string; last_name: string }): string {
   return `${a.first_name.slice(0, 1)}${a.last_name.slice(0, 1)}`.toUpperCase();
 }
 
-export function formatDate(iso: string | null | undefined): string {
+/** `timezone` is required, not defaulted, on these four display formatters —
+ *  unlike `todayIso`/`dateInTz`/`zonedTimeToUtcIso`/`timeInTz`/
+ *  `decimalHourInTz` below, which keep an optional `= DATE_TZ` fallback
+ *  because they're also reachable from non-request-scoped callers. Every
+ *  formatDate/formatLongDate/formatTime/formatDateTime call site sits under
+ *  `(staff)/**` or `(athlete)/**` (or a shared component/query rendered
+ *  from one of those trees), which always has a real org timezone from
+ *  `requireStaff()`/`requireAthlete()`'s `ctx.timezone` — CLAUDE.md rule 5
+ *  ("display in the organisation's timezone"). A silent `Europe/London`
+ *  fallback here would keep every non-UK org's displayed times wrong
+ *  without TypeScript ever flagging it; making the parameter required means
+ *  a missing timezone is a compile error, not a silent bug. */
+export function formatDate(iso: string | null | undefined, timezone: string): string {
   if (!iso) return BLANK;
   const d = new Date(iso.length === 10 ? `${iso}T12:00:00Z` : iso);
   if (Number.isNaN(d.getTime())) return BLANK;
@@ -40,11 +52,11 @@ export function formatDate(iso: string | null | undefined): string {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
-    timeZone: DATE_TZ,
+    timeZone: timezone,
   }).format(d);
 }
 
-export function formatLongDate(iso: string | null | undefined): string {
+export function formatLongDate(iso: string | null | undefined, timezone: string): string {
   if (!iso) return BLANK;
   const d = new Date(iso.length === 10 ? `${iso}T12:00:00Z` : iso);
   if (Number.isNaN(d.getTime())) return BLANK;
@@ -53,11 +65,11 @@ export function formatLongDate(iso: string | null | undefined): string {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
-    timeZone: DATE_TZ,
+    timeZone: timezone,
   }).format(d);
 }
 
-export function formatTime(iso: string | null | undefined): string {
+export function formatTime(iso: string | null | undefined, timezone: string): string {
   if (!iso) return BLANK;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return BLANK;
@@ -65,7 +77,7 @@ export function formatTime(iso: string | null | undefined): string {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
-    timeZone: DATE_TZ,
+    timeZone: timezone,
   }).format(d);
 }
 
@@ -74,7 +86,7 @@ export function formatTime(iso: string | null | undefined): string {
  *  from formatDate (no time) and formatTime (no date): a role-history row
  *  needs both, the same way an audit event needs to say not just which
  *  day something happened but when in it. */
-export function formatDateTime(iso: string | null | undefined): string {
+export function formatDateTime(iso: string | null | undefined, timezone: string): string {
   if (!iso) return BLANK;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return BLANK;
@@ -85,7 +97,7 @@ export function formatDateTime(iso: string | null | undefined): string {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
-    timeZone: DATE_TZ,
+    timeZone: timezone,
   }).format(d);
 }
 

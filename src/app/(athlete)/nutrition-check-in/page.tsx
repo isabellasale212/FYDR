@@ -46,6 +46,7 @@ export default async function NutritionCheckInPage({
           orgId={orgId}
           athleteId={athleteId}
           userId={claims.userId}
+          timezone={timezone}
           weekStart={weekStart}
           correction={{
             originalId: existing.id,
@@ -62,7 +63,7 @@ export default async function NutritionCheckInPage({
             Already answered
           </h2>
           <p className="import-sub" style={{ marginBottom: 0 }}>
-            For {formatDate(weekStart)} to {formatDate(weekEnd)}, you answered{' '}
+            For {formatDate(weekStart, timezone)} to {formatDate(weekEnd, timezone)}, you answered{' '}
             <b>
               {existing.answer === 'yes' ? 'Yes' : existing.answer === 'roughly' ? 'Roughly' : 'No'}
             </b>
@@ -78,6 +79,7 @@ export default async function NutritionCheckInPage({
           orgId={orgId}
           athleteId={athleteId}
           userId={claims.userId}
+          timezone={timezone}
           weekStart={weekStart}
         />
       )}

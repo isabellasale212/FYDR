@@ -3,6 +3,7 @@ import { formatDate } from '@/lib/format';
 
 type Props = {
   rows: readonly HistoryRow[];
+  timezone: string;
   unit: string;
   decimalPlaces: number;
   higherIsBetter: boolean;
@@ -37,7 +38,7 @@ type SeriesPoint = { date: string; value: number };
  *  two dated results renders no line at all, only if every side is that
  *  short does the whole component render nothing and the page falls back
  *  to the plain list below it. */
-export function TestTrendChart({ rows, unit, decimalPlaces, higherIsBetter }: Props) {
+export function TestTrendChart({ rows, timezone, unit, decimalPlaces, higherIsBetter }: Props) {
   const bySide = new Map<string, SeriesPoint[]>();
   for (const r of rows) {
     if (!r.is_best) continue;
@@ -101,7 +102,7 @@ export function TestTrendChart({ rows, unit, decimalPlaces, higherIsBetter }: Pr
         ))}
         {dateTicks.map((d) => (
           <text key={d} x={x(d)} y={H - MB + 16} textAnchor="middle" fontFamily="var(--font-mono)" fontSize={9.5} fill="var(--faint)">
-            {formatDate(d)}
+            {formatDate(d, timezone)}
           </text>
         ))}
 

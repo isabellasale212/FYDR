@@ -30,7 +30,7 @@ export default async function InjuryDetailPage({
   params: Promise<{ injuryId: string }>;
 }) {
   const { injuryId } = await params;
-  const { db, orgId, claims } = await requireStaff();
+  const { db, orgId, claims, timezone } = await requireStaff();
   const isMedical = claims.roles.includes('medical');
 
   const injury = await fetchInjuryDetail(db, orgId, injuryId);
@@ -66,9 +66,9 @@ export default async function InjuryDetailPage({
           ) : null}
         </div>
         <p style={{ marginTop: 10 }}>
-          Since {formatDate(injury.onset_date)}
-          {injury.expected_return ? ` · expected back ${formatDate(injury.expected_return)}` : ''}
-          {injury.actual_return ? ` · returned ${formatDate(injury.actual_return)}` : ''}
+          Since {formatDate(injury.onset_date, timezone)}
+          {injury.expected_return ? ` · expected back ${formatDate(injury.expected_return, timezone)}` : ''}
+          {injury.actual_return ? ` · returned ${formatDate(injury.actual_return, timezone)}` : ''}
         </p>
         {injury.restrictions && injury.restrictions.length > 0 ? (
           <div className="chiprow" style={{ marginTop: 10 }}>

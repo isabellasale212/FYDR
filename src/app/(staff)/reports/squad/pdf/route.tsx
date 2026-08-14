@@ -33,11 +33,11 @@ export async function GET(request: Request) {
   const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchSquadWeeklyReport(db, orgId, groupIds, timezone, endDate)]);
 
   const buffer = await renderToBuffer(
-    <PdfReport footer={`${orgName} · Fydr · generated ${formatDate(report.to)} · not for redistribution without the club's own policy`}>
+    <PdfReport footer={`${orgName} · Fydr · generated ${formatDate(report.to, timezone)} · not for redistribution without the club's own policy`}>
       <PdfHeader
         eyebrow={`Squad weekly · ${orgName}`}
         title="Squad weekly report"
-        meta={`${formatDate(report.from)} to ${formatDate(report.to)} · Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes)`}
+        meta={`${formatDate(report.from, timezone)} to ${formatDate(report.to, timezone)} · Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes)`}
       />
 
       <PdfTileRow>

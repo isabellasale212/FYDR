@@ -18,7 +18,7 @@ export const metadata = { title: 'Users · Fydr' };
  *  — a coach or medical staffer who guesses the URL gets bounced, the same
  *  two-layer pattern GPS import's coach/medical gate already uses. */
 export default async function UsersPage() {
-  const { db, orgId, claims } = await requireStaff();
+  const { db, orgId, claims, timezone } = await requireStaff();
   if (!claims.roles.includes('admin')) redirect('/settings');
 
   const [users, unlinked] = await Promise.all([fetchUsersWithRoles(db, orgId), fetchUnlinkedAthletes(db, orgId)]);
@@ -41,6 +41,7 @@ export default async function UsersPage() {
         currentActorRole={'admin' as AppRole}
         initialUsers={users}
         initialUnlinked={unlinked}
+        timezone={timezone}
       />
     </>
   );

@@ -40,7 +40,7 @@ function qs(params: Record<string, string | undefined>): string {
  *  actor name, and real offset pagination past the old hard cap of 100.
  *  Access is unchanged — still admin-only, same redirect. */
 export default async function AuditLogPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, claims } = await requireStaff();
+  const { db, orgId, claims, timezone } = await requireStaff();
   if (!claims.roles.includes('admin')) redirect('/settings');
 
   const sp = await searchParams;
@@ -146,7 +146,7 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Sea
               <tbody>
                 {result.rows.map((r) => (
                   <tr key={r.id}>
-                    <td className="sub mono">{formatDateTime(r.occurredAt)}</td>
+                    <td className="sub mono">{formatDateTime(r.occurredAt, timezone)}</td>
                     <td>
                       {r.actorName ?? '—'}
                       {r.actorRole ? <span className="tiny" style={{ color: 'var(--faint)' }}> · {r.actorRole}</span> : null}

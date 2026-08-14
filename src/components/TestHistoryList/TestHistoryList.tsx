@@ -13,12 +13,13 @@ type Props = {
   orgId: string;
   testDefinitionId: string;
   athleteId: string;
+  timezone: string;
   rows: readonly HistoryRow[];
   unit: string;
   decimalPlaces: number;
 };
 
-export function TestHistoryList({ orgId, testDefinitionId, athleteId, rows, unit, decimalPlaces }: Props) {
+export function TestHistoryList({ orgId, testDefinitionId, athleteId, timezone, rows, unit, decimalPlaces }: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [markingId, setMarkingId] = useState<string | null>(null);
@@ -62,7 +63,7 @@ export function TestHistoryList({ orgId, testDefinitionId, athleteId, rows, unit
       ) : null}
       {[...byDate.entries()].map(([date, dayRows]) => (
         <div key={date} className="card">
-          <p className="label">{formatDate(date)}</p>
+          <p className="label">{formatDate(date, timezone)}</p>
           <div className="stack" style={{ gap: 6, marginTop: 8 }}>
             {dayRows.map((r) => (
               <div key={r.id}>

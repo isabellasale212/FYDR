@@ -58,7 +58,7 @@ export default async function TestingPage() {
               Next scheduled testing session
             </p>
             <p className="nm">
-              {nextSession.title} — {formatDateTime(nextSession.starts_at)}
+              {nextSession.title} — {formatDateTime(nextSession.starts_at, timezone)}
               {nextSessionMd ? ` · ${nextSessionMd}` : ''}
             </p>
           </div>

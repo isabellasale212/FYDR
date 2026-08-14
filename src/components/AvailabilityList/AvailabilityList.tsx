@@ -3,7 +3,7 @@ import type { NotFullyAvailableRow } from '@/lib/queries/availability';
 import { availabilityStatus } from '@/lib/status';
 import { BLANK, enumLabel, formatDate } from '@/lib/format';
 
-type Props = { rows: readonly NotFullyAvailableRow[] };
+type Props = { rows: readonly NotFullyAvailableRow[]; timezone: string };
 
 const TONE_CLASS = {
   good: 'g-good',
@@ -21,7 +21,7 @@ const TONE_CLASS = {
  * Never a diagnosis: injury_clinical is not fetched for this list and is not
  * reachable from the query behind it.
  */
-export function AvailabilityList({ rows }: Props) {
+export function AvailabilityList({ rows, timezone }: Props) {
   return (
     <div>
       {rows.map((row) => {
@@ -61,7 +61,7 @@ export function AvailabilityList({ rows }: Props) {
             </div>
             <div className="mono sub">
               {row.expected_return ? (
-                <>Back {formatDate(row.expected_return)}</>
+                <>Back {formatDate(row.expected_return, timezone)}</>
               ) : (
                 <span className="tiny">Return not set</span>
               )}

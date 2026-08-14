@@ -183,7 +183,7 @@ export default async function AthletePage({
               {programme.weekTotal !== null
                 ? `week ${programme.weekNow} of ${programme.weekTotal}`
                 : `week ${programme.weekNow}`}
-              {programme.endsOn ? ` · ends ${formatDate(programme.endsOn)}` : ''}
+              {programme.endsOn ? ` · ends ${formatDate(programme.endsOn, timezone)}` : ''}
             </span>
             <Link href={`/programmes/${programme.programmeId}`} className="btn-ghost-pill accent">
               Change plan
@@ -370,9 +370,9 @@ export default async function AthletePage({
                           </b>
                           {injury.side ? ` (${enumLabel(injury.side)})` : ''} — {enumLabel(injury.status)}
                           {injury.actual_return
-                            ? `, returned ${formatDate(injury.actual_return)}`
+                            ? `, returned ${formatDate(injury.actual_return, timezone)}`
                             : injury.expected_return
-                              ? `, back ${formatDate(injury.expected_return)}`
+                              ? `, back ${formatDate(injury.expected_return, timezone)}`
                               : ''}
                         </p>
                       ))}
@@ -404,7 +404,7 @@ export default async function AthletePage({
           </div>
 
           <div className="pp-grid-col">
-            <PlayerProfileFlags flags={profile.flags} orgId={orgId} userId={claims.userId} today={today} />
+            <PlayerProfileFlags flags={profile.flags} orgId={orgId} userId={claims.userId} today={today} timezone={timezone} />
 
             <section className="card pp-card" aria-label="ACWR and wellness rating">
               <div className="pp-dials">

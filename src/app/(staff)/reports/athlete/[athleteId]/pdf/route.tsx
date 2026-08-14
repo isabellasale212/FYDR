@@ -27,11 +27,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
   const loadDaysWithValue = report.load.byDay.filter((d) => d.load !== null);
 
   const buffer = await renderToBuffer(
-    <PdfReport footer={`${orgName} · Fydr · generated ${formatDate(report.to)} · not for redistribution without the club's own policy`}>
+    <PdfReport footer={`${orgName} · Fydr · generated ${formatDate(report.to, timezone)} · not for redistribution without the club's own policy`}>
       <PdfHeader
         eyebrow={`Athlete report · ${orgName}`}
         title={`${athlete.first_name} ${athlete.last_name}`}
-        meta={`${athlete.position ?? ''} · ${formatDate(report.from)} to ${formatDate(report.to)}`}
+        meta={`${athlete.position ?? ''} · ${formatDate(report.from, timezone)} to ${formatDate(report.to, timezone)}`}
       />
 
       <PdfTileRow>
@@ -49,7 +49,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
           { key: 'domain', label: 'Domain', width: '20%', render: (r) => enumLabel(r.domain) },
           { key: 'what', label: 'What', width: '50%', render: (r) => `${r.what} ${r.observed} vs ${r.expected}`.trim() },
           { key: 'severity', label: 'Severity', width: '15%', render: (r) => r.severity },
-          { key: 'since', label: 'Since', width: '15%', render: (r) => formatDate(r.flag_date) },
+          { key: 'since', label: 'Since', width: '15%', render: (r) => formatDate(r.flag_date, timezone) },
         ]}
       />
 
@@ -58,7 +58,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
         emptyText="No session load recorded in this period."
         rows={loadDaysWithValue}
         columns={[
-          { key: 'date', label: 'Date', width: '50%', render: (r) => formatDate(r.date) },
+          { key: 'date', label: 'Date', width: '50%', render: (r) => formatDate(r.date, timezone) },
           { key: 'load', label: 'Load', width: '50%', align: 'right', render: (r) => formatNumber(r.load, 0) },
         ]}
       />
@@ -82,7 +82,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
         columns={[
           { key: 'name', label: 'Test', width: '30%', render: (r) => `${r.name} (${r.unit})` },
           { key: 'pb', label: 'PB', width: '20%', align: 'right', render: (r) => (r.pbValue === null ? '—' : formatNumber(r.pbValue, r.decimal_places)) },
-          { key: 'pbDate', label: 'PB date', width: '15%', render: (r) => (r.pbDate ? formatDate(r.pbDate) : '') },
+          { key: 'pbDate', label: 'PB date', width: '15%', render: (r) => (r.pbDate ? formatDate(r.pbDate, timezone) : '') },
           {
             key: 'latest',
             label: 'Latest',
@@ -90,7 +90,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
             align: 'right',
             render: (r) => (r.latestValue === null ? '—' : formatNumber(r.latestValue, r.decimal_places)),
           },
-          { key: 'latestDate', label: 'Latest date', width: '15%', render: (r) => (r.latestDate ? formatDate(r.latestDate) : '') },
+          { key: 'latestDate', label: 'Latest date', width: '15%', render: (r) => (r.latestDate ? formatDate(r.latestDate, timezone) : '') },
         ]}
       />
     </PdfReport>,

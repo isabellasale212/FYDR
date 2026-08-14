@@ -125,7 +125,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
     fetchWeekStrip(db, orgId, groupIds, weekStart, effectiveToday, timezone),
     // "now" is the real instant — a session is "passed" against the real
     // clock, never against an end-of-day stand-in (audit S2).
-    fetchTimeline(db, orgId, groupIds, selectedDay, new Date().toISOString()),
+    fetchTimeline(db, orgId, groupIds, selectedDay, new Date().toISOString(), timezone),
     fetchSaturdayReadiness(db, orgId, groupIds, effectiveToday, timezone),
     fetchSquadState(db, orgId, groupIds),
     fetchUntiedFlags(db, orgId, groupIds),
@@ -139,7 +139,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
   const selectedDayMd = week.find((d) => d.date === selectedDay)?.md ?? null;
 
   const dayCaption = isSelectedToday
-    ? `${formatDate(effectiveToday)} · ${timeline.length} session${timeline.length === 1 ? '' : 's'}${timeline.length > 0 ? ` · first at ${timeline[0]!.time}` : ''}`
+    ? `${formatDate(effectiveToday, timezone)} · ${timeline.length} session${timeline.length === 1 ? '' : 's'}${timeline.length > 0 ? ` · first at ${timeline[0]!.time}` : ''}`
     : selectedDay < effectiveToday
       ? `complete${timeline.length > 0 ? ` · ${timeline.length} session${timeline.length === 1 ? '' : 's'}` : ''}`
       : `${timeline.length} session${timeline.length === 1 ? '' : 's'} planned`;
@@ -149,7 +149,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       <div className="topbar">
         <div className="page-head">
           <p className="eyebrow">
-            WEEK OF {formatLongDate(weekStart).toUpperCase()} · {readiness.opponent ? `MD SATURDAY · V ${readiness.opponent.toUpperCase()}` : 'MD SATURDAY'} ·{' '}
+            WEEK OF {formatLongDate(weekStart, timezone).toUpperCase()} · {readiness.opponent ? `MD SATURDAY · V ${readiness.opponent.toUpperCase()}` : 'MD SATURDAY'} ·{' '}
             {/* The scope by name, not "1 GROUP" — audit S4 / coach finding 16. */}
             {groupScopeLabel(groups, groupIds).toUpperCase()}
           </p>
@@ -179,9 +179,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
             flexWrap: 'wrap',
           }}
         >
-          <b style={{ fontSize: 13.5 }}>Showing {formatDate(effectiveToday)} — the latest day with data.</b>
+          <b style={{ fontSize: 13.5 }}>Showing {formatDate(effectiveToday, timezone)} — the latest day with data.</b>
           <span className="tiny" style={{ color: 'var(--muted)' }}>
-            Nothing has been recorded for today ({formatDate(wallClockToday)}) yet. Schedule, Flags and Reports run
+            Nothing has been recorded for today ({formatDate(wallClockToday, timezone)}) yet. Schedule, Flags and Reports run
             on the real date.
           </span>
         </div>

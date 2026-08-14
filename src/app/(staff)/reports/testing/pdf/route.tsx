@@ -32,7 +32,7 @@ export async function GET(request: Request) {
   const testColWidth = byAthlete.definitions.length > 0 ? `${Math.min(15, 80 / byAthlete.definitions.length)}%` : '15%';
 
   const buffer = await renderToBuffer(
-    <PdfReport footer={`${orgName} · Fydr · generated ${formatDate(todayIso(timezone))} · not for redistribution without the club's own policy`}>
+    <PdfReport footer={`${orgName} · Fydr · generated ${formatDate(todayIso(timezone), timezone)} · not for redistribution without the club's own policy`}>
       <PdfHeader
         eyebrow={`Testing · ${orgName}`}
         title="Testing report"

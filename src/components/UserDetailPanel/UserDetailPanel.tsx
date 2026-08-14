@@ -22,6 +22,7 @@ type Props = {
   orgId: string;
   currentUserId: string;
   currentActorRole: AppRole;
+  timezone: string;
   user: UserDetail;
   history: UserAuditRow[];
   unlinkedAthletes: UnlinkedAthlete[];
@@ -63,7 +64,7 @@ const AUDIT_ACTION_LABEL: Record<string, string> = {
  *  second, differently-timed edit pattern on the same data one click away
  *  would be a real inconsistency, not a faithful rendering of the
  *  wireframe's intent. */
-export function UserDetailPanel({ orgId, currentUserId, currentActorRole, user, history, unlinkedAthletes, isSelf }: Props) {
+export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezone, user, history, unlinkedAthletes, isSelf }: Props) {
   const router = useRouter();
   const [roles, setRoles] = useState(user.roleGrants.map((g) => g.role).sort());
   const [status, setStatus] = useState(user.status);
@@ -126,7 +127,7 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, user, 
               {user.email} {isSelf ? <span className="tiny">(you)</span> : null}
             </p>
             <p className="tiny">
-              {user.last_seen_at ? `Last seen ${formatDateTime(user.last_seen_at)}` : 'Never signed in'}
+              {user.last_seen_at ? `Last seen ${formatDateTime(user.last_seen_at, timezone)}` : 'Never signed in'}
             </p>
           </div>
           <Pill status={USER_STATUS[status]} />
@@ -158,7 +159,7 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, user, 
             <ul className="tiny" style={{ marginTop: 8, paddingLeft: 18 }}>
               {user.roleGrants.map((g) => (
                 <li key={g.role}>
-                  {enumLabel(g.role)} — granted {formatDate(g.granted_at)}
+                  {enumLabel(g.role)} — granted {formatDate(g.granted_at, timezone)}
                   {g.granted_by_name ? `, ${g.granted_by_name}` : ''}
                 </li>
               ))}
@@ -231,7 +232,7 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, user, 
             </h2>
             <div className="kv">
               <span className="sub">Created</span>
-              <span className="sub">{formatDate(user.created_at)}</span>
+              <span className="sub">{formatDate(user.created_at, timezone)}</span>
             </div>
             <div className="kv">
               <span className="sub">Invited by</span>
@@ -239,7 +240,7 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, user, 
             </div>
             <div className="kv">
               <span className="sub">Last seen</span>
-              <span className="sub">{user.last_seen_at ? formatDate(user.last_seen_at) : '—'}</span>
+              <span className="sub">{user.last_seen_at ? formatDate(user.last_seen_at, timezone) : '—'}</span>
             </div>
             <div className="kv">
               <span className="sub">MFA</span>
@@ -268,7 +269,7 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, user, 
             <tbody>
               {history.map((h) => (
                 <tr key={h.id}>
-                  <td className="mono sub">{formatDateTime(h.occurred_at)}</td>
+                  <td className="mono sub">{formatDateTime(h.occurred_at, timezone)}</td>
                   <td className="nm">{AUDIT_ACTION_LABEL[h.action] ?? h.action}</td>
                   <td className="sub">{h.actor_name ?? '—'}</td>
                 </tr>

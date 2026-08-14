@@ -22,6 +22,7 @@ type Props = {
   orgId: string;
   athleteId: string;
   userId: string;
+  timezone: string;
   weekStart: string;
   correction?: Correction;
 };
@@ -32,7 +33,7 @@ type Props = {
  *  and No red tells an athlete which answer the app wants, which the spec
  *  calls out by name as the exact pressure that turns a self-report into
  *  self-presentation. */
-export function NutritionCheckinForm({ orgId, athleteId, userId, weekStart, correction }: Props) {
+export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekStart, correction }: Props) {
   const router = useRouter();
   const [answer, setAnswer] = useState<'yes' | 'roughly' | 'no' | null>(
     correction?.initialAnswer ?? null,
@@ -137,7 +138,7 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, weekStart, corr
       ) : null}
 
       <p className="eyebrow">
-        Week {isoWeekInfo(weekStart).isoWeek} · {formatDate(weekStart)} to {formatDate(weekEnd)}
+        Week {isoWeekInfo(weekStart).isoWeek} · {formatDate(weekStart, timezone)} to {formatDate(weekEnd, timezone)}
       </p>
       <p className="dir" style={{ marginTop: 8 }}>
         Did you hit your protein target most days this week?

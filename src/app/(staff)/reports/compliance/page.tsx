@@ -78,13 +78,13 @@ export default async function ComplianceReportPage({
       </div>
 
       <p className="eyebrow" style={{ marginBottom: 10 }}>
-        {groupScopeLabel(groups, groupIds)} · {orgName} · {formatDate(fromDate)} to {formatDate(today)} · {report.athleteCount} athletes
+        {groupScopeLabel(groups, groupIds)} · {orgName} · {formatDate(fromDate, timezone)} to {formatDate(today, timezone)} · {report.athleteCount} athletes
       </p>
 
       {usingLatestDataDefault ? (
         <p className="sub" style={{ margin: '0 0 10px' }}>
-          Showing the most recent window with data, ending <b>{formatDate(today)}</b> — real today is{' '}
-          {formatDate(realToday)}. <Link href={`/reports/compliance?days=${days}&to=${realToday}${groupQuery}`} className="linklike">
+          Showing the most recent window with data, ending <b>{formatDate(today, timezone)}</b> — real today is{' '}
+          {formatDate(realToday, timezone)}. <Link href={`/reports/compliance?days=${days}&to=${realToday}${groupQuery}`} className="linklike">
             Jump to today instead
           </Link>
         </p>
@@ -163,7 +163,7 @@ export default async function ComplianceReportPage({
                             {a.first_name} {a.last_name}
                           </span>
                           <span className="tiny">
-                            {a.lastSubmission ? `Last ${formatDate(a.lastSubmission)}` : 'No submissions'}
+                            {a.lastSubmission ? `Last ${formatDate(a.lastSubmission, timezone)}` : 'No submissions'}
                             {a.waivedCount > 0 ? ` · ${a.waivedCount} waived` : ''}
                           </span>
                           <span
@@ -196,7 +196,7 @@ export default async function ComplianceReportPage({
                       <div key={`${d.date}-${d.domain}`}>
                         {index > 0 ? <div className="hair" /> : null}
                         <div className="load-row" style={{ gridTemplateColumns: '1fr 1fr auto' }}>
-                          <span className="nm">{formatDate(d.date)}</span>
+                          <span className="nm">{formatDate(d.date, timezone)}</span>
                           <span className="tiny">{enumLabel(d.domain)}</span>
                           <span className={`pill ${pct === null ? 'pill-neutral' : pct < 60 ? 'pill-bad' : pct < 85 ? 'pill-warn' : 'pill-good'}`}>
                             {d.submitted}/{d.expected}

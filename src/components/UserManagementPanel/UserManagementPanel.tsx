@@ -17,11 +17,12 @@ type Props = {
   orgId: string;
   currentUserId: string;
   currentActorRole: AppRole;
+  timezone: string;
   initialUsers: UserWithRoles[];
   initialUnlinked: UnlinkedAthlete[];
 };
 
-export function UserManagementPanel({ orgId, currentUserId, currentActorRole, initialUsers, initialUnlinked }: Props) {
+export function UserManagementPanel({ orgId, currentUserId, currentActorRole, timezone, initialUsers, initialUnlinked }: Props) {
   const router = useRouter();
   const [users, setUsers] = useState(initialUsers);
   const [unlinked, setUnlinked] = useState(initialUnlinked);
@@ -96,6 +97,7 @@ export function UserManagementPanel({ orgId, currentUserId, currentActorRole, in
               isSelf={u.id === currentUserId}
               currentUserId={currentUserId}
               currentActorRole={currentActorRole}
+              timezone={timezone}
               divider={index > 0}
               unlinkedAthletes={unlinked}
               onChanged={(next) => setUsers((rows) => rows.map((r) => (r.id === next.id ? next : r)))}
@@ -309,6 +311,7 @@ function UserRow({
   isSelf,
   currentUserId,
   currentActorRole,
+  timezone,
   divider,
   unlinkedAthletes,
   onChanged,
@@ -319,6 +322,7 @@ function UserRow({
   isSelf: boolean;
   currentUserId: string;
   currentActorRole: AppRole;
+  timezone: string;
   divider: boolean;
   unlinkedAthletes: UnlinkedAthlete[];
   onChanged: (next: UserWithRoles) => void;
@@ -381,7 +385,7 @@ function UserRow({
             <p className="tiny">
               {user.email}
               {user.athlete_name ? ` · linked to ${user.athlete_name}` : ''}
-              {user.last_seen_at ? ` · last seen ${formatDate(user.last_seen_at)}` : ''}
+              {user.last_seen_at ? ` · last seen ${formatDate(user.last_seen_at, timezone)}` : ''}
             </p>
           </div>
           <div className="chiprow">

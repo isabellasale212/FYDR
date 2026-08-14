@@ -26,7 +26,7 @@ export const metadata = { title: 'Data retention · Fydr' };
  *  paragraphs later ("run it in report-only mode... read the reports").
  *  The table below is where an admin actually reads them. */
 export default async function RetentionPage() {
-  const { db, orgId, claims } = await requireStaff();
+  const { db, orgId, claims, timezone } = await requireStaff();
   if (!claims.roles.includes('admin')) redirect('/settings');
 
   const nightlyReports = await fetchRetentionNightlyReports(db, orgId);
@@ -105,7 +105,7 @@ export default async function RetentionPage() {
             <tbody>
               {nightlyReports.map((r) => (
                 <tr key={r.occurredAt}>
-                  <td className="mono sub">{formatDateTime(r.occurredAt)}</td>
+                  <td className="mono sub">{formatDateTime(r.occurredAt, timezone)}</td>
                   <td className="r mono">{r.importBatchesEligible}</td>
                   <td className="r mono">{r.injuriesEligible}</td>
                 </tr>

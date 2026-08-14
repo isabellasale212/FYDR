@@ -25,6 +25,7 @@ type Props = {
   orgId: string;
   userId: string;
   today: string;
+  timezone: string;
 };
 
 /**
@@ -39,7 +40,7 @@ type Props = {
  * shows the flag's new state, same mechanism OutboxFlusher uses after a
  * successful send.
  */
-export function FlagCard({ flag, orgId, userId, today }: Props) {
+export function FlagCard({ flag, orgId, userId, today, timezone }: Props) {
   const router = useRouter();
   const [dismissing, setDismissing] = useState(false);
   const [reason, setReason] = useState<string>('');
@@ -78,7 +79,7 @@ export function FlagCard({ flag, orgId, userId, today }: Props) {
 
   const raisedDate = flag.raised_at.slice(0, 10);
   const raisedLabel =
-    raisedDate === today ? formatTime(flag.raised_at) : formatDate(flag.raised_at);
+    raisedDate === today ? formatTime(flag.raised_at, timezone) : formatDate(flag.raised_at, timezone);
 
   const canAcknowledge = flag.status === 'raised' || flag.status === 'notified';
 
@@ -198,7 +199,7 @@ export function FlagCard({ flag, orgId, userId, today }: Props) {
                   row itself (audit coach finding 21). */}
               Acknowledged
               {flag.acknowledged_by_name ? ` by ${flag.acknowledged_by_name}` : ''}
-              {flag.acknowledged_at ? ` · ${formatDateTime(flag.acknowledged_at)}` : ''}
+              {flag.acknowledged_at ? ` · ${formatDateTime(flag.acknowledged_at, timezone)}` : ''}
             </span>
           )}
           <button

@@ -32,6 +32,8 @@ type Props = {
   orgId: string;
   athleteId: string;
   userId: string;
+  /** IANA zone used to display all dates on this form in the organisation's local time. */
+  timezone: string;
   entryDate: string;
   lastNightSleepHours: number | null;
   /** Present only when reached via "Correct this entry". Prefills every
@@ -63,6 +65,7 @@ export function CheckInForm({
   orgId,
   athleteId,
   userId,
+  timezone,
   entryDate,
   lastNightSleepHours,
   correction,
@@ -193,7 +196,7 @@ export function CheckInForm({
             ⓘ
           </span>
           <div>
-            Correcting your entry for {formatDate(entryDate)}. This creates a
+            Correcting your entry for {formatDate(entryDate, timezone)}. This creates a
             new revision; the original is kept, not overwritten.
           </div>
         </div>
@@ -340,7 +343,7 @@ export function CheckInForm({
         </button>
         <p className="tiny" style={{ textAlign: 'center', marginTop: 8 }}>
           {correction
-            ? `For ${formatDate(entryDate)}. Corrections send straight away and need signal. If it can’t get through, you’ll see an error here and your answers stay put.`
+            ? `For ${formatDate(entryDate, timezone)}. Corrections send straight away and need signal. If it can’t get through, you’ll see an error here and your answers stay put.`
             : 'Submitted entries cannot be edited. A correction creates a new revision.'}
         </p>
       </div>

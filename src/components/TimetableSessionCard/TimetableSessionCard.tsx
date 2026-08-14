@@ -18,6 +18,8 @@ type Props = {
   userId: string;
   actorRole: 'coach' | 'medical';
   session: TimetableSession;
+  // IANA zone used to display session.starts_at in the organisation's local time.
+  timezone: string;
   // The session's md_offset re-anchored to its real calendar week (see
   // anchorMdOffsetsToWeek, format.ts) — computed once by the page for the
   // whole day and passed down, rather than read raw off `session`, so this
@@ -58,7 +60,7 @@ type WriteFailure =
  *  table; router.refresh() re-pulls server state after each mutation,
  *  same pattern as GymSessionLogger.tsx rather than a hand-rolled
  *  optimistic cache. */
-export function TimetableSessionCard({ orgId, userId, actorRole, session, anchoredMdOffset, defaultExpanded }: Props) {
+export function TimetableSessionCard({ orgId, userId, actorRole, session, timezone, anchoredMdOffset, defaultExpanded }: Props) {
   const router = useRouter();
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [reasonDrafts, setReasonDrafts] = useState<Record<string, string>>({});
@@ -143,7 +145,7 @@ export function TimetableSessionCard({ orgId, userId, actorRole, session, anchor
           flexWrap: 'wrap',
         }}
       >
-        <span className="nm mono">{formatTime(session.starts_at)}</span>
+        <span className="nm mono">{formatTime(session.starts_at, timezone)}</span>
         <span className="nm">{session.title}</span>
         <span className="tiny">
           {enumLabel(session.session_type)}

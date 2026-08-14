@@ -284,7 +284,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                 <div className="tr-facts">
                   <div>
                     <div className="tr-fact-label">Date</div>
-                    <div className="tr-fact-value">{formatDate(selected.date)}</div>
+                    <div className="tr-fact-value">{formatDate(selected.date, timezone)}</div>
                   </div>
                   <div>
                     <div className="tr-fact-label">Venue</div>
@@ -453,7 +453,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
             className="tr-session-chip"
             aria-current={selected.sessionId === s.sessionId}
           >
-            {formatDate(s.date)}
+            {formatDate(s.date, timezone)}
             <span className="suffix">{mdLabel(s.mdOffset) ?? s.title}</span>
           </Link>
         ))}
@@ -472,7 +472,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
               <div className="tr-facts">
                 <div>
                   <div className="tr-fact-label">Date</div>
-                  <div className="tr-fact-value">{formatDate(selected.date)}</div>
+                  <div className="tr-fact-value">{formatDate(selected.date, timezone)}</div>
                 </div>
                 <div>
                   <div className="tr-fact-label">Duration</div>

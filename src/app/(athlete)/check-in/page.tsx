@@ -54,7 +54,7 @@ export default async function CheckInPage({
           className="tiny mono"
           style={{ width: 56, textAlign: 'end', whiteSpace: 'nowrap' }}
         >
-          {formatDate(entryDate)}
+          {formatDate(entryDate, timezone)}
         </span>
       </div>
 
@@ -63,6 +63,7 @@ export default async function CheckInPage({
           orgId={orgId}
           athleteId={athleteId}
           userId={claims.userId}
+          timezone={timezone}
           entryDate={entryDate}
           lastNightSleepHours={lastSleep}
           correction={{
@@ -81,7 +82,7 @@ export default async function CheckInPage({
         <div className="card">
           <h2 className="card-title">Already submitted</h2>
           <p className="import-sub" style={{ marginBottom: 0 }}>
-            {entryDate === today ? 'You sent today' : `You sent ${formatDate(entryDate)}`}
+            {entryDate === today ? 'You sent today' : `You sent ${formatDate(entryDate, timezone)}`}
             &rsquo;s check-in at{' '}
             <span className="mono">
               {existing.submitted_at
@@ -108,6 +109,7 @@ export default async function CheckInPage({
           orgId={orgId}
           athleteId={athleteId}
           userId={claims.userId}
+          timezone={timezone}
           entryDate={today}
           lastNightSleepHours={lastSleep}
         />
@@ -115,7 +117,7 @@ export default async function CheckInPage({
         <div className="card">
           <h2 className="card-title">Nothing submitted</h2>
           <p className="import-sub" style={{ marginBottom: 0 }}>
-            No check-in was recorded for {formatDate(entryDate)}. There is
+            No check-in was recorded for {formatDate(entryDate, timezone)}. There is
             nothing to correct.
           </p>
           <p className="cap">

@@ -22,7 +22,7 @@ export default async function GymSessionPage({
   params: Promise<{ sessionId: string }>;
 }) {
   const { sessionId } = await params;
-  const { db, orgId, athleteId } = await requireAthlete();
+  const { db, orgId, athleteId, timezone } = await requireAthlete();
 
   const [exercises, sessionRow] = await Promise.all([
     fetchSessionExercises(db, sessionId, athleteId),
@@ -46,6 +46,7 @@ export default async function GymSessionPage({
   return (
     <GymSessionLogger
       orgId={orgId}
+      timezone={timezone}
       gymSessionLogId={gymSessionLogId}
       sessionName={sessionRow.data?.name ?? 'Gym session'}
       startedAt={startedAt}

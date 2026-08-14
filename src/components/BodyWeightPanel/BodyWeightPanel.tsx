@@ -89,6 +89,7 @@ export function BodyWeightPanel({ orgId, athleteId, userId, timezone, entries, c
       {mode === 'edit' ? (
         <EditList
           orgId={orgId}
+          timezone={timezone}
           entries={entries}
           onDone={() => {
             router.refresh();
@@ -220,17 +221,19 @@ function LogForm({
 
 function EditList({
   orgId,
+  timezone,
   entries,
   onDone,
 }: {
   orgId: string;
+  timezone: string;
   entries: BodyCompositionEntry[];
   onDone: () => void;
 }) {
   return (
     <div className="pp-weight-edit-list">
       {entries.map((entry) => (
-        <EditRow key={entry.id} orgId={orgId} entry={entry} onDone={onDone} />
+        <EditRow key={entry.id} orgId={orgId} timezone={timezone} entry={entry} onDone={onDone} />
       ))}
     </div>
   );
@@ -238,10 +241,12 @@ function EditList({
 
 function EditRow({
   orgId,
+  timezone,
   entry,
   onDone,
 }: {
   orgId: string;
+  timezone: string;
   entry: BodyCompositionEntry;
   onDone: () => void;
 }) {
@@ -277,7 +282,7 @@ function EditRow({
   return (
     <div className="pp-weight-edit-row">
       <span className="mono tiny" style={{ minWidth: 78 }}>
-        {formatDate(entry.measured_on)}
+        {formatDate(entry.measured_on, timezone)}
       </span>
       <input
         className="field"
@@ -287,7 +292,7 @@ function EditRow({
           setMeasuredOn(event.target.value);
           setSaved(false);
         }}
-        aria-label={`Date for the ${formatDate(entry.measured_on)} entry`}
+        aria-label={`Date for the ${formatDate(entry.measured_on, timezone)} entry`}
       />
       <input
         className="field"
@@ -300,7 +305,7 @@ function EditRow({
           setBodyMassKg(event.target.value);
           setSaved(false);
         }}
-        aria-label={`Body mass in kg for the ${formatDate(entry.measured_on)} entry`}
+        aria-label={`Body mass in kg for the ${formatDate(entry.measured_on, timezone)} entry`}
       />
       <input
         className="field"
@@ -315,7 +320,7 @@ function EditRow({
           setSaved(false);
         }}
         placeholder="fat %"
-        aria-label={`Body fat percent for the ${formatDate(entry.measured_on)} entry`}
+        aria-label={`Body fat percent for the ${formatDate(entry.measured_on, timezone)} entry`}
       />
       <input
         className="field"
@@ -326,7 +331,7 @@ function EditRow({
           setSaved(false);
         }}
         placeholder="method"
-        aria-label={`Method for the ${formatDate(entry.measured_on)} entry`}
+        aria-label={`Method for the ${formatDate(entry.measured_on, timezone)} entry`}
       />
       <button
         type="button"

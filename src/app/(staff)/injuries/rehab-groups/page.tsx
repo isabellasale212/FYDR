@@ -29,7 +29,7 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
  *  from fetchGroups) the filter narrows the pool *by*. Named rehabGroups/squadGroups
  *  below specifically so that distinction can't get silently crossed. */
 export default async function RehabGroupsPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, orgName, claims } = await requireStaff();
+  const { db, orgId, orgName, claims, timezone } = await requireStaff();
   if (!claims.roles.some((r) => r === 'coach' || r === 'medical')) {
     redirect('/injuries');
   }
@@ -101,6 +101,7 @@ export default async function RehabGroupsPage({ searchParams }: { searchParams: 
             groups={rehabGroups}
             members={filteredMembers}
             canAllocate={isMedical}
+            timezone={timezone}
           />
         ) : null}
       </div>

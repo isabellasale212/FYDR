@@ -13,6 +13,7 @@ type Candidate = { id: string; first_name: string; last_name: string; position: 
 type Props = {
   orgId: string;
   groupId: string;
+  timezone: string;
   current: MemberRow[];
   candidates: Candidate[];
 };
@@ -23,7 +24,7 @@ type Props = {
  * existing member is a no-op reported as a skip, backed by the migration
  * 0014 partial unique index, not just by the client checking first.
  */
-export function GroupMemberManager({ orgId, groupId, current, candidates }: Props) {
+export function GroupMemberManager({ orgId, groupId, timezone, current, candidates }: Props) {
   const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -115,7 +116,7 @@ export function GroupMemberManager({ orgId, groupId, current, candidates }: Prop
                 </span>
                 <span className="tiny" style={{ display: 'block', marginTop: 2 }}>
                   {member.position ?? 'Position not set'} · since{' '}
-                  {formatDate(member.added_at)}
+                  {formatDate(member.added_at, timezone)}
                 </span>
               </span>
               <button

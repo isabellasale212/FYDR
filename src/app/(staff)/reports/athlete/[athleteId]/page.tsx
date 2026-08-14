@@ -106,7 +106,7 @@ export default async function AthleteReportPage({
               <span>
                 {enumLabel(openInjury.body_area)}
                 {openInjury.side ? ` (${enumLabel(openInjury.side)})` : ''}, back{' '}
-                <b className="mono">{openInjury.expected_return ? formatDate(openInjury.expected_return) : 'not set'}</b>
+                <b className="mono">{openInjury.expected_return ? formatDate(openInjury.expected_return, timezone) : 'not set'}</b>
               </span>
             </>
           ) : null}
@@ -115,7 +115,7 @@ export default async function AthleteReportPage({
 
       <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
         <span className="eyebrow">
-          {formatDate(report.from)} to {formatDate(report.to)}
+          {formatDate(report.from, timezone)} to {formatDate(report.to, timezone)}
         </span>
         <div className="chiprow">
           {PERIODS.map((d) => (
@@ -187,7 +187,7 @@ export default async function AthleteReportPage({
                 {report.wellness.every((p) => p.value === null) ? (
                   <EmptyState headingLevel={3} title="No wellness entries in this period" body="Nothing submitted in this window." />
                 ) : (
-                  <WellnessChart series={report.wellness} min={0} max={100} ticks={[0, 25, 50, 75, 100]} title={`Readiness for ${athlete.first_name} ${athlete.last_name}`} />
+                  <WellnessChart series={report.wellness} min={0} max={100} ticks={[0, 25, 50, 75, 100]} title={`Readiness for ${athlete.first_name} ${athlete.last_name}`} timezone={timezone} />
                 )}
               </section>
             ),
@@ -259,7 +259,7 @@ export default async function AthleteReportPage({
                       <div key={d.date}>
                         {i > 0 ? <div className="hair" /> : null}
                         <div className="load-row" style={{ gridTemplateColumns: '1fr auto' }}>
-                          <span className="sub mono">{formatDate(d.date)}</span>
+                          <span className="sub mono">{formatDate(d.date, timezone)}</span>
                           <span className="load-val mono">{formatNumber(d.load, 0)}</span>
                         </div>
                       </div>
@@ -324,9 +324,9 @@ export default async function AthleteReportPage({
                               {t.name} <span className="tiny">({t.unit})</span>
                             </td>
                             <td className="r mono">{t.pbValue === null ? BLANK : formatNumber(t.pbValue, t.decimal_places)}</td>
-                            <td className="sub mono">{t.pbDate ? formatDate(t.pbDate) : BLANK}</td>
+                            <td className="sub mono">{t.pbDate ? formatDate(t.pbDate, timezone) : BLANK}</td>
                             <td className="r mono">{t.latestValue === null ? BLANK : formatNumber(t.latestValue, t.decimal_places)}</td>
-                            <td className="sub mono">{t.latestDate ? formatDate(t.latestDate) : BLANK}</td>
+                            <td className="sub mono">{t.latestDate ? formatDate(t.latestDate, timezone) : BLANK}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -346,7 +346,7 @@ export default async function AthleteReportPage({
       <p className="cap" style={{ marginTop: 14 }}>
         {report.sessions.length} session{report.sessions.length === 1 ? '' : 's'} scheduled for {athlete.first_name} in this
         period
-        {mostRecentSession ? `, most recent ${formatDate(mostRecentSession.starts_at)} ${formatTime(mostRecentSession.starts_at)}` : ''}
+        {mostRecentSession ? `, most recent ${formatDate(mostRecentSession.starts_at, timezone)} ${formatTime(mostRecentSession.starts_at, timezone)}` : ''}
         .
       </p>
     </>

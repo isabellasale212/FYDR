@@ -20,7 +20,7 @@ import type { AppRole } from '@/lib/types/database';
  *  lib/queries/trainingReport.ts's header for why there is no H1/H2 split
  *  to export either). */
 export async function GET(request: Request) {
-  const { db, orgId, claims } = await requireReportAccess();
+  const { db, orgId, claims, timezone } = await requireReportAccess();
   const url = new URL(request.url);
   // resolveGroupFilter, not parseGroupParam: the export resolves the sticky
   // filter cookie exactly as the on-screen report does (audit S4), and each
@@ -68,7 +68,7 @@ export async function GET(request: Request) {
     return csvResponse(withCaption, `match-report-${selected.date}.csv`);
   }
 
-  const sessions = await fetchTrainingSessions(db, orgId);
+  const sessions = await fetchTrainingSessions(db, orgId, timezone);
   const selected = sessions.find((s) => s.sessionId === requested) ?? sessions[0] ?? null;
   if (!selected) return csvResponse(toCsv([], [['x', 'No GPS data']]), 'training-report.csv');
 

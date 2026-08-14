@@ -87,10 +87,10 @@ export default async function TodayPage({
     await Promise.all([
       fetchAthleteAvailability(db, orgId, athleteId),
       fetchMyOutstanding(db, athleteId, today),
-      fetchAthleteDaySessions(db, orgId, athleteId, today),
+      fetchAthleteDaySessions(db, orgId, athleteId, today, timezone),
       fetchCheckinForWeek(db, athleteId, nutritionWeekStart),
       fetchMyAllocation(db, athleteId, weekStart),
-      fetchWeekMdLabels(db, orgId, weekStart),
+      fetchWeekMdLabels(db, orgId, weekStart, timezone),
     ]);
 
   const todoItems = [

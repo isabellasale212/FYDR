@@ -1,5 +1,5 @@
 import type { FixtureRow, SessionRow } from '@/lib/types/database';
-import { anchorMdOffsetsToWeek } from '@/lib/format';
+import { addDays, anchorMdOffsetsToWeek, zonedTimeToUtcIso } from '@/lib/format';
 import { humanizeDbError } from '@/lib/writeErrors';
 import { fetchGroupAthleteIds, type Db } from './groups';
 
@@ -22,8 +22,35 @@ export type SessionWithHeadcount = Session & { expected: number | null };
 const COLUMNS =
   'id, title, session_type, starts_at, duration_min, location, md_offset, planned_rpe, status, fixture_id';
 
-function dayBounds(date: string): { from: string; to: string } {
-  return { from: `${date}T00:00:00Z`, to: `${date}T23:59:59.999Z` };
+/** The UTC instant range covering local midnight-to-midnight in `timezone`,
+ *  for one date or an inclusive multi-day span (`fromDate`..`toDate`).
+ *
+ *  Audit finding, integration-audit fix plan Batch 2: the previous version
+ *  of this built literal UTC-day bounds (`` `${date}T00:00:00Z}` ``..
+ *  `` `${date}T23:59:59.999Z}` ``), which is only correct for UTC+0 with no
+ *  DST. Europe/London is UTC+1 (BST) for roughly half the year, so any
+ *  session between 23:00–00:00 UTC (00:00–01:00 local) was being attributed
+ *  to the wrong calendar day everywhere this ran — both the coach and
+ *  athlete surfaces, identically, since both called the same broken
+ *  primitive. `zonedTimeToUtcIso` (format.ts) is the existing, already-
+ *  correct-across-DST primitive for turning a local wall-clock moment into
+ *  a UTC instant; this uses it for both edges of the window instead of
+ *  assuming the offset is always zero. The upper bound is local next-day
+ *  midnight minus 1ms (not `lt` on next midnight) so `fetchSessionsBetween`
+ *  can keep using `.lte()` on both ends unchanged.
+ *
+ *  Exported (only) so scripts/test-schedule-timezone.ts can assert the
+ *  boundary directly — every real caller still goes through the functions
+ *  below, not this. */
+export function rangeBounds(fromDate: string, toDate: string, timezone: string): { from: string; to: string } {
+  const from = zonedTimeToUtcIso(fromDate, '00:00', timezone);
+  const nextMidnight = zonedTimeToUtcIso(addDays(toDate, 1), '00:00', timezone);
+  const to = new Date(new Date(nextMidnight).getTime() - 1).toISOString();
+  return { from, to };
+}
+
+export function dayBounds(date: string, timezone: string): { from: string; to: string } {
+  return rangeBounds(date, date, timezone);
 }
 
 async function fetchSessionsBetween(
@@ -61,8 +88,9 @@ export async function fetchDaySessions(
   orgId: string,
   date: string,
   groupIds: readonly string[],
+  timezone: string,
 ): Promise<SessionWithHeadcount[]> {
-  const bounds = dayBounds(date);
+  const bounds = dayBounds(date, timezone);
   const sessions = await fetchSessionsBetween(db, orgId, bounds.from, bounds.to);
   if (sessions.length === 0) return [];
 
@@ -122,8 +150,9 @@ export async function fetchAthleteDaySessions(
   orgId: string,
   athleteId: string,
   date: string,
+  timezone: string,
 ): Promise<Session[]> {
-  const bounds = dayBounds(date);
+  const bounds = dayBounds(date, timezone);
   const [sessions, memberships] = await Promise.all([
     fetchSessionsBetween(db, orgId, bounds.from, bounds.to),
     db
@@ -177,10 +206,12 @@ export async function fetchAthleteRecentSessions(
   athleteId: string,
   from: string,
   to: string,
+  timezone: string,
   limit = 8,
 ): Promise<RecentSession[]> {
+  const bounds = rangeBounds(from, to, timezone);
   const [sessions, entries, attendance, memberships] = await Promise.all([
-    fetchSessionsBetween(db, orgId, `${from}T00:00:00Z`, `${to}T23:59:59.999Z`),
+    fetchSessionsBetween(db, orgId, bounds.from, bounds.to),
     db
       .from('training_entries_current')
       .select('session_id, rpe, session_load')
@@ -297,12 +328,11 @@ export async function fetchWeekMdLabels(
   db: Db,
   orgId: string,
   weekStart: string,
+  timezone: string,
 ): Promise<Map<string, number | null>> {
-  const weekEndDate = new Date(`${weekStart}T12:00:00Z`);
-  weekEndDate.setUTCDate(weekEndDate.getUTCDate() + 6);
-  const to = `${weekEndDate.toISOString().slice(0, 10)}T23:59:59.999Z`;
+  const bounds = rangeBounds(weekStart, addDays(weekStart, 6), timezone);
 
-  const sessions = await fetchSessionsBetween(db, orgId, `${weekStart}T00:00:00Z`, to);
+  const sessions = await fetchSessionsBetween(db, orgId, bounds.from, bounds.to);
   const byDate = new Map<string, { isMatch: boolean; storedMdOffset: number | null }>();
   for (const s of sessions) {
     const date = s.starts_at.slice(0, 10);
@@ -322,13 +352,11 @@ export async function fetchWeekSessions(
   orgId: string,
   weekStart: string,
   groupIds: readonly string[],
+  timezone: string,
 ): Promise<WeekSession[]> {
-  const from = `${weekStart}T00:00:00Z`;
-  const weekEndDate = new Date(`${weekStart}T12:00:00Z`);
-  weekEndDate.setUTCDate(weekEndDate.getUTCDate() + 6);
-  const to = `${weekEndDate.toISOString().slice(0, 10)}T23:59:59.999Z`;
+  const bounds = rangeBounds(weekStart, addDays(weekStart, 6), timezone);
 
-  const sessions = await fetchSessionsBetween(db, orgId, from, to);
+  const sessions = await fetchSessionsBetween(db, orgId, bounds.from, bounds.to);
   if (sessions.length === 0) return [];
 
   const [participants, memberships, scope] = await Promise.all([
@@ -412,13 +440,11 @@ export async function fetchWeekSessionsDetailed(
   weekStart: string,
   groupIds: readonly string[],
   allGroups: readonly { id: string; name: string }[],
+  timezone: string,
 ): Promise<GridSession[]> {
-  const from = `${weekStart}T00:00:00Z`;
-  const weekEndDate = new Date(`${weekStart}T12:00:00Z`);
-  weekEndDate.setUTCDate(weekEndDate.getUTCDate() + 6);
-  const to = `${weekEndDate.toISOString().slice(0, 10)}T23:59:59.999Z`;
+  const bounds = rangeBounds(weekStart, addDays(weekStart, 6), timezone);
 
-  const sessions = await fetchSessionsBetween(db, orgId, from, to);
+  const sessions = await fetchSessionsBetween(db, orgId, bounds.from, bounds.to);
   if (sessions.length === 0) return [];
 
   const [participants, memberships, scope] = await Promise.all([
@@ -531,6 +557,7 @@ export async function fetchNormalWeek(
   allGroups: readonly { id: string; name: string }[],
   weekStart: string,
   groupIds: readonly string[],
+  timezone: string,
   maxWeeks = 8,
 ): Promise<NormalWeek> {
   const { data: matches, error } = await db
@@ -539,7 +566,7 @@ export async function fetchNormalWeek(
     .eq('org_id', orgId)
     .eq('session_type', 'match')
     .is('deleted_at', null)
-    .lt('starts_at', `${weekStart}T00:00:00Z`)
+    .lt('starts_at', zonedTimeToUtcIso(weekStart, '00:00', timezone))
     .order('starts_at', { ascending: false });
   if (error) throw new Error(error.message);
 
@@ -559,7 +586,7 @@ export async function fetchNormalWeek(
   }
 
   const weekSessions = await Promise.all(
-    weeks.map((wk) => fetchWeekSessionsDetailed(db, orgId, wk, groupIds, allGroups)),
+    weeks.map((wk) => fetchWeekSessionsDetailed(db, orgId, wk, groupIds, allGroups, timezone)),
   );
 
   const byType = emptyTypical();
@@ -593,17 +620,20 @@ export type WeekFixture = { opponent: string; kickoff_at: string; home_away: str
  *  grid header's eyebrow line (SCHEDULE-SPEC.md §2: "MD SATURDAY 8 · V
  *  ASHFIELD RFC" in the mockup) — this build composes that clause from a
  *  real fixture instead of the spec's fictional opponent name. */
-export async function fetchWeekFixtures(db: Db, orgId: string, weekStart: string): Promise<WeekFixture[]> {
-  const weekEndDate = new Date(`${weekStart}T12:00:00Z`);
-  weekEndDate.setUTCDate(weekEndDate.getUTCDate() + 6);
-  const to = `${weekEndDate.toISOString().slice(0, 10)}T23:59:59.999Z`;
+export async function fetchWeekFixtures(
+  db: Db,
+  orgId: string,
+  weekStart: string,
+  timezone: string,
+): Promise<WeekFixture[]> {
+  const bounds = rangeBounds(weekStart, addDays(weekStart, 6), timezone);
 
   const { data, error } = await db
     .from('fixtures')
     .select('opponent, kickoff_at, home_away')
     .eq('org_id', orgId)
-    .gte('kickoff_at', `${weekStart}T00:00:00Z`)
-    .lte('kickoff_at', to)
+    .gte('kickoff_at', bounds.from)
+    .lte('kickoff_at', bounds.to)
     .is('deleted_at', null)
     .order('kickoff_at');
   if (error) throw new Error(error.message);

@@ -174,7 +174,7 @@ function ComparisonTableView({ table }: { table: ComparisonTable }) {
  *  Everything else — dials, the scoring model, all four comparison scopes,
  *  the scatter plot, the sparkline, the board — is real, live data. */
 export default async function TrainingReportPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, orgName, claims, tier } = await requireReportAccess();
+  const { db, orgId, orgName, claims, tier, timezone } = await requireReportAccess();
 
   if (!isPremium(tier)) {
     return (
@@ -399,7 +399,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
 
   // -------------------------------------------------------------------------
   // Training mode
-  const sessions = await fetchTrainingSessions(db, orgId);
+  const sessions = await fetchTrainingSessions(db, orgId, timezone);
   const selected = sessions.find((s) => s.sessionId === sp.session) ?? sessions[0] ?? null;
 
   if (!selected) {
@@ -426,7 +426,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
 
   const comparison =
     scope === 'restOfWeek'
-      ? await fetchRestOfWeekComparison(db, orgId, groupIds, selected.sessionId, selected.date)
+      ? await fetchRestOfWeekComparison(db, orgId, groupIds, selected.sessionId, selected.date, timezone)
       : scope === 'comparableSessions'
         ? await fetchComparableSessionsComparison(db, orgId, groupIds, 'training', selected.sessionId, selected.title)
         : scope === 'position'

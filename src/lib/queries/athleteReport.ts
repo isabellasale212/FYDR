@@ -133,7 +133,7 @@ export async function fetchAthleteReport(
     compliance,
   ] = await Promise.all([
     fetchWellnessByAthlete(db, athleteId, { from, to: today }),
-    fetchAthleteRecentSessions(db, orgId, athleteId, from, today, 200),
+    fetchAthleteRecentSessions(db, orgId, athleteId, from, today, timezone, 200),
     db
       .from('training_entries_current')
       .select('entry_date, session_load')

@@ -59,7 +59,7 @@ export default async function RpePage({
   // primitive (fetchWeekMdLabels/anchorMdOffsetsToWeek) the week-level
   // views use, so this raw single-session view can't disagree with them
   // for the identical session (audit blocker B2).
-  const weekMd = await fetchWeekMdLabels(db, orgId, mondayOf(sessionDate));
+  const weekMd = await fetchWeekMdLabels(db, orgId, mondayOf(sessionDate), timezone);
   const mdOffset = weekMd.get(sessionDate) ?? null;
   const md = mdLabel(mdOffset);
 

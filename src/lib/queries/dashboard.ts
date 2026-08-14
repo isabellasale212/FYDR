@@ -95,9 +95,10 @@ export async function fetchWeekStrip(
   groupIds: readonly string[],
   weekStart: string,
   effectiveToday: string,
+  timezone: string,
 ): Promise<DayStripCard[]> {
   const [sessions, flagRows] = await Promise.all([
-    fetchWeekSessions(db, orgId, weekStart, groupIds),
+    fetchWeekSessions(db, orgId, weekStart, groupIds, timezone),
     fetchFlagsByDateRange(db, orgId, groupIds, weekStart, addDays(weekStart, 5)),
   ]);
 
@@ -233,6 +234,7 @@ export async function fetchHeadlineStats(
   /** Real today: flag ages ("open 6 days") are wall-clock facts even when
    *  the rest of the screen is anchored to the latest day with data. */
   wallClockToday: string,
+  timezone: string,
 ): Promise<HeadlineStats> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
 
@@ -261,7 +263,7 @@ export async function fetchHeadlineStats(
     fetchFlagsByDateRange(db, orgId, groupIds, effectiveToday, effectiveToday),
     fetchDashboardAttention(db, orgId, wallClockToday, groupIds),
     fetchNextFixture(db, orgId, `${effectiveToday}T00:00:00Z`),
-    fetchWeekSessions(db, orgId, mondayOf(effectiveToday), groupIds),
+    fetchWeekSessions(db, orgId, mondayOf(effectiveToday), groupIds, timezone),
   ]);
 
   const available = availRes.filter((a) => a.status === 'available').length;
@@ -455,13 +457,14 @@ export async function fetchSaturdayReadiness(
   orgId: string,
   groupIds: readonly string[],
   effectiveToday: string,
+  timezone: string,
 ): Promise<SaturdayReadiness> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
   const [fixture, availRows, notFully, weekSessions, flagsThisWeek] = await Promise.all([
     fetchNextFixture(db, orgId, `${effectiveToday}T00:00:00Z`),
     fetchCurrentAvailability(db, orgId, scope),
     fetchNotFullyAvailable(db, orgId, groupIds),
-    fetchWeekSessions(db, orgId, mondayOf(effectiveToday), groupIds),
+    fetchWeekSessions(db, orgId, mondayOf(effectiveToday), groupIds, timezone),
     fetchFlagsByDateRange(db, orgId, groupIds, mondayOf(effectiveToday), addDays(mondayOf(effectiveToday), 5)),
   ]);
 

@@ -55,11 +55,11 @@ export default async function SchedulePage({ searchParams }: { searchParams: Sea
   const groups = await fetchGroupsWithCounts(db, orgId);
 
   const [sessions, groupMembership, templates, typical, weekFixtures] = await Promise.all([
-    fetchWeekSessionsDetailed(db, orgId, weekStart, groupIds, groups),
+    fetchWeekSessionsDetailed(db, orgId, weekStart, groupIds, groups, timezone),
     fetchGroupMembership(db, orgId),
     fetchTemplates(db, orgId),
-    fetchNormalWeek(db, orgId, groups, weekStart, groupIds),
-    fetchWeekFixtures(db, orgId, weekStart),
+    fetchNormalWeek(db, orgId, groups, weekStart, groupIds, timezone),
+    fetchWeekFixtures(db, orgId, weekStart, timezone),
   ]);
 
   const groupQuery = groupIds.length > 0 ? `&groups=${groupIds.join(',')}` : '';

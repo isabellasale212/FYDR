@@ -121,12 +121,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
 
   const [groups, stats, week, timeline, readiness, squad, untied, outstanding] = await Promise.all([
     fetchGroups(db, orgId),
-    fetchHeadlineStats(db, orgId, groupIds, effectiveToday, wallClockToday),
-    fetchWeekStrip(db, orgId, groupIds, weekStart, effectiveToday),
+    fetchHeadlineStats(db, orgId, groupIds, effectiveToday, wallClockToday, timezone),
+    fetchWeekStrip(db, orgId, groupIds, weekStart, effectiveToday, timezone),
     // "now" is the real instant — a session is "passed" against the real
     // clock, never against an end-of-day stand-in (audit S2).
     fetchTimeline(db, orgId, groupIds, selectedDay, new Date().toISOString()),
-    fetchSaturdayReadiness(db, orgId, groupIds, effectiveToday),
+    fetchSaturdayReadiness(db, orgId, groupIds, effectiveToday, timezone),
     fetchSquadState(db, orgId, groupIds),
     fetchUntiedFlags(db, orgId, groupIds),
     fetchOutstandingTracks(db, orgId, groupIds, effectiveToday),

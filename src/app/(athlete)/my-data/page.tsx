@@ -145,7 +145,7 @@ export default async function MyDataPage({
       {tab === 'wellness' ? (
         <WellnessTab db={db} athleteId={athleteId} from={from} today={today} dates={dates} />
       ) : tab === 'training' ? (
-        <TrainingTab db={db} orgId={orgId} athleteId={athleteId} from={from} today={today} />
+        <TrainingTab db={db} orgId={orgId} athleteId={athleteId} from={from} today={today} timezone={timezone} />
       ) : tab === 'nutrition' ? (
         <NutritionTab db={db} athleteId={athleteId} from={from} today={today} />
       ) : tab === 'testing' ? (
@@ -279,14 +279,16 @@ async function TrainingTab({
   athleteId,
   from,
   today,
+  timezone,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
   orgId: string;
   athleteId: string;
   from: string;
   today: string;
+  timezone: string;
 }) {
-  const sessions = await fetchAthleteRecentSessions(db, orgId, athleteId, from, today);
+  const sessions = await fetchAthleteRecentSessions(db, orgId, athleteId, from, today, timezone);
   const rated = sessions.filter((s) => s.rpe !== null).length;
 
   return (

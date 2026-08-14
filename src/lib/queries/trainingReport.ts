@@ -54,7 +54,7 @@ export type TrainingSessionOption = {
   location: string | null;
 };
 
-export async function fetchTrainingSessions(db: Db, orgId: string, limit = 8): Promise<TrainingSessionOption[]> {
+export async function fetchTrainingSessions(db: Db, orgId: string, timezone: string, limit = 8): Promise<TrainingSessionOption[]> {
   const { data, error } = await db
     .from('sessions')
     .select('id, title, starts_at, md_offset, duration_min, location, gps_records!inner(id)')
@@ -81,7 +81,7 @@ export async function fetchTrainingSessions(db: Db, orgId: string, limit = 8): P
    * `limit` most recent sessions can span several different weeks, so
    * fetch each distinct week once rather than one call per session. */
   const weeks = [...new Set(picked.map((s) => mondayOf(s.date)))];
-  const weekMdByWeek = await Promise.all(weeks.map((w) => fetchWeekMdLabels(db, orgId, w)));
+  const weekMdByWeek = await Promise.all(weeks.map((w) => fetchWeekMdLabels(db, orgId, w, timezone)));
   const weekMdLookup = new Map(weeks.map((w, i) => [w, weekMdByWeek[i]]));
 
   return picked.map((s) => ({
@@ -375,6 +375,7 @@ export async function fetchRestOfWeekComparison(
   groupIds: readonly string[],
   currentSessionId: string,
   currentDate: string,
+  timezone: string,
 ): Promise<ComparisonTable> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
   const weekStart = mondayOf(currentDate);
@@ -397,7 +398,7 @@ export async function fetchRestOfWeekComparison(
       .in('session_type', ['training', 'match'])
       .is('deleted_at', null)
       .order('starts_at'),
-    fetchWeekMdLabels(db, orgId, weekStart),
+    fetchWeekMdLabels(db, orgId, weekStart, timezone),
   ]);
   if (sessErr) throw new Error(sessErr.message);
 

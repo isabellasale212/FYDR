@@ -35,7 +35,7 @@ export default async function SessionDetailPage({
   // the identical session instead of showing the raw stored offset.
   const [groups, weekMd] = await Promise.all([
     fetchGroups(db, orgId),
-    fetchWeekMdLabels(db, orgId, mondayOf(sessionDate)),
+    fetchWeekMdLabels(db, orgId, mondayOf(sessionDate), timezone),
   ]);
   const md = mdLabel(weekMd.get(sessionDate) ?? null);
   const cancelled = session.status === 'cancelled';

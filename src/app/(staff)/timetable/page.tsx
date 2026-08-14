@@ -40,7 +40,7 @@ export default async function TimetablePage({ searchParams }: { searchParams: Se
   const [groups, sessions, weekMd] = await Promise.all([
     fetchGroups(db, orgId),
     fetchTimetableDay(db, orgId, date, groupIds),
-    fetchWeekMdLabels(db, orgId, mondayOf(date)),
+    fetchWeekMdLabels(db, orgId, mondayOf(date), timezone),
   ]);
   // Every session on this page shares `date` (fetchTimetableDay is bounded
   // to one calendar day), so one anchored lookup applies to all of them —

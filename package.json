@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:tenancy": "node scripts/test-tenancy.mjs",
+    "test:schedule-timezone": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-schedule-timezone.ts",
     "seed:auth": "node --experimental-strip-types scripts/seed-auth.ts"
   },
   "dependencies": {

@@ -38,7 +38,7 @@ export default async function FixtureDetailPage({
   // so this fetches fetchWeekMdLabels once per distinct week represented
   // and merges the results, same primitive the week views use (audit B2).
   const weeks = [...new Set(fixture.weekSessions.map((s) => mondayOf(s.entry_date)))];
-  const weekMdByWeek = await Promise.all(weeks.map((week) => fetchWeekMdLabels(db, orgId, week)));
+  const weekMdByWeek = await Promise.all(weeks.map((week) => fetchWeekMdLabels(db, orgId, week, timezone)));
   const weekMd = new Map<string, number | null>();
   for (const m of weekMdByWeek) for (const [date, offset] of m) weekMd.set(date, offset);
 

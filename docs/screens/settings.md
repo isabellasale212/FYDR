@@ -291,7 +291,7 @@ moving between Thresholds and Notification preferences is one click, not a back-
 | Push permission state | Device API plus `users.push_blocked_at` | Drives the "notifications are off in your phone settings" banner |
 | Active sessions | Supabase auth sessions | Device, approximate location, last seen |
 | Consent state | `athletes.consent_given_at`, `.consent_version` | Privacy section |
-| HealthKit sync state | `07-integrations.md` connection record | Athlete privacy section, Premium tier and iOS only |
+| HealthKit sync state | `07-integrations.md` connection record | Athlete privacy section, iOS only, both tiers (O-862 in `12-product-tiers.md` §3.4, resolved 14 August 2026: moved from Premium to Club/Basic) |
 | Leaderboard opt-outs | `leaderboard_opt_outs` where `ended_at is null` | Count shown, managed from `leaderboards.md` or inline |
 | Processing objections | `compliance_expectations.waived_reason = 'objection'` plus the per-domain flag | Article 21, per `09-security-and-compliance.md` §6 |
 | App version and build | Client constants | Footer |

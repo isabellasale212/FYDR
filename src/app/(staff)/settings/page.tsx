@@ -100,8 +100,8 @@ export default async function SettingsPage() {
               </h2>
               <p style={{ fontSize: 12.5, color: 'var(--muted)', margin: '2px 0 0' }}>
                 {onPremium
-                  ? 'Premium · GPS, the training report, heatmaps and Apple Health are on.'
-                  : 'Basic · wellness, gym, nutrition, schedule, reports and bar charts.'}
+                  ? 'Premium · GPS, the training report and heatmaps are on.'
+                  : 'Basic · wellness, gym, nutrition, schedule, reports, bar charts and Apple Health.'}
               </p>
             </div>
             <div className="plan-switch" title="Plan changes are a sales conversation with your Fydr contact, not a self-service toggle — see the note below.">
@@ -128,6 +128,7 @@ export default async function SettingsPage() {
                 <span>Reports · gym, wellness, testing, nutrition</span>
                 <span>Analytics · bar charts</span>
                 <span>Settings and exports</span>
+                <span>Apple Health connection</span>
               </div>
             </div>
             <div className="plan-compare-card" data-active={onPremium}>
@@ -139,7 +140,6 @@ export default async function SettingsPage() {
                 <span>GPS exports</span>
                 <span>Training report</span>
                 <span>Analytics · heatmaps</span>
-                <span>Apple Health connection</span>
               </div>
             </div>
           </div>
@@ -183,23 +183,22 @@ export default async function SettingsPage() {
 
             <div className="set-row">
               <div style={{ minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                  <span style={{ fontSize: 14, fontWeight: 600 }}>Apple Health</span>
-                  {!onPremium ? <span className="gold-badge">Premium</span> : null}
-                </div>
+                <span style={{ fontSize: 14, fontWeight: 600 }}>Apple Health</span>
                 <p style={{ fontSize: 12, color: 'var(--muted)', margin: '2px 0 0' }}>
                   Sleep, resting heart rate and body mass from the athlete&apos;s phone
                 </p>
               </div>
-              {onPremium ? (
-                <button type="button" className="set-row-btn" data-variant="connect" disabled aria-disabled="true" title="HealthKit connection requires the athlete mobile app, which isn't available yet.">
-                  Connect
-                </button>
-              ) : (
-                <span className="set-row-btn" data-variant="locked" style={{ cursor: 'default' }}>
-                  Locked
-                </span>
-              )}
+              {/* No tier gate here, on either plan — O-862 (12-product-tiers.md §3.4)
+               *  asked the client to confirm HealthKit's placement, calling it "the
+               *  weakest line in Premium": near-zero marginal cost, athlete-initiated,
+               *  and section 4.3's own athlete-features principle argues for Basic.
+               *  Resolved: HealthKit moved to Basic, available regardless of tier.
+               *  Still honestly disabled either way -- the connection itself needs the
+               *  athlete mobile app, which this build doesn't have (same reason this
+               *  button has always been disabled, unrelated to billing). */}
+              <button type="button" className="set-row-btn" data-variant="connect" disabled aria-disabled="true" title="HealthKit connection requires the athlete mobile app, which isn't available yet.">
+                Connect
+              </button>
             </div>
 
             <div className="set-row">

@@ -17,7 +17,7 @@ database archaeology exercise.
 |---|---|---|---|---|
 | 1 | Athlete self-report, staff entry | In-app forms | Club, Premium | v1 |
 | 2 | GPS vendor exports: Catapult, StatSports, GPSports, Polar | CSV or XLSX upload, staff initiated | Premium | v1 |
-| 3 | Apple HealthKit | Native iOS sync, athlete initiated | Premium | v1.1 |
+| 3 | Apple HealthKit | Native iOS sync, athlete initiated | Club, Premium | v1.1 |
 | 4 | Catapult and StatSports APIs, Android Health Connect | Scheduled server-side pull | Premium | Deferred |
 
 The two tiers are **`club` and `premium`** (`12-product-tiers.md`). Nothing here is gated on

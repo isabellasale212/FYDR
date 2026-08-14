@@ -158,7 +158,7 @@ maintained in full elsewhere. Condensed to the shape of the decision only:
 | Nutrition guidance: targets, meal ideas, matchday fuelling. Read-only, no meal or macro logging | Yes | Yes |
 | Weekly nutrition check-in: one question, one tap, three levels | Yes | Yes |
 | GPS data import | No | Yes |
-| Apple HealthKit sync | No | Yes |
+| Apple HealthKit sync | Yes | Yes |
 | Cross-domain analytics builder | Limited presets | Full custom builder |
 | Data export | CSV | CSV and API |
 
@@ -168,11 +168,12 @@ same document and is not optional.
 > **Open question O-1**: exact price points per tier. The £1/athlete/week figure discussed
 > previously is a Club-tier anchor, not a confirmed price. See `11-open-questions.md`.
 >
-> **O-1 is now downstream of O-750.** The tier split above puts GPS import, HealthKit, and the
-> custom analytics builder behind the Premium tier. Under Position A that is wrong on its
-> face: GPS is the first thing a professional club uses, it is a top-level item in the built
-> app's sidebar, and gating it makes the Club tier unsellable to the stated market. Under
-> Position B the split is sound. Do not set prices before answering O-750.
+> **O-1 is now downstream of O-750.** The tier split above puts GPS import and the custom
+> analytics builder behind the Premium tier (HealthKit was too, until O-862 in
+> `12-product-tiers.md` §3.4 moved it to Club on 14 August 2026). Under Position A that is
+> wrong on its face: GPS is the first thing a professional club uses, it is a top-level item
+> in the built app's sidebar, and gating it makes the Club tier unsellable to the stated
+> market. Under Position B the split is sound. Do not set prices before answering O-750.
 
 ## The four users
 

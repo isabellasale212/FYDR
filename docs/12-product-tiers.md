@@ -185,7 +185,7 @@ Every screen in the `02-information-architecture.md` §5 inventory.
 | **GPS import, vendor CSV and XLSX** | **P** | The hook. Section 5. |
 | GPS views, GPS flags, GPS leaderboards, training report | **P** | Downstream of the import. They render nothing without it. |
 | ACWR from combined RPE and GPS load | P | Club gets ACWR computed from RPE and duration. Premium gets it from GPS load as well. The metric exists in both; the input set differs. |
-| Apple HealthKit sync | **P** | See 3.4. Contested, and it is the weakest line in the Premium column. |
+| Apple HealthKit sync | **Both** | See 3.4. O-862 resolved: moved to Club/Basic. |
 | Team and group allocation | Both | `CLAUDE.md` §3 makes groups global. Gating them breaks every multi-athlete screen. |
 | Admin, user management, roles, audit log | Both | Governance. |
 | Offline sync and queueing | Both | Infrastructure. A tiered offline mode is a support nightmare and an insult. |
@@ -226,10 +226,9 @@ given it. **This is the highest-regret recommendation in this document.** O-854.
 **Downstream edits required if accepted**: `analytics.md` §"Tier gate", its error table, its
 edge cases 12 and 13, and the tier row in this document's own summary. Not made here.
 
-### 3.4 HealthKit, the weakest line in Premium
+### 3.4 HealthKit, moved to Club (O-862 resolved)
 
-HealthKit is Premium in the current spec and stays Premium here, but the argument is not
-strong and it should be recorded rather than assumed.
+HealthKit was Premium in the original spec, on a weak argument recorded rather than assumed:
 
 | For Premium | For Club |
 |---|---|
@@ -237,11 +236,12 @@ strong and it should be recorded rather than assumed.
 | It gives Premium a second line so the tier is not literally one feature | It is athlete-initiated, and section 4.3 argues athlete features belong in both tiers |
 | An Apple Watch is a proxy for the same spending pattern GPS units indicate | Sleep and HRV would materially improve the Club tier's readiness score |
 
-**Resolution used here**: the athlete-features principle in section 4.3 is scoped to the
-athlete's critical path to submitting an expected entry. HealthKit is not on that path. An
-athlete completes every expected entry without it. So it can be gated without breaking
-compliance, and it stays in Premium. O-862 asks the client to confirm, because the counter is
-respectable.
+**O-862 asked the client to confirm, because the counter was respectable. Resolved: Club.**
+The original reasoning for gating it (the athlete-features principle in section 4.3 is scoped
+to the athlete's critical path to submitting an expected entry, and HealthKit is not on that
+path, so gating it doesn't break compliance) was never wrong — it just wasn't a strong enough
+reason to keep it Premium once asked directly. Section 3 and 4's own tables are updated to
+match; nothing else in this document's tier logic depended on HealthKit being Premium.
 
 ---
 
@@ -1191,9 +1191,9 @@ The condensed version. `00-product-overview.md` carries a copy of this and point
 | Data export, CSV, XLSX, JSON | **Yes** | **Yes** |
 | Athlete app, offline, notifications | Yes | Yes |
 | Admin, users, roles, audit log | Yes | Yes |
+| Apple HealthKit sync | Yes | Yes |
 | **GPS import** | No | **Yes** |
 | GPS views, flags, leaderboards, training report | No | Yes |
-| Apple HealthKit sync | No | Yes |
 | API export (post-v1) | No | Yes |
 | Support | Best effort | Named contact, response commitment |
 
@@ -1242,7 +1242,7 @@ Raised by this document. Numbered from O-850 to keep clear of the existing range
 | **O-859** | Billing stays out of band in v1 (`00-product-overview.md` non-goal). At what customer count does that break, and is Stripe the intended answer? Manual invoicing is fine at five clubs and is a part-time job at forty. | Phase 4 |
 | **O-860** | Is multi-squad within one organisation a Premium line if it is ever built? It is currently unbuilt and is a professional-club need. | Not now |
 | **O-861** | The API export is a commitment on the tier table and not a shipped feature (O-225). Does it stay on the Premium column while unbuilt? Recommendation: yes, marked "planned", or remove it. Do not list it plainly. | Before publishing a price list |
-| **O-862** | HealthKit in Premium (3.4). The counter-argument is respectable: near-zero marginal cost, athlete-initiated, and sleep and HRV would materially improve the Club readiness score. | Before Phase 3 |
+| **O-862** | **Resolved, 14 August 2026: HealthKit moved to Club/Basic**, per 3.4. The counter-argument (near-zero marginal cost, athlete-initiated, sleep and HRV would materially improve the Club readiness score) is what the client decided on when asked. | Closed |
 | **O-863** | What support commitment is honest for Premium? A named contact is free to promise and expensive to keep for one person. State hours and a realistic response time, or do not sell it. | With O-851 |
 | **O-864** | Is `tier` needed in the JWT at all? Read paths could look up `organisations.tier` directly at a small cost. Keeping it out of the claim removes the staleness case entirely. Recommendation: keep the claim for read paths and the table for write paths, as specified, but the simpler alternative is worth a decision rather than an assumption. | Phase 0 |
 | **O-865** | How long is GPS data retained after a downgrade or a cancellation? Section 8.7 says 120 days before deletion on written instruction, which needs to agree with O-13 (data retention after an athlete leaves a club) and with the contract. | Before first Premium sale |

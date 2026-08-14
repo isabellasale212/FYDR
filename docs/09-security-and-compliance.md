@@ -963,9 +963,29 @@ theirs (which will be most of them, most weeks).
 | Composition rules | **None** | Forced symbols and mixed case produce `Password1!` and a sticky note. NCSC explicitly advises against them. |
 | Breached password check | **On.** Supabase has HaveIBeenPwned integration on paid plans; otherwise call the k-anonymity range API yourself. | Credential stuffing is the realistic attack, not brute force. |
 | Forced rotation | **Off** | NCSC advises against routine expiry. Rotate on evidence of compromise only. |
-| Failed login lockout | Exponential backoff, plus CAPTCHA after 5 failures | Supabase has built-in rate limits; do not rely on them alone. |
+| Failed login lockout | **Built: exponential backoff.** No CAPTCHA — see below. | Supabase has built-in rate limits; do not rely on them alone. |
 | MFA for coach, medical, admin | **Mandatory** | See below. |
 | MFA for athletes | Optional, encouraged, plus device biometric app lock | Mandating TOTP on 40 semi-pro athletes will destroy adoption, and their account only exposes their own data. |
+
+**Failed login lockout, built.** login-security checklist item 4. Per email, not per IP —
+this is a small club roster, not a public signup surface with the usual botnet-behind-
+shared-IP problem a per-IP limiter exists to solve. Server-side state
+(`login_attempts`, migration `0048_login_attempts.sql`), checked in a Route Handler
+(`src/app/auth/sign-in/route.ts`) that wraps the real `signInWithPassword` call —
+`LoginForm.tsx` no longer calls Supabase Auth directly from the browser, because a
+client-reported attempt count is unforgeable-proof in name only. Five failures locks the
+sixth attempt out; the cooldown escalates 30s → 2min → 10min → 30min → capped at 60min,
+never indefinite, and does not extend further while already locked — the bound on an
+attacker locking out an account they cannot guess into, rather than eliminating the
+tradeoff (which would mean removing the lockout, reopening this exact item). Full design
+writeup, including that tradeoff, in the migration's own header comment.
+
+CAPTCHA is a deliberate cut, not a silent one: it is a real third-party vendor
+integration decision (provider choice, a new API key, a client widget, server-side
+verification) outside what this pass was scoped to build. The backoff above is real and
+load-bearing on its own — CAPTCHA would raise the cost of a distributed attack further,
+not replace the account-level lock. Left for a future pass; do not read the line above as
+"do not rely on rate limits alone" fully closed.
 
 **Enforcing staff MFA properly.** Supabase Auth supports TOTP factors and expresses
 assurance level in the JWT `aal` claim. Do not enforce MFA in the UI, because the UI is not
@@ -1302,7 +1322,8 @@ sufficient alone. Add per-user and per-IP limits at the Edge Function layer:
 
 | Endpoint | Limit | Reason |
 |---|---|---|
-| Sign in, password reset, invite acceptance | Supabase defaults plus CAPTCHA after 5 failures | Credential stuffing |
+| Sign in | **Built** (§8.1 above): per-email exponential backoff after 5 failures, 30s-60min escalating/capped. No CAPTCHA (deliberate cut, §8.1). | Credential stuffing |
+| Password reset, invite acceptance | Not built. Same Supabase-defaults-are-not-enough caveat as sign in; still open. | Credential stuffing |
 | Export and SAR pack generation | 5 per user per hour | Expensive, and a bulk-exfiltration signal. Alert on breach of this limit, do not just block. |
 | CSV import | 3 per organisation per hour | Resource exhaustion |
 | **Analytics builder query** | 30 per user per hour, plus a hard `statement_timeout` | The most important one. See below. |

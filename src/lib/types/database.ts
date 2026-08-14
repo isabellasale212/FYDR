@@ -1611,6 +1611,47 @@ export type Database = {
         }
       ]
     }
+    login_attempts: {
+      Row: {
+        id: string
+        email: string
+        org_id: string | null
+        attempt_count: number
+        lock_count: number
+        locked_until: string | null
+        last_attempt_at: string
+        created_at: string
+      }
+      Insert: {
+        id?: string
+        email: string
+        org_id?: string | null
+        attempt_count?: number
+        lock_count?: number
+        locked_until?: string | null
+        last_attempt_at?: string
+        created_at?: string
+      }
+      Update: {
+        id?: string
+        email?: string
+        org_id?: string | null
+        attempt_count?: number
+        lock_count?: number
+        locked_until?: string | null
+        last_attempt_at?: string
+        created_at?: string
+      }
+      Relationships: [
+        {
+          foreignKeyName: "login_attempts_org_id_fkey"
+          columns: ["org_id"]
+          isOneToOne: false
+          referencedRelation: "organisations"
+          referencedColumns: ["id"]
+        }
+      ]
+    }
     metric_definitions: {
       Row: {
         key: string
@@ -4103,6 +4144,29 @@ export type Database = {
           record_count: number
           is_tied: boolean
           previous_position: number
+        }[]
+    }
+    login_attempt_gate: {
+      Args: {
+        p_email: string
+      }
+      Returns: {
+          is_locked: boolean
+          locked_until: string
+          seconds_remaining: number
+        }[]
+    }
+    login_attempt_record_result: {
+      Args: {
+        p_email: string
+        p_success: boolean
+        p_org_id?: string | null
+      }
+      Returns: {
+          is_locked: boolean
+          locked_until: string
+          seconds_remaining: number
+          attempts_remaining: number
         }[]
     }
     resolve_my_programme_sessions: {

@@ -6019,3 +6019,53 @@ table.tbl tbody tr:hover {
   font-size: 10.5px;
   color: var(--faint);
 }
+
+/* ---------- FlagNotice, integration-audit major finding ----------
+ * Appended at EOF per this repo's own CSS-merge rule. src/components/FlagNotice/. The
+ * athlete-facing read of an acknowledged flag: my-data.md line ~241's "dated marker...
+ * with the staff note". Deliberately calm — --accent2 for the domain pill background is
+ * the one already used for the wellness chart's own flag markers (WellnessChart.tsx),
+ * never --warn/--bad, so this never reads as an alert. */
+.flag-notice {
+  margin-top: 14px;
+}
+.flag-notice-heading {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.flag-notice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.flag-notice-item {
+  padding: 10px 12px;
+  border-radius: var(--r-field);
+  background: rgb(var(--accent2-rgb) / 0.08);
+  border-inline-start: 2px solid rgb(var(--accent2-rgb) / 0.6);
+}
+.flag-notice-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.flag-notice-line {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.flag-notice-note {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  font-style: italic;
+  color: var(--muted);
+}
+.flag-notice-attribution {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: var(--faint);
+}

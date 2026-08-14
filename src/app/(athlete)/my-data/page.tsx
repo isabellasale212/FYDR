@@ -1,12 +1,14 @@
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
-import { WellnessChart } from '@/components/WellnessChart/WellnessChart';
+import { WellnessChart, type FlagMarker } from '@/components/WellnessChart/WellnessChart';
+import { FlagNotice } from '@/components/FlagNotice/FlagNotice';
 import { fetchWellnessByAthlete, wellnessSeries } from '@/lib/queries/wellness';
 import { fetchAthleteRecentSessions, mondayOf } from '@/lib/queries/schedule';
 import { fetchCheckinForWeek, fetchRecentCheckins } from '@/lib/queries/nutrition';
 import { fetchMyTestSummary } from '@/lib/queries/testing';
 import { fetchRecentGymSessions } from '@/lib/queries/programmes';
 import { fetchOutstandingCount } from '@/lib/queries/compliance';
+import { fetchMyVisibleFlags, type VisibleFlag } from '@/lib/queries/flags';
 import {
   BLANK,
   addDays,
@@ -75,6 +77,30 @@ export default async function MyDataPage({
   const nutritionCheckin = await fetchCheckinForWeek(db, athleteId, nutritionWeekStart);
   const outstanding = await fetchOutstandingCount(db, athleteId, today, !!nutritionCheckin);
 
+  /* Integration-audit major finding: acknowledging a flag never became visible anywhere
+   * on the athlete side. my-data.md line ~241 scopes it as "flags | 'flags' where
+   * athlete_visible_at is not null | Dated markers on the chart with the staff note" —
+   * "the chart" only exists for one of the five segments here (Wellness; the other four
+   * are plain tables, see GymTab's own comment on why no chart was built for gym either).
+   * Rather than invent a chart for domains that don't have one, flag_domain is routed by
+   * name: a domain that names an existing segment (wellness, gym, testing, training,
+   * nutrition) surfaces on that segment's own tab; 'gps' and 'compliance' — the two
+   * flag_domain values with no same-named segment on this page (04-data-model.md §10's
+   * six-plus-training list against this page's five tabs) — have nowhere segment-shaped
+   * to live, so they render in `orphanFlags` below, always visible regardless of which
+   * tab is open, rather than being silently dropped. Chosen over guessing a semantic
+   * mapping (e.g. "gps is really about training load, put it on the Training tab") —
+   * CLAUDE.md §5: "do not guess and quietly implement" undocumented product behaviour. */
+  const visibleFlags = await fetchMyVisibleFlags(db, athleteId, { from, to: today });
+  const flagsByDomain = new Map<string, VisibleFlag[]>();
+  for (const f of visibleFlags) {
+    const list = flagsByDomain.get(f.domain) ?? [];
+    list.push(f);
+    flagsByDomain.set(f.domain, list);
+  }
+  const SEGMENT_DOMAINS = new Set(['wellness', 'gym', 'testing', 'training', 'nutrition']);
+  const orphanFlags = visibleFlags.filter((f) => !SEGMENT_DOMAINS.has(f.domain));
+
   return (
     <>
       <div className="hd">
@@ -142,16 +168,52 @@ export default async function MyDataPage({
         </Link>
       </div>
 
+      {/* gps and compliance domain flags have no matching segment (see the comment on
+       * orphanFlags above) — shown here, above the tab content, so they stay visible no
+       * matter which tab the athlete has open rather than living behind a tab that
+       * doesn't describe them. */}
+      <FlagNotice flags={orphanFlags} heading="Also noted for you" />
+
       {tab === 'wellness' ? (
-        <WellnessTab db={db} athleteId={athleteId} from={from} today={today} dates={dates} timezone={timezone} />
+        <WellnessTab
+          db={db}
+          athleteId={athleteId}
+          from={from}
+          today={today}
+          dates={dates}
+          timezone={timezone}
+          flags={flagsByDomain.get('wellness') ?? []}
+        />
       ) : tab === 'training' ? (
-        <TrainingTab db={db} orgId={orgId} athleteId={athleteId} from={from} today={today} timezone={timezone} />
+        <TrainingTab
+          db={db}
+          orgId={orgId}
+          athleteId={athleteId}
+          from={from}
+          today={today}
+          timezone={timezone}
+          flags={flagsByDomain.get('training') ?? []}
+        />
       ) : tab === 'nutrition' ? (
-        <NutritionTab db={db} athleteId={athleteId} from={from} today={today} timezone={timezone} />
+        <NutritionTab
+          db={db}
+          athleteId={athleteId}
+          from={from}
+          today={today}
+          timezone={timezone}
+          flags={flagsByDomain.get('nutrition') ?? []}
+        />
       ) : tab === 'testing' ? (
-        <TestingTab db={db} athleteId={athleteId} />
+        <TestingTab db={db} athleteId={athleteId} flags={flagsByDomain.get('testing') ?? []} />
       ) : (
-        <GymTab db={db} athleteId={athleteId} from={from} today={today} timezone={timezone} />
+        <GymTab
+          db={db}
+          athleteId={athleteId}
+          from={from}
+          today={today}
+          timezone={timezone}
+          flags={flagsByDomain.get('gym') ?? []}
+        />
       )}
     </>
   );
@@ -164,6 +226,7 @@ async function WellnessTab({
   today,
   dates,
   timezone,
+  flags,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
   athleteId: string;
@@ -171,6 +234,7 @@ async function WellnessTab({
   today: string;
   dates: string[];
   timezone: string;
+  flags: VisibleFlag[];
 }) {
   const entries = await fetchWellnessByAthlete(db, athleteId, { from, to: today });
   const byDate = new Map(entries.map((e) => [e.entry_date, e]));
@@ -180,6 +244,16 @@ async function WellnessTab({
     const p = bandPosition(s);
     return p === 'above' || p === 'below';
   }).length;
+
+  // The wellness chart is one readiness line; wellness.readiness_score,
+  // wellness.sleep_hours and wellness.soreness flags all land on it (there is only ever
+  // one wellness chart on this page — see this file's own header comment on why views 2
+  // to 4 of my-data.md's report pager were cut), so each marker's tooltip and the
+  // FlagNotice line beneath both carry `what` to say which metric was actually flagged.
+  const flagMarkers: FlagMarker[] = flags.map((f) => ({
+    date: f.flag_date,
+    tooltip: `${formatDate(f.flag_date, timezone)} — ${f.what}${f.staff_note ? `: ${f.staff_note}` : ''}`,
+  }));
 
   return (
     <div className="stack" style={{ marginTop: 14 }}>
@@ -210,8 +284,11 @@ async function WellnessTab({
             ticks={[0, 25, 50, 75, 100]}
             title="Your readiness"
             timezone={timezone}
+            flags={flagMarkers}
           />
         )}
+
+        <FlagNotice flags={flags} />
 
         <p className="cap">
           <b>
@@ -283,6 +360,7 @@ async function TrainingTab({
   from,
   today,
   timezone,
+  flags,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
   orgId: string;
@@ -290,6 +368,7 @@ async function TrainingTab({
   from: string;
   today: string;
   timezone: string;
+  flags: VisibleFlag[];
 }) {
   const sessions = await fetchAthleteRecentSessions(db, orgId, athleteId, from, today, timezone);
   const rated = sessions.filter((s) => s.rpe !== null).length;
@@ -305,6 +384,8 @@ async function TrainingTab({
           RPE means no rating was submitted, which is not the same as an easy
           session.
         </p>
+
+        <FlagNotice flags={flags} heading="Noted by staff" />
 
         {sessions.length === 0 ? (
           <EmptyState
@@ -383,12 +464,14 @@ async function NutritionTab({
   from,
   today,
   timezone,
+  flags,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
   athleteId: string;
   from: string;
   today: string;
   timezone: string;
+  flags: VisibleFlag[];
 }) {
   const checkins = await fetchRecentCheckins(db, athleteId, from, today);
 
@@ -402,6 +485,8 @@ async function NutritionTab({
           Did you hit your protein target most days that week &mdash; one question,
           answered once a week. No score, no streak, no comparison to anyone else.
         </p>
+
+        <FlagNotice flags={flags} heading="Noted by staff" />
 
         {checkins.length === 0 ? (
           <EmptyState
@@ -465,9 +550,11 @@ const TEST_NAME_EXPLAINER: Record<string, string> = {
 async function TestingTab({
   db,
   athleteId,
+  flags,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
   athleteId: string;
+  flags: VisibleFlag[];
 }) {
   const summary = await fetchMyTestSummary(db, athleteId);
 
@@ -481,6 +568,8 @@ async function TestingTab({
           Your own results and personal bests only &mdash; never a squad
           comparison here.
         </p>
+
+        <FlagNotice flags={flags} heading="Noted by staff" />
 
         {summary.length === 0 ? (
           <EmptyState
@@ -518,12 +607,14 @@ async function GymTab({
   from,
   today,
   timezone,
+  flags,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
   athleteId: string;
   from: string;
   today: string;
   timezone: string;
+  flags: VisibleFlag[];
 }) {
   const sessions = await fetchRecentGymSessions(db, athleteId, from, today);
 
@@ -537,6 +628,8 @@ async function GymTab({
           Completed gym sessions in this window. Tap Correct on a session to fix a set
           you mis-logged &mdash; the original is kept, never overwritten.
         </p>
+
+        <FlagNotice flags={flags} heading="Noted by staff" />
 
         {sessions.length === 0 ? (
           <EmptyState

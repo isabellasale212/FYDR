@@ -746,6 +746,7 @@ export type Database = {
         resolved_at: string | null
         athlete_visible_at: string | null
         created_at: string
+        staff_note: string | null
       }
       Insert: {
         id?: string
@@ -766,6 +767,7 @@ export type Database = {
         resolved_at?: string | null
         athlete_visible_at?: string | null
         created_at?: string
+        staff_note?: string | null
       }
       Update: {
         id?: string
@@ -786,6 +788,7 @@ export type Database = {
         resolved_at?: string | null
         athlete_visible_at?: string | null
         created_at?: string
+        staff_note?: string | null
       }
       Relationships: [
         {

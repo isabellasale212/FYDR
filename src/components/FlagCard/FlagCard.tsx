@@ -46,10 +46,22 @@ export function FlagCard({ flag, orgId, userId, today, timezone }: Props) {
   const [reason, setReason] = useState<string>('');
   const [otherReason, setOtherReason] = useState('');
   const [error, setError] = useState<string | null>(null);
+  // Optional, collapsed by default. screens/flags.md specifies Acknowledge as instant
+  // and optimistic ("The card moves to the Acknowledged section with a 200 ms
+  // transition... A 5-second Undo appears") — this stays true for the common case, a
+  // plain click with no note. The note is additive, not a required second step: see
+  // migration 0046's own header comment for why it exists at all and why it is
+  // optional ("with the staff note, if any").
+  const [addingNote, setAddingNote] = useState(false);
+  const [note, setNote] = useState('');
 
   const acknowledge = useMutation({
-    mutationFn: () => acknowledgeFlag(createClient(), flag.id, orgId, userId),
-    onSuccess: () => router.refresh(),
+    mutationFn: (noteText?: string) => acknowledgeFlag(createClient(), flag.id, orgId, userId, noteText),
+    onSuccess: () => {
+      setAddingNote(false);
+      setNote('');
+      router.refresh();
+    },
     onError: () => setError('Could not acknowledge this flag. Try again.'),
   });
 
@@ -177,18 +189,63 @@ export function FlagCard({ flag, orgId, userId, today, timezone }: Props) {
             </button>
           </div>
         </div>
-      ) : (
-        <div className="flag-actions">
-          {canAcknowledge ? (
+      ) : addingNote ? (
+        <div className="flag-dismiss">
+          <label className="label" htmlFor={`ack-note-${flag.id}`}>
+            Note for {flag.name.split(' ')[0]} (optional)
+          </label>
+          <textarea
+            id={`ack-note-${flag.id}`}
+            className="field"
+            rows={2}
+            placeholder="e.g. We've eased Tuesday's session — nothing to do on your end."
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+          />
+          <div className="flag-actions" style={{ marginTop: 10 }}>
             <button
               type="button"
-              className="btn-ghost"
-              onClick={() => acknowledge.mutate()}
+              className="btn-primary"
+              onClick={() => acknowledge.mutate(note)}
               disabled={acknowledge.isPending}
-              aria-label={`Acknowledge flag for ${flag.name}`}
             >
               {acknowledge.isPending ? 'Acknowledging…' : 'Acknowledge'}
             </button>
+            <button
+              type="button"
+              className="btn-ghost"
+              onClick={() => {
+                setAddingNote(false);
+                setNote('');
+                setError(null);
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="flag-actions">
+          {canAcknowledge ? (
+            <>
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => acknowledge.mutate(undefined)}
+                disabled={acknowledge.isPending}
+                aria-label={`Acknowledge flag for ${flag.name}`}
+              >
+                {acknowledge.isPending ? 'Acknowledging…' : 'Acknowledge'}
+              </button>
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => setAddingNote(true)}
+                aria-label={`Acknowledge flag for ${flag.name} with a note`}
+              >
+                + Note for athlete
+              </button>
+            </>
           ) : (
             <span className="tiny">
               <span className="g-good" aria-hidden="true">

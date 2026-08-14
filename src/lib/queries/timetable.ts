@@ -116,7 +116,9 @@ export async function fetchTimetableDay(
   const bounds = dayBounds(date);
   const { data: sessions, error: sessErr } = await db
     .from('sessions')
-    .select('id, title, session_type, starts_at, duration_min, location, md_offset, planned_rpe, status, fixture_id')
+    .select(
+      'id, title, session_type, starts_at, duration_min, location, md_offset, planned_rpe, status, fixture_id, updated_at',
+    )
     .eq('org_id', orgId)
     .gte('starts_at', bounds.from)
     .lte('starts_at', bounds.to)

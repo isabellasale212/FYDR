@@ -6,7 +6,7 @@ import { useMutation } from '@tanstack/react-query';
 import { addGroupMember, removeGroupMember, type MemberRow } from '@/lib/queries/groups';
 import { createClient } from '@/lib/supabase/client';
 import { withWriteTimeout } from '@/lib/writeErrors';
-import { formatDate } from '@/lib/format';
+import { formatDate, initials } from '@/lib/format';
 
 type Candidate = { id: string; first_name: string; last_name: string; position: string | null };
 
@@ -110,7 +110,19 @@ export function GroupMemberManager({ orgId, groupId, timezone, current, candidat
               className="todo"
               style={{ borderTop: '1px solid var(--hair)', cursor: 'default' }}
             >
-              <span style={{ flex: 1, minWidth: 0 }}>
+              {/* .todo is a 4-column grid (38px content auto 12px), built for
+               *  a leading icon/glyph. A 2-child row (content, then button)
+               *  falls into implicit grid placement instead — the content
+               *  span lands in the 38px column and the button stretches to
+               *  fill the 1fr column, exactly backwards from what either was
+               *  meant to look like. This initials glyph, the same .gl
+               *  pattern (today)/page.tsx already uses, fills that leading
+               *  slot for real (who this row is about) rather than as a
+               *  blank spacer. */}
+              <span className="gl" aria-hidden="true">
+                {initials(member)}
+              </span>
+              <span style={{ minWidth: 0 }}>
                 <span style={{ fontSize: 14, fontWeight: 700 }}>
                   {member.first_name} {member.last_name}
                 </span>

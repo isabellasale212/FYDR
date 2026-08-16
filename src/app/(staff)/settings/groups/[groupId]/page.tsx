@@ -10,7 +10,7 @@ import {
   fetchGroupMembers,
 } from '@/lib/queries/groups';
 import { fetchSquadList } from '@/lib/queries/squad';
-import { enumLabel, formatDate } from '@/lib/format';
+import { enumLabel, formatDate, initials } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Group · Fydr' };
@@ -108,7 +108,16 @@ export default async function GroupDetailPage({
                 className="todo"
                 style={{ borderTop: '1px solid var(--hair)', cursor: 'default' }}
               >
-                <span style={{ flex: 1, minWidth: 0 }}>
+                {/* .todo is a 4-column grid (38px, content, auto, 12px) —
+                 *  a single-child row falls into the 38px column by implicit
+                 *  grid placement, squeezing the whole line into a
+                 *  one-word-per-line column. Same fix as the current-members
+                 *  list above: a real .gl initials glyph fills the leading
+                 *  slot instead of leaving it to grab whatever lands there. */}
+                <span className="gl" aria-hidden="true">
+                  {initials(member)}
+                </span>
+                <span style={{ minWidth: 0 }}>
                   <span style={{ fontSize: 14, fontWeight: 700 }}>
                     {member.first_name} {member.last_name}
                   </span>

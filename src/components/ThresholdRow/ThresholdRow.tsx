@@ -63,7 +63,11 @@ export function ThresholdRow({ threshold, orgId, sentence }: Props) {
           <Pill status={SEVERITY_STATUS[threshold.severity as 'low' | 'medium' | 'high']} />
           {!threshold.is_active ? <span className="tiny">Inactive</span> : null}
         </span>
-        <span className="tiny" style={{ display: 'block', marginTop: 3, maxWidth: 62, whiteSpace: 'normal' }}>
+        {/* No maxWidth here — a stray `maxWidth: 62` (a bare number, so React
+         *  renders it as 62px) squeezed this whole sentence into a
+         *  one-word-per-line column. Wraps naturally within the row's own
+         *  flex:1 width instead, same as the "Notifies ..." line below it. */}
+        <span className="tiny" style={{ display: 'block', marginTop: 3, whiteSpace: 'normal' }}>
           {sentence}
         </span>
         <span className="tiny" style={{ display: 'block', marginTop: 3 }}>

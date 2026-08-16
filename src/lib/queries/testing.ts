@@ -323,7 +323,17 @@ export type MyTestSummary = {
 /** An athlete's own results only, across every test they have a result for —
  *  screens/testing.md's role table: "Own results only: history, personal
  *  bests." RLS already scopes test_results to their own rows; this just
- *  shapes it per test. */
+ *  shapes it per test.
+ *
+ *  pbValue picks the true all-time best by the test's own higher_is_better
+ *  direction, not the most recent is_best row — the same "phantom PB
+ *  regression" bug testingReport.ts's fetchTestingByAthlete found and fixed
+ *  (verified live: an athlete with a 41.6 all-time best showed 31.0 because
+ *  that was their latest session). is_best only marks the best attempt
+ *  WITHIN one session/day; the winner ACROSS every session still has to be
+ *  picked here, by comparing every is_best row against the current champion
+ *  rather than trusting date order. This was the one real place that fix
+ *  hadn't been applied yet — the athlete's own PB pill was still wrong. */
 export async function fetchMyTestSummary(db: Db, athleteId: string): Promise<MyTestSummary[]> {
   const { data, error } = await db
     .from('test_results')
@@ -350,9 +360,14 @@ export async function fetchMyTestSummary(db: Db, athleteId: string): Promise<MyT
       cur.latestValue = r.value;
       cur.latestDate = r.test_date;
     }
-    if (r.is_best && (cur.pbValue === null || cur.pbDate === null || r.test_date >= cur.pbDate)) {
-      cur.pbValue = r.value;
-      cur.pbDate = r.test_date;
+    if (r.is_best) {
+      const higherIsBetter = r.test_definitions.higher_is_better;
+      const beatsCurrentBest =
+        cur.pbValue === null || (higherIsBetter ? r.value > cur.pbValue : r.value < cur.pbValue);
+      if (beatsCurrentBest) {
+        cur.pbValue = r.value;
+        cur.pbDate = r.test_date;
+      }
     }
     byTest.set(r.test_definition_id, cur);
   }

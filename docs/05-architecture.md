@@ -839,7 +839,7 @@ because a job that cannot fail on a network is a job that cannot fail.
 | `dispatch_notifications` | `*/5 * * * *` | Edge Function | Drains `notification_queue` for rows whose `send_at` has passed. Handles the 07:00 wellness push in each organisation's timezone and RPE prompts 30 minutes after session end. |
 | `close_stale_gym_logs` | `0 4 * * *` | SQL | `gym_session_logs` left `in_progress` for over 24 hours become `abandoned`. Sets do not move. |
 | `recompute_md_offsets` | `10 4 * * *` plus trigger on `fixtures` | SQL | Recomputes `md_offset` for **future** sessions only. Past sessions keep the label they were executed under (`04-data-model.md` §4). |
-| `evaluate_daily_thresholds` | `30 4 * * *` | Edge Function | Thresholds that need a window rather than a single value: consecutive-day breaches, ACWR, compliance-rate rules. Per-entry thresholds fire on insert instead, see below. |
+| `evaluate_daily_thresholds` | `30 * * * *` (hourly, :30) | SQL | For every organisation whose local time is 04:30, evaluate the previous local day's thresholds that need a window rather than a single value: consecutive-day breaches, ACWR, compliance-rate rules. Idempotent via a unique key on `(threshold_id, athlete_id, flag_date)`. Built as pure SQL + `pg_cron`, same reasoning as `generate_compliance_expectations` above — see migration `0052_evaluate_daily_thresholds.sql`'s own header. The per-entry (on-insert) path below is **not built**: every threshold configured in this database today needs a window, so there is currently nothing for it to do — see that migration's header for the live check. |
 | `retention_review` | `30 4 * * 0` (Sundays) | SQL | Lists athlete records past the organisation's retention period into `retention_candidates`. **Never deletes.** Deletion is an explicit audited admin action. |
 | `archive_audit_log` | `0 5 1 * *` (monthly) | Edge Function | Moves `audit_log` rows older than 13 months to compressed object storage, then deletes the moved rows. Append-only within the retention window. |
 | `sync_health_report` | `0 6 * * *` | Edge Function | Counts parked outbox reports received in the last 24 hours per app version. Alerts if above threshold. |
@@ -884,6 +884,15 @@ submission is never slowed or failed by the flag engine. The cost is that a drop
 means a missed flag, which is why `evaluate_daily_thresholds` at 04:30 re-evaluates the
 previous day as a sweep and is idempotent through a unique key on
 `(athlete_id, threshold_id, flag_date)`.
+
+**This trigger is designed above but not built.** Checked live when `evaluate_daily_thresholds`
+was built (migration `0052_evaluate_daily_thresholds.sql`): every threshold configured in
+either organisation's database today needs a rolling baseline, a multi-day derived value
+(`load.acwr`), or `consecutive_days > 1` — i.e. a window. There is currently nothing for
+this per-entry path to evaluate, and it would also need a deployed Edge Function, `pg_net`
+and an `EDGE_SHARED_SECRET`, none of which exist in this build yet (no Edge Functions
+directory exists anywhere in this repo). Left unbuilt and said so, rather than built
+speculatively for thresholds that do not exist yet.
 
 ### Job observability
 

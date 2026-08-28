@@ -1,13 +1,17 @@
 -- 270_evaluate_daily_thresholds_test.sql
 --
--- public.evaluate_daily_thresholds_for_org(org, date) — migration 0052. The windowed
--- threshold sweep 05-architecture.md §7's job table already named but that, until this
--- migration, had no evaluation mechanism anywhere in the schema: every flag in the app
+-- public.evaluate_daily_thresholds_for_org(org, date) — migrations 0052 and 0053. The
+-- windowed threshold sweep 05-architecture.md §7's job table already named but that,
+-- until 0052, had no evaluation mechanism anywhere in the schema: every flag in the app
 -- was hand-inserted (seed data, tests.build_org() below, or a demo script). thresholds
 -- and flags both already have a complete, working UI sitting on a schema nothing had
 -- ever written to automatically.
 --
--- Written BEFORE the migration, per CLAUDE.md §5.
+-- Written BEFORE the migration, per CLAUDE.md §5. Updated for 0053's fix (gap-tolerant
+-- consecutive_days, per screens/thresholds.md edge case 8) with two new cases: a real
+-- gap inside a genuine consecutive-day breach still fires (section 6b below), and a
+-- real non-breaching value (not a gap) still correctly resets the run — already covered
+-- by the shape 3 near-miss case in section 6, whose assertion text now says so.
 --
 -- All synthetic data in this file is anchored at least 200 days before current_date, far
 -- from tests.build_org()'s own fixture dates (current_date - 1, current_date, and
@@ -27,9 +31,16 @@
 --        pct_change_below/personal_rolling, below/absolute x2 metrics, above/
 --        personal_rolling) fires on a genuine breach and does not fire on a near miss,
 --        using the exact real thresholds.md ground truth in this migration's own brief.
+--        Shape 3's near miss is also the "genuine non-breach resets the run" case: its
+--        middle day is a REAL wellness_entries row that does not breach, not a gap.
 --   6. min_baseline_observations: an athlete with too little history never fires, even
 --      with an extreme value, on the SAME threshold row that fires for a well-baselined
 --      athlete in the same call — proving the gate is genuinely per-athlete.
+--   6b. Gap tolerance (migration 0053): a genuine 2-consecutive-day breach with NO
+--       wellness_entries row at all on one of the two days still fires, with the gap
+--       correctly not counted as a breach itself, and staff_note records the real
+--       "N of the last M days, with G missing" detail from screens/thresholds.md edge
+--       case 8's own worked example.
 --   7. cooldown_days: a second real breach inside the cooldown window raises nothing; one
 --      after the window expires does.
 --   8. Idempotency: the same org+date evaluated twice inserts each real flag once.
@@ -92,7 +103,8 @@ from generate_series(
   (current_date - 265)::timestamp, (current_date - 172)::timestamp, interval '1 day'
 ) as gs
 where gs::date not in (current_date - 251, current_date - 250,
-                        current_date - 211, current_date - 210);
+                        current_date - 211, current_date - 210,
+                        current_date - 231, current_date - 230);
 
 -- Fire day: both current_date - 251 and current_date - 250 breach (readiness 40, an
 -- extreme dip — all five 1-5 sliders at 2).
@@ -136,6 +148,51 @@ values
   (tests.uid('orga', 'org'), tests.uid('orga', 'athlete_newbie'), current_date - 251,
    6.0, 2, 2, 2, 2, 2, 'self_report', tests.uid('orga', 'user_coach')),
   (tests.uid('orga', 'org'), tests.uid('orga', 'athlete_newbie'), current_date - 250,
+   6.0, 2, 2, 2, 2, 2, 'self_report', tests.uid('orga', 'user_coach'));
+
+-- Gap tolerance (migration 0053, screens/thresholds.md edge case 8): a genuine 2-
+-- consecutive-day breach on thr_readiness (the SAME threshold row as the fire day
+-- above, proving the fix is genuinely per-threshold-row too), but with NO
+-- wellness_entries row at all on current_date - 231 — a true gap, not a normal value.
+-- Only current_date - 230 gets a real breach row. Under the OLD strict reading this
+-- would not have fired (the missing day would have read as "not breached"); under the
+-- fixed gap-tolerant reading it does, because the gap is skipped rather than treated as
+-- a reset — exactly the "athlete dodges a flag by skipping a submission" loophole 0053
+-- closes.
+--
+-- A DEDICATED athlete (athlete_readiness_gap), not athlete_readiness itself: cooldown
+-- is keyed on (threshold_id, athlete_id) and counted from the prior flag's raised_at,
+-- which the function always stamps as now() — the REAL wall-clock day, regardless of
+-- how far in the synthetic past flag_date is. athlete_readiness already picked up a
+-- real thr_readiness flag from the fire-day test above (flag_date current_date - 250,
+-- raised_at effectively today), so evaluating that SAME athlete for ANY earlier
+-- synthetic date would read as centuries inside a 3-day cooldown and be blocked for the
+-- wrong reason. A fresh athlete with no prior flag sidesteps that entirely, matching
+-- every other scenario in this file's own "never reuse an athlete across scenarios"
+-- rule stated at the top.
+insert into public.athletes (id, org_id, first_name, last_name, date_of_birth, status)
+values (tests.uid('orga', 'athlete_readiness_gap'), tests.uid('orga', 'org'),
+        'Test', 'ReadinessGap', date '2000-01-01', 'active');
+
+insert into public.wellness_entries
+  (org_id, athlete_id, entry_date, sleep_hours, sleep_quality, fatigue, soreness, stress,
+   mood, source, created_by)
+select
+  tests.uid('orga', 'org'), tests.uid('orga', 'athlete_readiness_gap'), gs::date,
+  7.5, case when (gs::date - date '2000-01-01') % 2 = 0 then 4 else 3 end, 4, 4, 4, 4,
+  'self_report', tests.uid('orga', 'user_coach')
+from generate_series(
+  (current_date - 265)::timestamp, (current_date - 172)::timestamp, interval '1 day'
+) as gs
+where gs::date not in (current_date - 231, current_date - 230);
+
+-- current_date - 231 is deliberately absent (a real gap, not an accidental
+-- double-insert); only current_date - 230 gets a real breach row.
+insert into public.wellness_entries
+  (org_id, athlete_id, entry_date, sleep_hours, sleep_quality, fatigue, soreness, stress,
+   mood, source, created_by)
+values
+  (tests.uid('orga', 'org'), tests.uid('orga', 'athlete_readiness_gap'), current_date - 230,
    6.0, 2, 2, 2, 2, 2, 'self_report', tests.uid('orga', 'user_coach'));
 
 
@@ -197,11 +254,12 @@ values
 -- ===========================================================================
 -- Section 3: SHAPE 3 — below / absolute, wellness domain. "Soreness elevated", real
 -- ground truth #3: value 2.000, no baseline, consecutive_days 3,
--- min_baseline_observations 0, cooldown_days 2, severity medium. Also exercises this
--- migration's own documented strict consecutive_days reading: a gap in the MIDDLE of the
--- window breaks the run, even though the values either side both breach (the near-miss
--- below), unlike screens/thresholds.md edge case 8's gap-tolerant rule — see migration
--- 0052's header for why.
+-- min_baseline_observations 0, cooldown_days 2, severity medium. Also the "genuine
+-- non-breach still resets the run" case: the near-miss below has a REAL
+-- wellness_entries row on the middle day (soreness = 4, not sore), not a gap — under
+-- migration 0053's gap-tolerant reading a real non-breaching value still correctly
+-- breaks the run; only a genuinely MISSING entry is skipped (see section 6b's dedicated
+-- gap test on thr_readiness for that case).
 -- ===========================================================================
 
 insert into public.thresholds
@@ -228,8 +286,9 @@ values
   (tests.uid('orga', 'org'), tests.uid('orga', 'athlete_soreness'), current_date - 250,
    7.0, 4, 4, 1, 4, 4, 'self_report', tests.uid('orga', 'user_coach'));
 
--- Near-miss: breach, NORMAL, breach — the middle day of the 3-day window does not
--- breach, which this migration's strict reading treats as breaking the run.
+-- Near-miss: breach, NORMAL, breach — the middle day of the 3-day window has a REAL
+-- entry (soreness = 4, not sore) that does not breach. Not a gap, so it genuinely
+-- breaks the run even under the gap-tolerant reading.
 insert into public.wellness_entries
   (org_id, athlete_id, entry_date, sleep_hours, sleep_quality, fatigue, soreness, stress,
    mood, source, created_by)
@@ -388,6 +447,15 @@ select ok(
 );
 
 select is(
+  (select staff_note from public.flags
+    where threshold_id = tests.uid('orga', 'thr_readiness')
+      and athlete_id   = tests.uid('orga', 'athlete_readiness')
+      and flag_date     = current_date - 250),
+  null,
+  'staff_note is left null when the consecutive-day window had no gap (migration 0053)'
+);
+
+select is(
   (select count(*)::int from public.flags
     where threshold_id = tests.uid('orga', 'thr_readiness')
       and athlete_id   = tests.uid('orga', 'athlete_newbie')),
@@ -424,6 +492,43 @@ select is(
 
 
 -- ===========================================================================
+-- Section 6c: gap tolerance (migration 0053). thr_readiness again, current_date - 230,
+-- where current_date - 231 has NO wellness_entries row at all (a true gap) and only
+-- current_date - 230 has a real breach. Under the pre-0053 strict reading this would
+-- NOT have fired; the fix closes that "skip a submission to dodge the flag" loophole.
+-- ===========================================================================
+
+select is(
+  (select count(*)::int from public.flags
+    where threshold_id = tests.uid('orga', 'thr_readiness')
+      and athlete_id   = tests.uid('orga', 'athlete_readiness_gap')
+      and flag_date     = current_date - 230),
+  0,
+  'sanity: no flag exists for the gap-tolerance day before the function has run'
+);
+
+select public.evaluate_daily_thresholds_for_org(tests.uid('orga', 'org'), current_date - 230);
+
+select is(
+  (select count(*)::int from public.flags
+    where threshold_id = tests.uid('orga', 'thr_readiness')
+      and athlete_id   = tests.uid('orga', 'athlete_readiness_gap')
+      and flag_date     = current_date - 230),
+  1,
+  'gap tolerance: a genuine 2-consecutive-day breach with ONE day genuinely missing (not just non-breaching) still fires'
+);
+
+select is(
+  (select staff_note from public.flags
+    where threshold_id = tests.uid('orga', 'thr_readiness')
+      and athlete_id   = tests.uid('orga', 'athlete_readiness_gap')
+      and flag_date     = current_date - 230),
+  'Breached on 1 of the last 2 days, with 1 day missing.',
+  'staff_note records screens/thresholds.md edge case 8''s own worded example, with the real counts'
+);
+
+
+-- ===========================================================================
 -- Section 7 (part 1): idempotency. Running the SAME org+date again inserts nothing new
 -- for any of the flags just raised.
 -- ===========================================================================
@@ -455,6 +560,17 @@ select is(
       and flag_date     = current_date - 250),
   1,
   'idempotency: a second call for the same org+date does not duplicate the soreness flag'
+);
+
+select public.evaluate_daily_thresholds_for_org(tests.uid('orga', 'org'), current_date - 230);
+
+select is(
+  (select count(*)::int from public.flags
+    where threshold_id = tests.uid('orga', 'thr_readiness')
+      and athlete_id   = tests.uid('orga', 'athlete_readiness_gap')
+      and flag_date     = current_date - 230),
+  1,
+  'idempotency: a second call for the gap-tolerance day does not duplicate that flag either'
 );
 
 select is(
@@ -498,7 +614,7 @@ select is(
       and athlete_id   = tests.uid('orga', 'athlete_soreness')
       and flag_date     = current_date - 210),
   0,
-  'shape 3 near miss: a non-breaching day in the MIDDLE of the 3-day window breaks the run (this migration''s strict reading)'
+  'shape 3 near miss: a REAL non-breaching value in the MIDDLE of the 3-day window (not a gap) still correctly breaks the run'
 );
 
 select is(

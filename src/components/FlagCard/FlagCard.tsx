@@ -138,6 +138,14 @@ export function FlagCard({ flag, orgId, userId, today, timezone }: Props) {
         ) : null}
       </p>
 
+      {/* Whatever's currently in flags.staff_note — the engine's own
+       *  explanation (e.g. a gap-tolerance detail) if nobody's acknowledged
+       *  yet, or a coach's own note if someone has. Not attributed to
+       *  either source since the column doesn't record which one it is —
+       *  see FlagListRow's own comment. Was fetched and shown on the
+       *  athlete's own FlagNotice already; never shown here until now. */}
+      {flag.staff_note ? <p className="flag-notice-note">&ldquo;{flag.staff_note}&rdquo;</p> : null}
+
       {error ? (
         <p className="form-error" role="alert">
           {error}

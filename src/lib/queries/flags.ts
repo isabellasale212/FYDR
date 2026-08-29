@@ -300,6 +300,19 @@ export type FlagListRow = {
    *  ignores fields it doesn't use, so this is additive, not a shape
    *  change anything existing has to react to. */
   threshold_id: string | null;
+  /** Whatever's currently in flags.staff_note — either the engine's own
+   *  explanation (e.g. migration 0053's gap-tolerance detail, "Breached on
+   *  N of the last M days, with G day(s) missing") written at raise time,
+   *  or a coach's own note written at acknowledgement via the "+ Note for
+   *  athlete" action, which overwrites it. Both share this one column,
+   *  and neither is tagged with which kind it is — shown as a plain,
+   *  unattributed "Note:" line rather than claiming an origin the data
+   *  doesn't actually record. Was fetched by fetchMyDataFlags (athlete-
+   *  facing, post-acknowledgement) but never by this shared query, so
+   *  the coach-facing /flags board and the profile Flags card have never
+   *  shown it at all — confirmed missing while building the flag engine,
+   *  fixed here rather than left silently invisible. */
+  staff_note: string | null;
 };
 
 export async function fetchFlagsList(
@@ -312,7 +325,7 @@ export async function fetchFlagsList(
   let query = db
     .from('flags')
     .select(
-      'id, athlete_id, domain, metric, observed_value, expected_value, flag_date, severity, status, raised_at, acknowledged_at, acknowledged_by, threshold_id',
+      'id, athlete_id, domain, metric, observed_value, expected_value, flag_date, severity, status, raised_at, acknowledged_at, acknowledged_by, threshold_id, staff_note',
     )
     .eq('org_id', orgId)
     .in('status', [...OPEN_FLAG_STATUSES])
@@ -378,6 +391,7 @@ export async function fetchFlagsList(
         acknowledged_by_name: f.acknowledged_by ? (ackNameById.get(f.acknowledged_by) ?? null) : null,
         escalated: isEscalated(f, now),
         threshold_id: f.threshold_id,
+        staff_note: f.staff_note,
       };
       return row;
     })

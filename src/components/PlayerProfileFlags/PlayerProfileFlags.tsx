@@ -139,6 +139,11 @@ export function PlayerProfileFlags({ flags, orgId, userId, today, timezone }: Pr
                 </div>
                 <p className="pp-flag-rule">{flag.ruleSentence}</p>
                 <p className="mono pp-flag-evidence">{flag.evidence}</p>
+                {/* Whatever's currently in flags.staff_note — see
+                 *  FlagCard.tsx's identical addition for the full reasoning
+                 *  (the engine's own explanation pre-acknowledgement, or a
+                 *  coach's own note after — same column, not distinguished). */}
+                {flag.staff_note ? <p className="flag-notice-note">&ldquo;{flag.staff_note}&rdquo;</p> : null}
                 {noteDraftId === flag.id ? (
                   <div className="flag-dismiss" style={{ marginTop: 8 }}>
                     <label className="label" htmlFor={`pp-ack-note-${flag.id}`}>

@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { NutritionWorkspace } from '@/components/NutritionWorkspace/NutritionWorkspace';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { addDays, todayIso } from '@/lib/format';
@@ -147,7 +146,6 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
               Manual target
             </Link>
           ) : null}
-          <ThemeToggle />
         </div>
       </div>
 

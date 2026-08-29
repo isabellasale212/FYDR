@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ProgrammeBuilder } from '@/components/ProgrammeBuilder/ProgrammeBuilder';
 import { ProgrammeStatusControl } from '@/components/ProgrammeStatusControl/ProgrammeStatusControl';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchAssignedAthletes, fetchAssignments, fetchExercises, fetchProgrammeDetail } from '@/lib/queries/programmes';
 import { fetchSquadList } from '@/lib/queries/squad';
@@ -50,7 +49,6 @@ export default async function ProgrammeBuilderPage({
           </p>
           <h1>{detail.programme.name}</h1>
         </div>
-        <ThemeToggle />
       </div>
 
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>

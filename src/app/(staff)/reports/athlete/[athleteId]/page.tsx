@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { Pill } from '@/components/Pill/Pill';
 import { ReportPager } from '@/components/ReportPager/ReportPager';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { WellnessChart } from '@/components/WellnessChart/WellnessChart';
 import { acwrInsufficiencyNote, acwrSuppressedLabel } from '@/lib/acwr';
 import { fetchAthleteReport } from '@/lib/queries/athleteReport';
@@ -75,7 +74,6 @@ export default async function AthleteReportPage({
           <a href={`/reports/athlete/${athleteId}/pdf?days=${days}`} className="btn-ghost">
             Export PDF
           </a>
-          <ThemeToggle />
         </div>
       </div>
 

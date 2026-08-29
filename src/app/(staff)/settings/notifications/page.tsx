@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { NotificationPreferencesForm } from '@/components/NotificationPreferencesForm/NotificationPreferencesForm';
 import { fetchMyNotificationPreferences } from '@/lib/queries/notificationPreferences';
 import { catalogueForRoles } from '@/lib/notifications/catalogue';
@@ -29,7 +28,6 @@ export default async function StaffNotificationsPage() {
           </p>
           <h1>Notifications</h1>
         </div>
-        <ThemeToggle />
       </div>
 
       {entries.length === 0 ? (

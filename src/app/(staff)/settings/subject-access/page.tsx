@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { Pill } from '@/components/Pill/Pill';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchSarRequests } from '@/lib/queries/sarPack';
 import { formatLongDate } from '@/lib/format';
 import { SAR_STATUS } from '@/lib/status';
@@ -38,7 +37,6 @@ export default async function SubjectAccessPage({ searchParams }: { searchParams
           </p>
           <h1>Subject access requests</h1>
         </div>
-        <ThemeToggle />
       </div>
 
       <p className="import-sub" style={{ marginTop: -6, marginBottom: 14 }}>

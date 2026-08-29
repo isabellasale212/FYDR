@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { InjuryMedicalForm } from '@/components/InjuryMedicalForm/InjuryMedicalForm';
 import { SetAvailabilityForm } from '@/components/SetAvailabilityForm/SetAvailabilityForm';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchInjuryDetail, fetchInjuryClinical } from '@/lib/queries/injuries';
 import { enumLabel, formatDate } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
@@ -49,7 +48,6 @@ export default async function InjuryDetailPage({
             {injury.first_name} {injury.last_name}
           </h1>
         </div>
-        <ThemeToggle />
       </div>
 
       <div className="card">

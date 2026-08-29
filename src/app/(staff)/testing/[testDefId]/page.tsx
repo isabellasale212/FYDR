@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { TestLogGrid } from '@/components/TestLogGrid/TestLogGrid';
 import { TestDateNav } from '@/components/TestDateNav/TestDateNav';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { fetchResultsForLogging, fetchTestDates, fetchTestDefinitions } from '@/lib/queries/testing';
@@ -50,7 +49,6 @@ export default async function TestLogPage({
           </p>
           <h1>{definition.name}</h1>
         </div>
-        <ThemeToggle />
       </div>
 
       <p className="eyebrow" style={{ marginBottom: 10 }}>

@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { Pill } from '@/components/Pill/Pill';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { fetchGroups } from '@/lib/queries/groups';
@@ -35,7 +34,6 @@ export default async function AthleteReportPickerPage({ searchParams }: { search
           </p>
           <h1>Pick an athlete</h1>
         </div>
-        <ThemeToggle />
       </div>
 
       <p className="eyebrow" style={{ marginBottom: 10 }}>

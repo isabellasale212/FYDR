@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { ProgrammeForm } from '@/components/ProgrammeForm/ProgrammeForm';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'New programme · Fydr' };
@@ -23,7 +22,6 @@ export default async function NewProgrammePage() {
           </p>
           <h1>New programme</h1>
         </div>
-        <ThemeToggle />
       </div>
 
       <p className="eyebrow" style={{ marginBottom: 14 }}>

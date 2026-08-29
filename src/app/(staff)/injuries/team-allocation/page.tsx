@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { PublishWeekButton } from '@/components/PublishWeekButton/PublishWeekButton';
 import { TeamAllocationBoard } from '@/components/TeamAllocationBoard/TeamAllocationBoard';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchTeams, fetchWeekBoard } from '@/lib/queries/teamAllocation';
 import { fetchGroupAthleteIds, fetchGroups } from '@/lib/queries/groups';
 import { mondayOf } from '@/lib/queries/schedule';
@@ -76,7 +75,6 @@ export default async function TeamAllocationPage({
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           {isCoach ? <PublishWeekButton orgId={orgId} userId={claims.userId} weekStart={weekStart} draftCount={draftCount} /> : null}
-          <ThemeToggle />
         </div>
       </div>
 

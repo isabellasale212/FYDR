@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { GroupSwatch } from '@/components/GroupSwatch/GroupSwatch';
 import { GroupReorderButtons } from '@/components/GroupReorderButtons/GroupReorderButtons';
 import { fetchAthletesInNoGroup, fetchGroupsWithCounts } from '@/lib/queries/groups';
@@ -43,7 +42,6 @@ export default async function GroupsPage() {
           <Link href="/settings/groups/new" className="btn-primary">
             + New group
           </Link>
-          <ThemeToggle />
         </div>
       </div>
 

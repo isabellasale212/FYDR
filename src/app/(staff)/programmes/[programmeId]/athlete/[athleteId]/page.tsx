@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { OverrideForm } from '@/components/OverrideForm/OverrideForm';
 import { OverrideList } from '@/components/OverrideList/OverrideList';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import {
   fetchActiveOverridesForAthlete,
   fetchExercises,
@@ -105,7 +104,6 @@ export default async function ProgrammeAthletePage({
           </p>
           <h1>{athleteName}’s programme</h1>
         </div>
-        <ThemeToggle />
       </div>
 
       <p className="eyebrow" style={{ marginBottom: 14 }}>

@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { Pill } from '@/components/Pill/Pill';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { Dial } from '@/components/Dial/Dial';
 import { DomainChips } from '@/components/DomainChips/DomainChips';
 import { PlayerProfileFlags } from '@/components/PlayerProfileFlags/PlayerProfileFlags';
@@ -124,7 +123,6 @@ export default async function AthletePage({
             <p className="eyebrow">Squad · {orgName}</p>
             <h1>Athlete</h1>
           </div>
-          <ThemeToggle />
         </div>
         <div className="empty">
           <h2>Not part of this role</h2>
@@ -169,7 +167,6 @@ export default async function AthletePage({
             {athlete.first_name} {athlete.last_name}
           </h1>
         </div>
-        <ThemeToggle />
       </div>
 
       <div className="pp-col">

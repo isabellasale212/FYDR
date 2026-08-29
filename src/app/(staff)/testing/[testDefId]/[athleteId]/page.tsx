@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { TestHistoryList } from '@/components/TestHistoryList/TestHistoryList';
 import { TestTrendChart } from '@/components/TestTrendChart/TestTrendChart';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchHistory, fetchTestDefinitions } from '@/lib/queries/testing';
 import { requireStaff } from '@/lib/session';
 
@@ -37,7 +36,6 @@ export default async function TestAthleteHistoryPage({
             {athleteRes.data.first_name} {athleteRes.data.last_name}
           </h1>
         </div>
-        <ThemeToggle />
       </div>
 
       <p className="eyebrow" style={{ marginBottom: 14 }}>

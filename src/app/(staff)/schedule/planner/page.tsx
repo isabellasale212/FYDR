@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchTemplates, weekTotalLoad } from '@/lib/queries/weekTemplates';
 import { mdLabel } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
@@ -37,7 +36,6 @@ export default async function WeekTemplatesPage() {
               + New template
             </Link>
           ) : null}
-          <ThemeToggle />
         </div>
       </div>
 

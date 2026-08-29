@@ -1,5 +1,4 @@
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import {
   ACWR_BAND_TEXT,
   ACWR_CHRONIC_WINDOW_DAYS,
@@ -42,7 +41,6 @@ export default async function AnalyticsPage({
             <p className="eyebrow">{orgName}</p>
             <h1>Analytics</h1>
           </div>
-          <ThemeToggle />
         </div>
         <div className="empty">
           <h2>Not part of this role</h2>
@@ -75,7 +73,6 @@ export default async function AnalyticsPage({
           <p className="eyebrow">{groupScopeLabel(groups, groupIds)} · {orgName}</p>
           <h1>Analytics</h1>
         </div>
-        <ThemeToggle />
       </div>
 
       <div style={{ marginBottom: 14 }}>

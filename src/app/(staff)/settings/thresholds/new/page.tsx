@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { ThresholdEditorForm } from '@/components/ThresholdEditorForm/ThresholdEditorForm';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'New threshold · Fydr' };
@@ -19,7 +18,6 @@ export default async function NewThresholdPage() {
           </p>
           <h1>New threshold</h1>
         </div>
-        <ThemeToggle />
       </div>
 
       <ThresholdEditorForm orgId={orgId} userId={claims.userId} />

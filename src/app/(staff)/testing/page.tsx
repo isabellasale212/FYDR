@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { TestDefinitionForm } from '@/components/TestDefinitionForm/TestDefinitionForm';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchNextTestingSession, fetchTestDefinitions } from '@/lib/queries/testing';
 import { fetchWeekMdLabels, mondayOf } from '@/lib/queries/schedule';
 import { dateInTz, enumLabel, formatDateTime, mdLabel } from '@/lib/format';
@@ -38,7 +37,6 @@ export default async function TestingPage() {
           <p className="eyebrow">Squad · {orgName}</p>
           <h1>Testing</h1>
         </div>
-        <ThemeToggle />
       </div>
 
       {/* Audit finding 36: nothing here connected Testing to the Schedule's

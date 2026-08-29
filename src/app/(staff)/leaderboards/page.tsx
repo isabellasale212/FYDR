@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { LeaderboardWall } from '@/components/LeaderboardWall/LeaderboardWall';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchLeaderboardWall } from '@/lib/queries/leaderboardWall';
 import { groupScopeLabel } from '@/lib/groupFilter';
@@ -57,7 +56,6 @@ export default async function LeaderboardWallPage({
             <Link href="/leaderboards/manage" className="btn-ghost">
               Manage published boards →
             </Link>
-            <ThemeToggle />
           </div>
         </div>
         <div className="empty">
@@ -94,7 +92,6 @@ export default async function LeaderboardWallPage({
           <Link href="/leaderboards/manage" className="btn-ghost">
             Manage published boards →
           </Link>
-          <ThemeToggle />
         </div>
       </div>
 

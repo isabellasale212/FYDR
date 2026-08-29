@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { FlagCard } from '@/components/FlagCard/FlagCard';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchFlagsList } from '@/lib/queries/flags';
 import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
@@ -41,7 +40,6 @@ export default async function FlagsPage({
             <p className="eyebrow">Squad · {orgName}</p>
             <h1>Flags</h1>
           </div>
-          <ThemeToggle />
         </div>
         <div className="empty">
           <h2>Not part of this role</h2>
@@ -71,7 +69,6 @@ export default async function FlagsPage({
           </p>
           <h1>Flags</h1>
         </div>
-        <ThemeToggle />
       </div>
 
       <div style={{ marginBottom: 14 }}>

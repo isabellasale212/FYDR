@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import {
   fetchStaffBoards,
   fetchMetricCatalogue,
@@ -67,7 +66,6 @@ export default async function ManageLeaderboardsPage() {
           <Link href="/leaderboards/new" className="btn-primary">
             + New leaderboard
           </Link>
-          <ThemeToggle />
         </div>
       </div>
 

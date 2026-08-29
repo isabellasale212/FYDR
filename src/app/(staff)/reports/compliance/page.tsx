@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { ReportPager } from '@/components/ReportPager/ReportPager';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchGroups } from '@/lib/queries/groups';
 import { complianceAthletePct, fetchComplianceReport, fetchLatestComplianceExpectationDate, recordReportView } from '@/lib/queries/reports';
 import { groupScopeLabel } from '@/lib/groupFilter';
@@ -73,7 +72,6 @@ export default async function ComplianceReportPage({
           <a href={`/reports/compliance/pdf?days=${days}&to=${today}${groupQuery}`} className="btn-ghost">
             Export PDF
           </a>
-          <ThemeToggle />
         </div>
       </div>
 

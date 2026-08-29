@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import {
   fetchProgrammeDetail,
   fetchProgrammeListDetails,
@@ -117,7 +116,6 @@ export default async function ProgrammesPage({
           <Link href="/programmes/exercises" className="btn-ghost">
             Exercise library
           </Link>
-          <ThemeToggle />
         </div>
       </div>
 

@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { FixtureEditForm } from '@/components/FixtureEditForm/FixtureEditForm';
 import { FixtureActions } from '@/components/FixtureActions/FixtureActions';
 import { SessionCard } from '@/components/SessionCard/SessionCard';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchFixtureDetail, fetchWeekMdLabels, mondayOf } from '@/lib/queries/schedule';
 import { enumLabel, formatLongDate, formatTime } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
@@ -53,7 +52,6 @@ export default async function FixtureDetailPage({
             v {fixture.opponent}
           </h1>
         </div>
-        <ThemeToggle />
       </div>
 
       <div className="card">

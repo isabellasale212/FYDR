@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { ReportPager } from '@/components/ReportPager/ReportPager';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchTestByTest, fetchTestLongitudinal, fetchTestingByAthlete } from '@/lib/queries/testingReport';
 import { recordReportView } from '@/lib/queries/reports';
@@ -78,7 +77,6 @@ export default async function TestingReportPage({ searchParams }: { searchParams
           <a href={`/reports/testing/pdf?${selectedTestId ? `test=${selectedTestId}${groupQuery}` : groupQuery.replace('&', '')}`} className="btn-ghost">
             Export PDF
           </a>
-          <ThemeToggle />
         </div>
       </div>
 

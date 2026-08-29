@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { ExerciseForm } from '@/components/ExerciseForm/ExerciseForm';
 import { ExerciseLibraryList } from '@/components/ExerciseLibraryList/ExerciseLibraryList';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchExercises, fetchStrengthTestDefinitions } from '@/lib/queries/programmes';
 import { requireStaff } from '@/lib/session';
 
@@ -28,7 +27,6 @@ export default async function ExerciseLibraryPage() {
           </p>
           <h1>Exercise library</h1>
         </div>
-        <ThemeToggle />
       </div>
 
       <p className="eyebrow" style={{ marginBottom: 14 }}>

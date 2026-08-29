@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { UserManagementPanel } from '@/components/UserManagementPanel/UserManagementPanel';
 import { fetchUnlinkedAthletes, fetchUsersWithRoles } from '@/lib/queries/userManagement';
 import { requireStaff } from '@/lib/session';
@@ -32,7 +31,6 @@ export default async function UsersPage() {
           </p>
           <h1>Users</h1>
         </div>
-        <ThemeToggle />
       </div>
 
       <UserManagementPanel

@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { ExportBuilderForm } from '@/components/ExportBuilderForm/ExportBuilderForm';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { EXPORT_DOMAINS } from '@/lib/exportDomains';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
@@ -52,7 +51,6 @@ export default async function ExportsPage({ searchParams }: { searchParams: Sear
           </p>
           <h1>Exports</h1>
         </div>
-        <ThemeToggle />
       </div>
 
       <p className="sub" style={{ marginBottom: 14, maxWidth: '70ch' }}>

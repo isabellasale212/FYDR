@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { ThresholdRow } from '@/components/ThresholdRow/ThresholdRow';
 import { describeThreshold, fetchThresholds } from '@/lib/queries/thresholds';
 import { enumLabel } from '@/lib/format';
@@ -25,7 +24,6 @@ export default async function ThresholdsPage() {
             </p>
             <h1>Thresholds</h1>
           </div>
-          <ThemeToggle />
         </div>
         <div className="empty">
           <h2>Coach only</h2>
@@ -62,7 +60,6 @@ export default async function ThresholdsPage() {
           <Link href="/settings/thresholds/new" className="btn-primary">
             + New threshold
           </Link>
-          <ThemeToggle />
         </div>
       </div>
 

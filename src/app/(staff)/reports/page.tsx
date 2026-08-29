@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 
@@ -97,7 +96,6 @@ export default async function ReportsPage() {
           <p className="eyebrow">Squad · {orgName}</p>
           <h1>Reports</h1>
         </div>
-        <ThemeToggle />
       </div>
 
       {!hasReportAccess ? (

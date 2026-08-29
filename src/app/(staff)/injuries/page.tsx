@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { PrintButton } from '@/components/PrintButton/PrintButton';
 import { ProblemReportsTriage } from '@/components/ProblemReportsTriage/ProblemReportsTriage';
 import { fetchGroups } from '@/lib/queries/groups';
@@ -71,7 +70,6 @@ export default async function InjuriesPage({
             </Link>
           ) : null}
           <PrintButton />
-          <ThemeToggle />
         </div>
       </div>
 

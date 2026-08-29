@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { SessionEditForm } from '@/components/SessionEditForm/SessionEditForm';
 import { SessionActions } from '@/components/SessionActions/SessionActions';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchSessionDetail, fetchWeekMdLabels, mondayOf } from '@/lib/queries/schedule';
 import { dateInTz, enumLabel, formatLongDate, formatTime, mdLabel } from '@/lib/format';
@@ -51,7 +50,6 @@ export default async function SessionDetailPage({
           </p>
           <h1>{session.title}</h1>
         </div>
-        <ThemeToggle />
       </div>
 
       {cancelled ? (

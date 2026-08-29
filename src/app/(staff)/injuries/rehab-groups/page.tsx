@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { RehabGroupBoard } from '@/components/RehabGroupBoard/RehabGroupBoard';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchRehabBoard, fetchRehabGroups } from '@/lib/queries/rehabGroups';
 import { fetchGroupAthleteIds, fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
@@ -57,7 +56,6 @@ export default async function RehabGroupsPage({ searchParams }: { searchParams: 
           </p>
           <h1>Rehab groups</h1>
         </div>
-        <ThemeToggle />
       </div>
 
       <p className="eyebrow">{groupScopeLabel(squadGroups, groupIds)} · {orgName}</p>

@@ -4,7 +4,6 @@ import { Dial } from '@/components/Dial/Dial';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { PlanGate } from '@/components/PlanGate/PlanGate';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { TrainingScatter } from '@/components/TrainingScatter/TrainingScatter';
 import { TrainingSparkline } from '@/components/TrainingSparkline/TrainingSparkline';
 import { fetchGroups } from '@/lib/queries/groups';
@@ -211,7 +210,6 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
             Match day
           </Link>
         </div>
-        <ThemeToggle />
       </div>
     </div>
   );

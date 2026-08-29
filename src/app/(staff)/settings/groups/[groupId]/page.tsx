@@ -4,7 +4,6 @@ import { GroupMemberManager } from '@/components/GroupMemberManager/GroupMemberM
 import { GroupArchiveButton } from '@/components/GroupArchiveButton/GroupArchiveButton';
 import { GroupEditForm } from '@/components/GroupEditForm/GroupEditForm';
 import { GroupSwatch } from '@/components/GroupSwatch/GroupSwatch';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import {
   fetchGroupDetail,
   fetchGroupMembers,
@@ -62,7 +61,6 @@ export default async function GroupDetailPage({
             initialColour={group.colour}
           />
           <GroupArchiveButton orgId={orgId} groupId={group.id} archived={group.archived} />
-          <ThemeToggle />
         </div>
       </div>
 

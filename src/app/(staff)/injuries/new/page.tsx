@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { NewInjuryForm } from '@/components/NewInjuryForm/NewInjuryForm';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'New injury · Fydr' };
@@ -31,7 +30,6 @@ export default async function NewInjuryPage() {
           </p>
           <h1>New injury record</h1>
         </div>
-        <ThemeToggle />
       </div>
 
       <NewInjuryForm orgId={orgId} userId={claims.userId} timezone={timezone} athletes={athletes ?? []} />

@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { RosterTable } from '@/components/RosterTable/RosterTable';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { fetchGroups } from '@/lib/queries/groups';
@@ -33,7 +32,6 @@ export default async function SquadPage({
             <p className="eyebrow">Squad · {orgName}</p>
             <h1>Squad overview</h1>
           </div>
-          <ThemeToggle />
         </div>
         <div className="empty">
           <h2>Not part of this role</h2>
@@ -66,7 +64,6 @@ export default async function SquadPage({
           <Link href="/settings/groups" className="btn-ghost">
             Manage groups
           </Link>
-          <ThemeToggle />
         </div>
       </div>
 

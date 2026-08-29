@@ -3,7 +3,6 @@ import { DashboardFlagsPanel } from '@/components/DashboardFlagsPanel/DashboardF
 import { Dial } from '@/components/Dial/Dial';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { PrintButton } from '@/components/PrintButton/PrintButton';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import {
   fetchEffectiveToday,
   fetchHeadlineStats,
@@ -96,7 +95,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
             <p className="eyebrow">Squad · {orgName}</p>
             <h1>Dashboard</h1>
           </div>
-          <ThemeToggle />
         </div>
         <div className="empty">
           <h2>Not part of this role</h2>
@@ -166,7 +164,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <PrintButton />
-          <ThemeToggle />
         </div>
       </div>
 

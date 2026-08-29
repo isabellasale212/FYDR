@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { LeaderboardStaffActions } from '@/components/LeaderboardStaffActions/LeaderboardStaffActions';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import {
   fetchBoard,
   fetchBoardRanking,
@@ -59,7 +58,6 @@ export default async function LeaderboardDetailPage({
             </p>
             <h1>Board detail</h1>
           </div>
-          <ThemeToggle />
         </div>
         <div className="empty">
           <h2>Not part of this role</h2>
@@ -117,7 +115,6 @@ export default async function LeaderboardDetailPage({
           </p>
           <h1>{board.name}</h1>
         </div>
-        <ThemeToggle />
       </div>
 
       <div className="card">

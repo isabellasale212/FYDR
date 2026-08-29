@@ -3,7 +3,6 @@ import { AttentionRow } from '@/components/AttentionRow/AttentionRow';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { Pill } from '@/components/Pill/Pill';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchSquadWeeklyReport } from '@/lib/queries/squadWeeklyReport';
 import { recordReportView } from '@/lib/queries/reports';
@@ -75,7 +74,6 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
           <a href={`/reports/squad/pdf?${exportQuery}`} className="btn-ghost">
             Export PDF
           </a>
-          <ThemeToggle />
         </div>
       </div>
 

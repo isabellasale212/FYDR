@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { NewSessionForm } from '@/components/NewSessionForm/NewSessionForm';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchGroups } from '@/lib/queries/groups';
 import { todayIso } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
@@ -30,7 +29,6 @@ export default async function NewSessionPage({
           </p>
           <h1>New session</h1>
         </div>
-        <ThemeToggle />
       </div>
 
       <NewSessionForm

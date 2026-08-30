@@ -10,7 +10,21 @@ import type { AvailabilityReason } from '@/lib/types/database';
 
 const STATUSES = ['available', 'modified', 'unavailable'] as const;
 const REASONS = ['injury', 'illness', 'personal', 'suspension', 'load_management'] as const;
-const COMMON_RESTRICTIONS = ['no contact', 'no sprinting', 'no loading', 'upper body only', 'no pitch work'];
+/* Free text in the schema (availability.restrictions is text[]), so this list is
+ * only the quick-pick set — anything typed still works. 'gym modification' is
+ * the odd one out in shape: the rest name something the athlete cannot do,
+ * this one says their gym prescription needs adjusting, which is what medical
+ * actually wants to signal to S&C. It reaches the same coach-visible places as
+ * every other restriction (session cards, roster, team allocation), which is
+ * the point of putting it here rather than in a clinical note. */
+const COMMON_RESTRICTIONS = [
+  'no contact',
+  'no sprinting',
+  'no loading',
+  'upper body only',
+  'no pitch work',
+  'gym modification',
+];
 
 function label(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1).replace(/_/g, ' ');

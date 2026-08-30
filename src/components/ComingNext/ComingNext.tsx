@@ -1,5 +1,3 @@
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
-
 type Props = {
   eyebrow: string;
   title: string;
@@ -17,7 +15,6 @@ export function ComingNext({ eyebrow, title, body }: Props) {
           <p className="eyebrow">{eyebrow}</p>
           <h1>{title}</h1>
         </div>
-        <ThemeToggle />
       </div>
       <div className="empty">
         <h2>Coming in the next phase</h2>

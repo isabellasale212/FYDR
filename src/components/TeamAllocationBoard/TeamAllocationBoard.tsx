@@ -174,18 +174,35 @@ export function TeamAllocationBoard({ orgId, userId, weekStart, teams, board, ca
                   ) : null}
                 </div>
                 {canAllocate ? (
-                  <div className="chiprow" style={{ marginTop: 6 }}>
-                    {teams.map((team) => (
-                      <button
-                        key={team.id}
-                        type="button"
-                        className="squad-chip"
-                        onClick={() => pickTeam(a.athlete_id, team.id, a.availability)}
-                        disabled={allocMutation.isPending}
-                      >
-                        {team.short_name ?? team.name}
-                      </button>
-                    ))}
+                  /* One <select> rather than a chip per team: a club with more
+                   * than a handful of teams turned this into a wrapping wall of
+                   * buttons on every unallocated athlete's row. Value is pinned
+                   * to '' so the control always reads "Allocate to…" — the row
+                   * itself disappears on the router.refresh() that follows a
+                   * successful allocation, and an athlete who needs an override
+                   * reason should see the prompt, not a select that looks
+                   * already-set. */
+                  <div style={{ marginTop: 6 }}>
+                    <label className="visually-hidden" htmlFor={`alloc-${a.athlete_id}`}>
+                      Allocate {a.first_name} {a.last_name} to a team
+                    </label>
+                    <select
+                      id={`alloc-${a.athlete_id}`}
+                      className="field"
+                      value=""
+                      disabled={allocMutation.isPending}
+                      onChange={(event) => {
+                        const teamId = event.target.value;
+                        if (teamId) pickTeam(a.athlete_id, teamId, a.availability);
+                      }}
+                    >
+                      <option value="">Allocate to…</option>
+                      {teams.map((team) => (
+                        <option key={team.id} value={team.id}>
+                          {team.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 ) : null}
               </div>

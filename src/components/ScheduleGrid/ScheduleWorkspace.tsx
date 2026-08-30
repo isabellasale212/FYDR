@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { createClient } from '@/lib/supabase/client';
 import {
   createSession,
@@ -589,7 +588,6 @@ export function ScheduleWorkspace({
               ›
             </Link>
           </div>
-          <ThemeToggle />
         </div>
       </div>
 

@@ -5,7 +5,7 @@ import { PrintButton } from '@/components/PrintButton/PrintButton';
 import { ProblemReportsTriage } from '@/components/ProblemReportsTriage/ProblemReportsTriage';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchInjuriesList } from '@/lib/queries/injuries';
-import { fetchOpenProblemReports } from '@/lib/queries/problemReports';
+import { fetchOpenProblemReports, fetchProblemReportNotes } from '@/lib/queries/problemReports';
 import { enumLabel, formatDate } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
@@ -56,6 +56,16 @@ export default async function InjuriesPage({
     isMedical ? fetchOpenProblemReports(db, orgId) : Promise.resolve([]),
   ]);
 
+  // Medical's own triage notes on those reports (migration 0055) — one batched
+  // fetch for the whole inbox rather than one per row, so it has to wait on the
+  // report ids above. Medical-only by RLS, exactly like the reports themselves,
+  // and never shown on any athlete surface: see that migration's header for why
+  // it is a separate table rather than a column the athlete's own row-select
+  // would have handed them.
+  const problemReportNotes = problemReports.length > 0
+    ? await fetchProblemReportNotes(db, problemReports.map((r) => r.id))
+    : [];
+
   return (
     <>
       <div className="topbar">
@@ -94,7 +104,13 @@ export default async function InjuriesPage({
               <span className="pill pill-warn mono">{problemReports.length}</span>
             ) : null}
           </h2>
-          <ProblemReportsTriage reports={problemReports} userId={claims.userId} timezone={timezone} />
+          <ProblemReportsTriage
+            reports={problemReports}
+            notes={problemReportNotes}
+            orgId={orgId}
+            userId={claims.userId}
+            timezone={timezone}
+          />
         </section>
       ) : null}
 

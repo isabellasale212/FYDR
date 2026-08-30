@@ -6163,3 +6163,37 @@ button.dash-stat {
   font-size: 11px;
   color: var(--faint);
 }
+
+/* Medical's triage notes on a problem report (ProblemReportsTriage, migration
+   0055). Deliberately quieter than .flag-notice-item above and marked with a
+   plain rule rather than a tint: this is the physio's own working record on a
+   staff-only screen, not a highlighted message to anybody. The indent rule is
+   what says "these hang off the report above" without adding a card inside a
+   card. */
+.report-notes {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.report-note {
+  padding-inline-start: 10px;
+  border-inline-start: 2px solid var(--border);
+}
+.report-note-body {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+  white-space: pre-wrap;
+}
+.report-note-attribution {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--faint);
+}
+.report-note-form {
+  margin-top: 10px;
+}

@@ -2179,6 +2179,58 @@ export type Database = {
 
       ]
     }
+    problem_report_notes: {
+      Row: {
+        id: string
+        org_id: string
+        report_id: string
+        body: string
+        created_by: string
+        created_at: string
+        deleted_at: string | null
+      }
+      Insert: {
+        id?: string
+        org_id: string
+        report_id: string
+        body: string
+        created_by: string
+        created_at?: string
+        deleted_at?: string | null
+      }
+      Update: {
+        id?: string
+        org_id?: string
+        report_id?: string
+        body?: string
+        created_by?: string
+        created_at?: string
+        deleted_at?: string | null
+      }
+      Relationships: [
+        {
+          foreignKeyName: "problem_report_notes_created_by_fkey"
+          columns: ["created_by"]
+          isOneToOne: false
+          referencedRelation: "users"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "problem_report_notes_org_id_fkey"
+          columns: ["org_id"]
+          isOneToOne: false
+          referencedRelation: "organisations"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "problem_report_notes_report_id_fkey"
+          columns: ["report_id"]
+          isOneToOne: false
+          referencedRelation: "problem_reports"
+          referencedColumns: ["id"]
+        }
+      ]
+    }
     problem_reports: {
       Row: {
         id: string
@@ -4187,6 +4239,50 @@ export type Database = {
     }
     }
     Functions: {
+    _threshold_acwr_value: {
+      Args: {
+        p_athlete_id: string
+        p_date: string
+      }
+      Returns: number
+    }
+    _threshold_baseline: {
+      Args: {
+        p_athlete_id: string
+        p_metric: string
+        p_date: string
+        p_baseline_days: number
+      }
+      Returns: {
+          mean: number
+          sd: number
+          n: number
+        }[]
+    }
+    _threshold_breach_on_day: {
+      Args: {
+        p_threshold: unknown
+        p_athlete_id: string
+        p_date: string
+      }
+      Returns: boolean
+    }
+    _threshold_expected_value: {
+      Args: {
+        p_threshold: unknown
+        p_athlete_id: string
+        p_date: string
+      }
+      Returns: number
+    }
+    _threshold_metric_raw: {
+      Args: {
+        p_athlete_id: string
+        p_metric: string
+        p_date: string
+      }
+      Returns: number
+    }
     athlete_age_years: {
       Args: {
         p_dob: string
@@ -4248,6 +4344,17 @@ export type Database = {
           is_tied: boolean
           previous_position: number
         }[]
+    }
+    evaluate_daily_thresholds_for_org: {
+      Args: {
+        p_org_id: string
+        p_local_date: string
+      }
+      Returns: number
+    }
+    evaluate_daily_thresholds_nightly: {
+      Args: Record<string, never>
+      Returns: unknown
     }
     generate_compliance_expectations: {
       Args: {

@@ -132,6 +132,58 @@ is an audit row.
 
 ---
 
+## Problem reports, medical only
+
+Specified from the running app, not from the drawing. The staff web build renders a **Problem
+reports** section above the board on this screen, for medical staff only. It is the triage inbox
+for what an athlete sends through Today's "Something not right?" card and Me's "Report a problem"
+row (`screens/today.md`, `03-flows.md` §6, migration `0040_problem_reports.sql`). It is on this
+screen because this is where the physio already stands; it is not a separate navigation
+destination.
+
+**Access.** Medical only, for every part of it: the section, its count badge, the report bodies,
+and the notes below. A coach and an admin see no section at all — not an empty one, not a count.
+That is `problem_reports`' own RLS, not a UI decision: the athlete capability that files a report
+is worded "to medical staff" (`01-roles-and-permissions.md` §1) and the flow notifies Medical
+alone. The athlete reads their own report and its status back, and nothing else about it.
+
+**Per report**: the athlete's name, a status pill (Not yet seen / Acknowledged), the timestamp,
+the optional category, and the athlete's own words, which are immutable. Actions are
+`Acknowledge`, `+ Note` and `Close`; a report walks open → acknowledged → closed, or straight to
+closed for a duplicate or a mis-tap. There is no reopen — the athlete files a new report.
+
+### Notes on a report
+
+Medical can record notes against any athlete's report: what was done about it, who was called,
+what happens next. Behaviour, all of it enforced in the database rather than in the UI
+(migration `0055_problem_report_notes.sql`):
+
+| Rule | Where it lives |
+|---|---|
+| **Medical only, read and write.** Not the coach, not the admin, and **not the reporting athlete** — an athlete cannot read notes written on their own report. | `problem_report_notes_medical_select`, the only select policy on the table |
+| Notes are **appended, never edited or deleted**. A correction is a new note. The UI offers no edit affordance because no role has an update path. | No update or delete policy, and no update or delete grant to `authenticated` |
+| A note is stamped with the medic who wrote it, and shows as *author · timestamp*. A medic cannot file one in another person's name. | `created_by = auth_user_id()` in the insert policy's `WITH CHECK` |
+| Bounded at 1000 characters, same as the report body it annotates. | Check constraint; the textarea stops at the same number |
+| Org-scoped in both directions, including a note appended to another organisation's report id. | `org_id = auth_org_id()` plus the parent-report `exists()` guard |
+
+**Why a separate table rather than a column on `problem_reports`.** `problem_reports` grants the
+reporting athlete a select on their own row, deliberately — seeing the status is the trust loop
+the athlete-side screen exists to close. RLS is row-level, so a note column on that table would
+be readable by the athlete it is written about through one direct column select, whatever the
+staff UI chose to render. The split is structural, the same way `injuries` and `injury_clinical`
+are split (`CLAUDE.md` rule 3, `decisions/adr-007-clinical-data-separation.md`).
+
+**Not to be confused with the flag note.** `screens/flags.md`'s "+ Note for athlete" is
+athlete-facing by design and appears on the athlete's own flag notice. These notes are the
+opposite: medical-only, never shown to the athlete. The note composer says so at the point of
+writing, which is the same principle the non-clinical availability note follows above.
+
+**Not a clinical record.** Per `CLAUDE.md` §7, this is a triage trail against one athlete
+statement. Diagnosis and treatment belong in `injury_clinical`, reached through
+`injury-record.md`, where the read is audited.
+
+---
+
 ## Layout
 
 **Assumption, pending client design photographs.** Two view modes, board and timeline, with

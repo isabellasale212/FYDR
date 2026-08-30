@@ -99,6 +99,75 @@ export async function fetchOpenProblemReports(db: Db, orgId: string): Promise<Op
   }));
 }
 
+/* -------------------------------------------------------------------------
+ * Medical's triage notes on a report — migration 0055, problem_report_notes.
+ *
+ * A SEPARATE TABLE, not a column on problem_reports, and the distinction
+ * matters when reading this file: OWN_COLUMNS above is the athlete's own view
+ * of their report, and problem_reports_athlete_select (migration 0040) grants
+ * the athlete that whole ROW. Postgres RLS is row-level, so a note column on
+ * problem_reports would be readable by the athlete it is written about
+ * through one direct column select, whatever OWN_COLUMNS happened to list.
+ * Nothing below is ever added to OWN_COLUMNS, and nothing below is reachable
+ * from the athlete surface at all: problem_report_notes has a single select
+ * policy and it is medical-only. Same structural split as
+ * injuries/injury_clinical (CLAUDE.md rule 3).
+ * ---------------------------------------------------------------------- */
+
+export type ProblemReportNote = {
+  id: string;
+  report_id: string;
+  body: string;
+  created_at: string;
+  author_name: string | null;
+};
+
+/** Every note on the reports currently in the medic's inbox, oldest first —
+ *  these are an append log, read in the order they were written. Batched over
+ *  the whole page's report ids rather than one request per row, and matching
+ *  migration 0055's (report_id, created_at) index. Medical-only by RLS: any
+ *  other role calling this gets an empty array, the policy doing the denying
+ *  rather than an application-level role check. */
+export async function fetchProblemReportNotes(
+  db: Db,
+  reportIds: string[],
+): Promise<ProblemReportNote[]> {
+  if (reportIds.length === 0) return [];
+  const { data, error } = await db
+    .from('problem_report_notes')
+    .select('id, report_id, body, created_at, users!problem_report_notes_created_by_fkey(full_name)')
+    .in('report_id', reportIds)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((n) => ({
+    id: n.id,
+    report_id: n.report_id,
+    body: n.body,
+    created_at: n.created_at,
+    author_name: n.users?.full_name ?? null,
+  }));
+}
+
+/** Append one note. created_by is stamped by the caller and re-checked by
+ *  migration 0055's insert policy (`created_by = auth_user_id()`), so a medic
+ *  cannot file a note in someone else's name. There is deliberately no update
+ *  or delete counterpart: a written note is a record, a correction is a new
+ *  note. */
+export async function addProblemReportNote(
+  db: Db,
+  input: { reportId: string; body: string },
+  identity: { orgId: string; userId: string },
+): Promise<{ error: string | null }> {
+  const { error } = await db.from('problem_report_notes').insert({
+    org_id: identity.orgId,
+    report_id: input.reportId,
+    body: input.body,
+    created_by: identity.userId,
+  });
+  return { error: error?.message ?? null };
+}
+
 /** Migration 0040's trigger enforces the transition and the acting-user
  *  stamp; this just performs the update the trigger will accept. */
 export async function acknowledgeProblemReport(

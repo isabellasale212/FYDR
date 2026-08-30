@@ -4,6 +4,7 @@ import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { Pill } from '@/components/Pill/Pill';
 import { Dial } from '@/components/Dial/Dial';
 import { DomainChips } from '@/components/DomainChips/DomainChips';
+import { PlayerProfileBio } from '@/components/PlayerProfileBio/PlayerProfileBio';
 import { PlayerProfileFlags } from '@/components/PlayerProfileFlags/PlayerProfileFlags';
 import { BodyWeightPanel } from '@/components/BodyWeightPanel/BodyWeightPanel';
 import { SetAvailabilityFormCoach } from '@/components/SetAvailabilityFormCoach/SetAvailabilityFormCoach';
@@ -62,8 +63,6 @@ const TONE_TEXT_VAR: Record<Tone, string> = {
   bad: 'var(--bad-text)',
   faint: 'var(--faint)',
 };
-
-const HAND_LABEL: Record<string, string> = { left: 'L', right: 'R', both: 'A' };
 
 /* §11 rule 1, verbatim: "a missing value is an em dash, never a zero." This
  * page's own missing-value glyph, deliberately not this app's usual
@@ -151,6 +150,13 @@ export default async function AthletePage({
   // (0041) and availability_medical_insert (0012) between them cover exactly
   // coach and medical, so this never offers an action RLS would reject.
   const canSetAvailability = claims.roles.includes('coach') || claims.roles.includes('medical');
+  // One role only, for the same reason again: athletes_manage_update
+  // (migration 0012) grants coach and admin, never medical — "medical reads
+  // for context and does not edit the roster," that migration's own words.
+  // Admin never reaches this page (hasAccess above is coach/medical only),
+  // so this is coach-only in practice, offered only where RLS actually
+  // allows the write. See PlayerProfileBio's own header for the rest.
+  const canEditBio = claims.roles.includes('coach');
 
   const { athlete, athleticism, acwr, wellnessRating, headerWellness, programme, nutrition, bodyWeight } = profile;
   const spark = sparklinePaths(bodyWeight.history);
@@ -189,79 +195,67 @@ export default async function AthletePage({
         ) : null}
 
         <section className="card pp-card" aria-labelledby="pp-name">
-          <div className="pp-header-top">
-            <Link href="/squad" className="btn-ghost-pill">
-              <span aria-hidden="true" style={{ fontSize: 14, lineHeight: 1 }}>
-                ‹
-              </span>
-              Squad
-            </Link>
-            <div className="pp-avatar" aria-hidden="true">
-              {initials(athlete)}
-            </div>
-            <div className="pp-name-block">
-              <span className="pp-name" id="pp-name">
-                {athlete.first_name} {athlete.last_name}
-              </span>
-              <Pill status={availabilityStatus(athlete.availability?.status ?? null)} />
-            </div>
-            <DomainChips />
-            <button type="button" className="btn-ghost-pill" disabled aria-disabled="true" title="Staff-side profile editing isn't available yet.">
-              Edit
-            </button>
-            <div className="pp-wellness-mini" aria-label="Today's wellness entry">
-              <div>
-                <div className="v mono">{headerWellness.pct !== null ? Math.round(headerWellness.pct) : EM_DASH}</div>
-                <div className="l">wellness</div>
+          <PlayerProfileBio
+            orgId={orgId}
+            athleteId={athlete.id}
+            canEdit={canEditBio}
+            backLink={
+              <Link href="/squad" className="btn-ghost-pill">
+                <span aria-hidden="true" style={{ fontSize: 14, lineHeight: 1 }}>
+                  ‹
+                </span>
+                Squad
+              </Link>
+            }
+            avatar={
+              <div className="pp-avatar" aria-hidden="true">
+                {initials(athlete)}
               </div>
-            </div>
-          </div>
-
-          {athlete.availability && athlete.availability.status !== 'available' ? (
-            <p className="sub" style={{ margin: '2px 0 0' }}>
-              {/* Restrictions shown ahead of reason_category, same priority order and
-               * same enumLabel-joined format as AvailabilityBanner.tsx uses for the
-               * athlete's own Today page (integration-audit majors, Bug 2). Before this,
-               * this page rendered only reason_category + note and never the restriction
-               * list at all, even for real athletes with real restrictions (e.g. "no
-               * contact / no scrummaging / running 80% volume / gym lower modified") —
-               * a coach had to open the separate linked injury record to see what the
-               * athlete's own app already showed them front and centre. */}
-              {athlete.availability.restrictions && athlete.availability.restrictions.length > 0
-                ? athlete.availability.restrictions.map(enumLabel).join(' · ')
-                : athlete.availability.reason_category
-                  ? enumLabel(athlete.availability.reason_category)
-                  : 'No reason recorded'}
-              {athlete.availability.note ? ` — ${athlete.availability.note}` : ''}
-            </p>
-          ) : null}
-
-          <div className="pp-detail-row">
-            <div className="pp-detail-cell">
-              <div className="l">Position</div>
-              <div className="v">{emDash(athlete.position)}</div>
-            </div>
-            <div className="pp-detail-cell">
-              <div className="l">Jersey</div>
-              <div className="v">{athlete.squad_number !== null ? `#${athlete.squad_number}` : EM_DASH}</div>
-            </div>
-            <div className="pp-detail-cell">
-              <div className="l">Height</div>
-              <div className="v">{athlete.height_cm !== null ? `${athlete.height_cm} cm` : EM_DASH}</div>
-            </div>
-            <div className="pp-detail-cell">
-              <div className="l">Age</div>
-              <div className="v">{emDash(profile.age)}</div>
-            </div>
-            <div className="pp-detail-cell">
-              <div className="l">Hand</div>
-              <div className="v">{athlete.dominant_side ? (HAND_LABEL[athlete.dominant_side] ?? EM_DASH) : EM_DASH}</div>
-            </div>
-            <div className="pp-detail-cell">
-              <div className="l">Weight</div>
-              <div className="v">{bodyWeight.latestKg !== null ? `${formatNumber(bodyWeight.latestKg, 1)} kg` : EM_DASH}</div>
-            </div>
-          </div>
+            }
+            nameBlock={
+              <div className="pp-name-block">
+                <span className="pp-name" id="pp-name">
+                  {athlete.first_name} {athlete.last_name}
+                </span>
+                <Pill status={availabilityStatus(athlete.availability?.status ?? null)} />
+              </div>
+            }
+            domainChips={<DomainChips athleteId={athlete.id} gymProgrammeId={programme?.programmeId ?? null} />}
+            wellnessMini={
+              <div className="pp-wellness-mini" aria-label="Today's wellness entry">
+                <div>
+                  <div className="v mono">{headerWellness.pct !== null ? Math.round(headerWellness.pct) : EM_DASH}</div>
+                  <div className="l">wellness</div>
+                </div>
+              </div>
+            }
+            availabilityLine={
+              athlete.availability && athlete.availability.status !== 'available' ? (
+                <p className="sub" style={{ margin: '2px 0 0' }}>
+                  {/* Restrictions shown ahead of reason_category, same priority order and
+                   * same enumLabel-joined format as AvailabilityBanner.tsx uses for the
+                   * athlete's own Today page (integration-audit majors, Bug 2). Before this,
+                   * this page rendered only reason_category + note and never the restriction
+                   * list at all, even for real athletes with real restrictions (e.g. "no
+                   * contact / no scrummaging / running 80% volume / gym lower modified") —
+                   * a coach had to open the separate linked injury record to see what the
+                   * athlete's own app already showed them front and centre. */}
+                  {athlete.availability.restrictions && athlete.availability.restrictions.length > 0
+                    ? athlete.availability.restrictions.map(enumLabel).join(' · ')
+                    : athlete.availability.reason_category
+                      ? enumLabel(athlete.availability.reason_category)
+                      : 'No reason recorded'}
+                  {athlete.availability.note ? ` — ${athlete.availability.note}` : ''}
+                </p>
+              ) : null
+            }
+            ageDisplay={emDash(profile.age)}
+            weightDisplay={bodyWeight.latestKg !== null ? `${formatNumber(bodyWeight.latestKg, 1)} kg` : EM_DASH}
+            initialPosition={athlete.position}
+            initialSquadNumber={athlete.squad_number}
+            initialHeightCm={athlete.height_cm}
+            initialDominantSide={athlete.dominant_side}
+          />
         </section>
 
         <div className="pp-grid">
@@ -415,7 +409,11 @@ export default async function AthletePage({
           <div className="pp-grid-col">
             <PlayerProfileFlags flags={profile.flags} orgId={orgId} userId={claims.userId} today={today} timezone={timezone} />
 
-            <section className="card pp-card" aria-label="ACWR and wellness rating">
+            {/* id is the Wellness domain chip's real destination (DomainChips.tsx) —
+             * no dedicated per-athlete wellness history page exists anywhere in this
+             * app, so this on-page section is the real, whole answer, not a stand-in
+             * for a missing one. */}
+            <section className="card pp-card" id="pp-wellness-title" aria-label="ACWR and wellness rating">
               <div className="pp-dials">
                 <div className="pp-dial-col">
                   <p className="pp-dial-title pp-dial-col-head">ACWR</p>

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { DashboardFlagsPanel } from '@/components/DashboardFlagsPanel/DashboardFlagsPanel';
+import { DashboardHeadlineStats } from '@/components/DashboardHeadlineStats/DashboardHeadlineStats';
 import { Dial } from '@/components/Dial/Dial';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { PrintButton } from '@/components/PrintButton/PrintButton';
@@ -206,103 +207,68 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         />
       </div>
 
-      <div className="card dash-stats">
-        {/* Used to link to /dashboard — this page — so a coach who clicked
-         * it landed nowhere new (audit coach finding 13). needYouCount is
-         * flags raised on effectiveToday specifically (see fetchHeadlineStats'
-         * own comment); /flags now takes that same ?date= so this tile can
-         * point at the exact athletes it's counting, not just their number. */}
-        <Link
-          href={`/flags${qs({ groups: groupsQs, date: effectiveToday })}`}
-          className="dash-stat"
-        >
-          <div className="dash-stat-label">Need you</div>
-          <div className="dash-stat-value" style={{ color: stats.needYouCount > 0 ? 'var(--bad)' : undefined }}>
-            {stats.needYouCount}
-          </div>
-          <div className="dash-stat-sub">athletes today</div>
-          <div className="dash-stat-foot">across wellness and GPS</div>
-        </Link>
-        <Link href="/reports/compliance" className="dash-stat">
-          <div className="dash-stat-label">Wellness in</div>
-          <div className="dash-stat-value">
-            {stats.wellnessPct !== null ? (
-              <>
-                {stats.wellnessPct}
-                <span className="unit">%</span>
-              </>
-            ) : (
-              '—'
-            )}
-          </div>
-          <div className="dash-stat-sub">{stats.wellnessSub}</div>
-          <div className="dash-stat-foot">
-            {stats.wellnessPct === null
-              ? 'not expected today'
-              : isAnchoredToPast
-                ? 'window closed 09:00 that day'
-                : 'window closes 09:00'}
-          </div>
-        </Link>
-        <Link href="/squad" className="dash-stat">
-          <div className="dash-stat-label">Available</div>
-          <div className="dash-stat-value">
-            {stats.availableCount} <span className="unit">/ {stats.availableTotal}</span>
-          </div>
-          <div className="dash-stat-sub">
-            {stats.modifiedCount} modified, {stats.unavailableCount} out
-          </div>
-          <div className="dash-stat-foot">injury status set by medical, other absences by coach</div>
-        </Link>
-        <Link href="/flags" className="dash-stat">
-          <div className="dash-stat-label">Open flags</div>
-          <div className="dash-stat-value" style={{ color: stats.openFlags > 0 ? 'var(--warn-text)' : undefined }}>
-            {stats.openFlags}
-          </div>
-          <div className="dash-stat-sub">
-            {stats.awaitingAckFlags === 0 ? 'all acknowledged' : `${stats.awaitingAckFlags} awaiting acknowledgement`}
-          </div>
-          <div className="dash-stat-foot">wellness, gym, GPS</div>
-        </Link>
-        <Link href={`/dashboard${qs({ groups: groupsQs, day: week[5]?.date })}`} className="dash-stat">
-          <div className="dash-stat-label">To matchday</div>
-          <div className="dash-stat-value">
-            {stats.toMatchdayDays ?? '—'} <span className="unit">{stats.toMatchdayDays === 1 ? 'day' : 'days'}</span>
-          </div>
-          <div className="dash-stat-sub">{stats.opponent ? `v ${stats.opponent}` : 'no fixture'}</div>
-          <div className="dash-stat-foot">{stats.sessionsLeft} session{stats.sessionsLeft === 1 ? '' : 's'} left to run</div>
-        </Link>
-      </div>
+      {/* Used to be five static info cards — nothing here read as clickable
+       * beyond a bare CSS cursor, and Available/To matchday didn't even point
+       * anywhere useful (audit coach finding 13 only fixed Need you). Every
+       * tile now either navigates to its real destination or expands in
+       * place; DashboardHeadlineStats' own header states the reasoning for
+       * each one individually. */}
+      <DashboardHeadlineStats
+        stats={stats}
+        isAnchoredToPast={isAnchoredToPast}
+        needYouHref={`/flags${qs({ groups: groupsQs, date: effectiveToday })}`}
+        wellnessReportHref="/reports/compliance"
+        squadHref="/squad"
+        flagsHref="/flags"
+        toMatchdayHref={stats.fixtureId ? `/schedule/fixtures/${stats.fixtureId}` : '/schedule'}
+        squadModified={squad.modifiedNames}
+        squadUnavailable={squad.unavailableNames}
+      />
 
-      <div className="dash-week-strip">
+      {/* Week snapshot — a vertical list, not the old 6-card grid, per the
+       * coach's own ask ("make the week snapshot a list summary and more
+       * clear"). Every fact the card grid showed is still here: day name,
+       * MD label, session pips, the summary text, and the flag-count/
+       * "last session before Saturday" alert (now a pill, this app's
+       * existing attention-badge language, not new styling). Still one row
+       * per day, still a real link that sets ?day= on this same page —
+       * only the shape changed. */}
+      <div className="dash-week-list">
         {week.map((d) => (
           <Link
             key={d.date}
             href={`/dashboard${qs({ groups: groupsQs, day: d.date })}`}
-            className="dash-day"
-            data-today={d.isToday}
+            className="dash-week-row"
             data-past={d.isPast}
             data-selected={d.date === selectedDay}
           >
-            <div className="dash-day-head">
-              <span className="dash-day-name" style={{ color: d.isToday ? 'var(--accent)' : undefined }}>
+            <div className="dash-week-day">
+              <span className="dash-week-day-name" style={{ color: d.isToday ? 'var(--accent)' : undefined }}>
                 {d.dayLabel}
               </span>
-              <span className="dash-day-md" style={{ color: d.md === 'MD' ? 'var(--bad)' : d.md === 'MD-1' ? 'var(--accent)' : undefined }}>
-                {d.md ?? ''}
+              <span className="dash-week-day-pips">
+                {d.pips.length > 0
+                  ? d.pips.map((p, i) => <span key={i} className="dash-week-day-pip" style={{ background: PIP_COLOR[p] }} />)
+                  : <span className="dash-week-day-pip" style={{ background: 'var(--hair)' }} />}
               </span>
             </div>
-            <div className="dash-day-summary">{d.summary}</div>
-            <div className="dash-day-pips">
-              {d.pips.length > 0
-                ? d.pips.map((p, i) => <span key={i} className="dash-day-pip" style={{ background: PIP_COLOR[p] }} />)
-                : <span className="dash-day-pip" style={{ background: 'var(--hair)' }} />}
+            <div className="dash-week-summary">{d.summary}</div>
+            <div className="dash-week-meta">
+              {d.md ? (
+                <span
+                  className="mono dash-week-md"
+                  style={{ color: d.md === 'MD' ? 'var(--bad)' : d.md === 'MD-1' ? 'var(--accent)' : 'var(--faint)' }}
+                >
+                  {d.md}
+                </span>
+              ) : null}
+              {d.alert ? (
+                <span className={`pill ${d.alert.sev === 'bad' ? 'pill-bad' : 'pill-accent'}`}>{d.alert.text}</span>
+              ) : null}
             </div>
-            {d.alert ? (
-              <div className="dash-day-alert" style={{ color: d.alert.sev === 'bad' ? 'var(--bad)' : 'var(--accent)' }}>
-                {d.alert.text}
-              </div>
-            ) : null}
+            <span className="chev" aria-hidden="true">
+              ›
+            </span>
           </Link>
         ))}
       </div>

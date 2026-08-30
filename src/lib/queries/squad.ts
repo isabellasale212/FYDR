@@ -83,6 +83,44 @@ export type AthleteProfile = {
   open_injuries: OpenInjury[];
 };
 
+/* Coach-side edit for the four bio cells at the top of the athlete profile
+ * (position, squad number, height, dominant side) — everything in
+ * pp-detail-row except Age (computed from date_of_birth, not a field) and
+ * Weight (its own logged-history flow, BodyWeightPanel). Backed by a real,
+ * already-shipped policy: athletes_manage_update (migration 0012) grants
+ * exactly coach and admin an update on this row — medical is deliberately
+ * absent ("medical reads for context and does not edit the roster," same
+ * migration's own comment), and admin never reaches this page at all
+ * (AthletePage's hasAccess check above is coach/medical only). So in
+ * practice this is coach-only, enforced twice: the UI hides/disables the
+ * control for anyone else (CLAUDE.md rule 2 — a display choice, not the
+ * boundary), and RLS rejects the write regardless of what a client sends.
+ * No new migration, no new policy — this just wires up a write path the
+ * schema already allows and the profile page never offered. */
+export async function updateAthleteBio(
+  db: Db,
+  orgId: string,
+  athleteId: string,
+  input: {
+    position: string | null;
+    squadNumber: number | null;
+    heightCm: number | null;
+    dominantSide: DominantSide | null;
+  },
+): Promise<{ error: string | null }> {
+  const { error } = await db
+    .from('athletes')
+    .update({
+      position: input.position,
+      squad_number: input.squadNumber,
+      height_cm: input.heightCm,
+      dominant_side: input.dominantSide,
+    })
+    .eq('org_id', orgId)
+    .eq('id', athleteId);
+  return { error: error?.message ?? null };
+}
+
 export async function fetchAthlete(
   db: Db,
   orgId: string,

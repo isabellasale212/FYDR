@@ -224,6 +224,21 @@ export type HeadlineStats = {
   toMatchdayDays: number | null;
   opponent: string | null;
   sessionsLeft: number;
+  /** The real fixture this countdown is for, so the "To matchday" tile can
+   *  jump straight to it — see this file's own dashboard/page.tsx caller
+   *  for why that's a better destination than the tile's old href (back
+   *  onto this same dashboard, just with a different ?day=). Null when
+   *  there's no fixture on the books, same case toMatchdayDays already
+   *  handles. */
+  fixtureId: string | null;
+  /** Names of the athletes still outstanding for today's wellness
+   *  check-in — computed from the exact same expected/submitted pair as
+   *  wellessPct above, not a second, differently-filtered query, so the
+   *  dashboard tile's percentage and its own expanded name list can never
+   *  disagree (the trap fetchWellnessComplianceForDay's separate is_required
+   *  filter would set, per reports.ts's own header on why that filter is
+   *  wrong here). Sorted by last name, same convention as that function. */
+  wellnessMissingNames: string[];
 };
 
 export async function fetchHeadlineStats(
@@ -249,7 +264,7 @@ export async function fetchHeadlineStats(
       .then(async (res) => {
         if (res.error) throw new Error(res.error.message);
         const expected = scope ? res.data.filter((r) => scope.includes(r.athlete_id)) : res.data;
-        if (expected.length === 0) return { expected: 0, submitted: 0 };
+        if (expected.length === 0) return { expected: 0, submitted: 0, missingIds: [] as string[] };
         const ids = expected.map((r) => r.athlete_id);
         const { data: entries, error } = await db
           .from('wellness_entries_current')
@@ -258,7 +273,8 @@ export async function fetchHeadlineStats(
           .eq('entry_date', effectiveToday)
           .in('athlete_id', ids);
         if (error) throw new Error(error.message);
-        return { expected: expected.length, submitted: entries.length };
+        const submittedIds = new Set(entries.map((e) => e.athlete_id));
+        return { expected: expected.length, submitted: entries.length, missingIds: ids.filter((id) => !submittedIds.has(id)) };
       }),
     fetchFlagsByDateRange(db, orgId, groupIds, effectiveToday, effectiveToday),
     fetchDashboardAttention(db, orgId, wallClockToday, groupIds),
@@ -287,6 +303,20 @@ export async function fetchHeadlineStats(
   const toMatchdayDays = fixture ? daysBetween(effectiveToday, dateInTz(new Date(fixture.kickoff_at), timezone)) : null;
   const sessionsLeft = weekSessions.filter((s) => s.entry_date > effectiveToday && s.session_type !== 'match').length;
 
+  // Names for the "Wellness in" tile's expand panel — one extra lookup, only
+  // when there's actually someone missing, on the same ids wellnessExp
+  // already resolved above (never a second, differently-scoped query).
+  let wellnessMissingNames: string[] = [];
+  if (wellnessExp.missingIds.length > 0) {
+    const { data: missingAthletes, error: missingErr } = await db
+      .from('athletes')
+      .select('id, first_name, last_name')
+      .eq('org_id', orgId)
+      .in('id', wellnessExp.missingIds);
+    if (missingErr) throw new Error(missingErr.message);
+    wellnessMissingNames = (missingAthletes ?? []).map((a) => `${a.first_name} ${a.last_name}`).sort((a, b) => a.localeCompare(b));
+  }
+
   return {
     needYouCount: flaggedTodayIds.size,
     wellnessPct: wellnessExp.expected > 0 ? Math.round((100 * wellnessExp.submitted) / wellnessExp.expected) : null,
@@ -302,7 +332,9 @@ export async function fetchHeadlineStats(
     flagsBySeverity: attention.bySeverity,
     attentionRows: attention.rows,
     toMatchdayDays,
+    fixtureId: fixture?.id ?? null,
     opponent: fixture?.opponent ?? null,
+    wellnessMissingNames,
     sessionsLeft,
   };
 }

@@ -8,7 +8,7 @@ import { PdfHeader, PdfMedicalBanner, PdfReport, PdfSectionTitle, PdfTable, PdfT
 import { requireReportAccess } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
-const PERIODS = [28, 90] as const;
+const PERIODS = [28, 90, 180, 365] as const;
 
 /** lib/pdf.tsx has the "this was actually buildable" story. Third report
  *  to get a PDF. The coach and medical versions are two different reads,

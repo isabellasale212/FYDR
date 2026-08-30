@@ -51,6 +51,14 @@ export type NotFullyAvailableRow = {
   body_area: BodyArea | null;
   side: BodySide | null;
   expected_return: string | null;
+  /** The open injury's own id, when the current availability row is actually
+   *  linked to one (same `injury?.id` this row's body_area/side/
+   *  expected_return already come from) — never a diagnosis, just the
+   *  primary key of a row already read from the coach-safe `injuries` table
+   *  above. Lets a caller link through to the existing, correctly
+   *  role-gated /injuries/[injuryId] page for "the rest of the record"
+   *  instead of a screen re-deciding what's safe to show. */
+  injury_id: string | null;
 };
 
 export async function fetchCurrentAvailability(
@@ -192,6 +200,7 @@ export async function fetchNotFullyAvailable(
         body_area: injury?.body_area ?? null,
         side: injury?.side ?? null,
         expected_return: injury?.expected_return ?? null,
+        injury_id: injury?.id ?? null,
       };
     })
     .filter((r): r is NotFullyAvailableRow => r !== null)

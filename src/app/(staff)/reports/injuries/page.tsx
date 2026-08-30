@@ -13,7 +13,18 @@ export const metadata = { title: 'Injury & availability report · Fydr' };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-const PERIODS = [28, 90] as const;
+const PERIODS = [28, 90, 180, 365] as const;
+
+// 180/365 shown as "6 months"/"12 months" — the day count underneath is
+// unchanged (addDays/todayIso, the same mechanism 28/90 already use), this
+// only affects the chip label. Approximate calendar months, same convention
+// "last 6 months" uses elsewhere; not calendar-month arithmetic.
+const PERIOD_LABELS: Record<number, string> = {
+  28: '28 days',
+  90: '90 days',
+  180: '6 months',
+  365: '12 months',
+};
 
 const AVAIL_PILL: Record<string, string> = {
   modified: 'pill-warn',
@@ -101,7 +112,7 @@ export default async function InjuryAvailabilityReportPage({
               className="squad-chip"
               aria-pressed={days === d}
             >
-              {d} days
+              {PERIOD_LABELS[d] ?? `${d} days`}
             </Link>
           ))}
         </div>
@@ -125,24 +136,83 @@ export default async function InjuryAvailabilityReportPage({
                       : 'Everyone is available.'}
                   </p>
                 ) : (
-                  report.current.map((row, index) => (
-                    <div key={row.athlete_id}>
-                      {index > 0 ? <div className="hair" /> : null}
-                      <div className="load-row" style={{ gridTemplateColumns: '1fr auto' }}>
-                        <div>
-                          <span className="nm">{row.name}</span>
-                          <div className="tiny">
-                            {row.body_area
-                              ? enumLabel(row.body_area)
-                              : row.restrictions.join(', ') ||
-                                (row.reason_category ? enumLabel(row.reason_category) : 'Restricted')}
-                            {row.expected_return ? ` · back ${formatDate(row.expected_return, timezone)}` : ''}
+                  report.current.map((row, index) => {
+                    // Everything rendered below already comes from
+                    // NotFullyAvailableRow — availability.ts's own header:
+                    // "injury_clinical is not selected from, not joined to,
+                    // and is not named in the Database type this client is
+                    // built against, so it cannot be." Expanding this row
+                    // reveals more of that same coach-safe shape, never a
+                    // new, separately-fetched field.
+                    const hasDetail =
+                      Boolean(row.squad_number) ||
+                      Boolean(row.position) ||
+                      Boolean(row.body_area) ||
+                      row.restrictions.length > 0 ||
+                      Boolean(row.reason_category) ||
+                      Boolean(row.expected_return) ||
+                      Boolean(row.injury_id);
+                    return (
+                      <div key={row.athlete_id}>
+                        {index > 0 ? <div className="hair" /> : null}
+                        <details className="avail-row">
+                          <summary className="load-row" style={{ gridTemplateColumns: '1fr auto auto' }}>
+                            <div>
+                              <span className="nm">{row.name}</span>
+                              <div className="tiny">
+                                {row.body_area
+                                  ? enumLabel(row.body_area)
+                                  : row.restrictions.join(', ') ||
+                                    (row.reason_category ? enumLabel(row.reason_category) : 'Restricted')}
+                                {row.expected_return ? ` · back ${formatDate(row.expected_return, timezone)}` : ''}
+                              </div>
+                            </div>
+                            <span className={`pill ${AVAIL_PILL[row.status] ?? 'pill-neutral'}`}>{enumLabel(row.status)}</span>
+                            <span className="avail-row-caret" aria-hidden="true">
+                              ⌄
+                            </span>
+                          </summary>
+                          <div className="disclose-body" style={{ padding: '2px 4px 14px' }}>
+                            {[row.squad_number ? `Squad #${row.squad_number}` : null, row.position]
+                              .filter(Boolean).length > 0 ? (
+                              <p className="tiny">
+                                {[row.squad_number ? `Squad #${row.squad_number}` : null, row.position]
+                                  .filter(Boolean)
+                                  .join(' · ')}
+                              </p>
+                            ) : null}
+                            {row.body_area ? (
+                              <p className="tiny">
+                                {enumLabel(row.body_area)}
+                                {row.side ? ` · ${enumLabel(row.side)}` : ''}
+                              </p>
+                            ) : null}
+                            {row.restrictions.length > 0 ? (
+                              <div className="chiprow" style={{ marginTop: 4 }}>
+                                {row.restrictions.map((r) => (
+                                  <span key={r} className="chip-static">
+                                    {enumLabel(r)}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : null}
+                            {row.reason_category ? (
+                              <p className="tiny">Reason: {enumLabel(row.reason_category)}</p>
+                            ) : null}
+                            {row.expected_return ? (
+                              <p className="tiny">Expected back {formatDate(row.expected_return, timezone)}</p>
+                            ) : null}
+                            {!hasDetail ? <p className="tiny">No further detail on record.</p> : null}
+                            {row.injury_id ? (
+                              <Link href={`/injuries/${row.injury_id}`} className="tiny" style={{ fontWeight: 700, display: 'inline-block', marginTop: 4 }}>
+                                View full injury record →
+                              </Link>
+                            ) : null}
                           </div>
-                        </div>
-                        <span className={`pill ${AVAIL_PILL[row.status] ?? 'pill-neutral'}`}>{enumLabel(row.status)}</span>
+                        </details>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             ),

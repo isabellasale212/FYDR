@@ -23,7 +23,7 @@ export async function GET(request: Request) {
   const isMedical = claims.roles.includes('medical');
   const url = new URL(request.url);
   const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
-  const days = [28, 90].includes(Number(url.searchParams.get('days'))) ? Number(url.searchParams.get('days')) : 28;
+  const days = [28, 90, 180, 365].includes(Number(url.searchParams.get('days'))) ? Number(url.searchParams.get('days')) : 28;
 
   const today = todayIso(timezone);
   const fromDate = addDays(today, -(days - 1));

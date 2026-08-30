@@ -54,12 +54,25 @@ export default async function AthleteReportPickerPage({ searchParams }: { search
             <caption className="visually-hidden">Squad roster, choose one for their report</caption>
             <thead>
               <tr>
-                <th scope="col" className="r">
-                  No.
+                {/* Same .tbl styling every other roster table in the app uses
+                 *  (RosterTable, the picker on this same report), scoped up
+                 *  a step in contrast/wording here specifically: "No." read
+                 *  as an abbreviation with no column next to it to disambiguate,
+                 *  and --faint's default header contrast was hard to scan at a
+                 *  glance when this table is the page's only content, with no
+                 *  card-title above it for context. */}
+                <th scope="col" className="r" style={{ color: 'var(--muted)' }}>
+                  Squad No.
                 </th>
-                <th scope="col">Athlete</th>
-                <th scope="col">Position</th>
-                <th scope="col">Availability</th>
+                <th scope="col" style={{ color: 'var(--muted)' }}>
+                  Athlete
+                </th>
+                <th scope="col" style={{ color: 'var(--muted)' }}>
+                  Position
+                </th>
+                <th scope="col" style={{ color: 'var(--muted)' }}>
+                  Availability
+                </th>
               </tr>
             </thead>
             <tbody>

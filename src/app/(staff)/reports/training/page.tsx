@@ -4,9 +4,11 @@ import { Dial } from '@/components/Dial/Dial';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { PlanGate } from '@/components/PlanGate/PlanGate';
+import { ReportSelectNav } from '@/components/ReportSelectNav/ReportSelectNav';
 import { TrainingScatter } from '@/components/TrainingScatter/TrainingScatter';
 import { TrainingSparkline } from '@/components/TrainingSparkline/TrainingSparkline';
 import { fetchGroups } from '@/lib/queries/groups';
+import { mondayOf } from '@/lib/queries/schedule';
 import {
   fetchAthleteComparison,
   fetchComparableSessionsComparison,
@@ -27,12 +29,26 @@ import {
   type ReportMode,
 } from '@/lib/queries/trainingReport';
 import { recordReportView } from '@/lib/queries/reports';
-import { formatDate, mdLabel } from '@/lib/format';
+import { addDays, formatDate, mdLabel } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireReportAccess } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
+
+/** Sessions with real GPS data, for the "jump to date" dropdown — every one
+ *  on record, not just the handful the chip row below has room for
+ *  (screens/training-report.md's own O-709, unresolved until now: "how does
+ *  a coach reach an older session?"). The chip row keeps its original limit
+ *  of 8 for quick recent access; this is the same fetchTrainingSessions /
+ *  fetchMatchSessions the chips already use, called once with a higher cap
+ *  so both controls share one query and can never disagree about what
+ *  counts as "has data". */
+const DATE_PICKER_LIMIT = 60;
+
+/** Sentinel stored literally in `?athlete=`, not "param absent" — see its
+ *  use below for why the distinction is real. */
+const SQUAD_VIEW = '__squad__';
 
 export const metadata = { title: 'Training report · Fydr' };
 
@@ -190,6 +206,16 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
   const mode: ReportMode = sp.mode === 'match' ? 'match' : 'training';
   const groups = await fetchGroups(db, orgId);
   const groupsQs = groupIds.length > 0 ? groupIds.join(',') : undefined;
+  // Carried as the raw URL value, not the resolved `selected.sessionId` —
+  // both export routes already default to the most recent session when
+  // `session` is absent (see export/route.ts), the same fallback this page
+  // itself uses, so the header buttons don't need `selected` computed yet
+  // and can render before the mode branches below do that work.
+  const sessionParam = typeof sp.session === 'string' ? sp.session : undefined;
+  // Day/week is a training-only frame — a match is already one day's data
+  // and a "week of matches" is rarely more than one fixture, so there is no
+  // real second state to switch to.
+  const range: 'day' | 'week' = mode === 'training' && sp.range === 'week' ? 'week' : 'day';
 
   const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
 
@@ -201,7 +227,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
         </p>
         <h1>{mode === 'training' ? 'Training report' : 'Match day GPS report'}</h1>
       </div>
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <div className="tr-mode-switch">
           <Link href={`/reports/training${qs({ mode: 'training', groups: groupsQs })}`} aria-current={mode === 'training'}>
             Training
@@ -210,6 +236,12 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
             Match day
           </Link>
         </div>
+        <a href={`/reports/training/export${qs({ mode, session: sessionParam, groups: groupsQs })}`} className="btn-ghost">
+          Export CSV
+        </a>
+        <a href={`/reports/training/pdf${qs({ mode, session: sessionParam, groups: groupsQs })}`} className="btn-ghost">
+          Export PDF
+        </a>
       </div>
     </div>
   );
@@ -222,7 +254,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
 
   // -------------------------------------------------------------------------
   if (mode === 'match') {
-    const sessions = await fetchMatchSessions(db, orgId, timezone);
+    const sessions = await fetchMatchSessions(db, orgId, timezone, DATE_PICKER_LIMIT);
     const selected = sessions.find((s) => s.sessionId === sp.session) ?? sessions[0] ?? null;
 
     if (!selected) {
@@ -253,18 +285,27 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
         {header}
         {groupFilterEl}
 
-        <div className="chiprow" style={{ marginBottom: 16 }}>
-          {sessions.map((s) => (
-            <Link
-              key={s.sessionId}
-              href={`/reports/training${qs({ mode: 'match', session: s.sessionId, groups: groupsQs })}`}
-              className="tr-session-chip"
-              aria-current={selected.sessionId === s.sessionId}
-            >
-              v {s.opponent}
-              <span className="suffix">{s.result ?? '—'}</span>
-            </Link>
-          ))}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', marginBottom: 16 }}>
+          <div className="chiprow" style={{ margin: 0 }}>
+            {sessions.slice(0, 8).map((s) => (
+              <Link
+                key={s.sessionId}
+                href={`/reports/training${qs({ mode: 'match', session: s.sessionId, groups: groupsQs })}`}
+                className="tr-session-chip"
+                aria-current={selected.sessionId === s.sessionId}
+              >
+                v {s.opponent}
+                <span className="suffix">{s.result ?? '—'}</span>
+              </Link>
+            ))}
+          </div>
+          <ReportSelectNav
+            label="Jump to date"
+            paramKey="session"
+            value={selected.sessionId}
+            options={sessions.map((s) => ({ value: s.sessionId, label: `${formatDate(s.date, timezone)} · v ${s.opponent}` }))}
+            ariaLabel="Jump to a match with GPS data"
+          />
         </div>
 
         {!overview ? (
@@ -370,9 +411,9 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                         .filter((r) => r.group_name === unit)
                         .map((row) => (
                           <div key={row.athlete_id} className="tr-board-row" style={{ gridTemplateColumns: 'minmax(180px, 1.4fr) 62px repeat(4, minmax(76px, 1fr))' }}>
-                            <span className="nm" style={{ fontSize: 13.5 }}>
+                            <Link href={`/reports/athlete/${row.athlete_id}`} className="nm" style={{ fontSize: 13.5 }} title="Open this player's full report">
                               {row.last_name}, {row.first_name}
-                            </span>
+                            </Link>
                             <span className="r mono">{row.mins ?? '—'}</span>
                             <span className="r mono">{row.td !== null ? Math.round(row.td).toLocaleString() : '—'}</span>
                             <span className="r mono">{row.hsr !== null ? Math.round(row.hsr).toLocaleString() : '—'}</span>
@@ -397,7 +438,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
 
   // -------------------------------------------------------------------------
   // Training mode
-  const sessions = await fetchTrainingSessions(db, orgId, timezone);
+  const sessions = await fetchTrainingSessions(db, orgId, timezone, DATE_PICKER_LIMIT);
   const selected = sessions.find((s) => s.sessionId === sp.session) ?? sessions[0] ?? null;
 
   if (!selected) {
@@ -406,6 +447,79 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
         {header}
         {groupFilterEl}
         <EmptyState title="No GPS data yet" body="No GPS records have been imported. This build has no import pipeline yet — a direct insert is the only path in." />
+      </>
+    );
+  }
+
+  // Chip row (recent, quick access), the full-history date dropdown, and the
+  // day/week toggle — shared between the day and week returns below so the
+  // two frames present an identical toolbar and neither can drift from the
+  // other.
+  const trainingToolbar = (activeRange: 'day' | 'week') => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', marginBottom: 16 }}>
+      <div className="chiprow" style={{ margin: 0 }}>
+        {sessions.slice(0, 8).map((s) => (
+          <Link
+            key={s.sessionId}
+            href={`/reports/training${qs({ mode: 'training', session: s.sessionId, groups: groupsQs, range: activeRange })}`}
+            className="tr-session-chip"
+            aria-current={selected.sessionId === s.sessionId}
+          >
+            {formatDate(s.date, timezone)}
+            <span className="suffix">{mdLabel(s.mdOffset) ?? s.title}</span>
+          </Link>
+        ))}
+      </div>
+      <ReportSelectNav
+        label="Jump to date"
+        paramKey="session"
+        value={selected.sessionId}
+        options={sessions.map((s) => ({ value: s.sessionId, label: `${formatDate(s.date, timezone)} · ${s.title}` }))}
+        ariaLabel="Jump to a training session with GPS data"
+      />
+      <div className="tr-mode-switch">
+        <Link href={`/reports/training${qs({ mode: 'training', session: selected.sessionId, groups: groupsQs, range: 'day' })}`} aria-current={activeRange === 'day'}>
+          Day
+        </Link>
+        <Link href={`/reports/training${qs({ mode: 'training', session: selected.sessionId, groups: groupsQs, range: 'week' })}`} aria-current={activeRange === 'week'}>
+          Week
+        </Link>
+      </div>
+    </div>
+  );
+
+  if (range === 'week') {
+    const weekComparison = await fetchRestOfWeekComparison(db, orgId, groupIds, selected.sessionId, selected.date, timezone);
+    const weekStart = mondayOf(selected.date);
+    const weekEnd = addDays(weekStart, 6);
+
+    await recordReportView(db, orgId, claims.userId, actorRole, 'training', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, mode, range });
+
+    return (
+      <>
+        {header}
+        {groupFilterEl}
+        {trainingToolbar('week')}
+
+        <div className="card" style={{ padding: '18px 20px' }}>
+          <h2 className="card-title" style={{ margin: 0 }}>
+            Week of {formatDate(weekStart, timezone)} to {formatDate(weekEnd, timezone)}
+          </h2>
+          <p className="tiny" style={{ marginTop: 4, maxWidth: '76ch' }}>
+            Every training and match session in this calendar week with GPS data, per-athlete squad mean, scored
+            against a typical week. Pick any date above to jump to a different week — this reuses the same
+            rest-of-week reference the Comparison card&rsquo;s own &ldquo;Rest of the week&rdquo; scope already
+            computes for a single day, shown here as the primary view instead of a lens on one session.
+          </p>
+          <div style={{ marginTop: 14 }}>
+            <ComparisonTableView table={weekComparison} />
+          </div>
+        </div>
+
+        <p className="cap" style={{ marginTop: 14 }}>
+          Export CSV and Export PDF above export the selected day&rsquo;s session board, not the week — there is no
+          per-athlete week-level board to export, only this squad-mean summary.
+        </p>
       </>
     );
   }
@@ -431,8 +545,20 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
           ? await fetchPositionComparison(db, orgId, groupIds, 'training', selected.sessionId, selected.title)
           : await fetchAthleteComparison(db, orgId, groupIds, 'training', selected.sessionId, selected.title);
 
-  const selectedAthleteId = typeof sp.athlete === 'string' ? sp.athlete : (scatter[0]?.athleteId ?? null);
+  // SQUAD_VIEW is a real, explicit third state, not just "no param yet" —
+  // selecting it from the dropdown below forces the squad-wide view even
+  // though a scatter point would otherwise auto-select the top-band athlete.
+  // Without it there was no way to ask for "no one" once someone had already
+  // been picked, on this page or by following a link with `?athlete=` set.
+  const athleteParam = typeof sp.athlete === 'string' ? sp.athlete : undefined;
+  const selectedAthleteId = athleteParam === SQUAD_VIEW ? null : (athleteParam ?? scatter[0]?.athleteId ?? null);
   const athletePanel = selectedAthleteId ? await fetchSelectedAthletePanel(db, orgId, selected, selectedAthleteId) : null;
+  // Board rows already carry every athlete in scope with a GPS record for
+  // this session — the dropdown's real, data-backed option list, not a
+  // separate athletes query.
+  const athleteOptions = [...new Map(board.rows.map((r) => [r.athlete_id, `${r.last_name}, ${r.first_name}`])).entries()]
+    .sort((a, b) => a[1].localeCompare(b[1]))
+    .map(([value, label]) => ({ value, label }));
 
   await recordReportView(db, orgId, claims.userId, actorRole, 'training', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, mode });
 
@@ -443,19 +569,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
       {header}
       {groupFilterEl}
 
-      <div className="chiprow" style={{ marginBottom: 16 }}>
-        {sessions.map((s) => (
-          <Link
-            key={s.sessionId}
-            href={`/reports/training${qs({ mode: 'training', session: s.sessionId, groups: groupsQs })}`}
-            className="tr-session-chip"
-            aria-current={selected.sessionId === s.sessionId}
-          >
-            {formatDate(s.date, timezone)}
-            <span className="suffix">{mdLabel(s.mdOffset) ?? s.title}</span>
-          </Link>
-        ))}
-      </div>
+      {trainingToolbar('day')}
 
       {!overview ? (
         <EmptyState title="No athletes in this filter" body="No one in the current group filter has a GPS record for this session." />
@@ -567,8 +681,20 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
             </div>
 
             <div className="card">
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: athletePanel ? 14 : 0 }}>
+                <h2 className="card-title" style={{ margin: 0 }}>
+                  Individual player
+                </h2>
+                <ReportSelectNav
+                  label="View"
+                  paramKey="athlete"
+                  value={selectedAthleteId ?? SQUAD_VIEW}
+                  options={[{ value: SQUAD_VIEW, label: 'Whole squad (none selected)' }, ...athleteOptions]}
+                  ariaLabel="View one athlete's own data for this session, or the whole squad"
+                />
+              </div>
               {!athletePanel ? (
-                <p className="tiny">Select an athlete on the scatter to see their detail.</p>
+                <p className="tiny">Select an athlete above, or on the scatter, to see their detail.</p>
               ) : (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -646,6 +772,18 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                     <Link href={`/squad/${athletePanel.athleteId}`} className="btn-ghost">
                       Open profile
                     </Link>
+                    {/* /reports/athlete/[athleteId] already exists as the
+                     * dedicated one-athlete report — real period toggle
+                     * (28/90 days), real GPS totals for that period,
+                     * wellness, load and testing, its own CSV/PDF export.
+                     * That is the individual player's data in full;
+                     * duplicating a second day/week/period picker for one
+                     * athlete inside the training report would mean
+                     * re-deriving athleteReport.ts's own query logic for
+                     * no real benefit over linking to it. */}
+                    <Link href={`/reports/athlete/${athletePanel.athleteId}`} className="btn-ghost">
+                      Full player report
+                    </Link>
                   </div>
                 </>
               )}
@@ -707,11 +845,6 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
               </div>
             </div>
           </div>
-
-          <p className="cap" style={{ marginTop: 14 }}>
-            <Link href={`/reports/training/export?mode=training&session=${selected.sessionId}${groupsQs ? `&groups=${groupsQs}` : ''}`}>Export CSV</Link> ·
-            no PDF for this report, per reports.ts&rsquo;s own reasoning for the reports that stay CSV-only.
-          </p>
         </>
       )}
     </>

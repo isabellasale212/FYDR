@@ -6,6 +6,31 @@
 > already built. Everything I could not read from the screenshot is marked as a question, not
 > filled in.
 
+> **Status update, 2026-08-29**: everything below this note describes the screen's original
+> heat-mapped board, screenshot to screenshot. The screen has since been rebuilt around a
+> dial/scatter scoring model (training and match modes, four comparison scopes, a scatter plot,
+> a per-athlete panel) — the doc below was never updated for that rebuild and is a real
+> documentation gap predating this note, not something this pass introduced or is trying to
+> resolve in full. Four items this pass did add, answering four of the open questions below
+> against the current, real screen rather than the screenshot:
+> - **O-714 (export)**: both CSV and PDF export now exist (`Export CSV` / `Export PDF` buttons
+>   in the page header), covering training and match modes. PDF reuses the same
+>   `@react-pdf/renderer` pipeline every other report's PDF export already uses — see
+>   `src/lib/pdf.tsx`'s own header for why that pipeline is real and not a new dependency.
+> - **O-709 (reaching an older session)**: a "Jump to date" dropdown lists every session with a
+>   real GPS record, not just the 8 the chip row has room for.
+> - A **Day / Week** toggle, training mode only (a match is already one day, and a "week of
+>   matches" is rarely more than one fixture): Day is the existing per-session board; Week shows
+>   the calendar week containing the selected date, reusing the same rest-of-week reference the
+>   Comparison card's "Rest of the week" scope already computed, as its own primary view rather
+>   than only a lens on one day. There is no per-athlete week-level board or export — a real,
+>   stated gap, not a silent one.
+> - An **individual player** dropdown (training mode, Day view) jumps straight to one athlete's
+>   existing per-session panel without needing to find them on the scatter first, plus a "Full
+>   player report" link from that panel to `/reports/athlete/[athleteId]` — the screen that
+>   already has a real period toggle, GPS-for-period totals, wellness, load and testing for one
+>   athlete, rather than a second, duplicate one built inside this screen.
+
 Screen 37 in the inventory (`02-information-architecture.md` §5). Route `/staff/training-report`.
 Sidebar item 5 in the real staff web navigation (§4.1), and the active item in the screenshot.
 

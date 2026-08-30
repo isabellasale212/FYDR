@@ -190,8 +190,33 @@ export default async function MyProgrammePage({
               </div>
             );
           })}
+          <Link
+            href="/programme/nutrition"
+            className="load-row"
+            style={{ gridTemplateColumns: '1fr auto', textDecoration: 'none', color: 'inherit' }}
+          >
+            <span className="nm">Meal ideas</span>
+            <span className="chev" aria-hidden="true">
+              ›
+            </span>
+          </Link>
         </div>
-      ) : null}
+      ) : (
+        <div className="card">
+          <h2 className="card-title">Nutrition</h2>
+          <p className="import-sub">Your coach hasn&rsquo;t set targets yet, but meal ideas are ready to browse.</p>
+          <Link
+            href="/programme/nutrition"
+            className="load-row"
+            style={{ gridTemplateColumns: '1fr auto', textDecoration: 'none', color: 'inherit' }}
+          >
+            <span className="nm">Meal ideas</span>
+            <span className="chev" aria-hidden="true">
+              ›
+            </span>
+          </Link>
+        </div>
+      )}
     </>
   );
 }

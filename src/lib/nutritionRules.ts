@@ -218,3 +218,90 @@ export const MASS_FLAG_PCT_7D = 2;
  *  a literal `5` repeated at each call site, so the claim and the enforcement can't
  *  drift apart. */
 export const MACRO_TOLERANCE_PCT = 5;
+
+/* ---------------------------------------------------------------------------
+ * Weight-trend indicator, nutrition-staff-only. Coach request (2026-08-28):
+ * "a flag to show the nutritionist who needs more and who needs less". Built
+ * deliberately as a calm, symmetric, two-way FACT about a real number moving,
+ * never as a squad-wide "at risk" list and never using a stigmatising word like
+ * "overweight"/"underweight" — see supabase/migrations/0016_leaderboards.sql's
+ * comment and docs/screens/leaderboards.md's "Why body composition must never
+ * be leaderboarded" for exactly the harm this must not become. It is looked up
+ * per athlete, inline, in a list nutrition staff already have open (the
+ * `/nutrition` squad grid, the `/nutrition/new` athlete picker) — never sorted
+ * by "most over" or "most under", never rendered to an athlete, never a badge
+ * on a squad-wide board.
+ *
+ * Deliberately a SEPARATE, calmer signal from buildChaseList's "Needs a word"
+ * mass_down reason (nutritionWorkspace.ts). That list is intentionally
+ * ASYMMETRIC (a fall only, not a rise) and intentionally urgent — its own
+ * comment explains why a rapid rise reads as normal growth far more often than
+ * a rapid fall does for a growing 16-25 year old, and this function does not
+ * reopen that call. This is a plain, symmetric, non-urgent fact for a
+ * nutritionist deciding whether a plan needs more energy or less.
+ * ------------------------------------------------------------------------- */
+
+export type TrendDirection = 'above' | 'below';
+
+export type MassTrendFlag = {
+  direction: TrendDirection;
+  massKg: number;
+  band: MassBand;
+  /** The real trailing-7-day % change (same pctChange() the mass_down chase-list
+   *  reason uses), same sign as direction. */
+  changePct: number;
+};
+
+/** Fires only when BOTH of two independently-real signals agree:
+ *   1. massState() already says the latest weigh-in sits outside this athlete's
+ *      OWN mean +/- 1 SD band (computeMassBand — a real, self-referential
+ *      "target range" built from their own trailing weigh-ins, not an external
+ *      ideal, a population norm, or a fabricated target-weight column).
+ *   2. The trailing 7-day % change is at least MASS_FLAG_PCT_7D in magnitude,
+ *      in the SAME direction as (1) — the exact real threshold this codebase
+ *      already uses and documents (above, "2% of body mass in seven days is
+ *      the flag threshold"), just applied symmetrically here instead of
+ *      one-directionally.
+ * Requiring both is deliberate: (1) alone is noisy (a tight band, e.g. a very
+ * flat trend, can sit a fraction of a kilo outside itself with no real recent
+ * movement at all — computeMassBand's own 0.5%-of-mean floor exists for
+ * exactly this reason but does not eliminate it), and (2) alone says nothing
+ * about direction relative to where this athlete actually sits. Together they
+ * are: "moved by a real, non-trivial amount, AND that movement has actually
+ * carried them outside their own recent normal range." Returns null on
+ * insufficient data (no massKg, no band, no 7-day figure) or when neither
+ * condition is met — there is nothing to say, so nothing is shown. */
+export function massTrendFlag(
+  massKg: number | null,
+  band: MassBand | null,
+  change7d: number | null,
+): MassTrendFlag | null {
+  if (massKg === null || band === null || change7d === null) return null;
+  const state = massState(massKg, band);
+  if (state === 'above' && change7d >= MASS_FLAG_PCT_7D) {
+    return { direction: 'above', massKg, band, changePct: change7d };
+  }
+  if (state === 'below' && change7d <= -MASS_FLAG_PCT_7D) {
+    return { direction: 'below', massKg, band, changePct: change7d };
+  }
+  return null;
+}
+
+/** The one short label, identical everywhere this renders, so "trending above"
+ *  and "trending below" never drift into different wording (or into the word
+ *  this feature must never use) on different screens. */
+export function trendFlagLabel(direction: TrendDirection): string {
+  return direction === 'above' ? 'Trending above target range' : 'Trending below target range';
+}
+
+/** The one long sentence, real numbers included, for a title/tooltip or a
+ *  helper line under a picker — never shown to an athlete, never squad-wide. */
+export function trendFlagSentence(flag: MassTrendFlag): string {
+  const { direction, massKg, band, changePct } = flag;
+  const verb = direction === 'above' ? '+' : '';
+  return (
+    `${trendFlagLabel(direction)} — ${massKg.toFixed(1)} kg vs ${band.low.toFixed(1)}–${band.high.toFixed(1)} kg ` +
+    `(their own trailing mean ± 1 SD), ${verb}${changePct.toFixed(1)}% over the last 7 days. ` +
+    `Visible to nutrition staff only.`
+  );
+}

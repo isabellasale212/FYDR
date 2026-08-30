@@ -3,7 +3,17 @@
  * and its client components render. No I/O — see nutritionRules.ts's header for why
  * that split matters here (server render and client re-render must agree exactly). */
 
-import { computeMassBand, massState, MASS_FLAG_PCT_7D, pctChange, positionToUnit, UNIT_ORDER, type MassBand } from './nutritionRules';
+import {
+  computeMassBand,
+  massState,
+  massTrendFlag,
+  MASS_FLAG_PCT_7D,
+  pctChange,
+  positionToUnit,
+  UNIT_ORDER,
+  type MassBand,
+  type MassTrendFlag,
+} from './nutritionRules';
 
 export type MassPoint = { date: string; kg: number };
 
@@ -23,6 +33,10 @@ export type WorkspaceAthlete = {
   loggedDatesThisWeek: string[]; // ISO dates with a weigh-in in the current Mon-Sun week
   recentCheckins: { weekStart: string; answer: 'yes' | 'roughly' | 'no' }[]; // newest first
   hasPersonalTargetOverride: boolean;
+  /** Nutrition-staff-only weight-trend indicator (nutritionRules.ts's own header
+   *  explains the formula and why it is deliberately separate from the chase
+   *  list below). Null means "nothing worth saying", not "no data". */
+  trendFlag: MassTrendFlag | null;
 };
 
 export function buildWorkspaceAthlete(input: {
@@ -94,6 +108,7 @@ export function buildWorkspaceAthlete(input: {
     loggedDatesThisWeek,
     recentCheckins: input.checkins.map((c) => ({ weekStart: c.week_start, answer: c.answer })),
     hasPersonalTargetOverride: input.hasPersonalTargetOverride,
+    trendFlag: massTrendFlag(massKg, massBand, change7d),
   };
 }
 

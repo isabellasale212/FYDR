@@ -1,9 +1,17 @@
 -- 260_meal_library_test.sql
 --
 -- migration 0051's own header explains why this table exists, why it is org-scoped only
--- (O-892) and why its RLS split (coach write, medical read-only, admin and athlete no
--- access) differs from nutrition_rules' personal-scope medical carve-out. This file
--- tests that split plus the org-scoped meal -> items relationship and soft delete.
+-- (O-892) and why its RLS split (coach write, medical read-only, admin no access)
+-- differs from nutrition_rules' personal-scope medical carve-out. This file tests that
+-- split plus the org-scoped meal -> items relationship and soft delete.
+--
+-- Updated for migration 0054: an athlete now reads (never writes) their own org's
+-- library, the same "reading the list is harmless, writing is staff only" shape
+-- migration 0021 already gives athletes over `exercises`. Section 3's athlete
+-- assertions changed from "reads zero" to "reads both, same as coach/medical" — that
+-- is the intended behaviour change 0054 documents, not a regression. Section 1's and
+-- section 2's athlete write assertions are unchanged and still assert zero: 0054 adds
+-- no write policy for athlete on either table.
 --
 -- Which rules this implements
 --   Coach: full write on meal_library (any meal in their org) and meal_library_items
@@ -11,12 +19,16 @@
 --   Medical: read-only on both tables, no write path at all.
 --   Admin: no access to either table, at all — 01-roles-and-permissions.md §1's
 --     "admin never sees performance-domain detail" carve-out.
---   Athlete: no access to either table, at all — CLAUDE.md §2 rule 8, this is
---     coach/medical-authored content, never athlete-writable.
+--   Athlete: read-only on both tables, org-scoped, since migration 0054 — no write
+--     path at all, same as medical. CLAUDE.md §2 rule 8 is about athlete WRITES
+--     (logging, per-meal macro entry); it does not forbid an athlete reading
+--     coach/medical-authored guidance content, which is exactly what
+--     docs/screens/nutrition-guidance.md's "Meal ideas" panel does.
 --   Soft delete: a coach sets meal_library.deleted_at via UPDATE; no role has a DELETE
 --     grant or policy on either table (CLAUDE.md rule 4).
 --   Cross-tenant: orgb cannot read or write into orga's library or its items, including
---     an orgb coach trying to attach an item to one of orga's real meal ids.
+--     an orgb coach trying to attach an item to one of orga's real meal ids, and orgb's
+--     own athlete cannot read orga's library either.
 
 begin;
 select * from no_plan();
@@ -147,13 +159,27 @@ select is(
 select tests.set_jwt(tests.uid('orga', 'user_athlete_1'));
 select is(
   (select count(*) from meal_library where org_id = tests.uid('orga','org')),
-  0::bigint,
-  'an athlete reads zero meals — no access at all, this is never athlete-facing logging'
+  2::bigint,
+  'migration 0054: an athlete reads both meals in their own org — the same real content the "Meal ideas" screen browses, read-only'
 );
 select is(
   (select count(*) from meal_library_items where org_id = tests.uid('orga','org')),
-  0::bigint,
-  'an athlete reads zero items'
+  2::bigint,
+  'migration 0054: an athlete reads both items too'
+);
+select throws_ok(
+  format($q$insert into meal_library (org_id, name, time_label, created_by)
+            values (%L, 'Athlete attempt after 0054', '08:00', %L)$q$,
+         tests.uid('orga','org'), tests.uid('orga','user_athlete_1')),
+  '42501', null,
+  'migration 0054 adds no write policy for athlete — still cannot create a meal'
+);
+select throws_ok(
+  format($q$insert into meal_library_items (org_id, meal_id, sequence, name, qty, unit, protein_g, carb_g, fat_g)
+            values (%L, %L, 3, 'Athlete attempt after 0054', 100, 'g', 1, 1, 1)$q$,
+         tests.uid('orga','org'), tests.uid('orga','meal_1')),
+  '42501', null,
+  'migration 0054 adds no write policy for athlete — still cannot add an item'
 );
 
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
@@ -245,6 +271,18 @@ select throws_ok(
          tests.uid('orgb','org'), tests.uid('orga','meal_1')),
   '42501', null,
   'orgb''s coach cannot attach an item to orga''s real meal_1 even naming orgb''s own org_id — the parent-meal exists() check fails to find meal_1 under orgb'
+);
+
+select tests.set_jwt(tests.uid('orgb', 'user_athlete_1'));
+select is(
+  (select count(*) from meal_library where org_id = tests.uid('orga','org')),
+  0::bigint,
+  'migration 0054: orgb''s athlete cannot see orga''s meals — the new athlete policy is org-scoped, not global'
+);
+select is(
+  (select count(*) from meal_library_items where org_id = tests.uid('orga','org')),
+  0::bigint,
+  'migration 0054: orgb''s athlete cannot see orga''s items either'
 );
 
 select * from finish();

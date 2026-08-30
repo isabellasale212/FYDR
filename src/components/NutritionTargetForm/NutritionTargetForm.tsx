@@ -11,6 +11,14 @@ import { mdLabel, todayIso } from '@/lib/format';
 type Athlete = { id: string; first_name: string; last_name: string };
 type Group = { id: string; name: string };
 
+/** Nutrition-staff-only weight-trend indicator, computed server-side in
+ *  page.tsx from the same real formula /nutrition's squad grid uses
+ *  (nutritionRules.ts's massTrendFlag) — see that file's own header for the
+ *  formula and why this is deliberately calm, symmetric, and never shown to
+ *  an athlete. Plain, already-formatted strings, not the raw computation
+ *  type, since this is a client component and has no reason to re-derive it. */
+export type AthleteTrendDTO = { direction: 'above' | 'below'; note: string };
+
 type Props = {
   orgId: string;
   userId: string;
@@ -22,11 +30,14 @@ type Props = {
    *  refused. */
   canPickAnyScope: boolean;
   timezone: string;
+  /** Keyed by athlete id. Absent entry = nothing worth saying, same as a null
+   *  massTrendFlag — most athletes will have no entry here. */
+  athleteTrends?: Record<string, AthleteTrendDTO>;
 };
 
 const MD_OPTIONS = [-5, -4, -3, -2, -1, 0, 1];
 
-export function NutritionTargetForm({ orgId, userId, athletes, groups, canPickAnyScope, timezone }: Props) {
+export function NutritionTargetForm({ orgId, userId, athletes, groups, canPickAnyScope, timezone, athleteTrends }: Props) {
   const router = useRouter();
   const [scope, setScope] = useState<TargetScope>(canPickAnyScope ? 'org_default' : 'athlete');
   const [athleteId, setAthleteId] = useState(athletes[0]?.id ?? '');
@@ -40,6 +51,7 @@ export function NutritionTargetForm({ orgId, userId, athletes, groups, canPickAn
   const [fluidMl, setFluidMl] = useState('');
   const [reason, setReason] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const selectedTrend = athleteTrends?.[athleteId];
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -141,12 +153,24 @@ export function NutritionTargetForm({ orgId, userId, athletes, groups, canPickAn
         <label>
           <span className="label">Athlete</span>
           <select className="field" value={athleteId} onChange={(event) => setAthleteId(event.target.value)}>
-            {athletes.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.first_name} {a.last_name}
-              </option>
-            ))}
+            {athletes.map((a) => {
+              const trend = athleteTrends?.[a.id];
+              return (
+                <option key={a.id} value={a.id}>
+                  {a.first_name} {a.last_name}
+                  {trend ? (trend.direction === 'above' ? ' (trending above)' : ' (trending below)') : ''}
+                </option>
+              );
+            })}
           </select>
+          {selectedTrend ? (
+            <p
+              className={`tiny ${selectedTrend.direction === 'above' ? 'nutr-chase-warn' : 'nutr-chase-bad'}`}
+              style={{ marginTop: 6 }}
+            >
+              {selectedTrend.note}
+            </p>
+          ) : null}
         </label>
       ) : null}
 

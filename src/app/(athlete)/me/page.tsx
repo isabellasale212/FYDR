@@ -43,9 +43,27 @@ export default async function MePage() {
       </div>
 
       <div className="card me-profile" style={{ marginTop: 14 }}>
-        <span className="me-avatar" aria-hidden="true">
-          {initials({ first_name: firstName, last_name: lastName })}
-        </span>
+        {/* avatar_url was fetched and handed to AvatarUploadForm below, but
+         *  this header always drew initials regardless — so an athlete who
+         *  uploaded a photo still saw their initials here (and on Today).
+         *  The photo when there is one, initials only as the fallback. */}
+        {userRow.data?.avatar_url ? (
+          /* Supabase Storage URL, already public and correctly sized by the
+           * uploader. next/image would need a remotePatterns entry for a host
+           * that varies per project, for a 46px glyph. */
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            className="me-avatar"
+            src={userRow.data.avatar_url}
+            alt=""
+            width={46}
+            height={46}
+          />
+        ) : (
+          <span className="me-avatar" aria-hidden="true">
+            {initials({ first_name: firstName, last_name: lastName })}
+          </span>
+        )}
         <div style={{ minWidth: 0 }}>
           <div className="nm">
             {firstName} {lastName}
@@ -67,9 +85,7 @@ export default async function MePage() {
 
         <AthleteProfileEditForm
           userId={claims.userId}
-          athleteId={athleteId}
           fullName={userRow.data?.full_name ?? `${firstName} ${lastName}`}
-          initialPreferredName={athlete?.preferred_name ?? ''}
           initialPhone={userRow.data?.phone ?? ''}
         />
 

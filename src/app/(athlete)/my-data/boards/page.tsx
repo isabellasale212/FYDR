@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
+import { LeaderboardVisibilityGate } from '@/components/HideLeaderboardsToggle/LeaderboardVisibilityGate';
 import { fetchMyBoards, fetchMetricCatalogue, populationLabel } from '@/lib/queries/leaderboards';
 import { formatNumber } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
@@ -27,48 +28,50 @@ export default async function MyBoardsPage() {
         <h1 className="d">Leaderboards</h1>
       </div>
 
-      <p className="tiny">Opted in · leave any board from Me.</p>
+      <LeaderboardVisibilityGate>
+        <p className="tiny">Opted in · leave any board from Me.</p>
 
-      {mine.length === 0 ? (
-        <EmptyState
-          title="No leaderboards yet"
-          body="Boards your club publishes and includes you on appear here."
-        />
-      ) : (
-        <div className="stack" style={{ marginTop: 14 }}>
-          {mine.map(({ board, own }) => {
-            const metric = labelByKey.get(board.metric_key);
-            return (
-              <Link key={board.id} href={`/my-data/boards/${board.id}`} className="card">
-                <p className="nm" style={{ marginBottom: 2 }}>
-                  {board.name}
-                </p>
-                <p className="tiny" style={{ marginBottom: 8 }}>
-                  {/* No selectedNames arg: an athlete-scoped `db` can't resolve other
-                      athletes' names for a 'selected' board (RLS — see
-                      fetchAthleteNames' own comment in leaderboards.ts), so this falls
-                      back to populationLabel's count-only branch for that case. */}
-                  {populationLabel(board)} ·{' '}
-                  {board.window_type === 'days'
-                    ? `last ${board.window_days} days`
-                    : board.window_type === 'season'
-                      ? 'this season'
-                      : 'all time'}
-                </p>
-                <p style={{ margin: 0 }}>
-                  You are <b>{own.position}{own.is_tied ? ' (tied)' : ''}</b> ·{' '}
-                  <span className="mono">{formatNumber(own.value, 1)}</span>
-                  {metric?.unit ?? ''}
-                </p>
-              </Link>
-            );
-          })}
-        </div>
-      )}
+        {mine.length === 0 ? (
+          <EmptyState
+            title="No leaderboards yet"
+            body="Boards your club publishes and includes you on appear here."
+          />
+        ) : (
+          <div className="stack" style={{ marginTop: 14 }}>
+            {mine.map(({ board, own }) => {
+              const metric = labelByKey.get(board.metric_key);
+              return (
+                <Link key={board.id} href={`/my-data/boards/${board.id}`} className="card">
+                  <p className="nm" style={{ marginBottom: 2 }}>
+                    {board.name}
+                  </p>
+                  <p className="tiny" style={{ marginBottom: 8 }}>
+                    {/* No selectedNames arg: an athlete-scoped `db` can't resolve other
+                        athletes' names for a 'selected' board (RLS — see
+                        fetchAthleteNames' own comment in leaderboards.ts), so this falls
+                        back to populationLabel's count-only branch for that case. */}
+                    {populationLabel(board)} ·{' '}
+                    {board.window_type === 'days'
+                      ? `last ${board.window_days} days`
+                      : board.window_type === 'season'
+                        ? 'this season'
+                        : 'all time'}
+                  </p>
+                  <p style={{ margin: 0 }}>
+                    You are <b>{own.position}{own.is_tied ? ' (tied)' : ''}</b> ·{' '}
+                    <span className="mono">{formatNumber(own.value, 1)}</span>
+                    {metric?.unit ?? ''}
+                  </p>
+                </Link>
+              );
+            })}
+          </div>
+        )}
 
-      <p className="cap">
-        <Link href="/me/leaderboards">Manage who sees you on a leaderboard</Link>
-      </p>
+        <p className="cap">
+          <Link href="/me/leaderboards">Manage who sees you on a leaderboard</Link>
+        </p>
+      </LeaderboardVisibilityGate>
     </>
   );
 }

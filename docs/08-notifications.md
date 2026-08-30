@@ -556,8 +556,17 @@ create table notification_preferences (
 ### 5.2 The athlete mute rule
 
 **An athlete can mute everything except `athlete.availability.changed` and
-`athlete.consent.required`.** There is a single "pause all notifications" control on the
-athlete settings screen, with an optional end date, and it does exactly what it says.
+`athlete.consent.required`.** The design calls for a single "pause all notifications" control on
+the athlete settings screen, with an optional end date, doing exactly what it says.
+
+> **NOT BUILT, as of 2026-08-30.** This paragraph described the control in the present tense for
+> long enough that it was taken for shipped behaviour. It is not: there is no pause control on
+> `/me`, no `users.notifications_paused_until` column in any migration, and no reference to
+> either anywhere in `src/` or `supabase/`. The per-notification-type preferences at
+> `/me/notifications` are real; the global pause is not. Nothing sends a push or an email yet
+> either, so there is currently nothing for a global pause to suppress — which is why this was
+> never the gap it looked like. Left specified rather than deleted, because the rule below is
+> still the right rule for when notifications are actually delivered.
 
 This is deliberate and it is a trade against compliance. The alternative, forcing prompts on
 people who have asked for them to stop, produces an OS-level mute instead. An OS-level mute

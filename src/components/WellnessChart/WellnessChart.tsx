@@ -98,6 +98,37 @@ export function WellnessChart({
     )
     .join(' ');
 
+  /* The athlete's own daily values, joined up.
+   *
+   * These used to be drawn only as isolated dots while the ROLLING MEAN got
+   * the one solid line — so the most prominent shape on an athlete's own
+   * chart was a smoothed average, and their actual day-to-day story was
+   * scattered specks. That inversion is the main reason this read as "too
+   * complex": the eye follows the line, and the line was the wrong series.
+   * Now the value is the line and the mean is the quiet reference behind it.
+   *
+   * Split into segments at every missing day rather than drawn as one path,
+   * so a gap stays a visible break. Interpolating across a day the athlete
+   * did not submit would invent a reading, which rule 7 forbids and which
+   * would also quietly flatter their consistency. */
+  const valueSegments: string[] = [];
+  let current: string[] = [];
+  series.forEach((b, i) => {
+    if (b.value === null) {
+      if (current.length > 1) valueSegments.push(current.join(' '));
+      current = [];
+      return;
+    }
+    current.push(`${current.length === 0 ? 'M' : 'L'} ${x(i).toFixed(1)} ${y(clamp(b.value)).toFixed(1)}`);
+  });
+  if (current.length > 1) valueSegments.push(current.join(' '));
+
+  // "Where am I now" is the question an athlete opens this chart to answer,
+  // so the latest real reading gets a ring and its number, and nothing else
+  // competes with it.
+  const lastWithValue = [...series].reverse().find((b) => b.value !== null);
+  const lastIndex = lastWithValue ? series.findIndex((b) => b.date === lastWithValue.date) : -1;
+
   // Flag markers sit in the empty strip above the plot (0 to MT), a different vertical
   // zone from the per-point above/below-band triangles drawn at the data value itself
   // below, and a different colour (--accent2, never used elsewhere in this chart) — two
@@ -148,44 +179,73 @@ export function WellnessChart({
           <path d={bandPath} fill="rgb(var(--accent-rgb) / 0.14)" stroke="none" />
         ) : null}
 
+        {/* The mean, demoted to a quiet dashed reference — it is context for
+            the band, not the story. */}
         {meanPath ? (
           <path
             d={meanPath}
             fill="none"
             stroke="var(--accent)"
-            strokeWidth={2}
+            strokeWidth={1.25}
+            strokeDasharray="3,4"
+            opacity={0.5}
             strokeLinejoin="round"
           />
         ) : null}
+
+        {/* The athlete's own readings, now the most prominent line. */}
+        {valueSegments.map((d) => (
+          <path
+            key={d.slice(0, 24)}
+            d={d}
+            fill="none"
+            stroke="var(--accent)"
+            strokeWidth={2.5}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+        ))}
 
         {series.map((b, i) => {
           if (b.value === null) return null;
           const position = bandPosition(b);
           const cx = x(i);
           const cy = y(clamp(b.value));
+          const isLast = i === lastIndex;
 
-          if (position === 'above') {
-            return (
-              <polygon
-                key={b.date}
-                points={`${cx},${cy - 5} ${cx - 4.6},${cy + 3.4} ${cx + 4.6},${cy + 3.4}`}
-                fill="var(--warn)"
-              />
-            );
-          }
-          if (position === 'below') {
-            return (
-              <polygon
-                key={b.date}
-                points={`${cx},${cy + 5} ${cx - 4.6},${cy - 3.4} ${cx + 4.6},${cy - 3.4}`}
-                fill="var(--bad)"
-              />
-            );
-          }
+          // Outside-the-band days keep their own colour, but as dots rather
+          // than up/down triangles: the triangle direction duplicated what
+          // the dot's own height already says, and read as a third symbol to
+          // decode. Colour alone is not the only channel — the caption below
+          // the chart counts these in words too.
+          const fill =
+            position === 'above' ? 'var(--warn)' : position === 'below' ? 'var(--bad)' : 'var(--accent)';
+
           return (
-            <circle key={b.date} cx={cx} cy={cy} r={2.6} fill="var(--muted)" />
+            <g key={b.date}>
+              {isLast ? (
+                <circle cx={cx} cy={cy} r={7} fill="none" stroke={fill} strokeWidth={1.5} opacity={0.45} />
+              ) : null}
+              <circle cx={cx} cy={cy} r={isLast ? 4.5 : 3.2} fill={fill} />
+            </g>
           );
         })}
+
+        {/* Today's number, spelled out — the one value most athletes open
+            this chart to read, rather than estimating it off the axis. */}
+        {lastWithValue && lastIndex >= 0 ? (
+          <text
+            x={Math.min(x(lastIndex) + 10, W - MR)}
+            y={y(clamp(lastWithValue.value!)) - 10}
+            textAnchor={lastIndex > series.length - 3 ? 'end' : 'start'}
+            fontFamily="var(--font-mono)"
+            fontSize={13}
+            fontWeight={700}
+            fill="var(--text)"
+          >
+            {lastWithValue.value!.toFixed(decimals)}
+          </text>
+        ) : null}
 
         {flagMarkers.map((f) => {
           const cx = x(f.i);

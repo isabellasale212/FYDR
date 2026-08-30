@@ -261,13 +261,14 @@ async function WellnessTab({
         <h2 className="card-title" id="wellness-title">
           Readiness
         </h2>
+        {/* Was: "Against your own 28 day rolling mean and ±1SD band...".
+         *  Accurate, and unreadable for the audience — the club asked for
+         *  less wording and less complexity here. The statistics are
+         *  unchanged; only the explanation is. "Your usual range" is what
+         *  the ±1SD band actually means to the person reading it. */}
         <p className="import-sub">
-          Against your own {ROLLING_DAYS} day rolling mean and{' '}
-          <span title="The normal range for your own numbers, not anyone else's.">
-            &plusmn;1SD band
-          </span>{' '}
-          &mdash; the normal range for your own numbers. What matters is whether
-          today is normal for you, not the raw number.
+          The shaded band is your usual range. What matters is whether today is
+          normal <em>for you</em>, not the number itself.
         </p>
 
         {submitted === 0 ? (
@@ -294,9 +295,14 @@ async function WellnessTab({
           <b>
             {submitted} of {WINDOW_DAYS}
           </b>{' '}
-          days submitted; the {WINDOW_DAYS - submitted} missing days are drawn as
-          gaps, never as zero. {outside} day{outside === 1 ? '' : 's'} fell
-          outside your own band.
+          days logged
+          {outside > 0 ? (
+            <>
+              {' '}
+              &middot; {outside} outside your usual range
+            </>
+          ) : null}
+          . Days you missed are left blank, never counted as zero.
         </p>
       </section>
 

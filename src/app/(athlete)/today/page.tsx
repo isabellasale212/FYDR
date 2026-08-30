@@ -7,6 +7,7 @@ import { fetchAthleteAvailability } from '@/lib/queries/availability';
 import { fetchMyOutstanding } from '@/lib/queries/compliance';
 import {
   fetchAthleteDaySessions,
+  fetchAthleteWeekSessionTypes,
   fetchWeekMdLabels,
   mondayOf,
 } from '@/lib/queries/schedule';
@@ -86,14 +87,28 @@ export default async function TodayPage({
   const weekStart = mondayOf(today);
   const nutritionWeekStart = addDays(weekStart, -7);
 
-  const [availability, outstanding, sessions, nutritionCheckin, myAllocation, weekMd] =
-    await Promise.all([
+  const [
+    availability,
+    outstanding,
+    sessions,
+    nutritionCheckin,
+    myAllocation,
+    weekMd,
+    userRow,
+    weekSessionTypes,
+  ] = await Promise.all([
       fetchAthleteAvailability(db, orgId, athleteId),
       fetchMyOutstanding(db, athleteId, today),
       fetchAthleteDaySessions(db, orgId, athleteId, today, timezone),
       fetchCheckinForWeek(db, athleteId, nutritionWeekStart),
       fetchMyAllocation(db, athleteId, weekStart),
       fetchWeekMdLabels(db, orgId, weekStart, timezone),
+      // Only for the header glyph. This page drew initials unconditionally,
+      // so an athlete who had uploaded a photo on Me still saw initials
+      // here — the photo was never fetched on this route at all.
+      db.from('users').select('avatar_url').eq('id', claims.userId).maybeSingle(),
+      // Match/training/recovery/rest colouring for the week strip.
+      fetchAthleteWeekSessionTypes(db, orgId, athleteId, weekStart, timezone),
     ]);
 
   const todoItems = [
@@ -133,9 +148,17 @@ export default async function TodayPage({
   return (
     <>
       <div className="hd">
-        <span className="av" aria-hidden="true">
-          {initials({ first_name: firstName, last_name: lastName })}
-        </span>
+        {userRow.data?.avatar_url ? (
+          /* Supabase Storage URL, already public and sized by the uploader.
+           * next/image would need a remotePatterns entry for a host that
+           * varies per project, for a 30px glyph. */
+          // eslint-disable-next-line @next/next/no-img-element
+          <img className="av" src={userRow.data.avatar_url} alt="" width={30} height={30} />
+        ) : (
+          <span className="av" aria-hidden="true">
+            {initials({ first_name: firstName, last_name: lastName })}
+          </span>
+        )}
         <h1 className="d">{formatDate(today, timezone)}</h1>
         <span className={`pill status-pill ${outstandingCount > 0 ? 'pill-warn' : 'pill-good'}`}>
           {outstandingCount > 0 ? (
@@ -159,10 +182,34 @@ export default async function TodayPage({
           const md = mdLabel(offset);
           const tone = md === 'MD' ? 'md' : md === 'MD-1' ? 'md-1' : undefined;
           const explainer = mdExplainer(offset);
+
+          /* Day kind, so match, training and rest days are told apart at a
+           * glance rather than by reading MD labels. Match wins over
+           * everything (a matchday with a shakeout on it is still a
+           * matchday); recovery only counts as recovery when nothing harder
+           * shares the day; anything else with a session is training. A day
+           * with no session of this athlete's own is rest — genuinely rest,
+           * since fetchAthleteWeekSessionTypes resolves the same "mine" set
+           * as the day list below, not merely a day nothing was loaded for. */
+          const types = weekSessionTypes.get(date);
+          const kind = !types
+            ? 'rest'
+            : types.has('match')
+              ? 'match'
+              : types.size === 1 && types.has('recovery')
+                ? 'recovery'
+                : 'training';
+          const kindLabel =
+            kind === 'match' ? 'Match' : kind === 'training' ? 'Training' : kind === 'recovery' ? 'Recovery' : 'Rest';
+
           return (
-            <div key={date} className="wk-day" data-today={isToday}>
+            <div key={date} className="wk-day" data-today={isToday} data-kind={kind}>
               <span className="wi">{WEEKDAY_INITIAL[i]}</span>
               <span className="wn mono">{Number(date.slice(8, 10))}</span>
+              {/* Colour is never the only channel — the kind is also spelled
+                  out for screen readers and on hover. */}
+              <span className="visually-hidden">{kindLabel}</span>
+              <span className="wk-kind" aria-hidden="true" title={kindLabel} />
               <span className="wo mono" data-tone={tone} title={explainer ?? undefined}>
                 {md ?? ''}
               </span>
@@ -170,6 +217,12 @@ export default async function TodayPage({
           );
         })}
       </div>
+      <p className="cap" style={{ marginTop: 6 }}>
+        <span className="wk-key" data-kind="match" aria-hidden="true" /> Match{' '}
+        <span className="wk-key" data-kind="training" aria-hidden="true" /> Training{' '}
+        <span className="wk-key" data-kind="recovery" aria-hidden="true" /> Recovery{' '}
+        <span className="wk-key" data-kind="rest" aria-hidden="true" /> Rest
+      </p>
 
       <AvailabilityBanner
         status={availability.current?.status ?? null}

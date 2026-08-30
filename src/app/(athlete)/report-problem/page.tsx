@@ -44,7 +44,7 @@ export default async function ReportProblemPage({
   const reports = await fetchMyProblemReports(db, athleteId);
 
   const toastMessage =
-    params.submitted === '1' ? 'Sent · your club’s medical staff will follow up.' : null;
+    params.submitted === '1' ? 'Sent · your club’s staff will follow up.' : null;
 
   return (
     <>

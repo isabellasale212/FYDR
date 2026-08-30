@@ -581,9 +581,11 @@ content and it never appears twice in a fortnight.
 
 ### Notifications paused by the athlete
 
-When `users.notifications_paused_until` is in the future, a quiet caption sits in the header
-area: "Notifications paused until 12 Aug." No banner, no action. The athlete chose this
-(`08-notifications.md` §5.2).
+**Not built** — neither this caption nor the `users.notifications_paused_until` column it reads
+exists (see `08-notifications.md` §5.2, which carries the same correction). Specified behaviour,
+kept for when notification delivery is actually built: when `users.notifications_paused_until` is
+in the future, a quiet caption sits in the header area — "Notifications paused until 12 Aug." No
+banner, no action. The athlete chose this.
 
 ---
 

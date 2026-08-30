@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { LeaderboardConsentToggle } from '@/components/LeaderboardConsentToggle/LeaderboardConsentToggle';
 import { GlobalOptOutToggle } from '@/components/GlobalOptOutToggle/GlobalOptOutToggle';
+import { HideLeaderboardsToggle } from '@/components/HideLeaderboardsToggle/HideLeaderboardsToggle';
 import { fetchLeaderboardConsent, fetchMyOptOuts } from '@/lib/queries/leaderboards';
 import { ageFrom } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
@@ -54,6 +55,24 @@ export default async function MyLeaderboardsSettingsPage() {
           </p>
         </section>
       )}
+
+      {/* Ordered deliberately: hiding is the lighter, reversible, local
+       *  choice, so it comes first. Leaving is the real one with real
+       *  consequences and sits below it. The club asked for leaving to be
+       *  removed entirely — refused: migration 0016 carries a hard
+       *  `check (allow_opt_out)` on GDPR Article 7(3) grounds, and for an
+       *  adult the opt-out is their only exit (the consent toggle above
+       *  renders for minors only). */}
+      <section className="card" style={{ marginTop: 14 }} aria-labelledby="hide-title">
+        <h2 className="card-title" id="hide-title">
+          Seeing leaderboards
+        </h2>
+        <p className="import-sub">
+          Turn these off if you would rather not see rankings. This changes what you
+          see, not whether you are on a board.
+        </p>
+        <HideLeaderboardsToggle />
+      </section>
 
       <section className="card" style={{ marginTop: 14 }} aria-labelledby="global-title">
         <h2 className="card-title" id="global-title">

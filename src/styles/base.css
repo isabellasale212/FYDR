@@ -1089,6 +1089,66 @@ table.tbl tbody tr:hover {
   color: var(--accent-text);
 }
 
+/* Match / training / recovery / rest, as a dot under each day's number.
+ * The club asked for the week to read at a glance rather than by decoding
+ * MD-n labels. Colour is never the only channel: each day also carries a
+ * visually-hidden word and a title, and the key sits under the strip.
+ *
+ * Reuses the semantic status tokens rather than inventing four new hues —
+ * match is the sharp one (--bad is this system's "highest attention", which
+ * is what a matchday is on this strip, not a warning), training the accent,
+ * recovery the calm good, rest deliberately faint so an empty day recedes
+ * instead of competing. */
+.wk-kind {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--faint);
+  opacity: 0.45;
+}
+.wk-day[data-kind='match'] .wk-kind {
+  background: var(--bad);
+  opacity: 1;
+}
+.wk-day[data-kind='training'] .wk-kind {
+  background: var(--accent);
+  opacity: 1;
+}
+.wk-day[data-kind='recovery'] .wk-kind {
+  background: var(--good);
+  opacity: 1;
+}
+.wk-day[data-kind='match'] .wn {
+  border-color: var(--bad);
+  font-weight: 700;
+}
+.wk-key {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-inline-end: 3px;
+  margin-inline-start: 8px;
+  vertical-align: baseline;
+  background: var(--faint);
+  opacity: 0.45;
+}
+.wk-key:first-child {
+  margin-inline-start: 0;
+}
+.wk-key[data-kind='match'] {
+  background: var(--bad);
+  opacity: 1;
+}
+.wk-key[data-kind='training'] {
+  background: var(--accent);
+  opacity: 1;
+}
+.wk-key[data-kind='recovery'] {
+  background: var(--good);
+  opacity: 1;
+}
+
 /* -------- to do / sessions row list, §5 --------
  * Shared .todo/.sess row shapes, restyled to the spec's exact grid and
  * spacing but keeping the class names every athlete page already renders,
@@ -2004,6 +2064,13 @@ table.tbl tbody tr:hover {
   align-items: center;
   justify-content: center;
   flex: none;
+}
+/* Both avatar slots take either an initials <span> or an uploaded <img>.
+ * The photo has to fill the square rather than letterbox inside it, and a
+ * non-square upload must crop, not squash — object-fit does both. */
+img.me-avatar,
+img.av {
+  object-fit: cover;
 }
 .me-profile .nm {
   font-size: 17px;

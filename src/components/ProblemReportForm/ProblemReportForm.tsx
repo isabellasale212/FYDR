@@ -55,6 +55,11 @@ export function ProblemReportForm({ orgId, athleteId, userId }: Props) {
         <span className="g g-faint" aria-hidden="true">
           ⓘ
         </span>
+        {/* The button says "Send to staff" at the club's request, but who
+         *  actually receives this has not changed and the athlete should not
+         *  be misled about it: problem_reports is medical-only by design
+         *  (migration 0040 — coach and admin cannot see that a report even
+         *  exists). So the notice keeps naming medical explicitly. */}
         <span>
           Goes to your club&rsquo;s medical staff. Not a substitute for emergency care &mdash; if
           this is urgent, contact emergency services or your GP.
@@ -105,7 +110,7 @@ export function ProblemReportForm({ orgId, athleteId, userId }: Props) {
           disabled={mutation.isPending || body.trim().length === 0}
           style={{ width: '100%', minHeight: 56 }}
         >
-          {mutation.isPending ? 'Sending…' : 'Send to medical'}
+          {mutation.isPending ? 'Sending…' : 'Send to staff'}
         </button>
       </div>
     </form>

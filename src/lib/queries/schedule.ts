@@ -195,6 +195,72 @@ export async function fetchAthleteDaySessions(
   return sessions.filter((s) => mine.has(s.id));
 }
 
+/** Which of an athlete's own days in a week carry which kinds of session.
+ *
+ *  Exists for the Today week strip, which could previously only colour a day
+ *  by its MD offset — so a training day and a rest day looked identical, and
+ *  "what is this week actually like" was unanswerable at a glance. Returns a
+ *  date -> session types map; a date absent from the map is a genuine rest
+ *  day for this athlete, not merely a day nothing was fetched for.
+ *
+ *  Same membership-and-participants resolution as fetchAthleteDaySessions
+ *  above, widened from one day to a range: a session counts as this
+ *  athlete's if they are named on it individually or through a group they
+ *  are currently in. Deliberately not a second, looser definition of "my
+ *  session" — the two must agree or the strip would contradict the day list
+ *  directly beneath it. */
+export async function fetchAthleteWeekSessionTypes(
+  db: Db,
+  orgId: string,
+  athleteId: string,
+  weekStart: string,
+  timezone: string,
+): Promise<Map<string, Set<string>>> {
+  const bounds = rangeBounds(weekStart, addDays(weekStart, 6), timezone);
+  const [sessions, memberships] = await Promise.all([
+    fetchSessionsBetween(db, orgId, bounds.from, bounds.to),
+    db
+      .from('group_memberships')
+      .select('group_id')
+      .eq('org_id', orgId)
+      .eq('athlete_id', athleteId)
+      .is('removed_at', null),
+  ]);
+
+  if (memberships.error) throw new Error(memberships.error.message);
+  const byDate = new Map<string, Set<string>>();
+  if (sessions.length === 0) return byDate;
+
+  const myGroups = new Set((memberships.data ?? []).map((m) => m.group_id));
+
+  const { data, error } = await db
+    .from('session_participants')
+    .select('session_id, athlete_id, group_id')
+    .eq('org_id', orgId)
+    .in(
+      'session_id',
+      sessions.map((s) => s.id),
+    );
+  if (error) throw new Error(error.message);
+
+  const mine = new Set(
+    (data ?? [])
+      .filter((p) => p.athlete_id === athleteId || (p.group_id !== null && myGroups.has(p.group_id)))
+      .map((p) => p.session_id),
+  );
+
+  for (const s of sessions) {
+    if (!mine.has(s.id)) continue;
+    // The session's own local calendar date, not a UTC one — a 19:00 session
+    // in a zone ahead of UTC must not land on the following day in the strip.
+    const date = dateInTz(new Date(s.starts_at), timezone);
+    const set = byDate.get(date) ?? new Set<string>();
+    set.add(s.session_type);
+    byDate.set(date, set);
+  }
+  return byDate;
+}
+
 export type RecentSession = Session & {
   rpe: number | null;
   session_load: number | null;

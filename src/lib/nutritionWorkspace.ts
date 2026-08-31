@@ -37,7 +37,22 @@ export type WorkspaceAthlete = {
    *  the athlete has never been weighed inside the page's fetch window. */
   massKg: number | null;
   massHistory: MassPoint[]; // ascending by date, the selected trend window only
-  massBand: MassBand | null; // real substitute for the spec's fabricated target range
+  /** WHERE THEY HAVE BEEN: mean +/- 1 SD of their own trailing weekly weigh-ins.
+   *  Descriptive, authorless, recomputes on every weigh-in. NOT the staff target —
+   *  that is `targetRange` below, and the two must never be drawn as one band. */
+  massBand: MassBand | null;
+  /** WHERE STAFF WANT THEM: the live row from body_mass_target_ranges (migration
+   *  0060), or null if nobody has set one.
+   *
+   *  STAFF ONLY. The athlete never sees this, on any screen — the table grants an
+   *  athlete session no rows at all, and every renderer of this field is under
+   *  src/app/(staff)/. It is also never ranked. Both are the client's own rules; see
+   *  lib/queries/bodyMassTargetRange.ts's header before adding a caller.
+   *
+   *  Deliberately narrowed to the two bounds rather than carrying the whole row: the
+   *  workspace draws a band, it does not need who set it or when, and a type that
+   *  cannot carry the rationale text cannot leak the rationale text. */
+  targetRange: { low: number; high: number } | null;
   change7d: number | null; // %, real, from body_composition
   change12wk: number | null; // %, real
   loggedDatesThisWeek: string[]; // ISO dates with a weigh-in in the current Mon-Sun week
@@ -101,6 +116,12 @@ export function buildWorkspaceAthlete(input: {
   weekEnd: string; // Sunday of the viewed week, inclusive
   checkins: { week_start: string; answer: 'yes' | 'roughly' | 'no' }[]; // newest first
   hasPersonalTargetOverride: boolean;
+  /* The live staff-set range, or null. Passed straight through untouched — unlike
+   * massBand it is NOT computed from anything and NOT clipped to any window: a target
+   * range is a standing instruction, not a view of a period, so narrowing the mass
+   * trend to a week must not make the target disappear. Same reasoning as `massKg`
+   * above, which had exactly that bug. */
+  targetRange: { low: number; high: number } | null;
 }): WorkspaceAthlete {
   const withMass = input.history.filter(
     (h): h is { measured_on: string; body_mass_kg: number } => h.body_mass_kg !== null,
@@ -160,6 +181,7 @@ export function buildWorkspaceAthlete(input: {
     massKg,
     massHistory,
     massBand,
+    targetRange: input.targetRange,
     change7d,
     change12wk,
     loggedDatesThisWeek,

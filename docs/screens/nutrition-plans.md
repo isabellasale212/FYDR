@@ -429,6 +429,38 @@ create index on nutrition_entries (athlete_id, entry_date desc)
   where superseded_by is null;
 ```
 
+### AS BUILT — the staff-set body-mass target range, migration 0060
+
+The targets table's mass column used to carry **one** band, `computeMassBand`: the athlete's own
+trailing weekly mean ± 1 SD, shipped as an honest substitute after this screen's target-range band
+was cut for having no backing column. Migration 0060 adds
+`body_mass_target_ranges` and the table now carries **two**, in adjacent columns.
+
+| Column | Means | Source | Drawn as |
+|---|---|---|---|
+| **12-wk range** | Where they have been | Their own weigh-ins, mean ± 1 SD, no author | **Filled** band, accent wash |
+| **Staff target** | Where staff want them | A named coach or physio, on a date | **Unfilled** bracket, dashed, neutral |
+
+They are separate columns rather than two bands stacked on one track, each with its own header
+word, its own caption ("in range" versus "on target"), and its own ink. A legend beneath the table
+names both in full. On the selected-athlete card, where both *do* overlay one sparkline, the same
+four channels apply plus a second pill: "In trend / Above trend / Below trend" for the band,
+"On target / Above target / Below target" for the range. An athlete is often one and not the other,
+which is the point — a merged verdict would hide the interesting case.
+
+**Not part of `nutrition_targets`.** It is its own staff-only table with its own policies, because
+an athlete holds a row select on both `athletes` and `body_composition` and Postgres RLS is
+row-level, not column-level: the range would be readable by the athlete it is about through one
+direct column select. It is **never shown to the athlete** and **never rankable** — the client's own
+rules — and both are enforced structurally rather than by this screen's rendering choices. See
+`athlete-profile.md`, "The staff-set body-mass target range", for the full design and
+`leaderboards.md` for the four unrankability locks.
+
+**Where it is set.** The player profile's Body weight card, whose third action button ("Set target
+range") was disabled from the day it was built for want of this column. This screen displays and
+judges against the range; it does not author it, so that there is one place a target is set rather
+than two that can disagree.
+
 ### Query: resolve targets for the squad over a week
 
 ```sql

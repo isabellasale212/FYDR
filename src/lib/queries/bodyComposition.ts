@@ -33,7 +33,16 @@ export type BodyCompositionEntry = {
  *  the trailing weekly readings (the mean +/- SD band and the sparkline), and "days
  *  logged this week" (the week's-logging strip and the "Logged {n} of 7" chase-list
  *  reason) — see lib/nutritionRules.ts's header for why those are real substitutes for
- *  the spec's fabricated target range and its undefined "meal logging" respectively. */
+ *  the spec's target range and its undefined "meal logging" respectively.
+ *
+ *  On the first of those: the mean +/- SD band was built as a substitute when no
+ *  target-range column existed. Migration 0060 added one — body_mass_target_ranges,
+ *  its OWN staff-only table, never a column here. That placement is deliberate and
+ *  this file is the reason it matters: body_composition carries
+ *  body_composition_self_select, so the athlete reads their own rows, and RLS is
+ *  row-level. A target bound added to this table would be readable by the athlete it
+ *  is about, and sarPackAssembly.ts select(*)s this table into their subject access
+ *  pack besides. Do not add target columns here. */
 /** PAGED SINCE THE WINDOW BECAME SELECTABLE. `sinceIso` used to be a fixed
  *  today-minus-90 computed on /nutrition; it is now whatever the body-mass
  *  trend's PeriodSelector resolves, up to MAX_WINDOW_DAYS (730). A 40-athlete

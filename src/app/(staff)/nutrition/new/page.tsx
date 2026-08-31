@@ -73,6 +73,13 @@ export default async function NewNutritionTargetPage() {
       weekEnd: today,
       checkins: [],
       hasPersonalTargetOverride: false,
+      /* Null, not fetched: the only field read off this result is `trendFlag`, and the
+       * staff target range (migration 0060) feeds no part of it. Fetching it here would
+       * pull a staff-only value onto a screen that has no use for it, which is the kind
+       * of accidental reach the table exists to avoid. The range is set and shown on
+       * the player profile and the /nutrition workspace; this screen authors MACRO
+       * targets, which is a different thing. */
+      targetRange: null,
     }).trendFlag;
     if (trendFlag) {
       athleteTrends[a.id] = { direction: trendFlag.direction, note: trendFlagSentence(trendFlag) };

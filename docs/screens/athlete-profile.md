@@ -148,6 +148,67 @@ weigh-in a day. The wellness read is *provably* bounded instead of paged: the
 day, so 730 visible days plus the 14-day lead-in is at most 744 rows. If that index is ever dropped,
 `fetchWellnessByAthlete` must be paged.
 
+### The staff-set body-mass target range — AS BUILT, migration 0060
+
+**This section replaces a cut.** The Body weight card's spec drew a target range and an "On
+target" pill, and both were cut twice — once here and once on `/nutrition` — for the same real
+reason: no target-weight column existed anywhere in the schema. `body_composition` (migration
+0024) stores *measurements* only. The substitute shipped in their place was `computeMassBand`,
+the athlete's own trailing weekly mean ± 1 SD, which is real and stays.
+
+Migration 0060 adds the column the cut was made for. The client asked for it directly ("why can
+I not set a target weight range?") and gave four rules, which are **binding, not defaults**:
+
+1. **Staff-set only.**
+2. **Never visible to the athlete.**
+3. **A range** (low and high), never a single target number.
+4. **Never on a leaderboard.**
+
+**It is its own table, `body_mass_target_ranges`, and that is the whole design.** It could not be
+a column on `athletes` or on `body_composition`, because both grant the athlete a select on their
+own row (`athletes_self_select`, `body_composition_self_select`) and Postgres RLS is **row**-level,
+not column-level. A target range stored on either is readable by the athlete it is about through
+one direct PostgREST column select, whatever the UI renders — rule 2 would be a promise made by
+the interface and broken by the database. `body_composition` carries a third leak path on top:
+`sarPackAssembly.ts` `select('*')`s it with the service-role client straight into the athlete's own
+subject access pack. Same structural split as `injuries`/`injury_clinical` (CLAUDE.md rule 3) and
+`problem_reports`/`problem_report_notes` (migration 0055).
+
+**Roles: coach and medical.** There is no `nutritionist` value in `app_role` — the demo seed's own
+nutritionist holds `coach`, and says so in a comment — so excluding coach would lock out the person
+whose job this is. Medical holds it for return-to-play mass management, unnarrowed. Admin gets
+nothing, matching every other per-athlete domain. Exactly the pair that may already write
+`body_composition`: whoever records the measurement may set the range it is judged against.
+
+**History.** Effective-dated (`effective_from` / `effective_to`), one live range per athlete, and
+the bounds are **immutable once written** — enforced by a trigger, since an RLS `WITH CHECK` cannot
+see `OLD`. Changing a target closes the old row and inserts a new one, so "what were we asking of
+him in pre-season?" stays answerable. Retraction is a soft delete (rule 4); there is no hard delete
+for any authenticated role.
+
+#### Two bands, one card — and they must never be confusable
+
+The card now carries both. They answer opposite questions and the screen says so four ways:
+
+| | `computeMassBand` | `body_mass_target_ranges` |
+|---|---|---|
+| Means | **Where they have been** | **Where staff want them** |
+| Source | Their own trailing weekly mean ± 1 SD | A named coach or physio, on a date |
+| Exists when | They have two weigh-ins | Somebody decided |
+| Drawn as | **Filled** area, solid, `--accent2` | **Unfilled** bracket, dashed, `--muted` |
+| Called | "typical range", "In trend / Above trend / Below trend" | "staff target", "On target / Above target / Below target" |
+
+Fill versus stroke, solid versus dashed, accent versus neutral, plus separate words in the caption
+and separate pills. Four independent channels, because the failure — a reader taking "he's in the
+band" to mean the wrong one — is silent, and one channel is one refactor from being lost. The
+sparkline's y domain **includes the target bounds**: clipping the bracket to the viewBox would draw
+"3 kg over" and "15 kg over" identically, flush to the edge, which is exactly the case a coach
+opened the card to see.
+
+Tests: `supabase/tests/320_body_mass_target_ranges_test.sql`, written before the migration per
+CLAUDE.md §5. Rule 4 is asserted **structurally** there, not by convention — see
+`leaderboards.md` for the four locks.
+
 ### Body mass and readiness are not the same kind of signal
 
 **Decided: the wellness mean is capped at a trailing 28 days; the submission count follows the

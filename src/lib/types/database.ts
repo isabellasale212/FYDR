@@ -390,6 +390,73 @@ export type Database = {
         }
       ]
     }
+    body_mass_target_ranges: {
+      Row: {
+        id: string
+        org_id: string
+        athlete_id: string
+        target_low_kg: number
+        target_high_kg: number
+        rationale: string | null
+        set_by: string
+        set_at: string
+        effective_from: string
+        effective_to: string | null
+        updated_at: string
+        deleted_at: string | null
+      }
+      Insert: {
+        id?: string
+        org_id: string
+        athlete_id: string
+        target_low_kg: number
+        target_high_kg: number
+        rationale?: string | null
+        set_by: string
+        set_at?: string
+        effective_from?: string
+        effective_to?: string | null
+        updated_at?: string
+        deleted_at?: string | null
+      }
+      Update: {
+        id?: string
+        org_id?: string
+        athlete_id?: string
+        target_low_kg?: number
+        target_high_kg?: number
+        rationale?: string | null
+        set_by?: string
+        set_at?: string
+        effective_from?: string
+        effective_to?: string | null
+        updated_at?: string
+        deleted_at?: string | null
+      }
+      Relationships: [
+        {
+          foreignKeyName: "body_mass_target_ranges_athlete_id_fkey"
+          columns: ["athlete_id"]
+          isOneToOne: false
+          referencedRelation: "athletes"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "body_mass_target_ranges_org_id_fkey"
+          columns: ["org_id"]
+          isOneToOne: false
+          referencedRelation: "organisations"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "body_mass_target_ranges_set_by_fkey"
+          columns: ["set_by"]
+          isOneToOne: false
+          referencedRelation: "users"
+          referencedColumns: ["id"]
+        }
+      ]
+    }
     compliance_expectations: {
       Row: {
         id: string

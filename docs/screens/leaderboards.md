@@ -454,6 +454,31 @@ every wellness and body composition metric, and the query that builds a board jo
 check constraint. A board cannot be created on an ineligible metric by any client, including a
 direct PostgREST call, because the RLS-protected insert validates against the catalogue.
 
+#### The staff-set body-mass target range is *more* unrankable than the measurement
+
+Migration 0060 adds `body_mass_target_ranges` — the range staff want an athlete's mass to sit in.
+The client's fourth rule for it was "never on a leaderboard", and it deserves a stronger guard than
+`leaderboard_eligible = false`, because ranking a *target* would publish what staff privately want
+an athlete's body to be, which is worse on every count listed above than ranking the measurement.
+
+So the guarantee is structural rather than a catalogue flag, and it rests on **four independent
+locks**. `supabase/tests/320_body_mass_target_ranges_test.sql` §6 asserts all four separately, so
+any one regressing fails the suite even while the other three hold:
+
+1. **No catalogue row names it.** Nothing in `metric_definitions` has it as `source_table`, and no
+   metric key or label refers to a target range. `compute_leaderboard` computes from that table, so
+   nothing points at it and nothing here is computable.
+2. **No client can add one.** `authenticated` holds `SELECT` only on `metric_definitions` — the
+   catalogue is seeded by migration, "the same posture as an enum" (migration 0016). Lock 1 cannot
+   be unlocked at runtime by any role.
+3. **`leaderboards.metric_key` is a foreign key into the catalogue.** A board naming a metric that
+   does not exist is refused by the database, not by an application check somebody can forget. Even
+   a coach with full board-authoring rights cannot name it.
+4. **Nothing in the schema reads the table** except its own guard trigger. No function body and no
+   view definition mentions it, so there is no security-definer side door around locks 1–3 — which
+   matters specifically because `compute_leaderboard` *is* `security definer` and therefore bypasses
+   the RLS that keeps the table staff-only in the first place.
+
 ### Metrics that are eligible but discouraged
 
 `training.total_session_load` is rankable and probably should not be ranked. Rewarding the

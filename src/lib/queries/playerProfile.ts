@@ -40,10 +40,31 @@ import type { Db } from './groups';
  *     note explaining why, not silently dropped.
  * Body weight (§10) sits between those two: body_composition is a real
  * table with real columns, but shipped with zero rows anywhere in this
- * project — see the seed enrichment note below. The target range and "On
- * target" pill in the spec have no backing column at all (no
- * target_weight_kg anywhere in the schema), so those are cut too; the
- * value, history and trend delta are real. */
+ * project — see the seed enrichment note below. The value, history and
+ * trend delta are real.
+ *
+ * THE TARGET RANGE IS NO LONGER CUT — CORRECTED, MIGRATION 0060. This
+ * paragraph used to end "The target range and 'On target' pill in the spec
+ * have no backing column at all (no target_weight_kg anywhere in the
+ * schema), so those are cut too." That was true when written and is now
+ * wrong: migration 0060 added body_mass_target_ranges, read through
+ * lib/queries/bodyMassTargetRange.ts. The client asked for it directly and
+ * gave four binding rules — staff-set, never athlete-visible, a RANGE not a
+ * single number, never leaderboarded.
+ *
+ * IT IS DELIBERATELY NOT FETCHED HERE, and that is a design choice rather
+ * than an omission. fetchPlayerProfile assembles what the page renders for
+ * anyone allowed on it; the target range is readable by coach and medical
+ * only, so folding it into this function would put a staff-only value inside
+ * the same object as everything else and make every future consumer of
+ * PlayerProfile responsible for not leaking it. The page fetches it
+ * separately, behind its own role check, and hands it only to the components
+ * that draw it. Keep it that way.
+ *
+ * The band this file already computes for the sparkline is NOT the target
+ * range and must not be conflated with it: computeMassBand is where the
+ * athlete HAS BEEN (their own trailing mean +/- 1 SD), the target range is
+ * where staff WANT them. See lib/nutritionRules.ts's header. */
 
 /* ACWR windows, band and computation all come from lib/acwr.ts now — this
  * file used to carry its own copy of the maths and its own hardcoded 1.5

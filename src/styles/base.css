@@ -2912,6 +2912,52 @@ img.av {
   }
 }
 
+/* ---------- staff-set body-mass target range, migration 0060 ----------
+ *
+ * The swatch is the legend for the dashed bracket drawn on .pp-sparkline. Same
+ * neutral --muted, same dash, so the line beside the words "Staff target" and the
+ * line on the chart are visibly the same object — as against the athlete's own
+ * weigh-in history, which is a SOLID --accent2 line over a filled area. Stroke
+ * versus fill, dashed versus solid, neutral versus blue: three channels, so the
+ * two bands stay distinguishable in greyscale and under colour-vision deficiency,
+ * and neither is left relying on a colour convention nobody was told. */
+.pp-target-swatch {
+  display: inline-block;
+  width: 16px;
+  height: 0;
+  vertical-align: middle;
+  margin-right: 4px;
+  border-top: 1.5px dashed var(--muted);
+}
+/* The form says out loud that the athlete never sees this. Deliberately not a
+ * warning colour — this is not an error state, it is the standing fact about what
+ * kind of note the person is writing. */
+.pp-target-private {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--hair);
+  border-radius: 6px;
+  background: var(--surf2);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.pp-target-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 4px;
+}
+.pp-target-history {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--hair);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  color: var(--faint);
+}
+
 /* ---------- group reorder, GroupReorderButtons.tsx ---------- */
 .reorder-btn {
   width: 28px;
@@ -4534,6 +4580,23 @@ button.dash-stat {
   border-radius: 3px;
   background: rgb(var(--accent-rgb) / 0.16);
 }
+/* The STAFF-SET target range (migration 0060), deliberately not .nutr-range-band.
+ *
+ * .nutr-range-band above is a FILLED accent wash: the athlete's own trailing mean
+ * ± 1 SD, a cloud of where they have been, computed with no author. This is an
+ * UNFILLED, DASHED, NEUTRAL bracket: a rule a named member of staff drew. The two sit
+ * in adjacent columns on the same screen, so the difference has to be visible without
+ * reading the header — fill versus stroke, solid versus dashed, and accent versus
+ * neutral are three independent channels, which keeps them apart in greyscale and
+ * under every common colour-vision deficiency, not only in full colour. */
+.nutr-target-bracket {
+  position: absolute;
+  top: 2px;
+  height: 8px;
+  border: 1px dashed var(--muted);
+  border-radius: 3px;
+  background: none;
+}
 .nutr-range-marker {
   position: absolute;
   top: 0;
@@ -4541,6 +4604,28 @@ button.dash-stat {
   height: 12px;
   border-radius: 1.5px;
   transform: translateX(-50%);
+}
+/* The legend that names both bands in words. A visual convention nobody was told is
+ * not a label, and this table now draws two bands that mean opposite kinds of thing. */
+.nutr-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 18px;
+}
+.nutr-legend-band {
+  display: inline-block;
+  width: 18px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgb(var(--accent-rgb) / 0.16);
+}
+.nutr-legend-bracket {
+  display: inline-block;
+  width: 18px;
+  height: 8px;
+  border: 1px dashed var(--muted);
+  border-radius: 3px;
 }
 .nutr-range-caption {
   font-size: 10px;
@@ -4653,6 +4738,17 @@ button.dash-stat {
   font-size: 10.5px;
   color: var(--faint);
   margin-top: 4px;
+}
+/* Only rendered when the chart actually carries BOTH bands. A legend for one band is
+ * noise; a legend for two, where one is "where they have been" and the other is
+ * "where staff want them", is the difference between a chart and a guess. */
+.nutr-sparkline-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 0;
+  font-size: 10.5px;
+  color: var(--faint);
+  margin-top: 6px;
 }
 .nutr-sparkline-empty {
   padding: 20px 0;

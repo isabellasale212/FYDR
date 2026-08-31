@@ -11,6 +11,10 @@ import {
   fetchBodyCompositionForAthletes,
   fetchEarliestBodyCompositionDate,
 } from '@/lib/queries/bodyComposition';
+import {
+  fetchTargetRangesForAthletes,
+  type BodyMassTargetRange,
+} from '@/lib/queries/bodyMassTargetRange';
 import { fetchGroupAthleteIds, fetchGroups, fetchGroupsWithCounts } from '@/lib/queries/groups';
 import { fetchCheckinsForAthletes } from '@/lib/queries/nutrition';
 import { fetchMealLibrary } from '@/lib/queries/mealLibrary';
@@ -23,6 +27,14 @@ import { MASS_TREND_FLAG_WINDOW_DAYS } from '@/lib/nutritionRules';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Nutrition · Fydr' };
+
+/** Narrows a staff target range row to just its two bounds before it enters the
+ *  workspace types. Deliberate: the table draws a band, and a shape that cannot carry
+ *  the rationale or the setter's id cannot leak either of them into a component tree
+ *  that is one careless prop away from a shared component. */
+function rangeBounds(row: BodyMassTargetRange | undefined): { low: number; high: number } | null {
+  return row ? { low: row.target_low_kg, high: row.target_high_kg } : null;
+}
 
 /* Rebuild of NUTRITION-SPEC.md, replacing the Targets-tab-only cut this route
  * shipped earlier today (see the previous version of this file's own header, and
@@ -219,10 +231,18 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
   const checkinsSince = addDays(weekStart, -49); // trailing ~7 weeks of check-ins
 
   const athleteIds = fullSquad.map((a) => a.id);
-  const [massByAthlete, checkinsByAthlete, scopeIds] = await Promise.all([
+  /* targetRangesByAthlete: the STAFF-SET body-mass target ranges, migration 0060 — the
+   * thing the client asked for and this schema did not have until then. Fetched here
+   * rather than per row for the obvious reason, and unconditionally rather than behind
+   * a role check because this route is already coach-or-medical only (isCoach/isMedical
+   * below) and the table would return an empty map to anyone else regardless: it grants
+   * an athlete session no rows at all, which is what keeps client rule 2 true no matter
+   * what this page renders. */
+  const [massByAthlete, checkinsByAthlete, scopeIds, targetRangesByAthlete] = await Promise.all([
     fetchBodyCompositionForAthletes(db, orgId, athleteIds, massSince),
     fetchCheckinsForAthletes(db, orgId, athleteIds, checkinsSince),
     groupIds.length === 0 ? Promise.resolve(null) : fetchGroupAthleteIds(db, orgId, groupIds),
+    fetchTargetRangesForAthletes(db, orgId, athleteIds),
   ]);
 
   const personalOverrideIds = new Set(
@@ -243,6 +263,7 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
       weekEnd,
       checkins: checkinsByAthlete.get(a.id) ?? [],
       hasPersonalTargetOverride: personalOverrideIds.has(a.id),
+      targetRange: rangeBounds(targetRangesByAthlete.get(a.id)),
     }),
   );
 

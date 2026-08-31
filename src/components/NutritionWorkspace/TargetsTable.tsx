@@ -21,16 +21,34 @@ type Props = {
   onSelectAthlete: (id: string) => void;
 };
 
-const GRID = 'minmax(168px, 1.2fr) 66px 128px 80px 76px 76px 70px 74px 66px';
+const GRID = 'minmax(168px, 1.2fr) 66px 128px 104px 80px 76px 76px 70px 74px 66px';
 
-/* NUTRITION-SPEC.md §6, "Targets and body mass". One real deviation, documented in
- * full in lib/nutritionRules.ts: the "vs target range" column and its band render a
- * real mean +/- 1SD of the athlete's own trailing weigh-ins rather than the spec's
- * fabricated target-weight range (no such column exists anywhere in this schema —
- * confirmed by this session's own earlier, identical cut on the player-profile Body
- * weight card). Same axis-padding formula, same band-and-marker mechanic, honest
- * content. The "Logged" column is real weigh-in days this week, for the same reason
- * (no daily nutrition log exists to count instead). */
+/* NUTRITION-SPEC.md §6, "Targets and body mass".
+ *
+ * TWO RANGE COLUMNS, AND THEY ARE NOT THE SAME THING. This is the correction to what
+ * this header used to say. It used to record that the spec's target-weight range was
+ * fabricated, that "no such column exists anywhere in this schema", and that the band
+ * drawn here was an honest substitute — the athlete's own trailing mean +/- 1 SD.
+ * Migration 0060 added body_mass_target_ranges, so half of that is now out of date:
+ * the substitute was never wrong, it just was not the only thing available.
+ *
+ *   "12-wk range"    computeMassBand. WHERE THEY HAVE BEEN. Filled band, accent
+ *                    wash, exists for anyone with two weigh-ins, nobody authored it.
+ *   "Staff target"   body_mass_target_ranges. WHERE STAFF WANT THEM. Dashed neutral
+ *                    bracket, no fill, exists only where a coach or physio set one.
+ *
+ * They are separate COLUMNS rather than two bands stacked in one, which is the whole
+ * point: two unlabelled bands on one track would be worse than one band. Each column
+ * carries its own header word, and the two bars are drawn in different ink — fill
+ * versus stroke, solid versus dashed, accent versus neutral — so they stay
+ * distinguishable in greyscale and under colour-vision deficiency too.
+ *
+ * The staff target is STAFF ONLY and NEVER RANKED (the client's rules; see migration
+ * 0060). This component renders only from (staff)/nutrition, and the table hands an
+ * athlete session no rows regardless — do not lift it anywhere else.
+ *
+ * The "Logged" column is real weigh-in days this week, for the original reason: no
+ * daily nutrition log exists to count instead. */
 export function TargetsTable({ unitGroups, selectedAthleteId, onSelectAthlete }: Props) {
   if (unitGroups.length === 0) {
     return (
@@ -42,11 +60,19 @@ export function TargetsTable({ unitGroups, selectedAthleteId, onSelectAthlete }:
 
   return (
     <div className="card" style={{ padding: 16, overflowX: 'auto' }}>
-      <div style={{ minWidth: 940 }}>
+      {/* Widened from 940 by the new "Staff target" column's 104px plus its gap. The
+        * card already scrolls horizontally, so this sets the point at which it starts
+        * rather than allowing the columns to crush. */}
+      <div style={{ minWidth: 1054 }}>
         <div className="nutr-table-head" style={{ gridTemplateColumns: GRID }}>
           <div>Athlete</div>
           <div className="nutr-col-num">Mass</div>
-          <div className="nutr-col-num">12-wk range</div>
+          <div className="nutr-col-num" title="Where they have been: mean ± 1 SD of their own trailing weekly weigh-ins. Recomputes on every weigh-in.">
+            12-wk range
+          </div>
+          <div className="nutr-col-num" title="Where staff want them: the range a coach or physio set. Staff only — the athlete never sees this, and it is never ranked.">
+            Staff target
+          </div>
           <div className="nutr-col-num">Energy</div>
           <div className="nutr-col-num">Protein</div>
           <div className="nutr-col-num">Carbs</div>
@@ -88,6 +114,16 @@ export function TargetsTable({ unitGroups, selectedAthleteId, onSelectAthlete }:
           );
         })}
       </div>
+      <p className="nutr-table-caption">
+        <span className="nutr-legend-item">
+          <span className="nutr-legend-band" aria-hidden="true" /> 12-wk range — where they have
+          been, their own mean ± 1 SD, recomputed on every weigh-in
+        </span>
+        <span className="nutr-legend-item">
+          <span className="nutr-legend-bracket" aria-hidden="true" /> Staff target — where staff
+          want them, set by a named person, never shown to the athlete and never ranked
+        </span>
+      </p>
       <p className="nutr-table-caption">
         Targets recompute on the next weigh-in · an athlete override replaces the rule for that
         athlete only · a missing log is never counted as zero · a {MASS_FLAG_PCT_7D}%+ drop in 7 days
@@ -166,6 +202,15 @@ function AthleteRow({
           <span className="nutr-mono nutr-range-empty">no history yet</span>
         )}
       </span>
+      <span className="nutr-col-num">
+        {athlete.targetRange && athlete.massKg !== null ? (
+          <TargetBar mass={athlete.massKg} range={athlete.targetRange} />
+        ) : (
+          <span className="nutr-mono nutr-range-empty">
+            {athlete.targetRange ? 'no weigh-in' : 'none set'}
+          </span>
+        )}
+      </span>
       <span className="nutr-mono nutr-col-num" title={energyTitle}>
         {athlete.targets ? Math.round(athlete.targets.energyKcal).toLocaleString('en-GB') : '·'}
       </span>
@@ -208,6 +253,43 @@ function RangeBar({
       <div className="nutr-mono nutr-range-caption">
         {band.low.toFixed(0)}–{band.high.toFixed(0)} kg
         {change7d !== null ? ` · ${change7d >= 0 ? '+' : ''}${change7d.toFixed(1)}% 7d` : ''}
+      </div>
+    </div>
+  );
+}
+
+/* The staff-set target range (migration 0060), drawn in DELIBERATELY DIFFERENT INK from
+ * RangeBar above.
+ *
+ * RangeBar's band is a filled accent wash — a cloud of where the athlete has been.
+ * This is an unfilled, dashed, neutral BRACKET — a rule somebody drew. That is the
+ * distinction the two columns exist to preserve, and it is carried on three independent
+ * channels (fill vs stroke, solid vs dashed, accent vs neutral) so it survives
+ * greyscale and colour-vision deficiency, plus a fourth in words: the column header
+ * says "Staff target" and the caption says whether they are on it.
+ *
+ * The marker keeps the good/warn/bad status colouring, because "is he on target" is a
+ * judgement and this is the column that makes it. RangeBar's marker is coloured by the
+ * SAME palette for a DIFFERENT question ("is he away from his own trend"), which is why
+ * both bars carry a word as well as a colour. */
+function TargetBar({ mass, range }: { mass: number; range: { low: number; high: number } }) {
+  const state = massState(mass, range);
+  const colour = state === 'above' ? 'var(--warn)' : state === 'below' ? 'var(--bad)' : 'var(--good)';
+  const mark = rangeBarMark(mass, range.low, range.high);
+  const lowMark = rangeBarMark(range.low, range.low, range.high);
+  const highMark = rangeBarMark(range.high, range.low, range.high);
+  return (
+    <div>
+      <div className="nutr-range-track">
+        <div
+          className="nutr-target-bracket"
+          style={{ left: `${lowMark}%`, width: `${Math.max(0, highMark - lowMark)}%` }}
+        />
+        <div className="nutr-range-marker" style={{ left: `${mark}%`, background: colour }} />
+      </div>
+      <div className="nutr-mono nutr-range-caption">
+        {range.low.toFixed(0)}–{range.high.toFixed(0)} kg ·{' '}
+        {state === 'in_range' ? 'on target' : state === 'above' ? 'above' : 'below'}
       </div>
     </div>
   );

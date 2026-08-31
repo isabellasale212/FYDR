@@ -18,6 +18,8 @@ import {
   type Tone,
 } from '@/lib/queries/playerProfile';
 import { fetchBodyCompositionEntries } from '@/lib/queries/bodyComposition';
+import { fetchTargetRangeHistory } from '@/lib/queries/bodyMassTargetRange';
+import { massState } from '@/lib/nutritionRules';
 import { fetchCurrentSeason } from '@/lib/queries/schedule';
 import {
   fetchTrainingWithRevisions,
@@ -96,23 +98,45 @@ function emDash(value: string | number | null | undefined): string {
  *  body_composition history rather than the spec's literal example points.
  *  A flat line at mid-height when every reading is identical (n≥2, zero
  *  spread) rather than a division by zero. */
-function sparklinePaths(history: { kg: number }[]): { line: string; fill: string } | null {
+/* The body-weight sparkline, plus — since migration 0060 — the STAFF-SET target
+ * range drawn behind it.
+ *
+ * THE Y DOMAIN INCLUDES THE TARGET BOUNDS ON PURPOSE. Scaling to the weigh-ins
+ * alone and then clipping the band to the viewBox would draw the band flush
+ * against an edge whenever the athlete is outside their target, which is exactly
+ * the case a coach opened this card to see, and it would make "20 kg out" and
+ * "0.2 kg out" render identically. Folding the bounds into min/max costs a
+ * slightly flatter line and buys a chart where the gap between where he has been
+ * and where staff want him is the thing you can actually see.
+ *
+ * Returns the band as a rect in the same coordinate space rather than a path, so
+ * the caller can style it as a STROKE (see the render site) instead of the fill
+ * used for the history area. That distinction is load-bearing, not decorative —
+ * lib/queries/bodyMassTargetRange.ts's header sets out why the descriptive band
+ * (computeMassBand, where they have been) and the prescriptive one (this, where
+ * staff want them) must never be drawn the same way. */
+function sparklinePaths(
+  history: { kg: number }[],
+  target: { low: number; high: number } | null,
+): { line: string; fill: string; band: { y: number; height: number } | null } | null {
   if (history.length < 2) return null;
   const values = history.map((h) => h.kg);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
+  const min = Math.min(...values, ...(target ? [target.low] : []));
+  const max = Math.max(...values, ...(target ? [target.high] : []));
   const span = max - min;
-  const points = history.map((h, i) => {
-    const x = (i / (history.length - 1)) * 600;
-    const norm = span === 0 ? 0.5 : (h.kg - min) / span;
-    const y = 82 - norm * 74; // 4px top/bottom margin inside the 90-tall viewBox
-    return { x, y };
-  });
+  const y = (kg: number) => 82 - (span === 0 ? 0.5 : (kg - min) / span) * 74;
+  const points = history.map((h, i) => ({
+    x: (i / (history.length - 1)) * 600,
+    y: y(h.kg), // 4px top/bottom margin inside the 90-tall viewBox
+  }));
   const line = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
   const last = points[points.length - 1];
   const first = points[0];
   const fill = `${line} L${last?.x.toFixed(1)} 90 L${first?.x.toFixed(1)} 90 Z`;
-  return { line, fill };
+  const band = target
+    ? { y: y(target.high), height: Math.max(2, y(target.low) - y(target.high)) }
+    : null;
+  return { line, fill, band };
 }
 
 /* THE PERIOD CONTROL ON THIS PAGE IS PER-PANEL, NOT PAGE-WIDE.
@@ -308,6 +332,18 @@ export default async function AthletePage({
   // action RLS is just going to reject.
   const canLogWeighIn = claims.roles.includes('coach') || claims.roles.includes('medical');
   const weighIns = canLogWeighIn ? await fetchBodyCompositionEntries(db, orgId, athleteId) : [];
+  /* The staff-set body-mass target range (migration 0060). Gated on the SAME two
+   * roles for the same reason as the weigh-in controls above: body_mass_target_ranges
+   * grants select, insert and update to coach and medical and to nobody else, so
+   * asking for it as any other role returns an empty list anyway. This boolean only
+   * saves the round trip.
+   *
+   * The role check is NOT what keeps this off the athlete's screen — this whole route
+   * is (staff), and the table has no athlete select policy at all. Two independent
+   * reasons, which is the point: client rule 2 says the athlete NEVER sees this, and a
+   * rule that only one layer enforces is a rule one refactor away from being gone. */
+  const targetRanges = canLogWeighIn ? await fetchTargetRangeHistory(db, orgId, athleteId) : [];
+  const liveTargetRange = targetRanges.find((r) => r.effective_to === null) ?? null;
   // Same two roles, for the same reason: availability_coach_insert_noninjury
   // (0041) and availability_medical_insert (0012) between them cover exactly
   // coach and medical, so this never offers an action RLS would reject.
@@ -350,7 +386,24 @@ export default async function AthletePage({
   ]);
 
   const { athlete, athleticism, acwr, wellnessRating, headerWellness, programme, nutrition, bodyWeight } = profile;
-  const spark = sparklinePaths(bodyWeight.history);
+  const spark = sparklinePaths(
+    bodyWeight.history,
+    liveTargetRange
+      ? { low: liveTargetRange.target_low_kg, high: liveTargetRange.target_high_kg }
+      : null,
+  );
+  /* Where the athlete sits against the STAFF target — not against their own trailing
+   * band, which is a different question this card does not ask. massState reads only
+   * low/high, so the two uses share one function and cannot drift apart in their
+   * arithmetic; the WORDS differ ("above target" here, "trending above" in the
+   * nutrition workspace) because the two bands mean different things. */
+  const targetState =
+    liveTargetRange && bodyWeight.latestKg !== null
+      ? massState(bodyWeight.latestKg, {
+          low: liveTargetRange.target_low_kg,
+          high: liveTargetRange.target_high_kg,
+        })
+      : null;
   const openInjuries = profile.injuries.filter((i) => i.status !== 'closed');
 
   return (
@@ -823,7 +876,48 @@ export default async function AthletePage({
                       No weigh-in recorded.
                     </p>
                   )}
-                  <p className="pp-weight-note">No target range on record.</p>
+                  {/* This note used to read "No target range on record." with no
+                    * condition attached, because there was no column behind it.
+                    * Migration 0060 gave it one, so it is now a real empty state OR a
+                    * real range. It says "staff target" in words every time — this
+                    * card also draws the athlete's own trend as an area fill, and a
+                    * reader must never have to work out which band is which. */}
+                  {liveTargetRange ? (
+                    <p className="pp-weight-note">
+                      <span className="pp-target-swatch" aria-hidden="true" /> Staff target{' '}
+                      <span className="mono">
+                        {liveTargetRange.target_low_kg.toFixed(1)}–
+                        {liveTargetRange.target_high_kg.toFixed(1)} kg
+                      </span>
+                      {targetState ? (
+                        <>
+                          {' · '}
+                          <span
+                            className={`pill ${
+                              targetState === 'in_range'
+                                ? 'pill-good'
+                                : targetState === 'above'
+                                  ? 'pill-warn'
+                                  : 'pill-bad'
+                            }`}
+                          >
+                            {targetState === 'in_range'
+                              ? 'On target'
+                              : targetState === 'above'
+                                ? 'Above target'
+                                : 'Below target'}
+                          </span>
+                        </>
+                      ) : null}
+                    </p>
+                  ) : (
+                    <p className="pp-weight-note">No staff target range set.</p>
+                  )}
+                  {liveTargetRange?.rationale ? (
+                    <p className="pp-weight-note" style={{ marginTop: 2 }}>
+                      {liveTargetRange.rationale}
+                    </p>
+                  ) : null}
                 </div>
                 {bodyWeight.deltaKg !== null && bodyWeight.deltaDays !== null ? (
                   <div className="pp-weight-right">
@@ -837,6 +931,29 @@ export default async function AthletePage({
 
               {spark ? (
                 <svg className="pp-sparkline" viewBox="0 0 600 90" preserveAspectRatio="none" aria-hidden="true">
+                  {/* TWO BANDS, ONE CHART — and they must never be confusable.
+                    *
+                    * The weigh-in history is a FILLED area in --accent2: soft, hueless
+                    * of judgement, "here is the data". The staff target range is an
+                    * unfilled DASHED BRACKET in --muted: a rule somebody drew, not a
+                    * measurement. Fill-versus-stroke, solid-versus-dashed, and blue-
+                    * versus-neutral are three independent channels, so the distinction
+                    * survives greyscale and every common colour-vision deficiency —
+                    * and the note above the chart names the target range in words as
+                    * well, because a visual convention alone is not a label. */}
+                  {spark.band ? (
+                    <rect
+                      x="0"
+                      y={spark.band.y}
+                      width="600"
+                      height={spark.band.height}
+                      fill="none"
+                      stroke="var(--muted)"
+                      strokeWidth="1.2"
+                      strokeDasharray="6 4"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  ) : null}
                   <path d={spark.fill} fill="rgb(var(--accent2-rgb) / 0.14)" />
                   <path d={spark.line} fill="none" stroke="var(--accent2)" strokeWidth="2.4" strokeLinejoin="round" />
                 </svg>
@@ -849,6 +966,9 @@ export default async function AthletePage({
                 {profile.range.label.toLowerCase()} · {bodyWeight.history.length} weigh-in
                 {bodyWeight.history.length === 1 ? '' : 's'} in this window
                 {bodyWeight.history.length < 2 ? ' — not enough for a trend line' : ''}
+                {spark?.band
+                  ? ' · solid line and fill are logged weigh-ins, the dashed bracket is the staff target range'
+                  : ''}
               </p>
 
               <BodyWeightPanel
@@ -858,6 +978,7 @@ export default async function AthletePage({
                 timezone={timezone}
                 entries={weighIns}
                 canLog={canLogWeighIn}
+                targetRanges={targetRanges}
               />
             </section>
           </div>

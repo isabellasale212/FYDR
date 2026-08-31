@@ -31,13 +31,34 @@ function describeOverride(reason: string | null, rule: MacroRule | null): string
 
 const DAY_INITIALS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-/* NUTRITION-SPEC.md §7, "Selected athlete — the whole picture". Two real
- * deviations, both documented at the source:
- *   - the trend band behind the sparkline is a real mean +/- 1SD, not a fabricated
- *     target range (lib/nutritionRules.ts's header explains why).
+/* NUTRITION-SPEC.md §7, "Selected athlete — the whole picture".
+ *
+ * THE SPARKLINE CARRIES TWO BANDS AND THEY MEAN OPPOSITE KINDS OF THING. This is the
+ * one chart in the app where both appear over the same line, so it is the one that
+ * most has to keep them apart:
+ *
+ *   TREND BAND    computeMassBand — WHERE THEY HAVE BEEN. Their own mean ± 1 SD.
+ *                 Filled accent rect, no outline. Exists for anyone with two
+ *                 weigh-ins; nobody authored it. Called "typical range" in the copy
+ *                 and "In trend / Above trend / Below trend" in the pill.
+ *   TARGET BAND   body_mass_target_ranges (migration 0060) — WHERE STAFF WANT THEM.
+ *                 Unfilled dashed neutral bracket. Exists only where a coach or
+ *                 physio set one. Called "staff target" in the copy and "On target /
+ *                 Above target / Below target" in its own pill.
+ *
+ * Fill versus stroke, solid versus dashed, accent versus neutral, plus two separate
+ * captions and two separate pills. Four channels, because the failure this guards
+ * against — a reader taking "he's in the band" to mean the wrong one of the two — is
+ * silent, and one channel is one refactor from being lost.
+ *
+ * The target band is STAFF ONLY and NEVER RANKED (the client's own rules; migration
+ * 0060's header). This component renders only from (staff)/nutrition.
+ *
+ * Two other real deviations from the spec, both documented at the source:
  *   - the right column is a real "Weekly check-in" panel (nutrition_checkins),
  *     replacing the spec's "target against what was eaten" bars, which need a daily
- *     intake number CLAUDE.md rule 8 says will never exist. */
+ *     intake number CLAUDE.md rule 8 says will never exist.
+ *   - there is no per-meal breakdown, for the same reason. */
 export function SelectedAthleteCard({
   athlete,
   planLabel,
@@ -58,6 +79,28 @@ export function SelectedAthleteCard({
   const state = athlete.massKg !== null ? massState(athlete.massKg, athlete.massBand) : 'in_range';
   const pillClass = state === 'above' ? 'pill-warn' : state === 'below' ? 'pill-bad' : 'pill-good';
   const pillLabel = state === 'above' ? 'Above trend' : state === 'below' ? 'Below trend' : 'In trend';
+  /* The STAFF-TARGET pill, migration 0060 — a different question from the trend pill
+   * beside it, so it gets its own words. "Above trend" means he has moved away from
+   * where HE has been; "Above target" means he is outside where STAFF want him. An
+   * athlete can easily be one and not the other, which is exactly why both pills are
+   * shown rather than one merged verdict. Null when nobody has set a range: the
+   * absence of a target is not "on target". */
+  const targetState =
+    athlete.targetRange !== null && athlete.massKg !== null
+      ? massState(athlete.massKg, athlete.targetRange)
+      : null;
+  const targetPill = targetState
+    ? {
+        className:
+          targetState === 'above' ? 'pill-warn' : targetState === 'below' ? 'pill-bad' : 'pill-good',
+        label:
+          targetState === 'above'
+            ? 'Above target'
+            : targetState === 'below'
+              ? 'Below target'
+              : 'On target',
+      }
+    : null;
 
   const weekDates = Array.from({ length: 7 }, (_, i) => addDaysIso(weekStart, i));
 
@@ -94,11 +137,24 @@ export function SelectedAthleteCard({
                 <span className="nutr-mono nutr-mass-value">{athlete.massKg.toFixed(1)}</span>
                 <span className="nutr-mass-unit">kg</span>
                 <span className={`pill ${pillClass}`}>{pillLabel}</span>
+                {/* The staff-target pill sits beside the trend pill and says "target"
+                  * in every one of its three states, because the two pills otherwise
+                  * differ only in the word after "Above" and would be read as
+                  * duplicates of one another. */}
+                {targetPill ? (
+                  <span className={`pill ${targetPill.className}`}>{targetPill.label}</span>
+                ) : null}
               </div>
               <div className="nutr-mass-detail">
                 {athlete.massBand ? (
                   <>
                     typical range {athlete.massBand.low.toFixed(0)} to {athlete.massBand.high.toFixed(0)} kg ·{' '}
+                  </>
+                ) : null}
+                {athlete.targetRange ? (
+                  <>
+                    staff target {athlete.targetRange.low.toFixed(1)} to{' '}
+                    {athlete.targetRange.high.toFixed(1)} kg ·{' '}
                   </>
                 ) : null}
                 {athlete.change7d !== null
@@ -109,7 +165,12 @@ export function SelectedAthleteCard({
                   : ''}
                 {athlete.change7d !== null ? ` · flags at ${MASS_FLAG_PCT_7D}%+ in 7 days` : ''}
               </div>
-              <Sparkline history={athlete.massHistory} band={athlete.massBand} stateColour={state} />
+              <Sparkline
+                history={athlete.massHistory}
+                band={athlete.massBand}
+                targetRange={athlete.targetRange}
+                stateColour={state}
+              />
             </>
           ) : (
             <p className="tiny">No weigh-in on record for this athlete yet.</p>
@@ -148,10 +209,15 @@ export function SelectedAthleteCard({
 function Sparkline({
   history,
   band,
+  targetRange,
   stateColour,
 }: {
   history: { date: string; kg: number }[];
+  /** WHERE THEY HAVE BEEN — computeMassBand. Drawn as a filled rect. */
   band: { low: number; high: number } | null;
+  /** WHERE STAFF WANT THEM — body_mass_target_ranges. Drawn as a dashed outline.
+   *  Never the same ink as `band`; see this file's header. */
+  targetRange: { low: number; high: number } | null;
   stateColour: 'above' | 'below' | 'in_range';
 }) {
   if (history.length < 2) {
@@ -163,6 +229,14 @@ function Sparkline({
   if (band) {
     lo = Math.min(lo, band.low - 1);
     hi = Math.max(hi, band.high + 1);
+  }
+  /* The target bounds widen the y domain the same way the trend band does, and for a
+   * sharper reason: an athlete far outside their target is exactly the case a
+   * nutritionist opened this card to look at, and clipping the bracket to the viewBox
+   * would draw "3 kg over" and "15 kg over" identically, flush against the top edge. */
+  if (targetRange) {
+    lo = Math.min(lo, targetRange.low - 1);
+    hi = Math.max(hi, targetRange.high + 1);
   }
   const span = hi - lo || 1;
   const y = (v: number) => 62 - ((v - lo) / span) * 54;
@@ -179,10 +253,37 @@ function Sparkline({
   return (
     <div>
       <svg viewBox="0 0 400 70" preserveAspectRatio="none" className="nutr-sparkline">
+        {/* Filled, no outline: where they have been. */}
         {band ? <rect x="0" y={bandY} width="400" height={bandH} fill="rgb(var(--accent-rgb) / 0.1)" /> : null}
+        {/* Outlined, no fill, dashed, neutral: where staff want them. Drawn AFTER the
+          * trend band so its edges stay legible where the two overlap — which is the
+          * common case, and the one where an under-drawn bracket would vanish. */}
+        {targetRange ? (
+          <rect
+            x="0"
+            y={y(targetRange.high)}
+            width="400"
+            height={Math.max(2, y(targetRange.low) - y(targetRange.high))}
+            fill="none"
+            stroke="var(--muted)"
+            strokeWidth="1.2"
+            strokeDasharray="6 4"
+            vectorEffect="non-scaling-stroke"
+          />
+        ) : null}
         <path d={path} fill="none" stroke="var(--accent2)" strokeWidth="2.2" strokeLinejoin="round" />
         <circle cx={x(history.length - 1)} cy={y(last.kg)} r="4" fill={dotColour} />
       </svg>
+      {targetRange ? (
+        <div className="nutr-sparkline-legend">
+          <span className="nutr-legend-item">
+            <span className="nutr-legend-band" aria-hidden="true" /> where they have been
+          </span>
+          <span className="nutr-legend-item">
+            <span className="nutr-legend-bracket" aria-hidden="true" /> where staff want them
+          </span>
+        </div>
+      ) : null}
       {/* Was the literal string "12 weeks ago", correct only while the window
         * behind this line was a hardcoded 90 days on /nutrition. That window is
         * now the coach's own choice (`?period=`), so the axis names the real

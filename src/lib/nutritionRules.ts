@@ -141,20 +141,33 @@ export function positionToUnit(position: string | null): string {
 }
 
 /* ---------------------------------------------------------------------------
- * Body mass "range" — real substitute for the spec's fabricated target band.
+ * Body mass trailing band — the athlete's OWN recent range. NOT the staff target.
  *
- * Touchpoint (investigation): there is no target_weight_kg column anywhere in this
- * schema. src/components/BodyWeightPanel/BodyWeightPanel.tsx and
- * src/app/(staff)/squad/[athleteId]/page.tsx already made this exact cut for the
- * player-profile Body weight card ("No target range on record — there is no
- * target-weight column in this schema") — this screen makes the same real cut rather
- * than reintroducing a fabricated column through the back door.
+ * CORRECTED, MIGRATION 0060. This comment used to open "real substitute for the
+ * spec's fabricated target band" and assert "there is no target_weight_kg column
+ * anywhere in this schema", citing the identical cut made in BodyWeightPanel.tsx and
+ * squad/[athleteId]/page.tsx. That was accurate when written and is now WRONG:
+ * migration 0060 added body_mass_target_ranges, a staff-only table, read through
+ * lib/queries/bodyMassTargetRange.ts. All three stale notes are corrected together,
+ * because a comment saying "we cut this, no column exists" is precisely how the next
+ * person re-cuts a feature that now exists — this codebase lost the feature twice that
+ * way already.
  *
- * What renders in the band's place: mean +/- 1 standard deviation of the athlete's
- * trailing weekly weigh-ins, real and self-updating from body_composition. "In range"
- * becomes "within a standard deviation of their own recent trend" — same visual
- * mechanic (a band, a marker, the spec's own 40%-headroom axis padding), truthful
- * content.
+ * computeMassBand IS NOT SUPERSEDED, and must not be replaced by the target range.
+ * They answer different questions and both belong on screen:
+ *
+ *   computeMassBand (here)  WHERE THEY HAVE BEEN. Mean +/- 1 SD of the athlete's own
+ *     trailing weekly weigh-ins, real and self-updating from body_composition.
+ *     Descriptive, authorless, recomputes on every weigh-in. Exists for every athlete
+ *     with two weigh-ins, needs nobody to have decided anything.
+ *
+ *   body_mass_target_ranges  WHERE STAFF WANT THEM. Prescriptive, authored by a named
+ *     person on a date, changes only when staff change it, and NEVER visible to the
+ *     athlete or rankable on a leaderboard (the client's own four rules — see 0060).
+ *
+ * A chart drawing both MUST distinguish them by fill-versus-stroke, by hue, and in
+ * words. Two unlabelled bands on one chart is worse than one. TargetsTable.tsx and
+ * SelectedAthleteCard.tsx are the two places that draw both; follow what they do.
  * ------------------------------------------------------------------------- */
 
 export type MassBand = { low: number; high: number; mean: number };
@@ -185,7 +198,12 @@ export function rangeBarMark(value: number, low: number, high: number): number {
 
 export type MassState = 'in_range' | 'above' | 'below';
 
-export function massState(value: number, band: MassBand | null): MassState {
+/** Takes anything with a low and a high, not MassBand specifically, so the SAME
+ *  arithmetic serves both the trailing band and the staff target range (0060) and the
+ *  two can never drift into disagreeing about what "above" means. The two callers
+ *  differ in their WORDS, not their maths: "trending above" for the self-referential
+ *  band, "above target" for the staff one. Do not merge that copy. */
+export function massState(value: number, band: { low: number; high: number } | null): MassState {
   if (!band) return 'in_range';
   if (value > band.high) return 'above';
   if (value < band.low) return 'below';
@@ -271,11 +289,20 @@ export type MassTrendFlag = {
   changePct: number;
 };
 
-/** Fires only when BOTH of two independently-real signals agree:
+/** THE TREND FLAG IS KEYED TO THE ATHLETE'S OWN BAND, NEVER TO THE STAFF TARGET
+ *  RANGE. Migration 0060 added body_mass_target_ranges and this function was
+ *  deliberately NOT switched over to it. "He has moved away from where he has been"
+ *  is a fact about the athlete that this flag can assert on its own; "he is outside
+ *  where staff want him" is staff already knowing, and flagging it would tell a
+ *  nutritionist their own opinion back. It would also make the flag appear and vanish
+ *  when somebody edited a target rather than when the athlete's mass moved. Keep this
+ *  self-referential.
+ *
+ *  Fires only when BOTH of two independently-real signals agree:
  *   1. massState() already says the latest weigh-in sits outside this athlete's
- *      OWN mean +/- 1 SD band (computeMassBand — a real, self-referential
- *      "target range" built from their own trailing weigh-ins, not an external
- *      ideal, a population norm, or a fabricated target-weight column).
+ *      OWN mean +/- 1 SD band (computeMassBand — self-referential, built from
+ *      their own trailing weigh-ins, not an external ideal, a population norm,
+ *      or the staff target range).
  *   2. The trailing 7-day % change is at least MASS_FLAG_PCT_7D in magnitude,
  *      in the SAME direction as (1) — the exact real threshold this codebase
  *      already uses and documents (above, "2% of body mass in seven days is

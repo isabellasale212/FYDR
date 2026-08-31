@@ -9,7 +9,25 @@ type Props = {
   userId: string;
   fullName: string;
   initialAvatarUrl: string | null;
+  initialAvatarColour?: string | null;
 };
+
+/* The same ten names groups.colour uses, resolved through the same
+ * --group-* token pair, so an avatar colour themes correctly in light and
+ * dark and no hex is ever written into a component or the database. A
+ * second, parallel palette would drift. */
+const AVATAR_COLOURS = [
+  'Blue',
+  'Green',
+  'Purple',
+  'Slate',
+  'Indigo',
+  'Cyan',
+  'Olive',
+  'Magenta',
+  'Steel',
+  'Plum',
+] as const;
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -24,11 +42,37 @@ function initials(name: string): string {
  *  and remove logic is identical either way, only orgId/userId/fullName
  *  differ. See lib/queries/avatar.ts's header for the storage decisions
  *  behind it. */
-export function AvatarUploadForm({ orgId, userId, fullName, initialAvatarUrl }: Props) {
+export function AvatarUploadForm({
+  orgId,
+  userId,
+  fullName,
+  initialAvatarUrl,
+  initialAvatarColour = null,
+}: Props) {
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
+  const [colour, setColour] = useState<string | null>(initialAvatarColour);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  /* The colour only ever backs the initials, so it is offered only when there
+   * is no photo — a picker with no visible effect is worse than no picker.
+   * Saved immediately on click rather than behind a Save button: it is one
+   * field with an instantly visible result, and the surrounding photo
+   * controls already work that way. */
+  async function pickColour(next: string | null) {
+    const previous = colour;
+    setColour(next);
+    setError(null);
+    const { error: writeError } = await createClient()
+      .from('users')
+      .update({ avatar_colour: next })
+      .eq('id', userId);
+    if (writeError) {
+      setColour(previous);
+      setError('Could not save that colour. Try again.');
+    }
+  }
 
   async function onPick(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -89,14 +133,14 @@ export function AvatarUploadForm({ orgId, userId, fullName, initialAvatarUrl }: 
               width: 64,
               height: 64,
               borderRadius: '50%',
-              background: 'var(--surf2)',
+              background: colour ? `var(--group-${colour.toLowerCase()})` : 'var(--surf2)',
               border: '1px solid var(--border)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: 20,
               fontWeight: 700,
-              color: 'var(--muted)',
+              color: colour ? 'var(--on-accent)' : 'var(--muted)',
             }}
           >
             {initials(fullName)}
@@ -117,6 +161,46 @@ export function AvatarUploadForm({ orgId, userId, fullName, initialAvatarUrl }: 
           <p className="tiny" style={{ marginTop: 6 }}>
             JPEG, PNG or WebP, up to 2MB.
           </p>
+
+          {!avatarUrl ? (
+            <div style={{ marginTop: 10 }}>
+              <p className="label" id="avatar-colour-label">
+                Or pick a colour for your initials
+              </p>
+              <div className="chiprow" role="group" aria-labelledby="avatar-colour-label">
+                <button
+                  type="button"
+                  className="squad-chip"
+                  aria-pressed={colour === null}
+                  onClick={() => pickColour(null)}
+                >
+                  Default
+                </button>
+                {AVATAR_COLOURS.map((name) => (
+                  <button
+                    key={name}
+                    type="button"
+                    className="squad-chip"
+                    aria-pressed={colour === name}
+                    onClick={() => pickColour(name)}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                  >
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: '50%',
+                        background: `var(--group-${name.toLowerCase()})`,
+                        display: 'inline-block',
+                      }}
+                    />
+                    {name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
       {error ? (

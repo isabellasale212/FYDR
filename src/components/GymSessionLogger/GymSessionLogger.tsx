@@ -98,7 +98,45 @@ export function GymSessionLogger({
 }: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  /* Typed-but-not-yet-ticked reps and loads.
+   *
+   * These used to be React state and nothing else, so an athlete who typed a
+   * set and then took a phone call lost it with no warning — the one real
+   * data-loss path on this screen. Logged sets themselves were never at
+   * risk: each tick writes immediately (see logMutation below) and a failed
+   * write stays in the outbox. It was only the in-progress row.
+   *
+   * Persisted per gym_session_log_id so two sessions cannot bleed into each
+   * other, and cleared as soon as the set is logged or the session is
+   * finished. localStorage rather than the database on purpose: this is an
+   * unsubmitted draft, and rule 6's immutability applies to entries that
+   * exist, not to a half-typed row. Every access is guarded — private
+   * windows and blocked site data throw rather than return null. */
+  const draftKey = `fydr-gym-draft-${gymSessionLogId}`;
   const [drafts, setDrafts] = useState<Record<string, { reps: string; load: string }>>({});
+
+  // Restored in an effect, not in the initial state, so the server render and
+  // the first client render agree.
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(draftKey);
+      if (raw) setDrafts(JSON.parse(raw) as Record<string, { reps: string; load: string }>);
+    } catch {
+      /* Unreadable or malformed storage: start empty. A lost draft is bad;
+       * a screen that will not render because of one is worse. */
+    }
+  }, [draftKey]);
+
+  useEffect(() => {
+    try {
+      const hasContent = Object.values(drafts).some((d) => d.reps !== '' || d.load !== '');
+      if (hasContent) window.localStorage.setItem(draftKey, JSON.stringify(drafts));
+      else window.localStorage.removeItem(draftKey);
+    } catch {
+      /* Storage unavailable. The draft still lives in React for this
+       * session; it just will not survive the app closing. */
+    }
+  }, [drafts, draftKey]);
   const [sessionRpe, setSessionRpe] = useState('');
   const [now, setNow] = useState<number | null>(null);
   /* screens/gym-logging.md: "Tap a completed set row: re-opens it as active for
@@ -152,6 +190,18 @@ export function GymSessionLogger({
     },
     onSuccess: (_void, input) => {
       dequeueGymSetLog(input.id);
+      // The row is real now, so its draft is no longer the only copy.
+      // programme_exercise_id is nullable on the input (an ad-hoc set belongs
+      // to no prescribed exercise); drafts are only ever keyed by a real one,
+      // so a null here simply has no draft to clear.
+      const draftedExercise = input.programme_exercise_id;
+      if (draftedExercise !== null) {
+        setDrafts((d) => {
+          const next = { ...d };
+          delete next[draftedExercise];
+          return next;
+        });
+      }
       setError(null);
       router.refresh();
     },
@@ -209,6 +259,13 @@ export function GymSessionLogger({
     },
     onSuccess: () => {
       setError(null);
+      // The session is closed; any leftover half-typed row is dead weight and
+      // must not resurface if the athlete reopens this log.
+      try {
+        window.localStorage.removeItem(draftKey);
+      } catch {
+        /* Nothing to clean up if storage is unavailable. */
+      }
       router.push('/programme?submitted=gym');
       router.refresh();
     },

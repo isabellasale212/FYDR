@@ -31,7 +31,7 @@ export default async function MePage() {
 
   const [athlete, userRow, myBoards] = await Promise.all([
     fetchAthlete(db, orgId, athleteId),
-    db.from('users').select('full_name, phone, avatar_url').eq('id', claims.userId).maybeSingle(),
+    db.from('users').select('full_name, phone, avatar_url, avatar_colour').eq('id', claims.userId).maybeSingle(),
     fetchMyBoards(db, orgId, athleteId),
   ]);
 
@@ -60,7 +60,18 @@ export default async function MePage() {
             height={46}
           />
         ) : (
-          <span className="me-avatar" aria-hidden="true">
+          <span
+            className="me-avatar"
+            aria-hidden="true"
+            style={
+              userRow.data?.avatar_colour
+                ? {
+                    background: `var(--group-${userRow.data.avatar_colour.toLowerCase()})`,
+                    color: 'var(--on-accent)',
+                  }
+                : undefined
+            }
+          >
             {initials({ first_name: firstName, last_name: lastName })}
           </span>
         )}
@@ -81,6 +92,7 @@ export default async function MePage() {
           userId={claims.userId}
           fullName={userRow.data?.full_name ?? `${firstName} ${lastName}`}
           initialAvatarUrl={userRow.data?.avatar_url ?? null}
+          initialAvatarColour={userRow.data?.avatar_colour ?? null}
         />
 
         <AthleteProfileEditForm

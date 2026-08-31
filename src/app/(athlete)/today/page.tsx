@@ -106,7 +106,7 @@ export default async function TodayPage({
       // Only for the header glyph. This page drew initials unconditionally,
       // so an athlete who had uploaded a photo on Me still saw initials
       // here — the photo was never fetched on this route at all.
-      db.from('users').select('avatar_url').eq('id', claims.userId).maybeSingle(),
+      db.from('users').select('avatar_url, avatar_colour').eq('id', claims.userId).maybeSingle(),
       // Match/training/recovery/rest colouring for the week strip.
       fetchAthleteWeekSessionTypes(db, orgId, athleteId, weekStart, timezone),
     ]);
@@ -155,7 +155,18 @@ export default async function TodayPage({
           // eslint-disable-next-line @next/next/no-img-element
           <img className="av" src={userRow.data.avatar_url} alt="" width={30} height={30} />
         ) : (
-          <span className="av" aria-hidden="true">
+          <span
+            className="av"
+            aria-hidden="true"
+            style={
+              userRow.data?.avatar_colour
+                ? {
+                    background: `var(--group-${userRow.data.avatar_colour.toLowerCase()})`,
+                    color: 'var(--on-accent)',
+                  }
+                : undefined
+            }
+          >
             {initials({ first_name: firstName, last_name: lastName })}
           </span>
         )}

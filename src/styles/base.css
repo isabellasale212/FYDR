@@ -779,6 +779,41 @@ table.tbl td.r {
 table.tbl tbody tr:hover {
   background: var(--surf2);
 }
+
+/* Leaderboard tables, athlete side. The club asked for bolder headings and a
+ * table that looks less like a spreadsheet. Scoped to .lb-table rather than
+ * changing table.tbl, which every report and settings screen also uses. */
+table.tbl.lb-table th {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  padding-bottom: 11px;
+  border-bottom: 1px solid var(--border);
+}
+table.tbl.lb-table td {
+  padding-top: 11px;
+  padding-bottom: 11px;
+}
+table.tbl.lb-table .nm {
+  font-size: 14px;
+  font-weight: 600;
+}
+table.tbl.lb-table td.r {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.lb-pos {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  font-variant-numeric: tabular-nums;
+}
+.lb-pos[data-top='true'] {
+  color: var(--text);
+  font-weight: 700;
+}
 .row-link {
   display: block;
   min-height: 44px;

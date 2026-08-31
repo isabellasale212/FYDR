@@ -8,13 +8,17 @@ export const metadata = { title: 'Morning check-in · Fydr' };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-/** Reached two ways: plain `/check-in` for today's entry (the everyday
- *  path), or `/check-in?date=...&correct=1` from My Data's "Correct this
- *  entry" link (wellness-entry.md's documented entry point) to revise a
- *  past day. `date` only ever narrows which existing entry is shown or
- *  corrected — a date with no entry yet and no `correct` flag does not open
- *  a backdated submission form, which is a different, undiscussed feature
- *  from correcting one that already exists. */
+/** Reached two ways: plain `/check-in` for today's entry (the everyday path), or
+ *  `/check-in?date=...` from My Data to look at a past day. `date` only ever
+ *  narrows which existing entry is SHOWN — a date with no entry yet does not
+ *  open a backdated submission form, which is a different, undiscussed feature.
+ *
+ *  The third way is gone: `?correct=1` used to put CheckInForm into a correction
+ *  mode that called `revise_wellness_entry`. Migration 0058 made that RPC
+ *  coach/medical only at the club's request, so the parameter is no longer read
+ *  and no longer linked to anywhere. An athlete who has an old bookmark lands on
+ *  the ordinary "Already submitted" card below, which tells them what to do
+ *  instead — not on a form that would collect six answers and then refuse them. */
 export default async function CheckInPage({
   searchParams,
 }: {
@@ -25,7 +29,6 @@ export default async function CheckInPage({
   const params = await searchParams;
   const requestedDate = typeof params.date === 'string' ? params.date : today;
   const entryDate = requestedDate > today ? today : requestedDate;
-  const correcting = params.correct === '1';
 
   const [existing, recent] = await Promise.all([
     fetchWellnessDay(db, athleteId, entryDate),
@@ -47,9 +50,7 @@ export default async function CheckInPage({
         <Link href={backHref} className="sheet-x" aria-label="Close the check-in">
           <span aria-hidden="true">✕</span>
         </Link>
-        <h1 className="t">
-          {correcting ? 'Correct check-in' : 'Morning check-in'}
-        </h1>
+        <h1 className="t">Morning check-in</h1>
         <span
           className="tiny mono"
           style={{ width: 56, textAlign: 'end', whiteSpace: 'nowrap' }}
@@ -58,27 +59,7 @@ export default async function CheckInPage({
         </span>
       </div>
 
-      {existing && existing.id && correcting ? (
-        <CheckInForm
-          orgId={orgId}
-          athleteId={athleteId}
-          userId={claims.userId}
-          timezone={timezone}
-          entryDate={entryDate}
-          lastNightSleepHours={lastSleep}
-          correction={{
-            originalId: existing.id,
-            initial: {
-              sleep_hours: existing.sleep_hours,
-              sleep_quality: existing.sleep_quality,
-              fatigue: existing.fatigue,
-              soreness: existing.soreness,
-              stress: existing.stress,
-              mood: existing.mood,
-            },
-          }}
-        />
-      ) : existing ? (
+      {existing ? (
         <div className="card">
           <h2 className="card-title">Already submitted</h2>
           <p className="import-sub" style={{ marginBottom: 0 }}>
@@ -94,13 +75,22 @@ export default async function CheckInPage({
                   }).format(new Date(existing.submitted_at))
                 : '—'}
             </span>
-            . Entries can&rsquo;t be edited directly &mdash; correcting one
-            keeps the original and records a new, dated revision instead.
+            .
+          </p>
+          {/* What used to be a "Correct this entry" link. It is prose, not a
+            * disabled button: a control that can never become enabled for this
+            * reader is a worse answer than a sentence telling them who can do
+            * the thing. Says what happens to the original too, because the
+            * reason an athlete hesitates to report a mistake is the fear that
+            * "correcting it" means someone sees them changing their answer —
+            * they should know it is recorded either way. */}
+          <p className="import-sub" style={{ margin: '10px 0 0' }}>
+            A submitted check-in can&rsquo;t be edited, by you or by anyone. If
+            something in it is wrong, tell your coach: they can record a
+            correction against it from your profile. If they do, My Data marks
+            that day <b>Corrected</b> and shows you what you first reported.
           </p>
           <p className="cap" style={{ display: 'flex', gap: 14 }}>
-            <Link href={`/check-in?date=${entryDate}&correct=1`}>
-              Correct this entry
-            </Link>
             <Link href={backHref}>Back</Link>
           </p>
         </div>
@@ -109,7 +99,6 @@ export default async function CheckInPage({
           orgId={orgId}
           athleteId={athleteId}
           userId={claims.userId}
-          timezone={timezone}
           entryDate={today}
           lastNightSleepHours={lastSleep}
         />
@@ -117,8 +106,8 @@ export default async function CheckInPage({
         <div className="card">
           <h2 className="card-title">Nothing submitted</h2>
           <p className="import-sub" style={{ marginBottom: 0 }}>
-            No check-in was recorded for {formatDate(entryDate, timezone)}. There is
-            nothing to correct.
+            No check-in was recorded for {formatDate(entryDate, timezone)}, and a
+            past day can&rsquo;t be filled in after the fact.
           </p>
           <p className="cap">
             <Link href={backHref}>Back</Link>

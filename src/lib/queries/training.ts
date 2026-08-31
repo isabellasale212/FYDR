@@ -1,5 +1,6 @@
 import type { SessionRow } from '@/lib/types/database';
 import type { TrainingEntryInput } from '@/lib/validation/training';
+import type { TrainingCorrection } from '@/lib/validation/entryCorrection';
 import { humanizeDbError } from '@/lib/writeErrors';
 import type { Db } from './groups';
 
@@ -142,21 +143,21 @@ export async function submitTrainingEntry(
   if (error) throw new Error(error.message);
 }
 
-export type TrainingCorrectionInput = {
-  rpe: number;
-  duration_min: number;
-  comment?: string | null;
-};
-
 /** The sanctioned correction path (ADR-005), the training-entry equivalent
  *  of wellness.ts's reviseWellnessEntry — see that function's comment for
  *  the reasoning, which applies unchanged: `revise_training_entry` closes
  *  the original and inserts a new row server side, `session_id` and
- *  `entry_date` are not parameters and cannot be changed by a correction. */
+ *  `entry_date` are not parameters and cannot be changed by a correction,
+ *  and it is **staff only since migration 0058**.
+ *
+ *  `session_load` is deliberately absent from the payload: the
+ *  `training_entries_session_load` trigger recomputes rpe x duration_min on
+ *  the inserted revision, so a corrected RPE cannot leave a stale load
+ *  behind for ACWR to read. */
 export async function reviseTrainingEntry(
   db: Db,
   originalId: string,
-  payload: TrainingCorrectionInput,
+  payload: TrainingCorrection,
 ): Promise<{ error: string | null }> {
   const { error } = await db.rpc('revise_training_entry', {
     p_original_id: originalId,
@@ -171,8 +172,15 @@ export async function reviseTrainingEntry(
           'This entry has already been corrected once, or no longer exists. Refresh to see the latest.',
       };
     }
-    /* Same rule as reviseWellnessEntry: never a raw driver string. */
-    return { error: humanizeDbError(error.message, 'athlete') };
+    if (error.message.includes('not_permitted')) {
+      return {
+        error:
+          'Only coaching or medical staff can correct an entry. Refresh and sign in again if you believe you hold that role.',
+      };
+    }
+    /* Same rule as reviseWellnessEntry: never a raw driver string, and the
+       same 'staff' audience since the only caller is now a staff screen. */
+    return { error: humanizeDbError(error.message, 'staff') };
   }
   return { error: null };
 }

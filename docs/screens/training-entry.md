@@ -2,6 +2,19 @@
 
 > **Layout status**: provisional. Awaiting client design photographs.
 
+> **AMENDED 2026-08-30 — correction mode is removed from this screen**, for the same reason and
+> by the same migration (`0058_coach_only_entry_correction.sql`) as `wellness-entry.md`; see that
+> file's banner and `decisions/adr-005-immutable-entries.md` §"Who may correct what". §"Correcting"
+> below, the `revision_of` field, the `Rated → Correcting` transition and the "[ Correct this
+> entry ]" action are **historical**. Scenario 14 ("the athlete corrects a rating a week later
+> after a conversation with the coach") is now the *coach* correcting it after that conversation,
+> from the player profile — the point ADR-005 made there about rejecting a bounded correction
+> window still stands, and a coach may still correct a rating at any distance in time.
+>
+> As on `wellness-entry.md`: when a coach corrects a rating, My Data's Training table marks that
+> session `Corrected`, names who did it, and shows what the athlete originally rated it
+> (`screens/my-data.md` §"Revision marker").
+
 Screen 5 in `02-information-architecture.md` §5. Presented as a bottom sheet over Today.
 
 Every layout decision below that would normally come from the client's designs is marked

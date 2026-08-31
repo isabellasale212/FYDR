@@ -1,5 +1,6 @@
 import type { WellnessEntryRow } from '@/lib/types/database';
 import type { WellnessEntryInput } from '@/lib/validation/wellness';
+import type { WellnessCorrection } from '@/lib/validation/entryCorrection';
 import { humanizeDbError } from '@/lib/writeErrors';
 import { readiness, rollingBand, type Band, type Point } from '@/lib/stats';
 import type { Db } from './groups';
@@ -114,29 +115,34 @@ export async function submitWellnessEntry(
   if (error) throw new Error(error.message);
 }
 
-export type WellnessCorrectionInput = {
-  sleep_hours: number | null;
-  sleep_quality: number | null;
-  fatigue: number | null;
-  soreness: number | null;
-  stress: number | null;
-  mood: number | null;
-};
-
 /** The sanctioned correction path (ADR-005): calls `revise_wellness_entry`,
  *  which closes the original row (`superseded_by`) and inserts a new one
  *  carrying `revision_of`, in one transaction — never an update, per
  *  CLAUDE.md §2 rule 6. `entry_date`, `athlete_id` and `org_id` are not
  *  parameters: the function copies them from the original row server side,
- *  so a correction can never move an entry to another day. `entry_not_
- *  revisable` (the function's own error code, raised when the row named by
- *  `originalId` is not the current revision) is translated into the same
- *  message this screen shows for any other stale-entry case, rather than a
- *  raw Postgres error code reaching the athlete. */
+ *  so a correction can never move an entry to another day.
+ *
+ *  **Staff only since migration 0058.** This used to be called from the
+ *  athlete's own check-in screen; the club asked for correction to be a
+ *  coach action ("the athlete shouldn't be able to edit an entry, only the
+ *  coach"), so the RPC now refuses a non-coach/medical caller and the only
+ *  call site is the player profile's EntryCorrectionPanel. The error
+ *  audience below moved from 'athlete' to 'staff' with it — the fallback
+ *  copy differs ("ask your club admin to check your role" vs "tell your
+ *  coach"), and telling a coach to tell their coach reads as a bug.
+ *
+ *  Two named error codes are translated here rather than left to
+ *  `humanizeDbError`, because both are ordinary states rather than faults:
+ *   - `entry_not_revisable` — the row named by `originalId` is not the
+ *     current revision any more (somebody else corrected it first, in
+ *     another tab or on another device).
+ *   - `not_permitted` — 0058's role guard. Reachable by a coach whose role
+ *     was removed between the page render and the save, which is rare but
+ *     real, and must not surface as a raw Postgres string (audit S5). */
 export async function reviseWellnessEntry(
   db: Db,
   originalId: string,
-  payload: WellnessCorrectionInput,
+  payload: WellnessCorrection,
 ): Promise<{ error: string | null }> {
   const { error } = await db.rpc('revise_wellness_entry', {
     p_original_id: originalId,
@@ -151,9 +157,15 @@ export async function reviseWellnessEntry(
           'This entry has already been corrected once, or no longer exists. Refresh to see the latest.',
       };
     }
+    if (error.message.includes('not_permitted')) {
+      return {
+        error:
+          'Only coaching or medical staff can correct an entry. Refresh and sign in again if you believe you hold that role.',
+      };
+    }
     /* Anything else is humanized here so no caller can leak a raw driver
        string to a screen (audit S5). */
-    return { error: humanizeDbError(error.message, 'athlete') };
+    return { error: humanizeDbError(error.message, 'staff') };
   }
   return { error: null };
 }

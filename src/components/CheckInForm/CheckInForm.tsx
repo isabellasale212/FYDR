@@ -5,42 +5,41 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ScaleInput } from '@/components/ScaleInput/ScaleInput';
 import { createClient } from '@/lib/supabase/client';
-import { reviseWellnessEntry, submitWellnessEntry } from '@/lib/queries/wellness';
+import { submitWellnessEntry } from '@/lib/queries/wellness';
 import { qk } from '@/lib/queries/keys';
 import { dequeueWellness, enqueueWellness } from '@/lib/outbox';
-import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import {
   WELLNESS_SCALES,
   WellnessEntryInput,
   type WellnessScale,
 } from '@/lib/validation/wellness';
-import { formatDate } from '@/lib/format';
 
-type Correction = {
-  originalId: string;
-  initial: {
-    sleep_hours: number | null;
-    sleep_quality: number | null;
-    fatigue: number | null;
-    soreness: number | null;
-    stress: number | null;
-    mood: number | null;
-  };
-};
+/* This form used to have a second mode. Reached as `/check-in?date=…&correct=1`,
+ * it prefilled every control from an existing entry and submitted through
+ * `revise_wellness_entry` instead of a plain insert. It is gone, and the club
+ * asked for it to be: "the athlete shouldnt be able to edit an entry only the
+ * coach should be able to do it on the system."
+ *
+ * The mode is removed rather than merely hidden because migration 0058 narrowed
+ * that RPC to coach/medical. A hidden-but-reachable correction mode would render
+ * a full form, take the athlete's six answers, and fail on submit with
+ * not_permitted — the "visibly broken or lying affordance" that is worse than
+ * having no affordance. There is now one submit path here, and it inserts.
+ *
+ * The athlete is not left mute. `/check-in` and `/my-data` both now say, in
+ * plain words, that a wrong entry is fixed by asking a coach, and the coach has
+ * a real place to do it (squad/[athleteId], EntryCorrectionPanel). What was
+ * deliberately NOT built is an in-app "request a correction" queue: it needs a
+ * table, a staff inbox and a notification to be honest, and a button that files
+ * a request nobody is shown would be the same lie in a different shape. Recorded
+ * as O-30 in docs/decisions/adr-005-immutable-entries.md. */
 
 type Props = {
   orgId: string;
   athleteId: string;
   userId: string;
-  /** IANA zone used to display all dates on this form in the organisation's local time. */
-  timezone: string;
   entryDate: string;
   lastNightSleepHours: number | null;
-  /** Present only when reached via "Correct this entry". Prefills every
-   *  field from the entry being corrected and switches the submit path to
-   *  the revision RPC instead of a plain insert — see
-   *  wellness-entry.md's "Correcting" section and ADR-005. */
-  correction?: Correction;
 };
 
 type Scales = Record<WellnessScale, number | null>;
@@ -65,37 +64,30 @@ export function CheckInForm({
   orgId,
   athleteId,
   userId,
-  timezone,
   entryDate,
   lastNightSleepHours,
-  correction,
 }: Props) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  /* Rounded to the nearest half hour, the stepper's own resolution. Caught
-   * live: an entry corrected here can have a sleep_hours value the stepper
-   * itself could never produce (this app's seed data carries finer
-   * decimals than the UI ever writes, e.g. 7.9), and the validation schema
-   * requires a multiple of 0.5 — submitting the untouched prefill was
-   * being rejected by the same schema that filled it in. */
-  const [sleepHours, setSleepHours] = useState(
-    correction ? Math.round((correction.initial.sleep_hours ?? 7) * 2) / 2 : 7,
-  );
+  /* A plain 7-hour start. The half-hour rounding that used to guard this line
+   * belonged to the correction mode — a prefilled sleep_hours of 7.9 (real in
+   * this database, finer than the stepper can express) was rejected by the same
+   * schema that filled it in. With no prefill there is nothing to round, so the
+   * guard is not restored here; it would be dead code on a form that starts at 7.
+   *
+   * The bug it caught is NOT dead, though — it moved with the prefill, to the
+   * coach's EntryCorrectionPanel. It is guarded there differently and for a
+   * reason: that form diffs every field against the original before sending, so
+   * rounding 7.9 to 8.0 would read as a change the coach never made. It matches
+   * the input's step and the correction schema to sleep_hours' own numeric(3,1)
+   * precision instead, and sets `noValidate` as this form does. See the note
+   * above the forms in EntryCorrectionPanel.tsx. */
+  const [sleepHours, setSleepHours] = useState(7);
   const [restingHr, setRestingHr] = useState('');
   const [bodyMassKg, setBodyMassKg] = useState('');
   const [comment, setComment] = useState('');
-  const [scales, setScales] = useState<Scales>(
-    correction
-      ? {
-          sleep_quality: correction.initial.sleep_quality,
-          fatigue: correction.initial.fatigue,
-          soreness: correction.initial.soreness,
-          stress: correction.initial.stress,
-          mood: correction.initial.mood,
-        }
-      : EMPTY,
-  );
+  const [scales, setScales] = useState<Scales>(EMPTY);
   const [invalid, setInvalid] = useState<string | null>(null);
 
   const remaining = WELLNESS_SCALES.filter((s) => scales[s] === null).length;
@@ -127,38 +119,6 @@ export function CheckInForm({
     },
   });
 
-  /* Corrections are online-only, deliberately: a replayed revise cannot be
-   * told apart from "already corrected" (both raise entry_not_revisable),
-   * so queuing one in the outbox could silently swallow or double-report a
-   * fix — see lib/outbox.ts. The trade is that this path must be *bounded*
-   * (audit S5 / athlete finding 11: this exact button once hung on "Saving
-   * correction…" indefinitely): ten seconds to confirm, then a visible,
-   * human error, the athlete's values still on screen, and the button live
-   * again for a retry. */
-  const correctionMutation = useMutation({
-    mutationFn: async (input: WellnessEntryInput) => {
-      if (!correction) throw new Error('Not in correction mode.');
-      const result = await withWriteTimeout(
-        reviseWellnessEntry(createClient(), correction.originalId, {
-          sleep_hours: input.sleep_hours,
-          sleep_quality: input.sleep_quality,
-          fatigue: input.fatigue,
-          soreness: input.soreness,
-          stress: input.stress,
-          mood: input.mood,
-        }),
-      );
-      if (result.error) throw new HumanError(result.error);
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: qk.wellness.day(orgId, athleteId, entryDate),
-      });
-      router.push('/my-data?tab=wellness');
-    },
-    onError: (err: Error) => setInvalid(toUserMessage(err, 'athlete')),
-  });
-
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -170,7 +130,9 @@ export function CheckInForm({
       resting_hr: restingHr.trim() === '' ? null : Number(restingHr),
       body_mass_kg: bodyMassKg.trim() === '' ? null : Number(bodyMassKg),
       comment: comment.trim() ? comment.trim() : null,
-      revision_of: correction?.originalId,
+      /* revision_of is left unset for good now. This form only ever inserts an
+       * original; the one path that produces a revision is the coach's, and it
+       * sets revision_of server side inside revise_wellness_entry. */
     };
 
     const parsed = WellnessEntryInput.safeParse(candidate);
@@ -180,28 +142,12 @@ export function CheckInForm({
     }
 
     setInvalid(null);
-    if (correction) {
-      correctionMutation.mutate(parsed.data);
-    } else {
-      submitMutation.mutate(parsed.data);
-      router.push('/today?submitted=1');
-    }
+    submitMutation.mutate(parsed.data);
+    router.push('/today?submitted=1');
   }
 
   return (
     <form onSubmit={onSubmit} noValidate>
-      {correction ? (
-        <div className="banner" role="status">
-          <span className="g g-faint" aria-hidden="true">
-            ⓘ
-          </span>
-          <div>
-            Correcting your entry for {formatDate(entryDate, timezone)}. This creates a
-            new revision; the original is kept, not overwritten.
-          </div>
-        </div>
-      ) : null}
-
       <p className="dir">
         On every scale, <b>5 is the best you can feel.</b>
       </p>
@@ -312,39 +258,31 @@ export function CheckInForm({
       ) : null}
 
       <div className="subm">
-        {/* submitMutation.isPending guards the plain path the same way
-         * correctionMutation.isPending already guards the correction path
-         * above: a fast double-tap fires two onSubmit calls, each minting its
-         * own crypto.randomUUID() and enqueuing a distinct outbox row (see
-         * lib/outbox.ts) before either network call resolves. Without this,
-         * both rows race wellness_entries_one_live_per_day; the loser's
-         * insert dies on the unique index and, before OutboxFlusher's
+        {/* submitMutation.isPending: a fast double-tap fires two onSubmit calls,
+         * each minting its own crypto.randomUUID() and enqueuing a distinct
+         * outbox row (see lib/outbox.ts) before either network call resolves.
+         * Without this, both rows race wellness_entries_one_live_per_day; the
+         * loser's insert dies on the unique index and, before OutboxFlusher's
          * disambiguation below, was dequeued as "delivered" anyway — a real
          * submission silently dropped with no trace. Disabling on isPending
          * makes the second tap impossible to register as a second attempt in
-         * the first place, same as the correction path's existing guard. */}
+         * the first place. */}
         <button
           className="btn-primary"
           type="submit"
-          disabled={
-            correction
-              ? correctionMutation.isPending
-              : remaining > 0 || submitMutation.isPending
-          }
+          disabled={remaining > 0 || submitMutation.isPending}
           style={{ width: '100%' }}
         >
-          {correction
-            ? correctionMutation.isPending
-              ? 'Saving correction…'
-              : 'Submit correction'
-            : remaining > 0
-              ? `Submit entry · ${remaining} to go`
-              : 'Submit entry'}
+          {remaining > 0 ? `Submit entry · ${remaining} to go` : 'Submit entry'}
         </button>
+        {/* Said before the tap, not after. The old copy ("a correction creates a
+         * new revision") was true but described something the athlete could do;
+         * this one tells them who does it now, so the rule is learned at the
+         * moment it matters rather than discovered on a screen with no button. */}
         <p className="tiny" style={{ textAlign: 'center', marginTop: 8 }}>
-          {correction
-            ? `For ${formatDate(entryDate, timezone)}. Corrections send straight away and need signal. If it can’t get through, you’ll see an error here and your answers stay put.`
-            : 'Submitted entries cannot be edited. A correction creates a new revision.'}
+          Once this is sent it can&rsquo;t be edited. If you get a number wrong,
+          tell your coach &mdash; they can record a correction, and My Data will
+          show you both what they changed it to and what you first reported.
         </p>
       </div>
     </form>

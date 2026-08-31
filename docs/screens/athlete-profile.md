@@ -5,6 +5,36 @@
 Screen 20 in the inventory (`02-information-architecture.md` §5). Route
 `/staff/athletes/{athlete_id}`. The single athlete view for staff.
 
+> **The real route is `/squad/[athleteId]`**, and the shipped layout follows `PLAYER-PROFILE-SPEC.md`.
+>
+> **ADDED 2026-08-30 — "Entries and corrections".** A full-width card below the two-column grid,
+> above the admin-only subject-access block. It answers the club's question *"is this a feature in
+> the system for each player profile"* with yes, here. It lists the athlete's last **28 days** of
+> wellness check-ins and session ratings; each row that is itself a revision carries a neutral
+> `Corrected` pill naming who recorded the correction and when, and expands to show the values it
+> replaced. Each row also offers **Correct check-in** / **Correct rating**, which opens an inline
+> form pre-filled with the current values and submits through `revise_wellness_entry` /
+> `revise_training_entry` — never an update. Only genuinely changed fields are sent, so correcting
+> one number cannot restate the others. Coach and medical only, enforced in the function by
+> migration `0058_coach_only_entry_correction.sql`, not by the button being hidden.
+>
+> **Saving a correction writes an `entry_revision.created` row to `audit_log`** — actor, athlete,
+> entry, the row it superseded, and the previous value of every field that moved. It is written
+> inside `revise_wellness_entry` / `revise_training_entry`, in the same transaction, so it cannot be
+> skipped by a caller and a committed correction is never unaudited. Expanding a history *also*
+> writes one `entry_revision.view` row per entry per page view — ADR-005 O-28's third clause, and
+> the same treatment a physio opening clinical notes gets — but the write event is the important
+> one. For a short window only the `.view` event existed, which meant reading what an athlete used
+> to report was evidence and rewriting it was silent.
+>
+> The athlete sees the correction too: My Data marks the day or session `Corrected`, names the staff
+> member, and shows the previous values (`screens/my-data.md` §"Revision marker"). A coach making a
+> correction here is not doing it out of the athlete's sight.
+>
+> Gym set logs and the weekly nutrition check-in are **not** correctable here; the card says so
+> on screen rather than leaving a coach to wonder. See
+> `decisions/adr-005-immutable-entries.md` §"Who may correct what".
+
 ---
 
 ## Purpose

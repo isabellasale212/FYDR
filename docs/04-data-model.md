@@ -991,6 +991,14 @@ create table audit_log (
 any change to `user_roles`, any export, any support-role access, any consent change, any
 erasure. Append-only, no update or delete grants on this table for any application role.
 
+Added 2026-08-30 with migration `0058_coach_only_entry_correction.sql`: **any staff correction of
+an athlete entry** — `entry_revision.created`, written inside `revise_wellness_entry` /
+`revise_training_entry` rather than by the caller, carrying the prior value of each field that
+changed. Correction of a wellness or RPE entry is a staff-only power over an athlete's own
+self-report, which puts it in the same class as the events above. The companion
+`entry_revision.view` event (a coach expanding a revision history) is *not* mandatory in the same
+sense; it exists because `decisions/adr-005-immutable-entries.md` O-28 asks for it.
+
 ---
 
 ## 14. Row-level security

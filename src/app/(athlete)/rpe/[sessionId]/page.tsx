@@ -13,19 +13,20 @@ export const metadata = { title: 'How hard was it? · Fydr' };
  *  downwards. */
 const DUE_DELAY_MIN = 30;
 
-type SearchParams = Promise<Record<string, string | string[] | undefined>>;
-
+/* `?correct=1` used to switch this page into a correction form. It is no longer
+ * read: migration 0058 made `revise_training_entry` coach/medical only at the
+ * club's request, so the page has nothing to offer an athlete who arrives with
+ * an old link. It falls through to the "Rated" card, which now says who can fix
+ * a wrong rating. `searchParams` is dropped from the signature entirely rather
+ * than accepted and ignored — an unread parameter in a route's props is the kind
+ * of thing that gets quietly re-wired later. */
 export default async function RpePage({
   params,
-  searchParams,
 }: {
   params: Promise<{ sessionId: string }>;
-  searchParams: SearchParams;
 }) {
   const { sessionId } = await params;
   const { db, orgId, athleteId, claims, timezone } = await requireAthlete();
-  const qp = await searchParams;
-  const correcting = qp.correct === '1';
 
   const [session, existing] = await Promise.all([
     fetchSessionForRpe(db, orgId, athleteId, sessionId),
@@ -110,21 +111,7 @@ export default async function RpePage({
         </div>
       </div>
 
-      {existing && correcting ? (
-        <RpeForm
-          orgId={orgId}
-          athleteId={athleteId}
-          userId={claims.userId}
-          sessionId={session.id}
-          entryDate={entryDate}
-          scheduledDurationMin={session.duration_min}
-          sessionTitle={session.title}
-          correction={{
-            originalId: existing.id,
-            initial: { rpe: existing.rpe, duration_min: existing.duration_min },
-          }}
-        />
-      ) : existing ? (
+      {existing ? (
         <div className="card">
           <h2 className="card-title">
             <span className="g-good" aria-hidden="true">
@@ -141,12 +128,17 @@ export default async function RpePage({
                   timeZone: timezone,
                 }).format(new Date(existing.submitted_at))}. `
               : ''}
-            RPE <b>{existing.rpe}</b> · {existing.duration_min} min. Entries
-            can&rsquo;t be edited directly &mdash; correcting one keeps the
-            original and records a new, dated revision instead.
+            RPE <b>{existing.rpe}</b> · {existing.duration_min} min.
+          </p>
+          {/* Replaces a "Correct this entry" link. Prose, not a disabled button,
+            * for the reason spelled out on the check-in page's matching card. */}
+          <p className="import-sub" style={{ margin: '10px 0 0' }}>
+            A submitted rating can&rsquo;t be edited, by you or by anyone. If this
+            one is wrong, tell your coach: they can record a correction against it
+            from your profile. If they do, My Data marks that session{' '}
+            <b>Corrected</b> and shows you what you first rated it.
           </p>
           <p className="cap" style={{ display: 'flex', gap: 14 }}>
-            <Link href={`/rpe/${session.id}?correct=1`}>Correct this entry</Link>
             <Link href="/today">Back to today</Link>
           </p>
         </div>

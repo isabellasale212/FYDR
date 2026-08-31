@@ -8,9 +8,14 @@ import { PlayerProfileBio } from '@/components/PlayerProfileBio/PlayerProfileBio
 import { PlayerProfileFlags } from '@/components/PlayerProfileFlags/PlayerProfileFlags';
 import { BodyWeightPanel } from '@/components/BodyWeightPanel/BodyWeightPanel';
 import { SetAvailabilityFormCoach } from '@/components/SetAvailabilityFormCoach/SetAvailabilityFormCoach';
+import { EntryCorrectionPanel } from '@/components/EntryCorrectionPanel/EntryCorrectionPanel';
 import { fetchPlayerProfile, bandTone, type Tone } from '@/lib/queries/playerProfile';
 import { fetchBodyCompositionEntries } from '@/lib/queries/bodyComposition';
-import { enumLabel, formatDate, formatNumber, initials, ordinal, todayIso } from '@/lib/format';
+import {
+  fetchTrainingWithRevisions,
+  fetchWellnessWithRevisions,
+} from '@/lib/queries/entryRevisions';
+import { addDays, enumLabel, formatDate, formatNumber, initials, ordinal, todayIso } from '@/lib/format';
 import { availabilityStatus } from '@/lib/status';
 import { requireStaff } from '@/lib/session';
 
@@ -157,6 +162,35 @@ export default async function AthletePage({
   // so this is coach-only in practice, offered only where RLS actually
   // allows the write. See PlayerProfileBio's own header for the rest.
   const canEditBio = claims.roles.includes('coach');
+
+  /* The coach-facing correction path the club asked for: "the athlete shouldnt be
+   * able to edit an entry only the coach should be able to do it on the system —
+   * show me exactly how they can do this and is this a feature in the system for
+   * each player profile." It is, and this is where: one card per player profile.
+   *
+   * Same two roles again, and for once the client check and the server check are
+   * genuinely the same predicate — migration 0058 narrowed revise_wellness_entry
+   * and revise_training_entry to coach-or-medical, so `canCorrect` hides a control
+   * that the RPC would refuse anyway. CLAUDE.md §2 rule 2: the RPC is the
+   * authorisation, this boolean is only the tidiness.
+   *
+   * 28 days, not the profile's other windows. Long enough that a coach reviewing a
+   * block finds the entry they remember being wrong, short enough that the base-
+   * table read behind it (see queries/entryRevisions.ts on why it must be the base
+   * table and not the _current view) stays a small result set. A correction to an
+   * older entry is still possible — it is just not reachable from this card, and
+   * the card says which window it is showing rather than implying it is everything. */
+  const CORRECTION_WINDOW_DAYS = 28;
+  const correctionRange = { from: addDays(today, -(CORRECTION_WINDOW_DAYS - 1)), to: today };
+  const canCorrect = claims.roles.includes('coach') || claims.roles.includes('medical');
+  /* hasAccess above already restricted this whole page to coach/medical, so
+   * canCorrect is true for every reader who gets here today. It is computed
+   * explicitly anyway rather than hardcoded to true: if this page is ever opened
+   * to another role, the correction controls must not come along by accident. */
+  const [wellnessRevisions, trainingRevisions] = await Promise.all([
+    fetchWellnessWithRevisions(db, orgId, athleteId, correctionRange),
+    fetchTrainingWithRevisions(db, orgId, athleteId, correctionRange),
+  ]);
 
   const { athlete, athleticism, acwr, wellnessRating, headerWellness, programme, nutrition, bodyWeight } = profile;
   const spark = sparklinePaths(bodyWeight.history);
@@ -407,7 +441,17 @@ export default async function AthletePage({
           </div>
 
           <div className="pp-grid-col">
-            <PlayerProfileFlags flags={profile.flags} orgId={orgId} userId={claims.userId} today={today} timezone={timezone} />
+            {/* viewerIsMedical is wording, not authorisation (CLAUDE.md rule 2): a
+                flag note is written into a column every coach in the club reads, so
+                a clinician is told that before they type. */}
+            <PlayerProfileFlags
+              flags={profile.flags}
+              orgId={orgId}
+              userId={claims.userId}
+              today={today}
+              timezone={timezone}
+              viewerIsMedical={claims.roles.includes('medical')}
+            />
 
             {/* id is the Wellness domain chip's real destination (DomainChips.tsx) —
              * no dedicated per-athlete wellness history page exists anywhere in this
@@ -571,6 +615,20 @@ export default async function AthletePage({
             </section>
           </div>
         </div>
+
+        {/* Full width, below the two-column grid rather than inside it: these are
+          * wide tables with a per-row expansion, and half a grid column would force
+          * either a horizontal scroll on every row or a truncated history. Placed
+          * above the admin-only subject-access block so the last thing a coach sees
+          * on the page is their own tool, not a compliance one. */}
+        <EntryCorrectionPanel
+          athleteId={athlete.id}
+          athleteFirstName={athlete.first_name}
+          timezone={timezone}
+          canCorrect={canCorrect}
+          wellness={wellnessRevisions}
+          training={trainingRevisions}
+        />
 
         {claims.roles.includes('admin') ? (
           <section className="card pp-card" aria-labelledby="sar-title">

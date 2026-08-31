@@ -4,6 +4,17 @@
 
 **ACCEPTED.** 2026-08. Already binding as `CLAUDE.md` §2 rule 6.
 
+**AMENDED 2026-08-30 (migration `0058_coach_only_entry_correction.sql`).** *Who* may correct a
+wellness or training entry has narrowed from "the athlete concerned, or coach/medical" to
+"coach or medical only", at the club's explicit request. Nothing about the mechanism changed:
+entries are still never updated in place, a correction is still a new row plus a `superseded_by`
+stamp, and the identity columns are still copied from the original. The amendment is confined to
+the new **"Who may correct what"** section below, which is now the authoritative table; O-28 and
+O-32 are resolved by the same change, and rule 5 is restated because revision visibility now
+exists on both sides. The correction RPCs also became audited (`entry_revision.created`) as part of
+this amendment — a staff write power that changes an athlete's self-report has to leave evidence.
+Everything else in this ADR stands as written.
+
 ---
 
 ## Context
@@ -127,8 +138,25 @@ with (security_invoker = true) as
 4. **The `update` privilege is revoked** on entry tables for `authenticated`. The revision
    function is the only write path other than insert, and the `superseded_by` write happens
    inside it as `security invoker` under a policy permitting exactly that column change.
-5. **Revisions are visible.** The athlete's history shows "edited" with a timestamp and offers
-   the previous value. Hiding the revision would reintroduce the trust problem at the UI layer.
+5. **Revisions are visible, on both sides.** As of 2026-08-30 this is implemented for staff and
+   for the athlete, and the second half is not optional garnish: a coach can now change a number
+   the athlete reported, so an athlete who is shown nothing is exactly the trust problem this ADR
+   exists to prevent, reintroduced at the UI layer.
+   - **Staff:** the player profile's "Entries and corrections" card shows a `Corrected` marker on
+     any entry whose live row carries `revision_of`, names who recorded the correction and when,
+     and expands to the values it replaced. Expanding writes `entry_revision.view` to `audit_log`.
+   - **Athlete:** My Data's Wellness and Training tables show the same `Corrected` marker, name
+     the staff member who recorded it, and show the previous values — shown open rather than
+     behind a disclosure, because it is the athlete's own record and a coach changing their
+     answer is not something they should have to go looking for. Not audited: the audit event
+     records one person reading another's revised self-report, and the subject of the data is not
+     a third party looking in.
+   Both read `lib/queries/entryRevisions.ts`, which is the one place in the app permitted to read
+   the entry base tables rather than the `_current` views (see rule 3) because superseded rows are
+   the product. It needs no athlete-specific query: `wellness_athlete_select` /
+   `training_athlete_select` (`0012`) are `athlete_id = auth_athlete_id()` with no `superseded_by`
+   predicate, so the same function returns the athlete's own chains in full and cannot return
+   anyone else's. See O-28 and O-32, both resolved.
 6. **The offline outbox has no `update` operation** (`05-architecture.md` §6). A correction made
    offline is an insert carrying `revision_of`, which is why sync has no update-ordering
    conflicts to resolve.
@@ -154,6 +182,63 @@ is the case this ADR governs.
 
 The line is: **anything an athlete reports about a moment in time is immutable. Anything staff
 plan for the future is editable.**
+
+### Who may correct what
+
+Added by migration `0058_coach_only_entry_correction.sql`. This table is authoritative; where an
+older paragraph in this ADR or in a screen doc implies an athlete may correct their own wellness
+or RPE entry, it is describing behaviour that existed until 2026-08-30 and no longer does.
+
+| Domain | Athlete may correct | Coach / medical may correct | Where |
+|---|---|---|---|
+| `wellness_entries` | **No** (since 0058) | **Yes** | Player profile, "Entries and corrections" card |
+| `training_entries` (RPE) | **No** (since 0058) | **Yes** | Player profile, same card |
+| `nutrition_checkins` | Yes | **No** — no staff write path exists | Athlete app, My Data → Nutrition |
+| `gym_session_logs` / `gym_set_logs` | Yes | **No** — no staff write path exists | Athlete app, My Data → Gym |
+
+The asymmetry in the bottom two rows is deliberate and is `0045`'s own rule: *a correction
+function cannot grant a permission the base table never had.* `nutrition_checkins` has no staff
+insert policy at all (`0012` §11 — "a coach guessing whether a player hit their protein target
+is not a self report"), and `gym_set_logs` has no staff write path of any kind. Applying 0058's
+guard to those two would have left them correctable by **nobody**, which is a worse outcome than
+an inconsistent rule. They stay the athlete's, and both athlete screens say so in as many words
+rather than leaving the difference to be discovered.
+
+**Why the club asked.** Verbatim: *"the athlete shouldnt be able to edit an entry only the coach
+should be able to do it on the system."* This is §Context item 3 above — "editable self-report is
+not self-report, it is self-presentation" — taken one step further than this ADR originally took
+it. The revision chain made self-presentation *visible*; 0058 makes it impossible for the two
+domains a coach reads every morning.
+
+**Why the gate is in the function, not the screen.** `CLAUDE.md` §2 rule 2. Removing a link does
+not remove an RPC; an athlete's own session could still call `revise_wellness_entry` directly.
+The guard lives in the function, which is the only write path able to stamp `superseded_by` at
+all. `supabase/tests/300_coach_entry_correction_test.sql` is the rule.
+
+**Every correction is audited, and the audit is in the function too.** `revise_wellness_entry` and
+`revise_training_entry` write an `entry_revision.created` row through `write_audit_event` before
+returning: actor from the caller's claims, the athlete, the entry, the row it superseded, and the
+prior value of every field that actually moved. It is inside the RPC for the same reason the guard
+is — an audit event a caller can decline to send is not evidence — and in the same transaction, so
+a committed correction is never unaudited and a refused one logs nothing. The metadata diff is
+derived from the payload rather than a hand-written field list, so a column added to the insert
+cannot quietly fall out of the trail; it degrades to a key list rather than failing if it ever
+approaches §13's 16 KB ceiling.
+
+This corrects a real inversion in the first cut of this feature: expanding the history wrote
+`entry_revision.view` while the write that *changed* an athlete's self-reported number wrote
+nothing, so reading was evidence and rewriting was silent. The `.view` event stays — it is O-28's
+third clause and it is what lets full chain visibility coexist with a coach not being able to read
+invisibly — but it is no longer the only one, and it is no longer the more privileged one.
+
+**What the athlete gets instead of a correction form.** Nothing that pretends to be a correction,
+and everything that makes a coach's correction visible to them. The check-in form, the RPE form,
+`/check-in`, `/rpe/[sessionId]` and My Data all now say, in plain words, that a submitted entry
+cannot be edited and that a coach can record a correction against it — and each of them points at
+where the athlete will see it, because My Data now actually shows it (rule 5 above). The copy is
+allowed to promise the original is kept next to the correction precisely because the screen shows
+it; before that was built the same sentence was a claim nothing on the athlete's side backed. There
+is still no "request a correction" button, because there is no queue behind one — see O-30.
 
 ---
 
@@ -261,9 +346,59 @@ and a revision that presents as an ordinary edit afterwards.
 
 ## Open questions
 
-- **O-28**: Should a coach be able to see the full revision chain, or only the current value
-  plus an "edited" marker? Full visibility is more honest and might create the exact social
-  pressure this ADR is meant to prevent, because an athlete who knows the coach can see the
-  original will hesitate before correcting a genuine mistake. I have specified: the athlete sees
-  their own chain in full, the coach sees the current value plus an edited marker and can expand
-  it, and any expansion is written to the audit log. Confirm.
+- **O-28** — **RESOLVED 2026-08-30, as specified.** Should a coach be able to see the full
+  revision chain, or only the current value plus an "edited" marker? Full visibility is more
+  honest and might create the exact social pressure this ADR is meant to prevent, because an
+  athlete who knows the coach can see the original will hesitate before correcting a genuine
+  mistake. I have specified: the athlete sees their own chain in full, the coach sees the current
+  value plus an edited marker and can expand it, and any expansion is written to the audit log.
+  Built exactly that way. Staff: `components/EntryCorrectionPanel`, backed by
+  `lib/queries/entryRevisions.ts`; the expansion writes an `entry_revision.view` row through
+  `write_audit_event`, once per entry per page view rather than once per click. Athlete: My Data's
+  Wellness and Training tables, from the same query file. All three clauses are now built; the
+  first one was briefly outstanding as O-32, which is closed with this.
+
+  One thing this resolution got wrong on the first pass and is worth keeping written down: the
+  audit clause was read as being about the *expansion* only, and the correction itself — the staff
+  write that changes an athlete's number — was left unaudited. Reading was evidence and rewriting
+  was silent. `0058` now writes `entry_revision.created` inside both RPCs; see "Every correction is
+  audited" above.
+
+- **O-29**: Should an athlete be allowed a **same-day** self-correction — fix a mis-tap on the
+  day it was submitted, staff-only after that? Genuinely attractive: nearly every real correction
+  is a fat-finger caught within minutes, and an athlete who cannot fix a wrong number will either
+  stop submitting or submit noise, both of which cost more than the self-presentation risk. Not
+  implemented, on two grounds. It is not what the club asked for, and inventing product behaviour
+  on a customer's behalf is what `CLAUDE.md` §5 forbids. And it does not actually close §Context
+  item 3 for wellness, the domain the club cares about: a coach reads the morning check-ins the
+  same morning they are submitted, so a same-day window leaves the case wide open. If the club
+  later wants it, `0058` was deliberately written so the change is one predicate in two places —
+  see that migration's header for the exact replacement.
+
+- **O-30**: Should the athlete have an in-app **"ask my coach to correct this"** action? Today
+  they are told to tell their coach, in words, on four screens, and that is all. A button would
+  need a table, a staff-facing queue and a notification to be honest; a button that files a
+  request nobody is ever shown is the same lie as a Correct link that always fails. Deliberately
+  not built rather than stubbed. Worth building if coaches report athletes asking in person and
+  forgetting, which is the observable signal that the prose is not enough.
+
+- **O-31**: Should `gym_set_logs` and `nutrition_checkins` gain a staff correction path, so the
+  table in "Who may correct what" stops being asymmetric? It is a real schema change, not a
+  guard: both tables would need a staff insert policy, and `0012` §11's reasoning against one for
+  nutrition ("a coach guessing whether a player hit their protein target is not a self report")
+  is still sound. Gym is the more likely of the two — a coach standing at the rack watching the
+  set is not guessing.
+
+- **O-32** — **RESOLVED 2026-08-30.** The athlete-side revision marker, split out of O-28. My Data
+  now shows the athlete the same `Corrected` marker and previous values the coach sees, plus who
+  recorded the correction and when, on both the Wellness and the Training table. Built rather than
+  deferred, and rather than softening the copy that already promised it: five athlete surfaces were
+  telling athletes their original was "kept next to it" while no athlete screen showed any such
+  thing, and the honest resolutions were to build the visibility or to stop claiming it. Building
+  it is what this ADR's own premise requires — hiding a revision reintroduces the trust problem at
+  the UI layer, and hiding it from the person whose data it is, is the worse half.
+
+  Two things deliberately NOT carried over from the staff panel: the athlete's history is shown
+  open rather than behind a "History" disclosure (a coach scans thirty athletes and wants the
+  current number by default; this is one person's own record and a correction is rare), and it
+  writes no audit event (see rule 5).

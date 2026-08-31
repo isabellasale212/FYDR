@@ -386,9 +386,57 @@ results.
 
 ### Correction
 
-Every entry row for the last 14 days carries a "Correct" affordance. It opens the domain's entry
-screen in correction mode. The revision history for an edited entry is available from the entry
-detail sheet:
+> **AMENDED 2026-08-30.** "Every entry row carries a Correct affordance" is no longer true, and
+> was never true of every row. What is true now, per
+> `decisions/adr-005-immutable-entries.md` §"Who may correct what":
+>
+> - **Wellness and Training rows have no Correct affordance at all.** The column that held it was
+>   removed rather than emptied — a column of blanks headed "Actions" reads as broken. One line of
+>   copy under each table says the entry cannot be edited and that a coach can record a correction
+>   from the athlete's profile. Migration `0058_coach_only_entry_correction.sql` is the gate; the
+>   link was removed so the athlete is never offered a control the database will refuse.
+> - **Those same two rows DO carry a `Corrected` marker when a coach has corrected them**, with the
+>   staff member's name, the date, and the previous values shown open beneath the row. Built at the
+>   same time as the copy above, because that copy promises it: "the original is kept" is a claim
+>   about what the athlete can see, and for a short window it was made on five screens while no
+>   athlete screen showed anything of the sort. See the "Revision marker" section below.
+> - **Nutrition and Gym rows keep theirs.** Neither table has a staff write path, so removing the
+>   athlete's would leave them correctable by nobody. Both sections say on screen that they are
+>   the exception, so the difference is stated rather than discovered.
+>
+> The 14-day window below is aspirational in both directions and is still enforced nowhere in SQL
+> (`0045` lines 66-72 admits this); the athlete tables show a fixed 42-day window and the coach's
+> correction card shows 28 days.
+
+### Revision marker
+
+**Built 2026-08-30, closing ADR-005 O-32.** The revision history for an edited entry was specified
+as available from an entry detail sheet. That sheet still does not exist; the marker does not need
+it, and waiting for it was what left the athlete with nothing while a coach could change their
+numbers.
+
+What is built, on the Wellness and Training tables only (the two domains a coach can correct):
+
+- A `Corrected` pill on any row whose live entry carries `revision_of`.
+- Directly beneath it, always open rather than behind a disclosure: "Corrected by *name* on
+  *date*", then the previous values, oldest first. The staff panel hides this behind a "History"
+  button because a coach scans thirty athletes and wants the current number by default; this is one
+  person's own record, a correction is rare, and it is not something the athlete should have to go
+  looking for.
+- If the superseded row falls outside the 42-day window, the marker still shows — `revision_of`
+  being non-null is what marks it, not the presence of the parent — and says the earlier version is
+  older than the window.
+- **No audit event.** The staff side writes `entry_revision.view` on expansion; the athlete side
+  writes nothing. That event records one person reading another person's revised self-report, and
+  the subject of the data is not a third party looking in.
+
+Backed by `lib/queries/entryRevisions.ts`, the same functions the coach's panel uses —
+`wellness_athlete_select` / `training_athlete_select` (`0012`) scope them to the athlete's own rows
+and place no `superseded_by` filter on them, so the athlete gets their own chains in full and
+cannot reach anyone else's.
+
+The fuller side-by-side comparison below remains unbuilt, and belongs to the entry detail sheet
+rather than to this list:
 
 ```
 Wed 5 Aug · Wellness
@@ -459,8 +507,11 @@ screen it opens.
 4. **The athlete has both a self-reported and a device sleep value for the same night.** Both are
    retained. The device value is used for analytics per `03-flows.md` §7 rule 1, and the chart
    plots both as separate series with a direct label on each, never averaged.
-5. **An entry was corrected.** The series shows the current revision only. The list row is marked
-   "Edited" with a timestamp. The detail sheet shows both.
+5. **An entry was corrected.** The series shows the current revision only. **Built**, with two
+   changes from the wording here: the list row is marked `Corrected`, not "Edited" — since 0058
+   only a coach can have done it, and "edited" would imply the athlete did — and the previous
+   values are shown inline beneath the row rather than in a detail sheet, which does not exist.
+   See §"Revision marker".
 6. **An entry was redacted** under a rectification or erasure request
    (`09-security-and-compliance.md` §6). The row remains with the fields blank and the label
    "Removed at your request, 14 July". It is excluded from every aggregate and the coverage

@@ -208,7 +208,13 @@ select throws_ok(
 );
 
 -- The sanctioned correction path does work, and it leaves the original in place.
-select tests.set_jwt(tests.uid('orga', 'user_athlete_1'));
+--
+-- The caller here was `user_athlete_1` until migration 0058 made correction a staff
+-- action ("the athlete shouldn't be able to edit an entry, only the coach"). This
+-- assertion is about the MECHANISM — a revision row rather than an in-place edit —
+-- so it now runs as the role that still has the power, and the athlete's refusal has
+-- its own assertions in 300_coach_entry_correction_test.sql.
+select tests.set_jwt(tests.uid('orga', 'user_coach'));
 select lives_ok(
   format($q$select revise_wellness_entry(
               (select id from wellness_entries where athlete_id = %L
@@ -216,7 +222,7 @@ select lives_ok(
               gen_random_uuid(),
               '{"sleep_hours": 8.6}'::jsonb)$q$,
          tests.uid('orga', 'athlete_1')),
-  'revise_wellness_entry is the sanctioned correction path and it works'
+  'revise_wellness_entry is the sanctioned correction path and it works (coach, per 0058)'
 );
 
 select is((select count(*) from wellness_entries where athlete_id = tests.uid('orga','athlete_1')),

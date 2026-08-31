@@ -2,6 +2,23 @@
 
 > **Layout status**: provisional. Awaiting client design photographs.
 
+> **AMENDED 2026-08-30 — correction mode is removed from this screen.** Everything below
+> describing a correction mode (§"Entry points" row 3, §"Correcting", the `revision_of` field,
+> the `CorrectionBanner` component, the `Submitted → Correcting` state transition) described real
+> shipped behaviour until 2026-08-30 and is now **historical**. The club asked for correction to
+> be a staff action — *"the athlete shouldnt be able to edit an entry only the coach should be
+> able to do it on the system"* — and migration `0058_coach_only_entry_correction.sql` narrowed
+> `revise_wellness_entry` to coach/medical. `CheckInForm` now has one submit path, which inserts.
+> An athlete who has submitted sees a card saying the entry cannot be edited and that a coach can
+> record a correction against it. The coach does that from the player profile
+> (`squad/[athleteId]`, the "Entries and corrections" card). Rationale and the full
+> who-may-correct-what table: `decisions/adr-005-immutable-entries.md` §"Who may correct what".
+>
+> The athlete is not left blind to it. When a coach corrects a check-in, My Data marks that day
+> `Corrected`, names who did it, and shows what the athlete originally reported —
+> `screens/my-data.md` §"Revision marker". This screen's copy says so, and is only allowed to say
+> so because that marker is built.
+
 Screen 2 in `02-information-architecture.md` §5. Presented as a bottom sheet over Today.
 
 Every layout decision below that would normally come from the client's designs is marked

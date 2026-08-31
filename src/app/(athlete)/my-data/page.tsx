@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { WellnessChart, type FlagMarker } from '@/components/WellnessChart/WellnessChart';
@@ -8,7 +9,11 @@ import { fetchCheckinForWeek, fetchRecentCheckins } from '@/lib/queries/nutritio
 import { fetchMyTestSummary } from '@/lib/queries/testing';
 import { fetchRecentGymSessions } from '@/lib/queries/programmes';
 import { fetchOutstandingCount } from '@/lib/queries/compliance';
-import { fetchMyVisibleFlags, type VisibleFlag } from '@/lib/queries/flags';
+import { fetchMyVisibleFlags, staffNoteLines, type VisibleFlag } from '@/lib/queries/flags';
+import {
+  fetchTrainingRevisionChains,
+  fetchWellnessWithRevisions,
+} from '@/lib/queries/entryRevisions';
 import {
   BLANK,
   addDays,
@@ -177,6 +182,7 @@ export default async function MyDataPage({
       {tab === 'wellness' ? (
         <WellnessTab
           db={db}
+          orgId={orgId}
           athleteId={athleteId}
           from={from}
           today={today}
@@ -221,6 +227,7 @@ export default async function MyDataPage({
 
 async function WellnessTab({
   db,
+  orgId,
   athleteId,
   from,
   today,
@@ -229,6 +236,7 @@ async function WellnessTab({
   flags,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
+  orgId: string;
   athleteId: string;
   from: string;
   today: string;
@@ -238,6 +246,24 @@ async function WellnessTab({
 }) {
   const entries = await fetchWellnessByAthlete(db, athleteId, { from, to: today });
   const byDate = new Map(entries.map((e) => [e.entry_date, e]));
+
+  /* ADR-005 O-32, and O-28's first clause: "the athlete sees their own chain in full".
+   * A coach can now change a number this athlete reported, and until this read existed
+   * the athlete was shown nothing — the table above reads `wellness_entries_current`,
+   * which by construction cannot show that a value was corrected. A second query rather
+   * than a widened first one because the two want opposite things: the chart needs the
+   * live series with readiness_score, this needs the superseded rows. Only chains whose
+   * live row is itself a revision are kept, so the map is empty on the overwhelming
+   * majority of days and costs nothing to consult. */
+  const corrections = await fetchWellnessWithRevisions(db, orgId, athleteId, {
+    from,
+    to: today,
+  });
+  const correctedByDate = new Map(
+    corrections
+      .filter((c) => c.current.revision_of !== null)
+      .map((c) => [c.current.entry_date, c] as const),
+  );
   const series = wellnessSeries(entries, dates, 'readiness', ROLLING_DAYS);
   const submitted = series.filter((s) => s.value !== null).length;
   const outside = series.filter((s) => {
@@ -250,10 +276,17 @@ async function WellnessTab({
   // one wellness chart on this page — see this file's own header comment on why views 2
   // to 4 of my-data.md's report pager were cut), so each marker's tooltip and the
   // FlagNotice line beneath both carry `what` to say which metric was actually flagged.
-  const flagMarkers: FlagMarker[] = flags.map((f) => ({
-    date: f.flag_date,
-    tooltip: `${formatDate(f.flag_date, timezone)} — ${f.what}${f.staff_note ? `: ${f.staff_note}` : ''}`,
-  }));
+  const flagMarkers: FlagMarker[] = flags.map((f) => {
+    // staff_note can now hold several notes separated by newlines (addFlagNote,
+    // queries/flags.ts). A raw newline inside a one-line SVG tooltip renders
+    // inconsistently across browsers, so join them with a separator here; the
+    // FlagNotice below the chart is where they get one line each.
+    const notes = staffNoteLines(f.staff_note).join(' · ');
+    return {
+      date: f.flag_date,
+      tooltip: `${formatDate(f.flag_date, timezone)} — ${f.what}${notes ? `: ${notes}` : ''}`,
+    };
+  });
 
   return (
     <div className="stack" style={{ marginTop: 14 }}>
@@ -323,37 +356,87 @@ async function WellnessTab({
                   Sleep
                 </th>
                 <th scope="col">Submitted</th>
-                <th scope="col">
-                  <span className="visually-hidden">Actions</span>
-                </th>
               </tr>
             </thead>
             <tbody>
               {[...dates].reverse().map((date) => {
                 const entry = byDate.get(date);
+                const corrected = correctedByDate.get(date);
                 return (
-                  <tr key={date}>
-                    <td className="mono sub">{formatDate(date, timezone)}</td>
-                    <td className="r mono">
-                      {entry ? formatNumber(entry.readiness_score, 0) : 'Missing'}
-                    </td>
-                    <td className="r mono">
-                      {entry ? `${dash(entry.sleep_hours)} h` : BLANK}
-                    </td>
-                    <td className="sub mono">
-                      {entry?.submitted_at ? formatTime(entry.submitted_at, timezone) : BLANK}
-                    </td>
-                    <td className="sub">
-                      {entry ? (
-                        <Link href={`/check-in?date=${date}&correct=1`}>Correct</Link>
-                      ) : null}
-                    </td>
-                  </tr>
+                  <Fragment key={date}>
+                    <tr>
+                      <td className="mono sub">
+                        {formatDate(date, timezone)}
+                        {corrected ? (
+                          <span className="pill pill-neutral" style={{ marginInlineStart: 6 }}>
+                            Corrected
+                          </span>
+                        ) : null}
+                      </td>
+                      <td className="r mono">
+                        {entry ? formatNumber(entry.readiness_score, 0) : 'Missing'}
+                      </td>
+                      <td className="r mono">
+                        {entry ? `${dash(entry.sleep_hours)} h` : BLANK}
+                      </td>
+                      <td className="sub mono">
+                        {entry?.submitted_at ? formatTime(entry.submitted_at, timezone) : BLANK}
+                      </td>
+                    </tr>
+                    {corrected ? (
+                      /* Shown open, not behind a disclosure. The coach's version of this
+                       * is expandable because a coach scans thirty athletes and wants the
+                       * current number by default; this is one person's own record, a
+                       * correction is rare, and the fact someone changed their answer is
+                       * not something to make them go looking for. No audit event either
+                       * — see recordRevisionChainView's note on why. */
+                      <tr>
+                        <td colSpan={4} style={{ background: 'var(--surf2)' }}>
+                          <p className="cap" style={{ margin: 0 }}>
+                            Corrected by {corrected.correctedBy ?? 'a member of staff'}
+                            {corrected.correctedAt
+                              ? ` on ${formatDate(corrected.correctedAt, timezone)}`
+                              : ''}
+                            .{' '}
+                            {corrected.priorRevisions.length === 0
+                              ? 'What you first reported is older than the window shown here.'
+                              : 'What you reported:'}
+                          </p>
+                          {corrected.priorRevisions.length > 0 ? (
+                            <ol className="cap" style={{ margin: '4px 0 0', paddingInlineStart: 18 }}>
+                              {corrected.priorRevisions.map((rev) => (
+                                <li key={rev.id} className="mono">
+                                  {`sleep ${dash(rev.sleep_hours)} h · quality ${dash(
+                                    rev.sleep_quality,
+                                  )} · fatigue ${dash(rev.fatigue)} · soreness ${dash(
+                                    rev.soreness,
+                                  )} · stress ${dash(rev.stress)} · mood ${dash(rev.mood)}`}
+                                </li>
+                              ))}
+                            </ol>
+                          ) : null}
+                        </td>
+                      </tr>
+                    ) : null}
+                  </Fragment>
                 );
               })}
             </tbody>
           </table>
         </div>
+        {/* The Actions column that used to hold a per-row "Correct" link is gone
+          * with the athlete's correction path (migration 0058, and the note at
+          * the top of CheckInForm.tsx). The whole column went rather than the
+          * links inside it: a column of blanks headed "Actions" reads as broken.
+          * One sentence carries what the links used to promise — and the
+          * "Corrected" rows above are what make the second half of it true
+          * rather than a promise (ADR-005 O-32). */}
+        <p className="cap" style={{ marginTop: 8 }}>
+          Check-ins can&rsquo;t be edited once sent. If a number here is wrong,
+          tell your coach &mdash; they can record a correction from your profile.
+          If they do, this table says <b>Corrected</b> on that day and shows you
+          what you originally reported.
+        </p>
       </section>
     </div>
   );
@@ -378,6 +461,15 @@ async function TrainingTab({
 }) {
   const sessions = await fetchAthleteRecentSessions(db, orgId, athleteId, from, today, timezone);
   const rated = sessions.filter((s) => s.rpe !== null).length;
+
+  /* Same read, same reason, as the wellness table's — see its comment. Keyed by
+   * session_id because that is what this table's rows are; an RPE entry always names
+   * the session it rates (0046). */
+  const correctedBySession = new Map(
+    (await fetchTrainingRevisionChains(db, orgId, athleteId, { from, to: today }))
+      .filter((c) => c.current.revision_of !== null && c.current.session_id !== null)
+      .map((c) => [c.current.session_id as string, c] as const),
+  );
 
   return (
     <div className="stack" style={{ marginTop: 14 }}>
@@ -418,42 +510,82 @@ async function TrainingTab({
                     <th scope="col" className="r">
                       Load
                     </th>
-                    <th scope="col">
-                      <span className="visually-hidden">Actions</span>
-                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {sessions.map((session) => (
-                    <tr key={session.id} style={{ opacity: session.status === 'cancelled' ? 0.55 : 1 }}>
-                      <td className="mono sub">
-                        {formatDate(session.starts_at, timezone)} {formatTime(session.starts_at, timezone)}
-                      </td>
-                      <td className="nm">{session.title}</td>
-                      <td className="sub">
-                        {enumLabel(session.session_type)}
-                        {session.status === 'cancelled' ? (
-                          <span className="pill pill-bad" style={{ marginInlineStart: 6 }}>
-                            Cancelled
-                          </span>
+                  {sessions.map((session) => {
+                    const corrected = correctedBySession.get(session.id);
+                    return (
+                      <Fragment key={session.id}>
+                        <tr style={{ opacity: session.status === 'cancelled' ? 0.55 : 1 }}>
+                          <td className="mono sub">
+                            {formatDate(session.starts_at, timezone)} {formatTime(session.starts_at, timezone)}
+                          </td>
+                          <td className="nm">{session.title}</td>
+                          <td className="sub">
+                            {enumLabel(session.session_type)}
+                            {session.status === 'cancelled' ? (
+                              <span className="pill pill-bad" style={{ marginInlineStart: 6 }}>
+                                Cancelled
+                              </span>
+                            ) : null}
+                            {corrected ? (
+                              <span className="pill pill-neutral" style={{ marginInlineStart: 6 }}>
+                                Corrected
+                              </span>
+                            ) : null}
+                          </td>
+                          <td className="r mono">{session.duration_min ?? BLANK}</td>
+                          <td className="r mono">{formatNumber(session.rpe, 1)}</td>
+                          <td className="r mono">{formatNumber(session.session_load, 0)}</td>
+                        </tr>
+                        {corrected ? (
+                          <tr>
+                            <td colSpan={6} style={{ background: 'var(--surf2)' }}>
+                              <p className="cap" style={{ margin: 0 }}>
+                                Corrected by {corrected.correctedBy ?? 'a member of staff'}
+                                {corrected.correctedAt
+                                  ? ` on ${formatDate(corrected.correctedAt, timezone)}`
+                                  : ''}
+                                .{' '}
+                                {corrected.priorRevisions.length === 0
+                                  ? 'What you first reported is older than the window shown here.'
+                                  : 'What you reported:'}
+                              </p>
+                              {corrected.priorRevisions.length > 0 ? (
+                                <ol
+                                  className="cap"
+                                  style={{ margin: '4px 0 0', paddingInlineStart: 18 }}
+                                >
+                                  {corrected.priorRevisions.map((rev) => (
+                                    <li key={rev.id} className="mono">
+                                      {`RPE ${dash(rev.rpe)} · ${dash(rev.duration_min)} min · load ${dash(
+                                        rev.session_load,
+                                      )}`}
+                                    </li>
+                                  ))}
+                                </ol>
+                              ) : null}
+                            </td>
+                          </tr>
                         ) : null}
-                      </td>
-                      <td className="r mono">{session.duration_min ?? BLANK}</td>
-                      <td className="r mono">{formatNumber(session.rpe, 1)}</td>
-                      <td className="r mono">{formatNumber(session.session_load, 0)}</td>
-                      <td className="sub">
-                        {session.rpe !== null ? (
-                          <Link href={`/rpe/${session.id}?correct=1`}>Correct</Link>
-                        ) : null}
-                      </td>
-                    </tr>
-                  ))}
+                      </Fragment>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
             <p className="cap">
               <b>{rated}</b> of <b>{sessions.length}</b> sessions rated in this
               window.
+            </p>
+            {/* Same removal, same reason, and same "Corrected" row, as the
+              * wellness table above. */}
+            <p className="cap">
+              Ratings can&rsquo;t be edited once sent. If one is wrong, tell your
+              coach &mdash; they can record a correction from your profile. If they
+              do, this table says <b>Corrected</b> on that session and shows you
+              what you originally rated it.
             </p>
           </>
         )}
@@ -529,6 +661,23 @@ async function NutritionTab({
             </table>
           </div>
         )}
+        {/* This Correct link SURVIVED the change that removed the wellness and
+          * training ones, and the asymmetry is deliberate rather than an
+          * oversight. `revise_nutrition_checkin` is athlete-only by design and
+          * always has been: `nutrition_checkins` has no staff insert policy at
+          * all (migration 0012 §11 — "a coach guessing whether a player hit
+          * their protein target is not a self report"), so there is no coach
+          * path to move this to. Closing the athlete's path here would leave the
+          * weekly check-in correctable by nobody, which is worse than the
+          * inconsistency. Recorded in adr-005-immutable-entries.md's
+          * "Who may correct what" table. */}
+        {checkins.length > 0 ? (
+          <p className="cap" style={{ marginTop: 8 }}>
+            This one you can still change yourself &mdash; only you know the
+            answer, so no coach can correct it for you. Changing it keeps the old
+            answer on record.
+          </p>
+        ) : null}
       </section>
     </div>
   );
@@ -632,9 +781,17 @@ async function GymTab({
         <h2 className="card-title" id="gym-title">
           Sessions
         </h2>
+        {/* Like the nutrition check-in above and unlike wellness and RPE, gym set
+          * logs stay the athlete's own to correct. `gym_set_logs` has no staff
+          * write path of any kind (migration 0045), so `revise_gym_set_log` could
+          * not be widened to coaches without first building one — and removing the
+          * athlete's path would leave every mis-logged rep permanently wrong.
+          * Building that staff path was out of scope for this change and is
+          * recorded as O-31 in adr-005-immutable-entries.md. */}
         <p className="import-sub">
           Completed gym sessions in this window. Tap Correct on a session to fix a set
-          you mis-logged &mdash; the original is kept, never overwritten.
+          you mis-logged &mdash; the original is kept, never overwritten. Gym sets are
+          still yours to correct; your check-ins and session ratings are not.
         </p>
 
         <FlagNotice flags={flags} heading="Noted by staff" timezone={timezone} />

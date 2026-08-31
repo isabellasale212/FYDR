@@ -3851,6 +3851,7 @@ export type Database = {
         created_at: string
         updated_at: string
         deleted_at: string | null
+        avatar_colour: string | null
       }
       Insert: {
         id: string
@@ -3865,6 +3866,7 @@ export type Database = {
         created_at?: string
         updated_at?: string
         deleted_at?: string | null
+        avatar_colour?: string | null
       }
       Update: {
         id?: string
@@ -3879,6 +3881,7 @@ export type Database = {
         created_at?: string
         updated_at?: string
         deleted_at?: string | null
+        avatar_colour?: string | null
       }
       Relationships: [
         {
@@ -4345,6 +4348,25 @@ export type Database = {
           previous_position: number
         }[]
     }
+    default_threshold_set: {
+      Args: Record<string, never>
+      Returns: {
+          name: string
+          description: string
+          domain: Database["public"]["Enums"]["flag_domain"]
+          metric: string
+          comparison: Database["public"]["Enums"]["threshold_comparison"]
+          value: number
+          baseline_type: Database["public"]["Enums"]["baseline_type"]
+          baseline_days: number
+          consecutive_days: number
+          min_baseline_observations: number
+          cooldown_days: number
+          severity: Database["public"]["Enums"]["flag_severity"]
+          notify_roles: Database["public"]["Enums"]["app_role"][]
+          is_active: boolean
+        }[]
+    }
     evaluate_daily_thresholds_for_org: {
       Args: {
         p_org_id: string
@@ -4507,6 +4529,12 @@ export type Database = {
     rls_auto_enable: {
       Args: Record<string, never>
       Returns: unknown
+    }
+    seed_default_thresholds: {
+      Args: {
+        p_org_id: string
+      }
+      Returns: number
     }
     suspend_assignments_for_rehab: {
       Args: {

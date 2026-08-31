@@ -5,16 +5,17 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CR10List } from '@/components/CR10List/CR10List';
 import { createClient } from '@/lib/supabase/client';
-import { reviseTrainingEntry, submitTrainingEntry } from '@/lib/queries/training';
+import { submitTrainingEntry } from '@/lib/queries/training';
 import { qk } from '@/lib/queries/keys';
 import { dequeueTraining, enqueueTraining } from '@/lib/outbox';
-import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { TrainingEntryInput } from '@/lib/validation/training';
 
-type Correction = {
-  originalId: string;
-  initial: { rpe: number; duration_min: number };
-};
+/* The correction mode is gone, for the reasons written out at the top of
+ * CheckInForm.tsx — the same club instruction, the same migration (0058, which
+ * narrowed `revise_training_entry` to coach/medical), and the same refusal to
+ * leave behind a form that would take an athlete's answers and then be refused
+ * by the database. Coaches correct a rating on the player profile instead
+ * (components/EntryCorrectionPanel). */
 
 type Props = {
   orgId: string;
@@ -28,10 +29,6 @@ type Props = {
    *  run"), which needs the title, not just the id this form otherwise
    *  only needs for the mutation. */
   sessionTitle: string;
-  /** Present only when reached via "Correct this entry" — see
-   *  CheckInForm's identical prop for the reasoning, which applies
-   *  unchanged here. */
-  correction?: Correction;
 };
 
 const MIN_DURATION = 5;
@@ -47,8 +44,7 @@ const STEP = 5;
  * does not arise from a web route carrying one session id), no long-duration
  * or scheduled-mismatch soft confirmations, and no org-default duration
  * fallback (O-50 in 08-notifications.md is still open on what that default
- * even is). Correction now shares the same mechanics as CheckInForm's: see
- * its comment on correctionMutation for why it is online-only.
+ * even is). This form submits; it does not correct.
  */
 export function RpeForm({
   orgId,
@@ -58,25 +54,18 @@ export function RpeForm({
   entryDate,
   scheduledDurationMin,
   sessionTitle,
-  correction,
 }: Props) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  /* Rounded to the nearest whole CR10 stop. Caught live, same class of bug
-   * as CheckInForm's sleep-hours rounding: `training_entries.rpe` is
-   * numeric(3,1) so a staff-entered or imported value can carry a half
-   * point (checked against real data: 246 rows do, including some marked
-   * self_report), but this screen's CR10List and its validation schema are
-   * whole numbers only, "per O-411" (see validation/training.ts). Without
-   * rounding, correcting one of those entries submits the exact prefilled
-   * value straight back through the same schema that rejects it. */
-  const [rpe, setRpe] = useState<number | null>(
-    correction ? Math.min(10, Math.max(1, Math.round(correction.initial.rpe))) : null,
-  );
-  const [duration, setDuration] = useState<number | null>(
-    correction?.initial.duration_min ?? scheduledDurationMin,
-  );
+  /* No prefill and therefore no rounding. The CR10-stop rounding that used to
+   * sit here existed only for the correction mode: `training_entries.rpe` is
+   * numeric(3,1) and 246 real rows carry a half point, which this screen's
+   * whole-number CR10List and schema (O-411, validation/training.ts) cannot
+   * express. Those halves are now only ever edited from the coach's panel,
+   * whose own schema allows 0.5 steps precisely so they survive a correction. */
+  const [rpe, setRpe] = useState<number | null>(null);
+  const [duration, setDuration] = useState<number | null>(scheduledDurationMin);
   const [note, setNote] = useState('');
   const [noteOpen, setNoteOpen] = useState(false);
   const [invalid, setInvalid] = useState<string | null>(null);
@@ -101,30 +90,6 @@ export function RpeForm({
     },
   });
 
-  /* Online-only and bounded, exactly like CheckInForm's correctionMutation —
-   * see its comment for why corrections never queue and what the ten-second
-   * ceiling buys (audit S5 / athlete finding 11). */
-  const correctionMutation = useMutation({
-    mutationFn: async (input: TrainingEntryInput) => {
-      if (!correction) throw new Error('Not in correction mode.');
-      const result = await withWriteTimeout(
-        reviseTrainingEntry(createClient(), correction.originalId, {
-          rpe: input.rpe,
-          duration_min: input.duration_min,
-          comment: input.comment,
-        }),
-      );
-      if (result.error) throw new HumanError(result.error);
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: qk.training.entryForSession(orgId, athleteId, sessionId),
-      });
-      router.push('/my-data?tab=training');
-    },
-    onError: (err: Error) => setInvalid(toUserMessage(err, 'athlete')),
-  });
-
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -144,7 +109,8 @@ export function RpeForm({
       rpe,
       duration_min: duration,
       comment: note.trim() ? note.trim() : null,
-      revision_of: correction?.originalId,
+      /* See CheckInForm's identical line: revision_of is never set from a client
+       * form any more. Only revise_training_entry writes it, server side. */
     };
 
     const parsed = TrainingEntryInput.safeParse(candidate);
@@ -154,39 +120,16 @@ export function RpeForm({
     }
 
     setInvalid(null);
-    if (correction) {
-      correctionMutation.mutate(parsed.data);
-      return;
-    }
     submitMutation.mutate(parsed.data);
     router.push(
       `/today?submitted=rpe&rpe=${rpe}&session=${encodeURIComponent(sessionTitle)}`,
     );
   }
 
-  const submitLabel =
-    rpe === null
-      ? 'Choose a rating'
-      : correction
-        ? correctionMutation.isPending
-          ? 'Saving correction…'
-          : 'Submit correction'
-        : 'Submit rating';
+  const submitLabel = rpe === null ? 'Choose a rating' : 'Submit rating';
 
   return (
     <form onSubmit={onSubmit} noValidate>
-      {correction ? (
-        <div className="banner" role="status">
-          <span className="g g-faint" aria-hidden="true">
-            ⓘ
-          </span>
-          <div>
-            Correcting this rating. This creates a new revision; the
-            original is kept, not overwritten.
-          </div>
-        </div>
-      ) : null}
-
       <p className="dir">Rate the whole session, not the hardest bit.</p>
 
       <CR10List value={rpe} onChange={setRpe} />
@@ -267,29 +210,26 @@ export function RpeForm({
       ) : null}
 
       <div className="subm">
-        {/* submitMutation.isPending closes the same double-submit race the
-         * correction branch's correctionMutation.isPending already closed —
-         * see CheckInForm's identical guard for the full reasoning. Without
-         * it a fast double-tap enqueues two outbox rows for the same
+        {/* submitMutation.isPending closes a double-submit race — see
+         * CheckInForm's identical guard for the full reasoning. Without it a
+         * fast double-tap enqueues two outbox rows for the same
          * (athlete_id, entry_date, session_id) slot and the loser's insert
          * dies on training_entries_one_live_per_session. */}
         <button
           className="btn-primary"
           type="submit"
-          disabled={
-            rpe === null ||
-            (correction ? correctionMutation.isPending : submitMutation.isPending)
-          }
+          disabled={rpe === null || submitMutation.isPending}
           style={{ width: '100%', minHeight: 56 }}
         >
           {submitLabel}
         </button>
-        {correction ? (
-          <p className="tiny" style={{ textAlign: 'center', marginTop: 8 }}>
-            Corrections send straight away and need signal. If it can&rsquo;t get
-            through, you&rsquo;ll see an error here and your answers stay put.
-          </p>
-        ) : null}
+        {/* Same sentence as the check-in form's, for the same reason: the rule
+         * is easier to accept before submitting than to discover afterwards. */}
+        <p className="tiny" style={{ textAlign: 'center', marginTop: 8 }}>
+          Once this is sent it can&rsquo;t be edited. If the rating or the minutes
+          are wrong, tell your coach &mdash; they can record a correction, and My
+          Data will show you both what they changed it to and what you first sent.
+        </p>
       </div>
     </form>
   );

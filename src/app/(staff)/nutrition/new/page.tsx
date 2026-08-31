@@ -6,7 +6,7 @@ import { fetchBodyCompositionForAthletes } from '@/lib/queries/bodyComposition';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchSquadList } from '@/lib/queries/squad';
 import { buildWorkspaceAthlete } from '@/lib/nutritionWorkspace';
-import { trendFlagSentence } from '@/lib/nutritionRules';
+import { MASS_TREND_FLAG_WINDOW_DAYS, trendFlagSentence } from '@/lib/nutritionRules';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'New nutrition target · Fydr' };
@@ -31,7 +31,16 @@ export default async function NewNutritionTargetPage() {
   // trend formula actually needs (mass history) are real; position/groupIds/checkins
   // are irrelevant to massTrendFlag and passed as harmless placeholders.
   const today = todayIso(timezone);
-  const massSince = addDays(today, -90); // trailing ~13 weeks, same window /nutrition uses
+  /* The trend indicator's OWN window, from the constant both screens read —
+   * not a hand-copied 90 and not "the same window /nutrition uses", which is
+   * what this line used to claim. It stopped being true the day /nutrition got
+   * a mass-trend period selector: that screen's window became whatever a coach
+   * had last picked, so the two screens computed the same flag over different
+   * windows and could disagree about who was flagged — the exact outcome the
+   * comment below promises sharing the function prevents. Sharing the function
+   * is not enough when the callers feed it different windows, so the window is
+   * now shared too. See MASS_TREND_FLAG_WINDOW_DAYS in lib/nutritionRules.ts. */
+  const massSince = addDays(today, -MASS_TREND_FLAG_WINDOW_DAYS);
   const massByAthlete = await fetchBodyCompositionForAthletes(
     db,
     orgId,
@@ -47,13 +56,19 @@ export default async function NewNutritionTargetPage() {
       position: null,
       groupIds: [],
       history: massByAthlete.get(a.id) ?? [],
-      // This screen has no period control, so its trend window IS its fetch
-      // window and there is nothing to clip. Stated explicitly because
-      // buildWorkspaceAthlete now requires it: /nutrition fetches WIDER than
-      // its trend (its week navigator can reach further back than the selected
-      // period), so the trend's first day can no longer be inferred from the
-      // rows in hand and every caller has to say which it means.
+      /* THE ONLY FIELD THIS SCREEN READS OFF THE RESULT IS `trendFlag`, which
+       * answers to `flagFrom` alone. `trendFrom` is required by the type and is
+       * set to the same date purely so the unread trend fields are computed
+       * over something coherent rather than over an accidental window; nothing
+       * on this page renders them.
+       *
+       * Both are stated explicitly because buildWorkspaceAthlete deliberately
+       * refuses to infer either from the rows in hand: /nutrition fetches WIDER
+       * than its trend (its week navigator can reach further back than the
+       * selected period), so "the oldest row present" is not the trend's first
+       * day there, and every caller has to say which window it means. */
       trendFrom: massSince,
+      flagFrom: massSince,
       weekStart: today,
       weekEnd: today,
       checkins: [],

@@ -19,6 +19,7 @@ import { fetchTargets } from '@/lib/queries/nutritionTargets';
 import { fetchCurrentSeason, mondayOf } from '@/lib/queries/schedule';
 import { fetchSquadList } from '@/lib/queries/squad';
 import { buildChaseList, buildWorkspaceAthlete, groupByUnit, meanMass } from '@/lib/nutritionWorkspace';
+import { MASS_TREND_FLAG_WINDOW_DAYS } from '@/lib/nutritionRules';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Nutrition · Fydr' };
@@ -77,6 +78,40 @@ const MASS_TREND_REASONS: Partial<Record<RangeKey, string>> = {
   week: 'a mass trend needs a band, not a week',
 };
 
+/* THIS SCREEN'S OWN DEFAULT, and it is deliberately NOT DEFAULT_RANGE.
+ *
+ * The trend was a silent fixed `today - 90` before the control existed. Making
+ * it selectable also handed it resolvePeriod's global default of `month` (28
+ * days) whenever nobody had expressed a period — which is too narrow for what
+ * this particular window actually feeds, in two ways that are not cosmetic:
+ *
+ *  - THE BAND NEEDS WEEKS, NOT DAYS. computeMassBand (nutritionRules.ts) is a
+ *    mean +/- 1 SD over ONE WEIGH-IN PER ISO WEEK and returns null below two of
+ *    them. A club weighing in monthly has ONE inside 28 days, so it got no band,
+ *    no range bar and no in-range count at all.
+ *  - THE 12-WEEK CHANGE NEEDS 84 DAYS. `change12wk` is computed inside the trend
+ *    window on purpose (a comparison must not reach outside the window its own
+ *    caption names), so at 28 days it is unconditionally null — the screen was
+ *    rendering a column it had made structurally impossible to fill.
+ *
+ * `season` is the closest honest fit among the six keys the product defines
+ * (lib/period.ts's header: "day to the week to the season to the year to all" is
+ * the client's own vocabulary, so a seventh 90-day key is not mine to invent).
+ * It is a real nutrition conversation's window, and for the mid-season club this
+ * screen serves it is months long — nearest to the 90 days this actually had.
+ * `year` and `all` were the alternative and are worse HERE for the reason
+ * MASS_TREND_FLAG_WINDOW_DAYS already states about its own 90-day cap: a mean
+ * dragged across a close-season or a deliberate mass programme stops describing
+ * where the athlete sits now.
+ *
+ * The pre-season case (a season two weeks old) does collapse the band, and that
+ * is accepted rather than missed: the control NAMES the window, so a short band
+ * under "This season" is legible, where a 28-day default silently deleted the
+ * band while claiming "Last 28 days". A seasonless club gets `year`, the same
+ * pairing the testing report makes (TESTING_FALLBACK / TESTING_FALLBACK_NO_SEASON). */
+const MASS_TREND_FALLBACK: RangeKey = 'season';
+const MASS_TREND_FALLBACK_NO_SEASON: RangeKey = 'year';
+
 export default async function NutritionPage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, claims, timezone } = await requireStaff();
   const isCoach = claims.roles.includes('coach');
@@ -132,22 +167,51 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
    * mandatory), and starts_on is a `date` column passed through as a plain
    * YYYY-MM-DD string, never via dateInTz. */
   const [requestedPeriod, season] = await Promise.all([resolvePeriod(params), fetchCurrentSeason(db, orgId)]);
-  const period = clampPeriod(requestedPeriod.key, {
+
+  /* The screen default is applied BEFORE the clamp, because clampPeriod only
+   * substitutes for an ILLEGAL key and resolvePeriod hands an ABSENT period
+   * back as `month` with `source: 'default'` — which is legal here, so nothing
+   * was ever substituted and MASS_TREND_FALLBACK would have been dead on the
+   * only path it exists for. Same fix, same reasoning, as
+   * resolveReportPeriod()'s (lib/reportPeriod.server.ts); written out here
+   * because this screen is not a report and resolves its own range against its
+   * own earliest-weigh-in anchor. */
+  const periodExpressed = requestedPeriod.source !== 'default';
+  const massTrendFallback = season !== null ? MASS_TREND_FALLBACK : MASS_TREND_FALLBACK_NO_SEASON;
+  const period = clampPeriod(periodExpressed ? requestedPeriod.key : massTrendFallback, {
     allowed: MASS_TREND_PERIODS,
     seasonAvailable: season !== null,
+    fallback: massTrendFallback,
   });
+
+  /* A DEFAULT MUST NOT SEED THE ACCOUNT-WIDE COOKIE. Now that this screen has a
+   * default of its own, `fydr-period` would otherwise be written to `season` by
+   * the mere act of opening /nutrition, re-scoping every other screen to a
+   * window the coach never picked. Identical rule to periodSticky()
+   * (lib/reportPeriod.server.ts) and to /dashboard's `periodIsChoice`: sticky
+   * only when the rendered key is the reader's own AND was not clamped. */
+  const periodIsChoice = periodExpressed && period.coercedFrom === null;
   const earliestMass = period.key === 'all' ? await fetchEarliestBodyCompositionDate(db, orgId) : null;
   const massRange = resolveRange(period.key, today, season?.starts_on ?? null, earliestMass);
 
-  /* THE TWO CONTROLS SHARE ONE FETCH, so its lower bound is the EARLIER of the
-   * two, not the trend's alone. Without this, a coach who steps the week
-   * navigator back six months while the trend is on "Last 28 days" gets a
-   * weigh-in strip showing zero logged days — not because nobody weighed in
-   * that week, but because the read never reached back to it. Silently
-   * reporting "0 of 7" for a week that was fully logged is exactly the class of
-   * lie this whole change exists to remove. Both are plain YYYY-MM-DD calendar
+  /* THE TREND INDICATOR'S FIXED WINDOW — not a control, and not derived from
+   * either of the two above. massTrendFlag must fire on the same evidence
+   * wherever it renders, and /nutrition/new has no period control to agree
+   * with, so both screens pass this same trailing 90 days. See
+   * MASS_TREND_FLAG_WINDOW_DAYS's own doc in lib/nutritionRules.ts. */
+  const flagFrom = addDays(today, -MASS_TREND_FLAG_WINDOW_DAYS);
+
+  /* THREE WINDOWS SHARE ONE FETCH, so its lower bound is the EARLIEST of them,
+   * not the trend's alone. Without this, a coach who steps the week navigator
+   * back six months while the trend is on "Last 28 days" gets a weigh-in strip
+   * showing zero logged days — not because nobody weighed in that week, but
+   * because the read never reached back to it. Silently reporting "0 of 7" for
+   * a week that was fully logged is exactly the class of lie this whole change
+   * exists to remove, and the trend flag's 90 days is now in the same position:
+   * narrow the read to the selected trend and the indicator quietly stops
+   * firing on a window it does not control. All are plain YYYY-MM-DD calendar
    * dates off `date` columns, so a string compare IS the date compare. */
-  const massSince = weekStart < massRange.from ? weekStart : massRange.from;
+  const massSince = [weekStart, massRange.from, flagFrom].reduce((a, b) => (b < a ? b : a));
 
   // Follows the week navigator rather than today, so stepping back a week steps
   // the check-in strip back with it instead of showing this week's answers
@@ -174,6 +238,7 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
       groupIds: a.group_ids,
       history: massByAthlete.get(a.id) ?? [],
       trendFrom: massRange.from,
+      flagFrom,
       weekStart,
       weekEnd,
       checkins: checkinsByAthlete.get(a.id) ?? [],
@@ -248,6 +313,7 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
             allowed={MASS_TREND_PERIODS}
             reasons={MASS_TREND_REASONS}
             season={season}
+            sticky={periodIsChoice}
             label="Mass trend"
             ariaLabel="Window for the selected athlete's body mass trend"
           />

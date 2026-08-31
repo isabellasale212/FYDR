@@ -138,7 +138,9 @@ export function buildWorkspaceAthlete(input: {
    * renders the indicator, and one of them (/nutrition/new) has no period
    * control to be identical to. */
   const inFlagWindow = withMass.filter((h) => h.measured_on >= input.flagFrom);
-  const flagBand = computeMassBand(weeklyMasses([...inFlagWindow].reverse().map((h) => ({ date: h.measured_on, kg: h.body_mass_kg }))));
+  const flagBand = computeMassBand(
+    weeklyMasses([...inFlagWindow].reverse().map((h) => ({ date: h.measured_on, kg: h.body_mass_kg }))),
+  );
   const flagChange7d = latest ? changeOver(inFlagWindow, latest, 7) : null;
 
   // The UNCLIPPED set — this is the one thing on this card that answers to the
@@ -163,8 +165,53 @@ export function buildWorkspaceAthlete(input: {
     loggedDatesThisWeek,
     recentCheckins: input.checkins.map((c) => ({ weekStart: c.week_start, answer: c.answer })),
     hasPersonalTargetOverride: input.hasPersonalTargetOverride,
-    trendFlag: massTrendFlag(massKg, massBand, change7d),
+    /* THE FLAG'S OWN BAND AND ITS OWN 7-DAY CHANGE, never the trend's. Passing
+     * `massBand`/`change7d` here is the bug this pair of variables exists to
+     * fix: both are computed over `trendFrom`, which /nutrition lets a coach
+     * change and /nutrition/new does not have at all, so the same athlete could
+     * be flagged on one screen and not the other purely because a sparkline had
+     * been narrowed somewhere else. `massKg` is shared because it is not
+     * windowed on either screen — it is the latest weigh-in, full stop. */
+    trendFlag: massTrendFlag(massKg, flagBand, flagChange7d),
   };
+}
+
+/** One weigh-in per ISO week — the latest reading in that week — which is the
+ *  unit computeMassBand's mean and SD are defined over (nutritionRules.ts).
+ *  Takes ASCENDING points, so the last write per week is that week's latest.
+ *
+ *  A named helper rather than an inline loop because TWO windows now need it
+ *  and they must not be the same window: the displayed trend's band answers to
+ *  `trendFrom`, the indicator's band to `flagFrom`. */
+function weeklyMasses(ascending: readonly MassPoint[]): number[] {
+  const byWeek = new Map<string, number>();
+  for (const p of ascending) byWeek.set(mondayOfLocal(p.date), p.kg);
+  return [...byWeek.values()];
+}
+
+type MassRow = { measured_on: string; body_mass_kg: number };
+
+/** Percentage change from the nearest reading at or before `days` before
+ *  `latest` up to `latest` itself — "nearest available, not an exact day
+ *  count", the same approach playerProfile.ts uses for its own weight-trend
+ *  delta. Null when nothing in `rows` is old enough, which is the honest
+ *  answer: there is no change to state without an earlier reading.
+ *
+ *  `rows` must be NEWEST-FIRST, and it is the CALLER'S window rather than the
+ *  whole history — the trend's rows for the displayed 7-day and 12-week
+ *  changes, the flag's fixed 90-day rows for the indicator. Same reason
+ *  weeklyMasses takes its points as an argument.
+ *
+ *  `measured_on` is a `date` column. The midday-UTC parse here is day
+ *  arithmetic on a plain calendar date, not a timezone being applied to it
+ *  (CLAUDE.md rule 5 governs instants), and midday is chosen so no DST offset
+ *  can move the day. */
+function changeOver(rows: readonly MassRow[], latest: MassRow, days: number): number | null {
+  const target = Date.parse(`${latest.measured_on}T12:00:00Z`) - days * 86_400_000;
+  // Newest-first, so the FIRST row at or before the target is the nearest one
+  // to it.
+  const prior = rows.find((h) => Date.parse(`${h.measured_on}T12:00:00Z`) <= target);
+  return prior ? pctChange(latest.body_mass_kg, prior.body_mass_kg) : null;
 }
 
 function mondayOfLocal(dateIso: string): string {

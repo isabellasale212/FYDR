@@ -164,7 +164,7 @@ Switching the metric selector to Energy, Carbohydrate, Fat or Fluid redraws the 
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
-│ [Athlete: J. Okafor ▾]                              [Period: Last 28 days ▾]           │
+│ [Athlete: J. Okafor ▾]                          [Mass trend: This season ▾]            │
 │ Resolved target source: personal (28 Jul to 7 Sep) → Forwards → squad default          │
 ├────────────────────────────────────────────────────────────────────────────────────────┤
 │  Protein          Carbohydrate       Fat               Fluid          Energy           │
@@ -256,6 +256,20 @@ trend. `season` is **absent** when the org has no current season row. `all` anch
 real earliest weigh-in (`fetchEarliestBodyCompositionDate`), so the label does not promise more
 than it shows.
 
+**Its default is `season`, not the app-wide `month`** (`MASS_TREND_FALLBACK`, and `year` for a club
+with no season row). Making the window selectable briefly handed it the global 28-day default, which
+is too narrow for what this window actually feeds: `computeMassBand` is a mean ± 1 SD over *one
+weigh-in per ISO week* and returns null below two of them, so a monthly-weighing club got no band,
+no range bar and no in-range count at all; and the 12-week change is computed inside the trend
+window on purpose, so at 28 days it was unconditionally null. The screen default is applied **before**
+the clamp — `clampPeriod` substitutes only for an *illegal* key, and `month` is legal here, so a
+fallback applied after it would never have fired.
+
+Because that default is the screen's and not the coach's, `PeriodSelector` is passed
+`sticky={periodIsChoice}`: merely opening /nutrition must not write `season` into the account-wide
+`fydr-period` cookie and re-scope every other screen. Same rule as `periodSticky()`
+(`lib/reportPeriod.server.ts`) and /dashboard.
+
 **`?week=` — the week strip.** A prev/next week navigator, Monday-anchored (`mondayOf`), clamped
 forward to the current week. Deliberately **not** a period selector: "how many of the last 7 days
 did he weigh in on" is a question about *one week*, and widening it to a season would not answer it
@@ -274,7 +288,8 @@ by a navigation control).
 | Weigh-in strip ("n of 7 days weighed in") | `?week=` |
 | Weekly check-in strip | `?week=` (its 7-week lookback is anchored on the selected week) |
 | "Needs a word" chase list | Both — the mass-down reason from `?period=`, the under-logging reason from `?week=` |
-| Plans, targets table, meal card | Neither. Not windowed. |
+| Plans, targets table, meal card | Neither. Not windowed. Each athlete's current mass is their **latest weigh-in, unclipped** — clipping it at the trend window took a monthly-weighing club's macro targets, scaled portions and plan reference mass away the day a weigh-in aged past the window. |
+| Weight-trend indicator (nutrition staff only) | Neither. A **fixed trailing 90 days** (`MASS_TREND_FLAG_WINDOW_DAYS`), passed as `flagFrom` by both screens that render it. It has its own band and its own 7-day change, separate from the trend's: `/nutrition/new` has no period control, so keying the flag off `?period=` let the two screens disagree about who was flagged. |
 
 The sparkline's x-axis used to be hardcoded "12 weeks ago → today", which was only true while the
 window was a fixed 90 days. It now names the real first and last weigh-in dates in the window.

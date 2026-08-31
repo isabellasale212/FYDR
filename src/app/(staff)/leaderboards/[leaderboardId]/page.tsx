@@ -8,6 +8,7 @@ import {
   fetchBoardRanking,
   fetchMetricCatalogue,
   fetchAthleteNames,
+  metricDecimals,
   populationLabel,
 } from '@/lib/queries/leaderboards';
 import { fetchGroupAthleteIds, fetchGroups } from '@/lib/queries/groups';
@@ -104,7 +105,13 @@ export default async function LeaderboardDetailPage({
   const scopeLabel = groupScopeLabel(groups, groupIds);
 
   const metric = catalogue.find((m) => m.key === board.metric_key);
+  const decimals = metricDecimals(metric);
   const isMedical = claims.roles.includes('medical');
+
+  // Both exports carry the group filter, so a downloaded or printed board matches the
+  // one on screen rather than silently widening back out to the whole squad — same
+  // rule the reports' own export links follow (audit S4).
+  const groupQuery = groupIds.length > 0 ? `?groups=${groupIds.join(',')}` : '';
 
   return (
     <>
@@ -114,6 +121,17 @@ export default async function LeaderboardDetailPage({
             <Link href="/leaderboards/manage">Leaderboard</Link> · {board.name}
           </p>
           <h1>{board.name}</h1>
+        </div>
+        {/* Top right, per the coach's own request. Plain anchors, not Link: these are
+            file downloads, and a client-side navigation to a route handler would try
+            to render the response as a page. */}
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <a href={`/leaderboards/${board.id}/export${groupQuery}`} className="btn-ghost">
+            Download CSV
+          </a>
+          <a href={`/leaderboards/${board.id}/pdf${groupQuery}`} className="btn-ghost">
+            Print PDF
+          </a>
         </div>
       </div>
 
@@ -176,8 +194,11 @@ export default async function LeaderboardDetailPage({
                   <tr>
                     <th scope="col">#</th>
                     <th scope="col">Athlete</th>
+                    {/* Named, not "Value": with nine GPS metrics rankable, a board's
+                        own title no longer tells a coach what the column holds. Same
+                        change the athlete-facing table already made. */}
                     <th scope="col" className="r">
-                      Value
+                      {metric?.label ?? 'Value'}
                     </th>
                   </tr>
                 </thead>
@@ -192,7 +213,7 @@ export default async function LeaderboardDetailPage({
                         {row.first_name} {row.last_name}
                       </td>
                       <td className="r mono">
-                        {formatNumber(row.value, metric?.unit === '' ? 0 : 1)}
+                        {formatNumber(row.value, decimals)}
                         {metric?.unit ?? ''}
                       </td>
                     </tr>

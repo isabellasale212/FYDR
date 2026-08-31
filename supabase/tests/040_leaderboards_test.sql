@@ -65,8 +65,14 @@ set local role authenticated;
 -- 1. The catalogue: readable by everyone, wellness stays permanently ineligible
 -- ===========================================================================
 
+-- The literal below is the catalogue's real size, and it moves whenever a metric
+-- lands: 6 when migration 0016 seeded it, 15 since migration 0056 added the nine
+-- gps.* metrics. Deliberately kept exact rather than loosened to a floor — the rule
+-- under test is that this role reads the WHOLE catalogue, and a role quietly seeing
+-- a subset is the failure this assertion exists to catch. Adding a metric is meant
+-- to be a conscious edit here.
 select tests.set_jwt(tests.uid('orga', 'user_athlete_1'));
-select is((select count(*) from metric_definitions), 6::bigint,
+select is((select count(*) from metric_definitions), 15::bigint,
   'an athlete reads the full metric catalogue');
 select is(
   (select leaderboard_eligible from metric_definitions where key = 'wellness.readiness_score'),
@@ -77,7 +83,7 @@ select ok(
   'the ineligibility carries a reason, not just a false flag');
 
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
-select is((select count(*) from metric_definitions), 6::bigint,
+select is((select count(*) from metric_definitions), 15::bigint,
   'an admin reads the catalogue too — it names what CAN be ranked, not who is');
 
 

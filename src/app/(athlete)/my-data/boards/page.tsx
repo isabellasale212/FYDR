@@ -1,7 +1,12 @@
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { LeaderboardVisibilityGate } from '@/components/HideLeaderboardsToggle/LeaderboardVisibilityGate';
-import { fetchMyBoards, fetchMetricCatalogue, populationLabel } from '@/lib/queries/leaderboards';
+import {
+  fetchMyBoards,
+  fetchMetricCatalogue,
+  metricDecimals,
+  populationLabel,
+} from '@/lib/queries/leaderboards';
 import { formatNumber } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
 
@@ -46,6 +51,14 @@ export default async function MyBoardsPage() {
                     {board.name}
                   </p>
                   <p className="tiny" style={{ marginBottom: 8 }}>
+                    {/* The metric leads this line now. When every published board ranked
+                        session load there was nothing to tell apart, and a board's own
+                        name was enough; a club running distance, sprint distance and max
+                        speed boards side by side is exactly the athlete-side request
+                        ("tailor to different metrics rather than the total session load"),
+                        and a list of three names with no metric on any of them does not
+                        answer it. */}
+                    {metric ? `${metric.label} · ` : ''}
                     {/* No selectedNames arg: an athlete-scoped `db` can't resolve other
                         athletes' names for a 'selected' board (RLS — see
                         fetchAthleteNames' own comment in leaderboards.ts), so this falls
@@ -59,7 +72,11 @@ export default async function MyBoardsPage() {
                   </p>
                   <p style={{ margin: 0 }}>
                     You are <b>{own.position}{own.is_tied ? ' (tied)' : ''}</b> ·{' '}
-                    <span className="mono">{formatNumber(own.value, 1)}</span>
+                    {/* Was a hardcoded 1 decimal — the one place on either surface that
+                        really did assume session load, printing it as "1240.0" and, once
+                        GPS metrics landed, a distance as "6260.0 m". metricDecimals reads
+                        the metric's own unit instead. */}
+                    <span className="mono">{formatNumber(own.value, metricDecimals(metric))}</span>
                     {metric?.unit ?? ''}
                   </p>
                 </Link>

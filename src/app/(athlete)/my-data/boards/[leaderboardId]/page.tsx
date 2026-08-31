@@ -4,6 +4,7 @@ import {
   fetchBoard,
   fetchBoardRanking,
   fetchMetricCatalogue,
+  metricDecimals,
   populationLabel,
 } from '@/lib/queries/leaderboards';
 import { formatNumber } from '@/lib/format';
@@ -52,6 +53,10 @@ export default async function MyBoardDetailPage({
   }
 
   const metric = catalogue.find((m) => m.key === board.metric_key);
+  // metricDecimals, not the old inline `unit === '' ? 0 : 1`: a GPS distance board
+  // would otherwise read "6260.0 m" and a max-speed board "9.3 m/s", which rounds away
+  // the gap the board exists to show. See its own comment in lib/queries/leaderboards.ts.
+  const decimals = metricDecimals(metric);
   const topN = board.athlete_view === 'full' ? ranking.length : board.top_n;
   const top = ranking.slice(0, topN);
   const ownInTop = top.some((r) => r.athlete_id === athleteId);
@@ -79,14 +84,17 @@ export default async function MyBoardDetailPage({
 
       <div className="card flush">
         <div style={{ overflowX: 'auto' }}>
-          <table className="tbl">
+          <table className="tbl lb-table">
             <caption className="visually-hidden">{board.name} ranking</caption>
             <thead>
               <tr>
-                <th scope="col">#</th>
+                {/* "#" and "Value" said nothing. The position column is named,
+                    and the value column names the metric it actually holds —
+                    the board's own title does not always say it. */}
+                <th scope="col">Pos</th>
                 <th scope="col">Athlete</th>
                 <th scope="col" className="r">
-                  Value
+                  {metric?.label ?? 'Value'}
                 </th>
               </tr>
             </thead>
@@ -104,8 +112,14 @@ export default async function MyBoardDetailPage({
                     }
                   >
                     <td className="mono sub">
-                      {row.is_tied ? '=' : ''}
-                      {row.position}
+                      {/* Top three carry a little weight so the head of the
+                          board reads as the head of the board. Deliberately
+                          restrained — no medals, no colour: this is a squad
+                          of teammates, not a podium. */}
+                      <span className="lb-pos" data-top={row.position <= 3 ? 'true' : undefined}>
+                        {row.is_tied ? '=' : ''}
+                        {row.position}
+                      </span>
                     </td>
                     <td className="nm">
                       {isSelf ? (
@@ -120,7 +134,7 @@ export default async function MyBoardDetailPage({
                       )}
                     </td>
                     <td className="r mono">
-                      {formatNumber(row.value, metric?.unit === '' ? 0 : 1)}
+                      {formatNumber(row.value, decimals)}
                       {metric?.unit ?? ''}
                     </td>
                   </tr>
@@ -142,7 +156,7 @@ export default async function MyBoardDetailPage({
                     {own.first_name} {own.last_name}
                   </td>
                   <td className="r mono">
-                    {formatNumber(own.value, metric?.unit === '' ? 0 : 1)}
+                    {formatNumber(own.value, decimals)}
                     {metric?.unit ?? ''}
                   </td>
                 </tr>

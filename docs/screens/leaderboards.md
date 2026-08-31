@@ -358,6 +358,10 @@ Seeded into `metric_definitions`. This table is the specification of "everything
 | `gps.sprint_distance_m` | gps | **Yes** | |
 | `gps.max_speed_ms` | gps | **Yes** | |
 | `gps.accelerations` | gps | **Yes** | |
+| `gps.running_distance_m` | gps | **Yes** | Added by migration 0056, see note below |
+| `gps.high_intensity_efforts` | gps | **Yes** | Added by migration 0056, see note below |
+| `gps.decelerations` | gps | **Yes** | Added by migration 0056, see note below |
+| `gps.player_load` | gps | **Yes** | Added by migration 0056, see note below |
 | `compliance.wellness_pct` | compliance | **Yes** | |
 | `compliance.rpe_pct` | compliance | **Yes** | |
 | `compliance.overall_pct` | compliance | **Yes** | |
@@ -379,6 +383,28 @@ Seeded into `metric_definitions`. This table is the specification of "everything
 | `injury.days_available` | medical | **No** | Availability is medical information |
 | `injury.injury_count` | medical | **No** | Medical information |
 | `analytics.acwr` | gps | **No** | A risk indicator, not a performance measure |
+
+**What is actually seeded, as of migration 0056.** The `gps.*` and `training.*` rows above
+are live; the `testing.*`, `gym.*` and `compliance.*` rows are still waiting on the same
+"the source table has to exist first" rule migration 0016 set out, and the ineligible rows
+are seeded where their metric exists (the six wellness/body-mass ones) or are covered by the
+prohibition without a row where it does not.
+
+Migration 0056 seeded nine GPS metrics, four more than the five this table originally
+listed. The four additions — `running_distance_m`, `high_intensity_efforts`,
+`decelerations`, `player_load` — are columns `gps_records` really has (migration 0023) and
+that the dev database really populates, and they are the metrics a coach asks for beside the
+five above: deceleration load is half of the change-of-direction picture accelerations only
+half-answer, and `player_load` is the vendor's own composite. Each is a volume or intensity
+output with the same `higher_is_better = true` direction as its neighbours, so none of them
+changes the shape of this list, only its length.
+
+Three `gps_records` columns are deliberately **not** here. `impacts` and
+`metabolic_power_avg` hold no non-null value in any real import to date, and a catalogue row
+for an always-null column ships a builder chip that produces an empty board. `duration_s` is
+fully populated and still excluded: it measures how long an athlete was on the pitch, which
+is a selection fact rather than an output, and `higher_is_better` has no honest answer for
+it. See migration 0056's header for the row counts behind each decision.
 
 ### Why wellness must never be leaderboarded
 

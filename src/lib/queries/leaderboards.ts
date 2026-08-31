@@ -32,6 +32,32 @@ export async function fetchEligibleMetrics(db: Db): Promise<MetricDefinition[]> 
   return all.filter((m) => m.leaderboard_eligible);
 }
 
+/** How many decimal places a ranked value is printed to, from the metric alone.
+ *
+ *  Exists because until migration 0056 there were two eligible metrics, both unitless
+ *  integers, so every display site could get away with its own inline guess — and the
+ *  guesses had already diverged: the staff board and the athlete board detail used
+ *  `unit === '' ? 0 : 1`, while the athlete board LIST hardcoded 1 and printed session
+ *  load as "1240.0". With nine GPS metrics live, both of those are wrong in new ways:
+ *  a distance is a whole number of metres (9868 m, never 9868.0 m) and a max speed is
+ *  meaningless rounded to one place (9.3 m/s hides the difference between two athletes
+ *  0.04 apart). One function, keyed on the metric's own unit, so a metric added to the
+ *  catalogue tomorrow renders the same in every one of the five places that print it.
+ *
+ *  Keyed on `unit` rather than on `key` deliberately: a new distance metric in metres
+ *  gets the right answer here without this file having to learn its name. The fallback
+ *  is the old `unit === '' ? 0 : 1` rule, so nothing that existed before this function
+ *  changed behaviour except where it was already wrong. */
+export function metricDecimals(metric: Pick<MetricDefinition, 'unit'> | null | undefined): number {
+  const unit = metric?.unit ?? '';
+  // Speeds: two places. The whole point of a max-speed board is the small gap.
+  if (unit === ' m/s') return 2;
+  // Distances in metres, and every unitless count (efforts, accelerations, session
+  // load, sessions attended, player load): whole numbers.
+  if (unit === ' m' || unit === '') return 0;
+  return 1;
+}
+
 export type Leaderboard = {
   id: string;
   name: string;

@@ -110,9 +110,14 @@ export function LeaderboardBuilderForm({ orgId, userId, catalogue, groups }: Pro
           </button>
         ))}
       </div>
+      {/* "wellness and body composition never can" was the whole of the disabled list
+          until migration 0056. It still is for a Premium club, but a Basic club now sees
+          the nine GPS metrics here too, disabled on plan rather than on principle — two
+          genuinely different reasons, and each row states its own. The copy no longer
+          claims to know which one applies. */}
       <p className="tiny" style={{ marginTop: 8 }}>
-        Not every metric can be ranked &mdash; wellness and body composition never can.
-        Tap one below to see why.
+        Not every metric can be ranked. Wellness and body composition never can, and some
+        depend on your plan. Tap one below to see why.
       </p>
       <div className="chiprow" style={{ marginTop: 6, flexWrap: 'wrap' }}>
         {ineligible.map((m) => (

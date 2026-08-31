@@ -309,8 +309,20 @@ export type PlayerProfile = {
 /* Same interpolated-rank quartile as testingReport.ts's own quartile() —
  * copied rather than imported (that one is a private, unexported helper of
  * a report file, not a shared utility) so "median" means the exact same
- * arithmetic wherever a coach reads that word in this app. */
-function quartile(sorted: number[], q: number): number | null {
+ * arithmetic wherever a coach reads that word in this app.
+ *
+ * NOW EXPORTED, not copied a third time. queries/positionalContext.ts (the
+ * per-athlete Nutrition/Wellness/Gym pages' positional band) needs exactly
+ * this median and these quartiles, and a coach reading "median" on the
+ * Athleticism card and "median" on the Wellness page must be reading one
+ * function. Exported from here rather than promoted to lib/stats.ts on
+ * purpose: that file's own header states "there is no squad mean anywhere in
+ * this file" and means it — everything in it is an athlete against their own
+ * history. A cross-athlete quantile does not belong there. testingReport.ts's
+ * private copy is deliberately left alone (CLAUDE.md §5: no unrelated
+ * refactors in a feature change); it is the one remaining duplicate and the
+ * obvious next thing to fold in here. */
+export function quartile(sorted: number[], q: number): number | null {
   if (sorted.length === 0) return null;
   const pos = (sorted.length - 1) * q;
   const base = Math.floor(pos);
@@ -335,7 +347,24 @@ function percentileRank(value: number, peers: number[], higherIsBetter: boolean)
   return Math.round((100 * atLeastAsGood) / peers.length);
 }
 
-async function fetchPositionalGroup(
+/* EXPORTED so the per-athlete Nutrition/Wellness/Gym pages reuse this exact
+ * peer set rather than inventing a second one. The rule those pages follow is
+ * this file's own §11 rule 3 — "compared against the athlete's positional
+ * unit, not the whole squad" — and there is only one place in this app that
+ * knows what an athlete's positional unit IS from the database: the
+ * group_memberships row whose group has group_type = 'positional'.
+ * queries/trainingReport.ts resolves the same thing for its "vs unit" lens and
+ * documents the same first-membership-wins caveat.
+ *
+ * CALLERS MUST FILTER THE RESULT TO LIVE ATHLETES THEMSELVES. This reads
+ * group_memberships alone: a membership row with removed_at null still points
+ * at an athlete who may since have been soft-deleted or set to left_club, and
+ * this function has never checked. Harmless for the Athleticism card (a
+ * departed athlete has no is_best test result to contribute) and NOT harmless
+ * for a body-mass or wellness median, which would silently include people who
+ * left. positionalContext.ts intersects with a live-athlete read for exactly
+ * this reason. */
+export async function fetchPositionalGroup(
   db: Db,
   orgId: string,
   athleteId: string,

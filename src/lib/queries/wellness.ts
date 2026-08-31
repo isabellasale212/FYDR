@@ -3,6 +3,7 @@ import type { WellnessEntryInput } from '@/lib/validation/wellness';
 import type { WellnessCorrection } from '@/lib/validation/entryCorrection';
 import { humanizeDbError } from '@/lib/writeErrors';
 import { readiness, rollingBand, type Band, type Point } from '@/lib/stats';
+import { fetchAllPaged } from './paged';
 import type { Db } from './groups';
 
 export type WellnessEntry = Pick<
@@ -43,6 +44,31 @@ export async function fetchWellnessByAthlete(
   return data ?? [];
 }
 
+/* PAGED. This was a live silent-truncation bug before the positional pages
+ * existed, not a precaution taken for them.
+ *
+ * PostgREST caps an unpaginated read at `max_rows` (1000, supabase/config.toml)
+ * and DOES NOT ERROR at the ceiling — it returns exactly 1000 rows that look
+ * like a complete answer (queries/paged.ts's header). The single-athlete
+ * sibling above, fetchWellnessByAthlete, is provably safe without paging
+ * because `wellness_entries_one_live_per_day` (migration 0004) bounds it to one
+ * row per day (playerProfile.ts's header states that proof). THIS function
+ * multiplies that bound by the number of athletes, and both its callers push
+ * past 1000:
+ *
+ *   the bulk export (queries/exportBuilder.ts) — a whole squad over whatever
+ *   window the coach picks. A 40-athlete squad logging most days crosses the
+ *   ceiling before the 25th day, and every row past it was silently missing
+ *   from the CSV with nothing on screen to say so.
+ *
+ *   the positional wellness comparison (/squad/[athleteId]/wellness) — a
+ *   positional unit over a period that can reach MAX_WINDOW_DAYS (730).
+ *
+ * `.order('entry_date').order('id')` rather than `entry_date` alone: `.range()`
+ * re-runs the query per page, and several athletes share every entry_date, so
+ * a non-unique sort key lets the database break ties differently on each page
+ * and silently duplicate or drop rows across a boundary. The unique tiebreak is
+ * the half that makes paging correct, not decoration. */
 export async function fetchWellnessForAthletes(
   db: Db,
   athleteIds: string[],
@@ -50,16 +76,17 @@ export async function fetchWellnessForAthletes(
 ): Promise<WellnessEntry[]> {
   if (athleteIds.length === 0) return [];
 
-  const { data, error } = await db
-    .from('wellness_entries_current')
-    .select(COLUMNS)
-    .in('athlete_id', athleteIds)
-    .gte('entry_date', range.from)
-    .lte('entry_date', range.to)
-    .order('entry_date');
-
-  if (error) throw new Error(error.message);
-  return data ?? [];
+  return fetchAllPaged<WellnessEntry>((from, to) =>
+    db
+      .from('wellness_entries_current')
+      .select(COLUMNS)
+      .in('athlete_id', athleteIds)
+      .gte('entry_date', range.from)
+      .lte('entry_date', range.to)
+      .order('entry_date')
+      .order('id')
+      .range(from, to),
+  );
 }
 
 export async function fetchWellnessDay(

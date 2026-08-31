@@ -586,9 +586,15 @@ a {
   color: var(--on-accent);
   background: var(--accent);
 }
-/* The Gym domain chip when an athlete has no active programme to link to
- * (DomainChips.tsx) — same honest-disabled treatment as .btn-ghost-pill's,
- * so "nothing to show" reads differently from "pressed". */
+/* CORRECTED. This used to name the Gym domain chip as the caller: it was
+ * disabled when an athlete had no active programme to link to. The three domain
+ * chips are now plain links to /squad/[athleteId]/{nutrition,wellness,gym},
+ * which are real destinations whether or not anything is prescribed, so none of
+ * them is ever disabled. The rule stays because it is not chip-specific — the
+ * role toggles in UserDetailPanel.tsx use it while a write is in flight, and
+ * LeaderboardWall.tsx layers .lbw-chip-disabled on top of it. Same honest
+ * treatment either way: "nothing to do here" must read differently from
+ * "pressed". */
 .squad-chip:disabled,
 .squad-chip[aria-disabled='true'] {
   opacity: var(--o-disabled);
@@ -6543,4 +6549,104 @@ button.dash-stat {
 }
 .report-note-form {
   margin-top: 10px;
+}
+
+/* -------- Positional context (per-athlete Nutrition / Wellness / Gym) --------
+ *
+ * The band-and-marker row on /squad/[athleteId]/{nutrition,wellness,gym}. See
+ * components/PositionalContext/PositionalContext.tsx for what each of the
+ * three inks means and why they are deliberately none of the inks the
+ * nutrition range bars already use — these cards sit on the same pages as the
+ * staff body-mass target bracket and must not read as another one of those.
+ *
+ * Shaped on .pp-bench-row above rather than invented: same hairline separator,
+ * same top/bottom label grid, same type sizes, so a coach moving between the
+ * Athleticism card and these three pages is reading one component family. The
+ * difference is what the bar MEANS — .pp-bench-fill is a percentile, a
+ * directional judgement about this athlete; .pc-band is a spread, with no
+ * direction in it at all. */
+.pc-intro {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 8px 0 4px;
+}
+.pc-row {
+  border-top: 1px solid var(--hair);
+  padding: 14px 0 12px;
+}
+.pc-row-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 10px;
+}
+.pc-row-name {
+  font-size: 14.5px;
+  font-weight: 700;
+}
+.pc-row-value {
+  font-size: 16px;
+  font-weight: 500;
+}
+.pc-track {
+  position: relative;
+  height: 14px;
+  margin-top: 9px;
+}
+.pc-track::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 6px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--track);
+}
+/* The unit's middle half. A hueless wash, not an accent one: it is a
+ * description of where people are, and carries no judgement about whether
+ * being inside it is good. */
+.pc-band {
+  position: absolute;
+  top: 3px;
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: rgb(var(--ink-rgb) / 0.1);
+}
+.pc-median {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 14px;
+  margin-inline-start: -1px;
+  border-radius: 1px;
+  background: var(--muted);
+}
+/* This athlete. A filled accent dot with a card-coloured ring so it stays
+ * readable sitting on top of the median tick, which is exactly where it lands
+ * for a mid-unit athlete. */
+.pc-marker {
+  position: absolute;
+  top: 2px;
+  width: 10px;
+  height: 10px;
+  margin-inline-start: -5px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--surf);
+}
+.pc-row-bottom {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 8px;
+}
+.pc-row-band {
+  font-size: 12px;
+  color: var(--muted);
+}
+.pc-row-meta {
+  font-size: 11.5px;
+  color: var(--faint);
 }

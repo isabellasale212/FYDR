@@ -506,7 +506,7 @@ export default async function AthletePage({
                 <Pill status={availabilityStatus(athlete.availability?.status ?? null)} />
               </div>
             }
-            domainChips={<DomainChips athleteId={athlete.id} gymProgrammeId={programme?.programmeId ?? null} />}
+            domainChips={<DomainChips athleteId={athlete.id} />}
             wellnessMini={
               <div className="pp-wellness-mini" aria-label="Today's wellness entry">
                 <div>
@@ -723,10 +723,16 @@ export default async function AthletePage({
               viewerIsMedical={claims.roles.includes('medical')}
             />
 
-            {/* id is the Wellness domain chip's real destination (DomainChips.tsx) —
-             * no dedicated per-athlete wellness history page exists anywhere in this
-             * app, so this on-page section is the real, whole answer, not a stand-in
-             * for a missing one. */}
+            {/* CORRECTED. This comment used to read "id is the Wellness domain chip's
+             * real destination ... no dedicated per-athlete wellness history page
+             * exists anywhere in this app, so this on-page section is the real, whole
+             * answer". Both halves are now out of date: the chip navigates to
+             * /squad/[athleteId]/wellness, and that page IS the dedicated history the
+             * note said did not exist. The id stays because the section is still
+             * aria-labelled by it and an existing anchor is somebody's bookmark; this
+             * summary stays because a coach scanning the profile wants ACWR and
+             * readiness at a glance without a second navigation. The two are a summary
+             * and its detail view, not a stand-in and a replacement. */}
             <section className="card pp-card" id="pp-wellness-title" aria-label="ACWR and wellness rating">
               <div className="pp-dials">
                 <div className="pp-dial-col">

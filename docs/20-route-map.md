@@ -101,6 +101,9 @@ Deep links arriving from push are shell namespaced (`/staff/...`, `/athlete/...`
 | 9 | Squad overview | `/squad` | `screens/squad-status.md` | staff web, staff phone | coach, medical | none |
 | 19 | Squad list | `/squad/roster` | `screens/squad-list.md` | staff web, staff phone | coach, medical | `/squad` |
 | 20 | Athlete profile | `/squad/:athleteId` | `screens/athlete-profile.md` | staff web, staff phone | coach, medical | `/squad` |
+| 20a | Athlete nutrition | `/squad/:athleteId/nutrition` | *(none, built to a client request — see §4.20a)* | staff web | coach, medical | `/squad/:athleteId` |
+| 20a | Athlete wellness | `/squad/:athleteId/wellness` | *(none, built to a client request — see §4.20a)* | staff web | coach, medical | `/squad/:athleteId` |
+| 20a | Athlete gym | `/squad/:athleteId/gym` | *(none, built to a client request — see §4.20a)* | staff web | coach, medical | `/squad/:athleteId` |
 | 15 | Schedule | `/schedule` | `screens/schedule.md` | staff web, staff phone | coach, medical | none |
 | 11 | Timetable and register | `/schedule/timetable` | `screens/timetable.md` | staff web, staff phone | coach, medical | `/schedule` |
 | 41 | Fixtures list | `/schedule/fixtures` | *(none, G-2)* | staff web, staff phone | coach, medical | `/schedule` |
@@ -517,6 +520,43 @@ buttons and no `injuries.body_area` column.
 | Nutrition tab | `NutritionTargetCard` | `useAthleteNutrition` (`qk.nutrition.athlete`) | `nutrition_targets`, `nutrition_checkins`, `body_composition` | Nutrition and S&C. Medical if an open injury |
 | GPS tab | `GpsPanel` | `useAthleteGps` (`qk.squad.athlete`) | `gps_records`, `import_batches` | None |
 | Quick actions | `QuickActionMenu` | `useStaffEntry`, `useCreateExport` | `wellness_entries` with `source = 'staff_entered'`, `exercise_overrides`, `flags`, `export_jobs` | Coach and medical |
+
+### 4.20a `/squad/:athleteId/{nutrition,wellness,gym}`, screen 20a
+
+**No `screens/` spec exists for these three and none is claimed.** They were built to a
+direct client request — *"on the player profile when i click on the buttons nutrition,
+wellness and gym i should be taken to a new page with just that info in it and be able
+to edit it if i need to, there should also be a comparison to other people in their
+position"* — narrowed by the same client's follow-up: *"dont allow editing of gym,
+nutrition, or wellness in players profile just make it veiwable and only editable by the
+staff incharge"*. So the "be able to edit it" half of the first message is deliberately
+NOT built; each page links out to the single owner of that domain's edit instead.
+
+They are the destinations of the three `DomainChips` on `/squad/:athleteId`, which
+previously scroll-anchored to cards on that page (Nutrition, Wellness) or linked to
+`/programmes/:programmeId/athlete/:athleteId` when one existed (Gym).
+
+| Page | Shows | Edits live at |
+|---|---|---|
+| `/squad/:athleteId/nutrition` | Targets in force today (resolved), every live plan row that reaches him (athlete / group / club default), body mass with the staff target range (migration 0060, **staff-only**), weekly check-ins | `/nutrition` — coach or medical |
+| `/squad/:athleteId/wellness` | Readiness trend against his own 14-day baseline, submission rate, period means for the five 1–5 scales and sleep hours | `/squad/:athleteId#pp-corrections-title` — the audited correction path, coach or medical (migration 0058) |
+| `/squad/:athleteId/gym` | Every programme assignment that reaches him including group-assigned and suspended ones, active tailoring, completed session log | `/programmes/:programmeId` — coach, or **medical for a rehab programme** |
+
+**Positional comparison.** Every one of the three carries a "Compared with his position"
+card: an aggregate band (unit median, interquartile range) with this athlete as a marker.
+Never a ranked list of named team-mates — `supabase/migrations/0016_leaderboards.sql` bars
+wellness and body composition from rankings by name, and a league table here would route
+around that. Suppressed below five athletes with a value. Two groupings are used, both
+pre-existing: the `positional` **group** for Wellness and Gym (the same peer set
+Athleticism and the training report's "vs unit" already use), and
+`POSITION_TO_UNIT`'s six rugby units for Nutrition (mass drives energy targets, and mass
+is what separates a prop from a back-rower inside "Forwards").
+
+**Params.** `?groups=` and `?period=` per §6, both falling back to their sticky cookies.
+The group filter scopes the positional comparison — it aggregates other athletes, so
+CLAUDE.md §3 applies — and the card states the scope and how many of the unit the filter
+excluded. `day` is offered disabled with its reason on all three: every figure is a mean,
+a count or a rolling band.
 
 ### 4.21 `/schedule`, screen 15
 

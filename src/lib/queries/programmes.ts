@@ -1155,5 +1155,276 @@ export async function fetchGymSessionLog(
   return { id: data.id, entry_date: data.entry_date, session_rpe: data.session_rpe, comment: data.comment };
 }
 
+export type AthleteAssignment = {
+  assignmentId: string;
+  programmeId: string;
+  name: string;
+  programmeType: ProgrammeType;
+  goal: string | null;
+  status: AssignmentStatus;
+  startsOn: string;
+  endsOn: string | null;
+  durationWeeks: number | null;
+  /** How the athlete got this programme: named directly, or through a group.
+   *  Load-bearing on screen — "you are on this because you are in Forwards" is
+   *  a different fact from "somebody assigned this to you", and only the second
+   *  can be changed by editing this athlete. */
+  via: { kind: 'athlete' } | { kind: 'group'; groupId: string; groupName: string | null };
+};
+
+/** Every programme assignment that reaches one athlete, including SUSPENDED
+ *  ones and including the ones they hold through a GROUP.
+ *
+ *  Both inclusions are corrections of what the player profile's own programme
+ *  banner does, not embellishments:
+ *
+ *   GROUP ASSIGNMENTS. queries/playerProfile.ts reads programme_assignments
+ *   with `.eq('athlete_id', athleteId)` alone, so an athlete whose gym
+ *   programme was assigned to Forwards rather than to them by name shows NO
+ *   programme on their profile and the Gym chip has nowhere to go. That is a
+ *   real gap in the shipped page (the same union fetchAssignedAthletes above
+ *   already performs in the other direction, per programme), and a page whose
+ *   whole subject is this athlete's gym work must not have it.
+ *
+ *   SUSPENDED ROWS. CLAUDE.md §6's rehab exception: assigning a rehab
+ *   programme SUSPENDS the athlete's gym assignment rather than cancelling it
+ *   (migration 0050). Filtering to status = 'active' would show an athlete in
+ *   rehab as having no gym programme at all, when the true and more useful
+ *   answer is "suspended, because they are on rehab". The caller decides what
+ *   to foreground; this returns the facts.
+ *
+ *  Not paged, and the row argument for it: one row per assignment per athlete.
+ *  An assignment is created by hand by a coach, and this read is bounded to
+ *  one athlete's own plus the programmes assigned to the handful of groups
+ *  they belong to. That is tens of rows for a club with a long history, not
+ *  thousands. */
+export async function fetchAthleteProgrammeAssignments(
+  db: Db,
+  orgId: string,
+  athleteId: string,
+): Promise<AthleteAssignment[]> {
+  const { data: memberships, error: memErr } = await db
+    .from('group_memberships')
+    .select('group_id, groups(name)')
+    .eq('org_id', orgId)
+    .eq('athlete_id', athleteId)
+    .is('removed_at', null);
+  if (memErr) throw new Error(memErr.message);
+
+  const groupNameById = new Map<string, string | null>();
+  for (const m of (memberships ?? []) as unknown as { group_id: string; groups: { name: string } | null }[]) {
+    groupNameById.set(m.group_id, m.groups?.name ?? null);
+  }
+  const groupIds = [...groupNameById.keys()];
+
+  const columns =
+    'id, athlete_id, group_id, starts_on, ends_on, status, programmes(id, name, goal, programme_type, duration_weeks)';
+
+  const [direct, viaGroup] = await Promise.all([
+    db
+      .from('programme_assignments')
+      .select(columns)
+      .eq('org_id', orgId)
+      .eq('athlete_id', athleteId)
+      .order('starts_on', { ascending: false }),
+    groupIds.length > 0
+      ? db
+          .from('programme_assignments')
+          .select(columns)
+          .eq('org_id', orgId)
+          .in('group_id', groupIds)
+          .order('starts_on', { ascending: false })
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+  if (direct.error) throw new Error(direct.error.message);
+  if (viaGroup.error) throw new Error(viaGroup.error.message);
+
+  type Row = {
+    id: string;
+    athlete_id: string | null;
+    group_id: string | null;
+    starts_on: string;
+    ends_on: string | null;
+    status: AssignmentStatus;
+    programmes: {
+      id: string;
+      name: string;
+      goal: string | null;
+      programme_type: ProgrammeType;
+      duration_weeks: number | null;
+    } | null;
+  };
+
+  /* DE-DUPLICATED BY PROGRAMME, NOT BY ASSIGNMENT ROW, and direct wins.
+   *
+   * The same programme can legitimately reach one athlete twice — assigned to
+   * him by name AND to a group he is in — and those are two different
+   * programme_assignments rows with two different ids. Keying the dedupe on the
+   * row id would collapse nothing, and the Programme card would list "Strength
+   * Block 3" twice, once "assigned to him directly" and once "through the
+   * Forwards group", with the primary picked arbitrarily by the sort.
+   *
+   * The surviving row is chosen by an explicit precedence rather than by which
+   * query happened to run first, because "which of the two do we keep" has a
+   * right answer and it is not always the direct one:
+   *
+   *   1. ACTIVE BEFORE SUSPENDED. What is running now outranks what is paused,
+   *      whichever route it arrived by. A suspended direct row shadowing an
+   *      active group row would tell a coach the athlete is off a programme he
+   *      is on.
+   *   2. THEN DIRECT BEFORE GROUP. Somebody naming this athlete is the more
+   *      specific statement of intent, and the direct row is the one an editor
+   *      would go and change.
+   *   3. THEN MOST RECENTLY STARTED. */
+  const rank: Record<string, number> = { active: 0, suspended: 1 };
+  const rows = [
+    ...((direct.data ?? []) as unknown as Row[]),
+    ...((viaGroup.data ?? []) as unknown as Row[]),
+  ].sort(
+    (a, b) =>
+      (rank[a.status] ?? 2) - (rank[b.status] ?? 2) ||
+      Number(a.athlete_id === null) - Number(b.athlete_id === null) ||
+      b.starts_on.localeCompare(a.starts_on),
+  );
+  const out: AthleteAssignment[] = [];
+  const seen = new Set<string>();
+  for (const r of rows) {
+    if (!r.programmes || seen.has(r.programmes.id)) continue;
+    seen.add(r.programmes.id);
+    out.push({
+      assignmentId: r.id,
+      programmeId: r.programmes.id,
+      name: r.programmes.name,
+      programmeType: r.programmes.programme_type,
+      goal: r.programmes.goal,
+      status: r.status,
+      startsOn: r.starts_on,
+      endsOn: r.ends_on,
+      durationWeeks: r.programmes.duration_weeks,
+      via:
+        r.group_id !== null
+          ? { kind: 'group', groupId: r.group_id, groupName: groupNameById.get(r.group_id) ?? null }
+          : { kind: 'athlete' },
+    });
+  }
+  /* Already in the caller's order — `rows` was sorted before the dedupe loop
+   * and `out` is pushed in that order, so this returns active first, then
+   * direct before group, then most recently started. The reader wants what is
+   * running now; a suspended row is context beneath it, not a headline, and
+   * out[0] is what the Gym page uses as the primary assignment. Deliberately
+   * NOT re-sorted here: one ordering, decided in one place, is the reason the
+   * dedupe can be trusted to have kept the right row. */
+  return out;
+}
+
+/** The org's earliest completed gym session, for resolveRange's `earliest`
+ *  anchor when /squad/[athleteId]/gym is set to "All on record". Without it
+ *  `all` silently degrades to MAX_WINDOW_DAYS with `clipped` false, so the
+ *  label promises "all on record" over a window that is not — the exact
+ *  failure bodyComposition.ts's fetchEarliestBodyCompositionDate exists to
+ *  avoid, written the same way.
+ *
+ *  `entry_date` is a `date` column and comes back as a plain YYYY-MM-DD, so it
+ *  is compared as one and never pushed through dateInTz (CLAUDE.md rule 5
+ *  governs instants; a calendar date is not one). */
+export async function fetchEarliestGymSessionDate(db: Db, orgId: string): Promise<string | null> {
+  const { data, error } = await db
+    .from('gym_session_logs_current')
+    .select('entry_date')
+    .eq('org_id', orgId)
+    .eq('status', 'complete')
+    .not('entry_date', 'is', null)
+    .order('entry_date', { ascending: true })
+    .limit(1);
+  if (error) throw new Error(error.message);
+  return data?.[0]?.entry_date ?? null;
+}
+
+export type GymAthleteStats = {
+  /** Completed sessions in the window. */
+  sessions: number;
+  /** Mean total_volume_kg across the sessions that recorded one. Null when
+   *  none did — never a zero, which would read as "lifted nothing". */
+  meanVolumeKg: number | null;
+  /** Sessions that actually carried a volume figure, so a mean over 2 of 40
+   *  sessions can be seen for what it is. */
+  volumeN: number;
+  meanRpe: number | null;
+  rpeN: number;
+};
+
+/** Per-athlete gym aggregates over a window, for the positional comparison on
+ *  /squad/[athleteId]/gym. Returns AGGREGATES per athlete and never the
+ *  sessions themselves: the caller is drawing a band, and a function that
+ *  handed back a peer's individual sessions would be one refactor away from a
+ *  named ranking (see queries/positionalContext.ts's header for why that line
+ *  is drawn where it is).
+ *
+ *  PAGED, and this one is not close. `gym_session_logs_current` has no unique
+ *  index bounding an athlete to one session a day — fetchRecentGymSessions's
+ *  own header says so and caps itself in the database for that reason. Here
+ *  the read is a whole positional unit (tens of athletes) over a period that
+ *  reaches MAX_WINDOW_DAYS (730): tens of thousands of rows, of which
+ *  PostgREST would silently return the first 1000, and every mean past that
+ *  would be computed over an arbitrary early slice of the window with nothing
+ *  on screen to say so.
+ *
+ *  Capping like fetchRecentGymSessions does would be wrong here for the same
+ *  reason it is right there: that caller renders one row per session and
+ *  nobody scrolls 700 of them, so a most-recent-first cap loses nothing the
+ *  reader wanted. THIS caller computes a mean, and a mean over a truncated
+ *  set is not a shorter answer, it is a wrong one.
+ *
+ *  `.order('athlete_id').order('id')` — `id` is the unique tiebreak that makes
+ *  the order total. Several sessions share an athlete and a date, and
+ *  `.range()` re-runs the query per page, so without it a row can be returned
+ *  twice or skipped across a page boundary. For a figure the caller AVERAGES,
+ *  that is a silently wrong number with no short page to notice it. */
+export async function fetchGymSessionStatsForAthletes(
+  db: Db,
+  orgId: string,
+  athleteIds: readonly string[],
+  range: { from: string; to: string },
+): Promise<Map<string, GymAthleteStats>> {
+  if (athleteIds.length === 0) return new Map();
+
+  type Row = { athlete_id: string | null; total_volume_kg: number | null; session_rpe: number | null };
+  const rows = await fetchAllPaged<Row>((from, to) =>
+    db
+      .from('gym_session_logs_current')
+      .select('athlete_id, total_volume_kg, session_rpe')
+      .eq('org_id', orgId)
+      .eq('status', 'complete')
+      .in('athlete_id', [...athleteIds])
+      .gte('entry_date', range.from)
+      .lte('entry_date', range.to)
+      .order('athlete_id')
+      .order('id')
+      .range(from, to),
+  );
+
+  const acc = new Map<string, { sessions: number; vol: number[]; rpe: number[] }>();
+  for (const r of rows) {
+    if (!r.athlete_id) continue;
+    const a = acc.get(r.athlete_id) ?? { sessions: 0, vol: [], rpe: [] };
+    a.sessions += 1;
+    if (r.total_volume_kg !== null) a.vol.push(r.total_volume_kg);
+    if (r.session_rpe !== null) a.rpe.push(r.session_rpe);
+    acc.set(r.athlete_id, a);
+  }
+
+  const out = new Map<string, GymAthleteStats>();
+  for (const [id, a] of acc) {
+    out.set(id, {
+      sessions: a.sessions,
+      meanVolumeKg: a.vol.length > 0 ? a.vol.reduce((s, v) => s + v, 0) / a.vol.length : null,
+      volumeN: a.vol.length,
+      meanRpe: a.rpe.length > 0 ? a.rpe.reduce((s, v) => s + v, 0) / a.rpe.length : null,
+      rpeN: a.rpe.length,
+    });
+  }
+  return out;
+}
+
 export type GymLogStatusFilter = GymLogStatus;
 export type AssignmentStatusFilter = AssignmentStatus;

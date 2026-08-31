@@ -115,6 +115,11 @@ export default async function FlagsPage({
               userId={claims.userId}
               today={today}
               timezone={timezone}
+              /* Wording only, never authorisation (CLAUDE.md rule 2) — the roles
+                 come from the server-resolved session either way. A clinician
+                 writing a note here is writing into a column every coach in the
+                 club reads, and the card says so. */
+              viewerIsMedical={claims.roles.includes('medical')}
             />
           ))
         )}

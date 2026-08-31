@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import type { ProfileFlag } from '@/lib/queries/playerProfile';
-import { acknowledgeFlag } from '@/lib/queries/flags';
+import { acknowledgeFlag, addFlagNote, staffNoteLines } from '@/lib/queries/flags';
 import { createClient } from '@/lib/supabase/client';
 import { dateInTz, enumLabel, formatDate, formatDateTime, formatTime } from '@/lib/format';
 
@@ -15,6 +15,10 @@ type Props = {
   userId: string;
   today: string;
   timezone: string;
+  /** Wording only, never authorisation — see FlagCard's own prop comment. The note
+   *  written here lands in flags.staff_note, which flags_staff_select (0012) exposes
+   *  to every coach in the organisation, so a clinician is told that before typing. */
+  viewerIsMedical?: boolean;
 };
 
 const TONE_VAR: Record<'high' | 'medium' | 'low', string> = {
@@ -31,7 +35,14 @@ const TONE_VAR: Record<'high' | 'medium' | 'low', string> = {
  * Acknowledge; Dismiss (with its mandatory reason) stays on the dedicated
  * Flags screen, which this card's "Thresholds ›" link's sibling nav already
  * reaches. */
-export function PlayerProfileFlags({ flags, orgId, userId, today, timezone }: Props) {
+export function PlayerProfileFlags({
+  flags,
+  orgId,
+  userId,
+  today,
+  timezone,
+  viewerIsMedical = false,
+}: Props) {
   const router = useRouter();
   const [showAcked, setShowAcked] = useState(false);
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -58,6 +69,38 @@ export function PlayerProfileFlags({ flags, orgId, userId, today, timezone }: Pr
       setError('Could not acknowledge this flag. Try again.');
     },
   });
+
+  /* Standalone note, mirroring FlagCard's. Same reason: bundling the note into
+   * Acknowledge meant no note before acknowledging and no second note after.
+   * This card is the per-athlete view of the same rows /flags shows, so the two
+   * must offer the same action or a coach's note appears and disappears
+   * depending on which screen they happened to open. */
+  const saveNote = useMutation({
+    mutationFn: ({ flagId, note }: { flagId: string; note: string }) =>
+      addFlagNote(createClient(), flagId, orgId, note),
+    onMutate: ({ flagId }) => setPendingId(flagId),
+    onSuccess: () => {
+      setPendingId(null);
+      setNoteDraftId(null);
+      setNoteText('');
+      router.refresh();
+    },
+    onError: () => {
+      setPendingId(null);
+      setError('Could not save this note. Try again.');
+    },
+  });
+
+  function submitNote(flagId: string, alsoAcknowledge: boolean) {
+    const trimmed = noteText.trim();
+    if (!trimmed) {
+      setError('Write something before saving the note.');
+      return;
+    }
+    setError(null);
+    if (alsoAcknowledge) acknowledge.mutate({ flagId, note: trimmed });
+    else saveNote.mutate({ flagId, note: trimmed });
+  }
 
   const unacknowledged = flags.filter((f) => f.status === 'raised' || f.status === 'notified');
   const acknowledged = flags.filter((f) => f.status === 'acknowledged' || f.status === 'monitoring');
@@ -141,13 +184,18 @@ export function PlayerProfileFlags({ flags, orgId, userId, today, timezone }: Pr
                 <p className="mono pp-flag-evidence">{flag.evidence}</p>
                 {/* Whatever's currently in flags.staff_note — see
                  *  FlagCard.tsx's identical addition for the full reasoning
-                 *  (the engine's own explanation pre-acknowledgement, or a
-                 *  coach's own note after — same column, not distinguished). */}
-                {flag.staff_note ? <p className="flag-notice-note">&ldquo;{flag.staff_note}&rdquo;</p> : null}
+                 *  (the engine's own explanation, and/or coach notes, which
+                 *  now append — same column, not distinguished). One quoted
+                 *  line per note, via the shared splitter. */}
+                {staffNoteLines(flag.staff_note).map((line, i) => (
+                  <p className="flag-notice-note" key={`${flag.id}-note-${i}`}>
+                    &ldquo;{line}&rdquo;
+                  </p>
+                ))}
                 {noteDraftId === flag.id ? (
                   <div className="flag-dismiss" style={{ marginTop: 8 }}>
                     <label className="label" htmlFor={`pp-ack-note-${flag.id}`}>
-                      Note for {flag.name.split(' ')[0]} (optional)
+                      Note on this {enumLabel(flag.domain).toLowerCase()} flag
                     </label>
                     <textarea
                       id={`pp-ack-note-${flag.id}`}
@@ -157,21 +205,54 @@ export function PlayerProfileFlags({ flags, orgId, userId, today, timezone }: Pr
                       value={noteText}
                       onChange={(event) => setNoteText(event.target.value)}
                     />
+                    {/* The same audience sentence FlagCard shows, for the same
+                        reason — see its long note-audience comment. staff_note is
+                        readable by every coach and every clinician in the club
+                        (flags_staff_select, 0012) from the moment it is saved; the
+                        athlete joins that audience once acknowledgement sets
+                        athlete_visible_at. The previous copy ("stays with the
+                        coaching staff") named a narrower audience than the policy
+                        gives and read as confidentiality to a clinician. */}
+                    <p className="cap" style={{ margin: '6px 0 0' }}>
+                      {canAck
+                        ? `Every coach and medical staff member in the club can read this. ${flag.name.split(' ')[0]} sees it too once the flag is acknowledged.`
+                        : `Every coach and medical staff member in the club can read this, and so can ${flag.name.split(' ')[0]}, alongside the date the flag was raised.`}
+                    </p>
+                    {viewerIsMedical ? (
+                      <p className="cap" style={{ margin: '6px 0 0', color: 'var(--warn-text)' }}>
+                        Coaching staff read this field. Keep diagnosis and treatment detail
+                        out of it &mdash; that belongs on the injury record, where it stays
+                        with medical.
+                      </p>
+                    ) : null}
                     <div className="flag-actions" style={{ marginTop: 8 }}>
                       <button
                         type="button"
                         className="pp-ack-btn"
-                        onClick={() => acknowledge.mutate({ flagId: flag.id, note: noteText })}
-                        disabled={acknowledge.isPending && pendingId === flag.id}
+                        onClick={() => submitNote(flag.id, false)}
+                        disabled={pendingId === flag.id && (acknowledge.isPending || saveNote.isPending)}
                       >
-                        {acknowledge.isPending && pendingId === flag.id ? 'Acknowledging…' : 'Acknowledge'}
+                        {saveNote.isPending && pendingId === flag.id ? 'Saving…' : 'Save note'}
                       </button>
+                      {canAck ? (
+                        <button
+                          type="button"
+                          className="btn-ghost"
+                          onClick={() => submitNote(flag.id, true)}
+                          disabled={pendingId === flag.id && (acknowledge.isPending || saveNote.isPending)}
+                        >
+                          {acknowledge.isPending && pendingId === flag.id
+                            ? 'Acknowledging…'
+                            : 'Save and acknowledge'}
+                        </button>
+                      ) : null}
                       <button
                         type="button"
                         className="btn-ghost"
                         onClick={() => {
                           setNoteDraftId(null);
                           setNoteText('');
+                          setError(null);
                         }}
                       >
                         Cancel
@@ -181,35 +262,43 @@ export function PlayerProfileFlags({ flags, orgId, userId, today, timezone }: Pr
                 ) : (
                   <div className="pp-flag-bottom">
                     <span className="mono pp-flag-raised">raised {raisedLabel}</span>
-                    {canAck ? (
-                      <div style={{ display: 'flex', gap: 8 }}>
+                    {/* The note button now sits OUTSIDE the canAck branch (it used
+                        to be inside, which is why it vanished the moment a flag was
+                        acknowledged). Acknowledged rows still show who saw it and
+                        when — the note button is added beside that, not instead. */}
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      {canAck ? (
                         <button
                           type="button"
                           className="pp-ack-btn"
                           onClick={() => acknowledge.mutate({ flagId: flag.id })}
-                          disabled={acknowledge.isPending && pendingId === flag.id}
+                          disabled={pendingId === flag.id && (acknowledge.isPending || saveNote.isPending)}
                           aria-label={`Acknowledge flag for ${flag.name}`}
                         >
                           {acknowledge.isPending && pendingId === flag.id ? 'Acknowledging…' : 'Acknowledge'}
                         </button>
-                        <button
-                          type="button"
-                          className="btn-ghost"
-                          onClick={() => setNoteDraftId(flag.id)}
-                          aria-label={`Acknowledge flag for ${flag.name} with a note`}
-                        >
-                          + Note
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="pp-ack-btn" data-acked="true">
-                        {/* The card's own copy promises "records who saw it
-                            and when" — so show exactly that. */}
-                        Acknowledged
-                        {flag.acknowledged_by_name ? ` by ${flag.acknowledged_by_name}` : ''}
-                        {flag.acknowledged_at ? ` · ${formatDateTime(flag.acknowledged_at, timezone)}` : ''}
-                      </span>
-                    )}
+                      ) : (
+                        <span className="pp-ack-btn" data-acked="true">
+                          {/* The card's own copy promises "records who saw it
+                              and when" — so show exactly that. */}
+                          Acknowledged
+                          {flag.acknowledged_by_name ? ` by ${flag.acknowledged_by_name}` : ''}
+                          {flag.acknowledged_at ? ` · ${formatDateTime(flag.acknowledged_at, timezone)}` : ''}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        className="btn-ghost"
+                        onClick={() => {
+                          setNoteDraftId(flag.id);
+                          setNoteText('');
+                          setError(null);
+                        }}
+                        aria-label={`Add a note to ${flag.name}'s ${enumLabel(flag.domain).toLowerCase()} flag`}
+                      >
+                        {staffNoteLines(flag.staff_note).length > 0 ? '+ Another note' : '+ Add note'}
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

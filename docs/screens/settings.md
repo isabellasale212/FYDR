@@ -291,7 +291,7 @@ moving between Thresholds and Notification preferences is one click, not a back-
 | Push permission state | Device API plus `users.push_blocked_at` | Drives the "notifications are off in your phone settings" banner |
 | Active sessions | Supabase auth sessions | Device, approximate location, last seen |
 | Consent state | `athletes.consent_given_at`, `.consent_version` | Privacy section |
-| HealthKit sync state | `07-integrations.md` connection record | Athlete privacy section, iOS only, both tiers (O-862 in `12-product-tiers.md` §3.4, resolved 14 August 2026: moved from Premium to Club/Basic) |
+| HealthKit sync state | `07-integrations.md` connection record | Athlete privacy section, iOS only, **Premium only**. Tier history, both dates kept on purpose (O-862, `12-product-tiers.md` §3.4): Premium originally → moved to Club/Basic 14 August 2026 → **moved back to Premium 30 August 2026 when the club reversed its own decision**. O-862 is re-opened, not closed. |
 | Leaderboard opt-outs | `leaderboard_opt_outs` where `ended_at is null` | Count shown, managed from `leaderboards.md` or inline |
 | Processing objections | `compliance_expectations.waived_reason = 'objection'` plus the per-domain flag | Article 21, per `09-security-and-compliance.md` §6 |
 | App version and build | Client constants | Footer |

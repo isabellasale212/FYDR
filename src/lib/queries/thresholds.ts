@@ -183,6 +183,54 @@ export function findActiveAcwrThreshold(thresholds: readonly Threshold[]): Thres
   return thresholds.find((t) => t.metric === 'load.acwr' && t.is_active) ?? null;
 }
 
+/** Give a club Fydr's starter set of five thresholds (migration 0059).
+ *
+ *  Coach, verbatim: "do we have general default thresholds for each club to use
+ *  and start with?" Until 0059 the answer was no — nothing in the schema had
+ *  ever inserted a threshold for a real organisation, so a new club sat on an
+ *  empty rules list AND a flag engine (migration 0052) with nothing to evaluate,
+ *  raising zero flags forever without ever saying so. This is the coach-facing
+ *  half of the fix; the migration's own header carries the full investigation.
+ *
+ *  Returns how many rows were inserted. 0 is a legitimate, non-error answer and
+ *  means the club has had a threshold at some point — including one it has since
+ *  RETIRED. seed_default_thresholds() acts only on an organisation with no
+ *  threshold row at all, so a coach who cleared the rules on purpose never gets
+ *  them reinstated behind their back, whether they cleared four of five or all
+ *  five (0059 correction (c): the guard used to ignore soft-deleted rows, which
+ *  made "cleared everything" indistinguishable from "never configured" and let
+ *  the migration's own backfill re-seed a club overnight). Callers should read 0
+ *  as "nothing to do", not as a failure, and should not tell the coach the club
+ *  "already has thresholds" — it may have none live and still be ineligible.
+ *
+ *  Four of the five arrive active. 'Wellness compliance low' arrives switched off
+ *  by design: its metric is a count of wellness entries, so on a club that has
+ *  never submitted anything it reads 0 rather than "no data" and would flag the
+ *  whole squad on day one. It is one click from live on this same screen.
+ *
+ *  No org/role check here, deliberately, and this is the CLAUDE.md rule 2 point:
+ *  the function is SECURITY INVOKER, so the gate is the thresholds_coach_insert
+ *  RLS policy — a non-coach, or a coach naming another org's id, is refused by
+ *  Postgres (42501) rather than by anything this file could be persuaded to skip.
+ *  orgId is passed as an argument only because the RPC needs a target; it is
+ *  never what authorises the write. */
+export async function seedDefaultThresholds(
+  db: Db,
+  orgId: string,
+): Promise<{ inserted: number; error: string | null }> {
+  const { data, error } = await db.rpc('seed_default_thresholds', { p_org_id: orgId });
+
+  if (error) {
+    // 42501 is the RLS refusal, which for this screen means "you are not a coach
+    // in this club". Anything else is genuinely unexpected and says so.
+    if (error.code === '42501') {
+      return { inserted: 0, error: 'Only a coach can set up the default thresholds.' };
+    }
+    return { inserted: 0, error: error.message };
+  }
+  return { inserted: typeof data === 'number' ? data : 0, error: null };
+}
+
 /** Soft delete: deleted_at, never a row removal — there is no delete grant
  *  on this table at all (migration 0012), and the spec's own edge case says
  *  flags keep their threshold_id and render "threshold no longer exists"

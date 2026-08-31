@@ -1,4 +1,5 @@
 import type { VisibleFlag } from '@/lib/queries/flags';
+import { staffNoteLines } from '@/lib/queries/flags';
 import { enumLabel, formatDate } from '@/lib/format';
 
 type Props = {
@@ -51,7 +52,15 @@ export function FlagNotice({ flags, heading, timezone }: Props) {
                 </>
               ) : null}
             </p>
-            {f.staff_note ? <p className="flag-notice-note">&ldquo;{f.staff_note}&rdquo;</p> : null}
+            {/* staff_note can now hold several notes, one per line, because the
+                coach-facing "Add note" action appends rather than overwrites
+                (addFlagNote, queries/flags.ts). Split so two notes read as two
+                quoted lines and not as one paragraph with a line break in it. */}
+            {staffNoteLines(f.staff_note).map((line, i) => (
+              <p className="flag-notice-note" key={`${f.id}-note-${i}`}>
+                &ldquo;{line}&rdquo;
+              </p>
+            ))}
             <p className="flag-notice-attribution">
               {f.acknowledged_by_name ? `Seen by ${f.acknowledged_by_name}` : 'Seen by a staff member'} &middot;{' '}
               {formatDate(f.acknowledged_at, timezone)}

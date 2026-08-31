@@ -102,8 +102,8 @@ export default async function SettingsPage() {
               </h2>
               <p style={{ fontSize: 12.5, color: 'var(--muted)', margin: '2px 0 0' }}>
                 {onPremium
-                  ? 'Premium · GPS, the training report and heatmaps are on.'
-                  : 'Basic · wellness, gym, nutrition, schedule, reports, bar charts and Apple Health.'}
+                  ? 'Premium · GPS, the training report, the analytics bar chart and Apple Health are on.'
+                  : 'Basic · wellness, gym, nutrition, schedule, reports and exports.'}
               </p>
             </div>
             <div className="plan-switch" title="Plan changes are a sales conversation with your Fydr contact, not a self-service toggle — see the note below.">
@@ -128,9 +128,19 @@ export default async function SettingsPage() {
                 <span>Schedule and fixtures</span>
                 <span>Wellness</span>
                 <span>Reports · gym, wellness, testing, nutrition</span>
-                <span>Analytics · bar charts</span>
+                {/* This line used to read "Analytics · bar charts". The BAR
+                    CHART moved to the Premium column below, on the coach's own
+                    instruction ("move the analytics bar chart ... onto the
+                    premium plan side") — the screen did not. This is not a
+                    copy change: /analytics renders a locked panel in place of
+                    the bar view for a Basic club and leaves the rest of the
+                    screen live, so this list and the real gate agree line for
+                    line. The narrow scope, and what it does and does not
+                    contradict in 12-product-tiers.md §3.3 and
+                    screens/analytics.md, is argued in full in the analytics
+                    page component's own header. */}
+                <span>Analytics · metric builder, trends and table</span>
                 <span>Settings and exports</span>
-                <span>Apple Health connection</span>
               </div>
             </div>
             <div className="plan-compare-card" data-active={onPremium}>
@@ -141,7 +151,14 @@ export default async function SettingsPage() {
               <div className="plan-compare-list">
                 <span>GPS exports</span>
                 <span>Training report</span>
-                <span>Analytics · heatmaps</span>
+                {/* Was "Analytics · heatmaps", which promised a visualisation
+                    /analytics has never rendered. Named for the one analytics
+                    capability that is actually Premium — the bar chart, which
+                    is what the instruction names. Heatmaps stay unbuilt in
+                    both tiers, so neither column may claim them; see
+                    screens/analytics.md. */}
+                <span>Analytics · bar chart, by athlete</span>
+                <span>Apple Health connection</span>
               </div>
             </div>
           </div>
@@ -185,22 +202,44 @@ export default async function SettingsPage() {
 
             <div className="set-row">
               <div style={{ minWidth: 0 }}>
-                <span style={{ fontSize: 14, fontWeight: 600 }}>Apple Health</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600 }}>Apple Health</span>
+                  {!onPremium ? <span className="gold-badge">Premium</span> : null}
+                </div>
                 <p style={{ fontSize: 12, color: 'var(--muted)', margin: '2px 0 0' }}>
                   Sleep, resting heart rate and body mass from the athlete&apos;s phone
                 </p>
               </div>
-              {/* No tier gate here, on either plan — O-862 (12-product-tiers.md §3.4)
-               *  asked the client to confirm HealthKit's placement, calling it "the
-               *  weakest line in Premium": near-zero marginal cost, athlete-initiated,
-               *  and section 4.3's own athlete-features principle argues for Basic.
-               *  Resolved: HealthKit moved to Basic, available regardless of tier.
-               *  Still honestly disabled either way -- the connection itself needs the
-               *  athlete mobile app, which this build doesn't have (same reason this
-               *  button has always been disabled, unrelated to billing). */}
-              <button type="button" className="set-row-btn" data-variant="connect" disabled aria-disabled="true" title="HealthKit connection requires the athlete mobile app, which isn't available yet.">
-                Connect
-              </button>
+              {/* Premium-gated again, 2026-08-30. This row was Premium-gated until
+               *  34a416e moved it to Basic as the client's own resolution of O-862
+               *  (12-product-tiers.md §3.4, "the weakest line in Premium"). The club
+               *  has since reversed that call, so the gate is restored and O-862 is
+               *  re-opened in that doc with BOTH decisions dated rather than the
+               *  first one being overwritten — the counter-argument that won in
+               *  August (near-zero marginal cost, athlete-initiated, sleep/HRV would
+               *  materially improve the Club readiness score) is still on record and
+               *  is still true; the club simply decided the other way.
+               *
+               *  Same isPremium() gate and same locked/enabled shape as the
+               *  Catapult row directly above, deliberately — one tier check
+               *  (lib/tier.ts), never a raw `tier === 'performance'` comparison, so
+               *  §2's fail-closed rule holds here too.
+               *
+               *  On Premium the button stays honestly disabled: the connection
+               *  itself needs the athlete mobile app, which this build doesn't have.
+               *  That has always been true and is unrelated to billing, so it must
+               *  not be dressed up as a tier restriction. On Basic the row reads
+               *  "Locked", which IS the tier restriction. The two states say
+               *  different things because they mean different things. */}
+              {onPremium ? (
+                <button type="button" className="set-row-btn" data-variant="connect" disabled aria-disabled="true" title="HealthKit connection requires the athlete mobile app, which isn't available yet.">
+                  Connect
+                </button>
+              ) : (
+                <span className="set-row-btn" data-variant="locked" style={{ cursor: 'default' }} title="Apple Health is a Premium feature. Plan changes are a sales conversation with your Fydr contact.">
+                  Locked
+                </span>
+              )}
             </div>
 
             <div className="set-row">

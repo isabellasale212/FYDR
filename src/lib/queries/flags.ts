@@ -300,11 +300,14 @@ export type FlagListRow = {
    *  ignores fields it doesn't use, so this is additive, not a shape
    *  change anything existing has to react to. */
   threshold_id: string | null;
-  /** Whatever's currently in flags.staff_note — either the engine's own
-   *  explanation (e.g. migration 0053's gap-tolerance detail, "Breached on
-   *  N of the last M days, with G day(s) missing") written at raise time,
-   *  or a coach's own note written at acknowledgement via the "+ Note for
-   *  athlete" action, which overwrites it. Both share this one column,
+  /** Whatever's currently in flags.staff_note — the engine's own explanation
+   *  (e.g. migration 0053's gap-tolerance detail, "Breached on N of the last
+   *  M days, with G day(s) missing") written at raise time, and/or one or
+   *  more coach-written notes. As of the standalone "Add note" action
+   *  (addFlagNote below) a coach's note is APPENDED on its own line rather
+   *  than replacing what is already there, so this can now hold several
+   *  lines; render it through staffNoteLines(), never raw. Both kinds share
+   *  this one column,
    *  and neither is tagged with which kind it is — shown as a plain,
    *  unattributed "Note:" line rather than claiming an origin the data
    *  doesn't actually record. Was fetched by fetchMyDataFlags (athlete-
@@ -412,9 +415,20 @@ export async function fetchFlagsList(
  *  "if any" is the reason this stays optional rather than a required field or its own
  *  confirm step). screens/flags.md's Acknowledge action is specified as instant and
  *  optimistic with a 5-second Undo; adding a required second step here would break that.
- *  When given, it is trimmed and written to flags.staff_note in the same update as the
- *  rest of the acknowledge write — not a separate flag_actions row, see 0046's header
- *  comment for why. */
+ *  When given, it now goes through addFlagNote() rather than being written inline here.
+ *  That is a deliberate change from the original inline `staff_note: trimmedNote`: that
+ *  version REPLACED whatever the column held, which silently destroyed the threshold
+ *  engine's own explanation (migrations 0052/0053) the moment a coach typed a note.
+ *  There is one append implementation now, and both the standalone "Add note" action and
+ *  acknowledge-with-a-note share it. Still not a separate flag_actions row — see 0047's
+ *  header comment for why.
+ *
+ *  Cost of routing through addFlagNote: the note path is two round trips instead of one.
+ *  The bare-acknowledge path (no note), which is the common case and the one
+ *  screens/flags.md specifies as instant and optimistic, is untouched at one write. If
+ *  the status update below fails after the note was saved, the note stands and the flag
+ *  stays unacknowledged — a visible, recoverable state (the coach can click Acknowledge
+ *  again), not a lost note. */
 export async function acknowledgeFlag(
   db: Db,
   flagId: string,
@@ -422,8 +436,10 @@ export async function acknowledgeFlag(
   userId: string,
   note?: string,
 ): Promise<void> {
-  const now = new Date().toISOString();
   const trimmedNote = note?.trim();
+  if (trimmedNote) await addFlagNote(db, flagId, orgId, trimmedNote);
+
+  const now = new Date().toISOString();
   const { error } = await db
     .from('flags')
     .update({
@@ -431,13 +447,118 @@ export async function acknowledgeFlag(
       acknowledged_at: now,
       acknowledged_by: userId,
       athlete_visible_at: now,
-      ...(trimmedNote ? { staff_note: trimmedNote } : {}),
     })
     .eq('id', flagId)
     .eq('org_id', orgId)
     .in('status', ['raised', 'notified']);
 
   if (error) throw new Error(error.message);
+}
+
+/** Add a staff note to a flag WITHOUT touching its status.
+ *
+ *  The gap this closes: until now the only way to write flags.staff_note was
+ *  acknowledgeFlag's optional `note` argument, which is bundled into the
+ *  Raised → Acknowledged transition. That made two ordinary things impossible.
+ *  A coach could not leave a note on a flag they were not ready to acknowledge
+ *  (acknowledgeFlag's own `.in('status', ['raised','notified'])` guard silently
+ *  matches zero rows once a flag is acknowledged, so the write was a no-op, not
+ *  an error), and could not add a *second* note later — the note field was only
+ *  ever offered on the pre-acknowledgement card.
+ *
+ *  RLS: checked, not assumed. flags_staff_update (migration 0012) is
+ *  `using (org_id = auth_org_id() and auth_has_any_role(['coach','medical']))
+ *   with check (org_id = auth_org_id())` — no status predicate and no column
+ *  list, so coach/medical may update this one column on any flag in their own
+ *  org whatever its status. There is no other UPDATE policy on flags for
+ *  `authenticated`, so an athlete still cannot write their own staff_note.
+ *  Nothing new is needed in the database for this; no migration was added.
+ *
+ *  APPEND, not overwrite — the judgement call worth recording. staff_note is
+ *  dual-use and untagged: the threshold engine (migrations 0052/0053) writes
+ *  its own explanation there at raise time ("Breached on N of the last M days,
+ *  with G day(s) missing"), and nothing records which kind of text a row holds.
+ *  Overwriting would silently destroy the engine's evidence the moment a coach
+ *  typed anything, and would also make "add a second note" impossible, which is
+ *  the whole point of this function. So a new note is appended on its own line
+ *  and every existing line is preserved. The three render sites split on the
+ *  newline (staffNoteLines below) and show one quoted line each, so the result
+ *  reads as a short thread rather than one run-on paragraph.
+ *
+ *  Read-modify-write, knowingly. supabase-js cannot express `staff_note =
+ *  staff_note || E'\n' || $1` without a new RPC, and adding an RPC (plus its
+ *  grants and pgTAP coverage) to append a string is more surface than the
+ *  problem deserves. The race is two staff members saving a note on the SAME
+ *  flag inside the same few hundred milliseconds, where the loser's line is
+ *  dropped; the note is advisory free text, not a ledger, so that trade is
+ *  taken deliberately rather than by accident.
+ *
+ *  Note this does NOT make the note athlete-visible on its own: an athlete only
+ *  ever sees a flag once athlete_visible_at is set, which only acknowledgement
+ *  does (flags_self_select, 0012). A note added to an unacknowledged flag is
+ *  staff-only until someone acknowledges — the FlagCard UI says so rather than
+ *  implying the athlete has been told.
+ *
+ *  WHO READS IT, which the calling UI is now required to state. "Staff-only" is
+ *  not "coach-only": flags_staff_select (0012) grants SELECT on flags to coach
+ *  AND medical across the whole organisation, so every coach in the club reads
+ *  anything written here the moment it is saved. That makes this a shared staff
+ *  note and never a medical one. Medical staff may write it (flags_staff_update
+ *  covers them, and /flags is open to them), so both note surfaces —
+ *  FlagCard.tsx and PlayerProfileFlags.tsx — name the real audience and show a
+ *  clinician the CLAUDE.md rule 3 line: diagnosis and treatment detail belong on
+ *  the injury record, which coaching staff cannot read, not in a column they
+ *  can. That is a UI warning, not a permission: nothing in this function can
+ *  enforce it, and pretending otherwise in the copy is what went wrong the first
+ *  time.
+ *
+ *  Real follow-up, recorded rather than half-built: this column is untagged, so
+ *  a clinician's note, a coach's note and the engine's own explanation are
+ *  indistinguishable once written. If flag notes are ever to carry anything
+ *  role-scoped, they need their own table (flag_id, author, body, visible_to)
+ *  with policies of their own — not a second free-text column on flags. */
+export async function addFlagNote(
+  db: Db,
+  flagId: string,
+  orgId: string,
+  note: string,
+): Promise<void> {
+  const trimmed = note.trim();
+  if (!trimmed) throw new Error('A note cannot be empty.');
+
+  const { data: current, error: readError } = await db
+    .from('flags')
+    .select('staff_note')
+    .eq('id', flagId)
+    .eq('org_id', orgId)
+    .maybeSingle();
+  if (readError) throw new Error(readError.message);
+
+  const existing = current?.staff_note?.trim() ?? '';
+  const next = existing ? `${existing}\n${trimmed}` : trimmed;
+
+  // No status change, no acknowledged_by, no athlete_visible_at — this write
+  // must be able to happen before, after, or entirely without acknowledgement.
+  const { error } = await db
+    .from('flags')
+    .update({ staff_note: next })
+    .eq('id', flagId)
+    .eq('org_id', orgId);
+
+  if (error) throw new Error(error.message);
+}
+
+/** staff_note holds one or more notes separated by newlines (see addFlagNote).
+ *  Every surface that renders it uses this so a two-note flag never renders as
+ *  one paragraph with a stray line break inside a pair of quotation marks.
+ *  Tolerant of the single-line rows that already exist: a note with no newline
+ *  comes back as a one-element array. */
+export function staffNoteLines(note: string | null | undefined): string[] {
+  if (!note) return [];
+  return note
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
 }
 
 /* ---------------------------------------------------------------------------

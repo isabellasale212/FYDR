@@ -612,7 +612,91 @@ specific questions, on days with a shared stimulus.
 
 ## Default threshold set for a new organisation
 
-Seeded at organisation setup, `source = 'default'`, all active. The set is deliberately small.
+> **Build status, 30 August 2026 — five of these eleven now ship; the other six cannot yet.**
+>
+> Until migration `0059_default_thresholds.sql` the sentence below ("Seeded at organisation
+> setup") was **not true of any code**. Nothing in the schema had ever inserted a `thresholds`
+> row for a real organisation: the only threshold rows that had ever existed were hand-written
+> demo fixtures in `supabase/seed.sql` and `supabase/tests/000_setup_test_helpers.sql`, keyed to
+> hard-coded org UUIDs, and there is no organisation-creation code path in the app at all. A
+> new club therefore landed on an empty `/settings/thresholds` **and** — the part that was not
+> visible anywhere — a nightly flag engine (migration `0052`) with no rules to evaluate, raising
+> zero flags forever while its Flags screen looked reassuringly calm. Recorded per `CLAUDE.md`
+> §8: the doc asserted a mechanism, the code never had one, and the code was the fact.
+>
+> **What now ships** is `public.default_threshold_set()`, applied to a club by
+> `public.seed_default_thresholds(org_id)` and offered to a coach as "Start with the default
+> set" on the empty state of this screen. It is **rules 1, 3, 5, 7 and 10 of the table below,
+> at the values already proven against the demo club**, not the eleven as specified:
+>
+> | # below | Ships as | At the values | Divergence from the row below |
+> |---|---|---|---|
+> | 1 | Readiness below personal norm | z_score −1.5, personal rolling 28d, 2 days, high, coach+medical | none |
+> | 3 | Sleep dropped | pct_change_below 20%, personal rolling 28d, 2 days, medium, coach | `pct_change_below`, not `z_score` |
+> | 5 | Soreness elevated | below 2, absolute, 3 days, medium, coach+medical | absolute, not a 14-day rolling percentage |
+> | 7 | Acute chronic ratio high | above 1.30, **absolute**, 1 day, high, coach | 1.30, not 1.50 — 1.30 is the number the running app already quotes everywhere (audit finding S1) — **and absolute, not personal rolling** |
+> | 10 | Wellness compliance low | below 4 submissions in 7 days, absolute, low, coach, **ships inactive** | a count over 7 days on `compliance.wellness_7d`, not a percentage on `wellness_pct` — **and it arrives switched off** |
+>
+> **Two of those five diverge from the row below in ways that change behaviour, not just
+> numbers, and both were review corrections to the first version of `0059`:**
+>
+> *Rule 7 is `absolute`, not `personal rolling`.* `above` and `below` are flat comparisons
+> in the evaluator (`_threshold_breach_on_day`, migration `0052`): they compare the raw
+> value against the rule's own `value` and never read a mean or an SD. Pairing `above 1.30`
+> with `personal_rolling` therefore changed nothing about when the rule trips, and did one
+> thing only — it gated the rule behind `min_baseline_observations = 14`, so it could not
+> fire for an athlete's first 14 ACWR observations, which no screen said. Its shipped
+> description ("Seven to twenty eight day EWMA load ratio above own 1SD band") described a
+> `z_score` rule against a personal band, which it has never been. It is now an absolute
+> 1.30 cutoff with a description that says so. New clubs are still protected, by a stronger
+> gate: ACWR is suppressed entirely until 21 of the trailing 28 days carry a training entry.
+>
+> *Rule 10 arrives inactive.* `compliance.wellness_7d` is a **count**, so a club that has
+> never submitted anything evaluates to 0 — a real observation of "fewer than four", not a
+> gap — and 0 < 4 breaches for every athlete on every day of the club's pre-history. No
+> parameter on the rule can prevent that: `min_baseline_observations` counts non-null daily
+> values and this metric is never null, `consecutive_days` is satisfied because every prior
+> day breaches too, and edge case 8's gap tolerance does not apply because a count has no
+> gaps. As an active default it would have flagged every athlete in every new club on the
+> first nightly sweep. It therefore ships switched off, visible on this screen with an
+> Activate button and a description that explains the wait. Making it safe to ship live is
+> an **evaluator** change, not a threshold one: `_threshold_metric_raw` would have to return
+> NULL rather than 0 for an athlete with no wellness history at all. That is the follow-up.
+>
+> **Why not the other six.** Rules 2, 4, 6, 8, 9 and 11 sit on metric keys that migration
+> `0052`'s `_threshold_metric_value()` cannot evaluate — `mood`, `weekly_load`, `wellness_pct`
+> and `consecutive_missed` have no evaluator branch, and rules 2/4/8 are absolute variants that
+> would need one too. Shipping them would put six rules in front of a coach that are
+> configured, active, visible, and permanently incapable of firing, which is a worse failure
+> than five honest rules: a silent dead rule is indistinguishable from a rule that simply has
+> not tripped. The five that ship are, exactly and with nothing left over, the five metrics the
+> engine actually supports. **Extending the default set is downstream of extending the
+> evaluator, not independent of it** — that is the real prerequisite, and it is the follow-up.
+>
+> **Also not built: the `[Restore defaults]` toolbar button** drawn in the wireframe above and
+> specified at the end of this section as "adds back what is missing and never overwrites an
+> edited rule". `seed_default_thresholds()` is deliberately **all-or-nothing**: it acts only on
+> a club that has **never had a threshold row at all**, and returns 0 otherwise. Per-rule
+> restore-what-is-missing needs identity matching on rule name, and its natural consequence is
+> reinstating a default a coach deleted on purpose — the one outcome worth designing against
+> here. So the affordance is offered on the empty state only, where the intent is unambiguous.
+>
+> This paragraph used to end "it needs a real answer to 'how do we tell a rule you never had
+> from a rule you removed', which the schema does not currently record." **That was wrong, and
+> the correction matters**: the schema records it exactly. Rules are never hard-deleted
+> (`CLAUDE.md` rule 4 — there is no delete grant on `thresholds` at all); retiring one sets
+> `deleted_at`, so a removed rule is still a row and a never-configured club has none. The
+> first version of `0059` guarded on `deleted_at is null`, which read a club that had retired
+> *every* rule as never-configured — and its backfill, which runs as the migration owner
+> across every organisation with no human involved, would have handed that club five live
+> rules and a flag engine raising the flags they had switched off. The guard now asks whether
+> **any** row exists, retired included. The cost is stated rather than hidden: a club that
+> retired everything can no longer be re-provisioned by this function and authors a rule by
+> hand instead, which is a deliberate act rather than a silent reinstatement.
+
+Seeded at organisation setup, `source = 'default'`. Four of the five arrive active; wellness
+compliance arrives inactive for the reason given in the banner above. The set is deliberately
+small.
 Eleven rules that fire occasionally beat thirty that fire constantly, and a club can add more
 once they have seen how these behave.
 

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { EmptyState } from '@/components/EmptyState/EmptyState';
+import { SeedDefaultThresholds } from '@/components/SeedDefaultThresholds/SeedDefaultThresholds';
 import { ThresholdRow } from '@/components/ThresholdRow/ThresholdRow';
 import { describeThreshold, fetchThresholds } from '@/lib/queries/thresholds';
 import { enumLabel } from '@/lib/format';
@@ -68,11 +68,17 @@ export default async function ThresholdsPage() {
         {thresholds.length - activeCount} inactive.
       </p>
 
+      {/* Was a bare <EmptyState>, which named the absence honestly and then left
+          the coach with nowhere to go but "+ New threshold" and a blank form.
+          Answers the coach's own question ("do we have general default
+          thresholds for each club to use and start with?") in the one place it
+          gets asked — see migration 0059 and SeedDefaultThresholds's header.
+          Only this branch changes; a club with rules already sees exactly what
+          it saw before. The shared EmptyState component is untouched: it takes
+          no children by design, and widening it for one caller would push this
+          screen's copy into a component five other screens share. */}
       {thresholds.length === 0 ? (
-        <EmptyState
-          title="No thresholds set"
-          body="Flags are raised when a threshold is crossed. Nothing is being watched yet."
-        />
+        <SeedDefaultThresholds orgId={orgId} />
       ) : (
         <div className="stack">
           {[...sections.entries()].map(([domain, rows]) => (

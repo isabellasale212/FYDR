@@ -762,6 +762,45 @@ export async function fetchCurrentSeasonId(db: Db, orgId: string): Promise<strin
   return data?.id ?? null;
 }
 
+export type CurrentSeason = { id: string; name: string; starts_on: string; ends_on: string };
+
+/** The current season's real date bounds, not just its id.
+ *
+ *  Added for the testing report's "season's best" tile, which needs to
+ *  bound test_date against a real range — lib/queries/testingReport.ts's
+ *  own header still says "there is no season table in this schema to bound
+ *  it against". That statement is simply out of date: `seasons` has existed
+ *  since migration 0003 with starts_on/ends_on, and 0016_leaderboards.sql's
+ *  window_type = 'season' branch already resolves a season window off it in
+ *  SQL. This is the TypeScript-side equivalent of that same lookup, so the
+ *  two surfaces agree on what "this season" means.
+ *
+ *  `.is('deleted_at', null)` matters here and is deliberately not a copy of
+ *  fetchCurrentSeasonId above: the seasons_one_current unique index (0003)
+ *  is PARTIAL — `where is_current and deleted_at is null` — so a
+ *  soft-deleted season that was current when it was deleted can legally
+ *  coexist with the live current one. Without the filter maybeSingle() sees
+ *  two rows and throws. (fetchCurrentSeasonId has the same latent gap; left
+ *  alone rather than changed underneath its existing callers in an
+ *  unrelated feature, but it is a real bug and is flagged as one.)
+ *
+ *  starts_on/ends_on are `date` columns, not timestamptz, so they are
+ *  compared as plain YYYY-MM-DD strings against test_results.test_date
+ *  (also a `date`). CLAUDE.md rule 5 governs instants; a calendar date that
+ *  is already stored date-typed has no timezone to convert and must not be
+ *  pushed through dateInTz, which would shift it by a day near midnight. */
+export async function fetchCurrentSeason(db: Db, orgId: string): Promise<CurrentSeason | null> {
+  const { data, error } = await db
+    .from('seasons')
+    .select('id, name, starts_on, ends_on')
+    .eq('org_id', orgId)
+    .eq('is_current', true)
+    .is('deleted_at', null)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ?? null;
+}
+
 export type NewSessionInput = {
   title: string;
   sessionType: string;

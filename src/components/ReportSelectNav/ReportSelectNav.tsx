@@ -2,7 +2,18 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-export type ReportSelectOption = { value: string; label: string };
+export type ReportSelectOption = {
+  value: string;
+  label: string;
+  /** Rendered but not choosable. screens/analytics.md's own rule for a
+   *  visualisation that is illegal for the current query shape: "Illegal
+   *  combinations are disabled with the reason, not hidden." Hiding an option
+   *  makes a control look shorter on some screens than others and gives the
+   *  user nothing to reason about; disabling it shows the capability and
+   *  leaves the caller to print why. Optional, so every existing call site is
+   *  unaffected. */
+  disabled?: boolean;
+};
 
 type Props = {
   /** Visible label rendered beside the control. */
@@ -54,7 +65,7 @@ export function ReportSelectNav({ label, paramKey, value, options, clearValue, a
       </span>
       <select className="field" style={{ padding: '4px 8px' }} value={value} onChange={(e) => go(e.target.value)} aria-label={ariaLabel ?? label}>
         {options.map((o) => (
-          <option key={o.value} value={o.value}>
+          <option key={o.value} value={o.value} disabled={o.disabled}>
             {o.label}
           </option>
         ))}

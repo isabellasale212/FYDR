@@ -104,8 +104,9 @@ function ReportRow({
         {/* The triage trail, oldest first — migration 0055's problem_report_notes.
          *
          * IMPORTANT, and the opposite of FlagCard's superficially similar
-         * "+ Note for athlete": that note goes into flags.staff_note and is
-         * shown to the athlete on their own FlagNotice, by design. These notes
+         * "+ Add note": that note goes into flags.staff_note and is shown to
+         * the athlete on their own FlagNotice once the flag is acknowledged, by
+         * design (it is staff-only until then, and the card says so). These notes
          * are MEDICAL ONLY and are never shown to the athlete — not on the
          * athlete's own report, which they can otherwise read in full. That is
          * why they live in their own table with a single medical-only select

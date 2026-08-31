@@ -309,6 +309,259 @@ export async function fetchHistory(db: Db, orgId: string, athleteId: string, tes
   return data ?? [];
 }
 
+/** True when `candidate` is a better result than `incumbent` for a test
+ *  running in `higherIsBetter`'s direction. A null incumbent is always beaten.
+ *
+ *  This is THE comparison the rest of this feature is built on, extracted so
+ *  that "best" has exactly one definition. The rule it encodes is the one
+ *  already established (and separately fixed) in fetchMyTestSummary below and
+ *  in testingReport.ts's fetchTestingByAthlete: a best is picked by the
+ *  test's own direction, never by date recency, because is_best only marks
+ *  the best attempt WITHIN one session/day. */
+export function beatsBest(candidate: number, incumbent: number | null, higherIsBetter: boolean): boolean {
+  if (incumbent === null) return true;
+  return higherIsBetter ? candidate > incumbent : candidate < incumbent;
+}
+
+export type TestBests = {
+  allTimeValue: number | null;
+  /** The date the all-time best was FIRST set, not the last date it was
+   *  matched. See considerBest. */
+  allTimeDate: string | null;
+  seasonValue: number | null;
+  /** The date the season's best was first set inside the season window. */
+  seasonDate: string | null;
+  /** Best from strictly BEFORE the current season began. The trend baseline. */
+  priorValue: number | null;
+  /** Signed % improvement of seasonValue against priorValue. See computeTestBests. */
+  trendPct: number | null;
+  /** True only when this season's best STRICTLY beats every result the athlete
+   *  has from outside the season window — i.e. they really did set a new
+   *  lifetime mark this season. Equalling an older best is deliberately FALSE:
+   *  matching a two-year-old jump is not setting a PB, and a UI that announces
+   *  it as one is stating something untrue next to a 0.0% trend.
+   *
+   *  Computed here rather than in the component because it needs the rows, not
+   *  just the two summary figures. The component used to infer it from
+   *  `seasonValue === allTimeValue && seasonDate === allTimeDate`, which was
+   *  wrong for exactly the equalled-best case it claimed to exclude: on a tie
+   *  the all-time date was whichever equal row came first, and fetchHistory
+   *  sorts newest-first, so an equalled mark made allTimeDate the recent
+   *  (in-season) date and the two pairs matched. Direction is handled by
+   *  beatsBest, so a sprint time that merely equals an old best is likewise
+   *  not a PB. */
+  seasonIsNewAllTimeBest: boolean;
+};
+
+type BestSlot = { value: number | null; date: string | null };
+
+/** Applies one result to a running best. A strictly better mark (by the test's
+ *  own direction) wins outright. An EQUAL mark keeps the EARLIEST date, because
+ *  the date printed beside a best answers "when was this set", not "when was it
+ *  last matched".
+ *
+ *  Making the tie rule explicit also makes computeTestBests independent of the
+ *  order rows arrive in. It previously kept whichever equal row it saw first,
+ *  which was the most recent one only because fetchHistory happens to sort
+ *  descending — a pure function silently depending on its caller's ORDER BY. */
+function considerBest(slot: BestSlot, value: number, date: string, higherIsBetter: boolean): void {
+  if (beatsBest(value, slot.value, higherIsBetter)) {
+    slot.value = value;
+    slot.date = date;
+    return;
+  }
+  if (value === slot.value && (slot.date === null || date < slot.date)) slot.date = date;
+}
+
+/** Season's best, all-time best, and the trend between them, for ONE athlete
+ *  on ONE test. Pure — it derives everything from the history rows the page
+ *  has already fetched, so there is no second query that could drift from the
+ *  history list rendered directly underneath it.
+ *
+ *  ONLY is_best rows are considered, exactly as fetchMyTestSummary and
+ *  fetchTestingByAthlete do. This is load-bearing, not incidental: taking the
+ *  max over ALL attempts instead would silently disagree with every other
+ *  "best" in the app the moment a coach uses the manual override. Migration
+ *  0025's own worked example is the case — attempt 2 marked best by hand
+ *  while attempt 4 holds a higher raw value. The canonical best is attempt 2;
+ *  a naive max over all rows would report attempt 4 here and nowhere else.
+ *
+ *  THE TREND PERCENTAGE, defined precisely, because an unstated percentage on
+ *  a report is worse than no percentage:
+ *
+ *    trendPct = the current season's best measured against the athlete's best
+ *    from strictly BEFORE this season started (test_date < season.starts_on).
+ *
+ *    It answers one question — "has this athlete got better this season than
+ *    they had ever been before it?" — and it is signed so that POSITIVE ALWAYS
+ *    MEANS IMPROVEMENT, in both directions:
+ *      higher_is_better (a jump):   (season - prior) / |prior| * 100
+ *      lower_is_better  (a sprint): (prior - season) / |prior| * 100
+ *    so shaving 4.10s to 3.95s reads +3.7%, an improvement, NOT -3.7%.
+ *
+ *  Why this pairing and not "season's best vs all-time best": the all-time
+ *  window CONTAINS the season, so season-vs-all-time can never be positive —
+ *  it would be a gauge pinned at or below zero, which reads as a permanent
+ *  regression and is useless as a trend. Measuring against the pre-season
+ *  best makes the number genuinely two-sided.
+ *
+ *  It is NOT, however, safe to read "trendPct > 0" as "new lifetime PB" and it
+ *  never was: the two use different baselines (prior = before the season only,
+ *  the PB check = outside the season in either direction), and trendPct is null
+ *  for an athlete's first season even though a first result is a lifetime best.
+ *  The PB question has its own field, seasonIsNewAllTimeBest, computed below.
+ *
+ *  Returns null (not 0) for trendPct whenever the comparison is not defined —
+ *  no season configured, no result inside the season, no result before it
+ *  (an athlete's first season has nothing to trend against, and rendering
+ *  that as 0% would assert "no change" about a measurement never taken), or
+ *  a prior best of exactly 0, which has no meaningful percentage base.
+ *
+ *  ONE SIDE ONLY. `rows` must already be a single side's results — a left hand
+ *  and a right hand are two different measurements and mixing them produces a
+ *  best that belongs to neither and a trend between two unrelated limbs. This
+ *  function does not partition; computeTestBestsBySide does, and is what the
+ *  report, the CSV and the PDF all call. Calling this directly with a per-side
+ *  test's full history is the bug that partitioning exists to prevent. */
+export function computeTestBests(
+  rows: readonly HistoryRow[],
+  higherIsBetter: boolean,
+  season: { starts_on: string; ends_on: string } | null,
+): TestBests {
+  const allTime: BestSlot = { value: null, date: null };
+  const inSeasonBest: BestSlot = { value: null, date: null };
+  let priorValue: number | null = null;
+  /* Best from anywhere OUTSIDE the season window — before it or after it. The
+   * badge's baseline, and deliberately wider than `priorValue`: a stray
+   * future-dated result is not "prior" to the season (so it cannot be the
+   * trend baseline) but it IS a mark the athlete has already put down, so it
+   * must still block a "new lifetime best this season" claim. */
+  let outsideValue: number | null = null;
+
+  for (const r of rows) {
+    if (!r.is_best) continue;
+
+    considerBest(allTime, r.value, r.test_date, higherIsBetter);
+
+    if (season) {
+      // Plain string compare on two `date` columns in ISO YYYY-MM-DD form —
+      // lexicographic order is chronological order for that format. Inclusive
+      // of both season endpoints, matching how a coach reads "the season".
+      const inSeason = r.test_date >= season.starts_on && r.test_date <= season.ends_on;
+      if (inSeason) {
+        considerBest(inSeasonBest, r.value, r.test_date, higherIsBetter);
+      } else {
+        if (beatsBest(r.value, outsideValue, higherIsBetter)) outsideValue = r.value;
+        if (r.test_date < season.starts_on) {
+          // Strictly before the season. A result AFTER ends_on (a stray future
+          // date, or a season that has rolled over without is_current being
+          // moved) is deliberately counted in neither the season nor the
+          // baseline: it is not this season's, and it cannot be "prior" to it.
+          if (beatsBest(r.value, priorValue, higherIsBetter)) priorValue = r.value;
+        }
+      }
+    }
+  }
+
+  const out: TestBests = {
+    allTimeValue: allTime.value,
+    allTimeDate: allTime.date,
+    seasonValue: inSeasonBest.value,
+    seasonDate: inSeasonBest.date,
+    priorValue,
+    trendPct: null,
+    // beatsBest, not `>=` and not a date comparison: strict by construction, so
+    // equalling an older mark is not a new PB, and the direction inverts for a
+    // lower-is-better test without a second copy of that ternary.
+    seasonIsNewAllTimeBest: inSeasonBest.value !== null && beatsBest(inSeasonBest.value, outsideValue, higherIsBetter),
+  };
+
+  if (out.seasonValue !== null && out.priorValue !== null && out.priorValue !== 0) {
+    const delta = higherIsBetter ? out.seasonValue - out.priorValue : out.priorValue - out.seasonValue;
+    out.trendPct = (delta / Math.abs(out.priorValue)) * 100;
+  }
+
+  return out;
+}
+
+export type TestBestsForSide = {
+  /** The side these figures belong to. Null on a bilateral test, where there
+   *  is only ever one set of numbers and nothing to distinguish. */
+  side: BodySide | null;
+  /** The label the UI must print next to these numbers, or null when the test
+   *  is bilateral and a side label would be noise. Non-null means "these
+   *  numbers are meaningless without this word next to them". */
+  label: string | null;
+  bests: TestBests;
+};
+
+/** Canonical display order. Left then right reads the way a coach says it; a
+ *  'bilateral' or side-less row on a per_side test is unexpected data rather
+ *  than a normal case, so it sorts last instead of being dropped. */
+const SIDE_ORDER: readonly (BodySide | null)[] = ['left', 'right', 'bilateral', null];
+
+function sideLabel(side: BodySide | null): string {
+  if (side === 'left') return 'Left';
+  if (side === 'right') return 'Right';
+  if (side === 'bilateral') return 'Bilateral';
+  return 'Side not recorded';
+}
+
+/** Bests and trend for one athlete on one test, PARTITIONED BY SIDE.
+ *
+ *  test_definitions.side_mode is 'bilateral' or 'per_side', and test_results
+ *  carries the matching `side`. A per_side test (grip strength, single-leg
+ *  hop, isometric hamstring) measures two independent things, and rolling them
+ *  into one best is wrong twice over: the value belongs to a limb nobody is
+ *  told about, and the trend can compare this season's LEFT against last
+ *  season's RIGHT. Worked case, grip strength, higher is better: prior season
+ *  right 50 kg / left 38 kg, this season only the left tested at 42 kg. Mixed,
+ *  that reads "50 kg all-time" and a −16.0% regression; split, it reads
+ *  "Left: 42 kg, +10.5%" and "Right: 50 kg, not tested this season", which is
+ *  what actually happened.
+ *
+ *  This is the convention the rest of the testing domain already uses, not a
+ *  new one: TestTrendChart draws Left and Right as two labelled series keyed
+ *  on `r.side ?? 'bilateral'`, and testingReport.ts's fetchTestByTest keys its
+ *  bests by `${athlete_id}:${side ?? ''}` for the same reason.
+ *
+ *  It partitions and delegates — every number still comes from the one
+ *  computeTestBests/beatsBest pair, so there is no second definition of "best"
+ *  that could drift from the squad grid or the athlete's own PB pill.
+ *
+ *  Always returns at least one entry, so a caller can render without a
+ *  special case for "no results yet". */
+export function computeTestBestsBySide(
+  rows: readonly HistoryRow[],
+  definition: { higher_is_better: boolean; side_mode: SideMode },
+  season: { starts_on: string; ends_on: string } | null,
+): TestBestsForSide[] {
+  const higherIsBetter = definition.higher_is_better;
+
+  if (definition.side_mode !== 'per_side') {
+    // A bilateral test has one result per session by definition. Every row is
+    // used regardless of what `side` happens to hold, so no data is dropped if
+    // a definition was switched from per_side to bilateral after logging.
+    return [{ side: null, label: null, bests: computeTestBests(rows, higherIsBetter, season) }];
+  }
+
+  const bySide = new Map<BodySide | null, HistoryRow[]>();
+  for (const r of rows) {
+    const list = bySide.get(r.side) ?? [];
+    list.push(r);
+    bySide.set(r.side, list);
+  }
+  if (bySide.size === 0) {
+    return [{ side: null, label: null, bests: computeTestBests([], higherIsBetter, season) }];
+  }
+
+  return SIDE_ORDER.filter((side) => bySide.has(side)).map((side) => ({
+    side,
+    label: sideLabel(side),
+    bests: computeTestBests(bySide.get(side) ?? [], higherIsBetter, season),
+  }));
+}
+
 export type MyTestSummary = {
   test_definition_id: string;
   name: string;
@@ -361,10 +614,11 @@ export async function fetchMyTestSummary(db: Db, athleteId: string): Promise<MyT
       cur.latestDate = r.test_date;
     }
     if (r.is_best) {
-      const higherIsBetter = r.test_definitions.higher_is_better;
-      const beatsCurrentBest =
-        cur.pbValue === null || (higherIsBetter ? r.value > cur.pbValue : r.value < cur.pbValue);
-      if (beatsCurrentBest) {
+      // Shared beatsBest() rather than an inline copy of the same ternary —
+      // see that function's header. This comparison existed here in longhand
+      // and was duplicated in three other places; routing all four through
+      // one function is what stops them drifting apart again.
+      if (beatsBest(r.value, cur.pbValue, r.test_definitions.higher_is_better)) {
         cur.pbValue = r.value;
         cur.pbDate = r.test_date;
       }

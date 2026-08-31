@@ -987,6 +987,171 @@ Rules:
 
 ---
 
+## As built: bests, extra attempts, and saving
+
+This section records behaviour that ships and was not in the original spec above. It is
+written per `CLAUDE.md` §5 (a code change that alters documented behaviour carries the
+doc edit with it), and per §8 (where code and doc disagree on a *fact about what exists*,
+the code is the fact).
+
+### Season's best and all-time best, with a trend percentage
+
+The per-athlete testing report (`/testing/[testDefId]/[athleteId]`) shows three tiles
+above the trend chart: **season's best**, **all-time best**, and **season trend**.
+
+**On a `per_side` test the three tiles are repeated once per side, each row labelled
+"Left" / "Right".** A per-side test (grip strength, single-leg hop, isometric hamstring)
+measures two independent things: pooling them yields a best belonging to a limb nobody is
+told about, and a trend that can compare this season's left against last season's right.
+Worked case, grip strength, higher is better — prior season right 50 kg and left 38 kg,
+this season only the left tested at 42 kg: pooled that reads "50 kg all-time" and a
+**−16.0%** regression; split it reads "Left: 42 kg, +10.5%" and "Right: 50 kg, not tested
+this season", which is what actually happened. `computeTestBestsBySide()` does the
+partitioning and delegates each side to `computeTestBests()`, so there is still one
+definition of "best". The split matches `TestTrendChart` directly underneath (two
+labelled series, keyed on `r.side ?? 'bilateral'`) and `fetchTestByTest`, which keys its
+bests by `${athlete_id}:${side ?? ''}`. A `bilateral` test renders exactly one unlabelled
+row, as before. The CSV caption and the PDF tile rows are split and labelled the same way.
+
+All three come from `computeTestBests()` in `src/lib/queries/testing.ts`, computed from
+the history rows the page already fetched. There is no second query and no second
+definition of "best": every best in the app — this report, the squad grid
+(`fetchTestingByAthlete`), the by-test distribution (`fetchTestByTest`) and the athlete's
+own PB pill (`fetchMyTestSummary`) — routes through the single `beatsBest()` comparison.
+That matters because `is_best` marks the best attempt **within one session**, so the
+winner *across* sessions must be picked by the test's own `higher_is_better` direction,
+never by date recency. Picking by recency was a real shipped bug (an athlete with a 41.6
+all-time best displayed 31.0, because 31.0 was their latest session), and it was fixed in
+one of the four places while surviving in the other three — hence one shared function.
+
+**The trend percentage is defined as: the current season's best measured against the
+athlete's best from strictly before the season began** (`test_date < season.starts_on`).
+It answers "has this athlete got better this season than they had ever been before it?"
+
+It is signed so that **positive always means improvement**, in both directions:
+
+| Test direction | Formula |
+|---|---|
+| `higher_is_better` (a jump) | `(season − prior) / abs(prior) × 100` |
+| lower is better (a sprint) | `(prior − season) / abs(prior) × 100` |
+
+So shaving 4.10s to 3.95s reads **+3.7%**, not −3.7%.
+
+Why this pairing rather than the more obvious "season's best vs all-time best": the
+all-time window *contains* the season, so season-vs-all-time can never be positive. It
+would be a gauge pinned at or below zero, reading as a permanent regression, which is
+useless as a trend. Measured against the pre-season best the number is genuinely
+two-sided.
+
+**The "New PB" badge is a separate computation, not a reading of the trend.** An earlier
+version of this section claimed "the trend is positive if and only if the season's best is
+also the all-time best"; that is not true, and the badge must not be derived from it. The
+two use different baselines — the trend's is *before* the season only, the badge's is
+everything *outside* the season in either direction — and the trend is blank for an
+athlete's first season even though a first result is a lifetime best. The badge is
+`TestBests.seasonIsNewAllTimeBest`, true only when the season's best **strictly** beats
+every result from outside the season window, compared through `beatsBest()` so the
+direction inverts for a lower-is-better test. Equalling an older mark is deliberately
+*not* a new PB: matching a two-year-old jump reads 0.0% on the trend, and announcing "New
+PB" beside a 0.0% is two contradictory statements, one of them false. (It was: the badge
+previously inferred the case from `seasonValue === allTimeValue && seasonDate ===
+allTimeDate`, which assumed `allTimeDate` held the *earliest* date the mark was reached
+when it in fact held the most recent, because `fetchHistory` sorts descending and ties
+kept the first row seen.)
+
+The dates printed under each best are now the date the mark was **first set**, not the
+last date it was matched, and no longer depend on the order `fetchHistory` returns rows
+in.
+
+The trend renders as blank (not 0%) whenever the comparison is undefined: no current
+season configured, no result inside the season, no result before it (a first season has
+nothing to trend against, and 0% would assert "no change" about a measurement never
+taken), or a prior best of exactly 0, which has no percentage base. The tile prints the
+trend's meaning in words underneath it, and the CSV and PDF exports both carry the same
+definition, so a printout is still interpretable months later.
+
+The season window is the org's `is_current` season from `seasons` (`starts_on`/`ends_on`,
+inclusive of both endpoints), resolved by `fetchCurrentSeason()` in
+`src/lib/queries/schedule.ts`.
+
+> Note: this interacts with **O-387** below and does not resolve it. With no smallest
+> worthwhile change configured per test, the trend renders every difference as a
+> difference, measurement noise included.
+
+### Extra attempts
+
+The logging grid has a **+ Attempt** button on each athlete's own row, adding one attempt
+beyond the test's `default_attempts`.
+
+It is per athlete and per day, not per grid: on a real testing day it is one athlete who
+fluffs a rep and goes again, and widening the whole squad's grid would put empty boxes
+under everyone else's name.
+
+Pressing it writes nothing to the database, which is correct rather than a shortcut —
+`test_results.value` is `NOT NULL` (migration 0024), so "an empty attempt 4" is not a row
+that can exist. The button reveals the next slot; the existing per-cell autosave writes
+the real row with the next `attempt_number` as soon as a value is entered. No new trigger
+work was needed: `mark_best_attempt` (0024, rewritten in 0025) recomputes the best across
+every non-deleted attempt in the `(athlete, test, date, side)` group, so attempt 4
+competes for best on insert exactly as attempts 1–3 did, and `attempt_number` carries no
+upper bound.
+
+The grid draws `max(default_attempts, highest attempt already saved, coach's request)`
+boxes. Including *highest already saved* fixes a separate pre-existing bug: an extra
+attempt logged today became invisible on the next page load, because the grid only ever
+drew `default_attempts` boxes while the row sat in the table unrendered — and, being
+unrendered, uneditable. Lowering a test's `default_attempts` after a session had been
+logged hid results the same way.
+
+### Saving: autosave, no session save button
+
+The coach asked whether inputs autosave "or should there be a button to save and upload a
+testing session, you decide." **Decision: keep per-cell autosave, add no session-level
+save button.**
+
+Reasoning, recorded because it was a judgement call:
+
+- A save button reintroduces exactly the failure the grid was rebuilt to kill — a hall
+  full of typed values lost to a closed laptop or a dead phone. That was a real audit
+  finding, not a hypothetical.
+- It gives two competing answers to "is this saved?" next to per-cell state that is
+  already truthful.
+- There is no upload step for it to gate. `logAttempt()` writes straight to
+  `test_results`; there is no draft or session-staging table behind it, so "upload" would
+  be a button that saved already-saved rows.
+
+The honest fix for the underlying worry — *did that land?* — is per-cell saved/saving/
+failed state plus a browser leave-page warning when anything is uncommitted. Both already
+exist, and every exit path from a cell (Enter, Tab, click away) funnels through the same
+commit function so that a session's data never depends on which key the coach pressed.
+
+### Print and download
+
+Both testing screens carry print and export controls at the top right:
+
+| Screen | Controls |
+|---|---|
+| `/reports/testing` (squad) | Print (added), Export CSV, Export PDF (both already existed) |
+| `/testing/[testDefId]/[athleteId]` (individual) | Print, Export CSV, Export PDF (all added) |
+
+Print is `window.print()` through the existing `@media print` block in `base.css`, so
+there is no separate print view to keep in sync. One honest caveat on the squad report:
+it is paginated by `ReportPager`, so a print captures the tab currently open ("By
+athlete" *or* "By test"), not both. The PDF export is the one that contains everything.
+
+The per-athlete CSV exports **every** attempt, not only the best ones, because a CSV is
+the shape someone re-analyses elsewhere and dropping non-best attempts would throw away
+the within-session spread that makes that worth doing. A `best` column marks which row
+the trigger, or a coach via manual override, picked.
+
+Both per-athlete routes gate on `requireStaff`, deliberately *not* `requireReportAccess`:
+a download must gate exactly as the page it downloads, so an export is never reachable by
+someone who cannot already read the same numbers on screen, and never denied to someone
+who can. The squad report under `/reports` uses `requireReportAccess` because its own page
+does. Both record an audit row via `recordReportView(..., 'testing-athlete', ..., 'export')`.
+
+---
+
 ## Open questions
 
 - **O-383**: Staff writes are queued offline on this screen, which contradicts

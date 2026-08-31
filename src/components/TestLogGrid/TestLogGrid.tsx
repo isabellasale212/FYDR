@@ -85,18 +85,54 @@ export function TestLogGrid({ orgId, userId, testDefinitionId, testDate, default
     router.refresh();
   }
 
-  function attemptSlots(): Array<{ attempt: number; side: 'left' | 'right' | null }> {
+  /* "add a button to add additional attempts if required" — the coach's own
+   * words. Extra attempts are per-athlete and per-day, not per-grid: on a
+   * real testing day it is one athlete who fluffs a rep and goes again, and
+   * widening the whole squad's grid to match would put empty boxes under
+   * fourteen other names.
+   *
+   * Nothing is written to the database when this is pressed, and that is
+   * correct rather than a shortcut: test_results.value is NOT NULL (0024),
+   * so an "empty attempt 4" is not a row that can exist. The button reveals
+   * the next slot; the existing per-cell autosave writes the real row via
+   * logAttempt() with the next attempt_number as soon as a value is entered.
+   * No trigger work is needed either — mark_best_attempt (0024, rewritten in
+   * 0025) recomputes the best across every non-deleted attempt in the
+   * (athlete, test, date, side) group, so attempt 4 competes for best on
+   * insert exactly as attempts 1-3 did, and attempt_number carries no upper
+   * bound or check constraint. */
+  /* Stores a TARGET total attempt count per athlete, not a count of extra
+   * clicks. That distinction is what keeps this idempotent against the
+   * router.refresh() every save triggers: with an increment, saving a value
+   * into the new attempt 4 would come back as savedMax=4 PLUS the +1 still
+   * held in state and open a stray empty attempt 5 the coach never asked
+   * for, again on every subsequent save. As a target it simply loses to
+   * savedMax once the row exists. */
+  const [requestedAttempts, setRequestedAttempts] = useState<Record<string, number>>({});
+
+  function attemptSlotsFor(a: AthleteForLogging): Array<{ attempt: number; side: 'left' | 'right' | null }> {
+    // max(defaultAttempts, highest attempt already saved, coach's request) —
+    // not defaultAttempts alone. Including savedMax also fixes a real
+    // pre-existing bug: an extra attempt logged today became INVISIBLE on the
+    // next page load, because the grid only ever drew default_attempts boxes
+    // while the row sat in the table unrendered (and, being unrendered,
+    // uneditable and undeletable from this screen). Lowering a test's
+    // default_attempts after a session had already been logged did the same.
+    const savedMax = a.attempts.reduce((m, x) => Math.max(m, x.attempt_number), 0);
+    const count = Math.max(defaultAttempts, savedMax, requestedAttempts[a.athlete_id] ?? 0);
+
     if (sideMode === 'bilateral') {
-      return Array.from({ length: defaultAttempts }, (_, i) => ({ attempt: i + 1, side: null }));
+      return Array.from({ length: count }, (_, i) => ({ attempt: i + 1, side: null }));
     }
     const slots: Array<{ attempt: number; side: 'left' | 'right' | null }> = [];
-    for (let i = 1; i <= defaultAttempts; i += 1) {
+    for (let i = 1; i <= count; i += 1) {
+      // A per-side test gets both sides of the new attempt. An athlete who
+      // needs a re-run of their left grip still has a right-hand box for that
+      // attempt number; leaving it blank writes no row.
       for (const side of SIDES) slots.push({ attempt: i, side });
     }
     return slots;
   }
-
-  const slots = attemptSlots();
   const STATUS_GLYPH: Record<CellStatus, { text: string; color: string }> = {
     dirty: { text: 'unsaved', color: 'var(--warn-text)' },
     saving: { text: 'saving…', color: 'var(--faint)' },
@@ -112,7 +148,10 @@ export function TestLogGrid({ orgId, userId, testDefinitionId, testDate, default
         </p>
       ) : null}
       <div className="card flush">
-        {athletes.map((a, index) => (
+        {athletes.map((a, index) => {
+          const slots = attemptSlotsFor(a);
+          const nextAttemptNumber = slots.length === 0 ? 1 : Math.max(...slots.map((s) => s.attempt)) + 1;
+          return (
           <div key={a.athlete_id}>
             {index > 0 ? <div className="hair" /> : null}
             <div style={{ padding: '10px 16px' }}>
@@ -191,16 +230,61 @@ export function TestLogGrid({ orgId, userId, testDefinitionId, testDate, default
                     </div>
                   );
                 })}
+                {/* Sits at the end of this athlete's own row of boxes, where
+                  * a coach's eye already is after filling the last one.
+                  *
+                  * Wrapped in the same label/control column each input cell
+                  * uses, with the label hidden rather than omitted, so the
+                  * button lines up with the input boxes instead of with
+                  * whichever cells happen to be showing a "saved ✓" line
+                  * underneath. alignSelf on a bare button could not do this:
+                  * the row's height changes as save states appear.
+                  *
+                  * The accessible name says whose attempt it adds — the
+                  * visible "+ Attempt" label repeats once per athlete and
+                  * would otherwise be fifteen identically-named buttons. */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span className="tiny" aria-hidden="true" style={{ visibility: 'hidden' }}>
+                    +
+                  </span>
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    style={{ padding: '6px 10px', fontSize: 12, whiteSpace: 'nowrap' }}
+                    aria-label={`Add attempt ${nextAttemptNumber} for ${a.first_name} ${a.last_name}`}
+                    onClick={() => setRequestedAttempts((r) => ({ ...r, [a.athlete_id]: nextAttemptNumber }))}
+                  >
+                    + Attempt
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
+      {/* The coach asked whether inputs autosave "or should there be a button
+        * to save and upload a testing session, you decide." Decision: keep
+        * per-cell autosave, add no session-level save button. A save button
+        * here would be strictly worse than what already exists — it would
+        * reintroduce exactly the failure this grid was rebuilt to kill (a
+        * hall full of typed values lost to a closed laptop or a dead phone,
+        * the original audit finding in this file's header), it would give
+        * two competing answers to "is this saved?" next to per-cell state
+        * that is already truthful, and there is no upload step for it to
+        * gate: logAttempt() writes straight to test_results with no draft or
+        * session-staging table behind it, so "upload" would be a button that
+        * saved already-saved rows. The honest fix for the underlying worry —
+        * "did that land?" — is visible per-cell state plus the leave-page
+        * warning, and both are already here. */}
       <p className="tiny">
-        Values save when you press Enter or move to the next box, and each box shows its own
-        saved state. Best attempt per athlete, per side, is marked automatically (green
-        outline) &mdash; highest or lowest depending on the test&rsquo;s own direction. Tap a
-        name for history and to mark a different attempt best by hand.
+        Values save on their own when you press Enter or move to the next box &mdash; there is
+        no save button, and each box shows its own saved state. Use <strong>+ Attempt</strong> on
+        an athlete&rsquo;s row if they need an extra go beyond the {defaultAttempts} this test
+        expects. Best attempt per athlete, per side, is marked automatically (green outline)
+        &mdash; highest or lowest depending on the test&rsquo;s own direction, and it is
+        recalculated when an extra attempt is added. Tap a name for history, personal bests,
+        and to mark a different attempt best by hand.
       </p>
     </div>
   );

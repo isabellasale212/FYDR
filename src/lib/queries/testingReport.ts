@@ -1,6 +1,6 @@
 import type { Db } from './groups';
 import { fetchGroupAthleteIds } from './groups';
-import { fetchTestDefinitions, type TestDefinition } from './testing';
+import { beatsBest, fetchTestDefinitions, type TestDefinition } from './testing';
 
 /* screens/reports.md, report 5 of 5 ("Testing report"), the last of the
  * five to get built — see reports.ts's own header for why it was the one
@@ -21,8 +21,17 @@ import { fetchTestDefinitions, type TestDefinition } from './testing';
  *     separate statistic (comparing an athlete's own left against their own
  *     right) this pass doesn't compute.
  *   - Longitudinal is the test's whole result history in this scope, not a
- *     season boundary — there is no season table in this schema to bound it
- *     against, the same gap MD-n scheduling has elsewhere in this build.
+ *     season boundary. NOTE: the reason originally given here — "there is no
+ *     season table in this schema to bound it against" — was simply wrong,
+ *     and is corrected rather than deleted so the next reader doesn't
+ *     re-derive the same mistake. `seasons` has existed since migration 0003
+ *     with starts_on/ends_on and a one-current-per-org partial unique index,
+ *     and 0016_leaderboards.sql already resolves a season window off it. The
+ *     squad-wide longitudinal series here is still deliberately unbounded
+ *     (a testing history is read across seasons), but that is now a choice,
+ *     not a missing table. The per-athlete report DOES bound by season —
+ *     see fetchCurrentSeason in lib/queries/schedule.ts and computeTestBests
+ *     in lib/queries/testing.ts.
  *     No "individual trajectories on request" — squad median per date only.
  *   - "Change against previous" on the By athlete grid compares an
  *     athlete's two most recent test dates for that test, not a fixed
@@ -91,12 +100,17 @@ export async function fetchTestingByAthlete(db: Db, orgId: string, groupIds: rea
     // moment anyone posted a result worse than their true best (a real,
     // verified audit finding: an athlete with a 41.6 all-time best showed
     // 31.0 because that was the latest session).
+    // beatsBest() from lib/queries/testing.ts, not a local copy of the same
+    // ternary. The rule is identical and always was — this call site is where
+    // it was first fixed — but it was written out by hand in four places
+    // (here, fetchTestByTest below, fetchMyTestSummary, computeTestBests),
+    // which is how the "phantom PB regression" bug survived in three of them
+    // after being fixed in the fourth. One function, one definition of best,
+    // so a future correction cannot land in some of them and not the others.
+    // beatsBest treats a null incumbent as beaten, which covers both the
+    // no-existing-cell and null-valued-cell cases this used to check itself.
     const higherIsBetter = higherIsBetterByDef.get(r.test_definition_id) ?? true;
-    const beatsExisting =
-      !existing ||
-      existing.value === null ||
-      (higherIsBetter ? r.value > existing.value : r.value < existing.value);
-    if (beatsExisting) {
+    if (beatsBest(r.value, existing?.value ?? null, higherIsBetter)) {
       cellByAthleteTest.set(key, { test_definition_id: r.test_definition_id, value: r.value, date: r.test_date, isPb: true });
     }
   }
@@ -179,8 +193,8 @@ export async function fetchTestByTest(db: Db, orgId: string, groupIds: readonly 
   for (const r of filtered) {
     const key = `${r.athlete_id}:${r.side ?? ''}`;
     const existing = bestBySlot.get(key);
-    const beatsExisting = !existing || (definition.higher_is_better ? r.value > existing.value : r.value < existing.value);
-    if (beatsExisting) bestBySlot.set(key, r);
+    // Shared beatsBest(), same reason as fetchTestingByAthlete above.
+    if (beatsBest(r.value, existing?.value ?? null, definition.higher_is_better)) bestBySlot.set(key, r);
   }
   const deduped = [...bestBySlot.values()];
 

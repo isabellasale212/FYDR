@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
+import { PrintButton } from '@/components/PrintButton/PrintButton';
 import { ReportPager } from '@/components/ReportPager/ReportPager';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchTestByTest, fetchTestLongitudinal, fetchTestingByAthlete } from '@/lib/queries/testingReport';
@@ -71,6 +72,17 @@ export default async function TestingReportPage({ searchParams }: { searchParams
           >
             {selectedDefinition ? `+ Log a ${selectedDefinition.name} result` : '+ Log a result'}
           </Link>
+          {/* The coach asked for "a print and download button ... at the top
+            * right corner". Download already existed here as the two Export
+            * links below; Print was the genuinely missing half. PrintButton
+            * runs window.print() through base.css's existing @media print
+            * block, so there is no separate print view to keep in sync —
+            * with one real caveat this page has and the others don't: the
+            * report is paginated by ReportPager, so a print captures the
+            * tab currently open ("By athlete" or "By test"), not both. That
+            * is the honest behaviour of printing what is on screen; the PDF
+            * export is the one that contains everything. */}
+          <PrintButton />
           <a href={`/reports/testing/export?${selectedTestId ? `test=${selectedTestId}${groupQuery}` : groupQuery.replace('&', '')}`} className="btn-ghost">
             Export CSV
           </a>

@@ -90,7 +90,19 @@ export const TYPE_STYLE: Record<DbSessionType, TypeStyle> = {
   testing: { tone: 'var(--good)', bg: 'rgb(var(--good-rgb) / 0.14)', bc: 'rgb(var(--good-rgb) / 0.35)' },
   match: { tone: 'var(--bad)', bg: 'rgb(var(--bad-rgb) / 0.1)', bc: 'rgb(var(--bad-rgb) / 0.32)' },
   meeting: { tone: 'rgb(var(--ink-rgb) / 0.3)', bg: 'rgb(var(--ink-rgb) / 0.04)', bc: 'var(--border)' },
-  recovery: { tone: 'var(--good)', bg: 'rgb(var(--good-rgb) / 0.1)', bc: 'rgb(var(--good-rgb) / 0.3)' },
+  /* Recovery was --good, the same cyan as testing directly above it, because
+   * SCHEDULE-SPEC.md §1 gives both types that colour. The light-theme handoff
+   * §6 gives Recovery its own slate (--domain-recovery) as a distinct domain,
+   * and taking it resolves a real ambiguity the spec left behind rather than
+   * only satisfying the handoff: a testing block and a recovery block sitting
+   * next to each other in the grid were the same colour. The handoff is the
+   * later of the two documents and is what the club asked for here, so it
+   * wins — noted rather than done quietly, per CLAUDE.md §5. */
+  recovery: {
+    tone: 'var(--domain-recovery)',
+    bg: 'rgb(var(--domain-recovery-rgb) / 0.14)',
+    bc: 'rgb(var(--domain-recovery-rgb) / 0.4)',
+  },
 };
 
 /* §6's EXPECTS map, keys translated to this schema's real session_type

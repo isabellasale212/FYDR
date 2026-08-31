@@ -10,7 +10,13 @@ import { BodyWeightPanel } from '@/components/BodyWeightPanel/BodyWeightPanel';
 import { SetAvailabilityFormCoach } from '@/components/SetAvailabilityFormCoach/SetAvailabilityFormCoach';
 import { EntryCorrectionPanel } from '@/components/EntryCorrectionPanel/EntryCorrectionPanel';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
-import { fetchPlayerProfile, bandTone, type Tone } from '@/lib/queries/playerProfile';
+import {
+  fetchPlayerProfile,
+  bandTone,
+  bandIndex,
+  BAND_SHADING_MIN_N,
+  type Tone,
+} from '@/lib/queries/playerProfile';
 import { fetchBodyCompositionEntries } from '@/lib/queries/bodyComposition';
 import { fetchCurrentSeason } from '@/lib/queries/schedule';
 import {
@@ -529,8 +535,26 @@ export default async function AthletePage({
                 </p>
               </div>
 
+              {/* Light-theme handoff §7's suppression notice. Shown only when
+                  at least one row actually had its tint withheld, and it says
+                  the percentiles are unchanged because they are — the row
+                  still shows its band label, its bar and its n. */}
+              {athleticism.rows.some((r) => r.pct !== null && r.n < BAND_SHADING_MIN_N) ? (
+                <p className="pp-bench-suppressed">
+                  Row shading is off where fewer than {BAND_SHADING_MIN_N} players have a result — a
+                  percentile against three team-mates shades further than it should. The percentiles
+                  themselves are unchanged.
+                </p>
+              ) : null}
+
               {athleticism.rows.map((row) => (
-                <div className="pp-bench-row" key={row.testDefinitionId}>
+                <div
+                  className="pp-bench-row"
+                  key={row.testDefinitionId}
+                  data-band={
+                    row.pct !== null && row.n >= BAND_SHADING_MIN_N ? bandIndex(row.pct) : undefined
+                  }
+                >
                   <div className="pp-bench-top">
                     <span className="pp-bench-name">{row.name}</span>
                     <span className="mono pp-bench-value">

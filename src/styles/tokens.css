@@ -22,7 +22,13 @@
 :root {
   --accent: #1f6fea;
   --accent2: #33b6ff;
-  --good: #4dcbb2;
+  /* Light-theme handoff §5: Good is #4fd6ff. Was #4dcbb2 (teal) site-wide with
+     three scoped blocks (.phone, .nutrition-workspace, .sg) overriding it to
+     this cyan because each of their specs named the cyan explicitly. The
+     handoff settles it for the whole product, so the override blocks that used
+     to sit below the dark theme are gone — one value, one place. Dark already
+     read as cyan through those blocks; it now does so everywhere. */
+  --good: #4fd6ff;
   --warn: #f6ab2f;
   --bad: #f15a4a;
   --highlight: #f5c518;
@@ -65,7 +71,7 @@
      triplet-plus-alpha pattern actually working. */
   --accent-rgb: 31 111 234;
   --accent2-rgb: 51 182 255;
-  --good-rgb: 77 203 178;
+  --good-rgb: 79 214 255;
   --warn-rgb: 246 171 47;
   --bad-rgb: 241 90 74;
   --highlight-rgb: 245 197 24;
@@ -81,10 +87,39 @@
   --ink-rgb: 16 18 23;
 
   /* §4.4. The status pill fill alpha. Raised from 0.16 so the fill separates
-     under dichromacy; the text tokens in §3.7 are derived against this value. */
+     under dichromacy; the text tokens in §3.7 are derived against this value.
+     The light-theme handoff §5 gives three per-tone fills rather than one
+     shared alpha — good 0.22 (unchanged, so it stays the default every pill
+     inherits), warn 0.28, bad 0.24. Amber and red need more fill than cyan to
+     read as the same weight of tint, which is the same dichromacy argument
+     that raised the shared value from 0.16 in the first place. */
   --pill-fill-alpha: 0.22;
+  --pill-fill-alpha-warn: 0.28;
+  --pill-fill-alpha-bad: 0.24;
 
-  /* §2.6 radius, §2.7 spacing, §2.8 motion. */
+  /* Domain colour-coding, light-theme handoff §6: "used to distinguish where a
+     number came from. One dot, bar segment, or tint per domain." Four of the
+     five are existing tokens at identical values, so they alias rather than
+     restate — a second literal for the same colour is how --gym and --highlight
+     nearly became two colours. Only Recovery is a genuinely new value, and it
+     is single-valued (a mid slate that reads on both grounds) like --gym above
+     for the same reason: it is painted as a dot or a tint, never as text. */
+  --domain-gym: var(--gym);
+  --domain-pitch: var(--accent2);
+  --domain-testing: var(--good);
+  --domain-recovery: #8a94b8;
+  /* §4.5's triplet convention: the schedule grid tints a recovery block at
+     0.14 and outlines it at 0.4, and neither may restate the hex. Only
+     Recovery needs one — the other four domains alias tokens that already
+     have their triplet. */
+  --domain-recovery-rgb: 138 148 184;
+  --domain-medical: var(--bad);
+
+  /* §2.6 radius, §2.7 spacing, §2.8 motion.
+     --r-band is the handoff's heat/band cell radius; its --r-ctrl (12px) is
+     this file's existing --r-field and its --r-round (50%) is a literal every
+     dot and dial already writes inline, so neither is restated here. */
+  --r-band: 7px;
   --r-toggle: 9px;
   --r-field: 12px;
   --r-tab: 14px;
@@ -97,6 +132,13 @@
   --pad-field: 12px 14px;
   --t-state: 0.15s ease;
   --t-press: 0.08s ease;
+
+  /* Handoff §9 and §10. State opacities and the one blur radius the theme
+     permits (the sticky group-filter bar and the athlete tab bar, nowhere
+     else). Single valued: an opacity is not a colour and does not flip. */
+  --o-disabled: 0.45;
+  --o-gated: 0.62;
+  --blur: 14px;
 }
 
 /* ---------------------------------------------------------------------------
@@ -106,6 +148,10 @@
 :root[data-theme='light'] {
   --bg: #eaedf1;
   --surf: #ffffff;
+  /* The desk behind the app frame, and any inset well. Light-theme handoff §1.
+     Distinct from --surf2 (#f3f5f8), which is a RAISED alt surface: this one
+     sits below --bg, --surf2 sits above it. */
+  --surf-sunken: #dfe3e9;
   --surf2: #f3f5f8;
   --elev: #ffffff;
   --text: #13161c;
@@ -114,27 +160,72 @@
   --border: rgba(16, 18, 23, 0.085);
   --border-strong: rgba(16, 18, 23, 0.52);
   --hair: rgba(16, 18, 23, 0.05);
-  --track: rgba(16, 18, 23, 0.07);
+  /* Handoff §3 raises the unfilled track from 0.07 to 0.10 so a bar reads as
+     an empty measure rather than as nothing, and adds --tick for a reference
+     marker ON that track (the median mark), which has to out-read it. */
+  --track: rgba(16, 18, 23, 0.1);
+  --tick: rgba(16, 18, 23, 0.22);
   --barfill: rgba(16, 18, 23, 0.155);
   --field: #f0f2f5;
   --shadow: 0 1px 3px rgba(16, 18, 23, 0.08);
 
-  /* §3.7, a coloured label on a plain surface, 4.5:1 against --bg. */
+  /* §3.7, a coloured label on a plain surface, 4.5:1 against --bg.
+     Good and Bad take the light handoff's own on-*-strong values (§5). Warn
+     does NOT — see the note below --warn-text. */
   --accent-text: #0065de;
   --accent2-text: #0070b3;
-  --good-text: #007967;
+  --good-text: #0d7a96;
+  /* HANDOFF DEVIATION, deliberate. The handoff's on-warn-strong is #b07d0a,
+     which measures 3.63:1 on --surf and 3.09:1 on --bg — below WCAG AA's
+     4.5:1 for the small bold status words this token is for, and below it on
+     the handoff's own 40-59th band wash too (3.38:1). The handoff's central
+     rule is that a semantic colour is never used as text *because* #f6ab2f
+     fails contrast; #b07d0a fails the same test less obviously. This file's
+     existing derivation is held instead: same hue family, 5.36:1 on --surf,
+     4.56:1 on --bg. Every other value in that table is applied as given. */
   --warn-text: #995d00;
-  --bad-text: #c6332b;
+  --bad-text: #8a2418;
   --highlight-fg: #876600;
   --avatar-text-fg: #2a68c6;
 
-  /* §3.7, text on that colour's own 22% tint. */
+  /* §3.7, text on that colour's own tint — the handoff's on-* column. */
   --accent-pill-text: #0051c6;
   --accent2-pill-text: #0064a6;
-  --good-pill-text: #00705c;
-  --warn-pill-text: #905600;
-  --bad-pill-text: #b31e1e;
+  --good-pill-text: #0d5f75;
+  --warn-pill-text: #6b4708;
+  --bad-pill-text: #7a1f14;
   --highlight-pill-text: #7f6000;
+
+  /* Handoff §4 and §5. Tints and outlines, in ascending strength. Composed
+     from the -rgb triplets above so no alpha tint restates a hex (§4.5), and
+     so a tone's wash follows its base automatically.
+
+     Urgency is a coloured 1px border plus its wash — never a heavier shadow,
+     a larger radius, or a scale transform. There is exactly one --shadow. */
+  --wash-accent-soft: rgb(var(--accent-rgb) / 0.07);
+  --wash-accent: rgb(var(--accent-rgb) / 0.12);
+  --wash-accent-strong: rgb(var(--accent-rgb) / 0.16);
+  --border-accent: rgb(var(--accent-rgb) / 0.5);
+  --border-accent-soft: rgb(var(--accent-rgb) / 0.42);
+  --border-hover: rgb(var(--accent-rgb) / 0.4);
+  --ring-accent: 0 0 0 3px rgb(var(--accent-rgb) / 0.16);
+
+  --wash-good: rgb(var(--good-rgb) / 0.13);
+  --border-good: rgb(var(--good-rgb) / 0.5);
+  --wash-warn: rgb(var(--warn-rgb) / 0.16);
+  --border-warn: rgb(var(--warn-rgb) / 0.6);
+  --wash-bad: rgb(var(--bad-rgb) / 0.13);
+  --border-bad: rgb(var(--bad-rgb) / 0.55);
+
+  /* Handoff §7. A benchmark row carries its percentile band as a row tint, so
+     a list colour-codes top to bottom. Four bands, not the three the band
+     LABEL uses: 0-19 and 20-39 share a colour and separate on strength. The
+     bar fill stays the base tone; only the row takes the wash. Suppressed
+     below five subjects with data — see .pp-bench-row in base.css. */
+  --band-1-wash: rgb(var(--bad-rgb) / 0.13);
+  --band-2-wash: rgb(var(--bad-rgb) / 0.07);
+  --band-3-wash: rgb(var(--warn-rgb) / 0.11);
+  --band-4-wash: rgb(var(--good-rgb) / 0.14);
 
   /* Audit S7/finding 22: was single-valued in §2.2 at #4a5578 — 6.25:1 here in
      light, but only 2.13:1 once the same literal rendered against dark's --bg
@@ -187,14 +278,18 @@
      than the existing --warn-text/--warn-pill-text derivations, which are
      for a different surface (a status pill's own tint, or plain body text). */
   --lb-rank1: #7a6205;
-  /* The Standard lens's "met" checkmark. Coincidentally the same literal
-     value as ATHLETE-APP-SPEC.md's .phone --good-text override in this same
-     file — declared independently here since this is the staff surface, not
-     a reason to reach into that scoped block. */
+  /* The Standard lens's "met" checkmark. SUPERSEDED IN VALUE, KEPT AS A NAME:
+     this was declared independently of the old .phone --good-text override it
+     coincidentally matched, and since the light-theme handoff made #4fd6ff the
+     product's Good it is now also, exactly, --good-pill-text in light. Left as
+     its own token rather than pointed at --good-pill-text because the two are
+     equal by the handoff's arithmetic, not by intent — this one is a fixed
+     single-valued mark on the testing wall, --good-pill-text is theme-split. */
   --lb-standard-met: #0d5f75;
-  /* "Meets the standard" tint, rgba(79,214,255,0.2) — the spec's own #4fd6ff
-     cyan, distinct from the staff --good (#4dcbb2 teal) it would otherwise be
-     tempting to reuse. */
+  /* "Meets the standard" tint, rgba(79,214,255,0.2). Was called out here as
+     the spec's own cyan, "distinct from the staff --good (#4dcbb2 teal)" —
+     no longer distinct from anything: --good-rgb is this triplet now. Kept
+     for the same reason as --lb-standard-met above. */
   --lb-standard-met-rgb: 79 214 255;
   /* The selected wall row's sticky name-cell background, a flat literal the
      spec gives directly rather than as a computed alpha-over-white tint. */
@@ -233,6 +328,7 @@
 :root[data-theme='dark'] {
   --bg: #182241;
   --surf: #171e36;
+  --surf-sunken: #121a33;
   --surf2: #1a2340;
   --elev: #1a2340;
   --text: #e9edfa;
@@ -242,13 +338,14 @@
   --border-strong: #657199;
   --hair: rgba(255, 255, 255, 0.055);
   --track: rgba(255, 255, 255, 0.12);
+  --tick: rgba(255, 255, 255, 0.26);
   --barfill: rgba(255, 255, 255, 0.19);
   --field: #1a2340;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 
   --accent-text: #4f85ff;
   --accent2-text: #33b6ff;
-  --good-text: #4dcbb2;
+  --good-text: #4fd6ff;
   --warn-text: #f6ab2f;
   --bad-text: #f15a4a;
   --highlight-fg: #f5c518;
@@ -256,10 +353,47 @@
 
   --accent-pill-text: #699bff;
   --accent2-pill-text: #33b6ff;
-  --good-pill-text: #4dcbb2;
+  --good-pill-text: #4fd6ff;
   --warn-pill-text: #f6ab2f;
   --bad-pill-text: #ff7460;
   --highlight-pill-text: #f5c518;
+
+  /* DARK VALUES DERIVED HERE, NOT SUPPLIED. The light-theme handoff is
+     light-only; every wash, border and tint alpha below is a derivation from
+     its light counterpart, not a designer measurement, and the two rules used
+     to derive them are:
+       1. Match perceived tint STRENGTH, not the number. The same alpha of a
+          bright tone lifts a dark ground far more than it tints white, so the
+          alphas here are mostly LOWER than light's, chosen so a wash separates
+          from --surf by roughly the same luminance ratio it does in light
+          (~1.07-1.16). A literal copy of light's 0.13/0.16 would have made
+          dark's rows shout.
+       2. Never let a wash break the text that sits on it. --bad-text (#f15a4a)
+          measures only 4.94:1 on plain --surf in dark, so any red wash under
+          it eats the AA margin: 0.08 holds 4.54:1, 0.10 already drops to
+          4.43:1. That is what caps --wash-bad and --band-1-wash here, and it
+          is why they are the two values furthest from their light siblings.
+     Borders and the focus ring move the other way, up rather than down: a
+     1px outline and a 3px ring have to survive on a dark ground. */
+  --wash-accent-soft: rgb(var(--accent-rgb) / 0.1);
+  --wash-accent: rgb(var(--accent-rgb) / 0.16);
+  --wash-accent-strong: rgb(var(--accent-rgb) / 0.22);
+  --border-accent: rgb(var(--accent-rgb) / 0.62);
+  --border-accent-soft: rgb(var(--accent-rgb) / 0.52);
+  --border-hover: rgb(var(--accent-rgb) / 0.52);
+  --ring-accent: 0 0 0 3px rgb(var(--accent-rgb) / 0.34);
+
+  --wash-good: rgb(var(--good-rgb) / 0.07);
+  --border-good: rgb(var(--good-rgb) / 0.55);
+  --wash-warn: rgb(var(--warn-rgb) / 0.08);
+  --border-warn: rgb(var(--warn-rgb) / 0.62);
+  --wash-bad: rgb(var(--bad-rgb) / 0.08);
+  --border-bad: rgb(var(--bad-rgb) / 0.6);
+
+  --band-1-wash: rgb(var(--bad-rgb) / 0.08);
+  --band-2-wash: rgb(var(--bad-rgb) / 0.045);
+  --band-3-wash: rgb(var(--warn-rgb) / 0.08);
+  --band-4-wash: rgb(var(--good-rgb) / 0.07);
 
   /* 4.99:1 vs --bg, 4.94:1 vs --elev (live-measured) — comfortably over the
      4.5:1 this text (and the glyph border it doubles as) needs, dimmer than
@@ -287,83 +421,27 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Athlete app override. ATHLETE-APP-SPEC.md §1 states a "Good" tint of
-   #4fd6ff, a paler cyan, and calls it out by name as distinct from the
-   staff --good (#4dcbb2, teal) — deliberate, not a typo: this app's phone
-   surface and its desk surface never render side by side, so there is no
-   inconsistency for anyone to spot between them. Scoped to .phone (the
-   athlete shell's own root) the same way .dark-tokens scopes a whole
-   theme, per §2.4's own pattern, rather than changing the site-wide value.
-   Light's derived text/pill-text (#0d5f75) is the literal value the spec
-   uses everywhere it shows Good as a foreground — the pill fg, the done
-   checkmark, the session "✓ submitted" lines — so both derived tokens
-   share it rather than being computed separately. Dark has no literal
-   spec value to match (the spec renders one theme only); it follows this
-   file's own existing convention for the other four semantic colours,
-   where a bright fill reads directly as its own dark-theme text colour. */
-.phone {
-  --good: #4fd6ff;
-  --good-rgb: 79 214 255;
-  --good-text: #0d5f75;
-  --good-pill-text: #0d5f75;
-}
-:root[data-theme='dark'] .phone,
-.dark-tokens .phone {
-  --good-text: #4fd6ff;
-  --good-pill-text: #4fd6ff;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .phone {
-    --good-text: #4fd6ff;
-    --good-pill-text: #4fd6ff;
-  }
-}
+   REMOVED: the .phone, .nutrition-workspace and .sg "Good is cyan" overrides.
+   Three specs (ATHLETE-APP-SPEC.md §1, NUTRITION-SPEC.md §1, SCHEDULE-SPEC.md
+   §1) each independently named #4fd6ff as their own Good and each got a scoped
+   block overriding the staff-wide #4dcbb2 teal, on the reasoning that those
+   surfaces never render side by side so nobody could spot the inconsistency.
 
-/* NUTRITION-SPEC.md §1's colour table states Good as #4fd6ff, the same paler cyan
- * as .phone above and by the same reasoning: this is a staff screen, but its own
- * spec calls the value out explicitly as distinct from the staff-wide --good
- * (#4dcbb2, teal), and — like .phone — this workspace never renders beside another
- * screen that would make the inconsistency visible. Scoped to .nutrition-workspace,
- * the workspace grid's own root class, not the whole /nutrition page (the topbar and
- * group filter above it stay on the ordinary staff palette). Space-separated rgb
- * triplet, not comma-separated — see --accent-rgb's own comment above for why a
- * comma here silently turns every tint on this screen transparent.
- *
- * SCHEDULE-SPEC.md §1 makes the identical override for the identical reason,
- * scoped to .sg (that screen's own root) instead — not a coincidence: §6 of that
- * spec embeds the real athlete Today-tab row inside the selected-session panel,
- * so one token value most honestly represents that the schedule grid's Testing/
- * Recovery blocks and the athlete app's own Good tint are the same colour by
- * design. Both screens were built independently and reached the same scoped-
- * override pattern .phone set first; kept as two sibling blocks rather than
- * merged into one selector so each stays self-contained and removable on its
- * own. */
-.nutrition-workspace,
-.sg {
-  --good: #4fd6ff;
-  --good-rgb: 79 214 255;
-  --good-text: #0d5f75;
-  --good-pill-text: #0d5f75;
-}
-:root[data-theme='dark'] .nutrition-workspace,
-.dark-tokens .nutrition-workspace,
-:root[data-theme='dark'] .sg,
-.dark-tokens .sg {
-  --good-text: #4fd6ff;
-  --good-pill-text: #4fd6ff;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .nutrition-workspace,
-  :root:not([data-theme]) .sg {
-    --good-text: #4fd6ff;
-    --good-pill-text: #4fd6ff;
-  }
-}
+   The light-theme handoff §5 makes #4fd6ff the product's Good outright, so the
+   thing being worked around no longer exists: --good is cyan at :root, and
+   light's derived pair is now the handoff's own (--good-text #0d7a96 for a
+   label on a plain surface, --good-pill-text #0d5f75 for text on the tint —
+   the value all three scoped blocks used for both). Keeping the blocks would
+   have pinned those three screens to the pill value in places the rest of the
+   app now uses the stronger one, which is the inconsistency the overrides
+   existed to prevent, only inverted.
+   --------------------------------------------------------------------------- */
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     --bg: #182241;
     --surf: #171e36;
+    --surf-sunken: #121a33;
     --surf2: #1a2340;
     --elev: #1a2340;
     --text: #e9edfa;
@@ -373,13 +451,14 @@
     --border-strong: #657199;
     --hair: rgba(255, 255, 255, 0.055);
     --track: rgba(255, 255, 255, 0.12);
+    --tick: rgba(255, 255, 255, 0.26);
     --barfill: rgba(255, 255, 255, 0.19);
     --field: #1a2340;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 
     --accent-text: #4f85ff;
     --accent2-text: #33b6ff;
-    --good-text: #4dcbb2;
+    --good-text: #4fd6ff;
     --warn-text: #f6ab2f;
     --bad-text: #f15a4a;
     --highlight-fg: #f5c518;
@@ -387,10 +466,34 @@
 
     --accent-pill-text: #699bff;
     --accent2-pill-text: #33b6ff;
-    --good-pill-text: #4dcbb2;
+    --good-pill-text: #4fd6ff;
     --warn-pill-text: #f6ab2f;
     --bad-pill-text: #ff7460;
     --highlight-pill-text: #f5c518;
+
+    /* Mirror of the .dark-tokens block above; see its comment for how these
+       alphas were derived. Kept literal rather than factored out because this
+       whole block is already a deliberate duplicate (§2.4's three delivery
+       routes) and a half-shared dark theme is worse than a fully repeated one. */
+    --wash-accent-soft: rgb(var(--accent-rgb) / 0.1);
+    --wash-accent: rgb(var(--accent-rgb) / 0.16);
+    --wash-accent-strong: rgb(var(--accent-rgb) / 0.22);
+    --border-accent: rgb(var(--accent-rgb) / 0.62);
+    --border-accent-soft: rgb(var(--accent-rgb) / 0.52);
+    --border-hover: rgb(var(--accent-rgb) / 0.52);
+    --ring-accent: 0 0 0 3px rgb(var(--accent-rgb) / 0.34);
+
+    --wash-good: rgb(var(--good-rgb) / 0.07);
+    --border-good: rgb(var(--good-rgb) / 0.55);
+    --wash-warn: rgb(var(--warn-rgb) / 0.08);
+    --border-warn: rgb(var(--warn-rgb) / 0.62);
+    --wash-bad: rgb(var(--bad-rgb) / 0.08);
+    --border-bad: rgb(var(--bad-rgb) / 0.6);
+
+    --band-1-wash: rgb(var(--bad-rgb) / 0.08);
+    --band-2-wash: rgb(var(--bad-rgb) / 0.045);
+    --band-3-wash: rgb(var(--warn-rgb) / 0.08);
+    --band-4-wash: rgb(var(--good-rgb) / 0.07);
 
     --tab-inactive: #8590bb;
 
@@ -442,6 +545,7 @@
   .dark-tokens {
     --bg: #eaedf1;
     --surf: #ffffff;
+    --surf-sunken: #dfe3e9;
     --surf2: #f3f5f8;
     --elev: #ffffff;
     --text: #13161c;
@@ -450,20 +554,45 @@
     --border: rgba(16, 18, 23, 0.085);
     --border-strong: rgba(16, 18, 23, 0.52);
     --hair: rgba(16, 18, 23, 0.05);
-    --track: rgba(16, 18, 23, 0.07);
+    --track: rgba(16, 18, 23, 0.1);
+    --tick: rgba(16, 18, 23, 0.22);
     --barfill: rgba(16, 18, 23, 0.155);
     --shadow: none;
 
     --accent-text: #0065de;
     --accent2-text: #0070b3;
-    --good-text: #007967;
+    --good-text: #0d7a96;
     --warn-text: #995d00;
-    --bad-text: #c6332b;
+    --bad-text: #8a2418;
 
     --accent-pill-text: #0051c6;
     --accent2-pill-text: #0064a6;
-    --good-pill-text: #00705c;
-    --warn-pill-text: #905600;
-    --bad-pill-text: #b31e1e;
+    --good-pill-text: #0d5f75;
+    --warn-pill-text: #6b4708;
+    --bad-pill-text: #7a1f14;
+
+    /* The washes and band tints have to be forced back to their light values
+       too, for the same reason every token above is: a club printing from a
+       dark session gets light surfaces from this block, and a dark-derived
+       wash composited over white would be the wrong tint on the page. */
+    --wash-accent-soft: rgb(var(--accent-rgb) / 0.07);
+    --wash-accent: rgb(var(--accent-rgb) / 0.12);
+    --wash-accent-strong: rgb(var(--accent-rgb) / 0.16);
+    --border-accent: rgb(var(--accent-rgb) / 0.5);
+    --border-accent-soft: rgb(var(--accent-rgb) / 0.42);
+    --border-hover: rgb(var(--accent-rgb) / 0.4);
+    --ring-accent: none;
+
+    --wash-good: rgb(var(--good-rgb) / 0.13);
+    --border-good: rgb(var(--good-rgb) / 0.5);
+    --wash-warn: rgb(var(--warn-rgb) / 0.16);
+    --border-warn: rgb(var(--warn-rgb) / 0.6);
+    --wash-bad: rgb(var(--bad-rgb) / 0.13);
+    --border-bad: rgb(var(--bad-rgb) / 0.55);
+
+    --band-1-wash: rgb(var(--bad-rgb) / 0.13);
+    --band-2-wash: rgb(var(--bad-rgb) / 0.07);
+    --band-3-wash: rgb(var(--warn-rgb) / 0.11);
+    --band-4-wash: rgb(var(--good-rgb) / 0.14);
   }
 }

@@ -41,14 +41,27 @@ function namedWithReason(entries: SquadStateEntry[]): string {
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
+/* Light-theme handoff §6, domain colour-coding: "one dot, bar segment, or tint
+ * per domain". Three fixes came out of applying it here.
+ *
+ * 1. `recovery` and `meeting` were the SAME raw rgba(16,18,23,0.2) — two
+ *    session types rendering one indistinguishable pip, and two raw colour
+ *    literals in a component, which CLAUDE.md §8 rules out. Recovery takes the
+ *    handoff's own --domain-recovery slate; meeting takes the neutral-ink
+ *    alpha that scheduleGeometry.ts's TYPE_STYLE already gives it, so the two
+ *    surfaces that draw a meeting now draw it the same colour.
+ * 2. `testing` was --accent2 here and --good in TYPE_STYLE. The handoff settles
+ *    it at #4fd6ff, which is --good now, so --domain-testing points at both.
+ * 3. Nothing else moved: training, gym, rehab and match were already the
+ *    handoff's values under the names this codebase gives them. */
 const PIP_COLOR: Record<SessionPip, string> = {
   training: 'var(--accent)',
-  gym: 'var(--gym)',
+  gym: 'var(--domain-gym)',
   rehab: 'var(--warn)',
-  testing: 'var(--accent2)',
+  testing: 'var(--domain-testing)',
   match: 'var(--bad)',
-  recovery: 'rgba(16,18,23,0.2)',
-  meeting: 'rgba(16,18,23,0.2)',
+  recovery: 'var(--domain-recovery)',
+  meeting: 'rgb(var(--ink-rgb) / 0.3)',
 };
 
 const TONE_VAR: Record<string, string> = { good: 'var(--accent2)', accent: 'var(--accent)', accent2: 'var(--accent2)', warn: 'var(--warn)', bad: 'var(--bad)' };

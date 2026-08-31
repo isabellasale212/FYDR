@@ -124,27 +124,55 @@ a {
  *   <768px (sm and below, doc's own "not a supported dashboard size,
  *     renders the mobile layout") the sidebar stacks full-width above the
  *     page content, as before */
+/* The page wash, light-theme handoff §1: two very soft radial washes on the
+ * app background and nothing else — cyan top-right, blue bottom-left. They sit
+ * BEHIND cards, never on them, and receive no pointer events (they are a
+ * background, so there is nothing to receive).
+ *
+ * Three background layers rather than the handoff's two, because this shell
+ * has a sidebar the handoff's full-bleed reference did not. Layer order is
+ * topmost-first:
+ *   1. an opaque --surf strip the width of the rail. This replaces the
+ *      `linear-gradient(to right, --surf 0, --surf 236px, --bg 236px)` that
+ *      used to be the whole background and did the same job — it keeps the
+ *      rail column white below a sticky sidebar that has scrolled — but as a
+ *      sized layer it can sit ON TOP of the washes instead of hiding them,
+ *      which the full-width opaque gradient could not.
+ *   2, 3. the two washes, at the handoff's own sizes, positions and alphas.
+ * --bg is the background-colour underneath all three.
+ *
+ * The alphas (cyan 0.30, blue 0.20) are the handoff's deliberate deviation
+ * from the design system's own 0.10/0.06 — flagged in its Deviations list, not
+ * an error. The composed alphas ride on --accent2-rgb/--accent-rgb rather than
+ * restating #33b6ff/#1f6fea, so the wash follows the brand colours. */
 .app {
   display: grid;
   grid-template-columns: 236px minmax(0, 1fr);
   min-height: 100vh;
-  background: linear-gradient(
-    to right,
-    var(--surf) 0,
-    var(--surf) 236px,
-    var(--bg) 236px
-  );
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(var(--surf), var(--surf)),
+    radial-gradient(900px 480px at 88% -12%, rgb(var(--accent2-rgb) / 0.3), transparent 64%),
+    radial-gradient(700px 400px at -6% 108%, rgb(var(--accent-rgb) / 0.2), transparent 58%);
+  background-size: 236px 100%, auto, auto;
+  background-position: left top, center, center;
+  background-repeat: no-repeat;
 }
 @media (min-width: 768px) and (max-width: 1023px) {
   .app {
     grid-template-columns: 64px minmax(0, 1fr);
-    background: linear-gradient(to right, var(--surf) 0, var(--surf) 64px, var(--bg) 64px);
+    background-size: 64px 100%, auto, auto;
   }
 }
 @media (max-width: 767px) {
   .app {
     grid-template-columns: minmax(0, 1fr);
-    background: var(--bg);
+    /* No rail below 768px — the sidebar stacks full-width above the content —
+     * so the strip layer is dropped and only the two washes remain. */
+    background-image:
+      radial-gradient(900px 480px at 88% -12%, rgb(var(--accent2-rgb) / 0.3), transparent 64%),
+      radial-gradient(700px 400px at -6% 108%, rgb(var(--accent-rgb) / 0.2), transparent 58%);
+    background-size: auto;
   }
 }
 
@@ -262,9 +290,20 @@ a {
   flex: none;
   opacity: 0.85;
 }
+/* Handoff §4 names --wash-accent-strong "selected nav item" outright, so this
+ * is the token's own case. 0.10 -> 0.16 in light, and in dark it picks up the
+ * stronger alpha the derived dark set carries instead of staying at a light
+ * number on a dark ground. */
 .nav-item[aria-current='page'] {
-  background: rgb(var(--accent-rgb) / 0.1);
-  color: var(--accent-text);
+  background: var(--wash-accent-strong);
+  /* --accent-pill-text, not --accent-text. The row is no longer a plain
+     surface once it has a wash on it, and this file's §3.7 split is exactly
+     that distinction: --accent-text is derived for a plain surface,
+     --accent-pill-text for a label on that colour's own tint. Measured on the
+     composited background: light 5.67:1 (was 4.72:1 with --accent-text on the
+     old 0.10 wash), dark 4.76:1 — where --accent-text was already failing at
+     4.35:1 before this change and would have fallen to 3.77:1 after it. */
+  color: var(--accent-pill-text);
 }
 .nav-item[aria-current='page'] .ic {
   opacity: 1;
@@ -386,8 +425,10 @@ a {
   gap: 7px;
   transition: border-color var(--t-state), color var(--t-state);
 }
+/* Handoff §9's hover, exactly: border to --border-hover, text to --text.
+ * Ghost controls brighten only — they never darken, lift, or scale. */
 .toggle:hover {
-  border-color: rgb(var(--accent-rgb) / 0.4);
+  border-color: var(--border-hover);
   color: var(--text);
 }
 .toggle:active {
@@ -550,7 +591,7 @@ a {
  * so "nothing to show" reads differently from "pressed". */
 .squad-chip:disabled,
 .squad-chip[aria-disabled='true'] {
-  opacity: 0.5;
+  opacity: var(--o-disabled);
   cursor: not-allowed;
 }
 .squad-chip:disabled:hover,
@@ -596,13 +637,20 @@ a {
   --pill-rgb: var(--good-rgb);
   --pill-text: var(--good-pill-text);
 }
+/* Handoff §5 gives three per-tone pill fills rather than one shared alpha:
+ * good 0.22 (the existing --pill-fill-alpha default, inherited above), warn
+ * 0.28, bad 0.24. Amber and red need the extra fill to read as the same
+ * weight of tint as cyan. The pill-text values in tokens.css are the
+ * handoff's own on-* pair, derived against these alphas. */
 .pill-warn {
   --pill-rgb: var(--warn-rgb);
   --pill-text: var(--warn-pill-text);
+  --pill-fill-alpha: var(--pill-fill-alpha-warn);
 }
 .pill-bad {
   --pill-rgb: var(--bad-rgb);
   --pill-text: var(--bad-pill-text);
+  --pill-fill-alpha: var(--pill-fill-alpha-bad);
 }
 .pill-accent {
   --pill-rgb: var(--accent-rgb);
@@ -978,6 +1026,27 @@ table.tbl.lb-table td.r {
  * comfortable browser-tab base, and is a no-op everywhere but a real
  * installed-to-home-screen device — the literal 62px/36px/30px/60px never
  * appear here because they are not real numbers for this surface. */
+/* Handoff §1: --surf-sunken is "the desk behind the app frame". This shell is
+ * the only place in the product that has one — a 480px column centred in a
+ * desktop browser tab, with the rest of the viewport left over. Until now that
+ * left-over painted --bg, the same colour as the column, so the frame did not
+ * read as a frame at all; on the desk colour it does, and the column's own two
+ * washes (below) get something to sit against.
+ *
+ * :has() rather than a class on <body>, because the athlete layout renders
+ * .phone and nothing above it. If a browser does not support :has() the whole
+ * rule is dropped and the desk stays --bg — the state it is in today. */
+body:has(.phone) {
+  background: var(--surf-sunken);
+}
+
+/* Same two page washes as the staff shell (see .app above), at the same
+ * alphas and the same corners. The radii are scaled to this column instead of
+ * copied: the handoff's 900x480 and 700x400 were measured against a full-width
+ * desk, and at 900px on a 480px-wide phone column the top-right wash stops
+ * being a corner glow and becomes a flat cyan field over the whole screen.
+ * Sizes are layout, which the handoff puts out of its own scope; the colours
+ * and alphas, which are in scope, are unchanged. */
 .phone {
   position: relative;
   max-width: 480px;
@@ -985,7 +1054,11 @@ table.tbl.lb-table td.r {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(420px 300px at 92% -6%, rgb(var(--accent2-rgb) / 0.3), transparent 64%),
+    radial-gradient(340px 260px at -10% 104%, rgb(var(--accent-rgb) / 0.2), transparent 58%);
+  background-repeat: no-repeat;
 }
 .phone-body {
   flex: 1;
@@ -1043,8 +1116,8 @@ table.tbl.lb-table td.r {
   background: color-mix(in srgb, var(--elev) 94%, transparent);
   border-top: 1px solid var(--border);
   padding: 8px 6px calc(10px + env(safe-area-inset-bottom, 0px));
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
 }
 .athlete-tab {
   display: flex;
@@ -1900,7 +1973,7 @@ table.tbl.lb-table td.r {
 }
 .form-error {
   border-radius: var(--r-field);
-  background: rgb(var(--bad-rgb) / var(--pill-fill-alpha));
+  background: rgb(var(--bad-rgb) / var(--pill-fill-alpha-bad));
   color: var(--bad-pill-text);
   border-inline-start: 2px solid rgb(var(--bad-rgb));
   padding: 10px 12px;
@@ -2265,7 +2338,7 @@ img.av {
 }
 .btn-ghost-pill:disabled,
 .btn-ghost-pill[aria-disabled='true'] {
-  opacity: 0.55;
+  opacity: var(--o-disabled);
   cursor: not-allowed;
 }
 .btn-ghost-pill:disabled:hover,
@@ -2276,7 +2349,7 @@ img.av {
 
 /* -------- §3 Development plan banner -------- */
 .pp-banner {
-  background: rgb(var(--accent-rgb) / 0.07);
+  background: var(--wash-accent-soft);
   border: 1px solid rgb(var(--accent-rgb) / 0.3);
   border-radius: var(--r-card);
   padding: 14px 20px;
@@ -2485,9 +2558,45 @@ img.av {
   font-size: 11.5px;
   color: var(--faint);
 }
+/* Light-theme handoff §7. A benchmark row carries its percentile band as a
+ * full-width row tint, so the list colour-codes top to bottom. The tint bleeds
+ * to the card's edges — hence the negative inline margin matching .pp-card's
+ * own 20px padding, put back as padding so nothing inside moves. The bar fill
+ * and the band label keep the three bandTone() colours; only the row takes the
+ * four-step wash, which is why band 1 and band 2 differ here and nowhere else.
+ *
+ * data-band is absent, not empty, when shading is suppressed (fewer than
+ * BAND_SHADING_MIN_N peers with a result, or no percentile at all), so an
+ * unshaded row renders exactly as it did before this existed. The caption
+ * above the list says so — see .pp-bench-suppressed.
+ *
+ * This is the handoff's own flagged Deviation 2 from the stock design system,
+ * which shades in one place only. */
 .pp-bench-row {
   border-top: 1px solid var(--hair);
   padding: 14px 0 12px;
+}
+.pp-bench-row[data-band] {
+  margin-inline: -20px;
+  padding-inline: 20px;
+  border-radius: var(--r-band);
+}
+.pp-bench-row[data-band='1'] {
+  background: var(--band-1-wash);
+}
+.pp-bench-row[data-band='2'] {
+  background: var(--band-2-wash);
+}
+.pp-bench-row[data-band='3'] {
+  background: var(--band-3-wash);
+}
+.pp-bench-row[data-band='4'] {
+  background: var(--band-4-wash);
+}
+.pp-bench-suppressed {
+  font-size: 11.5px;
+  color: var(--faint);
+  margin: 10px 0 0;
 }
 .pp-bench-top {
   display: grid;
@@ -2528,9 +2637,15 @@ img.av {
   color: var(--faint);
 }
 
-/* -------- §8 Flags card -------- */
+/* -------- §8 Flags card --------
+ * Handoff §5's urgency recipe, which this card is the clearest case of in the
+ * app: a coloured 1px border plus that tone's wash. Never a heavier shadow, a
+ * larger radius or a scale — the card keeps the one --shadow every surface
+ * has. The border was already a warn alpha at 0.55 written out by hand; it is
+ * --border-warn (0.60 light) now, and the wash is what is new. */
 .pp-flags-card {
-  border-color: rgb(var(--warn-rgb) / 0.55);
+  border-color: var(--border-warn);
+  background: var(--wash-warn);
 }
 .pp-flags-list {
   display: flex;
@@ -2883,8 +2998,12 @@ img.av {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(16, 18, 23, 0.25);
+  /* Was `#fff` and a bespoke 0.25 shadow — the file's last raw hex, and a
+   * second elevation level the handoff's §8 "one shadow for the entire theme,
+   * there is no elevation scale" rules out. The knob sits on a solid --accent
+   * track when on, so --on-accent is the token for its face. */
+  background: var(--on-accent);
+  box-shadow: var(--shadow);
   transition: transform 0.15s;
 }
 /* Knob travel = track width − padding×2 − knob width = 54 − 6 − 24 = 24px,
@@ -3077,9 +3196,11 @@ img.av {
  * nothing here is a new literal colour. What's new is layout: dials,
  * scatter plot, sparkline, comparison table and board are all shapes this
  * app didn't have before this screen. */
-.tr-bg {
-  background: radial-gradient(900px 480px at 88% -12%, rgb(var(--accent2-rgb) / 0.1), transparent 62%);
-}
+/* .tr-bg is gone. It was the single 0.10 cyan wash the design system specified
+ * for this one screen, and it was dead CSS — defined here, applied by no JSX in
+ * the app. The light-theme handoff §1 makes the wash a property of the page
+ * background rather than of one report, at a stronger alpha (its own flagged
+ * deviation), so it now lives on .app and .phone and every screen gets it. */
 .tr-mode-switch {
   display: inline-flex;
   background: var(--hair);
@@ -3250,11 +3371,18 @@ img.av {
 .tr-scatter-plot {
   position: relative;
   height: 320px;
-  border-left: 1px solid rgba(16, 18, 23, 0.14);
-  border-bottom: 1px solid rgba(16, 18, 23, 0.14);
+  /* Was four raw rgba(16,18,23,…) literals — the only colours in this file
+   * CLAUDE.md's "style through the tokens, never a raw hex" rule had escaped,
+   * and light-only, so the axes and grid of this plot were invisible in dark
+   * theme. --tick (handoff §3, the reference-marker weight, 0.22 light /
+   * 0.26 dark) for the two axes and --hair (0.05 / 0.055) for the internal
+   * grid are the two existing weights nearest what the literals drew, and
+   * both flip with the theme. */
+  border-left: 1px solid var(--tick);
+  border-bottom: 1px solid var(--tick);
   background-image:
-    linear-gradient(to top, rgba(16, 18, 23, 0.045) 1px, transparent 1px),
-    linear-gradient(to right, rgba(16, 18, 23, 0.045) 1px, transparent 1px);
+    linear-gradient(to top, var(--hair) 1px, transparent 1px),
+    linear-gradient(to right, var(--hair) 1px, transparent 1px);
   background-size: 100% 25%, 20% 100%;
 }
 .tr-scatter-dot {
@@ -3266,8 +3394,10 @@ img.av {
   text-decoration: none;
   display: block;
 }
+/* Handoff §4 names --ring-accent as the "focus/plot ring" — this is the plot
+ * half of that, so it takes the token rather than its own 4px/0.22 ring. */
 .tr-scatter-dot.selected {
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 0.22);
+  box-shadow: var(--ring-accent);
   z-index: 5;
 }
 .tr-scatter-label {
@@ -3361,11 +3491,12 @@ img.av {
  * exists as a token except one: Accent→--accent, Warn→--warn (text uses
  * the existing --warn-text, already a safe-contrast amber close enough to
  * the spec's literal #b07d0a that a second near-duplicate token would be
- * noise), Bad→--bad, and Good (#4fd6ff) is close enough to the existing
- * --accent2 (#33b6ff) — already this design system's "cool/calm" role on
- * both the training report and player profile — that adding a second
- * near-identical cyan token would fight the one this file already has,
- * not add real distinction. Gold is the one genuine addition: tokens.css
+ * noise — and the light-theme handoff's own on-warn-strong is that same
+ * #b07d0a, held back for the same reason plus a measured one, see
+ * --warn-text in tokens.css), Bad→--bad, and Good (#4fd6ff) needed no
+ * decision at all any more: the handoff made #4fd6ff --good itself, so the
+ * --accent2 stand-in this note used to argue for is no longer a stand-in
+ * for anything. Gold is the one genuine addition: tokens.css
  * itself documents --highlight as "decorative, never encodes status", and
  * this spec's gym-session pip is a real status use, so --gym is a new,
  * same-value token rather than a quiet reuse that undoes that rule. */
@@ -3682,10 +3813,17 @@ button.dash-stat {
 }
 .dash-session-card[data-past='true'] {
   opacity: 0.72;
-  border-left-color: rgba(16, 18, 23, 0.14);
+  /* --tick, not the old raw rgba(16,18,23,0.14): same neutral weight, and it
+   * flips with the theme instead of drawing dark ink on a dark ground. */
+  border-left-color: var(--tick);
 }
+/* Urgency on a timeline row: the coloured border only, not the border-plus-
+ * wash of .pp-flags-card. These rows already carry a 3px left border coding
+ * the session type, and a red field behind that would leave two colours
+ * arguing about what the row is. Handoff §5's "never a heavier shadow" is the
+ * part that matters here and is honoured either way. */
 .dash-session-card[data-severe='true'] {
-  border-color: rgb(var(--bad-rgb) / 0.3);
+  border-color: var(--border-bad);
 }
 .dash-session-head {
   display: grid;
@@ -3814,12 +3952,16 @@ button.dash-stat {
   left: 0;
   border-radius: 20px;
 }
+/* The handoff's §3 --tick by name and by definition — "reference marker on a
+ * track (e.g. the median tick)" — so it takes the token instead of the raw
+ * rgba(16,18,23,0.35) it used to hold, which drew dark ink on a dark ground in
+ * dark theme. 0.22 rather than 0.35, the handoff's own measured weight. */
 .dash-load-tick {
   position: absolute;
   top: 0;
   bottom: 0;
   width: 2px;
-  background: rgba(16, 18, 23, 0.35);
+  background: var(--tick);
 }
 
 .dash-squad-bar {
@@ -3889,8 +4031,9 @@ button.dash-stat {
  * glance without duplicating the font stack. Pills, chips, cards, buttons and fields
  * are the same house classes as everywhere else in this app (`.pill`, `.card`,
  * `.btn-primary`, `.field`) per NUTRITION-SPEC.md §1's own "Pills follow the house
- * set" — the Good colour swap that makes them render the spec's cyan instead of the
- * staff-wide teal lives in tokens.css, scoped to `.nutrition-workspace`.
+ * set". The `.nutrition-workspace`-scoped Good colour swap this note used to point
+ * at is gone: the light-theme handoff §5 made #4fd6ff the product-wide --good, so
+ * this screen renders the spec's cyan from :root like every other screen does.
  */
 
 .nutr-mono {
@@ -4287,7 +4430,9 @@ button.dash-stat {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   padding: 9px 13px;
-  background: rgba(16, 18, 23, 0.02);
+  /* An inset well inside the meal card. Composed from --ink-rgb rather than
+   * restating the literal, per tokens.css §4.5. */
+  background: rgb(var(--ink-rgb) / 0.02);
 }
 .nutr-meal-macro-value {
   font-family: var(--font-mono), ui-monospace, monospace;
@@ -4690,7 +4835,8 @@ button.dash-stat {
    Foundations already match this app's design system with zero new colour
    literals beyond the four added to tokens.css (checked --accent/--accent2/
    --good/--warn/--bad/--highlight and their -rgb triplets first): the page
-   background gradient (.tr-bg, already shipped for the training report),
+   background wash (was .tr-bg here; it now lives on .app for every screen,
+   per the light-theme handoff §1 — see the note where .tr-bg used to be),
    the stats card (.dash-stats/.dash-stat*, already shipped for the
    dashboard — reused verbatim in the JSX, no new class), the chip styling
    (.squad-chip, active solid accent / inactive outlined), and the pill
@@ -4876,7 +5022,7 @@ button.dash-stat {
   opacity: 0.65;
 }
 .lbw-chip-disabled {
-  opacity: 0.4;
+  opacity: var(--o-disabled);
   cursor: not-allowed;
 }
 
@@ -5229,8 +5375,8 @@ button.dash-stat {
   margin: 0 -40px 14px;
   padding: 11px 40px;
   background: color-mix(in srgb, var(--bg) 85%, transparent);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
   border-bottom: 1px solid var(--border);
 }
 @media (max-width: 767px) {
@@ -5637,9 +5783,12 @@ button.dash-stat {
   overflow: hidden;
   transition: border-color var(--t-state), box-shadow var(--t-state);
 }
+/* Handoff §9's selected state, exactly: --border-accent outline, and a plotted
+ * element adds --ring-accent. Both were already this block's own literals; as
+ * tokens they now also carry the stronger alphas dark theme needs. */
 .sg-block[data-selected='true'] {
-  border-color: rgb(var(--accent-rgb) / 0.5);
-  box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / 0.16);
+  border-color: var(--border-accent);
+  box-shadow: var(--ring-accent);
 }
 .sg-block[data-edit='true'] {
   border-style: dashed;
@@ -5668,7 +5817,7 @@ button.dash-stat {
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--warn-pill-text);
-  background: rgb(var(--warn-rgb) / var(--pill-fill-alpha));
+  background: rgb(var(--warn-rgb) / var(--pill-fill-alpha-warn));
   border-radius: 6px;
   padding: 1px 5px;
   flex: none;

@@ -112,12 +112,17 @@ export default async function ReportsPage() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14 }}>
         {REPORTS.map((r) => {
           const locked = r.premiumGated && !onPremium;
+          /* Gated is 0.62 opacity plus a badge, never hidden — light-theme
+             handoff §9. This card already did exactly that with a literal
+             0.62 before the handoff named the rule; --o-gated is the same
+             number, now stated once in tokens.css. */
+          const gatedOpacity = locked ? 'var(--o-gated)' : 1;
           return r.available && r.href && hasReportAccess ? (
             <Link
               key={r.key}
               href={r.href}
               className="card"
-              style={{ textDecoration: 'none', color: 'inherit', opacity: locked ? 0.62 : 1 }}
+              style={{ textDecoration: 'none', color: 'inherit', opacity: gatedOpacity }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <p className="card-title" style={{ margin: 0 }}>
@@ -144,7 +149,10 @@ export default async function ReportsPage() {
               </p>
             </Link>
           ) : (
-            <div key={r.key} className="card" style={{ opacity: 0.55 }}>
+            /* Genuinely unavailable rather than gated, so this is the handoff
+               §9 disabled treatment — --o-disabled plus the caption below
+               saying why, which this card already carried. */
+            <div key={r.key} className="card" style={{ opacity: 'var(--o-disabled)' }}>
               <p className="card-title">{r.title}</p>
               <p className="tiny">{r.body}</p>
               <p className="tiny" style={{ marginTop: 8 }}>

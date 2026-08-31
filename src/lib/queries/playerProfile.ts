@@ -139,6 +139,33 @@ export function bandTone(pct: number): Tone {
   return 'bad';
 }
 
+/** The smallest peer group whose distribution is allowed to tint a row.
+ *
+ *  The light-theme handoff §7 sets it: "Suppress shading below five subjects
+ *  with data, and when suppressed say so and state that the numbers themselves
+ *  are unchanged. Small samples make shading lie." A percentile computed
+ *  against three team-mates is arithmetically fine and visually a lie — the
+ *  bottom of a three-man group is the 0th percentile and would take the
+ *  darkest red row in the list. The percentile itself is still shown, still
+ *  correct, and still labelled; only the row tint is withheld. */
+export const BAND_SHADING_MIN_N = 5;
+
+/** §7's four percentile bands, which are NOT the three bandTone() colours: the
+ *  0-19th and 20-39th bands are the same red and differ only in wash strength,
+ *  so a list of poor results still reads top-to-bottom rather than as one flat
+ *  block. Returns 1-4, matching --band-1-wash … --band-4-wash in tokens.css.
+ *
+ *  Deliberately separate from bandTone() rather than folded into it: the LABEL
+ *  colour and the bar fill still come from bandTone's three tones, exactly as
+ *  the handoff's own table has them (bands 1 and 2 share #f15a4a as fill and
+ *  #8a2418 as label). Only the row wash needs the fourth step. */
+export function bandIndex(pct: number): 1 | 2 | 3 | 4 {
+  if (pct >= 60) return 4;
+  if (pct >= 40) return 3;
+  if (pct >= 20) return 2;
+  return 1;
+}
+
 const COMPOSITE_LABEL: Record<Tone, string> = {
   accent2: 'Elite',
   warn: 'Solid',

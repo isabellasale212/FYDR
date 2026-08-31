@@ -1,18 +1,25 @@
 import { renderToBuffer } from '@react-pdf/renderer';
-import { complianceAthletePct, fetchComplianceReport, fetchLatestComplianceExpectationDate, recordReportView } from '@/lib/queries/reports';
+import { complianceAthletePct, fetchComplianceReport, recordReportView } from '@/lib/queries/reports';
 import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { addDays, enumLabel, formatDate, todayIso } from '@/lib/format';
+import { enumLabel, formatDate, todayIso } from '@/lib/format';
+import { complianceAnchor, resolveCompliancePeriod } from '../period';
+import { periodParamsFromUrl } from '@/lib/reportPeriod.server';
 import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
 import { requireReportAccess } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
-const PERIODS = [7, 14, 28] as const;
-
 /** lib/pdf.tsx has the "this was actually buildable" story. Second report
  *  to get a PDF, after Squad weekly proved the pattern — same numbers as
- *  the on-screen report and the CSV export. */
+ *  the on-screen report and the CSV export.
+ *
+ *  "Same numbers" is now enforced rather than asserted: the local
+ *  `PERIODS = [7, 14, 28]` this file used to carry was the third of three
+ *  copies of the same allow-list, and the first one to fall out of step would
+ *  have handed a coach a PDF covering a different window than the screen they
+ *  clicked it from, with the header meta stating the wrong window confidently.
+ *  All three surfaces now resolve through resolveReportPeriod. */
 export async function GET(request: Request) {
   const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
   const url = new URL(request.url);
@@ -20,20 +27,15 @@ export async function GET(request: Request) {
   // filter cookie exactly as the on-screen report does (audit S4), and the
   // header meta names the resolved scope.
   const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
-  const days = PERIODS.includes(Number(url.searchParams.get('days')) as (typeof PERIODS)[number]) ? Number(url.searchParams.get('days')) : 7;
-  // Same ?to= the on-screen report's window picker sets (default: the most
-  // recent day with data, not real today — audit analysis finding 14), so
-  // an exported file matches whatever window the coach was actually
-  // looking at.
-  const toParam = url.searchParams.get('to');
   const realToday = todayIso(timezone);
-  const today =
-    toParam && /^\d{4}-\d{2}-\d{2}$/.test(toParam)
-      ? toParam > realToday
-        ? realToday
-        : toParam
-      : (await fetchLatestComplianceExpectationDate(db, orgId, groupIds)) ?? realToday;
-  const fromDate = addDays(today, -(days - 1));
+  // Same ?to= day anchor the on-screen report uses (default: the most recent
+  // day with data, not real today — audit analysis finding 14), so an exported
+  // file matches the window the coach was actually looking at. `?to=` and
+  // `?period=` stay orthogonal here exactly as they do on the page.
+  const anchor = await complianceAnchor(db, orgId, groupIds, url.searchParams.get('to') ?? undefined, realToday);
+  const today = anchor.to;
+  const period = await resolveCompliancePeriod(db, orgId, today, periodParamsFromUrl(url));
+  const fromDate = period.range.from;
 
   const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchComplianceReport(db, orgId, groupIds, fromDate, today)]);
 
@@ -42,7 +44,7 @@ export async function GET(request: Request) {
       <PdfHeader
         eyebrow={`Compliance · ${orgName}`}
         title="Compliance report"
-        meta={`${formatDate(fromDate, timezone)} to ${formatDate(today, timezone)} · Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes)`}
+        meta={`${period.range.label} · ${formatDate(fromDate, timezone)} to ${formatDate(today, timezone)} · Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes)`}
       />
 
       <PdfTileRow>
@@ -97,7 +99,7 @@ export async function GET(request: Request) {
     claims.userId,
     actorRole,
     'compliance',
-    { from: fromDate, to: today, group_ids: groupIds, format: 'pdf' },
+    { from: fromDate, to: today, period: period.key, group_ids: groupIds, format: 'pdf' },
     'export',
   );
 

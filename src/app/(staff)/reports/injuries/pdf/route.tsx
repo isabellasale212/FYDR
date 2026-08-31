@@ -3,12 +3,11 @@ import { fetchInjuryAvailabilityReport, recordReportView } from '@/lib/queries/r
 import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { addDays, enumLabel, formatDate, todayIso } from '@/lib/format';
+import { enumLabel, formatDate } from '@/lib/format';
 import { PdfHeader, PdfMedicalBanner, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
 import { requireReportAccess } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
-
-const PERIODS = [28, 90, 180, 365] as const;
+import { periodCaveat, periodParamsFromUrl, resolveInjuryPeriod } from '../period';
 
 /** lib/pdf.tsx has the "this was actually buildable" story. Third report
  *  to get a PDF. The coach and medical versions are two different reads,
@@ -27,10 +26,15 @@ export async function GET(request: Request) {
   // the sticky filter cookie exactly as the on-screen report does, and its
   // header meta names the resolved scope.
   const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
-  const days = PERIODS.includes(Number(url.searchParams.get('days')) as (typeof PERIODS)[number]) ? Number(url.searchParams.get('days')) : 28;
 
-  const today = todayIso(timezone);
-  const fromDate = addDays(today, -(days - 1));
+  /* Resolved through the same module as the page and the CSV. A PDF that
+   * meets `?period=season` and quietly falls back to its own 28-day default
+   * is the worst version of this failure — it is a document, handed to
+   * someone else, with a wrong window and nothing on it that says so. */
+  const period = await resolveInjuryPeriod(db, orgId, timezone, periodParamsFromUrl(url));
+  const fromDate = period.from;
+  const today = period.to;
+  const caveat = periodCaveat(period);
 
   const [groups, report] = await Promise.all([
     fetchGroups(db, orgId),
@@ -48,7 +52,7 @@ export async function GET(request: Request) {
       <PdfHeader
         eyebrow={isMedical ? `MEDICAL IN CONFIDENCE · Injury & availability · ${orgName}` : `Injury & availability · ${orgName}`}
         title="Injury & availability report"
-        meta={`${formatDate(fromDate, timezone)} to ${formatDate(today, timezone)} · Scope: ${scopeLabel} (${report.summary.athleteCount} athletes)`}
+        meta={`${period.label} · ${formatDate(fromDate, timezone)} to ${formatDate(today, timezone)} · Scope: ${scopeLabel} (${report.summary.athleteCount} athletes)${caveat ? ` · ${caveat}` : ''}`}
       />
 
       <PdfTileRow>
@@ -113,7 +117,7 @@ export async function GET(request: Request) {
     claims.userId,
     actorRole,
     'injury_availability',
-    { from: fromDate, to: today, group_ids: groupIds, medical: isMedical, format: 'pdf' },
+    { from: fromDate, to: today, period: period.key, group_ids: groupIds, medical: isMedical, format: 'pdf' },
     'export',
   );
 

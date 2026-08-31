@@ -1,5 +1,6 @@
 import type { BodySide, SideMode, TestCategory } from '@/lib/types/database';
 import { fetchGroupAthleteIds, type Db } from './groups';
+import { fetchAllPaged } from './paged';
 
 /* screens/testing.md, cut down hard — see migration 0024's header for the
  * full list of what this pass does and does not build (no batteries, no
@@ -588,16 +589,39 @@ export type MyTestSummary = {
  *  rather than trusting date order. This was the one real place that fix
  *  hadn't been applied yet — the athlete's own PB pill was still wrong. */
 export async function fetchMyTestSummary(db: Db, athleteId: string): Promise<MyTestSummary[]> {
-  const { data, error } = await db
-    .from('test_results')
-    .select('test_definition_id, value, test_date, is_best, test_definitions(name, unit, decimal_places, higher_is_better)')
-    .eq('athlete_id', athleteId)
-    .is('deleted_at', null)
-    .order('test_date', { ascending: false });
-  if (error) throw new Error(error.message);
+  /* PAGED, and this one has no window to widen — it is ALL TIME by design and
+   * always has been (there is no gte on test_date, deliberately: a personal
+   * best is all-time or it is not a personal best). That makes it unbounded by
+   * construction, which is precisely the shape paged.ts exists for, and it was
+   * already exposed before /my-data grew a period control rather than because
+   * of it. A club testing a squad fortnightly across a dozen definitions puts
+   * one athlete past 1000 rows in a few seasons, and the failure would be
+   * silent AND wrong in the worst direction: `.order('test_date', desc)` means
+   * the rows that fall off the end are the OLDEST, so an athlete's real
+   * all-time PB — usually not their most recent result — would quietly become
+   * their best recent one. That is the same "phantom PB regression" this
+   * function's header describes being fixed once already, arriving by a
+   * different route. `id` is the unique tiebreak: a whole squad's results share
+   * one test_date by construction. */
+  const data = await fetchAllPaged<{
+    test_definition_id: string;
+    value: number;
+    test_date: string;
+    is_best: boolean;
+    test_definitions: { name: string; unit: string; decimal_places: number; higher_is_better: boolean } | null;
+  }>((pageFrom, pageTo) =>
+    db
+      .from('test_results')
+      .select('test_definition_id, value, test_date, is_best, test_definitions(name, unit, decimal_places, higher_is_better)')
+      .eq('athlete_id', athleteId)
+      .is('deleted_at', null)
+      .order('test_date', { ascending: false })
+      .order('id')
+      .range(pageFrom, pageTo),
+  );
 
   const byTest = new Map<string, MyTestSummary>();
-  for (const r of data ?? []) {
+  for (const r of data) {
     if (!r.test_definitions) continue;
     const cur = byTest.get(r.test_definition_id) ?? {
       test_definition_id: r.test_definition_id,

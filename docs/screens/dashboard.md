@@ -229,12 +229,45 @@ arm's length, which is how a coach reads a phone propped on a desk while doing s
 
 ---
 
+## Period and `?day=`
+
+**AS BUILT.** The dashboard already had a `?day=` strip (the Monday–Saturday week list, one row per
+day, selecting which day's timeline is shown). `?period=` does not compete with it — the two are
+halves of one control:
+
+| `?period=` | The day-detail column shows | `?day=` |
+|---|---|---|
+| `day` (default) | One day's timeline, with the per-session flag and outstanding-entry detail. Unchanged behaviour. | Picks which day, bounded to the visible week. |
+| `week` | Every session Monday–Saturday, grouped by day, each linking to its session. | Not read. |
+
+The week list renders in **both** modes — it is the day picker, and hiding it in week mode would
+leave no route back to a day. Its rows write `period=day` alongside `day=`, so clicking a day in
+week mode means "drop into this day", which is the only thing it could sensibly mean.
+
+Week mode deliberately omits the per-athlete "affected" rows. Those come from `fetchTimeline`'s
+per-date flag and `gps_records` reads; running six of them to fill a scan-level block would be six
+times the queries for detail nobody reads at week altitude. A caption says so, because an absent
+flag list must never look like an absence of flags.
+
+**What the control does NOT touch, and why that is right rather than a gap.** The headline stats,
+Ready for Saturday, Squad state and Outstanding entries are not day-or-week-scoped by
+configuration — they are scoped by *definition*: "Wellness, today", "RPE, yesterday", availability
+as it stands right now, days to Saturday. Several are already week-scoped ("week load so far",
+sessions left this week). Re-pointing any of them at a period would not widen a window, it would
+change what the number means. The footer states this rather than leaving it implicit.
+
+No query on this screen needed pagination: week mode reads six days of one org's sessions, tens of
+rows, nowhere near PostgREST's 1000-row ceiling. The rule is "page any query whose window can grow
+past the ceiling", not "page everything".
+
+---
+
 ## Components
 
 | Component | Source | Purpose |
 |---|---|---|
 | `GroupFilter` | `06-design-system.md` §6.7 | Global group filter in the header. `variant="trigger"` on mobile, `inline` on web. |
-| `PeriodSelector` | §6.8 | Header. `allowed={['today','thisWeek']}` only. The dashboard is a today screen; longer windows belong in Analytics. |
+| `PeriodSelector` | §6.8 | Header. `allowed={['day','week']}` only (the `today`/`thisWeek` of this table in `RangeKey` vocabulary). The dashboard is a today screen; longer windows belong in Analytics. `month`, `season`, `year` and `all` render **disabled with that reason**, not hidden. Fallback is `day`, stated explicitly because `DEFAULT_RANGE` is `month` and is not legal here. See "Period and `?day=`" below. |
 | `AttentionRow` | **New**, this screen | One athlete plus a generated one-line reason. Composed from `AthleteCard` with a `reason` line and no `trailing` slot. See below. |
 | `AthleteCard` | §6.1 | Base of `AttentionRow`, and used directly in the availability list. |
 | `FlagBadge` | §6.4 | Severity meter plus count on each attention row. |

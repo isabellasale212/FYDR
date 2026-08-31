@@ -183,9 +183,15 @@ function Sparkline({
         <path d={path} fill="none" stroke="var(--accent2)" strokeWidth="2.2" strokeLinejoin="round" />
         <circle cx={x(history.length - 1)} cy={y(last.kg)} r="4" fill={dotColour} />
       </svg>
+      {/* Was the literal string "12 weeks ago", correct only while the window
+        * behind this line was a hardcoded 90 days on /nutrition. That window is
+        * now the coach's own choice (`?period=`), so the axis names the real
+        * first point instead of a fixed number of weeks it can no longer
+        * promise. Derived from the data already in hand — no prop to keep in
+        * sync with the page, and therefore nothing that can drift out of it. */}
       <div className="nutr-sparkline-axis">
-        <span>12 weeks ago</span>
-        <span>today</span>
+        <span>{formatShort(history[0]!.date)}</span>
+        <span>{formatShort(last.date)}</span>
       </div>
     </div>
   );

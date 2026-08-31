@@ -1,5 +1,6 @@
 import type { AppRole, ComplianceDomain, Json } from '@/lib/types/database';
 import { fetchGroupAthleteIds, type Db } from './groups';
+import { fetchAllPaged } from './paged';
 import { fetchNotFullyAvailable, type NotFullyAvailableRow } from './availability';
 
 /* screens/reports.md, cut down hard, then entirely un-cut as the schema
@@ -79,6 +80,26 @@ export type ComplianceReport = {
 
 const REPORT_DOMAINS: ComplianceDomain[] = ['wellness', 'training_rpe', 'gym'];
 
+/** The narrow shapes fetchComplianceReport reads. Declared rather than
+ *  inferred because fetchAllPaged is generic over its row type — same reason
+ *  analytics.ts declares AcwrEntryRow. `id` is not selected: it is only needed
+ *  as the paging tiebreak in the ORDER BY, and PostgREST will order by a column
+ *  the projection does not return. */
+type ComplianceExpectationRow = {
+  athlete_id: string;
+  expectation_date: string;
+  domain: ComplianceDomain;
+  is_required: boolean;
+  waived_reason: string | null;
+};
+
+/** Every column nullable because a `_current` view types them that way
+ *  regardless of the base table's constraints (the same view-typing quirk
+ *  analytics.ts documents). gym_session_logs is a base table and is narrower
+ *  than this, but the three are consumed identically and one shape keeps the
+ *  three paged reads symmetrical. */
+type SubmissionRow = { athlete_id: string | null; entry_date: string | null };
+
 /** The most recent day this org has a real compliance_expectations row for,
  *  in scope. Used to default the report's window sensibly instead of a
  *  rolling "last N days ending real today" that lands on empty real-clock
@@ -95,6 +116,28 @@ export async function fetchLatestComplianceExpectationDate(
   let query = db.from('compliance_expectations').select('expectation_date').eq('org_id', orgId);
   if (scope) query = query.in('athlete_id', scope);
   const { data, error } = await query.order('expectation_date', { ascending: false }).limit(1);
+  if (error) throw new Error(error.message);
+  return data?.[0]?.expectation_date ?? null;
+}
+
+/** The other end of the same lookup: the FIRST day this org has a compliance
+ *  expectation for, which is what `?period=all` resolves its window against.
+ *
+ *  Org-wide, not group-scoped, on purpose — an org-wide earliest date is never
+ *  later than a group-scoped one, so the window it produces can only be wider,
+ *  and over-showing is visible where under-showing is silent. Same "never
+ *  narrower" rule periodFromLegacyDays applies in lib/period.ts.
+ *
+ *  Null for an org with no compliance history at all; resolveRange then
+ *  degrades `all` to the MAX_WINDOW_DAYS floor rather than inventing a start
+ *  date. Called only when the resolved key IS `all`. */
+export async function fetchEarliestComplianceExpectationDate(db: Db, orgId: string): Promise<string | null> {
+  const { data, error } = await db
+    .from('compliance_expectations')
+    .select('expectation_date')
+    .eq('org_id', orgId)
+    .order('expectation_date', { ascending: true })
+    .limit(1);
   if (error) throw new Error(error.message);
   return data?.[0]?.expectation_date ?? null;
 }
@@ -124,15 +167,36 @@ export async function fetchComplianceReport(
     return { summary: [], byAthlete: [], byDay: [], athleteCount: 0, fromDate, toDate };
   }
 
-  const { data: expectations, error: expErr } = await db
-    .from('compliance_expectations')
-    .select('athlete_id, expectation_date, domain, is_required, waived_reason')
-    .eq('org_id', orgId)
-    .in('athlete_id', athleteIds)
-    .gte('expectation_date', fromDate)
-    .lte('expectation_date', toDate)
-    .neq('domain', 'nutrition');
-  if (expErr) throw new Error(expErr.message);
+  /* PAGED, AND THE ONE MOST EXPOSED OF THE FOUR.
+   *
+   * This window used to be a fixed 7, 14 or 28 days from a hard-coded
+   * allow-list; it is now a PeriodSelector offering week, month, season, year
+   * and all. The row count is athletes × days × domains — a 40-athlete squad
+   * with three domains is 120 rows a day, which is over PostgREST's silent
+   * 1000-row ceiling (max_rows, supabase/config.toml) before the NINTH day and
+   * is ~44,000 rows over a season. PostgREST does not error at the ceiling: it
+   * returns exactly 1000 rows that look like a complete answer, and every
+   * denominator on this report would quietly shrink to whatever fitted.
+   *
+   * The order ends in `id` because `.range()` re-runs the query per page and a
+   * tie broken differently between pages duplicates or drops a row — which,
+   * for counters that are summed, is a wrong percentage with nothing to notice
+   * it by. */
+  const expectations = await fetchAllPaged<ComplianceExpectationRow>((pageFrom, pageTo) =>
+    db
+      .from('compliance_expectations')
+      .select('athlete_id, expectation_date, domain, is_required, waived_reason')
+      .eq('org_id', orgId)
+      .in('athlete_id', athleteIds)
+      // expectation_date is a `date` column: fromDate/toDate are compared as
+      // plain YYYY-MM-DD strings, never pushed through dateInTz (rule 5).
+      .gte('expectation_date', fromDate)
+      .lte('expectation_date', toDate)
+      .neq('domain', 'nutrition')
+      .order('expectation_date')
+      .order('id')
+      .range(pageFrom, pageTo),
+  );
 
   // NOT filtered to is_required here. That used to happen — const required =
   // expectations.filter(e => e.is_required) — and it was a real, pre-existing
@@ -146,32 +210,48 @@ export async function fetchComplianceReport(
   // silently always zero regardless of real data (audit analysis finding 19
   // — "hides the waiver distinction it brags about" was literal). Iterating
   // every expectation and trusting the loop's own waived check is the fix.
-  const required = expectations ?? [];
+  const required = expectations;
 
+  /* The three submission reads scale with the window exactly as the
+   * expectations read does — one row per athlete per day each — so all three
+   * page too. They are the numerator: truncating them without truncating the
+   * denominator does not just lose rows, it invents non-compliance. */
   const [wellness, training, gym] = await Promise.all([
-    db
-      .from('wellness_entries_current')
-      .select('athlete_id, entry_date')
-      .in('athlete_id', athleteIds)
-      .gte('entry_date', fromDate)
-      .lte('entry_date', toDate),
-    db
-      .from('training_entries_current')
-      .select('athlete_id, entry_date')
-      .in('athlete_id', athleteIds)
-      .gte('entry_date', fromDate)
-      .lte('entry_date', toDate),
-    db
-      .from('gym_session_logs')
-      .select('athlete_id, entry_date')
-      .in('athlete_id', athleteIds)
-      .gte('entry_date', fromDate)
-      .lte('entry_date', toDate)
-      .eq('status', 'complete'),
+    fetchAllPaged<SubmissionRow>((pageFrom, pageTo) =>
+      db
+        .from('wellness_entries_current')
+        .select('athlete_id, entry_date')
+        .in('athlete_id', athleteIds)
+        .gte('entry_date', fromDate)
+        .lte('entry_date', toDate)
+        .order('entry_date')
+        .order('id')
+        .range(pageFrom, pageTo),
+    ),
+    fetchAllPaged<SubmissionRow>((pageFrom, pageTo) =>
+      db
+        .from('training_entries_current')
+        .select('athlete_id, entry_date')
+        .in('athlete_id', athleteIds)
+        .gte('entry_date', fromDate)
+        .lte('entry_date', toDate)
+        .order('entry_date')
+        .order('id')
+        .range(pageFrom, pageTo),
+    ),
+    fetchAllPaged<SubmissionRow>((pageFrom, pageTo) =>
+      db
+        .from('gym_session_logs')
+        .select('athlete_id, entry_date')
+        .in('athlete_id', athleteIds)
+        .gte('entry_date', fromDate)
+        .lte('entry_date', toDate)
+        .eq('status', 'complete')
+        .order('entry_date')
+        .order('id')
+        .range(pageFrom, pageTo),
+    ),
   ]);
-  if (wellness.error) throw new Error(wellness.error.message);
-  if (training.error) throw new Error(training.error.message);
-  if (gym.error) throw new Error(gym.error.message);
 
   const submittedKey = (athleteId: string | null, date: string | null) => `${athleteId}:${date}`;
   // wellness_entries_current / training_entries_current type every column as
@@ -179,9 +259,9 @@ export async function fetchComplianceReport(
   // analytics.ts) even though a real row is never missing one — submittedKey
   // accepts the nullable shape directly rather than asserting it away.
   const submittedByDomain: Record<ComplianceDomain, Set<string>> = {
-    wellness: new Set((wellness.data ?? []).map((r) => submittedKey(r.athlete_id, r.entry_date))),
-    training_rpe: new Set((training.data ?? []).map((r) => submittedKey(r.athlete_id, r.entry_date))),
-    gym: new Set((gym.data ?? []).map((r) => submittedKey(r.athlete_id, r.entry_date))),
+    wellness: new Set(wellness.map((r) => submittedKey(r.athlete_id, r.entry_date))),
+    training_rpe: new Set(training.map((r) => submittedKey(r.athlete_id, r.entry_date))),
+    gym: new Set(gym.map((r) => submittedKey(r.athlete_id, r.entry_date))),
     nutrition: new Set(),
   };
 
@@ -324,6 +404,31 @@ function mondayOfIso(dateIso: string): string {
   return d.toISOString().slice(0, 10);
 }
 
+/** The earliest onset date this org has an injury for, for the period
+ *  control's "All on record". One row, ordered — not a scan.
+ *
+ *  Deliberately the INJURY table's own earliest date, not
+ *  analytics.ts's fetchEarliestEntryDate (which reads the training or
+ *  wellness view): "all on record" on THIS report means every injury the
+ *  club has recorded, and anchoring it on a wellness entry would start the
+ *  window somewhere unrelated to what the report counts.
+ *
+ *  `onset_date` is a `date` column, so it is compared and returned as a
+ *  plain YYYY-MM-DD string — CLAUDE.md rule 5's other half: nothing here
+ *  goes near dateInTz. */
+export async function fetchEarliestInjuryOnset(db: Db, orgId: string): Promise<string | null> {
+  const { data, error } = await db
+    .from('injuries')
+    .select('onset_date')
+    .eq('org_id', orgId)
+    .is('deleted_at', null)
+    .order('onset_date', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data?.onset_date ?? null;
+}
+
 export async function fetchInjuryAvailabilityReport(
   db: Db,
   orgId: string,
@@ -334,27 +439,61 @@ export async function fetchInjuryAvailabilityReport(
 ): Promise<InjuryAvailabilityReport> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
 
-  const [current, athletesRes] = await Promise.all([
+  /* `current` is deliberately NOT date-bounded and must never become so.
+   * fetchNotFullyAvailable answers "who cannot train RIGHT NOW", from the
+   * live availability row and the open-injury list, with no window at all —
+   * which is why widening this screen's period control cannot make an
+   * unavailable athlete disappear from the Current tab. An athlete whose
+   * injury started before `fromDate` is still unavailable today and still
+   * appears; only the PERIOD SUMMARY and BURDEN figures below are windowed,
+   * and both say so in their own captions. (The PDF's Current section
+   * carries the same sentence for the same reason.) */
+  const [current, athletes] = await Promise.all([
     fetchNotFullyAvailable(db, orgId, groupIds),
-    (async () => {
+    /* Paged: one row per live athlete in the org, bounded only by the club's
+     * own size, and this list is the denominator of availability % — a short
+     * read would silently understate athlete-days and overstate
+     * availability. Ordered by `id` alone because nothing here wants any
+     * other order and `id` is the unique key .range() needs (paged.ts). */
+    fetchAllPaged((from, to) => {
       let q = db.from('athletes').select('id').eq('org_id', orgId).is('deleted_at', null).neq('status', 'left_club');
       if (scope) q = q.in('id', scope);
-      return q;
-    })(),
+      return q.order('id').range(from, to);
+    }),
   ]);
-  if (athletesRes.error) throw new Error(athletesRes.error.message);
-  const athleteIds = (athletesRes.data ?? []).map((a) => a.id);
+  const athleteIds = athletes.map((a) => a.id);
 
-  let injuriesQuery = db
-    .from('injuries')
-    .select('id, athlete_id, body_area, onset_date, actual_return, status')
-    .eq('org_id', orgId)
-    .is('deleted_at', null)
-    .lte('onset_date', toDate);
-  if (athleteIds.length > 0) injuriesQuery = injuriesQuery.in('athlete_id', athleteIds);
-
-  const { data: injuries, error: injErr } = await injuriesQuery;
-  if (injErr) throw new Error(injErr.message);
+  /* PAGED, and it was over the ceiling before the period control ever
+   * widened: this read has no lower date bound by construction (an injury
+   * that started two seasons ago and is still open is still relevant), so it
+   * accumulates with the club's whole injury history and a 1000-row
+   * PostgREST cap would have silently dropped the OLDEST-onset injuries —
+   * exactly the long-running ones that dominate athlete-days lost.
+   *
+   * The `.or()` is the same predicate the `relevant` filter below applies in
+   * JS, pushed into the database so the window actually bounds the read:
+   * an injury is relevant when its end (actual_return, or "still open") is
+   * on or after fromDate, and a null actual_return always qualifies because
+   * its notional end is toDate, which is never before fromDate. It narrows
+   * the fetch without changing the answer; the JS filter stays as the single
+   * statement of the rule.
+   *
+   * Total order ends in `id`: `onset_date` alone ties constantly (a squad
+   * session that injures two players writes two rows with the same date),
+   * and a tie broken differently on two pages double-counts or drops an
+   * injury — which for a SUMMED figure like days lost is a wrong number with
+   * no error and no short page to notice. */
+  const injuries = await fetchAllPaged((from, to) => {
+    let q = db
+      .from('injuries')
+      .select('id, athlete_id, body_area, onset_date, actual_return, status')
+      .eq('org_id', orgId)
+      .is('deleted_at', null)
+      .lte('onset_date', toDate)
+      .or(`actual_return.is.null,actual_return.gte.${fromDate}`);
+    if (athleteIds.length > 0) q = q.in('athlete_id', athleteIds);
+    return q.order('onset_date').order('id').range(from, to);
+  });
 
   // An injury with no actual_return yet is still open — "as of today" for
   // this report's purposes. Every real caller already passes the org's own
@@ -363,7 +502,7 @@ export async function fetchInjuryAvailabilityReport(
   // (`new Date().toISOString().slice(0, 10)`, which reads the wrong day for
   // part of every day the org is ahead of UTC — same bug class as
   // schedule.ts's own dayBounds()/rangeBounds()).
-  const relevant = (injuries ?? []).filter((i) => {
+  const relevant = injuries.filter((i) => {
     const end = i.actual_return ?? toDate;
     return end >= fromDate;
   });

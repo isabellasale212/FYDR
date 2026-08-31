@@ -43,6 +43,18 @@ export async function fetchCheckinForWeek(
   };
 }
 
+/** ROW CEILING: not paged, and provably safe rather than assumed so. `from`/`to`
+ *  are now driven by the shared period model on /my-data (up to MAX_WINDOW_DAYS,
+ *  730) and myDataExport.ts already passes 2000-01-01..2100-01-01, so this read
+ *  is deliberately checked against PostgREST's silent 1000-row cap rather than
+ *  left to luck. `nutrition_checkins_one_live_per_week` (migration 0004) makes
+ *  nutrition_checkins_current hold AT MOST one row per athlete per week, so 730
+ *  days is at most 105 rows and the export's century-wide window is at most
+ *  ~5,200 — which does exceed the cap, but only for a club that has been running
+ *  since the year 2000. That is the same proof-not-assumption standard
+ *  playerProfile.ts applies to fetchWellnessByAthlete: if that unique index is
+ *  ever dropped, or the export window is ever really used at that width, this
+ *  must page. */
 export async function fetchRecentCheckins(
   db: Db,
   athleteId: string,

@@ -1,4 +1,5 @@
 import type { Db } from './groups';
+import { fetchAllPaged } from './paged';
 
 /**
  * The revision chain. Read by both sides — the coach's player profile and the athlete's
@@ -189,17 +190,33 @@ export async function fetchWellnessWithRevisions(
   athleteId: string,
   range: { from: string; to: string },
 ): Promise<WithRevisions<WellnessRevisionRow>[]> {
-  const { data, error } = await db
-    .from('wellness_entries')
-    .select(WELLNESS_COLUMNS)
-    .eq('org_id', orgId)
-    .eq('athlete_id', athleteId)
-    .gte('entry_date', range.from)
-    .lte('entry_date', range.to)
-    .order('entry_date', { ascending: false });
-
-  if (error) throw new Error(error.message);
-  const chains = chainsOf((data ?? []) as unknown as WellnessRevisionRow[]);
+  /* PAGED. The BASE table, not the `_current` view — that is this file's whole
+   * point (see the header) and it is also why the view's bound does not apply.
+   * `wellness_entries_one_live_per_day` (migration 0004) is PARTIAL: it bounds
+   * LIVE rows to one per athlete per day, which is what lets playerProfile.ts
+   * prove fetchWellnessByAthlete needs no paging. Superseded rows are outside
+   * that index entirely, so this read is one-per-day PLUS every correction ever
+   * made, with no ceiling. At the 42-day window this replaced it could not
+   * matter; at MAX_WINDOW_DAYS (730) the base rows alone are within 27% of
+   * PostgREST's silent 1000-row cap before a single correction is counted.
+   *
+   * Descending on entry_date, so a truncated result would have dropped the
+   * OLDEST corrections — losing an athlete's earliest history rather than their
+   * latest, which is quieter and no less wrong. `id` is the unique tiebreak:
+   * several revisions of one day's entry share an entry_date exactly. */
+  const data = await fetchAllPaged<unknown>((pageFrom, pageTo) =>
+    db
+      .from('wellness_entries')
+      .select(WELLNESS_COLUMNS)
+      .eq('org_id', orgId)
+      .eq('athlete_id', athleteId)
+      .gte('entry_date', range.from)
+      .lte('entry_date', range.to)
+      .order('entry_date', { ascending: false })
+      .order('id')
+      .range(pageFrom, pageTo),
+  );
+  const chains = chainsOf(data as WellnessRevisionRow[]);
   return attachAuthors(db, orgId, chains);
 }
 
@@ -213,18 +230,26 @@ export async function fetchTrainingRevisionChains(
   athleteId: string,
   range: { from: string; to: string },
 ): Promise<WithRevisions<TrainingRevisionRow>[]> {
-  const { data, error } = await db
-    .from('training_entries')
-    .select(TRAINING_COLUMNS)
-    .eq('org_id', orgId)
-    .eq('athlete_id', athleteId)
-    .gte('entry_date', range.from)
-    .lte('entry_date', range.to)
-    .order('entry_date', { ascending: false });
+  /* PAGED, for the same reason as fetchWellnessWithRevisions above and with one
+   * more: `training_entries_one_live_per_session` (migration 0004) bounds live
+   * rows per SESSION, not per day, so this table is already several rows a day
+   * for an athlete training twice, before revisions. Descending on entry_date,
+   * `id` as the unique tiebreak — every revision of one RPE entry shares both
+   * the entry_date and the session_id. */
+  const data = await fetchAllPaged<unknown>((pageFrom, pageTo) =>
+    db
+      .from('training_entries')
+      .select(TRAINING_COLUMNS)
+      .eq('org_id', orgId)
+      .eq('athlete_id', athleteId)
+      .gte('entry_date', range.from)
+      .lte('entry_date', range.to)
+      .order('entry_date', { ascending: false })
+      .order('id')
+      .range(pageFrom, pageTo),
+  );
 
-  if (error) throw new Error(error.message);
-
-  return attachAuthors(db, orgId, chainsOf((data ?? []) as unknown as TrainingRevisionRow[]));
+  return attachAuthors(db, orgId, chainsOf(data as TrainingRevisionRow[]));
 }
 
 export type TrainingWithSession = WithRevisions<TrainingRevisionRow> & {

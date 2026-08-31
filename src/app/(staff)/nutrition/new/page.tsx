@@ -47,6 +47,13 @@ export default async function NewNutritionTargetPage() {
       position: null,
       groupIds: [],
       history: massByAthlete.get(a.id) ?? [],
+      // This screen has no period control, so its trend window IS its fetch
+      // window and there is nothing to clip. Stated explicitly because
+      // buildWorkspaceAthlete now requires it: /nutrition fetches WIDER than
+      // its trend (its week navigator can reach further back than the selected
+      // period), so the trend's first day can no longer be inferred from the
+      // rows in hand and every caller has to say which it means.
+      trendFrom: massSince,
       weekStart: today,
       weekEnd: today,
       checkins: [],

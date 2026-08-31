@@ -1,19 +1,20 @@
 import Link from 'next/link';
 import { ReportPager } from '@/components/ReportPager/ReportPager';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
+import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { fetchGroups } from '@/lib/queries/groups';
-import { complianceAthletePct, fetchComplianceReport, fetchLatestComplianceExpectationDate, recordReportView } from '@/lib/queries/reports';
+import { complianceAthletePct, fetchComplianceReport, recordReportView } from '@/lib/queries/reports';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { addDays, enumLabel, formatDate, todayIso } from '@/lib/format';
+import { enumLabel, formatDate, todayIso } from '@/lib/format';
+import { complianceAnchor, complianceQuery, resolveCompliancePeriod } from './period';
+import { periodCaveat, periodParamsFrom, periodSticky } from '@/lib/reportPeriod.server';
 import { requireReportAccess } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
 export const metadata = { title: 'Compliance report · Fydr' };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
-
-const PERIODS = [7, 14, 28] as const;
 
 /** screens/reports.md, report 3 of 5, built in full — see
  *  lib/queries/reports.ts's header for what this pass does and does not cover.
@@ -26,33 +27,48 @@ export default async function ComplianceReportPage({
   const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
-  const days = PERIODS.includes(Number(params.days) as (typeof PERIODS)[number]) ? Number(params.days) : 7;
   const realToday = todayIso(timezone);
-  const requestedTo = typeof params.to === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(params.to) ? params.to : null;
 
-  // No ?to= at all: default to the most recent day this org actually has
-  // expectations for, not real today — a rolling window ending real today
-  // was landing on "0 of 0" whenever the org's own data trails the wall
-  // clock (audit analysis finding 14). Once a coach has explicitly picked a
-  // date (via ?to=, including "today" itself), that choice is respected
-  // even if it's empty — this only changes what the report opens to.
-  const latestDataDate = requestedTo === null ? await fetchLatestComplianceExpectationDate(db, orgId, groupIds) : null;
-  const anchor = requestedTo ?? latestDataDate ?? realToday;
-  const today = anchor > realToday ? realToday : anchor; // never park in the future
-  const fromDate = addDays(today, -(days - 1));
-  const usingLatestDataDefault = requestedTo === null && latestDataDate !== null && today !== realToday;
+  /* TWO ORTHOGONAL CONTROLS, AND THEY STAY ORTHOGONAL.
+   *
+   * `?to=` is the DAY ANCHOR: which day the window ends on. `?period=` is the
+   * WINDOW LENGTH: how far back from that day it reaches. They compose, and
+   * neither resets the other — which is exactly what the hand-rolled chip row
+   * this replaces could not promise. That row built its own href from a fixed
+   * list of keys (`?days=${d}&to=${today}${groupQuery}`), so it preserved
+   * `groups` and `to` and silently dropped every other param on the URL,
+   * including any a future pass adds. PeriodSelector wraps ReportSelectNav,
+   * which rebuilds the next href from the live useSearchParams(), so nothing
+   * can be dropped by omission again. */
+  const anchor = await complianceAnchor(db, orgId, groupIds, params.to, realToday);
+  const today = anchor.to;
+
+  // Resolved against the ANCHOR, not the wall clock — see resolveCompliancePeriod.
+  const period = await resolveCompliancePeriod(db, orgId, today, periodParamsFrom(params));
+  const fromDate = period.range.from;
+  const caveat = periodCaveat(period);
+  const usingLatestDataDefault = anchor.usingLatestData;
 
   const [groups, report] = await Promise.all([
     fetchGroups(db, orgId),
     fetchComplianceReport(db, orgId, groupIds, fromDate, today),
   ]);
 
-  const groupQuery = groupIds.length > 0 ? `&groups=${groupIds.join(',')}` : '';
+  // The RESOLVED key, never the raw URL value — a coerced period must not
+  // travel to the export, or the download covers a window the screen did not
+  // show. Built by the colocated module so the period cannot be the param that
+  // goes missing from a hand-built href.
+  const query = complianceQuery(period.key, today, groupIds);
 
   const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   await recordReportView(db, orgId, claims.userId, actorRole, 'compliance', {
     from: fromDate,
     to: today,
+    // The audit row records the named window as well as its dates: "this coach
+    // opened the whole season" and "this coach opened 3 Feb to 28 Aug" are the
+    // same disclosure but not the same fact about intent, and a report open is
+    // a data disclosure (reports.ts's header).
+    period: period.key,
     group_ids: groupIds,
   });
 
@@ -66,23 +82,31 @@ export default async function ComplianceReportPage({
           <h1>Compliance</h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <a href={`/reports/compliance/export?days=${days}&to=${today}${groupQuery}`} className="btn-ghost">
+          <a href={`/reports/compliance/export?${query}`} className="btn-ghost">
             Export CSV
           </a>
-          <a href={`/reports/compliance/pdf?days=${days}&to=${today}${groupQuery}`} className="btn-ghost">
+          <a href={`/reports/compliance/pdf?${query}`} className="btn-ghost">
             Export PDF
           </a>
         </div>
       </div>
 
       <p className="eyebrow" style={{ marginBottom: 10 }}>
-        {groupScopeLabel(groups, groupIds)} · {orgName} · {formatDate(fromDate, timezone)} to {formatDate(today, timezone)} · {report.athleteCount} athletes
+        {groupScopeLabel(groups, groupIds)} · {orgName} · {period.range.label} · {formatDate(fromDate, timezone)} to{' '}
+        {formatDate(today, timezone)} · {report.athleteCount} athletes
       </p>
+
+      {caveat ? (
+        <p className="sub" style={{ margin: '0 0 10px' }}>
+          {caveat}
+        </p>
+      ) : null}
 
       {usingLatestDataDefault ? (
         <p className="sub" style={{ margin: '0 0 10px' }}>
           Showing the most recent window with data, ending <b>{formatDate(today, timezone)}</b> — real today is{' '}
-          {formatDate(realToday, timezone)}. <Link href={`/reports/compliance?days=${days}&to=${realToday}${groupQuery}`} className="linklike">
+          {formatDate(realToday, timezone)}.{' '}
+          <Link href={`/reports/compliance?${complianceQuery(period.key, realToday, groupIds)}`} className="linklike">
             Jump to today instead
           </Link>
         </p>
@@ -90,18 +114,24 @@ export default async function ComplianceReportPage({
 
       <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
         <GroupFilter groups={groups} selected={groupIds} />
-        <div className="chiprow">
-          {PERIODS.map((d) => (
-            <Link
-              key={d}
-              href={`/reports/compliance?days=${d}&to=${today}${groupQuery}`}
-              className="squad-chip"
-              aria-pressed={days === d}
-            >
-              {d} days
-            </Link>
-          ))}
-        </div>
+        {/* `day` is offered DISABLED with its reason rather than hidden, per
+          * screens/analytics.md's "Illegal combinations are disabled with the
+          * reason, not hidden". "This season" is the one option that goes
+          * ABSENT instead, and only for a club with no current season row —
+          * a different fact, and one nothing a coach does in this control can
+          * fix. Both are also clamped server-side in resolveReportPeriod,
+          * because a disabled <option> does not stop a hand-typed URL. */}
+        {/* NOT sticky when this is the report's own default (`week`, which is
+          * deliberately not DEFAULT_RANGE) rather than something the coach
+          * picked, and not sticky when their pick was clamped either — see
+          * periodSticky(). */}
+        <PeriodSelector
+          value={period.key}
+          allowed={period.allowed}
+          reasons={period.reasons}
+          season={period.season}
+          sticky={periodSticky(period)}
+        />
       </div>
 
       <ReportPager

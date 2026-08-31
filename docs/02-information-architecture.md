@@ -487,12 +487,30 @@ chip row is contextual per screen. Confirm alongside O-724.
 
 ### Date / period selector
 
-Every screen showing time-series data has a period control. Standard options: `Today`,
-`This week`, `Last 7 days`, `Last 28 days`, `Season`, `Custom`. Like the group filter, the
+Every screen showing time-series data has a period control. Like the group filter, the
 selection persists across navigation.
 
 The 28-day default window is the analysis default because acute:chronic workload ratios
 conventionally use a 7:28 day comparison.
+
+**As built.** The standard options are the six the client asked for — *"from the day to the
+week to the season to the year to all"* — not the six listed here originally (`Today`,
+`This week`, `Last 7 days`, `Last 28 days`, `Season`, `Custom`):
+
+`Today` · `Last 7 days` · `Last 28 days` · `This season` · `Last 365 days` · `All on record`
+
+`Last 365 days` and `All on record` were missing and are explicitly requested. `Custom` is not
+built and is not planned as a period key: `?from=`/`?to=` already covers an arbitrary range
+(§6.2 of `20-route-map.md`). `This week` collapsed into `Last 7 days`, which is what the code
+has always computed.
+
+The control is `PeriodSelector` (`06-design-system.md` §7.10) over the range model in
+`src/lib/period.ts`. Persistence is the `fydr-period` cookie read by `resolvePeriod()` in
+`src/lib/period.server.ts`, under exactly the rule the group filter uses: the URL wins whenever
+`?period=` is present at all, *including present and empty*, and only a genuinely absent key
+inherits the sticky value. Two of the six are not legal on every screen — `day` for anything
+with a rolling band, `all` for a ratio — and those render disabled with the reason, never
+hidden, per `screens/analytics.md`.
 
 ### Day / week toggle
 

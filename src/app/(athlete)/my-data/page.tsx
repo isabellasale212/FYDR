@@ -3,8 +3,9 @@ import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { WellnessChart, type FlagMarker } from '@/components/WellnessChart/WellnessChart';
 import { FlagNotice } from '@/components/FlagNotice/FlagNotice';
+import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { fetchWellnessByAthlete, wellnessSeries } from '@/lib/queries/wellness';
-import { fetchAthleteRecentSessions, mondayOf } from '@/lib/queries/schedule';
+import { fetchAthleteRecentSessions, fetchCurrentSeason, mondayOf } from '@/lib/queries/schedule';
 import { fetchCheckinForWeek, fetchRecentCheckins } from '@/lib/queries/nutrition';
 import { fetchMyTestSummary } from '@/lib/queries/testing';
 import { fetchRecentGymSessions } from '@/lib/queries/programmes';
@@ -24,18 +25,208 @@ import {
   formatTime,
   todayIso,
 } from '@/lib/format';
+import {
+  PERIOD_PARAM,
+  clampPeriod,
+  resolveRange,
+  type RangeKey,
+  type ResolvedRange,
+} from '@/lib/period';
+import { resolvePeriod } from '@/lib/period.server';
 import { bandPosition } from '@/lib/stats';
 import { requireAthlete } from '@/lib/session';
 
 export const metadata = { title: 'My data · Fydr' };
 
-const WINDOW_DAYS = 42;
+/** The rolling band the readiness chart draws around the line. Also the reason
+ *  `day` is not a legal period on this screen — see PERIOD_ALLOWED. */
 const ROLLING_DAYS = 14;
+
+/** How many rows any one table on this page renders, most recent first.
+ *
+ *  Not a query bound and not a fudge for the row ceiling — the queries beneath
+ *  are paged or provably bounded (see the per-tab notes). It is a rendering
+ *  bound: at `all` the window is up to MAX_WINDOW_DAYS (730) and a 730-row
+ *  table is not a thing anyone reads. my-data.md's own performance section
+ *  already draws this line at 60 ("the entry list is virtualised beyond 60
+ *  rows"); virtualisation does not exist here, so the list stops at 60 and SAYS
+ *  it stopped, which is the honest half of that rule.
+ *
+ *  60 is above every previous cap on this page, so nothing an athlete could see
+ *  before is hidden now: the wellness table was 42 rows and the training table
+ *  was EIGHT (fetchAthleteRecentSessions's `limit` default, never overridden
+ *  here — its "n of m sessions rated in this window" footer was therefore
+ *  counting out of 8, not out of the window it named). */
+const LIST_LIMIT = 60;
+
+/** The five periods this screen's data can honestly express.
+ *
+ *  `day` is excluded, and it is the DISABLED-with-a-reason kind of exclusion,
+ *  not the absent kind (lib/period.ts's header draws that distinction; the
+ *  absent kind is `season` on a club with no season row, which PeriodSelector
+ *  handles itself). The readiness chart is a line plus a 14-day rolling mean
+ *  and ±1SD band — `wellnessSeries(entries, dates, 'readiness', ROLLING_DAYS)`
+ *  — and `rollingBand` computes that band from the points inside the window,
+ *  with no runway fetched outside it. A one-day window is therefore one point
+ *  and no band at all: the chart renders, and the single sentence the tab
+ *  exists to say ("is today normal for you") becomes unanswerable.
+ *
+ *  ONE HOLE, STATED RATHER THAN PATCHED: `season` can reach the same one-point
+ *  shape without going through `day`. resolveRange collapses a season whose
+ *  starts_on is in the FUTURE down to `today` (a club can legitimately have a
+ *  current season starting next month — see that function's own comment on why
+ *  it collapses rather than inverting the window), so "This season" during
+ *  pre-season is a single day. That is left alone on purpose: unlike `day` it is
+ *  a true statement about the club's calendar rather than a period that cannot
+ *  mean anything, and the window line beneath the control says "1 day", so the
+ *  athlete is told what they are looking at rather than shown a band that was
+ *  drawn from one observation. */
+const PERIOD_ALLOWED: readonly RangeKey[] = ['week', 'month', 'season', 'year', 'all'];
+
+/** Appended to the disabled option's own label by PeriodSelector, so the option
+ *  reads "Today — one day cannot show your usual range". Written for the
+ *  athlete, not for the codebase: this is the only period control on the
+ *  athlete side and "a metric with a trailing aggregate" is not their
+ *  vocabulary. */
+const PERIOD_REASONS: Partial<Record<RangeKey, string>> = {
+  day: 'one day cannot show your usual range',
+};
+
+/** WHAT AN ATHLETE SEES WHEN THEY HAVE NOT CHOSEN A PERIOD.
+ *
+ *  This replaces a hardcoded 42-day window, and 28 is NARROWER than 42, so the
+ *  choice is stated rather than made quietly.
+ *
+ *  42 was never specified anywhere. It was a constant in this file with no
+ *  reference behind it, and docs/screens/my-data.md says 28 in five separate
+ *  places — the wireframe is captioned "Wellness segment, 28-day period", the
+ *  entry-point table says "First ever open lands on Wellness, last 28 days",
+ *  edge case 1 works through "the 28-day view" and its "7 of 28 days" coverage
+ *  line, the accessibility table spells the control's spoken label as "Last 28
+ *  days, 9 July to 5 August", and the performance budget sizes the query as "a
+ *  single athlete over 28 days". CLAUDE.md §5, "when the spec and the code
+ *  disagree, the spec wins": 42 is the undocumented deviation here, not 28.
+ *
+ *  28 is also ACWR_CHRONIC_WINDOW_DAYS (lib/period.ts reads `month` straight
+ *  off it), so the default window and the chronic-load window this club's
+ *  staff screens use are the same number rather than two nearby ones.
+ *
+ *  The 14 days are not lost, and that is the part that makes this defensible
+ *  rather than a silent narrowing: the window is now stated on screen with its
+ *  real dates, every wider option is one click away, and the choice sticks
+ *  (period.server.ts's cookie) so an athlete who wants a season picks it once.
+ *  The alternative — keeping 42 as an unlabelled default — cannot be expressed:
+ *  42 is not a RangeKey, and a PeriodSelector whose `value` matches no option
+ *  silently displays a different option than the one that rendered. */
+const SCREEN_DEFAULT_RANGE: RangeKey = 'month';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
+const TABS = ['wellness', 'training', 'nutrition', 'testing', 'gym'] as const;
+type Tab = (typeof TABS)[number];
+
+function isTab(v: unknown): v is Tab {
+  return typeof v === 'string' && (TABS as readonly string[]).includes(v);
+}
+
 function dateRange(from: string, days: number): string[] {
   return Array.from({ length: days }, (_, i) => addDays(from, i));
+}
+
+/** The earliest date this athlete has anything on record, across the four
+ *  domains the period control governs, for the `all` window.
+ *
+ *  Athlete-scoped on purpose rather than reusing analytics.ts's
+ *  `fetchEarliestEntryDate`, which filters on `org_id` and is only
+ *  athlete-scoped by RLS accident on this surface — a query whose correctness
+ *  depends on a policy the file does not mention is a query waiting to be
+ *  copied somewhere the policy does not apply.
+ *
+ *  ONE date across all four domains, not one per domain, because one control
+ *  drives all five tabs: resolving `all` per-tab would mean "All on record"
+ *  covered a different span depending on which chip was open, and the footer
+ *  under the chart would contradict the footer under the table. The min is the
+ *  honest joint answer — it is the first day this athlete has ANY record.
+ *
+ *  Four `.limit(1)` reads on indexed columns, and only when the athlete has
+ *  actually asked for `all`. Null (a brand-new athlete with nothing logged)
+ *  degrades to resolveRange's 730-day floor, which is what that function
+ *  already does with a missing anchor. */
+async function fetchMyEarliestRecord(
+  db: Awaited<ReturnType<typeof requireAthlete>>['db'],
+  athleteId: string,
+): Promise<string | null> {
+  /* Four branches rather than one parameterised helper, for the reason
+   * analytics.ts's fetchEarliestEntryDate already states about the same shape:
+   * "a dynamic table name loses supabase-js's row typing entirely, and two
+   * four-line branches are cheaper than an `any`." Same trade here, twice over,
+   * and nutrition's column is `week_start` rather than `entry_date` anyway. */
+  const [wellness, training, gym, nutrition] = await Promise.all([
+    db
+      .from('wellness_entries_current')
+      .select('entry_date')
+      .eq('athlete_id', athleteId)
+      .not('entry_date', 'is', null)
+      .order('entry_date', { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+    db
+      .from('training_entries_current')
+      .select('entry_date')
+      .eq('athlete_id', athleteId)
+      .not('entry_date', 'is', null)
+      .order('entry_date', { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+    db
+      .from('gym_session_logs_current')
+      .select('entry_date')
+      .eq('athlete_id', athleteId)
+      .not('entry_date', 'is', null)
+      .order('entry_date', { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+    db
+      .from('nutrition_checkins_current')
+      .select('week_start')
+      .eq('athlete_id', athleteId)
+      .not('week_start', 'is', null)
+      .order('week_start', { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
+  for (const res of [wellness, training, gym, nutrition]) {
+    if (res.error) throw new Error(res.error.message);
+  }
+
+  const dates = [
+    wellness.data?.entry_date ?? null,
+    training.data?.entry_date ?? null,
+    gym.data?.entry_date ?? null,
+    nutrition.data?.week_start ?? null,
+  ].filter((d): d is string => d !== null);
+
+  if (dates.length === 0) return null;
+  return dates.reduce((a, b) => (a < b ? a : b));
+}
+
+/** The window, spelled out, under the control. my-data.md region C: "The
+ *  resolved range is mandatory: 'Last 28 days' alone does not tell the athlete
+ *  whether today is included." */
+function WindowLine({ range, timezone }: { range: ResolvedRange; timezone: string }) {
+  return (
+    <p className="cap" style={{ margin: '6px 0 0' }}>
+      {formatDate(range.from, timezone)} &ndash; {formatDate(range.to, timezone)} &middot;{' '}
+      <span className="mono">{range.days}</span> day{range.days === 1 ? '' : 's'}
+      {range.clipped ? (
+        <>
+          {' '}
+          &middot; showing the last 2 years, which is as far back as this goes
+        </>
+      ) : null}
+    </p>
+  );
 }
 
 /**
@@ -53,9 +244,22 @@ function dateRange(from: string, days: number): string[] {
  * per-session detail page — no volume trend, no e1RM chart, no PR callouts,
  * all real, larger, separately scoped features. Leaderboards are linked
  * separately below the tabs rather than folded in as a tab, since it isn't a
- * history list the same shape as the others. Fixed 42-day window, no custom
- * period picker — same simplifications as the rest of this pass, same
- * reasoning: ship the read path well, note what is cut.
+ * history list the same shape as the others.
+ *
+ * THE PERIOD. This header used to end "Fixed 42-day window, no custom period
+ * picker — same simplifications as the rest of this pass, same reasoning: ship
+ * the read path well, note what is cut." That reasoning has expired and the
+ * sentence is replaced rather than left to contradict the code. It was a Phase
+ * 1a cut on a TWO-tab screen; the screen now has five tabs and a leaderboards
+ * link, `docs/20-route-map.md` §4.7 has always listed a `PeriodSelector` in
+ * this screen's own panel table, and my-data.md specifies one in four places.
+ * There is now one control (lib/period.ts, the shared model) and it drives all
+ * five tabs from one resolved window.
+ *
+ * FOUR OF THE FIVE TABS. The Testing tab is all-time and stays all-time — see
+ * TestingTab's own comment for why that is a correctness argument about
+ * personal bests rather than an omission, and note that it is now SAID on
+ * screen instead of being a silent difference between siblings.
  */
 export default async function MyDataPage({
   searchParams,
@@ -64,20 +268,36 @@ export default async function MyDataPage({
 }) {
   const { db, orgId, athleteId, timezone } = await requireAthlete();
   const params = await searchParams;
-  const tab =
-    params.tab === 'training'
-      ? 'training'
-      : params.tab === 'nutrition'
-        ? 'nutrition'
-        : params.tab === 'testing'
-          ? 'testing'
-          : params.tab === 'gym'
-            ? 'gym'
-            : 'wellness';
+  const tab: Tab = isTab(params.tab) ? params.tab : 'wellness';
 
   const today = todayIso(timezone);
-  const from = addDays(today, -(WINDOW_DAYS - 1));
-  const dates = dateRange(from, WINDOW_DAYS);
+
+  /* PERIOD RESOLUTION, in the order lib/period.ts's contract requires.
+   *
+   * `resolvePeriod` reads `?period=` first and falls back to the sticky
+   * `fydr-period` cookie only when the URL says NOTHING — so a period chosen on
+   * another screen carries over, and a bookmarked or hand-cleared `?period=`
+   * beats it. This screen has no legacy period vocabulary of its own (it never
+   * had a `?days=` or `?range=`), so `approximated`/`legacyDays` cannot be set
+   * by any link that exists and nothing renders them.
+   *
+   * `clampPeriod` then coerces server-side, which the control alone cannot do:
+   * `?period=day` typed by hand, or `?period=season` at a club with no season
+   * row, must not reach a query. Both coerce to this screen's default and the
+   * page says which happened rather than quietly rendering something else. */
+  const requested = await resolvePeriod(params);
+  const season = await fetchCurrentSeason(db, orgId);
+  const { key: periodKey, coercedFrom } = clampPeriod(requested.key, {
+    allowed: PERIOD_ALLOWED,
+    seasonAvailable: season !== null,
+    fallback: SCREEN_DEFAULT_RANGE,
+  });
+
+  const earliest = periodKey === 'all' ? await fetchMyEarliestRecord(db, athleteId) : null;
+  const range = resolveRange(periodKey, today, season?.starts_on ?? null, earliest);
+  const from = range.from;
+  const dates = dateRange(range.from, range.days);
+
   const nutritionWeekStart = addDays(mondayOf(today), -7);
   const nutritionCheckin = await fetchCheckinForWeek(db, athleteId, nutritionWeekStart);
   const outstanding = await fetchOutstandingCount(db, athleteId, today, !!nutritionCheckin);
@@ -95,7 +315,13 @@ export default async function MyDataPage({
    * to live, so they render in `orphanFlags` below, always visible regardless of which
    * tab is open, rather than being silently dropped. Chosen over guessing a semantic
    * mapping (e.g. "gps is really about training load, put it on the Training tab") —
-   * CLAUDE.md §5: "do not guess and quietly implement" undocumented product behaviour. */
+   * CLAUDE.md §5: "do not guess and quietly implement" undocumented product behaviour.
+   *
+   * Bounded by the resolved period like every other read on this page, INCLUDING on the
+   * Testing tab, whose results are not. Deliberate and small: a flag is a dated thing a
+   * staff member wrote in a window, not a lifetime record, and "everything ever noted
+   * about you" is a different screen. fetchMyVisibleFlags pages, because at `all` an
+   * athlete can hold more than PostgREST will return in one go. */
   const visibleFlags = await fetchMyVisibleFlags(db, athleteId, { from, to: today });
   const flagsByDomain = new Map<string, VisibleFlag[]>();
   for (const f of visibleFlags) {
@@ -105,6 +331,15 @@ export default async function MyDataPage({
   }
   const SEGMENT_DOMAINS = new Set(['wellness', 'gym', 'testing', 'training', 'nutrition']);
   const orphanFlags = visibleFlags.filter((f) => !SEGMENT_DOMAINS.has(f.domain));
+
+  /* The chips carry the resolved period. They used to be bare
+   * `/my-data?tab=training` hrefs, which DROPPED `?period=`: choosing "This
+   * season" and then tapping Gym silently put the athlete back on 28 days. Same
+   * class of bug PeriodSelector's own header calls out on the athlete report's
+   * hand-built `?days=` href, and the same fix — the link is built from what
+   * actually resolved, not from the tab name alone. The resolved key, not the
+   * requested one, so a coerced URL does not survive a tab change. */
+  const tabHref = (next: Tab) => `/my-data?tab=${next}&${PERIOD_PARAM}=${periodKey}`;
 
   return (
     <>
@@ -126,51 +361,67 @@ export default async function MyDataPage({
        * to /my-data/boards rather than a fifth ?tab= segment, since its
        * content isn't a history list the same shape as the other four
        * (see fetchMyBoards's own header comment for why that's a real
-       * distinction, not just a styling one). */}
+       * distinction, not just a styling one). Leaderboards deliberately does
+       * NOT carry the period: a board is a standing ranking, not a window. */}
       <div className="chiprow" role="tablist" aria-label="Data segment" style={{ marginTop: 4 }}>
-        <Link
-          href="/my-data?tab=wellness"
-          className="squad-chip"
-          role="tab"
-          aria-selected={tab === 'wellness'}
-        >
+        <Link href={tabHref('wellness')} className="squad-chip" role="tab" aria-selected={tab === 'wellness'}>
           Wellness
         </Link>
-        <Link
-          href="/my-data?tab=training"
-          className="squad-chip"
-          role="tab"
-          aria-selected={tab === 'training'}
-        >
+        <Link href={tabHref('training')} className="squad-chip" role="tab" aria-selected={tab === 'training'}>
           Training
         </Link>
-        <Link
-          href="/my-data?tab=nutrition"
-          className="squad-chip"
-          role="tab"
-          aria-selected={tab === 'nutrition'}
-        >
+        <Link href={tabHref('nutrition')} className="squad-chip" role="tab" aria-selected={tab === 'nutrition'}>
           Nutrition
         </Link>
-        <Link
-          href="/my-data?tab=testing"
-          className="squad-chip"
-          role="tab"
-          aria-selected={tab === 'testing'}
-        >
+        <Link href={tabHref('testing')} className="squad-chip" role="tab" aria-selected={tab === 'testing'}>
           Testing
         </Link>
-        <Link
-          href="/my-data?tab=gym"
-          className="squad-chip"
-          role="tab"
-          aria-selected={tab === 'gym'}
-        >
+        <Link href={tabHref('gym')} className="squad-chip" role="tab" aria-selected={tab === 'gym'}>
           Gym
         </Link>
         <Link href="/my-data/boards" className="squad-chip">
           Leaderboards
         </Link>
+      </div>
+
+      {/* THE CONTROL, and the one tab it does not govern.
+       *
+       * On Testing the selector is ABSENT rather than rendered-and-inert. This
+       * is not the "disabled with the reason, not hidden" rule being broken:
+       * that rule is about OPTIONS inside a control that still governs the
+       * screen (which is why `day` is disabled above rather than removed). A
+       * control every one of whose options would be a lie is a different thing
+       * — it would visibly do nothing on that tab — so the row keeps its shape
+       * and states the fact instead. Switching tabs preserves the period, so
+       * nothing is lost by its absence here. */}
+      <div style={{ marginTop: 12 }}>
+        {tab === 'testing' ? (
+          <p className="tiny" style={{ color: 'var(--muted)', margin: 0 }}>
+            Period: all time
+          </p>
+        ) : (
+          <>
+            <PeriodSelector
+              value={periodKey}
+              allowed={PERIOD_ALLOWED}
+              reasons={PERIOD_REASONS}
+              season={season ? { name: season.name } : null}
+              ariaLabel="Period shown"
+            />
+            <WindowLine range={range} timezone={timezone} />
+            {coercedFrom === 'day' ? (
+              <p className="cap" style={{ margin: '4px 0 0' }}>
+                A single day was asked for. Your usual range needs {ROLLING_DAYS} days to draw, so
+                this is showing {range.label.toLowerCase()} instead.
+              </p>
+            ) : coercedFrom === 'season' ? (
+              <p className="cap" style={{ margin: '4px 0 0' }}>
+                Your club hasn&rsquo;t set a current season up, so this is showing{' '}
+                {range.label.toLowerCase()} instead.
+              </p>
+            ) : null}
+          </>
+        )}
       </div>
 
       {/* gps and compliance domain flags have no matching segment (see the comment on
@@ -187,6 +438,7 @@ export default async function MyDataPage({
           from={from}
           today={today}
           dates={dates}
+          range={range}
           timezone={timezone}
           flags={flagsByDomain.get('wellness') ?? []}
         />
@@ -197,6 +449,7 @@ export default async function MyDataPage({
           athleteId={athleteId}
           from={from}
           today={today}
+          range={range}
           timezone={timezone}
           flags={flagsByDomain.get('training') ?? []}
         />
@@ -206,6 +459,7 @@ export default async function MyDataPage({
           athleteId={athleteId}
           from={from}
           today={today}
+          range={range}
           timezone={timezone}
           flags={flagsByDomain.get('nutrition') ?? []}
         />
@@ -217,11 +471,25 @@ export default async function MyDataPage({
           athleteId={athleteId}
           from={from}
           today={today}
+          range={range}
           timezone={timezone}
           flags={flagsByDomain.get('gym') ?? []}
         />
       )}
     </>
+  );
+}
+
+/** "Showing the 60 most recent of N" — one sentence, one place, so the four
+ *  tables cannot word the same fact differently. Renders nothing when nothing
+ *  was cut, which is every window up to two months. */
+function ListCapNote({ shown, more, noun }: { shown: number; more: boolean; noun: string }) {
+  if (!more) return null;
+  return (
+    <p className="cap" style={{ marginTop: 8 }}>
+      Showing the <b>{shown}</b> most recent {noun} in this window. There are more &mdash; narrow
+      the period to see a shorter stretch in full.
+    </p>
   );
 }
 
@@ -232,6 +500,7 @@ async function WellnessTab({
   from,
   today,
   dates,
+  range,
   timezone,
   flags,
 }: {
@@ -241,9 +510,18 @@ async function WellnessTab({
   from: string;
   today: string;
   dates: string[];
+  range: ResolvedRange;
   timezone: string;
   flags: VisibleFlag[];
 }) {
+  /* NOT PAGED, and provably so rather than by assumption:
+   * `wellness_entries_one_live_per_day` (migration 0004) means
+   * wellness_entries_current holds at most one row per athlete per day, so the
+   * widest window this control can ask for (MAX_WINDOW_DAYS, 730) is at most
+   * 730 rows against PostgREST's 1000-row cap. queries/playerProfile.ts states
+   * the same proof for the same call and names the condition under which it
+   * stops holding: "if that index is ever dropped, fetchWellnessByAthlete must
+   * be paged." */
   const entries = await fetchWellnessByAthlete(db, athleteId, { from, to: today });
   const byDate = new Map(entries.map((e) => [e.entry_date, e]));
 
@@ -254,7 +532,12 @@ async function WellnessTab({
    * than a widened first one because the two want opposite things: the chart needs the
    * live series with readiness_score, this needs the superseded rows. Only chains whose
    * live row is itself a revision are kept, so the map is empty on the overwhelming
-   * majority of days and costs nothing to consult. */
+   * majority of days and costs nothing to consult.
+   *
+   * This one IS paged, and the difference from the read above is the whole point of the
+   * proof: it reads the BASE table, and the one-live-per-day index is partial — it
+   * bounds live rows only, so superseded revisions sit outside it and the row count has
+   * no ceiling. See fetchWellnessWithRevisions. */
   const corrections = await fetchWellnessWithRevisions(db, orgId, athleteId, {
     from,
     to: today,
@@ -270,6 +553,13 @@ async function WellnessTab({
     const p = bandPosition(s);
     return p === 'above' || p === 'below';
   }).length;
+
+  /* The CHART spans the whole window; only the TABLE stops at LIST_LIMIT. That
+   * asymmetry is deliberate: a line is legible at 730 points and a table is not,
+   * and the coverage footer beneath the chart counts the real window, not the
+   * rows rendered. */
+  const tableDates = [...dates].reverse();
+  const shownDates = tableDates.slice(0, LIST_LIMIT);
 
   // The wellness chart is one readiness line; wellness.readiness_score,
   // wellness.sleep_hours and wellness.soreness flags all land on it (there is only ever
@@ -324,11 +614,16 @@ async function WellnessTab({
 
         <FlagNotice flags={flags} timezone={timezone} />
 
+        {/* Was `{submitted} of {WINDOW_DAYS}` — a coverage line that printed a
+          * module constant. It now reports the window that actually resolved,
+          * which is the only version of this sentence that can stay true once
+          * the window is choosable. */}
         <p className="cap">
           <b>
-            {submitted} of {WINDOW_DAYS}
+            {submitted} of {range.days}
           </b>{' '}
-          days logged
+          days logged &middot; {formatDate(range.from, timezone)} to{' '}
+          {formatDate(range.to, timezone)}
           {outside > 0 ? (
             <>
               {' '}
@@ -359,7 +654,7 @@ async function WellnessTab({
               </tr>
             </thead>
             <tbody>
-              {[...dates].reverse().map((date) => {
+              {shownDates.map((date) => {
                 const entry = byDate.get(date);
                 const corrected = correctedByDate.get(date);
                 return (
@@ -424,6 +719,11 @@ async function WellnessTab({
             </tbody>
           </table>
         </div>
+        <ListCapNote
+          shown={shownDates.length}
+          more={tableDates.length > shownDates.length}
+          noun="days"
+        />
         {/* The Actions column that used to hold a per-row "Correct" link is gone
           * with the athlete's correction path (migration 0058, and the note at
           * the top of CheckInForm.tsx). The whole column went rather than the
@@ -448,6 +748,7 @@ async function TrainingTab({
   athleteId,
   from,
   today,
+  range,
   timezone,
   flags,
 }: {
@@ -456,15 +757,34 @@ async function TrainingTab({
   athleteId: string;
   from: string;
   today: string;
+  range: ResolvedRange;
   timezone: string;
   flags: VisibleFlag[];
 }) {
-  const sessions = await fetchAthleteRecentSessions(db, orgId, athleteId, from, today, timezone);
+  /* LIST_LIMIT + 1, so a full page is the signal that there is more rather than
+   * a second count query. This call used to pass no limit at all and therefore
+   * took fetchAthleteRecentSessions's default of EIGHT — which is why the
+   * footer below, which reads "n of m sessions rated in this window", was
+   * counting out of 8 while naming a 42-day window. It now counts out of what
+   * the window really holds, up to the cap, and says when the cap bit. */
+  const fetched = await fetchAthleteRecentSessions(
+    db,
+    orgId,
+    athleteId,
+    from,
+    today,
+    timezone,
+    LIST_LIMIT + 1,
+  );
+  const sessions = fetched.slice(0, LIST_LIMIT);
+  const more = fetched.length > LIST_LIMIT;
   const rated = sessions.filter((s) => s.rpe !== null).length;
 
   /* Same read, same reason, as the wellness table's — see its comment. Keyed by
    * session_id because that is what this table's rows are; an RPE entry always names
-   * the session it rates (0046). */
+   * the session it rates (0046). Paged: training_entries is bounded per SESSION rather
+   * than per day, so an athlete training twice a day is several rows a day before any
+   * correction is counted. */
   const correctedBySession = new Map(
     (await fetchTrainingRevisionChains(db, orgId, athleteId, { from, to: today }))
       .filter((c) => c.current.revision_of !== null && c.current.session_id !== null)
@@ -489,7 +809,10 @@ async function TrainingTab({
           <EmptyState
             headingLevel={3}
             title="Nothing in this window"
-            body="You are not named in any session in the last 42 days."
+            body={`You are not named in any session between ${formatDate(
+              range.from,
+              timezone,
+            )} and ${formatDate(range.to, timezone)}.`}
           />
         ) : (
           <>
@@ -576,9 +899,10 @@ async function TrainingTab({
               </table>
             </div>
             <p className="cap">
-              <b>{rated}</b> of <b>{sessions.length}</b> sessions rated in this
-              window.
+              <b>{rated}</b> of <b>{sessions.length}</b> sessions rated between{' '}
+              {formatDate(range.from, timezone)} and {formatDate(range.to, timezone)}.
             </p>
+            <ListCapNote shown={sessions.length} more={more} noun="sessions" />
             {/* Same removal, same reason, and same "Corrected" row, as the
               * wellness table above. */}
             <p className="cap">
@@ -601,6 +925,7 @@ async function NutritionTab({
   athleteId,
   from,
   today,
+  range,
   timezone,
   flags,
 }: {
@@ -608,10 +933,16 @@ async function NutritionTab({
   athleteId: string;
   from: string;
   today: string;
+  range: ResolvedRange;
   timezone: string;
   flags: VisibleFlag[];
 }) {
+  /* NOT PAGED, provably: `nutrition_checkins_one_live_per_week` (migration 0004)
+   * bounds nutrition_checkins_current to one row per athlete per week, so the
+   * widest window this control offers (730 days) is at most ~105 rows. See
+   * fetchRecentCheckins's own note. */
   const checkins = await fetchRecentCheckins(db, athleteId, from, today);
+  const shown = checkins.slice(0, LIST_LIMIT);
 
   return (
     <div className="stack" style={{ marginTop: 14 }}>
@@ -630,7 +961,10 @@ async function NutritionTab({
           <EmptyState
             headingLevel={3}
             title="Nothing answered yet"
-            body="Your weekly check-ins appear here once you start answering."
+            body={`No check-ins between ${formatDate(range.from, timezone)} and ${formatDate(
+              range.to,
+              timezone,
+            )}. Your weekly check-ins appear here once you start answering.`}
           />
         ) : (
           <div style={{ overflowX: 'auto' }}>
@@ -646,7 +980,7 @@ async function NutritionTab({
                 </tr>
               </thead>
               <tbody>
-                {checkins.map((c) => (
+                {shown.map((c) => (
                   <tr key={c.id}>
                     <td className="mono sub">{formatDate(c.week_start, timezone)}</td>
                     <td className="nm">{ANSWER_LABEL[c.answer] ?? c.answer}</td>
@@ -661,6 +995,7 @@ async function NutritionTab({
             </table>
           </div>
         )}
+        <ListCapNote shown={shown.length} more={checkins.length > shown.length} noun="weeks" />
         {/* This Correct link SURVIVED the change that removed the wellness and
           * training ones, and the asymmetry is deliberate rather than an
           * oversight. `revise_nutrition_checkin` is athlete-only by design and
@@ -701,7 +1036,38 @@ const TEST_NAME_EXPLAINER: Record<string, string> = {
 
 /** screens/testing.md's own role table: "Athlete: Own results only: history,
  *  personal bests." RLS already scopes test_results to the caller's own
- *  rows; fetchMyTestSummary just shapes it per test, latest result plus PB. */
+ *  rows; fetchMyTestSummary just shapes it per test, latest result plus PB.
+ *
+ *  THE ONE TAB THE PERIOD CONTROL DOES NOT DRIVE, and it stays that way.
+ *
+ *  This was a real inconsistency before the control existed — four tabs on a
+ *  fixed 42 days and this one silently all-time, with nothing on screen saying
+ *  so — and there were two ways to close it. Bounding it to the window is the
+ *  wrong one, and not marginally:
+ *
+ *   - A PERSONAL BEST IS ALL-TIME OR IT IS NOT A PERSONAL BEST. Bounding
+ *     `test_date` would relabel "best you have ever done" as "best in the last
+ *     28 days", which for almost every athlete is a LOWER number than the truth.
+ *     That is the identical failure fetchMyTestSummary's own header records
+ *     being fixed once already — the "phantom PB regression", an athlete with a
+ *     41.6 all-time best shown 31.0 because that was their latest session — and
+ *     re-introducing it through the front door because the sibling tabs have a
+ *     control would be worse than the original bug, which at least was an
+ *     accident.
+ *   - It is what the spec asks for. my-data.md O-296, "how much history should
+ *     an athlete be able to see", answers itself with "full history", and the
+ *     role table scopes this tab as "history, personal bests".
+ *
+ *  So the fix is the label, not the query: the control is replaced on this tab
+ *  by the words "Period: all time" (see the page body), and the copy below says
+ *  what that covers. The difference is now stated where it is visible rather
+ *  than discovered by an athlete wondering why a number did not move.
+ *
+ *  fetchMyTestSummary is nonetheless PAGED now. It has no window to widen and
+ *  never had one, which is exactly what made it unbounded by construction and
+ *  the most dangerous read on the page: descending on test_date, a silent 1000
+ *  row cut drops the OLDEST results, which is where an athlete's real all-time
+ *  best usually lives. */
 async function TestingTab({
   db,
   athleteId,
@@ -724,6 +1090,12 @@ async function TestingTab({
         <p className="import-sub">
           Your own results and personal bests only &mdash; never a squad
           comparison here.
+        </p>
+        <p className="cap">
+          This tab ignores the period used on the other tabs, on purpose: a personal best is
+          the best you have <em>ever</em> done, so showing it inside a window would show you a
+          smaller number than the truth. Latest and PB are both all-time. Anything staff have
+          noted below is from the last period you chose.
         </p>
 
         <FlagNotice flags={flags} heading="Noted by staff" timezone={timezone} />
@@ -757,12 +1129,19 @@ async function TestingTab({
 /** Blocker B3 (integration audit): the one segment this page had no read for at all.
  *  fetchRecentGymSessions is athlete-scoped by construction (gym_session_logs_current
  *  RLS), complete sessions only — an in_progress or abandoned one has nothing submitted
- *  yet to correct, same reasoning as revise_gym_session_log's own status gate. */
+ *  yet to correct, same reasoning as revise_gym_session_log's own status gate.
+ *
+ *  The heaviest read on this page once the window can reach 730 days, and the only one
+ *  capped in the DATABASE rather than paged: the set count behind each row is one row
+ *  per set logged, tens of thousands over two seasons. See fetchRecentGymSessions's own
+ *  header for why a deterministic most-recent-first `.limit()` is the right shape here
+ *  and paging is not. */
 async function GymTab({
   db,
   athleteId,
   from,
   today,
+  range,
   timezone,
   flags,
 }: {
@@ -770,10 +1149,13 @@ async function GymTab({
   athleteId: string;
   from: string;
   today: string;
+  range: ResolvedRange;
   timezone: string;
   flags: VisibleFlag[];
 }) {
-  const sessions = await fetchRecentGymSessions(db, athleteId, from, today);
+  const fetched = await fetchRecentGymSessions(db, athleteId, from, today, LIST_LIMIT + 1);
+  const sessions = fetched.slice(0, LIST_LIMIT);
+  const more = fetched.length > LIST_LIMIT;
 
   return (
     <div className="stack" style={{ marginTop: 14 }}>
@@ -800,7 +1182,10 @@ async function GymTab({
           <EmptyState
             headingLevel={3}
             title="Nothing logged yet"
-            body="Completed gym sessions appear here."
+            body={`No completed gym sessions between ${formatDate(
+              range.from,
+              timezone,
+            )} and ${formatDate(range.to, timezone)}.`}
           />
         ) : (
           <div style={{ overflowX: 'auto' }}>
@@ -843,6 +1228,7 @@ async function GymTab({
             </table>
           </div>
         )}
+        <ListCapNote shown={sessions.length} more={more} noun="sessions" />
       </section>
     </div>
   );

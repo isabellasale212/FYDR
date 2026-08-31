@@ -1131,13 +1131,24 @@ Both testing screens carry print and export controls at the top right:
 
 | Screen | Controls |
 |---|---|
-| `/reports/testing` (squad) | Print (added), Export CSV, Export PDF (both already existed) |
+| `/reports/testing` (squad) | Period selector (added), Print (added), Export CSV, Export PDF (both already existed) |
 | `/testing/[testDefId]/[athleteId]` (individual) | Print, Export CSV, Export PDF (all added) |
 
 Print is `window.print()` through the existing `@media print` block in `base.css`, so
 there is no separate print view to keep in sync. One honest caveat on the squad report:
 it is paginated by `ReportPager`, so a print captures the tab currently open ("By
 athlete" *or* "By test"), not both. The PDF export is the one that contains everything.
+
+**The squad report is now period-scoped** (`?period=`, offering `month | season | year |
+all` and defaulting to `season`; `day` and `week` are disabled with their reason because
+testing is episodic and a week is usually one session, which the single-test grid already
+shows). Its CSV and PDF read the same param through the same colocated
+`reports/testing/period.ts`, so a download covers the window the coach was looking at and
+states it in the caption or the header. Before this it had **no** window at all: its three
+queries took no dates, so the longitudinal series plotted every result the club had ever
+recorded and, past PostgREST's 1000-row ceiling, was silently truncated. Consequently the
+"By athlete" grid's heading no longer says "current personal best" — it is best *in the
+window*, and it names it. See `reports.md`, "The period control, as built".
 
 The per-athlete CSV exports **every** attempt, not only the best ones, because a CSV is
 the shape someone re-analyses elsewhere and dropping non-best attempts would throw away

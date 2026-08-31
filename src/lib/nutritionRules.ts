@@ -241,6 +241,25 @@ export const MACRO_TOLERANCE_PCT = 5;
  * nutritionist deciding whether a plan needs more energy or less.
  * ------------------------------------------------------------------------- */
 
+/** The trailing window the trend indicator's band is built over, on EVERY
+ *  screen that shows it. FIXED, and deliberately not the `?period=` control.
+ *
+ *  This flag is a fact about an athlete — "moved outside their own recent
+ *  normal range" — not a view of a window, and two screens showing the same
+ *  athlete must agree about whether it is set. `/nutrition` has a mass-trend
+ *  period selector and `/nutrition/new` has no control at all, so keying the
+ *  band off the selected window would let one screen flag an athlete the other
+ *  does not, purely because a coach had narrowed a sparkline somewhere else.
+ *  buildWorkspaceAthlete (lib/nutritionWorkspace.ts) therefore takes this
+ *  window separately from the trend's, and every caller must reach at least
+ *  this far back in its own fetch.
+ *
+ *  90 days ≈ 13 weekly weigh-ins: enough for a mean and SD that mean something
+ *  (computeMassBand needs 2 and is noisy near that), short enough that a change
+ *  of season or a deliberate mass programme is not still dragging the mean
+ *  around. It is also the window /nutrition/new was already hardcoding. */
+export const MASS_TREND_FLAG_WINDOW_DAYS = 90;
+
 export type TrendDirection = 'above' | 'below';
 
 export type MassTrendFlag = {

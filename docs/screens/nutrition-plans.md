@@ -242,12 +242,52 @@ sheet, because there are five numeric fields per MD-n row.
 
 ---
 
+## Time controls — two of them, and they are not interchangeable
+
+**AS BUILT.** This screen carries two independent time controls, both on the URL at once. The
+component row above used to describe them as one ("Window for the Athlete tab and the week
+navigation on Squad"), which is two different things sharing a name.
+
+**`?period=` — the body-mass trend.** Was a silent, hardcoded `today - 90`. Now a `PeriodSelector`
+over `month | season | year | all`. `day` and `week` render **disabled with their reason**, not
+hidden: the trend is a line through weekly weigh-ins against a mean ± 1 SD band
+(`lib/nutritionRules.ts`), and one day or one week is one or two points — not a band, and not a
+trend. `season` is **absent** when the org has no current season row. `all` anchors on the org's
+real earliest weigh-in (`fetchEarliestBodyCompositionDate`), so the label does not promise more
+than it shows.
+
+**`?week=` — the week strip.** A prev/next week navigator, Monday-anchored (`mondayOf`), clamped
+forward to the current week. Deliberately **not** a period selector: "how many of the last 7 days
+did he weigh in on" is a question about *one week*, and widening it to a season would not answer it
+more fully, it would replace it with a different question and make this a different screen. Before
+this the week was always *this* week with no prev/next at all, so last week was unreachable.
+
+The navigator's links are rebuilt from the live search params, never from a fixed list of keys, so
+`?groups=` and `?period=` survive a week step (CLAUDE.md §3 — the group filter must not be dropped
+by a navigation control).
+
+**What each drives:**
+
+| Panel | Control |
+|---|---|
+| Selected athlete's mass sparkline, trend band, 7-day and 12-week change | `?period=` |
+| Weigh-in strip ("n of 7 days weighed in") | `?week=` |
+| Weekly check-in strip | `?week=` (its 7-week lookback is anchored on the selected week) |
+| "Needs a word" chase list | Both — the mass-down reason from `?period=`, the under-logging reason from `?week=` |
+| Plans, targets table, meal card | Neither. Not windowed. |
+
+The sparkline's x-axis used to be hardcoded "12 weeks ago → today", which was only true while the
+window was a fixed 90 days. It now names the real first and last weigh-in dates in the window.
+
+---
+
 ## Components
 
 | Component | Source | Purpose |
 |---|---|---|
 | `GroupFilter` | `06-design-system.md` §6.7 | Scopes the squad grid and target coverage counts |
-| `PeriodSelector` | §6.8 | Window for the Athlete tab and the week navigation on Squad |
+| `PeriodSelector` | §6.8 | Window for the selected athlete's body-mass trend **only**. `?period=`, `allowed={['month','season','year','all']}`; `day` and `week` disabled with their reason. Labelled "Mass trend", not "Period", so it cannot be read as moving the week strip. |
+| Week navigator | New, this screen | `?week=`, prev/next, Monday-anchored, clamped forward to the current week. Drives the weigh-in strip, the weekly check-in panel and the "needs a word" list. **Not** a PeriodSelector — see below. |
 | `DayWeekToggle` | §6.9 | The "day or week view" from the drawing |
 | `AthleteCard` | §6.1 | Mobile squad rows |
 | `MetricTile` | §6.2 | The five macro tiles on the Athlete tab |

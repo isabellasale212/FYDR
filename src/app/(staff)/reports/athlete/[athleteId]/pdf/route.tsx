@@ -7,8 +7,7 @@ import { enumLabel, formatDate, formatNumber } from '@/lib/format';
 import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
 import { requireReportAccess } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
-
-const PERIODS = [28, 90] as const;
+import { ACWR_WINDOW_CAPTION, periodCaveat, periodParamsFromUrl, resolveAthletePeriod } from '../period';
 
 /** lib/pdf.tsx has the "this was actually buildable" story. Fourth report
  *  to get a PDF. No wellness chart — same "no charts" cut every PDF export
@@ -18,9 +17,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
   const { athleteId } = await params;
   const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
   const url = new URL(request.url);
-  const days = PERIODS.includes(Number(url.searchParams.get('days')) as (typeof PERIODS)[number]) ? Number(url.searchParams.get('days')) : 28;
 
-  const report = await fetchAthleteReport(db, orgId, athleteId, timezone, days);
+  /* Same module as the page and the CSV. A PDF is the worst place for a
+   * silently substituted window: it is a document, handed to someone else,
+   * with no control on it to check the figure against. */
+  const period = await resolveAthletePeriod(db, orgId, athleteId, timezone, periodParamsFromUrl(url));
+  const caveat = periodCaveat(period);
+
+  const report = await fetchAthleteReport(db, orgId, athleteId, timezone, { from: period.from, to: period.to });
   if (!report) notFound();
 
   const { athlete, compliancePct, openFlags, currentProgrammes } = report.summary;
@@ -31,15 +35,24 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
       <PdfHeader
         eyebrow={`Athlete report · ${orgName}`}
         title={`${athlete.first_name} ${athlete.last_name}`}
-        meta={`${athlete.position ?? ''} · ${formatDate(report.from, timezone)} to ${formatDate(report.to, timezone)}`}
+        meta={`${athlete.position ?? ''} · ${period.label} · ${formatDate(report.from, timezone)} to ${formatDate(report.to, timezone)}${caveat ? ` · ${caveat}` : ''}`}
       />
 
+      {/* The ACWR tile sits in a row headed by a period label, so its own
+          fixed window is stated in the tile label AND spelled out underneath.
+          On screen the coach can at least see the control; on a printed page
+          handed to a director of rugby there is nothing else to read it
+          against, and "ACWR" under "This season" invites exactly the wrong
+          conclusion. The ratio is defined as trailing 7:28 (lib/acwr.ts) and
+          no period selection changes it. */}
       <PdfTileRow>
         <PdfTile label="Compliance, this period" value={compliancePct === null ? '—' : `${compliancePct}%`} />
         <PdfTile label="Open flags" value={String(openFlags.length)} tone={openFlags.length > 0 ? 'warn' : undefined} />
-        <PdfTile label="ACWR" value={report.load.acwr === null ? (report.load.suppressed ? acwrSuppressedLabel(report.load.daysWithData) : '—') : formatNumber(report.load.acwr, 2)} />
+        <PdfTile label="ACWR · trailing 7:28" value={report.load.acwr === null ? (report.load.suppressed ? acwrSuppressedLabel(report.load.daysWithData) : '—') : formatNumber(report.load.acwr, 2)} />
         <PdfTile label="Programme" value={currentProgrammes.length === 0 ? '—' : currentProgrammes.map((p) => p.name).join(', ')} />
       </PdfTileRow>
+
+      <PdfSectionTitle title="How to read these figures" caption={ACWR_WINDOW_CAPTION} />
 
       <PdfSectionTitle title="Open flags" />
       <PdfTable
@@ -103,7 +116,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
     claims.userId,
     actorRole,
     'athlete',
-    { athlete_id: athleteId, from: report.from, to: report.to, format: 'pdf' },
+    { athlete_id: athleteId, from: report.from, to: report.to, period: period.key, format: 'pdf' },
     'export',
   );
 

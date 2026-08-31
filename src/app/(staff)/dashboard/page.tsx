@@ -3,6 +3,7 @@ import { DashboardFlagsPanel } from '@/components/DashboardFlagsPanel/DashboardF
 import { DashboardHeadlineStats } from '@/components/DashboardHeadlineStats/DashboardHeadlineStats';
 import { Dial } from '@/components/Dial/Dial';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
+import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { PrintButton } from '@/components/PrintButton/PrintButton';
 import {
   fetchEffectiveToday,
@@ -15,12 +16,15 @@ import {
   fetchWeekStrip,
   type SessionPip,
   type SquadStateEntry,
+  type TimelineEntry,
 } from '@/lib/queries/dashboard';
 import { fetchGroups } from '@/lib/queries/groups';
-import { mondayOf } from '@/lib/queries/schedule';
-import { addDays, enumLabel, formatDate, formatLongDate, todayIso } from '@/lib/format';
+import { fetchCurrentSeason, fetchWeekSessions, mondayOf, type WeekSession } from '@/lib/queries/schedule';
+import { addDays, enumLabel, formatDate, formatLongDate, formatTime, todayIso } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
+import { clampPeriod, type RangeKey } from '@/lib/period';
+import { resolvePeriod } from '@/lib/period.server';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Dashboard · Fydr' };
@@ -48,6 +52,54 @@ const PIP_COLOR: Record<SessionPip, string> = {
 };
 
 const TONE_VAR: Record<string, string> = { good: 'var(--accent2)', accent: 'var(--accent)', accent2: 'var(--accent2)', warn: 'var(--warn)', bad: 'var(--bad)' };
+
+/* TWO OPTIONS ONLY, AND `?day=` IS THE OTHER HALF OF THE SAME CONTROL.
+ *
+ * docs/screens/dashboard.md's component table is explicit: `PeriodSelector`,
+ * `allowed={['today','thisWeek']}` only, because "the dashboard is a today
+ * screen; longer windows belong in Analytics". Honoured literally — `day` and
+ * `week`, and the other four rendered DISABLED with that reason rather than
+ * hidden, so a coach can see the capability exists and read why it is not here.
+ * A season on a triage screen would quietly turn it into a report.
+ *
+ * HOW IT COEXISTS WITH THE EXISTING `?day=` STRIP. It coexists because they are
+ * not two controls fighting over one thing — `?period=` says whether the
+ * day-detail column is showing ONE DAY or THE WEEK, and `?day=` is that
+ * column's cursor, meaningful only in day mode:
+ *
+ *   period=day (the default)  the column is one day's timeline, with the flag
+ *                             and outstanding-entry detail per session. `?day=`
+ *                             picks which day, bounded to the visible week
+ *                             exactly as before. Unchanged behaviour.
+ *   period=week               the column lists every session Monday-Saturday,
+ *                             grouped by day. `?day=` is not read.
+ *
+ * The week list stays in BOTH modes: it is the day picker, and removing it in
+ * week mode would leave no way back to a day. Its rows write `period=day` as
+ * well as `day=`, so clicking a day in week mode means "drop into this day",
+ * which is the only thing clicking a day there could sensibly mean.
+ *
+ * WHAT THE CONTROL DOES NOT TOUCH, and why that is right rather than a gap: the
+ * headline stats, Ready for Saturday, Squad state and Outstanding entries are
+ * not day-or-week-scoped by configuration, they are scoped by DEFINITION —
+ * "Wellness, today", "RPE, yesterday", availability as it stands right now,
+ * days to Saturday. Several are already week-scoped ("week load so far",
+ * sessions left this week). Re-pointing them at a period would not widen a
+ * window, it would change what each number means. They are left alone.
+ *
+ * The fallback is `day`, not DEFAULT_RANGE: DEFAULT_RANGE is `month`, which is
+ * not legal here, so it must be stated or every arrival with a sticky 28-day
+ * cookie would clamp to a value the control does not offer. That fallback is
+ * this screen's OPINION, though, not the coach's — see `periodIsChoice` below
+ * for why it must never reach the account-wide cookie. */
+const DASHBOARD_PERIODS: readonly RangeKey[] = ['day', 'week'];
+const DASHBOARD_PERIOD_REASON = 'the dashboard is a today screen — longer windows are in Analytics';
+const DASHBOARD_PERIOD_REASONS: Partial<Record<RangeKey, string>> = {
+  month: DASHBOARD_PERIOD_REASON,
+  season: DASHBOARD_PERIOD_REASON,
+  year: DASHBOARD_PERIOD_REASON,
+  all: DASHBOARD_PERIOD_REASON,
+};
 
 function qs(params: Record<string, string | undefined>): string {
   const s = new URLSearchParams();
@@ -127,17 +179,68 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
   const weekEnd = addDays(weekStart, 5);
   const selectedDay = typeof sp.day === 'string' && sp.day >= weekStart && sp.day <= weekEnd ? sp.day : effectiveToday;
 
-  const [groups, stats, week, timeline, readiness, squad, untied, outstanding] = await Promise.all([
+  /* URL first, sticky cookie second, then `day` — clamped server-side as well
+   * as disabled in the control, because the control does not stop a bookmarked
+   * `?period=season`. `season` is resolved only to satisfy PeriodSelector's
+   * required prop: neither of this screen's two legal options is the season
+   * one, so a club with no season row loses nothing here either way, and
+   * fetchCurrentSeason (never fetchCurrentSeasonId) is the safe lookup. */
+  const [requestedPeriod, season] = await Promise.all([resolvePeriod(sp), fetchCurrentSeason(db, orgId)]);
+  const period = clampPeriod(requestedPeriod.key, {
+    allowed: DASHBOARD_PERIODS,
+    seasonAvailable: season !== null,
+    fallback: 'day',
+  });
+  const isWeekMode = period.key === 'week';
+
+  /* THIS SCREEN MUST NOT WRITE THE ACCOUNT-WIDE COOKIE UNLESS THE COACH REALLY
+   * PICKED THE VALUE ON IT. `fydr-period` is shared by every screen, and this
+   * one has the narrowest allow-list in the app (`day` and `week` only) while
+   * homeRoute() lands every coach and medical sign-in here — so a sticky write
+   * from the dashboard is the single most destructive one there is:
+   *
+   *  - NOT EXPRESSED (no `?period=`, no cookie): the value is `day`, this
+   *    screen's own fallback, and stickying it would seed the whole account
+   *    with `day` on a first-ever visit — a key NO report allows, so each one
+   *    then clamps to a different fallback and prints a caveat about a choice
+   *    the coach never made.
+   *  - COERCED: the coach picked "This season" on the testing report, arrives
+   *    here, and the clamp turns it into `day`. Writing that back would erase
+   *    their real preference on a visit where they touched nothing.
+   *
+   * Same rule and same reasoning as periodSticky() (lib/reportPeriod.server.ts)
+   * and squad/[athleteId]; written out here because this screen resolves its
+   * period with clampPeriod directly rather than through a report module. An
+   * explicit pick on THIS control still sticks everywhere: `?period=week` is
+   * expressed, legal here, and writes the cookie exactly as before. */
+  const periodIsChoice = requestedPeriod.source !== 'default' && period.coercedFrom === null;
+
+  const [groups, stats, week, timeline, readiness, squad, untied, outstanding, weekSessions] = await Promise.all([
     fetchGroups(db, orgId),
     fetchHeadlineStats(db, orgId, groupIds, effectiveToday, wallClockToday, timezone),
     fetchWeekStrip(db, orgId, groupIds, weekStart, effectiveToday, timezone),
     // "now" is the real instant — a session is "passed" against the real
     // clock, never against an end-of-day stand-in (audit S2).
-    fetchTimeline(db, orgId, groupIds, selectedDay, new Date().toISOString(), timezone),
+    // Skipped entirely in week mode: fetchTimeline is a per-DATE read (a day's
+    // timetable, that day's flags, that day's gps_records), so running it in a
+    // mode that does not render it would be six pointless round trips.
+    isWeekMode
+      ? Promise.resolve<TimelineEntry[]>([])
+      : fetchTimeline(db, orgId, groupIds, selectedDay, new Date().toISOString(), timezone),
     fetchSaturdayReadiness(db, orgId, groupIds, effectiveToday, timezone),
     fetchSquadState(db, orgId, groupIds),
     fetchUntiedFlags(db, orgId, groupIds),
     fetchOutstandingTracks(db, orgId, groupIds, effectiveToday),
+    /* Week mode's own source. This is the SAME function fetchWeekStrip already
+     * builds the day rows from, so the week list and the week timeline cannot
+     * disagree about which sessions exist. Six days of an org's sessions is
+     * tens of rows, not thousands — nowhere near PostgREST's 1000-row ceiling,
+     * so unlike the two body-mass reads this one needs no paging, and saying so
+     * is the point: the rule is "page any query whose window can grow past the
+     * ceiling", not "page everything". */
+    isWeekMode
+      ? fetchWeekSessions(db, orgId, weekStart, groupIds, timezone)
+      : Promise.resolve<WeekSession[]>([]),
   ]);
 
   const isAnchoredToPast = effectiveToday !== wallClockToday;
@@ -145,6 +248,20 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
   const groupsQs = groupIds.length > 0 ? groupIds.join(',') : undefined;
   const isSelectedToday = selectedDay === effectiveToday;
   const selectedDayMd = week.find((d) => d.date === selectedDay)?.md ?? null;
+
+  // Week mode's timeline, bucketed onto the same six days the week list draws
+  // (Monday-Saturday, matching fetchWeekStrip) so the two blocks always agree.
+  const sessionsByDate = new Map<string, WeekSession[]>();
+  for (const s of weekSessions) {
+    const list = sessionsByDate.get(s.entry_date) ?? [];
+    list.push(s);
+    sessionsByDate.set(s.entry_date, list);
+  }
+  const weekTimeline = week.map((d) => ({
+    day: d,
+    sessions: (sessionsByDate.get(d.date) ?? []).sort((a, b) => a.starts_at.localeCompare(b.starts_at)),
+  }));
+  const weekSessionCount = weekTimeline.reduce((n, d) => n + d.sessions.length, 0);
 
   const dayCaption = isSelectedToday
     ? `${formatDate(effectiveToday, timezone)} · ${timeline.length} session${timeline.length === 1 ? '' : 's'}${timeline.length > 0 ? ` · first at ${timeline[0]!.time}` : ''}`
@@ -164,6 +281,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           <h1>Dashboard</h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <PeriodSelector
+            value={period.key}
+            allowed={DASHBOARD_PERIODS}
+            reasons={DASHBOARD_PERIOD_REASONS}
+            season={season}
+            sticky={periodIsChoice}
+            ariaLabel="Show one day or the whole week"
+          />
           <PrintButton />
         </div>
       </div>
@@ -232,15 +357,21 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
        * "last session before Saturday" alert (now a pill, this app's
        * existing attention-badge language, not new styling). Still one row
        * per day, still a real link that sets ?day= on this same page —
-       * only the shape changed. */}
+       * only the shape changed.
+       *
+       * The row href now writes `period=day` as well as `day=`: in day mode
+       * that is a no-op, and in week mode clicking a day can only mean "drop
+       * into this day", which is exactly what the pair says. The list itself
+       * renders in BOTH modes — it is the day picker, and hiding it in week
+       * mode would leave no way back to a day. */}
       <div className="dash-week-list">
         {week.map((d) => (
           <Link
             key={d.date}
-            href={`/dashboard${qs({ groups: groupsQs, day: d.date })}`}
+            href={`/dashboard${qs({ groups: groupsQs, day: d.date, period: 'day' })}`}
             className="dash-week-row"
             data-past={d.isPast}
-            data-selected={d.date === selectedDay}
+            data-selected={!isWeekMode && d.date === selectedDay}
           >
             <div className="dash-week-day">
               <span className="dash-week-day-name" style={{ color: d.isToday ? 'var(--accent)' : undefined }}>
@@ -276,14 +407,102 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       <div className="dash-body" style={{ marginTop: 14 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 12 }}>
-            <h2 style={{ fontSize: 17, fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>{dayTitle(selectedDay, wallClockToday)}</h2>
+            <h2 style={{ fontSize: 17, fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>
+              {isWeekMode ? 'This week' : dayTitle(selectedDay, wallClockToday)}
+            </h2>
             <span className="tiny mono" style={{ color: 'var(--muted)', marginLeft: 'auto' }}>
-              {selectedDayMd && selectedDayMd !== 'MD' ? `${selectedDayMd} · ` : ''}
-              {dayCaption}
+              {isWeekMode ? (
+                <>
+                  {formatDate(weekStart, timezone)} to {formatDate(weekEnd, timezone)} · {weekSessionCount} session
+                  {weekSessionCount === 1 ? '' : 's'}
+                </>
+              ) : (
+                <>
+                  {selectedDayMd && selectedDayMd !== 'MD' ? `${selectedDayMd} · ` : ''}
+                  {dayCaption}
+                </>
+              )}
             </span>
           </div>
 
-          {timeline.length === 0 ? (
+          {isWeekMode ? (
+            /* The week's sessions, grouped by day. Deliberately WITHOUT the
+             * per-athlete "affected" rows the day view carries: those come from
+             * fetchTimeline's per-date flag and gps_records reads, and running
+             * six of those to fill a scan-level block would be six times the
+             * queries for detail nobody reads at week altitude. The caption
+             * says so rather than leaving a coach to wonder where the flags
+             * went — an absent flag list must never look like an absence of
+             * flags. */
+            <>
+              <div className="dash-week-list">
+                {weekTimeline.map(({ day, sessions }) => (
+                  <div key={day.date}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, margin: '10px 0 4px' }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: day.isToday ? 'var(--accent)' : undefined }}>
+                        {day.dayLabel}
+                      </span>
+                      {day.md ? (
+                        <span
+                          className="mono dash-week-md"
+                          style={{ color: day.md === 'MD' ? 'var(--bad)' : day.md === 'MD-1' ? 'var(--accent)' : 'var(--faint)' }}
+                        >
+                          {day.md}
+                        </span>
+                      ) : null}
+                      {day.alert ? (
+                        <span className={`pill ${day.alert.sev === 'bad' ? 'pill-bad' : 'pill-accent'}`}>
+                          {day.alert.text}
+                        </span>
+                      ) : null}
+                      <Link
+                        href={`/dashboard${qs({ groups: groupsQs, day: day.date, period: 'day' })}`}
+                        className="tiny"
+                        style={{ marginLeft: 'auto', color: 'var(--accent)', fontWeight: 600 }}
+                      >
+                        Open this day ›
+                      </Link>
+                    </div>
+                    {sessions.length === 0 ? (
+                      <p className="tiny" style={{ color: 'var(--faint)', margin: '0 0 4px' }}>
+                        Nothing scheduled, for this filter.
+                      </p>
+                    ) : (
+                      sessions.map((s) => (
+                        <Link
+                          key={s.id}
+                          href={`/schedule/${s.id}`}
+                          className="card dash-session-card"
+                          style={{ padding: '12px 16px', display: 'block', textDecoration: 'none', color: 'inherit', marginBottom: 6 }}
+                          data-past={day.isPast}
+                        >
+                          <div className="dash-session-head">
+                            <div>
+                              <span className="dash-session-name">{s.title}</span>{' '}
+                              <span className="pill pill-neutral">{enumLabel(s.session_type)}</span>
+                              <div className="dash-session-meta">
+                                {formatTime(s.starts_at, timezone)}
+                                {s.location ? ` · ${s.location}` : ''}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="dash-session-count">{s.expected ?? '—'}</div>
+                              <div className="dash-session-count-label">expected</div>
+                            </div>
+                            <span className="dash-session-chevron">›</span>
+                          </div>
+                        </Link>
+                      ))
+                    )}
+                  </div>
+                ))}
+              </div>
+              <p className="cap" style={{ marginTop: 10 }}>
+                Every session Monday to Saturday, for this filter. Flags and outstanding entries are per
+                day &mdash; open a day above to see who is affected in each session.
+              </p>
+            </>
+          ) : timeline.length === 0 ? (
             <div className="card">
               <p className="tiny">Nothing is scheduled for this day, for this filter.</p>
             </div>
@@ -530,7 +749,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
 
       <p className="cap" style={{ marginTop: 14 }}>
         Squad · {orgName} · signed in as {claims.roles.join(', ')}. The dashboard navigates, it does not
-        act — every row and card above leads to the screen that owns the thing.
+        act — every row and card above leads to the screen that owns the thing. Period covers the session
+        list only: {isWeekMode ? 'the whole week' : 'one day'}. Availability, readiness and the entry
+        tracks are fixed by what they mean — &ldquo;today&rdquo;, &ldquo;yesterday&rdquo;, &ldquo;days to
+        Saturday&rdquo; — and anything longer than a week lives in Analytics.
       </p>
     </>
   );

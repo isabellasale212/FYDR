@@ -1,30 +1,45 @@
 import Link from 'next/link';
 import { ReportPager } from '@/components/ReportPager/ReportPager';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
+import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchInjuryAvailabilityReport, recordReportView } from '@/lib/queries/reports';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { addDays, enumLabel, formatDate, todayIso } from '@/lib/format';
+import { enumLabel, formatDate } from '@/lib/format';
 import { requireReportAccess } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
+import {
+  exportQuery,
+  INJURY_PERIOD_REASONS,
+  INJURY_PERIODS,
+  periodCaveat,
+  periodParamsFrom,
+  resolveInjuryPeriod,
+} from './period';
 
 export const metadata = { title: 'Injury & availability report · Fydr' };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-const PERIODS = [28, 90, 180, 365] as const;
-
-// 180/365 shown as "6 months"/"12 months" — the day count underneath is
-// unchanged (addDays/todayIso, the same mechanism 28/90 already use), this
-// only affects the chip label. Approximate calendar months, same convention
-// "last 6 months" uses elsewhere; not calendar-month arithmetic.
-const PERIOD_LABELS: Record<number, string> = {
-  28: '28 days',
-  90: '90 days',
-  180: '6 months',
-  365: '12 months',
-};
+/* The `?days=[28, 90, 180, 365]` chip row that used to live here is gone,
+ * replaced by the shared PeriodSelector. Three things went with it, all of
+ * them deliberate:
+ *
+ *  - THE HAND-BUILT HREF. Each chip rebuilt its own URL from a fixed list of
+ *    keys it happened to know about (`?days=${d}` plus `groups`), which is
+ *    the exact shape of the bug on /reports/athlete/[athleteId] — any param
+ *    added to this screen later would have been silently dropped on every
+ *    period change. ReportSelectNav, under PeriodSelector, rebuilds from the
+ *    live useSearchParams() instead, so nothing can be lost.
+ *  - 90 AND 180 AS CHOOSABLE WINDOWS. Neither has a RangeKey, and the six
+ *    keys are the client's own vocabulary ("from the day to the week to the
+ *    season to the year to all"). A bookmarked `?days=90` or `?days=180`
+ *    still renders — readPeriodParam widens it to `year`, never narrows it —
+ *    and the page says so rather than substituting silently (periodCaveat).
+ *  - `?days=` AS THIS SCREEN'S PARAM. The page now writes `?period=`, and
+ *    both handlers under this folder read the same module, so a PDF exported
+ *    from a season-scoped page covers the season. */
 
 const AVAIL_PILL: Record<string, string> = {
   modified: 'pill-warn',
@@ -51,10 +66,10 @@ export default async function InjuryAvailabilityReportPage({
   const isMedical = claims.roles.includes('medical');
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
-  const days = PERIODS.includes(Number(params.days) as (typeof PERIODS)[number]) ? Number(params.days) : 28;
-
-  const today = todayIso(timezone);
-  const fromDate = addDays(today, -(days - 1));
+  const period = await resolveInjuryPeriod(db, orgId, timezone, periodParamsFrom(params));
+  const fromDate = period.from;
+  const today = period.to;
+  const caveat = periodCaveat(period);
 
   const [groups, report] = await Promise.all([
     fetchGroups(db, orgId),
@@ -62,9 +77,14 @@ export default async function InjuryAvailabilityReportPage({
   ]);
 
   const actorRole = (isMedical ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
+  // The audit row records the RESOLVED window and the key that produced it,
+  // not the raw param: "a report is a data disclosure that leaves the system"
+  // (screens/reports.md), and `period=all` alone does not say what was
+  // actually disclosed — the dates do.
   await recordReportView(db, orgId, claims.userId, actorRole, 'injury_availability', {
     from: fromDate,
     to: today,
+    period: period.key,
     group_ids: groupIds,
     medical: isMedical,
   });
@@ -79,10 +99,10 @@ export default async function InjuryAvailabilityReportPage({
           <h1>Injury &amp; availability</h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <a href={`/reports/injuries/export?days=${days}${groupIds.length ? `&groups=${groupIds.join(',')}` : ''}`} className="btn-ghost">
+          <a href={`/reports/injuries/export?${exportQuery(period.key, groupIds)}`} className="btn-ghost">
             Export CSV
           </a>
-          <a href={`/reports/injuries/pdf?days=${days}${groupIds.length ? `&groups=${groupIds.join(',')}` : ''}`} className="btn-ghost">
+          <a href={`/reports/injuries/pdf?${exportQuery(period.key, groupIds)}`} className="btn-ghost">
             Export PDF
           </a>
         </div>
@@ -99,24 +119,31 @@ export default async function InjuryAvailabilityReportPage({
       ) : null}
 
       <p className="eyebrow" style={{ marginBottom: 10 }}>
-        {groupScopeLabel(groups, groupIds)} · {orgName} · {formatDate(fromDate, timezone)} to {formatDate(today, timezone)} · {report.summary.athleteCount} athletes
+        {groupScopeLabel(groups, groupIds)} · {orgName} · {period.label} · {formatDate(fromDate, timezone)} to {formatDate(today, timezone)} · {report.summary.athleteCount} athletes
       </p>
 
       <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
         <GroupFilter groups={groups} selected={groupIds} />
-        <div className="chiprow">
-          {PERIODS.map((d) => (
-            <Link
-              key={d}
-              href={`/reports/injuries?days=${d}${groupIds.length ? `&groups=${groupIds.join(',')}` : ''}`}
-              className="squad-chip"
-              aria-pressed={days === d}
-            >
-              {PERIOD_LABELS[d] ?? `${d} days`}
-            </Link>
-          ))}
-        </div>
+        {/* `value` is the CLAMPED key, not the raw URL value: a select whose
+            value matches no option silently displays the first one instead,
+            so the control must show what actually rendered. `allowed` leaves
+            `day` and `week` visible-but-disabled with their reasons; `season`
+            is passed through so the option is absent entirely when the club
+            has no current season row. */}
+        <PeriodSelector
+          value={period.key}
+          allowed={INJURY_PERIODS}
+          reasons={INJURY_PERIOD_REASONS}
+          season={period.season}
+          ariaLabel="Reporting period"
+        />
       </div>
+
+      {caveat ? (
+        <p className="cap" style={{ marginBottom: 12 }}>
+          {caveat}
+        </p>
+      ) : null}
 
       <ReportPager
         pages={[
@@ -124,6 +151,20 @@ export default async function InjuryAvailabilityReportPage({
             label: 'Current',
             content: (
               <div className="card flush">
+                {/* Said out loud now that the period control can read
+                    "This season" or "All on record" beside it. This list is
+                    NOT windowed and must not become so: fetchNotFullyAvailable
+                    answers "who cannot train today" from the live availability
+                    row, with no date bound anywhere in it, which is exactly
+                    what stops a longer period from appearing to change who is
+                    injured. Date-bounding it would hide an athlete whose
+                    injury started before `from` and who is still unavailable —
+                    the same false-reassurance class as the group-filter case
+                    below. The PDF carries this sentence too. */}
+                <p className="cap" style={{ padding: '14px 16px 0' }}>
+                  Availability as of {formatDate(today, timezone)} — not a snapshot of the
+                  selected period. The period applies to the summary and burden figures.
+                </p>
                 {report.current.length === 0 ? (
                   /* The audit's worst S4 case (analysis finding 27): this said
                    * "Everyone is available." while a forgotten group filter hid
@@ -260,6 +301,17 @@ export default async function InjuryAvailabilityReportPage({
                 <p className="tiny" style={{ marginTop: 14 }}>
                   Days lost and availability are computed from each injury&rsquo;s onset and
                   return date, not a day-by-day reconstruction of every availability change.
+                  {/* Only worth saying once the window can outlive the squad
+                      list it is divided by. Availability % is (squad × days −
+                      days lost) / (squad × days), and `squad` is TODAY's live
+                      roster — so over a season or all on record it counts
+                      days for athletes who had not joined yet and none for
+                      athletes who have since left. Honest at 28 days,
+                      increasingly approximate beyond it, and the reader
+                      should know which they are looking at. */}
+                  {period.days > 90
+                    ? ' Availability is measured against the current squad, so over a window this long it counts days for athletes who joined part-way through it.'
+                    : ''}
                 </p>
               </div>
             ),

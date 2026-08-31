@@ -236,6 +236,10 @@ The denominator is `compliance_expectations`, never a flat expectation. Waivers 
 from both numerator and denominator and are reported separately with their reasons, so a coach
 can see the difference between "did not submit" and "was not asked".
 
+**As built**: the window is `?period=` (`week`, `month`, `season`, `year`, `all`; default
+`week`), widened from the old `?days=` chip row's 7/14/28. It composes with the separate
+`?to=` day anchor. See "The period control, as built" below.
+
 ### 4. Injury and availability report
 
 **Question**: who is out, for how long, and what is it costing?
@@ -270,6 +274,151 @@ header and footer, and their file name states it.
 This is the report the "left / right reports" annotation was drawn against, so the pager is the
 primary navigation and the pages are ordered from the most-asked question to the least.
 
+**As built**: the window is `?period=` (`month`, `season`, `year`, `all`; default `season`).
+Before this it had **no window at all** — no `days`, no `from`, no `todayIso` anywhere in the
+route, and all three queries dateless — so page 4's longitudinal series plotted the club's
+entire history and page 2's "best attempt" was an all-time read. Page 2's heading and the
+export captions now name the window rather than saying "personal best". See "The period
+control, as built" below. `lib/queries/testingReport.ts`'s header, which used to claim there
+was no `seasons` table to bound against, was already corrected before this pass and is
+corrected again for the unboundedness itself.
+
+---
+
+## The period control, as built
+
+`PeriodSelector` (`src/components/PeriodSelector/PeriodSelector.tsx`, wrapping
+`ReportSelectNav`) is live on the **athlete report**, the **injury and availability report**,
+the **compliance report** and the **testing report**. It writes `?period=<key>`, one of the
+six `RangeKey`s in `src/lib/period.ts` (`day | week | month | season | year | all`), and it
+replaced a hand-rolled chip row on each screen that wrote `?days=<n>` from a per-screen
+allow-list — except on the testing report, which had no window control and no window at all.
+
+Each report resolves the period once, in a module colocated with its routes
+(`reports/injuries/period.ts`, `reports/athlete/[athleteId]/period.ts`,
+`reports/compliance/period.ts`, `reports/testing/period.ts`), which the page, the CSV export
+and the PDF all import. That is the point of it: `?days=` was duplicated across nine files,
+and a page that started writing `?period=season` while its own PDF handler still read
+`?days=` would have produced a document silently covering 28 days.
+
+The compliance and testing modules take their four resolution steps (read the param, look up
+the season, clamp server-side, resolve the range) from `src/lib/reportPeriod.server.ts`
+rather than spelling them out again — by the fourth report the steps were plainly identical
+and only the allow-list, the fallback and the anchors differed. The injuries and athlete
+modules still spell them out inline; they are correct, their public shape would not change,
+and moving them is a separate pass.
+
+**The compliance report is the worked example of why the three surfaces must share a
+module.** It carried the allow-list three times: `PERIODS = [7, 14, 28]` in `page.tsx`, the
+same constant in `pdf/route.tsx`, and — in `export/route.ts` — the array *inlined as a
+literal*, `[7, 14, 28].includes(…)`, with no constant to grep for. That inline copy and
+`injuries/export/route.ts` are the two of the nine files a `PERIODS` search does not find, so
+a migration trusting such a grep would have left this report's CSV falling back to seven days
+while the screen showed a season.
+
+**Legacy `?days=` bookmarks still render.** `readPeriodParam` translates them, widening
+rather than narrowing when there is no exact key (`?days=90` and `?days=180` both become
+`year`), and the screen prints a caption saying it approximated rather than substituting
+silently.
+
+### Which keys each report offers, and why
+
+| Report | Offered | Disabled, with the reason shown in the option label |
+|---|---|---|
+| Athlete report | `week`, `month`, `season`, `year`, `all` | `day` — readiness is drawn against the athlete's own 14-day rolling band, and one day is one point with no band to read it against |
+| Injury and availability | `month`, `season`, `year`, `all` | `day`, `week` — days lost and availability % are inherently multi-week, and burden is bucketed by week, so a seven-day injury report is a chart of the control rather than of the squad |
+| Compliance | `week`, `month`, `season`, `year`, `all` | `day` — a one-day compliance percentage is just "did they submit today", which is `/dashboard`'s job and which it answers with names rather than a rate |
+| Testing | `month`, `season`, `year`, `all` | `day`, `week` — testing is *episodic*; a seven-day window on a test battery is usually a single session, which is `/testing/[testDefId]`, and the squad-median trend degenerates to one point |
+
+**Defaults are per report and are not all `DEFAULT_RANGE`.** Compliance defaults to `week`,
+the 7 days its old chip row defaulted to: widening the window is the coach's call, and
+silently quadrupling it during a migration would change what every bookmark-free open shows.
+Testing defaults to **`season`**, deliberately wider than `DEFAULT_RANGE`'s 28 days, because
+28 days is under most clubs' retest interval and a `month` default would open that report
+empty for a squad that tests every six weeks. A club with no season row falls back to `year`
+there, not `month`, for the same reason. (`season` is also the window `fetchCurrentSeason`
+was added to the codebase for — its own header names "the testing report's season's best
+tile".)
+
+Illegal keys are **disabled with the reason, never hidden** (the rule `analytics.md` already
+sets). `season` is the one exception and a different fact: when the org has no current season
+row it is **absent**, because that is true of the organisation on every screen and there is
+nothing a coach can act on from inside a period control. Both are also coerced server-side
+(`clampPeriod`), because the control alone does not stop a hand-typed URL.
+
+### What the period does not reach
+
+**ACWR is pinned to trailing 7:28 on the athlete report, whatever the period says.** The
+ratio is *defined* as a trailing 7-day acute load over a trailing 28-day chronic load
+(`ACWR_ACUTE_WINDOW_DAYS` / `ACWR_CHRONIC_WINDOW_DAYS`, `src/lib/acwr.ts`); there is no
+season-long or all-time ACWR to show. `fetchAthleteReport` derives both window starts from
+today alone and never from the period's `from`, and the three load tiles carry their fixed
+windows in their own labels plus a caption spelling it out — on the page, in the PDF, and as
+a comment line in the CSV. Everything else on that tab (GPS totals, session load by day) is
+genuinely period-scoped and is captioned "this period".
+
+**The injury report's Current tab is not windowed either.** `fetchNotFullyAvailable` answers
+"who cannot train today" from the live availability row with no date bound anywhere in it,
+which is exactly what stops a longer period from appearing to change who is injured — an
+athlete whose injury started before `from` is still unavailable and still listed. Only the
+period summary and burden figures are windowed, and all three surfaces say so. Date-bounding
+that list would hide genuinely unavailable people, the same false-reassurance class as the
+group-filter case the empty state already guards against.
+
+**The compliance report's `?to=` day anchor is a second, orthogonal control and stays one.**
+`?to=` picks which day the window ends on; `?period=` picks how far back from it. They
+compose and neither resets the other. The anchor still defaults to the most recent day the
+org actually has expectations for rather than real today (audit finding 14), and — this is
+the part that would silently reintroduce that bug — the period is resolved *against the
+anchor*, not against `todayIso(timezone)`. Resolving against the wall clock while querying
+against the anchor would end the window on a day with no data and put "0 of 0" back one layer
+down.
+
+**"Personal best" on the testing report is now "best in the window".** Bounding that report
+changes what its grid means, so the copy changed with it: the heading reads "Best per test —
+*this season*" and names the dates, on the page, in the PDF and in the CSV caption. At
+`?period=all` it reads "All on record", which is the old, unbounded behaviour said out loud.
+The empty states changed for the same reason — "no result recorded for this test **yet**" was
+true of an all-time read and is a lie about a bounded one, so they now name the window and
+point at the widest one available.
+
+### Widening multiplies rows
+
+Every query on all four reports whose window can now grow pages through `fetchAllPaged`
+(`src/lib/queries/paged.ts`) with a total order ending in `id`. PostgREST caps an
+unpaginated read at 1000 rows and does not error. Two reads on the athlete report were
+replaced outright rather than paged in place: the squad-wide compliance report it used to
+call for one athlete's percentage, and the org-wide session fan-out with its hard 200-row
+slice. Both replacements live at the foot of `src/lib/queries/athleteReport.ts`.
+
+One fix fell out of this: the athlete report's load query was bounded to the ACWR window
+while its day list was built over the whole period, so `?days=90` already rendered 62
+permanently-empty days and exported 62 empty CSV rows. The read now spans whichever window is
+longer and ACWR takes its 28-day slice out of the result.
+
+Availability % on the injury report is measured against **today's** squad, so over a season
+or longer it counts days for athletes who joined part-way through. The page says so once the
+window passes 90 days.
+
+**Compliance was the most exposed read in the tree and was never paged.** Its four
+window-scaled queries — `compliance_expectations` plus the three submission sources
+(`wellness_entries_current`, `training_entries_current`, `gym_session_logs`) — all now page.
+The expectations read is `athletes × days × domains`: a 40-athlete squad with three domains
+is 120 rows a day, over the 1000-row ceiling before the **ninth** day and roughly 44,000 rows
+over a season. Truncating the three submission reads without truncating the denominator does
+not merely lose rows, it *invents non-compliance*. `fetchComplianceReport` is also called by
+the athlete and squad-weekly reports, so both got the fix for free.
+
+**The testing report's three reads were unbounded from the start**, which is the defect this
+pass exists to close rather than a consequence of it. `fetchTestingByAthlete`,
+`fetchTestByTest` and `fetchTestLongitudinal` took no dates at all, and the longitudinal one
+simply `.order('test_date')` — so "squad median over time" plotted every result the club had
+ever recorded (a squad three seasons deep saw a trend dominated by athletes who have left)
+and, past 1000 rows, was truncated at an arbitrary date with no error. All three now take the
+resolved window and page. Two of them also had their group scope moved *into* the query from
+a post-filter, which is wrong the moment a read is paged: the 1000-row ceiling would be spent
+on out-of-scope athletes and the in-scope ones silently truncated behind them.
+
 ---
 
 ## Components
@@ -277,7 +426,7 @@ primary navigation and the pages are ordered from the most-asked question to the
 | Component | Source | Purpose |
 |---|---|---|
 | `GroupFilter` | `06-design-system.md` §6.7 | Scopes squad reports. Recorded into the run so an exported file states the filter |
-| `PeriodSelector` | §6.8 | Report period |
+| `PeriodSelector` | §6.8 | Report period. **Built and live** on the athlete, injury, compliance and testing reports — see "The period control, as built" above for the offered keys per report and what the period deliberately does not reach |
 | `MetricTile` | §6.2 | Headline tiles |
 | `TrendSparkline` | §6.3 | Inline trends in tables |
 | `ComplianceRing` | §6.6 | Compliance summary |
@@ -482,6 +631,7 @@ Report generation is asynchronous above a threshold. Below it, a report renders 
 | Condition | Behaviour |
 |---|---|
 | Athlete report, one athlete, period up to 90 days | Rendered inline, page by page, first page in under 1.5 s |
+| Athlete report at `season`, `year` or `all` (capped at `MAX_WINDOW_DAYS`, 730) | Slower by the paging: the load, GPS, gym, compliance and session reads each cross the 1000-row page boundary at that length. Correctness before latency — a short read here is a wrong ACWR, not a slow one |
 | Squad report, up to 40 athletes, one week | Rendered inline, first page in under 2 s |
 | Anything larger, or any PDF or XLSX export | Queued, generated by an Edge Function, notification when ready |
 

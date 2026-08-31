@@ -1461,27 +1461,78 @@ Behaviour:
 
 ### 7.10 PeriodSelector
 
+**As built.** `src/components/PeriodSelector/PeriodSelector.tsx`, over the range model in
+`src/lib/period.ts` and the cookie fallback in `src/lib/period.server.ts`. This entry has been
+rewritten to describe what exists; the previous specification is recorded at the end because
+two of its decisions were wrong rather than merely unbuilt.
+
 ```ts
-export type Period =
-  | { kind: 'today' } | { kind: 'thisWeek' } | { kind: 'last7' }
-  | { kind: 'last28' } | { kind: 'season' } | { kind: 'custom'; from: string; to: string };
+// src/lib/period.ts — the vocabulary. Six keys, exactly the client's own list.
+export type RangeKey = 'day' | 'week' | 'month' | 'season' | 'year' | 'all';
 
 export type PeriodSelectorProps = {
-  value: Period;
-  onChange: (p: Period) => void;
-  allowed?: Period['kind'][];
-  variant?: 'segmented' | 'trigger';
-  showResolvedRange?: boolean;
-  disabled?: boolean;
+  /** The key the page ACTUALLY resolved and queried, after clampPeriod(). */
+  value: RangeKey;
+  /** Keys this screen's data can honestly express. Omitted means all six. */
+  allowed?: readonly RangeKey[];
+  /** Why each disallowed key is disallowed; appended to its label. */
+  reasons?: Partial<Record<RangeKey, string>>;
+  /** From fetchCurrentSeason / fetchCurrentSeasonWindow. Null hides "This
+   *  season". Required, with no default, on purpose. */
+  season: { name: string } | null;
+  label?: string;      // default 'Period'
+  paramKey?: string;   // default 'period'; override only mid-migration
+  ariaLabel?: string;
 };
 ```
 
-Default is `last28`, matching the 7:28 acute-to-chronic convention and the source's own
+Labels come from `RANGE_OPTIONS` in `lib/period.ts` and are the same six everywhere: `Today`,
+`Last 7 days`, `Last 28 days`, `This season`, `Last 365 days`, `All on record`. Default is
+`month` (`DEFAULT_RANGE`), matching the 7:28 acute-to-chronic convention and the source's own
 "Squad workload · last 28 days" card. The resolved range is always shown somewhere on the
-screen, because "Last 28 days" alone does not tell a coach whether today is included.
+screen, because "Last 28 days" alone does not tell a coach whether today is included;
+`resolveRange()` returns the real `from`/`to` and a `clipped` flag for the screen to print.
 
-Rendered as `.squad-chip` in a row, so the period control and the group filter read as the
-same kind of thing.
+**It is a wrapper over `ReportSelectNav`, not a new control.** That is the substance of it, not
+an implementation detail: `ReportSelectNav` rebuilds the next href from the live
+`useSearchParams()`, so every other param survives a period change. Three hand-rolled period
+chip rows in the app do not, and `/reports/athlete/[athleteId]` drops `?groups=` outright when
+the period changes — a CLAUDE.md §3 violation caused purely by hand-building an href. Screens
+adopting `PeriodSelector` get that fixed for free.
+
+**Disabled versus absent.** Two different facts, rendered differently:
+
+| Cause | Rendering | Why |
+|---|---|---|
+| Key not in `allowed` — the screen's data cannot express it | **Disabled, with the reason in the label** | `screens/analytics.md`: "Illegal combinations are disabled with the reason, not hidden". The capability exists elsewhere; hiding it makes the control a different length on every screen |
+| Org has no current season row | **Absent** | The option does not exist for this organisation anywhere, and there is nothing a coach can act on from inside a period control. Matches `/analytics` as already built |
+
+The selected value is never hidden, even when it would otherwise be removed — a `<select>` whose
+value matches no option silently displays a different one.
+
+**Two keys are never universally legal**, documented in full in `lib/period.ts`'s header:
+`day` is meaningless for anything with a rolling band (a 14-day wellness baseline or a 28-day
+chronic load has nothing to draw at one-day resolution), and `all` is meaningless for a ratio
+(ACWR is *defined* as 7-day acute over 28-day chronic; there is no all-time ACWR). Screens pass
+the legal set as `allowed` and a reason for the rest.
+
+**Persistence.** The choice writes a `fydr-period` cookie (180 days, same lifetime as
+`fydr-group-filter`) from an effect on the *resolved* value, so what sticks is what actually
+rendered rather than what was clicked. `resolvePeriod()` in `lib/period.server.ts` applies it:
+the URL wins whenever `?period=` is present at all, **including present and empty** — that is
+"the user cleared it", not "no period specified" — and only a genuinely absent key falls back to
+the cookie. Identical rule, and identical reasoning, to `resolveGroupFilter()`.
+
+**Superseded specification.** The original entry specified `Period = { kind: 'today' } | ... |
+{ kind: 'custom'; from, to }` with `variant: 'segmented' | 'trigger'`, rendered as `.squad-chip`
+in a row. Not followed, on two counts. The union predates the client's instruction — *"adjust
+the period of any data from the day to the week to the season to the year to all"* — so it is
+missing `year` and `all`, and it carries `custom`, which nothing in the app implements or has a
+UI for. And the control is a `<select>`, because that is what `ReportSelectNav` is and because a
+native option list is the only thing on this stack that can render a disabled option carrying
+its own reason; a chip row would mean a second control to keep in sync with the first.
+`showResolvedRange` and `disabled` were dropped as unused: the resolved range is printed by the
+screen from `resolveRange()`, and no screen has a reason to disable the period control outright.
 
 ### 7.11 DayWeekToggle
 

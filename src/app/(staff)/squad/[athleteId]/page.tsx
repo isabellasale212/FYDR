@@ -9,13 +9,17 @@ import { PlayerProfileFlags } from '@/components/PlayerProfileFlags/PlayerProfil
 import { BodyWeightPanel } from '@/components/BodyWeightPanel/BodyWeightPanel';
 import { SetAvailabilityFormCoach } from '@/components/SetAvailabilityFormCoach/SetAvailabilityFormCoach';
 import { EntryCorrectionPanel } from '@/components/EntryCorrectionPanel/EntryCorrectionPanel';
+import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { fetchPlayerProfile, bandTone, type Tone } from '@/lib/queries/playerProfile';
 import { fetchBodyCompositionEntries } from '@/lib/queries/bodyComposition';
+import { fetchCurrentSeason } from '@/lib/queries/schedule';
 import {
   fetchTrainingWithRevisions,
   fetchWellnessWithRevisions,
 } from '@/lib/queries/entryRevisions';
 import { addDays, enumLabel, formatDate, formatNumber, initials, ordinal, todayIso } from '@/lib/format';
+import { DEFAULT_RANGE, clampPeriod, resolveRange, type RangeKey } from '@/lib/period';
+import { resolvePeriod } from '@/lib/period.server';
 import { availabilityStatus } from '@/lib/status';
 import { requireStaff } from '@/lib/session';
 
@@ -105,10 +109,103 @@ function sparklinePaths(history: { kg: number }[]): { line: string; fill: string
   return { line, fill };
 }
 
+/* THE PERIOD CONTROL ON THIS PAGE IS PER-PANEL, NOT PAGE-WIDE.
+ *
+ * docs/screens/athlete-profile.md specs a PeriodSelector here, "applicable and
+ * global". Global it is — one control in the header, one `?period=`, sticky
+ * across screens like every other. But it does NOT re-scope every panel, and
+ * pretending otherwise would have been the bug, for two independent reasons
+ * that have nothing to do with each other:
+ *
+ *  1. THE ACWR DIAL MUST NOT MOVE. ACWR is defined as a trailing 7-day acute
+ *     load over a trailing 28-day chronic load (ACWR_ACUTE_WINDOW_DAYS /
+ *     ACWR_CHRONIC_WINDOW_DAYS, lib/acwr.ts). There is no season-long or
+ *     all-time ACWR — widening the window would not widen the ratio, it would
+ *     only change how many already-trailing ratios you were looking at, and
+ *     the ONE number the dial shows would print identically at every period
+ *     while appearing to have responded to the control.
+ *
+ *  2. THE CORRECTION PANEL'S 28 DAYS MUST NOT MOVE EITHER, for a completely
+ *     different reason: it is a PERFORMANCE bound on a base-table read, not a
+ *     view window. See CORRECTION_WINDOW_DAYS below, whose own comment already
+ *     said so before this control existed.
+ *
+ * Rather than let either leak, both now carry a VISIBLE caption naming the
+ * fixed window they really use, so a coach who has set the page to "Last 365
+ * days" can see at a glance which two panels did not follow. An unlabelled
+ * panel that ignores the control is worse than no control at all.
+ *
+ * `day` is offered but DISABLED with its reason, per this codebase's own rule
+ * (docs/screens/analytics.md, "Illegal combinations are disabled with the
+ * reason, not hidden"): both panels the control drives are trends — a
+ * sparkline and a rolling band — and one day is one point, not a trend. */
+const PROFILE_PERIODS: readonly RangeKey[] = ['week', 'month', 'season', 'year', 'all'];
+const PROFILE_PERIOD_REASONS: Partial<Record<RangeKey, string>> = {
+  day: 'one day is one point, not a trend',
+};
+
+/* THIS SCREEN'S DEFAULT IS `season`, NOT DEFAULT_RANGE.
+ *
+ * DEFAULT_RANGE is `month` (28 days) and is right for most screens. It is wrong
+ * here, and shipping it would have quietly destroyed the panel this control
+ * exists to serve. The sparkline it drives read a hardcoded 120 days before
+ * this control existed, and 120 days was not arbitrary: BODY MASS IS A SLOW
+ * SIGNAL. It is watched for drift over months, and at 28 days a coach opening a
+ * profile sees a near-flat line through three or four weigh-ins — technically
+ * accurate, and useless. Most people never touch a default, so the default IS
+ * the screen for almost everyone.
+ *
+ * `season` rather than a per-panel exception or a bespoke 120-day window: it is
+ * the closest real option to the old 120 days, it is the unit a coach actually
+ * thinks in for body composition ("since pre-season"), and it stays inside the
+ * shared six keys instead of inventing a seventh that only this page knows how
+ * to read.
+ *
+ * DEGRADES TO `month` WITH NO SEASON ROW, and the existing machinery already
+ * does it: clampPeriod's own fallback is DEFAULT_RANGE, and PeriodSelector
+ * renders "This season" ABSENT (not disabled) for a club that has not set one
+ * up. So a club with no season silently gets 28 days and is never offered an
+ * option that would resolve against a null season start.
+ *
+ * APPLIED ONLY WHEN NOTHING WAS EXPRESSED. resolvePeriod reports where the key
+ * came from, and this substitution fires for `source: 'default'` alone — no
+ * `?period=` on the URL AND no usable `fydr-period` cookie. A coach who has
+ * picked a period anywhere in the app keeps it; only a first-time visitor, or
+ * one who explicitly cleared the param, lands on `season`.
+ *
+ * docs/screens/athlete-profile.md said "Default last28". That line predates the
+ * control existing — it was describing the 7:28 convention, not a chosen
+ * default for a sparkline nobody could resize — and the doc has been corrected
+ * rather than followed. */
+const PROFILE_DEFAULT_PERIOD: RangeKey = 'season';
+
+/** Below this many days, `season` is not a usable default and the screen falls
+ *  back to DEFAULT_RANGE.
+ *
+ *  A club can legitimately have a current season that starts in the future
+ *  (pre-season admin). resolveRange handles that deliberately and correctly by
+ *  collapsing the window to a single day rather than returning an inverted
+ *  `from > to`, which downstream would read as "no data" instead of "this has
+ *  not started" — that behaviour is right and is left alone. But it means the
+ *  screen default could land on a ONE-DAY window, on a screen whose own control
+ *  disables `day` with the reason "one day is one point, not a trend". A
+ *  default that resolves to something the control calls illegal is worth one
+ *  guard.
+ *
+ *  Applies to the DEFAULT ONLY. A coach who explicitly picks "This season" in
+ *  pre-season gets exactly that, because honouring a stated choice outranks
+ *  second-guessing it, and the card captions state the real day count and
+ *  weigh-in sample either way. */
+const MIN_USEFUL_DEFAULT_DAYS = 7;
+
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
 export default async function AthletePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ athleteId: string }>;
+  searchParams: SearchParams;
 }) {
   const { athleteId } = await params;
   const { db, orgId, orgName, timezone, claims } = await requireStaff();
@@ -142,7 +239,61 @@ export default async function AthletePage({
 
   const today = todayIso(timezone);
 
-  const profile = await fetchPlayerProfile(db, orgId, athleteId, timezone);
+  /* URL first, sticky cookie second, DEFAULT_RANGE last — resolvePeriod. Then
+   * clamped SERVER-SIDE as well as disabled in the control: the control alone
+   * does not stop a hand-typed or bookmarked `?period=day`, and the query and
+   * the control must never disagree about what rendered.
+   *
+   * fetchCurrentSeason, never fetchCurrentSeasonId — the `seasons_one_current`
+   * index is partial (`where is_current and deleted_at is null`), so the
+   * unfiltered lookup can legally see two rows and throw. starts_on is a
+   * `date` column and is passed through as a plain YYYY-MM-DD string; it must
+   * NOT go through dateInTz (CLAUDE.md rule 5 governs instants, not calendar
+   * dates that are already date-typed). */
+  const sp = await searchParams;
+  const [requestedPeriod, season] = await Promise.all([
+    resolvePeriod(sp),
+    fetchCurrentSeason(db, orgId),
+  ]);
+
+  /* `source: 'default'` is resolvePeriod's way of saying "nobody expressed a
+   * preference" — no `?period=`, and no usable cookie either. That, and only
+   * that, is where this screen substitutes its own default (see
+   * PROFILE_DEFAULT_PERIOD). Every other source — 'period', 'legacy-range',
+   * 'legacy-days', 'cookie' — is a real choice and is honoured untouched, which
+   * is what keeps a coach who picked "Last 7 days" on another screen from
+   * having it silently widened back to a season here. */
+  const expressed = requestedPeriod.source !== 'default';
+
+  /* The pre-season guard (MIN_USEFUL_DEFAULT_DAYS). resolveRange is pure and
+   * deterministic, so previewing the season window here and resolving it again
+   * inside fetchPlayerProfile cannot disagree — `earliest` is irrelevant to
+   * `season`, which anchors on starts_on alone. */
+  const seasonPreviewDays =
+    season !== null ? resolveRange('season', today, season.starts_on, null).days : 0;
+  const screenDefault: RangeKey =
+    season !== null && seasonPreviewDays >= MIN_USEFUL_DEFAULT_DAYS ? PROFILE_DEFAULT_PERIOD : DEFAULT_RANGE;
+
+  const requestedKey = expressed ? requestedPeriod.key : screenDefault;
+  const period = clampPeriod(requestedKey, {
+    allowed: PROFILE_PERIODS,
+    seasonAvailable: season !== null,
+    // fallback is DEFAULT_RANGE ('month') — deliberately NOT
+    // PROFILE_DEFAULT_PERIOD, which is the very value that can be illegal here.
+  });
+
+  /* Only a coach's OWN unavailable choice is worth a sentence. When the screen
+   * default `season` is coerced because the club has no season row, that is not
+   * something the reader asked for or can act on from inside a period control —
+   * and PeriodSelector has already removed the option entirely rather than
+   * showing it disabled, so there is nothing on screen to explain. Reporting it
+   * would be noise about a decision they never made. */
+  const coercedFromChoice = expressed ? period.coercedFrom : null;
+
+  const profile = await fetchPlayerProfile(db, orgId, athleteId, timezone, {
+    key: period.key,
+    seasonStart: season?.starts_on ?? null,
+  });
   if (!profile) notFound();
 
   // body_composition's own RLS (migration 0024) grants insert/update to
@@ -207,7 +358,49 @@ export default async function AthletePage({
             {athlete.first_name} {athlete.last_name}
           </h1>
         </div>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <PeriodSelector
+            value={period.key}
+            allowed={PROFILE_PERIODS}
+            reasons={PROFILE_PERIOD_REASONS}
+            season={season}
+            /* Sticky only when the coach actually chose this window. This
+             * screen's default is `season` where DEFAULT_RANGE is `month`, and
+             * the cookie is account-wide — without this, opening a profile once
+             * would carry `season` to Analytics and everywhere else, a window
+             * they never picked and could neither see the origin of nor undo.
+             * An explicit choice (URL, cookie, or a click on this control) sets
+             * `expressed` and still sticks everywhere, which is the behaviour
+             * the period model was actually asked for.
+             *
+             * AND not when that choice was CLAMPED. `expressed` alone was the
+             * wrong half of the test on its own: a coach arriving with a
+             * perfectly good `day` cookie meets PROFILE_PERIODS, gets coerced to
+             * `month`, and the write would push this screen's opinion back out
+             * over their real preference. Same rule as periodSticky()
+             * (lib/reportPeriod.server.ts) and /dashboard, which is where this
+             * failure actually bites. */
+            sticky={expressed && period.coercedFrom === null}
+            ariaLabel="Period for the body weight and wellness trends"
+          />
+        </div>
       </div>
+
+      {/* The one sentence that keeps a "global" control from lying. Both facts
+        * it can carry are real and both are otherwise invisible: that only two
+        * panels follow the control, and — when resolveRange says so — that
+        * MAX_WINDOW_DAYS clipped the window the label promised. */}
+      <p className="cap" style={{ margin: '0 0 12px' }}>
+        {profile.range.label} ({profile.range.days} day{profile.range.days === 1 ? '' : 's'},{' '}
+        {formatDate(profile.range.from, timezone)} to {formatDate(profile.range.to, timezone)}) applies to
+        Body weight and Wellness rating, and to nothing else on this page. ACWR is fixed at acute 7d over
+        chronic 28d and entry corrections at a fixed 28 days &mdash; both say so on their own cards.
+        Athleticism, Injuries, Flags and Nutrition are not windowed at all.
+        {profile.range.clipped ? ' Clipped to the two-year maximum this app reads in one window.' : ''}
+        {coercedFromChoice !== null
+          ? ` "${coercedFromChoice}" is not available on this screen, so ${profile.range.label.toLowerCase()} is shown instead.`
+          : ''}
+      </p>
 
       <div className="pp-col">
         {programme ? (
@@ -461,7 +654,10 @@ export default async function AthletePage({
               <div className="pp-dials">
                 <div className="pp-dial-col">
                   <p className="pp-dial-title pp-dial-col-head">ACWR</p>
-                  <p className="mono pp-dial-window pp-dial-col-head">acute 7d over chronic 28d</p>
+                  {/* Names its own fixed windows, and now says they are fixed:
+                    * the header's period control does not reach this dial and
+                    * cannot, because ACWR IS the 7-over-28 ratio. */}
+                  <p className="mono pp-dial-window pp-dial-col-head">fixed · acute 7d over chronic 28d</p>
                   <div className="pp-big-dial">
                     <Dial size={116} pct={acwr.pct} tone={TONE_VAR[acwr.status.tone]}>
                       <div>
@@ -482,7 +678,18 @@ export default async function AthletePage({
                 </div>
                 <div className="pp-dial-col">
                   <p className="pp-dial-title pp-dial-col-head">Wellness rating</p>
-                  <p className="mono pp-dial-window pp-dial-col-head">mean readiness, last 7 days</p>
+                  {/* THREE windows on this one card, and they are not the same
+                    * — so each is named where it applies rather than one label
+                    * being left to stand for all of them:
+                    *   the MEAN  — trailing 28 days, capped (here)
+                    *   the COUNT — the selected period (meta line below)
+                    *   the BAND  — a 14-day rolling baseline (meta line below)
+                    * The mean is capped because readiness is a fast signal and
+                    * a dial collapses its window to one number; see
+                    * queries/playerProfile.ts's header. */}
+                  <p className="mono pp-dial-window pp-dial-col-head">
+                    mean readiness · last {wellnessRating.meanWindowDays} days
+                  </p>
                   <div className="pp-big-dial">
                     <Dial size={116} pct={wellnessRating.meanPct} tone="var(--accent)">
                       <div>
@@ -496,7 +703,14 @@ export default async function AthletePage({
                   <p className="pp-dial-status" style={{ color: TONE_TEXT_VAR[wellnessRating.status.tone] }}>
                     {wellnessRating.status.label}
                   </p>
-                  <p className="mono pp-dial-meta">{wellnessRating.submittedN} of 7 days submitted</p>
+                  <p className="mono pp-dial-meta">
+                    {wellnessRating.submittedN} of {wellnessRating.windowDays} days submitted ·{' '}
+                    {wellnessRating.windowLabel.toLowerCase()}
+                    {wellnessRating.meanWindowDays < wellnessRating.windowDays
+                      ? ' — the count follows the period, the mean above does not'
+                      : ''}
+                    {' · '}status vs his own 14-day baseline
+                  </p>
                 </div>
               </div>
             </section>
@@ -603,6 +817,15 @@ export default async function AthletePage({
                   <path d={spark.line} fill="none" stroke="var(--accent2)" strokeWidth="2.4" strokeLinejoin="round" />
                 </svg>
               ) : null}
+              {/* The sparkline's window was a silent, hardcoded 120 days. It is
+                * now whatever the header control says, and the line says which
+                * — with the real sample behind it, because a wide window with
+                * four weigh-ins in it is not the trend it looks like. */}
+              <p className="cap" style={{ marginTop: 6 }}>
+                {profile.range.label.toLowerCase()} · {bodyWeight.history.length} weigh-in
+                {bodyWeight.history.length === 1 ? '' : 's'} in this window
+                {bodyWeight.history.length < 2 ? ' — not enough for a trend line' : ''}
+              </p>
 
               <BodyWeightPanel
                 orgId={orgId}
@@ -621,6 +844,18 @@ export default async function AthletePage({
           * either a horizontal scroll on every row or a truncated history. Placed
           * above the admin-only subject-access block so the last thing a coach sees
           * on the page is their own tool, not a compliance one. */}
+        {/* Captioned, not moved. CORRECTION_WINDOW_DAYS is a performance bound
+          * on a base-table read (see its own comment above), so the header's
+          * period control deliberately does not reach it — and a coach who has
+          * set the page to a year must be told that, or a correction they
+          * cannot find here reads as an entry that does not exist. */}
+        <p className="cap" style={{ margin: '0 0 -6px' }}>
+          Entry corrections cover a fixed {CORRECTION_WINDOW_DAYS} days ({formatDate(correctionRange.from, timezone)}{' '}
+          to {formatDate(correctionRange.to, timezone)}) and do not follow the period control &mdash; it is a
+          bound on how much of the entry base table this card reads, not a view window. An older entry is
+          still correctable, just not from here.
+        </p>
+
         <EntryCorrectionPanel
           athleteId={athlete.id}
           athleteFirstName={athlete.first_name}

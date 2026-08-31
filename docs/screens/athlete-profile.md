@@ -76,8 +76,108 @@ Four jobs:
 `disabled` per `06-design-system.md` §6.7, rather than being absent. A control that disappears
 on some screens is a control a coach stops looking for.
 
-**Period selector**: applicable and global. Default `last28`, matching the 7:28 acute-to-chronic
-convention.
+**Period selector**: applicable and global. `?period=`, sticky across screens via the
+`fydr-period` cookie (`lib/period.server.ts`).
+
+**AS BUILT — the default is `season`, not `last28`.** This line used to read "Default `last28`,
+matching the 7:28 acute-to-chronic convention". That predates the control existing: it was
+describing the ACWR convention, not choosing a window for a sparkline nobody could yet resize.
+Followed literally it would have broken the panel the control exists to serve.
+
+Body mass is a **slow signal** — it is watched for drift over months, which is why the sparkline's
+pre-control window was a hardcoded 120 days. At 28 days a coach opening a profile sees a near-flat
+line through three or four weigh-ins: technically accurate, and unreadable. Most people never
+change a default, so the default *is* the screen for almost everyone; captioning a bad default
+makes it honest, not useful.
+
+`season` is chosen because it is the closest real option to the old 120 days, because it is the
+unit a coach actually thinks in for body composition ("since pre-season"), and because it stays
+inside the shared six `RangeKey`s rather than inventing a per-panel exception only this page knows
+how to read.
+
+- **No current season row** → degrades to `month`. Existing machinery, no special case:
+  `clampPeriod`'s fallback is `DEFAULT_RANGE`, and `PeriodSelector` renders "This season" *absent*
+  rather than disabled for such a club, so the option is never offered against a null season start.
+  Not announced in the caption — it is not a choice the reader made or can act on from inside a
+  period control.
+- **Applied only when nothing was expressed.** The substitution fires for `resolvePeriod`'s
+  `source: 'default'` alone — no `?period=` on the URL *and* no usable cookie. Every other source
+  (`period`, `cookie`, the two legacy ones) is a real choice and is honoured untouched, so a coach
+  who picked a window elsewhere keeps it here.
+- **Pre-season guard.** A club can legitimately have a current season starting in the future, and
+  `resolveRange` collapses such a window to a *single day* rather than returning an inverted
+  `from > to` (right behaviour, left alone — an inverted range reads downstream as "no data"
+  instead of "this has not started"). That would land the default on a one-day window, on a screen
+  whose control disables `day` as "one day is one point, not a trend". So when the resolved season
+  window is shorter than `MIN_USEFUL_DEFAULT_DAYS` (7), the default falls back to `month`. **The
+  default only** — a coach who explicitly picks "This season" in pre-season gets exactly that,
+  because honouring a stated choice outranks second-guessing it and the captions state the real
+  day count either way.
+- **Cookie interaction — the default does NOT stick.** `PeriodSelector` takes `sticky?: boolean`
+  (default `true`); this screen passes `sticky={expressed}`, so the cookie is written only when the
+  window came from a real choice. Rationale: the cookie is account-wide, and a screen-specific
+  default silently becoming it would carry `season` to Analytics for a coach who never picked it —
+  surprising in a way they can neither see nor undo. An explicit choice (URL, cookie, or a click on
+  this control) still sticks everywhere, which is the behaviour the period model was asked for.
+  Consequence: the default is re-derived on every visit rather than seeding itself once, which is
+  the more predictable of the two.
+
+**AS BUILT — the control is global but its EFFECT is per-panel, and that is deliberate.** One
+control, one param, one sticky value; but it re-scopes exactly two panels and a caption under the
+header says so. Written down because "global" read as "page-wide" would have produced two
+different silent lies:
+
+| Panel | Window | Follows the control? |
+|---|---|---|
+| Body weight sparkline | The selected period | **Yes.** Was a hardcoded, unstated 120 days. |
+| Wellness rating dial | **Three different windows, each labelled on the card.** Mean: trailing 28 days, capped. Submission count: the selected period. Status band: a 14-day rolling baseline. | **Partly, on purpose** — see "Body mass and readiness are not the same kind of signal" below. The count follows the control; the mean and the baseline do not. |
+| ACWR dial | Acute 7d over chronic 28d | **No, and it must not.** ACWR is *defined* as that ratio (`ACWR_ACUTE_WINDOW_DAYS` / `ACWR_CHRONIC_WINDOW_DAYS`, `lib/acwr.ts`). There is no season-long or all-time ACWR: widening the window would not widen the ratio, so the dial would print an identical number at every setting while appearing to have responded. Captioned "fixed · acute 7d over chronic 28d". |
+| Entry corrections | A fixed 28 days | **No**, for an unrelated reason: it is a performance bound on a base-table read, not a view window (see the page's own `CORRECTION_WINDOW_DAYS` comment). Captioned with its real dates and with the fact that older entries are still correctable, just not from this card. |
+| Athleticism, Injuries, Flags, Nutrition plan | Not windowed at all | n/a |
+
+Allowed keys: `week`, `month`, `season`, `year`, `all`. `day` renders **disabled with its reason**
+("one day is one point, not a trend") rather than hidden, per `analytics.md`'s established rule —
+both panels the control drives are trends, and one day gives a sparkline one point and a rolling
+band nothing to sit against. `season` is **absent** rather than disabled when the org has no
+current season row: a different fact, rendered differently.
+
+**Row ceiling.** The body-weight read is paged (`fetchAllPaged`, ordered `measured_on, id`) because
+its window can now reach `MAX_WINDOW_DAYS` (730) and nothing stops an athlete having more than one
+weigh-in a day. The wellness read is *provably* bounded instead of paged: the
+`wellness_entries_one_live_per_day` unique index (migration 0004) caps it at one row per athlete per
+day, so 730 visible days plus the 14-day lead-in is at most 744 rows. If that index is ever dropped,
+`fetchWellnessByAthlete` must be paged.
+
+### Body mass and readiness are not the same kind of signal
+
+**Decided: the wellness mean is capped at a trailing 28 days; the submission count follows the
+period.** The two panels share one control, and the `season` default suits one of them better than
+the other — this is how that is resolved rather than papered over.
+
+Body mass is a **slow** signal and the sparkline shows a *shape*: a longer window adds information,
+which is the whole argument for the `season` default. Readiness is a **fast** signal and the dial
+collapses its window to *one number*: a longer window removes information. A season-long mean
+readiness barely moves, washes out exactly the peaks and troughs the dial exists to surface, and
+sits next to ACWR where the surrounding grammar reads "how is he right now".
+
+What each element of the card does at a long period:
+
+| Element | Window | Why |
+|---|---|---|
+| Centre number (mean readiness) | **Trailing 28 days, capped** (`WELLNESS_MEAN_WINDOW`) | Degrades at anything longer. A cap, not a fixed window: at `week` the mean is still 7 days, exactly as before the control existed. |
+| "n of D days submitted" | **The selected period** | Genuinely *improves* with a longer window — a season-long submission rate is a better number than a 28-day one. |
+| Status label ("Steady" / "Trending down") | **14-day rolling baseline** | Unaffected by the period either way: computed from the latest *submitted* reading against its own band. |
+
+The rejected alternative was giving the wellness panel its own fixed window and dropping it out of
+the control entirely. That would have thrown away the one part that genuinely benefits from a
+longer window in order to fix the part that degrades. Capping keeps both halves honest.
+
+This is the screen's **established grammar, not an exception invented for this card**: the wellness
+baseline is pinned at 14 days regardless of period, ACWR at 7:28, the correction panel at 28.
+"Some things are fixed and say so" is already how this page works. The card labels all three
+windows separately, and when the mean's window is shorter than the period the submission line says
+so outright ("the count follows the period, the mean above does not"), so it is never left to
+inference that they differ.
 
 **Clinical boundary**: the injury tab is the sensitive one and it is specified in full below.
 
@@ -286,7 +386,7 @@ record" linking to `injury-record.md`. Same collapsed-by-default treatment as
 
 | Component | Source | Purpose |
 |---|---|---|
-| `PeriodSelector` | `06-design-system.md` §6.8 | Header, global, all six options |
+| `PeriodSelector` | `06-design-system.md` §6.8 | Header, global. `allowed={['week','month','season','year','all']}`; `day` disabled with its reason. **Screen default `season`** (degrading to `month` with no season row, or with a season shorter than a week), not `DEFAULT_RANGE` — body mass is a slow signal. Passes **`sticky={expressed}`**, the `sticky?: boolean` prop added for this screen, so its own default never seeds the account-wide cookie while an explicit choice still does. Drives the body-weight sparkline and the wellness-rating *submission count* — the wellness *mean* is capped at 28 days. See "Period selector" above for the panel-by-panel table, the default's reasoning, and why ACWR and entry corrections do not follow it. |
 | `GroupFilter` | §6.7 | Header, `disabled` |
 | `DayWeekToggle` | §6.9 | Within domain tabs |
 | `AthleteCard` | §6.1 | Not used. The identity header is a bespoke composition at this size. |

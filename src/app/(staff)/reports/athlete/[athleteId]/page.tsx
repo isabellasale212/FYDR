@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
+import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { Pill } from '@/components/Pill/Pill';
 import { ReportPager } from '@/components/ReportPager/ReportPager';
 import { WellnessChart } from '@/components/WellnessChart/WellnessChart';
@@ -11,12 +12,35 @@ import { BLANK, ageFrom, enumLabel, formatDate, formatNumber, formatTime } from 
 import { availabilityStatus, SEVERITY_STATUS } from '@/lib/status';
 import { requireReportAccess } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
+import {
+  ACWR_WINDOW_CAPTION,
+  ATHLETE_PERIOD_REASONS,
+  ATHLETE_PERIODS,
+  exportQuery,
+  periodCaveat,
+  periodParamsFrom,
+  resolveAthletePeriod,
+} from './period';
 
 export const metadata = { title: 'Athlete report · Fydr' };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-const PERIODS = [28, 90] as const;
+/* The `?days=[28, 90]` chip row that used to live here is gone. Two separate
+ * things were wrong with it and only one of them was the narrow vocabulary:
+ *
+ *  - IT DROPPED THE GROUP FILTER. Every chip's href was
+ *    `/reports/athlete/${athleteId}?days=${d}` — hand-built from a fixed list
+ *    of keys, so `?groups=` (and anything added later) vanished on every
+ *    period change. A coach filtered to Forwards, changed the period, and
+ *    silently lost the filter: CLAUDE.md §3, broken by an href. PeriodSelector
+ *    wraps ReportSelectNav, which rebuilds from the live useSearchParams(),
+ *    so the whole class of bug is gone rather than this one instance of it.
+ *  - IT OFFERED TWO WINDOWS. Now week / month / season / year / all, with
+ *    `day` disabled-and-explained rather than hidden.
+ *
+ * The period does NOT reach the ACWR tiles on the Load tab — see ./period.ts's
+ * header, and ACWR_WINDOW_CAPTION printed under them below. */
 
 /** screens/reports.md, report 1 of 5 — see lib/queries/athleteReport.ts's
  *  header for the full scope reasoning: built now that GPS records and
@@ -32,9 +56,10 @@ export default async function AthleteReportPage({
   const { athleteId } = await params;
   const { db, orgId, claims, timezone } = await requireReportAccess();
   const sp = await searchParams;
-  const days = PERIODS.includes(Number(sp.days) as (typeof PERIODS)[number]) ? Number(sp.days) : 28;
+  const period = await resolveAthletePeriod(db, orgId, athleteId, timezone, periodParamsFrom(sp));
+  const caveat = periodCaveat(period);
 
-  const report = await fetchAthleteReport(db, orgId, athleteId, timezone, days);
+  const report = await fetchAthleteReport(db, orgId, athleteId, timezone, { from: period.from, to: period.to });
   if (!report) notFound();
 
   const { athlete, compliancePct, openFlags, currentProgrammes } = report.summary;
@@ -48,11 +73,14 @@ export default async function AthleteReportPage({
     athlete_id: athleteId,
     from: report.from,
     to: report.to,
+    period: period.key,
   });
 
   const loadDaysWithValue = report.load.byDay.filter((d) => d.load !== null);
-  // fetchAthleteRecentSessions sorts most-recent-first (screens/schedule.md's
+  // fetchAthleteSessionsInWindow sorts most-recent-first (screens/schedule.md's
   // own "recent sessions" convention), so index 0 is the latest, not the last.
+  // It is also no longer capped at 200 rows, so the count in the footer is the
+  // real one at a year or a season rather than a ceiling.
   const mostRecentSession = report.sessions.length > 0 ? report.sessions[0] : undefined;
 
   return (
@@ -68,10 +96,10 @@ export default async function AthleteReportPage({
           </h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <a href={`/reports/athlete/${athleteId}/export?days=${days}`} className="btn-ghost">
+          <a href={`/reports/athlete/${athleteId}/export?${exportQuery(period.key)}`} className="btn-ghost">
             Export CSV
           </a>
-          <a href={`/reports/athlete/${athleteId}/pdf?days=${days}`} className="btn-ghost">
+          <a href={`/reports/athlete/${athleteId}/pdf?${exportQuery(period.key)}`} className="btn-ghost">
             Export PDF
           </a>
         </div>
@@ -113,16 +141,26 @@ export default async function AthleteReportPage({
 
       <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
         <span className="eyebrow">
-          {formatDate(report.from, timezone)} to {formatDate(report.to, timezone)}
+          {period.label} · {formatDate(report.from, timezone)} to {formatDate(report.to, timezone)}
         </span>
-        <div className="chiprow">
-          {PERIODS.map((d) => (
-            <Link key={d} href={`/reports/athlete/${athleteId}?days=${d}`} className="squad-chip" aria-pressed={days === d}>
-              {d} days
-            </Link>
-          ))}
-        </div>
+        {/* `value` is the CLAMPED key, not the raw URL value — a select whose
+            value matches no option silently shows the first one instead.
+            `allowed` leaves `day` visible-but-disabled with its reason;
+            `season` is absent entirely when the club has no season row. */}
+        <PeriodSelector
+          value={period.key}
+          allowed={ATHLETE_PERIODS}
+          reasons={ATHLETE_PERIOD_REASONS}
+          season={period.season}
+          ariaLabel="Reporting period"
+        />
       </div>
+
+      {caveat ? (
+        <p className="cap" style={{ marginBottom: 12 }}>
+          {caveat}
+        </p>
+      ) : null}
 
       <ReportPager
         pages={[
@@ -194,26 +232,38 @@ export default async function AthleteReportPage({
             label: 'Load',
             content: (
               <div className="stack">
+                {/* THE THREE TILES BELOW DO NOT MOVE WITH THE PERIOD CONTROL,
+                    and the caption under them says so in words rather than
+                    leaving the coach to infer it from the tile labels. ACWR is
+                    DEFINED as trailing 7-day acute over trailing 28-day chronic
+                    (lib/acwr.ts); there is no season-long or all-time ratio to
+                    show. The risk this caption exists to close is specific: a
+                    coach who has set the control to "Last 365 days" reads
+                    "ACWR 1.42" beside it and takes it as a year-long figure.
+                    Every panel BELOW this row — GPS totals, session load by
+                    day — is genuinely period-scoped and is captioned "this
+                    period" accordingly. */}
                 <div className="grid3">
                   <div className="card">
-                    <p className="tiny">Acute (7 day)</p>
+                    <p className="tiny">Acute · trailing 7 days</p>
                     <p className="mono" style={{ fontSize: 22, fontWeight: 800 }}>
                       {report.load.acute === null ? '—' : formatNumber(report.load.acute, 0)}
                     </p>
                   </div>
                   <div className="card">
-                    <p className="tiny">Chronic (28 day, weekly)</p>
+                    <p className="tiny">Chronic · trailing 28 days, weekly</p>
                     <p className="mono" style={{ fontSize: 22, fontWeight: 800 }}>
                       {report.load.chronic === null ? '—' : formatNumber(report.load.chronic, 0)}
                     </p>
                   </div>
                   <div className="card">
-                    <p className="tiny">ACWR</p>
+                    <p className="tiny">ACWR · trailing 7:28</p>
                     <p className="mono" style={{ fontSize: 22, fontWeight: 800 }}>
                       {report.load.acwr === null ? '—' : formatNumber(report.load.acwr, 2)}
                     </p>
                   </div>
                 </div>
+                <p className="cap">{ACWR_WINDOW_CAPTION}</p>
                 {report.load.suppressed ? (
                   <p className="cap">
                     {acwrSuppressedLabel(report.load.daysWithData)} — {acwrInsufficiencyNote(report.load.daysWithData)}

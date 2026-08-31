@@ -5,6 +5,8 @@ import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, formatNumber, todayIso } from '@/lib/format';
+import { resolveTestingPeriod, testingWindow } from '../period';
+import { periodParamsFromUrl } from '@/lib/reportPeriod.server';
 import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
 import { requireReportAccess } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
@@ -22,11 +24,18 @@ export async function GET(request: Request) {
   // header meta names the resolved scope.
   const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
 
-  const [groups, byAthlete] = await Promise.all([fetchGroups(db, orgId), fetchTestingByAthlete(db, orgId, groupIds)]);
+  // Same period resolution as the page and the CSV. A PDF is the artefact most
+  // likely to outlive the session that made it, so the window it covers is
+  // resolved from the same place and then printed on it (header meta and the
+  // page footer), never left implicit.
+  const period = await resolveTestingPeriod(db, orgId, timezone, periodParamsFromUrl(url));
+  const reportWindow = testingWindow(period);
+
+  const [groups, byAthlete] = await Promise.all([fetchGroups(db, orgId), fetchTestingByAthlete(db, orgId, groupIds, reportWindow)]);
   const scopeLabel = groupScopeLabel(groups, groupIds);
   const requestedTestId = url.searchParams.get('test');
   const selectedTestId = byAthlete.definitions.find((d) => d.id === requestedTestId)?.id ?? byAthlete.definitions[0]?.id ?? null;
-  const byTest = selectedTestId ? await fetchTestByTest(db, orgId, groupIds, selectedTestId) : null;
+  const byTest = selectedTestId ? await fetchTestByTest(db, orgId, groupIds, selectedTestId, reportWindow) : null;
 
   const athleteColWidth = `${Math.max(20, 100 - byAthlete.definitions.length * 15)}%`;
   const testColWidth = byAthlete.definitions.length > 0 ? `${Math.min(15, 80 / byAthlete.definitions.length)}%` : '15%';
@@ -36,10 +45,13 @@ export async function GET(request: Request) {
       <PdfHeader
         eyebrow={`Testing · ${orgName}`}
         title="Testing report"
-        meta={`Scope: ${scopeLabel} (${byAthlete.rows.length} athletes) · ${byAthlete.definitions.length} tests`}
+        meta={`${period.range.label} · ${formatDate(reportWindow.from, timezone)} to ${formatDate(reportWindow.to, timezone)} · Scope: ${scopeLabel} (${byAthlete.rows.length} athletes) · ${byAthlete.definitions.length} tests`}
       />
 
-      <PdfSectionTitle title="By athlete" caption="Every athlete, every test, current personal best." />
+      <PdfSectionTitle
+        title="By athlete"
+        caption={`Every athlete, every test, best result between ${formatDate(reportWindow.from, timezone)} and ${formatDate(reportWindow.to, timezone)}.`}
+      />
       <PdfTable
         emptyText={groupIds.length > 0 ? `No athletes in the current scope (${scopeLabel}).` : 'No athletes in this squad yet.'}
         rows={byAthlete.rows}
@@ -60,14 +72,14 @@ export async function GET(request: Request) {
 
       {byTest ? (
         <>
-          <PdfSectionTitle title={`${byTest.definition.name} — ranked`} caption="Current best attempt per athlete." />
+          <PdfSectionTitle title={`${byTest.definition.name} — ranked`} caption={`Best attempt per athlete in ${period.range.label.toLowerCase()}.`} />
           <PdfTileRow>
             <PdfTile label="Median" value={byTest.median === null ? '—' : `${formatNumber(byTest.median, byTest.definition.decimal_places)} ${byTest.definition.unit}`} />
             <PdfTile label="Q1" value={byTest.q1 === null ? '—' : formatNumber(byTest.q1, byTest.definition.decimal_places)} />
             <PdfTile label="Q3" value={byTest.q3 === null ? '—' : formatNumber(byTest.q3, byTest.definition.decimal_places)} />
           </PdfTileRow>
           <PdfTable
-            emptyText="No result recorded for this test in this filter."
+            emptyText={`No result recorded for this test in ${period.range.label.toLowerCase()}, in this filter.`}
             rows={byTest.rows}
             columns={[
               { key: 'rank', label: 'Rank', width: '10%', render: (r) => String(r.rank) },
@@ -82,7 +94,15 @@ export async function GET(request: Request) {
   );
 
   const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
-  await recordReportView(db, orgId, claims.userId, actorRole, 'testing', { group_ids: groupIds, test_definition_id: selectedTestId, format: 'pdf' }, 'export');
+  await recordReportView(
+    db,
+    orgId,
+    claims.userId,
+    actorRole,
+    'testing',
+    { group_ids: groupIds, test_definition_id: selectedTestId, period: period.key, from: reportWindow.from, to: reportWindow.to, format: 'pdf' },
+    'export',
+  );
 
-  return pdfResponse(buffer, 'testing-report.pdf');
+  return pdfResponse(buffer, `testing-report-${reportWindow.from}-to-${reportWindow.to}.pdf`);
 }

@@ -11,6 +11,7 @@ import type { GymSetLogInput } from '@/lib/validation/gym';
 import { todayIso } from '@/lib/format';
 import { humanizeDbError } from '@/lib/writeErrors';
 import type { Db } from './groups';
+import { fetchAllPaged } from './paged';
 
 /* screens/gym-programmes.md, screens/programme-builder.md, screens/my-programme.md
  * and screens/gym-logging.md, cut down hard. Migration 0021's own header has the
@@ -1006,11 +1007,36 @@ export type GymSessionSummary = {
  *  Only covers the athlete's CURRENTLY active assignment, so a session from an ended or
  *  reassigned programme falls back to the generic "Gym session" label rather than a name
  *  — a real, small, honest gap rather than a wrong or guessed name. */
+/* ROW CEILING, and why this one is capped rather than paged.
+ *
+ * `from`/`to` used to be a fixed 42 days (the My Data page's own constant);
+ * that page now drives them from the shared period model (lib/period.ts), so
+ * the span can be MAX_WINDOW_DAYS — 730 days. Nothing bounds an athlete to one
+ * completed gym session a day, so the session read is unbounded by
+ * construction, and the SET read beneath it is worse by an order of magnitude:
+ * one row per set logged, which at 25-40 sets a session is tens of thousands of
+ * rows over two seasons. PostgREST would have returned 1000 of them and every
+ * set count past the first few sessions would have silently read low.
+ *
+ * Paging both would have been correct and useless: the caller renders one table
+ * row per session, and nobody scrolls 700 of them. So the SESSION read is
+ * capped in the DATABASE — `.limit()` on a descending order, so the truncation
+ * is deterministic, most-recent-first, and known to the caller (ask for
+ * limit + 1 and a full page means "there are more", which is what the tab says
+ * on screen) — and the set read, now bounded to the ids that survived that cap,
+ * is paged for the residue. `.order('id')` on the session read is not
+ * decoration: several sessions share one entry_date, and a `.limit()` over a
+ * non-unique order cuts an arbitrary one of them.
+ *
+ * `limit` is defaulted rather than required so the shape of every existing call
+ * is unchanged, but there is exactly one caller (the My Data gym tab) and it
+ * passes its own. */
 export async function fetchRecentGymSessions(
   db: Db,
   athleteId: string,
   from: string,
   to: string,
+  limit = 60,
 ): Promise<GymSessionSummary[]> {
   const { data, error } = await db
     .from('gym_session_logs_current')
@@ -1019,7 +1045,9 @@ export async function fetchRecentGymSessions(
     .eq('status', 'complete')
     .gte('entry_date', from)
     .lte('entry_date', to)
-    .order('entry_date', { ascending: false });
+    .order('entry_date', { ascending: false })
+    .order('id')
+    .limit(limit);
   if (error) throw new Error(error.message);
 
   const rows = (data ?? []).filter(
@@ -1028,17 +1056,21 @@ export async function fetchRecentGymSessions(
   );
   if (rows.length === 0) return [];
 
-  const [setsRes, sessions] = await Promise.all([
-    db
-      .from('gym_set_logs_current')
-      .select('gym_session_log_id')
-      .in('gym_session_log_id', rows.map((r) => r.id)),
+  const [sets, sessions] = await Promise.all([
+    fetchAllPaged<{ gym_session_log_id: string | null }>((pageFrom, pageTo) =>
+      db
+        .from('gym_set_logs_current')
+        .select('gym_session_log_id')
+        .in('gym_session_log_id', rows.map((r) => r.id))
+        .order('gym_session_log_id')
+        .order('id')
+        .range(pageFrom, pageTo),
+    ),
     fetchMyProgrammeSessions(db, athleteId),
   ]);
-  if (setsRes.error) throw new Error(setsRes.error.message);
 
   const countByLog = new Map<string, number>();
-  for (const s of setsRes.data ?? []) {
+  for (const s of sets) {
     if (!s.gym_session_log_id) continue;
     countByLog.set(s.gym_session_log_id, (countByLog.get(s.gym_session_log_id) ?? 0) + 1);
   }

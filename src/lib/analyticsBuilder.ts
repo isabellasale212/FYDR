@@ -1,5 +1,9 @@
 import { ACWR_BAND_TEXT, ACWR_CHRONIC_WINDOW_DAYS, ACWR_MIN_DAYS_WITH_DATA } from '@/lib/acwr';
-import { addDays } from '@/lib/format';
+// `RangeKey` is imported as well as re-exported below: a bare `export { type X }
+// from` is a pass-through and does NOT put the name in this module's scope,
+// and chartUnavailableReason() below still needs it in scope. `addDays` was
+// only ever used by resolveRange and left with it.
+import type { RangeKey } from '@/lib/period';
 
 /* The analytics builder's vocabulary — metrics, timelines, chart types — and
  * nothing else. Pure: no database, no React, no `Db`. It exists so the page,
@@ -184,88 +188,33 @@ export function resolveMetric(raw: string | string[] | undefined): MetricDef {
  * Timelines
  * ------------------------------------------------------------------ */
 
-export type RangeKey = 'day' | 'week' | 'month' | 'season' | 'year' | 'all';
-
-/** analytics.md's own validation table caps a window at 730 days ("The window
- *  must be between 1 day and 2 years"). "All" and "Season" both honour that
- *  cap rather than issuing an unbounded scan: a club three seasons deep would
- *  otherwise pull every wellness row it has ever written to draw one line. */
-export const MAX_WINDOW_DAYS = 730;
-
-export type ResolvedRange = {
-  key: RangeKey;
-  label: string;
-  from: string;
-  to: string;
-  days: number;
-  /** True when MAX_WINDOW_DAYS clipped the window the label promises, so the
-   *  page can say so instead of quietly showing less than it claims. */
-  clipped: boolean;
-};
-
-export const RANGE_OPTIONS: readonly { key: RangeKey; label: string }[] = [
-  { key: 'day', label: 'Today' },
-  { key: 'week', label: 'Last 7 days' },
-  { key: 'month', label: `Last ${ACWR_CHRONIC_WINDOW_DAYS} days` },
-  { key: 'season', label: 'This season' },
-  { key: 'year', label: 'Last 365 days' },
-  { key: 'all', label: 'All on record' },
-];
-
-export const DEFAULT_RANGE: RangeKey = 'month';
-
-export function isRangeKey(raw: unknown): raw is RangeKey {
-  return typeof raw === 'string' && RANGE_OPTIONS.some((r) => r.key === raw);
-}
-
-/**
- * Turn a range key into real dates.
+/* MOVED, NOT CHANGED. The whole range model — RangeKey, RANGE_OPTIONS,
+ * DEFAULT_RANGE, isRangeKey, resolveRange, inclusiveDays, MAX_WINDOW_DAYS,
+ * ResolvedRange — now lives in lib/period.ts, byte for byte, comments
+ * included. Nothing about the logic changed.
  *
- * `today` is already the org-timezone date (todayIso(timezone)) — CLAUDE.md
- * rule 5: never read UTC components to decide what "today" is for a club in
- * another zone. `seasonStart` and `earliest` are passed in because only the
- * database knows them; when either is missing the range degrades to a
- * bounded window rather than inventing a start date.
- */
-export function resolveRange(
-  key: RangeKey,
-  today: string,
-  seasonStart: string | null,
-  earliest: string | null,
-): ResolvedRange {
-  const label = RANGE_OPTIONS.find((r) => r.key === key)?.label ?? key;
-
-  // Fixed-length windows. `days` counts inclusively, so "Last 7 days" is
-  // today plus the six before it, the same convention lib/acwr.ts uses.
-  const fixed: Partial<Record<RangeKey, number>> = { day: 1, week: 7, month: ACWR_CHRONIC_WINDOW_DAYS, year: 365 };
-  const fixedDays = fixed[key];
-  if (fixedDays !== undefined) {
-    return { key, label, from: addDays(today, -(fixedDays - 1)), to: today, days: fixedDays, clipped: false };
-  }
-
-  // Open-ended windows: season-to-date and everything on record. Both are
-  // anchored on a real date from the database, then clipped to the cap.
-  const anchor = key === 'season' ? seasonStart : earliest;
-  const floor = addDays(today, -(MAX_WINDOW_DAYS - 1));
-  const clipped = anchor !== null && anchor < floor;
-  // A club can legitimately have a current season that starts next month
-  // (pre-season admin), and an anchor after today would produce from > to —
-  // an inverted window, which reads downstream as "no data" rather than as
-  // "this has not started". Collapse it to the single day instead.
-  const raw = anchor === null || anchor < floor ? floor : anchor;
-  const from = raw > today ? today : raw;
-  return { key, label, from, to: today, days: inclusiveDays(from, today), clipped };
-}
-
-/** Inclusive day count between two YYYY-MM-DD dates. Deliberately not
- *  lib/format.ts's daysBetween(), which is exclusive; getting these two
- *  confused is a silent off-by-one in every window on this screen. */
-export function inclusiveDays(from: string, to: string): number {
-  const a = Date.parse(`${from}T00:00:00Z`);
-  const b = Date.parse(`${to}T00:00:00Z`);
-  if (Number.isNaN(a) || Number.isNaN(b)) return 0;
-  return Math.max(0, Math.round((b - a) / 86_400_000) + 1);
-}
+ * WHY IT LEFT. The client asked to adjust the period of ANY data, not just
+ * analytics ("from the day to the week to the season to the year to all" —
+ * exactly these six keys). Every other screen that wants them would have had
+ * to import this file, and this file also carries METRICS, CHART_OPTIONS and
+ * the analytics tier gate — so a compliance report asking "what is a week"
+ * would have pulled the entire analytics catalogue in with it.
+ *
+ * WHY THE RE-EXPORT STAYS. /analytics imports all seven of these from HERE
+ * (analytics/page.tsx:15-26). Re-exporting keeps that call site untouched, so
+ * the move is provably behaviour-neutral for the one screen already using it.
+ * New code should import from '@/lib/period' directly; this line is a bridge,
+ * not the address. */
+export {
+  DEFAULT_RANGE,
+  MAX_WINDOW_DAYS,
+  RANGE_OPTIONS,
+  inclusiveDays,
+  isRangeKey,
+  resolveRange,
+  type RangeKey,
+  type ResolvedRange,
+} from '@/lib/period';
 
 /* ------------------------------------------------------------------ *
  * Chart types

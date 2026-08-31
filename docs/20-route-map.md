@@ -317,7 +317,7 @@ arrays sorted, dates as ISO strings.
 | Panel | Component | Query | Tables | Edit |
 |---|---|---|---|---|
 | Section tabs | `SegmentedControl` *(DS)* | none, URL state (`?tab=`) | none | None |
-| Period selector | `PeriodSelector` *(DS)* | none, URL state (`?from=&to=`) | none | Athlete, for themselves |
+| Period selector | `PeriodSelector` *(DS)* | none, URL state (`?period=`, §6.2) | none | Athlete, for themselves |
 | Headline tiles, wellness | `MetricTile` *(DS)* | `useMyWellnessSummary` (`qk.wellness.history`) | `wellness_entries_current`, `mv_wellness_baselines` | None |
 | Chart | `DomainChart` *(DS)* | `useMyWellnessHistory` (`qk.wellness.history`) | `wellness_entries_current`, `mv_wellness_baselines` | None |
 | Submitted days footer | `SubmissionFootnote` | `useMyCompliance` (`qk.compliance.mine`) | `compliance_expectations`, `mv_compliance_rates` | None |
@@ -814,7 +814,68 @@ This is the implementation of `CLAUDE.md` §3 and of the header rule in `19-page
 - `?group=<id>,<id>` holds the group filter, sorted, uuids only, absent when the filter is
   `All squad`. Teams are separate, `?team=<id>`, because `04-data-model.md` §17.13 keeps
   `teams` out of `groups` and the filter reads two sources (O-808).
-- `?from=YYYY-MM-DD&to=YYYY-MM-DD` holds the date range, or `?period=today|this-week|last-7|last-28|season` where the page offers named windows only.
+- `?from=YYYY-MM-DD&to=YYYY-MM-DD` holds the date range, or `?period=` where the page offers
+  named windows only.
+
+  **`?period=` is now real** (`src/lib/period.ts`, `src/components/PeriodSelector/`). Its
+  values are the six keys the client asked for — *"from the day to the week to the season to
+  the year to all"* — not the five this line used to name:
+
+  `?period=day|week|month|season|year|all`
+
+  `month` is 28 days, not a calendar month, because the whole model is anchored on the 7:28
+  acute-to-chronic convention. `year` and `all` were missing from the older list and are
+  explicitly requested; `today|this-week|last-7|last-28` were renamed to the keys the code has
+  used since `/analytics` shipped, so the rename cost nothing. There is no `custom` key: no
+  screen implements a custom range, and `?from=`/`?to=` already covers that case.
+
+  Both open-ended keys are capped at `MAX_WINDOW_DAYS` (730), and `season` resolves against the
+  org's current season row — the option is absent, not defaulted, for a club that has none.
+
+  **Legacy period params still in the tree**, all readable through `readPeriodParam()` /
+  `periodToOfferedDays()` in `lib/period.ts` so a migrated control cannot make an unmigrated
+  handler fall back to its default without saying so:
+
+  | Param | Where | Meaning | Status |
+  |---|---|---|---|
+  | `?range=day\|week\|month\|season\|year\|all` | `/analytics` | The same six keys | A pure rename to `?period=` |
+  | `?range=day\|week` | `/reports/training` | **Not a period.** Which view: one session, or the week around it | Rename the *other* control; do not auto-convert |
+  | `?range=all` | `/settings/audit` | **Not a period.** "Lift the default 90-day bound" | Boolean-shaped; do not auto-convert |
+  | `?days=<number>` | *(read-only compatibility)* `/reports/compliance`, `/reports/injuries`, `/reports/athlete/[athleteId]` | A raw integer that used to come from a per-screen allow-list, duplicated across **nine** files — each report's `page.tsx`, `export/route.ts` and `pdf/route.tsx` | **Migrated.** All nine now resolve through `readPeriodParam()` and write `?period=`; existing `?days=` bookmarks still render, widened not narrowed, with the screen saying it approximated |
+
+  All nine copies are gone. Each report resolves its period once, in a `period.ts` colocated
+  with its routes (`reports/injuries/`, `reports/athlete/[athleteId]/`, `reports/compliance/`,
+  `reports/testing/`), imported by its page, its CSV export and its PDF, so a value the page
+  can offer but a handler cannot honour is a type error rather than a document that quietly
+  covers the wrong window. The compliance and testing modules take the four resolution steps
+  from `lib/reportPeriod.server.ts`; the other two still spell them out inline.
+
+  The historical warning, kept because it is what the migration nearly tripped over: **grep
+  the numbers, not `PERIODS`.** `compliance/export/route.ts` and `injuries/export/route.ts`
+  inlined the array literal (`[7, 14, 28].includes(…)`) rather than naming the constant, so a
+  search for `PERIODS` found only seven of the nine, and a migration trusting it would have
+  left two export handlers reading the old param and silently falling back to their defaults.
+
+  `/reports/testing` is a fifth case and was in none of the nine: it had **no** window param
+  and no window, so its queries were unbounded rather than merely narrow. It now offers
+  `month | season | year | all`, defaulting to `season`.
+
+  **Migration status.** `/reports/injuries` and `/reports/athlete/[athleteId]` are migrated:
+  all six of their files (each `page.tsx`, `export/route.ts`, `pdf/route.tsx`) now write and
+  read `?period=` through one module colocated with the routes
+  (`reports/injuries/period.ts`, `reports/athlete/[athleteId]/period.ts`), so a page and its
+  own PDF handler cannot disagree about the window. Their legacy `?days=` bookmarks still
+  render — `readPeriodParam()` widens rather than narrows when there is no exact key, and both
+  screens print a caption saying they approximated. Offered keys differ per screen and are
+  listed in `docs/screens/reports.md`, "The period control, as built", along with the two
+  things the period deliberately does not reach: the athlete report's ACWR tiles (pinned to
+  trailing 7:28, because that is what the ratio is) and the injury report's Current tab (live
+  availability, never date-bounded).
+
+  `?period=` also has a sticky `fydr-period` cookie, read by `resolvePeriod()` in
+  `lib/period.server.ts` under the same present-versus-absent rule as the group filter: the URL
+  wins whenever the key is present at all, including present and empty; only a genuinely absent
+  key inherits.
 - The global provider is the **owner** of the value and the URL is the **transport**. On
   navigation the provider writes the current filter into the next URL; on load a page reads
   the URL first and falls back to the persisted provider value. A URL without the params

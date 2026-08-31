@@ -25,8 +25,18 @@ export type WorkspaceAthlete = {
   position: string | null;
   unit: string;
   groupIds: string[];
+  /** The athlete's CURRENT body mass: their latest weigh-in, full stop.
+   *
+   *  NOT windowed, and that is load-bearing rather than an oversight — this
+   *  drives computeTargets(), the meal plan's portion scaling, inRangeCount()
+   *  and each plan's "Reference mass", none of which are views of a period.
+   *  /nutrition's own header states the period control "does not touch the
+   *  plans, the targets table or the meal card"; clipping this at the trend
+   *  window broke that promise silently, and a club weighing in monthly lost
+   *  every target it had the day a weigh-in aged past 28 days. Null only when
+   *  the athlete has never been weighed inside the page's fetch window. */
   massKg: number | null;
-  massHistory: MassPoint[]; // ascending by date, trailing ~12 weeks
+  massHistory: MassPoint[]; // ascending by date, the selected trend window only
   massBand: MassBand | null; // real substitute for the spec's fabricated target range
   change7d: number | null; // %, real, from body_composition
   change12wk: number | null; // %, real
@@ -35,7 +45,10 @@ export type WorkspaceAthlete = {
   hasPersonalTargetOverride: boolean;
   /** Nutrition-staff-only weight-trend indicator (nutritionRules.ts's own header
    *  explains the formula and why it is deliberately separate from the chase
-   *  list below). Null means "nothing worth saying", not "no data". */
+   *  list below). Null means "nothing worth saying", not "no data".
+   *
+   *  Computed over MASS_TREND_FLAG_WINDOW_DAYS, NEVER over the selected trend
+   *  window — see `flagFrom` below. */
   trendFlag: MassTrendFlag | null;
 };
 
@@ -46,48 +59,90 @@ export function buildWorkspaceAthlete(input: {
   position: string | null;
   groupIds: string[];
   history: { measured_on: string; body_mass_kg: number | null }[]; // newest first, as fetched
-  weekStart: string; // Monday of the current week, inclusive
-  weekEnd: string; // Sunday of the current week, inclusive
+  /* THE FETCH IS WIDER THAN THE TREND, ON PURPOSE, so this has to be told
+   * where the trend actually starts.
+   *
+   * /nutrition has two independent time controls: `?period=` for the mass
+   * trend and `?week=` for the week strip. They share one body_composition
+   * read, whose lower bound is the EARLIER of the two — otherwise stepping the
+   * week navigator back past the trend window would report "0 of 7 days
+   * weighed in" for a week that was fully logged.
+   *
+   * The consequence is that `history` can reach further back than the trend
+   * the coach asked for. Everything TREND-SHAPED below — the sparkline, the
+   * mean ± 1 SD band, the 7-day and 12-week changes — is therefore computed
+   * from `history` clipped at `trendFrom`, because without the clip the
+   * sparkline would silently draw a wider window than its own caption claims.
+   *
+   * THREE THINGS ARE NOT TREND-SHAPED AND MUST NOT BE CLIPPED HERE, and each
+   * one was, or would have been, a real bug:
+   *   - `massKg` (the latest weigh-in) — see its own doc on WorkspaceAthlete.
+   *     Clipping it took a club's nutrition targets away for the crime of not
+   *     weighing in this month.
+   *   - `loggedDatesThisWeek` — answers to `?week=`, not to `?period=`.
+   *   - `trendFlag` — answers to neither; see `flagFrom`. */
+  trendFrom: string; // inclusive YYYY-MM-DD; the mass trend's first day
+  /* THE TREND FLAG'S OWN WINDOW, and the reason it is a separate argument
+   * rather than reusing `trendFrom`.
+   *
+   * `trendFlag` is a fact about the athlete, not a view of a window, and it is
+   * rendered on two screens with different controls: /nutrition has a mass-trend
+   * period selector, /nutrition/new has none. Keying its band off `trendFrom`
+   * let those two disagree about who is flagged whenever a coach had narrowed
+   * the sparkline — which is exactly what /nutrition/new's own comment ("reused
+   * here, not reimplemented, so the two screens can never disagree about who is
+   * flagged or why") promises cannot happen. Sharing the FUNCTION is not enough
+   * if the two callers feed it different windows.
+   *
+   * Pass addDays(today, -MASS_TREND_FLAG_WINDOW_DAYS) (nutritionRules.ts) on
+   * every screen, and make sure the fetch reaches at least that far back. */
+  flagFrom: string; // inclusive YYYY-MM-DD; the trend indicator's first day
+  weekStart: string; // Monday of the viewed week, inclusive
+  weekEnd: string; // Sunday of the viewed week, inclusive
   checkins: { week_start: string; answer: 'yes' | 'roughly' | 'no' }[]; // newest first
   hasPersonalTargetOverride: boolean;
 }): WorkspaceAthlete {
   const withMass = input.history.filter(
     (h): h is { measured_on: string; body_mass_kg: number } => h.body_mass_kg !== null,
   );
-  const ascending = [...withMass].reverse();
-  const massHistory: MassPoint[] = ascending.map((h) => ({ date: h.measured_on, kg: h.body_mass_kg }));
+
+  /* CURRENT MASS — the latest reading in hand, taken from the UNCLIPPED set.
+   * `history` is newest-first (fetchBodyCompositionForAthletes orders
+   * `measured_on desc, id desc` and its own header names this read), so [0] is
+   * it. Reading `inTrend[0]` here instead was the bug: a window is a lower
+   * bound, so this differs from the trend's latest ONLY when the athlete has no
+   * weigh-in inside the selected window at all — and in that case the honest
+   * answer is their last known mass, not null. Null-ing it silently deleted
+   * their protein/carb/fat/fluid targets, their scaled portions and their
+   * plan's reference mass. */
   const latest = withMass[0] ?? null;
   const massKg = latest?.body_mass_kg ?? null;
 
-  // 7-day change: the nearest reading at or before 7 days prior to the latest one,
-  // same "nearest available, not an exact day count" approach playerProfile.ts already
-  // uses for its own weight-trend delta.
-  let change7d: number | null = null;
-  let change12wk: number | null = null;
-  if (latest) {
-    const latestDate = new Date(`${latest.measured_on}T12:00:00Z`).getTime();
-    const findNearestBefore = (days: number) => {
-      const targetTime = latestDate - days * 86400000;
-      const candidates = withMass.filter(
-        (h) => new Date(`${h.measured_on}T12:00:00Z`).getTime() <= targetTime,
-      );
-      return candidates[0] ?? null; // withMass is newest-first, so [0] is nearest to target
-    };
-    const prior7 = findNearestBefore(7);
-    if (prior7) change7d = pctChange(latest.body_mass_kg, prior7.body_mass_kg);
-    const prior12wk = findNearestBefore(84);
-    if (prior12wk) change12wk = pctChange(latest.body_mass_kg, prior12wk.body_mass_kg);
-  }
+  // The trend's own rows. `measured_on` is a `date` column, so this is a
+  // calendar-date compare on plain YYYY-MM-DD strings, not an instant compare.
+  const inTrend = withMass.filter((h) => h.measured_on >= input.trendFrom);
+  const ascending = [...inTrend].reverse();
+  const massHistory: MassPoint[] = ascending.map((h) => ({ date: h.measured_on, kg: h.body_mass_kg }));
+  const massBand = computeMassBand(weeklyMasses(massHistory));
 
-  // Weekly weigh-ins for the band: one per ISO week, latest reading in that week.
-  const byWeek = new Map<string, number>();
-  for (const h of massHistory) {
-    const wk = mondayOfLocal(h.date);
-    byWeek.set(wk, h.kg); // massHistory is ascending, so the last write per week is the latest in that week
-  }
-  const weeklyMasses = [...byWeek.values()];
-  const massBand = computeMassBand(weeklyMasses);
+  // 7-day and 12-week change, over the TREND window: a comparison must not
+  // silently reach outside the window the coach selected just because the
+  // shared fetch pulled older rows for the week strip. Both are null when the
+  // latest reading is itself outside that window, which is right — there is no
+  // change to state inside a window with nothing in it.
+  const change7d = latest ? changeOver(inTrend, latest, 7) : null;
+  const change12wk = latest ? changeOver(inTrend, latest, 84) : null;
 
+  /* THE TREND FLAG, over its own FIXED window — never `trendFrom`. See
+   * `flagFrom` on the input type: this must be identical on every screen that
+   * renders the indicator, and one of them (/nutrition/new) has no period
+   * control to be identical to. */
+  const inFlagWindow = withMass.filter((h) => h.measured_on >= input.flagFrom);
+  const flagBand = computeMassBand(weeklyMasses([...inFlagWindow].reverse().map((h) => ({ date: h.measured_on, kg: h.body_mass_kg }))));
+  const flagChange7d = latest ? changeOver(inFlagWindow, latest, 7) : null;
+
+  // The UNCLIPPED set — this is the one thing on this card that answers to the
+  // week navigator rather than to the trend window (see `trendFrom` above).
   const loggedDatesThisWeek = withMass
     .filter((h) => h.measured_on >= input.weekStart && h.measured_on <= input.weekEnd)
     .map((h) => h.measured_on);

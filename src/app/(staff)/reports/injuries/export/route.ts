@@ -3,9 +3,9 @@ import { fetchInjuryAvailabilityReport, recordReportView } from '@/lib/queries/r
 import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { addDays, todayIso } from '@/lib/format';
 import { requireReportAccess } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
+import { periodParamsFromUrl, resolveInjuryPeriod } from '../period';
 
 /** CSV only, see lib/csv.ts's header. The coach export and the medical
  *  export are two different queries, not one CSV with a column hidden after
@@ -23,10 +23,18 @@ export async function GET(request: Request) {
   const isMedical = claims.roles.includes('medical');
   const url = new URL(request.url);
   const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
-  const days = [28, 90, 180, 365].includes(Number(url.searchParams.get('days'))) ? Number(url.searchParams.get('days')) : 28;
 
-  const today = todayIso(timezone);
-  const fromDate = addDays(today, -(days - 1));
+  /* This line used to be `[28, 90, 180, 365].includes(...)` — the array
+   * INLINED as a literal rather than named, which is why a grep for `PERIODS`
+   * found seven of the nine copies of the legacy `?days=` allow-list and
+   * missed this one. It now resolves through the same module the page and the
+   * PDF use, so the CSV covers the window the coach was looking at rather
+   * than silently falling back to 28 days the moment it meets `?period=season`.
+   * resolveInjuryPeriod also reads the sticky cookie, exactly as the page
+   * does — a bare export URL is scoped the way the screen is. */
+  const period = await resolveInjuryPeriod(db, orgId, timezone, periodParamsFromUrl(url));
+  const fromDate = period.from;
+  const today = period.to;
 
   const [groups, report] = await Promise.all([
     fetchGroups(db, orgId),
@@ -65,6 +73,7 @@ export async function GET(request: Request) {
     {
       from: fromDate,
       to: today,
+      period: period.key,
       group_ids: groupIds,
       medical: isMedical,
       format: 'csv',
@@ -72,9 +81,16 @@ export async function GET(request: Request) {
     'export',
   );
 
+  /* The caption names the period KEY as well as its dates. "28 days" and
+   * "this season" can resolve to the same span for a club four weeks into a
+   * season, and a CSV that lands in someone's inbox has no control to read
+   * the answer off. `Current` is stated as unwindowed for the same reason the
+   * page and the PDF state it: these rows are availability as of today, not a
+   * historical snapshot of the period. */
   const caption =
-    `# Injury & availability report, ${fromDate} to ${today}. ` +
-    `Scope: ${groupScopeLabel(groups, groupIds)} (${report.summary.athleteCount} athletes).\r\n`;
+    `# Injury & availability report, ${period.label} (${fromDate} to ${today}). ` +
+    `Scope: ${groupScopeLabel(groups, groupIds)} (${report.summary.athleteCount} athletes). ` +
+    `Rows are availability as of ${today}, not a snapshot of the period.\r\n`;
 
   return csvResponse(caption + csv, `injury-availability-${fromDate}-to-${today}.csv`);
 }

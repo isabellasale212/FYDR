@@ -2,6 +2,7 @@ import type { AvailabilityStatus, FlagDomain, FlagSeverity } from '@/lib/types/d
 import { daysBetween, formatNumber } from '@/lib/format';
 import { fetchCurrentAvailability } from './availability';
 import { fetchGroupAthleteIds, type Db } from './groups';
+import { fetchAllPaged } from './paged';
 
 /* Flags. Roles and access from screens/flags.md: coach and medical get full
  * view, acknowledge and dismiss; the athlete_visible_at gate (carve-out 2,
@@ -599,19 +600,40 @@ export async function fetchMyVisibleFlags(
   athleteId: string,
   range: { from: string; to: string },
 ): Promise<VisibleFlag[]> {
-  const { data: flags, error } = await db
-    .from('flags')
-    .select(
-      'id, domain, metric, observed_value, expected_value, flag_date, acknowledged_at, acknowledged_by, staff_note',
-    )
-    .eq('athlete_id', athleteId)
-    .not('athlete_visible_at', 'is', null)
-    .gte('flag_date', range.from)
-    .lte('flag_date', range.to)
-    .order('flag_date', { ascending: false });
+  /* PAGED. `range` is no longer a fixed 42 days — /my-data drives it from the
+   * shared period model and it can be MAX_WINDOW_DAYS (730). Nothing bounds an
+   * athlete to one flag a day: flag_date is per (domain, metric), and
+   * 04-data-model.md §10 lists seven domains, so a poor spell can raise several
+   * on the same date. Ordered DESCENDING, which is why a truncation here would
+   * have been the quiet kind — the athlete would have kept their most recent
+   * markers and silently lost the far end of the window. `id` is the unique
+   * tiebreak; several flags legitimately share one flag_date. */
+  const flags = await fetchAllPaged<{
+    id: string;
+    domain: FlagDomain;
+    metric: string;
+    observed_value: number | null;
+    expected_value: number | null;
+    flag_date: string;
+    acknowledged_at: string | null;
+    acknowledged_by: string | null;
+    staff_note: string | null;
+  }>((pageFrom, pageTo) =>
+    db
+      .from('flags')
+      .select(
+        'id, domain, metric, observed_value, expected_value, flag_date, acknowledged_at, acknowledged_by, staff_note',
+      )
+      .eq('athlete_id', athleteId)
+      .not('athlete_visible_at', 'is', null)
+      .gte('flag_date', range.from)
+      .lte('flag_date', range.to)
+      .order('flag_date', { ascending: false })
+      .order('id')
+      .range(pageFrom, pageTo),
+  );
 
-  if (error) throw new Error(error.message);
-  if (!flags || flags.length === 0) return [];
+  if (flags.length === 0) return [];
 
   const ackUserIds = [...new Set(flags.map((f) => f.acknowledged_by).filter((v): v is string => v !== null))];
 

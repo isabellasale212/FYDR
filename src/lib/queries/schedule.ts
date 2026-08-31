@@ -3,6 +3,7 @@ import { addDays, anchorMdOffsetsToWeek, dateInTz, zonedTimeToUtcIso } from '@/l
 import { humanizeDbError } from '@/lib/writeErrors';
 import { fetchCurrentAvailability } from './availability';
 import { fetchGroupAthleteIds, type Db } from './groups';
+import { fetchAllPaged } from './paged';
 import { computeConflicts } from './restrictionConflicts';
 
 export type Session = Pick<
@@ -69,17 +70,33 @@ async function fetchSessionsBetween(
    * live: this filter predated any way to actually cancel a session, so it
    * silently made every cancelled session vanish instead. Only a deleted
    * session (a different, rarer state — see deleteSession) is excluded. */
-  const { data, error } = await db
-    .from('sessions')
-    .select(COLUMNS)
-    .eq('org_id', orgId)
-    .gte('starts_at', from)
-    .lte('starts_at', to)
-    .is('deleted_at', null)
-    .order('starts_at');
-
-  if (error) throw new Error(error.message);
-  return data ?? [];
+  /* PAGED. Every caller but one asks for a day or a week and could never have
+   * reached PostgREST's silent 1000-row ceiling; fetchAthleteRecentSessions
+   * now asks for up to MAX_WINDOW_DAYS (730) because /my-data grew a period
+   * selector, and this read is ORG-WIDE — every session for every group, not
+   * just the athlete's — so a club running three or four sessions a day is
+   * several thousand rows over two seasons.
+   *
+   * The ordering is what made truncation dangerous rather than merely lossy:
+   * `.order('starts_at')` is ASCENDING, so a silently capped result would have
+   * been the OLDEST 1000 sessions and every caller that sorts most-recent-first
+   * afterwards (fetchAthleteRecentSessions does, then slices) would have shown
+   * a year-old session as "recent". `.order('id')` is the unique tiebreak
+   * paged.ts's header requires: two sessions can legally start at the same
+   * instant, and a tie broken differently on each page duplicates or drops a
+   * row across the boundary. */
+  return fetchAllPaged<Session>((pageFrom, pageTo) =>
+    db
+      .from('sessions')
+      .select(COLUMNS)
+      .eq('org_id', orgId)
+      .gte('starts_at', from)
+      .lte('starts_at', to)
+      .is('deleted_at', null)
+      .order('starts_at')
+      .order('id')
+      .range(pageFrom, pageTo),
+  );
 }
 
 /** Today's timetable with the headcount each session expects.
@@ -268,7 +285,14 @@ export type RecentSession = Session & {
 };
 
 /** An athlete's recent sessions with what they reported afterwards. A session
- *  with no entry shows a blank, which is not the same as an easy session. */
+ *  with no entry shows a blank, which is not the same as an easy session.
+ *
+ *  WINDOW. `from`/`to` used to be a fixed 42 days on /my-data and a fixed
+ *  `?days=` on the athlete report. /my-data now drives this from the shared
+ *  period model (lib/period.ts), so `to - from` can be MAX_WINDOW_DAYS (730).
+ *  Three of the four reads below were unbounded by construction at that width
+ *  and are paged; the fourth (group_memberships) is bounded by how many groups
+ *  one athlete can be in. See each one's note. */
 export async function fetchAthleteRecentSessions(
   db: Db,
   orgId: string,
@@ -279,63 +303,95 @@ export async function fetchAthleteRecentSessions(
   limit = 8,
 ): Promise<RecentSession[]> {
   const bounds = rangeBounds(from, to, timezone);
-  const [sessions, entries, attendance, memberships] = await Promise.all([
+
+  /* Resolved BEFORE the participants read, not alongside it, because that read
+   * now filters on the group list rather than filtering in memory afterwards.
+   * Bounded: one row per group this athlete is currently in. */
+  const memberships = await db
+    .from('group_memberships')
+    .select('group_id')
+    .eq('org_id', orgId)
+    .eq('athlete_id', athleteId)
+    .is('removed_at', null);
+  if (memberships.error) throw new Error(memberships.error.message);
+  const myGroups = (memberships.data ?? [])
+    .map((m) => m.group_id)
+    .filter((id): id is string => id !== null);
+
+  const [sessions, entries, attendance, participants] = await Promise.all([
     fetchSessionsBetween(db, orgId, bounds.from, bounds.to),
-    db
-      .from('training_entries_current')
-      .select('session_id, rpe, session_load')
-      .eq('athlete_id', athleteId)
-      .gte('entry_date', from)
-      .lte('entry_date', to),
-    db
-      .from('session_attendance')
-      .select('session_id, attendance')
-      .eq('org_id', orgId)
-      .eq('athlete_id', athleteId),
-    db
-      .from('group_memberships')
-      .select('group_id')
-      .eq('org_id', orgId)
-      .eq('athlete_id', athleteId)
-      .is('removed_at', null),
+
+    /* PAGED. `training_entries_one_live_per_session` (migration 0004) bounds
+     * this to one row per session, not one per day — an athlete with two
+     * sessions a day is past 1000 rows before the 500th day. */
+    fetchAllPaged<{ session_id: string | null; rpe: number | null; session_load: number | null }>(
+      (pageFrom, pageTo) =>
+        db
+          .from('training_entries_current')
+          .select('session_id, rpe, session_load')
+          .eq('athlete_id', athleteId)
+          .gte('entry_date', from)
+          .lte('entry_date', to)
+          .order('entry_date')
+          .order('id')
+          .range(pageFrom, pageTo),
+    ),
+
+    /* PAGED. This read has NO date filter at all and never had one — it is
+     * every attendance row this athlete has ever had, which passes 1000 in
+     * about three seasons regardless of the window asked for. Pre-existing
+     * exposure, not one the period selector created, but it is the same silent
+     * ceiling and it is fixed here rather than left because the fix is three
+     * lines. */
+    fetchAllPaged<{ session_id: string; attendance: string | null }>((pageFrom, pageTo) =>
+      db
+        .from('session_attendance')
+        .select('session_id, attendance')
+        .eq('org_id', orgId)
+        .eq('athlete_id', athleteId)
+        .order('session_id')
+        .order('id')
+        .range(pageFrom, pageTo),
+    ),
+
+    /* PAGED, AND INVERTED. This used to be `.in('session_id', <every session
+     * in the window>)` and then filtered in memory. At 42 days that was a few
+     * dozen ids; at 730 days it is every session the CLUB ran — several
+     * thousand UUIDs, ~37 bytes each, in a GET query string, which is a URL
+     * length failure long before it is a row-count one.
+     *
+     * Asking the question from the athlete's side instead removes both
+     * problems: the filter is "named individually, or named through a group I
+     * am currently in", which is the identical definition of "my session" the
+     * in-memory filter applied, expressed in SQL. It returns one row per
+     * session this athlete is on rather than one per session the club ran, and
+     * the intersection with the windowed `sessions` list below is what bounds
+     * it to the period — participations outside the window simply never match.
+     *
+     * Still paged: over a club's lifetime one athlete can accumulate more than
+     * 1000 participations. `id` is the primary key (migration 0003) and the
+     * only unique order available — a group row has a null athlete_id, so
+     * (session_id, athlete_id) is not unique. */
+    fetchAllPaged<{ session_id: string }>((pageFrom, pageTo) => {
+      const q = db.from('session_participants').select('session_id').eq('org_id', orgId);
+      // `.or()` with an empty `in.()` list is a PostgREST syntax error, so an
+      // athlete in no groups asks the narrower question rather than a broken one.
+      const scoped =
+        myGroups.length > 0
+          ? q.or(`athlete_id.eq.${athleteId},group_id.in.(${myGroups.join(',')})`)
+          : q.eq('athlete_id', athleteId);
+      return scoped.order('id').range(pageFrom, pageTo);
+    }),
   ]);
 
-  if (entries.error) throw new Error(entries.error.message);
-  if (attendance.error) throw new Error(attendance.error.message);
-  if (memberships.error) throw new Error(memberships.error.message);
   if (sessions.length === 0) return [];
 
-  const myGroups = new Set((memberships.data ?? []).map((m) => m.group_id));
-
-  const { data: participants, error } = await db
-    .from('session_participants')
-    .select('session_id, athlete_id, group_id')
-    .eq('org_id', orgId)
-    .in(
-      'session_id',
-      sessions.map((s) => s.id),
-    );
-
-  if (error) throw new Error(error.message);
-
-  const mine = new Set(
-    (participants ?? [])
-      .filter(
-        (p) =>
-          p.athlete_id === athleteId ||
-          (p.group_id !== null && myGroups.has(p.group_id)),
-      )
-      .map((p) => p.session_id),
-  );
+  const mine = new Set(participants.map((p) => p.session_id));
 
   const entryBySession = new Map(
-    (entries.data ?? [])
-      .filter((e) => e.session_id !== null)
-      .map((e) => [e.session_id as string, e]),
+    entries.filter((e) => e.session_id !== null).map((e) => [e.session_id as string, e]),
   );
-  const attendanceBySession = new Map(
-    (attendance.data ?? []).map((a) => [a.session_id, a.attendance]),
-  );
+  const attendanceBySession = new Map(attendance.map((a) => [a.session_id, a.attendance]));
 
   return sessions
     .filter((s) => mine.has(s.id))

@@ -8,7 +8,9 @@ import {
   loadByDateFrom,
 } from '@/lib/acwr';
 import { addDays, ageFrom, daysBetween, formatDate, todayIso } from '@/lib/format';
+import { resolveRange, type RangeKey, type ResolvedRange } from '@/lib/period';
 import { bandPosition } from '@/lib/stats';
+import { fetchAllPaged } from './paged';
 import { fetchAthlete, type AthleteProfile } from './squad';
 import { fetchAthleteInjuries, type AthleteInjuryRow } from './injuries';
 import { fetchFlagsList, type FlagListRow } from './flags';
@@ -49,8 +51,78 @@ import type { Db } from './groups';
  * flag rule (above 1.30, thresholds table). The dial's full ring is the
  * top of the shared display band; the "flags above X" copy quotes the
  * real threshold row. */
+/* ---------------------------------------------------------------------- *
+ * WHICH WINDOWS THE PERIOD CONTROL MOVES, AND WHICH IT MUST NOT
+ * ---------------------------------------------------------------------- *
+ *
+ * This file used to hold four hardcoded windows and the page held a fifth,
+ * none of them visible to a coach. `?period=` (lib/period.ts) now drives TWO
+ * of the five. The other three are NOT view windows and are deliberately left
+ * fixed — a page-wide override would have silently redefined them:
+ *
+ *  MOVES  weightFrom     — the body-weight sparkline. Was a fixed 120 days.
+ *  MOVES  the wellness dial's SUBMISSION COUNT — "n of D days submitted" now
+ *                          spans the selected period, which is the one part of
+ *                          that card a longer window genuinely improves: a
+ *                          season-long submission rate is a better number than
+ *                          a 28-day one.
+ *
+ *  FIXED  the wellness dial's MEAN, capped at WELLNESS_MEAN_WINDOW (28 days).
+ *         Body mass and readiness are not the same kind of signal, and the two
+ *         panels sharing one control exposed it. Mass is SLOW and the sparkline
+ *         shows a SHAPE, so a longer window adds information. Readiness is FAST
+ *         and the dial collapses its window to ONE NUMBER, so a longer window
+ *         removes it: a season-long mean readiness barely moves, washes out
+ *         exactly the peaks and troughs the dial exists to surface, and sits
+ *         next to ACWR where the surrounding grammar reads "how is he right
+ *         now". Capping the mean while letting the count follow the period
+ *         keeps both halves honest instead of sacrificing one to fix the other.
+ *         The card labels the two windows separately so it is visible that they
+ *         differ. This is the screen's ESTABLISHED grammar, not an exception
+ *         invented for this card — the wellness baseline is pinned at 14 days
+ *         regardless of period, ACWR at 7:28, the correction panel at 28.
+ *
+ *  FIXED  ACWR_ACUTE_WINDOW_DAYS (7) / ACWR_CHRONIC_WINDOW_DAYS (28), from
+ *         lib/acwr.ts. ACWR is DEFINED as a trailing 7-day acute load over a
+ *         trailing 28-day chronic load. There is no season-long or all-time
+ *         ACWR: widening the window does not widen the ratio, it only changes
+ *         how many already-trailing ratios you are looking at (lib/period.ts's
+ *         header states the general rule). The dial carries a visible caption
+ *         naming its two real windows so a coach reading this page at
+ *         `period=year` is not misled into thinking the ratio moved with it.
+ *
+ *  FIXED  WELLNESS_ROLLING_WINDOW (14). This is the BASELINE the wellness band
+ *         is drawn against — "is this normal for him" — not the window being
+ *         viewed. The mean the dial reports is what widens; the 14 days it is
+ *         judged against stay 14 days, or "steady" would mean something
+ *         different at every period and the two could not be compared.
+ *
+ *  FIXED  CORRECTION_WINDOW_DAYS (28, in the page). Its own comment there
+ *         argues it is a performance bound on a base-table read, not a view
+ *         window. Also captioned rather than moved.
+ *
+ * ROW CEILING. Widening weightFrom to `all` (capped at MAX_WINDOW_DAYS, 730)
+ * puts the body_composition read past PostgREST's silent 1000-row ceiling in
+ * principle — nothing constrains an athlete to one weigh-in a day — so that
+ * read pages via fetchAllPaged with `measured_on, id` as its total order.
+ * The wellness read is provably bounded instead of paged: the
+ * `wellness_entries_one_live_per_day` unique index (migration 0004) means
+ * wellness_entries_current holds AT MOST one row per athlete per day, so a
+ * single athlete over 730 visible days plus a 14-day lead-in is at most 744
+ * rows. That is a proof, not an assumption — if that index is ever dropped,
+ * fetchWellnessByAthlete must be paged. */
 const WELLNESS_ROLLING_WINDOW = 14; // matches wellnessSeries's use elsewhere (athleteReport.ts, the old profile page)
-const WEIGHT_HISTORY_DAYS = 120;
+
+/** The ceiling on the wellness dial's mean, in days. A CAP, not a fixed
+ *  window: the mean spans min(this, the selected period), so `week` still means
+ *  a 7-day mean exactly as it did before the period control existed, and
+ *  everything from `month` upwards means 28 days.
+ *
+ *  A literal 28 rather than ACWR_CHRONIC_WINDOW_DAYS, which is also 28: that
+ *  constant is half of a sports-science ratio definition and this is a
+ *  readability judgement about a mean. Importing it here would tie two numbers
+ *  together that have no reason to move together. */
+const WELLNESS_MEAN_WINDOW = 28;
 const WEIGHT_TREND_LOOKBACK_DAYS = 14;
 
 export type Tone = 'accent' | 'accent2' | 'warn' | 'bad' | 'faint';
@@ -110,8 +182,22 @@ export type AcwrSummary = {
 };
 
 export type WellnessRatingSummary = {
-  meanPct: number | null; // mean readiness, last 7 days
-  submittedN: number; // of 7
+  /** Mean readiness over the TRAILING `meanWindowDays`, which is capped at
+   *  WELLNESS_MEAN_WINDOW and is NOT the selected period once the period is
+   *  longer than that. See the header for why. */
+  meanPct: number | null;
+  /** The mean's real window, in days: min(WELLNESS_MEAN_WINDOW, windowDays).
+   *  Carried so the card can label it, because a mean over 28 days sitting
+   *  above a count over 214 must not look like one window. */
+  meanWindowDays: number;
+  /** Days in the SELECTED period with a submitted entry, out of `windowDays`.
+   *  This half does follow the control — a season-long submission rate is a
+   *  better number than a 28-day one. */
+  submittedN: number;
+  windowDays: number;
+  /** The period's own label ("Last 28 days", "This season"), for the
+   *  submission line. */
+  windowLabel: string;
   status: StatusLabel;
 };
 
@@ -153,6 +239,12 @@ export type BodyWeightSummary = {
 };
 
 export type PlayerProfile = {
+  /** The window that ACTUALLY rendered, after resolveRange clipped and
+   *  anchored it. Returned rather than recomputed on the page so the control,
+   *  the captions and the query can never disagree — and so the page can say
+   *  when MAX_WINDOW_DAYS clipped what the label promised. Governs the body
+   *  weight sparkline and the wellness rating ONLY; see the header. */
+  range: ResolvedRange;
   athlete: AthleteProfile;
   age: number | null;
   athleticism: AthleticismSummary;
@@ -368,20 +460,74 @@ function wellnessStatus(position: ReturnType<typeof bandPosition>): StatusLabel 
   return { label: 'Not enough data', tone: 'faint' };
 }
 
+/** The athlete's own earliest recorded date across the two domains the period
+ *  control governs, so `all` anchors on something real instead of silently
+ *  becoming "the last 730 days". Only ever called for `all` — resolveRange
+ *  ignores it for every other key, and a round trip for an argument nothing
+ *  reads is a round trip not worth making. Null when the athlete has no
+ *  weigh-in and no wellness entry at all, which resolveRange already degrades
+ *  to a bounded window rather than inventing a start date. */
+async function fetchEarliestRecordedDate(
+  db: Db,
+  orgId: string,
+  athleteId: string,
+): Promise<string | null> {
+  const [weight, wellness] = await Promise.all([
+    db
+      .from('body_composition')
+      .select('measured_on')
+      .eq('org_id', orgId)
+      .eq('athlete_id', athleteId)
+      .order('measured_on', { ascending: true })
+      .limit(1),
+    db
+      .from('wellness_entries_current')
+      .select('entry_date')
+      .eq('org_id', orgId)
+      .eq('athlete_id', athleteId)
+      .order('entry_date', { ascending: true })
+      .limit(1),
+  ]);
+  if (weight.error) throw new Error(weight.error.message);
+  if (wellness.error) throw new Error(wellness.error.message);
+  // Both are `date` columns, compared and sorted as plain YYYY-MM-DD strings
+  // — CLAUDE.md rule 5 governs instants, and neither of these is one.
+  const candidates = [weight.data?.[0]?.measured_on, wellness.data?.[0]?.entry_date].filter(
+    (d): d is string => typeof d === 'string',
+  );
+  if (candidates.length === 0) return null;
+  return candidates.sort()[0] ?? null;
+}
+
 export async function fetchPlayerProfile(
   db: Db,
   orgId: string,
   athleteId: string,
   timezone: string,
+  /** The period the page resolved and clamped. `seasonStart` comes from
+   *  fetchCurrentSeason (schedule.ts) — NOT fetchCurrentSeasonId, which has a
+   *  documented soft-delete gap — and is null when the club has no current
+   *  season, in which case `season` was never offered as an option. */
+  period: { key: RangeKey; seasonStart: string | null },
 ): Promise<PlayerProfile | null> {
   const today = todayIso(timezone);
+  // Fixed by definition, never by the control. See the header.
   const chronicFrom = addDays(today, -(ACWR_CHRONIC_WINDOW_DAYS - 1));
   const acuteFrom = addDays(today, -(ACWR_ACUTE_WINDOW_DAYS - 1));
-  const wellnessFrom = addDays(today, -(WELLNESS_ROLLING_WINDOW + ACWR_ACUTE_WINDOW_DAYS - 1));
-  const weightFrom = addDays(today, -(WEIGHT_HISTORY_DAYS - 1));
 
   const athlete = await fetchAthlete(db, orgId, athleteId);
   if (!athlete) return null;
+
+  const earliest = period.key === 'all' ? await fetchEarliestRecordedDate(db, orgId, athleteId) : null;
+  const range = resolveRange(period.key, today, period.seasonStart, earliest);
+
+  // Driven by the control.
+  const weightFrom = range.from;
+  // The band needs WELLNESS_ROLLING_WINDOW days of lead-in BEFORE the first
+  // visible day, or the earliest days of the selected period would be judged
+  // against a baseline that is still filling up and would read "not enough
+  // data" on an athlete with a complete history.
+  const wellnessFrom = addDays(range.from, -WELLNESS_ROLLING_WINDOW);
 
   const [
     athleticism,
@@ -414,19 +560,33 @@ export async function fetchPlayerProfile(
       .order('starts_on', { ascending: false })
       .limit(1),
     resolveTargetForDate(db, athleteId, today),
-    db
-      .from('body_composition')
-      .select('measured_on, body_mass_kg')
-      .eq('org_id', orgId)
-      .eq('athlete_id', athleteId)
-      .gte('measured_on', weightFrom)
-      .lte('measured_on', today)
-      .order('measured_on'),
+    /* PAGED, and it is the one read on this page that had to be. This window
+     * used to be a fixed 120 days; at `season`/`year`/`all` it reaches
+     * MAX_WINDOW_DAYS (730) and nothing in the schema stops an athlete having
+     * more than one weigh-in on a day, so an unpaginated read could hit
+     * PostgREST's 1000-row ceiling and return a truncated history that looks
+     * complete. `.order('measured_on').order('id')` is the required TOTAL
+     * order: measured_on alone has ties, and .range() re-runs the query per
+     * page, so a tie broken differently across a page boundary duplicates or
+     * drops a point in the sparkline. Ascending is correct here and is not the
+     * trap it was elsewhere in this codebase — the whole window is read, not a
+     * first page of it, so no end of the range is preferentially lost. */
+    fetchAllPaged<{ measured_on: string | null; body_mass_kg: number | null }>((pageFrom, pageTo) =>
+      db
+        .from('body_composition')
+        .select('measured_on, body_mass_kg')
+        .eq('org_id', orgId)
+        .eq('athlete_id', athleteId)
+        .gte('measured_on', weightFrom)
+        .lte('measured_on', today)
+        .order('measured_on')
+        .order('id')
+        .range(pageFrom, pageTo),
+    ),
   ]);
 
   if (loadEntries.error) throw new Error(loadEntries.error.message);
   if (programmeRows.error) throw new Error(programmeRows.error.message);
-  if (weightRows.error) throw new Error(weightRows.error.message);
 
   const thresholdById = new Map(thresholds.map((t) => [t.id, t]));
   const athleteFlags: ProfileFlag[] = flags
@@ -464,13 +624,27 @@ export async function fetchPlayerProfile(
   // normal for him" from the same rolling-band machinery WellnessChart and
   // the old profile page both already use, so the header dial doesn't
   // invent a second opinion about what "steady" means.
-  const wellnessDates = Array.from({ length: WELLNESS_ROLLING_WINDOW + ACWR_ACUTE_WINDOW_DAYS }, (_, i) =>
+  // wellnessFrom is range.from minus the 14-day lead-in, so the series runs
+  // lead-in + the selected period, and the last range.days entries are exactly
+  // the days the coach asked to see. The 14-day BASELINE stays 14 days at every
+  // period (see the header) — only the mean's window widens.
+  const wellnessDates = Array.from({ length: WELLNESS_ROLLING_WINDOW + range.days }, (_, i) =>
     addDays(wellnessFrom, i),
   );
   const band = wellnessSeries(wellnessEntries, wellnessDates, 'readiness', WELLNESS_ROLLING_WINDOW);
-  const last7 = band.slice(-ACWR_ACUTE_WINDOW_DAYS);
-  const last7Values = last7.map((b) => b.value).filter((v): v is number => v !== null);
-  const meanPct = last7Values.length > 0 ? Math.round(last7Values.reduce((s, v) => s + v, 0) / last7Values.length) : null;
+  // The SUBMISSION COUNT spans the whole selected period...
+  const visible = band.slice(-range.days);
+  const visibleValues = visible.map((b) => b.value).filter((v): v is number => v !== null);
+
+  // ...but the MEAN is capped at a trailing 28 days. Two different windows on
+  // one card, deliberately, and both labelled on it. See the header.
+  const meanWindowDays = Math.min(WELLNESS_MEAN_WINDOW, range.days);
+  const meanValues = band
+    .slice(-meanWindowDays)
+    .map((b) => b.value)
+    .filter((v): v is number => v !== null);
+  const meanPct =
+    meanValues.length > 0 ? Math.round(meanValues.reduce((s, v) => s + v, 0) / meanValues.length) : null;
   // The most recent day with an actual submitted value, not just the most
   // recent calendar day: band's last entry is today, and today usually has
   // no entry yet at the time a coach is looking (the whole reason the
@@ -484,7 +658,10 @@ export async function fetchPlayerProfile(
 
   const wellnessRating: WellnessRatingSummary = {
     meanPct,
-    submittedN: last7Values.length,
+    meanWindowDays,
+    submittedN: visibleValues.length,
+    windowDays: range.days,
+    windowLabel: range.label,
     status: wellnessStatus(latestSubmitted ? bandPosition(latestSubmitted) : 'unknown'),
   };
 
@@ -520,8 +697,11 @@ export async function fetchPlayerProfile(
     };
   }
 
-  const history: WeightPoint[] = (weightRows.data ?? [])
-    .filter((r): r is { measured_on: string; body_mass_kg: number } => r.body_mass_kg !== null)
+  const history: WeightPoint[] = weightRows
+    .filter(
+      (r): r is { measured_on: string; body_mass_kg: number } =>
+        r.body_mass_kg !== null && typeof r.measured_on === 'string',
+    )
     .map((r) => ({ date: r.measured_on, kg: r.body_mass_kg }));
   const latest = history[history.length - 1] ?? null;
   let deltaKg: number | null = null;
@@ -541,6 +721,7 @@ export async function fetchPlayerProfile(
   }
 
   return {
+    range,
     athlete,
     age: ageFrom(athlete.date_of_birth, timezone),
     athleticism,

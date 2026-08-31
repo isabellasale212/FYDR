@@ -6,8 +6,7 @@ import { recordReportView } from '@/lib/queries/reports';
 import { formatNumber } from '@/lib/format';
 import { requireReportAccess } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
-
-const PERIODS = [28, 90] as const;
+import { ACWR_WINDOW_CAPTION, periodCaveat, periodParamsFromUrl, resolveAthletePeriod } from '../period';
 
 /** CSV only, see lib/csv.ts's header. One row per day in the period —
  *  readiness and session load, the two daily series this report has — with
@@ -20,11 +19,16 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
   const { athleteId } = await params;
   const { db, orgId, claims, timezone } = await requireReportAccess();
   const url = new URL(request.url);
-  const days = PERIODS.includes(Number(url.searchParams.get('days')) as (typeof PERIODS)[number])
-    ? Number(url.searchParams.get('days'))
-    : 28;
 
-  const report = await fetchAthleteReport(db, orgId, athleteId, timezone, days);
+  /* Resolved through the same module as the page and the PDF. Before this,
+   * this handler's own `PERIODS = [28, 90]` copy meant a page writing
+   * `?period=season` produced a CSV silently covering 28 days — the export is
+   * wrong and says nothing, which is the failure the period model exists to
+   * stop. It also reads the sticky cookie, exactly as the page does, so a
+   * bare export URL is scoped the way the screen was. */
+  const period = await resolveAthletePeriod(db, orgId, athleteId, timezone, periodParamsFromUrl(url));
+
+  const report = await fetchAthleteReport(db, orgId, athleteId, timezone, { from: period.from, to: period.to });
   if (!report) notFound();
 
   const readinessByDate = new Map(report.wellness.map((p) => [p.date, p.value]));
@@ -60,13 +64,20 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
   ]);
 
   const { athlete, compliancePct, openFlags, currentProgrammes } = report.summary;
+  /* The ACWR figure in this caption sits beside a period label, so the caption
+   * must say that the two are not the same window — a CSV has no tile label to
+   * carry it and lands in an inbox with no control to check it against. Same
+   * sentence the page prints under the load tiles, from the same constant. */
+  const caveat = periodCaveat(period);
   const caption =
-    `# Athlete report, ${athlete.first_name} ${athlete.last_name}, ${report.from} to ${report.to}. ` +
+    `# Athlete report, ${athlete.first_name} ${athlete.last_name}, ${period.label} (${report.from} to ${report.to}). ` +
     `Compliance ${compliancePct === null ? 'n/a' : `${compliancePct}%`}, ` +
     `ACWR ${report.load.acwr === null ? acwrSuppressedLabel(report.load.daysWithData) : formatNumber(report.load.acwr, 2)}, ` +
     `${openFlags.length} open flag${openFlags.length === 1 ? '' : 's'}, ` +
-    `programme(s): ${currentProgrammes.length > 0 ? currentProgrammes.map((p) => p.name).join('; ') : 'none'}.\r\n\r\n` +
-    `# Daily readiness and session load\r\n`;
+    `programme(s): ${currentProgrammes.length > 0 ? currentProgrammes.map((p) => p.name).join('; ') : 'none'}.\r\n` +
+    `# ${ACWR_WINDOW_CAPTION}\r\n` +
+    (caveat ? `# ${caveat}\r\n` : '') +
+    `\r\n# Daily readiness and session load\r\n`;
 
   const testHeader = `\r\n# Testing — latest and personal best\r\n`;
 
@@ -77,7 +88,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
     claims.userId,
     actorRole,
     'athlete',
-    { athlete_id: athleteId, from: report.from, to: report.to, format: 'csv' },
+    { athlete_id: athleteId, from: report.from, to: report.to, period: period.key, format: 'csv' },
     'export',
   );
 

@@ -77,6 +77,89 @@ screen that shows a time series.
 
 ---
 
+## Period control
+
+**Built.** This section replaces the earlier state of the screen, which had a **fixed 42-day
+window and no control at all** — a `WINDOW_DAYS = 42` constant in `my-data/page.tsx` bounding
+all five tabs, with the coverage footer literally printing the constant ("24 of 42 days
+logged"). That was a Phase-1a scoping cut taken when this screen had two tabs; it has five now,
+and both this file and `20-route-map.md` §4.7 have specified a `PeriodSelector` here throughout.
+
+### What is built
+
+One `PeriodSelector` (`src/components/PeriodSelector/PeriodSelector.tsx`, over the shared model
+in `src/lib/period.ts`) above the tab content, driving **four** of the five tabs — Wellness,
+Training, Nutrition and Gym — from one resolved window. It writes `?period=`, and the resolved
+window is printed beneath it as real dates plus a day count, per region C's rule that "the
+resolved range is mandatory".
+
+| Option | State here | Why |
+|---|---|---|
+| Today (`day`) | **Disabled, with the reason in the label** | The readiness chart is a line plus a 14-day rolling mean and ±1SD band, computed from the points inside the window with no runway fetched outside it. One day is one point and no band, so the one question the tab exists to answer ("is today normal *for me*") becomes unanswerable. Disabled rather than hidden, per `analytics.md`'s rule. |
+| Last 7 days (`week`) | Offered | |
+| Last 28 days (`month`) | Offered, and the **default** | See below |
+| This season (`season`) | Offered, **absent** when the club has no current season row | The different-in-kind case: it is not illegal on this screen, it does not exist for this organisation. Matches `/analytics`. Resolved through `fetchCurrentSeason`, which filters `deleted_at` (the `seasons_one_current` index is partial). |
+| Last 365 days (`year`) | Offered | |
+| All on record (`all`) | Offered, capped at `MAX_WINDOW_DAYS` (730) | Anchored on the athlete's **own** earliest record across wellness, training, gym and nutrition — one date for all four tabs, so "All on record" does not mean a different span depending on which chip is open. A window the 730-day cap clipped says so. |
+
+Both illegal cases are coerced **server-side** as well as disabled in the control, and the page
+states which coercion happened — a hand-typed `?period=day` renders 28 days with a line saying
+why, rather than silently.
+
+### The default is 28 days, not 42
+
+Deliberate, and narrower than what the screen showed before, so it is recorded rather than left
+to be discovered:
+
+- **42 was never specified.** It was an unreferenced constant in the page. This file says 28 in
+  five places: the wireframe caption, the entry-point table ("First ever open lands on Wellness,
+  last 28 days"), edge case 1 and its "7 of 28 days" coverage line, the accessibility table's
+  spoken label, and the performance budget's "a single athlete over 28 days". Per CLAUDE.md §5,
+  42 was the undocumented deviation.
+- 28 is `ACWR_CHRONIC_WINDOW_DAYS`, which is what `month` resolves from, so the athlete's default
+  window and the chronic-load window on the staff screens are one number.
+- The 14 days are recoverable and visible: the window is stated on screen, every wider option is
+  one click away, and the choice sticks via the `fydr-period` cookie.
+- Keeping 42 was not expressible. It is not a `RangeKey`, and a `PeriodSelector` whose `value`
+  matches no option silently displays a different option from the one that rendered.
+
+### Testing is all-time, and now says so
+
+The Testing tab was **already** all-time before this change — `fetchMyTestSummary` has no
+`test_date` lower bound — while its four siblings were on 42 days, on the same screen, with
+nothing on screen explaining the difference. It stays all-time, and the fix is the label:
+
+- **A personal best is all-time or it is not a personal best.** Bounding `test_date` to the
+  window would relabel "the best you have ever done" as "your best in the last 28 days", which
+  for most athletes is a *lower* number than the truth. That is the exact "phantom PB
+  regression" `fetchMyTestSummary`'s own header records having been fixed once already (a 41.6
+  all-time best displayed as 31.0), reintroduced deliberately instead of by accident.
+- O-296 in this file answers "how much history should an athlete see" with full history, and the
+  role table scopes this tab as "history, personal bests".
+
+On the Testing tab the control is therefore **absent**, replaced by the words "Period: all
+time", and the tab's copy says what is and is not bounded. An option-level disable is the wrong
+tool here: that rule governs options inside a control that still applies to the screen, and a
+control none of whose options would be true is worse present than absent. Switching tabs
+preserves the period, so nothing is lost by its absence. The staff notes shown on that tab do
+follow the period, and the copy says so.
+
+### Row caps, and why the tables stop at 60
+
+The period widening multiplies rows, so every read on this page was audited against PostgREST's
+silent 1000-row ceiling. Three reads are now capped for **rendering** rather than correctness —
+a 730-row table is not something anyone reads, and this file's own performance section already
+draws that line ("the entry list is virtualised beyond 60 rows"). Virtualisation does not exist
+here, so each table stops at 60 rows and **says** it stopped, with the chart and the coverage
+footer still spanning the full window.
+
+60 is above every previous cap, so nothing visible before is hidden now. In particular the
+Training tab previously took `fetchAthleteRecentSessions`'s default `limit` of **eight**, which
+means its "*n* of *m* sessions rated in this window" footer was counting out of 8 while naming a
+42-day window. It now counts out of the window, up to the cap.
+
+---
+
 ## Layout
 
 ### Web
@@ -405,8 +488,10 @@ results.
 >   the exception, so the difference is stated rather than discovered.
 >
 > The 14-day window below is aspirational in both directions and is still enforced nowhere in SQL
-> (`0045` lines 66-72 admits this); the athlete tables show a fixed 42-day window and the coach's
-> correction card shows 28 days.
+> (`0045` lines 66-72 admits this); the coach's correction card shows 28 days, and the athlete
+> tables show whatever the period control resolved — 28 days by default, up to 730 at "All on
+> record". This line used to read "the athlete tables show a fixed 42-day window"; see "Period
+> control" above.
 
 ### Revision marker
 
@@ -423,9 +508,11 @@ What is built, on the Wellness and Training tables only (the two domains a coach
   button because a coach scans thirty athletes and wants the current number by default; this is one
   person's own record, a correction is rare, and it is not something the athlete should have to go
   looking for.
-- If the superseded row falls outside the 42-day window, the marker still shows — `revision_of`
-  being non-null is what marks it, not the presence of the parent — and says the earlier version is
-  older than the window.
+- If the superseded row falls outside the resolved window (42 days when this was written; now
+  whatever the period control resolved), the marker still shows — `revision_of` being non-null is
+  what marks it, not the presence of the parent — and says the earlier version is older than the
+  window. Widening the period genuinely recovers those earlier versions rather than only relabelling
+  them, because the revision chain is read over the same window as everything else.
 - **No audit event.** The staff side writes `entry_revision.view` on expansion; the athlete side
   writes nothing. That event records one person reading another person's revised self-report, and
   the subject of the data is not a third party looking in.
@@ -570,7 +657,20 @@ Rules:
 
 - **Aggregate on the server, not the client.** Twelve months of set logs is tens of thousands of
   rows and must never be sent to a phone to be summed.
-- **The entry list is virtualised** beyond 60 rows.
+- **The entry list is virtualised** beyond 60 rows. **Not built.** The lists instead stop at 60
+  rows and say they stopped ("Showing the 60 most recent sessions in this window"). A stated cut
+  is honest; a silent one is not.
+- **Every read whose window can widen pages, or is provably bounded.** PostgREST returns at most
+  1000 rows and does not error at the ceiling, so widening a window is how a screen starts
+  quietly showing wrong numbers. As built: `fetchWellnessWithRevisions`,
+  `fetchTrainingRevisionChains`, `fetchMyVisibleFlags`, `fetchMyTestSummary`,
+  `fetchSessionsBetween` and the three athlete-scoped reads inside
+  `fetchAthleteRecentSessions` all page via `fetchAllPaged` with an `id` tiebreak;
+  `fetchWellnessByAthlete` and `fetchRecentCheckins` are left unpaged against a written proof
+  (their `_current` views carry a one-live-per-day and one-live-per-week unique index, so 730
+  days is at most 730 and ~105 rows respectively); the gym set-count read is bounded by capping
+  its session list in the database rather than paging tens of thousands of set rows to count
+  them.
 - **Charts do not animate on data refresh.** First mount may draw in at `duration.slow`, and does
   not under reduced motion (`06-design-system.md` §8.6).
 - **Prefetch the adjacent report view** in the pager, one either side, so a swipe is instant.

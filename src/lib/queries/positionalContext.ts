@@ -35,6 +35,43 @@ import { fetchPositionalGroup, quartile } from './playerProfile';
  * routed around by a different door. If a comparison can only be expressed as
  * a ranking of named people, it does not get built — the page says so instead.
  *
+ * ---------------------------------------------------------------------------
+ * WHAT THAT RULE DOES *NOT* SAY — A CORRECTION, WRITTEN WHERE IT WENT WRONG
+ * ---------------------------------------------------------------------------
+ *
+ * squad/[athleteId]/gym/page.tsx shipped (commit 87b0587) with a paragraph
+ * citing this header to explain why it carried NO strength comparison: "the
+ * comparison a coach would actually read off such a table is a ranking of named
+ * team-mates by how much they lift, which is precisely the shape this app does
+ * not build". Both halves of that were wrong, and the client has since asked
+ * for the comparison, so it is now built and this note replaces the reasoning
+ * rather than leaving a stale comment asserting the opposite of the code.
+ *
+ *   1. STRENGTH IS NOT BODY COMPOSITION. 0016's bar is specific and reasoned:
+ *      wellness (a health disclosure, reported in confidence) and body
+ *      composition (disordered eating). Neither reason transfers to a squat
+ *      number. Performance IS ranked by name in this product, on purpose:
+ *      metric_definitions seeds training.total_session_load and
+ *      training.sessions_attended `leaderboard_eligible = true`, and
+ *      queries/leaderboardWall.ts ranks named athletes on test results across
+ *      seven boards. A strength band is a weaker disclosure than either.
+ *
+ *   2. A RANKED LIST WAS NEVER THE ONLY FORM. It is not the form the three
+ *      comparisons already on that page take, and strength takes the same one:
+ *      a median, an interquartile band and one marker, with no peer name and no
+ *      id-paired peer value reaching the component. summarisePositional below
+ *      is metric-agnostic and needed no change to carry it.
+ *
+ * The line this file actually holds is unmoved: aggregates, never an ordering
+ * of people. What moved is the mistaken belief that a strength metric could not
+ * be expressed as one.
+ *
+ * ONE GENUINE EDGE, ON RELATIVE STRENGTH. Load ÷ body mass is a strength metric
+ * whose DIVISOR is body composition. The ratio is publishable under the rule
+ * above; the mass is not, and neither is any figure a reader could divide back
+ * out. queries/bodyComposition.ts's fetchLatestBodyMassForAthletes exists in
+ * that narrow shape for this reason — see its own header.
+ *
  * The small-population rule is borrowed from the same migration rather than
  * invented: metric_definitions.min_population defaults to 3 and
  * compute_leaderboard() enforces `greatest(min_population, 3)`. This module

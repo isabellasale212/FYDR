@@ -1426,5 +1426,175 @@ export async function fetchGymSessionStatsForAthletes(
   return out;
 }
 
+/* ===========================================================================
+ * BEST LOGGED SET LOAD, PER ATHLETE PER EXERCISE
+ *
+ * The raw material for the strength half of the positional comparison on
+ * /squad/[athleteId]/gym. Read this before changing it; three of the four
+ * decisions below are correctness, not taste.
+ *
+ * WHY "HEAVIEST WORKING SET" AND NOT A 1RM. A 1RM would be the standard S&C
+ * comparison, and this schema can express one: exercises.one_rm_test_definition_id
+ * (migration 0043) links a lift to a test_definitions row and
+ * resolve_programme_exercises reads the athlete's latest is_best test_results value
+ * off it. That path is real and it is EMPTY — in the seeded orgs, zero of the
+ * fifteen exercises carry a link, and no test definition is a barbell lift at all
+ * (the seven are sprints, jumps, a Bronco, a Yo-Yo and an IMTP). A 1RM band would
+ * therefore render "no data" on every row for every athlete in both organisations.
+ *
+ * AND FYDR DOES NOT ESTIMATE ONE. Epley or Brzycki off a 5RM would fill that gap
+ * and is explicitly not built: open question O-389 (docs/11-open-questions.md,
+ * screens/testing.md) is answered by omission in migration 0043's own header —
+ * "no estimation from a submaximal set (O-389). Missing means missing". A band
+ * computed from an estimator would make this file the first place in the codebase
+ * to invent a 1RM, which is a product decision and not this function's to take.
+ *
+ * So the honest figure is the heaviest single set actually logged. It carries a
+ * real caveat the CALLER must state on screen and this function cannot: two
+ * athletes' bests can sit at different rep counts, so it is a comparison of load
+ * moved, not of maximal strength.
+ *
+ * WHAT COUNTS AS A WORKING SET. Non-warm-up, load above zero, reps above zero.
+ * validation/gym.ts allows `reps_completed: 0` and `load_kg: 0` (both `.min(0)`),
+ * so both are real values a logger can write: a zero-rep set is a failed attempt
+ * and a zero-kilogram set is bodyweight work. Neither is evidence of a load
+ * lifted, and `.gt()` excludes nulls as well, which is the behaviour wanted for
+ * both columns.
+ *
+ * PAGED AND CHUNKED — TWO DIFFERENT LIMITS, BOTH REAL. gym_set_logs is the
+ * largest athlete-data table in this app: tens of thousands of rows across two
+ * seasons for one club. fetchAllPaged covers PostgREST's silent 1000-row ceiling.
+ * The SECOND limit is that gym_set_logs carries no athlete_id and no entry_date —
+ * both live on the parent gym_session_logs row — so the only way in is
+ * `.in('gym_session_log_id', ...)`, and at `all` over a thirty-athlete unit that
+ * list is thousands of uuids in a URL. See SESSION_LOG_ID_CHUNK.
+ *
+ * IT RETURNS AGGREGATES PER ATHLETE, NEVER SETS. One number per athlete per
+ * exercise, the same stance fetchGymSessionStatsForAthletes takes and for the same
+ * reason: the caller is drawing a band, and a function that handed back a peer's
+ * individual sets would be one refactor away from a named ranking. See
+ * queries/positionalContext.ts's header for where that line is and why.
+ * ======================================================================== */
+
+/** How many session-log ids go into one `.in()` filter.
+ *
+ *  NOT paging, and not a substitute for it — fetchAllPaged still wraps each chunk.
+ *  This is a URL-length bound: PostgREST puts every filter in the query string, a
+ *  uuid costs ~39 bytes inside `in.(...)`, and the gateway in front of PostgREST
+ *  rejects an over-long request line. 150 ids is ~5.9 kB, inside the conventional
+ *  8 kB request-line budget with the rest of the query and the base URL on top.
+ *
+ *  Chunks are issued concurrently: they are independent reads and the worst case
+ *  (a wide unit at `all`) is otherwise dozens of sequential round trips. */
+const SESSION_LOG_ID_CHUNK = 150;
+
+/** athlete id → exercise id → heaviest working-set load in kilograms.
+ *
+ *  `exerciseIds`, when given, narrows the set read to the lifts the caller will
+ *  actually render. On the gym page that is the subject's own lifts, which is what
+ *  keeps the peer read proportionate: without it, `all` over a full unit pulls
+ *  every set of every exercise the club has ever logged to answer a question about
+ *  four barbell movements.
+ *
+ *  `entry_date` and `measured_on` are `date` columns, so `range.from`/`range.to`
+ *  are compared as plain YYYY-MM-DD (CLAUDE.md rule 5 governs instants; a calendar
+ *  date is not one). Both `.order()` chains end in `id` because `.range()` re-runs
+ *  the query per page and a non-unique sort can duplicate or drop a row across a
+ *  page boundary. */
+export async function fetchBestSetLoadsForAthletes(
+  db: Db,
+  orgId: string,
+  athleteIds: readonly string[],
+  range: { from: string; to: string },
+  opts: { exerciseIds?: readonly string[] } = {},
+): Promise<Map<string, Map<string, number>>> {
+  if (athleteIds.length === 0) return new Map();
+  if (opts.exerciseIds !== undefined && opts.exerciseIds.length === 0) return new Map();
+
+  type SessionRow = { id: string | null; athlete_id: string | null };
+  const sessions = await fetchAllPaged<SessionRow>((from, to) =>
+    db
+      .from('gym_session_logs_current')
+      .select('id, athlete_id')
+      .eq('org_id', orgId)
+      .eq('status', 'complete')
+      .in('athlete_id', [...athleteIds])
+      .gte('entry_date', range.from)
+      .lte('entry_date', range.to)
+      .order('athlete_id')
+      .order('id')
+      .range(from, to),
+  );
+
+  const athleteByLog = new Map<string, string>();
+  for (const s of sessions) {
+    if (s.id !== null && s.athlete_id !== null) athleteByLog.set(s.id, s.athlete_id);
+  }
+  if (athleteByLog.size === 0) return new Map();
+
+  const logIds = [...athleteByLog.keys()];
+  const chunks: string[][] = [];
+  for (let i = 0; i < logIds.length; i += SESSION_LOG_ID_CHUNK) {
+    chunks.push(logIds.slice(i, i + SESSION_LOG_ID_CHUNK));
+  }
+
+  type SetRow = { gym_session_log_id: string | null; exercise_id: string | null; load_kg: number | null };
+  const perChunk = await Promise.all(
+    chunks.map((chunk) =>
+      fetchAllPaged<SetRow>((from, to) => {
+        let q = db
+          .from('gym_set_logs_current')
+          .select('gym_session_log_id, exercise_id, load_kg')
+          .eq('org_id', orgId)
+          .eq('is_warmup', false)
+          .gt('load_kg', 0)
+          .gt('reps_completed', 0)
+          .in('gym_session_log_id', chunk);
+        if (opts.exerciseIds !== undefined) q = q.in('exercise_id', [...opts.exerciseIds]);
+        return q.order('gym_session_log_id').order('id').range(from, to);
+      }),
+    ),
+  );
+
+  const out = new Map<string, Map<string, number>>();
+  for (const rows of perChunk) {
+    for (const r of rows) {
+      if (r.gym_session_log_id === null || r.exercise_id === null || r.load_kg === null) continue;
+      const athleteId = athleteByLog.get(r.gym_session_log_id);
+      if (athleteId === undefined) continue;
+      const byExercise = out.get(athleteId) ?? new Map<string, number>();
+      const prev = byExercise.get(r.exercise_id);
+      if (prev === undefined || r.load_kg > prev) byExercise.set(r.exercise_id, r.load_kg);
+      out.set(athleteId, byExercise);
+    }
+  }
+  return out;
+}
+
+/** Names for a known, short list of exercise ids.
+ *
+ *  Deliberately NOT fetchExercises(): that reads the whole movement library and
+ *  filters `deleted_at is null`, which is right for a picker and wrong here. A
+ *  set logged against an exercise the club has since retired is still a set that
+ *  happened, and labelling it from a list that excludes retired movements would
+ *  leave a real row on screen with no name. Callers here always have the ids in
+ *  hand — they came out of the set logs — so this asks for exactly those and
+ *  reads soft-deleted rows too. Bounded by the caller's own id list, so no
+ *  paging: this is a handful of lifts, not a table scan. */
+export async function fetchExerciseNames(
+  db: Db,
+  orgId: string,
+  exerciseIds: readonly string[],
+): Promise<Map<string, string>> {
+  if (exerciseIds.length === 0) return new Map();
+  const { data, error } = await db
+    .from('exercises')
+    .select('id, name')
+    .eq('org_id', orgId)
+    .in('id', [...exerciseIds]);
+  if (error) throw new Error(error.message);
+  return new Map((data ?? []).map((e): [string, string] => [e.id, e.name]));
+}
+
 export type GymLogStatusFilter = GymLogStatus;
 export type AssignmentStatusFilter = AssignmentStatus;

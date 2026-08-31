@@ -5,12 +5,15 @@ import { PositionalContext } from '@/components/PositionalContext/PositionalCont
 import { AthleteDomainDenied, ViewOnlyNotice } from '@/components/AthleteDomainShell/AthleteDomainShell';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { loadAthleteDomainContext } from '@/lib/athleteDomain.server';
-import { daysBetween, enumLabel, formatDate, formatNumber } from '@/lib/format';
+import { addDays, daysBetween, enumLabel, formatDate, formatNumber } from '@/lib/format';
 import { resolveRange, type RangeKey } from '@/lib/period';
+import { fetchLatestBodyMassForAthletes } from '@/lib/queries/bodyComposition';
 import {
   fetchActiveOverridesForAthlete,
   fetchAthleteProgrammeAssignments,
+  fetchBestSetLoadsForAthletes,
   fetchEarliestGymSessionDate,
+  fetchExerciseNames,
   fetchGymSessionStatsForAthletes,
   fetchProgrammeDetail,
   fetchProgrammeExerciseIndex,
@@ -19,6 +22,7 @@ import {
   type GymAthleteStats,
 } from '@/lib/queries/programmes';
 import {
+  POSITIONAL_MIN_N,
   positionalScopeLine,
   resolvePositionalUnit,
   summarisePositional,
@@ -80,15 +84,34 @@ export const metadata = { title: 'Gym · Fydr' };
  * coach-defined `positional` group — so "vs unit" means one thing on the
  * training report and on this page.
  *
- * The three rows are SESSIONS COMPLETED, MEAN SESSION VOLUME and MEAN SESSION
- * RPE: how much work, how heavy, how hard it felt. What is NOT here is a
- * strength comparison — no "his squat against the unit's". That is not a cut
- * for want of time: exercise loads live in gym_set_logs per exercise, and the
- * comparison a coach would actually read off such a table is a ranking of named
- * team-mates by how much they lift, which is precisely the shape this app does
- * not build (see queries/positionalContext.ts's header). Relative strength
- * against a positional unit belongs on the Testing screens, where a test
- * definition, a standard and a consent model already exist for it.
+ * THREE CARDS, THREE QUESTIONS.
+ *
+ *   WORKLOAD    sessions completed, mean session volume, mean session RPE —
+ *               how much work, how heavy, how hard it felt.
+ *   STRENGTH    the heaviest working set he logged for each lift, per lift.
+ *   RELATIVE    the same set divided by his body mass, per lift.
+ *
+ * THE STRENGTH CARDS REVERSE A DECISION THIS FILE USED TO RECORD. The shipped
+ * version of this page (commit 87b0587) argued in this comment that a strength
+ * comparison could only be "a ranking of named team-mates by how much they
+ * lift", citing migration 0016. That was wrong twice over — 0016 bars wellness
+ * and body composition by name and for reasons that do not reach a squat
+ * number, and the band-and-marker shape the other three rows already use was
+ * available all along. queries/positionalContext.ts's header now carries the
+ * correction in full. The comparison is what the client asked for and it is
+ * built here, through the same summarisePositional and the same
+ * PositionalContext, with no second mechanism and no peer name anywhere.
+ *
+ * PER LIFT, NEVER "STRENGTH". A coach wants the squat, the bench and the trap
+ * bar, and an aggregate across them is close to meaningless — a heavy squat and
+ * a light press average to a number describing nobody. Rows are the exercises
+ * HE logged in this window, so this is his page answering about his lifts, and a
+ * lift too thin in the unit suppresses ITS OWN ROW rather than the panel.
+ *
+ * NOT A 1RM, AND NOT AN ESTIMATE OF ONE. See fetchBestSetLoadsForAthletes's
+ * header: the 1RM path exists in the schema and is empty in every seeded org,
+ * and estimating one off a submaximal set is open question O-389, answered by
+ * omission in migration 0043. The screen says so rather than implying a maximum.
  * ======================================================================== */
 
 /** `day` disabled with its reason. Every figure here is a count or a mean over
@@ -105,6 +128,19 @@ const GYM_PERIOD_REASONS: Partial<Record<RangeKey, string>> = {
  *  quietly ending. The POSITIONAL card does not use this read and is not capped
  *  — it pages, because a mean over a truncated set is wrong rather than short. */
 const SESSION_ROWS = 40;
+
+/** How far back a weigh-in may sit and still be a legitimate divisor for a lift
+ *  logged inside the selected period.
+ *
+ *  A ratio is only as current as its denominator: a mass measured two seasons
+ *  ago behind a set lifted last week renders a figure that looks precise and is
+ *  wrong, and nothing on the bar would say so. Six months is the loosest bound
+ *  that is still defensible for a squad weighing in on any routine at all —
+ *  Ashcombe's own weigh-ins run fortnightly — and an athlete with nothing inside
+ *  it gets NO ratio rather than a stale one. The row states its own n, so a lift
+ *  whose unit is thin on weigh-ins is visibly thin rather than quietly averaged
+ *  over whoever happened to stand on the scales. */
+const BODY_MASS_LOOKBACK_DAYS = 180;
 
 function assignmentOwner(a: AthleteAssignment): string {
   return a.programmeType === 'rehab' ? 'medical staff' : 'the coach who authors it';
@@ -212,6 +248,120 @@ export default async function AthleteGymPage({
       ]
     : [];
 
+  /* ---------------------------------------------------------------------
+   * STRENGTH, PER LIFT
+   * ---------------------------------------------------------------------
+   *
+   * TWO PASSES, AND THE FIRST ONE IS WHAT KEEPS THE SECOND HONEST IN SIZE.
+   * Pass one reads only HIM, which answers "which lifts is this page even
+   * about" — the exercises he logged a working set for inside the period. Pass
+   * two reads the unit, narrowed to exactly those exercises. Without that
+   * narrowing, `all` over a full positional unit pulls every set of every
+   * exercise the club has ever logged (gym_set_logs is the largest athlete-data
+   * table here) to answer a question about four barbell movements.
+   *
+   * ROWS ARE HIS LIFTS, NOT THE UNIT'S. A squat he never performed has no
+   * personal number to mark against the band, and a row that is all band and no
+   * marker is the unit's business rather than his. If he logged nothing loaded
+   * in the window there are no rows and the card says so.
+   *
+   * HIS OWN VALUE COMES OUT OF THE PEER MAP, NOT OUT OF PASS ONE, even though
+   * pass one has it. That is deliberate: summarisePositional derives BOTH the
+   * marker and n from the one map it is given, so folding his value in when the
+   * group filter has excluded him would inflate n by one and drop his number
+   * into the band he is being compared against. When he is outside the filter
+   * his marker is absent and the card's intro says why — the same behaviour the
+   * three workload rows above already have, for the same reason. */
+  const subjectBests = unit
+    ? ((await fetchBestSetLoadsForAthletes(db, orgId, [athleteId], { from: range.from, to: range.to })).get(
+        athleteId,
+      ) ?? new Map<string, number>())
+    : new Map<string, number>();
+  const strengthExerciseIds = [...subjectBests.keys()];
+
+  const strengthComparable = unit !== null && unit.athleteIds.length > 0 && strengthExerciseIds.length > 0;
+  let peerBests = new Map<string, Map<string, number>>();
+  let exerciseNames = new Map<string, string>();
+  if (unit && strengthComparable) {
+    const [bests, names] = await Promise.all([
+      fetchBestSetLoadsForAthletes(
+        db,
+        orgId,
+        unit.athleteIds,
+        { from: range.from, to: range.to },
+        { exerciseIds: strengthExerciseIds },
+      ),
+      fetchExerciseNames(db, orgId, strengthExerciseIds),
+    ]);
+    peerBests = bests;
+    exerciseNames = names;
+  }
+
+  /* Mass for the DIVISOR only, and only for the peer set the band is drawn
+   * over. Read as at the END of the selected period rather than as at today, so
+   * a ratio on a season-long window is the mass that actually stood behind
+   * those lifts — and floored at BODY_MASS_LOOKBACK_DAYS before the window
+   * opens, so a lift at the start of a long window still has a weigh-in it can
+   * legitimately reach back to. */
+  const bodyMass =
+    unit && strengthComparable
+      ? await fetchLatestBodyMassForAthletes(db, orgId, unit.athleteIds, {
+          since: addDays(range.from, -BODY_MASS_LOOKBACK_DAYS),
+          asOf: range.to,
+        })
+      : new Map<string, number>();
+
+  /* Alphabetical, not by peer count or by load. The row order must not move
+   * when a team-mate logs a set: a coach comparing this page against last
+   * week's is reading the same list in the same places.
+   *
+   * Gated on strengthComparable rather than on strengthExerciseIds alone: with
+   * an empty peer set (a unit of one, or a filter that leaves nobody in scope)
+   * every row would be a name with no marker and no band, which reads as broken
+   * data rather than as an absent comparison. The card's own empty state says
+   * it properly. */
+  const strengthRows = strengthComparable
+    ? strengthExerciseIds
+        .map((id) => ({ id, name: exerciseNames.get(id) ?? 'Retired exercise' }))
+        .sort((a, b) => a.name.localeCompare(b.name))
+    : [];
+
+  const loadBands: PositionalBand[] = strengthRows.map((ex) => {
+    const values = new Map<string, number>();
+    for (const [id, byExercise] of peerBests) {
+      const best = byExercise.get(ex.id);
+      if (best !== undefined) values.set(id, best);
+    }
+    return summarisePositional(athleteId, values, {
+      key: `load-${ex.id}`,
+      label: ex.name,
+      unit: ' kg',
+      decimals: 0,
+    });
+  });
+
+  const relativeBands: PositionalBand[] = strengthRows.map((ex) => {
+    const values = new Map<string, number>();
+    for (const [id, byExercise] of peerBests) {
+      const best = byExercise.get(ex.id);
+      const mass = bodyMass.get(id);
+      if (best !== undefined && mass !== undefined && mass > 0) values.set(id, best / mass);
+    }
+    return summarisePositional(athleteId, values, {
+      key: `rel-${ex.id}`,
+      label: ex.name,
+      // "1.42×" — the intro says what it is a multiple of. Spelling it out per
+      // figure makes the band line ("middle half 1.30×–1.55×") unreadable.
+      unit: '×',
+      decimals: 2,
+    });
+  });
+
+  /* No weigh-in anywhere in the peer set means there is no divisor to draw
+   * with, and four rows of em dashes would say that badly. The card states the
+   * absence and where the missing data is entered instead. */
+  const anyMassOnFile = relativeBands.some((b) => b.n > 0);
+
   return (
     <>
       <div className="topbar">
@@ -232,15 +382,16 @@ export default async function AthleteGymPage({
             reasons={GYM_PERIOD_REASONS}
             season={season}
             sticky={expressed && coercedFrom === null}
-            ariaLabel="Period for the session history and the positional comparison"
+            ariaLabel="Period for the session history and the positional comparisons"
           />
         </div>
       </div>
 
       <p className="cap" style={{ margin: '0 0 12px' }}>
         {range.label} ({range.days} day{range.days === 1 ? '' : 's'}, {formatDate(range.from, timezone)} to{' '}
-        {formatDate(range.to, timezone)}) applies to the session history and to the positional comparison.
-        The programme and its tailoring are what is prescribed <b>now</b> and are not windowed.
+        {formatDate(range.to, timezone)}) applies to the session history and to the three positional
+        comparisons, including which lifts appear and what counts as a best set. The programme and its
+        tailoring are what is prescribed <b>now</b> and are not windowed.
         {range.clipped ? ' Clipped to the two-year maximum this app reads in one window.' : ''}
         {coercedFrom !== null
           ? ` "${coercedFrom}" is not available on this screen, so ${range.label.toLowerCase()} is shown instead.`
@@ -400,15 +551,16 @@ export default async function AthleteGymPage({
           {truncated ? (
             <p className="cap" style={{ marginTop: 10 }}>
               Showing the {SESSION_ROWS} most recent of more than that in this window. The positional
-              comparison below is not capped &mdash; it reads every session in the window, because a mean
-              over a truncated set is a wrong number rather than a short list.
+              comparisons below are not capped &mdash; they read every session in the window, because a
+              mean over a truncated set is a wrong number rather than a short list, and a best set found
+              in the most recent forty is not the best set.
             </p>
           ) : null}
         </section>
 
         {unit ? (
           <PositionalContext
-            title="Compared with his position"
+            title="Workload, compared with his position"
             titleId="g-positional-title"
             scopeLine={positionalScopeLine(unit, groups, groupIds)}
             intro={`How much gym work he has done this period against the spread across ${unit.name} — the same positional unit the training report benchmarks load against. Volume is the mean per completed session, not a total, so an athlete who trained twice is not compared with one who trained twenty. The bar is the unit's middle half and its median, the dot is him; nobody is named or ranked.${unit.subjectIncluded ? '' : ' He is outside the current group filter, so the band is his unit without him.'}`}
@@ -426,6 +578,56 @@ export default async function AthleteGymPage({
             />
           </section>
         )}
+
+        {unit ? (
+          <>
+            {loadBands.length > 0 ? (
+              <PositionalContext
+                title="Strength, compared with his position"
+                titleId="g-strength-title"
+                scopeLine={positionalScopeLine(unit, groups, groupIds)}
+                intro={`The heaviest single working set he logged for each lift in this period, against the spread across ${unit.name}. Warm-ups and any set logged without a load or without a completed repetition are excluded. This is load moved, not a one-rep max: two players' best sets can sit at different repetitions, and Fydr does not estimate a maximum from a submaximal set — a tested 1RM belongs in Testing, linked to the exercise there. Rows are the lifts he actually performed in this window; a lift too thin in the unit withholds its own median and keeps the rest.${unit.subjectIncluded ? '' : ' He is outside the current group filter, so the band is his unit without him.'}`}
+                rows={loadBands}
+              />
+            ) : (
+              <section className="card pp-card" aria-labelledby="g-nostrength-title">
+                <h2 className="card-title" id="g-nostrength-title">
+                  Strength, compared with his position
+                </h2>
+                <EmptyState
+                  headingLevel={3}
+                  title="No loaded set to compare"
+                  body={
+                    strengthExerciseIds.length === 0
+                      ? `${athlete.first_name} logged no working set carrying a load in this window — bodyweight and warm-up sets are not a strength figure. Widen the period, or check what he is actually logging in the app.`
+                      : `He logged loaded sets, but no player in ${unit.name} is in scope after the group filter, so there is nothing to compare them against. Clear or widen the filter.`
+                  }
+                />
+              </section>
+            )}
+
+            {anyMassOnFile ? (
+              <PositionalContext
+                title="Relative strength, compared with his position"
+                titleId="g-relative-title"
+                scopeLine={positionalScopeLine(unit, groups, groupIds)}
+                intro={`The same best set, divided by body mass — the comparison that separates a prop from a wing inside one unit, where the absolute figure above mostly separates the heavy from the light. Body mass is the divisor and nothing else: no player's mass is shown here, no peer is named, and the row is withheld unless ${POSITIONAL_MIN_N} players in the unit have both a logged set and a recent weigh-in, which is why a unit that does not weigh in regularly will see fewer bands here than above. Mass is each player's latest reading on or before the end of this period and no more than ${BODY_MASS_LOOKBACK_DAYS} days before it starts; a lift with no weigh-in behind it gets no ratio rather than a stale one.`}
+                rows={relativeBands}
+              />
+            ) : loadBands.length > 0 ? (
+              <section className="card pp-card" aria-labelledby="g-norel-title">
+                <h2 className="card-title" id="g-norel-title">
+                  Relative strength, compared with his position
+                </h2>
+                <EmptyState
+                  headingLevel={3}
+                  title="No weigh-in to divide by"
+                  body={`Nobody in ${unit.name} who is in scope has a body mass recorded within ${BODY_MASS_LOOKBACK_DAYS} days of this period, so there is no divisor and no ratio to draw. Weigh-ins are recorded against each athlete under Body composition; once the unit has them, this card compares load per kilogram without showing anyone's mass.`}
+                />
+              </section>
+            ) : null}
+          </>
+        ) : null}
       </div>
     </>
   );

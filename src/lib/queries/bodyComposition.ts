@@ -93,6 +93,69 @@ export async function fetchBodyCompositionForAthletes(
   return byAthlete;
 }
 
+/** Each athlete's most recent body mass as at a date, for use as a DIVISOR only.
+ *
+ *  Built for the relative-strength rows on /squad/[athleteId]/gym (load ÷ body
+ *  mass), and shaped so it cannot be used for anything else: it returns one
+ *  number per athlete and no measured_on, no body fat, no lean mass, no history
+ *  and no row id. A caller cannot draw a body-mass comparison out of it, and if
+ *  one ever wants to it should say so out loud by calling
+ *  fetchBodyCompositionForAthletes instead.
+ *
+ *  THAT NARROWNESS IS THE POINT, and it is the same line migration 0016 and
+ *  queries/positionalContext.ts already draw. Body composition is barred from
+ *  every ranking in this product for disordered-eating reasons
+ *  (metric_definitions seeds `wellness.body_mass_kg` ineligible by name). A
+ *  strength-to-mass RATIO is a strength metric — it is what distinguishes a prop
+ *  from a wing and it is the figure an S&C coach reads first — but the divisor is
+ *  still body mass, so the caller must publish the ratio and never the mass, in
+ *  aggregate and never by name. This function gives it exactly enough to do that
+ *  and nothing more.
+ *
+ *  STALENESS IS AN ANSWER, NOT A DEFAULT. `since` is a floor, not an optimisation:
+ *  a two-year-old weigh-in behind a lift logged last week produces a ratio that
+ *  looks precise and is wrong. An athlete with nothing inside the window is absent
+ *  from the map, which the caller renders as "no ratio", never as a stale one.
+ *
+ *  `measured_on` is a `date` column, so both bounds are compared as plain
+ *  YYYY-MM-DD (CLAUDE.md rule 5 governs instants; a calendar date is not one).
+ *  PAGED, with the order ending in `id`: a squad weighing in weekly over a 180-day
+ *  floor is well inside PostgREST's 1000-row ceiling, but the ceiling does not
+ *  error when it is hit and the window is caller-supplied. Descending on
+ *  `measured_on` then `id` means the FIRST row seen per athlete is the latest one,
+ *  and the `id` tiebreak makes that deterministic when a club records two weigh-ins
+ *  on one day. */
+export async function fetchLatestBodyMassForAthletes(
+  db: Db,
+  orgId: string,
+  athleteIds: readonly string[],
+  window: { since: string; asOf: string },
+): Promise<Map<string, number>> {
+  if (athleteIds.length === 0) return new Map();
+  type Row = { athlete_id: string; measured_on: string; body_mass_kg: number | null };
+  const data = await fetchAllPaged<Row>((pageFrom, pageTo) =>
+    db
+      .from('body_composition')
+      .select('athlete_id, measured_on, body_mass_kg')
+      .eq('org_id', orgId)
+      .in('athlete_id', [...athleteIds])
+      .not('body_mass_kg', 'is', null)
+      .gte('measured_on', window.since)
+      .lte('measured_on', window.asOf)
+      .order('measured_on', { ascending: false })
+      .order('id', { ascending: false })
+      .range(pageFrom, pageTo),
+  );
+
+  const latest = new Map<string, number>();
+  for (const row of data) {
+    if (row.body_mass_kg === null || row.body_mass_kg <= 0) continue;
+    if (latest.has(row.athlete_id)) continue;
+    latest.set(row.athlete_id, row.body_mass_kg);
+  }
+  return latest;
+}
+
 /** The org's earliest weigh-in, for resolveRange's `earliest` argument when a
  *  screen's body-mass trend is set to "All on record". Without it `all` quietly
  *  degrades to MAX_WINDOW_DAYS and the label promises more than it shows. Only

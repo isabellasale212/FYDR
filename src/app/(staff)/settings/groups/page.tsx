@@ -3,6 +3,7 @@ import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { GroupSwatch } from '@/components/GroupSwatch/GroupSwatch';
 import { GroupReorderButtons } from '@/components/GroupReorderButtons/GroupReorderButtons';
 import { fetchAthletesInNoGroup, fetchGroupsWithCounts } from '@/lib/queries/groups';
+import { fetchTeams } from '@/lib/queries/teamAllocation';
 import { enumLabel } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 
@@ -15,12 +16,19 @@ export const metadata = { title: 'Groups · Fydr' };
  *  depends on — creating groups, and adding or removing members without
  *  ever losing history — is built and works. */
 export default async function GroupsPage() {
-  const { db, orgId, orgName } = await requireStaff();
+  const { db, orgId, orgName, claims } = await requireStaff();
 
-  const [groups, noGroup] = await Promise.all([
+  const [groups, noGroup, teams] = await Promise.all([
     fetchGroupsWithCounts(db, orgId),
     fetchAthletesInNoGroup(db, orgId),
+    fetchTeams(db, orgId),
   ]);
+
+  /* Team allocation redirects anyone who is not coach or medical (see that
+   * page's own role gate), so the link is only offered to those two. Hiding
+   * UI only — the real gate is on that route and in teams' RLS, never here.
+   * CLAUDE.md rule 2. */
+  const canAllocate = claims.roles.includes('coach') || claims.roles.includes('medical');
 
   const sections = new Map<string, typeof groups>();
   for (const g of groups) {
@@ -49,6 +57,73 @@ export default async function GroupsPage() {
         The named subsets of the squad every screen in {orgName} filters by. Get
         these right and every other filter is right.
       </p>
+
+      {/* "Different team selections."
+        *
+        * This is a signpost, not a new concept, and that is a deliberate
+        * decision rather than a shortcut. A weekly team selection already
+        * exists in this build, in full: the `teams` table (migration 0003)
+        * and `team_allocations` with its draft/published states, surfaced at
+        * /injuries/team-allocation. Building a second selection concept here
+        * would have meant two places a team is defined and two answers to
+        * "who is in the 1st XV this week".
+        *
+        * The obvious alternative — a new group_type value such as 'team' or
+        * 'selection' — is explicitly ruled out by a recorded decision, not
+        * merely by preference: migration 0001 states "04-data-model.md
+        * §17.13 is explicit that group_type does not gain a 'team' value.
+        * Teams are a separate table so there is exactly one place a team is
+        * defined", and migration 0003 gives the modelling reason — an
+        * athlete is in Forwards and S&C Group A and Under 20 all at once,
+        * but plays for exactly one team on a given weekend, and that
+        * exclusivity cannot be expressed on group_memberships. Groups are
+        * many-per-athlete and standing; a selection is one-per-athlete and
+        * weekly. CLAUDE.md §1 says to stop and say so rather than contradict
+        * a recorded decision, so this contradicts nothing and points at what
+        * is already there.
+        *
+        * This also keeps CLAUDE.md rule 7 intact: the global group filter
+        * keeps exactly one vocabulary. Teams deliberately do not enter it
+        * (team-allocation.md's O-808, recorded as cut in
+        * lib/queries/teamAllocation.ts), and adding a selection-shaped group
+        * type here would have quietly created the second parallel filtering
+        * concept that rule exists to prevent. */}
+      <section className="card" aria-labelledby="teams-title" style={{ marginBottom: 14 }}>
+        <h2 className="card-title" id="teams-title">
+          Team selections
+        </h2>
+        <p className="import-sub">
+          Groups are standing subsets an athlete belongs to many of at once, and they drive the
+          filter on every squad screen. Picking who plays for which team in a given week is a
+          separate thing, because an athlete plays for exactly one team on a weekend — that lives
+          in <b>Team allocation</b>, with its own draft and published states, so a selection is
+          never visible to athletes before it is published.
+        </p>
+
+        {teams.length > 0 ? (
+          <p className="cap" style={{ marginTop: 8 }}>
+            {teams.length} team{teams.length === 1 ? '' : 's'} set up: {teams.map((t) => t.name).join(', ')}.
+          </p>
+        ) : (
+          <p className="cap" style={{ marginTop: 8 }}>
+            No teams are set up yet, so there is nothing to select into. Teams are standing squads
+            such as 1st XV, 2nd XV or Colts.
+          </p>
+        )}
+
+        {canAllocate ? (
+          <div style={{ marginTop: 10 }}>
+            <Link href="/injuries/team-allocation" className="btn-ghost">
+              Open team allocation →
+            </Link>
+          </div>
+        ) : (
+          <p className="cap" style={{ marginTop: 10 }}>
+            Selecting teams is a coach decision, with medical able to see the board. It is not part
+            of your role.
+          </p>
+        )}
+      </section>
 
       {groups.length === 0 ? (
         <EmptyState

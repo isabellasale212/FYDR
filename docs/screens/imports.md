@@ -199,6 +199,45 @@ file went in.
 └────────────┴─────────────────────────────────────────────────────────────────────────────┘
 ```
 
+#### As built
+
+The imports list above is shipped in reduced form at `/settings/imports`, as a table rather
+than the card stack drawn here. What is real: file name, uploading user, accepted and rejected
+counts, the import time rendered in the organisation's timezone, and a per-batch **CSV** export
+of the `gps_records` rows that batch inserted, joined on `import_batch_id`
+(`/settings/imports/[batchId]/export`). The list shows the 20 most recent batches with a
+`?all=1` link to the complete history when there are more.
+
+What is drawn here and still not built: the vendor and date-range filters, the draft/`Resume
+review`/`Discard` states (there is no staging table — see `lib/queries/gpsImport.ts`), `Revert`
+and the reverted state, and `Failures.csv`. That last one is not a deferred nicety but a
+consequence of an earlier decision: rejected rows are never stored, only counted, so there is
+nothing to write a failures file from. The per-batch export is therefore accepted rows only,
+and both the screen and the exported file's caption say so rather than letting a coach
+reconcile 47 exported rows against a 50-row source file and conclude the export lost three.
+
+**The export is a record of what was imported, not an import file, and it says so in its own
+caption.** It carries two columns the template does not (Squad Number, and Player Name split
+into Last/First so a spreadsheet sorts like a team sheet) and three `#` caption lines above the
+header row, so `parseGpsImportCsv` rejects it on the template check. That is deliberate:
+round-tripping would cost the provenance caption and the squad number that disambiguates two
+athletes sharing a name, and it would advertise a correct-and-re-import workflow this build
+cannot support — there is no duplicate detection and no revert, so a re-imported export doubles
+the batch instead of replacing it. A coach who wants an import-shaped file downloads the
+template from the upload form.
+
+Both the export query and the `?all=1` history are **paged** rather than relying on a single
+select. PostgREST stops at `max_rows = 1000` without erroring, so a 3,000-row batch used to
+download as a 1,000-row CSV captioned "1000 accepted rows exported" while the history table beside
+it read Accepted = 3,000. Each pages with a total order (`record_date, id` and `created_at, id`);
+a non-unique sort key lets `.range()` return a row on both sides of a page boundary or on neither.
+The caption reports the true exported count and, when it differs from the batch's recorded
+`accepted_count` (rows deleted since the import), says so in words on its own line.
+
+The export is not tier-gated even though the import is. A club that drops from Premium to Basic
+keeps the GPS data it already imported, and locking them out of exporting their own records
+would be a data-portability problem rather than a monetisation one.
+
 ### Parsing
 
 Between the drop and the review. It is a real wait, roughly 3 to 12 seconds for 400 rows, so

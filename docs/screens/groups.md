@@ -28,6 +28,32 @@ Three responsibilities beyond the obvious:
 3. **Removing an athlete sets `removed_at`. It never deletes the row.** Everything on this screen
    is built around that fact.
 
+### Groups are not team selections
+
+A recurring request is for "different team selections" on this screen. That is a different
+concept and it already exists elsewhere, so this screen signposts it rather than reimplementing
+it.
+
+- A **group** is standing and many-per-athlete: an athlete is in Forwards and S&C Group A and
+  Under 20 simultaneously. Groups are what the global filter (`CLAUDE.md` §3) is built on.
+- A **team selection** is weekly and one-per-athlete: an athlete plays for exactly one team on a
+  given weekend. That lives in `teams` and `team_allocations` (migration 0003), with draft and
+  published states, at `/injuries/team-allocation` — see `team-allocation.md`.
+
+`group_type` deliberately has no `team` value, and must not gain one: `04-data-model.md` §17.13
+is explicit about it, and migration 0001 records the same decision at the enum itself. The
+modelling reason is in migration 0003 — one-team-per-weekend exclusivity cannot be expressed on
+`group_memberships` without denormalising `group_type` onto a hot table. The practical reason is
+that two definitions of "the 1st XV" is one too many.
+
+As built, the Groups settings screen carries a **Team selections** card that states this
+distinction in the coach's own terms, lists the club's configured teams, and links to team
+allocation for coach and medical (the two roles that route admits; admin is told it is not part
+of their role). Teams stay out of the global group filter, so the filter keeps one vocabulary —
+this is `team-allocation.md`'s O-808, still cut, and adding a selection-shaped `group_type` here
+would have created exactly the second parallel filtering concept `CLAUDE.md` §3 exists to
+prevent.
+
 ---
 
 ## Roles and access

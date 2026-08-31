@@ -1,6 +1,76 @@
+/* ═══ EVERY group_memberships AND athletes READ IN THIS FILE PAGES ═══════════
+ *
+ * PostgREST answers any request with at most `db-max-rows` rows, and this
+ * project sets it explicitly (`max_rows = 1000` in supabase/config.toml).
+ * Hitting that ceiling is SILENT: no error, no short page — exactly 1000 rows
+ * that are indistinguishable from a complete answer. So every read here whose
+ * result set is unbounded by construction goes through fetchAllPaged
+ * (./paged.ts), which loops until a page comes back short.
+ *
+ * ── Count ROWS. Never a proxy for rows ────────────────────────────────────
+ *
+ * `analytics.ts` used to carry a header saying its presets "do not need" to
+ * page because "they pull 28 and 56 days". That sentence is the reason a real
+ * truncation bug survived review: the ceiling counts ROWS, and days are not
+ * rows — 28 days × 40 athletes is 1,120 of them. Do not re-derive the same
+ * mistake in this file's units. "A club only has a handful of groups" and "a
+ * squad is only 40 people" are the same error wearing different clothes.
+ *
+ * The real row counts here, because `group_memberships` is one row per
+ * athlete per group AND is history-preserving — removeGroupMember sets
+ * removed_at and the row is never deleted (04-data-model.md §3), so a row is
+ * created and never destroyed:
+ *
+ *   fetchMembershipsByAthlete   whole org, live rows: athletes × groups each.
+ *                               200 athletes × 4 groups = 800 and climbing.
+ *   fetchGroupsWithCounts       same org-wide live shape. Truncation here
+ *                               silently UNDERCOUNTS the member badge.
+ *   fetchAthletesInNoGroup      same org-wide live shape — and truncation
+ *                               INVENTS members-of-no-group out of athletes
+ *                               whose membership row fell off the page.
+ *   fetchGroupAthleteIds        live rows in the SELECTED groups only, so the
+ *                               smallest of these — but it backs the global
+ *                               group filter (CLAUDE.md §3, which makes that
+ *                               filter mandatory on every multi-athlete
+ *                               screen), so a short read quietly shrinks the
+ *                               filter's scope and omits athletes from every
+ *                               such screen at once.
+ *   fetchGroupMembers           ONE group, but deliberately reads removed
+ *                               rows too (it renders a past-members list), so
+ *                               it accumulates across every season the group
+ *                               has existed. Bounded by history, not by size.
+ *
+ * The `athletes` read in fetchAthletesInNoGroup pages for the same reason: one
+ * row per athlete in the org, with no bound but the club's own size.
+ *
+ * ── What deliberately does NOT page, and the row argument for it ──────────
+ *
+ * The `groups` table reads (fetchGroups, fetchGroupsWithCounts' first query,
+ * fetchGroupDetail, and the sibling lookups in createGroup/moveGroup). One row
+ * per group, and a group is created by hand by a coach and named in a UI list
+ * they have to scroll: a real club runs tens, and 1000 hand-made groups is not
+ * a scale this product has. That is an argument about the number of ROWS the
+ * table can hold, which is the only kind that counts. If groups ever become
+ * machine-generated, this reasoning expires and they must page too.
+ * createGroup's and moveGroup's sibling reads are additionally narrowed to one
+ * group_type and, for createGroup, `.limit(1)`.
+ *
+ * ═══ EVERY PAGED QUERY ENDS IN `.order('id')`. NOT A STYLE POINT ═════════
+ *
+ * PostgREST turns `.range(from, to)` into LIMIT/OFFSET, and each page is a
+ * SEPARATE execution of the query. Postgres promises no stable order among
+ * rows that tie under ORDER BY and may pick a different plan for OFFSET 0 than
+ * for OFFSET 1000, so a tied row can come back on BOTH sides of a page
+ * boundary or on NEITHER. Ties are the normal case here, not an edge case:
+ * every membership added in one bulk assignment shares an `added_at`. `id` is
+ * group_memberships' and athletes' primary key (migration 0002) and so breaks
+ * every remaining tie. Sort columns need not appear in the select list.
+ * ------------------------------------------------------------------------ */
+
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, GroupRow } from '@/lib/types/database';
 import { humanizeDbError } from '@/lib/writeErrors';
+import { fetchAllPaged, type PagedResponse } from './paged';
 
 export type Db = SupabaseClient<Database>;
 
@@ -61,31 +131,44 @@ export async function fetchGroupAthleteIds(
 ): Promise<string[] | null> {
   if (groupIds.length === 0) return null;
 
-  const { data, error } = await db
-    .from('group_memberships')
-    .select('athlete_id')
-    .eq('org_id', orgId)
-    .in('group_id', [...groupIds])
-    .is('removed_at', null);
+  /* Paged: bounded only by how many athletes sit in the selected groups, and
+   * a short read here silently narrows the global group filter on every
+   * multi-athlete screen at once. `id` is the total order. */
+  type Row = { athlete_id: string };
+  const data = await fetchAllPaged<Row>((from, to) =>
+    db
+      .from('group_memberships')
+      .select('athlete_id')
+      .eq('org_id', orgId)
+      .in('group_id', [...groupIds])
+      .is('removed_at', null)
+      .order('id')
+      .range(from, to) as unknown as PagedResponse<Row>,
+  );
 
-  if (error) throw new Error(error.message);
-  return [...new Set((data ?? []).map((r) => r.athlete_id))];
+  return [...new Set(data.map((r) => r.athlete_id))];
 }
 
 export async function fetchMembershipsByAthlete(
   db: Db,
   orgId: string,
 ): Promise<Map<string, string[]>> {
-  const { data, error } = await db
-    .from('group_memberships')
-    .select('athlete_id, group_id')
-    .eq('org_id', orgId)
-    .is('removed_at', null);
-
-  if (error) throw new Error(error.message);
+  /* Paged: unfiltered across the whole org — athletes × groups-per-athlete.
+   * The caller collapses these into a Map, so read order does not matter to
+   * it; `id` is here to make the pages a partition rather than to sort. */
+  type Row = { athlete_id: string; group_id: string };
+  const data = await fetchAllPaged<Row>((from, to) =>
+    db
+      .from('group_memberships')
+      .select('athlete_id, group_id')
+      .eq('org_id', orgId)
+      .is('removed_at', null)
+      .order('id')
+      .range(from, to) as unknown as PagedResponse<Row>,
+  );
 
   const byAthlete = new Map<string, string[]>();
-  for (const row of data ?? []) {
+  for (const row of data) {
     const list = byAthlete.get(row.athlete_id) ?? [];
     list.push(row.group_id);
     byAthlete.set(row.athlete_id, list);
@@ -110,17 +193,23 @@ export async function fetchMembershipsByAthlete(
  * measurements show both failing 3:1 against --warn and --highlight in dark
  * theme (O-247, unresolved), and a colour picker should not knowingly offer
  * a colour the same document says fails the rule it exists to enforce. */
+/* Only `name` is load-bearing: it is what groups.colour stores, and
+ * GroupSwatch resolves it to the --group-* token pair in tokens.css so a
+ * component never paints a raw hex. The light/dark hexes here were a
+ * duplicate of those tokens that nothing read — confirmed unused — and had
+ * already gone stale against the brightened light palette. Dropped rather
+ * than re-synced, so there is one place to change a group colour. */
 export const GROUP_COLOURS = [
-  { name: 'Blue', light: '#1246C8', dark: '#5AA8FF' },
-  { name: 'Green', light: '#007B3F', dark: '#22AB60' },
-  { name: 'Purple', light: '#7A2FA8', dark: '#EE9FE6' },
-  { name: 'Slate', light: '#41505E', dark: '#6E7F91' },
-  { name: 'Indigo', light: '#3B3BAF', dark: '#8C8CF5' },
-  { name: 'Cyan', light: '#0F6C87', dark: '#4FC3E8' },
-  { name: 'Olive', light: '#5A6B12', dark: '#B4C64A' },
-  { name: 'Magenta', light: '#96256E', dark: '#F08CC8' },
-  { name: 'Steel', light: '#2F5A6B', dark: '#7FB4C8' },
-  { name: 'Plum', light: '#5D2E6B', dark: '#C08FD2' },
+  { name: 'Blue' },
+  { name: 'Green' },
+  { name: 'Purple' },
+  { name: 'Slate' },
+  { name: 'Indigo' },
+  { name: 'Cyan' },
+  { name: 'Olive' },
+  { name: 'Magenta' },
+  { name: 'Steel' },
+  { name: 'Plum' },
 ] as const;
 
 export type GroupWithCount = Group & {
@@ -146,18 +235,24 @@ export async function fetchGroupsWithCounts(
   if (error) throw new Error(error.message);
   if (!groups || groups.length === 0) return [];
 
-  const { data: memberships, error: memError } = await db
-    .from('group_memberships')
-    .select('group_id, athlete_id, athletes!inner(status, deleted_at)')
-    .eq('org_id', orgId)
-    .is('removed_at', null)
-    .is('athletes.deleted_at', null)
-    .neq('athletes.status', 'left_club');
-
-  if (memError) throw new Error(memError.message);
+  /* Paged: org-wide live memberships, same unbounded shape as
+   * fetchMembershipsByAthlete. A truncated read would not fail, it would just
+   * quietly report a group as having fewer members than it has. */
+  type MembershipRow = { group_id: string; athlete_id: string; athletes: unknown };
+  const memberships = await fetchAllPaged<MembershipRow>((from, to) =>
+    db
+      .from('group_memberships')
+      .select('group_id, athlete_id, athletes!inner(status, deleted_at)')
+      .eq('org_id', orgId)
+      .is('removed_at', null)
+      .is('athletes.deleted_at', null)
+      .neq('athletes.status', 'left_club')
+      .order('id')
+      .range(from, to) as unknown as PagedResponse<MembershipRow>,
+  );
 
   const counts = new Map<string, number>();
-  for (const m of memberships ?? []) {
+  for (const m of memberships) {
     counts.set(m.group_id, (counts.get(m.group_id) ?? 0) + 1);
   }
 
@@ -179,21 +274,37 @@ export async function fetchAthletesInNoGroup(
   db: Db,
   orgId: string,
 ): Promise<{ id: string; first_name: string; last_name: string }[]> {
+  /* Both sides page. This function is a set difference, so truncation on
+   * EITHER side is worse than a short list: a missing membership row promotes
+   * an athlete who is in a group into the "in no group" list, and staff act on
+   * that by assigning them again. */
+  type AthleteRow = { id: string; first_name: string; last_name: string };
+  type MembershipRow = { athlete_id: string };
+
   const [athletes, memberships] = await Promise.all([
-    db
-      .from('athletes')
-      .select('id, first_name, last_name')
-      .eq('org_id', orgId)
-      .is('deleted_at', null)
-      .neq('status', 'left_club'),
-    db.from('group_memberships').select('athlete_id').eq('org_id', orgId).is('removed_at', null),
+    fetchAllPaged<AthleteRow>((from, to) =>
+      db
+        .from('athletes')
+        .select('id, first_name, last_name')
+        .eq('org_id', orgId)
+        .is('deleted_at', null)
+        .neq('status', 'left_club')
+        .order('id')
+        .range(from, to) as unknown as PagedResponse<AthleteRow>,
+    ),
+    fetchAllPaged<MembershipRow>((from, to) =>
+      db
+        .from('group_memberships')
+        .select('athlete_id')
+        .eq('org_id', orgId)
+        .is('removed_at', null)
+        .order('id')
+        .range(from, to) as unknown as PagedResponse<MembershipRow>,
+    ),
   ]);
 
-  if (athletes.error) throw new Error(athletes.error.message);
-  if (memberships.error) throw new Error(memberships.error.message);
-
-  const grouped = new Set((memberships.data ?? []).map((m) => m.athlete_id));
-  return (athletes.data ?? [])
+  const grouped = new Set(memberships.map((m) => m.athlete_id));
+  return athletes
     .filter((a) => !grouped.has(a.id))
     .sort((a, b) => a.last_name.localeCompare(b.last_name));
 }
@@ -410,22 +521,47 @@ export async function fetchGroupMembers(
   orgId: string,
   groupId: string,
 ): Promise<{ current: MemberRow[]; past: PastMemberRow[] }> {
-  const { data, error } = await db
-    .from('group_memberships')
-    .select(
-      'athlete_id, added_at, removed_at, athletes!inner(first_name, last_name, squad_number, position, deleted_at)',
-    )
-    .eq('org_id', orgId)
-    .eq('group_id', groupId)
-    .is('athletes.deleted_at', null)
-    .order('added_at', { ascending: false });
+  /* Paged: this is the one read that deliberately does NOT filter removed_at
+   * — it splits current from past members below — so it accumulates every
+   * membership the group has ever had, across every season. Truncation would
+   * drop the oldest entries off the past-members list without saying so.
+   *
+   * added_at leads because it is the intent of the sort; `id` (migration
+   * 0002's primary key) is what makes it a TOTAL order, and it is doing real
+   * work here — a bulk assignment writes one added_at across the whole group,
+   * so ties are the common case, not a corner. Both arrays are re-sorted in
+   * memory below, so the server order only has to partition the pages. */
+  type Row = {
+    athlete_id: string;
+    added_at: string;
+    removed_at: string | null;
+    athletes: {
+      first_name: string;
+      last_name: string;
+      squad_number: number | null;
+      position: string | null;
+      deleted_at: string | null;
+    } | null;
+  };
 
-  if (error) throw new Error(error.message);
+  const data = await fetchAllPaged<Row>((from, to) =>
+    db
+      .from('group_memberships')
+      .select(
+        'athlete_id, added_at, removed_at, athletes!inner(first_name, last_name, squad_number, position, deleted_at)',
+      )
+      .eq('org_id', orgId)
+      .eq('group_id', groupId)
+      .is('athletes.deleted_at', null)
+      .order('added_at', { ascending: false })
+      .order('id')
+      .range(from, to) as unknown as PagedResponse<Row>,
+  );
 
   const current: MemberRow[] = [];
   const past: PastMemberRow[] = [];
 
-  for (const row of data ?? []) {
+  for (const row of data) {
     const athlete = row.athletes;
     if (!athlete) continue;
     const base = {

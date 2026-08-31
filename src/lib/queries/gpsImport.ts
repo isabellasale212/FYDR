@@ -1,5 +1,7 @@
 import { parseCsvRecords } from '@/lib/csvParse';
+import type { AppRole } from '@/lib/types/database';
 import type { Db } from './groups';
+import { fetchAllPaged, type PagedResponse } from './paged';
 
 /* screens/imports.md, 07-integrations.md §3 — cut down hard, and every cut
  * is real, not an oversight:
@@ -285,15 +287,20 @@ export type ImportBatchSummary = {
   imported_by_name: string | null;
 };
 
-export async function fetchRecentImportBatches(db: Db, orgId: string): Promise<ImportBatchSummary[]> {
-  const { data, error } = await db
-    .from('import_batches')
-    .select('id, filename, row_count, accepted_count, rejected_count, created_at, users(full_name)')
-    .eq('org_id', orgId)
-    .order('created_at', { ascending: false })
-    .limit(20);
-  if (error) throw new Error(error.message);
-  return (data ?? []).map((b) => ({
+const BATCH_SELECT = 'id, filename, row_count, accepted_count, rejected_count, created_at, users(full_name)';
+
+type BatchSelectRow = {
+  id: string;
+  filename: string | null;
+  row_count: number | null;
+  accepted_count: number | null;
+  rejected_count: number | null;
+  created_at: string;
+  users: { full_name: string | null } | null;
+};
+
+function toBatchSummary(b: BatchSelectRow): ImportBatchSummary {
+  return {
     id: b.id,
     filename: b.filename,
     row_count: b.row_count,
@@ -301,5 +308,215 @@ export async function fetchRecentImportBatches(db: Db, orgId: string): Promise<I
     rejected_count: b.rejected_count,
     created_at: b.created_at,
     imported_by_name: (b.users as { full_name: string | null } | null)?.full_name ?? null,
-  }));
+  };
+}
+
+/** The import history. `limit` is a parameter rather than the hard-coded 20 it
+ *  used to be because the coach's ask is "access ALL previous gps imports":
+ *  the screen still defaults to a short recent list (a club importing after
+ *  every session accumulates hundreds, and an unbounded table is not a useful
+ *  landing state), but /settings/imports?all=1 passes null and gets the lot.
+ *  Org-scoped here as well as by RLS — belt and braces, CLAUDE.md rule 1, and
+ *  the same doubled scoping every other query in this file uses.
+ *
+ *  `limit: null` really does mean ALL. It used to mean "the first 1000",
+ *  because a select with no .limit() still stops at PostgREST's max_rows and
+ *  says nothing about it — so a club past 1000 batches got a page headed "Show
+ *  all 1,340" listing 1,000, with no sign it was short. Paged, with a total
+ *  order (created_at is not unique — two imports in the same second are
+ *  ordinary), for the reason lib/queries/paged.ts's header gives. */
+export async function fetchRecentImportBatches(
+  db: Db,
+  orgId: string,
+  limit: number | null = 20,
+): Promise<ImportBatchSummary[]> {
+  if (limit !== null) {
+    const { data, error } = await db
+      .from('import_batches')
+      .select(BATCH_SELECT)
+      .eq('org_id', orgId)
+      .order('created_at', { ascending: false })
+      .order('id')
+      .limit(limit);
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((b) => toBatchSummary(b as unknown as BatchSelectRow));
+  }
+
+  const data = await fetchAllPaged<BatchSelectRow>((from, to) =>
+    db
+      .from('import_batches')
+      .select(BATCH_SELECT)
+      .eq('org_id', orgId)
+      .order('created_at', { ascending: false })
+      .order('id')
+      .range(from, to) as unknown as PagedResponse<BatchSelectRow>,
+  );
+  return data.map((b) => toBatchSummary(b));
+}
+
+/** Total batches for this org, so the screen can say "showing 20 of 137"
+ *  honestly rather than leaving a coach to guess whether the list is
+ *  truncated. head:true — a count, not the rows. */
+export async function countImportBatches(db: Db, orgId: string): Promise<number> {
+  const { count, error } = await db
+    .from('import_batches')
+    .select('id', { count: 'exact', head: true })
+    .eq('org_id', orgId);
+  if (error) throw new Error(error.message);
+  return count ?? 0;
+}
+
+/** One batch, for the export route's caption and filename. Returns null rather
+ *  than throwing when the id is unknown OR belongs to another org — RLS makes
+ *  those two cases indistinguishable from here, which is the point: the export
+ *  route turns both into the same 404 and leaks nothing about whether a batch
+ *  id exists in some other club. */
+export async function fetchImportBatch(
+  db: Db,
+  orgId: string,
+  batchId: string,
+): Promise<ImportBatchSummary | null> {
+  const { data, error } = await db
+    .from('import_batches')
+    .select(BATCH_SELECT)
+    .eq('org_id', orgId)
+    .eq('id', batchId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return null;
+  return toBatchSummary(data as unknown as BatchSelectRow);
+}
+
+/** One exported row: the gps_records this batch actually inserted, joined to
+ *  the athlete they landed on. */
+export type ImportBatchRecord = {
+  first_name: string;
+  last_name: string;
+  squad_number: number | null;
+  record_date: string;
+  total_distance_m: number | null;
+  high_speed_distance_m: number | null;
+  sprint_distance_m: number | null;
+  max_speed_ms: number | null;
+  accelerations: number | null;
+  decelerations: number | null;
+  player_load: number | null;
+  duration_s: number | null;
+};
+
+/** The rows one batch inserted, found by import_batch_id — the column
+ *  commitGpsImport stamps on every row it writes (migration 0023 adds the FK).
+ *  That join, not a date range, is what makes this export exact: two imports
+ *  covering the same session on the same day export separately and correctly,
+ *  which matters precisely because this build has no duplicate detection (see
+ *  this file's header) and re-uploading a file is a real thing coaches do.
+ *
+ *  duration_s is converted back to minutes at the CSV boundary, not here, so
+ *  this stays a faithful read of the stored column.
+ *
+ *  Note the deliberate asymmetry with the import: rejected rows are NOT
+ *  exportable. They were never stored — commitGpsImport keeps only a
+ *  rejected_count, never the rejected rows themselves (again, this file's
+ *  header) — so there is nothing to export, and the screen says so rather
+ *  than offering a download that would silently be accepted-rows-only.
+ *
+ *  PAGED, because a batch is not small. supabase/config.toml sets
+ *  `max_rows = 1000` and the upload route sizes for "a season of GPS data for a
+ *  squad... a few thousand rows" (MAX_BYTES = 5MB), so a plain select here
+ *  returned the first 1000 rows with no error and no short-page signal — a
+ *  3,000-row batch downloaded as a 1,000-row CSV whose own caption called that
+ *  the total, next to a history table showing Accepted = 3,000. That is exactly
+ *  the reconciliation failure the export route's header claims to prevent.
+ *
+ *  The order is (record_date, id), not record_date alone: `.range()` re-runs
+ *  the query per page and Postgres does not promise a stable order among tied
+ *  rows, so a non-unique sort key can hand back the same row on both sides of a
+ *  page boundary or on neither. A whole squad shares a record_date, so ties are
+ *  the normal case here, not an edge case. See lib/queries/paged.ts and the
+ *  total-order block in lib/queries/analytics.ts, where this exact bug was
+ *  found first. */
+export async function fetchGpsRecordsForBatch(
+  db: Db,
+  orgId: string,
+  batchId: string,
+): Promise<ImportBatchRecord[]> {
+  type Row = {
+    record_date: string;
+    total_distance_m: number | null;
+    high_speed_distance_m: number | null;
+    sprint_distance_m: number | null;
+    max_speed_ms: number | null;
+    accelerations: number | null;
+    decelerations: number | null;
+    player_load: number | null;
+    duration_s: number | null;
+    athletes: unknown;
+  };
+
+  const data = await fetchAllPaged<Row>((from, to) =>
+    db
+      .from('gps_records')
+      .select(
+        'record_date, total_distance_m, high_speed_distance_m, sprint_distance_m, max_speed_ms, accelerations, decelerations, player_load, duration_s, athletes!inner(first_name, last_name, squad_number)',
+      )
+      .eq('org_id', orgId)
+      .eq('import_batch_id', batchId)
+      /* TOTAL ORDER. `id` is gps_records' primary key and is what makes this
+       * unique; record_date leads only so the pages arrive in an order a human
+       * debugging this can follow. It is ordered but not selected — PostgREST
+       * does not require a sort column in the select list, and adding it would
+       * change the inferred row type for no gain. */
+      .order('record_date', { ascending: true })
+      .order('id')
+      .range(from, to) as unknown as PagedResponse<Row>,
+  );
+
+  return data
+    .map((r) => {
+      const a = r.athletes as unknown as { first_name: string; last_name: string; squad_number: number | null };
+      return {
+        first_name: a.first_name,
+        last_name: a.last_name,
+        squad_number: a.squad_number,
+        record_date: r.record_date,
+        total_distance_m: r.total_distance_m,
+        high_speed_distance_m: r.high_speed_distance_m,
+        sprint_distance_m: r.sprint_distance_m,
+        max_speed_ms: r.max_speed_ms,
+        accelerations: r.accelerations,
+        decelerations: r.decelerations,
+        player_load: r.player_load,
+        duration_s: r.duration_s,
+      };
+    })
+    /* Sorted in TS, not SQL: PostgREST cannot order by an embedded table's
+     * column, and a coach opening this in a spreadsheet expects it grouped by
+     * date then by player, the same order the on-screen tables use. */
+    .sort((x, y) => x.record_date.localeCompare(y.record_date) || x.last_name.localeCompare(y.last_name));
+}
+
+/** GPS output is not clinical data, but it is named-athlete performance data
+ *  leaving the building as a file, which is exactly the class of event
+ *  09-security-and-compliance.md wants an audit row for. Modelled on
+ *  recordReportView (lib/queries/reports.ts) but written here with
+ *  entity_type 'import_batch' and the real batch id in entity_id, rather than
+ *  reusing that helper's entity_type of 'report' — this is not a report view,
+ *  and an audit trail that mislabels the entity is worse than a bespoke row. */
+export async function recordImportExport(
+  db: Db,
+  orgId: string,
+  userId: string,
+  actorRole: AppRole,
+  batchId: string,
+  rowCount: number,
+): Promise<void> {
+  await db.from('audit_log').insert({
+    org_id: orgId,
+    actor_id: userId,
+    actor_role: actorRole,
+    action: 'import_batch.export',
+    entity_type: 'import_batch',
+    entity_id: batchId,
+    metadata: { format: 'csv', row_count: rowCount },
+  });
 }

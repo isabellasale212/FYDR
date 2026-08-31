@@ -141,7 +141,7 @@ Every screen in the `02-information-architecture.md` §5 inventory.
 | 24 | Nutrition plans | Both | Same. |
 | 25 | Testing | Both | A club without GPS still runs a CMJ and a 10m sprint. This is its objective data. |
 | 26 | Leaderboards | Both | Athlete-visible and an engagement lever for compliance. Boards on GPS metrics require Premium via `metric_definitions.requires_tier`. |
-| 27 | Analytics | Both | See section 3.3. Club gets the full builder over the metrics it has. |
+| 27 | Analytics | Both | **Amended 2026-08-30:** the screen is on both plans, as this row has always said. One capability inside it — the *bar chart, by athlete* — is Premium, per the client's instruction. A `core` org keeps the metric builder, the pickers, the trend chart and the table, and sees a locked panel where the bar view would be. See section 3.3. |
 | 28 | Reports | Both | GPS sections of the load report render only with GPS data. |
 | 29 | Settings | Both | Includes the tier display and the upgrade route. |
 | 30 | Thresholds | Both | Flags are worthless without configurable thresholds. GPS-metric thresholds need Premium. |
@@ -177,7 +177,7 @@ Every screen in the `02-information-architecture.md` §5 inventory.
 | Flags and thresholds | Both | Non-GPS domains. GPS-domain flags and thresholds are Premium because the data is. |
 | Leaderboards | Both | GPS-metric boards Premium. |
 | Reports, scheduled and formatted | Both | GPS sections absent without GPS data. |
-| Analytics builder, presets, saved views | Both | Full builder in both tiers. GPS metrics only in Premium. See 3.3. |
+| Analytics builder, presets, saved views | Both | Full builder in both tiers; GPS metrics only in Premium (none are built yet). **Amended 2026-08-30:** the *bar chart* visualisation is Premium — the builder is not. Saved views are not built in either tier. See 3.3. |
 | Cross-domain correlation | Both | See 3.3. This is a deliberate change from the current spec. |
 | Data export, CSV, XLSX, JSON | **Both** | Ethical and legal floor. Section 4.2. |
 | Athlete portability export | Both | Article 20. Not a feature. |
@@ -185,7 +185,7 @@ Every screen in the `02-information-architecture.md` §5 inventory.
 | **GPS import, vendor CSV and XLSX** | **P** | The hook. Section 5. |
 | GPS views, GPS flags, GPS leaderboards, training report | **P** | Downstream of the import. They render nothing without it. |
 | ACWR from combined RPE and GPS load | P | Club gets ACWR computed from RPE and duration. Premium gets it from GPS load as well. The metric exists in both; the input set differs. |
-| Apple HealthKit sync | **Both** | See 3.4. O-862 resolved: moved to Club/Basic. |
+| Apple HealthKit sync | **P** | See 3.4. O-862 **re-opened**: the club reversed its own 14 Aug decision on 30 Aug 2026 and HealthKit is Premium again. |
 | Team and group allocation | Both | `CLAUDE.md` §3 makes groups global. Gating them breaks every multi-athlete screen. |
 | Admin, user management, roles, audit log | Both | Governance. |
 | Offline sync and queueing | Both | Infrastructure. A tiered offline mode is a support nightmare and an insult. |
@@ -195,6 +195,38 @@ Every screen in the `02-information-architecture.md` §5 inventory.
 | Named support contact and response commitment | P | Honest differentiation and it costs real time. Club gets best-effort support, stated plainly rather than implied. |
 
 ### 3.3 Analytics: a recommended change to the current spec
+
+> **STILL OPEN, AND NOT CONTRADICTED BY THE BUILD. Amended 2026-08-30.**
+>
+> An earlier pass of this build read the client's instruction — *"for the setting page
+> move the analytics bar chart and apple health connection onto the premium plan
+> side"* — as gating the whole `/analytics` route, closed O-854 as rejected on that
+> basis, and struck this section through. **That has been reverted.** What ships now is
+> the narrow reading the sentence actually supports: the **bar chart** is Premium, the
+> screen is not. A `core` organisation keeps `/analytics` — every metric, the athlete
+> and group pickers, every timeline, the trend chart, the athlete table and the day-by-
+> day table — and sees a locked panel in the place the bar chart would have been.
+>
+> Two reasons the wide reading was wrong, recorded so it is not re-derived:
+>
+> 1. **It is wider than the instruction.** The same sentence names Apple Health, and the
+>    Apple Health half was implemented narrowly — a plan-card column move plus a Locked
+>    state on one Settings row, no route gated. Reading the two halves of one sentence at
+>    two different scopes is a slip, not an interpretation.
+> 2. **It deleted a shipped screen from existing customers**, which is precisely the
+>    "highest-regret" move this section's own closing paragraph warns against
+>    ("reversing it later is a downgrade for existing customers"). A downgrade of that
+>    size is a commercial decision that needs the buyer's sign-off on the *scope*, not
+>    only on the sentence. Nobody asked for it.
+>
+> So the recommendation below stands unchanged and **O-854 stays open**. Nothing in it is
+> contradicted by the narrow gate: the recommendation is about which *metrics* and which
+> *analysis capabilities* each tier gets, and the bar chart is a rendering of a metric
+> both tiers can already read as a number.
+>
+> One correction to this section's framing, which is true either way: correlation,
+> scatter, heatmap and saved views are **not built at all**, in either tier, so no tier
+> can currently be sold on them. See `screens/analytics.md`'s own banner.
 
 **Current spec** (`00-product-overview.md` tier table, `analytics.md` §"Tier gate"): Core gets
 five presets plus a single-metric, single-domain builder with no correlation. Performance gets
@@ -226,7 +258,7 @@ given it. **This is the highest-regret recommendation in this document.** O-854.
 **Downstream edits required if accepted**: `analytics.md` §"Tier gate", its error table, its
 edge cases 12 and 13, and the tier row in this document's own summary. Not made here.
 
-### 3.4 HealthKit, moved to Club (O-862 resolved)
+### 3.4 HealthKit: Premium → Club → Premium again (O-862 re-opened)
 
 HealthKit was Premium in the original spec, on a weak argument recorded rather than assumed:
 
@@ -236,12 +268,32 @@ HealthKit was Premium in the original spec, on a weak argument recorded rather t
 | It gives Premium a second line so the tier is not literally one feature | It is athlete-initiated, and section 4.3 argues athlete features belong in both tiers |
 | An Apple Watch is a proxy for the same spending pattern GPS units indicate | Sleep and HRV would materially improve the Club tier's readiness score |
 
-**O-862 asked the client to confirm, because the counter was respectable. Resolved: Club.**
-The original reasoning for gating it (the athlete-features principle in section 4.3 is scoped
-to the athlete's critical path to submitting an expected entry, and HealthKit is not on that
-path, so gating it doesn't break compliance) was never wrong — it just wasn't a strong enough
-reason to keep it Premium once asked directly. Section 3 and 4's own tables are updated to
-match; nothing else in this document's tier logic depended on HealthKit being Premium.
+**Decision 1 — 14 August 2026: Club.** O-862 asked the client to confirm, because the counter
+was respectable, and the client chose the right-hand column. The original reasoning for gating
+it (the athlete-features principle in section 4.3 is scoped to the athlete's critical path to
+submitting an expected entry, and HealthKit is not on that path, so gating it doesn't break
+compliance) was never wrong — it just wasn't a strong enough reason to keep it Premium once
+asked directly. Shipped as commit `34a416e`.
+
+**Decision 2 — 30 August 2026: Premium again. The club reversed its own decision.** This is
+recorded as a reversal rather than written over the top of decision 1, because decision 1 was
+not a mistake or a misreading — it was a considered call the customer made and then changed
+their mind about, and the record of *why* it went the other way in August is exactly what stops
+this question being re-litigated from scratch a third time. Shipped as the mirror image of
+`34a416e`: `settings/page.tsx`'s Apple Health row is `isPremium()`-gated again and shows the
+same `Locked` state the Catapult row shows on Basic; both plan-comparison lists and the plan
+summary line moved the "Apple Health connection" line back to the Premium column.
+
+**Nothing in the left-hand "For Premium" column got any stronger between the two dates, and
+nothing in the right-hand column got weaker.** The reversal is a commercial preference, not a
+new argument, and it should be described to a customer as one. If it is ever asked a third
+time, the substantive case is still the table above, unchanged.
+
+**Consistency note found while making this change**: section 8's `FEATURE_MIN_TIER` map in this
+same document has said `'healthkit.sync': 'premium'` throughout — decision 1 never updated it,
+and neither did section 9.4's "Settings, integrations | GPS and HealthKit sections render
+locked". Those two were *wrong* between 14 and 30 August and are *right* again now, by accident
+rather than by care. They are left as they stand because they now match the shipped gate.
 
 ---
 
@@ -1045,7 +1097,7 @@ Locked surfaces, and where each appears:
 |---|---|
 | `Import GPS` sidebar item | Present, with a lock affordance. Opens the locked panel. |
 | `Training report` sidebar item | Present, opens the locked panel with a sample-data screenshot. |
-| Analytics metric picker | GPS metrics listed and disabled, with "Needs Premium" against them, rather than absent. Consistent with `analytics.md`, which already shows locked capability rather than hiding it. |
+| Analytics metric picker | GPS metrics listed and disabled, with "Needs Premium" against them. None are built yet, so nothing is listed today. **Amended 2026-08-30:** a Basic org *does* reach the picker — the route is not gated. The rule now also governs the **chart-type** control, where the Premium-only bar view stays choosable and marked `· Premium`, and selecting it renders the locked panel in place of the chart. Distinct from an *illegal* chart type (a trend over a single day), which is disabled with its reason (`analyticsBuilder.ts`'s `chartUnavailableReason`) — locked is purchasable, illegal is not. |
 | Leaderboard metric picker | Same. |
 | Thresholds, GPS domain | Domain tab present and locked. |
 | Athlete profile, GPS tab | Tab present and locked. Staff only. |
@@ -1186,12 +1238,12 @@ The condensed version. `00-product-overview.md` carries a copy of this and point
 | Programme builder and prescription | Yes | Yes |
 | Flags, thresholds, leaderboards | Yes | Yes |
 | Reports | Yes | Yes |
-| Analytics builder, correlation, saved views | Yes | Yes, plus GPS metrics |
+| Analytics builder | Yes, minus the bar chart | Yes, including the bar chart. Metric, athlete, group, timeline and chart-type pickers in both. *(Correlation and saved views are not built in either tier.)* |
 | ACWR | From RPE and duration | From RPE, duration and GPS load |
 | Data export, CSV, XLSX, JSON | **Yes** | **Yes** |
 | Athlete app, offline, notifications | Yes | Yes |
 | Admin, users, roles, audit log | Yes | Yes |
-| Apple HealthKit sync | Yes | Yes |
+| Apple HealthKit sync | No | **Yes** |
 | **GPS import** | No | **Yes** |
 | GPS views, flags, leaderboards, training report | No | Yes |
 | API export (post-v1) | No | Yes |
@@ -1234,7 +1286,7 @@ Raised by this document. Numbered from O-850 to keep clear of the existing range
 | **O-851** | Are the section 6.3 band prices right? They must be tested against five real clubs before an invoice is issued (6.5). What do the clubs you know currently spend on performance software and on GPS? | Yes, before selling |
 | **O-852** | Are the band boundaries (35 / 60 / 100) right for rugby squad sizes including academy? A boundary in the wrong place creates a cliff where clubs actually cluster. | Yes, with O-851 |
 | **O-853** | Pilot terms. **The paid-versus-free conflict is resolved, 5 August 2026: the pilot is paid.** `10-roadmap.md` §10 said "free during the pilot" and §7.3 here said £500; this document was right and the roadmap has been corrected, with the argument for paid recorded there and O-65 closed. What is still open is the shape, not the principle: is £500 for 12 weeks credited against the first invoice right, and is two concurrent pilots the right cap for one developer? | Before Phase 1a exit |
-| **O-854** | **Accept or reject the analytics change in section 3.3.** Club gets the full builder including correlation and saved views, with GPS metrics as the only gate. This is the highest-regret recommendation here: reversing it later is a downgrade for existing customers. | Before Phase 3 |
+| **O-854** | **Accept or reject the analytics change in section 3.3.** *Briefly closed as "rejected" on 2026-08-30 and re-opened the same day.* The closure rested on reading *"move the analytics bar chart ... onto the premium plan side"* as an instruction to gate the whole `/analytics` route; that gate shipped, then was reverted, because it deleted a live screen from every existing `core` org — the exact "highest-regret" outcome §3.3 warns about — and because the Apple Health half of the same sentence was implemented at a far narrower scope. What ships is the narrow gate: the bar chart is Premium, the screen is not, which contradicts nothing in §3.3. **The question §3.3 actually asks is still unanswered and still needs the buyer.** Ask it separately from the bar chart, and ask explicitly whether removing analytics from existing Basic clubs is wanted — do not infer it. | **Open.** Before a price list is published |
 | **O-855** | Confirm visible-and-locked over absent for Premium surfaces (9.1), against the existing `imports.md` rule. | Before Phase 3 |
 | **O-856** | Confirm that export is available in every tier and in every billing state including suspension, and that this is written into the club contract rather than only into this document. | Yes, contract |
 | **O-857** | Which athletes count for the band? `settings.md` uses `count(athletes) where status <> 'left_club'`. Do trialists, dual-registered players and long-term injured count? Does a separate academy squad count? | With O-851 |
@@ -1242,7 +1294,7 @@ Raised by this document. Numbered from O-850 to keep clear of the existing range
 | **O-859** | Billing stays out of band in v1 (`00-product-overview.md` non-goal). At what customer count does that break, and is Stripe the intended answer? Manual invoicing is fine at five clubs and is a part-time job at forty. | Phase 4 |
 | **O-860** | Is multi-squad within one organisation a Premium line if it is ever built? It is currently unbuilt and is a professional-club need. | Not now |
 | **O-861** | The API export is a commitment on the tier table and not a shipped feature (O-225). Does it stay on the Premium column while unbuilt? Recommendation: yes, marked "planned", or remove it. Do not list it plainly. | Before publishing a price list |
-| **O-862** | **Resolved, 14 August 2026: HealthKit moved to Club/Basic**, per 3.4. The counter-argument (near-zero marginal cost, athlete-initiated, sleep and HRV would materially improve the Club readiness score) is what the client decided on when asked. | Closed |
+| **O-862** | **Re-opened, 30 August 2026. Two decisions, both on the record — see 3.4.** (1) *Resolved 14 August 2026: HealthKit moved to Club/Basic*, on the counter-argument (near-zero marginal cost, athlete-initiated, sleep and HRV would materially improve the Club readiness score), shipped as `34a416e`. (2) *Reversed 30 August 2026 at the club's own request: HealthKit is Premium again*, shipped as the mirror of that commit. Decision 1 is deliberately **not** deleted: no new argument arrived, the club simply changed its commercial mind, and the reasoning that won in August is what stops this being argued from zero a third time. | **Re-opened.** Needs a written answer before a price list is published, because a feature that has moved tier twice in three weeks cannot be printed on one. |
 | **O-863** | What support commitment is honest for Premium? A named contact is free to promise and expensive to keep for one person. State hours and a realistic response time, or do not sell it. | With O-851 |
 | **O-864** | Is `tier` needed in the JWT at all? Read paths could look up `organisations.tier` directly at a small cost. Keeping it out of the claim removes the staleness case entirely. Recommendation: keep the claim for read paths and the table for write paths, as specified, but the simpler alternative is worth a decision rather than an assumption. | Phase 0 |
 | **O-865** | How long is GPS data retained after a downgrade or a cancellation? Section 8.7 says 120 days before deletion on written instruction, which needs to agree with O-13 (data retention after an athlete leaves a club) and with the contract. | Before first Premium sale |

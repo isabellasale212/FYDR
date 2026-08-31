@@ -51,6 +51,43 @@ and exported. It is not a dashboard. It is exploratory, and per design principle
 | Athlete | No access. `01-roles-and-permissions.md` §1 explicitly denies athletes squad-level analytics. Their own trends live in `my-data.md` |
 | Admin | No access to athlete-level analytics. Aggregate compliance and usage statistics only, which live in `settings.md` |
 
+> **AS BUILT, 2026-08-30 — the screen is on both plans; the BAR CHART is Premium.**
+>
+> The paragraph below (and the "Club tier" row in §Role-specific) describe a
+> *partial* gate: Core gets the presets and a single-metric builder, Performance
+> adds correlation, scatter, heatmap and saved views. That shape is intact. One
+> line of it has moved, on the client's verbatim instruction: *"for the setting
+> page move the analytics bar chart and apple health connection onto the premium
+> plan side."* So the Club-tier row's "line **and bar** only" is now "line only",
+> and the bar chart sits in Premium. Nothing else about the gate changed.
+>
+> Concretely, for a Basic (`core`) organisation: `/analytics` opens. Every metric
+> in the catalogue, the athlete picker, the group filter, every timeline, the
+> trend chart, the athlete table and the day-by-day table all work. Selecting
+> "Bar, by athlete" — which stays choosable and is labelled `· Premium` — renders
+> a locked panel in its place, naming what it is and pointing at the Table view,
+> which carries the identical per-athlete numbers. The Settings plan card lists
+> "Analytics · bar chart, by athlete" under Premium and "Analytics · metric
+> builder, trends and table" under Basic, so the card and the real gate agree.
+>
+> **A route-level gate was built first and reverted.** An earlier pass read the
+> same sentence as "gate `/analytics`" and rendered `PlanGate` over the whole
+> screen for a `core` org. That was wider than the sentence — the Apple Health
+> half of it was implemented as a plan-card move plus one Locked Settings row,
+> with no route gated — and it deleted a live, shipped screen from existing
+> customers, which `12-product-tiers.md` §3.3 names as the highest-regret class
+> of change. **O-854 is therefore still open**, not answered: whether Club should
+> lose analytics wholesale is a commercial question that needs asking on its own,
+> not one to infer from an instruction about a bar chart.
+>
+> What Premium buys here today is narrower than this section promises, and the
+> gap is deliberate, not pending: **no correlation, no scatter, no heatmap, no
+> saved or shared views**, in either tier. `saved_views` does not exist in this
+> schema. The shipped builder is one metric × one population × one window, drawn
+> as a trend, a bar chart or a table. See `src/lib/analyticsBuilder.ts` for the
+> metric catalogue and its `chartIsPremium()`, and
+> `src/app/(staff)/analytics/page.tsx` for the gate.
+
 **Tier gate.** `00-product-overview.md` sells "Limited presets" on Core and the "Full custom
 builder" on Performance. Concretely: Core gets the five presets plus a single-metric,
 single-domain builder with no correlation. Performance gets multi-metric, cross-domain,
@@ -889,7 +926,7 @@ partial window without saying so.
 |---|---|
 | Coach / S&C | Full, minus clinical dimensions |
 | Medical | Full, plus `body_area`, `severity`, `mechanism` and `tissue_type` as dimensions. Medical-only views are marked and cannot be shared to a coach. Sharing one attempts and is refused with an explanation |
-| Club tier | Five presets, single-metric builder, line and bar only. Correlation, scatter, heatmap, multi-metric and saved views are visible and locked |
+| Club tier | Five presets, single-metric builder, ~~line and bar~~ **line only** — the bar chart moved to Premium on 2026-08-30, see the banner above §"Tier gate". Correlation, scatter, heatmap, multi-metric and saved views are visible and locked (none of them are built in either tier). The Club org **does** have this screen; only the bar view is locked, and the Table view carries the same per-athlete numbers. |
 | Athlete, admin | Route not registered |
 
 ---

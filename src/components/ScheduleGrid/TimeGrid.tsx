@@ -175,12 +175,16 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
                       {
                         top: b.top,
                         height: b.height,
-                        // The design insets blocks 6px inside their column so
-                        // the hairline dividers stay visible either side. The
+                        // Inset inside the column so the hairline dividers stay
+                        // visible either side. The design uses 6px; this is 4,
+                        // because at 6 a block's text box lands on 96px and
+                        // "Speed & power testing" measures 96px for its second
+                        // line — it lost by a hair and clamped to "power…".
+                        // Four buys 4px and the divider is no less visible. The
                         // percentages still come from the clash algorithm, so
                         // staggered blocks keep their split.
-                        left: `calc(${b.left}% + 6px)`,
-                        width: `calc(${b.width}% - 12px)`,
+                        left: `calc(${b.left}% + 4px)`,
+                        width: `calc(${b.width}% - 8px)`,
                         zIndex: b.zIndex,
                         '--tone': style.tone,
                         '--bc': style.bc,
@@ -196,7 +200,9 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
                           {b.showBadge ? <span className="sg-block-badge">Edited</span> : null}
                           {b.clashed ? <span className="sg-block-dot" aria-label="Clash" /> : null}
                         </div>
-                        <div className="sg-block-name">{b.title}</div>
+                        <div className="sg-block-name" title={b.title}>
+                          {b.title}
+                        </div>
                         {b.height >= 63 && b.groupNames.length > 0 ? (
                           <div className="sg-block-group">{b.groupNames.join(' + ')}</div>
                         ) : null}

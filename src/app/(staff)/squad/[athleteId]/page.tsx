@@ -445,21 +445,18 @@ export default async function AthletePage({
         </div>
       </div>
 
-      {/* The one sentence that keeps a "global" control from lying. Both facts
-        * it can carry are real and both are otherwise invisible: that only two
-        * panels follow the control, and — when resolveRange says so — that
-        * MAX_WINDOW_DAYS clipped the window the label promised. */}
-      <p className="cap" style={{ margin: '0 0 12px' }}>
-        {profile.range.label} ({profile.range.days} day{profile.range.days === 1 ? '' : 's'},{' '}
-        {formatDate(profile.range.from, timezone)} to {formatDate(profile.range.to, timezone)}) applies to
-        Body weight and Wellness rating, and to nothing else on this page. ACWR is fixed at acute 7d over
-        chronic 28d and entry corrections at a fixed 28 days &mdash; both say so on their own cards.
-        Athleticism, Injuries, Flags and Nutrition are not windowed at all.
-        {profile.range.clipped ? ' Clipped to the two-year maximum this app reads in one window.' : ''}
-        {coercedFromChoice !== null
-          ? ` "${coercedFromChoice}" is not available on this screen, so ${profile.range.label.toLowerCase()} is shown instead.`
-          : ''}
-      </p>
+      {/* The scope sentence is gone at the club's request. The two facts it
+          also carried are NOT the same thing and survive on their own: a
+          clipped window and a coerced one both mean the data on screen is not
+          the window that was asked for, and neither is visible anywhere else. */}
+      {profile.range.clipped || coercedFromChoice !== null ? (
+        <p className="cap" style={{ margin: '0 0 12px' }}>
+          {profile.range.clipped ? 'Clipped to the two-year maximum this app reads in one window.' : ''}
+          {coercedFromChoice !== null
+            ? ` "${coercedFromChoice}" is not available on this screen, so ${profile.range.label.toLowerCase()} is shown instead.`
+            : ''}
+        </p>
+      ) : null}
 
       <div className="pp-col">
         {programme ? (

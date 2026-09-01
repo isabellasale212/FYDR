@@ -1,8 +1,6 @@
 import Link from 'next/link';
-import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
-import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { PositionalContext } from '@/components/PositionalContext/PositionalContext';
-import { AthleteDomainDenied, ViewOnlyNotice } from '@/components/AthleteDomainShell/AthleteDomainShell';
+import { AthleteDomainDenied } from '@/components/AthleteDomainShell/AthleteDomainShell';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { loadAthleteDomainContext } from '@/lib/athleteDomain.server';
 import { addDays, daysBetween, enumLabel, formatDate, formatNumber } from '@/lib/format';
@@ -18,11 +16,9 @@ import {
   fetchProgrammeDetail,
   fetchProgrammeExerciseIndex,
   fetchRecentGymSessions,
-  type AthleteAssignment,
   type GymAthleteStats,
 } from '@/lib/queries/programmes';
 import {
-  POSITIONAL_MIN_N,
   positionalScopeLine,
   resolvePositionalUnit,
   summarisePositional,
@@ -117,9 +113,6 @@ export const metadata = { title: 'Gym · Fydr' };
 /** `day` disabled with its reason. Every figure here is a count or a mean over
  *  a block of training, and one day is one session at most. */
 const GYM_PERIODS: readonly RangeKey[] = ['week', 'month', 'season', 'year', 'all'];
-const GYM_PERIOD_REASONS: Partial<Record<RangeKey, string>> = {
-  day: 'these are counts and means over a block of training, and one day is one session',
-};
 
 /** The session table's row cap. fetchRecentGymSessions caps in the DATABASE on
  *  a descending order (its own header explains why a cap, not paging, is right
@@ -142,9 +135,6 @@ const SESSION_ROWS = 40;
  *  over whoever happened to stand on the scales. */
 const BODY_MASS_LOOKBACK_DAYS = 180;
 
-function assignmentOwner(a: AthleteAssignment): string {
-  return a.programmeType === 'rehab' ? 'medical staff' : 'the coach who authors it';
-}
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -160,7 +150,7 @@ export default async function AthleteGymPage({
   const ctx = await loadAthleteDomainContext(athleteId, sp, { allowed: GYM_PERIODS });
   if (ctx.denied) return <AthleteDomainDenied orgName={ctx.orgName} domain="Gym" />;
 
-  const { db, orgId, timezone, today, athlete, groups, groupIds, season, periodKey, coercedFrom, expressed } = ctx;
+  const { db, orgId, timezone, today, athlete, groups, groupIds, season, periodKey } = ctx;
 
   const earliest = await fetchEarliestGymSessionDate(db, orgId);
   const range = resolveRange(periodKey, today, season?.starts_on ?? null, earliest);
@@ -374,42 +364,19 @@ export default async function AthleteGymPage({
           </p>
           <h1>Gym</h1>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          <GroupFilter groups={groups} selected={groupIds} />
-          <PeriodSelector
-            value={periodKey}
-            allowed={GYM_PERIODS}
-            reasons={GYM_PERIOD_REASONS}
-            season={season}
-            sticky={expressed && coercedFrom === null}
-            ariaLabel="Period for the session history and the positional comparisons"
-          />
-        </div>
       </div>
 
-      <p className="cap" style={{ margin: '0 0 12px' }}>
-        {range.label} ({range.days} day{range.days === 1 ? '' : 's'}, {formatDate(range.from, timezone)} to{' '}
-        {formatDate(range.to, timezone)}) applies to the session history and to the three positional
-        comparisons, including which lifts appear and what counts as a best set. The programme and its
-        tailoring are what is prescribed <b>now</b> and are not windowed.
-        {range.clipped ? ' Clipped to the two-year maximum this app reads in one window.' : ''}
-        {coercedFrom !== null
-          ? ` "${coercedFrom}" is not available on this screen, so ${range.label.toLowerCase()} is shown instead.`
-          : ''}
-      </p>
+      {/* The scope sentence goes with the controls that made it necessary.
+          A CLIPPED window is a different fact — the label and the data really
+          do differ — so that line stays. */}
+      {range.clipped ? (
+        <p className="cap" style={{ margin: '0 0 12px' }}>
+          {range.label} is clipped to the two-year maximum this app reads in one window.
+        </p>
+      ) : null}
 
       <div className="pp-col">
-        <ViewOnlyNotice
-          what={primary ? `“${primary.name}”` : 'Gym programmes'}
-          owner={primary ? assignmentOwner(primary) : 'a coach, or by medical for a rehab programme'}
-          href={primary ? `/programmes/${primary.programmeId}` : '/programmes'}
-          linkLabel={primary ? 'Open the programme builder' : 'Open gym programmes'}
-          note={
-            primary
-              ? `A gym programme is authored by a coach and a rehab programme by medical — the database enforces that split, not just the screen. Per-athlete tailoring (a substitution, a load change, an exemption) is made on the athlete view of the programme, linked below; nothing on this page changes anything.`
-              : 'Nothing is assigned to this athlete yet, directly or through one of his groups.'
-          }
-        />
+
 
         <section className="card pp-card" aria-labelledby="g-prog-title">
           <div className="pp-card-head">
@@ -563,7 +530,6 @@ export default async function AthleteGymPage({
             title="Workload, compared with his position"
             titleId="g-positional-title"
             scopeLine={positionalScopeLine(unit, groups, groupIds)}
-            intro={`How much gym work he has done this period against the spread across ${unit.name} — the same positional unit the training report benchmarks load against. Volume is the mean per completed session, not a total, so an athlete who trained twice is not compared with one who trained twenty. The bar is the unit's middle half and its median, the dot is him; nobody is named or ranked.${unit.subjectIncluded ? '' : ' He is outside the current group filter, so the band is his unit without him.'}`}
             rows={bands}
           />
         ) : (
@@ -586,7 +552,6 @@ export default async function AthleteGymPage({
                 title="Strength, compared with his position"
                 titleId="g-strength-title"
                 scopeLine={positionalScopeLine(unit, groups, groupIds)}
-                intro={`The heaviest single working set he logged for each lift in this period, against the spread across ${unit.name}. Warm-ups and any set logged without a load or without a completed repetition are excluded. This is load moved, not a one-rep max: two players' best sets can sit at different repetitions, and Fydr does not estimate a maximum from a submaximal set — a tested 1RM belongs in Testing, linked to the exercise there. Rows are the lifts he actually performed in this window; a lift too thin in the unit withholds its own median and keeps the rest.${unit.subjectIncluded ? '' : ' He is outside the current group filter, so the band is his unit without him.'}`}
                 rows={loadBands}
               />
             ) : (
@@ -611,7 +576,6 @@ export default async function AthleteGymPage({
                 title="Relative strength, compared with his position"
                 titleId="g-relative-title"
                 scopeLine={positionalScopeLine(unit, groups, groupIds)}
-                intro={`The same best set, divided by body mass — the comparison that separates a prop from a wing inside one unit, where the absolute figure above mostly separates the heavy from the light. Body mass is the divisor and nothing else: no player's mass is shown here, no peer is named, and the row is withheld unless ${POSITIONAL_MIN_N} players in the unit have both a logged set and a recent weigh-in, which is why a unit that does not weigh in regularly will see fewer bands here than above. Mass is each player's latest reading on or before the end of this period and no more than ${BODY_MASS_LOOKBACK_DAYS} days before it starts; a lift with no weigh-in behind it gets no ratio rather than a stale one.`}
                 rows={relativeBands}
               />
             ) : loadBands.length > 0 ? (

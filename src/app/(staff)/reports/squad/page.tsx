@@ -233,9 +233,14 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
                 </span>
               </div>
             ) : null}
-            {report.load.length === 0 ? (
+            {/* Branch on the COMPUTABLE rows, not on report.load: with every
+                athlete suppressed the list is 29 long and none of it is
+                renderable, which was printing a column header over nothing. */}
+            {report.load.filter((r) => r.acwr !== null).length === 0 ? (
               <p className="tiny" style={{ marginTop: 10, color: 'var(--muted)' }}>
-                No athlete in this filter.
+                {report.load.length === 0
+                  ? 'No athlete in this filter.'
+                  : 'No athlete has enough trailing days for a ratio yet, so there is nothing to rank.'}
               </p>
             ) : (
               <>

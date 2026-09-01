@@ -12,7 +12,10 @@ type Props = {
    *  the thing audit finding S4 was about. */
   scopeLine: string;
   /** One sentence saying what these numbers ARE, in this domain's words. */
-  intro: string;
+  /** Optional: several profile panels have had their explanatory paragraph
+   *  removed at the club's request. The scopeLine above still says WHO is in
+   *  the comparison, which is the part that changes what the chart means. */
+  intro?: string;
   rows: readonly PositionalBand[];
 };
 
@@ -62,7 +65,7 @@ export function PositionalContext({ title, titleId, scopeLine, intro, rows }: Pr
         </h2>
         <span className="mono s">{scopeLine}</span>
       </div>
-      <p className="pc-intro">{intro}</p>
+      {intro ? <p className="pc-intro">{intro}</p> : null}
 
       {rows.length === 0 ? (
         <p className="cap">Nothing on record to compare in this window.</p>

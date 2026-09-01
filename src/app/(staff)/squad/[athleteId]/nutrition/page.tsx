@@ -1,8 +1,6 @@
 import Link from 'next/link';
-import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
-import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { PositionalContext } from '@/components/PositionalContext/PositionalContext';
-import { AthleteDomainDenied, ViewOnlyNotice } from '@/components/AthleteDomainShell/AthleteDomainShell';
+import { AthleteDomainDenied } from '@/components/AthleteDomainShell/AthleteDomainShell';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { loadAthleteDomainContext } from '@/lib/athleteDomain.server';
 import { enumLabel, formatDate, formatNumber, mdLabel } from '@/lib/format';
@@ -107,9 +105,6 @@ export const metadata = { title: 'Nutrition · Fydr' };
  *  two panels the control drives and both are series; a single day is one
  *  weigh-in at most and no check-in at all (a check-in is weekly). */
 const NUTRITION_PERIODS: readonly RangeKey[] = ['week', 'month', 'season', 'year', 'all'];
-const NUTRITION_PERIOD_REASONS: Partial<Record<RangeKey, string>> = {
-  day: 'body mass is a slow signal and the check-in is weekly — one day shows neither',
-};
 
 /** Body mass is watched for drift over MONTHS. DEFAULT_RANGE (28 days) is right
  *  for most screens and wrong here for the same reason squad/[athleteId] states
@@ -143,7 +138,7 @@ export default async function AthleteNutritionPage({
   });
   if (ctx.denied) return <AthleteDomainDenied orgName={ctx.orgName} domain="Nutrition" />;
 
-  const { db, orgId, timezone, today, athlete, groups, groupIds, season, periodKey, coercedFrom, expressed } = ctx;
+  const { db, orgId, timezone, today, athlete, groups, groupIds, season, periodKey } = ctx;
 
   const earliest = await fetchEarliestBodyCompositionDate(db, orgId);
   const range = resolveRange(periodKey, today, season?.starts_on ?? null, earliest);
@@ -291,42 +286,20 @@ export default async function AthleteNutritionPage({
           </p>
           <h1>Nutrition</h1>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          <GroupFilter groups={groups} selected={groupIds} />
-          <PeriodSelector
-            value={periodKey}
-            allowed={NUTRITION_PERIODS}
-            reasons={NUTRITION_PERIOD_REASONS}
-            season={season}
-            /* Never sticky when this screen is showing its OWN default
-             * (`season`, where the app-wide default is `month`) or its own
-             * clamp fallback: the cookie is account-wide and would carry a
-             * window nobody picked to Analytics and everywhere else. */
-            sticky={expressed && coercedFrom === null}
-            ariaLabel="Period for the weigh-in comparison and the check-in history"
-          />
-        </div>
       </div>
 
-      <p className="cap" style={{ margin: '0 0 12px' }}>
-        {range.label} ({range.days} day{range.days === 1 ? '' : 's'}, {formatDate(range.from, timezone)} to{' '}
-        {formatDate(range.to, timezone)}) applies to the check-in history and to the weigh-in used in the
-        positional comparison. Today&apos;s targets are the plan in force <b>now</b> and are not windowed
-        at all; the body-mass headline is his most recent weigh-in on record, whenever it was.
-        {range.clipped ? ' Clipped to the two-year maximum this app reads in one window.' : ''}
-        {coercedFrom !== null
-          ? ` "${coercedFrom}" is not available on this screen, so ${range.label.toLowerCase()} is shown instead.`
-          : ''}
-      </p>
+      {/* The scope sentence is gone with the controls that made it necessary —
+          nothing on this screen is selectable any more, so there is no
+          discrepancy between what was asked for and what is shown. A CLIPPED
+          window is still a real difference between the label and the data, so
+          that one line survives. */}
+      {range.clipped ? (
+        <p className="cap" style={{ margin: '0 0 12px' }}>
+          {range.label} is clipped to the two-year maximum this app reads in one window.
+        </p>
+      ) : null}
 
       <div className="pp-col">
-        <ViewOnlyNotice
-          what="Nutrition targets"
-          owner="coach or medical, in the nutrition workspace"
-          href="/nutrition"
-          linkLabel="Open the nutrition workspace"
-          note="A target is effective-dated, not edited: changing one closes the old row and opens a new one, so the plan an athlete was on in pre-season is still on the record. That is why there is no field to type in here — there is nothing on this page a keystroke could correctly change."
-        />
 
         <section className="card pp-card" aria-labelledby="n-today-title">
           <div className="pp-card-head">
@@ -523,7 +496,6 @@ export default async function AthleteNutritionPage({
             title="Compared with his position"
             titleId="n-positional-title"
             scopeLine={positionalScopeLine(unit, groups, groupIds)}
-            intro={`${unit.name} is derived from his recorded position (${athlete.position ?? 'not recorded'}) using the same six-unit map the nutrition workspace groups by. Body mass is each athlete's latest weigh-in inside this period, so the unit is compared like for like; the targets are each athlete's plan in force today. The bar is the middle half of the unit and its median, the dot is him — no team-mate is named, and nothing here is ranked.${unit.subjectIncluded ? '' : ' He is outside the current group filter, so the band is his unit without him.'}`}
             rows={bands}
           />
         ) : (

@@ -55,6 +55,12 @@ export type AttentionRow = {
   value: string;
   baseline: string;
   duration: string;
+  /** Every open flag this athlete has, not just the top one the sentence
+   *  narrates — the row's own evidence, built from the SAME rows the count
+   *  and the priority order come from, so an expanded row can never disagree
+   *  with the "+N more" beside it. Each line is one flag: which rule fired,
+   *  the reading and the baseline that fired it, and how hard. */
+  flags: { id: string; rule: string; evidence: string; severity: FlagSeverity }[];
 };
 
 const SEVERITY_RANK: Record<FlagSeverity, number> = { low: 0, medium: 1, high: 2 };
@@ -285,6 +291,26 @@ export async function fetchDashboardAttention(
           ? ''
           : `${formatNumber(f.expected_value, copy.decimals)}${copy.unit}`,
       duration: durationLabel(f.flag_date, wallClockToday),
+      flags: athleteFlags.map((af) => {
+        const c2 = metricCopy(af.metric);
+        const observed = af.observed_value === null ? null : `${formatNumber(af.observed_value, c2.decimals)}${c2.unit}`;
+        const expected = af.expected_value === null ? null : `${formatNumber(af.expected_value, c2.decimals)}${c2.unit}`;
+        return {
+          id: af.id,
+          rule: c2.what,
+          /* Date, reading, baseline — the three things that let a coach check
+             the flag rather than take it on trust. A missing reading is left
+             out rather than printed as a zero. */
+          evidence: [
+            durationLabel(af.flag_date, wallClockToday),
+            observed,
+            expected === null ? null : `baseline ${expected}`,
+          ]
+            .filter(Boolean)
+            .join(' · '),
+          severity: af.severity,
+        };
+      }),
     });
   }
 

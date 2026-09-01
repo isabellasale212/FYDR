@@ -1,13 +1,11 @@
 import Link from 'next/link';
-import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
-import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { Pill } from '@/components/Pill/Pill';
 import { PositionalContext } from '@/components/PositionalContext/PositionalContext';
 import { WellnessChart } from '@/components/WellnessChart/WellnessChart';
-import { AthleteDomainDenied, ViewOnlyNotice } from '@/components/AthleteDomainShell/AthleteDomainShell';
+import { AthleteDomainDenied } from '@/components/AthleteDomainShell/AthleteDomainShell';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { loadAthleteDomainContext } from '@/lib/athleteDomain.server';
-import { addDays, formatDate, formatNumber } from '@/lib/format';
+import { addDays, formatNumber } from '@/lib/format';
 import { resolveRange, type RangeKey } from '@/lib/period';
 import { availabilityStatus } from '@/lib/status';
 import { mean, readiness } from '@/lib/stats';
@@ -93,9 +91,6 @@ export const metadata = { title: 'Wellness · Fydr' };
  *  over a window; one day gives each of them a single observation, and the
  *  positional median would be computed over whoever happened to submit today. */
 const WELLNESS_PERIODS: readonly RangeKey[] = ['week', 'month', 'season', 'year', 'all'];
-const WELLNESS_PERIOD_REASONS: Partial<Record<RangeKey, string>> = {
-  day: 'every figure here is a mean or a rolling band, and one day is one point',
-};
 
 /** The trailing baseline the readiness band is drawn against — "is this normal
  *  for him". FIXED at 14 days regardless of the selected period, matching
@@ -158,7 +153,7 @@ export default async function AthleteWellnessPage({
   const ctx = await loadAthleteDomainContext(athleteId, sp, { allowed: WELLNESS_PERIODS });
   if (ctx.denied) return <AthleteDomainDenied orgName={ctx.orgName} domain="Wellness" />;
 
-  const { db, orgId, timezone, today, athlete, groups, groupIds, season, periodKey, coercedFrom, expressed } = ctx;
+  const { db, orgId, timezone, today, athlete, groups, groupIds, season, periodKey } = ctx;
 
   const earliest = await fetchEarliestEntryDate(db, orgId, 'wellness');
   const range = resolveRange(periodKey, today, season?.starts_on ?? null, earliest);
@@ -242,22 +237,6 @@ export default async function AthleteWellnessPage({
           </p>
           <h1>Wellness</h1>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          <GroupFilter groups={groups} selected={groupIds} />
-          <PeriodSelector
-            value={periodKey}
-            allowed={WELLNESS_PERIODS}
-            reasons={WELLNESS_PERIOD_REASONS}
-            season={season}
-            /* Sticky only when the reader actually chose this window and it was
-             * not clamped. The cookie is account-wide, so a screen writing its
-             * own default or its own fallback into it silently re-scopes every
-             * other screen to a window nobody picked. Same test /dashboard and
-             * squad/[athleteId] already use. */
-            sticky={expressed && coercedFrom === null}
-            ariaLabel="Period for the wellness trend and the positional comparison"
-          />
-        </div>
       </div>
 
       {/* The control is page-wide here and genuinely means it — unlike the
@@ -265,25 +244,16 @@ export default async function AthleteWellnessPage({
         * baseline, which is a BASELINE and not a view window. Said out loud
         * rather than left for a coach to infer from a ribbon that did not
         * move. */}
-      <p className="cap" style={{ margin: '0 0 12px' }}>
-        {range.label} ({range.days} day{range.days === 1 ? '' : 's'}, {formatDate(range.from, timezone)} to{' '}
-        {formatDate(range.to, timezone)}) applies to every figure on this page. The shaded ribbon is a
-        fixed {ROLLING_WINDOW}-day rolling baseline &mdash; what is normal for him &mdash; and does not
-        widen with the period.
-        {range.clipped ? ' Clipped to the two-year maximum this app reads in one window.' : ''}
-        {coercedFrom !== null
-          ? ` "${coercedFrom}" is not available on this screen, so ${range.label.toLowerCase()} is shown instead.`
-          : ''}
-      </p>
+      {/* The scope sentence goes with the control that made it necessary. A
+          CLIPPED window still means the label and the data differ, so it stays. */}
+      {range.clipped ? (
+        <p className="cap" style={{ margin: '0 0 12px' }}>
+          {range.label} is clipped to the two-year maximum this app reads in one window.
+        </p>
+      ) : null}
 
       <div className="pp-col">
-        <ViewOnlyNotice
-          what="Wellness entries"
-          owner="coach or medical"
-          href={`/squad/${athleteId}#pp-corrections-title`}
-          linkLabel="Open the entry correction panel"
-          note="An entry is immutable once submitted (CLAUDE.md rule 6): a correction does not overwrite it, it writes a new revision and marks the old one superseded, with the corrector and the reason on the record. That path lives on the player profile and nowhere else."
-        />
+
 
         <section className="card pp-card" aria-labelledby="w-summary-title">
           <div className="pp-card-head">
@@ -414,7 +384,6 @@ export default async function AthleteWellnessPage({
             title="Compared with his position"
             titleId="w-positional-title"
             scopeLine={positionalScopeLine(unit, groups, groupIds)}
-            intro={`Each row is his own mean for this period against the spread of per-athlete means across ${unit.name}. The bar shows the middle half of the unit and its median; the dot is him. No team-mate is named or ranked — wellness is self-reported health data and this app does not rank it (see the leaderboard metric catalogue, migration 0016).${unit.subjectIncluded ? '' : ' He is outside the current group filter, so the band is his unit without him.'}`}
             rows={bands}
           />
         ) : (

@@ -3522,8 +3522,11 @@ img.av {
 .tr-board {
   overflow-x: auto;
 }
+/* Sized so all six columns — %MAX included — fit the board's own column in
+   the two-up layout rather than scrolling the last one out of sight. 880px was
+   inherited from when the board had the full page width to itself. */
 .tr-board-inner {
-  min-width: 880px;
+  min-width: 548px;
 }
 .tr-board-inner.match {
   min-width: 980px;
@@ -3534,6 +3537,15 @@ img.av {
   padding: 8px 6px;
   border-radius: 8px;
   align-items: center;
+}
+/* Well above their own high-speed norm. Sits before .selected so a selected
+   spiked row still reads as selected — the two are different questions and the
+   one you just clicked wins. */
+.tr-board-row[data-spike='1'] {
+  background: rgb(var(--bad-rgb) / 0.10);
+}
+.tr-board-row[data-spike='1']:hover {
+  background: rgb(var(--bad-rgb) / 0.16);
 }
 .tr-board-row.selected {
   background: rgb(var(--accent-rgb) / 0.07);
@@ -3550,11 +3562,6 @@ img.av {
   justify-content: space-between;
 }
 
-@media (max-width: 1200px) {
-  .tr-scatter-selected-grid {
-    grid-template-columns: 1fr !important;
-  }
-}
 @media (max-width: 1000px) {
   .tr-overview {
     grid-template-columns: 1fr !important;
@@ -7274,4 +7281,50 @@ button.dash-stat {
   .tr-lower {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* Heat toggle, from the Training report design's top bar. Built as a switch
+   rather than a chip because it is a state, not a destination. */
+.tr-heat-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+.tr-heat-toggle[aria-checked='true'] {
+  color: var(--text);
+}
+.tr-heat-toggle-track {
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--hair);
+  position: relative;
+  transition: background var(--t-state);
+  flex: none;
+}
+.tr-heat-toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform var(--t-state);
+}
+.tr-heat-toggle[aria-checked='true'] .tr-heat-toggle-track {
+  background: var(--accent);
+}
+.tr-heat-toggle[aria-checked='true'] .tr-heat-toggle-track::after {
+  transform: translateX(18px);
+}
+.tr-heat-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
 }

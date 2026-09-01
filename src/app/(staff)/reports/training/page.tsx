@@ -271,6 +271,18 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
   // real second state to switch to.
   const range: 'day' | 'week' = mode === 'training' && sp.range === 'week' ? 'week' : 'day';
 
+  // Heat shading is a view preference, so it lives in the URL like the group
+  // filter, the lens and the selected athlete do: shareable, back-button-safe,
+  // and no client state on a page that is otherwise entirely server-rendered.
+  // On is the default because the shading is the point of the board; off is for
+  // reading the raw numbers, or for projecting it in a room where the tints do
+  // not survive the projector.
+  const heatOn = sp.heat !== 'off';
+  /** `qs` with the heat preference carried through, so following any link on
+   *  this page — a date, a player, a lens — does not silently turn it back on. */
+  const q = (params: Record<string, string | undefined>): string =>
+    qs({ ...params, heat: heatOn ? undefined : 'off' });
+
   const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
 
   const header = (
@@ -283,17 +295,28 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
       </div>
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <div className="tr-mode-switch">
-          <Link href={`/reports/training${qs({ mode: 'training', groups: groupsQs })}`} aria-current={mode === 'training'}>
+          <Link href={`/reports/training${q({ mode: 'training', groups: groupsQs })}`} aria-current={mode === 'training'}>
             Training
           </Link>
-          <Link href={`/reports/training${qs({ mode: 'match', groups: groupsQs })}`} aria-current={mode === 'match'}>
+          <Link href={`/reports/training${q({ mode: 'match', groups: groupsQs })}`} aria-current={mode === 'match'}>
             Match day
           </Link>
         </div>
-        <a href={`/reports/training/export${qs({ mode, session: sessionParam, groups: groupsQs })}`} className="btn-ghost">
+        {/* The design's own top-bar control. A link, not a checkbox: it is a
+            view state, and this page keeps every view state in the URL. */}
+        <Link
+          href={`/reports/training${qs({ mode, session: sessionParam, groups: groupsQs, heat: heatOn ? 'off' : undefined })}`}
+          className="tr-heat-toggle"
+          role="switch"
+          aria-checked={heatOn}
+        >
+          Heat
+          <span className="tr-heat-toggle-track" aria-hidden />
+        </Link>
+        <a href={`/reports/training/export${q({ mode, session: sessionParam, groups: groupsQs })}`} className="btn-ghost">
           Export CSV
         </a>
-        <a href={`/reports/training/pdf${qs({ mode, session: sessionParam, groups: groupsQs })}`} className="btn-ghost">
+        <a href={`/reports/training/pdf${q({ mode, session: sessionParam, groups: groupsQs })}`} className="btn-ghost">
           Export PDF
         </a>
       </div>
@@ -344,7 +367,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
             {sessions.slice(0, 8).map((s) => (
               <Link
                 key={s.sessionId}
-                href={`/reports/training${qs({ mode: 'match', session: s.sessionId, groups: groupsQs })}`}
+                href={`/reports/training${q({ mode: 'match', session: s.sessionId, groups: groupsQs })}`}
                 className="tr-session-chip"
                 aria-current={selected.sessionId === s.sessionId}
               >
@@ -515,7 +538,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
         {sessions.slice(0, 8).map((s) => (
           <Link
             key={s.sessionId}
-            href={`/reports/training${qs({ mode: 'training', session: s.sessionId, groups: groupsQs, range: activeRange })}`}
+            href={`/reports/training${q({ mode: 'training', session: s.sessionId, groups: groupsQs, range: activeRange })}`}
             className="tr-session-chip"
             aria-current={selected.sessionId === s.sessionId}
           >
@@ -532,10 +555,10 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
         ariaLabel="Jump to a training session with GPS data"
       />
       <div className="tr-mode-switch">
-        <Link href={`/reports/training${qs({ mode: 'training', session: selected.sessionId, groups: groupsQs, range: 'day' })}`} aria-current={activeRange === 'day'}>
+        <Link href={`/reports/training${q({ mode: 'training', session: selected.sessionId, groups: groupsQs, range: 'day' })}`} aria-current={activeRange === 'day'}>
           Day
         </Link>
-        <Link href={`/reports/training${qs({ mode: 'training', session: selected.sessionId, groups: groupsQs, range: 'week' })}`} aria-current={activeRange === 'week'}>
+        <Link href={`/reports/training${q({ mode: 'training', session: selected.sessionId, groups: groupsQs, range: 'week' })}`} aria-current={activeRange === 'week'}>
           Week
         </Link>
       </div>
@@ -732,8 +755,15 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                            one in a new tab. */
                         <Link
                           key={row.athlete_id}
-                          href={`/reports/training${qs({ mode: 'training', session: selected.sessionId, groups: groupsQs, scope, lens, athlete: row.athlete_id })}`}
+                          href={`/reports/training${q({ mode: 'training', session: selected.sessionId, groups: groupsQs, scope, lens, athlete: row.athlete_id })}`}
                           className={`tr-board-row tr-board-row-link${row.athlete_id === selectedAthleteId ? ' selected' : ''}`}
+                          /* The design washes a few rows red. It marks the ones
+                             the rail already names: an athlete well ABOVE their
+                             own high-speed norm. Up only, and deliberately —
+                             running much less than usual is worth knowing but is
+                             not the thing that hurts someone, and tinting both
+                             directions the same colour would say it was. */
+                          data-spike={heatOn && row.hsr_self_n >= 2 && (row.vs_self_hsr ?? 0) >= 125 ? '1' : undefined}
                           style={{ gridTemplateColumns: 'minmax(170px, 1.3fr) repeat(5, minmax(66px, 1fr))' }}
                           aria-current={row.athlete_id === selectedAthleteId}
                         >
@@ -741,14 +771,14 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                             {row.last_name}, {row.first_name}
                           </span>
                           <span className="r mono">{row.td !== null ? Math.round(row.td).toLocaleString() : '—'}</span>
-                          <span className="r mono tr-heat" data-band={heatBand(row.hsr, hsrP95)} data-ramp="hsr">
+                          <span className="r mono tr-heat" data-band={heatOn ? heatBand(row.hsr, hsrP95) : null} data-ramp="hsr">
                             {row.hsr !== null ? Math.round(row.hsr).toLocaleString() : '—'}
                           </span>
-                          <span className="r mono tr-heat" data-band={heatBand(row.hie, hieP95)} data-ramp="hie">
+                          <span className="r mono tr-heat" data-band={heatOn ? heatBand(row.hie, hieP95) : null} data-ramp="hie">
                             {row.hie ?? '—'}
                           </span>
                           <span className="r mono">{row.maxv_kmh ?? '—'}</span>
-                          <span className="r mono tr-heat" data-band={pctMaxBand(row.pct_max)} data-ramp="pct">
+                          <span className="r mono tr-heat" data-band={heatOn ? pctMaxBand(row.pct_max) : null} data-ramp="pct">
                             {row.pct_max !== null ? `${row.pct_max}%` : '—'}
                           </span>
                         </Link>
@@ -761,6 +791,133 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
           </div>
             </div>
             <div className="tr-lower-rail">
+              <div className="card" style={{ marginTop: 14 }}>
+              {/* The design's rail card leads with the athlete, not a card title:
+                    by the time you are reading this you already clicked their
+                    row, so "Individual player" is a label for something you
+                    know. The picker stays for the state the design does not
+                    draw — nobody selected yet — because without it there is no
+                    keyboard route into this card. */}
+                {!athletePanel ? (
+                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+                    <h2 className="card-title" style={{ margin: 0 }}>
+                      Individual player
+                    </h2>
+                    <ReportSelectNav
+                      label="View"
+                      paramKey="athlete"
+                      value={selectedAthleteId ?? SQUAD_VIEW}
+                      options={[{ value: SQUAD_VIEW, label: 'Whole squad (none selected)' }, ...athleteOptions]}
+                      ariaLabel="View one athlete's own data for this session, or the whole squad"
+                    />
+                  </div>
+                ) : null}
+                {!athletePanel ? (
+                <p className="tiny">Select an athlete above, or on the scatter, to see their detail.</p>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div
+                      style={{
+                        width: 38,
+                        height: 38,
+                        borderRadius: 12,
+                        background: 'var(--avatar-bg)',
+                        color: 'var(--avatar-text)',
+                        display: 'grid',
+                        placeItems: 'center',
+                        fontWeight: 700,
+                        fontSize: 14,
+                        flex: 'none',
+                      }}
+                    >
+                      {athletePanel.name.split(', ').reverse().map((n) => n[0]).join('')}
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: 16 }}>{athletePanel.name}</div>
+                      <div className="tiny" style={{ color: 'var(--faint)' }}>
+                        {athletePanel.unit}
+                      </div>
+                    </div>
+                    {/* Straight to their profile, where the session this page
+                        is about is one row of their whole history. */}
+                    <Link
+                      href={`/squad/${selectedAthleteId}`}
+                      className="tiny"
+                      style={{ marginLeft: 'auto', color: 'var(--accent-text)', fontWeight: 600 }}
+                    >
+                      Profile
+                    </Link>
+                  </div>
+
+                  <div className="tr-selected-panel-table" style={{ marginTop: 14 }}>
+                    <span className="tiny" style={{ fontWeight: 700 }}>
+                      Metric
+                    </span>
+                    <span className="tiny r" style={{ fontWeight: 700 }}>
+                      Today
+                    </span>
+                    <span className="tiny r" style={{ fontWeight: 700 }}>
+                      vs self
+                    </span>
+                    <span className="tiny r" style={{ fontWeight: 700 }}>
+                      vs unit
+                    </span>
+                    {athletePanel.rows.map((r) => (
+                      <Fragment key={r.metric}>
+                        <span>{r.metric}</span>
+                        <span className="r mono">{r.today}</span>
+                        <span className="r mono">{r.vsSelf}</span>
+                        <span className="r mono">{r.vsUnit}</span>
+                      </Fragment>
+                    ))}
+                  </div>
+
+                  <div style={{ marginTop: 14 }}>
+                    <p className="tiny" style={{ marginBottom: 6 }}>
+                      High speed running, last {athletePanel.sparkline.length} sessions
+                    </p>
+                    <TrainingSparkline
+                      points={athletePanel.sparkline}
+                      endTone={BAND_TONE[scatter.find((p) => p.athleteId === selectedAthleteId)?.band ?? 'mid']}
+                    />
+                    <p className="tiny mono" style={{ color: 'var(--faint)', marginTop: 4 }}>
+                      {athletePanel.footnote}
+                    </p>
+                  </div>
+
+                  {/* "Raise a flag" used to sit here (`/flags?athlete=`),
+                   * found dead while surveying flag-related nav for the
+                   * dashboard panel: /flags never reads that param, and
+                   * there is no manual-raise mutation anywhere in
+                   * lib/queries/flags.ts — flags are only ever raised
+                   * automatically by threshold logic (screens/flags.md's
+                   * own model). A button that looked like it worked but
+                   * silently landed on an unfiltered list is worse than
+                   * no button; removed rather than wired to a manual-raise
+                   * feature this pass has no spec authority to invent. */}
+                  <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+                    <Link href={`/squad/${athletePanel.athleteId}`} className="btn-ghost">
+                      Open profile
+                    </Link>
+                    {/* /reports/athlete/[athleteId] already exists as the
+                     * dedicated one-athlete report — real period selector
+                     * (ATHLETE_PERIODS: week/month/season/year/all, over the
+                     * shared model in lib/period.ts; the old 28/90-day chip
+                     * row is gone), real GPS totals for that period,
+                     * wellness, load and testing, its own CSV/PDF export.
+                     * That is the individual player's data in full;
+                     * duplicating a second day/week/period picker for one
+                     * athlete inside the training report would mean
+                     * re-deriving athleteReport.ts's own query logic for
+                     * no real benefit over linking to it. */}
+                    <Link href={`/reports/athlete/${athletePanel.athleteId}`} className="btn-ghost">
+                      Full player report
+                    </Link>
+                  </div>
+                </>
+              )}
+            </div>
 {/* OUTSIDE THEIR NORMAL RANGE, from the Training report design's own
               right rail. The board answers "who did most today"; this answers
               "who did something unlike themselves", which is a different and
@@ -876,7 +1033,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                 ] as const).map(([key, label]) => (
                   <Link
                     key={key}
-                    href={`/reports/training${qs({ mode: 'training', session: selected.sessionId, groups: groupsQs, scope: key })}`}
+                    href={`/reports/training${q({ mode: 'training', session: selected.sessionId, groups: groupsQs, scope: key })}`}
                     className="tr-scope-chip"
                     aria-current={scope === key}
                   >
@@ -890,22 +1047,21 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.5fr) minmax(0, 1fr)', gap: 14, alignItems: 'start', marginTop: 14 }} className="tr-scatter-selected-grid">
-            <div className="card">
+          <div className="card" style={{ marginTop: 14 }}>
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
                 <h2 className="card-title" style={{ margin: 0 }}>
                   Scatter
                 </h2>
                 <div className="tr-scope-chips">
                   <Link
-                    href={`/reports/training${qs({ mode: 'training', session: selected.sessionId, groups: groupsQs, scope, lens: 'self', athlete: selectedAthleteId ?? undefined })}`}
+                    href={`/reports/training${q({ mode: 'training', session: selected.sessionId, groups: groupsQs, scope, lens: 'self', athlete: selectedAthleteId ?? undefined })}`}
                     className="tr-scope-chip"
                     aria-current={lens === 'self'}
                   >
                     vs self
                   </Link>
                   <Link
-                    href={`/reports/training${qs({ mode: 'training', session: selected.sessionId, groups: groupsQs, scope, lens: 'position', athlete: selectedAthleteId ?? undefined })}`}
+                    href={`/reports/training${q({ mode: 'training', session: selected.sessionId, groups: groupsQs, scope, lens: 'position', athlete: selectedAthleteId ?? undefined })}`}
                     className="tr-scope-chip"
                     aria-current={lens === 'position'}
                   >
@@ -922,122 +1078,11 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                   points={scatter}
                   selectedAthleteId={selectedAthleteId}
                   lens={lens}
-                  hrefFor={(id) => `/reports/training${qs({ mode: 'training', session: selected.sessionId, groups: groupsQs, scope, lens, athlete: id })}`}
+                  hrefFor={(id) => `/reports/training${q({ mode: 'training', session: selected.sessionId, groups: groupsQs, scope, lens, athlete: id })}`}
                 />
               </div>
             </div>
-
-            <div className="card">
-              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: athletePanel ? 14 : 0 }}>
-                <h2 className="card-title" style={{ margin: 0 }}>
-                  Individual player
-                </h2>
-                <ReportSelectNav
-                  label="View"
-                  paramKey="athlete"
-                  value={selectedAthleteId ?? SQUAD_VIEW}
-                  options={[{ value: SQUAD_VIEW, label: 'Whole squad (none selected)' }, ...athleteOptions]}
-                  ariaLabel="View one athlete's own data for this session, or the whole squad"
-                />
-              </div>
-              {!athletePanel ? (
-                <p className="tiny">Select an athlete above, or on the scatter, to see their detail.</p>
-              ) : (
-                <>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div
-                      style={{
-                        width: 38,
-                        height: 38,
-                        borderRadius: 12,
-                        background: 'var(--avatar-bg)',
-                        color: 'var(--avatar-text)',
-                        display: 'grid',
-                        placeItems: 'center',
-                        fontWeight: 700,
-                        fontSize: 14,
-                        flex: 'none',
-                      }}
-                    >
-                      {athletePanel.name.split(', ').reverse().map((n) => n[0]).join('')}
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: 16 }}>{athletePanel.name}</div>
-                      <div className="tiny" style={{ color: 'var(--faint)' }}>
-                        {athletePanel.unit}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="tr-selected-panel-table" style={{ marginTop: 14 }}>
-                    <span className="tiny" style={{ fontWeight: 700 }}>
-                      Metric
-                    </span>
-                    <span className="tiny r" style={{ fontWeight: 700 }}>
-                      Today
-                    </span>
-                    <span className="tiny r" style={{ fontWeight: 700 }}>
-                      vs self
-                    </span>
-                    <span className="tiny r" style={{ fontWeight: 700 }}>
-                      vs unit
-                    </span>
-                    {athletePanel.rows.map((r) => (
-                      <Fragment key={r.metric}>
-                        <span>{r.metric}</span>
-                        <span className="r mono">{r.today}</span>
-                        <span className="r mono">{r.vsSelf}</span>
-                        <span className="r mono">{r.vsUnit}</span>
-                      </Fragment>
-                    ))}
-                  </div>
-
-                  <div style={{ marginTop: 14 }}>
-                    <p className="tiny" style={{ marginBottom: 6 }}>
-                      High speed running, last {athletePanel.sparkline.length} sessions
-                    </p>
-                    <TrainingSparkline
-                      points={athletePanel.sparkline}
-                      endTone={BAND_TONE[scatter.find((p) => p.athleteId === selectedAthleteId)?.band ?? 'mid']}
-                    />
-                    <p className="tiny mono" style={{ color: 'var(--faint)', marginTop: 4 }}>
-                      {athletePanel.footnote}
-                    </p>
-                  </div>
-
-                  {/* "Raise a flag" used to sit here (`/flags?athlete=`),
-                   * found dead while surveying flag-related nav for the
-                   * dashboard panel: /flags never reads that param, and
-                   * there is no manual-raise mutation anywhere in
-                   * lib/queries/flags.ts — flags are only ever raised
-                   * automatically by threshold logic (screens/flags.md's
-                   * own model). A button that looked like it worked but
-                   * silently landed on an unfiltered list is worse than
-                   * no button; removed rather than wired to a manual-raise
-                   * feature this pass has no spec authority to invent. */}
-                  <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-                    <Link href={`/squad/${athletePanel.athleteId}`} className="btn-ghost">
-                      Open profile
-                    </Link>
-                    {/* /reports/athlete/[athleteId] already exists as the
-                     * dedicated one-athlete report — real period selector
-                     * (ATHLETE_PERIODS: week/month/season/year/all, over the
-                     * shared model in lib/period.ts; the old 28/90-day chip
-                     * row is gone), real GPS totals for that period,
-                     * wellness, load and testing, its own CSV/PDF export.
-                     * That is the individual player's data in full;
-                     * duplicating a second day/week/period picker for one
-                     * athlete inside the training report would mean
-                     * re-deriving athleteReport.ts's own query logic for
-                     * no real benefit over linking to it. */}
-                    <Link href={`/reports/athlete/${athletePanel.athleteId}`} className="btn-ghost">
-                      Full player report
-                    </Link>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>        </>
+                  </>
       )}
     </>
   );

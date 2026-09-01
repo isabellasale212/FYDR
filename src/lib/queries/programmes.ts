@@ -1178,13 +1178,14 @@ export type AthleteAssignment = {
  *  Both inclusions are corrections of what the player profile's own programme
  *  banner does, not embellishments:
  *
- *   GROUP ASSIGNMENTS. queries/playerProfile.ts reads programme_assignments
- *   with `.eq('athlete_id', athleteId)` alone, so an athlete whose gym
- *   programme was assigned to Forwards rather than to them by name shows NO
- *   programme on their profile and the Gym chip has nowhere to go. That is a
- *   real gap in the shipped page (the same union fetchAssignedAthletes above
- *   already performs in the other direction, per programme), and a page whose
- *   whole subject is this athlete's gym work must not have it.
+ *   GROUP ASSIGNMENTS. An athlete whose gym programme was assigned to
+ *   Forwards rather than to them by name must still see it. This performs the
+ *   same union fetchAssignedAthletes above already does in the other
+ *   direction, per programme. queries/playerProfile.ts's banner used to read
+ *   programme_assignments with `.eq('athlete_id', athleteId)` alone and so
+ *   showed NO programme for those athletes, with the Gym chip beside it
+ *   pointing nowhere; it now calls this function, so the profile and the gym
+ *   page agree.
  *
  *   SUSPENDED ROWS. CLAUDE.md §6's rehab exception: assigning a rehab
  *   programme SUSPENDS the athlete's gym assignment rather than cancelling it

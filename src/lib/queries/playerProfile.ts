@@ -16,6 +16,7 @@ import { fetchAthleteInjuries, type AthleteInjuryRow } from './injuries';
 import { fetchFlagsList, type FlagListRow } from './flags';
 import { fetchWellnessByAthlete, wellnessSeries } from './wellness';
 import { fetchTestDefinitions } from './testing';
+import { fetchAthleteProgrammeAssignments } from './programmes';
 import { resolveTargetForDate, type ResolvedTarget } from './nutritionTargets';
 import { describeThreshold, fetchThresholds, findActiveAcwrThreshold } from './thresholds';
 import type { Db } from './groups';
@@ -628,14 +629,15 @@ export async function fetchPlayerProfile(
       .eq('athlete_id', athleteId)
       .gte('entry_date', chronicFrom)
       .lte('entry_date', today),
-    db
-      .from('programme_assignments')
-      .select('id, starts_on, ends_on, status, programmes(id, name, goal, duration_weeks)')
-      .eq('org_id', orgId)
-      .eq('athlete_id', athleteId)
-      .eq('status', 'active')
-      .order('starts_on', { ascending: false })
-      .limit(1),
+    /* fetchAthleteProgrammeAssignments, NOT an inline .eq('athlete_id') read.
+     * This banner used to query programme_assignments by athlete_id alone, so
+     * an athlete whose gym programme was assigned to Forwards rather than to
+     * them by name showed NO programme here at all — and the Gym chip beside
+     * it had nowhere to go. The helper performs the same union
+     * fetchAssignedAthletes already does in the other direction, and
+     * de-duplicates by programme with a direct assignment winning over the
+     * same programme reaching them through a group. */
+    fetchAthleteProgrammeAssignments(db, orgId, athleteId),
     resolveTargetForDate(db, athleteId, today),
     /* PAGED, and it is the one read on this page that had to be. This window
      * used to be a fixed 120 days; at `season`/`year`/`all` it reaches
@@ -663,7 +665,6 @@ export async function fetchPlayerProfile(
   ]);
 
   if (loadEntries.error) throw new Error(loadEntries.error.message);
-  if (programmeRows.error) throw new Error(programmeRows.error.message);
 
   const thresholdById = new Map(thresholds.map((t) => [t.id, t]));
   const athleteFlags: ProfileFlag[] = flags
@@ -747,27 +748,31 @@ export async function fetchPlayerProfile(
     pct: todaysEntry?.readiness_score ?? null,
   };
 
-  const assignmentRow = (programmeRows.data ?? [])[0] as
-    | {
-        id: string;
-        starts_on: string;
-        ends_on: string | null;
-        programmes: { id: string; name: string; goal: string | null; duration_weeks: number | null } | null;
-      }
-    | undefined;
+  /* Active only, and the helper's own ordering decides which one.
+   *
+   * fetchAthleteProgrammeAssignments deliberately returns suspended rows too
+   * (migration 0050: assigning a rehab programme SUSPENDS the gym one rather
+   * than cancelling it, so "suspended because they are on rehab" is a truer
+   * answer than "no programme"). This banner cannot say that yet —
+   * ProgrammeBanner carries no status — and rendering a suspended programme
+   * as though it were current would be worse than the gap. So it filters to
+   * active, and surfacing the suspended case honestly stays a separate change.
+   * The per-athlete gym page already shows the full picture, suspensions and
+   * group provenance included. */
+  const assignmentRow = programmeRows.find((a) => a.status === 'active');
 
   let programme: ProgrammeBanner = null;
-  if (assignmentRow?.programmes) {
-    const weeksElapsed = Math.floor(daysBetween(assignmentRow.starts_on, today) / 7) + 1;
-    const weekTotal = assignmentRow.programmes.duration_weeks;
+  if (assignmentRow) {
+    const weeksElapsed = Math.floor(daysBetween(assignmentRow.startsOn, today) / 7) + 1;
+    const weekTotal = assignmentRow.durationWeeks;
     const weekNow = weekTotal !== null ? Math.min(Math.max(weeksElapsed, 1), weekTotal) : Math.max(weeksElapsed, 1);
     const endsOn =
-      assignmentRow.ends_on ??
-      (weekTotal !== null ? addDays(assignmentRow.starts_on, weekTotal * 7) : null);
+      assignmentRow.endsOn ??
+      (weekTotal !== null ? addDays(assignmentRow.startsOn, weekTotal * 7) : null);
     programme = {
-      programmeId: assignmentRow.programmes.id,
-      name: assignmentRow.programmes.name,
-      goal: assignmentRow.programmes.goal,
+      programmeId: assignmentRow.programmeId,
+      name: assignmentRow.name,
+      goal: assignmentRow.goal,
       weekNow,
       weekTotal,
       endsOn,

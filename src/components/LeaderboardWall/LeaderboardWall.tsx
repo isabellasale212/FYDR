@@ -181,7 +181,7 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
           <p className="dash-stat-sub">with results on file</p>
           <p className="dash-stat-foot">best of three, staff entered</p>
         </div>
-        <div className="dash-stat">
+        <div className="dash-stat" data-tone="good">
           <p className="dash-stat-label">Meeting standard</p>
           <p className="dash-stat-value">
             {derived.stats.meetingStandardPct}
@@ -192,9 +192,13 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
             standards differ for forwards and backs · Fydr placeholder, not yet configurable
           </p>
         </div>
-        <div className="dash-stat">
+        <div className="dash-stat" data-tone="accent">
           <p className="dash-stat-label">Improved</p>
-          <p className="dash-stat-value" style={{ color: 'var(--accent)' }}>
+          {/* Colour comes from data-tone on the tile, not an inline --accent:
+              --accent is the brand fill and measures 4.24:1 as text on this
+              tile's own wash, under the 4.5:1 floor. --accent-pill-text is the
+              derived text pair for exactly this background (5.28:1). */}
+          <p className="dash-stat-value">
             {derived.stats.improvedCount}
           </p>
           <p className="dash-stat-sub">on at least one board</p>
@@ -296,7 +300,7 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
                     className="lbw-wall-head-sub"
                     title={lens === 'Standard' ? 'Fydr-set placeholder standard, not club-specific norms · not yet configurable' : undefined}
                   >
-                    {lens === 'Result' ? b.unit : lens === 'Improvement' ? `vs earliest · ${b.unit}` : `std ${fmt(b.standardFwd, b.decimals)}/${fmt(b.standardBack, b.decimals)}`}
+                    {lens === 'Result' ? b.unit : lens === 'Improvement' ? `vs earliest · ${b.unit}` : b.standardFwd === null || b.standardBack === null ? 'no standard on file' : `std ${fmt(b.standardFwd, b.decimals)}/${fmt(b.standardBack, b.decimals)}`}
                   </div>
                 </div>
               ))}
@@ -413,7 +417,7 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
                           className="lbw-sel-std"
                           title="Fydr-set placeholder standard, not club-specific norms · not yet configurable"
                         >
-                          standard {fmt(standardFor(b, selAthlete.unitIndex), b.decimals)} · {std ? (std.marker === '✓' ? 'met' : 'short') : '·'}
+                          {(() => { const sv = standardFor(b, selAthlete.unitIndex); return sv === null ? 'no standard on file' : `standard ${fmt(sv, b.decimals)} · ${std ? (std.marker === '✓' ? 'met' : 'short') : '·'}`; })()}
                         </p>
                       </div>
                       <div className="r lbw-sel-result">{current !== null ? `${fmt(current, b.decimals)}${b.unit}` : '·'}</div>

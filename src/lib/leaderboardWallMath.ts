@@ -131,7 +131,7 @@ export function isRealGain(board: WallBoard, current: number | null, first: numb
 
 /** LEADERBOARD-SPEC.md §6: "standardFor picks on unit <= 2" — units 0–2 (Front row,
  *  Second row, Back row) are forwards, 3–5 (Half backs, Centres, Back three) backs. */
-export function standardFor(board: WallBoard, unitIndex: number | null): number {
+export function standardFor(board: WallBoard, unitIndex: number | null): number | null {
   return unitIndex !== null && unitIndex <= 2 ? board.standardFwd : board.standardBack;
 }
 
@@ -139,7 +139,11 @@ export type StandardCell = { marker: string; markerColor: string; bg: string };
 
 export function standardCell(board: WallBoard, value: number | null, unitIndex: number | null): StandardCell | null {
   if (value === null) return null;
+  // A board with no real norm is not scored. Returning null here is what keeps
+  // the Standard lens honest: the cell renders as "no standard on file" rather
+  // than as a tick or a shortfall computed against an invented bar.
   const standard = standardFor(board, unitIndex);
+  if (standard === null) return null;
   const diff = board.lowerIsBetter ? standard - value : value - standard;
   const met = diff >= 0;
   const close = !met && Math.abs(diff) <= standard * 0.03;

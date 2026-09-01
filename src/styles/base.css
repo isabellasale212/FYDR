@@ -3718,14 +3718,42 @@ button.dash-stat {
   align-items: center;
   gap: 7px;
 }
-/* A tile whose number is the bad news carries its tone as a wash plus a
-   toned label — never a heavier shadow or a border, per the handoff's §5
-   urgency rule and the design system's "one shadow for the whole product". */
+/* A tile whose number carries a tone takes it as a wash plus toned text —
+   never a heavier shadow or a border, per the handoff's §5 urgency rule and the
+   design system's "one shadow for the whole product". data-urgent is the bad
+   case (the dashboard's open-flags tile); data-tone is the neutral form the
+   Leaderboard uses for its "Meeting standard" and "Improved" tiles.
+
+   The text tokens here are the PILL variants, not the plain-surface ones,
+   because that is what these are: text sitting on that colour's own tint.
+   Measured on the wash over --surf: good 6.84:1, accent 5.28:1. */
 .dash-stat[data-urgent='true'] {
   background: rgb(var(--bad-rgb) / 0.07);
 }
 .dash-stat[data-urgent='true'] .dash-stat-label {
   color: var(--bad-text);
+}
+.dash-stat[data-tone='good'] {
+  background: rgb(var(--good-rgb) / 0.09);
+}
+.dash-stat[data-tone='good'] .dash-stat-label,
+.dash-stat[data-tone='good'] .dash-stat-value {
+  color: var(--good-pill-text);
+}
+.dash-stat[data-tone='accent'] {
+  background: rgb(var(--accent-rgb) / 0.07);
+}
+.dash-stat[data-tone='accent'] .dash-stat-label,
+.dash-stat[data-tone='accent'] .dash-stat-value {
+  color: var(--accent-pill-text);
+}
+/* The Leaderboard's stat strip is its own scale. The dashboard's tiles are the
+   screen's headline and run at 34px/500; these sit under a page title and above
+   a dense table, and "Fydr Leaderboard.dc.html" sets them at 28px/700. Scoped
+   rather than changed globally — the two strips share markup, not a size. */
+.lbw-stats-card .dash-stat-value {
+  font-size: 28px;
+  font-weight: 700;
 }
 /* The mini bars. 4px is deliberate: enough to read a proportion at a glance,
    too thin to be mistaken for a chart with an axis. Segments are flex-weighted

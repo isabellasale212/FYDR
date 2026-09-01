@@ -1,4 +1,4 @@
-import { todayIso } from '@/lib/format';
+import { addDays, todayIso } from '@/lib/format';
 import { fetchGroupAthleteIds, type Db } from './groups';
 
 /* LEADERBOARD-SPEC.md's "testing wall" — the real content of the bare /leaderboards
@@ -46,6 +46,11 @@ import { fetchGroupAthleteIds, type Db } from './groups';
  *     explicit, documented lookup from the real free-text athletes.position values
  *     onto the spec's six rugby units — categorising real values, not inventing data.
  */
+
+/** The GPS family's rolling window. Four weeks is the design's own figure and
+ *  is the usual block length a coach reasons in; it is also long enough that a
+ *  single missed session does not swing an athlete's mean. */
+const GPS_WINDOW_DAYS = 28;
 
 export const UNITS = ['Front row', 'Second row', 'Back row', 'Half backs', 'Centres', 'Back three'] as const;
 export type Unit = (typeof UNITS)[number];
@@ -95,7 +100,7 @@ function ageOn(dob: string | null, asOf: string): number | null {
   return age;
 }
 
-export type BoardFamily = 'Speed & power' | 'Endurance' | 'Strength' | 'Habits';
+export type BoardFamily = 'Speed & power' | 'Endurance' | 'Strength' | 'GPS' | 'Habits';
 
 export type WallBoard = {
   key: string;
@@ -104,8 +109,14 @@ export type WallBoard = {
   lowerIsBetter: boolean;
   decimals: number;
   family: BoardFamily;
-  standardFwd: number;
-  standardBack: number;
+  /** Forwards / backs standard for this board, or null when no real norm exists
+   *  for it. GPS boards are null: gps_records carries real measurements but this
+   *  schema has no norms-by-position table for them (the same gap O-387 records
+   *  for tests), and a made-up GPS standard would be indistinguishable on screen
+   *  from a measured one. A null standard means the board ranks and tints
+   *  normally and is simply not scored in the Standard lens. */
+  standardFwd: number | null;
+  standardBack: number | null;
   typicalError: number;
   gainable: boolean;
 };
@@ -201,7 +212,7 @@ export async function fetchLeaderboardWall(
 
   const athleteIds = (athleteRows ?? []).map((a) => a.id);
 
-  const [defs, results, wellness, expectations] = await Promise.all([
+  const [defs, results, wellness, expectations, gpsRows] = await Promise.all([
     (async () => {
       const { data, error } = await db
         .from('test_definitions')
@@ -234,11 +245,27 @@ export async function fetchLeaderboardWall(
         .eq('is_required', true)
         .in('athlete_id', [...chunk]),
     ),
+    /* The GPS family's rolling four-week window, which is what the design's own
+     * footer states ("Rolling 4-week mean per athlete, Catapult Openfield").
+     * Chunked by athlete like every read above it. Bounded by the window, so
+     * unlike the analytics reads this one cannot grow without limit — a squad's
+     * four weeks of sessions is tens of rows per athlete. */
+    inOrEmpty(athleteIds, (chunk) =>
+      db
+        .from('gps_records')
+        .select(
+          'athlete_id, duration_s, total_distance_m, running_distance_m, high_speed_distance_m, sprint_distance_m, high_intensity_efforts, max_speed_ms, accelerations, decelerations, player_load, impacts',
+        )
+        .eq('org_id', orgId)
+        .gte('record_date', addDays(asOf, -GPS_WINDOW_DAYS))
+        .lte('record_date', asOf)
+        .in('athlete_id', [...chunk]),
+    ),
   ]);
 
   // Real test boards: family/standard/typicalError from BOARD_META (documented
   // placeholders, see header), everything else from the live test_definitions row.
-  const testBoards: WallBoard[] = BOARD_ORDER.map((name) => {
+  const testBoards: WallBoard[] = BOARD_ORDER.map((name): WallBoard | null => {
     const def = defs.find((d) => d.name === name);
     const meta = BOARD_META[name];
     if (!def || !meta) return null;
@@ -255,6 +282,100 @@ export async function fetchLeaderboardWall(
       gainable: true,
     };
   }).filter((b): b is WallBoard => b !== null);
+
+  /* THE GPS FAMILY. "Fydr Leaderboard.dc.html" ranks sixteen GPS boards; these
+   * are the fourteen that map onto a real gps_records column, plus the four
+   * per-minute normalisations that divide one real column by another
+   * (duration_s). Normalising a measurement by the time it was measured over is
+   * arithmetic on real data, not invention — which is the line this file's
+   * header draws, and it is why the design's other two boards are absent:
+   *
+   *   - "Explosive distance" and "RHIE bouts" have no column anywhere in this
+   *     schema. The design mock computes them (`td*0.11 + hsr*0.28`,
+   *     `hie/5.2`) so its own numbers hang together, which is the right thing
+   *     for a mock and the wrong thing here: those formulas are not a
+   *     measurement of anything, and on this screen they would sit in the same
+   *     row, in the same type, as fourteen figures that are.
+   *   - "% of max V" is genuinely computable, and is left out for a different
+   *     reason: it is squad-relative, and every other tint on this wall is a
+   *     rank inside the positional unit. Two different reference frames in one
+   *     table is how a coach misreads it.
+   *
+   * Aggregation is the rolling four-week MEAN per athlete, which is what the
+   * design's own footer states. Mean rather than best because these are
+   * workload volumes, not personal bests: the biggest single session an athlete
+   * ever had says less about them than their typical week does.
+   *
+   * gainable: false on every GPS board. Improvement needs a noise floor to
+   * separate a real gain from session-to-session variation, and no per-metric
+   * typical error exists for GPS any more than it does for tests (O-387).
+   * Session-to-session GPS variation is large, so "improved" without one would
+   * mostly report weather and opposition. */
+  /** The gps_records columns these boards read. A type rather than a runtime
+   *  list: nothing iterates it, it exists to keep `from` below honest — a board
+   *  that names a column this table does not have will not compile. */
+  type GpsColumn =
+    | 'total_distance_m'
+    | 'running_distance_m'
+    | 'high_speed_distance_m'
+    | 'sprint_distance_m'
+    | 'high_intensity_efforts'
+    | 'max_speed_ms'
+    | 'accelerations'
+    | 'decelerations'
+    | 'player_load'
+    | 'impacts';
+
+  type GpsBoardDef = {
+    key: string;
+    label: string;
+    unit: string;
+    decimals: number;
+    from: GpsColumn;
+    /* How the window collapses to one number:
+     *   mean — the typical session. Volumes and effort counts.
+     *   rate — sum(value) / sum(minutes) over the window, NOT the mean of each
+     *          session's rate: a mean of ratios weights a ten-minute cameo the
+     *          same as an eighty-minute match, which is how a bench player ends
+     *          up top of Distance/min.
+     *   best — the peak. Only max velocity, and migration 0056 says why in its
+     *          own comment: "Max speed is the one metric here that is a peak
+     *          rather than a volume: totalling or meaning it across sessions
+     *          answers nothing." */
+    agg: 'mean' | 'rate' | 'best';
+  };
+
+  const GPS_BOARD_DEFS: GpsBoardDef[] = [
+    { key: 'gps.td', label: 'Total distance', unit: 'm', decimals: 0, from: 'total_distance_m', agg: 'mean' },
+    { key: 'gps.tdMin', label: 'Distance/min', unit: 'm/min', decimals: 1, from: 'total_distance_m', agg: 'rate' },
+    { key: 'gps.run', label: 'Running distance', unit: 'm', decimals: 0, from: 'running_distance_m', agg: 'mean' },
+    { key: 'gps.hsr', label: 'HSR', unit: 'm', decimals: 0, from: 'high_speed_distance_m', agg: 'mean' },
+    { key: 'gps.hsrMin', label: 'HSR/min', unit: 'm/min', decimals: 1, from: 'high_speed_distance_m', agg: 'rate' },
+    { key: 'gps.sprint', label: 'Sprint distance', unit: 'm', decimals: 0, from: 'sprint_distance_m', agg: 'mean' },
+    { key: 'gps.maxv', label: 'Max velocity', unit: 'm/s', decimals: 1, from: 'max_speed_ms', agg: 'best' },
+    { key: 'gps.hie', label: 'HIE', unit: '', decimals: 0, from: 'high_intensity_efforts', agg: 'mean' },
+    { key: 'gps.hieMin', label: 'HIE/min', unit: '/min', decimals: 2, from: 'high_intensity_efforts', agg: 'rate' },
+    { key: 'gps.acc', label: 'Accels', unit: '', decimals: 0, from: 'accelerations', agg: 'mean' },
+    { key: 'gps.dec', label: 'Decels', unit: '', decimals: 0, from: 'decelerations', agg: 'mean' },
+    { key: 'gps.pl', label: 'Player load', unit: 'AU', decimals: 0, from: 'player_load', agg: 'mean' },
+    { key: 'gps.plMin', label: 'Load/min', unit: 'AU/min', decimals: 2, from: 'player_load', agg: 'rate' },
+    { key: 'gps.impacts', label: 'Impacts', unit: '', decimals: 0, from: 'impacts', agg: 'mean' },
+  ];
+
+  const gpsBoards: WallBoard[] = GPS_BOARD_DEFS.map((d) => ({
+    key: d.key,
+    label: d.label,
+    unit: d.unit,
+    // Every one of these is "more is better" except none — max velocity, volumes
+    // and effort counts all read upward. No GPS board here is lower-is-better.
+    lowerIsBetter: false,
+    decimals: d.decimals,
+    family: 'GPS' as const,
+    standardFwd: null,
+    standardBack: null,
+    typicalError: 0,
+    gainable: false,
+  }));
 
   const habitBoards: WallBoard[] = [
     {
@@ -283,7 +404,7 @@ export async function fetchLeaderboardWall(
     },
   ];
 
-  const boards = [...testBoards, ...habitBoards];
+  const boards = [...testBoards, ...gpsBoards, ...habitBoards];
 
   // Best-of-three per session is already the mark_best_attempt trigger's job
   // (is_best=true within one athlete/test/date). "First" and "current" here are
@@ -337,6 +458,51 @@ export async function fetchLeaderboardWall(
     return { streak, compliancePct };
   }
 
+  /* Collapse the window to one number per athlete per GPS board. Sessions with a
+   * null value for a column contribute nothing to that board rather than zero —
+   * a device that did not record player load must not drag an athlete's mean
+   * down (this file's own "a missing entry is never zero" rule, which the design
+   * system states as data rule 1). An athlete with no GPS session in the window
+   * gets no value at all and renders as a dash, exactly like a missing test. */
+  const gpsByAthlete = new Map<string, Record<string, number>>();
+  {
+    const perAthlete = new Map<string, typeof gpsRows>();
+    for (const g of gpsRows) {
+      const list = perAthlete.get(g.athlete_id) ?? [];
+      list.push(g);
+      perAthlete.set(g.athlete_id, list);
+    }
+    for (const [athleteId, rows] of perAthlete) {
+      const out: Record<string, number> = {};
+      for (const d of GPS_BOARD_DEFS) {
+        const vals: number[] = [];
+        let sumValue = 0;
+        let sumMinutes = 0;
+        for (const row of rows) {
+          const raw = row[d.from];
+          if (raw === null || raw === undefined) continue;
+          const v = Number(raw);
+          if (!Number.isFinite(v)) continue;
+          vals.push(v);
+          if (d.agg === 'rate') {
+            const secs = row.duration_s;
+            if (secs === null || secs === undefined || secs <= 0) continue;
+            sumValue += v;
+            sumMinutes += secs / 60;
+          }
+        }
+        if (d.agg === 'rate') {
+          if (sumMinutes > 0) out[d.key] = sumValue / sumMinutes;
+        } else if (d.agg === 'best') {
+          if (vals.length > 0) out[d.key] = Math.max(...vals);
+        } else if (vals.length > 0) {
+          out[d.key] = vals.reduce((x, y) => x + y, 0) / vals.length;
+        }
+      }
+      gpsByAthlete.set(athleteId, out);
+    }
+  }
+
   const athletes: WallAthlete[] = (athleteRows ?? []).map((a) => {
     const age = ageOn(a.date_of_birth, asOf);
     const values: Record<string, WallAthleteValue> = {};
@@ -355,6 +521,20 @@ export async function fetchLeaderboardWall(
         sessionCount: sessions.length,
         sessions: sessions.map((s) => s.value),
       };
+    }
+
+    /* GPS boards carry no session series and no first-vs-latest comparison:
+     * `sessions` drives the movers' sparkline and `first` drives Improvement,
+     * and both are meaningless for a rolling window aggregate — the number IS
+     * the window, not a point in a series. gainable: false on these boards
+     * means nothing reads them. */
+    const gpsValues = gpsByAthlete.get(a.id);
+    for (const d of GPS_BOARD_DEFS) {
+      const v = gpsValues?.[d.key];
+      values[d.key] =
+        v === undefined
+          ? NO_VALUE
+          : { current: v, currentDate: null, first: null, sessionCount: 0, sessions: [] };
     }
 
     const { streak, compliancePct } = streakAndCompliance(a.id);

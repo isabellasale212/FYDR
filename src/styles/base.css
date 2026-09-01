@@ -8109,3 +8109,132 @@ button.dash-stat {
   max-height: 232px;
   overflow-y: auto;
 }
+
+/* ---------------------------------------------------------------------------
+ * Published leaderboard — Fydr Published Board.dc.html
+ *
+ * Bars are scaled to the LEADER with a floor just under the last-placed value,
+ * not to zero. Every athlete on a season-long load board sits within a few
+ * percent of the others, so a zero-based bar draws twenty-nine identical
+ * lines; scaling to the spread is what makes the board readable at all.
+ * ------------------------------------------------------------------------ */
+.lb-head,
+.lb-row {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1.1fr) 132px minmax(0, 1.5fr) 108px 96px;
+  gap: 14px;
+  align-items: center;
+  padding: 9px 4px;
+}
+@media (max-width: 1100px) {
+  .lb-head,
+  .lb-row {
+    grid-template-columns: 34px minmax(0, 1.1fr) 96px minmax(0, 1.3fr) 88px 78px;
+    gap: 10px;
+  }
+}
+.lb-head {
+  padding: 0 4px 10px;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.lb-row {
+  border-radius: 8px;
+  border-top: 1px solid var(--hair);
+}
+/* The podium, marked once by the row rather than by a badge on every line. */
+.lb-row[data-top='true'] {
+  background: rgb(var(--accent-rgb) / 0.05);
+}
+:root[data-theme='dark'] .lb-row[data-top='true'],
+.dark-tokens .lb-row[data-top='true'] { background: rgb(var(--accent-rgb) / 0.1); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .lb-row[data-top='true'] { background: rgb(var(--accent-rgb) / 0.1); }
+}
+.lb-row:hover {
+  background: rgb(var(--accent-rgb) / 0.08);
+}
+.lb-rank {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--faint);
+}
+.lb-row[data-top='true'] .lb-rank {
+  font-weight: 700;
+  color: var(--accent-pill-text);
+}
+.lb-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lb-row[data-top='true'] .lb-name { font-weight: 700; }
+.lb-unit {
+  font-size: 12.5px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lb-value {
+  text-align: right;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+.lb-row[data-top='true'] .lb-value { font-weight: 700; }
+.lb-gap {
+  text-align: right;
+  font-size: 12.5px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+.lb-track {
+  height: 8px;
+  border-radius: 20px;
+  background: rgb(var(--ink-rgb) / 0.07);
+  overflow: hidden;
+}
+:root[data-theme='dark'] .lb-track,
+.dark-tokens .lb-track { background: rgb(255 255 255 / 0.12); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .lb-track { background: rgb(255 255 255 / 0.12); }
+}
+.lb-fill {
+  display: block;
+  height: 100%;
+  border-radius: 20px;
+  background: rgb(var(--accent-rgb) / 0.4);
+}
+.lb-row[data-top='true'] .lb-fill { background: var(--accent); }
+.lb-stats {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 11.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  flex-wrap: wrap;
+}
+.lb-stats b {
+  color: var(--text);
+  font-weight: 700;
+}
+.lb-meta {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.lb-meta-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}

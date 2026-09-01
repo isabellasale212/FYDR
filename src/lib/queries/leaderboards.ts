@@ -153,6 +153,26 @@ export function populationLabel(
  *  change deferred here; the two athlete-surface display sites call populationLabel()
  *  with no `selectedNames` argument and get the count-only branch instead — see their
  *  own comments. */
+/** Playing position per ranked athlete, for the board's Unit column. A
+ *  separate helper rather than widening fetchAthleteNames: that one exists to
+ *  resolve names for a board's own explicit athlete_ids list, and is called on
+ *  a different population from this. Position is a coach-visible squad field —
+ *  nothing here touches medical data. */
+export async function fetchAthletePositions(
+  db: Db,
+  orgId: string,
+  athleteIds: readonly string[],
+): Promise<Map<string, string | null>> {
+  if (athleteIds.length === 0) return new Map();
+  const { data, error } = await db
+    .from('athletes')
+    .select('id, position')
+    .eq('org_id', orgId)
+    .in('id', [...athleteIds]);
+  if (error) throw new Error(error.message);
+  return new Map((data ?? []).map((a) => [a.id, a.position]));
+}
+
 export async function fetchAthleteNames(
   db: Db,
   orgId: string,

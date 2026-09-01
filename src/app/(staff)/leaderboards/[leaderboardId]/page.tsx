@@ -8,6 +8,7 @@ import {
   fetchBoardRanking,
   fetchMetricCatalogue,
   fetchAthleteNames,
+  fetchAthletePositions,
   metricDecimals,
   populationLabel,
 } from '@/lib/queries/leaderboards';
@@ -100,6 +101,7 @@ export default async function LeaderboardDetailPage({
       : null;
 
   const filterAthleteIds = groupIds.length > 0 ? await fetchGroupAthleteIds(db, orgId, groupIds) : null;
+  const positionsById = await fetchAthletePositions(db, orgId, fullRanking.map((r) => r.athlete_id));
   const ranking = filterAthleteIds ? fullRanking.filter((row) => filterAthleteIds.includes(row.athlete_id)) : fullRanking;
   const isFiltered = groupIds.length > 0;
   const scopeLabel = groupScopeLabel(groups, groupIds);
@@ -112,6 +114,26 @@ export default async function LeaderboardDetailPage({
   // one on screen rather than silently widening back out to the whole squad — same
   // rule the reports' own export links follow (audit S4).
   const groupQuery = groupIds.length > 0 ? `?groups=${groupIds.join(',')}` : '';
+
+  /* Board figures, all off fullRanking so the header and the table cannot
+   * disagree — and squad-wide by construction: the group filter narrows what
+   * is SHOWN, never what is ranked (see this file's own header). */
+  const leaderValue = fullRanking[0]?.value ?? null;
+  const squadMean =
+    fullRanking.length > 0
+      ? fullRanking.reduce((s, r) => s + r.value, 0) / fullRanking.length
+      : null;
+  /* Scaled to the leader with a floor just under last place, NOT to zero.
+     Every athlete on a season-long load board sits within a few percent of the
+     others, so a zero-based bar draws one identical line per athlete and the
+     spread — the only thing the bar is for — disappears. The footer says so,
+     because a bar that does not start at zero has to admit it. */
+  const lastValue = fullRanking.length > 0 ? fullRanking[fullRanking.length - 1]!.value : 0;
+  const floor = lastValue * 0.96;
+  const barPct = (v: number) =>
+    leaderValue !== null && leaderValue > floor
+      ? Math.max(2, Math.round(((v - floor) / (leaderValue - floor)) * 100))
+      : 100;
 
   return (
     <>
@@ -135,38 +157,53 @@ export default async function LeaderboardDetailPage({
         </div>
       </div>
 
-      <div className="card">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <span className={`pill ${board.visibility === 'published' ? 'pill-good' : 'pill-neutral'}`}>
-            {board.visibility === 'published' ? 'Published' : 'Draft'}
-          </span>
-          <span className="pill pill-neutral">{populationLabel(board, selectedNames)}</span>
-          <span className="pill pill-neutral">
-            {board.window_type === 'days'
-              ? `Last ${board.window_days} days`
-              : board.window_type === 'season'
-                ? 'This season'
-                : 'All time'}
-          </span>
+      {/* One header strip: what this board is, who can see it, and the two
+          actions that change either — rather than a status card with the
+          publish controls stranded in a second block below it. */}
+      <div className="card lb-meta">
+        <div style={{ minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span className={`pill ${board.visibility === 'published' ? 'pill-good' : 'pill-neutral'}`}>
+              {board.visibility === 'published' ? 'Published to athletes' : 'Draft'}
+            </span>
+            <span className="pill pill-neutral">{populationLabel(board, selectedNames)}</span>
+            <span className="pill pill-neutral">
+              {board.window_type === 'days'
+                ? `Last ${board.window_days} days`
+                : board.window_type === 'season'
+                  ? 'This season'
+                  : 'All time'}
+            </span>
+          </div>
+          <p className="tiny" style={{ color: 'var(--muted)', margin: '8px 0 0', maxWidth: '84ch' }}>
+            Ranking {metric?.label ?? board.metric_key}, {board.aggregation}.
+          </p>
         </div>
-        <p style={{ marginTop: 10 }}>
-          Ranking {metric?.label ?? board.metric_key}, {board.aggregation}.
-        </p>
+        <div className="lb-meta-actions">
+          <LeaderboardStaffActions
+            orgId={orgId}
+            userId={claims.userId}
+            boardId={board.id}
+            visibility={board.visibility}
+            isMedical={isMedical}
+            ranking={fullRanking}
+          />
+        </div>
       </div>
 
-      <div style={{ margin: '14px 0' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', margin: '14px 0' }}>
         <GroupFilter groups={groups} selected={groupIds} />
-      </div>
-
-      <div style={{ marginBottom: 14 }}>
-        <LeaderboardStaffActions
-          orgId={orgId}
-          userId={claims.userId}
-          boardId={board.id}
-          visibility={board.visibility}
-          isMedical={isMedical}
-          ranking={fullRanking}
-        />
+        {fullRanking.length > 0 ? (
+          <span className="lb-stats">
+            <span>
+              Leader <b>{formatNumber(leaderValue ?? 0, decimals)}{metric?.unit ?? ''}</b>
+            </span>
+            <span>
+              Squad mean <b>{formatNumber(squadMean ?? 0, decimals)}{metric?.unit ?? ''}</b>
+            </span>
+            <span>n = {fullRanking.length} athletes</span>
+          </span>
+        ) : null}
       </div>
 
       <section aria-labelledby="ranking-title">
@@ -186,44 +223,50 @@ export default async function LeaderboardDetailPage({
             body={`No athletes in the current scope (${scopeLabel}) appear on this board. Clear the filter to see everyone.`}
           />
         ) : (
-          <div className="card flush">
-            <div style={{ overflowX: 'auto' }}>
-              <table className="tbl">
-                <caption className="visually-hidden">{board.name} ranking</caption>
-                <thead>
-                  <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Athlete</th>
-                    {/* Named, not "Value": with nine GPS metrics rankable, a board's
-                        own title no longer tells a coach what the column holds. Same
-                        change the athlete-facing table already made. */}
-                    <th scope="col" className="r">
-                      {metric?.label ?? 'Value'}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ranking.map((row) => (
-                    <tr key={row.athlete_id}>
-                      <td className="mono sub">
-                        {row.is_tied ? '=' : ''}
-                        {row.position}
-                      </td>
-                      <td className="nm">
-                        {row.first_name} {row.last_name}
-                      </td>
-                      <td className="r mono">
-                        {formatNumber(row.value, decimals)}
-                        {metric?.unit ?? ''}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <div className="card cmpl-table">
+            <div className="lb-head">
+              <span>#</span>
+              <span>Athlete</span>
+              <span>Unit</span>
+              <span>Relative to leader</span>
+              <span style={{ textAlign: 'right' }}>{metric?.label ?? 'Value'}</span>
+              <span style={{ textAlign: 'right' }}>Off leader</span>
             </div>
+            {ranking.map((row) => {
+              const top = row.position <= 3;
+              const gap = leaderValue === null ? null : leaderValue - row.value;
+              return (
+                <div key={row.athlete_id} className="lb-row" data-top={top}>
+                  <span className="lb-rank">
+                    {row.is_tied ? '=' : ''}
+                    {row.position}
+                  </span>
+                  <span className="lb-name">
+                    {row.first_name} {row.last_name}
+                  </span>
+                  <span className="lb-unit">{positionsById.get(row.athlete_id) ?? '—'}</span>
+                  <span className="lb-track">
+                    <span className="lb-fill" style={{ width: `${barPct(row.value)}%` }} />
+                  </span>
+                  <span className="lb-value">
+                    {formatNumber(row.value, decimals)}
+                    {metric?.unit ?? ''}
+                  </span>
+                  {/* The leader's own gap is a dash, not a zero: there is
+                      nobody ahead of them to be behind. */}
+                  <span className="lb-gap">
+                    {gap === null || gap === 0 ? '—' : `−${formatNumber(gap, decimals)}`}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         )}
         <p className="cap">
+          {/* Bars do not start at zero, so this has to say so — a scaled bar
+              that stays quiet about its baseline overstates the spread. */}
+          Bars are scaled to the leader, not to zero, so the spread across the squad stays
+          readable.{' '}
           {isFiltered
             ? `Showing ${ranking.length} of ${fullRanking.length} ranked athletes. Positions are squad-wide.`
             : `${ranking.length} athlete${ranking.length === 1 ? '' : 's'} ranked`}

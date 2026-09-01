@@ -9,6 +9,11 @@ import type { AppRole, Database } from '@/lib/types/database';
  * form field, a query string, a table read on the client, or a cookie we set. */
 export type FydrClaims = {
   userId: string;
+  /** From `getUser()`, which authenticates against the auth server before this
+   *  is read — so it is as trustworthy as `roles` and usable for access
+   *  decisions (lib/platformStaff.ts is the only one that does). Null only if
+   *  the identity has no email at all, e.g. a phone-only sign-in. */
+  email: string | null;
   orgId: string | null;
   athleteId: string | null;
   roles: readonly AppRole[];
@@ -79,6 +84,7 @@ export async function getClaims(
 
   return {
     userId: user.id,
+    email: user.email ?? null,
     orgId: asString(fromToken.org_id) ?? asString(fromUser.org_id),
     athleteId: asString(fromToken.athlete_id) ?? asString(fromUser.athlete_id),
     roles,

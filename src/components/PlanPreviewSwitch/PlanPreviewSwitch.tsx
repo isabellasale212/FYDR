@@ -19,8 +19,12 @@ type Props = {
  * explaining that plan changes are a sales conversation. That reasoning was
  * right about BILLING and is unchanged — nothing here writes
  * organisations.tier, and the club's paid plan cannot be altered from this UI.
- * What the switch now does is change what this admin's own session renders, so
- * the product can be seen the way a Basic club sees it.
+ * What the switch now does is change what the viewer's own session renders, so
+ * the product can be seen the way a Basic club sees it. Who that viewer may be
+ * is NOT "an admin" — a club's own administrator does not get to try the other
+ * plan on. It is Fydr's staff, allowlisted by email in lib/platformStaff.ts,
+ * because this is a sales and support tool: it answers "what would we lose on
+ * Basic?" with the real product instead of a feature table.
  *
  * A cookie rather than component state, because every tier gate in this app is
  * server-side: the analytics chart, the training report, GPS import and the

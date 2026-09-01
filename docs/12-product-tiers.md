@@ -1132,6 +1132,34 @@ Implementation notes:
   org admin. Self-service upgrade is out of scope while billing is out of band.
 - Log to `audit_log` per `04-data-model.md` §13.
 
+### 9.x The plan preview switch (2026-09-01)
+
+The Plan card carries a Basic/Premium switch. It writes **nothing**: `organisations.tier`
+stays service-role-only per the rule directly above, and the club's paid plan cannot be
+changed from any UI. All it does is set a cookie that makes the *viewer's own session*
+render as the other plan, so every server-side gate in the app — the analytics
+destination, the training report, GPS import, the leaderboard metric picker — answers as
+it would for that plan.
+
+Two rules make it safe rather than a hole:
+
+1. **A preview may only ever resolve downward.** `lib/tierPreview.ts` honours exactly one
+   cookie value, `core`, and only when the club's real tier is `performance`. A Basic club
+   asking to be Premium stays Basic. The worst a hand-written cookie achieves is showing
+   its own author fewer features. `npm run test:tier-preview` is the mandatory §5 test.
+2. **Only Fydr's own staff may use it, not a club's admin.** This was originally gated on
+   the `admin` role, which was wrong in both directions: it handed every customer's
+   administrator a switch that is not theirs to flip, and it meant a Fydr person running an
+   upgrade conversation needed a role inside that customer's org. The gate is now an email
+   allowlist, `FYDR_PLATFORM_EMAILS`, read server-side and compared against the email on the
+   verified session — see `lib/platformStaff.ts` for why an env allowlist beats a fifth role
+   in the enum. **Unset means nobody**, so on a deployment that never sets it the switch does
+   not render and the cookie is inert.
+
+The intended use is the sales conversation this section is otherwise about: when a club asks
+what Premium adds, or what they would lose by dropping to Basic, the answer is the real
+product rather than the feature table above.
+
 ---
 
 ## 10. Roadmap interaction

@@ -10,6 +10,7 @@ import { mfaRequiredForRoles } from '@/lib/mfa';
 import { requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import { PlanPreviewSwitch } from '@/components/PlanPreviewSwitch/PlanPreviewSwitch';
+import { isPlatformStaff } from '@/lib/platformStaff';
 
 export const metadata = { title: 'Settings · Fydr' };
 
@@ -44,6 +45,12 @@ export default async function SettingsPage() {
   const isAdmin = claims.roles.includes('admin');
   const isAdminOnly = isAdmin && !claims.roles.includes('coach') && !claims.roles.includes('medical');
   const onPremium = isPremium(tier);
+  /* Not `isAdmin`: a club's own administrator does not get to try the other
+     plan on. lib/platformStaff.ts has the reasoning; requireStaff() enforces
+     the same rule on the cookie, so this only decides whether the control is
+     drawn. Premium-only because the preview is downgrade-only — offering it to
+     a Basic club would be a switch that provably cannot do anything. */
+  const canPreviewTier = isPlatformStaff(claims.email) && isPremium(realTier);
 
   const [userRow, orgRow, athleteCount, activeThresholds, mfaFactors] = await Promise.all([
     db.from('users').select('phone, avatar_url, avatar_colour').eq('id', claims.userId).maybeSingle(),
@@ -123,7 +130,7 @@ export default async function SettingsPage() {
                 downgrading their own view, and a Basic club can only preview
                 upward, which lib/tierPreview.ts refuses on entitlement
                 grounds. */}
-            <PlanPreviewSwitch onPremium={onPremium} canPreview={isAdmin && isPremium(realTier)} />
+            <PlanPreviewSwitch onPremium={onPremium} canPreview={canPreviewTier} />
           </div>
 
           <div className="plan-compare">

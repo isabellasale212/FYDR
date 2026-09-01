@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { TIER_PREVIEW_COOKIE, effectiveTier, isPreviewingTier } from '@/lib/tierPreview';
 import { getClaims, isAthlete, isStaff, type FydrClaims } from '@/lib/supabase/claims';
+import { isPlatformStaff } from '@/lib/platformStaff';
 import type { Db } from '@/lib/queries/groups';
 
 export type StaffContext = {
@@ -78,13 +79,17 @@ export async function requireStaff(): Promise<StaffContext> {
     supabase.from('users').select('full_name').eq('id', claims.userId).maybeSingle(),
   ]);
 
-  /* The preview is an ADMIN-ONLY affordance, checked here rather than only in
-   * the UI that offers it: the cookie is browser-written, so a coach who set
-   * it by hand would otherwise silently downgrade their own session and read
-   * it as the product being broken. Roles come from the verified session
-   * (CLAUDE.md rule 2), never from the client. */
+  /* The preview is a FYDR-STAFF affordance, checked here rather than only in
+   * the UI that offers it: the cookie is browser-written, so anyone who set it
+   * by hand would otherwise silently downgrade their own session and read it
+   * as the product being broken. It used to be gated on the `admin` role,
+   * which was wrong in both directions — every club's own administrator got a
+   * switch that is not theirs to flip, and Fydr staff running an upgrade
+   * conversation had to hold a role inside the customer's org to use it. See
+   * lib/platformStaff.ts. The email comes from the verified session, never
+   * from the client, the same as roles do (CLAUDE.md rule 2). */
   const realTier = org.data?.tier ?? 'core';
-  const previewCookie = claims.roles.includes('admin')
+  const previewCookie = isPlatformStaff(claims.email)
     ? (await cookies()).get(TIER_PREVIEW_COOKIE)?.value
     : undefined;
 

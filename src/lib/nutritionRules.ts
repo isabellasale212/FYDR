@@ -79,20 +79,6 @@ export const RULE_BOUNDS = {
   fluid: { min: 25, max: 60, step: 5, default: 40, unit: 'ml per kg', footnote: 'raised in hot weather' },
 } as const;
 
-export const DEFAULT_RULE: MacroRule = {
-  proteinGPerKg: RULE_BOUNDS.protein.default,
-  carbGPerKg: RULE_BOUNDS.carb.default,
-  fatGPerKg: RULE_BOUNDS.fat.default,
-  fluidMlPerKg: RULE_BOUNDS.fluid.default,
-  energyKcalCap: null,
-};
-
-export function clampRule(step: keyof typeof RULE_BOUNDS, value: number): number {
-  const b = RULE_BOUNDS[step];
-  const rounded = Math.round(value / b.step) * b.step;
-  return Math.min(b.max, Math.max(b.min, Math.round(rounded * 100) / 100));
-}
-
 /* ---------------------------------------------------------------------------
  * Real rugby position -> positional unit mapping.
  *

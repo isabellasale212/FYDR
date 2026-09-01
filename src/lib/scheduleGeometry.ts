@@ -118,11 +118,6 @@ export const EXPECTS: Record<DbSessionType, string> = {
   meeting: '—',
 };
 
-/* The six-swatch legend (§5) covers Pitch/Gym/Rehab/Testing/Match/Recovery
- * — Meeting has a swatch in the type table but not the legend row, matched
- * here by simply listing the five real types plus training last. */
-export const LEGEND_TYPES: DbSessionType[] = ['training', 'gym', 'rehab', 'testing', 'match', 'recovery'];
-
 export function clockLabel(decimalHour: number): string {
   const totalMin = Math.round(decimalHour * 60);
   const h = Math.floor(totalMin / 60);

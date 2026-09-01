@@ -380,54 +380,6 @@ export function periodFromLegacyDays(days: number): { key: RangeKey; exact: bool
 }
 
 /**
- * The other direction, and the one that matters most right now: a period key
- * → the `?days=` integer a NOT-YET-MIGRATED handler should use.
- *
- * WHY THIS EXISTS. `?days=` is duplicated across three files per report —
- * page.tsx, export/route.ts and pdf/route.tsx each carry their own `PERIODS`
- * array and their own `PERIODS.includes(...) ? ... : <default>` line. The
- * moment a screen's control starts writing `?period=season`, every one of
- * those handlers meets a value it does not recognise and falls back to its
- * default — so the coach clicks "This season", gets a PDF, and the PDF
- * silently covers 7 days. That is the failure this function exists to stop:
- * the export is wrong and says nothing.
- *
- * The contract:
- *
- *  - Returns null for `season` and `all`. There is no honest fixed day count
- *    for either; their length comes from a database row. A handler that gets
- *    null must resolve the real window via `resolveRange` (with the season
- *    start / earliest date) or state on the document that it covers a fixed
- *    window instead. It must NOT quietly substitute its default.
- *  - Otherwise returns the offered value closest to the key's nominal length,
- *    with `exact` false when it had to snap. `offered` is the handler's own
- *    existing `PERIODS` array, passed in rather than assumed, because the
- *    three reports offer three different sets and none of them is wrong.
- *  - Ties break WIDER (28 is nearer to 28 than to 7; 17 between 7 and 28
- *    would take 28), for the same reason as periodFromLegacyDays: over-
- *    showing is visible, under-showing is invisible.
- */
-export function periodToOfferedDays(
-  key: RangeKey,
-  offered: readonly number[],
-): { days: number; exact: boolean } | null {
-  const target = nominalDays(key);
-  if (target === null) return null;
-  // Reading offered[0] and testing it, rather than testing offered.length:
-  // under noUncheckedIndexedAccess an index read is `number | undefined`
-  // however the length was checked, so the guard has to be on the value.
-  const first = offered[0];
-  if (first === undefined) return null;
-  let best = first;
-  for (const candidate of offered) {
-    const d = Math.abs(candidate - target);
-    const bestD = Math.abs(best - target);
-    if (d < bestD || (d === bestD && candidate > best)) best = candidate;
-  }
-  return { days: best, exact: best === target };
-}
-
-/**
  * Coerce a requested key to one this screen can actually honour, so the
  * control and the query never disagree.
  *

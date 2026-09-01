@@ -32,14 +32,6 @@ export type OpenInjury = {
   expected_return: string | null;
 };
 
-export type AvailabilityCounts = {
-  available: number;
-  modified: number;
-  unavailable: number;
-  unknown: number;
-  total: number;
-};
-
 export type NotFullyAvailableRow = {
   athlete_id: string;
   name: string;
@@ -125,34 +117,6 @@ async function fetchScopedAthletes(
   const { data, error } = await q.order('squad_number', { nullsFirst: false });
   if (error) throw new Error(error.message);
   return data ?? [];
-}
-
-export async function fetchAvailabilityCounts(
-  db: Db,
-  orgId: string,
-  groupIds: readonly string[],
-): Promise<AvailabilityCounts> {
-  const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
-  const [athletes, availability] = await Promise.all([
-    fetchScopedAthletes(db, orgId, scope),
-    fetchCurrentAvailability(db, orgId, scope),
-  ]);
-
-  const byAthlete = new Map(availability.map((a) => [a.athlete_id, a]));
-  const counts: AvailabilityCounts = {
-    available: 0,
-    modified: 0,
-    unavailable: 0,
-    unknown: 0,
-    total: athletes.length,
-  };
-
-  for (const athlete of athletes) {
-    const current = byAthlete.get(athlete.id);
-    if (!current) counts.unknown += 1;
-    else counts[current.status] += 1;
-  }
-  return counts;
 }
 
 /** Everyone who is not fully available, named, with the restriction and where

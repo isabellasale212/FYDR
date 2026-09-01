@@ -27,11 +27,6 @@ export async function fetchMetricCatalogue(db: Db): Promise<MetricDefinition[]> 
   return data ?? [];
 }
 
-export async function fetchEligibleMetrics(db: Db): Promise<MetricDefinition[]> {
-  const all = await fetchMetricCatalogue(db);
-  return all.filter((m) => m.leaderboard_eligible);
-}
-
 /** How many decimal places a ranked value is printed to, from the metric alone.
  *
  *  Exists because until migration 0056 there were two eligible metrics, both unitless

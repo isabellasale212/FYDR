@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { DEFAULT_RANGE, isRangeKey, readPeriodParam, type PeriodResolution, type PeriodSource, type RangeKey } from './period';
+import { DEFAULT_RANGE, isRangeKey, readPeriodParam, type PeriodResolution, type PeriodSource } from './period';
 
 /* Server-only companion to period.ts, split for exactly the reason
  * groupFilter.server.ts is split from groupFilter.ts (see that file's header):
@@ -74,16 +74,6 @@ export async function resolvePeriod(params: {
     return { key: sticky, source: 'cookie', legacyDays: null, approximated: false };
   }
   return { key: DEFAULT_RANGE, source: 'default', legacyDays: null, approximated: false };
-}
-
-/** The sticky period on its own, for a caller that has already resolved its
- *  URL param by hand (the export and PDF route handlers read a `URL` object,
- *  not a Next searchParams record). Null when there is no usable cookie —
- *  the caller decides what its own default is. */
-export async function stickyPeriod(): Promise<RangeKey | null> {
-  const store = await cookies();
-  const sticky = store.get(PERIOD_COOKIE)?.value;
-  return isRangeKey(sticky) ? sticky : null;
 }
 
 export { PERIOD_COOKIE };

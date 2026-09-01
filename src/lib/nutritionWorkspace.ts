@@ -5,7 +5,6 @@
 
 import {
   computeMassBand,
-  massState,
   massTrendFlag,
   MASS_FLAG_PCT_7D,
   pctChange,
@@ -28,8 +27,8 @@ export type WorkspaceAthlete = {
   /** The athlete's CURRENT body mass: their latest weigh-in, full stop.
    *
    *  NOT windowed, and that is load-bearing rather than an oversight — this
-   *  drives computeTargets(), the meal plan's portion scaling, inRangeCount()
-   *  and each plan's "Reference mass", none of which are views of a period.
+   *  drives computeTargets(), the meal plan's portion scaling and each plan's
+   *  "Reference mass", none of which are views of a period.
    *  /nutrition's own header states the period control "does not touch the
    *  plans, the targets table or the meal card"; clipping this at the trend
    *  window broke that promise silently, and a club weighing in monthly lost
@@ -336,10 +335,6 @@ export function groupByUnit(athletes: readonly WorkspaceAthlete[]): UnitGroup[] 
     byUnit.set(a.unit, list);
   }
   return UNIT_ORDER.filter((u) => byUnit.has(u)).map((unit) => ({ unit, athletes: byUnit.get(unit)! }));
-}
-
-export function inRangeCount(athletes: readonly WorkspaceAthlete[]): number {
-  return athletes.filter((a) => a.massKg !== null && massState(a.massKg, a.massBand) === 'in_range').length;
 }
 
 /** The real substitute for NUTRITION-SPEC.md §3's authored "Reference mass" column

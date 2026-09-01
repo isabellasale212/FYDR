@@ -1451,7 +1451,7 @@ body:has(.phone) {
 
 /* -------- done state, §5 -------- */
 .done-card {
-  padding: 28px 18px;
+  padding: var(--pad-card);
   text-align: center;
 }
 .done-check {
@@ -1534,7 +1534,7 @@ body:has(.phone) {
   grid-template-columns: minmax(0, 1fr) 12px;
   align-items: center;
   gap: 8px;
-  padding: 15px 14px;
+  padding: var(--pad-card);
   width: 100%;
   background: var(--surf);
   border: 1px solid var(--border);
@@ -2384,7 +2384,7 @@ img.av {
 }
 
 .pp-card {
-  padding: 18px 20px;
+  padding: var(--pad-card);
 }
 
 .pp-card-row {
@@ -3095,7 +3095,7 @@ img.av {
   margin-top: 20px;
 }
 .set-card {
-  padding: 18px;
+  padding: var(--pad-card);
 }
 
 /* §3: the flip switch. Both labels always visible — this is a two-way
@@ -3176,7 +3176,7 @@ img.av {
 }
 .plan-compare-card {
   border-radius: 14px;
-  padding: 14px;
+  padding: var(--pad-card);
   border: 1px solid var(--border);
 }
 .plan-compare-card[data-active='true'] {
@@ -4530,7 +4530,7 @@ button.dash-stat {
 /* ---------- Plan rules card, §4 ---------- */
 .nutr-plan-rules-card,
 .nutr-day-food-card {
-  padding: 18px 20px !important;
+  padding: var(--pad-card) !important;
 }
 .nutr-card-head {
   display: grid;
@@ -6031,7 +6031,7 @@ button.dash-stat {
 
 /* -------- §5 the time grid -------- */
 .sg-grid-card {
-  padding: 0;
+  padding: var(--pad-card);
   overflow-x: auto;
   margin-top: 14px;
 }
@@ -6273,7 +6273,7 @@ button.dash-stat {
   flex-wrap: wrap;
   align-items: center;
   gap: 16px;
-  padding: 14px 16px 16px;
+  padding-top: 14px;
   margin-top: 14px;
   border-top: 1px solid var(--hair);
 }
@@ -6315,7 +6315,7 @@ button.dash-stat {
   }
 }
 .sg-panel-card {
-  padding: 18px 20px;
+  padding: var(--pad-card);
 }
 .sg-panel-head {
   display: grid;

@@ -1364,7 +1364,11 @@ body:has(.phone) {
   grid-template-columns: 38px minmax(0, 1fr) auto 12px;
   gap: 12px;
   align-items: center;
-  padding: 15px 14px;
+  /* .card.flush drops the card's own padding so a row's hover and its dividers
+     can reach the edge — which makes the horizontal inset this row's job. It
+     has to be the same token, or text inside a flush card sits closer to the
+     border than text in every other card. It was 14px against 16. */
+  padding: 15px var(--pad-card);
   min-height: 44px;
   width: 100%;
   background: none;

@@ -308,9 +308,21 @@ export function ScheduleWorkspace({
     setSel(id);
   }
 
-  function startDraft(dow: string) {
-    if (mode !== 'edit') return;
-    setNewDraft({ id: '__new', dow, start: 9, mins: 60, title: '', type: 'training', location: null, mdOffset: null, groupIds: [] });
+  /* Creating a session starts here, from the grid itself: a coach who wants a
+   * session at 14:30 on Thursday points at 14:30 on Thursday. `startHour` is
+   * where they clicked, already snapped and clamped by the grid; the day
+   * header keeps its old behaviour by not passing one, which still means 9am.
+   *
+   * A click from READ mode switches to edit rather than doing nothing. The
+   * alternative — an inert grid until you find the Edit toggle — is the same
+   * click, one failed attempt earlier, and the toggle is visible so the mode
+   * change is not a surprise. */
+  function startDraft(dow: string, startHour?: number) {
+    const start = startHour ?? 9;
+    // A 60-minute draft must still fit inside the visible grid.
+    const clamped = clamp(start, h0, Math.max(h0, h1 - 1));
+    if (mode !== 'edit') setMode('edit');
+    setNewDraft({ id: '__new', dow, start: clamped, mins: 60, title: '', type: 'training', location: null, mdOffset: null, groupIds: [] });
     setSel('__new');
   }
 
@@ -716,6 +728,7 @@ export function ScheduleWorkspace({
         gridHeightPx={gridHeightPx}
         onSelect={selectSession}
         onDayHeaderClick={startDraft}
+        onGridClick={startDraft}
       />
 
       <div className="sg-panels">

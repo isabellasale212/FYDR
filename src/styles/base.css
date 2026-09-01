@@ -6235,10 +6235,20 @@ button.dash-stat {
   color: var(--faint);
   white-space: nowrap;
 }
+/* The column is the create affordance: point at a time to start a session
+   there. Kept to a cursor and a whisper of a tint — the grid's job is to be
+   read, and a column that lights up on every mousemove would fight that. */
 .sg-day-col {
   position: relative;
   height: 680px;
   border-left: 1px solid rgb(var(--ink-rgb) / 0.07);
+  cursor: pointer;
+}
+.sg-day-col:hover {
+  background: rgb(var(--accent-rgb) / 0.03);
+}
+.sg-day-col[data-today='true']:hover {
+  background: rgb(var(--accent-rgb) / 0.08);
 }
 .sg-day-col[data-today='true'] {
   background: rgb(var(--accent-rgb) / 0.05);

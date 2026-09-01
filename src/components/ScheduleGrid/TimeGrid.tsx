@@ -45,6 +45,8 @@ type Props = {
   gridHeightPx: number; // (h1 - h0) * PXH, the shared column/gutter height
   onSelect: (id: string) => void;
   onDayHeaderClick: (date: string) => void;
+  /** A click on empty grid: the day, and the hour the pointer was over. */
+  onGridClick: (date: string, startHour: number) => void;
 };
 
 function hourLabel(h: number): string {
@@ -61,7 +63,7 @@ function hourLabel(h: number): string {
  *  base.css's `.sg-grid-inner`/`.sg-grid-header`/`.sg-grid-body`, which now
  *  shrink to fit the available viewport down to a real per-column minimum
  *  instead of forcing a flat 1440px scroll). */
-export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridHeightPx, onSelect, onDayHeaderClick }: Props) {
+export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridHeightPx, onSelect, onDayHeaderClick, onGridClick }: Props) {
   const HOURS = Array.from({ length: h1 - h0 + 1 }, (_, i) => h0 + i);
   const bodyRef = useRef<HTMLDivElement>(null);
 
@@ -171,6 +173,17 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
               data-today={day.isToday}
               data-past={day.isPast}
               style={{ height: gridHeightPx }}
+              /* Point at a time to create a session there. The hour comes from
+                 where in the column the pointer was, snapped to 15 minutes —
+                 a coach clicking two thirds down an hour means "about then",
+                 not a to-the-pixel time. Blocks sit above this and take their
+                 own clicks, so this only ever fires on empty space. */
+              onClick={(e) => {
+                if (e.target !== e.currentTarget) return;
+                const y = e.clientY - e.currentTarget.getBoundingClientRect().top;
+                const raw = h0 + y / PXH;
+                onGridClick(day.date, Math.round(raw * 4) / 4);
+              }}
             >
               {HOURS.map((h) => (
                 <div key={h} className="sg-hour-line" style={{ top: (h - h0) * PXH }} />

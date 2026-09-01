@@ -379,7 +379,30 @@ export type InjuryReportSummary = {
   athleteCount: number;
 };
 
-export type InjuryBurdenWeek = { weekStart: string; daysLost: number };
+export type InjuryBurdenWeek = {
+  weekStart: string;
+  daysLost: number;
+  /** True only when all seven of the week's days fall inside the period. A
+   *  part week is short BY CONSTRUCTION, not because the squad got healthier,
+   *  and the mean-per-week figure excludes it for the same reason. */
+  fullWeek: boolean;
+  /** How many of the week's days the period actually covers, so a short row
+   *  can say why rather than looking like an improvement. */
+  daysInPeriod: number;
+};
+
+/** Days lost grouped by where they went. Split by INJURY SITE, not by cause:
+ *  `injuries` records a body area, and cause (injury vs illness vs academic)
+ *  lives on availability rows over a different population. Naming this
+ *  "by site" rather than "by cause" keeps the label true to the column it is
+ *  actually counting. */
+export type InjuryDaysBySite = { bodyArea: string; days: number };
+
+/** Where the squad is thin if it happens again. */
+export type InjuryDaysByUnit = { unit: string; days: number };
+
+/** Who the days belong to — the athletes carrying the burden, worst first. */
+export type InjuryDaysByAthlete = { athlete_id: string; name: string; bodyArea: string | null; days: number };
 
 export type ClinicalBreakdown = { bodyArea: string; count: number };
 
@@ -387,6 +410,9 @@ export type InjuryAvailabilityReport = {
   current: NotFullyAvailableRow[];
   summary: InjuryReportSummary;
   burden: InjuryBurdenWeek[];
+  bySite: InjuryDaysBySite[];
+  byUnit: InjuryDaysByUnit[];
+  byAthlete: InjuryDaysByAthlete[];
   clinical: { byBodyAreaOfNewInjuries: ClinicalBreakdown[] } | null;
 };
 
@@ -404,6 +430,14 @@ function mondayOfIso(dateIso: string): string {
   const day = d.getUTCDay();
   const diff = day === 0 ? -6 : 1 - day;
   d.setUTCDate(d.getUTCDate() + diff);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Six days on from a Monday, in the same UTC-noon-free arithmetic
+ *  mondayOfIso uses — these are plain calendar strings, never instants. */
+function addDaysIso(dateIso: string, days: number): string {
+  const d = new Date(`${dateIso}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
 }
 
@@ -459,7 +493,15 @@ export async function fetchInjuryAvailabilityReport(
      * availability. Ordered by `id` alone because nothing here wants any
      * other order and `id` is the unique key .range() needs (paged.ts). */
     fetchAllPaged((from, to) => {
-      let q = db.from('athletes').select('id').eq('org_id', orgId).is('deleted_at', null).neq('status', 'left_club');
+      // `position` and the name join the select purely so days lost can be
+      // grouped by unit and attributed to a named athlete below — both are
+      // already coach-visible squad fields, not medical ones.
+      let q = db
+        .from('athletes')
+        .select('id, first_name, last_name, position')
+        .eq('org_id', orgId)
+        .is('deleted_at', null)
+        .neq('status', 'left_club');
       if (scope) q = q.in('id', scope);
       return q.order('id').range(from, to);
     }),
@@ -525,6 +567,14 @@ export async function fetchInjuryAvailabilityReport(
   let daysLost = 0;
   const weekTotals = new Map<string, number>();
   const seenAthleteDays = new Set<string>();
+  /* Three breakdowns off the SAME deduped day, so they can never disagree
+     with daysLost or with each other. Attributing them in a second pass over
+     `relevant` would reintroduce exactly the concurrent-injury double count
+     seenAthleteDays exists to prevent. */
+  const siteTotals = new Map<string, number>();
+  const unitTotals = new Map<string, number>();
+  const athleteTotals = new Map<string, { days: number; bodyArea: string | null }>();
+  const byId = new Map(athletes.map((a) => [a.id, a]));
   for (const i of relevant) {
     const end = i.actual_return ?? toDate;
 
@@ -541,6 +591,14 @@ export async function fetchInjuryAvailabilityReport(
         daysLost += 1;
         const week = mondayOfIso(cursor);
         weekTotals.set(week, (weekTotals.get(week) ?? 0) + 1);
+
+        const site = i.body_area ?? 'unrecorded';
+        siteTotals.set(site, (siteTotals.get(site) ?? 0) + 1);
+        const unit = byId.get(i.athlete_id)?.position ?? 'No position set';
+        unitTotals.set(unit, (unitTotals.get(unit) ?? 0) + 1);
+        const cur = athleteTotals.get(i.athlete_id) ?? { days: 0, bodyArea: i.body_area };
+        cur.days += 1;
+        athleteTotals.set(i.athlete_id, cur);
       }
       const next = new Date(`${cursor}T00:00:00Z`);
       next.setUTCDate(next.getUTCDate() + 1);
@@ -552,9 +610,37 @@ export async function fetchInjuryAvailabilityReport(
   const athleteDays = athleteIds.length * periodDays;
   const availabilityPct = athleteDays > 0 ? Math.round((100 * (athleteDays - daysLost)) / athleteDays) : null;
 
+  /* A week is whole only when all seven of its days sit inside the period.
+     The last row of a 28-day window usually is not, and a short bar there is
+     the window's shape rather than a recovering squad — so the fact travels
+     with the row instead of being inferred by whoever draws it. */
   const burden = [...weekTotals.entries()]
-    .map(([weekStart, days]) => ({ weekStart, daysLost: days }))
+    .map(([weekStart, days]) => {
+      const weekEnd = addDaysIso(weekStart, 6);
+      const coveredFrom = weekStart > fromDate ? weekStart : fromDate;
+      const coveredTo = weekEnd < toDate ? weekEnd : toDate;
+      const daysInPeriod = daysOverlap(coveredFrom, coveredTo, coveredFrom, coveredTo);
+      return { weekStart, daysLost: days, fullWeek: daysInPeriod === 7, daysInPeriod };
+    })
     .sort((a, b) => a.weekStart.localeCompare(b.weekStart));
+
+  const bySite = [...siteTotals.entries()]
+    .map(([bodyArea, days]) => ({ bodyArea, days }))
+    .sort((a, b) => b.days - a.days);
+  const byUnit = [...unitTotals.entries()]
+    .map(([unit, days]) => ({ unit, days }))
+    .sort((a, b) => b.days - a.days);
+  const byAthlete = [...athleteTotals.entries()]
+    .map(([athlete_id, v]) => {
+      const a = byId.get(athlete_id);
+      return {
+        athlete_id,
+        name: a ? `${a.first_name} ${a.last_name}` : 'Unknown athlete',
+        bodyArea: v.bodyArea,
+        days: v.days,
+      };
+    })
+    .sort((a, b) => b.days - a.days);
 
   let clinical: InjuryAvailabilityReport['clinical'] = null;
   if (isMedical) {
@@ -574,6 +660,9 @@ export async function fetchInjuryAvailabilityReport(
     current,
     summary: { newInjuries, daysLost, availabilityPct, athleteCount: athleteIds.length },
     burden,
+    bySite,
+    byUnit,
+    byAthlete,
     clinical,
   };
 }

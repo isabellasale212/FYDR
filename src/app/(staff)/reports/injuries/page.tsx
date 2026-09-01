@@ -93,6 +93,36 @@ export default async function InjuryAvailabilityReportPage({
 
   /* Status carries the grouping, worst first, so the row does not repeat it as
    * a pill on every line. */
+  /* Burden facts. A part week is short because the window cuts it, not
+   * because the squad recovered, so the mean is taken over FULL weeks only
+   * and the trend reads the last three of them. */
+  const fullWeeks = report.burden.filter((w) => w.fullWeek);
+  const meanPerFullWeek =
+    fullWeeks.length > 0
+      ? Math.round((10 * fullWeeks.reduce((s, w) => s + w.daysLost, 0)) / fullWeeks.length) / 10
+      : null;
+  const lastThree = fullWeeks.slice(-3);
+  const trend =
+    lastThree.length < 2
+      ? { label: 'Not enough weeks', note: 'a trend needs at least two full weeks in the window' }
+      : (() => {
+          const first = lastThree[0]!.daysLost;
+          const last = lastThree[lastThree.length - 1]!.daysLost;
+          const spread = Math.max(...lastThree.map((w) => w.daysLost)) - Math.min(...lastThree.map((w) => w.daysLost));
+          // "Flat" is a real reading, not a fallback: a squad losing the same
+          // number of days each week is not improving, and saying "rising" or
+          // "falling" off a day or two of noise would be worse than saying so.
+          if (spread <= 2) return { label: 'Flat', note: `about ${last} days in each of the last ${lastThree.length} full weeks` };
+          return last > first
+            ? { label: 'Rising', note: `${first} to ${last} days across the last ${lastThree.length} full weeks` }
+            : { label: 'Falling', note: `${first} to ${last} days across the last ${lastThree.length} full weeks` };
+        })();
+  const peakWeek = report.burden.reduce((m, w) => Math.max(m, w.daysLost), 0);
+  const peakSite = report.bySite.reduce((m, s) => Math.max(m, s.days), 0);
+  const peakUnit = report.byUnit.reduce((m, u) => Math.max(m, u.days), 0);
+  const peakAthlete = report.byAthlete.reduce((m, a) => Math.max(m, a.days), 0);
+  const athleteDaysAvailable = report.summary.athleteCount * period.days;
+
   const STATUS_GROUPS: { key: string; name: string; rows: typeof report.current }[] = [
     { key: 'unavailable', name: 'Unavailable', rows: unavailable },
     { key: 'modified', name: 'Modified', rows: modified },
@@ -329,80 +359,254 @@ export default async function InjuryAvailabilityReportPage({
           {
             label: 'Period summary',
             content: (
-              <div className="card">
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 16 }}>
-                  <div>
-                    <div className="mono" style={{ fontSize: 24, fontWeight: 800 }}>
-                      {report.summary.newInjuries}
-                    </div>
-                    <div className="tiny">New injuries</div>
+              <div className="stack">
+                <div className="card cmpl-stats" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+                  <div className="cmpl-stat">
+                    <span className="cmpl-stat-label">New injuries</span>
+                    <span className="cmpl-stat-value">{report.summary.newInjuries}</span>
+                    <span className="cmpl-stat-sub">
+                      {report.summary.newInjuries === 0
+                        ? 'nothing new opened in the window'
+                        : `opened inside ${period.label.toLowerCase()}`}
+                    </span>
                   </div>
-                  <div>
-                    <div className="mono" style={{ fontSize: 24, fontWeight: 800 }}>
-                      {report.summary.daysLost}
-                    </div>
-                    <div className="tiny">Athlete-days lost</div>
+                  <div className="cmpl-stat" data-tone={report.summary.daysLost > 0 ? 'bad' : undefined}>
+                    <span className="cmpl-stat-label">Athlete-days lost</span>
+                    <span className="cmpl-stat-value">{report.summary.daysLost}</span>
+                    <span className="cmpl-stat-sub">
+                      {report.byAthlete.length} athlete{report.byAthlete.length === 1 ? '' : 's'} · of{' '}
+                      {athleteDaysAvailable.toLocaleString('en-GB')} athlete-days available
+                    </span>
                   </div>
-                  <div>
-                    <div className="mono" style={{ fontSize: 24, fontWeight: 800 }}>
-                      {report.summary.availabilityPct === null ? '—' : `${report.summary.availabilityPct}%`}
-                    </div>
-                    <div className="tiny">Availability</div>
+                  <div className="cmpl-stat">
+                    <span className="cmpl-stat-label">Availability</span>
+                    <span className="cmpl-stat-value">
+                      {report.summary.availabilityPct === null ? '—' : report.summary.availabilityPct}
+                      {report.summary.availabilityPct === null ? null : <small>%</small>}
+                    </span>
+                    <span className="cmpl-stat-sub">
+                      {(athleteDaysAvailable - report.summary.daysLost).toLocaleString('en-GB')} of{' '}
+                      {athleteDaysAvailable.toLocaleString('en-GB')} athlete-days
+                    </span>
                   </div>
                 </div>
-                {isMedical && report.clinical ? (
-                  <div style={{ marginTop: 16 }}>
-                    <p className="label">New injuries by body area</p>
-                    {report.clinical.byBodyAreaOfNewInjuries.length === 0 ? (
-                      <p className="tiny">None in this period.</p>
+
+                <div className="ath-summary-grid">
+                  <section className="card" aria-labelledby="inj-site">
+                    <h2 className="ath-card-title" id="inj-site">
+                      Where the days went
+                    </h2>
+                    {/* BY SITE, NOT BY CAUSE. `injuries` records a body area;
+                        cause — injury against illness against academic — lives
+                        on availability rows over a different population, so a
+                        "by cause" split here would be counting one thing and
+                        labelling it another. */}
+                    <p className="tiny" style={{ color: 'var(--muted)', margin: '6px 0 12px' }}>
+                      Injury site, recorded by medical staff at onset.
+                    </p>
+                    {report.bySite.length === 0 ? (
+                      <p className="tiny" style={{ color: 'var(--muted)' }}>No days lost in this period.</p>
                     ) : (
-                      <div className="chiprow" style={{ marginTop: 8 }}>
-                        {report.clinical.byBodyAreaOfNewInjuries.map((c) => (
-                          <span key={c.bodyArea} className="chip-static">
-                            {enumLabel(c.bodyArea)} · {c.count}
-                          </span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {report.bySite.slice(0, 6).map((s, i) => (
+                          <div key={s.bodyArea}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+                              <span style={{ fontSize: 13, fontWeight: 600 }}>
+                                {s.bodyArea === 'unrecorded' ? 'Site not recorded' : enumLabel(s.bodyArea)}
+                              </span>
+                              <span className="ath-test-num" style={{ marginLeft: 'auto', fontWeight: 700 }}>
+                                {s.days} days
+                              </span>
+                              <span className="tiny" style={{ color: 'var(--faint)', width: 92, textAlign: 'right' }}>
+                                {report.summary.daysLost > 0
+                                  ? `${Math.round((100 * s.days) / report.summary.daysLost)}% of the total`
+                                  : ''}
+                              </span>
+                            </div>
+                            <span className="cmpl-track" style={{ display: 'block', marginTop: 5 }}>
+                              <span
+                                className="cmpl-fill"
+                                data-tone={i === 0 ? 'bad' : i === 1 ? 'warn' : 'accent'}
+                                style={{ width: `${peakSite > 0 ? Math.round((100 * s.days) / peakSite) : 0}%` }}
+                              />
+                            </span>
+                          </div>
                         ))}
                       </div>
                     )}
-                  </div>
-                ) : null}
-                <p className="tiny" style={{ marginTop: 14 }}>
-                  Days lost and availability are computed from each injury&rsquo;s onset and
-                  return date, not a day-by-day reconstruction of every availability change.
-                  {/* Only worth saying once the window can outlive the squad
-                      list it is divided by. Availability % is (squad × days −
-                      days lost) / (squad × days), and `squad` is TODAY's live
-                      roster — so over a season or all on record it counts
-                      days for athletes who had not joined yet and none for
-                      athletes who have since left. Honest at 28 days,
-                      increasingly approximate beyond it, and the reader
-                      should know which they are looking at. */}
-                  {period.days > 90
-                    ? ' Availability is measured against the current squad, so over a window this long it counts days for athletes who joined part-way through it.'
-                    : ''}
-                </p>
+                  </section>
+
+                  <section className="card" aria-labelledby="inj-unit">
+                    <h2 className="ath-card-title" id="inj-unit">
+                      By positional unit
+                    </h2>
+                    <p className="tiny" style={{ color: 'var(--muted)', margin: '6px 0 12px' }}>
+                      Where the squad is thin if it happens again.
+                    </p>
+                    {report.byUnit.length === 0 ? (
+                      <p className="tiny" style={{ color: 'var(--muted)' }}>No days lost in this period.</p>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {report.byUnit.map((u) => (
+                          <div key={u.unit} className="ath-loadday">
+                            <span className="ath-loadday-day" style={{ width: 110 }}>{u.unit}</span>
+                            <span className="cmpl-track">
+                              <span
+                                className="cmpl-fill"
+                                data-tone="accent"
+                                style={{ width: `${peakUnit > 0 ? Math.round((100 * u.days) / peakUnit) : 0}%` }}
+                              />
+                            </span>
+                            <span className="ath-loadday-val">{u.days}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </section>
+                </div>
+
+                <section className="card" aria-labelledby="inj-who">
+                  <h2 className="ath-card-title" id="inj-who">
+                    Who the days belong to
+                  </h2>
+                  <p className="tiny" style={{ color: 'var(--muted)', margin: '6px 0 12px' }}>
+                    {report.byAthlete.length === 0
+                      ? 'Nobody lost a day in this period.'
+                      : `${report.byAthlete.length} athlete${report.byAthlete.length === 1 ? '' : 's'} account for all ${report.summary.daysLost} days. Nobody else lost one.`}
+                  </p>
+                  {report.byAthlete.slice(0, 8).map((a) => (
+                    <div key={a.athlete_id} className="cmpl-row" style={{ gridTemplateColumns: 'minmax(0, 1fr) 110px minmax(0, 1.4fr) 76px' }}>
+                      <span className="cmpl-name">{a.name}</span>
+                      <span className="inj-site">{a.bodyArea ? enumLabel(a.bodyArea) : '—'}</span>
+                      <span className="cmpl-track">
+                        <span
+                          className="cmpl-fill"
+                          data-tone={peakAthlete > 0 && a.days / peakAthlete >= 0.75 ? 'bad' : 'warn'}
+                          style={{ width: `${peakAthlete > 0 ? Math.round((100 * a.days) / peakAthlete) : 0}%` }}
+                        />
+                      </span>
+                      <span
+                        className="ath-test-delta"
+                        data-tone={peakAthlete > 0 && a.days / peakAthlete >= 0.75 ? 'heavy' : 'off'}
+                      >
+                        {a.days} days
+                      </span>
+                    </div>
+                  ))}
+                  {isMedical && report.clinical && report.clinical.byBodyAreaOfNewInjuries.length > 0 ? (
+                    <div style={{ marginTop: 14 }}>
+                      <p className="label">New injuries by body area</p>
+                      <div className="chiprow" style={{ marginTop: 8 }}>
+                        {report.clinical.byBodyAreaOfNewInjuries.map((cl) => (
+                          <span key={cl.bodyArea} className="chip-static">
+                            {enumLabel(cl.bodyArea)} · {cl.count}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                  <p className="inj-foot">
+                    Days lost and availability are computed from each injury&rsquo;s onset and return
+                    date, not a day-by-day reconstruction of every availability change. n ={' '}
+                    {report.summary.athleteCount} athletes over {period.days} days.
+                    {/* Only worth saying once the window can outlive the squad
+                        list it is divided by. Availability % is (squad × days −
+                        days lost) / (squad × days), and `squad` is TODAY's live
+                        roster — so over a season or all on record it counts
+                        days for athletes who had not joined yet and none for
+                        athletes who have since left. */}
+                    {period.days > 90
+                      ? ' Availability is measured against the current squad, so over a window this long it counts days for athletes who joined part-way through it.'
+                      : ''}
+                  </p>
+                </section>
               </div>
             ),
           },
           {
             label: 'Burden',
             content: (
-              <div className="card flush">
-                {report.burden.length === 0 ? (
-                  <p className="tiny" style={{ padding: 16 }}>
-                    No days lost in this period.
-                  </p>
-                ) : (
-                  report.burden.map((w, index) => (
-                    <div key={w.weekStart}>
-                      {index > 0 ? <div className="hair" /> : null}
-                      <div className="load-row" style={{ gridTemplateColumns: '1fr auto' }}>
-                        <span className="nm">Week of {formatDate(w.weekStart, timezone)}</span>
-                        <span className="mono">{w.daysLost} days</span>
+              <div className="stack">
+                <div className="card cmpl-stats" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+                  <div className="cmpl-stat">
+                    <span className="cmpl-stat-label">Total burden</span>
+                    <span className="cmpl-stat-value">
+                      {report.summary.daysLost}
+                      <small style={{ fontWeight: 400 }}>days</small>
+                    </span>
+                    <span className="cmpl-stat-sub">
+                      across {report.byAthlete.length} athlete{report.byAthlete.length === 1 ? '' : 's'}
+                    </span>
+                  </div>
+                  <div className="cmpl-stat">
+                    <span className="cmpl-stat-label">Mean per full week</span>
+                    <span className="cmpl-stat-value">
+                      {meanPerFullWeek === null ? '—' : meanPerFullWeek}
+                      {meanPerFullWeek === null ? null : <small style={{ fontWeight: 400 }}>days</small>}
+                    </span>
+                    <span className="cmpl-stat-sub">
+                      {meanPerFullWeek === null
+                        ? 'no whole week falls inside the period'
+                        : `n = ${fullWeeks.length} · part weeks are left out`}
+                    </span>
+                  </div>
+                  <div className="cmpl-stat">
+                    <span className="cmpl-stat-label">Trend</span>
+                    <span className="cmpl-stat-value" style={{ fontSize: 24 }}>
+                      {trend.label}
+                    </span>
+                    <span className="cmpl-stat-sub">{trend.note}</span>
+                  </div>
+                </div>
+
+                <section className="card cmpl-table" aria-labelledby="inj-burden">
+                  <h2 className="ath-card-title" id="inj-burden">
+                    Athlete-days lost, by week
+                  </h2>
+                  {report.burden.length === 0 ? (
+                    <p className="tiny" style={{ padding: '10px 0 14px', color: 'var(--muted)' }}>
+                      No days lost in this period.
+                    </p>
+                  ) : (
+                    <>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 12 }}>
+                        {report.burden.map((w) => (
+                          <div key={w.weekStart}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: 13.5, fontWeight: 700 }}>
+                                Week of {formatDate(w.weekStart, timezone)}
+                              </span>
+                              {/* A short bar on a part week is the window's
+                                  shape, not a recovering squad — so the row
+                                  says which before anyone reads the bar. */}
+                              {w.fullWeek ? null : (
+                                <span className="tiny" style={{ color: 'var(--faint)' }}>
+                                  {w.daysInPeriod} of 7 days fall inside the period
+                                </span>
+                              )}
+                              <span className="ath-test-num" style={{ marginLeft: 'auto', fontWeight: 700, fontSize: 13.5 }}>
+                                {w.daysLost} days
+                              </span>
+                            </div>
+                            <span className="cmpl-track" style={{ display: 'block', marginTop: 6, height: 8 }}>
+                              <span
+                                className="cmpl-fill"
+                                data-tone="bad"
+                                style={{ width: `${peakWeek > 0 ? Math.round((100 * w.daysLost) / peakWeek) : 0}%` }}
+                              />
+                            </span>
+                          </div>
+                        ))}
                       </div>
-                    </div>
-                  ))
-                )}
+                      <p className="inj-foot" style={{ marginTop: 14 }}>
+                        A week is counted whole only when all seven of its days fall inside the period,
+                        so a short last row is the window&rsquo;s shape rather than an improvement. Bars
+                        share one scale · n = {report.byAthlete.length} athlete
+                        {report.byAthlete.length === 1 ? '' : 's'}.
+                      </p>
+                    </>
+                  )}
+                </section>
               </div>
             ),
           },

@@ -337,8 +337,8 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
     if (!selected) {
       return (
         <>
-          {header}
           {groupFilterEl}
+          {header}
           <EmptyState
             title="No match GPS data yet"
             body="No completed match has a GPS record on file. This week's fixture is upcoming and has no record yet, by design — an unplayed session is never rendered as measured data."
@@ -359,8 +359,8 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
 
     return (
       <>
-        {header}
         {groupFilterEl}
+        {header}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', marginBottom: 16 }}>
           <div className="chiprow" style={{ margin: 0 }}>
@@ -521,8 +521,8 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
   if (!selected) {
     return (
       <>
-        {header}
         {groupFilterEl}
+        {header}
         <EmptyState title="No GPS data yet" body="No GPS records have been imported. This build has no import pipeline yet — a direct insert is the only path in." />
       </>
     );
@@ -574,8 +574,8 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
 
     return (
       <>
-        {header}
         {groupFilterEl}
+        {header}
         {trainingToolbar('week')}
 
         <div className="card" style={{ padding: '18px 20px' }}>
@@ -649,8 +649,8 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
 
   return (
     <>
-      {header}
       {groupFilterEl}
+      {header}
 
       {trainingToolbar('day')}
 

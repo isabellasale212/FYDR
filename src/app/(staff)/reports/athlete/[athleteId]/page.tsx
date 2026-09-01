@@ -279,12 +279,9 @@ export default async function AthleteReportPage({
                         building they show a dash and say so: an estimate from
                         too few days is worse than no estimate. */}
                     {report.load.suppressed ? (
-                      <div className="note" style={{ borderColor: 'var(--warn)', marginBottom: 12 }}>
-                        <div className="note-glyph">i</div>
-                        <p className="note-text">
-                          <b>{acwrSuppressedLabel(report.load.daysWithData)}</b> —{' '}
-                          {acwrInsufficiencyNote(report.load.daysWithData)}
-                        </p>
+                      <div className="ath-note">
+                        <span className="ath-note-title">{acwrSuppressedLabel(report.load.daysWithData)}</span>
+                        <span className="ath-note-body">{acwrInsufficiencyNote(report.load.daysWithData)}</span>
                       </div>
                     ) : null}
                     <div className="ath-load-tiles">
@@ -321,13 +318,21 @@ export default async function AthleteReportPage({
                       </div>
                     </div>
                     <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--hair)' }}>
-                      <p style={{ fontSize: 12.5, fontWeight: 700, margin: '0 0 8px' }}>Session load by day</p>
+                      <p style={{ fontSize: 12.5, fontWeight: 700, margin: '0 0 8px' }}>
+                        Session load by day
+                        {loadDaysWithValue.length > 0 ? (
+                          <span className="tiny" style={{ fontWeight: 400, color: 'var(--faint)' }}>
+                            {' '}
+                            · {loadDaysWithValue.length} day{loadDaysWithValue.length === 1 ? '' : 's'}
+                          </span>
+                        ) : null}
+                      </p>
                       {loadDaysWithValue.length === 0 ? (
                         <p className="tiny" style={{ color: 'var(--muted)' }}>
                           No session load recorded in this period.
                         </p>
                       ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        <div className="ath-loaddays">
                           {loadDaysWithValue.map((d) => (
                             <div key={d.date} className="ath-loadday">
                               <span className="ath-loadday-day">{formatDate(d.date, timezone)}</span>

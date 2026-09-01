@@ -8073,3 +8073,39 @@ button.dash-stat {
 .ath-test-delta[data-tone='heavy'] { color: var(--bad-pill-text); }
 .ath-test-delta[data-tone='off'] { color: var(--warn-pill-text); }
 .ath-test-delta[data-tone='at'] { color: var(--faint); }
+
+/* The design's amber baseline notice. .note is this app's inline advisory and
+   renders as a bordered block with a stacked glyph; the design wants a filled
+   panel with a title line over body copy, so this is its own thing rather than
+   an override that would follow .note everywhere else. */
+.ath-note {
+  border-radius: 12px;
+  border: 1px solid rgb(var(--warn-rgb) / 0.6);
+  background: rgb(var(--warn-rgb) / 0.16);
+  padding: 11px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+.ath-note-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--warn-pill-text);
+}
+.ath-note-body {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text);
+  text-wrap: pretty;
+}
+/* A season's worth of days would otherwise stretch this card to three times
+   the wellness card beside it. Scrolls instead, and the caption above says how
+   many there are so the cap never hides a count. */
+.ath-loaddays {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 232px;
+  overflow-y: auto;
+}

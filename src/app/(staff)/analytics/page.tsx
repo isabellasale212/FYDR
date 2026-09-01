@@ -59,6 +59,12 @@ type Board = {
   bars: boolean;
   /** The 0.8–1.5 convention, drawn only on ACWR. */
   acwrBand?: true;
+  /** Draw a least-squares trend instead of the raw daily series. The two bar
+   *  boards do this — their own subtitles say "a trend line per athlete", and
+   *  it is the right call: the bars already carry the week-to-week detail, so a
+   *  second jagged daily line over them adds noise, not information. The two
+   *  scale boards keep their real series, where every wobble is the point. */
+  trend?: true;
 };
 
 const BOARDS: Board[] = [
@@ -71,6 +77,7 @@ const BOARDS: Board[] = [
     windowLabel: '12 weeks',
     colour: 'var(--accent)',
     bars: true,
+    trend: true,
   },
   {
     key: 'wellness',
@@ -91,6 +98,7 @@ const BOARDS: Board[] = [
     windowLabel: '8 weeks',
     colour: 'var(--domain-gym)',
     bars: true,
+    trend: true,
   },
   {
     key: 'acwr',
@@ -145,6 +153,33 @@ function bounds(metric: MetricDef, all: readonly (number | null)[]): { min: numb
   const max = hi + pad;
   const step = (max - min) / 4;
   return { min, max, ticks: [0, 1, 2, 3, 4].map((i) => min + i * step) };
+}
+
+/** Least-squares fit over the real points, returned in the same Band shape so
+ *  the chart needs no second code path. Every day gets a value, so the line is
+ *  continuous across gaps — which is correct for a trend and wrong for a
+ *  series, and is exactly why only the bar boards use it. Fewer than two real
+ *  points is not a trend, and returns the series untouched. */
+function trendLine(series: readonly Band[]): Band[] {
+  const pts = series.map((p, i) => ({ i, v: p.value })).filter((p): p is { i: number; v: number } => p.v !== null);
+  if (pts.length < 2) return [...series];
+  const n = pts.length;
+  const sx = pts.reduce((s, p) => s + p.i, 0);
+  const sy = pts.reduce((s, p) => s + p.v, 0);
+  const sxy = pts.reduce((s, p) => s + p.i * p.v, 0);
+  const sxx = pts.reduce((s, p) => s + p.i * p.i, 0);
+  const denom = n * sxx - sx * sx;
+  if (denom === 0) return [...series];
+  const slope = (n * sxy - sx * sy) / denom;
+  const intercept = (sy - slope * sx) / n;
+  const first = pts[0]!.i;
+  const last = pts[pts.length - 1]!.i;
+  // Drawn only across the span that has data: extrapolating a trend into days
+  // nobody logged would invent the very thing this app refuses to invent.
+  return series.map((p, i) => ({
+    ...p,
+    value: i < first || i > last ? null : intercept + slope * i,
+  }));
 }
 
 function xLabelsFor(series: readonly Band[]): string[] {
@@ -285,9 +320,11 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
             const scale = board.acwrBand
               ? { min: 0.5, max: 2, ticks: [0.5, 1.0, 1.5, 2.0] }
               : bounds(metric, all);
-            const primary: ChartSeries = { points: seriesA, label: a.last_name, colour: board.colour };
-            const secondary: ChartSeries | null = seriesB
-              ? { points: seriesB, label: b!.last_name, colour: 'var(--cmp-b)', dashed: true }
+            const lineA = board.trend ? trendLine(seriesA) : seriesA;
+            const lineB = seriesB ? (board.trend ? trendLine(seriesB) : seriesB) : null;
+            const primary: ChartSeries = { points: lineA, label: a.last_name, colour: board.colour };
+            const secondary: ChartSeries | null = lineB
+              ? { points: lineB, label: b!.last_name, colour: 'var(--cmp-b)', dashed: true }
               : null;
             /* The wellness band is the PRIMARY athlete's own trailing ±1SD,
              * which is what the card's own subtitle promises — "each against

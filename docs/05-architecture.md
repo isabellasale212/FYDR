@@ -296,6 +296,30 @@ graph LR
 **Order is fixed: database, then functions, then web, then mobile.** Every deployment step
 must leave the previous client version working, which is what §14 is about.
 
+### 4.1 How this build actually deploys today
+
+The pipeline above is the target, not the current state, and the gap is recorded here
+rather than left for the next person to discover. This repository has **no git remote**,
+so none of the PR/staging/tag steps exist yet: production deploys run from a developer
+machine with
+
+```
+npm run deploy
+```
+
+**The Vercel CLI version in that script is pinned on purpose.** It used to be a bare
+`npx vercel --prod`, which resolves the `latest` dist-tag — so the version doing the
+deploy changed without anyone choosing to change it. That broke a deploy mid-session:
+`latest` moved to 59.11.0 and the install failed with `No matching version found for
+@vercel/go@9.0.0`. That dependency is in fact published, so the true cause was a stale
+packument in the local npm cache rather than a bad release — which is the point. A
+deploy tool that silently re-resolves is a deploy that can fail for reasons unrelated to
+the change being shipped, and it fails at the worst moment, when you are trying to ship.
+
+`59.10.0` is pinned because it is the version this project has actually deployed with.
+Bumping it is a deliberate edit to `package.json`, which is what it should be. When the
+CI pipeline above is real, the same pin belongs in the workflow.
+
 ---
 
 ## 5. Authentication and authorisation

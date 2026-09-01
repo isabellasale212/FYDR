@@ -279,7 +279,20 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
    * same query (fetchWeekStrip calls fetchWeekSessions itself), so collapsing
    * them to the always-present one loses nothing and removes the disagreement. */
   const weekSessionCount = week.reduce((n, d) => n + d.activities.length, 0);
-  const weekRangeLabel = `${week[0]?.dayLabel ?? ''} to ${week[week.length - 1]?.dayLabel ?? ''}`;
+  /* dayLabel is "Mon 31" — weekday and day, no month — so a bare "Mon 31 to
+   * Sat 5" is ambiguous, and actively wrong-looking in a week that crosses a
+   * month boundary, which is exactly the week this was first seen on
+   * (31 Aug - 5 Sep). The month is appended once when the week sits inside one
+   * month and on both ends when it does not. UTC noon to match dayLabelFor,
+   * which builds the day numbers the same way. */
+  const monthOf = (iso: string) =>
+    new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-GB', { month: 'short', timeZone: 'UTC' });
+  const weekFirst = week[0]?.dayLabel ?? '';
+  const weekLast = week[week.length - 1]?.dayLabel ?? '';
+  const weekRangeLabel =
+    monthOf(weekStart) === monthOf(weekEnd)
+      ? `${weekFirst} to ${weekLast} ${monthOf(weekEnd)}`
+      : `${weekFirst} ${monthOf(weekStart)} to ${weekLast} ${monthOf(weekEnd)}`;
 
   const isAnchoredToPast = effectiveToday !== wallClockToday;
 

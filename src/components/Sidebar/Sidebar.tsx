@@ -34,24 +34,27 @@ type Row = {
   icon: React.ReactNode;
 };
 
+/* Solid glyphs on a 14-unit grid, ported from FydrSidebar.dc.html. They were
+ * 1.4px outline strokes on a 16-unit grid; the design's are filled, which is
+ * what gives the rail its weight at 17px. The sign-out arrow stays a stroke
+ * because the design draws that one as a stroke too. */
 const icon = (paths: React.ReactNode) => (
-  <svg
-    className="ic"
-    viewBox="0 0 16 16"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.4}
-    aria-hidden="true"
-  >
+  <svg className="ic" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
     {paths}
   </svg>
 );
 
-const SIGN_OUT_ICON = icon(
-  <>
-    <path d="M6.6 1.8H3.4a1 1 0 0 0-1 1v10.4a1 1 0 0 0 1 1h3.2" />
-    <path d="M10.8 11.2 14.2 8l-3.4-3.2M14.2 8H5.8" />
-  </>,
+const SIGN_OUT_ICON = (
+  <svg
+    className="ic"
+    viewBox="0 0 14 14"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.5}
+    aria-hidden="true"
+  >
+    <path d="M5.4 12.4H2.4V1.6h3M8 4.2l2.8 2.8L8 9.8M10.8 7H5.6" />
+  </svg>
 );
 
 export const SIDEBAR: readonly Row[] = [
@@ -62,10 +65,9 @@ export const SIDEBAR: readonly Row[] = [
     roles: ['coach', 'medical'],
     icon: icon(
       <>
-        <rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1" />
-        <rect x="9" y="1.5" width="5.5" height="5.5" rx="1" />
-        <rect x="1.5" y="9" width="5.5" height="5.5" rx="1" />
-        <rect x="9" y="9" width="5.5" height="5.5" rx="1" />
+        <rect x="0.8" y="0.8" width="5.2" height="12.4" rx="1.4" />
+        <rect x="7.4" y="0.8" width="5.8" height="5.6" rx="1.4" />
+        <rect x="7.4" y="7.6" width="5.8" height="5.6" rx="1.4" />
       </>,
     ),
   },
@@ -76,8 +78,10 @@ export const SIDEBAR: readonly Row[] = [
     roles: ['coach', 'medical'],
     icon: icon(
       <>
-        <circle cx="8" cy="5" r="2.6" />
-        <path d="M2.6 14c0-3 2.4-4.6 5.4-4.6S13.4 11 13.4 14" />
+        <circle cx="5.2" cy="4" r="2.9" />
+        <path d="M5.2 7.9c2.4 0 4.3 1.7 4.8 3.9 0.1 0.7-0.4 1.4-1.1 1.4H1.5c-0.7 0-1.2-0.7-1.1-1.4 0.5-2.2 2.4-3.9 4.8-3.9z" />
+        <path d="M10.5 2.2c1.2 0 2.2 1 2.2 2.2s-1 2.2-2.2 2.2c-0.3 0-0.6-0.1-0.9-0.2 0.4-0.6 0.7-1.3 0.7-2 0-0.8-0.3-1.5-0.7-2.1 0.3-0.1 0.6-0.1 0.9-0.1z" />
+        <path d="M11 7.7c1.4 0.2 2.5 1.2 2.9 2.6 0.2 0.7-0.4 1.3-1.1 1.3h-1.4c-0.1-1.5-0.7-2.9-1.7-3.9h1.3z" />
       </>,
     ),
   },
@@ -87,10 +91,11 @@ export const SIDEBAR: readonly Row[] = [
     route: '/schedule',
     roles: ['coach', 'medical'],
     icon: icon(
-      <>
-        <circle cx="8" cy="8" r="6.2" />
-        <path d="M8 4.4V8l2.4 1.6" />
-      </>,
+      <g fillRule="evenodd">
+        <path d="M7 0.7a6.3 6.3 0 1 0 0 12.6A6.3 6.3 0 0 0 7 0.7zm0 2a4.3 4.3 0 1 1 0 8.6 4.3 4.3 0 0 1 0-8.6z" />
+        <rect x="6.3" y="3.5" width="1.4" height="4" rx="0.7" />
+        <rect x="6.8" y="6.3" width="3.4" height="1.4" rx="0.7" />
+      </g>,
     ),
   },
   {
@@ -99,10 +104,11 @@ export const SIDEBAR: readonly Row[] = [
     route: '/reports',
     roles: ['coach', 'medical', 'admin'],
     icon: icon(
-      <>
-        <path d="M3.5 1.8h6l3 3v9.4h-9z" />
-        <path d="M6 8h4M6 10.6h4" />
-      </>,
+      <g fillRule="evenodd">
+        <path d="M5.1 0.6h3.8c0.9 0 1.6 0.7 1.6 1.6v0.9h-1.7V2.3H5.2v0.8H3.5V2.2c0-0.9 0.7-1.6 1.6-1.6z" />
+        <path d="M1.5 3.8h11c0.7 0 1.3 0.6 1.3 1.3v1.7H8.1v1.1H5.9V6.8H0.2V5.1c0-0.7 0.6-1.3 1.3-1.3z" />
+        <path d="M0.2 7.9h5.7v1.1h2.2V7.9h5.7v3.9c0 0.7-0.6 1.3-1.3 1.3h-11c-0.7 0-1.3-0.6-1.3-1.3z" />
+      </g>,
     ),
   },
   {
@@ -110,14 +116,27 @@ export const SIDEBAR: readonly Row[] = [
     label: 'Nutrition',
     route: '/nutrition',
     roles: ['coach', 'medical'],
-    icon: icon(<path d="M8 1.8 14.2 8 8 14.2 1.8 8z" />),
+    icon: icon(
+      <g fillRule="evenodd">
+        <path d="M1.1 0.6h1.5v3.6h0.8V0.6h1.5v3.6h0.8V0.6h1.5v4.3c0 1-0.6 1.8-1.5 2.1v6.4H2.6V7c-0.9-0.3-1.5-1.1-1.5-2.1z" />
+        <path d="M10.7 0.6c1.4 0 2.4 1.5 2.4 3.6 0 1.8-0.7 3.2-1.7 3.5v5.7H9.9V7.7C8.9 7.4 8.3 6 8.3 4.2c0-2.1 1-3.6 2.4-3.6z" />
+      </g>,
+    ),
   },
   {
     id: 'staff.programmes',
     label: 'Gym programme',
     route: '/programmes',
     roles: ['coach', 'medical'],
-    icon: icon(<path d="M9.2 1.8 3.4 9.2h3.6l-1 5 5.8-7.4H8.2z" />),
+    icon: icon(
+      <>
+        <rect x="0.4" y="4" width="2.2" height="6" rx="0.9" />
+        <rect x="3.2" y="2.6" width="2.2" height="8.8" rx="0.9" />
+        <rect x="8.6" y="2.6" width="2.2" height="8.8" rx="0.9" />
+        <rect x="11.4" y="4" width="2.2" height="6" rx="0.9" />
+        <rect x="5" y="6.1" width="4" height="1.8" />
+      </>,
+    ),
   },
   {
     // Admin stays in this row's roles deliberately — 20-route-map.md's own
@@ -138,8 +157,9 @@ export const SIDEBAR: readonly Row[] = [
     roles: ['coach', 'medical', 'admin'],
     icon: icon(
       <>
-        <path d="M2.4 13.6V8M6.8 13.6V4.4M11.2 13.6V6.6" />
-        <path d="M1.4 13.6h13.2" />
+        <rect x="0.6" y="7.8" width="3.8" height="5.6" rx="1.2" />
+        <rect x="5.1" y="2.6" width="3.8" height="10.8" rx="1.2" />
+        <rect x="9.6" y="5.6" width="3.8" height="7.8" rx="1.2" />
       </>,
     ),
   },
@@ -150,8 +170,8 @@ export const SIDEBAR: readonly Row[] = [
     roles: ['coach', 'medical'],
     icon: icon(
       <>
-        <rect x="1.6" y="2.4" width="12.8" height="11.2" rx="1.4" />
-        <path d="M1.6 6h12.8M6 6v7.6" />
+        <path d="M1.4 9.5 5.3 5.6l2.5 2.5 3.3-3.3 1.4 1.4-4.7 4.7-2.5-2.5-2.5 2.5z" />
+        <path d="M8.6 3.1h4.7v4.7l-1.7-1.7-1.3-1.3z" />
       </>,
     ),
   },
@@ -161,10 +181,10 @@ export const SIDEBAR: readonly Row[] = [
     route: '/settings',
     roles: ['coach', 'medical', 'admin'],
     icon: icon(
-      <>
-        <circle cx="8" cy="8" r="2.2" />
-        <path d="M8 1.6v1.8M8 12.6v1.8M14.4 8h-1.8M3.4 8H1.6M12.5 3.5l-1.3 1.3M4.8 11.2l-1.3 1.3M12.5 12.5l-1.3-1.3M4.8 4.8 3.5 3.5" />
-      </>,
+      <path
+        fillRule="evenodd"
+        d="M5.9 0.4h2.2l0.35 1.85 1.25 0.52 1.5-1.13 1.56 1.56-1.13 1.5 0.52 1.25 1.85 0.35v2.2l-1.85 0.35-0.52 1.25 1.13 1.5-1.56 1.56-1.5-1.13-1.25 0.52-0.35 1.85H5.9l-0.35-1.85-1.25-0.52-1.5 1.13-1.56-1.56 1.13-1.5-0.52-1.25L0 8.1V5.9l1.85-0.35 0.52-1.25-1.13-1.5 1.56-1.56 1.5 1.13 1.25-0.52z M7 4.55a2.45 2.45 0 1 0 0 4.9 2.45 2.45 0 0 0 0-4.9z"
+      />,
     ),
   },
 ];
@@ -201,7 +221,26 @@ export function Sidebar({ roles, fullName, orgName, previewingTier = false }: Pr
           <span className="wm-mono" aria-hidden="true">
             F
           </span>
-          <i>.</i>
+          {/* The mark itself: a GPS trace stepping under the wordmark and
+              ending in a ringed dot. Light draws trace and ring as accent
+              tints with a solid accent dot; dark is one flat colour, because
+              a tint of the accent on a dark panel reads as muddy rather than
+              quiet. Hidden on the 64px collapsed rail with the wordmark. */}
+          <svg
+            className="wm-trace"
+            viewBox="0 0 242 66"
+            aria-hidden="true"
+          >
+            <path
+              d="M3 36 L44 36 L56 54 L92 54 L104 36 L188 36 L206 27"
+              fill="none"
+              strokeWidth={5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <circle className="wm-ring" cx="220" cy="21" r="17" fill="none" strokeWidth={3} />
+            <circle className="wm-dot" cx="220" cy="21" r="7" />
+          </svg>
         </div>
       </div>
       <nav className="nav" aria-label="Main">
@@ -240,10 +279,12 @@ export function Sidebar({ roles, fullName, orgName, previewingTier = false }: Pr
         ) : null}
         <div className="nav-who">
           <b>{fullName}</b>
-          {orgName} · {roles.join(', ')}
+          <span>
+            {orgName} · {roles.join(', ')}
+          </span>
         </div>
         <form action="/auth/sign-out" method="post">
-          <button type="submit" className="nav-item" title="Log out">
+          <button type="submit" className="nav-signout" title="Log out">
             {SIGN_OUT_ICON}
             <span className="nav-label">Log out</span>
           </button>

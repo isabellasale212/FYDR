@@ -187,7 +187,7 @@ a {
 .sidebar {
   background: var(--surf);
   border-right: 1px solid var(--border);
-  padding: 20px 14px;
+  padding: 26px 0 20px;
   position: sticky;
   top: 0;
   height: 100vh;
@@ -197,7 +197,7 @@ a {
 }
 @media (min-width: 768px) and (max-width: 1023px) {
   .sidebar {
-    padding: 20px 8px;
+    padding: 20px 0;
   }
 }
 @media (max-width: 767px) {
@@ -213,16 +213,58 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 8px 20px;
+  padding: 0 24px 24px;
 }
 .brand .wm {
-  font-size: 21px;
+  position: relative;
+  width: 132px;
+  padding-bottom: 12px;
+  font-size: 50px;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.035em;
+  line-height: 1;
 }
-.brand .wm i {
-  color: var(--accent);
-  font-style: normal;
+/* The trace runs under the wordmark and off to its ringed dot, so it is
+   positioned against .wm rather than laid out in flow. */
+.wm-trace {
+  position: absolute;
+  left: -2%;
+  bottom: -5.7%;
+  display: block;
+  width: 132px;
+  height: 36px;
+  stroke: rgb(var(--accent-rgb) / 0.45);
+}
+.wm-ring {
+  stroke: rgb(var(--accent-rgb) / 0.34);
+}
+.wm-dot {
+  fill: var(--accent);
+}
+/* Dark draws the mark in one flat ink instead: an accent tint on a dark
+   panel goes muddy rather than quiet. */
+:root[data-theme='dark'] .wm-trace,
+:root[data-theme='dark'] .wm-ring {
+  stroke: var(--text);
+}
+:root[data-theme='dark'] .wm-dot {
+  fill: var(--text);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .wm-trace,
+  :root:not([data-theme='light']) .wm-ring {
+    stroke: var(--text);
+  }
+  :root:not([data-theme='light']) .wm-dot {
+    fill: var(--text);
+  }
+}
+.dark-tokens .wm-trace,
+.dark-tokens .wm-ring {
+  stroke: var(--text);
+}
+.dark-tokens .wm-dot {
+  fill: var(--text);
 }
 /* .wm-mono (a bare "F") is the icon-tier fallback for the full wordmark —
  * hidden everywhere except the 64px collapsed rail, where .wm-full is
@@ -268,16 +310,15 @@ a {
 .nav {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 4px;
 }
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 11px;
-  min-height: 44px;
-  border-radius: var(--r-field);
-  font-size: 13.5px;
+  gap: 11px;
+  padding: 9px 24px 9px 21px;
+  border-left: 3px solid transparent;
+  font-size: 14px;
   font-weight: 600;
   color: var(--muted);
   cursor: pointer;
@@ -293,17 +334,17 @@ a {
   color: var(--text);
 }
 .nav-item .ic {
-  width: 16px;
-  height: 16px;
+  width: 17px;
+  height: 17px;
   flex: none;
-  opacity: 0.85;
 }
 /* Handoff §4 names --wash-accent-strong "selected nav item" outright, so this
  * is the token's own case. 0.10 -> 0.16 in light, and in dark it picks up the
  * stronger alpha the derived dark set carries instead of staying at a light
  * number on a dark ground. */
 .nav-item[aria-current='page'] {
-  background: var(--wash-accent-strong);
+  border-left-color: var(--accent);
+  font-weight: 700;
   /* --accent-pill-text, not --accent-text. The row is no longer a plain
      surface once it has a wash on it, and this file's §3.7 split is exactly
      that distinction: --accent-text is derived for a plain surface,
@@ -313,13 +354,11 @@ a {
      4.35:1 before this change and would have fallen to 3.77:1 after it. */
   color: var(--accent-pill-text);
 }
-.nav-item[aria-current='page'] .ic {
-  opacity: 1;
-}
+
 @media (min-width: 768px) and (max-width: 1023px) {
   .nav-item {
     justify-content: center;
-    padding: 10px;
+    padding: 10px 6px;
     gap: 0;
   }
   /* Same clip-based visually-hidden technique as .visually-hidden
@@ -342,18 +381,44 @@ a {
 }
 .nav-foot {
   margin-top: auto;
-  padding-top: 14px;
+  padding: 16px 24px 0;
+  border-top: 1px solid var(--border);
 }
 .nav-who {
-  font-size: 11.5px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+  line-height: 1.45;
   color: var(--faint);
-  padding: 0 11px 8px;
-  line-height: 1.5;
 }
 .nav-who b {
-  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.nav-signout {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 14px;
+  padding: 0;
+  font-family: inherit;
+  font-size: 13px;
   font-weight: 600;
-  display: block;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+.nav-signout:hover {
+  color: var(--text);
+}
+.nav-signout .ic {
+  width: 17px;
+  height: 17px;
+  flex: none;
 }
 @media (min-width: 768px) and (max-width: 1023px) {
   .nav-who {

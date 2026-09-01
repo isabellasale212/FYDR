@@ -10,6 +10,7 @@ import {
   type CurrentAvailability,
 } from './availability';
 import { fetchGroupAthleteIds, fetchMembershipsByAthlete, type Db } from './groups';
+import { fetchAllPaged } from './paged';
 
 export type SquadRow = {
   id: string;
@@ -22,6 +23,53 @@ export type SquadRow = {
   restrictions: string[];
   group_ids: string[];
 };
+
+/** Morning wellness submissions per athlete over a trailing window, plus the
+ *  most recent one on record.
+ *
+ *  COUNTS ENTRIES, NOT SCORES. "5 of 7" is how many mornings they filled the
+ *  form in, which is a different question from how they felt — the picker's own
+ *  footer says so, because a bar that could be read as a readiness score would
+ *  be actively misleading next to an availability pill.
+ *
+ *  Reads wellness_entries_current, never the base table: a corrected entry
+ *  writes a new revision and supersedes the old one (CLAUDE.md rule 6), so the
+ *  base table would count one morning twice. Paged for the same reason every
+ *  other submission read here is — one row per athlete per day, which a squad
+ *  over a season pushes past PostgREST's ceiling, and a short page would
+ *  silently understate submissions rather than error.
+ *
+ *  `lastEntry` is deliberately all-time, not bounded by the window: an athlete
+ *  who last submitted three weeks ago should show that date rather than a dash
+ *  that reads the same as "never". */
+export async function fetchWellnessRecency(
+  db: Db,
+  athleteIds: readonly string[],
+  fromDate: string,
+): Promise<Map<string, { last7: number; lastEntry: string | null }>> {
+  const out = new Map<string, { last7: number; lastEntry: string | null }>();
+  if (athleteIds.length === 0) return out;
+
+  const rows = await fetchAllPaged<{ athlete_id: string | null; entry_date: string | null }>(
+    (pageFrom, pageTo) =>
+      db
+        .from('wellness_entries_current')
+        .select('athlete_id, entry_date')
+        .in('athlete_id', [...athleteIds])
+        .order('entry_date')
+        .order('id')
+        .range(pageFrom, pageTo),
+  );
+
+  for (const r of rows) {
+    if (!r.athlete_id || !r.entry_date) continue;
+    const cur = out.get(r.athlete_id) ?? { last7: 0, lastEntry: null };
+    if (r.entry_date >= fromDate) cur.last7 += 1;
+    if (cur.lastEntry === null || r.entry_date > cur.lastEntry) cur.lastEntry = r.entry_date;
+    out.set(r.athlete_id, cur);
+  }
+  return out;
+}
 
 export async function fetchSquadList(
   db: Db,

@@ -12,6 +12,8 @@ import {
   fetchSquadState,
   fetchTimeline,
   fetchUntiedFlags,
+  fetchWeekStrip,
+    type SessionPip,
     type SquadStateEntry,
 } from '@/lib/queries/dashboard';
 import { fetchGroups } from '@/lib/queries/groups';
@@ -48,6 +50,26 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
  *    it at #4fd6ff, which is --good now, so --domain-testing points at both.
  * 3. Nothing else moved: training, gym, rehab and match were already the
  *    handoff's values under the names this codebase gives them. */
+const PIP_COLOR: Record<SessionPip, string> = {
+  training: 'var(--accent)',
+  gym: 'var(--domain-gym)',
+  rehab: 'var(--warn)',
+  testing: 'var(--domain-testing)',
+  match: 'var(--bad)',
+  recovery: 'var(--domain-recovery)',
+  meeting: 'rgb(var(--ink-rgb) / 0.3)',
+};
+
+/* The four domains the week strip's legend names, in the Visual Lift's own
+ * order. Training and match are deliberately absent: the legend explains the
+ * dots a coach might not recognise, and those two are self-evident from the
+ * activity titles beside them. */
+const WEEK_LEGEND: { type: SessionPip; label: string }[] = [
+  { type: 'gym', label: 'Gym' },
+  { type: 'training', label: 'Pitch' },
+  { type: 'testing', label: 'Testing' },
+  { type: 'recovery', label: 'Recovery' },
+];
 
 const TONE_VAR: Record<string, string> = { good: 'var(--accent2)', accent: 'var(--accent)', accent2: 'var(--accent2)', warn: 'var(--warn)', bad: 'var(--bad)' };
 
@@ -144,9 +166,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
    * it seeded the whole account with a key no report accepts. Longer windows
    * live on Analytics, which has its own per-board controls. */
 
-  const [groups, stats, timeline, readiness, squad, untied, outstanding] = await Promise.all([
+  const [groups, stats, week, timeline, readiness, squad, untied, outstanding] = await Promise.all([
     fetchGroups(db, orgId),
     fetchHeadlineStats(db, orgId, groupIds, effectiveToday, wallClockToday, timezone),
+    fetchWeekStrip(db, orgId, groupIds, weekStart, effectiveToday, timezone),
     // "now" is the real instant — a session is "passed" against the real
     // clock, never against an end-of-day stand-in (audit S2).
     fetchTimeline(db, orgId, groupIds, selectedDay, new Date().toISOString(), timezone),
@@ -156,10 +179,38 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
     fetchOutstandingTracks(db, orgId, groupIds, effectiveToday),
   ]);
 
+
+  /* The week strip's header line, derived from the strip's own days rather
+   * than re-queried: the count is literally the number of activities rendered
+   * in the columns below, so the two can never disagree. dayLabel is already
+   * "Mon 10" / "Sat 15", which is the form the header wants.
+   *
+   * This replaced a second count taken off weekTimeline, which was fed by a
+   * fetch that only runs in week mode — so it read 0 in day mode while the
+   * strip beside it listed real sessions. Both counted the same rows from the
+   * same query (fetchWeekStrip calls fetchWeekSessions itself), so collapsing
+   * them to the always-present one loses nothing and removes the disagreement. */
+  const weekSessionCount = week.reduce((n, d) => n + d.activities.length, 0);
+  /* dayLabel is "Mon 31" — weekday and day, no month — so a bare "Mon 31 to
+   * Sat 5" is ambiguous, and actively wrong-looking in a week that crosses a
+   * month boundary, which is exactly the week this was first seen on
+   * (31 Aug - 5 Sep). The month is appended once when the week sits inside one
+   * month and on both ends when it does not. UTC noon to match dayLabelFor,
+   * which builds the day numbers the same way. */
+  const monthOf = (iso: string) =>
+    new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-GB', { month: 'short', timeZone: 'UTC' });
+  const weekFirst = week[0]?.dayLabel ?? '';
+  const weekLast = week[week.length - 1]?.dayLabel ?? '';
+  const weekRangeLabel =
+    monthOf(weekStart) === monthOf(weekEnd)
+      ? `${weekFirst} to ${weekLast} ${monthOf(weekEnd)}`
+      : `${weekFirst} ${monthOf(weekStart)} to ${weekLast} ${monthOf(weekEnd)}`;
+
   const isAnchoredToPast = effectiveToday !== wallClockToday;
 
   const groupsQs = groupIds.length > 0 ? groupIds.join(',') : undefined;
   const isSelectedToday = selectedDay === effectiveToday;
+  const selectedDayMd = week.find((d) => d.date === selectedDay)?.md ?? null;
 
   const dayCaption = isSelectedToday
     ? `${formatDate(effectiveToday, timezone)} · ${timeline.length} session${timeline.length === 1 ? '' : 's'}${timeline.length > 0 ? ` · first at ${timeline[0]!.time}` : ''}`
@@ -240,6 +291,76 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         squadUnavailable={squad.unavailableNames}
       />
 
+      {/* The week strip, per the Visual Lift screenshots: one card, a header
+       * with the session count and a domain legend, then a column per day.
+       * Each day lists its own activities with a domain dot each, rather than
+       * one joined summary line, so a coach reads the week as a shape.
+       * Still six real links that set ?day= on this same page — only the
+       * arrangement changed. */}
+      <div className="dash-week">
+        <div className="dash-week-head">
+          <span className="dash-week-head-title">This week</span>
+          <span className="dash-week-head-meta">
+            {weekSessionCount} session{weekSessionCount === 1 ? '' : 's'} · {weekRangeLabel}
+          </span>
+          <span className="dash-week-legend">
+            {WEEK_LEGEND.map((l) => (
+              <span key={l.label} className="dash-week-legend-item">
+                <span className="dash-stat-dot" style={{ background: PIP_COLOR[l.type] }} aria-hidden="true" />
+                {l.label}
+              </span>
+            ))}
+          </span>
+        </div>
+        <div className="dash-week-grid">
+          {week.map((d) => (
+            <Link
+              key={d.date}
+              href={`/dashboard${qs({ groups: groupsQs, day: d.date, period: 'day' })}`}
+              className="dash-week-col"
+              data-past={d.isPast}
+              data-selected={d.date === selectedDay}
+              data-alert={d.alert?.sev ?? undefined}
+            >
+              <div className="dash-week-col-head">
+                <span className="dash-week-col-day" style={{ color: d.isToday ? 'var(--accent)' : undefined }}>
+                  {d.dayLabel}
+                </span>
+                {d.md ? (
+                  <span
+                    className="mono dash-week-col-md"
+                    style={{ color: d.md === 'MD' ? 'var(--bad-text)' : undefined }}
+                  >
+                    {d.md}
+                  </span>
+                ) : null}
+                {d.durationMin !== null ? <span className="mono dash-week-col-dur">{d.durationMin} min</span> : null}
+              </div>
+              {d.activities.length > 0 ? (
+                <div className="dash-week-col-acts">
+                  {d.activities.map((a, i) => (
+                    <span key={`${a.title}-${i}`} className="dash-week-act">
+                      <span className="dash-week-act-dot" style={{ background: PIP_COLOR[a.type] }} aria-hidden="true" />
+                      <span>{a.title}</span>
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <div className="dash-week-col-empty">Nothing scheduled</div>
+              )}
+              {d.alert ? (
+                <div
+                  className="dash-week-col-flag"
+                  style={d.alert.sev === 'accent' ? { color: 'var(--accent-text)' } : undefined}
+                >
+                  {d.alert.text}
+                </div>
+              ) : null}
+            </Link>
+          ))}
+        </div>
+      </div>
+
       <div className="dash-body" style={{ marginTop: 14 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 12 }}>
@@ -247,6 +368,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
               {dayTitle(selectedDay, wallClockToday)}
             </h2>
             <span className="tiny mono" style={{ color: 'var(--muted)', marginLeft: 'auto' }}>
+              {selectedDayMd && selectedDayMd !== 'MD' ? `${selectedDayMd} · ` : ''}
               {dayCaption}
             </span>
           </div>

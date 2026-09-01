@@ -679,11 +679,32 @@ client check must be a mirror of it rather than the thing itself. This is the sa
 > gate.** If a screen refuses, every route that screen would have called must refuse too, on
 > its own, without reference to whether any UI points at it.
 >
-> Still open: the Apple Health consent write (`HealthkitConsentToggle`) goes to PostgREST
-> from the browser, so it is reachable regardless of what the app renders. Closing that one
-> properly means either moving the write behind a server action or putting tier into the
-> RLS policy on `athlete_consents` — the second is what this section actually asks for, and
-> it needs a migration.
+> **Partly closed, same date, by migration `0061_tier_in_rls.sql`.** The Apple Health
+> consent write — `HealthkitConsentToggle` goes to PostgREST from the browser, so it was
+> reachable regardless of what the app rendered — is now gated in RLS itself, via
+> `auth_org_is_premium()`. That helper reads `organisations.tier` rather than the JWT, so
+> an upgrade applies immediately instead of at the next token refresh, and it fails closed:
+> an absent org, an absent claim or an anon caller is Basic.
+>
+> **Withdrawal is permitted on every tier, deliberately.** Consent that cannot be withdrawn
+> is not consent, and `queries/healthkit.ts` withdraws by setting `withdrawn_at` while
+> leaving `granted_at` in place — so the predicate passes any row that is not an *active*
+> grant. `supabase/tests/330_tier_rls_test.sql` asserts this explicitly, so that a later
+> simplification against `granted_at` alone fails loudly rather than trapping a Basic
+> club's athletes in a consent they wanted to revoke. Existing rows are untouched: a club
+> that downgrades keeps its record of what was granted and when.
+>
+> **Still application-layer, on purpose:**
+> - **`gps_records`** — a downgraded club must still answer a subject access request, and
+>   `queries/sarPackAssembly.ts` reads that table to build one. GDPR Article 15 is not a
+>   plan feature, and a tier predicate there would turn a billing state into a refusal to
+>   disclose someone's own data.
+> - **Leaderboards** — the honest fix for `gps.*` boards is tier inside
+>   `compute_leaderboard`, not a policy that would also hide a board's history from the
+>   club that created it. `leaderboards/new/page.tsx` names this gap in its own header.
+> - **The staff export routes** — all now refuse at the route (`premiumOnlyResponse()`),
+>   guarded against regression by `npm run test:premium-routes`. They read tables that
+>   Basic clubs are entitled to read; what is Premium is the report, not the row.
 
 ### 8.1 Schema additions
 

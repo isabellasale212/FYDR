@@ -70,7 +70,7 @@ export function SelectedAthleteCard({
 }: Props) {
   if (!athlete) {
     return (
-      <div className="card" style={{ padding: '18px 20px' }}>
+      <div className="card">
         <p className="tiny">Select an athlete from the table or the chase list.</p>
       </div>
     );
@@ -114,7 +114,7 @@ export function SelectedAthleteCard({
   const overrideNote = describeOverride(overrideReason, overrideRule);
 
   return (
-    <div className="card" style={{ padding: '18px 20px' }}>
+    <div className="card">
       <div className="nutr-selected-head">
         <div className="nutr-selected-avatar">{initials({ first_name: athlete.firstName, last_name: athlete.lastName })}</div>
         <div style={{ minWidth: 0 }}>

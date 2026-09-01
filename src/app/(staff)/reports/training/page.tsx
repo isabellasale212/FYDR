@@ -449,7 +449,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
               </p>
             </div>
 
-            <div className="card" style={{ marginTop: 14, padding: '18px 20px' }}>
+            <div className="card" style={{ marginTop: 14 }}>
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
                 <div>
                   <h2 className="card-title" style={{ margin: 0 }}>
@@ -578,7 +578,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
         {header}
         {trainingToolbar('week')}
 
-        <div className="card" style={{ padding: '18px 20px' }}>
+        <div className="card">
           <h2 className="card-title" style={{ margin: 0 }}>
             Week of {formatDate(weekStart, timezone)} to {formatDate(weekEnd, timezone)}
           </h2>
@@ -1017,7 +1017,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
             </div>
           </div>
 
-<div className="card" style={{ marginTop: 14, padding: '18px 20px' }}>
+<div className="card" style={{ marginTop: 14 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
               <div>
                 <h2 className="card-title" style={{ margin: 0 }}>

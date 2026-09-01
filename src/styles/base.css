@@ -3401,7 +3401,7 @@ img.av {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 28px;
   align-items: center;
-  padding: 20px 22px;
+  padding: var(--pad-card);
 }
 .tr-facts {
   display: flex;

@@ -124,27 +124,22 @@ a {
  *   <768px (sm and below, doc's own "not a supported dashboard size,
  *     renders the mobile layout") the sidebar stacks full-width above the
  *     page content, as before */
-/* The page wash, light-theme handoff §1: two very soft radial washes on the
- * app background and nothing else — cyan top-right, blue bottom-left. They sit
- * BEHIND cards, never on them, and receive no pointer events (they are a
- * background, so there is nothing to receive).
+/* THE PAGE GROUND IS FLAT. The light-theme handoff §1 specified two soft
+ * radial washes on the app background — cyan top-right, blue bottom-left, at
+ * its own deliberately-lifted 0.30/0.20 alphas. Those are removed at the
+ * club's request: they made the ground a slightly different colour depending
+ * on where a page's content sat relative to the wash centres, so two screens
+ * side by side did not read as the same surface. Every screen is --bg now.
  *
- * Three background layers rather than the handoff's two, because this shell
- * has a sidebar the handoff's full-bleed reference did not. Layer order is
- * topmost-first:
- *   1. an opaque --surf strip the width of the rail. This replaces the
- *      `linear-gradient(to right, --surf 0, --surf 236px, --bg 236px)` that
- *      used to be the whole background and did the same job — it keeps the
- *      rail column white below a sticky sidebar that has scrolled — but as a
- *      sized layer it can sit ON TOP of the washes instead of hiding them,
- *      which the full-width opaque gradient could not.
- *   2, 3. the two washes, at the handoff's own sizes, positions and alphas.
- * --bg is the background-colour underneath all three.
+ * A deliberate departure from the handoff, which lists high fidelity and
+ * prohibits "any colour not listed in this file" — recorded here rather than
+ * done quietly, per CLAUDE.md §5, because the handoff is otherwise followed
+ * closely and the next person to compare the two will notice.
  *
- * The alphas (cyan 0.30, blue 0.20) are the handoff's deliberate deviation
- * from the design system's own 0.10/0.06 — flagged in its Deviations list, not
- * an error. The composed alphas ride on --accent2-rgb/--accent-rgb rather than
- * restating #33b6ff/#1f6fea, so the wash follows the brand colours. */
+ * One background layer survives and it is NOT a wash: a solid --surf block
+ * sized to the rail, which keeps that column filled if a sticky sidebar ever
+ * ends short of the page. It is written as a linear-gradient only because
+ * that is how CSS expresses a sized solid fill. */
 .app {
   display: grid;
   grid-template-columns: 236px minmax(0, 1fr);
@@ -158,29 +153,29 @@ a {
      restrained one. Raised past them once and reverted: the handoff states
      high fidelity and lists "any colour not listed in this file" as
      prohibited. */
-  background-image:
-    linear-gradient(var(--surf), var(--surf)),
-    radial-gradient(900px 480px at 88% -12%, rgb(var(--accent2-rgb) / 0.3), transparent 64%),
-    radial-gradient(700px 400px at -6% 108%, rgb(var(--accent-rgb) / 0.2), transparent 58%);
-  background-size: 236px 100%, auto, auto;
-  background-position: left top, center, center;
+  /* One flat ground. The two ambient radial washes are gone at the club's
+     request — every screen now sits on --bg and nothing else, so no page can
+     look like a different shade of the app depending on where its content
+     happens to fall. The one remaining layer is NOT a gradient: it is a solid
+     --surf block sized to the rail, which keeps that column filled if a
+     sticky sidebar ever ends short of the page. */
+  background-image: linear-gradient(var(--surf), var(--surf));
+  background-size: 236px 100%;
+  background-position: left top;
   background-repeat: no-repeat;
 }
 @media (min-width: 768px) and (max-width: 1023px) {
   .app {
     grid-template-columns: 64px minmax(0, 1fr);
-    background-size: 64px 100%, auto, auto;
+    background-size: 64px 100%;
   }
 }
 @media (max-width: 767px) {
   .app {
     grid-template-columns: minmax(0, 1fr);
     /* No rail below 768px — the sidebar stacks full-width above the content —
-     * so the strip layer is dropped and only the two washes remain. */
-    background-image:
-      radial-gradient(900px 480px at 88% -12%, rgb(var(--accent2-rgb) / 0.3), transparent 64%),
-      radial-gradient(700px 400px at -6% 108%, rgb(var(--accent-rgb) / 0.2), transparent 58%);
-    background-size: auto;
+     * so there is no strip to draw and the ground is simply --bg. */
+    background-image: none;
   }
 }
 
@@ -1152,11 +1147,9 @@ body:has(.phone) {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  /* Same flat ground as the staff shell — the athlete app is the same product
+     and should not be the one screen with a wash on it. */
   background-color: var(--bg);
-  background-image:
-    radial-gradient(420px 300px at 92% -6%, rgb(var(--accent2-rgb) / 0.3), transparent 64%),
-    radial-gradient(340px 260px at -10% 104%, rgb(var(--accent-rgb) / 0.2), transparent 58%);
-  background-repeat: no-repeat;
 }
 .phone-body {
   flex: 1;
@@ -2015,7 +2008,7 @@ body:has(.phone) {
   width: 26px;
   height: 26px;
   border-radius: 8px;
-  background: linear-gradient(150deg, var(--accent), var(--accent2));
+  background: var(--accent);
   box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / 0.14);
   flex: none;
 }

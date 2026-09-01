@@ -393,10 +393,24 @@ a {
   align-items: flex-start;
   gap: 16px;
   margin-bottom: 18px;
+  /* WRAPS, because it did not and the heading paid for it. .page-head is
+     flex:1 with min-width:0, while the controls block beside it keeps
+     min-width:auto and so refuses to shrink below its content. On a page with
+     heavy controls that is not a shared squeeze — the controls take what they
+     need and the heading absorbs every pixel of the shortfall. Measured on
+     /nutrition at a 1024 viewport: controls 635px, page-head 81px, with the
+     eyebrow and the intro paragraph rendering one word per line.
+     Wrapping drops the controls to their own row instead, which is the
+     behaviour the layout always implied. */
+  flex-wrap: wrap;
 }
 .page-head {
   flex: 1;
-  min-width: 0;
+  /* A floor, not zero. min-width:0 is what let it collapse to the width of its
+     longest unbreakable word; 260px is narrow enough to sit beside controls on
+     any real desktop and wide enough that a title is still a title. Below that
+     the topbar wraps, so this never forces a horizontal scrollbar. */
+  min-width: 260px;
 }
 .eyebrow {
   font-size: 11px;

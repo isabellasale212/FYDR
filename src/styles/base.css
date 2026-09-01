@@ -7296,7 +7296,10 @@ button.dash-stat {
 .tr-heat[data-ramp='pct'][data-band='1'] { background: rgb(140 234 173 / 0.18); }
 .tr-heat[data-ramp='pct'][data-band='2'] { background: rgb(140 234 173 / 0.28); }
 .tr-heat[data-ramp='pct'][data-band='3'] { background: rgb(140 234 173 / 0.38); }
-.tr-heat[data-ramp='pct'][data-band='4'] { background: rgb(140 234 173 / 0.5);  color: var(--on-bright-tint); }
+/* 0.6, not 0.5: this is the ramp's top band, and ink on it only clears 4.5:1
+   once the fill is bright enough to carry it — at 0.5 it measured 4.36 in
+   dark. A stronger top also reads as the top, which is the ramp's job. */
+.tr-heat[data-ramp='pct'][data-band='4'] { background: rgb(140 234 173 / 0.6); color: var(--on-bright-tint); }
 /* No band means no data to rank, so no shading — never a band-0 fill, which
    would read as "lowest" rather than "absent". */
 .tr-heat:not([data-band]) {

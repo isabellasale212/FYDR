@@ -1,3 +1,4 @@
+import { BackButton } from '@/components/BackButton/BackButton';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
 import { requireStaff } from '@/lib/session';
 
@@ -14,6 +15,7 @@ export default async function StaffLayout({
     <div className="app">
       <Sidebar roles={claims.roles} fullName={fullName} orgName={orgName} previewingTier={previewingTier} />
       <main className="main" id="main">
+        <BackButton />
         {children}
       </main>
     </div>

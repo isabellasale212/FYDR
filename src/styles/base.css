@@ -7439,3 +7439,40 @@ button.dash-stat {
   outline-offset: 3px;
   border-radius: 6px;
 }
+
+/* Back, top-left of the content area on every screen that is a step inside a
+   journey. Sits above the page's own header rather than inside it, so no page
+   has to make room for it and every one places it identically. */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding: 6px 12px 6px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surf);
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--t-state), border-color var(--t-state);
+}
+.back-btn:hover {
+  color: var(--text);
+  border-color: var(--border-accent);
+}
+.back-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.back-btn svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+/* The athlete shell is a phone column with its own inset. */
+.phone-body .back-btn {
+  margin-bottom: 10px;
+}

@@ -1,3 +1,4 @@
+import { BackButton } from '@/components/BackButton/BackButton';
 import { AthleteTabBar } from '@/components/AthleteTabBar/AthleteTabBar';
 import { requireAthlete } from '@/lib/session';
 
@@ -22,6 +23,7 @@ export default async function AthleteLayout({
   return (
     <div className="phone">
       <main className="phone-body" id="main">
+        <BackButton />
         {children}
       </main>
       <AthleteTabBar />

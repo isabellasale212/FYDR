@@ -4,7 +4,14 @@
  * stepper with the value centred in mono 20px/500 over a unit line, and a mono
  * 10.5px footnote. */
 
+/** Which macro this tile is, so it can carry that macro's colour. The design's
+ *  own caption for this screen is "each macro owns a colour": four identical
+ *  grey tiles make a coach read the label every time, where a colour makes the
+ *  protein tile findable at a glance. */
+export type MacroKind = 'protein' | 'carb' | 'fat' | 'fluid';
+
 type Props = {
+  macro: MacroKind;
   label: string;
   value: number;
   displayValue?: string;
@@ -17,12 +24,12 @@ type Props = {
   disabled?: boolean;
 };
 
-export function RuleStepper({ label, value, displayValue, unit, footnote, min, max, step, onChange, disabled }: Props) {
+export function RuleStepper({ macro, label, value, displayValue, unit, footnote, min, max, step, onChange, disabled }: Props) {
   const dec = (v: number) => Math.round((v - step) * 100) / 100;
   const inc = (v: number) => Math.round((v + step) * 100) / 100;
 
   return (
-    <div className="nutr-rule-tile">
+    <div className="nutr-rule-tile" data-macro={macro}>
       <div className="nutr-rule-label">{label}</div>
       <div className="nutr-rule-stepper">
         <button

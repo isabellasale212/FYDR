@@ -403,6 +403,7 @@ export function NutritionWorkspace({
 
           <div className="nutr-rule-tiles">
             <RuleStepper
+              macro="protein"
               label="Protein"
               value={protein}
               unit={RULE_BOUNDS.protein.unit}
@@ -414,6 +415,7 @@ export function NutritionWorkspace({
               disabled={!canEdit}
             />
             <RuleStepper
+              macro="carb"
               label="Carbohydrate"
               value={carb * dayTypeInfo.multiplier}
               displayValue={(carb * dayTypeInfo.multiplier).toFixed(1)}
@@ -426,6 +428,7 @@ export function NutritionWorkspace({
               disabled={!canEdit}
             />
             <RuleStepper
+              macro="fat"
               label="Fat"
               value={fat}
               unit={RULE_BOUNDS.fat.unit}
@@ -437,6 +440,7 @@ export function NutritionWorkspace({
               disabled={!canEdit}
             />
             <RuleStepper
+              macro="fluid"
               label="Fluid"
               value={fluid}
               unit={RULE_BOUNDS.fluid.unit}

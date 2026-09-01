@@ -6981,3 +6981,51 @@ button.dash-stat {
 .prog-day-head svg {
   flex: none;
 }
+
+/* EACH MACRO OWNS A COLOUR — the Nutrition design's own caption for this
+   screen. Four identical grey tiles make a coach read the label every time; a
+   colour makes the protein tile findable at a glance, and the same four hues
+   then carry through to the athlete's own targets.
+
+   The hues are the ones already in the palette, not new ones: accent for
+   protein, accent2 for carbohydrate, gym gold for fat, good for fluid.
+   Alphas are the design's own figures.
+
+   Labels take the PILL text tokens rather than the plain-surface ones, because
+   that is exactly what they are — text on that colour's own tint. Measured on
+   each tile over --surf: 6.40, 5.85, 7.81 and 6.72:1. The design's own protein
+   label is the raw #1f6fea accent, which measures 4.36:1 there and is the one
+   value not copied. */
+.nutr-rule-tile[data-macro='protein'] {
+  border-color: rgb(var(--accent-rgb) / 0.42);
+  background: rgb(var(--accent-rgb) / 0.08);
+}
+.nutr-rule-tile[data-macro='protein'] .nutr-rule-label {
+  color: var(--accent-pill-text);
+}
+.nutr-rule-tile[data-macro='carb'] {
+  border-color: rgb(var(--accent2-rgb) / 0.5);
+  background: rgb(var(--accent2-rgb) / 0.09);
+}
+.nutr-rule-tile[data-macro='carb'] .nutr-rule-label {
+  color: var(--accent2-pill-text);
+}
+.nutr-rule-tile[data-macro='fat'] {
+  border-color: rgb(var(--gym-rgb) / 0.55);
+  background: rgb(var(--gym-rgb) / 0.12);
+}
+.nutr-rule-tile[data-macro='fat'] .nutr-rule-label {
+  color: var(--warn-pill-text);
+}
+.nutr-rule-tile[data-macro='fluid'] {
+  border-color: rgb(var(--good-rgb) / 0.5);
+  background: rgb(var(--good-rgb) / 0.13);
+}
+.nutr-rule-tile[data-macro='fluid'] .nutr-rule-label {
+  color: var(--good-pill-text);
+}
+/* The stepper buttons sit ON the tint now, so they need their own ground to
+   stay legible as controls rather than dissolving into the tile. */
+.nutr-rule-tile[data-macro] .nutr-stepper-btn {
+  background: var(--surf);
+}

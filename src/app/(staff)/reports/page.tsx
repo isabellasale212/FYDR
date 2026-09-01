@@ -12,9 +12,21 @@ export const metadata = { title: 'Reports · Fydr' };
 // the honest real equivalent. Still a real link either way: a Basic club
 // sees this card and can click through to the real gate at
 // /reports/training, never a dead end.
+/* Each report is tinted to the DOMAIN IT READS FROM — the design's own caption
+ * for this screen. It is not decoration: these six cards otherwise differ only
+ * by a title, and a coach looking for "the medical one" reads six titles every
+ * time. Colour makes the set scannable, and the same domain colours are
+ * already doing this job on the dashboard's KPI strip and the week strip.
+ *
+ * `neutral` is a real tone, not a missing one: the Athlete report and Squad
+ * weekly read EVERY domain, so tinting them to one would be a lie about where
+ * their numbers come from. They stay on plain --surf and say "all domains". */
 const REPORTS = [
   {
     key: 'compliance',
+    tone: 'wellness',
+    source: 'wellness',
+    exports: 'CSV · PDF',
     title: 'Compliance',
     body: 'Who is submitting, and who is not.',
     href: '/reports/compliance',
@@ -23,6 +35,9 @@ const REPORTS = [
   },
   {
     key: 'injuries',
+    tone: 'medical',
+    source: 'medical',
+    exports: 'CSV · PDF',
     title: 'Injury & availability',
     body: 'Who is out, for how long, and what it is costing.',
     href: '/reports/injuries',
@@ -31,6 +46,9 @@ const REPORTS = [
   },
   {
     key: 'training',
+    tone: 'gps',
+    source: 'GPS · premium',
+    exports: 'CSV',
     title: 'Training report',
     body: 'One session, every athlete, every GPS metric, on one board.',
     href: '/reports/training',
@@ -39,6 +57,9 @@ const REPORTS = [
   },
   {
     key: 'athlete',
+    tone: 'neutral',
+    source: 'all domains',
+    exports: 'CSV · PDF',
     title: 'Athlete report',
     body: 'One athlete, every domain, one period.',
     href: '/reports/athlete',
@@ -47,6 +68,9 @@ const REPORTS = [
   },
   {
     key: 'squad',
+    tone: 'neutral',
+    source: 'all domains',
+    exports: 'CSV · PDF',
     title: 'Squad weekly',
     body: 'The week in one document.',
     href: '/reports/squad',
@@ -55,6 +79,9 @@ const REPORTS = [
   },
   {
     key: 'testing',
+    tone: 'gym',
+    source: 'testing',
+    exports: 'CSV · PDF',
     title: 'Testing',
     body: 'A testing session, or a test over time.',
     href: '/reports/testing',
@@ -124,10 +151,12 @@ export default async function ReportsPage() {
             <Link
               key={r.key}
               href={r.href}
-              className="card"
+              className="card rep-card"
+              data-tone={r.tone}
               style={{ textDecoration: 'none', color: 'inherit', opacity: gatedOpacity }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span className="rep-dot" aria-hidden="true" />
                 <p className="card-title" style={{ margin: 0 }}>
                   {r.title}
                 </p>
@@ -150,6 +179,15 @@ export default async function ReportsPage() {
               <p className="tiny" style={{ marginTop: 6 }}>
                 {r.body}
               </p>
+              {/* Pushed to the bottom so the six cards' footers line up even
+                  when a blurb wraps to two lines and its neighbour does not. */}
+              <div className="rep-foot">
+                <span className="rep-source">{r.source}</span>
+                <span className="rep-exports">{r.exports}</span>
+                <span className="chev" aria-hidden="true">
+                  ›
+                </span>
+              </div>
             </Link>
           ) : (
             /* Genuinely unavailable rather than gated, so this is the handoff

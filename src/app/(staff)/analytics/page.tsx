@@ -11,6 +11,7 @@ import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import { PlanGateCard } from '@/components/PlanGate/PlanGate';
+import { ReportSelectNav } from '@/components/ReportSelectNav/ReportSelectNav';
 import type { Band } from '@/lib/stats';
 
 export const metadata = { title: 'Analytics · Fydr' };
@@ -54,7 +55,6 @@ type Board = {
   title: string;
   sub: string;
   days: number;
-  windowLabel: string;
   colour: string;
   /** Weekly bars for athlete A behind the lines. The two rate/ratio boards do
    *  not get them — a bar chart of a ratio invites reading area as meaning. */
@@ -80,7 +80,6 @@ const BOARDS: Board[] = [
     title: 'Training load',
     sub: 'weeks as bars, a trend line per athlete',
     days: 84,
-    windowLabel: '12 weeks',
     colour: 'var(--accent)',
     bars: true,
     trend: true,
@@ -91,7 +90,6 @@ const BOARDS: Board[] = [
     title: 'Wellness',
     sub: 'each against his own baseline, never the squad average',
     days: 28,
-    windowLabel: '28 days',
     colour: 'var(--good)',
     bars: false,
   },
@@ -101,7 +99,6 @@ const BOARDS: Board[] = [
     title: 'Gym volume',
     sub: 'tonnage lifted per week',
     days: 56,
-    windowLabel: '8 weeks',
     colour: 'var(--domain-gym)',
     bars: true,
     trend: true,
@@ -112,11 +109,21 @@ const BOARDS: Board[] = [
     title: 'Acute:chronic ratio',
     sub: '7-day load over the 28-day weekly mean',
     days: 84,
-    windowLabel: '12 weeks',
     colour: 'var(--accent)',
     bars: false,
     acwrBand: true,
   },
+];
+
+/* The timeframe choices. Days, not months, because every series here is built
+ * per-day and a "month" would have to pick a length anyway. 28 is the shortest
+ * a trailing band means anything over; 182 is where a daily line stops being
+ * readable at this width and the weekly bars carry it instead. */
+const WINDOWS: readonly { days: number; label: string }[] = [
+  { days: 28, label: '28 days' },
+  { days: 56, label: '8 weeks' },
+  { days: 84, label: '12 weeks' },
+  { days: 182, label: '26 weeks' },
 ];
 
 function metricFor(key: MetricKey): MetricDef {
@@ -254,16 +261,36 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
     return q ? `?${q}` : '';
   };
 
+  /* Per-board metric and window, each on its own URL key so one board's choice
+   * never moves another's. Both are clamped server-side against the same lists
+   * the dropdowns are built from — a metric arriving in the URL is untrusted
+   * input, and on Basic that matters: honouring `?mwellness=gps_distance` would
+   * put GPS in front of a club that has not bought it, which is the entitlement
+   * leak this screen already had once. Falls back to the board's own default,
+   * so a stale or hand-edited link degrades to the designed view. */
+  const metricOptions = METRICS.filter((m) => premium || m.source !== 'gps');
+  const resolveMetric = (board: Board): MetricDef => {
+    const raw = params[`m${board.key}`];
+    const picked = typeof raw === 'string' ? metricOptions.find((m) => m.key === raw) : undefined;
+    return picked ?? metricFor(board.metric);
+  };
+  const resolveDays = (board: Board): number => {
+    const raw = params[`w${board.key}`];
+    const picked = typeof raw === 'string' ? WINDOWS.find((w) => String(w.days) === raw) : undefined;
+    return picked?.days ?? board.days;
+  };
+
   const boardData = a
     ? await Promise.all(
         BOARDS.filter((board) => premium || !board.gpsMetric).map(async (board) => {
-          const metric = metricFor(board.metric);
-          const range = { from: addDays(today, -(board.days - 1)), to: today };
+          const metric = resolveMetric(board);
+          const days = resolveDays(board);
+          const range = { from: addDays(today, -(days - 1)), to: today };
           const [ra, rb] = await Promise.all([
             fetchMetricSeries(db, orgId, metric, range, groupIds, a.id),
             b ? fetchMetricSeries(db, orgId, metric, range, groupIds, b.id) : Promise.resolve(null),
           ]);
-          return { board, metric, seriesA: ra.series, seriesB: rb?.series ?? null, daysWithData: ra.daysWithData };
+          return { board, metric, days, seriesA: ra.series, seriesB: rb?.series ?? null, daysWithData: ra.daysWithData };
         }),
       )
     : [];
@@ -346,7 +373,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
               style={{ marginBottom: 14 }}
             />
           )}
-          {boardData.map(({ board, metric, seriesA, seriesB, daysWithData }) => {
+          {boardData.map(({ board, metric, days, seriesA, seriesB, daysWithData }) => {
             const all = [...seriesA.map((p) => p.value), ...(seriesB ?? []).map((p) => p.value)];
             const scale = board.acwrBand
               ? { min: 0.5, max: 2, ticks: [0.5, 1.0, 1.5, 2.0] }
@@ -380,8 +407,22 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
                     <p className="cmp-card-sub">{board.sub}</p>
                   </div>
                   <div className="cmp-card-controls">
-                    <span className="chip-static">{metric.label}</span>
-                    <span className="chip-static">{board.windowLabel}</span>
+                    <ReportSelectNav
+                      label="Metric"
+                      paramKey={`m${board.key}`}
+                      value={metric.key}
+                      options={metricOptions.map((m) => ({ value: m.key, label: m.label }))}
+                      clearValue={board.metric}
+                      ariaLabel={`Metric for the ${board.title} chart`}
+                    />
+                    <ReportSelectNav
+                      label="Window"
+                      paramKey={`w${board.key}`}
+                      value={String(days)}
+                      options={WINDOWS.map((w) => ({ value: String(w.days), label: w.label }))}
+                      clearValue={String(board.days)}
+                      ariaLabel={`Timeframe for the ${board.title} chart`}
+                    />
                   </div>
                 </div>
 

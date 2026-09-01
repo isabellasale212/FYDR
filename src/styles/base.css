@@ -6993,11 +6993,15 @@ button.dash-stat {
   margin: 2px 0 0;
   max-width: 44ch;
 }
+/* Two selects now, not two static chips — they wrap onto their own line on a
+   narrow card rather than squeezing the title, and `flex: none` had to go with
+   the chips or a long metric name would push the header out of the card. */
 .cmp-card-controls {
   display: flex;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 8px 10px;
   margin-left: auto;
-  flex: none;
+  align-items: center;
 }
 .cmp-chart {
   width: 100%;

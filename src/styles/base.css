@@ -28,7 +28,7 @@ body {
 
 /* §2.1. Every number and every data label. Body prose never uses it. */
 .mono {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
   letter-spacing: -0.01em;
@@ -317,12 +317,14 @@ a {
   align-items: center;
   gap: 11px;
   padding: 9px 24px 9px 21px;
-  border-left: 3px solid transparent;
   font-size: 14px;
   font-weight: 600;
   color: var(--muted);
   cursor: pointer;
   border: none;
+  /* After `border: none`, not before — the shorthand resets all four sides
+     and silently zeroed this bar when it was declared above. */
+  border-left: 3px solid transparent;
   background: none;
   font-family: inherit;
   text-align: left;
@@ -3388,7 +3390,8 @@ img.av {
   border-color: rgb(var(--accent-rgb) / 0.55);
 }
 .tr-session-chip .suffix {
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   opacity: 0.65;
 }
@@ -3413,7 +3416,8 @@ img.av {
   color: var(--faint);
 }
 .tr-fact-value {
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
+  font-variant-numeric: tabular-nums;
   font-size: 15px;
   font-weight: 500;
   margin-top: 2px;
@@ -3430,7 +3434,8 @@ img.av {
   border-left: 1px solid var(--hair);
 }
 .tr-dial-value {
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
+  font-variant-numeric: tabular-nums;
   font-size: 23px;
   font-weight: 500;
 }
@@ -3513,7 +3518,8 @@ img.av {
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-end;
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
+  font-variant-numeric: tabular-nums;
   font-size: 10.5px;
   color: var(--faint);
 }
@@ -3874,7 +3880,7 @@ button.dash-stat {
   min-width: 2px;
 }
 .dash-stat-value {
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
   font-size: 34px;
   font-weight: 500;
   line-height: 1.15;
@@ -4092,7 +4098,8 @@ button.dash-stat {
   overflow: hidden;
 }
 .dash-week-md {
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
+  font-variant-numeric: tabular-nums;
   font-size: 11.5px;
   font-weight: 600;
 }
@@ -4112,7 +4119,8 @@ button.dash-stat {
   padding-top: 18px;
 }
 .dash-timeline-clock {
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
+  font-variant-numeric: tabular-nums;
   font-size: 15px;
   font-weight: 500;
 }
@@ -4158,7 +4166,8 @@ button.dash-stat {
   margin-top: 2px;
 }
 .dash-session-count {
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
+  font-variant-numeric: tabular-nums;
   font-size: 17px;
   font-weight: 500;
   text-align: right;
@@ -4211,7 +4220,8 @@ button.dash-stat {
   color: var(--muted);
 }
 .dash-affected-value {
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
+  font-variant-numeric: tabular-nums;
   font-size: 12.5px;
 }
 .dash-clean {
@@ -4353,7 +4363,7 @@ button.dash-stat {
  */
 
 .nutr-mono {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
 }
@@ -4443,7 +4453,8 @@ button.dash-stat {
   font-weight: 600;
 }
 .nutr-daytype-carb {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 11.5px;
   color: var(--muted);
 }
@@ -4499,7 +4510,8 @@ button.dash-stat {
   font-weight: 600;
 }
 .nutr-chase-value {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 12px;
   flex-shrink: 0;
 }
@@ -4590,7 +4602,8 @@ button.dash-stat {
   text-align: center;
 }
 .nutr-rule-value span {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 20px;
   font-weight: 500;
 }
@@ -4600,7 +4613,8 @@ button.dash-stat {
   margin-top: 2px;
 }
 .nutr-rule-footnote {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 10.5px;
   color: var(--faint);
   margin-top: 8px;
@@ -4621,7 +4635,8 @@ button.dash-stat {
   margin: 0;
 }
 .nutr-read-mean {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 22px;
   font-weight: 500;
   text-align: right;
@@ -4656,7 +4671,8 @@ button.dash-stat {
   font-weight: 600;
 }
 .nutr-totals-delta {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 12px;
   color: var(--muted);
 }
@@ -4686,7 +4702,8 @@ button.dash-stat {
   background: var(--border-strong);
 }
 .nutr-totals-detail {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 10.5px;
   color: var(--faint);
   margin-top: 6px;
@@ -4718,7 +4735,8 @@ button.dash-stat {
   font-weight: 700;
 }
 .nutr-meal-time {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   color: var(--muted);
 }
@@ -4737,7 +4755,8 @@ button.dash-stat {
   white-space: nowrap;
 }
 .nutr-meal-item-qty {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 11.5px;
   color: var(--muted);
   flex-shrink: 0;
@@ -4751,7 +4770,8 @@ button.dash-stat {
   background: rgb(var(--ink-rgb) / 0.02);
 }
 .nutr-meal-macro-value {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 11.5px;
   font-weight: 500;
 }
@@ -4763,7 +4783,8 @@ button.dash-stat {
   margin-top: 1px;
 }
 .nutr-meal-caption {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 11.5px;
   color: var(--faint);
   margin: 14px 0 0;
@@ -4799,7 +4820,8 @@ button.dash-stat {
   color: var(--accent-text);
 }
 .nutr-group-meta {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   color: var(--faint);
 }
@@ -4907,7 +4929,8 @@ button.dash-stat {
   color: var(--faint);
 }
 .nutr-table-caption {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 11.5px;
   color: var(--faint);
   margin: 14px 0 0;
@@ -4981,7 +5004,8 @@ button.dash-stat {
   gap: 8px;
 }
 .nutr-mass-value {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 30px;
   font-weight: 500;
   letter-spacing: -0.02em;
@@ -5004,7 +5028,8 @@ button.dash-stat {
 .nutr-sparkline-axis {
   display: flex;
   justify-content: space-between;
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 10.5px;
   color: var(--faint);
   margin-top: 4px;
@@ -5048,12 +5073,14 @@ button.dash-stat {
   border-color: rgb(var(--good-rgb) / 0.5);
 }
 .nutr-logging-initial {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 9.5px;
   color: var(--faint);
 }
 .nutr-logging-caption {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   color: var(--faint);
   margin-top: 8px;
@@ -5080,7 +5107,8 @@ button.dash-stat {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   font-weight: 700;
   border: 1px solid transparent;
@@ -5242,7 +5270,8 @@ button.dash-stat {
   margin: 0;
 }
 .lbw-movers-caption {
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
+  font-variant-numeric: tabular-nums;
   font-size: 11.5px;
   color: var(--muted);
   margin-left: auto;
@@ -5299,7 +5328,8 @@ button.dash-stat {
   margin-top: 14px;
 }
 .lbw-mover-delta-value {
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
+  font-variant-numeric: tabular-nums;
   font-size: 26px;
   font-weight: 500;
   letter-spacing: -0.02em;
@@ -5310,7 +5340,8 @@ button.dash-stat {
   color: var(--muted);
 }
 .lbw-mover-range {
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
+  font-variant-numeric: tabular-nums;
   font-size: 12.5px;
   margin-top: 6px;
 }
@@ -5323,7 +5354,8 @@ button.dash-stat {
   height: 42px;
 }
 .lbw-mover-foot {
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
+  font-variant-numeric: tabular-nums;
   font-size: 10.5px;
   color: var(--faint);
   margin: 10px 0 0;
@@ -5384,7 +5416,8 @@ button.dash-stat {
 }
 
 .lbw-chip-count {
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   opacity: 0.65;
 }
@@ -5447,7 +5480,8 @@ button.dash-stat {
   color: var(--faint);
 }
 .lbw-wall-head-sub {
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
+  font-variant-numeric: tabular-nums;
   font-size: 10px;
   color: var(--faint);
   text-transform: none;
@@ -5471,7 +5505,8 @@ button.dash-stat {
   background: var(--surf);
 }
 .lbw-group-cell {
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
+  font-variant-numeric: tabular-nums;
   font-size: 10.5px;
   color: var(--faint);
   text-align: right;
@@ -5512,7 +5547,8 @@ button.dash-stat {
   font-weight: 700;
 }
 .lbw-age {
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
+  font-variant-numeric: tabular-nums;
   font-size: 10.5px;
   color: var(--faint);
   flex: none;
@@ -5528,17 +5564,20 @@ button.dash-stat {
   font-variant-numeric: tabular-nums;
 }
 .lbw-value-marker {
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
+  font-variant-numeric: tabular-nums;
   font-size: 10px;
   font-weight: 500;
 }
 .lbw-value {
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
+  font-variant-numeric: tabular-nums;
   font-size: 13px;
 }
 
 .lbw-wall-caption {
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
+  font-variant-numeric: tabular-nums;
   font-size: 11.5px;
   color: var(--muted);
   margin: 14px 0 0;
@@ -5618,7 +5657,7 @@ button.dash-stat {
   padding: 9px 0;
   border-top: 1px solid var(--hair);
   align-items: center;
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
   font-variant-numeric: tabular-nums;
 }
 .lbw-sel-table .r {
@@ -5645,7 +5684,8 @@ button.dash-stat {
   color: var(--faint);
 }
 .lbw-sel-foot {
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
 }
 
@@ -6257,7 +6297,8 @@ button.dash-stat {
   margin-left: auto;
   font-size: 11px;
   color: var(--faint);
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
 }
 
 /* -------- §6 selected session panel -------- */
@@ -6434,7 +6475,8 @@ button.dash-stat {
 .sg-preview-foot {
   font-size: 11px;
   color: var(--faint);
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   margin-top: 10px;
 }
 
@@ -6551,7 +6593,8 @@ button.dash-stat {
   font-size: 10.5px;
   color: var(--faint);
   margin-top: 4px;
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
 }
 
 /* =====================================================================
@@ -6673,7 +6716,8 @@ button.dash-stat {
  * next to their name rather than only the plan card's illustrative 100 kg example. */
 .nutr-selected-energy {
   margin-top: 3px;
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   color: var(--muted);
 }
@@ -6724,7 +6768,8 @@ button.dash-stat {
   display: flex;
   justify-content: space-between;
   margin-top: 6px;
-  font-family: var(--font-mono);
+  font-family: var(--font-sora);
+  font-variant-numeric: tabular-nums;
   font-size: 10.5px;
   color: var(--faint);
 }

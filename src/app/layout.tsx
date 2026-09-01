@@ -1,22 +1,24 @@
 import type { Metadata, Viewport } from 'next';
-import { DM_Mono, Sora } from 'next/font/google';
+import { Sora } from 'next/font/google';
 import { Providers } from './providers';
 import '@/styles/tokens.css';
 import '@/styles/base.css';
 
-/* 06-design-system.md §2.1. Four Sora faces and two DM Mono faces, and there is
- * no Sora 500: writing font-weight 500 against Sora synthesises it. */
+/* One family, Sora, in four faces. 06-design-system.md §2.1 paired it with DM
+ * Mono for figures; that pairing is gone and Sora now sets numbers too.
+ *
+ * The catch, and the reason every numeric rule in base.css carries
+ * `font-variant-numeric: tabular-nums` explicitly: DM Mono is monospaced, so
+ * its digits were fixed-width whether or not anything asked. Sora's are
+ * proportional by default — measured, "111" sets 25px narrower than "888" —
+ * and only line up when tabular figures are requested. Dropping the request
+ * anywhere makes that column shift as its values change.
+ *
+ * There is no Sora 500: writing font-weight 500 against Sora synthesises it. */
 const sora = Sora({
   subsets: ['latin'],
   weight: ['400', '600', '700', '800'],
   variable: '--font-sora',
-  display: 'swap',
-});
-
-const dmMono = DM_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500'],
-  variable: '--font-mono',
   display: 'swap',
 });
 
@@ -57,7 +59,7 @@ export default function RootLayout({
   return (
     <html
       lang="en-GB"
-      className={`${sora.variable} ${dmMono.variable}`}
+      className={sora.variable}
       // The blocking script below sets data-theme on this element before
       // hydration, deliberately outside anything React rendered server-side
       // (the server has no localStorage to read). Without this, React logs a

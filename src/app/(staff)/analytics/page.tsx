@@ -9,6 +9,8 @@ import { fetchBuilderAthletes, fetchMetricSeries } from '@/lib/queries/analytics
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
+import { isPremium } from '@/lib/tier';
+import { PlanGateCard } from '@/components/PlanGate/PlanGate';
 import type { Band } from '@/lib/stats';
 
 export const metadata = { title: 'Analytics · Fydr' };
@@ -59,6 +61,9 @@ type Board = {
   bars: boolean;
   /** The 0.8–1.5 convention, drawn only on ACWR. */
   acwrBand?: true;
+  /** This board's metric comes from GPS, so the whole board is Premium —
+   *  12-product-tiers.md §2.3 row 26 puts GPS behind Premium outright. */
+  gpsMetric?: true;
   /** Draw a least-squares trend instead of the raw daily series. The two bar
    *  boards do this — their own subtitles say "a trend line per athlete", and
    *  it is the right call: the bars already carry the week-to-week detail, so a
@@ -71,6 +76,7 @@ const BOARDS: Board[] = [
   {
     key: 'load',
     metric: 'gps_distance',
+    gpsMetric: true,
     title: 'Training load',
     sub: 'weeks as bars, a trend line per athlete',
     days: 84,
@@ -194,7 +200,20 @@ function xLabelsFor(series: readonly Band[]): string[] {
 }
 
 export default async function AnalyticsPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, orgName, timezone } = await requireStaff();
+  const { db, orgId, orgName, timezone, tier } = await requireStaff();
+  /* Read from requireStaff(), which has already resolved the Basic-plan
+   * preview through effectiveTier() — so this screen shows a previewing admin
+   * exactly what a Basic club sees, and effectiveTier() guarantees a preview
+   * can only ever resolve DOWNWARD. Two separate entitlements live on this
+   * page and they are not the same rule:
+   *   - the Training load board's metric IS GPS, so on Basic the board is
+   *     replaced by a locked panel (§2.3 row 26);
+   *   - the bar chart is Premium on its own (§3.3, "the bar chart is Premium,
+   *     the builder is not"), so the Gym volume board stays — gym volume is a
+   *     Both-tier metric — and loses only its bars, keeping the trend line.
+   * Getting that second one wrong in the other direction is what §3.3 was
+   * written to correct, so it is spelled out here rather than inferred. */
+  const premium = isPremium(tier);
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
 
@@ -237,7 +256,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
 
   const boardData = a
     ? await Promise.all(
-        BOARDS.map(async (board) => {
+        BOARDS.filter((board) => premium || !board.gpsMetric).map(async (board) => {
           const metric = metricFor(board.metric);
           const range = { from: addDays(today, -(board.days - 1)), to: today };
           const [ra, rb] = await Promise.all([
@@ -315,11 +334,25 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
         </div>
       ) : (
         <div className="cmp-grid">
+          {/* Where the Training load board sits on Premium. Named, not simply
+              absent: a coach who has seen this screen on another club's plan
+              and finds a board missing needs to know it is their plan, not a
+              fault or a data gap. */}
+          {premium ? null : (
+            <PlanGateCard
+              heading="Training load is a Premium board"
+              body="Weekly GPS distance per athlete, as bars with a trend line over them. It reads from GPS records, which arrive through the Premium import. Everything else on this screen is on your plan: wellness against each athlete's own baseline, gym volume, and the acute:chronic ratio — which your plan computes from RPE and session duration."
+              metadata="Premium · GPS distance · 12 weeks"
+              style={{ marginBottom: 14 }}
+            />
+          )}
           {boardData.map(({ board, metric, seriesA, seriesB, daysWithData }) => {
             const all = [...seriesA.map((p) => p.value), ...(seriesB ?? []).map((p) => p.value)];
             const scale = board.acwrBand
               ? { min: 0.5, max: 2, ticks: [0.5, 1.0, 1.5, 2.0] }
               : bounds(metric, all);
+            // Bars are the Premium capability; the trend line over them is not.
+            const showBars = board.bars && premium;
             const lineA = board.trend ? trendLine(seriesA) : seriesA;
             const lineB = seriesB ? (board.trend ? trendLine(seriesB) : seriesB) : null;
             const primary: ChartSeries = { points: lineA, label: a.last_name, colour: board.colour };
@@ -355,7 +388,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
                 <ComparisonChart
                   primary={primary}
                   secondary={secondary}
-                  bars={board.bars ? weekly(seriesA) : undefined}
+                  bars={showBars ? weekly(seriesA) : undefined}
                   min={scale.min}
                   max={scale.max}
                   ticks={scale.ticks}

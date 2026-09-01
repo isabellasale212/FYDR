@@ -1,12 +1,10 @@
 import Link from 'next/link';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { NutritionWorkspace } from '@/components/NutritionWorkspace/NutritionWorkspace';
-import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { addDays, formatDate, todayIso } from '@/lib/format';
 import { clampPeriod, resolveRange, type RangeKey } from '@/lib/period';
-import { resolvePeriod } from '@/lib/period.server';
 import {
   fetchBodyCompositionForAthletes,
   fetchEarliestBodyCompositionDate,
@@ -63,34 +61,34 @@ function rangeBounds(row: BodyMassTargetRange | undefined): { low: number; high:
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-/* TWO CONTROLS, NOT ONE. docs/screens/nutrition-plans.md's own component table
- * asks for exactly this split — PeriodSelector is listed as the "Window for the
- * Athlete tab AND the week navigation on Squad", which is two different things
- * wearing one row.
+/* ONE CONTROL. The week navigator, and nothing else.
  *
- * 1. `?period=` — the SELECTED ATHLETE'S BODY-MASS TREND. Was a silent, fixed
- *    `today - 90`. `day` and `week` are DISABLED with their reason rather than
- *    hidden: a body-mass trend is a line through weekly weigh-ins against a
- *    mean +/- 1SD band (lib/nutritionRules.ts), and one day or one week is one
- *    or two points — not a band, and not a trend. That is lib/period.ts's rule
- *    1 applied to this screen's actual metric, not a style preference.
+ * docs/screens/nutrition-plans.md's component table asks for a PeriodSelector
+ * here — "Window for the Athlete tab AND the week navigation on Squad" — and
+ * for a while this screen had both: a "Mass trend" dropdown over `?period=`,
+ * and the week strip over `?week=`. The dropdown is gone at the club's
+ * request, so the doc is now ahead of the code on this one row. Recorded here
+ * rather than silently diverging, per CLAUDE.md §5.
  *
- * 2. `?week=` — THE WEEK STRIP. A week navigator, NOT a period selector, and
- *    the distinction is the whole point. "How many of the last 7 days did he
- *    weigh in on" is a question about ONE week; widening it to a season would
- *    not answer it more fully, it would replace it with a different question
- *    and make this a different screen. So the week gets prev/next, the way
- *    /reports/squad's own navigator works, and keeps its identity. Before this
- *    the week was always THIS week, with not even a prev/next — a coach could
- *    not look at last week at all.
+ * `?week=` — THE WEEK STRIP. A week navigator, NOT a period selector, and the
+ * distinction is the whole point. "How many of the last 7 days did he weigh in
+ * on" is a question about ONE week; widening it to a season would not answer it
+ * more fully, it would replace it with a different question and make this a
+ * different screen. So the week gets prev/next, the way /reports/squad's own
+ * navigator works. Before that the week was always THIS week, with not even a
+ * prev/next — a coach could not look at last week at all.
  *
- * The two are independent and both live on the URL at once. Neither touches the
- * plans, the targets table or the meal card, none of which are windowed. */
+ * The body-mass trend now runs over a FIXED window (see MASS_TREND_FALLBACK
+ * below), which is what it did before the dropdown ever existed. It still
+ * cannot be a day or a week: a trend is a line through weekly weigh-ins against
+ * a mean +/- 1SD band (lib/nutritionRules.ts), and one day is one point. That
+ * constraint has just moved from a disabled dropdown option to a value nobody
+ * can set. MASS_TREND_PERIODS survives as the clamp's allow-list, so the
+ * fallback still cannot resolve to something a trend cannot be read over.
+ *
+ * Neither the week nor the trend touches the plans, the targets table or the
+ * meal card, none of which are windowed. */
 const MASS_TREND_PERIODS: readonly RangeKey[] = ['month', 'season', 'year', 'all'];
-const MASS_TREND_REASONS: Partial<Record<RangeKey, string>> = {
-  day: 'one weigh-in is not a trend',
-  week: 'a mass trend needs a band, not a week',
-};
 
 /* THIS SCREEN'S OWN DEFAULT, and it is deliberately NOT DEFAULT_RANGE.
  *
@@ -180,7 +178,7 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
    * (the partial `seasons_one_current` index makes the deleted_at filter
    * mandatory), and starts_on is a `date` column passed through as a plain
    * YYYY-MM-DD string, never via dateInTz. */
-  const [requestedPeriod, season] = await Promise.all([resolvePeriod(params), fetchCurrentSeason(db, orgId)]);
+  const season = await fetchCurrentSeason(db, orgId);
 
   /* The screen default is applied BEFORE the clamp, because clampPeriod only
    * substitutes for an ILLEGAL key and resolvePeriod hands an ABSENT period
@@ -190,21 +188,19 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
    * resolveReportPeriod()'s (lib/reportPeriod.server.ts); written out here
    * because this screen is not a report and resolves its own range against its
    * own earliest-weigh-in anchor. */
-  const periodExpressed = requestedPeriod.source !== 'default';
-  const massTrendFallback = season !== null ? MASS_TREND_FALLBACK : MASS_TREND_FALLBACK_NO_SEASON;
-  const period = clampPeriod(periodExpressed ? requestedPeriod.key : massTrendFallback, {
+  /* FIXED, not chosen. The Mass trend dropdown is gone, so `?period=` is
+   * deliberately ignored here rather than quietly honoured: a window a reader
+   * cannot see, change or reset is worse than no window at all, and this screen
+   * shares `fydr-period` with every other one — reading it would let a choice
+   * made on Analytics silently re-scope a body-mass trend nobody was looking
+   * at. The window is this screen's own default, which is what the trend ran
+   * over before the control existed. */
+  const period = clampPeriod(season !== null ? MASS_TREND_FALLBACK : MASS_TREND_FALLBACK_NO_SEASON, {
     allowed: MASS_TREND_PERIODS,
     seasonAvailable: season !== null,
-    fallback: massTrendFallback,
+    fallback: MASS_TREND_FALLBACK_NO_SEASON,
   });
 
-  /* A DEFAULT MUST NOT SEED THE ACCOUNT-WIDE COOKIE. Now that this screen has a
-   * default of its own, `fydr-period` would otherwise be written to `season` by
-   * the mere act of opening /nutrition, re-scoping every other screen to a
-   * window the coach never picked. Identical rule to periodSticky()
-   * (lib/reportPeriod.server.ts) and to /dashboard's `periodIsChoice`: sticky
-   * only when the rendered key is the reader's own AND was not clamped. */
-  const periodIsChoice = periodExpressed && period.coercedFrom === null;
   const earliestMass = period.key === 'all' ? await fetchEarliestBodyCompositionDate(db, orgId) : null;
   const massRange = resolveRange(period.key, today, season?.starts_on ?? null, earliestMass);
 
@@ -328,18 +324,6 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
           </p>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          {/* Labelled for what it actually governs. A bare "Period" beside a
-            * screen with a week strip on it would read as though it moved the
-            * week too, which is precisely what it must not do. */}
-          <PeriodSelector
-            value={period.key}
-            allowed={MASS_TREND_PERIODS}
-            reasons={MASS_TREND_REASONS}
-            season={season}
-            sticky={periodIsChoice}
-            label="Mass trend"
-            ariaLabel="Window for the selected athlete's body mass trend"
-          />
           {isCoach || isMedical ? (
             <Link href="/nutrition/new" className="btn-ghost" title="Set one absolute target by hand, outside the rule engine">
               Manual target
@@ -378,13 +362,11 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
 
       <p className="cap" style={{ margin: '0 0 12px' }}>
         The week above drives the weigh-in strip, the weekly check-in panel and the &ldquo;needs a
-        word&rdquo; list. The mass trend runs over {massRange.label.toLowerCase()} (
-        {formatDate(massRange.from, timezone)} to {formatDate(massRange.to, timezone)}) and is set
-        separately, because a trend and a week are two different questions.
+        word&rdquo; list. The mass trend is read over {massRange.label.toLowerCase()} (
+        {formatDate(massRange.from, timezone)} to {formatDate(massRange.to, timezone)}) — a fixed
+        window, because a trend and a week are two different questions and only one of them is
+        yours to move here.
         {massRange.clipped ? ' The trend is clipped to the two-year maximum this app reads in one window.' : ''}
-        {period.coercedFrom !== null
-          ? ` "${period.coercedFrom}" is not a window a mass trend can be read over, so ${massRange.label.toLowerCase()} is shown instead.`
-          : ''}
       </p>
 
       <NutritionWorkspace

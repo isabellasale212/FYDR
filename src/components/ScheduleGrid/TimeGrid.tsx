@@ -82,13 +82,39 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
     if (!el) return;
     const fit = () => {
       el.querySelectorAll<HTMLElement>('.sg-block').forEach((b) => {
-        if (!b.querySelector('.sg-block-group')) return;
         b.removeAttribute('data-tight');
-        // Tolerance, not zero: sub-pixel line-box rounding leaves a block
+        b.style.removeProperty('--name-lines');
+        const name = b.querySelector<HTMLElement>('.sg-block-name');
+        if (!name) return;
+        const group = b.querySelector<HTMLElement>('.sg-block-group');
+
+        // Step 1 — drop the group line if the block misses by more than
+        // rounding. Tolerance, not zero: sub-pixel line boxes leave a block
         // 1px over its own height without anything actually being cut, and a
-        // zero test threw away the group line on blocks that fit fine. A real
-        // miss is a whole line — 17px — so 4px separates the two cleanly.
-        if (b.scrollHeight > b.clientHeight + 4) b.setAttribute('data-tight', '');
+        // zero test threw the group line away on blocks that fit fine. A real
+        // miss is a whole line, so 4px separates the two cleanly.
+        if (group && b.scrollHeight > b.clientHeight + 4) b.setAttribute('data-tight', '');
+
+        // Step 2 — clamp the name to the lines that genuinely remain. A short
+        // block in a narrow column has room for one line, not the CSS
+        // default of two: at 1100px "Captain's run" wrapped and hung 16px
+        // below its own bottom edge, and there was no group line left to
+        // drop. Computed from what the block is actually made of, so it holds
+        // at any column width.
+        const s = getComputedStyle(b);
+        const lh = parseFloat(getComputedStyle(name).lineHeight) || 16;
+        const row = b.querySelector<HTMLElement>('.sg-block-row');
+        const groupH =
+          group && getComputedStyle(group).display !== 'none'
+            ? group.getBoundingClientRect().height + parseFloat(getComputedStyle(group).marginTop || '0')
+            : 0;
+        const room =
+          b.clientHeight -
+          parseFloat(s.paddingTop) -
+          parseFloat(s.paddingBottom) -
+          (row ? row.getBoundingClientRect().height : 0) -
+          groupH;
+        b.style.setProperty('--name-lines', String(Math.max(1, Math.floor((room + 1.5) / lh))));
       });
     };
     fit();

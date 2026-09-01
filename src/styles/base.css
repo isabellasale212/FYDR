@@ -373,18 +373,21 @@ a {
 }
 
 .main {
-  padding: 26px 28px 64px;
+  --main-pad: 28px;
+  padding: 26px var(--main-pad) 64px;
   max-width: 1240px;
   min-width: 0;
 }
 @media (min-width: 768px) and (max-width: 1023px) {
   .main {
-    padding: 22px 20px 56px;
+    --main-pad: 20px;
+    padding: 22px var(--main-pad) 56px;
   }
 }
 @media (max-width: 767px) {
   .main {
-    padding: 18px 16px 48px;
+    --main-pad: 16px;
+    padding: 18px var(--main-pad) 48px;
   }
 }
 
@@ -5085,6 +5088,7 @@ button.dash-stat {
     background: none !important;
   }
   .main {
+    --main-pad: 0px;
     max-width: none !important;
     padding: 0 !important;
   }
@@ -5670,18 +5674,12 @@ button.dash-stat {
   position: sticky;
   top: 0;
   z-index: 30;
-  margin: 0 -40px 14px;
-  padding: 11px 40px;
+  margin: 0 calc(-1 * var(--main-pad, 28px)) 14px;
+  padding: 11px var(--main-pad, 28px);
   background: color-mix(in srgb, var(--bg) 85%, transparent);
   backdrop-filter: blur(var(--blur));
   -webkit-backdrop-filter: blur(var(--blur));
   border-bottom: 1px solid var(--border);
-}
-@media (max-width: 767px) {
-  .sg-filterbar {
-    margin: 0 -16px 14px;
-    padding: 11px 16px;
-  }
 }
 
 /* -------- §2 header -------- */
@@ -6133,7 +6131,7 @@ button.dash-stat {
   line-height: 1.25;
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: var(--name-lines, 2);
   -webkit-box-orient: vertical;
 }
 .sg-block[data-stagger='true'] .sg-block-name {

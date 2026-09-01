@@ -58,7 +58,7 @@ export default async function ManageLeaderboardsPage() {
       <div className="topbar">
         <div className="page-head">
           <p className="eyebrow">
-            <Link href="/leaderboards">Testing wall</Link> · Manage
+            <Link href="/leaderboards">Leaderboard</Link> · Manage
           </p>
           <h1>Manage leaderboards</h1>
         </div>

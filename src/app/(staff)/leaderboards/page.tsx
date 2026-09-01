@@ -7,7 +7,11 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 
-export const metadata = { title: 'Testing wall · Fydr' };
+/* Renamed from "Testing wall". That name was accurate when every board came
+ * from test_results; the wall now ranks GPS and wellness too, and the design
+ * ("Fydr Leaderboard.dc.html") titles the screen Leaderboard, which is also
+ * what the sidebar row has always said. */
+export const metadata = { title: 'Leaderboard · Fydr' };
 
 /** LEADERBOARD-SPEC.md's testing wall — the real content of the bare /leaderboards
  *  route now. A different feature from the real, staff-configured, consent-gated
@@ -49,8 +53,8 @@ export default async function LeaderboardWallPage({
       <>
         <div className="topbar">
           <div className="page-head">
-            <p className="eyebrow">TESTING · {orgName}</p>
-            <h1>Testing wall</h1>
+            <p className="eyebrow">TESTING · GPS · WELLNESS · {orgName}</p>
+            <h1>Leaderboard</h1>
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             <Link href="/leaderboards/manage" className="btn-ghost">
@@ -61,7 +65,7 @@ export default async function LeaderboardWallPage({
         <div className="empty">
           <h2>Not part of this role</h2>
           <p>
-            The testing wall ranks every athlete, by name, against every test. Admin
+            The leaderboard ranks every athlete, by name, against every board. Admin
             manages the club and does not read athlete performance data &mdash; see
             01-roles-and-permissions.md §1. Board management, which never shows a named
             result, is still open above.
@@ -85,8 +89,11 @@ export default async function LeaderboardWallPage({
     <>
       <div className="topbar">
         <div className="page-head">
-          <p className="eyebrow">TESTING · LATEST RESULT PER ATHLETE · {activeGroupLabel.toUpperCase()}</p>
-          <h1>Testing wall</h1>
+          {/* The design's eyebrow names its three families; ours names the three
+              this build actually has. "Gym" is deliberately not claimed — the
+              strength boards here are test_results, not gym_set_logs. */}
+          <p className="eyebrow">TESTING · GPS · WELLNESS · LATEST RESULT PER ATHLETE · {activeGroupLabel.toUpperCase()}</p>
+          <h1>Leaderboard</h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <Link href="/leaderboards/manage" className="btn-ghost">
@@ -96,9 +103,9 @@ export default async function LeaderboardWallPage({
       </div>
 
       <p className="lbw-intro">
-        Every athlete, every test, one screen. Ranked inside their own positional unit by
-        default, because a hooker who is 24th in the squad on sprint speed might be the
-        fastest front row you have.
+        Every athlete, every board, one screen. Ranked inside their own positional unit by
+        default, because a hooker who is 24th in the squad on high speed running might be
+        the hardest-running front row you have.
       </p>
 
       <div style={{ marginBottom: 14 }}>

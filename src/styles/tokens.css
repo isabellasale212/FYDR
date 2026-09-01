@@ -146,32 +146,28 @@
    --------------------------------------------------------------------------- */
 :root,
 :root[data-theme='light'] {
-  /* THE GROUND CARRIES THE THEME. This was #eaedf1 — a neutral office grey
-     that left the app reading as white rectangles on nothing, with colour
-     surviving only inside pills a few millimetres tall. Deepened AND cooled
-     to #dde4f2: white cards now separate from it at 1.28:1 rather than
-     1.17:1, so they read as lit surfaces instead of merged ones, and the
-     ambient accent washes in base.css's .app finally have a ground dark
-     enough to be visible against.
-
-     Deeper, not lighter, and that direction was forced rather than chosen.
-     Every candidate that moved toward a brighter blue put --accent2-text
-     below 4.5:1 on the ground it sits on, because a lighter ground takes
-     contrast AWAY from dark text. Going down gives contrast back — which is
-     why the §3.7 block below could be re-derived without losing a single
-     ratio, and gained one it had already lost. --surf stays pure white; the
-     whole effect depends on the card being the brightest thing on screen. */
-  --bg: #dde4f2;
+  /* §1, quoted exactly. This was briefly deepened to #dde4f2 to make white
+     cards separate harder, and reverted: the handoff states High fidelity
+     ("every hex value and alpha is final and was measured off the reference
+     — use them exactly") and its §12 lists "any colour not listed in this
+     file" among the prohibitions, adding that a new colour "is a design
+     decision, not an implementation one". #dde4f2 was exactly that. The flat,
+     near-neutral read is the specified intent, not a shortfall: the handoff's
+     own Baseline says this theme "reads as an instrument panel, not a
+     consumer app: a near-neutral grey-blue page, flat white cards". Anyone
+     wanting more colour than this is asking for a design change, and it has
+     to come from the designer. */
+  --bg: #eaedf1;
   --surf: #ffffff;
   /* The desk behind the app frame, and any inset well. Light-theme handoff §1.
      Distinct from --surf2 (#f3f5f8), which is a RAISED alt surface: this one
      sits below --bg, --surf2 sits above it. */
-  --surf-sunken: #d2dbec;
-  --surf2: #eef2f9;
+  --surf-sunken: #dfe3e9;
+  --surf2: #f3f5f8;
   --elev: #ffffff;
   --text: #13161c;
   --muted: #5b636e;
-  --faint: #7a8391;
+  --faint: #929aa5;
   --border: rgba(16, 18, 23, 0.085);
   --border-strong: rgba(16, 18, 23, 0.52);
   --hair: rgba(16, 18, 23, 0.05);
@@ -181,55 +177,42 @@
   --track: rgba(16, 18, 23, 0.1);
   --tick: rgba(16, 18, 23, 0.22);
   --barfill: rgba(16, 18, 23, 0.155);
-  --field: #eaeff7;
-  --shadow: 0 1px 2px rgba(16, 18, 23, 0.06), 0 4px 14px rgba(16, 18, 23, 0.07);
+  --field: #f0f2f5;
+  --shadow: 0 1px 3px rgba(16, 18, 23, 0.08);
 
   /* §3.7, a coloured label on a plain surface, 4.5:1 against --bg.
+     Handoff §5's on-*-strong column, applied as given EXCEPT where the given
+     value fails the very test that column exists to satisfy.
 
-     RE-DERIVED when --bg deepened to #dde4f2 (see the surfaces note above).
-     §3.7's promise is a RATIO against --bg, not a fixed hex, so a darker
-     ground obliges every one of these to move with it or the promise quietly
-     stops being true. Each was walked down in lightness with its hue and
-     saturation held, stopping at the first value clearing 4.5:1 on BOTH --bg
-     and --surf, so the palette reads identically and only the contrast debt
-     is paid:
-       --accent-text  #0065de -> #0060d4   4.54 on bg, 5.79 on surf
-       --accent2-text #0070b3 -> #006aaa   4.52 on bg, 5.77 on surf
-       --good-text    #0d7a96 -> #0c6f89   4.51 on bg, 5.75 on surf
-       --warn-text    #995d00 -> #925900   4.51 on bg, 5.75 on surf
-     --bad-text is unchanged: it already measures 7.01 on the new ground.
+     THE HANDOFF'S OWN RULE, §5: "a semantic colour is never used as text.
+     #f6ab2f on white fails contrast at small sizes." The whole pairing
+     mechanism is contrast-driven — which makes it a genuine internal
+     contradiction that two of its three on-*-strong values fail it too.
+     Measured against the handoff's own surfaces:
 
-     --good-text's move is not only bookkeeping. At #0d7a96 — the handoff's own
-     on-good-strong — it measured 4.22:1 on the OLD --bg and was already below
-     AA before this change; it had been applied from the handoff table without
-     being measured against --bg, the exact failure the --warn-text note below
-     was written about. Same defect, same fix, now caught for both. */
-  --accent-text: #0060d4;
-  --accent2-text: #006aaa;
+       --warn-text  #b07d0a   3.63:1 on --surf, 3.09:1 on --bg   FAILS
+       --good-text  #0d7a96   4.95:1 on --surf, 4.22:1 on --bg   FAILS on --bg
+       --bad-text   #8a2418   8.95:1 / 7.62:1                    passes
+
+     Both failures are replaced with the nearest value in the same hue family
+     that clears 4.5:1 on both surfaces — #925900 and #0c6f89, each 5.75:1 on
+     --surf and 4.90:1 on --bg. These are the only two colour deviations in
+     this file, both are contrast-forced rather than aesthetic, and both are
+     worth putting back to the designer: the fix belongs in the handoff.
+
+     Everything else here is the handoff's value untouched. */
+  --accent-text: #0065de;
+  --accent2-text: #0070b3;
   --good-text: #0c6f89;
-  /* HANDOFF DEVIATION, deliberate. The handoff's on-warn-strong is #b07d0a,
-     which measures 3.63:1 on --surf and 3.09:1 on --bg — below WCAG AA's
-     4.5:1 for the small bold status words this token is for, and below it on
-     the handoff's own 40-59th band wash too (3.38:1). The handoff's central
-     rule is that a semantic colour is never used as text *because* #f6ab2f
-     fails contrast; #b07d0a fails the same test less obviously. This file's
-     own derivation is held instead: same hue family, and re-derived with the
-     rest of §3.7 when the ground deepened — 5.75:1 on --surf, 4.51:1 on --bg. */
   --warn-text: #925900;
   --bad-text: #8a2418;
   --highlight-fg: #876600;
   --avatar-text-fg: #2a68c6;
 
-  /* §3.7, text on that colour's own tint — the handoff's on-* column.
-
-     Accent and Accent2 are re-derived (#0051c6 -> #004dbd, #0064a6 -> #0060a0)
-     because the pill FILLS below were raised: a stronger tint is a darker
-     background, so the text on it has less room, and the worst case is a pill
-     sitting on --bg rather than inside a white card. Both measured 4.22 and
-     4.26 there at the raised alpha and now clear 4.51 / 4.52. The other four
-     already cleared it on both grounds unchanged. */
-  --accent-pill-text: #004dbd;
-  --accent2-pill-text: #0060a0;
+  /* §3.7, text on that colour's own tint — the handoff's on-* column,
+     applied exactly. */
+  --accent-pill-text: #0051c6;
+  --accent2-pill-text: #0064a6;
   --good-pill-text: #0d5f75;
   --warn-pill-text: #6b4708;
   --bad-pill-text: #7a1f14;
@@ -239,49 +222,42 @@
      from the -rgb triplets above so no alpha tint restates a hex (§4.5), and
      so a tone's wash follows its base automatically.
 
-     ALPHAS RAISED across the block — accent .12->.16, good .13->.20,
-     warn .16->.22, bad .13->.18, and the soft/strong accent steps with them.
-     A wash is where this theme actually shows its colour: at the old values a
-     tinted card was within a couple of percent of plain white and the tint
-     was decorative rather than informative. --good took the largest rise
-     because it is the palest base in the palette (#4fd6ff), so equal alpha
-     bought it visibly less tint than amber or red — the same argument §4.4
-     already makes for giving warn and bad their own pill alphas. Every text
-     token that lands on these was re-measured against the new values, over
-     both --surf and --bg; see the pill-text note above for the two that had
-     to move as a result.
-
-     Urgency is a coloured 1px border plus its wash — never a heavier shadow,
-     a larger radius, or a scale transform. There is exactly one --shadow. */
-  --wash-accent-soft: rgb(var(--accent-rgb) / 0.10);
-  --wash-accent: rgb(var(--accent-rgb) / 0.16);
-  --wash-accent-strong: rgb(var(--accent-rgb) / 0.22);
+Every alpha here is the handoff's own figure (§4 and §5),
+     applied exactly. They were raised once — good to 0.20, warn to 0.22 — on
+     the argument that a 0.13 tint on white is barely a tint at all, and
+     reverted under the handoff's High fidelity rule. The observation stands
+     and is the designer's to act on, not this file's. */
+  --wash-accent-soft: rgb(var(--accent-rgb) / 0.07);
+  --wash-accent: rgb(var(--accent-rgb) / 0.12);
+  --wash-accent-strong: rgb(var(--accent-rgb) / 0.16);
   --border-accent: rgb(var(--accent-rgb) / 0.5);
   --border-accent-soft: rgb(var(--accent-rgb) / 0.42);
   --border-hover: rgb(var(--accent-rgb) / 0.4);
   --ring-accent: 0 0 0 3px rgb(var(--accent-rgb) / 0.16);
 
-  --wash-good: rgb(var(--good-rgb) / 0.20);
+  --wash-good: rgb(var(--good-rgb) / 0.13);
   --border-good: rgb(var(--good-rgb) / 0.5);
-  --wash-warn: rgb(var(--warn-rgb) / 0.22);
+  --wash-warn: rgb(var(--warn-rgb) / 0.16);
   --border-warn: rgb(var(--warn-rgb) / 0.6);
-  --wash-bad: rgb(var(--bad-rgb) / 0.18);
+  --wash-bad: rgb(var(--bad-rgb) / 0.13);
   --border-bad: rgb(var(--bad-rgb) / 0.55);
 
-  /* Handoff §7. A benchmark row carries its percentile band as a row tint, so
-     a list colour-codes top to bottom — which at the old alphas it did not
-     really do: 0.07 on band 2 is under two percent of ink over white, and the
-     four bands were hard to tell apart at a glance, which is the single thing
-     the feature exists for. Raised to .18/.10/.16/.20, keeping the same
-     ordering and the same 1-vs-2 strength split. --muted, the weakest text
-     that lands on these rows, holds 4.91:1 or better on all four. Four bands, not the three the band
-     LABEL uses: 0-19 and 20-39 share a colour and separate on strength. The
-     bar fill stays the base tone; only the row takes the wash. Suppressed
-     below five subjects with data — see .pp-bench-row in base.css. */
-  --band-1-wash: rgb(var(--bad-rgb) / 0.18);
-  --band-2-wash: rgb(var(--bad-rgb) / 0.10);
-  --band-3-wash: rgb(var(--warn-rgb) / 0.16);
-  --band-4-wash: rgb(var(--good-rgb) / 0.20);
+  /* Handoff §7's figures exactly. A benchmark row carries its percentile band
+     as a row tint, so a list colour-codes top to bottom. Four bands, not the
+     three the band LABEL uses: 0-19 and 20-39 share a colour and separate on
+     strength. The bar fill stays the base tone; only the row takes the wash.
+     Suppressed below five subjects with data — §7's own rule, "small samples
+     make shading lie" — see .pp-bench-row in base.css.
+
+     Raised once to .18/.10/.16/.20 and reverted for fidelity. Recorded because
+     it is a real observation about a spec value rather than a preference:
+     band 2 at 0.07 is under two percent of ink over white, and the four bands
+     are genuinely hard to separate at a glance, which is the one thing §7 says
+     this tint is for. The designer's call, not this file's. */
+  --band-1-wash: rgb(var(--bad-rgb) / 0.13);
+  --band-2-wash: rgb(var(--bad-rgb) / 0.07);
+  --band-3-wash: rgb(var(--warn-rgb) / 0.11);
+  --band-4-wash: rgb(var(--good-rgb) / 0.14);
 
   /* Audit S7/finding 22: was single-valued in §2.2 at #4a5578 — 6.25:1 here in
      light, but only 2.13:1 once the same literal rendered against dark's --bg

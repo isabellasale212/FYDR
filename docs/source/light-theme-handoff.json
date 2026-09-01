@@ -1,0 +1,122 @@
+{
+  "$comment": "Fydr light theme — colour and surface tokens only. No layout, sizing, or type families. See README.md for usage rules.",
+  "name": "fydr-light",
+  "colorScheme": "light",
+  "surface": {
+    "bg": "#eaedf1",
+    "surface": "#ffffff",
+    "sunken": "#dfe3e9",
+    "chipDark": "#1a2340",
+    "chipDarkFg": "#6f9bff"
+  },
+  "text": {
+    "primary": "#13161c",
+    "secondary": "#5b636e",
+    "faint": "#929aa5"
+  },
+  "border": {
+    "default": "rgba(16,18,23,0.085)",
+    "divider": "rgba(16,18,23,0.05)",
+    "track": "rgba(16,18,23,0.1)",
+    "tick": "rgba(16,18,23,0.22)",
+    "hover": "rgba(31,111,234,0.4)"
+  },
+  "accent": {
+    "base": "#1f6fea",
+    "secondary": "#33b6ff",
+    "rgb": "31,111,234",
+    "washSoft": "rgba(31,111,234,0.07)",
+    "wash": "rgba(31,111,234,0.12)",
+    "washStrong": "rgba(31,111,234,0.16)",
+    "border": "rgba(31,111,234,0.5)",
+    "borderSoft": "rgba(31,111,234,0.42)",
+    "ring": "0 0 0 3px rgba(31,111,234,0.16)",
+    "logoDot": "linear-gradient(150deg, #1f6fea, #33b6ff)"
+  },
+  "semantic": {
+    "$rule": "Never render a base tone as text. Use onStrong for coloured text on white, and the pill pair inside a tinted chip.",
+    "good": {
+      "base": "#4fd6ff",
+      "on": "#0d5f75",
+      "onStrong": "#0d7a96",
+      "pill": "rgba(79,214,255,0.22)",
+      "wash": "rgba(79,214,255,0.13)",
+      "border": "rgba(79,214,255,0.5)"
+    },
+    "warn": {
+      "base": "#f6ab2f",
+      "on": "#6b4708",
+      "onStrong": "#b07d0a",
+      "pill": "rgba(246,171,47,0.28)",
+      "wash": "rgba(246,171,47,0.16)",
+      "border": "rgba(246,171,47,0.6)"
+    },
+    "bad": {
+      "base": "#f15a4a",
+      "on": "#7a1f14",
+      "onStrong": "#8a2418",
+      "pill": "rgba(241,90,74,0.24)",
+      "wash": "rgba(241,90,74,0.13)",
+      "border": "rgba(241,90,74,0.55)"
+    }
+  },
+  "flagSeverity": {
+    "$rule": "Fixed and theme-independent. Do not remap.",
+    "high": "#f15a4a",
+    "medium": "#f6ab2f"
+  },
+  "domain": {
+    "gym": "#f5c518",
+    "pitch": "#33b6ff",
+    "testing": "#4fd6ff",
+    "recovery": "#8a94b8",
+    "medical": "#f15a4a"
+  },
+  "percentileBands": {
+    "$rule": "Row-level tint plus base-tone bar fill. Suppress shading below five subjects with data and say so.",
+    "0-19": { "wash": "rgba(241,90,74,0.13)", "fill": "#f15a4a", "label": "#8a2418" },
+    "20-39": { "wash": "rgba(241,90,74,0.07)", "fill": "#f15a4a", "label": "#8a2418" },
+    "40-59": { "wash": "rgba(246,171,47,0.11)", "fill": "#f6ab2f", "label": "#b07d0a" },
+    "60-100": { "wash": "rgba(79,214,255,0.14)", "fill": "#33b6ff", "label": "#0d7a96" }
+  },
+  "pageWash": {
+    "$rule": "Behind cards only, never on them. No pointer events.",
+    "topRight": "radial-gradient(900px 480px at 88% -12%, rgba(51,182,255,0.30), transparent 64%)",
+    "bottomLeft": "radial-gradient(700px 400px at -6% 108%, rgba(31,111,234,0.20), transparent 58%)"
+  },
+  "elevation": {
+    "$rule": "One shadow for the whole theme. There is no elevation scale. Urgency uses a coloured border, not a heavier shadow.",
+    "shadow": "0 1px 3px rgba(16,18,23,0.08)"
+  },
+  "radius": {
+    "band": "7px",
+    "control": "12px",
+    "card": "18px",
+    "pill": "20px",
+    "round": "50%"
+  },
+  "transparency": {
+    "$rule": "These two surfaces only. No frosted cards or glass panels.",
+    "stickyBar": "rgba(234,237,241,0.85)",
+    "tabBar": "rgba(255,255,255,0.94)",
+    "blur": "14px"
+  },
+  "motion": {
+    "stateDuration": "150ms",
+    "stateProperties": ["border-color", "color", "background"],
+    "ringDuration": "900ms",
+    "ringEasing": "cubic-bezier(0.22,0.8,0.36,1)"
+  },
+  "opacity": {
+    "disabled": 0.45,
+    "gated": 0.62
+  },
+  "prohibited": [
+    "additional shadow levels",
+    "gradients on cards, headers, or buttons (logo dot excepted)",
+    "texture, pattern, photography, illustration",
+    "semantic base tones used as text on white",
+    "recolouring flag severity away from red/amber",
+    "any colour not listed in this file"
+  ]
+}

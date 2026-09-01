@@ -151,15 +151,17 @@ a {
   min-height: 100vh;
   background-color: var(--bg);
   /* Two ambient washes over the ground, plus the sidebar strip as layer one.
-     Raised from 0.3/0.2 alongside the light theme's deeper --bg: against the
-     old near-white grey these were close to invisible and the page read as
-     flat, which is most of what made the light theme feel lifeless next to
-     the dark one. They are decoration and carry no meaning, so they stay well
-     below any tint that does — a status wash tops out at 0.22. */
+     0.30 cyan top-right and 0.20 blue bottom-left are the light-theme
+     handoff's own §1 figures, quoted exactly. They are already a deliberate
+     3x lift over the stock Fydr system (0.10/0.06) — the handoff's own
+     Deviations list says so — so this IS the brightened version, not the
+     restrained one. Raised past them once and reverted: the handoff states
+     high fidelity and lists "any colour not listed in this file" as
+     prohibited. */
   background-image:
     linear-gradient(var(--surf), var(--surf)),
-    radial-gradient(900px 480px at 88% -12%, rgb(var(--accent2-rgb) / 0.42), transparent 64%),
-    radial-gradient(700px 400px at -6% 108%, rgb(var(--accent-rgb) / 0.28), transparent 58%);
+    radial-gradient(900px 480px at 88% -12%, rgb(var(--accent2-rgb) / 0.3), transparent 64%),
+    radial-gradient(700px 400px at -6% 108%, rgb(var(--accent-rgb) / 0.2), transparent 58%);
   background-size: 236px 100%, auto, auto;
   background-position: left top, center, center;
   background-repeat: no-repeat;
@@ -176,8 +178,8 @@ a {
     /* No rail below 768px — the sidebar stacks full-width above the content —
      * so the strip layer is dropped and only the two washes remain. */
     background-image:
-      radial-gradient(900px 480px at 88% -12%, rgb(var(--accent2-rgb) / 0.42), transparent 64%),
-      radial-gradient(700px 400px at -6% 108%, rgb(var(--accent-rgb) / 0.28), transparent 58%);
+      radial-gradient(900px 480px at 88% -12%, rgb(var(--accent2-rgb) / 0.3), transparent 64%),
+      radial-gradient(700px 400px at -6% 108%, rgb(var(--accent-rgb) / 0.2), transparent 58%);
     background-size: auto;
   }
 }

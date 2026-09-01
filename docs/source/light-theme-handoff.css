@@ -1,0 +1,140 @@
+/* Fydr — light theme tokens.
+   Colour and surface treatment only. No layout, no sizing, no type families.
+   Adapt into the target codebase's existing theming mechanism rather than
+   shipping this file as-is. See README.md for the rules behind each value. */
+
+:root {
+  /* ---- surfaces ---- */
+  --bg: #eaedf1;
+  --surface: #ffffff;
+  --surface-sunken: #dfe3e9;
+  --chip-dark: #1a2340;
+  --chip-dark-fg: #6f9bff;
+
+  /* ---- text ---- */
+  --text: #13161c;
+  --text-secondary: #5b636e;
+  --faint: #929aa5;
+
+  /* ---- borders ---- */
+  --border: rgba(16, 18, 23, 0.085);
+  --divider: rgba(16, 18, 23, 0.05);
+  --track: rgba(16, 18, 23, 0.1);
+  --tick: rgba(16, 18, 23, 0.22);
+
+  /* ---- accent ---- */
+  --accent: #1f6fea;
+  --accent-2: #33b6ff;
+  --accent-rgb: 31, 111, 234;
+  --wash-accent-soft: rgba(31, 111, 234, 0.07);
+  --wash-accent: rgba(31, 111, 234, 0.12);
+  --wash-accent-strong: rgba(31, 111, 234, 0.16);
+  --border-accent: rgba(31, 111, 234, 0.5);
+  --border-accent-soft: rgba(31, 111, 234, 0.42);
+  --border-hover: rgba(31, 111, 234, 0.4);
+  --ring-accent: 0 0 0 3px rgba(31, 111, 234, 0.16);
+  --logo-dot: linear-gradient(150deg, #1f6fea, #33b6ff); /* the only gradient */
+
+  /* ---- semantic tones ----
+     Never use a base tone as text. Pair a fill with its own foreground. */
+  --good: #4fd6ff;
+  --on-good: #0d5f75;
+  --on-good-strong: #0d7a96;
+  --pill-good: rgba(79, 214, 255, 0.22);
+  --wash-good: rgba(79, 214, 255, 0.13);
+  --border-good: rgba(79, 214, 255, 0.5);
+
+  --warn: #f6ab2f;
+  --on-warn: #6b4708;
+  --on-warn-strong: #b07d0a;
+  --pill-warn: rgba(246, 171, 47, 0.28);
+  --wash-warn: rgba(246, 171, 47, 0.16);
+  --border-warn: rgba(246, 171, 47, 0.6);
+
+  --bad: #f15a4a;
+  --on-bad: #7a1f14;
+  --on-bad-strong: #8a2418;
+  --pill-bad: rgba(241, 90, 74, 0.24);
+  --wash-bad: rgba(241, 90, 74, 0.13);
+  --border-bad: rgba(241, 90, 74, 0.55);
+
+  /* Flag severity is fixed and theme-independent. */
+  --flag-high: var(--bad);
+  --flag-medium: var(--warn);
+
+  /* ---- domain colour-coding ---- */
+  --domain-gym: #f5c518; /* also the one coloured icon in the product */
+  --domain-pitch: #33b6ff;
+  --domain-testing: #4fd6ff;
+  --domain-recovery: #8a94b8;
+  --domain-medical: #f15a4a;
+
+  /* ---- percentile band washes ---- */
+  --band-1-wash: rgba(241, 90, 74, 0.13); /*  0–19th */
+  --band-2-wash: rgba(241, 90, 74, 0.07); /* 20–39th */
+  --band-3-wash: rgba(246, 171, 47, 0.11); /* 40–59th */
+  --band-4-wash: rgba(79, 214, 255, 0.14); /* 60–100th */
+
+  /* ---- elevation: one shadow, no scale ---- */
+  --shadow: 0 1px 3px rgba(16, 18, 23, 0.08);
+
+  /* ---- radii (surface identity, not layout) ---- */
+  --r-band: 7px;
+  --r-ctrl: 12px;
+  --r-card: 18px;
+  --r-pill: 20px;
+  --r-round: 50%;
+
+  /* ---- transparency: these two places only ---- */
+  --sticky-bar: rgba(234, 237, 241, 0.85);
+  --tab-bar: rgba(255, 255, 255, 0.94);
+  --blur: 14px;
+
+  /* ---- motion ---- */
+  --dur-state: 150ms;
+  --ease-state: ease;
+  --dur-ring: 900ms;
+  --ease-ring: cubic-bezier(0.22, 0.8, 0.36, 1);
+
+  /* ---- opacity states ---- */
+  --o-disabled: 0.45;
+  --o-gated: 0.62;
+}
+
+/* App background: two soft radial washes, behind cards, never on them. */
+.app-bg {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(900px 480px at 88% -12%, rgba(51, 182, 255, 0.3), transparent 64%),
+    radial-gradient(700px 400px at -6% 108%, rgba(31, 111, 234, 0.2), transparent 58%);
+}
+
+/* Surface recipe. Urgency changes the border and wash, never the shadow. */
+.surface {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  border-radius: var(--r-card);
+}
+.surface--urgent { border-color: var(--border-bad); background: var(--wash-bad); box-shadow: none; }
+.surface--due    { border-color: var(--border-warn); background: var(--wash-warn); box-shadow: none; }
+.surface--accent { border-color: var(--border-accent-soft); background: var(--wash-accent); }
+
+/* Interactive states. Nothing scales, lifts, or translates. */
+.interactive {
+  transition: border-color var(--dur-state) var(--ease-state),
+              color var(--dur-state) var(--ease-state),
+              background var(--dur-state) var(--ease-state);
+}
+.interactive:hover { border-color: var(--border-hover); color: var(--text); }
+.interactive[aria-selected="true"] {
+  background: var(--wash-accent-strong);
+  border-color: var(--border-accent);
+  color: var(--accent);
+}
+.interactive:focus-visible { outline: none; box-shadow: var(--ring-accent); }
+.interactive[aria-disabled="true"] { opacity: var(--o-disabled); cursor: not-allowed; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

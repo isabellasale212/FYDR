@@ -87,26 +87,21 @@ export default async function TestingReportPage({ searchParams }: { searchParams
           <h1>Testing report</h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          {/* Testing's own sidebar row is gone — recording a result and
-           * defining a new test both live here now, one tap from the
-           * report they land in. logAttempt (lib/queries/testing.ts) is
-           * always scoped to one test definition and one date, so "+ Log
-           * a result" opens that same real grid rather than a new flat
-           * form; per-column "+" below jumps straight to today's grid for
-           * that test. Audit finding 39: the label used to just say "+ Log
-           * a result" with no indication of which test it would open —
-           * whichever test happened to be selected (or definitions[0], the
-           * first time). selectedDefinition is guaranteed non-null
-           * whenever this button renders (byAthlete.definitions.length===0
-           * is the only case it's null, and that takes the whole page down
-           * the empty-state branch below instead), so the label can always
-           * name the real destination test. */}
-          <Link
-            href={selectedTestId ? `/testing/${selectedTestId}` : '/testing'}
-            className="btn-primary"
-            aria-label={selectedDefinition ? `Log a ${selectedDefinition.name} result` : 'Log a result'}
-          >
-            {selectedDefinition ? `+ Log a ${selectedDefinition.name} result` : '+ Log a result'}
+          {/* One entry point for every test, not whichever one happened to
+           * be selected. It used to read "+ Log a 10m sprint result" and open
+           * that test's grid — which was an improvement on the bare "+ Log a
+           * result" it replaced (audit finding 39, where the label gave no clue
+           * which test it would open), but it still made the primary action on
+           * this page mean "log the test you are currently looking at". A coach
+           * arriving to enter a testing session's results wants whichever test
+           * they just ran, which is usually not the one the report defaulted to.
+           *
+           * /testing is already the list of every definition, each row linking
+           * to its own real logging grid, so this needs no new screen. The
+           * specific path is not lost either: the per-column "+" in the table
+           * below still jumps straight to today's grid for that one test. */}
+          <Link href="/testing" className="btn-primary" aria-label="Log a result for any test">
+            + Log a result
           </Link>
           {/* The coach asked for "a print and download button ... at the top
             * right corner". Download already existed here as the two Export

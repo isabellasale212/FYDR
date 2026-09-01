@@ -7676,7 +7676,10 @@ button.dash-stat {
     background: rgb(255 255 255 / 0.12);
   }
 }
+/* display:block is load-bearing, not tidiness: these are <span>s, and an
+   inline box ignores width and height — every bar rendered 0x0. */
 .cmpl-fill {
+  display: block;
   height: 100%;
   border-radius: 20px;
 }

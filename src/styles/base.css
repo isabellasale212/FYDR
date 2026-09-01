@@ -7296,7 +7296,7 @@ button.dash-stat {
 .tr-heat[data-ramp='pct'][data-band='1'] { background: rgb(140 234 173 / 0.18); }
 .tr-heat[data-ramp='pct'][data-band='2'] { background: rgb(140 234 173 / 0.28); }
 .tr-heat[data-ramp='pct'][data-band='3'] { background: rgb(140 234 173 / 0.38); }
-.tr-heat[data-ramp='pct'][data-band='4'] { background: rgb(140 234 173 / 0.5); }
+.tr-heat[data-ramp='pct'][data-band='4'] { background: rgb(140 234 173 / 0.5);  color: var(--on-bright-tint); }
 /* No band means no data to rank, so no shading — never a band-0 fill, which
    would read as "lowest" rather than "absent". */
 .tr-heat:not([data-band]) {

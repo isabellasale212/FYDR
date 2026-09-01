@@ -264,6 +264,12 @@
   --accent-pill-text: #0050c4;
   --accent2-pill-text: #0063a5;
   --good-pill-text: #0d5f75;
+  /* Text on the STRONGEST tint of a bright ramp. The %Max ramp's top band is a
+     mint fill heavy enough that light theme's dark --text clears it easily
+     (14.97:1) while dark theme's near-white --text does not (3.67:1 measured).
+     So this is not --text with a tweak: it is ink either way, and dark theme
+     is the case that needs saying. */
+  --on-bright-tint: var(--text);
   --warn-pill-text: #6b4708;
   --bad-pill-text: #7a1f14;
   --highlight-pill-text: #7f6000;
@@ -444,6 +450,7 @@ Every alpha here is the handoff's own figure (§4 and §5),
   --accent-pill-text: #699bff;
   --accent2-pill-text: #33b6ff;
   --good-pill-text: #4fd6ff;
+  --on-bright-tint: #101219;
   --warn-pill-text: #f6ab2f;
   --bad-pill-text: #ff7460;
   --highlight-pill-text: #f5c518;
@@ -570,6 +577,7 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --accent-pill-text: #699bff;
     --accent2-pill-text: #33b6ff;
     --good-pill-text: #4fd6ff;
+    --on-bright-tint: #101219;
     --warn-pill-text: #f6ab2f;
     --bad-pill-text: #ff7460;
     --highlight-pill-text: #f5c518;
@@ -681,6 +689,12 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --accent-pill-text: #0051c6;
     --accent2-pill-text: #0064a6;
     --good-pill-text: #0d5f75;
+    /* Text on the STRONGEST tint of a bright ramp. The %Max ramp's top band is a
+       mint fill heavy enough that light theme's dark --text clears it easily
+       (14.97:1) while dark theme's near-white --text does not (3.67:1 measured).
+       So this is not --text with a tweak: it is ink either way, and dark theme
+       is the case that needs saying. */
+    --on-bright-tint: var(--text);
     --warn-pill-text: #6b4708;
     --bad-pill-text: #7a1f14;
 

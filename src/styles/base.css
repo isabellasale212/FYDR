@@ -3814,16 +3814,6 @@ button.dash-stat {
   color: var(--muted);
 }
 
-/* Week snapshot, DASHBOARD-SPEC.md's own strip, rebuilt as a vertical list
-   per the coach's own ask ("make the week snapshot a list summary and more
-   clear") — same row shape as .todo/.sess (grid, 12px gap, ~14px padding,
-   var(--surf2) hover, a trailing chevron), not a new visual language. Every
-   fact the old 6-card grid showed is still here: day name (dash-week-day-
-   name), MD label (dash-week-md), session-type pips (dash-week-day-pip,
-   same SessionPip colour map), the summary text, and the flag-count/"last
-   session before Saturday" alert — now a .pill instead of bare coloured
-   text, this app's existing "needs attention" visual language, not an
-   invented one. */
 /* THE WEEK STRIP, from the Visual Lift screenshots: one card, a header
    carrying the session count and a domain legend, then six day columns
    separated by hairlines.
@@ -3979,63 +3969,6 @@ button.dash-stat {
   border-radius: var(--r-card);
   box-shadow: var(--shadow);
   overflow: hidden;
-}
-.dash-week-row {
-  display: grid;
-  grid-template-columns: 60px minmax(0, 1fr) auto 12px;
-  gap: 14px;
-  align-items: center;
-  padding: 13px 18px;
-  border-top: 1px solid var(--hair);
-  cursor: pointer;
-  text-decoration: none;
-  color: inherit;
-  transition: background var(--t-state), opacity var(--t-state);
-}
-.dash-week-row:first-child {
-  border-top: none;
-}
-.dash-week-row:hover {
-  background: var(--surf2);
-}
-.dash-week-row[data-past='true'] {
-  opacity: 0.68;
-}
-.dash-week-row[data-selected='true'] {
-  background: rgb(var(--accent-rgb) / 0.07);
-  opacity: 1;
-}
-.dash-week-day {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.dash-week-day-name {
-  font-size: 12.5px;
-  font-weight: 700;
-}
-.dash-week-day-pips {
-  display: flex;
-  gap: 3px;
-}
-.dash-week-day-pip {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-}
-.dash-week-summary {
-  font-size: 13px;
-  font-weight: 600;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.dash-week-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  justify-self: end;
 }
 .dash-week-md {
   font-family: var(--font-mono);

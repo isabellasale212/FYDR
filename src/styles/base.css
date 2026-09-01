@@ -6098,7 +6098,7 @@ button.dash-stat {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
-  height: 15px;
+  height: 14px;
   gap: 6px;
 }
 .sg-block-time {
@@ -6131,7 +6131,6 @@ button.dash-stat {
   font-size: 13px;
   font-weight: 700;
   line-height: 1.25;
-  margin-top: 1px;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;

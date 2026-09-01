@@ -84,7 +84,11 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
       el.querySelectorAll<HTMLElement>('.sg-block').forEach((b) => {
         if (!b.querySelector('.sg-block-group')) return;
         b.removeAttribute('data-tight');
-        if (b.scrollHeight > b.clientHeight) b.setAttribute('data-tight', '');
+        // Tolerance, not zero: sub-pixel line-box rounding leaves a block
+        // 1px over its own height without anything actually being cut, and a
+        // zero test threw away the group line on blocks that fit fine. A real
+        // miss is a whole line — 17px — so 4px separates the two cleanly.
+        if (b.scrollHeight > b.clientHeight + 4) b.setAttribute('data-tight', '');
       });
     };
     fit();

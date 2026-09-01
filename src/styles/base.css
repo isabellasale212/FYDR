@@ -3824,6 +3824,152 @@ button.dash-stat {
    session before Saturday" alert — now a .pill instead of bare coloured
    text, this app's existing "needs attention" visual language, not an
    invented one. */
+/* THE WEEK STRIP, from the Visual Lift screenshots: one card, a header
+   carrying the session count and a domain legend, then six day columns
+   separated by hairlines.
+   This replaces a vertical one-row-per-day list. That list was itself a
+   deliberate change ("make the week snapshot a list summary and more clear"),
+   so this is a reversal, not an oversight being corrected — the design now
+   shows the columns, and a column per day is what makes a week readable as a
+   shape rather than as six sentences. Every fact the list carried is still
+   here: day name, MD label, the activities, and the flag alert.
+   Below 900px it falls back to stacking, because six columns of activity
+   titles cannot survive a narrow viewport without truncating the titles,
+   which is the one thing that would make it worse than the list. */
+.dash-week {
+  margin-top: 14px;
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.dash-week-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+}
+.dash-week-head-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+.dash-week-head-meta {
+  font-size: 12px;
+  color: var(--muted);
+  flex: 1;
+  min-width: 0;
+}
+.dash-week-legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.dash-week-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.dash-week-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  border-top: 1px solid var(--hair);
+}
+.dash-week-col {
+  padding: 12px 14px 14px;
+  border-left: 1px solid var(--hair);
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
+  transition: background var(--t-state);
+}
+.dash-week-col:first-child {
+  border-left: none;
+}
+.dash-week-col:hover {
+  background: rgb(var(--accent-rgb) / 0.06);
+}
+/* A day carrying a flag takes the same wash-plus-tone treatment the urgent KPI
+   tile does — never a border or a shadow. */
+.dash-week-col[data-alert='bad'] {
+  background: rgb(var(--bad-rgb) / 0.07);
+}
+.dash-week-col[data-selected='true'] {
+  background: rgb(var(--accent-rgb) / 0.1);
+}
+.dash-week-col[data-past='true'] .dash-week-col-acts {
+  opacity: 0.7;
+}
+.dash-week-col-head {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 9px;
+}
+.dash-week-col-day {
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.dash-week-col-md {
+  font-size: 11px;
+  color: var(--muted);
+}
+.dash-week-col-dur {
+  font-size: 11px;
+  color: var(--faint);
+  margin-left: auto;
+  white-space: nowrap;
+}
+.dash-week-col-acts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dash-week-act {
+  display: grid;
+  grid-template-columns: 6px minmax(0, 1fr);
+  gap: 8px;
+  align-items: baseline;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.dash-week-act-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  transform: translateY(-1px);
+}
+.dash-week-col-empty {
+  font-size: 12.5px;
+  color: var(--faint);
+}
+.dash-week-col-flag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bad-text);
+}
+@media (max-width: 900px) {
+  .dash-week-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dash-week-col {
+    border-left: none;
+    border-top: 1px solid var(--hair);
+  }
+  .dash-week-col:first-child {
+    border-top: none;
+  }
+}
+
 .dash-week-list {
   display: flex;
   flex-direction: column;

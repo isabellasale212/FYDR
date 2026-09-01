@@ -80,6 +80,17 @@ export type DayStripCard = {
   md: string | null;
   summary: string;
   pips: SessionPip[];
+  /** One entry per session, title paired with its own type — the week strip
+   *  lists a day's activities with a domain dot each, so the two facts have to
+   *  travel together. `summary` and `pips` kept alongside: summary is still the
+   *  single-line form the day list and the athlete strip use, and pips is still
+   *  the compact dot row. Same sessions, three shapes, one read. */
+  activities: { title: string; type: SessionPip }[];
+  /** Total scheduled minutes for the day, null when nothing is scheduled or no
+   *  session carries a duration. Sessions with a null duration contribute
+   *  nothing rather than zero — a session of unknown length must not make the
+   *  day look shorter than it is. */
+  durationMin: number | null;
   alert: { text: string; sev: 'bad' | 'accent' } | null;
   isToday: boolean;
   isPast: boolean;
@@ -136,6 +147,9 @@ export async function fetchWeekStrip(
     const daySessions = (byDate.get(date) ?? []).sort((a, b) => a.starts_at.localeCompare(b.starts_at));
     const pips = daySessions.map((s) => s.session_type as SessionPip);
     const summary = [...new Set(daySessions.map((s) => s.title))].join(' · ') || 'Nothing scheduled';
+    const activities = daySessions.map((s) => ({ title: s.title, type: s.session_type as SessionPip }));
+    const durations = daySessions.map((s) => s.duration_min).filter((d): d is number => d !== null);
+    const durationMin = durations.length > 0 ? durations.reduce((a, b) => a + b, 0) : null;
     const flagsToday = flagsByDate.get(date) ?? [];
     const md = daySessions.length > 0 ? (anchoredMd.get(date) ?? null) : null;
 
@@ -152,6 +166,8 @@ export async function fetchWeekStrip(
       md: mdLabel(md),
       summary,
       pips,
+      activities,
+      durationMin,
       alert,
       isToday: date === effectiveToday,
       isPast: date < effectiveToday,

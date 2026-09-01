@@ -171,8 +171,23 @@
   --surf2: #f3f5f8;
   --elev: #ffffff;
   --text: #13161c;
-  --muted: #5b636e;
-  --faint: #929aa5;
+  --muted: #484e57;
+  /* AA-CORRECTED, and it forced --muted to move with it.
+     #929aa5 measured 2.84:1 on --surf and 2.38:1 on --bg, against the 4.5:1
+     that applies to the 11px captions, denominators, field labels and em-dash
+     empty markers this token is for. It failed under the August handoff, it
+     failed under the Visual Lift, and neither addressed it.
+
+     WHY --MUTED MOVED TOO. Raising the lightest level from 2.38 to 4.57
+     consumes most of the usable range, and at 4.57 --faint lands within a hair
+     of where --muted used to sit — their mutual contrast would have been
+     1.06:1, which is one level, not two. The design system's "three levels, no
+     more" only survives if the middle level moves as well, so --muted goes to
+     7.01 on --bg. The scale is now 4.57 / 7.01 / 15.14 with a 1.54:1 step
+     between faint and muted. That is narrower than the old 2.14:1, and the
+     narrowing is unavoidable rather than chosen: the old spacing was bought by
+     putting the lightest level below AA. */
+  --faint: #626a76;
   --border: rgba(16, 18, 23, 0.085);
   --border-strong: rgba(16, 18, 23, 0.52);
   --hair: rgba(16, 18, 23, 0.05);
@@ -393,7 +408,11 @@ Every alpha here is the handoff's own figure (§4 and §5),
   --elev: #1a2340;
   --text: #e9edfa;
   --muted: #a6b3d2;
-  --faint: #6472a0;
+  /* Same correction, dark side: #6472a0 measured 2.94:1 on --bg. Moved
+     lighter, clearing 4.5:1 on all three dark surfaces (--bg 4.56,
+     --surf 5.42, --surf2 5.09). --muted is unchanged: at 6.59:1 it already
+     passed, and it keeps a 1.45:1 step from the new faint. */
+  --faint: #8993b6;
   --border: #232c4a;
   --border-strong: #657199;
   --hair: rgba(255, 255, 255, 0.055);
@@ -515,7 +534,11 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --elev: #1a2340;
     --text: #e9edfa;
     --muted: #a6b3d2;
-    --faint: #6472a0;
+    /* Same correction, dark side: #6472a0 measured 2.94:1 on --bg. Moved
+       lighter, clearing 4.5:1 on all three dark surfaces (--bg 4.56,
+       --surf 5.42, --surf2 5.09). --muted is unchanged: at 6.59:1 it already
+       passed, and it keeps a 1.45:1 step from the new faint. */
+    --faint: #8993b6;
     --border: #232c4a;
     --border-strong: #657199;
     --hair: rgba(255, 255, 255, 0.055);
@@ -618,8 +641,10 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --surf2: #f3f5f8;
     --elev: #ffffff;
     --text: #13161c;
-    --muted: #5b636e;
-    --faint: #929aa5;
+    --muted: #484e57;
+    /* Print takes the same corrected light scale — a printed 11px caption
+       is as unreadable at 2.84:1 as an on-screen one. */
+    --faint: #626a76;
     --border: rgba(16, 18, 23, 0.085);
     --border-strong: rgba(16, 18, 23, 0.52);
     --hair: rgba(16, 18, 23, 0.05);

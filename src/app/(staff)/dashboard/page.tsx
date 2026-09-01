@@ -64,6 +64,17 @@ const PIP_COLOR: Record<SessionPip, string> = {
   meeting: 'rgb(var(--ink-rgb) / 0.3)',
 };
 
+/* The four domains the week strip's legend names, in the Visual Lift's own
+ * order. Training and match are deliberately absent: the legend explains the
+ * dots a coach might not recognise, and those two are self-evident from the
+ * activity titles beside them. */
+const WEEK_LEGEND: { type: SessionPip; label: string }[] = [
+  { type: 'gym', label: 'Gym' },
+  { type: 'training', label: 'Pitch' },
+  { type: 'testing', label: 'Testing' },
+  { type: 'recovery', label: 'Recovery' },
+];
+
 const TONE_VAR: Record<string, string> = { good: 'var(--accent2)', accent: 'var(--accent)', accent2: 'var(--accent2)', warn: 'var(--warn)', bad: 'var(--bad)' };
 
 /* TWO OPTIONS ONLY, AND `?day=` IS THE OTHER HALF OF THE SAME CONTROL.
@@ -190,6 +201,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
   // effectiveToday` — accepting any string, including a stale ?day= from a
   // different week, with no bounds check at all.
   const weekEnd = addDays(weekStart, 5);
+
   const selectedDay = typeof sp.day === 'string' && sp.day >= weekStart && sp.day <= weekEnd ? sp.day : effectiveToday;
 
   /* URL first, sticky cookie second, then `day` — clamped server-side as well
@@ -256,6 +268,19 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       : Promise.resolve<WeekSession[]>([]),
   ]);
 
+  /* The week strip's header line, derived from the strip's own days rather
+   * than re-queried: the count is literally the number of activities rendered
+   * in the columns below, so the two can never disagree. dayLabel is already
+   * "Mon 10" / "Sat 15", which is the form the header wants.
+   *
+   * This replaced a second count taken off weekTimeline, which was fed by a
+   * fetch that only runs in week mode — so it read 0 in day mode while the
+   * strip beside it listed real sessions. Both counted the same rows from the
+   * same query (fetchWeekStrip calls fetchWeekSessions itself), so collapsing
+   * them to the always-present one loses nothing and removes the disagreement. */
+  const weekSessionCount = week.reduce((n, d) => n + d.activities.length, 0);
+  const weekRangeLabel = `${week[0]?.dayLabel ?? ''} to ${week[week.length - 1]?.dayLabel ?? ''}`;
+
   const isAnchoredToPast = effectiveToday !== wallClockToday;
 
   const groupsQs = groupIds.length > 0 ? groupIds.join(',') : undefined;
@@ -274,7 +299,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
     day: d,
     sessions: (sessionsByDate.get(d.date) ?? []).sort((a, b) => a.starts_at.localeCompare(b.starts_at)),
   }));
-  const weekSessionCount = weekTimeline.reduce((n, d) => n + d.sessions.length, 0);
 
   const dayCaption = isSelectedToday
     ? `${formatDate(effectiveToday, timezone)} · ${timeline.length} session${timeline.length === 1 ? '' : 's'}${timeline.length > 0 ? ` · first at ${timeline[0]!.time}` : ''}`
@@ -377,44 +401,74 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
        * into this day", which is exactly what the pair says. The list itself
        * renders in BOTH modes — it is the day picker, and hiding it in week
        * mode would leave no way back to a day. */}
-      <div className="dash-week-list">
-        {week.map((d) => (
-          <Link
-            key={d.date}
-            href={`/dashboard${qs({ groups: groupsQs, day: d.date, period: 'day' })}`}
-            className="dash-week-row"
-            data-past={d.isPast}
-            data-selected={!isWeekMode && d.date === selectedDay}
-          >
-            <div className="dash-week-day">
-              <span className="dash-week-day-name" style={{ color: d.isToday ? 'var(--accent)' : undefined }}>
-                {d.dayLabel}
+      {/* The week strip, per the Visual Lift screenshots: one card, a header
+       * with the session count and a domain legend, then a column per day.
+       * Each day lists its own activities with a domain dot each, rather than
+       * one joined summary line, so a coach reads the week as a shape.
+       * Still six real links that set ?day= on this same page — only the
+       * arrangement changed. */}
+      <div className="dash-week">
+        <div className="dash-week-head">
+          <span className="dash-week-head-title">This week</span>
+          <span className="dash-week-head-meta">
+            {weekSessionCount} session{weekSessionCount === 1 ? '' : 's'} · {weekRangeLabel}
+          </span>
+          <span className="dash-week-legend">
+            {WEEK_LEGEND.map((l) => (
+              <span key={l.label} className="dash-week-legend-item">
+                <span className="dash-stat-dot" style={{ background: PIP_COLOR[l.type] }} aria-hidden="true" />
+                {l.label}
               </span>
-              <span className="dash-week-day-pips">
-                {d.pips.length > 0
-                  ? d.pips.map((p, i) => <span key={i} className="dash-week-day-pip" style={{ background: PIP_COLOR[p] }} />)
-                  : <span className="dash-week-day-pip" style={{ background: 'var(--hair)' }} />}
-              </span>
-            </div>
-            <div className="dash-week-summary">{d.summary}</div>
-            <div className="dash-week-meta">
-              {d.md ? (
-                <span
-                  className="mono dash-week-md"
-                  style={{ color: d.md === 'MD' ? 'var(--bad)' : d.md === 'MD-1' ? 'var(--accent)' : 'var(--faint)' }}
-                >
-                  {d.md}
+            ))}
+          </span>
+        </div>
+        <div className="dash-week-grid">
+          {week.map((d) => (
+            <Link
+              key={d.date}
+              href={`/dashboard${qs({ groups: groupsQs, day: d.date, period: 'day' })}`}
+              className="dash-week-col"
+              data-past={d.isPast}
+              data-selected={!isWeekMode && d.date === selectedDay}
+              data-alert={d.alert?.sev ?? undefined}
+            >
+              <div className="dash-week-col-head">
+                <span className="dash-week-col-day" style={{ color: d.isToday ? 'var(--accent)' : undefined }}>
+                  {d.dayLabel}
                 </span>
-              ) : null}
+                {d.md ? (
+                  <span
+                    className="mono dash-week-col-md"
+                    style={{ color: d.md === 'MD' ? 'var(--bad-text)' : undefined }}
+                  >
+                    {d.md}
+                  </span>
+                ) : null}
+                {d.durationMin !== null ? <span className="mono dash-week-col-dur">{d.durationMin} min</span> : null}
+              </div>
+              {d.activities.length > 0 ? (
+                <div className="dash-week-col-acts">
+                  {d.activities.map((a, i) => (
+                    <span key={`${a.title}-${i}`} className="dash-week-act">
+                      <span className="dash-week-act-dot" style={{ background: PIP_COLOR[a.type] }} aria-hidden="true" />
+                      <span>{a.title}</span>
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <div className="dash-week-col-empty">Nothing scheduled</div>
+              )}
               {d.alert ? (
-                <span className={`pill ${d.alert.sev === 'bad' ? 'pill-bad' : 'pill-accent'}`}>{d.alert.text}</span>
+                <div
+                  className="dash-week-col-flag"
+                  style={d.alert.sev === 'accent' ? { color: 'var(--accent-text)' } : undefined}
+                >
+                  {d.alert.text}
+                </div>
               ) : null}
-            </div>
-            <span className="chev" aria-hidden="true">
-              ›
-            </span>
-          </Link>
-        ))}
+            </Link>
+          ))}
+        </div>
       </div>
 
       <div className="dash-body" style={{ marginTop: 14 }}>

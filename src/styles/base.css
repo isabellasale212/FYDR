@@ -4262,7 +4262,8 @@ button.dash-stat {
    4.2:1, so the card's secondary text steps up one tier — the same
    surface-vs-tint distinction as --accent-text against --accent-pill-text. */
 .dash-ready-card .tiny,
-.dash-ready-card .cap {
+.dash-ready-card .cap,
+.dash-ready-row > span {
   color: var(--muted);
 }
 .dash-ready-head {

@@ -478,14 +478,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                 <div key={r.label} className="dash-ready-row">
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 600 }}>{r.label}</div>
-                    <div className="tiny" style={{ color: 'var(--faint)' }}>
+                    <div className="tiny">
                       {r.detail}
                     </div>
                   </div>
                   <span className="mono" style={{ fontSize: 13, color: TONE_TEXT[r.tone === 'bad' ? 'bad' : r.tone === 'warn' ? 'warn' : ''] }}>
                     {r.value}
                   </span>
-                  <span style={{ color: 'var(--faint)' }}>›</span>
+                  <span>›</span>
                 </div>
               ))}
             </div>
@@ -504,7 +504,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                   <div className="dash-load-fill" style={{ width: `${readiness.weekLoad.fillPct}%`, background: TONE_VAR[readiness.weekLoad.tone] ?? 'var(--accent)' }} />
                   <div className="dash-load-tick" style={{ left: `${readiness.weekLoad.tickPct}%` }} />
                 </div>
-                <p className="tiny mono" style={{ color: 'var(--faint)', marginTop: 6 }}>
+                <p className="tiny mono" style={{ marginTop: 6 }}>
                   {readiness.weekLoad.foot}
                 </p>
               </>
@@ -533,7 +533,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                 <span className="dash-squad-dot" style={{ background: 'var(--accent2)' }} />
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 600 }}>Available</div>
-                  <div className="tiny" style={{ color: 'var(--faint)' }}>
+                  <div className="tiny">
                     full training
                   </div>
                 </div>
@@ -545,7 +545,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                 <span className="dash-squad-dot" style={{ background: 'var(--warn)' }} />
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 600 }}>Modified</div>
-                  <div className="tiny" style={{ color: 'var(--faint)' }}>
+                  <div className="tiny">
                     {namedWithReason(squad.modifiedNames) || 'nobody'}
                   </div>
                 </div>
@@ -557,7 +557,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                 <span className="dash-squad-dot" style={{ background: 'var(--bad)' }} />
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 600 }}>Unavailable</div>
-                  <div className="tiny" style={{ color: 'var(--faint)' }}>
+                  <div className="tiny">
                     {namedWithReason(squad.unavailableNames) || 'nobody'}
                   </div>
                 </div>

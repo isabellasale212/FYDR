@@ -8251,3 +8251,11 @@ button.dash-stat {
 .prog-ex-num[data-quiet='true'] {
   color: var(--faint);
 }
+
+/* The rail's own subtitles. --faint is derived for a plain surface and drops
+   to about 4.1:1 once a card carries the selected or rehab wash — the same
+   surface-vs-tint distinction as --accent-text against --accent-pill-text.
+   The design sets these muted on every card, tinted or not, so they match. */
+.prog-item .tiny {
+  color: var(--muted);
+}

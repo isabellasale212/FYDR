@@ -188,6 +188,35 @@ function ComparisonTableView({ table }: { table: ComparisonTable }) {
  *  render as an explicit, labelled absence rather than invented numbers.
  *  Everything else — dials, the scoring model, all four comparison scopes,
  *  the scatter plot, the sparkline, the board — is real, live data. */
+
+/* The board's heat ramps. Five bands against the squad's own p95 for THIS
+ * session — a rank inside today's squad, never an absolute standard, which is
+ * what the caption and the legend both say.
+ *
+ * p95 rather than the maximum: one outlier should not compress everyone else
+ * into the bottom band, which is exactly what a max-anchored ramp does to a
+ * squad containing a single flat-out winger. */
+function p95Of(values: readonly (number | null)[]): number | null {
+  const v = values.filter((x): x is number => x !== null).sort((a, b) => a - b);
+  if (v.length === 0) return null;
+  return v[Math.min(v.length - 1, Math.round(0.95 * (v.length - 1)))] ?? null;
+}
+
+/** Band 0-4, or null when there is nothing to shade against. */
+function heatBand(value: number | null, ref: number | null): number | null {
+  if (value === null || ref === null || ref <= 0) return null;
+  const n = Math.min(1, Math.max(0, value / ref));
+  return n < 0.2 ? 0 : n < 0.4 ? 1 : n < 0.6 ? 2 : n < 0.8 ? 3 : 4;
+}
+
+/** %Max is already a percentage of the athlete's own best, so it bands on fixed
+ *  cuts rather than against the squad — 90% of your own top speed means the
+ *  same thing whoever else played. */
+function pctMaxBand(pct: number | null): number | null {
+  if (pct === null) return null;
+  return pct < 70 ? 0 : pct < 80 ? 1 : pct < 85 ? 2 : pct < 90 ? 3 : 4;
+}
+
 export default async function TrainingReportPage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, orgName, claims, tier, timezone } = await requireReportAccess();
 
@@ -556,6 +585,12 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
   // Board rows already carry every athlete in scope with a GPS record for
   // this session — the dropdown's real, data-backed option list, not a
   // separate athletes query.
+  /* Shading references, computed once per render from the rows actually on
+   * screen — so a group filter re-ranks the board inside the filtered squad
+   * rather than shading against athletes who are not shown. */
+  const hsrP95 = p95Of(board.rows.map((r) => r.hsr));
+  const hieP95 = p95Of(board.rows.map((r) => r.hie));
+
   const athleteOptions = [...new Map(board.rows.map((r) => [r.athlete_id, `${r.last_name}, ${r.first_name}`])).entries()]
     .sort((a, b) => a[1].localeCompare(b[1]))
     .map(([value, label]) => ({ value, label }));
@@ -862,56 +897,109 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
           <div className="card" style={{ marginTop: 14 }}>
             <h2 className="card-title">Board</h2>
             <p className="tiny mono" style={{ color: 'var(--faint)' }}>
-              Raw session values · vs self is the athlete&rsquo;s own mean for this session type, vs unit is their
-              positional unit&rsquo;s · n = {board.rows.length} athletes
+              Raw session values · shading is this squad&rsquo;s spread for this session, HSR blue, HIE pink, %Max
+              green · n = {board.rows.length} athletes
             </p>
             <div className="tr-board" style={{ marginTop: 10 }}>
               <div className="tr-board-inner">
                 <div
                   className="tr-board-row"
-                  style={{ gridTemplateColumns: 'minmax(180px, 1.4fr) repeat(5, minmax(66px, 1fr)) 84px 84px', fontWeight: 700, color: 'var(--faint)', fontSize: 11, textTransform: 'uppercase' }}
+                  style={{ gridTemplateColumns: 'minmax(170px, 1.3fr) repeat(5, minmax(66px, 1fr))', fontWeight: 700, color: 'var(--faint)', fontSize: 11, textTransform: 'uppercase' }}
                 >
                   <span>Player</span>
                   <span className="r" title={GPS_TERM_TITLE.td}>TD</span>
-                  <span className="r" title={GPS_TERM_TITLE.run}>Run</span>
                   <span className="r" title={GPS_TERM_TITLE.hsr}>HSR</span>
                   <span className="r" title={GPS_TERM_TITLE.hie}>HIE</span>
                   <span className="r" title={GPS_TERM_TITLE.maxv}>MaxV</span>
-                  <span className="r">vs self</span>
-                  <span className="r">vs unit</span>
+                  <span className="r" title="Today's max velocity as a percentage of this athlete's own best on record for this session type">
+                    %Max
+                  </span>
                 </div>
-                {board.unitOrder.map((unit) => (
-                  <div key={unit}>
-                    <div className="tr-board-unit-header">
-                      <span>{unit}</span>
-                    </div>
-                    {board.rows
-                      .filter((r) => r.group_name === unit)
-                      .map((row) => (
-                        <div
+                {board.unitOrder.map((unit) => {
+                  const inUnit = board.rows.filter((r) => r.group_name === unit);
+                  const unitMean =
+                    inUnit.filter((r) => r.td !== null).length > 0
+                      ? Math.round(
+                          inUnit.reduce((t, r) => t + (r.td ?? 0), 0) / inUnit.filter((r) => r.td !== null).length,
+                        )
+                      : null;
+                  return (
+                    <div key={unit}>
+                      {/* The unit's own mean sits on its header, which is where the
+                          design puts the squad comparison: a coach reads a row
+                          against the line above it rather than against a column of
+                          percentages. */}
+                      <div className="tr-board-unit-header">
+                        <span>{unit}</span>
+                        {unitMean !== null ? (
+                          <span className="mono tr-unit-mean">unit mean {unitMean.toLocaleString()} m</span>
+                        ) : null}
+                      </div>
+                      {inUnit.map((row) => (
+                        /* CLICKABLE. Selecting a player here does the same thing as
+                           clicking one in the scatter — it sets ?athlete=, which
+                           drives the Individual player card and the whole page's
+                           lens. A link rather than a handler, so it is
+                           back-button-safe and shareable, and so a coach can open
+                           one in a new tab. */
+                        <Link
                           key={row.athlete_id}
-                          className={`tr-board-row${row.athlete_id === selectedAthleteId ? ' selected' : ''}`}
-                          style={{ gridTemplateColumns: 'minmax(180px, 1.4fr) repeat(5, minmax(66px, 1fr)) 84px 84px' }}
+                          href={`/reports/training${qs({ mode: 'training', session: selected.sessionId, groups: groupsQs, scope, lens, athlete: row.athlete_id })}`}
+                          className={`tr-board-row tr-board-row-link${row.athlete_id === selectedAthleteId ? ' selected' : ''}`}
+                          style={{ gridTemplateColumns: 'minmax(170px, 1.3fr) repeat(5, minmax(66px, 1fr))' }}
+                          aria-current={row.athlete_id === selectedAthleteId}
                         >
                           <span className="nm" style={{ fontSize: 13.5 }}>
                             {row.last_name}, {row.first_name}
                           </span>
                           <span className="r mono">{row.td !== null ? Math.round(row.td).toLocaleString() : '—'}</span>
-                          <span className="r mono">{row.run !== null ? Math.round(row.run).toLocaleString() : '—'}</span>
-                          <span className="r mono">{row.hsr !== null ? Math.round(row.hsr).toLocaleString() : '—'}</span>
-                          <span className="r mono">{row.hie ?? '—'}</span>
+                          <span className="r mono tr-heat" data-band={heatBand(row.hsr, hsrP95)} data-ramp="hsr">
+                            {row.hsr !== null ? Math.round(row.hsr).toLocaleString() : '—'}
+                          </span>
+                          <span className="r mono tr-heat" data-band={heatBand(row.hie, hieP95)} data-ramp="hie">
+                            {row.hie ?? '—'}
+                          </span>
                           <span className="r mono">{row.maxv_kmh ?? '—'}</span>
-                          <span className="r mono" style={{ color: row.vs_self !== null ? TONE[scoreTone(row.vs_self).tone] : undefined }}>
-                            {row.vs_self !== null ? `${row.vs_self}%` : '—'}
+                          <span className="r mono tr-heat" data-band={pctMaxBand(row.pct_max)} data-ramp="pct">
+                            {row.pct_max !== null ? `${row.pct_max}%` : '—'}
                           </span>
-                          <span className="r mono" style={{ color: row.vs_unit !== null ? TONE[scoreTone(row.vs_unit).tone] : undefined }}>
-                            {row.vs_unit !== null ? `${row.vs_unit}%` : '—'}
-                          </span>
-                        </div>
+                        </Link>
                       ))}
-                  </div>
-                ))}
+                    </div>
+                  );
+                })}
               </div>
+            </div>
+          </div>
+
+          {/* HEAT BANDS. The board's three ramps, named. Without it the shading is
+              a colour a coach has to infer a meaning for; with it the scale is
+              stated once and the board's own caption can stay short. */}
+          <div className="card" style={{ marginTop: 14 }}>
+            <h2 className="card-title">Heat bands</h2>
+            <p className="tiny" style={{ color: 'var(--muted)', marginTop: 2 }}>
+              Five bands against this squad&rsquo;s p95 for this session. Shading is a rank inside today&rsquo;s
+              squad, never an absolute standard.
+            </p>
+            {[
+              { ramp: 'hsr', label: 'HSR', note: 'high speed running' },
+              { ramp: 'hie', label: 'HIE', note: 'high intensity efforts' },
+              { ramp: 'pct', label: '%Max', note: 'of their own best velocity' },
+            ].map((r) => (
+              <div key={r.ramp} className="tr-legend-row">
+                <span className="tr-legend-label">
+                  {r.label} <span style={{ color: 'var(--faint)', fontWeight: 400 }}>{r.note}</span>
+                </span>
+                <span className="tr-legend-ramp">
+                  {[0, 1, 2, 3, 4].map((b) => (
+                    <span key={b} className="tr-heat tr-legend-step" data-band={b} data-ramp={r.ramp} />
+                  ))}
+                </span>
+              </div>
+            ))}
+            <div className="tr-legend-ends">
+              <span>Low</span>
+              <span>p95</span>
             </div>
           </div>
         </>

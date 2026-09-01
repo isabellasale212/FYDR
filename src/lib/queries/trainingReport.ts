@@ -1155,6 +1155,13 @@ export type TrainingBoardRow = {
    *  on record — one session is not a baseline, and an athlete with no history
    *  is absent from the exceptions panel rather than shown at 100%. */
   vs_self_hsr: number | null;
+  /** Today's max velocity as a percentage of their own best on record for this
+   *  session type. Null when they have no max-speed history at all. */
+  pct_max: number | null;
+  /** Their prior HSR values for this session type, oldest first, for the
+   *  selected-athlete sparkline. Real sessions only — a gap is a gap, and the
+   *  chart draws however many exist rather than padding to a fixed count. */
+  hsr_history: number[];
   /** The mean itself, so the panel can state the evidence rather than only the
    *  percentage. Fydr's copy rule: every flag carries the numbers behind it. */
   hsr_self_mean: number | null;
@@ -1186,7 +1193,7 @@ export async function fetchTrainingBoard(
     db.from('groups').select('id, name, sort_order').eq('org_id', orgId).eq('group_type', 'positional').is('deleted_at', null),
     db
       .from('gps_records')
-      .select('athlete_id, total_distance_m, high_speed_distance_m, session_id, sessions!inner(session_type, title)')
+      .select('athlete_id, total_distance_m, high_speed_distance_m, max_speed_ms, session_id, sessions!inner(session_type, title)')
       .eq('org_id', orgId)
       .eq('sessions.session_type', 'training')
       .eq('sessions.title', session.title)
@@ -1206,7 +1213,17 @@ export async function fetchTrainingBoard(
    * someone has run unusually hard or unusually little, where total distance
    * mostly tracks how long they were on the pitch. */
   const selfHsrByAthlete = new Map<string, number[]>();
+  /** Their fastest on record for this session type, for the %Max column: a max
+   *  velocity means little on its own, and "92% of their best" is the form a
+   *  coach reads it in. Today's own value is included, so a personal best reads
+   *  100% rather than something above it. */
+  const selfMaxvByAthlete = new Map<string, number[]>();
   for (const r of histRes.data ?? []) {
+    if (r.max_speed_ms !== null) {
+      const ml = selfMaxvByAthlete.get(r.athlete_id) ?? [];
+      ml.push(r.max_speed_ms);
+      selfMaxvByAthlete.set(r.athlete_id, ml);
+    }
     if (r.high_speed_distance_m !== null) {
       const hl = selfHsrByAthlete.get(r.athlete_id) ?? [];
       hl.push(r.high_speed_distance_m);
@@ -1239,6 +1256,10 @@ export async function fetchTrainingBoard(
       const selfMean = mean(selfHistByAthlete.get(r.athlete_id) ?? []);
       const hsrHist = selfHsrByAthlete.get(r.athlete_id) ?? [];
       const hsrSelfMean = mean(hsrHist);
+      const maxvHist = selfMaxvByAthlete.get(r.athlete_id) ?? [];
+      const maxvBest = maxvHist.length > 0 || r.max_speed_ms !== null
+        ? Math.max(...maxvHist, r.max_speed_ms ?? 0)
+        : null;
       const uMean = unitId ? unitMean.get(unitId) ?? null : null;
       return {
         athlete_id: r.athlete_id,
@@ -1259,6 +1280,11 @@ export async function fetchTrainingBoard(
             : null,
         hsr_self_mean: hsrSelfMean,
         hsr_self_n: hsrHist.length,
+        pct_max:
+          r.max_speed_ms !== null && maxvBest !== null && maxvBest > 0
+            ? Math.round((r.max_speed_ms / maxvBest) * 100)
+            : null,
+        hsr_history: hsrHist,
       };
     })
     .filter((r): r is TrainingBoardRow => r !== null)

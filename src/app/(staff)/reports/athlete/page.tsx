@@ -35,7 +35,7 @@ export default async function AthleteReportPickerPage({ searchParams }: { search
   const windowFrom = addDays(today, -(WELLNESS_WINDOW_DAYS - 1));
 
   const [groups, rows] = await Promise.all([fetchGroups(db, orgId), fetchSquadList(db, orgId, groupIds)]);
-  const wellness = await fetchWellnessRecency(db, rows.map((r) => r.id), windowFrom);
+  const wellness = await fetchWellnessRecency(db, rows.map((r) => r.id), windowFrom, today);
 
   /* Grouped by POSITIONAL group, which is what the design calls a unit and
    * what this schema already models — group_type 'positional' is Backs and

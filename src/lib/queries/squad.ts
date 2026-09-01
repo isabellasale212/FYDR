@@ -39,13 +39,22 @@ export type SquadRow = {
  *  over a season pushes past PostgREST's ceiling, and a short page would
  *  silently understate submissions rather than error.
  *
- *  `lastEntry` is deliberately all-time, not bounded by the window: an athlete
- *  who last submitted three weeks ago should show that date rather than a dash
- *  that reads the same as "never". */
+ *  `lastEntry` is deliberately all-time BACKWARDS, not bounded by the window:
+ *  an athlete who last submitted three weeks ago should show that date rather
+ *  than a dash that reads the same as "never".
+ *
+ *  BOUNDED AT BOTH ENDS, THOUGH, AND THAT IS NOT PEDANTRY. A trailing window
+ *  written as `entry_date >= from` alone counts anything dated after `from`,
+ *  including dates in the future — and this org's own data has wellness rows
+ *  dated 2033, which made one athlete read "2 of 7" while his real last entry
+ *  was three weeks ago. formatDate prints no year, so "2033-07-29" rendered as
+ *  "Fri 29 Jul" and looked entirely plausible. An entry dated after today has
+ *  not happened yet, so it counts towards neither figure. */
 export async function fetchWellnessRecency(
   db: Db,
   athleteIds: readonly string[],
   fromDate: string,
+  toDate: string,
 ): Promise<Map<string, { last7: number; lastEntry: string | null }>> {
   const out = new Map<string, { last7: number; lastEntry: string | null }>();
   if (athleteIds.length === 0) return out;
@@ -63,6 +72,8 @@ export async function fetchWellnessRecency(
 
   for (const r of rows) {
     if (!r.athlete_id || !r.entry_date) continue;
+    // Not yet happened: neither a submission in the window nor a "last report".
+    if (r.entry_date > toDate) continue;
     const cur = out.get(r.athlete_id) ?? { last7: 0, lastEntry: null };
     if (r.entry_date >= fromDate) cur.last7 += 1;
     if (cur.lastEntry === null || r.entry_date > cur.lastEntry) cur.lastEntry = r.entry_date;

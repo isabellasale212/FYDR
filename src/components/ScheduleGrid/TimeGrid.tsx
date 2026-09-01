@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
+
 import { PXH, TYPE_STYLE, clockLabel, type DbSessionType } from '@/lib/scheduleGeometry';
 import { enumLabel, mdLabel } from '@/lib/format';
 
@@ -61,6 +63,37 @@ function hourLabel(h: number): string {
  *  instead of forcing a flat 1440px scroll). */
 export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridHeightPx, onSelect, onDayHeaderClick }: Props) {
   const HOURS = Array.from({ length: h1 - h0 + 1 }, (_, i) => h0 + i);
+  const bodyRef = useRef<HTMLDivElement>(null);
+
+  /* A block is a fixed height — the session's real duration — so its content
+   * has to fit or be cut. Three text lines fit a one-hour block, but only if
+   * the session's name takes one of them: "Speed & power testing" wraps to two
+   * and pushed the group line 13px past the bottom edge, where overflow:hidden
+   * silently ate it and the clamped name ended "power…". Cutting either one is
+   * wrong, so the secondary line goes instead: the name is what identifies the
+   * session, and the group list is already ellipsised to a fragment.
+   *
+   * Measured rather than guessed from a height threshold, because whether a
+   * name wraps depends on the column width, which is fluid — the same title
+   * fits on one line at 1440px and two at 1100px. Re-measured on resize and
+   * once webfonts land, since both change the wrap point. */
+  useEffect(() => {
+    const el = bodyRef.current;
+    if (!el) return;
+    const fit = () => {
+      el.querySelectorAll<HTMLElement>('.sg-block').forEach((b) => {
+        if (!b.querySelector('.sg-block-group')) return;
+        b.removeAttribute('data-tight');
+        if (b.scrollHeight > b.clientHeight) b.setAttribute('data-tight', '');
+      });
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    void document.fonts?.ready.then(fit);
+    return () => ro.disconnect();
+  });
+
   return (
     <div className="card sg-grid-card">
       <div className="sg-grid-inner">
@@ -92,7 +125,7 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
           ))}
         </div>
 
-        <div className="sg-grid-body">
+        <div className="sg-grid-body" ref={bodyRef}>
           <div className="sg-hour-gutter" style={{ height: gridHeightPx }}>
             {HOURS.map((h) => (
               <span key={h} className="sg-hour-label mono" style={{ top: (h - h0) * PXH }}>
@@ -147,6 +180,7 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
                         zIndex: b.zIndex,
                         '--tone': style.tone,
                         '--bc': style.bc,
+                        '--time': style.text,
                       } as React.CSSProperties
                     }
                     onClick={() => onSelect(b.id)}

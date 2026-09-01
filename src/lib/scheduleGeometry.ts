@@ -69,7 +69,19 @@ export type DbSessionType =
   | 'meeting'
   | 'rehab';
 
-export type TypeStyle = { tone: string; bg: string; bc: string };
+export type TypeStyle = {
+  tone: string;
+  bg: string;
+  bc: string;
+  /** The block's TIME line, which the design carries in the domain's own
+   *  colour rather than plain muted grey — it is what tells you a block's
+   *  type before you read its name. Always the derived *-pill-text token,
+   *  never the raw tone: the tone is a fill colour and sits below 4.5:1 as
+   *  text on its own tint, the same shade-too-light pattern the report and
+   *  nutrition designs had. Types whose tone is already a neutral slate
+   *  (recovery, meeting) have no derived token and stay muted. */
+  text: string;
+};
 
 /* Colours ported 1:1 from §10's TYPE table. Every value is a CSS custom
  * property reference, never a literal hex/rgba — base.css's own rule
@@ -84,12 +96,12 @@ export type TypeStyle = { tone: string; bg: string; bc: string };
  * tokens.css (§4.5's own triplet convention) rather than written as a raw
  * literal here. */
 export const TYPE_STYLE: Record<DbSessionType, TypeStyle> = {
-  training: { tone: 'var(--accent)', bg: 'rgb(var(--accent-rgb) / 0.08)', bc: 'rgb(var(--accent-rgb) / 0.22)' },
-  gym: { tone: 'var(--gym)', bg: 'rgb(var(--gym-rgb) / 0.12)', bc: 'rgb(var(--gym-rgb) / 0.35)' },
-  rehab: { tone: 'var(--warn)', bg: 'rgb(var(--warn-rgb) / 0.12)', bc: 'rgb(var(--warn-rgb) / 0.35)' },
-  testing: { tone: 'var(--good)', bg: 'rgb(var(--good-rgb) / 0.14)', bc: 'rgb(var(--good-rgb) / 0.35)' },
-  match: { tone: 'var(--bad)', bg: 'rgb(var(--bad-rgb) / 0.1)', bc: 'rgb(var(--bad-rgb) / 0.32)' },
-  meeting: { tone: 'rgb(var(--ink-rgb) / 0.3)', bg: 'rgb(var(--ink-rgb) / 0.04)', bc: 'var(--border)' },
+  training: { tone: 'var(--accent)', bg: 'rgb(var(--accent-rgb) / 0.08)', bc: 'rgb(var(--accent-rgb) / 0.22)', text: 'var(--accent-pill-text)' },
+  gym: { tone: 'var(--gym)', bg: 'rgb(var(--gym-rgb) / 0.12)', bc: 'rgb(var(--gym-rgb) / 0.35)', text: 'var(--warn-pill-text)' },
+  rehab: { tone: 'var(--warn)', bg: 'rgb(var(--warn-rgb) / 0.12)', bc: 'rgb(var(--warn-rgb) / 0.35)', text: 'var(--warn-pill-text)' },
+  testing: { tone: 'var(--good)', bg: 'rgb(var(--good-rgb) / 0.14)', bc: 'rgb(var(--good-rgb) / 0.35)', text: 'var(--good-pill-text)' },
+  match: { tone: 'var(--bad)', bg: 'rgb(var(--bad-rgb) / 0.1)', bc: 'rgb(var(--bad-rgb) / 0.32)', text: 'var(--bad-pill-text)' },
+  meeting: { tone: 'rgb(var(--ink-rgb) / 0.3)', bg: 'rgb(var(--ink-rgb) / 0.04)', bc: 'var(--border)', text: 'var(--muted)' },
   /* Recovery was --good, the same cyan as testing directly above it, because
    * SCHEDULE-SPEC.md §1 gives both types that colour. The light-theme handoff
    * §6 gives Recovery its own slate (--domain-recovery) as a distinct domain,
@@ -102,6 +114,7 @@ export const TYPE_STYLE: Record<DbSessionType, TypeStyle> = {
     tone: 'var(--domain-recovery)',
     bg: 'rgb(var(--domain-recovery-rgb) / 0.14)',
     bc: 'rgb(var(--domain-recovery-rgb) / 0.4)',
+    text: 'var(--muted)',
   },
 };
 

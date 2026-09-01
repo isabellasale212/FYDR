@@ -3324,11 +3324,13 @@ img.av {
   align-items: center;
   gap: 8px;
 }
+/* The design's own column widths. The old set was tight enough that "Bodyweight"
+   and a three-digit load sat almost against the next column. */
 .prog-ex-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 58px 62px 84px 88px;
+  grid-template-columns: minmax(0, 1fr) 80px 80px 120px 110px;
   gap: 8px;
-  padding: 9px 12px;
+  padding: 12px 16px;
   border-top: 1px solid var(--hair);
   align-items: center;
 }
@@ -8237,4 +8239,15 @@ button.dash-stat {
   align-items: center;
   gap: 10px;
   flex: none;
+}
+
+/* Sets, reps and load are DATA, not captions. They were rendering at the .tiny
+   caption tier — 11.5px and muted — which put the numbers a coach came to read
+   below the labels naming them. Tabular so a column of them lines up. */
+.prog-ex-num {
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+.prog-ex-num[data-quiet='true'] {
+  color: var(--faint);
 }

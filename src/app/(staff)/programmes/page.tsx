@@ -25,7 +25,7 @@ function loadLabel(ex: ResolvedExercise): string {
   if (ex.load_basis === 'absolute') {
     if (ex.load_value === null) return '—';
     const bare = ex.category === 'plyo' || ex.category === 'conditioning' || ex.category === 'mobility';
-    return bare ? String(ex.load_value) : `${ex.load_value}kg`;
+    return bare ? String(ex.load_value) : `${ex.load_value} kg`;
   }
   if (ex.load_basis === 'percent_1rm') {
     if (ex.load_value === null) return '—';
@@ -145,6 +145,15 @@ export default async function ProgrammesPage({
                   data-rehab={p.programme_type === 'rehab'}
                 >
                   <div className="nm">{p.name}</div>
+                  {/* The tint says "this one is different"; the pill says how.
+                      A colour alone is not a label, and rehab is the one
+                      programme type with a different author and a different
+                      reader (CLAUDE.md rule 3), so it gets named. */}
+                  {p.programme_type === 'rehab' ? (
+                    <span className="pill pill-bad" style={{ marginLeft: 8 }}>
+                      rehab
+                    </span>
+                  ) : null}
                   <div className="tiny" style={{ marginTop: 3 }}>
                     {assignedLine(p)}
                   </div>
@@ -179,8 +188,10 @@ export default async function ProgrammesPage({
                   {detail.blocks.length > 0 ? ` · ${detail.blocks.length} block${detail.blocks.length === 1 ? '' : 's'}` : ''}
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                  <h2 style={{ margin: 0, fontSize: 19 }}>{selected.name}</h2>
-                  <span className="pill pill-neutral">{enumLabel(selected.status)}</span>
+                  <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-0.025em' }}>{selected.name}</h2>
+                  <span className={`pill ${selected.status === 'active' ? 'pill-good' : 'pill-neutral'}`}>
+                    {enumLabel(selected.status)}
+                  </span>
                   <span className="pill pill-accent">
                     {selected.assigned_athlete_count} athlete{selected.assigned_athlete_count === 1 ? '' : 's'}
                   </span>
@@ -262,10 +273,12 @@ export default async function ProgrammesPage({
                                         </span>
                                       ) : null}
                                     </span>
-                                    <span className="tiny">{ex.sets}</span>
-                                    <span className="tiny">{repsLabel(ex)}</span>
-                                    <span className="tiny">{loadLabel(ex)}</span>
-                                    <span className="tiny">—</span>
+                                    <span className="prog-ex-num">{ex.sets}</span>
+                                    <span className="prog-ex-num">{repsLabel(ex)}</span>
+                                    <span className="prog-ex-num">{loadLabel(ex)}</span>
+                                    <span className="prog-ex-num" data-quiet="true">
+                                      —
+                                    </span>
                                   </div>
                                 ))}
                               </div>

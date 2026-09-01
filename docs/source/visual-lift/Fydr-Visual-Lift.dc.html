@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/styles.css">
+<script src="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/_ds_bundle.js"></script>
+<style>
+  body { margin: 0; background: #d7dfef; font-family: 'Sora', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #1f6fea; text-decoration: none; }
+  a:hover { color: #13161c; }
+  ::selection { background: rgba(51,182,255,0.35); }
+  @keyframes ring-in { from { stroke-dashoffset: 251; } }
+  :root { --font-mono: 'Sora', system-ui, sans-serif; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</helmet>
+
+<section style="padding: 56px 56px 0; display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; align-items: baseline; gap: 14px">
+    <div style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #5b636e">Turn 2 · the same scheme in the opposite theme</div>
+    <div style="height: 1px; flex: 1; background: rgba(16,18,23,0.12)"></div>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start">
+
+    <div id="2a" style="display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <div style="font-size: 12px; font-weight: 500; padding: 3px 9px; border-radius: 7px; background: #13161c; color: #fff">2a</div>
+        <div style="font-size: 14px; font-weight: 700; color: #13161c">Dashboard — light theme</div>
+        <div style="font-size: 12px; color: #5b636e">same colour scheme as 1b, on white paper</div>
+      </div>
+
+      <div style="width: 1280px; height: 900px; overflow: hidden; border-radius: 16px; border: 1px solid rgba(16,18,23,0.12); box-shadow: 0 1px 3px rgba(16,18,23,0.08); display: flex; background: #e4ebf9; color: #13161c; position: relative">
+
+        <!-- sidebar -->
+        <div style="width: 234px; flex: none; background: #ffffff; border-right: 1px solid rgba(16,18,23,0.085); display: flex; flex-direction: column; padding: 26px 14px 20px; position: relative; z-index: 1">
+          <div style="display: flex; align-items: center; gap: 3px; padding: 0 10px 26px">
+            <div style="font-size: 21px; font-weight: 800; letter-spacing: -0.03em; color: #13161c">Fydr</div>
+            <div style="width: 7px; height: 7px; border-radius: 50%; background: linear-gradient(150deg, #1f6fea, #33b6ff); margin-bottom: 3px"></div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; background: rgba(31,111,234,0.16); border: 1px solid rgba(31,111,234,0.5); color: #1f6fea; font-size: 14px; font-weight: 700">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="0.9" y="0.9" width="12.2" height="12.2" rx="1.6"></rect><path d="M7 0.9v12.2M0.9 7h12.2"></path></svg>
+              Dashboard
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #5b636e; font-size: 14px; font-weight: 600" style-hover="color: #13161c; background: rgba(31,111,234,0.06)">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="0.6" y="0.6" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="5.7" y="0.6" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="10.8" y="0.6" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="0.6" y="5.7" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="5.7" y="5.7" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="10.8" y="5.7" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="0.6" y="10.8" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="5.7" y="10.8" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="10.8" y="10.8" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect></svg>
+              Squad overview
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #5b636e; font-size: 14px; font-weight: 600" style-hover="color: #13161c; background: rgba(31,111,234,0.06)">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5.8"></circle><path d="M7 3.6V7l2.6 1.6"></path></svg>
+              Schedule
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #5b636e; font-size: 14px; font-weight: 600" style-hover="color: #13161c; background: rgba(31,111,234,0.06)">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="0.8" y="2.6" width="12.4" height="9.4" rx="2.6"></rect><path d="M4.4 2.6V1.4h5.2v1.2"></path></svg>
+              Reports
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #5b636e; font-size: 14px; font-weight: 600" style-hover="color: #13161c; background: rgba(31,111,234,0.06)">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="10" height="10" rx="1.5" transform="rotate(45 7 7)" fill="currentColor" stroke="none"></rect></svg>
+              Nutrition
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #5b636e; font-size: 14px; font-weight: 600" style-hover="color: #13161c; background: rgba(31,111,234,0.06)">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="#f5c518"><path d="M8.4 0L2.2 8h3.3L5.1 14L11.8 5.6H8.1z"></path></svg>
+              Gym programme
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #5b636e; font-size: 14px; font-weight: 600" style-hover="color: #13161c; background: rgba(31,111,234,0.06)">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="0.5" y="2.4" width="13" height="1.7" rx="0.85" fill="currentColor" stroke="none"></rect><rect x="0.5" y="6.2" width="13" height="1.7" rx="0.85" fill="currentColor" stroke="none"></rect><rect x="0.5" y="10" width="13" height="1.7" rx="0.85" fill="currentColor" stroke="none"></rect></svg>
+              Leaderboard
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #5b636e; font-size: 14px; font-weight: 600" style-hover="color: #13161c; background: rgba(31,111,234,0.06)">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><defs><pattern id="kitHatch1" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="1.3" height="3" fill="currentColor"></rect></pattern></defs><rect x="0.8" y="0.8" width="12.4" height="12.4" rx="1.6" fill="url(#kitHatch1)" stroke="currentColor" stroke-width="1.1"></rect></svg>
+              Analytics
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #5b636e; font-size: 14px; font-weight: 600" style-hover="color: #13161c; background: rgba(31,111,234,0.06)">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.2 1.8"><circle cx="7" cy="7" r="5.4"></circle></svg>
+              Settings
+            </div>
+          </div>
+
+          <div style="flex: 1"></div>
+
+          <div style="border-top: 1px solid rgba(16,18,23,0.085); padding: 16px 12px 0; display: flex; flex-direction: column; gap: 3px">
+            <div style="font-size: 13px; font-weight: 700; color: #13161c">Adam Selby</div>
+            <div style="font-size: 12px; line-height: 1.45; color: #929aa5">Ashcombe Rugby Club · athlete, coach</div>
+            <div style="display: flex; align-items: center; gap: 9px; margin-top: 14px; font-size: 13px; font-weight: 600; color: #5b636e">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5.4 12.4H2.4V1.6h3M8 4.2l2.8 2.8L8 9.8M10.8 7H5.6"></path></svg>
+              Log out
+            </div>
+          </div>
+        </div>
+
+        <!-- content -->
+        <div style="flex: 1; min-width: 0; padding: 22px 30px 20px; position: relative; z-index: 1; display: flex; flex-direction: column; gap: 11px">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; flex: none">
+            <div style="display: flex; flex-direction: column; gap: 5px">
+              <div style="font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #929aa5">Week of Mon, 10 Aug 2026 · MD Saturday · v Northampton Saints · whole squad</div>
+              <div style="font-size: 30px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1">Dashboard</div>
+            </div>
+            <div style="display: flex; gap: 9px; flex: none">
+              <div style="padding: 9px 15px; border-radius: 12px; border: 1px solid rgba(16,18,23,0.085); font-size: 13px; font-weight: 600; color: #5b636e" style-hover="border-color: rgba(31,111,234,0.4); color: #13161c">Print</div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px; flex: none">
+            <div style="display: flex; align-items: center; gap: 6px; padding: 9px 17px; border-radius: 20px; background: #1f6fea; border: 1px solid #3c85f7; font-size: 13px; font-weight: 700; color: #fff; box-shadow: 0 1px 3px rgba(16,18,23,0.08)">✓ Whole squad</div>
+            <div style="padding: 9px 17px; border-radius: 20px; border: 1px solid rgba(16,18,23,0.085); font-size: 13px; font-weight: 600; color: #5b636e" style-hover="border-color: rgba(31,111,234,0.4); color: #13161c">Backs</div>
+            <div style="padding: 9px 17px; border-radius: 20px; border: 1px solid rgba(16,18,23,0.085); font-size: 13px; font-weight: 600; color: #5b636e" style-hover="border-color: rgba(31,111,234,0.4); color: #13161c">Forwards</div>
+            <div style="padding: 9px 17px; border-radius: 20px; border: 1px solid rgba(16,18,23,0.085); font-size: 13px; font-weight: 600; color: #5b636e" style-hover="border-color: rgba(31,111,234,0.4); color: #13161c">Rehab</div>
+            <div style="padding: 9px 17px; border-radius: 20px; border: 1px solid rgba(16,18,23,0.085); font-size: 13px; font-weight: 600; color: #5b636e" style-hover="border-color: rgba(31,111,234,0.4); color: #13161c">Academy</div>
+          </div>
+
+          <!-- flag banner: coloured urgency border, not a heavier shadow -->
+          <div style="border-radius: 18px; border: 1px solid rgba(241,90,74,0.55); background: rgba(241,90,74,0.14); padding: 10px 14px; display: flex; align-items: center; gap: 9px; flex: none">
+            <svg width="16" height="16" viewBox="0 0 14 14" fill="#f15a4a"><path d="M3 1h7.4L8.6 4.2l1.8 3.2H3z"></path><rect x="2.1" y="1" width="1.1" height="12" rx="0.5"></rect></svg>
+            <div style="display: flex; align-items: center; gap: 7px; white-space: nowrap; font-size: 12.5px">
+              <span style="font-weight: 500; color: #13161c; font-variant-numeric: tabular-nums">9</span>
+              <span style="font-weight: 700; color: #13161c">open flags</span>
+              <span style="color: #929aa5">·</span>
+              <span style="padding: 2px 9px; border-radius: 20px; background: rgba(241,90,74,0.24); color: #7a1f14; font-weight: 700">3 high</span>
+              <span style="padding: 2px 9px; border-radius: 20px; background: rgba(246,171,47,0.22); color: #6b4708; font-weight: 700">4 medium</span>
+              <span style="color: #929aa5">·</span>
+              <span style="color: #5b636e">2 awaiting acknowledgement · top 5 athletes shown</span>
+            </div>
+            <div style="flex: 1"></div>
+            <div style="color: #929aa5; font-size: 15px">⌄</div>
+          </div>
+
+          <sc-if value="{{ flagsExpanded }}" hint-placeholder-val="{{ true }}">
+            <div style="border-radius: 18px; border: 1px solid rgba(16,18,23,0.085); background: #ffffff; padding: 4px 16px; display: flex; flex-direction: column">
+              <div style="display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid rgba(16,18,23,0.05)">
+                <div style="width: 6px; height: 6px; border-radius: 50%; background: #f15a4a; flex: none"></div>
+                <div style="font-size: 13px; font-weight: 700; width: 150px; flex: none">Nash, Elliot</div>
+                <div style="font-size: 12px; color: #5b636e; flex: 1">soreness 1 of 5, third consecutive morning below his baseline</div>
+                <div style="font-size: 11px; color: #929aa5; font-variant-numeric: tabular-nums">Mon 3, Tue 4, Wed 5 Aug · 2, 2, 1 · baseline 4</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px; padding: 11px 0">
+                <div style="width: 6px; height: 6px; border-radius: 50%; background: #f6ab2f; flex: none"></div>
+                <div style="font-size: 13px; font-weight: 700; width: 150px; flex: none">Okonkwo, Dan</div>
+                <div style="font-size: 12px; color: #5b636e; flex: 1">acute to chronic ratio above 1.5 across the last seven days</div>
+                <div style="font-size: 11px; color: #929aa5; font-variant-numeric: tabular-nums">n = 18 sessions · ratio 1.62 · threshold 1.30</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- KPI strip, one domain colour per tile -->
+          <div style="border-radius: 18px; border: 1px solid rgba(16,18,23,0.085); background: #ffffff; box-shadow: 0 1px 3px rgba(16,18,23,0.08); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); overflow: hidden; flex: none">
+            <div style="padding: 14px 18px 14px; border-right: 1px solid rgba(16,18,23,0.05); display: flex; flex-direction: column; gap: 5px">
+              <div style="display: flex; align-items: center; gap: 7px">
+                <div style="width: 6px; height: 6px; border-radius: 50%; background: #4fd6ff"></div>
+                <div style="font-size: 11px; font-weight: 500; letter-spacing: 0.13em; text-transform: uppercase; color: #929aa5">Need you</div>
+              </div>
+              <div style="font-size: 34px; font-weight: 500; letter-spacing: -0.02em; color: #929aa5; font-variant-numeric: tabular-nums">0</div>
+              <div style="font-size: 12.5px; color: #5b636e">athletes today</div>
+              <div style="font-size: 11px; color: #929aa5">across wellness and GPS</div>
+            </div>
+            <div style="padding: 14px 18px 14px; border-right: 1px solid rgba(16,18,23,0.05); display: flex; flex-direction: column; gap: 5px">
+              <div style="display: flex; align-items: center; gap: 7px">
+                <div style="width: 6px; height: 6px; border-radius: 50%; background: #4fd6ff"></div>
+                <div style="font-size: 11px; font-weight: 500; letter-spacing: 0.13em; text-transform: uppercase; color: #929aa5">Wellness in</div>
+              </div>
+              <div style="display: flex; align-items: baseline; gap: 2px">
+                <div style="font-size: 34px; font-weight: 500; letter-spacing: -0.02em; color: #0d5f75; font-variant-numeric: tabular-nums">97</div>
+                <div style="font-size: 15px; color: #0d7a96">%</div>
+              </div>
+              <div style="height: 4px; border-radius: 2px; background: rgba(16,18,23,0.1); overflow: hidden"><div style="width: 97%; height: 100%; background: #4fd6ff"></div></div>
+              <div style="font-size: 12.5px; color: #5b636e">28 of 29 today</div>
+              <div style="font-size: 11px; color: #929aa5">window closes 09:00</div>
+            </div>
+            <div style="padding: 14px 18px 14px; border-right: 1px solid rgba(16,18,23,0.05); display: flex; flex-direction: column; gap: 5px">
+              <div style="display: flex; align-items: center; gap: 7px">
+                <div style="width: 6px; height: 6px; border-radius: 50%; background: #f15a4a"></div>
+                <div style="font-size: 11px; font-weight: 500; letter-spacing: 0.13em; text-transform: uppercase; color: #929aa5">Available</div>
+              </div>
+              <div style="display: flex; align-items: baseline; gap: 6px">
+                <div style="font-size: 34px; font-weight: 500; letter-spacing: -0.02em; color: #13161c; font-variant-numeric: tabular-nums">22</div>
+                <div style="font-size: 15px; color: #929aa5">/ 28</div>
+              </div>
+              <div style="display: flex; gap: 3px; height: 4px">
+                <div style="flex: 22; border-radius: 2px; background: #4fd6ff"></div>
+                <div style="flex: 3; border-radius: 2px; background: #f6ab2f"></div>
+                <div style="flex: 3; border-radius: 2px; background: #f15a4a"></div>
+              </div>
+              <div style="font-size: 12.5px; color: #5b636e">3 modified, 3 out</div>
+              <div style="font-size: 11px; line-height: 1.5; color: #929aa5">injury status set by medical, other absences by coach</div>
+            </div>
+            <div style="padding: 14px 18px 14px; border-right: 1px solid rgba(16,18,23,0.05); display: flex; flex-direction: column; gap: 5px; background: rgba(241,90,74,0.07)">
+              <div style="display: flex; align-items: center; gap: 7px">
+                <div style="width: 6px; height: 6px; border-radius: 50%; background: #f15a4a"></div>
+                <div style="font-size: 11px; font-weight: 500; letter-spacing: 0.13em; text-transform: uppercase; color: #8a2418">Open flags</div>
+              </div>
+              <div style="font-size: 34px; font-weight: 500; letter-spacing: -0.02em; color: #8a2418; font-variant-numeric: tabular-nums">9</div>
+              <div style="display: flex; gap: 3px; height: 4px">
+                <div style="flex: 3; border-radius: 2px; background: #f15a4a"></div>
+                <div style="flex: 4; border-radius: 2px; background: #f6ab2f"></div>
+                <div style="flex: 2; border-radius: 2px; background: rgba(16,18,23,0.16)"></div>
+              </div>
+              <div style="font-size: 12.5px; line-height: 1.45; color: #5b636e">2 awaiting acknowledgement</div>
+              <div style="font-size: 11px; color: #929aa5">wellness, gym, GPS</div>
+            </div>
+            <div style="padding: 14px 18px 14px; display: flex; flex-direction: column; gap: 5px">
+              <div style="display: flex; align-items: center; gap: 7px">
+                <div style="width: 6px; height: 6px; border-radius: 50%; background: #33b6ff"></div>
+                <div style="font-size: 11px; font-weight: 500; letter-spacing: 0.13em; text-transform: uppercase; color: #929aa5">To matchday</div>
+              </div>
+              <div style="display: flex; align-items: baseline; gap: 7px">
+                <div style="font-size: 34px; font-weight: 500; letter-spacing: -0.02em; color: #13161c; font-variant-numeric: tabular-nums">6</div>
+                <div style="font-size: 12.5px; color: #5b636e">days</div>
+              </div>
+              <div style="font-size: 12.5px; color: #5b636e">v Northampton Saints</div>
+              <div style="font-size: 11px; color: #929aa5">0 sessions left to run</div>
+            </div>
+          </div>
+
+          <!-- week: one strip, activities listed per day -->
+          <div style="border-radius: 18px; border: 1px solid rgba(16,18,23,0.085); background: #ffffff; box-shadow: 0 1px 3px rgba(16,18,23,0.08); overflow: hidden; flex: none">
+            <div style="display: flex; align-items: baseline; gap: 10px; padding: 9px 14px; border-bottom: 1px solid rgba(16,18,23,0.05)">
+              <div style="font-size: 13.5px; font-weight: 700">This week</div>
+              <div style="font-size: 11px; color: #929aa5">8 sessions · Mon 10 to Sat 15 Aug</div>
+              <div style="flex: 1"></div>
+              <div style="display: flex; align-items: center; gap: 12px; font-size: 10.5px; color: #929aa5">
+                <div style="display: flex; align-items: center; gap: 5px"><div style="width: 5px; height: 5px; border-radius: 50%; background: #f5c518"></div>Gym</div>
+                <div style="display: flex; align-items: center; gap: 5px"><div style="width: 5px; height: 5px; border-radius: 50%; background: #33b6ff"></div>Pitch</div>
+                <div style="display: flex; align-items: center; gap: 5px"><div style="width: 5px; height: 5px; border-radius: 50%; background: #4fd6ff"></div>Testing</div>
+                <div style="display: flex; align-items: center; gap: 5px"><div style="width: 5px; height: 5px; border-radius: 50%; background: #8a94b8"></div>Recovery</div>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr))">
+              <div style="border-right: 1px solid rgba(16,18,23,0.05); background: rgba(16,18,23,0.02); padding: 11px 14px 12px; display: flex; flex-direction: column; gap: 7px">
+                <div style="display: flex; align-items: baseline; gap: 6px">
+                  <div style="font-size: 13.5px; font-weight: 700; flex: none; white-space: nowrap; color: #13161c">Mon 10</div>
+                  <div style="font-size: 10px; letter-spacing: 0.06em; color: #929aa5; flex: none; white-space: nowrap">MD-5</div>
+                  <div style="flex: 1"></div>
+                  <div style="font-size: 10px; color: #929aa5; flex: none; white-space: nowrap; font-variant-numeric: tabular-nums">40 min</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px">
+                <div style="display: flex; align-items: baseline; gap: 7px">
+                  <div style="width: 5px; height: 5px; border-radius: 50%; background: #8a94b8; flex: none; transform: translateY(-2px)"></div>
+                  <div style="flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; line-height: 1.35; color: #13161c">Recovery</div>
+                  </div></div>
+              </div>
+              <div style="border-right: 1px solid rgba(16,18,23,0.05); background: transparent; padding: 11px 14px 12px; display: flex; flex-direction: column; gap: 7px">
+                <div style="display: flex; align-items: baseline; gap: 6px">
+                  <div style="font-size: 13.5px; font-weight: 700; flex: none; white-space: nowrap; color: #13161c">Tue 11</div>
+                  <div style="font-size: 10px; letter-spacing: 0.06em; color: #929aa5; flex: none; white-space: nowrap">MD-4</div>
+                  <div style="flex: 1"></div>
+                  <div style="font-size: 10px; color: #929aa5; flex: none; white-space: nowrap; font-variant-numeric: tabular-nums">90 min</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px">
+                <div style="display: flex; align-items: baseline; gap: 7px">
+                  <div style="width: 5px; height: 5px; border-radius: 50%; background: #f5c518; flex: none; transform: translateY(-2px)"></div>
+                  <div style="flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; line-height: 1.35; color: #13161c">Lower body</div>
+                  </div>
+                <div style="display: flex; align-items: baseline; gap: 7px">
+                  <div style="width: 5px; height: 5px; border-radius: 50%; background: #33b6ff; flex: none; transform: translateY(-2px)"></div>
+                  <div style="flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; line-height: 1.35; color: #13161c">Conditioning</div>
+                  </div></div>
+              </div>
+              <div style="border-right: 1px solid rgba(16,18,23,0.05); background: transparent; padding: 11px 14px 12px; display: flex; flex-direction: column; gap: 7px">
+                <div style="display: flex; align-items: baseline; gap: 6px">
+                  <div style="font-size: 13.5px; font-weight: 700; flex: none; white-space: nowrap; color: #13161c">Wed 12</div>
+                  <div style="font-size: 10px; letter-spacing: 0.06em; color: #929aa5; flex: none; white-space: nowrap">MD-3</div>
+                  <div style="flex: 1"></div>
+                  <div style="font-size: 10px; color: #929aa5; flex: none; white-space: nowrap; font-variant-numeric: tabular-nums">95 min</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px">
+                <div style="display: flex; align-items: baseline; gap: 7px">
+                  <div style="width: 5px; height: 5px; border-radius: 50%; background: #4fd6ff; flex: none; transform: translateY(-2px)"></div>
+                  <div style="flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; line-height: 1.35; color: #13161c">Speed & power testing</div>
+                  </div>
+                <div style="display: flex; align-items: baseline; gap: 7px">
+                  <div style="width: 5px; height: 5px; border-radius: 50%; background: #33b6ff; flex: none; transform: translateY(-2px)"></div>
+                  <div style="flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; line-height: 1.35; color: #13161c">Team run</div>
+                  </div></div>
+              </div>
+              <div style="border-right: 1px solid rgba(16,18,23,0.05); background: rgba(241,90,74,0.09); padding: 11px 14px 12px; display: flex; flex-direction: column; gap: 7px">
+                <div style="display: flex; align-items: baseline; gap: 6px">
+                  <div style="font-size: 13.5px; font-weight: 700; flex: none; white-space: nowrap; color: #13161c">Thu 13</div>
+                  <div style="font-size: 10px; letter-spacing: 0.06em; color: #929aa5; flex: none; white-space: nowrap">MD-2</div>
+                  <div style="flex: 1"></div>
+                  <div style="font-size: 10px; color: #929aa5; flex: none; white-space: nowrap; font-variant-numeric: tabular-nums">95 min</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px">
+                <div style="display: flex; align-items: baseline; gap: 7px">
+                  <div style="width: 5px; height: 5px; border-radius: 50%; background: #f5c518; flex: none; transform: translateY(-2px)"></div>
+                  <div style="flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; line-height: 1.35; color: #13161c">Upper body</div>
+                  </div>
+                <div style="display: flex; align-items: baseline; gap: 7px">
+                  <div style="width: 5px; height: 5px; border-radius: 50%; background: #33b6ff; flex: none; transform: translateY(-2px)"></div>
+                  <div style="flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; line-height: 1.35; color: #13161c">Team run</div>
+                  </div>
+                <div style="display: flex; align-items: center; gap: 6px; padding-top: 2px">
+                  <svg width="11" height="11" viewBox="0 0 14 14" fill="#f15a4a"><path d="M3 1h7.4L8.6 4.2l1.8 3.2H3z"></path><rect x="2.1" y="1" width="1.1" height="12" rx="0.5"></rect></svg>
+                  <div style="font-size: 11px; font-weight: 500; color: #7a1f14">1 flag</div>
+                </div></div>
+              </div>
+              <div style="border-right: 1px solid rgba(16,18,23,0.05); background: transparent; padding: 11px 14px 12px; display: flex; flex-direction: column; gap: 7px">
+                <div style="display: flex; align-items: baseline; gap: 6px">
+                  <div style="font-size: 13.5px; font-weight: 700; flex: none; white-space: nowrap; color: #13161c">Fri 14</div>
+                  <div style="font-size: 10px; letter-spacing: 0.06em; color: #929aa5; flex: none; white-space: nowrap">MD-1</div>
+                  <div style="flex: 1"></div>
+                  <div style="font-size: 10px; color: #929aa5; flex: none; white-space: nowrap; font-variant-numeric: tabular-nums">30 min</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px">
+                <div style="display: flex; align-items: baseline; gap: 7px">
+                  <div style="width: 5px; height: 5px; border-radius: 50%; background: #33b6ff; flex: none; transform: translateY(-2px)"></div>
+                  <div style="flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; line-height: 1.35; color: #13161c">Captain's run</div>
+                  </div></div>
+              </div>
+              <div style="background: transparent; padding: 11px 14px 12px; display: flex; flex-direction: column; gap: 7px">
+                <div style="display: flex; align-items: baseline; gap: 6px">
+                  <div style="font-size: 13.5px; font-weight: 700; flex: none; white-space: nowrap; color: #5b636e">Sat 15</div>
+                  <div style="font-size: 10.5px; letter-spacing: 0.08em; color: #1f6fea">MD</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px">
+                <div style="font-size: 11.5px; color: #929aa5">Nothing scheduled</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- today + ready panel -->
+          <div style="display: grid; grid-template-columns: minmax(0, 1fr) 460px; gap: 20px; align-items: start; padding-top: 4px">
+            <div style="display: flex; flex-direction: column; gap: 10px">
+              <div style="display: flex; align-items: baseline; gap: 14px">
+                <div style="font-size: 20px; font-weight: 800; letter-spacing: -0.025em">Today</div>
+                <div style="flex: 1"></div>
+                <div style="font-size: 11.5px; color: #929aa5; font-variant-numeric: tabular-nums">Sun 16 Aug · 0 sessions</div>
+              </div>
+              <div style="border-radius: 18px; border: 1px dashed rgba(16,18,23,0.14); background: transparent; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 6px">
+                <div style="font-size: 13px; color: #5b636e">Nothing is scheduled for this day, for this filter.</div>
+                <div style="font-size: 11px; color: #929aa5">a typical MD-6</div>
+              </div>
+            </div>
+
+            <div style="border-radius: 18px; border: 1px solid rgba(31,111,234,0.42); background: rgba(31,111,234,0.09); box-shadow: 0 1px 3px rgba(16,18,23,0.08); padding: 18px 20px 4px; display: flex; flex-direction: column; gap: 14px">
+              <div style="display: flex; align-items: flex-start; gap: 16px">
+                <div style="display: flex; flex-direction: column; gap: 4px; flex: 1">
+                  <div style="font-size: 16px; font-weight: 800; letter-spacing: -0.02em">Ready for Saturday</div>
+                  <div style="font-size: 11.5px; color: #5b636e">v Northampton Saints · home · 6 days out</div>
+                </div>
+                <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Dial" size="{{ d58 }}" value="{{ v25 }}" max="{{ v28 }}" display="25" unit="of 28" stroke="{{ s7 }}" tone="#33b6ff" hint-size="58px,58px"></x-import>
+              </div>
+              <div style="font-size: 13px; line-height: 1.55; color: #5b636e; max-width: 68ch; text-wrap: pretty">You can name 25 from 28. Adam Selby, Isikeli Nadolo, James Barnes are the selection questions.</div>
+              <div style="display: flex; flex-direction: column">
+                <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid rgba(16,18,23,0.05)">
+                  <div style="width: 6px; height: 6px; border-radius: 50%; background: #4fd6ff; flex: none"></div>
+                  <div style="flex: 1">
+                    <div style="font-size: 13.5px; font-weight: 700">Fit and available</div>
+                    <div style="font-size: 11px; color: #929aa5">no restriction recorded</div>
+                  </div>
+                  <div style="font-size: 13px; font-weight: 500; color: #0d7a96; font-variant-numeric: tabular-nums">22</div>
+                  <div style="color: #929aa5">&rsaquo;</div>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-top: 1px solid rgba(16,18,23,0.05); background: rgba(246,171,47,0.06)">
+                  <div style="width: 6px; height: 6px; border-radius: 50%; background: #f6ab2f; flex: none; margin-top: 5px"></div>
+                  <div style="flex: 1">
+                    <div style="font-size: 13.5px; font-weight: 700; color: #6b4708">Doubtful</div>
+                    <div style="font-size: 11px; line-height: 1.6; color: #929aa5">Adam Selby · return to play protocol, stage 3 of 6; Isikeli Nadolo · no maximal kicking; James Barnes · no contact</div>
+                  </div>
+                  <div style="font-size: 13px; font-weight: 500; color: #6b4708; font-variant-numeric: tabular-nums">3</div>
+                  <div style="color: #929aa5">&rsaquo;</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="2b" style="display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <div style="font-size: 12px; font-weight: 500; padding: 3px 9px; border-radius: 7px; background: #13161c; color: #fff">2b</div>
+        <div style="font-size: 14px; font-weight: 700; color: #13161c">Athlete profile — dark theme</div>
+        <div style="font-size: 12px; color: #5b636e">percentile heat ramp on dark surfaces</div>
+      </div>
+
+      <div class="dark-tokens" style="width: 1280px; height: 900px; overflow: hidden; border-radius: 16px; border: 1px solid rgba(16,18,23,0.12); box-shadow: 0 1px 3px rgba(0,0,0,0.35); display: flex; background: #202b4e; color: #e9edfa; position: relative">
+
+        <div style="width: 234px; flex: none; background: #1d2643; border-right: 1px solid #232c4a; display: flex; flex-direction: column; padding: 26px 14px 20px; position: relative; z-index: 1">
+          <div style="display: flex; align-items: center; gap: 3px; padding: 0 10px 26px">
+            <div style="font-size: 21px; font-weight: 800; letter-spacing: -0.03em">Fydr</div>
+            <div style="width: 7px; height: 7px; border-radius: 50%; background: linear-gradient(150deg, #1f6fea, #33b6ff); margin-bottom: 3px"></div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #a6b3d2; font-size: 14px; font-weight: 600">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="0.9" y="0.9" width="12.2" height="12.2" rx="1.6"></rect><path d="M7 0.9v12.2M0.9 7h12.2"></path></svg>
+              Dashboard
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; background: rgba(31,111,234,0.16); border: 1px solid rgba(31,111,234,0.42); color: #8fb4ff; font-size: 14px; font-weight: 700">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="0.6" y="0.6" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="5.7" y="0.6" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="10.8" y="0.6" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="0.6" y="5.7" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="5.7" y="5.7" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="10.8" y="5.7" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="0.6" y="10.8" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="5.7" y="10.8" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="10.8" y="10.8" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect></svg>
+              Squad overview
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #a6b3d2; font-size: 14px; font-weight: 600">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5.8"></circle><path d="M7 3.6V7l2.6 1.6"></path></svg>
+              Schedule
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #a6b3d2; font-size: 14px; font-weight: 600">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="0.8" y="2.6" width="12.4" height="9.4" rx="2.6"></rect><path d="M4.4 2.6V1.4h5.2v1.2"></path></svg>
+              Reports
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #a6b3d2; font-size: 14px; font-weight: 600">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="10" height="10" rx="1.5" transform="rotate(45 7 7)" fill="currentColor" stroke="none"></rect></svg>
+              Nutrition
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #a6b3d2; font-size: 14px; font-weight: 600">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="#f5c518"><path d="M8.4 0L2.2 8h3.3L5.1 14L11.8 5.6H8.1z"></path></svg>
+              Gym programme
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #a6b3d2; font-size: 14px; font-weight: 600">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="0.5" y="2.4" width="13" height="1.7" rx="0.85" fill="currentColor" stroke="none"></rect><rect x="0.5" y="6.2" width="13" height="1.7" rx="0.85" fill="currentColor" stroke="none"></rect><rect x="0.5" y="10" width="13" height="1.7" rx="0.85" fill="currentColor" stroke="none"></rect></svg>
+              Leaderboard
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #a6b3d2; font-size: 14px; font-weight: 600">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><defs><pattern id="kitHatch2" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="1.3" height="3" fill="currentColor"></rect></pattern></defs><rect x="0.8" y="0.8" width="12.4" height="12.4" rx="1.6" fill="url(#kitHatch2)" stroke="currentColor" stroke-width="1.1"></rect></svg>
+              Analytics
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #a6b3d2; font-size: 14px; font-weight: 600">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.2 1.8"><circle cx="7" cy="7" r="5.4"></circle></svg>
+              Settings
+            </div>
+          </div>
+          <div style="flex: 1"></div>
+          <div style="border-top: 1px solid #232c4a; padding: 16px 12px 0; display: flex; flex-direction: column; gap: 3px">
+            <div style="font-size: 13px; font-weight: 700">Adam Selby</div>
+            <div style="font-size: 12px; line-height: 1.45; color: #8492bd">Ashcombe Rugby Club · athlete, coach</div>
+            <div style="display: flex; align-items: center; gap: 9px; margin-top: 14px; font-size: 13px; font-weight: 600; color: #a6b3d2">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5.4 12.4H2.4V1.6h3M8 4.2l2.8 2.8L8 9.8M10.8 7H5.6"></path></svg>
+              Log out
+            </div>
+          </div>
+        </div>
+
+        <div style="flex: 1; min-width: 0; padding: 26px 30px 24px; position: relative; z-index: 1; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 20px">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <div style="font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #8492bd">Squad overview · athlete</div>
+              <div style="font-size: 30px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1">Dan Okonkwo</div>
+            </div>
+          </div>
+
+          <!-- identity card -->
+          <div style="border-radius: 18px; border: 1px solid #232c4a; background: #1d2643; box-shadow: 0 1px 3px rgba(0,0,0,0.35); overflow: hidden">
+            <div style="padding: 16px 20px; display: flex; align-items: center; gap: 14px; background: rgba(31,111,234,0.14)">
+              <div style="padding: 7px 13px; border-radius: 20px; border: 1px solid #232c4a; font-size: 12.5px; font-weight: 600; color: #cdd7ef; flex: none">&lsaquo; Squad</div>
+              <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(111,155,255,0.2); color: #a8c4ff; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; flex: none">DO</div>
+              <div style="font-size: 20px; font-weight: 800; letter-spacing: -0.025em">Dan Okonkwo</div>
+              <div style="display: flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 20px; background: rgba(79,214,255,0.2); color: #8ceaff; font-size: 12px; font-weight: 700; flex: none"><span style="width: 6px; height: 6px; border-radius: 50%; background: #4fd6ff"></span>Available</div>
+              <div style="flex: 1"></div>
+              <div style="display: flex; align-items: center; gap: 8px; flex: none">
+                <div style="padding: 8px 14px; border-radius: 20px; border: 1px solid #232c4a; background: #1d2643; font-size: 12.5px; font-weight: 600; color: #e9edfa" style-hover="border-color: rgba(31,111,234,0.4)">Nutrition</div>
+                <div style="padding: 8px 14px; border-radius: 20px; border: 1px solid #232c4a; background: #1d2643; font-size: 12.5px; font-weight: 600; color: #e9edfa" style-hover="border-color: rgba(31,111,234,0.4)">Wellness</div>
+                <div style="padding: 8px 14px; border-radius: 20px; border: 1px solid #232c4a; background: #1d2643; font-size: 12.5px; font-weight: 600; color: #e9edfa" style-hover="border-color: rgba(31,111,234,0.4)">Gym</div>
+                <div style="padding: 8px 14px; border-radius: 20px; border: 1px solid #232c4a; font-size: 12.5px; font-weight: 600; color: #e9edfa; opacity: 0.45">Edit</div>
+                <div style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid rgba(79,214,255,0.5); background: rgba(79,214,255,0.1); display: flex; flex-direction: column; align-items: center; justify-content: center">
+                  <div style="font-size: 15px; font-weight: 500; color: #8ceaff; line-height: 1; font-variant-numeric: tabular-nums">84</div>
+                  <div style="font-size: 8.5px; color: #8ceaff; letter-spacing: 0.04em">wellness</div>
+                </div>
+              </div>
+            </div>
+            <div style="border-top: 1px solid rgba(255,255,255,0.055); padding: 14px 20px 16px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr))">
+              <div style="display: flex; flex-direction: column; gap: 3px"><div style="font-size: 12px; color: #8492bd">Position</div><div style="font-size: 14.5px; font-weight: 700">Loosehead prop</div></div>
+              <div style="display: flex; flex-direction: column; gap: 3px"><div style="font-size: 12px; color: #8492bd">Jersey</div><div style="font-size: 14.5px; font-weight: 500; font-variant-numeric: tabular-nums">#1</div></div>
+              <div style="display: flex; flex-direction: column; gap: 3px"><div style="font-size: 12px; color: #8492bd">Height</div><div style="font-size: 14.5px; font-weight: 500; font-variant-numeric: tabular-nums">185 cm</div></div>
+              <div style="display: flex; flex-direction: column; gap: 3px"><div style="font-size: 12px; color: #8492bd">Age</div><div style="font-size: 14.5px; font-weight: 500; font-variant-numeric: tabular-nums">29</div></div>
+              <div style="display: flex; flex-direction: column; gap: 3px"><div style="font-size: 12px; color: #8492bd">Hand</div><div style="font-size: 14.5px; font-weight: 700">R</div></div>
+              <div style="display: flex; flex-direction: column; gap: 3px"><div style="font-size: 12px; color: #8492bd">Weight</div><div style="font-size: 14.5px; font-weight: 500; font-variant-numeric: tabular-nums">118.4 kg</div></div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start">
+
+            <div style="border-radius: 18px; border: 1px solid #232c4a; background: #1d2643; box-shadow: 0 1px 3px rgba(0,0,0,0.35); padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 16px">
+              <div style="display: flex; align-items: baseline; gap: 10px">
+                <div style="font-size: 16px; font-weight: 800; letter-spacing: -0.02em">Athleticism</div>
+                <div style="font-size: 11.5px; color: #8492bd">vs Forwards · 15 players</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 18px; box-sizing: border-box; margin: 0 -20px; padding: 4px 20px; background: rgba(241,90,74,0.07)">
+                <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Dial" size="{{ d82 }}" value="{{ v35 }}" unit="athleticism" tone="var(--bad)" hint-size="82px,82px"></x-import>
+                <div style="display: flex; flex-direction: column; gap: 5px">
+                  <div style="font-size: 15.5px; font-weight: 800; color: #ff8d7f; letter-spacing: -0.01em">Developing</div>
+                  <div style="font-size: 13px; line-height: 1.55; color: #a6b3d2; max-width: 46ch; text-wrap: pretty">Composite of the position-relative percentiles below. 50 ≈ average for a Loosehead prop player.</div>
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 2px; padding-top: 2px">
+                <div style="font-size: 13.5px; font-weight: 700">Position benchmarks</div>
+                <div style="font-size: 11.5px; color: #8492bd">the 7 measures behind the score</div>
+              </div>
+
+              <div style="display: flex; flex-direction: column">
+                <div style="padding: 12px 20px; box-sizing: border-box; margin: 0 -20px; border-top: 1px solid rgba(255,255,255,0.055); display: flex; flex-direction: column; gap: 7px; background: rgba(241,90,74,0.07)">
+                  <div style="display: flex; align-items: baseline"><div style="font-size: 13.5px; font-weight: 700; flex: 1">10m sprint</div><div style="font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums">1.9 s</div></div>
+                  <div style="height: 6px; border-radius: 3px; background: rgba(255,255,255,0.12); overflow: hidden; position: relative"><div style="width: 14%; height: 100%; border-radius: 3px; background: #f15a4a"></div><div style="position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: rgba(255,255,255,0.3)"></div></div>
+                  <div style="display: flex; align-items: baseline; gap: 10px"><div style="font-size: 11.5px; font-weight: 500; color: #ff8d7f; flex: 1">14th percentile</div><sc-if value="{{ showMedians }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11.5px; color: #8492bd; font-variant-numeric: tabular-nums">median 1.7 · best 1.7 · n=22</div></sc-if></div>
+                </div>
+                <div style="padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.055); display: flex; flex-direction: column; gap: 7px; background: rgba(241,90,74,0.13); box-sizing: border-box; margin: 0 -20px; padding-left: 20px; padding-right: 20px">
+                  <div style="display: flex; align-items: baseline"><div style="font-size: 13.5px; font-weight: 700; flex: 1">CMJ height</div><div style="font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums">31.0 cm</div></div>
+                  <div style="height: 6px; border-radius: 3px; background: rgba(255,255,255,0.12); overflow: hidden; position: relative"><div style="width: 4%; height: 100%; border-radius: 3px; background: #f15a4a"></div><div style="position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: rgba(255,255,255,0.3)"></div></div>
+                  <div style="display: flex; align-items: baseline; gap: 10px"><div style="font-size: 11.5px; font-weight: 500; color: #ff8d7f; flex: 1">4th percentile</div><sc-if value="{{ showMedians }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11.5px; color: #8492bd; font-variant-numeric: tabular-nums">median 38.0 · best 42.5 · n=25</div></sc-if></div>
+                </div>
+                <div style="padding: 12px 20px; box-sizing: border-box; margin: 0 -20px; border-top: 1px solid rgba(255,255,255,0.055); display: flex; flex-direction: column; gap: 7px; background: rgba(246,171,47,0.11)">
+                  <div style="display: flex; align-items: baseline"><div style="font-size: 13.5px; font-weight: 700; flex: 1">40m sprint</div><div style="font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums">5.57 s</div></div>
+                  <div style="height: 6px; border-radius: 3px; background: rgba(255,255,255,0.12); overflow: hidden; position: relative"><div style="width: 33%; height: 100%; border-radius: 3px; background: #f6ab2f"></div><div style="position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: rgba(255,255,255,0.3)"></div></div>
+                  <div style="display: flex; align-items: baseline; gap: 10px"><div style="font-size: 11.5px; font-weight: 500; color: #ffdda6; flex: 1">33rd percentile</div><sc-if value="{{ showMedians }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11.5px; color: #8492bd; font-variant-numeric: tabular-nums">median 5.48 · best 5.31 · n=15</div></sc-if></div>
+                </div>
+                <div style="padding: 12px 20px; box-sizing: border-box; margin: 0 -20px; border-top: 1px solid rgba(255,255,255,0.055); display: flex; flex-direction: column; gap: 7px; background: rgba(79,214,255,0.14)">
+                  <div style="display: flex; align-items: baseline"><div style="font-size: 13.5px; font-weight: 700; flex: 1">Bronco test</div><div style="font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums">308.2 s</div></div>
+                  <div style="height: 6px; border-radius: 3px; background: rgba(255,255,255,0.12); overflow: hidden; position: relative"><div style="width: 64%; height: 100%; border-radius: 3px; background: #33b6ff"></div><div style="position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: rgba(255,255,255,0.3)"></div></div>
+                  <div style="display: flex; align-items: baseline; gap: 10px"><div style="font-size: 11.5px; font-weight: 500; color: #8ceaff; flex: 1">64th percentile</div><sc-if value="{{ showMedians }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11.5px; color: #8492bd; font-variant-numeric: tabular-nums">median 316.6 · best 289.3 · n=22</div></sc-if></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 14px">
+              <div style="border-radius: 18px; border: 1px solid rgba(246,171,47,0.6); background: rgba(246,171,47,0.13); padding: 16px 20px 18px; display: flex; flex-direction: column; gap: 9px">
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <div style="font-size: 16px; font-weight: 800; letter-spacing: -0.02em">Flags</div>
+                  <div style="padding: 4px 10px; border-radius: 20px; background: rgba(246,171,47,0.24); color: #ffdda6; font-size: 11.5px; font-weight: 700">0 open</div>
+                  <div style="flex: 1"></div>
+                  <div style="font-size: 12.5px; font-weight: 700; color: #bcd3ff">Thresholds &rsaquo;</div>
+                </div>
+                <div style="font-size: 13px; line-height: 1.55; color: #a6b3d2; max-width: 62ch; text-wrap: pretty">Raised automatically when a value crosses a threshold. Acknowledging one records who saw it and when.</div>
+                <div style="font-size: 11.5px; color: #ffdda6">No open flags for this athlete.</div>
+              </div>
+
+              <div style="border-radius: 18px; border: 1px solid #232c4a; background: #1d2643; box-shadow: 0 1px 3px rgba(0,0,0,0.35); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); overflow: hidden">
+                <div style="padding: 18px 20px 20px; border-right: 1px solid rgba(255,255,255,0.055); display: flex; flex-direction: column; align-items: center; gap: 10px; background: rgba(246,171,47,0.1)">
+                  <div style="width: 100%; display: flex; flex-direction: column; gap: 3px">
+                    <div style="font-size: 15px; font-weight: 800; letter-spacing: -0.02em">ACWR</div>
+                    <div style="font-size: 11.5px; color: #8492bd">acute 7d over chronic 28d</div>
+                  </div>
+                  <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Dial" size="{{ d92 }}" unit="ratio" style="margin-top: 4px" hint-size="92px,92px"></x-import>
+                  <div style="font-size: 12.5px; font-weight: 700; color: #ffdda6; text-align: center">Building baseline · 15 of 21 days</div>
+                  <div style="font-size: 11px; color: #8492bd; text-align: center; line-height: 1.5">flags above 1.30 · n = 18 sessions</div>
+                </div>
+                <div style="padding: 18px 20px 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; background: rgba(79,214,255,0.1)">
+                  <div style="width: 100%; display: flex; flex-direction: column; gap: 3px">
+                    <div style="font-size: 15px; font-weight: 800; letter-spacing: -0.02em">Wellness rating</div>
+                    <div style="font-size: 11.5px; color: #8492bd">mean readiness, last 7 days</div>
+                  </div>
+                  <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Dial" size="{{ d92 }}" value="{{ v84 }}" display="84%" unit="of 100" tone="var(--accent)" style="margin-top: 4px" hint-size="92px,92px"></x-import>
+                  <div style="font-size: 12.5px; font-weight: 700; color: #8ceaff">Steady</div>
+                  <div style="font-size: 11px; color: #8492bd">7 of 7 days submitted</div>
+                </div>
+              </div>
+
+              <div style="border-radius: 18px; border: 1px solid #232c4a; background: #1d2643; box-shadow: 0 1px 3px rgba(0,0,0,0.35); padding: 16px 20px 18px; display: flex; flex-direction: column; gap: 8px">
+                <div style="font-size: 16px; font-weight: 800; letter-spacing: -0.02em">Goals</div>
+                <div style="font-size: 13px; color: #a6b3d2"><span style="font-weight: 700; color: #e9edfa">Goal:</span> No active programme goal on record.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section style="padding: 56px 56px 80px; display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; align-items: baseline; gap: 14px">
+    <div style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #5b636e">Turn 1 · visual lift · layout and type unchanged</div>
+    <div style="height: 1px; flex: 1; background: rgba(16,18,23,0.12)"></div>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start">
+
+    <div id="1a" style="display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <div style="font-size: 12px; font-weight: 500; padding: 3px 9px; border-radius: 7px; background: #13161c; color: #fff">1a</div>
+        <div style="font-size: 14px; font-weight: 700; color: #13161c">Dashboard — dark as the hero</div>
+        <div style="font-size: 12px; color: #5b636e">domain colour-coding · coloured urgency borders</div>
+      </div>
+
+      <div class="dark-tokens" style="width: 1280px; height: 900px; overflow: hidden; border-radius: 16px; border: 1px solid rgba(16,18,23,0.12); box-shadow: 0 1px 3px rgba(16,18,23,0.08); display: flex; background: #202b4e; color: #e9edfa; position: relative">
+
+        <!-- sidebar -->
+        <div style="width: 234px; flex: none; background: #1d2643; border-right: 1px solid #232c4a; display: flex; flex-direction: column; padding: 26px 14px 20px; position: relative; z-index: 1">
+          <div style="display: flex; align-items: center; gap: 3px; padding: 0 10px 26px">
+            <div style="font-size: 21px; font-weight: 800; letter-spacing: -0.03em; color: #e9edfa">Fydr</div>
+            <div style="width: 7px; height: 7px; border-radius: 50%; background: linear-gradient(150deg, #1f6fea, #33b6ff); margin-bottom: 3px"></div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; background: rgba(31,111,234,0.16); border: 1px solid rgba(31,111,234,0.42); color: #8fb4ff; font-size: 14px; font-weight: 700">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="0.9" y="0.9" width="12.2" height="12.2" rx="1.6"></rect><path d="M7 0.9v12.2M0.9 7h12.2"></path></svg>
+              Dashboard
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #a6b3d2; font-size: 14px; font-weight: 600" style-hover="color: #e9edfa; background: rgba(255,255,255,0.04)">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="0.6" y="0.6" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="5.7" y="0.6" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="10.8" y="0.6" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="0.6" y="5.7" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="5.7" y="5.7" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="10.8" y="5.7" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="0.6" y="10.8" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="5.7" y="10.8" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="10.8" y="10.8" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect></svg>
+              Squad overview
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #a6b3d2; font-size: 14px; font-weight: 600" style-hover="color: #e9edfa; background: rgba(255,255,255,0.04)">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5.8"></circle><path d="M7 3.6V7l2.6 1.6"></path></svg>
+              Schedule
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #a6b3d2; font-size: 14px; font-weight: 600" style-hover="color: #e9edfa; background: rgba(255,255,255,0.04)">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="0.8" y="2.6" width="12.4" height="9.4" rx="2.6"></rect><path d="M4.4 2.6V1.4h5.2v1.2"></path></svg>
+              Reports
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #a6b3d2; font-size: 14px; font-weight: 600" style-hover="color: #e9edfa; background: rgba(255,255,255,0.04)">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="10" height="10" rx="1.5" transform="rotate(45 7 7)" fill="currentColor" stroke="none"></rect></svg>
+              Nutrition
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #a6b3d2; font-size: 14px; font-weight: 600" style-hover="color: #e9edfa; background: rgba(255,255,255,0.04)">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="#f5c518"><path d="M8.4 0L2.2 8h3.3L5.1 14L11.8 5.6H8.1z"></path></svg>
+              Gym programme
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #a6b3d2; font-size: 14px; font-weight: 600" style-hover="color: #e9edfa; background: rgba(255,255,255,0.04)">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="0.5" y="2.4" width="13" height="1.7" rx="0.85" fill="currentColor" stroke="none"></rect><rect x="0.5" y="6.2" width="13" height="1.7" rx="0.85" fill="currentColor" stroke="none"></rect><rect x="0.5" y="10" width="13" height="1.7" rx="0.85" fill="currentColor" stroke="none"></rect></svg>
+              Leaderboard
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #a6b3d2; font-size: 14px; font-weight: 600" style-hover="color: #e9edfa; background: rgba(255,255,255,0.04)">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><defs><pattern id="kitHatch1" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="1.3" height="3" fill="currentColor"></rect></pattern></defs><rect x="0.8" y="0.8" width="12.4" height="12.4" rx="1.6" fill="url(#kitHatch1)" stroke="currentColor" stroke-width="1.1"></rect></svg>
+              Analytics
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #a6b3d2; font-size: 14px; font-weight: 600" style-hover="color: #e9edfa; background: rgba(255,255,255,0.04)">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.2 1.8"><circle cx="7" cy="7" r="5.4"></circle></svg>
+              Settings
+            </div>
+          </div>
+
+          <div style="flex: 1"></div>
+
+          <div style="border-top: 1px solid #232c4a; padding: 16px 12px 0; display: flex; flex-direction: column; gap: 3px">
+            <div style="font-size: 13px; font-weight: 700; color: #e9edfa">Adam Selby</div>
+            <div style="font-size: 12px; line-height: 1.45; color: #6472a0">Ashcombe Rugby Club · athlete, coach</div>
+            <div style="display: flex; align-items: center; gap: 9px; margin-top: 14px; font-size: 13px; font-weight: 600; color: #a6b3d2">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5.4 12.4H2.4V1.6h3M8 4.2l2.8 2.8L8 9.8M10.8 7H5.6"></path></svg>
+              Log out
+            </div>
+          </div>
+        </div>
+
+        <!-- content -->
+        <div style="flex: 1; min-width: 0; padding: 22px 30px 20px; position: relative; z-index: 1; display: flex; flex-direction: column; gap: 11px">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; flex: none">
+            <div style="display: flex; flex-direction: column; gap: 5px">
+              <div style="font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #6472a0">Week of Mon, 10 Aug 2026 · MD Saturday · v Northampton Saints · whole squad</div>
+              <div style="font-size: 30px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1">Dashboard</div>
+            </div>
+            <div style="display: flex; gap: 9px; flex: none">
+              <div style="padding: 9px 15px; border-radius: 12px; border: 1px solid #232c4a; font-size: 13px; font-weight: 600; color: #a6b3d2" style-hover="border-color: rgba(31,111,234,0.4); color: #e9edfa">Print</div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px; flex: none">
+            <div style="display: flex; align-items: center; gap: 6px; padding: 9px 17px; border-radius: 20px; background: #1f6fea; border: 1px solid #3c85f7; font-size: 13px; font-weight: 700; color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.35)">✓ Whole squad</div>
+            <div style="padding: 9px 17px; border-radius: 20px; border: 1px solid #232c4a; font-size: 13px; font-weight: 600; color: #a6b3d2" style-hover="border-color: rgba(31,111,234,0.4); color: #e9edfa">Backs</div>
+            <div style="padding: 9px 17px; border-radius: 20px; border: 1px solid #232c4a; font-size: 13px; font-weight: 600; color: #a6b3d2" style-hover="border-color: rgba(31,111,234,0.4); color: #e9edfa">Forwards</div>
+            <div style="padding: 9px 17px; border-radius: 20px; border: 1px solid #232c4a; font-size: 13px; font-weight: 600; color: #a6b3d2" style-hover="border-color: rgba(31,111,234,0.4); color: #e9edfa">Rehab</div>
+            <div style="padding: 9px 17px; border-radius: 20px; border: 1px solid #232c4a; font-size: 13px; font-weight: 600; color: #a6b3d2" style-hover="border-color: rgba(31,111,234,0.4); color: #e9edfa">Academy</div>
+          </div>
+
+          <!-- flag banner: coloured urgency border, not a heavier shadow -->
+          <div style="border-radius: 18px; border: 1px solid rgba(241,90,74,0.55); background: rgba(241,90,74,0.14); padding: 10px 14px; display: flex; align-items: center; gap: 9px; flex: none">
+            <svg width="16" height="16" viewBox="0 0 14 14" fill="#f15a4a"><path d="M3 1h7.4L8.6 4.2l1.8 3.2H3z"></path><rect x="2.1" y="1" width="1.1" height="12" rx="0.5"></rect></svg>
+            <div style="display: flex; align-items: center; gap: 7px; white-space: nowrap; font-size: 12.5px">
+              <span style="font-weight: 500; color: #fff; font-variant-numeric: tabular-nums">9</span>
+              <span style="font-weight: 700; color: #fff">open flags</span>
+              <span style="color: #6472a0">·</span>
+              <span style="padding: 2px 9px; border-radius: 20px; background: rgba(241,90,74,0.24); color: #ffd0c8; font-weight: 700">3 high</span>
+              <span style="padding: 2px 9px; border-radius: 20px; background: rgba(246,171,47,0.22); color: #ffdda6; font-weight: 700">4 medium</span>
+              <span style="color: #6472a0">·</span>
+              <span style="color: #a6b3d2">2 awaiting acknowledgement · top 5 athletes shown</span>
+            </div>
+            <div style="flex: 1"></div>
+            <div style="color: #6472a0; font-size: 15px">⌄</div>
+          </div>
+
+          <sc-if value="{{ flagsExpanded }}" hint-placeholder-val="{{ true }}">
+            <div style="border-radius: 18px; border: 1px solid #232c4a; background: #1d2643; padding: 4px 16px; display: flex; flex-direction: column">
+              <div style="display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,0.055)">
+                <div style="width: 6px; height: 6px; border-radius: 50%; background: #f15a4a; flex: none"></div>
+                <div style="font-size: 13px; font-weight: 700; width: 150px; flex: none">Nash, Elliot</div>
+                <div style="font-size: 12px; color: #a6b3d2; flex: 1">soreness 1 of 5, third consecutive morning below his baseline</div>
+                <div style="font-size: 11px; color: #6472a0; font-variant-numeric: tabular-nums">Mon 3, Tue 4, Wed 5 Aug · 2, 2, 1 · baseline 4</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px; padding: 11px 0">
+                <div style="width: 6px; height: 6px; border-radius: 50%; background: #f6ab2f; flex: none"></div>
+                <div style="font-size: 13px; font-weight: 700; width: 150px; flex: none">Okonkwo, Dan</div>
+                <div style="font-size: 12px; color: #a6b3d2; flex: 1">acute to chronic ratio above 1.5 across the last seven days</div>
+                <div style="font-size: 11px; color: #6472a0; font-variant-numeric: tabular-nums">n = 18 sessions · ratio 1.62 · threshold 1.30</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- KPI strip, one domain colour per tile -->
+          <div style="border-radius: 18px; border: 1px solid #232c4a; background: #1d2643; box-shadow: 0 1px 3px rgba(0,0,0,0.35); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); overflow: hidden; flex: none">
+            <div style="padding: 14px 18px 14px; border-right: 1px solid rgba(255,255,255,0.055); display: flex; flex-direction: column; gap: 5px">
+              <div style="display: flex; align-items: center; gap: 7px">
+                <div style="width: 6px; height: 6px; border-radius: 50%; background: #4fd6ff"></div>
+                <div style="font-size: 11px; font-weight: 500; letter-spacing: 0.13em; text-transform: uppercase; color: #6472a0">Need you</div>
+              </div>
+              <div style="font-size: 34px; font-weight: 500; letter-spacing: -0.02em; color: #6472a0; font-variant-numeric: tabular-nums">0</div>
+              <div style="font-size: 12.5px; color: #a6b3d2">athletes today</div>
+              <div style="font-size: 11px; color: #6472a0">across wellness and GPS</div>
+            </div>
+            <div style="padding: 14px 18px 14px; border-right: 1px solid rgba(255,255,255,0.055); display: flex; flex-direction: column; gap: 5px">
+              <div style="display: flex; align-items: center; gap: 7px">
+                <div style="width: 6px; height: 6px; border-radius: 50%; background: #4fd6ff"></div>
+                <div style="font-size: 11px; font-weight: 500; letter-spacing: 0.13em; text-transform: uppercase; color: #6472a0">Wellness in</div>
+              </div>
+              <div style="display: flex; align-items: baseline; gap: 2px">
+                <div style="font-size: 34px; font-weight: 500; letter-spacing: -0.02em; color: #8ceaff; font-variant-numeric: tabular-nums">97</div>
+                <div style="font-size: 15px; color: #4fd6ff">%</div>
+              </div>
+              <div style="height: 4px; border-radius: 2px; background: rgba(255,255,255,0.12); overflow: hidden"><div style="width: 97%; height: 100%; background: #4fd6ff"></div></div>
+              <div style="font-size: 12.5px; color: #a6b3d2">28 of 29 today</div>
+              <div style="font-size: 11px; color: #6472a0">window closes 09:00</div>
+            </div>
+            <div style="padding: 14px 18px 14px; border-right: 1px solid rgba(255,255,255,0.055); display: flex; flex-direction: column; gap: 5px">
+              <div style="display: flex; align-items: center; gap: 7px">
+                <div style="width: 6px; height: 6px; border-radius: 50%; background: #f15a4a"></div>
+                <div style="font-size: 11px; font-weight: 500; letter-spacing: 0.13em; text-transform: uppercase; color: #6472a0">Available</div>
+              </div>
+              <div style="display: flex; align-items: baseline; gap: 6px">
+                <div style="font-size: 34px; font-weight: 500; letter-spacing: -0.02em; color: #e9edfa; font-variant-numeric: tabular-nums">22</div>
+                <div style="font-size: 15px; color: #6472a0">/ 28</div>
+              </div>
+              <div style="display: flex; gap: 3px; height: 4px">
+                <div style="flex: 22; border-radius: 2px; background: #4fd6ff"></div>
+                <div style="flex: 3; border-radius: 2px; background: #f6ab2f"></div>
+                <div style="flex: 3; border-radius: 2px; background: #f15a4a"></div>
+              </div>
+              <div style="font-size: 12.5px; color: #a6b3d2">3 modified, 3 out</div>
+              <div style="font-size: 11px; line-height: 1.5; color: #6472a0">injury status set by medical, other absences by coach</div>
+            </div>
+            <div style="padding: 14px 18px 14px; border-right: 1px solid rgba(255,255,255,0.055); display: flex; flex-direction: column; gap: 5px; background: rgba(241,90,74,0.07)">
+              <div style="display: flex; align-items: center; gap: 7px">
+                <div style="width: 6px; height: 6px; border-radius: 50%; background: #f15a4a"></div>
+                <div style="font-size: 11px; font-weight: 500; letter-spacing: 0.13em; text-transform: uppercase; color: #ff9d90">Open flags</div>
+              </div>
+              <div style="font-size: 34px; font-weight: 500; letter-spacing: -0.02em; color: #ff8d7f; font-variant-numeric: tabular-nums">9</div>
+              <div style="display: flex; gap: 3px; height: 4px">
+                <div style="flex: 3; border-radius: 2px; background: #f15a4a"></div>
+                <div style="flex: 4; border-radius: 2px; background: #f6ab2f"></div>
+                <div style="flex: 2; border-radius: 2px; background: rgba(255,255,255,0.16)"></div>
+              </div>
+              <div style="font-size: 12.5px; line-height: 1.45; color: #a6b3d2">2 awaiting acknowledgement</div>
+              <div style="font-size: 11px; color: #6472a0">wellness, gym, GPS</div>
+            </div>
+            <div style="padding: 14px 18px 14px; display: flex; flex-direction: column; gap: 5px">
+              <div style="display: flex; align-items: center; gap: 7px">
+                <div style="width: 6px; height: 6px; border-radius: 50%; background: #33b6ff"></div>
+                <div style="font-size: 11px; font-weight: 500; letter-spacing: 0.13em; text-transform: uppercase; color: #6472a0">To matchday</div>
+              </div>
+              <div style="display: flex; align-items: baseline; gap: 7px">
+                <div style="font-size: 34px; font-weight: 500; letter-spacing: -0.02em; color: #e9edfa; font-variant-numeric: tabular-nums">6</div>
+                <div style="font-size: 12.5px; color: #a6b3d2">days</div>
+              </div>
+              <div style="font-size: 12.5px; color: #a6b3d2">v Northampton Saints</div>
+              <div style="font-size: 11px; color: #6472a0">0 sessions left to run</div>
+            </div>
+          </div>
+
+          <!-- week: one strip, activities listed per day -->
+          <div style="border-radius: 18px; border: 1px solid #232c4a; background: #1d2643; box-shadow: 0 1px 3px rgba(0,0,0,0.35); overflow: hidden; flex: none">
+            <div style="display: flex; align-items: baseline; gap: 10px; padding: 9px 14px; border-bottom: 1px solid rgba(255,255,255,0.055)">
+              <div style="font-size: 13.5px; font-weight: 700">This week</div>
+              <div style="font-size: 11px; color: #6472a0">8 sessions · Mon 10 to Sat 15 Aug</div>
+              <div style="flex: 1"></div>
+              <div style="display: flex; align-items: center; gap: 12px; font-size: 10.5px; color: #6472a0">
+                <div style="display: flex; align-items: center; gap: 5px"><div style="width: 5px; height: 5px; border-radius: 50%; background: #f5c518"></div>Gym</div>
+                <div style="display: flex; align-items: center; gap: 5px"><div style="width: 5px; height: 5px; border-radius: 50%; background: #33b6ff"></div>Pitch</div>
+                <div style="display: flex; align-items: center; gap: 5px"><div style="width: 5px; height: 5px; border-radius: 50%; background: #4fd6ff"></div>Testing</div>
+                <div style="display: flex; align-items: center; gap: 5px"><div style="width: 5px; height: 5px; border-radius: 50%; background: #8a94b8"></div>Recovery</div>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr))">
+              <div style="border-right: 1px solid rgba(255,255,255,0.055); background: rgba(255,255,255,0.015); padding: 11px 14px 12px; display: flex; flex-direction: column; gap: 7px">
+                <div style="display: flex; align-items: baseline; gap: 6px">
+                  <div style="font-size: 13.5px; font-weight: 700; flex: none; white-space: nowrap; color: #e9edfa">Mon 10</div>
+                  <div style="font-size: 10px; letter-spacing: 0.06em; color: #6472a0; flex: none; white-space: nowrap">MD-5</div>
+                  <div style="flex: 1"></div>
+                  <div style="font-size: 10px; color: #6472a0; flex: none; white-space: nowrap; font-variant-numeric: tabular-nums">40 min</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px">
+                <div style="display: flex; align-items: baseline; gap: 7px">
+                  <div style="width: 5px; height: 5px; border-radius: 50%; background: #8a94b8; flex: none; transform: translateY(-2px)"></div>
+                  <div style="flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; line-height: 1.35; color: #e9edfa">Recovery</div>
+                  </div></div>
+              </div>
+              <div style="border-right: 1px solid rgba(255,255,255,0.055); background: transparent; padding: 11px 14px 12px; display: flex; flex-direction: column; gap: 7px">
+                <div style="display: flex; align-items: baseline; gap: 6px">
+                  <div style="font-size: 13.5px; font-weight: 700; flex: none; white-space: nowrap; color: #e9edfa">Tue 11</div>
+                  <div style="font-size: 10px; letter-spacing: 0.06em; color: #6472a0; flex: none; white-space: nowrap">MD-4</div>
+                  <div style="flex: 1"></div>
+                  <div style="font-size: 10px; color: #6472a0; flex: none; white-space: nowrap; font-variant-numeric: tabular-nums">90 min</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px">
+                <div style="display: flex; align-items: baseline; gap: 7px">
+                  <div style="width: 5px; height: 5px; border-radius: 50%; background: #f5c518; flex: none; transform: translateY(-2px)"></div>
+                  <div style="flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; line-height: 1.35; color: #e9edfa">Lower body</div>
+                  </div>
+                <div style="display: flex; align-items: baseline; gap: 7px">
+                  <div style="width: 5px; height: 5px; border-radius: 50%; background: #33b6ff; flex: none; transform: translateY(-2px)"></div>
+                  <div style="flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; line-height: 1.35; color: #e9edfa">Conditioning</div>
+                  </div></div>
+              </div>
+              <div style="border-right: 1px solid rgba(255,255,255,0.055); background: transparent; padding: 11px 14px 12px; display: flex; flex-direction: column; gap: 7px">
+                <div style="display: flex; align-items: baseline; gap: 6px">
+                  <div style="font-size: 13.5px; font-weight: 700; flex: none; white-space: nowrap; color: #e9edfa">Wed 12</div>
+                  <div style="font-size: 10px; letter-spacing: 0.06em; color: #6472a0; flex: none; white-space: nowrap">MD-3</div>
+                  <div style="flex: 1"></div>
+                  <div style="font-size: 10px; color: #6472a0; flex: none; white-space: nowrap; font-variant-numeric: tabular-nums">95 min</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px">
+                <div style="display: flex; align-items: baseline; gap: 7px">
+                  <div style="width: 5px; height: 5px; border-radius: 50%; background: #4fd6ff; flex: none; transform: translateY(-2px)"></div>
+                  <div style="flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; line-height: 1.35; color: #e9edfa">Speed & power testing</div>
+                  </div>
+                <div style="display: flex; align-items: baseline; gap: 7px">
+                  <div style="width: 5px; height: 5px; border-radius: 50%; background: #33b6ff; flex: none; transform: translateY(-2px)"></div>
+                  <div style="flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; line-height: 1.35; color: #e9edfa">Team run</div>
+                  </div></div>
+              </div>
+              <div style="border-right: 1px solid rgba(255,255,255,0.055); background: rgba(241,90,74,0.09); padding: 11px 14px 12px; display: flex; flex-direction: column; gap: 7px">
+                <div style="display: flex; align-items: baseline; gap: 6px">
+                  <div style="font-size: 13.5px; font-weight: 700; flex: none; white-space: nowrap; color: #e9edfa">Thu 13</div>
+                  <div style="font-size: 10px; letter-spacing: 0.06em; color: #6472a0; flex: none; white-space: nowrap">MD-2</div>
+                  <div style="flex: 1"></div>
+                  <div style="font-size: 10px; color: #6472a0; flex: none; white-space: nowrap; font-variant-numeric: tabular-nums">95 min</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px">
+                <div style="display: flex; align-items: baseline; gap: 7px">
+                  <div style="width: 5px; height: 5px; border-radius: 50%; background: #f5c518; flex: none; transform: translateY(-2px)"></div>
+                  <div style="flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; line-height: 1.35; color: #e9edfa">Upper body</div>
+                  </div>
+                <div style="display: flex; align-items: baseline; gap: 7px">
+                  <div style="width: 5px; height: 5px; border-radius: 50%; background: #33b6ff; flex: none; transform: translateY(-2px)"></div>
+                  <div style="flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; line-height: 1.35; color: #e9edfa">Team run</div>
+                  </div>
+                <div style="display: flex; align-items: center; gap: 6px; padding-top: 2px">
+                  <svg width="11" height="11" viewBox="0 0 14 14" fill="#f15a4a"><path d="M3 1h7.4L8.6 4.2l1.8 3.2H3z"></path><rect x="2.1" y="1" width="1.1" height="12" rx="0.5"></rect></svg>
+                  <div style="font-size: 11px; font-weight: 500; color: #ffd0c8">1 flag</div>
+                </div></div>
+              </div>
+              <div style="border-right: 1px solid rgba(255,255,255,0.055); background: transparent; padding: 11px 14px 12px; display: flex; flex-direction: column; gap: 7px">
+                <div style="display: flex; align-items: baseline; gap: 6px">
+                  <div style="font-size: 13.5px; font-weight: 700; flex: none; white-space: nowrap; color: #e9edfa">Fri 14</div>
+                  <div style="font-size: 10px; letter-spacing: 0.06em; color: #6472a0; flex: none; white-space: nowrap">MD-1</div>
+                  <div style="flex: 1"></div>
+                  <div style="font-size: 10px; color: #6472a0; flex: none; white-space: nowrap; font-variant-numeric: tabular-nums">30 min</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px">
+                <div style="display: flex; align-items: baseline; gap: 7px">
+                  <div style="width: 5px; height: 5px; border-radius: 50%; background: #33b6ff; flex: none; transform: translateY(-2px)"></div>
+                  <div style="flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; line-height: 1.35; color: #e9edfa">Captain's run</div>
+                  </div></div>
+              </div>
+              <div style="background: transparent; padding: 11px 14px 12px; display: flex; flex-direction: column; gap: 7px">
+                <div style="display: flex; align-items: baseline; gap: 6px">
+                  <div style="font-size: 13.5px; font-weight: 700; flex: none; white-space: nowrap; color: #a6b3d2">Sat 15</div>
+                  <div style="font-size: 10.5px; letter-spacing: 0.08em; color: #8fb4ff">MD</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px">
+                <div style="font-size: 11.5px; color: #6472a0">Nothing scheduled</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- today + ready panel -->
+          <div style="display: grid; grid-template-columns: minmax(0, 1fr) 460px; gap: 20px; align-items: start; padding-top: 4px">
+            <div style="display: flex; flex-direction: column; gap: 10px">
+              <div style="display: flex; align-items: baseline; gap: 14px">
+                <div style="font-size: 20px; font-weight: 800; letter-spacing: -0.025em">Today</div>
+                <div style="flex: 1"></div>
+                <div style="font-size: 11.5px; color: #6472a0; font-variant-numeric: tabular-nums">Sun 16 Aug · 0 sessions</div>
+              </div>
+              <div style="border-radius: 18px; border: 1px dashed #2b3559; background: transparent; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 6px">
+                <div style="font-size: 13px; color: #a6b3d2">Nothing is scheduled for this day, for this filter.</div>
+                <div style="font-size: 11px; color: #6472a0">a typical MD-6</div>
+              </div>
+            </div>
+
+            <div style="border-radius: 18px; border: 1px solid rgba(31,111,234,0.42); background: rgba(31,111,234,0.09); box-shadow: 0 1px 3px rgba(0,0,0,0.35); padding: 18px 20px 4px; display: flex; flex-direction: column; gap: 14px">
+              <div style="display: flex; align-items: flex-start; gap: 16px">
+                <div style="display: flex; flex-direction: column; gap: 4px; flex: 1">
+                  <div style="font-size: 16px; font-weight: 800; letter-spacing: -0.02em">Ready for Saturday</div>
+                  <div style="font-size: 11.5px; color: #a6b3d2">v Northampton Saints · home · 6 days out</div>
+                </div>
+                <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Dial" size="{{ d58 }}" value="{{ v25 }}" max="{{ v28 }}" display="25" unit="of 28" stroke="{{ s7 }}" tone="#33b6ff" hint-size="58px,58px"></x-import>
+              </div>
+              <div style="font-size: 13px; line-height: 1.55; color: #cdd7ef; max-width: 68ch; text-wrap: pretty">You can name 25 from 28. Adam Selby, Isikeli Nadolo, James Barnes are the selection questions.</div>
+              <div style="display: flex; flex-direction: column">
+                <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.055)">
+                  <div style="width: 6px; height: 6px; border-radius: 50%; background: #4fd6ff; flex: none"></div>
+                  <div style="flex: 1">
+                    <div style="font-size: 13.5px; font-weight: 700">Fit and available</div>
+                    <div style="font-size: 11px; color: #6472a0">no restriction recorded</div>
+                  </div>
+                  <div style="font-size: 13px; font-weight: 500; color: #8ceaff; font-variant-numeric: tabular-nums">22</div>
+                  <div style="color: #6472a0">&rsaquo;</div>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.055); background: rgba(246,171,47,0.06)">
+                  <div style="width: 6px; height: 6px; border-radius: 50%; background: #f6ab2f; flex: none; margin-top: 5px"></div>
+                  <div style="flex: 1">
+                    <div style="font-size: 13.5px; font-weight: 700; color: #ffdda6">Doubtful</div>
+                    <div style="font-size: 11px; line-height: 1.6; color: #6472a0">Adam Selby · return to play protocol, stage 3 of 6; Isikeli Nadolo · no maximal kicking; James Barnes · no contact</div>
+                  </div>
+                  <div style="font-size: 13px; font-weight: 500; color: #ffdda6; font-variant-numeric: tabular-nums">3</div>
+                  <div style="color: #6472a0">&rsaquo;</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="1b" style="display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <div style="font-size: 12px; font-weight: 500; padding: 3px 9px; border-radius: 7px; background: #13161c; color: #fff">1b</div>
+        <div style="font-size: 14px; font-weight: 700; color: #13161c">Athlete profile — light, print-safe</div>
+        <div style="font-size: 12px; color: #5b636e">percentile heat ramp · same lift, white paper</div>
+      </div>
+
+      <div style="width: 1280px; height: 900px; overflow: hidden; border-radius: 16px; border: 1px solid rgba(16,18,23,0.12); box-shadow: 0 1px 3px rgba(16,18,23,0.08); display: flex; background: #e4ebf9; color: #13161c; position: relative">
+
+        <div style="width: 234px; flex: none; background: #fff; border-right: 1px solid rgba(16,18,23,0.085); display: flex; flex-direction: column; padding: 26px 14px 20px; position: relative; z-index: 1">
+          <div style="display: flex; align-items: center; gap: 3px; padding: 0 10px 26px">
+            <div style="font-size: 21px; font-weight: 800; letter-spacing: -0.03em">Fydr</div>
+            <div style="width: 7px; height: 7px; border-radius: 50%; background: linear-gradient(150deg, #1f6fea, #33b6ff); margin-bottom: 3px"></div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #5b636e; font-size: 14px; font-weight: 600">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="0.9" y="0.9" width="12.2" height="12.2" rx="1.6"></rect><path d="M7 0.9v12.2M0.9 7h12.2"></path></svg>
+              Dashboard
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; background: rgba(31,111,234,0.16); border: 1px solid rgba(31,111,234,0.5); color: #1f6fea; font-size: 14px; font-weight: 700">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="0.6" y="0.6" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="5.7" y="0.6" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="10.8" y="0.6" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="0.6" y="5.7" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="5.7" y="5.7" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="10.8" y="5.7" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="0.6" y="10.8" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="5.7" y="10.8" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect><rect x="10.8" y="10.8" width="2.6" height="2.6" fill="currentColor" stroke="none"></rect></svg>
+              Squad overview
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #5b636e; font-size: 14px; font-weight: 600">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5.8"></circle><path d="M7 3.6V7l2.6 1.6"></path></svg>
+              Schedule
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #5b636e; font-size: 14px; font-weight: 600">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="0.8" y="2.6" width="12.4" height="9.4" rx="2.6"></rect><path d="M4.4 2.6V1.4h5.2v1.2"></path></svg>
+              Reports
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #5b636e; font-size: 14px; font-weight: 600">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="10" height="10" rx="1.5" transform="rotate(45 7 7)" fill="currentColor" stroke="none"></rect></svg>
+              Nutrition
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #5b636e; font-size: 14px; font-weight: 600">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="#f5c518"><path d="M8.4 0L2.2 8h3.3L5.1 14L11.8 5.6H8.1z"></path></svg>
+              Gym programme
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #5b636e; font-size: 14px; font-weight: 600">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="0.5" y="2.4" width="13" height="1.7" rx="0.85" fill="currentColor" stroke="none"></rect><rect x="0.5" y="6.2" width="13" height="1.7" rx="0.85" fill="currentColor" stroke="none"></rect><rect x="0.5" y="10" width="13" height="1.7" rx="0.85" fill="currentColor" stroke="none"></rect></svg>
+              Leaderboard
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #5b636e; font-size: 14px; font-weight: 600">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><defs><pattern id="kitHatch2" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="1.3" height="3" fill="currentColor"></rect></pattern></defs><rect x="0.8" y="0.8" width="12.4" height="12.4" rx="1.6" fill="url(#kitHatch2)" stroke="currentColor" stroke-width="1.1"></rect></svg>
+              Analytics
+            </div>
+            <div style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 12px; color: #5b636e; font-size: 14px; font-weight: 600">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.2 1.8"><circle cx="7" cy="7" r="5.4"></circle></svg>
+              Settings
+            </div>
+          </div>
+          <div style="flex: 1"></div>
+          <div style="border-top: 1px solid rgba(16,18,23,0.085); padding: 16px 12px 0; display: flex; flex-direction: column; gap: 3px">
+            <div style="font-size: 13px; font-weight: 700">Adam Selby</div>
+            <div style="font-size: 12px; line-height: 1.45; color: #929aa5">Ashcombe Rugby Club · athlete, coach</div>
+            <div style="display: flex; align-items: center; gap: 9px; margin-top: 14px; font-size: 13px; font-weight: 600; color: #5b636e">
+              <svg width="17" height="17" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5.4 12.4H2.4V1.6h3M8 4.2l2.8 2.8L8 9.8M10.8 7H5.6"></path></svg>
+              Log out
+            </div>
+          </div>
+        </div>
+
+        <div style="flex: 1; min-width: 0; padding: 26px 30px 24px; position: relative; z-index: 1; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 20px">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <div style="font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #929aa5">Squad overview · athlete</div>
+              <div style="font-size: 30px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1">Dan Okonkwo</div>
+            </div>
+          </div>
+
+          <!-- identity card -->
+          <div style="border-radius: 18px; border: 1px solid rgba(16,18,23,0.085); background: #fff; box-shadow: 0 1px 3px rgba(16,18,23,0.08); overflow: hidden">
+            <div style="padding: 16px 20px; display: flex; align-items: center; gap: 14px; background: #cedcf7">
+              <div style="padding: 7px 13px; border-radius: 20px; border: 1px solid rgba(16,18,23,0.085); font-size: 12.5px; font-weight: 600; color: #5b636e; flex: none">&lsaquo; Squad</div>
+              <div style="width: 44px; height: 44px; border-radius: 50%; background: #1a2340; color: #6f9bff; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; flex: none">DO</div>
+              <div style="font-size: 20px; font-weight: 800; letter-spacing: -0.025em">Dan Okonkwo</div>
+              <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Pill" tone="good" size="xl" hint-size="102px,26px"><span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #0d7a96; margin-right: 6px"></span>Available</x-import>
+              <div style="flex: 1"></div>
+              <div style="display: flex; align-items: center; gap: 8px; flex: none">
+                <div style="padding: 8px 14px; border-radius: 20px; border: 1px solid rgba(16,18,23,0.085); background: #fff; font-size: 12.5px; font-weight: 600; color: #13161c" style-hover="border-color: rgba(31,111,234,0.4)">Nutrition</div>
+                <div style="padding: 8px 14px; border-radius: 20px; border: 1px solid rgba(16,18,23,0.085); background: #fff; font-size: 12.5px; font-weight: 600; color: #13161c" style-hover="border-color: rgba(31,111,234,0.4)">Wellness</div>
+                <div style="padding: 8px 14px; border-radius: 20px; border: 1px solid rgba(16,18,23,0.085); background: #fff; font-size: 12.5px; font-weight: 600; color: #13161c" style-hover="border-color: rgba(31,111,234,0.4)">Gym</div>
+                <div style="padding: 8px 14px; border-radius: 20px; border: 1px solid rgba(16,18,23,0.085); font-size: 12.5px; font-weight: 600; color: #13161c; opacity: 0.45">Edit</div>
+                <div style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid rgba(79,214,255,0.5); background: rgba(79,214,255,0.1); display: flex; flex-direction: column; align-items: center; justify-content: center">
+                  <div style="font-size: 15px; font-weight: 500; color: #0d5f75; line-height: 1; font-variant-numeric: tabular-nums">84</div>
+                  <div style="font-size: 8.5px; color: #0d7a96; letter-spacing: 0.04em">wellness</div>
+                </div>
+              </div>
+            </div>
+            <div style="border-top: 1px solid rgba(16,18,23,0.05); padding: 14px 20px 16px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr))">
+              <div style="display: flex; flex-direction: column; gap: 3px"><div style="font-size: 12px; color: #929aa5">Position</div><div style="font-size: 14.5px; font-weight: 700">Loosehead prop</div></div>
+              <div style="display: flex; flex-direction: column; gap: 3px"><div style="font-size: 12px; color: #929aa5">Jersey</div><div style="font-size: 14.5px; font-weight: 500; font-variant-numeric: tabular-nums">#1</div></div>
+              <div style="display: flex; flex-direction: column; gap: 3px"><div style="font-size: 12px; color: #929aa5">Height</div><div style="font-size: 14.5px; font-weight: 500; font-variant-numeric: tabular-nums">185 cm</div></div>
+              <div style="display: flex; flex-direction: column; gap: 3px"><div style="font-size: 12px; color: #929aa5">Age</div><div style="font-size: 14.5px; font-weight: 500; font-variant-numeric: tabular-nums">29</div></div>
+              <div style="display: flex; flex-direction: column; gap: 3px"><div style="font-size: 12px; color: #929aa5">Hand</div><div style="font-size: 14.5px; font-weight: 700">R</div></div>
+              <div style="display: flex; flex-direction: column; gap: 3px"><div style="font-size: 12px; color: #929aa5">Weight</div><div style="font-size: 14.5px; font-weight: 500; font-variant-numeric: tabular-nums">118.4 kg</div></div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start">
+
+            <div style="border-radius: 18px; border: 1px solid rgba(16,18,23,0.085); background: #fff; box-shadow: 0 1px 3px rgba(16,18,23,0.08); padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 16px">
+              <div style="display: flex; align-items: baseline; gap: 10px">
+                <div style="font-size: 16px; font-weight: 800; letter-spacing: -0.02em">Athleticism</div>
+                <div style="font-size: 11.5px; color: #929aa5">vs Forwards · 15 players</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 18px; box-sizing: border-box; margin: 0 -20px; padding: 4px 20px; background: rgba(241,90,74,0.07)">
+                <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Dial" size="{{ d82 }}" value="{{ v35 }}" unit="athleticism" tone="var(--bad)" hint-size="82px,82px"></x-import>
+                <div style="display: flex; flex-direction: column; gap: 5px">
+                  <div style="font-size: 15.5px; font-weight: 800; color: #8a2418; letter-spacing: -0.01em">Developing</div>
+                  <div style="font-size: 13px; line-height: 1.55; color: #5b636e; max-width: 46ch; text-wrap: pretty">Composite of the position-relative percentiles below. 50 ≈ average for a Loosehead prop player.</div>
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 2px; padding-top: 2px">
+                <div style="font-size: 13.5px; font-weight: 700">Position benchmarks</div>
+                <div style="font-size: 11.5px; color: #929aa5">the 7 measures behind the score</div>
+              </div>
+
+              <div style="display: flex; flex-direction: column">
+                <div style="padding: 12px 20px; box-sizing: border-box; margin: 0 -20px; border-top: 1px solid rgba(16,18,23,0.05); display: flex; flex-direction: column; gap: 7px; background: rgba(241,90,74,0.07)">
+                  <div style="display: flex; align-items: baseline"><div style="font-size: 13.5px; font-weight: 700; flex: 1">10m sprint</div><div style="font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums">1.9 s</div></div>
+                  <div style="height: 6px; border-radius: 3px; background: rgba(16,18,23,0.1); overflow: hidden; position: relative"><div style="width: 14%; height: 100%; border-radius: 3px; background: #f15a4a"></div><div style="position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: rgba(16,18,23,0.22)"></div></div>
+                  <div style="display: flex; align-items: baseline; gap: 10px"><div style="font-size: 11.5px; font-weight: 500; color: #8a2418; flex: 1">14th percentile</div><sc-if value="{{ showMedians }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11.5px; color: #929aa5; font-variant-numeric: tabular-nums">median 1.7 · best 1.7 · n=22</div></sc-if></div>
+                </div>
+                <div style="padding: 12px 0; border-top: 1px solid rgba(16,18,23,0.05); display: flex; flex-direction: column; gap: 7px; background: rgba(241,90,74,0.13); box-sizing: border-box; margin: 0 -20px; padding-left: 20px; padding-right: 20px">
+                  <div style="display: flex; align-items: baseline"><div style="font-size: 13.5px; font-weight: 700; flex: 1">CMJ height</div><div style="font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums">31.0 cm</div></div>
+                  <div style="height: 6px; border-radius: 3px; background: rgba(16,18,23,0.1); overflow: hidden; position: relative"><div style="width: 4%; height: 100%; border-radius: 3px; background: #f15a4a"></div><div style="position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: rgba(16,18,23,0.22)"></div></div>
+                  <div style="display: flex; align-items: baseline; gap: 10px"><div style="font-size: 11.5px; font-weight: 500; color: #8a2418; flex: 1">4th percentile</div><sc-if value="{{ showMedians }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11.5px; color: #929aa5; font-variant-numeric: tabular-nums">median 38.0 · best 42.5 · n=25</div></sc-if></div>
+                </div>
+                <div style="padding: 12px 20px; box-sizing: border-box; margin: 0 -20px; border-top: 1px solid rgba(16,18,23,0.05); display: flex; flex-direction: column; gap: 7px; background: rgba(246,171,47,0.11)">
+                  <div style="display: flex; align-items: baseline"><div style="font-size: 13.5px; font-weight: 700; flex: 1">40m sprint</div><div style="font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums">5.57 s</div></div>
+                  <div style="height: 6px; border-radius: 3px; background: rgba(16,18,23,0.1); overflow: hidden; position: relative"><div style="width: 33%; height: 100%; border-radius: 3px; background: #f6ab2f"></div><div style="position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: rgba(16,18,23,0.22)"></div></div>
+                  <div style="display: flex; align-items: baseline; gap: 10px"><div style="font-size: 11.5px; font-weight: 500; color: #b07d0a; flex: 1">33rd percentile</div><sc-if value="{{ showMedians }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11.5px; color: #929aa5; font-variant-numeric: tabular-nums">median 5.48 · best 5.31 · n=15</div></sc-if></div>
+                </div>
+                <div style="padding: 12px 20px; box-sizing: border-box; margin: 0 -20px; border-top: 1px solid rgba(16,18,23,0.05); display: flex; flex-direction: column; gap: 7px; background: rgba(79,214,255,0.14)">
+                  <div style="display: flex; align-items: baseline"><div style="font-size: 13.5px; font-weight: 700; flex: 1">Bronco test</div><div style="font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums">308.2 s</div></div>
+                  <div style="height: 6px; border-radius: 3px; background: rgba(16,18,23,0.1); overflow: hidden; position: relative"><div style="width: 64%; height: 100%; border-radius: 3px; background: #33b6ff"></div><div style="position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: rgba(16,18,23,0.22)"></div></div>
+                  <div style="display: flex; align-items: baseline; gap: 10px"><div style="font-size: 11.5px; font-weight: 500; color: #0d7a96; flex: 1">64th percentile</div><sc-if value="{{ showMedians }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11.5px; color: #929aa5; font-variant-numeric: tabular-nums">median 316.6 · best 289.3 · n=22</div></sc-if></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 14px">
+              <div style="border-radius: 18px; border: 1px solid rgba(246,171,47,0.6); background: rgba(246,171,47,0.16); padding: 16px 20px 18px; display: flex; flex-direction: column; gap: 9px">
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <div style="font-size: 16px; font-weight: 800; letter-spacing: -0.02em">Flags</div>
+                  <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Pill" tone="warn" size="lg" hint-size="60px,22px">0 open</x-import>
+                  <div style="flex: 1"></div>
+                  <div style="font-size: 12.5px; font-weight: 700; color: #1f6fea">Thresholds &rsaquo;</div>
+                </div>
+                <div style="font-size: 13px; line-height: 1.55; color: #5b636e; max-width: 62ch; text-wrap: pretty">Raised automatically when a value crosses a threshold. Acknowledging one records who saw it and when.</div>
+                <div style="font-size: 11.5px; color: #6b4708">No open flags for this athlete.</div>
+              </div>
+
+              <div style="border-radius: 18px; border: 1px solid rgba(16,18,23,0.085); background: #fff; box-shadow: 0 1px 3px rgba(16,18,23,0.08); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); overflow: hidden">
+                <div style="padding: 18px 20px 20px; border-right: 1px solid rgba(16,18,23,0.05); display: flex; flex-direction: column; align-items: center; gap: 10px; background: rgba(246,171,47,0.09)">
+                  <div style="width: 100%; display: flex; flex-direction: column; gap: 3px">
+                    <div style="font-size: 15px; font-weight: 800; letter-spacing: -0.02em">ACWR</div>
+                    <div style="font-size: 11.5px; color: #929aa5">acute 7d over chronic 28d</div>
+                  </div>
+                  <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Dial" size="{{ d92 }}" unit="ratio" style="margin-top: 4px" hint-size="92px,92px"></x-import>
+                  <div style="font-size: 12.5px; font-weight: 700; color: #b07d0a; text-align: center">Building baseline · 15 of 21 days</div>
+                  <div style="font-size: 11px; color: #929aa5; text-align: center; line-height: 1.5">flags above 1.30 · n = 18 sessions</div>
+                </div>
+                <div style="padding: 18px 20px 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; background: rgba(79,214,255,0.13)">
+                  <div style="width: 100%; display: flex; flex-direction: column; gap: 3px">
+                    <div style="font-size: 15px; font-weight: 800; letter-spacing: -0.02em">Wellness rating</div>
+                    <div style="font-size: 11.5px; color: #929aa5">mean readiness, last 7 days</div>
+                  </div>
+                  <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Dial" size="{{ d92 }}" value="{{ v84 }}" display="84%" unit="of 100" tone="var(--accent)" style="margin-top: 4px" hint-size="92px,92px"></x-import>
+                  <div style="font-size: 12.5px; font-weight: 700; color: #1f6fea">Steady</div>
+                  <div style="font-size: 11px; color: #929aa5">7 of 7 days submitted</div>
+                </div>
+              </div>
+
+              <div style="border-radius: 18px; border: 1px solid rgba(16,18,23,0.085); background: #fff; box-shadow: 0 1px 3px rgba(16,18,23,0.08); padding: 16px 20px 18px; display: flex; flex-direction: column; gap: 8px">
+                <div style="font-size: 16px; font-weight: 800; letter-spacing: -0.02em">Goals</div>
+                <div style="font-size: 13px; color: #5b636e"><span style="font-weight: 700; color: #13161c">Goal:</span> No active programme goal on record.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;flagsExpanded&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Dashboard&quot;},&quot;showMedians&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Athlete profile&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      flagsExpanded: this.props.flagsExpanded ?? false,
+      showMedians: this.props.showMedians ?? true,
+      d58: 58, d82: 82, d92: 92, s7: 7,
+      v25: 25, v28: 28, v35: 35, v84: 84,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -80,7 +80,10 @@ export function DashboardHeadlineStats({
     <>
       <div className="card dash-stats">
         <Link href={needYouHref} className="dash-stat">
-          <div className="dash-stat-label">Need you</div>
+          <div className="dash-stat-label">
+            <span className="dash-stat-dot" style={{ background: 'var(--good)' }} aria-hidden="true" />
+            Need you
+          </div>
           <div className="dash-stat-value" style={{ color: stats.needYouCount > 0 ? 'var(--bad)' : undefined }}>
             {stats.needYouCount}
           </div>
@@ -95,7 +98,10 @@ export function DashboardHeadlineStats({
           aria-label={`${expanded === 'wellness' ? 'Collapse' : 'Expand'} wellness submissions: ${stats.wellnessSub}`}
           onClick={() => setExpanded((k) => (k === 'wellness' ? null : 'wellness'))}
         >
-          <div className="dash-stat-label">Wellness in</div>
+          <div className="dash-stat-label">
+            <span className="dash-stat-dot" style={{ background: 'var(--good)' }} aria-hidden="true" />
+            Wellness in
+          </div>
           <div className="dash-stat-value">
             {stats.wellnessPct !== null ? (
               <>
@@ -106,6 +112,11 @@ export function DashboardHeadlineStats({
               '—'
             )}
           </div>
+          {stats.wellnessPct !== null ? (
+            <div className="dash-stat-bar-track" aria-hidden="true">
+              <div className="dash-stat-bar-fill" style={{ width: `${stats.wellnessPct}%`, background: 'var(--good)' }} />
+            </div>
+          ) : null}
           <div className="dash-stat-sub">{stats.wellnessSub}</div>
           <div className="dash-stat-foot">
             {stats.wellnessPct === null
@@ -126,9 +137,23 @@ export function DashboardHeadlineStats({
           aria-label={`${expanded === 'available' ? 'Collapse' : 'Expand'} squad availability: ${stats.modifiedCount} modified, ${stats.unavailableCount} out`}
           onClick={() => setExpanded((k) => (k === 'available' ? null : 'available'))}
         >
-          <div className="dash-stat-label">Available</div>
+          <div className="dash-stat-label">
+            <span className="dash-stat-dot" style={{ background: 'var(--domain-medical)' }} aria-hidden="true" />
+            Available
+          </div>
           <div className="dash-stat-value">
             {stats.availableCount} <span className="unit">/ {stats.availableTotal}</span>
+          </div>
+          <div className="dash-stat-bar" aria-hidden="true">
+            {stats.availableCount > 0 ? (
+              <span className="dash-stat-bar-seg" style={{ flex: stats.availableCount, background: 'var(--good)' }} />
+            ) : null}
+            {stats.modifiedCount > 0 ? (
+              <span className="dash-stat-bar-seg" style={{ flex: stats.modifiedCount, background: 'var(--warn)' }} />
+            ) : null}
+            {stats.unavailableCount > 0 ? (
+              <span className="dash-stat-bar-seg" style={{ flex: stats.unavailableCount, background: 'var(--bad)' }} />
+            ) : null}
           </div>
           <div className="dash-stat-sub">
             {stats.modifiedCount} modified, {stats.unavailableCount} out
@@ -141,11 +166,35 @@ export function DashboardHeadlineStats({
           </div>
         </button>
 
-        <Link href={flagsHref} className="dash-stat">
-          <div className="dash-stat-label">Open flags</div>
-          <div className="dash-stat-value" style={{ color: stats.openFlags > 0 ? 'var(--warn-text)' : undefined }}>
+        <Link href={flagsHref} className="dash-stat" data-urgent={stats.openFlags > 0}>
+          <div className="dash-stat-label">
+            <span className="dash-stat-dot" style={{ background: 'var(--bad)' }} aria-hidden="true" />
+            Open flags
+          </div>
+          {/* --bad-text, not --warn-text. The lift tones this tile red
+              throughout (its own value is #8a2418) rather than mixing a red
+              dot and wash with amber type, and red is what the count means:
+              severity is a property of the individual flags, shown in the bar
+              below, not of the total. */}
+          <div className="dash-stat-value" style={{ color: stats.openFlags > 0 ? 'var(--bad-text)' : undefined }}>
             {stats.openFlags}
           </div>
+          {stats.openFlags > 0 ? (
+            <div className="dash-stat-bar" aria-hidden="true">
+              {stats.flagsBySeverity.high > 0 ? (
+                <span className="dash-stat-bar-seg" style={{ flex: stats.flagsBySeverity.high, background: 'var(--bad)' }} />
+              ) : null}
+              {stats.flagsBySeverity.medium > 0 ? (
+                <span className="dash-stat-bar-seg" style={{ flex: stats.flagsBySeverity.medium, background: 'var(--warn)' }} />
+              ) : null}
+              {/* Low takes neutral ink, not a third tone: it is counted, but
+                  it is not a warning, and giving it one would make every
+                  quiet week look amber. */}
+              {stats.flagsBySeverity.low > 0 ? (
+                <span className="dash-stat-bar-seg" style={{ flex: stats.flagsBySeverity.low, background: 'rgb(var(--ink-rgb) / 0.16)' }} />
+              ) : null}
+            </div>
+          ) : null}
           <div className="dash-stat-sub">
             {stats.awaitingAckFlags === 0 ? 'all acknowledged' : `${stats.awaitingAckFlags} awaiting acknowledgement`}
           </div>
@@ -153,7 +202,10 @@ export function DashboardHeadlineStats({
         </Link>
 
         <Link href={toMatchdayHref} className="dash-stat">
-          <div className="dash-stat-label">To matchday</div>
+          <div className="dash-stat-label">
+            <span className="dash-stat-dot" style={{ background: 'var(--domain-pitch)' }} aria-hidden="true" />
+            To matchday
+          </div>
           <div className="dash-stat-value">
             {stats.toMatchdayDays ?? '—'} <span className="unit">{stats.toMatchdayDays === 1 ? 'day' : 'days'}</span>
           </div>

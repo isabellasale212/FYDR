@@ -3699,9 +3699,62 @@ button.dash-stat {
   text-transform: uppercase;
   color: var(--faint);
 }
+/* THE VISUAL LIFT'S KPI STRIP ("Fydr Visual Lift.dc.html", variant 2a — the
+   comment on its own markup reads "KPI strip, one domain colour per tile").
+   The strip itself already had this shape: one card, five tiles, hairline
+   dividers. What the lift adds is the colour-coding, and it is informational
+   rather than decorative — the dot says which domain a number came from,
+   which is the join this product exists to make (see the design system's
+   own readme: "almost every screen is a table of numbers that came from
+   somewhere else"). */
+.dash-stat-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex: none;
+}
+.dash-stat-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+/* A tile whose number is the bad news carries its tone as a wash plus a
+   toned label — never a heavier shadow or a border, per the handoff's §5
+   urgency rule and the design system's "one shadow for the whole product". */
+.dash-stat[data-urgent='true'] {
+  background: rgb(var(--bad-rgb) / 0.07);
+}
+.dash-stat[data-urgent='true'] .dash-stat-label {
+  color: var(--bad-text);
+}
+/* The mini bars. 4px is deliberate: enough to read a proportion at a glance,
+   too thin to be mistaken for a chart with an axis. Segments are flex-weighted
+   by their real counts, so a bar with nothing in a band simply has no segment
+   rather than a zero-width sliver. */
+.dash-stat-bar {
+  display: flex;
+  gap: 3px;
+  height: 4px;
+  margin-top: 8px;
+}
+.dash-stat-bar-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--track);
+  overflow: hidden;
+  margin-top: 8px;
+}
+.dash-stat-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+.dash-stat-bar-seg {
+  border-radius: 2px;
+  min-width: 2px;
+}
 .dash-stat-value {
   font-family: var(--font-mono);
-  font-size: 30px;
+  font-size: 34px;
   font-weight: 500;
   line-height: 1.15;
   letter-spacing: -0.02em;

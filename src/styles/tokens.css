@@ -146,18 +146,23 @@
    --------------------------------------------------------------------------- */
 :root,
 :root[data-theme='light'] {
-  /* §1, quoted exactly. This was briefly deepened to #dde4f2 to make white
-     cards separate harder, and reverted: the handoff states High fidelity
-     ("every hex value and alpha is final and was measured off the reference
-     — use them exactly") and its §12 lists "any colour not listed in this
-     file" among the prohibitions, adding that a new colour "is a design
-     decision, not an implementation one". #dde4f2 was exactly that. The flat,
-     near-neutral read is the specified intent, not a shortfall: the handoff's
-     own Baseline says this theme "reads as an instrument panel, not a
-     consumer app: a near-neutral grey-blue page, flat white cards". Anyone
-     wanting more colour than this is asking for a design change, and it has
-     to come from the designer. */
-  --bg: #eaedf1;
+  /* THE VISUAL LIFT'S GROUND. #e4ebf9, from "Fydr Visual Lift.dc.html"
+     variants 1b and 2a (vendored at docs/source/visual-lift/) — the designer's
+     answer to the question the Aug 6 handoff left open.
+
+     History, because this value has moved twice. The handoff specified
+     #eaedf1 at High fidelity, and its §12 reserved a new colour to the
+     designer: "a design decision, not an implementation one". A deepened
+     #dde4f2 was tried here on my own judgement and reverted for exactly that
+     reason. This is the same move, made by the designer instead — deeper and
+     markedly bluer — so it lands as a spec change rather than an override.
+
+     Contrast is NOT inherited from the handoff, because this ground is darker
+     than #eaedf1 (relative luminance 0.828 vs 0.844) and dark text on it has
+     less room, not more. Four tokens fell below 4.5:1 and were re-derived
+     against it — see §3.7 below. White cards separate slightly better as a
+     side effect: 1.197:1, up from 1.174:1. */
+  --bg: #e4ebf9;
   --surf: #ffffff;
   /* The desk behind the app frame, and any inset well. Light-theme handoff §1.
      Distinct from --surf2 (#f3f5f8), which is a RAISED alt surface: this one
@@ -195,14 +200,33 @@
        --bad-text   #8a2418   8.95:1 / 7.62:1                    passes
 
      Both failures are replaced with the nearest value in the same hue family
-     that clears 4.5:1 on both surfaces — #925900 and #0c6f89, each 5.75:1 on
-     --surf and 4.90:1 on --bg. These are the only two colour deviations in
-     this file, both are contrast-forced rather than aesthetic, and both are
-     worth putting back to the designer: the fix belongs in the handoff.
+     that clears 4.5:1 on both surfaces. Both are contrast-forced rather than
+     aesthetic, and both are worth putting back to the designer: the fix
+     belongs upstream. THE VISUAL LIFT DID NOT FIX EITHER — its own light
+     variants still set #0d7a96 and #b07d0a, which on its new, darker ground
+     measure 4.14:1 and 3.03:1, so the deviations carry forward rather than
+     being retired.
 
-     Everything else here is the handoff's value untouched. */
-  --accent-text: #0065de;
-  --accent2-text: #0070b3;
+     RE-DERIVED FOR THE LIFT'S GROUND. #e4ebf9 is darker than #eaedf1, so
+     every one of these lost margin and four fell below the line. Re-derived
+     with hue and saturation held, stopping at the first value clearing 4.5:1
+     on both --bg and --surf:
+
+       --accent-text       #0065de -> #0064dc   4.55 on bg, 5.45 on surf
+       --accent2-text      #0070b3 -> #006eb0   4.55 on bg, 5.44 on surf
+       --accent-pill-text  #0051c6 -> #0050c4   4.56 / 5.28 on its own fill
+       --accent2-pill-text #0064a6 -> #0063a5   4.54 / 5.27 on its own fill
+       --good-text         #0c6f89              4.81 on bg   (already deviated)
+       --warn-text         #925900              4.81 on bg   (already deviated)
+       --bad-text          #8a2418              7.48 on bg   unchanged
+
+     --faint #929aa5 remains the handoff's value and remains failing — 2.38:1
+     on this ground, against 4.5:1 for the captions and field labels it is
+     for. Left as specified because no nearby value fixes it: reaching AA
+     means a visibly darker caption layer product-wide, which is a design
+     decision. The lift did not address it either. Still open. */
+  --accent-text: #0064dc;
+  --accent2-text: #006eb0;
   --good-text: #0c6f89;
   --warn-text: #925900;
   --bad-text: #8a2418;
@@ -211,8 +235,8 @@
 
   /* §3.7, text on that colour's own tint — the handoff's on-* column,
      applied exactly. */
-  --accent-pill-text: #0051c6;
-  --accent2-pill-text: #0064a6;
+  --accent-pill-text: #0050c4;
+  --accent2-pill-text: #0063a5;
   --good-pill-text: #0d5f75;
   --warn-pill-text: #6b4708;
   --bad-pill-text: #7a1f14;
@@ -358,7 +382,11 @@ Every alpha here is the handoff's own figure (§4 and §5),
    --------------------------------------------------------------------------- */
 .dark-tokens,
 :root[data-theme='dark'] {
-  --bg: #182241;
+  /* Visual Lift variants 1a and 2b, the dark half of the same scheme:
+     #182241 -> #202b4e. Lighter and bluer, so the dark shell reads as a
+     surface rather than a void, and it is what the lift's "dark as the hero"
+     dashboard is drawn on. */
+  --bg: #202b4e;
   --surf: #171e36;
   --surf-sunken: #121a33;
   --surf2: #1a2340;

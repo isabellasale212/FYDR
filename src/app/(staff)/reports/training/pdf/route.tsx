@@ -83,7 +83,7 @@ export async function GET(request: Request) {
           <>
             <PdfTileRow>
               {overview.dials.map((d) => (
-                <PdfTile key={d.key} label={d.label} value={`${d.value}%`} tone={dialTone(d.value)} />
+                <PdfTile key={d.key} label={d.label} value={d.value === null ? '—' : `${d.value}%`} tone={d.value === null ? undefined : dialTone(d.value)} />
               ))}
             </PdfTileRow>
             <PdfSectionTitle title="Read" caption={overview.headline} />
@@ -139,7 +139,7 @@ export async function GET(request: Request) {
         <>
           <PdfTileRow>
             {overview.dials.map((d) => (
-              <PdfTile key={d.key} label={d.label} value={`${d.value}%`} tone={dialTone(d.value)} />
+              <PdfTile key={d.key} label={d.label} value={d.value === null ? '—' : `${d.value}%`} tone={d.value === null ? undefined : dialTone(d.value)} />
             ))}
           </PdfTileRow>
           <PdfSectionTitle title="Read" caption={overview.headline} />

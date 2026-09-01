@@ -85,6 +85,31 @@ function qs(params: Record<string, string | undefined>): string {
 }
 
 function DialView({ dial }: { dial: DialScore }) {
+  /* An axis this session cannot score still gets its dial. Rendering two dials
+   * where three belong leaves a reader working out which one is missing and
+   * whether that is a data gap or a design choice; a dash with a reason answers
+   * both. Same rule as everywhere else here — absent is not zero. */
+  if (dial.value === null) {
+    return (
+      <div style={{ textAlign: 'center' }}>
+        <Dial size={104} pct={0} scaleMax={130} tick={100} tone="var(--track)">
+          <div>
+            <span className="tr-dial-value" style={{ color: 'var(--faint)' }}>
+              —
+            </span>
+            <div className="tr-dial-of">of typical</div>
+          </div>
+        </Dial>
+        <div style={{ marginTop: 6, fontWeight: 700, fontSize: 12.5 }}>{dial.label}</div>
+        <div className="tiny" style={{ color: 'var(--faint)', fontWeight: 700 }}>
+          Not scoreable
+        </div>
+        <div className="tiny mono" style={{ color: 'var(--faint)' }}>
+          {dial.raw === null ? 'no reading' : 'no reference'}
+        </div>
+      </div>
+    );
+  }
   const { tone, statusLabel } = scoreTone(dial.value);
   return (
     <div style={{ textAlign: 'center' }}>
@@ -102,8 +127,8 @@ function DialView({ dial }: { dial: DialScore }) {
         {statusLabel}
       </div>
       <div className="tiny mono" style={{ color: 'var(--faint)' }}>
-        {dial.raw < 100 ? dial.raw.toFixed(2) : Math.round(dial.raw).toLocaleString()}
-        {dial.unit}
+        {dial.raw === null ? '—' : dial.raw < 100 ? dial.raw.toFixed(2) : Math.round(dial.raw).toLocaleString()}
+        {dial.raw === null ? '' : dial.unit}
       </div>
     </div>
   );
@@ -648,7 +673,194 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
             </div>
           </div>
 
-          <div className="card" style={{ marginTop: 14, padding: '18px 20px' }}>
+                    {/* THE DESIGN'S TWO-COLUMN PAIR: the board on the left, the athlete
+              rail on the right, directly under the session card. They belong
+              side by side because they are read together — you pick a player
+              out of the board and read them beside it — and they belong here
+              because the board is what this page is for. Comparison and the
+              scatter follow underneath; they are real, wide tables that need
+              the whole width and are not in this design at all. */}
+          <div className="tr-lower">
+            <div className="tr-lower-main">
+<div className="card" style={{ marginTop: 14 }}>
+            <h2 className="card-title">Board</h2>
+            <p className="tiny mono" style={{ color: 'var(--faint)' }}>
+              Raw session values · shading is this squad&rsquo;s spread for this session, HSR blue, HIE pink, %Max
+              green · n = {board.rows.length} athletes
+            </p>
+            <div className="tr-board" style={{ marginTop: 10 }}>
+              <div className="tr-board-inner">
+                <div
+                  className="tr-board-row"
+                  style={{ gridTemplateColumns: 'minmax(170px, 1.3fr) repeat(5, minmax(66px, 1fr))', fontWeight: 700, color: 'var(--faint)', fontSize: 11, textTransform: 'uppercase' }}
+                >
+                  <span>Player</span>
+                  <span className="r" title={GPS_TERM_TITLE.td}>TD</span>
+                  <span className="r" title={GPS_TERM_TITLE.hsr}>HSR</span>
+                  <span className="r" title={GPS_TERM_TITLE.hie}>HIE</span>
+                  <span className="r" title={GPS_TERM_TITLE.maxv}>MaxV</span>
+                  <span className="r" title="Today's max velocity as a percentage of this athlete's own best on record for this session type">
+                    %Max
+                  </span>
+                </div>
+                {board.unitOrder.map((unit) => {
+                  const inUnit = board.rows.filter((r) => r.group_name === unit);
+                  const unitMean =
+                    inUnit.filter((r) => r.td !== null).length > 0
+                      ? Math.round(
+                          inUnit.reduce((t, r) => t + (r.td ?? 0), 0) / inUnit.filter((r) => r.td !== null).length,
+                        )
+                      : null;
+                  return (
+                    <div key={unit}>
+                      {/* The unit's own mean sits on its header, which is where the
+                          design puts the squad comparison: a coach reads a row
+                          against the line above it rather than against a column of
+                          percentages. */}
+                      <div className="tr-board-unit-header">
+                        <span>{unit}</span>
+                        {unitMean !== null ? (
+                          <span className="mono tr-unit-mean">unit mean {unitMean.toLocaleString()} m</span>
+                        ) : null}
+                      </div>
+                      {inUnit.map((row) => (
+                        /* CLICKABLE. Selecting a player here does the same thing as
+                           clicking one in the scatter — it sets ?athlete=, which
+                           drives the Individual player card and the whole page's
+                           lens. A link rather than a handler, so it is
+                           back-button-safe and shareable, and so a coach can open
+                           one in a new tab. */
+                        <Link
+                          key={row.athlete_id}
+                          href={`/reports/training${qs({ mode: 'training', session: selected.sessionId, groups: groupsQs, scope, lens, athlete: row.athlete_id })}`}
+                          className={`tr-board-row tr-board-row-link${row.athlete_id === selectedAthleteId ? ' selected' : ''}`}
+                          style={{ gridTemplateColumns: 'minmax(170px, 1.3fr) repeat(5, minmax(66px, 1fr))' }}
+                          aria-current={row.athlete_id === selectedAthleteId}
+                        >
+                          <span className="nm" style={{ fontSize: 13.5 }}>
+                            {row.last_name}, {row.first_name}
+                          </span>
+                          <span className="r mono">{row.td !== null ? Math.round(row.td).toLocaleString() : '—'}</span>
+                          <span className="r mono tr-heat" data-band={heatBand(row.hsr, hsrP95)} data-ramp="hsr">
+                            {row.hsr !== null ? Math.round(row.hsr).toLocaleString() : '—'}
+                          </span>
+                          <span className="r mono tr-heat" data-band={heatBand(row.hie, hieP95)} data-ramp="hie">
+                            {row.hie ?? '—'}
+                          </span>
+                          <span className="r mono">{row.maxv_kmh ?? '—'}</span>
+                          <span className="r mono tr-heat" data-band={pctMaxBand(row.pct_max)} data-ramp="pct">
+                            {row.pct_max !== null ? `${row.pct_max}%` : '—'}
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+            </div>
+            <div className="tr-lower-rail">
+{/* OUTSIDE THEIR NORMAL RANGE, from the Training report design's own
+              right rail. The board answers "who did most today"; this answers
+              "who did something unlike themselves", which is a different and
+              usually more actionable question — a low-volume athlete running
+              hard for THEM never rises up a squad-ranked board.
+
+              Compared against each athlete's own baseline, never the squad,
+              which is the panel's own subtitle and the reason it exists. The
+              baseline is their other sessions of this same title rather than a
+              literal 28 days: same-title is what makes two sessions
+              comparable, and it is the baseline the board's vs-self column
+              already uses. Said plainly in the caption rather than borrowing
+              the design's "28-day" wording, which this data is not. */}
+          {(() => {
+            const OUT = 12; // percent from their own normal before it is worth a coach's attention
+            const outliers = board.rows
+              .filter((r) => r.vs_self_hsr !== null && r.hsr_self_n >= 2 && Math.abs(r.vs_self_hsr - 100) >= OUT)
+              .sort((a, b) => Math.abs((b.vs_self_hsr ?? 100) - 100) - Math.abs((a.vs_self_hsr ?? 100) - 100))
+              .slice(0, 5);
+            return (
+              <div className="card" style={{ marginTop: 14 }}>
+                <h2 className="card-title">Outside their normal range</h2>
+                <p className="tiny" style={{ color: 'var(--muted)', marginTop: 2 }}>
+                  High speed running against each athlete&rsquo;s own mean for this session, not the squad.
+                </p>
+                {outliers.length === 0 ? (
+                  <p className="tiny" style={{ color: 'var(--faint)', marginTop: 12 }}>
+                    Nobody ran more than {OUT}% from their own normal today. An athlete needs at least two
+                    previous sessions of this type before they have a baseline to be outside of.
+                  </p>
+                ) : (
+                  <div style={{ marginTop: 8 }}>
+                    {outliers.map((r) => {
+                      const pct = r.vs_self_hsr ?? 100;
+                      const up = pct >= 100;
+                      const delta = `${up ? '+' : '−'}${Math.abs(pct - 100)}%`;
+                      return (
+                        <div key={r.athlete_id} className="tr-outlier">
+                          <div className="tr-outlier-head">
+                            <span className="tr-outlier-name">
+                              {r.last_name}, {r.first_name}
+                            </span>
+                            <span
+                              className="mono tr-outlier-delta"
+                              style={{ color: up ? 'var(--warn-text)' : 'var(--accent-text)' }}
+                            >
+                              {delta}
+                            </span>
+                          </div>
+                          <p className="tiny" style={{ color: 'var(--muted)', margin: '3px 0 0' }}>
+                            {r.last_name} ran {up ? 'more' : 'less'} high speed running than a normal {selected.title}{' '}
+                            for {up ? 'them' : 'them'}.
+                          </p>
+                          {/* Fydr's copy rule: never shorten an evidence line. */}
+                          <p className="tiny mono" style={{ color: 'var(--faint)', margin: '3px 0 0' }}>
+                            today {Math.round(r.hsr ?? 0).toLocaleString('en-GB')} m · their mean{' '}
+                            {Math.round(r.hsr_self_mean ?? 0).toLocaleString('en-GB')} m · n = {r.hsr_self_n} sessions
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+{/* HEAT BANDS. The board's three ramps, named. Without it the shading is
+              a colour a coach has to infer a meaning for; with it the scale is
+              stated once and the board's own caption can stay short. */}
+          <div className="card" style={{ marginTop: 14 }}>
+            <h2 className="card-title">Heat bands</h2>
+            <p className="tiny" style={{ color: 'var(--muted)', marginTop: 2 }}>
+              Five bands against this squad&rsquo;s p95 for this session. Shading is a rank inside today&rsquo;s
+              squad, never an absolute standard.
+            </p>
+            {[
+              { ramp: 'hsr', label: 'HSR', note: 'high speed running' },
+              { ramp: 'hie', label: 'HIE', note: 'high intensity efforts' },
+              { ramp: 'pct', label: '%Max', note: 'of their own best velocity' },
+            ].map((r) => (
+              <div key={r.ramp} className="tr-legend-row">
+                <span className="tr-legend-label">
+                  {r.label} <span style={{ color: 'var(--faint)', fontWeight: 400 }}>{r.note}</span>
+                </span>
+                <span className="tr-legend-ramp">
+                  {[0, 1, 2, 3, 4].map((b) => (
+                    <span key={b} className="tr-heat tr-legend-step" data-band={b} data-ramp={r.ramp} />
+                  ))}
+                </span>
+              </div>
+            ))}
+            <div className="tr-legend-ends">
+              <span>Low</span>
+              <span>p95</span>
+            </div>
+          </div>
+            </div>
+          </div>
+
+<div className="card" style={{ marginTop: 14, padding: '18px 20px' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
               <div>
                 <h2 className="card-title" style={{ margin: 0 }}>
@@ -825,184 +1037,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                 </>
               )}
             </div>
-          </div>
-
-          {/* OUTSIDE THEIR NORMAL RANGE, from the Training report design's own
-              right rail. The board answers "who did most today"; this answers
-              "who did something unlike themselves", which is a different and
-              usually more actionable question — a low-volume athlete running
-              hard for THEM never rises up a squad-ranked board.
-
-              Compared against each athlete's own baseline, never the squad,
-              which is the panel's own subtitle and the reason it exists. The
-              baseline is their other sessions of this same title rather than a
-              literal 28 days: same-title is what makes two sessions
-              comparable, and it is the baseline the board's vs-self column
-              already uses. Said plainly in the caption rather than borrowing
-              the design's "28-day" wording, which this data is not. */}
-          {(() => {
-            const OUT = 12; // percent from their own normal before it is worth a coach's attention
-            const outliers = board.rows
-              .filter((r) => r.vs_self_hsr !== null && r.hsr_self_n >= 2 && Math.abs(r.vs_self_hsr - 100) >= OUT)
-              .sort((a, b) => Math.abs((b.vs_self_hsr ?? 100) - 100) - Math.abs((a.vs_self_hsr ?? 100) - 100))
-              .slice(0, 5);
-            return (
-              <div className="card" style={{ marginTop: 14 }}>
-                <h2 className="card-title">Outside their normal range</h2>
-                <p className="tiny" style={{ color: 'var(--muted)', marginTop: 2 }}>
-                  High speed running against each athlete&rsquo;s own mean for this session, not the squad.
-                </p>
-                {outliers.length === 0 ? (
-                  <p className="tiny" style={{ color: 'var(--faint)', marginTop: 12 }}>
-                    Nobody ran more than {OUT}% from their own normal today. An athlete needs at least two
-                    previous sessions of this type before they have a baseline to be outside of.
-                  </p>
-                ) : (
-                  <div style={{ marginTop: 8 }}>
-                    {outliers.map((r) => {
-                      const pct = r.vs_self_hsr ?? 100;
-                      const up = pct >= 100;
-                      const delta = `${up ? '+' : '−'}${Math.abs(pct - 100)}%`;
-                      return (
-                        <div key={r.athlete_id} className="tr-outlier">
-                          <div className="tr-outlier-head">
-                            <span className="tr-outlier-name">
-                              {r.last_name}, {r.first_name}
-                            </span>
-                            <span
-                              className="mono tr-outlier-delta"
-                              style={{ color: up ? 'var(--warn-text)' : 'var(--accent-text)' }}
-                            >
-                              {delta}
-                            </span>
-                          </div>
-                          <p className="tiny" style={{ color: 'var(--muted)', margin: '3px 0 0' }}>
-                            {r.last_name} ran {up ? 'more' : 'less'} high speed running than a normal {selected.title}{' '}
-                            for {up ? 'them' : 'them'}.
-                          </p>
-                          {/* Fydr's copy rule: never shorten an evidence line. */}
-                          <p className="tiny mono" style={{ color: 'var(--faint)', margin: '3px 0 0' }}>
-                            today {Math.round(r.hsr ?? 0).toLocaleString('en-GB')} m · their mean{' '}
-                            {Math.round(r.hsr_self_mean ?? 0).toLocaleString('en-GB')} m · n = {r.hsr_self_n} sessions
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })()}
-
-          <div className="card" style={{ marginTop: 14 }}>
-            <h2 className="card-title">Board</h2>
-            <p className="tiny mono" style={{ color: 'var(--faint)' }}>
-              Raw session values · shading is this squad&rsquo;s spread for this session, HSR blue, HIE pink, %Max
-              green · n = {board.rows.length} athletes
-            </p>
-            <div className="tr-board" style={{ marginTop: 10 }}>
-              <div className="tr-board-inner">
-                <div
-                  className="tr-board-row"
-                  style={{ gridTemplateColumns: 'minmax(170px, 1.3fr) repeat(5, minmax(66px, 1fr))', fontWeight: 700, color: 'var(--faint)', fontSize: 11, textTransform: 'uppercase' }}
-                >
-                  <span>Player</span>
-                  <span className="r" title={GPS_TERM_TITLE.td}>TD</span>
-                  <span className="r" title={GPS_TERM_TITLE.hsr}>HSR</span>
-                  <span className="r" title={GPS_TERM_TITLE.hie}>HIE</span>
-                  <span className="r" title={GPS_TERM_TITLE.maxv}>MaxV</span>
-                  <span className="r" title="Today's max velocity as a percentage of this athlete's own best on record for this session type">
-                    %Max
-                  </span>
-                </div>
-                {board.unitOrder.map((unit) => {
-                  const inUnit = board.rows.filter((r) => r.group_name === unit);
-                  const unitMean =
-                    inUnit.filter((r) => r.td !== null).length > 0
-                      ? Math.round(
-                          inUnit.reduce((t, r) => t + (r.td ?? 0), 0) / inUnit.filter((r) => r.td !== null).length,
-                        )
-                      : null;
-                  return (
-                    <div key={unit}>
-                      {/* The unit's own mean sits on its header, which is where the
-                          design puts the squad comparison: a coach reads a row
-                          against the line above it rather than against a column of
-                          percentages. */}
-                      <div className="tr-board-unit-header">
-                        <span>{unit}</span>
-                        {unitMean !== null ? (
-                          <span className="mono tr-unit-mean">unit mean {unitMean.toLocaleString()} m</span>
-                        ) : null}
-                      </div>
-                      {inUnit.map((row) => (
-                        /* CLICKABLE. Selecting a player here does the same thing as
-                           clicking one in the scatter — it sets ?athlete=, which
-                           drives the Individual player card and the whole page's
-                           lens. A link rather than a handler, so it is
-                           back-button-safe and shareable, and so a coach can open
-                           one in a new tab. */
-                        <Link
-                          key={row.athlete_id}
-                          href={`/reports/training${qs({ mode: 'training', session: selected.sessionId, groups: groupsQs, scope, lens, athlete: row.athlete_id })}`}
-                          className={`tr-board-row tr-board-row-link${row.athlete_id === selectedAthleteId ? ' selected' : ''}`}
-                          style={{ gridTemplateColumns: 'minmax(170px, 1.3fr) repeat(5, minmax(66px, 1fr))' }}
-                          aria-current={row.athlete_id === selectedAthleteId}
-                        >
-                          <span className="nm" style={{ fontSize: 13.5 }}>
-                            {row.last_name}, {row.first_name}
-                          </span>
-                          <span className="r mono">{row.td !== null ? Math.round(row.td).toLocaleString() : '—'}</span>
-                          <span className="r mono tr-heat" data-band={heatBand(row.hsr, hsrP95)} data-ramp="hsr">
-                            {row.hsr !== null ? Math.round(row.hsr).toLocaleString() : '—'}
-                          </span>
-                          <span className="r mono tr-heat" data-band={heatBand(row.hie, hieP95)} data-ramp="hie">
-                            {row.hie ?? '—'}
-                          </span>
-                          <span className="r mono">{row.maxv_kmh ?? '—'}</span>
-                          <span className="r mono tr-heat" data-band={pctMaxBand(row.pct_max)} data-ramp="pct">
-                            {row.pct_max !== null ? `${row.pct_max}%` : '—'}
-                          </span>
-                        </Link>
-                      ))}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* HEAT BANDS. The board's three ramps, named. Without it the shading is
-              a colour a coach has to infer a meaning for; with it the scale is
-              stated once and the board's own caption can stay short. */}
-          <div className="card" style={{ marginTop: 14 }}>
-            <h2 className="card-title">Heat bands</h2>
-            <p className="tiny" style={{ color: 'var(--muted)', marginTop: 2 }}>
-              Five bands against this squad&rsquo;s p95 for this session. Shading is a rank inside today&rsquo;s
-              squad, never an absolute standard.
-            </p>
-            {[
-              { ramp: 'hsr', label: 'HSR', note: 'high speed running' },
-              { ramp: 'hie', label: 'HIE', note: 'high intensity efforts' },
-              { ramp: 'pct', label: '%Max', note: 'of their own best velocity' },
-            ].map((r) => (
-              <div key={r.ramp} className="tr-legend-row">
-                <span className="tr-legend-label">
-                  {r.label} <span style={{ color: 'var(--faint)', fontWeight: 400 }}>{r.note}</span>
-                </span>
-                <span className="tr-legend-ramp">
-                  {[0, 1, 2, 3, 4].map((b) => (
-                    <span key={b} className="tr-heat tr-legend-step" data-band={b} data-ramp={r.ramp} />
-                  ))}
-                </span>
-              </div>
-            ))}
-            <div className="tr-legend-ends">
-              <span>Low</span>
-              <span>p95</span>
-            </div>
-          </div>
-        </>
+          </div>        </>
       )}
     </>
   );

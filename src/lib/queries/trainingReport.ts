@@ -148,8 +148,13 @@ export type DialKey = 'intensity' | 'highSpeed' | 'endurance';
 export type DialScore = {
   key: DialKey;
   label: string;
-  value: number; // percent of typical, uncapped
-  raw: number; // the actual metric value
+  /** Percent of typical, uncapped. NULL when this axis cannot be scored for
+   *  this session — no reference to divide by, or no reading to divide. The
+   *  dial still renders, showing a dash and saying why, rather than vanishing
+   *  and leaving the reader to guess which axis is missing. */
+  value: number | null;
+  /** The actual metric value. Null when the session recorded none. */
+  raw: number | null;
   unit: string;
 };
 
@@ -173,13 +178,19 @@ const GAP = 6;
  *  meaningfully outside the band, which the spec calls out by name as a
  *  real defect found in review. */
 export function sessionRead(scores: readonly DialScore[], kind: 'session' | 'match'): string {
-  if (scores.length === 0) return `Not enough data to read this ${kind} yet.`;
-  const dev = (x: DialScore) => Math.abs(x.value - 100);
+  /* Only scoreable axes can be read. A dial with a null value now exists on
+   * screen so the reader can see the axis is there, but it must not enter the
+   * sentence — "harder on 1 of the three axes" would be counting an axis that
+   * was never measured. */
+  const scored = scores.filter((x): x is DialScore & { value: number } => x.value !== null);
+  if (scored.length === 0) return `Not enough data to read this ${kind} yet.`;
+  scores = scored;
+  const dev = (x: DialScore) => Math.abs((x.value ?? 100) - 100);
   const sorted = [...scores].sort((a, b) => dev(b) - dev(a));
   const top = sorted[0]!;
   const second = sorted[1];
-  const outside = scores.filter((x) => x.value >= OUT_HI || x.value <= OUT_LO);
-  const word = top.value > 100 ? 'harder' : 'lighter';
+  const outside = scores.filter((x) => x.value !== null && (x.value >= OUT_HI || x.value <= OUT_LO));
+  const word = (top.value ?? 100) > 100 ? 'harder' : 'lighter';
   if (outside.length === 0) return `A typical ${kind}.`;
   if (outside.length === 1 && second !== undefined && dev(top) - dev(second) >= GAP) {
     return `A ${word} ${kind} than usual, and ${top.label.toLowerCase()} is what made it ${word}.`;
@@ -283,16 +294,30 @@ export async function fetchTrainingOverview(
     curRecords.filter((r) => r.duration_s).map((r) => (r.high_intensity_efforts !== null && r.duration_s ? r.high_intensity_efforts / (r.duration_s / 60) : null)),
   );
 
-  const dials: DialScore[] = [];
-  if (curHiePerMin !== null && refHiePerMin !== null && refHiePerMin > 0) {
-    dials.push({ key: 'intensity', label: 'Intensity', value: Math.round((curHiePerMin / refHiePerMin) * 100), raw: curHiePerMin, unit: '/min' });
-  }
-  if (curHsr !== null && refHsr !== null && refHsr > 0) {
-    dials.push({ key: 'highSpeed', label: 'High speed', value: Math.round((curHsr / refHsr) * 100), raw: curHsr, unit: 'm' });
-  }
-  if (curTd !== null && refTd !== null && refTd > 0) {
-    dials.push({ key: 'endurance', label: 'Endurance', value: Math.round((curTd / refTd) * 100), raw: curTd, unit: 'm' });
-  }
+  /* ALL THREE DIALS, ALWAYS. They used to be pushed only when scoreable, so a
+   * session missing one input silently rendered two dials and the reader had no
+   * way to tell which axis was absent or why. The design shows three; an
+   * unscoreable one now renders with a null value and says so, which is the
+   * same "absent is not zero" rule the rest of this app follows. */
+  const dial = (
+    key: DialScore['key'],
+    label: string,
+    cur: number | null,
+    ref: number | null,
+    unit: string,
+  ): DialScore => ({
+    key,
+    label,
+    value: cur !== null && ref !== null && ref > 0 ? Math.round((cur / ref) * 100) : null,
+    raw: cur,
+    unit,
+  });
+
+  const dials: DialScore[] = [
+    dial('intensity', 'Intensity', curHiePerMin, refHiePerMin, '/min'),
+    dial('highSpeed', 'High speed', curHsr, refHsr, 'm'),
+    dial('endurance', 'Endurance', curTd, refTd, 'm'),
+  ];
 
   const headline = dials.length === 3 ? sessionRead(dials, 'session') : 'Not enough reference sessions yet to score this one.';
   const n = priorSessionIds.size;

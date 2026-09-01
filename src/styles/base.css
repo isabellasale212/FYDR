@@ -7244,3 +7244,34 @@ button.dash-stat {
 .tbl tr[data-availability='unavailable'] {
   background: rgb(var(--bad-rgb) / 0.07);
 }
+
+/* Training report: the board and the athlete rail, side by side. 1.55/1 is the
+   design's own split — the board carries six columns of figures and needs the
+   room, the rail is a reading column.
+   Stacks below 1200px: a six-column board and a rail cannot both be honest in
+   half of a laptop screen, and the board is the one that must not be squeezed. */
+.tr-lower {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: var(--gap-grid);
+  align-items: start;
+  margin-top: 14px;
+}
+.tr-lower-main,
+.tr-lower-rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-grid);
+  min-width: 0;
+}
+/* The cards inside already carry their own marginTop from when they were a
+   flat stack; the flex gap replaces it. */
+.tr-lower-main > .card,
+.tr-lower-rail > .card {
+  margin-top: 0 !important;
+}
+@media (max-width: 1200px) {
+  .tr-lower {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

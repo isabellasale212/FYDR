@@ -115,6 +115,17 @@
   --domain-recovery-rgb: 138 148 184;
   --domain-medical: var(--bad);
 
+  /* The two-athlete comparison pair, from the Analytics design's own caption:
+     "Selby solid in the card's own colour · Fox violet and dashed". Athlete A
+     takes whichever colour the board already uses, so the card keeps its
+     identity; athlete B is one fixed violet everywhere, so the SECOND athlete
+     is the same colour on all four boards and a coach learns it once. Violet
+     because it is the one hue in reach that collides with none of the four
+     board colours or the three semantic tones. Single-valued: it is a line on
+     a chart in both themes, never text. */
+  --cmp-b: #8b5cf6;
+  --cmp-b-rgb: 139 92 246;
+
   /* §2.6 radius, §2.7 spacing, §2.8 motion.
      --r-band is the handoff's heat/band cell radius; its --r-ctrl (12px) is
      this file's existing --r-field and its --r-round (50%) is a literal every

@@ -6821,3 +6821,128 @@ button.dash-stat {
   font-size: 11.5px;
   color: var(--faint);
 }
+
+/* ---------------------------------------------------------------------------
+   Analytics comparison boards ("Fydr Analytics.dc.html", 8a/8b). Four cards,
+   each one metric for one or two athletes.
+   --------------------------------------------------------------------------- */
+.cmp-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--gap-grid);
+}
+@media (max-width: 1100px) {
+  .cmp-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.cmp-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.cmp-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+}
+.cmp-card-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 2px 0 0;
+  max-width: 44ch;
+}
+.cmp-card-controls {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  flex: none;
+}
+.cmp-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.cmp-chart-axis {
+  font-size: 9px;
+  fill: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+.cmp-legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.cmp-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cmp-legend-key {
+  width: 16px;
+  height: 0;
+  border-top-width: 2px;
+  border-top-style: solid;
+  flex: none;
+}
+.cmp-legend-note {
+  margin-left: auto;
+  color: var(--faint);
+}
+/* The athlete pickers and the compare toggle. */
+.cmp-athletes {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cmp-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-field);
+  background: var(--surf);
+  min-width: 210px;
+}
+.cmp-picker[data-secondary='true'] {
+  border-color: rgb(var(--cmp-b-rgb) / 0.5);
+}
+.cmp-picker-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.cmp-picker-meta {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.cmp-against {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-field);
+  background: var(--surf);
+}
+.cmp-against-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.cmp-against-n {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}

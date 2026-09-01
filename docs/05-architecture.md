@@ -311,13 +311,15 @@ npm run deploy
 `npx vercel --prod`, which resolves the `latest` dist-tag — so the version doing the
 deploy changed without anyone choosing to change it. That broke a deploy mid-session:
 `latest` moved to 59.11.0 and the install failed with `No matching version found for
-@vercel/go@9.0.0`. That dependency is in fact published, so the true cause was a stale
-packument in the local npm cache rather than a bad release — which is the point. A
-deploy tool that silently re-resolves is a deploy that can fail for reasons unrelated to
-the change being shipped, and it fails at the worst moment, when you are trying to ship.
+@vercel/go@9.0.0`. That dependency is in fact published, and 59.11.0 installs cleanly on
+a retry, so the true cause was a stale packument in the local npm cache rather than a bad
+release — which is exactly the point. A deploy tool that silently re-resolves is a deploy
+that can fail for reasons unrelated to the change being shipped, and it fails at the worst
+moment, when you are trying to ship.
 
-`59.10.0` is pinned because it is the version this project has actually deployed with.
-Bumping it is a deliberate edit to `package.json`, which is what it should be. When the
+The pin is currently `59.11.0`, verified installing and deploying from a clean resolve
+before it was set. Bumping it is a deliberate edit to `package.json`, which is what it
+should be, and the new version should be run once before the bump is committed. When the
 CI pipeline above is real, the same pin belongs in the workflow.
 
 ---

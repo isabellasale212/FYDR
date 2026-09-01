@@ -19,7 +19,8 @@
     "test:tier-preview": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-tier-preview.ts",
     "seed:auth": "node --experimental-strip-types scripts/seed-auth.ts",
     "test:premium-routes": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-premium-routes.ts",
-    "verify:tier-rls": "node --env-file=.env.local scripts/verify-tier-rls.mjs"
+    "verify:tier-rls": "node --env-file=.env.local scripts/verify-tier-rls.mjs",
+    "db:push": "node --env-file=.env.local scripts/db-push.mjs"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.5.1",

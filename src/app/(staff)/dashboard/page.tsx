@@ -71,7 +71,20 @@ const WEEK_LEGEND: { type: SessionPip; label: string }[] = [
   { type: 'recovery', label: 'Recovery' },
 ];
 
+/* FILLS. Bars and swatches — a block of colour, where the raw tone is right. */
 const TONE_VAR: Record<string, string> = { good: 'var(--accent2)', accent: 'var(--accent)', accent2: 'var(--accent2)', warn: 'var(--warn)', bad: 'var(--bad)' };
+
+/* TEXT, which is a different question and was being answered with the fill
+ * map above. A tone is chosen to be seen as an area; as a 13px numeral it was
+ * measuring 2:1 on white and 1.5:1 once the Ready card took its tint — the
+ * count telling a coach how many players are doubtful was the least readable
+ * thing in the card. These are the derived pill-text tokens, the same
+ * distinction tokens.css §3.7 already draws for --accent-text against
+ * --accent-pill-text. */
+const TONE_TEXT: Record<string, string> = {
+  warn: 'var(--warn-pill-text)',
+  bad: 'var(--bad-pill-text)',
+};
 
 /* One day, and only one day. The week strip and the week list are gone: the
  * dashboard answers "what is happening now", and a six-day recap on the same
@@ -469,7 +482,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                       {r.detail}
                     </div>
                   </div>
-                  <span className="mono" style={{ fontSize: 13, color: TONE_VAR[r.tone === 'bad' ? 'bad' : r.tone === 'warn' ? 'warn' : ''] }}>
+                  <span className="mono" style={{ fontSize: 13, color: TONE_TEXT[r.tone === 'bad' ? 'bad' : r.tone === 'warn' ? 'warn' : ''] }}>
                     {r.value}
                   </span>
                   <span style={{ color: 'var(--faint)' }}>›</span>

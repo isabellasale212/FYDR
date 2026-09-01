@@ -4258,6 +4258,13 @@ button.dash-stat {
   border: 1px solid rgb(var(--accent-rgb) / 0.3);
   background: var(--wash-accent-soft);
 }
+/* --faint is derived for a plain surface. On this card's tint it drops to
+   4.2:1, so the card's secondary text steps up one tier — the same
+   surface-vs-tint distinction as --accent-text against --accent-pill-text. */
+.dash-ready-card .tiny,
+.dash-ready-card .cap {
+  color: var(--muted);
+}
 .dash-ready-head {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

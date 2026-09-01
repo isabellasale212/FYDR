@@ -125,7 +125,23 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
   );
 
   const isGain = lens === 'Improvement';
-  const effectiveFamily = isGain && family === 'Habits' ? 'Speed & power' : family;
+  const isStd = lens === 'Standard';
+  /* A family is unavailable in a lens it cannot answer, rather than shown
+   * answering it emptily. Habits and GPS are both gainable:false — a wellness
+   * streak isn't differenced against a first test, and a GPS rolling mean has
+   * no noise floor to separate a real gain from session variation. GPS is also
+   * out under Standard: every one of its boards carries a null standard,
+   * because this schema has no GPS norms-by-position table. */
+  const familyUnavailable = (f: WallBoard['family']): string | null => {
+    if (isGain && f === 'Habits')
+      return 'Wellness streak and compliance aren’t differenced against a first test, so Habits has no meaningful improvement to show here.';
+    if (isGain && f === 'GPS')
+      return 'GPS boards are a rolling four-week mean with no per-metric typical error, so a change here can’t be told apart from normal session-to-session variation.';
+    if (isStd && f === 'GPS')
+      return 'No GPS norms-by-position exist in this schema, so these boards carry no standard to be measured against.';
+    return null;
+  };
+  const effectiveFamily = familyUnavailable(family) ? 'Speed & power' : family;
 
   const familyCounts = useMemo(() => {
     const counts: Partial<Record<WallBoard['family'], number>> = {};
@@ -172,7 +188,7 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
         <div className="dash-stat">
           <p className="dash-stat-label">Boards</p>
           <p className="dash-stat-value">{derived.stats.boards}</p>
-          <p className="dash-stat-sub">across four families</p>
+          <p className="dash-stat-sub">across {derived.stats.familyCount} families</p>
           <p className="dash-stat-foot">club wide, every athlete included</p>
         </div>
         <div className="dash-stat">
@@ -257,8 +273,9 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
 
       <div className="lbw-controls-row" style={{ marginTop: 12 }}>
         <div className="chiprow">
-          {(['Speed & power', 'Endurance', 'Strength', 'Habits'] as const).map((f) => {
-            const disabled = isGain && f === 'Habits';
+          {(['Speed & power', 'Endurance', 'Strength', 'GPS', 'Habits'] as const).map((f) => {
+            const unavailable = familyUnavailable(f);
+            const disabled = unavailable !== null;
             return (
               <button
                 key={f}
@@ -266,11 +283,7 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
                 className={`squad-chip${disabled ? ' lbw-chip-disabled' : ''}`}
                 aria-pressed={effectiveFamily === f}
                 disabled={disabled}
-                title={
-                  disabled
-                    ? 'Wellness streak and compliance aren’t differenced against a first test, so Habits has no meaningful improvement to show here.'
-                    : undefined
-                }
+                title={unavailable ?? undefined}
                 onClick={() => !disabled && setFamily(f)}
               >
                 {f} <span className="lbw-chip-count">{familyCounts[f] ?? 0}</span>

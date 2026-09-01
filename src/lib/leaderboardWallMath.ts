@@ -167,6 +167,10 @@ export function standardCell(board: WallBoard, value: number | null, unitIndex: 
 
 export type WallStats = {
   boards: number;
+  /** How many families those boards fall into. Derived rather than written out,
+   *  because the number moved from four to five the moment GPS landed and a
+   *  hardcoded "across four families" would have quietly started lying. */
+  familyCount: number;
   athletes: number;
   meetingStandardPct: number;
   improvedCount: number;
@@ -303,6 +307,7 @@ export function computeWallDerived(data: WallData): WallDerived {
   return {
     stats: {
       boards: boards.length,
+      familyCount: new Set(boards.map((b) => b.family)).size,
       athletes: athleteIdsWithAnyValue.size,
       meetingStandardPct,
       improvedCount: improvedAthletes.size,

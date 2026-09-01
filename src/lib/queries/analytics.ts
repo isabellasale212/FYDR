@@ -418,6 +418,31 @@ export async function fetchEarliestEntryDate(
   orgId: string,
   source: MetricSource,
 ): Promise<string | null> {
+  if (source === 'gps') {
+    const { data, error } = await db
+      .from('gps_records')
+      .select('record_date')
+      .eq('org_id', orgId)
+      .not('record_date', 'is', null)
+      .order('record_date', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return data?.record_date ?? null;
+  }
+  if (source === 'gym') {
+    // The parent's date again — gym_set_logs has none of its own.
+    const { data, error } = await db
+      .from('gym_session_logs_current')
+      .select('entry_date')
+      .eq('org_id', orgId)
+      .not('entry_date', 'is', null)
+      .order('entry_date', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return data?.entry_date ?? null;
+  }
   if (source === 'training') {
     const { data, error } = await db
       .from('training_entries_current')
@@ -495,6 +520,18 @@ const BAND_RUNWAY_DAYS = 27;
  * `_current` views), and every metric in lib/analyticsBuilder.ts reads one of
  * them or is computed from them. */
 const TRAINING_COLS = 'athlete_id, entry_date, session_load, rpe';
+/* gps_records dates its rows `record_date`, not `entry_date`. Aliased in the
+ * select so the row arrives in the same shape every other source produces and
+ * the per-day collapse below needs no branch of its own. Ordering still names
+ * the REAL column — an alias is a projection, not a sort key. */
+const GPS_COLS = 'athlete_id, entry_date:record_date, total_distance_m';
+/* gym_set_logs carries neither athlete_id nor entry_date — both live on the
+ * parent session (this is the same shape that forces the chunked read in
+ * programmes.ts). An inner embed brings them across in one query instead, and
+ * filters on the parent at the same time. volume_kg is a generated stored
+ * column (migration 0021, reps x load), so the tonnage is read, not computed
+ * here. */
+const GYM_COLS = 'volume_kg, gym_session_logs!inner(athlete_id, entry_date, superseded_by)';
 const WELLNESS_COLS =
   'athlete_id, entry_date, sleep_hours, sleep_quality, fatigue, soreness, stress, mood, resting_hr';
 
@@ -513,6 +550,8 @@ type MetricRow = {
   stress?: number | null;
   mood?: number | null;
   resting_hr?: number | null;
+  total_distance_m?: number | null;
+  volume_kg?: number | null;
 };
 
 /** The one place a MetricDef turns into a number from a row. ACWR returns the
@@ -589,10 +628,62 @@ export async function fetchMetricSeries(
    * volume reduction on the one shape where it is free. */
   const single = athleteId !== null && inScope.has(athleteId) ? athleteId : null;
 
+  /* GPS and gym are fetched separately from the two entry views: gps_records
+   * dates on record_date, and gym_set_logs has to reach through its parent for
+   * an athlete and a date at all. Both normalise to the same MetricRow the
+   * collapse below already understands, so nothing downstream branches. */
+  const gpsRows = async (): Promise<MetricRow[]> =>
+    fetchAllPaged<MetricRow>((from, to) => {
+      const q = db
+        .from('gps_records')
+        .select(GPS_COLS)
+        .eq('org_id', orgId)
+        .gte('record_date', fetchFrom)
+        .lte('record_date', range.to);
+      return (single ? q.eq('athlete_id', single) : q)
+        .order('record_date')
+        .order('athlete_id')
+        .order('id')
+        .range(from, to);
+    });
+
+  type GymSetRow = {
+    volume_kg: number | null;
+    gym_session_logs: { athlete_id: string | null; entry_date: string | null; superseded_by: string | null } | null;
+  };
+  const gymRows = async (): Promise<MetricRow[]> => {
+    const raw = await fetchAllPaged<GymSetRow>((from, to) => {
+      const q = db
+        .from('gym_set_logs')
+        .select(GYM_COLS)
+        .eq('org_id', orgId)
+        /* The parent's revision state, filtered through the embed: a corrected
+         * session leaves its superseded parent behind, and counting both would
+         * double that day's tonnage. This is the embed's equivalent of reading
+         * gym_session_logs_current. */
+        .is('gym_session_logs.superseded_by', null)
+        .gte('gym_session_logs.entry_date', fetchFrom)
+        .lte('gym_session_logs.entry_date', range.to)
+        /* Warm-ups are not training volume. Excluded here rather than in the
+         * metric's note, so the number is right wherever it is read. */
+        .eq('is_warmup', false);
+      return (single ? q.eq('gym_session_logs.athlete_id', single) : q).order('id').range(from, to);
+    });
+    return raw.map((r) => ({
+      athlete_id: r.gym_session_logs?.athlete_id ?? null,
+      entry_date: r.gym_session_logs?.entry_date ?? null,
+      volume_kg: r.volume_kg,
+    }));
+  };
+
   const rows: MetricRow[] =
     inScope.size === 0
       ? []
-      : metric.source === 'training'
+      : metric.source === 'gps'
+        ? await gpsRows()
+        : metric.source === 'gym'
+          ? await gymRows()
+          : metric.source === 'training'
         ? await fetchAllPaged<MetricRow>((from, to) => {
             const q = db
               .from('training_entries_current')

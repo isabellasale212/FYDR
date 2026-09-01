@@ -26,7 +26,11 @@ import type { RangeKey } from '@/lib/period';
  * number the schema cannot supply, and nothing is scaled, imputed or
  * back-filled: a day an athlete did not submit is absent, never zero. */
 
-export type MetricSource = 'training' | 'wellness';
+/* Where a metric's numbers come from. 'gps' and 'gym' were added for the four
+ * fixed boards the Analytics design specifies — Training load reads
+ * gps_records, Gym volume reads gym_set_logs — and the builder gained both
+ * metrics for free, since it runs the same engine. */
+export type MetricSource = 'training' | 'wellness' | 'gps' | 'gym';
 
 /** How several entries for ONE athlete on ONE day collapse to that day's
  *  value. Session load is additive — two sessions in a day is a bigger day.
@@ -72,6 +76,8 @@ export type MetricDef = {
 export type MetricKey =
   | 'acwr'
   | 'readiness'
+  | 'gps_distance'
+  | 'gym_volume'
   | 'load'
   | 'rpe'
   | 'sleep_hours'
@@ -112,6 +118,34 @@ export const METRICS: readonly MetricDef[] = [
     perDay: 'mean',
     aggregate: 'mean',
     note: 'The five 1-to-5 wellness scales averaged onto 0–100, matching public.wellness_compute_readiness. A day missing any one of the five scales has no readiness value at all rather than a partial one.',
+  },
+  {
+    key: 'gps_distance',
+    label: 'Total distance',
+    source: 'gps',
+    column: 'total_distance_m',
+    unit: ' m',
+    decimals: 0,
+    axis: null,
+    ticks: null,
+    /* Summed across a day: two sessions is genuinely a bigger day's running,
+     * the same reasoning session load uses directly below. */
+    perDay: 'sum',
+    aggregate: 'mean',
+    note: 'Metres covered, from the GPS unit. Summed across every session an athlete wore one that day; a session with no unit is absent, not zero.',
+  },
+  {
+    key: 'gym_volume',
+    label: 'Volume load',
+    source: 'gym',
+    column: 'volume_kg',
+    unit: ' kg',
+    decimals: 0,
+    axis: null,
+    ticks: null,
+    perDay: 'sum',
+    aggregate: 'mean',
+    note: 'Tonnage lifted: reps × load, summed across every working set that day. Warm-up sets are excluded — they are not training volume. Corrected sessions count once, through the current-revision view.',
   },
   {
     key: 'load',

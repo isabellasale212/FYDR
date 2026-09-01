@@ -259,7 +259,14 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
       flagFrom,
       weekStart,
       weekEnd,
-      checkins: checkinsByAthlete.get(a.id) ?? [],
+      /* Bounded at BOTH ends. fetchCheckinsForAthletes takes only a `since`,
+         and exportBuilder's fetchNutritionCheckinExportRows bounds the top in
+         memory for exactly this reason -- this call site did not. A check-in
+         dated after the current week has not happened yet, and counting one
+         inside "the last seven weeks" is the same defect that had the athlete
+         picker reporting two 2033-dated wellness entries as this week's
+         mornings. Two such rows are in wellness_entries today. */
+      checkins: (checkinsByAthlete.get(a.id) ?? []).filter((c) => c.week_start <= weekStart),
       hasPersonalTargetOverride: personalOverrideIds.has(a.id),
       targetRange: rangeBounds(targetRangesByAthlete.get(a.id)),
     }),

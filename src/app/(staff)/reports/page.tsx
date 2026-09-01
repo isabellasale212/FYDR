@@ -98,9 +98,10 @@ const REPORTS = [
  *  records and testing, the gaps that blocked them, both existed. No
  *  scheduling on any of them — these are live in-app pages, recomputed on
  *  open, each with a CSV export AND a PDF route (all six now have one; the
- *  training report was the last, see reports/training/pdf/route.tsx). NOTE:
- *  the caption this page renders below still says "all but the training
- *  report also export to PDF", which is stale user-facing copy. See each
+ *  training report was the last, see reports/training/pdf/route.tsx). The
+ *  caption below used to say "all but the training report also export to
+ *  PDF" and carried a NOTE here calling itself stale; both were corrected
+ *  on 2026-09-01, once all six pdf routes were confirmed present. See each
  *  query file's own header for what it cuts against the full spec.
  *
  *  This index page itself stays open to every staff role — lib/session.ts's
@@ -205,9 +206,8 @@ export default async function ReportsPage() {
       </div>
 
       <p className="cap">
-        Live pages, recomputed each time you open them. Every report exports to CSV, and all but
-        the training report also export to PDF. XLSX and scheduled email delivery aren&rsquo;t
-        available yet.
+        Live pages, recomputed each time you open them. Every report exports to CSV and to PDF.
+        XLSX and scheduled email delivery aren&rsquo;t available yet.
       </p>
     </>
   );

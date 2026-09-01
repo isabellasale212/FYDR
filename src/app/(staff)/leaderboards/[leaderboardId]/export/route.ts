@@ -14,6 +14,7 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatNumber } from '@/lib/format';
 import { premiumOnlyResponse, requireStaff } from '@/lib/session';
+import { isUuid } from '@/lib/uuid';
 import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
 
@@ -50,6 +51,11 @@ export async function GET(
 ) {
   const { leaderboardId } = await params;
   const { db, orgId, claims, tier } = await requireStaff();
+  /* Shape-check the route param before it reaches a query. Authenticated
+     first, so this never becomes a probe; then 404 rather than 500, because a
+     malformed id is a URL that does not name anything, not a server fault. */
+  if (!isUuid(leaderboardId)) notFound();
+
 
   if (!claims.roles.includes('coach') && !claims.roles.includes('medical')) {
     return new Response('A board ranking is named-athlete data and is not part of this role.', {

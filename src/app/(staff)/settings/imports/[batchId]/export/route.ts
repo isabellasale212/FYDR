@@ -7,6 +7,7 @@ import {
 } from '@/lib/queries/gpsImport';
 import { formatDateTime } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
+import { isUuid } from '@/lib/uuid';
 
 /** The export half of the coach's ask: "access all previous gps imports and
  *  make them exportable." One batch, one CSV, via lib/csv.ts — the same
@@ -52,6 +53,11 @@ export async function GET(
 ) {
   const { batchId } = await params;
   const { db, orgId, claims, timezone } = await requireStaff();
+  /* Shape-check the route param before it reaches a query. Authenticated
+     first, so this never becomes a probe; then 404 rather than 500, because a
+     malformed id is a URL that does not name anything, not a server fault. */
+  if (!isUuid(batchId)) notFound();
+
 
   if (!claims.roles.includes('coach') && !claims.roles.includes('medical')) {
     return new Response('GPS records are named-athlete performance data and are not part of this role.', {

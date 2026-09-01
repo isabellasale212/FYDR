@@ -30,6 +30,7 @@ import { DEFAULT_RANGE, clampPeriod, resolveRange, type RangeKey } from '@/lib/p
 import { resolvePeriod } from '@/lib/period.server';
 import { availabilityStatus } from '@/lib/status';
 import { requireStaff } from '@/lib/session';
+import { isUuid } from '@/lib/uuid';
 
 export const metadata = { title: 'Athlete · Fydr' };
 
@@ -239,6 +240,11 @@ export default async function AthletePage({
 }) {
   const { athleteId } = await params;
   const { db, orgId, orgName, timezone, claims } = await requireStaff();
+  /* Shape-check the route param before it reaches a query. Authenticated
+     first, so this never becomes a probe; then 404 rather than 500, because a
+     malformed id is a URL that does not name anything, not a server fault. */
+  if (!isUuid(athleteId)) notFound();
+
 
   // Same gate as /squad, applied before any per-athlete query runs: a
   // direct link or a bookmark can reach this route without passing through

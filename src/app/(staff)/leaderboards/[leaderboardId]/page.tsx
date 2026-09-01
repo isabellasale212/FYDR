@@ -16,6 +16,7 @@ import { fetchGroupAthleteIds, fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
+import { isUuid } from '@/lib/uuid';
 import { isPremium } from '@/lib/tier';
 import { PlanGate } from '@/components/PlanGate/PlanGate';
 
@@ -44,6 +45,11 @@ export default async function LeaderboardDetailPage({
 }) {
   const { leaderboardId } = await params;
   const { db, orgId, claims, tier } = await requireStaff();
+  /* Shape-check the route param before it reaches a query. Authenticated
+     first, so this never becomes a probe; then 404 rather than 500, because a
+     malformed id is a URL that does not name anything, not a server fault. */
+  if (!isUuid(leaderboardId)) notFound();
+
 
   // docs/20-route-map.md §2.3: board detail's roles are `coach, medical`
   // only — unlike the wall one level up, there's no admin row_note here at

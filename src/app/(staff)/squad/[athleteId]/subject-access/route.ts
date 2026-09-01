@@ -1,6 +1,8 @@
+import { notFound } from 'next/navigation';
 import { redirect } from 'next/navigation';
 import { createSarRequest } from '@/lib/queries/sarPack';
 import { requireStaff } from '@/lib/session';
+import { isUuid } from '@/lib/uuid';
 
 /** exports.md's own entry-point table: `athlete-profile.md, "Generate
  *  subject access pack" (admin) → SAR flow, athlete_id`. Admin only — see
@@ -12,6 +14,11 @@ import { requireStaff } from '@/lib/session';
 export async function POST(_request: Request, { params }: { params: Promise<{ athleteId: string }> }) {
   const { athleteId } = await params;
   const { db, orgId, claims } = await requireStaff();
+  /* Shape-check the route param before it reaches a query. Authenticated
+     first, so this never becomes a probe; then 404 rather than 500, because a
+     malformed id is a URL that does not name anything, not a server fault. */
+  if (!isUuid(athleteId)) notFound();
+
   if (!claims.roles.includes('admin')) redirect(`/squad/${athleteId}?e=no-sar-access`);
 
   const { id, error } = await createSarRequest(db, orgId, athleteId, claims.userId);

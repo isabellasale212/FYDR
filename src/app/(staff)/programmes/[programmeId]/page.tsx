@@ -7,6 +7,7 @@ import { fetchAssignedAthletes, fetchAssignments, fetchExercises, fetchProgramme
 import { fetchSquadList } from '@/lib/queries/squad';
 import { enumLabel } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
+import { isUuid } from '@/lib/uuid';
 
 export const metadata = { title: 'Programme · Fydr' };
 
@@ -22,6 +23,11 @@ export default async function ProgrammeBuilderPage({
 }) {
   const { programmeId } = await params;
   const { db, orgId, orgName, claims } = await requireStaff();
+  /* Shape-check the route param before it reaches a query. Authenticated
+     first, so this never becomes a probe; then 404 rather than 500, because a
+     malformed id is a URL that does not name anything, not a server fault. */
+  if (!isUuid(programmeId)) notFound();
+
   const isCoach = claims.roles.includes('coach');
   const isMedical = claims.roles.includes('medical');
 

@@ -1,3 +1,4 @@
+import { isUuid } from '@/lib/uuid';
 /* The group filter, CLAUDE.md §3: every screen that shows more than one
  * athlete is filterable by group, held in `?groups=` so the selection
  * survives a refresh and is applied in the query rather than after the rows
@@ -13,8 +14,6 @@
  * server pages and the client GroupFilter component can import it.
  */
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 /** Every caller feeds this straight into a `group_id in (...)` query, so a
  *  non-UUID value here is never a real group — it's a hand-edited URL, a
  *  stale link, or a query string built by hand. Caught live: an invalid
@@ -29,7 +28,7 @@ export function parseGroupParam(value: string | string[] | undefined): string[] 
   return raw
     .split(',')
     .map((s) => s.trim())
-    .filter((s) => UUID_RE.test(s));
+    .filter((s) => isUuid(s));
 }
 
 /** The active scope, by name — "Whole squad", "Forwards", "Backs + Academy".

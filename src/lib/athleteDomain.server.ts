@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { isUuid } from '@/lib/uuid';
 import { clampPeriod, DEFAULT_RANGE, type RangeKey } from '@/lib/period';
 import { resolvePeriod } from '@/lib/period.server';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
@@ -92,6 +93,14 @@ export async function loadAthleteDomainContext(
   if (!claims.roles.includes('coach') && !claims.roles.includes('medical')) {
     return { denied: true, orgName };
   }
+
+  /* Shape-check before any per-athlete query, for the same reason the role
+     gate sits here rather than in each page: wellness, gym and nutrition all
+     enter through this function, so guarding it once covers all three — and
+     covers whatever the next domain screen turns out to be. A malformed id
+     reached Postgres and came back as an unhandled uuid-syntax error: a 500
+     on a URL that simply does not name anything. */
+  if (!isUuid(athleteId)) notFound();
 
   const [requestedPeriod, groupIds, groups, season, athlete] = await Promise.all([
     resolvePeriod(sp),

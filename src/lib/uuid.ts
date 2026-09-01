@@ -17,9 +17,16 @@
  *  org may see it. Tenancy is RLS and the `org_id` filter on the query
  *  (CLAUDE.md rule 1); never treat a passing id as an authorised one.
  *
- *  NOTE: `groupFilter.ts` and `queries/auditLog.ts` each hold their own copy of
- *  this regex. They are not changed here — CLAUDE.md §5, no unrelated
- *  refactoring in a feature commit — but they should collapse into this. */
+ *  `groupFilter.ts` and `queries/auditLog.ts` each held their own copy of this
+ *  regex and now call this instead — one definition, so a future correction
+ *  cannot land in two of three places.
+ *
+ *  Those two keep their own RESPONSE to a bad id, and should: a malformed
+ *  `?groups=` value is dropped and the filter falls open to "no filter", the
+ *  same as the param being absent, because a stale link should not take a
+ *  whole page down — and an audit-log filter behaves likewise. A malformed
+ *  path SEGMENT is different: it names a resource that does not exist, so it
+ *  is a 404. Shared shape test, different consequence, deliberately. */
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function isUuid(value: string | null | undefined): boolean {

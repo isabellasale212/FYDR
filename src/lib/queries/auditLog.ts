@@ -1,4 +1,5 @@
 import type { Db } from './groups';
+import { isUuid } from '@/lib/uuid';
 import { rangeBounds } from './schedule';
 
 /* docs/10-roadmap.md's own gap list: "Audit log viewer (new screen 35) —
@@ -64,8 +65,6 @@ export type AuditLogFilters = {
   /** Free text, matched against `action` and the actor's name. */
   q: string | null;
 };
-
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** PostgREST's `.or()` mini-language uses `,` to separate conditions and
  *  `()` to delimit `.in()` lists. Free text typed by a person can contain
@@ -154,8 +153,8 @@ export async function fetchAuditLog(
   // independently, so this can't just call rangeBounds(from, to, tz) once).
   if (filters.from) query = query.gte('occurred_at', rangeBounds(filters.from, filters.from, timezone).from);
   if (filters.to) query = query.lte('occurred_at', rangeBounds(filters.to, filters.to, timezone).to);
-  if (filters.actorId && UUID_RE.test(filters.actorId)) query = query.eq('actor_id', filters.actorId);
-  if (filters.athleteId && UUID_RE.test(filters.athleteId)) {
+  if (filters.actorId && isUuid(filters.actorId)) query = query.eq('actor_id', filters.actorId);
+  if (filters.athleteId && isUuid(filters.athleteId)) {
     // Matches the real column (sar.request/release, restriction overrides,
     // availability changes, clinical reads) OR the metadata-only reference
     // that report views carry instead. See this file's header.

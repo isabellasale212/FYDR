@@ -5,6 +5,9 @@ import { ChangePasswordForm } from '@/components/ChangePasswordForm/ChangePasswo
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchAthlete } from '@/lib/queries/squad';
 import { fetchMyBoards } from '@/lib/queries/leaderboards';
+import { fetchHealthkitConsent } from '@/lib/queries/healthkit';
+import { HealthkitConsentToggle } from '@/components/HealthkitConsentToggle/HealthkitConsentToggle';
+import { isPremium } from '@/lib/tier';
 import { initials } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
 
@@ -27,12 +30,13 @@ export const metadata = { title: 'Me · Fydr' };
  *  at (see lib/queries/avatar.ts). Privacy controls are still named
  *  honestly as not built. */
 export default async function MePage() {
-  const { db, orgId, athleteId, claims, firstName, lastName, timezone } = await requireAthlete();
+  const { db, orgId, athleteId, claims, firstName, lastName, timezone, tier } = await requireAthlete();
 
-  const [athlete, userRow, myBoards] = await Promise.all([
+  const [athlete, userRow, myBoards, healthkit] = await Promise.all([
     fetchAthlete(db, orgId, athleteId),
     db.from('users').select('full_name, phone, avatar_url, avatar_colour').eq('id', claims.userId).maybeSingle(),
     fetchMyBoards(db, orgId, athleteId),
+    fetchHealthkitConsent(db, athleteId),
   ]);
 
   return (
@@ -152,11 +156,41 @@ export default async function MePage() {
           </form>
         </div>
 
-        <section className="card" aria-labelledby="more-title">
-          <h2 className="card-title" id="more-title">
-            Coming soon
+        {/* Apple Health lives HERE, not in club settings. The connection is to
+         *  this athlete's own phone, so only they can make it — the staff
+         *  Settings screen used to carry a "Connect" button that could not work
+         *  by construction, and now points here instead.
+         *
+         *  Gated, not hidden, on Basic: the design system's own states rule is
+         *  "a club should be able to see what it is not buying". */}
+        <section className="card" aria-labelledby="health-title">
+          <h2 className="card-title" id="health-title">
+            Apple Health
           </h2>
-          <p className="cap">Privacy controls are planned for a future update.</p>
+          <p className="cap">
+            Lets your phone fill in your sleep hours, so the wellness check-in has one less
+            question to answer each morning. Resting heart rate and body mass come across too.
+          </p>
+          {isPremium(tier) ? (
+            <>
+              <HealthkitConsentToggle orgId={orgId} athleteId={athleteId} initialGranted={healthkit.granted} />
+              {/* Said plainly rather than implied. Granting the permission is
+               *  real and is recorded; the reading itself needs the native iOS
+               *  app, which this build does not have (CLAUDE.md §8) — a browser
+               *  cannot reach HealthKit. Better to state that than to leave an
+               *  athlete waiting for sleep data that cannot arrive. */}
+              <p className="tiny" style={{ color: 'var(--faint)', margin: '8px 0 0' }}>
+                {healthkit.granted
+                  ? 'Allowed. Nothing is being read yet — that needs the Fydr iPhone app, which is not out. You can withdraw this at any time.'
+                  : 'You can turn this off again whenever you like. Your coach is never told either way.'}
+              </p>
+            </>
+          ) : (
+            <p className="tiny" style={{ color: 'var(--faint)', margin: '8px 0 0' }}>
+              Your club&apos;s plan does not include Apple Health. Nothing is read from your
+              phone.
+            </p>
+          )}
         </section>
       </div>
 

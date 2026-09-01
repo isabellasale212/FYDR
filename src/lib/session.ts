@@ -47,6 +47,12 @@ export type AthleteContext = {
   timezone: string;
   firstName: string;
   lastName: string;
+  /** The club's plan. The athlete surface needs it for exactly one thing: the
+   *  Apple Health permission, which is a Premium feature and so must not be
+   *  offered to an athlete whose club has not bought it. Real tier, never the
+   *  preview — a club's own athletes must not see a staff member's Basic
+   *  preview change what they are allowed to switch on. */
+  tier: 'core' | 'performance';
 };
 
 async function base() {
@@ -132,7 +138,7 @@ export async function requireAthlete(): Promise<AthleteContext> {
   if (!claims.athleteId) redirect('/login?e=no-roles');
 
   const [org, athlete] = await Promise.all([
-    supabase.from('organisations').select('timezone').eq('id', orgId).maybeSingle(),
+    supabase.from('organisations').select('timezone, tier').eq('id', orgId).maybeSingle(),
     supabase
       .from('athletes')
       .select('first_name, last_name')
@@ -148,5 +154,6 @@ export async function requireAthlete(): Promise<AthleteContext> {
     timezone: org.data?.timezone ?? 'Europe/London',
     firstName: athlete.data?.first_name ?? '',
     lastName: athlete.data?.last_name ?? '',
+    tier: org.data?.tier ?? 'core',
   };
 }

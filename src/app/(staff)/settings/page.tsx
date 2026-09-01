@@ -222,33 +222,34 @@ export default async function SettingsPage() {
                   Sleep, resting heart rate and body mass from the athlete&apos;s phone
                 </p>
               </div>
-              {/* Premium-gated again, 2026-08-30. This row was Premium-gated until
-               *  34a416e moved it to Basic as the client's own resolution of O-862
-               *  (12-product-tiers.md §3.4, "the weakest line in Premium"). The club
-               *  has since reversed that call, so the gate is restored and O-862 is
-               *  re-opened in that doc with BOTH decisions dated rather than the
-               *  first one being overwritten — the counter-argument that won in
-               *  August (near-zero marginal cost, athlete-initiated, sleep/HRV would
-               *  materially improve the Club readiness score) is still on record and
-               *  is still true; the club simply decided the other way.
+              {/* NO BUTTON HERE, DELIBERATELY. This row used to offer "Connect",
+               *  disabled, with a title explaining that the connection needs the
+               *  athlete mobile app. That was a control a coach could never make
+               *  work: Apple Health is a connection to ONE PERSON'S PHONE, so
+               *  only that person can make it. The athlete now does it in their
+               *  own Me tab (src/app/(athlete)/me/page.tsx).
                *
-               *  Same isPremium() gate and same locked/enabled shape as the
-               *  Catapult row directly above, deliberately — one tier check
-               *  (lib/tier.ts), never a raw `tier === 'performance'` comparison, so
-               *  §2's fail-closed rule holds here too.
+               *  It also cannot report state. Migration 0012's athlete_consents
+               *  note is explicit — "Coach and medical get nothing: a consent
+               *  state is not performance data and knowing that an athlete
+               *  declined HealthKit sync tells a coach nothing they are entitled
+               *  to act on" — so there is no connected count here and no per
+               *  athlete indicator. RLS would refuse the read anyway; this row
+               *  does not ask for it.
                *
-               *  On Premium the button stays honestly disabled: the connection
-               *  itself needs the athlete mobile app, which this build doesn't have.
-               *  That has always been true and is unrelated to billing, so it must
-               *  not be dressed up as a tier restriction. On Basic the row reads
-               *  "Locked", which IS the tier restriction. The two states say
-               *  different things because they mean different things. */}
+               *  The tier gate stays, because the tier is genuinely the club's:
+               *  what the plan buys is whether athletes are offered it at all. */}
               {onPremium ? (
-                <button type="button" className="set-row-btn" data-variant="connect" disabled aria-disabled="true" title="HealthKit connection requires the athlete mobile app, which isn't available yet.">
-                  Connect
-                </button>
+                <span className="tiny" style={{ color: 'var(--faint)', textAlign: 'right', maxWidth: 260 }}>
+                  Each athlete turns this on in their own Me tab
+                </span>
               ) : (
-                <span className="set-row-btn" data-variant="locked" style={{ cursor: 'default' }} title="Apple Health is a Premium feature. Plan changes are a sales conversation with your Fydr contact.">
+                <span
+                  className="set-row-btn"
+                  data-variant="locked"
+                  style={{ cursor: 'default' }}
+                  title="Apple Health is a Premium feature. Plan changes are a sales conversation with your Fydr contact."
+                >
                   Locked
                 </span>
               )}

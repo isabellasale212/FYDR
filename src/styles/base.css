@@ -7122,3 +7122,29 @@ button.dash-stat {
 .rep-card[data-tone='neutral'] {
   --rep-dot: var(--domain-recovery);
 }
+
+/* "Outside their normal range" — the Training report's exceptions panel. */
+.tr-outlier {
+  border-top: 1px solid var(--hair);
+  padding: 12px 0 2px;
+}
+.tr-outlier:first-child {
+  border-top: none;
+}
+.tr-outlier-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.tr-outlier-name {
+  font-size: 14px;
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+}
+.tr-outlier-delta {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}

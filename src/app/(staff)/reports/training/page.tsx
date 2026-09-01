@@ -792,6 +792,73 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
             </div>
           </div>
 
+          {/* OUTSIDE THEIR NORMAL RANGE, from the Training report design's own
+              right rail. The board answers "who did most today"; this answers
+              "who did something unlike themselves", which is a different and
+              usually more actionable question — a low-volume athlete running
+              hard for THEM never rises up a squad-ranked board.
+
+              Compared against each athlete's own baseline, never the squad,
+              which is the panel's own subtitle and the reason it exists. The
+              baseline is their other sessions of this same title rather than a
+              literal 28 days: same-title is what makes two sessions
+              comparable, and it is the baseline the board's vs-self column
+              already uses. Said plainly in the caption rather than borrowing
+              the design's "28-day" wording, which this data is not. */}
+          {(() => {
+            const OUT = 12; // percent from their own normal before it is worth a coach's attention
+            const outliers = board.rows
+              .filter((r) => r.vs_self_hsr !== null && r.hsr_self_n >= 2 && Math.abs(r.vs_self_hsr - 100) >= OUT)
+              .sort((a, b) => Math.abs((b.vs_self_hsr ?? 100) - 100) - Math.abs((a.vs_self_hsr ?? 100) - 100))
+              .slice(0, 5);
+            return (
+              <div className="card" style={{ marginTop: 14 }}>
+                <h2 className="card-title">Outside their normal range</h2>
+                <p className="tiny" style={{ color: 'var(--muted)', marginTop: 2 }}>
+                  High speed running against each athlete&rsquo;s own mean for this session, not the squad.
+                </p>
+                {outliers.length === 0 ? (
+                  <p className="tiny" style={{ color: 'var(--faint)', marginTop: 12 }}>
+                    Nobody ran more than {OUT}% from their own normal today. An athlete needs at least two
+                    previous sessions of this type before they have a baseline to be outside of.
+                  </p>
+                ) : (
+                  <div style={{ marginTop: 8 }}>
+                    {outliers.map((r) => {
+                      const pct = r.vs_self_hsr ?? 100;
+                      const up = pct >= 100;
+                      const delta = `${up ? '+' : '−'}${Math.abs(pct - 100)}%`;
+                      return (
+                        <div key={r.athlete_id} className="tr-outlier">
+                          <div className="tr-outlier-head">
+                            <span className="tr-outlier-name">
+                              {r.last_name}, {r.first_name}
+                            </span>
+                            <span
+                              className="mono tr-outlier-delta"
+                              style={{ color: up ? 'var(--warn-text)' : 'var(--accent-text)' }}
+                            >
+                              {delta}
+                            </span>
+                          </div>
+                          <p className="tiny" style={{ color: 'var(--muted)', margin: '3px 0 0' }}>
+                            {r.last_name} ran {up ? 'more' : 'less'} high speed running than a normal {selected.title}{' '}
+                            for {up ? 'them' : 'them'}.
+                          </p>
+                          {/* Fydr's copy rule: never shorten an evidence line. */}
+                          <p className="tiny mono" style={{ color: 'var(--faint)', margin: '3px 0 0' }}>
+                            today {Math.round(r.hsr ?? 0).toLocaleString('en-GB')} m · their mean{' '}
+                            {Math.round(r.hsr_self_mean ?? 0).toLocaleString('en-GB')} m · n = {r.hsr_self_n} sessions
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           <div className="card" style={{ marginTop: 14 }}>
             <h2 className="card-title">Board</h2>
             <p className="tiny mono" style={{ color: 'var(--faint)' }}>

@@ -1150,6 +1150,15 @@ export type TrainingBoardRow = {
   maxv_kmh: number | null;
   vs_self: number | null;
   vs_unit: number | null;
+  /* HSR against this athlete's own mean for this session title, as an index
+   *  where 100 is their normal. Null until they have a prior session with HSR
+   *  on record — one session is not a baseline, and an athlete with no history
+   *  is absent from the exceptions panel rather than shown at 100%. */
+  vs_self_hsr: number | null;
+  /** The mean itself, so the panel can state the evidence rather than only the
+   *  percentage. Fydr's copy rule: every flag carries the numbers behind it. */
+  hsr_self_mean: number | null;
+  hsr_self_n: number;
 };
 
 export async function fetchTrainingBoard(
@@ -1177,7 +1186,7 @@ export async function fetchTrainingBoard(
     db.from('groups').select('id, name, sort_order').eq('org_id', orgId).eq('group_type', 'positional').is('deleted_at', null),
     db
       .from('gps_records')
-      .select('athlete_id, total_distance_m, session_id, sessions!inner(session_type, title)')
+      .select('athlete_id, total_distance_m, high_speed_distance_m, session_id, sessions!inner(session_type, title)')
       .eq('org_id', orgId)
       .eq('sessions.session_type', 'training')
       .eq('sessions.title', session.title)
@@ -1192,7 +1201,17 @@ export async function fetchTrainingBoard(
   const groupById = new Map((groupsRes.data ?? []).map((g) => [g.id, g]));
 
   const selfHistByAthlete = new Map<string, number[]>();
+  /* The same history, on high speed running. "Outside their normal range"
+   * asks about HSR specifically — it is the metric a coach acts on when
+   * someone has run unusually hard or unusually little, where total distance
+   * mostly tracks how long they were on the pitch. */
+  const selfHsrByAthlete = new Map<string, number[]>();
   for (const r of histRes.data ?? []) {
+    if (r.high_speed_distance_m !== null) {
+      const hl = selfHsrByAthlete.get(r.athlete_id) ?? [];
+      hl.push(r.high_speed_distance_m);
+      selfHsrByAthlete.set(r.athlete_id, hl);
+    }
     if (r.total_distance_m === null) continue;
     const list = selfHistByAthlete.get(r.athlete_id) ?? [];
     list.push(r.total_distance_m);
@@ -1218,6 +1237,8 @@ export async function fetchTrainingBoard(
       const unitId = unitByAthlete.get(r.athlete_id);
       const group = unitId ? groupById.get(unitId) : null;
       const selfMean = mean(selfHistByAthlete.get(r.athlete_id) ?? []);
+      const hsrHist = selfHsrByAthlete.get(r.athlete_id) ?? [];
+      const hsrSelfMean = mean(hsrHist);
       const uMean = unitId ? unitMean.get(unitId) ?? null : null;
       return {
         athlete_id: r.athlete_id,
@@ -1232,6 +1253,12 @@ export async function fetchTrainingBoard(
         maxv_kmh: r.max_speed_ms !== null ? Math.round(r.max_speed_ms * 3.6 * 10) / 10 : null,
         vs_self: r.total_distance_m !== null && selfMean !== null && selfMean > 0 ? Math.round((r.total_distance_m / selfMean) * 100) : null,
         vs_unit: r.total_distance_m !== null && uMean !== null && uMean > 0 ? Math.round((r.total_distance_m / uMean) * 100) : null,
+        vs_self_hsr:
+          r.high_speed_distance_m !== null && hsrSelfMean !== null && hsrSelfMean > 0
+            ? Math.round((r.high_speed_distance_m / hsrSelfMean) * 100)
+            : null,
+        hsr_self_mean: hsrSelfMean,
+        hsr_self_n: hsrHist.length,
       };
     })
     .filter((r): r is TrainingBoardRow => r !== null)

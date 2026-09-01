@@ -153,7 +153,12 @@ export default async function SettingsPage() {
             <div className="plan-compare-card" data-active={onPremium}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <p style={{ fontSize: 13.5, fontWeight: 700, margin: 0 }}>Premium</p>
-                <span className="gold-badge">everything in Basic, plus</span>
+                {/* The design gives this badge the WARN pill, not the highlight
+                    gold the gated-row "Premium" markers use. Two different jobs:
+                    those mark a row as out of reach, this labels what the
+                    adjacent column contains. Following the design for the one it
+                    specifies and leaving the gate badges on gold. */}
+                <span className="pill pill-warn">everything in Basic, plus</span>
               </div>
               <div className="plan-compare-list">
                 <span>GPS exports</span>
@@ -272,9 +277,12 @@ export default async function SettingsPage() {
               <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block' }}>Thresholds</span>
               <span style={{ fontSize: 12, color: 'var(--faint)' }}>The rules that raise a flag</span>
             </span>
-            <span className="mono" style={{ fontSize: 11.5, color: 'var(--faint)' }}>
-              {activeThresholds.length} active
-            </span>
+            {/* An amber pill, not faint text. "Fydr Settings.dc.html" gives this
+                count the warn pill (fill 0.28, text #6b4708) — which is what
+                .pill-warn already resolves to — because the number of live
+                thresholds is a standing state a coach should be able to read
+                without hunting for it, and at --faint it read as a caption. */}
+            <span className="pill pill-warn mono">{activeThresholds.length} active</span>
             <span aria-hidden="true" style={{ fontSize: 16, color: 'var(--faint)' }}>
               ›
             </span>

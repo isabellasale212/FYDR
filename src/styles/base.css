@@ -3216,9 +3216,13 @@ img.av {
   color: inherit;
   transition: border-color var(--t-state), background var(--t-state);
 }
+/* Selection strengthened to the design's own figures (border 0.5, fill 0.10).
+   At 0.35/0.08 the selected programme was barely distinguishable from its
+   neighbours in a list of four, which is the one thing this column has to
+   communicate. */
 .prog-item[data-selected='true'] {
-  border-color: rgb(var(--accent-rgb) / 0.35);
-  background: rgb(var(--accent-rgb) / 0.08);
+  border-color: rgb(var(--accent-rgb) / 0.5);
+  background: rgb(var(--accent-rgb) / 0.1);
 }
 .prog-day {
   border: 1px solid var(--border);
@@ -6945,4 +6949,35 @@ button.dash-stat {
   font-size: 11.5px;
   color: var(--faint);
   font-variant-numeric: tabular-nums;
+}
+
+/* A REHAB PROGRAMME IS MARKED IN THE LIST, not only once it is opened. The
+   design gives it a red border and wash in both themes — its dark variant's
+   own caption is "the rehab programme keeps its red border" — and the reason
+   is a permission boundary, not decoration: medical authors rehab, coach
+   authors everything else (this page's own footer says so), so a coach
+   scanning the column needs to see which entries are not theirs to edit
+   before clicking one.
+
+   Selection still wins when both apply: a selected rehab programme reads as
+   selected, because that is the state the user just created. */
+.prog-item[data-rehab='true'] {
+  border-color: rgb(var(--bad-rgb) / 0.55);
+  background: rgb(var(--bad-rgb) / 0.09);
+}
+.prog-item[data-selected='true'] .nm {
+  /* The PILL text token, not the plain-surface one. These cards sit directly
+     on --bg, and --accent-text on the 0.10 selection wash over that ground
+     measures 4.04:1 — under the floor. --accent-pill-text is derived for text
+     on exactly this kind of tint: 5.30:1 there, 6.27:1 on a card. */
+  color: var(--accent-pill-text);
+}
+/* The block header carries gym gold — the design system's one coloured icon
+   and the domain colour for strength work. A tint, never a fill: the text on
+   it is ordinary --text and must stay so. */
+.prog-day-head {
+  background: rgb(var(--gym-rgb) / 0.12);
+}
+.prog-day-head svg {
+  flex: none;
 }

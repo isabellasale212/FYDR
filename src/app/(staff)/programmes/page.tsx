@@ -138,6 +138,11 @@ export default async function ProgrammesPage({
                   href={`/programmes?p=${p.id}`}
                   className="prog-item"
                   data-selected={p.id === selected?.id}
+                  /* Marked in the list, not only once opened: rehab is
+                     medical's to author and everything else is coach's (see
+                     this page's own footer), so which entries are not yours to
+                     edit should be visible before you click one. */
+                  data-rehab={p.programme_type === 'rehab'}
                 >
                   <div className="nm">{p.name}</div>
                   <div className="tiny" style={{ marginTop: 3 }}>
@@ -215,6 +220,12 @@ export default async function ProgrammesPage({
                       return (
                         <div key={s.id} className="prog-day">
                           <div className="prog-day-head">
+                            {/* The gym bolt: the design system's single
+                                coloured icon, in --gym gold, hand-authored on
+                                the 14x14 viewBox every icon in this app uses. */}
+                            <svg width="15" height="15" viewBox="0 0 14 14" fill="var(--gym)" aria-hidden="true">
+                              <path d="M8.4 0L2.2 8h3.3L5.1 14L11.8 5.6H8.1z" />
+                            </svg>
                             <span className="nm">{s.name}</span>
                             <span className="tiny">
                               {s.day_number !== null ? `Day ${s.day_number}` : 'Not day-anchored'}

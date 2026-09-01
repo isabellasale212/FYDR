@@ -414,7 +414,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                         <div className="dash-session-meta">{entry.where}</div>
                       </div>
                       <div>
-                        <div className="dash-session-count" style={{ color: entry.countState === 'bad' ? 'var(--bad)' : entry.countState === 'warn' ? 'var(--warn-text)' : undefined }}>
+                        <div className="dash-session-count" style={{ color: entry.countState === 'bad' ? 'var(--bad-pill-text)' : entry.countState === 'warn' ? 'var(--warn-pill-text)' : undefined }}>
                           {entry.count}
                         </div>
                         <div className="dash-session-count-label">{entry.countLabel}</div>
@@ -439,7 +439,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                               <span className={`pill ${a.sev === 'bad' ? 'pill-bad' : 'pill-warn'}`}>{a.kind}</span>
                               <div className="dash-affected-why">{a.why}</div>
                             </div>
-                            <span className="dash-affected-value" style={{ color: a.sev === 'bad' ? 'var(--bad)' : 'var(--warn-text)' }}>
+                            <span className="dash-affected-value" style={{ color: a.sev === 'bad' ? 'var(--bad-pill-text)' : 'var(--warn-pill-text)' }}>
                               {a.value}
                             </span>
                             <span style={{ color: 'var(--faint)', fontSize: 13 }}>›</span>
@@ -586,7 +586,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                     <span style={{ fontSize: 13.5, fontWeight: 600 }}>{f.name}</span>
                     <span className="pill pill-neutral">{f.domain}</span>
-                    <span className="mono" style={{ fontSize: 12.5, marginLeft: 'auto', color: f.sev === 'bad' ? 'var(--bad)' : 'var(--warn-text)' }}>
+                    <span className="mono" style={{ fontSize: 12.5, marginLeft: 'auto', color: f.sev === 'bad' ? 'var(--bad-pill-text)' : 'var(--warn-pill-text)' }}>
                       {f.value}
                     </span>
                   </div>

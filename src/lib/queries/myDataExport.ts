@@ -101,10 +101,15 @@ export async function fetchMyDataExport(db: Db, orgId: string, athleteId: string
       .select('session_id, entry_date, rpe, duration_min, submitted_at')
       .eq('athlete_id', athleteId)
       .order('entry_date'),
+    // The _current view, matching the two reads above it — 0045:239, "Read
+    // this, never the base table." A session the athlete corrected would
+    // otherwise appear in their own portability export twice, once as the
+    // superseded row and once as the correction that replaced it.
     db
-      .from('gym_session_logs')
+      .from('gym_session_logs_current')
       .select('id, entry_date')
-      .eq('athlete_id', athleteId),
+      .eq('athlete_id', athleteId)
+      .order('entry_date'),
     fetchRecentCheckins(db, athleteId, '2000-01-01', '2100-01-01'),
     db
       .from('nutrition_targets')

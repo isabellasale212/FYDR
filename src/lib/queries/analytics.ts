@@ -11,10 +11,15 @@ import { fetchAllPaged } from './paged';
  * (`mv_acute_chronic_load`, `mv_wellness_baselines`) exist in this schema, so both
  * presets are computed live from the base tables instead, the same choice already
  * made for the leaderboard ranking. The other three presets are real, documented
- * cuts: Compliance needs compliance_expectations rows, and nothing in this build
- * generates them yet (the same gap noted in schedule.ts's cancelSession comment).
- * Load-by-MD-n and the nutrition trend are both real screens on their own and are
- * left for a pass with room for them, not folded in half-built here.
+ * cuts. Compliance's stated reason is now out of date and kept only as history:
+ * it read "needs compliance_expectations rows, and nothing in this build
+ * generates them yet". Migration 0044 generates them, hourly, on pg_cron — so
+ * the data this preset needs exists, and the preset is simply not built. It is
+ * an open piece of work, not a blocked one. (schedule.ts's cancelSession
+ * carried the same dead premise and has been corrected; there it was load-
+ * bearing, because it meant cancelled sessions never had their expectations
+ * waived.) Load-by-MD-n and the nutrition trend are both real screens on their
+ * own and are left for a pass with room for them, not folded in half-built here.
  *
  * ---------------------------------------------------------------------------
  * AMENDED. This header used to end "No custom builder, no correlation, no

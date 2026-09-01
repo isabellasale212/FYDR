@@ -44,8 +44,10 @@ type Props = {
  *     has no param of its own (groupFilter.server.ts, period.server.ts), so the
  *     coach's scope follows them across without this component hand-building
  *     hrefs from a fixed list of known keys — which is the exact mistake
- *     PeriodSelector.tsx's header catalogues on /reports/athlete/[athleteId],
- *     where a period change silently drops `?groups=`. */
+ *     PeriodSelector.tsx's header catalogues (it happened on
+ *     /reports/athlete/[athleteId], where a period change silently dropped
+ *     `?groups=`; that screen has since adopted PeriodSelector and no longer
+ *     does). */
 export function DomainChips({ athleteId }: Props) {
   return (
     <div className="pp-domain-chips" role="group" aria-label="Open a domain detail page">

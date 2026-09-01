@@ -429,18 +429,30 @@ async function fetchAthleticism(db: Db, orgId: string, athleteId: string): Promi
     };
   }
 
-  const { data: results, error } = await db
-    .from('test_results')
-    .select('athlete_id, test_definition_id, value')
-    .eq('org_id', orgId)
-    .eq('is_best', true)
-    .is('deleted_at', null)
-    .in('athlete_id', group.athleteIds);
-  if (error) throw new Error(error.message);
+  /* PAGED. This is the whole positional unit's is_best rows across EVERY test
+   * definition, all time — and is_best is per (athlete, definition, date,
+   * side), not one row per athlete, so a 12-athlete unit with 8 definitions
+   * over 18 sessions is already ~1,700 rows. Past PostgREST's 1000-row ceiling
+   * the peer set silently becomes a subset, and the Athleticism card then
+   * reports a percentile against peers it didn't read while printing an `n`
+   * that says otherwise — a wrong number presented as a measured one. */
+  const results = await fetchAllPaged<{ athlete_id: string; test_definition_id: string; value: number }>(
+    (pageFrom, pageTo) =>
+      db
+        .from('test_results')
+        .select('athlete_id, test_definition_id, value')
+        .eq('org_id', orgId)
+        .eq('is_best', true)
+        .is('deleted_at', null)
+        .in('athlete_id', group.athleteIds)
+        .order('athlete_id')
+        .order('id')
+        .range(pageFrom, pageTo),
+  );
 
   const valuesByTest = new Map<string, number[]>();
   const athleteValueByTest = new Map<string, number>();
-  for (const r of results ?? []) {
+  for (const r of results) {
     const list = valuesByTest.get(r.test_definition_id) ?? [];
     list.push(r.value);
     valuesByTest.set(r.test_definition_id, list);

@@ -6,9 +6,11 @@
  * construction pages through it instead of hoping.
  *
  * Lifted verbatim out of lib/queries/analytics.ts, which wrote it first for
- * the 730-day analytics builder and is now one of two callers. Shared rather
- * than copied, so a fix to the paging rule (the `< PAGE` stop condition, the
- * page cap) cannot land in one and not the other.
+ * the 730-day analytics builder and is now one of FIFTEEN caller modules
+ * across lib/queries (grep `fetchAllPaged`). Shared rather than copied, so a
+ * fix to the paging rule (the `< PAGE` stop condition, the page cap) lands in
+ * all of them at once — and, for the same reason, a change to that rule now
+ * has fifteen modules' worth of blast radius, not two.
  *
  * PAGE is 1000 because that is PostgREST's own conventional default ceiling
  * and this project's configured value; a short page just costs one more round

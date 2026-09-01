@@ -61,15 +61,15 @@ export const metadata = { title: 'Gym · Fydr' };
  * WHAT THIS PAGE FIXES ON THE WAY PAST
  * ---------------------------------------------------------------------------
  *
- * GROUP-ASSIGNED PROGRAMMES WERE INVISIBLE. queries/playerProfile.ts builds its
- * programme banner from programme_assignments with `.eq('athlete_id', ...)`
- * alone, so an athlete whose gym programme was assigned to Forwards rather than
- * to him by name showed NO programme on his profile — and the Gym chip was
- * therefore rendered disabled, with a tooltip saying he had no active gym
- * programme, for an athlete who had one. fetchAthleteProgrammeAssignments does
- * the union (see its own header). The profile banner is left as it is: fixing
- * it is a change to a shipped screen and belongs in its own change, but it is
- * real and it is written down here.
+ * GROUP-ASSIGNED PROGRAMMES WERE INVISIBLE. queries/playerProfile.ts used to
+ * build its programme banner from programme_assignments with
+ * `.eq('athlete_id', ...)` alone, so an athlete whose gym programme was assigned
+ * to Forwards rather than to him by name showed NO programme on his profile —
+ * and the Gym chip was therefore rendered disabled, with a tooltip saying he had
+ * no active gym programme, for an athlete who had one.
+ * fetchAthleteProgrammeAssignments does the union (see its own header).
+ * FIXED: the profile banner now calls that same helper (commit ff98b35; see
+ * playerProfile.ts's comment on the call). This note is history, not a live bug.
  *
  * SUSPENDED IS NOT ABSENT. CLAUDE.md §6's rehab exception suspends a gym
  * assignment rather than cancelling it (migration 0050). Filtering to active

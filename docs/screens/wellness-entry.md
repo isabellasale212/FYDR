@@ -843,7 +843,8 @@ value is a rule that deletes the most interesting data in the product.
     "Add heart rate, weight or a note". The label is derived from the enabled set, never
     hard-coded.
 11. **The athlete taps "+ Where?" and selects nothing.** Closing the map stores null, not an
-    empty array. `?? []` in this path is a lint failure (`06-design-system.md` §5.4).
+    empty array. `?? []` in this path defeats the missing-versus-zero rule
+    (`06-design-system.md` §6.4).
 12. **Soreness is 5, no soreness, and the athlete still selects an area.** Permitted. An
     athlete flagging a niggle that is not yet soreness is useful signal, and refusing it teaches
     them not to bother.

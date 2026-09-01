@@ -48,7 +48,7 @@ export function PlayerProfileFlags({
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   // Optional note at acknowledgement, additive to §11's own spec (see this file's own
-  // header comment) — migration 0046's flags.staff_note, surfaced athlete-side by
+  // header comment) — migration 0047's flags.staff_note, surfaced athlete-side by
   // my-data.md's "with the staff note, if any". One item open at a time, matching this
   // card's existing single-pendingId pattern above rather than a per-row Set.
   const [noteDraftId, setNoteDraftId] = useState<string | null>(null);

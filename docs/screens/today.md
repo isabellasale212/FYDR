@@ -211,10 +211,15 @@ ascending by the tuple below, ties broken by `expectation_date` then domain name
 | 7 | Wellness, today, not yet open | Expectation exists, prompt time not reached. Rendered disabled with "Opens 07:00" |
 | 8 | RPE, not yet due | Session has not ended, or ended under 30 minutes ago. Rendered disabled with "Opens 19:45" |
 
-**Nutrition never appears in this list.** Athletes do not log nutrition, no `'nutrition'`
-expectation is generated (`04-data-model.md` §11), and there is nothing for an athlete to do.
-Fuelling for today is reference content, reached from the Programme tab and from the "Fuelling
-for today" card, and it is never an outstanding task. See `nutrition-guidance.md`.
+**Nutrition appears in this list only as the weekly check-in.** Athletes do not log nutrition
+daily, no `'nutrition'` expectation is generated (`04-data-model.md` §11), and daily fuelling is
+never an outstanding task: it is reference content, reached from the Programme tab and from the
+"Fuelling for today" card. See `nutrition-guidance.md`. The ONE exception is `CLAUDE.md` rule
+8's weekly one-tap check-in: `src/app/(athlete)/today/page.tsx` appends a `domain: 'nutrition'`
+row ("Weekly check-in", → `/nutrition-check-in`) whenever this week's `nutrition_checkins` row is
+missing, and it counts toward the outstanding total. It is driven by the absence of that row, not
+by a `compliance_expectations` row, so it is unranked by the tuple above and missing it is not
+non-compliance (`nutrition-checkin.md`).
 
 Rationale for wellness first in every case: it is the only entry whose value depends on being
 taken in the morning, and it is the input to the flag engine that changes today's session.

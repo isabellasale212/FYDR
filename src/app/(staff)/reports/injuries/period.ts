@@ -109,7 +109,8 @@ export async function resolveInjuryPeriod(
    * already calendar dates with no timezone in them, passed to resolveRange
    * as plain YYYY-MM-DD and compared as strings. CLAUDE.md rule 5 governs
    * INSTANTS; pushing either through dateInTz would shift it a day near
-   * midnight (schedule.ts:787-791 states this on the season lookup itself). */
+   * midnight (schedule.ts:843-847, the header on `fetchCurrentSeason`, states
+   * this on the season lookup itself). */
   const range = resolveRange(key, today, season?.starts_on ?? null, earliest);
 
   return {

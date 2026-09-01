@@ -17,14 +17,17 @@ import { PERIOD_PARAM, RANGE_OPTIONS, type RangeKey } from '@/lib/period';
  * URL survives the change — the group filter, the selected athlete, the mode,
  * the tab, whatever a future screen adds.
  *
- * Three of the hand-rolled period chip rows in this app do not do that, and
- * one of them is an outright bug: `/reports/athlete/[athleteId]` builds
- * `href={`/reports/athlete/${athleteId}?days=${d}`}` (page.tsx:120), which
- * drops `?groups=` entirely. A coach who has filtered to Forwards and then
- * changes the period silently loses the filter — a direct violation of
- * CLAUDE.md §3, caused by nothing more than hand-building an href from a fixed
- * list of known keys. Wrapping ReportSelectNav makes that class of bug
- * impossible for every screen that adopts this.
+ * Hand-rolled period chip rows do not do that, and one of them was an outright
+ * bug: `/reports/athlete/[athleteId]` used to build
+ * `href={`/reports/athlete/${athleteId}?days=${d}`}`, which dropped `?groups=`
+ * entirely. A coach who had filtered to Forwards and then changed the period
+ * silently lost the filter — a direct violation of CLAUDE.md §3, caused by
+ * nothing more than hand-building an href from a fixed list of known keys.
+ * THAT SCREEN HAS SINCE ADOPTED THIS COMPONENT and the bug is gone (see the
+ * page's own header, which records the same archaeology); it is kept here as
+ * the worked example of the class, not as a live defect to go and fix.
+ * Wrapping ReportSelectNav makes that class of bug impossible for every screen
+ * that adopts this.
  *
  * §7.10 as written specifies chips (`.squad-chip` in a row) and a `Period`
  * discriminated union with `today | thisWeek | last7 | last28 | season |

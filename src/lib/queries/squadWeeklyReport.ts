@@ -5,6 +5,7 @@ import { fetchDashboardAttention, type AttentionRow } from './flags';
 import { fetchNotFullyAvailable, type NotFullyAvailableRow } from './availability';
 import { fetchSquadList } from './squad';
 import { fetchGroupAthleteIds, type Db } from './groups';
+import { fetchAllPaged } from './paged';
 import { addDays, todayIso } from '@/lib/format';
 
 /* screens/reports.md, report 2 of 5 ("Squad weekly report"), built the same
@@ -128,18 +129,32 @@ export async function fetchSquadWeeklyReport(
   const athleteIds = athletes.map((a) => a.id);
   const nameById = new Map(athletes.map((a) => [a.id, `${a.first_name} ${a.last_name}`]));
 
-  let gymQuery = db
-    .from('gym_session_logs')
-    .select('athlete_id, status')
-    .eq('org_id', orgId)
-    .gte('entry_date', from)
-    .lte('entry_date', today);
-  if (scope) gymQuery = gymQuery.in('athlete_id', scope);
-  const gymLogs = await gymQuery;
-  if (gymLogs.error) throw new Error(gymLogs.error.message);
+  /* The _current view and PAGED, both for the same reason: `logged` and
+   * `completed` below are counts of these rows. On the base table a session
+   * corrected through revise_gym_session_log contributes its superseded row
+   * as well as its replacement, so the tile over-reports; unpaged, a squad ×
+   * a week of gym logs can cross PostgREST's 1000-row ceiling silently and
+   * the tile under-reports. 0045:239: "Read this, never the base table." */
+  // Every column of a Postgres view is nullable in the generated types, even
+  // where the base table's is NOT NULL — hence the nullable row shape and the
+  // guard in the loop, the same idiom athleteReport.ts uses for the other two
+  // _current views.
+  const gymLogs = await fetchAllPaged<{ athlete_id: string | null; status: string | null }>((pageFrom, pageTo) => {
+    let gymQuery = db
+      .from('gym_session_logs_current')
+      .select('athlete_id, status')
+      .eq('org_id', orgId)
+      .gte('entry_date', from)
+      .lte('entry_date', today)
+      .order('entry_date')
+      .order('id');
+    if (scope) gymQuery = gymQuery.in('athlete_id', scope);
+    return gymQuery.range(pageFrom, pageTo);
+  });
 
   const gymByAthleteMap = new Map<string, { logged: number; completed: number }>();
-  for (const row of gymLogs.data ?? []) {
+  for (const row of gymLogs) {
+    if (row.athlete_id === null) continue;
     const cur = gymByAthleteMap.get(row.athlete_id) ?? { logged: 0, completed: 0 };
     cur.logged += 1;
     if (row.status === 'complete') cur.completed += 1;

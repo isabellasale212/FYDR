@@ -127,18 +127,32 @@ export async function fetchResultsForLogging(
       .eq('test_definition_id', testDefinitionId)
       .eq('test_date', testDate)
       .is('deleted_at', null),
-    db
-      .from('test_results')
-      .select('athlete_id, value')
-      .eq('org_id', orgId)
-      .eq('test_definition_id', testDefinitionId)
-      .eq('is_best', true)
-      .is('deleted_at', null),
+    /* PAGED. mark_best_attempt (0024:127) sets is_best per (athlete,
+     * definition, date, side), NOT one row per athlete — so this is athletes ×
+     * test dates × sides, squad-wide and all-time. A per-side test run eight
+     * times a season for 40 athletes is 640 rows, over PostgREST's 1000-row
+     * ceiling in its second season, and truncation is silent. pbByAthlete
+     * would then be built from an arbitrary subset and TestLogGrid's "PB" pill
+     * would show a wrong or missing personal best while a coach logs against
+     * it — the same phantom-PB regression fetchMyTestSummary below was paged
+     * for; this sibling was missed at the time. With no ORDER BY at all, which
+     * rows survived was planner-dependent and could differ between loads. */
+    fetchAllPaged<{ athlete_id: string; value: number }>((pageFrom, pageTo) =>
+      db
+        .from('test_results')
+        .select('athlete_id, value')
+        .eq('org_id', orgId)
+        .eq('test_definition_id', testDefinitionId)
+        .eq('is_best', true)
+        .is('deleted_at', null)
+        .order('athlete_id')
+        .order('id')
+        .range(pageFrom, pageTo),
+    ),
     db.from('test_definitions').select('higher_is_better').eq('id', testDefinitionId).single(),
   ]);
   if (athletesRes.error) throw new Error(athletesRes.error.message);
   if (todayRes.error) throw new Error(todayRes.error.message);
-  if (pbRes.error) throw new Error(pbRes.error.message);
   if (defRes.error) throw new Error(defRes.error.message);
 
   const inScope = scope ? new Set(scope) : null;
@@ -146,7 +160,7 @@ export async function fetchResultsForLogging(
 
   const higherIsBetter = defRes.data.higher_is_better;
   const pbByAthlete = new Map<string, number>();
-  for (const r of pbRes.data ?? []) {
+  for (const r of pbRes) {
     const cur = pbByAthlete.get(r.athlete_id);
     if (cur === undefined || (higherIsBetter ? r.value > cur : r.value < cur)) pbByAthlete.set(r.athlete_id, r.value);
   }
@@ -180,16 +194,24 @@ export type TestSessionDate = { date: string; resultCount: number };
  *  regardless of which group is currently selected, and the list is for
  *  navigation, not a scoped report. */
 export async function fetchTestDates(db: Db, orgId: string, testDefinitionId: string): Promise<TestSessionDate[]> {
-  const { data, error } = await db
-    .from('test_results')
-    .select('test_date')
-    .eq('org_id', orgId)
-    .eq('test_definition_id', testDefinitionId)
-    .is('deleted_at', null);
-  if (error) throw new Error(error.message);
+  /* PAGED, same unbounded shape as the PB read above: every result this test
+   * has ever recorded, org-wide. A silent cap would remove whole dates from
+   * the session-jump navigator — a date the coach knows exists simply not
+   * being offered — and understate resultCount on the ones that remain. */
+  const data = await fetchAllPaged<{ test_date: string }>((pageFrom, pageTo) =>
+    db
+      .from('test_results')
+      .select('test_date')
+      .eq('org_id', orgId)
+      .eq('test_definition_id', testDefinitionId)
+      .is('deleted_at', null)
+      .order('test_date')
+      .order('id')
+      .range(pageFrom, pageTo),
+  );
 
   const counts = new Map<string, number>();
-  for (const r of data ?? []) counts.set(r.test_date, (counts.get(r.test_date) ?? 0) + 1);
+  for (const r of data) counts.set(r.test_date, (counts.get(r.test_date) ?? 0) + 1);
   return [...counts.entries()]
     .map(([date, resultCount]) => ({ date, resultCount }))
     .sort((a, b) => b.date.localeCompare(a.date));

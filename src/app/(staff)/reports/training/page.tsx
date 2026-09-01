@@ -773,8 +773,10 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                       Open profile
                     </Link>
                     {/* /reports/athlete/[athleteId] already exists as the
-                     * dedicated one-athlete report — real period toggle
-                     * (28/90 days), real GPS totals for that period,
+                     * dedicated one-athlete report — real period selector
+                     * (ATHLETE_PERIODS: week/month/season/year/all, over the
+                     * shared model in lib/period.ts; the old 28/90-day chip
+                     * row is gone), real GPS totals for that period,
                      * wellness, load and testing, its own CSV/PDF export.
                      * That is the individual player's data in full;
                      * duplicating a second day/week/period picker for one

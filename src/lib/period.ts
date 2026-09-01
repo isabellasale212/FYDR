@@ -209,9 +209,10 @@ export function inclusiveDays(from: string, to: string): number {
  *  wellness_entries.entry_date — is ALREADY a calendar date with no timezone
  *  in it. Compare `from`/`to` to it as plain YYYY-MM-DD strings and do NOT
  *  push it through `dateInTz`, which would shift it by a day near midnight
- *  (schedule.ts:787-791 states this on the season lookup itself).
+ *  (schedule.ts:843-847, the header on `fetchCurrentSeason`, states this on
+ *  the season lookup itself).
  *
- * SEASON BOUNDS come from `fetchCurrentSeason` (schedule.ts:792) or
+ * SEASON BOUNDS come from `fetchCurrentSeason` (schedule.ts:848) or
  * `fetchCurrentSeasonWindow` (queries/analytics.ts:391). Both filter
  * `deleted_at`, which matters: the `seasons_one_current` unique index is
  * PARTIAL (`where is_current and deleted_at is null`), so a soft-deleted

@@ -12,14 +12,18 @@ Every layout decision below that would normally come from the client's designs i
 ## Purpose
 
 My Data is the athlete's answer to "what have I actually been doing". It holds their complete
-history across wellness, gym and testing, segmented by domain, with a period
+history across wellness, training, nutrition, testing and gym, segmented by domain, with a period
 selector, and it is the only place an athlete can review, correct, and export their own record.
 
-**There is no Nutrition segment.** Athletes do not log nutrition, so there is no nutrition
-history to review, correct or export. Their targets and the guidance built on them live on the
-Programme tab (`nutrition-guidance.md`), which is reference content rather than a record. A
-segment showing a target with no actual against it is a chart of one line, and it belongs where
-the guidance is.
+**The Nutrition segment holds the weekly check-in, and nothing else.** Athletes do not log
+nutrition daily, so there is no daily nutrition history to review, correct or export; their
+targets and the guidance built on them live on the Programme tab (`nutrition-guidance.md`),
+which is reference content rather than a record. A segment showing a target with no actual
+against it is a chart of one line, and it belongs where the guidance is. What the segment DOES
+hold is `CLAUDE.md` rule 8's one exception: `TABS` in `src/app/(athlete)/my-data/page.tsx`
+includes `'nutrition'`, `NutritionTab` lists the athlete's `nutrition_checkins` answers, and
+`me/export/route.ts` exports them as `nutritionCheckins`. Consistent with §"What is built"
+below, which counts Nutrition among the four tabs the shared period model drives.
 
 It has a second job that is easy to underrate: it is the visible return on the 45 seconds they
 spend every morning. An athlete who submits wellness for six weeks and never sees anything come

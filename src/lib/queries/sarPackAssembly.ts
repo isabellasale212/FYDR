@@ -1,5 +1,6 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { fetchAllPaged } from './paged';
 import { SAR_CATEGORIES, SAR_MANIFEST_VERSION, SAR_RECIPIENTS, SAR_YOUR_RIGHTS } from '@/lib/subjectAccess/manifest';
 
 /* Split out of sarPack.ts for a real build reason, not a style choice:
@@ -26,6 +27,26 @@ import { SAR_CATEGORIES, SAR_MANIFEST_VERSION, SAR_RECIPIENTS, SAR_YOUR_RIGHTS }
  *  and device_metrics/notification_deliveries (neither table exists in
  *  this schema — see 08-notifications.md's own "nothing sends anything
  *  yet" gap, already documented for notification preferences). */
+/* EVERY READ IN THIS FILE PAGES, and the service-role client is the reason it
+ * is easy to assume otherwise. `db-max-rows` is a PostgREST setting, not an RLS
+ * one — the 1000-row ceiling applies to `service_role` exactly as it does to
+ * `authenticated`, and it returns a full-looking page rather than an error.
+ * Bypassing RLS buys this file nothing here.
+ *
+ * That matters more here than anywhere else in the codebase. Everywhere else a
+ * silent truncation produces a wrong number on a screen; in a subject access
+ * pack it produces a response that is *incomplete*, which is the one property
+ * this feature exists to guarantee. An athlete with three seasons of daily
+ * wellness entries has ~1,100 rows in that table alone, and audit_log,
+ * gps_records and gym_set_logs all run far past it. The pack would have
+ * silently stopped at 1000 and been released as complete.
+ *
+ * Ordering is by `id` throughout: `.range()` re-runs the query per page, so
+ * without a unique sort key a row can be duplicated or skipped at a page
+ * boundary — which in this context means a record silently missing from a
+ * legal disclosure. */
+const SET_LOG_ID_CHUNK = 150;
+
 async function gatherAthleteData(orgId: string, athleteId: string) {
   const admin = createAdminClient();
 
@@ -57,62 +78,74 @@ async function gatherAthleteData(orgId: string, athleteId: string) {
     leaderboardOptOuts,
     auditLog,
   ] = await Promise.all([
-    admin.from('wellness_entries').select('*').eq('org_id', orgId).eq('athlete_id', athleteId),
-    admin.from('nutrition_targets').select('*').eq('org_id', orgId).eq('athlete_id', athleteId),
-    admin.from('nutrition_checkins').select('*').eq('org_id', orgId).eq('athlete_id', athleteId),
-    admin.from('training_entries').select('*').eq('org_id', orgId).eq('athlete_id', athleteId),
-    admin.from('gym_session_logs').select('*').eq('org_id', orgId).eq('athlete_id', athleteId),
-    admin.from('gps_records').select('*').eq('org_id', orgId).eq('athlete_id', athleteId),
-    admin.from('test_results').select('*').eq('org_id', orgId).eq('athlete_id', athleteId),
-    admin.from('body_composition').select('*').eq('org_id', orgId).eq('athlete_id', athleteId),
-    admin.from('session_attendance').select('*').eq('org_id', orgId).eq('athlete_id', athleteId),
-    admin.from('availability').select('*').eq('org_id', orgId).eq('athlete_id', athleteId),
-    admin.from('injuries').select('*').eq('org_id', orgId).eq('athlete_id', athleteId),
-    admin.from('flags').select('*').eq('org_id', orgId).eq('athlete_id', athleteId),
-    admin.from('flag_actions').select('*, flags!inner(athlete_id)').eq('flags.org_id', orgId).eq('flags.athlete_id', athleteId),
-    admin.from('programme_assignments').select('*').eq('org_id', orgId).eq('athlete_id', athleteId),
-    admin.from('rehab_assignments').select('*').eq('org_id', orgId).eq('athlete_id', athleteId),
-    admin.from('group_memberships').select('*, groups!inner(name)').eq('org_id', orgId).eq('athlete_id', athleteId),
-    admin.from('compliance_expectations').select('*').eq('org_id', orgId).eq('athlete_id', athleteId),
-    admin.from('athlete_consents').select('*').eq('org_id', orgId).eq('athlete_id', athleteId),
-    admin.from('push_tokens').select('platform, shell, created_at, invalidated_reason').eq('org_id', orgId).eq('user_id', athleteRes.data?.user_id ?? ''),
-    admin.from('leaderboard_opt_outs').select('*').eq('org_id', orgId).eq('athlete_id', athleteId),
-    admin.from('audit_log').select('id, actor_role, action, entity_type, occurred_at, metadata').eq('org_id', orgId).eq('athlete_id', athleteId),
+    fetchAllPaged((f, t) => admin.from('wellness_entries').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
+    fetchAllPaged((f, t) => admin.from('nutrition_targets').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
+    fetchAllPaged((f, t) => admin.from('nutrition_checkins').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
+    fetchAllPaged((f, t) => admin.from('training_entries').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
+    fetchAllPaged((f, t) => admin.from('gym_session_logs').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
+    fetchAllPaged((f, t) => admin.from('gps_records').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
+    fetchAllPaged((f, t) => admin.from('test_results').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
+    fetchAllPaged((f, t) => admin.from('body_composition').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
+    fetchAllPaged((f, t) => admin.from('session_attendance').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
+    fetchAllPaged((f, t) => admin.from('availability').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
+    fetchAllPaged((f, t) => admin.from('injuries').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
+    fetchAllPaged((f, t) => admin.from('flags').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
+    fetchAllPaged((f, t) => admin.from('flag_actions').select('*, flags!inner(athlete_id)').eq('flags.org_id', orgId).eq('flags.athlete_id', athleteId).order('id').range(f, t)),
+    fetchAllPaged((f, t) => admin.from('programme_assignments').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
+    fetchAllPaged((f, t) => admin.from('rehab_assignments').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
+    fetchAllPaged((f, t) => admin.from('group_memberships').select('*, groups!inner(name)').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
+    fetchAllPaged((f, t) => admin.from('compliance_expectations').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
+    fetchAllPaged((f, t) => admin.from('athlete_consents').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
+    fetchAllPaged((f, t) => admin.from('push_tokens').select('platform, shell, created_at, invalidated_reason').eq('org_id', orgId).eq('user_id', athleteRes.data?.user_id ?? '').order('id').range(f, t)),
+    fetchAllPaged((f, t) => admin.from('leaderboard_opt_outs').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
+    fetchAllPaged((f, t) => admin.from('audit_log').select('id, actor_role, action, entity_type, occurred_at, metadata').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
   ]);
 
-  // gym_set_logs has no athlete_id of its own — it hangs off
-  // gym_session_logs, already fetched above, so its ids are the actual
-  // filter.
-  const gymSessionIds = (gymSessions.data ?? []).map((s) => s.id);
-  const gymSets =
-    gymSessionIds.length > 0
-      ? await admin.from('gym_set_logs').select('*').eq('org_id', orgId).in('gym_session_log_id', gymSessionIds)
-      : { data: [] as never[] };
+  /* gym_set_logs has no athlete_id of its own — it hangs off
+   * gym_session_logs, already fetched above, so its ids are the actual
+   * filter. Two limits apply here and nowhere else in this file, the same
+   * pair programmes.ts documents at SESSION_LOG_ID_CHUNK: one row per SET is
+   * the largest table in the pack by a wide margin, and the id list itself
+   * goes in the URL, so this both pages and chunks. */
+  const gymSessionIds = gymSessions.map((s) => s.id);
+  const setChunks: string[][] = [];
+  for (let i = 0; i < gymSessionIds.length; i += SET_LOG_ID_CHUNK) {
+    setChunks.push(gymSessionIds.slice(i, i + SET_LOG_ID_CHUNK));
+  }
+  const gymSets = (
+    await Promise.all(
+      setChunks.map((chunk) =>
+        fetchAllPaged((f, t) =>
+          admin.from('gym_set_logs').select('*').eq('org_id', orgId).in('gym_session_log_id', chunk).order('id').range(f, t),
+        ),
+      ),
+    )
+  ).flat();
 
   return {
     athlete: athleteRes.data,
-    wellness_entries: wellness.data ?? [],
-    nutrition_targets: nutritionTargets.data ?? [],
-    nutrition_checkins: nutritionCheckins.data ?? [],
-    training_entries: training.data ?? [],
-    gym_session_logs: gymSessions.data ?? [],
-    gym_set_logs: gymSets.data ?? [],
-    gps_records: gps.data ?? [],
-    test_results: testResults.data ?? [],
-    body_composition: bodyComp.data ?? [],
-    session_attendance: attendance.data ?? [],
-    availability: availability.data ?? [],
-    injuries: injuries.data ?? [],
-    flags: flags.data ?? [],
-    flag_actions: flagActions.data ?? [],
-    programme_assignments: programmeAssignments.data ?? [],
-    rehab_assignments: rehabAssignments.data ?? [],
-    group_memberships: groupMemberships.data ?? [],
-    compliance_expectations: compliance.data ?? [],
-    athlete_consents: consents.data ?? [],
-    push_tokens: pushTokens.data ?? [],
-    leaderboard_opt_outs: leaderboardOptOuts.data ?? [],
-    audit_log_entries_about_you: auditLog.data ?? [],
+    wellness_entries: wellness,
+    nutrition_targets: nutritionTargets,
+    nutrition_checkins: nutritionCheckins,
+    training_entries: training,
+    gym_session_logs: gymSessions,
+    gym_set_logs: gymSets,
+    gps_records: gps,
+    test_results: testResults,
+    body_composition: bodyComp,
+    session_attendance: attendance,
+    availability: availability,
+    injuries: injuries,
+    flags: flags,
+    flag_actions: flagActions,
+    programme_assignments: programmeAssignments,
+    rehab_assignments: rehabAssignments,
+    group_memberships: groupMemberships,
+    compliance_expectations: compliance,
+    athlete_consents: consents,
+    push_tokens: pushTokens,
+    leaderboard_opt_outs: leaderboardOptOuts,
+    audit_log_entries_about_you: auditLog,
   };
 }
 
@@ -141,7 +174,20 @@ export async function assembleSarPack(orgId: string, athleteId: string, requestI
     return { pack: null, error: `${undecided.length} clinical record${undecided.length === 1 ? '' : 's'} still need${undecided.length === 1 ? 's' : ''} a medical review decision before this pack can be released.` };
   }
 
-  const data = await gatherAthleteData(orgId, athleteId);
+  /* gatherAthleteData now THROWS on a failed read rather than treating it as
+   * an empty table, which is the only defensible behaviour here: a section
+   * missing because the query errored is indistinguishable, in the released
+   * pack, from a section the athlete genuinely has no rows in. Caught and
+   * returned as an error so the release route's existing failure path shows
+   * the admin a message instead of a 500 — and, crucially, so
+   * releaseSarRequest below never runs and the request is not marked released
+   * against a pack that was never assembled. */
+  let data: Awaited<ReturnType<typeof gatherAthleteData>>;
+  try {
+    data = await gatherAthleteData(orgId, athleteId);
+  } catch (e) {
+    return { pack: null, error: e instanceof Error ? e.message : 'Could not read this athlete’s records.' };
+  }
   if (!data.athlete) return { pack: null, error: 'Athlete not found.' };
 
   // Apply the review decisions to injury_clinical before it's fetched: a

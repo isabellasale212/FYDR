@@ -185,8 +185,10 @@ export async function fetchAthleteReport(
    * most `periodDays` points, so at `?period=week` an athlete with two years of
    * daily wellness got no band for the first three days and a 4-to-7-day
    * "baseline" for the rest — and a reading well inside their real usual range
-   * could plot outside the drawn band. This copies playerProfile.ts:526-536,
-   * which already does it correctly for the same chart on the same data: fetch
+   * could plot outside the drawn band. This copies playerProfile.ts:608 and
+   * :709-714 (`wellnessFrom` / the `WELLNESS_ROLLING_WINDOW + range.days`
+   * build / `band.slice(-range.days)`), which already does it correctly for
+   * the same chart on the same data: fetch
    * from `from - 14`, build the series over `14 + periodDays` dates, then drop
    * the lead-in with a `.slice(-periodDays)` so only the days asked for render.
    *
@@ -260,9 +262,17 @@ export async function fetchAthleteReport(
     // PAGED: one row per gym session logged, and both figures derived from it
     // are counts of the rows themselves — the shape where a silent 1000-row
     // cap reads as "this athlete logged exactly 1000 sessions".
+    //
+    // AND THE VIEW, NOT THE BASE TABLE — 0045:239's own comment is "Read this,
+    // never the base table." Its two siblings in this Promise.all already read
+    // wellness_entries_current and training_entries_current; this one was
+    // still on gym_session_logs, so a single session corrected through
+    // revise_gym_session_log counted twice (the superseded row AND its
+    // replacement), and the report and its PDF/CSV claimed two sessions where
+    // one happened. Counts of revisable rows must come from the _current view.
     fetchAllPaged((pageFrom, pageTo) =>
       db
-        .from('gym_session_logs')
+        .from('gym_session_logs_current')
         .select('status')
         .eq('org_id', orgId)
         .eq('athlete_id', athleteId)
@@ -429,9 +439,13 @@ async function fetchAthleteCompliancePct(
         .order('id')
         .range(pageFrom, pageTo),
     ),
+    // The view, for the same reason as above. This one feeds a Set of dates so
+    // duplicate revisions of one session were harmless, but a revision that
+    // moved a session OUT of 'complete' still left its superseded 'complete'
+    // row matching here — the date stayed marked done.
     fetchAllPaged((pageFrom, pageTo) =>
       db
-        .from('gym_session_logs')
+        .from('gym_session_logs_current')
         .select('entry_date')
         .eq('org_id', orgId)
         .eq('athlete_id', athleteId)
@@ -447,7 +461,7 @@ async function fetchAthleteCompliancePct(
   const submitted: Record<ComplianceDomain, Set<string>> = {
     wellness: new Set(wellness.map((r) => r.entry_date).filter((d): d is string => d !== null)),
     training_rpe: new Set(training.map((r) => r.entry_date).filter((d): d is string => d !== null)),
-    gym: new Set(gym.map((r) => r.entry_date)),
+    gym: new Set(gym.map((r) => r.entry_date).filter((d): d is string => d !== null)),
     nutrition: new Set(),
   };
 

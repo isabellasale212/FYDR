@@ -168,26 +168,50 @@ export async function fetchDashboardAttention(
 ): Promise<DashboardAttention> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
 
-  let flagQuery = db
-    .from('flags')
-    .select(
-      'id, athlete_id, domain, metric, observed_value, expected_value, flag_date, severity, status, raised_at, acknowledged_at',
-    )
-    .eq('org_id', orgId)
-    .in('status', [...OPEN_FLAG_STATUSES])
-    .order('raised_at', { ascending: false });
+  /* PAGED. Flags are raised daily by evaluate_daily_thresholds and only leave
+   * OPEN_FLAG_STATUSES when a coach acknowledges or dismisses one, so the open
+   * set grows without bound in a club that isn't triaging — roughly four
+   * months to cross PostgREST's 1000-row ceiling. openTotal and bySeverity
+   * below are computed over EVERY row, not just the `limit` rows rendered, so
+   * a silent cap wouldn't shorten the list, it would understate the counts the
+   * panel's summary line reports. `.order('id')` is the unique tiebreak
+   * fetchAllPaged requires: raised_at ties are common because the generator
+   * raises a whole day's flags in one transaction. */
+  type AttentionFlagRow = {
+    id: string;
+    athlete_id: string;
+    domain: FlagDomain;
+    metric: string;
+    observed_value: number | null;
+    expected_value: number | null;
+    flag_date: string;
+    severity: FlagSeverity;
+    status: string;
+    raised_at: string;
+    acknowledged_at: string | null;
+  };
 
-  if (scope) flagQuery = flagQuery.in('athlete_id', scope);
+  const flags = await fetchAllPaged<AttentionFlagRow>((pageFrom, pageTo) => {
+    let q = db
+      .from('flags')
+      .select(
+        'id, athlete_id, domain, metric, observed_value, expected_value, flag_date, severity, status, raised_at, acknowledged_at',
+      )
+      .eq('org_id', orgId)
+      .in('status', [...OPEN_FLAG_STATUSES])
+      .order('raised_at', { ascending: false })
+      .order('id');
+    if (scope) q = q.in('athlete_id', scope);
+    return q.range(pageFrom, pageTo);
+  });
 
-  const { data: flags, error } = await flagQuery;
-  if (error) throw new Error(error.message);
   const empty: DashboardAttention = {
     rows: [],
     openTotal: 0,
     awaitingAck: 0,
     bySeverity: { low: 0, medium: 0, high: 0 },
   };
-  if (!flags || flags.length === 0) return empty;
+  if (flags.length === 0) return empty;
 
   const athleteIds = [...new Set(flags.map((f) => f.athlete_id))];
 
@@ -326,20 +350,44 @@ export async function fetchFlagsList(
 ): Promise<FlagListRow[]> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
 
-  let query = db
-    .from('flags')
-    .select(
-      'id, athlete_id, domain, metric, observed_value, expected_value, flag_date, severity, status, raised_at, acknowledged_at, acknowledged_by, threshold_id, staff_note',
-    )
-    .eq('org_id', orgId)
-    .in('status', [...OPEN_FLAG_STATUSES])
-    .order('raised_at', { ascending: true });
+  /* PAGED, for the reason spelled out on fetchDashboardAttention above — and
+   * here the ordering makes truncation worse, not merely incomplete: oldest
+   * first means a silent cap drops the NEWEST flags, the ones a coach most
+   * needs this morning. It also reaches the athlete report, which calls this
+   * with no group filter and narrows to one athlete in memory, so that
+   * athlete's own recent flags could vanish from their report. */
+  type RawFlagRow = {
+    id: string;
+    athlete_id: string;
+    domain: FlagDomain;
+    metric: string;
+    observed_value: number | null;
+    expected_value: number | null;
+    flag_date: string;
+    severity: FlagSeverity;
+    status: string;
+    raised_at: string;
+    acknowledged_at: string | null;
+    acknowledged_by: string | null;
+    threshold_id: string | null;
+    staff_note: string | null;
+  };
 
-  if (scope) query = query.in('athlete_id', scope);
+  const flags = await fetchAllPaged<RawFlagRow>((pageFrom, pageTo) => {
+    let query = db
+      .from('flags')
+      .select(
+        'id, athlete_id, domain, metric, observed_value, expected_value, flag_date, severity, status, raised_at, acknowledged_at, acknowledged_by, threshold_id, staff_note',
+      )
+      .eq('org_id', orgId)
+      .in('status', [...OPEN_FLAG_STATUSES])
+      .order('raised_at', { ascending: true })
+      .order('id');
+    if (scope) query = query.in('athlete_id', scope);
+    return query.range(pageFrom, pageTo);
+  });
 
-  const { data: flags, error } = await query;
-  if (error) throw new Error(error.message);
-  if (!flags || flags.length === 0) return [];
+  if (flags.length === 0) return [];
 
   const athleteIds = [...new Set(flags.map((f) => f.athlete_id))];
   const ackUserIds = [...new Set(flags.map((f) => f.acknowledged_by).filter((v): v is string => v !== null))];

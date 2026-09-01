@@ -1883,8 +1883,11 @@ body:has(.phone) {
 /* ---------- sign-in, §3 ----------
  * The spec's sign-in is a six-digit emailed code: no password, a separate
  * club-code field, "Send my code". This app's real auth is Supabase email +
- * password (LoginForm.tsx) — there is no OTP infrastructure anywhere in
- * this codebase, and the org is resolved from the account server-side, not
+ * password (LoginForm.tsx) — there is no EMAILED-code infrastructure in this
+ * codebase and no passwordless path (the six-digit code that does exist is
+ * TOTP, and it is a SECOND factor on /login/mfa after the password check —
+ * see lib/mfa.ts and MfaChallengeForm.tsx, neither of which this screen
+ * reaches), and the org is resolved from the account server-side, not
  * typed in as a club code. The visual language (logo row, heading block,
  * field styling, bottom-pinned button, privacy line) is reproduced exactly;
  * the fields themselves are the two this app actually asks for, and the

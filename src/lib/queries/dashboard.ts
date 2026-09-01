@@ -2,6 +2,7 @@ import { fetchCurrentAvailability, fetchNotFullyAvailable } from './availability
 import { fetchDashboardAttention, type AttentionRow, type DashboardAttention } from './flags';
 import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchNextFixture, fetchWeekSessions, mondayOf, rangeBounds, type WeekSession } from './schedule';
+import { fetchAllPaged } from './paged';
 import { fetchTimetableDay } from './timetable';
 import { anchorMdOffsetsToWeek, daysBetween, dateInTz, formatTime, mdLabel, zonedTimeToUtcIso } from '../format';
 
@@ -591,6 +592,53 @@ export async function fetchSaturdayReadiness(
  *  instead of its local one. Both fixed the same way — `rangeBounds`
  *  (schedule.ts) for the window, `dateInTz` (format.ts) for the
  *  per-session date — rather than reinvented here a third time. */
+/* TWO SEPARATE LIMITS, BOTH REAL — the same pair programmes.ts documents at
+ * SESSION_LOG_ID_CHUNK, hit here for the same reason.
+ *
+ * (1) gps_records is one row per athlete per session, so a read keyed on a
+ *     list of sessions is squad-size × sessions. The prior-week comparison
+ *     below spans EVERY training session in club history, so a 40-athlete
+ *     club crosses PostgREST's 1000-row ceiling after ~25 GPS-tracked
+ *     sessions — about five weeks. Truncation is silent, and it lands on the
+ *     denominator: most prior weeks then find no records, their total is 0,
+ *     `typical` collapses, and the dashboard tile reports a week at 98% as
+ *     something like 340% in `tone: 'bad'`. Hence fetchAllPaged.
+ *
+ * (2) The id list itself goes in the URL. ~780 uuids is a ~30 kB request
+ *     line, which fails before any row ceiling is reached. Hence chunking,
+ *     which is NOT paging and not a substitute for it — each chunk is still
+ *     paged. 150 ids is ~5.9 kB, matching the constant programmes.ts picked.
+ *
+ * Ordering is by session then id: `.range()` re-runs the query per page, so a
+ * tie the database is free to break differently across two calls would drop
+ * or duplicate a row at the page boundary. */
+const SESSION_ID_CHUNK = 150;
+
+type SessionGpsRow = { session_id: string | null; athlete_id: string; total_distance_m: number | null };
+
+async function fetchGpsForSessions(db: Db, orgId: string, sessionIds: readonly string[]): Promise<SessionGpsRow[]> {
+  if (sessionIds.length === 0) return [];
+  const chunks: string[][] = [];
+  for (let i = 0; i < sessionIds.length; i += SESSION_ID_CHUNK) {
+    chunks.push([...sessionIds.slice(i, i + SESSION_ID_CHUNK)]);
+  }
+  const perChunk = await Promise.all(
+    chunks.map((chunk) =>
+      fetchAllPaged<SessionGpsRow>((pageFrom, pageTo) =>
+        db
+          .from('gps_records')
+          .select('session_id, athlete_id, total_distance_m')
+          .eq('org_id', orgId)
+          .in('session_id', chunk)
+          .order('session_id')
+          .order('id')
+          .range(pageFrom, pageTo),
+      ),
+    ),
+  );
+  return perChunk.flat();
+}
+
 async function fetchWeekLoad(
   db: Db,
   orgId: string,
@@ -614,10 +662,8 @@ async function fetchWeekLoad(
   const sessionIds = (thisWeekSessions ?? []).map((s) => s.id);
   if (sessionIds.length === 0) return null;
 
-  const recordsQuery = db.from('gps_records').select('session_id, athlete_id, total_distance_m').eq('org_id', orgId).in('session_id', sessionIds);
-  const { data: records, error: recErr } = await recordsQuery;
-  if (recErr) throw new Error(recErr.message);
-  const scoped = scope ? (records ?? []).filter((r) => scope.includes(r.athlete_id)) : (records ?? []);
+  const records = await fetchGpsForSessions(db, orgId, sessionIds);
+  const scoped = scope ? records.filter((r) => scope.includes(r.athlete_id)) : records;
 
   const bySession = new Map<string, number[]>();
   for (const r of scoped) {
@@ -632,18 +678,22 @@ async function fetchWeekLoad(
 
   // Prior weeks' totals (same weekday cutoff, so a Wednesday-so-far week
   // compares against other weeks' Wednesday-so-far totals, not a full week).
-  const { data: priorSessions, error: priorErr } = await db
-    .from('sessions')
-    .select('id, starts_at')
-    .eq('org_id', orgId)
-    .eq('session_type', 'training')
-    .lt('starts_at', zonedTimeToUtcIso(weekStart, '00:00', timezone))
-    .is('deleted_at', null);
-  if (priorErr) throw new Error(priorErr.message);
+  const priorSessions = await fetchAllPaged<{ id: string; starts_at: string }>((pageFrom, pageTo) =>
+    db
+      .from('sessions')
+      .select('id, starts_at')
+      .eq('org_id', orgId)
+      .eq('session_type', 'training')
+      .lt('starts_at', zonedTimeToUtcIso(weekStart, '00:00', timezone))
+      .is('deleted_at', null)
+      .order('starts_at')
+      .order('id')
+      .range(pageFrom, pageTo),
+  );
 
   const cutoffDayIndex = daysBetween(weekStart, upToDate);
   const weeksSeen = new Map<string, string[]>();
-  for (const s of priorSessions ?? []) {
+  for (const s of priorSessions) {
     const sDate = dateInTz(new Date(s.starts_at), timezone);
     const wk = mondayOf(sDate);
     const dayIndex = daysBetween(wk, sDate);
@@ -655,15 +705,14 @@ async function fetchWeekLoad(
   const priorWeekIds = [...weeksSeen.values()];
   if (priorWeekIds.length === 0) return { pct: null, fillPct: Math.min(100, (weekTotal / 19_000) * 0.72), tickPct: 72, tone: 'accent', foot: `${Math.round(weekTotal).toLocaleString()} m so far · no prior week on record to compare against` };
 
-  const flatPriorIds = priorWeekIds.flat();
-  const { data: priorRecords, error: priorRecErr } = await db.from('gps_records').select('session_id, athlete_id, total_distance_m').eq('org_id', orgId).in('session_id', flatPriorIds);
-  if (priorRecErr) throw new Error(priorRecErr.message);
-  const scopedPrior = scope ? (priorRecords ?? []).filter((r) => scope.includes(r.athlete_id)) : (priorRecords ?? []);
+  const priorRecords = await fetchGpsForSessions(db, orgId, priorWeekIds.flat());
+  const scopedPrior = scope ? priorRecords.filter((r) => scope.includes(r.athlete_id)) : priorRecords;
 
   const priorTotals = priorWeekIds.map((ids) => {
+    const idSet = new Set(ids);
     const bySess = new Map<string, number[]>();
     for (const r of scopedPrior) {
-      if (r.total_distance_m === null || !ids.includes(r.session_id ?? '')) continue;
+      if (r.total_distance_m === null || !idSet.has(r.session_id ?? '')) continue;
       const list = bySess.get(r.session_id ?? '') ?? [];
       list.push(r.total_distance_m);
       bySess.set(r.session_id ?? '', list);

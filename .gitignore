@@ -18,4 +18,5 @@ supabase/.temp/
 *.whl
 .vercel
 .env*
+!.env.example
 .claude/worktrees/

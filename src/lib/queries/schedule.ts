@@ -1097,10 +1097,37 @@ export async function updateSession(
 }
 
 /** screens/schedule.md: "Cancel session — expectations for that session are
- *  waived, not deleted." This build does not yet generate
- *  compliance_expectations rows at all (that lands with the flag engine's
- *  wider compliance work), so there is nothing to waive here — a real,
- *  documented cut, not a silent one. */
+ *  waived, not deleted."
+ *
+ *  THIS USED TO BE A NO-OP ON THE SECOND HALF, and the comment here said so:
+ *  "this build does not generate compliance_expectations rows at all, so there
+ *  is nothing to waive." That was true when it was written and stopped being
+ *  true at migration 0044, which schedules
+ *  generate_compliance_expectations_nightly on pg_cron ('5 * * * *', never
+ *  unscheduled) and has been writing real rows hourly ever since.
+ *
+ *  The generator itself skips cancelled sessions (0044:216, `s.status <>
+ *  'cancelled'`), so nothing NEW is created for one — but it generates the
+ *  local today AND tomorrow at 02:00, so a session cancelled during the day
+ *  already has its expectation rows on the table. Left alone they stay
+ *  `is_required = true` and keep counting against every athlete who was down
+ *  for a session that never happened: their compliance percentage, the
+ *  dashboard tile, the compliance report and the threshold engine's
+ *  `compliance.wellness_7d` metric all read the same denominator.
+ *
+ *  Waived, not deleted — the spec's own words, and migration 0006 built the
+ *  columns for it (`is_required` / `waived_reason`, with a check constraint
+ *  keeping the two from disagreeing) while 0012's compliance_staff_update
+ *  policy exists for this exact write: "an expectation is waived with a reason
+ *  rather than deleted, so the denominator keeps telling the truth about what
+ *  was asked of the athlete."
+ *
+ *  Order matters: the session is cancelled FIRST. If the waive then fails, the
+ *  cancellation still stands and the caller is told — the reverse would leave
+ *  expectations waived for a session still shown as going ahead, which is the
+ *  worse of the two half-states. */
+const CANCELLED_SESSION_WAIVER = 'Session cancelled';
+
 export async function cancelSession(
   db: Db,
   orgId: string,
@@ -1111,7 +1138,17 @@ export async function cancelSession(
     .update({ status: 'cancelled' })
     .eq('id', sessionId)
     .eq('org_id', orgId);
-  return { error: error ? humanizeDbError(error.message, 'staff') : null };
+  if (error) return { error: humanizeDbError(error.message, 'staff') };
+
+  const { error: waiveError } = await db
+    .from('compliance_expectations')
+    .update({ is_required: false, waived_reason: CANCELLED_SESSION_WAIVER })
+    .eq('org_id', orgId)
+    .eq('session_id', sessionId)
+    .eq('is_required', true);
+  if (waiveError) return { error: humanizeDbError(waiveError.message, 'staff') };
+
+  return { error: null };
 }
 
 /** The reverse of cancelSession, per session-detail.md's lifecycle diagram:

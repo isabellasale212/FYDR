@@ -45,7 +45,7 @@ export default async function SettingsPage() {
   const onPremium = isPremium(tier);
 
   const [userRow, orgRow, athleteCount, activeThresholds, mfaFactors] = await Promise.all([
-    db.from('users').select('phone, avatar_url').eq('id', claims.userId).maybeSingle(),
+    db.from('users').select('phone, avatar_url, avatar_colour').eq('id', claims.userId).maybeSingle(),
     isAdmin
       ? db.from('organisations').select('name, sport, timezone, country_code, logo_url').eq('id', orgId).maybeSingle()
       : Promise.resolve({ data: null }),
@@ -432,7 +432,11 @@ export default async function SettingsPage() {
           </div>
         </section>
 
-        <AvatarUploadForm orgId={orgId} userId={claims.userId} fullName={fullName} initialAvatarUrl={userRow.data?.avatar_url ?? null} />
+        {/* initialAvatarColour is not optional in practice: pickColour writes
+            users.avatar_colour immediately, so omitting it left the picker
+            reopening on "Default" — aria-pressed on the wrong chip — while the
+            database held a real colour. Same read the athlete /me page does. */}
+        <AvatarUploadForm orgId={orgId} userId={claims.userId} fullName={fullName} initialAvatarUrl={userRow.data?.avatar_url ?? null} initialAvatarColour={userRow.data?.avatar_colour ?? null} />
         <StaffProfileEditForm userId={claims.userId} initialFullName={fullName} initialPhone={userRow.data?.phone ?? ''} />
 
         {isAdmin && orgRow.data ? (

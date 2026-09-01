@@ -872,9 +872,12 @@ This is the implementation of `CLAUDE.md` §3 and of the header rule in `19-page
   Both open-ended keys are capped at `MAX_WINDOW_DAYS` (730), and `season` resolves against the
   org's current season row — the option is absent, not defaulted, for a club that has none.
 
-  **Legacy period params still in the tree**, all readable through `readPeriodParam()` /
-  `periodToOfferedDays()` in `lib/period.ts` so a migrated control cannot make an unmigrated
-  handler fall back to its default without saying so:
+  **Legacy period params still in the tree**, all readable through `readPeriodParam()` in
+  `lib/period.ts` so a migrated control cannot make an unmigrated handler fall back to its
+  default without saying so. (`periodToOfferedDays()` was the other half of that bridge, for
+  handlers that still took a raw day count. All nine of those migrated in the same pass — see
+  the `?days=` row below — so the function survives with no callers; it is not part of how
+  these params are read today.)
 
   | Param | Where | Meaning | Status |
   |---|---|---|---|

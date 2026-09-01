@@ -68,10 +68,13 @@ const REPORTS = [
  *  (screens/training-report.md, trainingReport.ts), the Athlete report
  *  (athleteReport.ts), Squad weekly (squadWeeklyReport.ts) and now the
  *  Testing report (testingReport.ts) — the last three built once GPS
- *  records and testing, the gaps that blocked them, both existed. No PDF or
- *  scheduling on any of the five — these are live in-app pages, recomputed
- *  on open, each with a CSV export. See each query file's own header for
- *  what it cuts against the full spec.
+ *  records and testing, the gaps that blocked them, both existed. No
+ *  scheduling on any of them — these are live in-app pages, recomputed on
+ *  open, each with a CSV export AND a PDF route (all six now have one; the
+ *  training report was the last, see reports/training/pdf/route.tsx). NOTE:
+ *  the caption this page renders below still says "all but the training
+ *  report also export to PDF", which is stale user-facing copy. See each
+ *  query file's own header for what it cuts against the full spec.
  *
  *  This index page itself stays open to every staff role — lib/session.ts's
  *  requireReportAccess() is what actually gates each report, and it's

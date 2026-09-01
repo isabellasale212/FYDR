@@ -45,9 +45,11 @@ function rangeBounds(row: BodyMassTargetRange | undefined): { low: number; high:
  * — the rule's own text names "targets, meal ideas, and training-day fuelling" as
  * exactly the guidance content staff may author. Real deviations from the literal
  * spec, and why, are documented at the point each one is made:
- *   - lib/nutritionRules.ts: the body-mass target RANGE (a fabricated schema column,
- *     already cut once on the player-profile page) and the rugby positional-unit
- *     mapping (real, derived from real free-text positions).
+ *   - lib/nutritionRules.ts: the rugby positional-unit mapping (real, derived from
+ *     real free-text positions). NOTE: the body-mass target RANGE used to be listed
+ *     here as a fabricated schema column, cut twice. It is no longer a deviation —
+ *     migration 0060 created body_mass_target_ranges, and this page reads it (see
+ *     the BodyMassTargetRange import above) to render the staff-only target column.
  *   - lib/nutritionWorkspace.ts: the "Needs a word" chase list's third reason
  *     (no real daily-intake number exists; reframed onto the real weekly check-in).
  *   - lib/nutritionMeals.ts: the meal plan itself (seed data — no meal_plans table

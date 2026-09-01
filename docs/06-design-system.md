@@ -1495,10 +1495,12 @@ screen, because "Last 28 days" alone does not tell a coach whether today is incl
 
 **It is a wrapper over `ReportSelectNav`, not a new control.** That is the substance of it, not
 an implementation detail: `ReportSelectNav` rebuilds the next href from the live
-`useSearchParams()`, so every other param survives a period change. Three hand-rolled period
-chip rows in the app do not, and `/reports/athlete/[athleteId]` drops `?groups=` outright when
-the period changes — a CLAUDE.md §3 violation caused purely by hand-building an href. Screens
-adopting `PeriodSelector` get that fixed for free.
+`useSearchParams()`, so every other param survives a period change. Hand-rolled period chip
+rows do not: `/reports/athlete/[athleteId]` used to build each chip's href from a fixed list of
+keys and dropped `?groups=` outright on every period change — a CLAUDE.md §3 violation caused
+purely by hand-building an href. That screen has since adopted `PeriodSelector` and the bug is
+gone (see the page's own header comment); any remaining hand-rolled chip row still carries it,
+and gets it fixed for free by adopting `PeriodSelector`.
 
 **Disabled versus absent.** Two different facts, rendered differently:
 

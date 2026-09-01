@@ -239,9 +239,12 @@ export async function fetchComplianceReport(
         .order('id')
         .range(pageFrom, pageTo),
     ),
+    // The _current view, per 0045:239 — a session corrected through
+    // revise_gym_session_log leaves its superseded row behind on the base
+    // table, and compliance counts must not see both.
     fetchAllPaged<SubmissionRow>((pageFrom, pageTo) =>
       db
-        .from('gym_session_logs')
+        .from('gym_session_logs_current')
         .select('athlete_id, entry_date')
         .in('athlete_id', athleteIds)
         .gte('entry_date', fromDate)

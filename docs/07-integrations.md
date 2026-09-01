@@ -20,8 +20,12 @@ database archaeology exercise.
 | 3 | Apple HealthKit | Native iOS sync, athlete initiated | Premium | v1.1 |
 | 4 | Catapult and StatSports APIs, Android Health Connect | Scheduled server-side pull | Premium | Deferred |
 
-The two tiers are **`club` and `premium`** (`12-product-tiers.md`). Nothing here is gated on
-any other name.
+The two tiers are the `subscription_tier` enum's **`core` and `performance`** (migration
+`0001`), surfaced in the UI as "Basic" and "Premium" by `src/lib/tier.ts`. `12-product-tiers.md`
+§2 *recommends* renaming the enum values to `club`/`premium` to match the client's own words;
+that rename has **not** been applied, so gate on `isPremium(tier)` and never on the string
+`'premium'` — §2.1 of that document records why a raw literal comparison here fails silently
+rather than loudly.
 
 Phase 2 is the one that earns the Premium tier. It is also the only integration whose
 success depends on a human being willing to do a weekly task, which is why most of this

@@ -7502,3 +7502,241 @@ button.dash-stat {
 .phone-body .back-btn {
   margin-bottom: 10px;
 }
+
+/* ---------------------------------------------------------------------------
+ * Compliance report — Fydr Compliance.dc.html
+ *
+ * Two tables that read as meters rather than lists: a band header, then rows
+ * whose bar IS the answer and whose number confirms it. Every denominator is
+ * printed, because a percentage without one is not checkable.
+ * ------------------------------------------------------------------------ */
+.cmpl-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  overflow: hidden;
+  padding: 0;
+  margin-bottom: 14px;
+}
+@media (max-width: 900px) {
+  .cmpl-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.cmpl-stat {
+  padding: 15px 20px 16px;
+  border-right: 1px solid var(--hair);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.cmpl-stat:last-child {
+  border-right: none;
+}
+/* The one card that names a problem carries a wash, so the number a coach has
+   to act on is the one their eye lands on first. */
+.cmpl-stat[data-tone='bad'] {
+  background: rgb(var(--bad-rgb) / 0.07);
+}
+.cmpl-stat-label {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.cmpl-stat[data-tone='bad'] .cmpl-stat-label,
+.cmpl-stat[data-tone='bad'] .cmpl-stat-value {
+  color: var(--bad-pill-text);
+}
+.cmpl-stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.cmpl-stat-value small {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-left: 2px;
+}
+.cmpl-stat-sub {
+  font-size: 11.5px;
+  color: var(--faint);
+}
+
+.cmpl-table {
+  padding: 14px 20px 0;
+}
+.cmpl-head,
+.cmpl-row {
+  display: grid;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 4px;
+}
+.cmpl-head {
+  padding: 0 4px 10px;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.cmpl-row {
+  border-radius: 8px;
+}
+.cmpl-row:hover {
+  background: rgb(var(--accent-rgb) / 0.06);
+}
+.cmpl-band {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 12px 4px 6px;
+  border-top: 1px solid var(--hair);
+}
+.cmpl-band-name {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+.cmpl-band-name[data-tone='bad'] { color: var(--bad-pill-text); }
+.cmpl-band-name[data-tone='warn'] { color: var(--warn-pill-text); }
+.cmpl-band-name[data-tone='accent'] { color: var(--accent-pill-text); }
+.cmpl-band-name[data-tone='neutral'] { color: var(--faint); }
+.cmpl-band-count {
+  margin-left: auto;
+  font-size: 10.5px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+.cmpl-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cmpl-num {
+  text-align: right;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.cmpl-num[data-quiet='true'] {
+  color: var(--faint);
+}
+.cmpl-last {
+  text-align: right;
+  font-size: 12.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The meter. A track, a fill, and — on the athlete table — a hairline at the
+   halfway mark, which the caption is careful to call 50% and not a standard. */
+.cmpl-meter {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+.cmpl-meter-count {
+  width: 74px;
+  text-align: right;
+  font-size: 12.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.cmpl-meter-pct {
+  width: 46px;
+  text-align: right;
+  font-size: 13.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.cmpl-track {
+  flex: 1;
+  min-width: 0;
+  height: 6px;
+  border-radius: 20px;
+  background: rgb(var(--ink-rgb) / 0.07);
+  position: relative;
+  overflow: hidden;
+}
+:root[data-theme='dark'] .cmpl-track,
+.dark-tokens .cmpl-track {
+  background: rgb(255 255 255 / 0.12);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .cmpl-track {
+    background: rgb(255 255 255 / 0.12);
+  }
+}
+.cmpl-fill {
+  height: 100%;
+  border-radius: 20px;
+}
+.cmpl-tick {
+  position: absolute;
+  left: 50%;
+  top: -2px;
+  bottom: -2px;
+  width: 1px;
+  background: rgb(var(--ink-rgb) / 0.16);
+}
+:root[data-theme='dark'] .cmpl-tick,
+.dark-tokens .cmpl-tick {
+  background: rgb(255 255 255 / 0.26);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .cmpl-tick {
+    background: rgb(255 255 255 / 0.26);
+  }
+}
+/* Bar fills are the raw tone: a bar is an area, which is what a tone is for.
+   The numbers beside them take the derived pill-text tokens instead. */
+.cmpl-fill[data-tone='bad'] { background: var(--bad); }
+.cmpl-fill[data-tone='warn'] { background: var(--warn); }
+.cmpl-fill[data-tone='accent'] { background: var(--accent); }
+.cmpl-fill[data-tone='good'] { background: var(--good); }
+.cmpl-tone[data-tone='bad'] { color: var(--bad-pill-text); }
+.cmpl-tone[data-tone='warn'] { color: var(--warn-pill-text); }
+.cmpl-tone[data-tone='accent'] { color: var(--accent-pill-text); }
+.cmpl-tone[data-tone='good'] { color: var(--good-pill-text); }
+.cmpl-tone[data-tone='none'] { color: var(--faint); }
+
+.cmpl-foot {
+  padding: 11px 4px 13px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.cmpl-foot-note {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.cmpl-legend {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.cmpl-legend span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cmpl-swatch {
+  width: 14px;
+  height: 6px;
+  border-radius: 20px;
+  flex: none;
+}

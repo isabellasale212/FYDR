@@ -11,6 +11,7 @@ import { recordReportView } from '@/lib/queries/reports';
 import { BLANK, ageFrom, enumLabel, formatDate, formatNumber, formatTime } from '@/lib/format';
 import { availabilityStatus, SEVERITY_STATUS } from '@/lib/status';
 import { requireReportAccess } from '@/lib/session';
+import { isUuid } from '@/lib/uuid';
 import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
 import {
@@ -82,6 +83,11 @@ export default async function AthleteReportPage({
 }) {
   const { athleteId } = await params;
   const { db, orgId, claims, timezone, tier } = await requireReportAccess();
+  /* Shape-check the route param before it reaches a query. Authenticated
+     first, so this never becomes a probe; then 404 rather than 500, because a
+     malformed id is a URL that does not name anything, not a server fault. */
+  if (!isUuid(athleteId)) notFound();
+
   const sp = await searchParams;
   const period = await resolveAthletePeriod(db, orgId, athleteId, timezone, periodParamsFrom(sp));
   const caveat = periodCaveat(period);

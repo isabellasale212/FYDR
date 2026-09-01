@@ -5,6 +5,7 @@ import { fetchAthleteReport } from '@/lib/queries/athleteReport';
 import { recordReportView } from '@/lib/queries/reports';
 import { formatNumber } from '@/lib/format';
 import { requireReportAccess } from '@/lib/session';
+import { isUuid } from '@/lib/uuid';
 import type { AppRole } from '@/lib/types/database';
 import { ACWR_WINDOW_CAPTION, periodCaveat, periodParamsFromUrl, resolveAthletePeriod } from '../period';
 
@@ -18,6 +19,11 @@ import { ACWR_WINDOW_CAPTION, periodCaveat, periodParamsFromUrl, resolveAthleteP
 export async function GET(request: Request, { params }: { params: Promise<{ athleteId: string }> }) {
   const { athleteId } = await params;
   const { db, orgId, claims, timezone } = await requireReportAccess();
+  /* Shape-check the route param before it reaches a query. Authenticated
+     first, so this never becomes a probe; then 404 rather than 500, because a
+     malformed id is a URL that does not name anything, not a server fault. */
+  if (!isUuid(athleteId)) notFound();
+
   const url = new URL(request.url);
 
   /* Resolved through the same module as the page and the PDF. Before this,

@@ -3,7 +3,6 @@ import { DashboardFlagsPanel } from '@/components/DashboardFlagsPanel/DashboardF
 import { DashboardHeadlineStats } from '@/components/DashboardHeadlineStats/DashboardHeadlineStats';
 import { Dial } from '@/components/Dial/Dial';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
-import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { PrintButton } from '@/components/PrintButton/PrintButton';
 import {
   fetchEffectiveToday,
@@ -16,12 +15,10 @@ import {
     type SquadStateEntry,
 } from '@/lib/queries/dashboard';
 import { fetchGroups } from '@/lib/queries/groups';
-import { fetchCurrentSeason, mondayOf } from '@/lib/queries/schedule';
+import { mondayOf } from '@/lib/queries/schedule';
 import { addDays, enumLabel, formatDate, formatLongDate, todayIso } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { clampPeriod, type RangeKey } from '@/lib/period';
-import { resolvePeriod } from '@/lib/period.server';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Dashboard · Fydr' };
@@ -58,15 +55,6 @@ const TONE_VAR: Record<string, string> = { good: 'var(--accent2)', accent: 'var(
  * dashboard answers "what is happening now", and a six-day recap on the same
  * screen answered a question Schedule already owns better, with a real week
  * grid rather than six stacked summaries. */
-const DASHBOARD_PERIODS: readonly RangeKey[] = ['day'];
-const DASHBOARD_PERIOD_REASON = 'the dashboard is a today screen — longer windows are in Analytics';
-const DASHBOARD_PERIOD_REASONS: Partial<Record<RangeKey, string>> = {
-  week: 'the week is on Schedule, which draws it as a real grid',
-  month: DASHBOARD_PERIOD_REASON,
-  season: DASHBOARD_PERIOD_REASON,
-  year: DASHBOARD_PERIOD_REASON,
-  all: DASHBOARD_PERIOD_REASON,
-};
 
 function qs(params: Record<string, string | undefined>): string {
   const s = new URLSearchParams();
@@ -147,40 +135,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
 
   const selectedDay = typeof sp.day === 'string' && sp.day >= weekStart && sp.day <= weekEnd ? sp.day : effectiveToday;
 
-  /* URL first, sticky cookie second, then `day` — clamped server-side as well
-   * as disabled in the control, because the control does not stop a bookmarked
-   * `?period=season`. `season` is resolved only to satisfy PeriodSelector's
-   * required prop: neither of this screen's two legal options is the season
-   * one, so a club with no season row loses nothing here either way, and
-   * fetchCurrentSeason (never fetchCurrentSeasonId) is the safe lookup. */
-  const [requestedPeriod, season] = await Promise.all([resolvePeriod(sp), fetchCurrentSeason(db, orgId)]);
-  const period = clampPeriod(requestedPeriod.key, {
-    allowed: DASHBOARD_PERIODS,
-    seasonAvailable: season !== null,
-    fallback: 'day',
-  });
-
-  /* THIS SCREEN MUST NOT WRITE THE ACCOUNT-WIDE COOKIE UNLESS THE COACH REALLY
-   * PICKED THE VALUE ON IT. `fydr-period` is shared by every screen, and this
-   * one has the narrowest allow-list in the app (`day` and `week` only) while
-   * homeRoute() lands every coach and medical sign-in here — so a sticky write
-   * from the dashboard is the single most destructive one there is:
-   *
-   *  - NOT EXPRESSED (no `?period=`, no cookie): the value is `day`, this
-   *    screen's own fallback, and stickying it would seed the whole account
-   *    with `day` on a first-ever visit — a key NO report allows, so each one
-   *    then clamps to a different fallback and prints a caveat about a choice
-   *    the coach never made.
-   *  - COERCED: the coach picked "This season" on the testing report, arrives
-   *    here, and the clamp turns it into `day`. Writing that back would erase
-   *    their real preference on a visit where they touched nothing.
-   *
-   * Same rule and same reasoning as periodSticky() (lib/reportPeriod.server.ts)
-   * and squad/[athleteId]; written out here because this screen resolves its
-   * period with clampPeriod directly rather than through a report module. An
-   * explicit pick on THIS control still sticks everywhere: `?period=week` is
-   * expressed, legal here, and writes the cookie exactly as before. */
-  const periodIsChoice = requestedPeriod.source !== 'default' && period.coercedFrom === null;
+  /* NO PERIOD ON THIS SCREEN. The dashboard is one day — the day strip and the
+   * week list are gone, the selector is gone, and with nothing left to window
+   * there is no period to resolve. That also removes this screen as a writer of
+   * the account-wide `fydr-period` cookie, which was the single most damaging
+   * write there is: homeRoute() lands every coach and medical sign-in here, and
+   * this screen had the narrowest allow-list in the app, so a sticky write from
+   * it seeded the whole account with a key no report accepts. Longer windows
+   * live on Analytics, which has its own per-board controls. */
 
   const [groups, stats, timeline, readiness, squad, untied, outstanding] = await Promise.all([
     fetchGroups(db, orgId),
@@ -217,14 +179,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           <h1>Dashboard</h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <PeriodSelector
-            value={period.key}
-            allowed={DASHBOARD_PERIODS}
-            reasons={DASHBOARD_PERIOD_REASONS}
-            season={season}
-            sticky={periodIsChoice}
-            ariaLabel="Show one day or the whole week"
-          />
           <PrintButton />
         </div>
       </div>
@@ -285,21 +239,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         squadModified={squad.modifiedNames}
         squadUnavailable={squad.unavailableNames}
       />
-
-      {/* Week snapshot — a vertical list, not the old 6-card grid, per the
-       * coach's own ask ("make the week snapshot a list summary and more
-       * clear"). Every fact the card grid showed is still here: day name,
-       * MD label, session pips, the summary text, and the flag-count/
-       * "last session before Saturday" alert (now a pill, this app's
-       * existing attention-badge language, not new styling). Still one row
-       * per day, still a real link that sets ?day= on this same page —
-       * only the shape changed.
-       *
-       * The row href now writes `period=day` as well as `day=`: in day mode
-       * that is a no-op, and in week mode clicking a day can only mean "drop
-       * into this day", which is exactly what the pair says. The list itself
-       * renders in BOTH modes — it is the day picker, and hiding it in week
-       * mode would leave no way back to a day. */}
 
       <div className="dash-body" style={{ marginTop: 14 }}>
         <div>

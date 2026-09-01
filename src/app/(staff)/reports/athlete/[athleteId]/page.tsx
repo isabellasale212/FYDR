@@ -46,6 +46,32 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
  *  header for the full scope reasoning: built now that GPS records and
  *  testing, the two gaps reports.ts's own header named as the reason this
  *  report was cut, both exist. */
+
+/* Vs PB, direction-corrected. A sprint is faster when the number is smaller,
+ * so `gap` is signed against the test's OWN direction — printing a slower time
+ * as a gain is the whole reason MyTestSummary now carries higher_is_better.
+ * "At PB" is a real third state, not a zero: it says the latest result IS his
+ * best, which is different from being a hair off it. */
+function vsPb(t: {
+  pbValue: number | null;
+  latestValue: number | null;
+  higher_is_better: boolean;
+  decimal_places: number;
+}): { label: string; tone: 'at' | 'off' | 'heavy'; heavy: boolean } | null {
+  if (t.pbValue === null || t.latestValue === null) return null;
+  const gap = t.higher_is_better ? t.latestValue - t.pbValue : t.pbValue - t.latestValue;
+  const atPb = Math.abs(gap) < Math.pow(10, -t.decimal_places) / 2;
+  if (atPb) return { label: 'at PB', tone: 'at', heavy: false };
+  const pctOff = t.pbValue !== 0 ? Math.abs(gap / t.pbValue) * 100 : 0;
+  const heavy = pctOff >= 10;
+  const sign = gap > 0 ? '+' : '−';
+  return {
+    label: `${sign}${formatNumber(Math.abs(gap), t.decimal_places)} · ${sign}${Math.round(pctOff)}%`,
+    tone: heavy ? 'heavy' : 'off',
+    heavy,
+  };
+}
+
 export default async function AthleteReportPage({
   params,
   searchParams,
@@ -76,7 +102,25 @@ export default async function AthleteReportPage({
     period: period.key,
   });
 
-  const loadDaysWithValue = report.load.byDay.filter((d) => d.load !== null);
+  /* Narrowed, not just filtered: the predicate tells TypeScript the load is a
+     number so the bar arithmetic below does not have to re-check it. */
+  const loadDaysWithValue = report.load.byDay.filter(
+    (d): d is typeof d & { load: number } => d.load !== null,
+  );
+  const peakLoad = loadDaysWithValue.reduce((m, d) => Math.max(m, d.load), 0);
+
+  /* The latest wellness reading actually on file, and how many of the window's
+     days carry one. A composite score with no date beside it invites reading a
+     three-week-old number as today's. */
+  const wellnessWithValue = report.wellness.filter(
+    (p): p is typeof p & { value: number } => p.value !== null,
+  );
+  const latestWellness = wellnessWithValue.length > 0 ? wellnessWithValue[wellnessWithValue.length - 1]! : null;
+  const wellnessSubmitted = wellnessWithValue.length;
+
+  /* "N tests well below PB" — the same 10% threshold vsPb() uses for its own
+     row wash, counted once here so the badge and the washes cannot disagree. */
+  const wellBelowPb = report.gymAndTesting.tests.filter((t) => vsPb(t)?.heavy).length;
   // fetchAthleteSessionsInWindow sorts most-recent-first (screens/schedule.md's
   // own "recent sessions" convention), so index 0 is the latest, not the last.
   // It is also no longer capped at 200 rows, so the count in the footer is the
@@ -105,38 +149,53 @@ export default async function AthleteReportPage({
         </div>
       </div>
 
-      <div className="pbar">
-        <div className="l1">
-          <span className="nmx">
-            {athlete.first_name} {athlete.last_name}
+      {/* The design's identity card. It leads with the POSITION, not the name
+          again — the name is already the page title, and what a coach needs
+          next to it is what this athlete plays and whether they are available.
+          Squad number, age, team and groups keep their line underneath. */}
+      <div className="card ath-id">
+        <span className="ath-avatar" aria-hidden="true">
+          {`${athlete.first_name[0] ?? ''}${athlete.last_name[0] ?? ''}`.toUpperCase()}
+        </span>
+        <span className="ath-id-main">
+          <span className="ath-id-line">
+            <span className="ath-position">{athlete.position ?? 'Position not set'}</span>
+            <Pill status={status} />
+            {restrictions.length > 0 ? (
+              <span className="tiny" style={{ color: 'var(--muted)' }}>{restrictions.map(enumLabel).join(' · ')}</span>
+            ) : null}
           </span>
-          <span className="sub">
-            {athlete.position ?? BLANK}
-            {age !== null ? ` · ${age}` : ''}
-            {athlete.team_name ? ` · ${athlete.team_name}` : ''}
-          </span>
-          <Pill status={status} />
-          {restrictions.length > 0 ? <span className="sub">{restrictions.map(enumLabel).join(' · ')}</span> : null}
-        </div>
-        <div className="l2">
-          <span>
-            Squad no. <b className="mono">{athlete.squad_number ?? BLANK}</b>
-          </span>
-          <span className="dot">·</span>
-          <span>
-            Groups <b>{athlete.group_names.length > 0 ? athlete.group_names.join(', ') : BLANK}</b>
+          <span className="ath-meta">
+            {[
+              age !== null ? String(age) : null,
+              athlete.team_name,
+              athlete.squad_number !== null ? `squad no. ${athlete.squad_number}` : null,
+              athlete.group_names.length > 0 ? athlete.group_names.join(', ') : null,
+            ]
+              .filter(Boolean)
+              .join(' · ') || 'No squad detail on file'}
           </span>
           {openInjury ? (
-            <>
-              <span className="dot">·</span>
-              <span>
-                {enumLabel(openInjury.body_area)}
-                {openInjury.side ? ` (${enumLabel(openInjury.side)})` : ''}, back{' '}
-                <b className="mono">{openInjury.expected_return ? formatDate(openInjury.expected_return, timezone) : 'not set'}</b>
-              </span>
-            </>
+            <span className="tiny" style={{ color: 'var(--muted)' }}>
+              {enumLabel(openInjury.body_area)}
+              {openInjury.side ? ` (${enumLabel(openInjury.side)})` : ''}, back{' '}
+              {openInjury.expected_return ? formatDate(openInjury.expected_return, timezone) : 'not set'}
+            </span>
           ) : null}
-        </div>
+        </span>
+        {/* Carried over from the summary tiles this card replaced rather than
+            dropped with them: cross-domain compliance is a different question
+            from the Wellness card's own "days submitted", and it was the one
+            headline figure the design's identity row had no home for. */}
+        <span style={{ marginLeft: 'auto', textAlign: 'right' }}>
+          <span className="ath-stat-label">Compliance</span>
+          <span className="ath-stat-value" style={{ fontSize: 20 }}>
+            {compliancePct === null ? BLANK : `${compliancePct}%`}
+          </span>
+          <span className="tiny" style={{ display: 'block', color: 'var(--faint)' }}>
+            {period.label.toLowerCase()}
+          </span>
+        </span>
       </div>
 
       <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
@@ -168,26 +227,193 @@ export default async function AthleteReportPage({
             label: 'Summary',
             content: (
               <div className="stack">
-                <div className="grid3">
-                  <div className="card">
-                    <p className="tiny">Compliance, this period</p>
-                    <p className="mono" style={{ fontSize: 24, fontWeight: 800 }}>
-                      {compliancePct === null ? '—' : `${compliancePct}%`}
+                <div className="ath-summary-grid">
+                  <section className="card" aria-labelledby="sum-wellness">
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
+                      <h2 className="ath-card-title" id="sum-wellness">
+                        Wellness
+                      </h2>
+                      <span className="ath-latest">
+                        {latestWellness === null ? '—' : latestWellness.value}
+                      </span>
+                      <span className="tiny" style={{ color: 'var(--faint)' }}>
+                        {latestWellness === null
+                          ? 'nothing submitted'
+                          : `latest, ${formatDate(latestWellness.date, timezone)}`}
+                      </span>
+                    </div>
+                    <p className="tiny" style={{ color: 'var(--muted)', margin: '8px 0 10px' }}>
+                      Composite readiness against {athlete.first_name}&apos;s own 14-day rolling mean
+                      and &plusmn;1 SD band.
                     </p>
-                  </div>
-                  <div className="card">
-                    <p className="tiny">Open flags</p>
-                    <p className="mono" style={{ fontSize: 24, fontWeight: 800 }}>
-                      {openFlags.length}
-                    </p>
-                  </div>
-                  <div className="card">
-                    <p className="tiny">Current programme{currentProgrammes.length === 1 ? '' : 's'}</p>
-                    <p style={{ fontSize: 15, fontWeight: 700 }}>
-                      {currentProgrammes.length === 0 ? BLANK : currentProgrammes.map((p) => p.name).join(', ')}
-                    </p>
-                  </div>
+                    {report.wellness.every((p) => p.value === null) ? (
+                      <EmptyState
+                        headingLevel={3}
+                        title="No wellness entries in this period"
+                        body="Nothing submitted in this window."
+                      />
+                    ) : (
+                      <>
+                        <WellnessChart
+                          series={report.wellness}
+                          min={0}
+                          max={100}
+                          ticks={[0, 25, 50, 75, 100]}
+                          title={`Readiness for ${athlete.first_name} ${athlete.last_name}`}
+                          timezone={timezone}
+                        />
+                        <p className="tiny" style={{ color: 'var(--muted)', marginTop: 10 }}>
+                          {wellnessSubmitted} of {report.wellness.length} days submitted
+                        </p>
+                      </>
+                    )}
+                  </section>
+
+                  <section className="card" aria-labelledby="sum-load">
+                    <h2 className="ath-card-title" id="sum-load" style={{ marginBottom: 12 }}>
+                      Load
+                    </h2>
+                    {/* THE THREE TILES DO NOT MOVE WITH THE PERIOD CONTROL —
+                        acute is trailing 7 days and chronic trailing 28 by
+                        definition (lib/acwr.ts). When the baseline is still
+                        building they show a dash and say so: an estimate from
+                        too few days is worse than no estimate. */}
+                    {report.load.suppressed ? (
+                      <div className="note" style={{ borderColor: 'var(--warn)', marginBottom: 12 }}>
+                        <div className="note-glyph">i</div>
+                        <p className="note-text">
+                          <b>{acwrSuppressedLabel(report.load.daysWithData)}</b> —{' '}
+                          {acwrInsufficiencyNote(report.load.daysWithData)}
+                        </p>
+                      </div>
+                    ) : null}
+                    <div className="ath-load-tiles">
+                      {[
+                        { label: 'Acute', value: report.load.acute, dp: 0, sub: 'trailing 7 days' },
+                        { label: 'Chronic', value: report.load.chronic, dp: 0, sub: 'trailing 28 days' },
+                        { label: 'ACWR', value: report.load.acwr, dp: 2, sub: 'trailing 7:28' },
+                      ].map((tile) => (
+                        <div key={tile.label} className="ath-tile">
+                          <span className="ath-tile-label">{tile.label}</span>
+                          <span className="ath-tile-value" data-empty={tile.value === null}>
+                            {tile.value === null ? '—' : formatNumber(tile.value, tile.dp)}
+                          </span>
+                          <span className="ath-tile-sub">{tile.sub}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="ath-stats" style={{ marginTop: 12 }}>
+                      <div>
+                        <div className="ath-stat-label">GPS sessions</div>
+                        <div className="ath-stat-value">{report.load.gps.sessionsWithData}</div>
+                      </div>
+                      <div>
+                        <div className="ath-stat-label">Total distance</div>
+                        <div className="ath-stat-value">
+                          {formatNumber(report.load.gps.totalDistanceM, 0)} m
+                        </div>
+                      </div>
+                      <div>
+                        <div className="ath-stat-label">High speed</div>
+                        <div className="ath-stat-value">
+                          {formatNumber(report.load.gps.highSpeedDistanceM, 0)} m
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--hair)' }}>
+                      <p style={{ fontSize: 12.5, fontWeight: 700, margin: '0 0 8px' }}>Session load by day</p>
+                      {loadDaysWithValue.length === 0 ? (
+                        <p className="tiny" style={{ color: 'var(--muted)' }}>
+                          No session load recorded in this period.
+                        </p>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {loadDaysWithValue.map((d) => (
+                            <div key={d.date} className="ath-loadday">
+                              <span className="ath-loadday-day">{formatDate(d.date, timezone)}</span>
+                              <span className="cmpl-track">
+                                <span
+                                  className="cmpl-fill"
+                                  data-tone="accent"
+                                  style={{ width: `${peakLoad > 0 ? Math.round((100 * d.load) / peakLoad) : 0}%` }}
+                                />
+                              </span>
+                              <span className="ath-loadday-val">{formatNumber(d.load, 0)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </section>
                 </div>
+
+                <section className="card cmpl-table" aria-labelledby="sum-gym">
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, flexWrap: 'wrap' }}>
+                    <h2 className="ath-card-title" id="sum-gym">
+                      Gym and testing
+                    </h2>
+                    <span className="tiny" style={{ color: 'var(--muted)' }}>
+                      {report.gymAndTesting.sessionsCompleted} of {report.gymAndTesting.sessionsLogged} gym
+                      sessions completed
+                      {currentProgrammes.length > 0 ? ` · ${currentProgrammes.map((p) => p.name).join(', ')}` : ''}
+                    </span>
+                    {wellBelowPb > 0 ? (
+                      <span className="pill pill-bad" style={{ marginLeft: 'auto' }}>
+                        {wellBelowPb} test{wellBelowPb === 1 ? '' : 's'} well below PB
+                      </span>
+                    ) : null}
+                  </div>
+                  {report.gymAndTesting.tests.length === 0 ? (
+                    <p className="tiny" style={{ padding: '12px 0 14px' }}>
+                      No test result recorded for this athlete.
+                    </p>
+                  ) : (
+                    <>
+                      <div className="ath-tests-head">
+                        <span>Test</span>
+                        <span style={{ textAlign: 'right' }}>PB</span>
+                        <span style={{ textAlign: 'right' }}>PB date</span>
+                        <span style={{ textAlign: 'right' }}>Latest</span>
+                        <span style={{ textAlign: 'right' }}>Latest date</span>
+                        <span style={{ textAlign: 'right' }}>Vs PB</span>
+                      </div>
+                      {report.gymAndTesting.tests.map((t) => {
+                        const delta = vsPb(t);
+                        return (
+                          <div key={t.test_definition_id} className="ath-test-row" data-heavy={delta?.heavy ?? false}>
+                            <span>
+                              <span style={{ fontSize: 13.5, fontWeight: 600 }}>{t.name}</span>{' '}
+                              <span className="tiny" style={{ color: 'var(--faint)' }}>
+                                ({t.unit})
+                              </span>
+                            </span>
+                            <span className="ath-test-num">
+                              {t.pbValue === null ? BLANK : formatNumber(t.pbValue, t.decimal_places)}
+                            </span>
+                            <span className="ath-test-date">
+                              {t.pbDate ? formatDate(t.pbDate, timezone) : BLANK}
+                            </span>
+                            <span className="ath-test-num">
+                              {t.latestValue === null ? BLANK : formatNumber(t.latestValue, t.decimal_places)}
+                            </span>
+                            <span className="ath-test-date">
+                              {t.latestDate ? formatDate(t.latestDate, timezone) : BLANK}
+                            </span>
+                            <span className="ath-test-delta" data-tone={delta?.tone ?? 'at'}>
+                              {delta?.label ?? BLANK}
+                            </span>
+                          </div>
+                        );
+                      })}
+                      <p className="inj-foot">
+                        Squad percentiles are not shown on a one-athlete report — see the Testing report
+                        for squad-wide comparisons. Vs PB compares the latest result with{' '}
+                        {athlete.first_name}&apos;s own best, and is direction-corrected for the tests
+                        where lower is better.
+                      </p>
+                    </>
+                  )}
+                </section>
 
                 <section className="card" aria-labelledby="flags-title">
                   <h2 className="card-title" id="flags-title">

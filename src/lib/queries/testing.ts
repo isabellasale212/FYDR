@@ -590,6 +590,12 @@ export type MyTestSummary = {
   name: string;
   unit: string;
   decimal_places: number;
+  /** Carried through, not re-derived: a "vs PB" figure is meaningless without
+   *  it. For a sprint, lower is better, so a LARGER latest value is a loss —
+   *  a consumer that assumes higher-is-better would print a slower time as a
+   *  gain. The query already selects this column to pick the PB correctly;
+   *  it just was not reaching callers. */
+  higher_is_better: boolean;
   pbValue: number | null;
   pbDate: string | null;
   latestValue: number | null;
@@ -650,6 +656,7 @@ export async function fetchMyTestSummary(db: Db, athleteId: string): Promise<MyT
       name: r.test_definitions.name,
       unit: r.test_definitions.unit,
       decimal_places: r.test_definitions.decimal_places,
+      higher_is_better: r.test_definitions.higher_is_better,
       pbValue: null,
       pbDate: null,
       latestValue: null,

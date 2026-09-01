@@ -502,7 +502,13 @@ Every alpha here is the handoff's own figure (§4 and §5),
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    --bg: #182241;
+    /* Route 2 of the three ways dark arrives (§2.4). Must track
+       :root[data-theme='dark'] exactly — this block was missed when the
+       Visual Lift moved the dark ground, so an OS-dark viewer with no explicit
+       choice kept #182241 while an explicit choice got #202b4e. Caught by
+       diffing the two dark blocks against each other after deploying; they now
+       differ in nothing. */
+    --bg: #202b4e;
     --surf: #171e36;
     --surf-sunken: #121a33;
     --surf2: #1a2340;

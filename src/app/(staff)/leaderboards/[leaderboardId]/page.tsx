@@ -13,7 +13,6 @@ import {
   populationLabel,
 } from '@/lib/queries/leaderboards';
 import { fetchGroupAthleteIds, fetchGroups } from '@/lib/queries/groups';
-import { formatNumber } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
@@ -118,6 +117,12 @@ export default async function LeaderboardDetailPage({
   /* Board figures, all off fullRanking so the header and the table cannot
    * disagree — and squad-wide by construction: the group filter narrows what
    * is SHOWN, never what is ranked (see this file's own header). */
+  /* Grouped for display only. formatNumber() deliberately does NOT separate
+     thousands, because the same helper formats the CSV and PDF exports and a
+     comma inside an unquoted CSV field splits the row. So the separator lives
+     here, on the screen, and the export keeps the machine-readable form. */
+  const grouped = (v: number) =>
+    v.toLocaleString('en-GB', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
   const leaderValue = fullRanking[0]?.value ?? null;
   const squadMean =
     fullRanking.length > 0
@@ -196,10 +201,10 @@ export default async function LeaderboardDetailPage({
         {fullRanking.length > 0 ? (
           <span className="lb-stats">
             <span>
-              Leader <b>{formatNumber(leaderValue ?? 0, decimals)}{metric?.unit ?? ''}</b>
+              Leader <b>{grouped(leaderValue ?? 0)}{metric?.unit ?? ''}</b>
             </span>
             <span>
-              Squad mean <b>{formatNumber(squadMean ?? 0, decimals)}{metric?.unit ?? ''}</b>
+              Squad mean <b>{grouped(squadMean ?? 0)}{metric?.unit ?? ''}</b>
             </span>
             <span>n = {fullRanking.length} athletes</span>
           </span>
@@ -249,13 +254,13 @@ export default async function LeaderboardDetailPage({
                     <span className="lb-fill" style={{ width: `${barPct(row.value)}%` }} />
                   </span>
                   <span className="lb-value">
-                    {formatNumber(row.value, decimals)}
+                    {grouped(row.value)}
                     {metric?.unit ?? ''}
                   </span>
                   {/* The leader's own gap is a dash, not a zero: there is
                       nobody ahead of them to be behind. */}
                   <span className="lb-gap">
-                    {gap === null || gap === 0 ? '—' : `−${formatNumber(gap, decimals)}`}
+                    {gap === null || gap === 0 ? '—' : `−${grouped(gap)}`}
                   </span>
                 </div>
               );

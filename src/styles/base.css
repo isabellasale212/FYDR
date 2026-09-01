@@ -8444,3 +8444,185 @@ button.dash-stat {
   border-radius: 50%;
   flex: none;
 }
+
+/* ---------------------------------------------------------------------------
+ * Squad weekly — Fydr Squad Weekly.dc.html
+ *
+ * Four KPIs over two columns: what needs attention on the left, and the two
+ * lists a coach checks it against on the right.
+ * ------------------------------------------------------------------------ */
+.sw-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 1000px) {
+  .sw-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.sw-kpi {
+  padding: 13px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.sw-kpi-label {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.sw-kpi-value {
+  font-size: 27px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+/* The delta is read against what is GOOD for the squad, not against the sign:
+   flags rising is bad, compliance rising is good, and the arrow alone cannot
+   say which — so the tone carries the judgement and the arrow the direction. */
+.sw-kpi-trend {
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.sw-kpi-trend[data-tone='good'] { color: var(--good-pill-text); }
+.sw-kpi-trend[data-tone='bad'] { color: var(--warn-pill-text); }
+.sw-kpi-trend[data-tone='flat'] { color: var(--faint); }
+.sw-kpi-note {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+.sw-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.32fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .sw-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.sw-side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.sw-card-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.sw-card-meta {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+.sw-load-head,
+.sw-load-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 62px 62px 66px;
+  gap: 10px;
+  align-items: baseline;
+  padding: 6px 0;
+}
+.sw-load-head {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+  padding-bottom: 2px;
+}
+.sw-load-row {
+  border-top: 1px solid var(--hair);
+}
+.sw-load-name {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sw-load-num {
+  text-align: right;
+  font-size: 12.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.sw-load-acwr {
+  text-align: right;
+  font-size: 12.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+/* Outside the descriptive band. Not a verdict — see the caption. */
+.sw-load-acwr[data-out='true'] {
+  color: var(--bad-pill-text);
+}
+.sw-avail-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 8px 0;
+  border-top: 1px solid var(--hair);
+}
+.sw-avail-name {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sw-avail-note {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+/* The week stepper. One control that names the window and moves it, rather
+   than a band of buttons between the title and the numbers. */
+.week-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surf);
+  box-shadow: var(--shadow);
+}
+.week-nav a,
+.week-nav span {
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+}
+.week-nav a:hover {
+  color: var(--text);
+  background: var(--surf2);
+}
+.week-nav b {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0 4px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+/* The forward step on the current week: present so the control keeps its
+   shape, visibly inert because there is no next week to go to. */
+.week-nav span[data-disabled='true'] {
+  color: var(--faint);
+  opacity: 0.5;
+}

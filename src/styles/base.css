@@ -7233,3 +7233,14 @@ button.dash-stat {
   font-size: 11px;
   color: var(--faint);
 }
+
+/* Squad overview: availability tints the whole row. Alphas are the design's
+   own — deliberately light, because this sits under a table of names that must
+   stay the most legible thing on the row. Body text on the strongest of them
+   measures 14.7:1. */
+.tbl tr[data-availability='modified'] {
+  background: rgb(var(--warn-rgb) / 0.07);
+}
+.tbl tr[data-availability='unavailable'] {
+  background: rgb(var(--bad-rgb) / 0.07);
+}

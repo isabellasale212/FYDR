@@ -83,7 +83,15 @@ export function RosterTable({ orgId, groupIds, initialRows }: Props) {
                 row.availability === 'unknown' ? null : row.availability,
               );
               return (
-                <tr key={row.id}>
+                /* AVAILABILITY TINTS THE WHOLE ROW — the design's own caption for
+                   this screen. The pill already says the status, but a pill is
+                   read one row at a time; a row wash is what lets a coach see
+                   how much of the squad is carrying something in a single
+                   glance down the list, which is the question this page exists
+                   to answer. Available stays untinted: it is the normal case,
+                   and tinting the majority would make the exceptions harder to
+                   see rather than easier. */
+                <tr key={row.id} data-availability={row.availability}>
                   <td className="r mono">{row.squad_number ?? BLANK}</td>
                   <td>
                     <Link href={`/squad/${row.id}`} className="nm">

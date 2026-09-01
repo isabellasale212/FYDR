@@ -36,7 +36,7 @@
  * that genuinely has something earlier or later. */
 export const DEFAULT_H0 = 7;
 export const DEFAULT_H1 = 21;
-export const PXH = 68;
+export const PXH = 66;
 export const STAGGER = 14;
 
 export type HourRangeInput = { start: number; mins: number };

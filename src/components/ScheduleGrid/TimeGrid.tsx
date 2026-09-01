@@ -50,7 +50,7 @@ function hourLabel(h: number): string {
 }
 
 /** SCHEDULE-SPEC.md §5, "The time grid" — the screen's centre. Every
- *  geometric value below (PXH, the 58px gutter, hour-line tops) is a literal
+ *  geometric value below (PXH, the 62px gutter, hour-line tops) is a literal
  *  port; ScheduleWorkspace has already run scheduleGeometry.ts's
  *  placement/clash algorithms and computeHourRange before this component
  *  ever renders, so this file is pure layout, no math. `h0`/`h1` are this
@@ -138,8 +138,12 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
                       {
                         top: b.top,
                         height: b.height,
-                        left: `${b.left}%`,
-                        width: `calc(${b.width}% - 4px)`,
+                        // The design insets blocks 6px inside their column so
+                        // the hairline dividers stay visible either side. The
+                        // percentages still come from the clash algorithm, so
+                        // staggered blocks keep their split.
+                        left: `calc(${b.left}% + 6px)`,
+                        width: `calc(${b.width}% - 12px)`,
                         zIndex: b.zIndex,
                         '--tone': style.tone,
                         '--bc': style.bc,

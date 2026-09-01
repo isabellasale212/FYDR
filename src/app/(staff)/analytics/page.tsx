@@ -10,7 +10,7 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
-import { PlanGateCard } from '@/components/PlanGate/PlanGate';
+import { PlanGate, PlanGateCard } from '@/components/PlanGate/PlanGate';
 import { ReportSelectNav } from '@/components/ReportSelectNav/ReportSelectNav';
 import type { Band } from '@/lib/stats';
 
@@ -221,6 +221,25 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
    * Getting that second one wrong in the other direction is what §3.3 was
    * written to correct, so it is spelled out here rather than inferred. */
   const premium = isPremium(tier);
+
+  /* WHOLE SCREEN, NOT JUST THE BAR CHART, ON BASIC. 12-product-tiers.md §2.3
+   * row 27 and §3.3 both say the Analytics screen is on both plans and only
+   * the bar-chart view is Premium; the club has since asked for the screen
+   * itself to be Premium, and this is that decision. The doc is amended
+   * alongside rather than left to contradict the code (CLAUDE.md §5).
+   *
+   * Gated at the ROUTE, not only hidden from the sidebar: a hidden link is a
+   * decoration, and /analytics typed into the address bar has to refuse too. */
+  if (!premium) {
+    return (
+      <PlanGate
+        featureName="Analytics"
+        body="Per-athlete trends and comparisons across wellness, load and gym volume, including the bar chart that ranks a metric across the squad."
+        metadata="Premium · analytics · trend and bar views"
+      />
+    );
+  }
+
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
 

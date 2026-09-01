@@ -1,6 +1,6 @@
 import { AnalyticsBarChart, type AnalyticsBar } from '@/components/AnalyticsBarChart/AnalyticsBarChart';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
-import { PlanGateCard } from '@/components/PlanGate/PlanGate';
+import { PlanGate, PlanGateCard } from '@/components/PlanGate/PlanGate';
 import { ReportSelectNav, type ReportSelectOption } from '@/components/ReportSelectNav/ReportSelectNav';
 import { WellnessChart } from '@/components/WellnessChart/WellnessChart';
 import {
@@ -116,6 +116,19 @@ const ALL_ATHLETES = 'all';
  */
 export default async function AnalyticsPage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, orgName, timezone, claims, tier } = await requireStaff();
+
+  /* The builder is behind the same gate as the screen it belongs to — see
+     analytics/page.tsx. Route-level, so a bookmarked /analytics/build refuses
+     rather than rendering a Premium screen with its chart panel locked. */
+  if (!isPremium(tier)) {
+    return (
+      <PlanGate
+        featureName="Analytics"
+        body="The metric builder, the athlete and group pickers, and every chart on the Analytics screen."
+        metadata="Premium · analytics · metric builder"
+      />
+    );
+  }
 
   /* Role BEFORE tier, deliberately. docs/20-route-map.md §2.3 gives /analytics
    * to coach and medical only, and 01-roles-and-permissions.md §2 gives admin

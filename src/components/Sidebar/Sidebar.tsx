@@ -57,6 +57,12 @@ const SIGN_OUT_ICON = (
   </svg>
 );
 
+/** Rows that disappear on Basic. Only Analytics qualifies as a whole
+ *  destination: the training report and the GPS import live inside Reports and
+ *  Settings, which both stay because their other contents are on every plan —
+ *  those two gate on their own routes instead. */
+const PREMIUM_ONLY = new Set<string>(['staff.analytics']);
+
 export const SIDEBAR: readonly Row[] = [
   {
     id: 'staff.dashboard',
@@ -199,12 +205,21 @@ type Props = {
   roles: readonly AppRole[];
   fullName: string;
   orgName: string;
+  /** The plan this session renders at, already resolved through
+   *  effectiveTier() — so a Basic preview hides the same rows a real Basic
+   *  club never sees. Hiding is presentation only: every route it hides is
+   *  also gated server-side, because a missing link is not access control. */
+  premium: boolean;
 };
 
-export function Sidebar({ roles, fullName, orgName, previewingTier = false }: Props) {
+export function Sidebar({ roles, fullName, orgName, premium, previewingTier = false }: Props) {
   const pathname = usePathname();
-  const visible = SIDEBAR.filter((row) =>
-    row.roles.some((r) => roles.includes(r)),
+  const visible = SIDEBAR.filter(
+    (row) =>
+      row.roles.some((r) => roles.includes(r)) &&
+      // Premium-only destinations leave the rail entirely on Basic rather than
+      // standing there as a link to a locked page.
+      (premium || !PREMIUM_ONLY.has(row.id)),
   );
 
   return (

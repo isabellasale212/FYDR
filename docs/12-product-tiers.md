@@ -141,7 +141,7 @@ Every screen in the `02-information-architecture.md` §5 inventory.
 | 24 | Nutrition plans | Both | Same. |
 | 25 | Testing | Both | A club without GPS still runs a CMJ and a 10m sprint. This is its objective data. |
 | 26 | Leaderboards | Both | Athlete-visible and an engagement lever for compliance. Boards on GPS metrics require Premium via `metric_definitions.requires_tier`. |
-| 27 | Analytics | Both | **Amended 2026-08-30:** the screen is on both plans, as this row has always said. One capability inside it — the *bar chart, by athlete* — is Premium, per the client's instruction. A `core` org keeps the metric builder, the pickers, the trend chart and the table, and sees a locked panel where the bar view would be. See section 3.3. |
+| 27 | Analytics | **P** | **Amended 2026-09-01 — the screen is Premium.** This row said Both from the start, and §3.3 argued at length that only the *bar chart* was Premium. The club has since asked for the whole Analytics destination to be Premium: hidden from the sidebar on Basic and refused at the route, not shown with a locked panel inside it. That is what the code now does (`analytics/page.tsx`, `analytics/build/page.tsx`, `Sidebar.tsx`'s `PREMIUM_ONLY`). §3.3's reasoning is left below as the record of the earlier position, not as current behaviour. |
 | 28 | Reports | Both | GPS sections of the load report render only with GPS data. |
 | 29 | Settings | Both | Includes the tier display and the upgrade route. |
 | 30 | Thresholds | Both | Flags are worthless without configurable thresholds. GPS-metric thresholds need Premium. |

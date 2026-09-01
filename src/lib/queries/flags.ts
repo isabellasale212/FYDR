@@ -65,6 +65,20 @@ export type AttentionRow = {
 
 const SEVERITY_RANK: Record<FlagSeverity, number> = { low: 0, medium: 1, high: 2 };
 
+/** A flag's own date, short. `flag_date` is a calendar date, not an instant, so
+ *  it renders in UTC rather than through a timezone — the same reasoning
+ *  mondayOfIso uses. The row already says how long the flag has been open; the
+ *  evidence line needs the day the reading was taken, which is a different
+ *  fact and the one that lets a coach go and check it. */
+function flagDateLabel(dateIso: string): string {
+  return new Date(`${dateIso}T12:00:00Z`).toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  });
+}
+
 /* ---------------------------------------------------------------------------
  * The shared vocabulary of flag state. The dashboard tile, the dashboard
  * panel, /flags and the profile Flags card were each counting and ordering
@@ -302,7 +316,7 @@ export async function fetchDashboardAttention(
              the flag rather than take it on trust. A missing reading is left
              out rather than printed as a zero. */
           evidence: [
-            durationLabel(af.flag_date, wallClockToday),
+            flagDateLabel(af.flag_date),
             observed,
             expected === null ? null : `baseline ${expected}`,
           ]

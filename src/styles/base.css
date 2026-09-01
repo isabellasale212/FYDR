@@ -4248,8 +4248,15 @@ button.dash-stat {
   flex: none;
 }
 
+/* The design draws this as a tinted panel, not a white card with a blue edge:
+   it is the one card on the dashboard that answers a question rather than
+   reporting a number, and the wash is what separates it from the five stat
+   cards beside it. --wash-accent-soft, not --wash-accent, because the card
+   carries body copy and two nested rows — the stronger tint starts competing
+   with them. */
 .dash-ready-card {
   border: 1px solid rgb(var(--accent-rgb) / 0.3);
+  background: var(--wash-accent-soft);
 }
 .dash-ready-head {
   display: grid;

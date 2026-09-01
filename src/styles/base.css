@@ -8259,3 +8259,18 @@ button.dash-stat {
 .prog-item .tiny {
   color: var(--muted);
 }
+
+/* Pills sitting on an already-tinted card. The rehab pill sits on the rehab
+   card's own wash and the MD pill on the block header's gold — a tint over a
+   tint, where the *-pill-text tokens (derived against a plain surface) fall
+   under 4.5:1. "Day 1" steps to muted for the same reason; the design sets it
+   muted on that header anyway. */
+.prog-item[data-rehab='true'] .pill {
+  color: var(--bad-on-tint);
+}
+.prog-day-head .pill-accent {
+  color: var(--accent-on-tint);
+}
+.prog-day-head .tiny {
+  color: var(--muted);
+}

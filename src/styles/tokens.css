@@ -270,6 +270,13 @@
      So this is not --text with a tweak: it is ink either way, and dark theme
      is the case that needs saying. */
   --on-bright-tint: var(--text);
+  /* Text on a pill that itself sits on a tinted card — a tint over a tint,
+     which the *-pill-text tokens were not derived for: they assume the pill
+     sits on a plain surface. Measured on the gym programme's rehab card and
+     its gold block header, the pill-text pair lands at 3.6-3.9:1 in dark.
+     These are the values the design specifies for that exact case. */
+  --bad-on-tint: #7a1f14;
+  --accent-on-tint: #0050c4;
   --warn-pill-text: #6b4708;
   --bad-pill-text: #7a1f14;
   --highlight-pill-text: #7f6000;
@@ -451,6 +458,10 @@ Every alpha here is the handoff's own figure (§4 and §5),
   --accent2-pill-text: #33b6ff;
   --good-pill-text: #4fd6ff;
   --on-bright-tint: #101219;
+  /* See :root — text on a tint over a tint. Lighter than *-pill-text, which
+     assumes a plain surface underneath the pill. */
+  --bad-on-tint: #ffb3a8;
+  --accent-on-tint: #8fb4ff;
   --warn-pill-text: #f6ab2f;
   --bad-pill-text: #ff7460;
   --highlight-pill-text: #f5c518;
@@ -578,6 +589,10 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --accent2-pill-text: #33b6ff;
     --good-pill-text: #4fd6ff;
     --on-bright-tint: #101219;
+    /* See :root — text on a tint over a tint. Lighter than *-pill-text, which
+       assumes a plain surface underneath the pill. */
+    --bad-on-tint: #ffb3a8;
+    --accent-on-tint: #8fb4ff;
     --warn-pill-text: #f6ab2f;
     --bad-pill-text: #ff7460;
     --highlight-pill-text: #f5c518;
@@ -695,6 +710,13 @@ Every alpha here is the handoff's own figure (§4 and §5),
        So this is not --text with a tweak: it is ink either way, and dark theme
        is the case that needs saying. */
     --on-bright-tint: var(--text);
+    /* Text on a pill that itself sits on a tinted card — a tint over a tint,
+       which the *-pill-text tokens were not derived for: they assume the pill
+       sits on a plain surface. Measured on the gym programme's rehab card and
+       its gold block header, the pill-text pair lands at 3.6-3.9:1 in dark.
+       These are the values the design specifies for that exact case. */
+    --bad-on-tint: #7a1f14;
+    --accent-on-tint: #0050c4;
     --warn-pill-text: #6b4708;
     --bad-pill-text: #7a1f14;
 

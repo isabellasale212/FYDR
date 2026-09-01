@@ -11,6 +11,7 @@ import { recordReportView } from '@/lib/queries/reports';
 import { BLANK, ageFrom, enumLabel, formatDate, formatNumber, formatTime } from '@/lib/format';
 import { availabilityStatus, SEVERITY_STATUS } from '@/lib/status';
 import { requireReportAccess } from '@/lib/session';
+import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
 import {
   ACWR_WINDOW_CAPTION,
@@ -80,7 +81,7 @@ export default async function AthleteReportPage({
   searchParams: SearchParams;
 }) {
   const { athleteId } = await params;
-  const { db, orgId, claims, timezone } = await requireReportAccess();
+  const { db, orgId, claims, timezone, tier } = await requireReportAccess();
   const sp = await searchParams;
   const period = await resolveAthletePeriod(db, orgId, athleteId, timezone, periodParamsFrom(sp));
   const caveat = periodCaveat(period);
@@ -501,6 +502,12 @@ export default async function AthleteReportPage({
                   </p>
                 ) : null}
 
+                {/* The athlete report is free (reports/page.tsx marks it
+                    premiumGated: false), but this one panel is GPS, which is
+                    not. Withheld whole rather than zeroed: an empty tile row
+                    would read as "this athlete ran nothing", and absent is
+                    never zero. */}
+                {isPremium(tier) ? (
                 <section className="card" aria-labelledby="gps-title">
                   <h2 className="card-title" id="gps-title">
                     GPS, this period
@@ -524,6 +531,7 @@ export default async function AthleteReportPage({
                     </div>
                   )}
                 </section>
+                ) : null}
 
                 <section className="card flush" aria-labelledby="load-days-title">
                   <h2 className="card-title" id="load-days-title" style={{ padding: '16px 16px 0' }}>

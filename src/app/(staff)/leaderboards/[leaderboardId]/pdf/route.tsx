@@ -14,7 +14,8 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, formatNumber, todayIso } from '@/lib/format';
 import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
-import { requireStaff } from '@/lib/session';
+import { premiumOnlyResponse, requireStaff } from '@/lib/session';
+import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
 
 /** The "print" half of the coach's request. A real PDF through lib/pdf.tsx and
@@ -45,7 +46,7 @@ export async function GET(
   { params }: { params: Promise<{ leaderboardId: string }> },
 ) {
   const { leaderboardId } = await params;
-  const { db, orgId, orgName, claims, timezone } = await requireStaff();
+  const { db, orgId, orgName, claims, timezone, tier } = await requireStaff();
 
   if (!claims.roles.includes('coach') && !claims.roles.includes('medical')) {
     return new Response('A board ranking is named-athlete data and is not part of this role.', {
@@ -59,6 +60,16 @@ export async function GET(
 
   const board = await fetchBoard(db, orgId, leaderboardId);
   if (!board) notFound();
+
+  /* A board whose metric is GPS is a GPS export, whatever route serves it.
+     leaderboards/new/page.tsx already refuses to CREATE one on Basic and says
+     in its own header that the prohibition is not server-enforced — so a board
+     made while the club was Premium, or inserted directly, kept ranking and
+     kept exporting after a downgrade. `gps.` is the same discriminator that
+     page filters on. */
+  if (board.metric_key.startsWith('gps.') && !isPremium(tier)) {
+    return premiumOnlyResponse('Ranking GPS metrics');
+  }
 
   const [fullRanking, catalogue, groups, selectedNamesById] = await Promise.all([
     fetchBoardRanking(db, leaderboardId),

@@ -6,6 +6,7 @@ import { recordReportView } from '@/lib/queries/reports';
 import { enumLabel, formatDate, formatNumber } from '@/lib/format';
 import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
 import { requireReportAccess } from '@/lib/session';
+import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
 import { ACWR_WINDOW_CAPTION, periodCaveat, periodParamsFromUrl, resolveAthletePeriod } from '../period';
 
@@ -15,7 +16,7 @@ import { ACWR_WINDOW_CAPTION, periodCaveat, periodParamsFromUrl, resolveAthleteP
  *  PDF equivalent worth inventing. */
 export async function GET(request: Request, { params }: { params: Promise<{ athleteId: string }> }) {
   const { athleteId } = await params;
-  const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
+  const { db, orgId, orgName, claims, timezone, tier } = await requireReportAccess();
   const url = new URL(request.url);
 
   /* Same module as the page and the CSV. A PDF is the worst place for a
@@ -76,16 +77,23 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
         ]}
       />
 
-      <PdfSectionTitle
-        title="GPS, this period"
-        caption={report.load.gps.sessionsWithData === 0 ? 'No GPS data for this athlete in this period.' : ''}
-      />
-      {report.load.gps.sessionsWithData > 0 ? (
-        <PdfTileRow>
-          <PdfTile label="Sessions with data" value={String(report.load.gps.sessionsWithData)} />
-          <PdfTile label="Total distance" value={`${formatNumber(report.load.gps.totalDistanceM, 0)} m`} />
-          <PdfTile label="High speed distance" value={`${formatNumber(report.load.gps.highSpeedDistanceM, 0)} m`} />
-        </PdfTileRow>
+      {/* Same withholding as the screen this prints: GPS is Premium, the
+          rest of the athlete report is not. A PDF is the version that leaves
+          the building, so it must not carry a section the screen refuses. */}
+      {isPremium(tier) ? (
+        <>
+          <PdfSectionTitle
+            title="GPS, this period"
+            caption={report.load.gps.sessionsWithData === 0 ? 'No GPS data for this athlete in this period.' : ''}
+          />
+          {report.load.gps.sessionsWithData > 0 ? (
+            <PdfTileRow>
+              <PdfTile label="Sessions with data" value={String(report.load.gps.sessionsWithData)} />
+              <PdfTile label="Total distance" value={`${formatNumber(report.load.gps.totalDistanceM, 0)} m`} />
+              <PdfTile label="High speed distance" value={`${formatNumber(report.load.gps.highSpeedDistanceM, 0)} m`} />
+            </PdfTileRow>
+          ) : null}
+        </>
       ) : null}
 
       <PdfSectionTitle title="Testing" caption="Latest and personal best per test." />

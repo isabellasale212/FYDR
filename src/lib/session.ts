@@ -123,6 +123,29 @@ export async function requireReportAccess(): Promise<StaffContext> {
   return ctx;
 }
 
+/** The route-handler equivalent of PlanGate.
+ *
+ *  A page can refuse by rendering something; a route handler has to refuse with
+ *  a status. This exists because the two training-report export routes had no
+ *  tier check at all: the PAGE gated correctly and its export buttons sit after
+ *  that early return, so on Basic the buttons were never drawn — and everyone
+ *  reading the screen concluded the feature was gated. It was not. Both routes
+ *  answered a bare GET with the complete per-athlete GPS board. That is the
+ *  whole lesson of docs/12-product-tiers.md §655: a hidden button is not a
+ *  gate, because the URL is still there.
+ *
+ *  403 rather than 404: the club is authenticated and the report genuinely
+ *  exists, it is their plan that does not include it. Saying so is also what
+ *  makes the upgrade conversation possible. Plain text because the caller is a
+ *  download, not a screen — a browser that follows this link shows the sentence
+ *  instead of silently saving a file full of markup. */
+export function premiumOnlyResponse(feature: string): Response {
+  return new Response(`${feature} is a Premium feature, and this club is on Basic.\n`, {
+    status: 403,
+    headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
+  });
+}
+
 /** 09-security-and-compliance.md §6 and screens/exports.md's own role
  *  table: an admin opens a subject access request and releases the
  *  finished pack, medical records the clinical withhold/include decision

@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { ExerciseForm } from '@/components/ExerciseForm/ExerciseForm';
 import { ExerciseLibraryList } from '@/components/ExerciseLibraryList/ExerciseLibraryList';
 import { fetchExercises, fetchStrengthTestDefinitions } from '@/lib/queries/programmes';
@@ -10,7 +9,15 @@ export const metadata = { title: 'Exercise library · Fydr' };
  *  every staff role, shared write for coach and medical alike — an exercise
  *  belongs to nobody's lane, only programmes do. Search/filter added for
  *  audit finding 33; edit and a detail view are still a real, documented gap
- *  (see ExerciseLibraryList's own comment). */
+ *  (see ExerciseLibraryList's own comment).
+ *
+ *  The page fetches and composes; every pixel of the screen's chrome lives in
+ *  the two components. The search field, the category picker, the per-category
+ *  counts and the "n of m shown" footer are one piece of client state, so the
+ *  header they sit in belongs to ExerciseLibraryList — this file cannot hold
+ *  state, it awaits. The add-an-exercise card is passed in as `aside` so the
+ *  org id and the strength-test list stay on the server side of the boundary.
+ *  `(staff)/layout.tsx` renders the shared `<BackButton />` above this. */
 export default async function ExerciseLibraryPage() {
   const { db, orgId, orgName } = await requireStaff();
   const [exercises, strengthTests] = await Promise.all([
@@ -19,36 +26,10 @@ export default async function ExerciseLibraryPage() {
   ]);
 
   return (
-    <>
-      <div className="topbar">
-        <div className="page-head">
-          <p className="eyebrow">
-            <Link href="/programmes">Gym programme</Link> · Exercise library
-          </p>
-          <h1>Exercise library</h1>
-        </div>
-      </div>
-
-      <p className="eyebrow" style={{ marginBottom: 14 }}>
-        Squad · {orgName}
-      </p>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 16, alignItems: 'start' }}>
-        <ExerciseLibraryList exercises={exercises} />
-        <div className="card">
-          <p className="label">Add an exercise</p>
-          <div style={{ marginTop: 10 }}>
-            <ExerciseForm orgId={orgId} strengthTests={strengthTests} />
-          </div>
-          {strengthTests.length === 0 ? (
-            <p className="cap" style={{ marginTop: 10 }}>
-              No strength-category tests exist yet, so nothing can be linked as a 1RM source.
-              Add one from Testing first if you want “% of 1RM” prescriptions to resolve to a
-              real weight.
-            </p>
-          ) : null}
-        </div>
-      </div>
-    </>
+    <ExerciseLibraryList
+      exercises={exercises}
+      orgName={orgName}
+      aside={<ExerciseForm orgId={orgId} strengthTests={strengthTests} />}
+    />
   );
 }

@@ -262,15 +262,28 @@ export default async function SettingsPage() {
               )}
             </div>
 
+            {/* This row was the only link to /settings/imports with no badge
+                and no tier condition, and it described a feature that page
+                does not offer — /settings/imports is the GPS vendor importer,
+                not a roster or wellness importer, and there is no such screen
+                to point at. Relabelled to what it actually opens, and given
+                the same Premium treatment as the two GPS rows beside it. */}
             <div className="set-row">
               <div style={{ minWidth: 0 }}>
-                <span style={{ fontSize: 14, fontWeight: 600 }}>CSV import</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600 }}>Vendor CSV import</span>
+                  {!onPremium ? <span className="gold-badge">Premium</span> : null}
+                </div>
                 <p style={{ fontSize: 12, color: 'var(--muted)', margin: '2px 0 0' }}>
-                  Squad roster, historic wellness and test results
+                  Catapult, STATSports and Polar GPS session files
                 </p>
               </div>
-              <Link href="/settings/imports" className="set-row-btn">
-                Open
+              <Link
+                href="/settings/imports"
+                className="set-row-btn"
+                data-variant={onPremium ? undefined : 'locked'}
+              >
+                {onPremium ? 'Open' : 'Locked'}
               </Link>
             </div>
           </div>

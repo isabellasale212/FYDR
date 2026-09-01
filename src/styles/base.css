@@ -8712,3 +8712,380 @@ button.dash-stat {
   color: var(--faint);
   opacity: 0.5;
 }
+
+/* ===== Exercise library (exlib) ===== */
+/* screens/programme-builder.md screen 22, rebuilt to the light/dark design
+ * handoff. Appended as one block at the end of the file, every class prefixed
+ * `exlib-`, nothing above this line touched.
+ *
+ * NO NEW TOKENS. Every colour here reads a token that already exists in all
+ * three of tokens.css §2.4's dark routes (:root[data-theme='dark'],
+ * prefers-color-scheme, .dark-tokens), so there is nothing to add to them and
+ * no route to miss: --text, --muted, --faint, --surf, --surf2, --field,
+ * --border, --border-strong, --border-hover, --hair, --wash-accent-soft,
+ * --accent, --focus. Radii, spacing, motion and --o-disabled are single-valued
+ * at :root and identical in both themes. There is no gradient anywhere below;
+ * every fill is flat.
+ *
+ * CARD PADDING. Both cards are plain .card, so they carry var(--pad-card)
+ * (16px) on all four sides and nothing inside them fakes an edge inset with a
+ * margin. Every text element below sets `margin: 0` (or `margin: auto 0 0`
+ * where the design pins a block to the card's bottom edge, which is flex
+ * distribution, not padding), and internal spacing is flex `gap` or padding on
+ * the element's own box. So the distance from a card's border to its first
+ * text and to its most deeply nested text is the same 16px.
+ *
+ * TABULAR FIGURES. Sora's digits are proportional (see app/layout.tsx), so
+ * .exlib-num asks for tabular figures explicitly on every count on this
+ * screen: the header sub-line, the picker's count, the per-category counts,
+ * and the "n of m shown." footer. The picker's count is additionally a
+ * fixed 3ch right-aligned cell, so its right edge does not move between 0, 7
+ * and 100.
+ */
+
+/* ---------- header ---------- */
+/* .topbar already wraps and already gives .page-head `flex: 1`, so the tools
+   cluster lands hard right on a wide viewport and drops to its own row on a
+   narrow one. The Back button is not here: (staff)/layout.tsx renders the one
+   shared .back-btn above every staff screen. */
+.exlib-topbar {
+  margin-bottom: 16px;
+}
+.exlib-sub {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.exlib-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.exlib-search {
+  position: relative;
+  flex: 1 1 240px;
+  min-width: 0;
+  max-width: 300px;
+}
+.exlib-search-icon {
+  position: absolute;
+  inset-inline-start: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px;
+  height: 15px;
+  color: var(--faint);
+  pointer-events: none;
+}
+.exlib-search-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 14px;
+  padding-inline-start: 36px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-pill);
+  background: var(--field);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  transition: border-color var(--t-state);
+}
+.exlib-search-input::placeholder {
+  color: var(--faint);
+}
+.exlib-search-input:focus {
+  border-color: var(--accent);
+}
+
+/* ---------- category bar ---------- */
+.exlib-catbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 16px;
+}
+/* The drawn control. A real <select> is laid transparently over it (below) so
+   the label, the count and the chevron can sit where the design puts them —
+   a styled <select> cannot place its own value text. */
+.exlib-cat {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  width: 360px;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-pill);
+  background: var(--surf);
+  transition: border-color var(--t-state);
+}
+.exlib-cat:hover {
+  border-color: var(--border-hover);
+}
+.exlib-cat:has(.exlib-cat-select:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.exlib-cat-label {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+/* Three characters wide and right-aligned, so 0, 7 and 100 all end on the
+   same pixel and the chevron never shifts. */
+.exlib-cat-count {
+  min-width: 3ch;
+  text-align: right;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.exlib-cat-chev {
+  font-size: 12px;
+  line-height: 1;
+  color: var(--faint);
+}
+.exlib-cat-select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0 16px;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13.5px;
+}
+.exlib-counts {
+  margin: 0;
+  min-width: 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+/* Sora's figures are proportional by default. Anything countable on this
+   screen asks for tabular figures so it lines up with itself as it changes. */
+.exlib-num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* ---------- body ---------- */
+.exlib-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 288px;
+  align-items: stretch;
+  gap: 16px;
+}
+/* The 288px column is a fixed measure, so below roughly a tablet it stops
+   being a column and stacks — otherwise the grid is wider than the viewport
+   and the whole page scrolls sideways. */
+@media (max-width: 900px) {
+  .exlib-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---------- the list ---------- */
+.exlib-list {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  /* One template for the header and every row, so "CATEGORY" sits exactly
+     above the pill column and the chevron column is the same width down the
+     whole card. */
+  --exlib-cols: minmax(0, 1fr) 124px 16px;
+}
+.exlib-head,
+.exlib-row {
+  display: grid;
+  grid-template-columns: var(--exlib-cols);
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.exlib-head {
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--hair);
+}
+.exlib-col {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.exlib-rows {
+  min-width: 0;
+}
+.exlib-row {
+  padding: 11px 0;
+  transition: background var(--t-state);
+}
+/* Hairline between rows, none after the last. */
+.exlib-row + .exlib-row {
+  border-top: 1px solid var(--hair);
+}
+.exlib-row:hover {
+  background: var(--wash-accent-soft);
+}
+.exlib-row-main {
+  min-width: 0;
+}
+.exlib-row-name {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.exlib-row-cue {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+/* Neutral by design: a category is not a status, so every pill on this screen
+   is the same soft fill and the same body ink. No tone, so no *-pill-text. */
+.exlib-pill {
+  justify-self: start;
+  max-width: 100%;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: var(--surf2);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Decorative. There is no exercise detail route to open — the other half of
+   audit finding 33 — so the row is not a link and this is aria-hidden. */
+.exlib-chev {
+  justify-self: end;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--faint);
+}
+.exlib-empty {
+  margin: 0;
+  padding: 16px 0;
+  font-size: 12.5px;
+  color: var(--faint);
+}
+/* Pinned to the card's bottom edge by flex distribution, so the list card
+   matches the height of the form beside it however few rows it holds.
+   `margin: auto 0 0` is the pin; the bottom inset is still the card's own
+   var(--pad-card). */
+.exlib-foot {
+  margin: auto 0 0;
+  padding-top: 11px;
+  border-top: 1px solid var(--hair);
+  font-size: 12px;
+  color: var(--faint);
+}
+
+/* ---------- the add-an-exercise card ---------- */
+/* The <form> is the card, so the actions can sit on its bottom edge. */
+.exlib-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.exlib-form-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+.exlib-form-help {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+/* .form-error carries a 14px bottom margin for the forms it was written for;
+   here the flex gap already spaces it. Two classes, so this wins without the
+   original rule being touched. */
+.exlib-form-error {
+  margin-bottom: 0;
+}
+.exlib-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.exlib-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.exlib-flabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.exlib-fopt {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--faint);
+}
+/* Why the Unit picker beside Primary muscle is inert. Sits under the two-up
+   row at its full width rather than inside the 123px column it explains,
+   which would set it four words to the line. */
+.exlib-fhint {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--faint);
+}
+.exlib-2up {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+.exlib-textarea {
+  min-height: 66px;
+  line-height: 1.45;
+  resize: vertical;
+}
+.exlib-note {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--faint);
+}
+.exlib-actions {
+  margin: auto 0 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+}
+.exlib-submit {
+  flex: 1 1 auto;
+  padding: 13px 18px;
+  font-size: 14px;
+}
+.exlib-cancel {
+  flex: 0 0 auto;
+}

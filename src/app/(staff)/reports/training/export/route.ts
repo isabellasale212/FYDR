@@ -9,7 +9,8 @@ import {
 import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { requireReportAccess } from '@/lib/session';
+import { premiumOnlyResponse, requireReportAccess } from '@/lib/session';
+import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
 
 /** CSV only, see lib/csv.ts's header. Plain numbers, no colour — colour is a
@@ -20,7 +21,10 @@ import type { AppRole } from '@/lib/types/database';
  *  lib/queries/trainingReport.ts's header for why there is no H1/H2 split
  *  to export either). */
 export async function GET(request: Request) {
-  const { db, orgId, claims, timezone } = await requireReportAccess();
+  const { db, orgId, claims, timezone, tier } = await requireReportAccess();
+  /* The page this exports refuses on Basic (reports/training/page.tsx), but a
+     route handler is reachable by URL whether or not a button was drawn. */
+  if (!isPremium(tier)) return premiumOnlyResponse('The training report');
   const url = new URL(request.url);
   // resolveGroupFilter, not parseGroupParam: the export resolves the sticky
   // filter cookie exactly as the on-screen report does (audit S4), and each

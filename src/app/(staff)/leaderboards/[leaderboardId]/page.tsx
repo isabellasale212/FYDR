@@ -16,6 +16,8 @@ import { fetchGroupAthleteIds, fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
+import { isPremium } from '@/lib/tier';
+import { PlanGate } from '@/components/PlanGate/PlanGate';
 
 export const metadata = { title: 'Board · Fydr' };
 
@@ -41,7 +43,7 @@ export default async function LeaderboardDetailPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { leaderboardId } = await params;
-  const { db, orgId, claims } = await requireStaff();
+  const { db, orgId, claims, tier } = await requireStaff();
 
   // docs/20-route-map.md §2.3: board detail's roles are `coach, medical`
   // only — unlike the wall one level up, there's no admin row_note here at
@@ -78,6 +80,21 @@ export default async function LeaderboardDetailPage({
 
   const board = await fetchBoard(db, orgId, leaderboardId);
   if (!board) notFound();
+
+  /* The board page had no tier reference at all, so a `gps.*` board — created
+     while the club was Premium, or inserted directly — kept ranking GPS on
+     Basic. leaderboards/new refuses to create one and names this exact hole in
+     its own header. Gated rather than notFound(): the board is real and the
+     club owns it, it is the plan that stopped including the metric. */
+  if (board.metric_key.startsWith('gps.') && !isPremium(tier)) {
+    return (
+      <PlanGate
+        featureName="GPS leaderboards"
+        body="This board ranks a GPS metric, and GPS is part of the Premium plan. The board and its results are still here — they are not shown while the club is on Basic."
+        metadata="Premium · GPS metrics · board rankings and exports"
+      />
+    );
+  }
 
   // The extra query only fires for a 'selected' board (rare — most boards are
   // 'squad'/'group'), and only here on the single-board detail page, not the list —

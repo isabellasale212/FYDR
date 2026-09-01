@@ -17,7 +17,8 @@
     "test:session-local-date": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-session-local-date-derivation.ts",
     "test:safe-redirect": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-safe-redirect.ts",
     "test:tier-preview": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-tier-preview.ts",
-    "seed:auth": "node --experimental-strip-types scripts/seed-auth.ts"
+    "seed:auth": "node --experimental-strip-types scripts/seed-auth.ts",
+    "test:premium-routes": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-premium-routes.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.5.1",

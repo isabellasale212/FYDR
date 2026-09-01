@@ -34,7 +34,24 @@ export default async function AthleteReportPickerPage({ searchParams }: { search
   const today = todayIso(timezone);
   const windowFrom = addDays(today, -(WELLNESS_WINDOW_DAYS - 1));
 
-  const [groups, rows] = await Promise.all([fetchGroups(db, orgId), fetchSquadList(db, orgId, groupIds)]);
+  const [groups, allRows] = await Promise.all([fetchGroups(db, orgId), fetchSquadList(db, orgId, groupIds)]);
+
+  /* Search is a plain `?q=`, filtered here rather than in the query: the group
+   * filter is already applied in the database (groupFilter.ts's header explains
+   * why that one has to be), and a squad is a few dozen rows, so a second round
+   * trip per keystroke would buy nothing. Name, position and squad number,
+   * because those are the three things on the row a coach would type. */
+  const q = typeof params.q === 'string' ? params.q.trim() : '';
+  const needle = q.toLowerCase();
+  const rows = needle
+    ? allRows.filter(
+        (r) =>
+          `${r.first_name} ${r.last_name}`.toLowerCase().includes(needle) ||
+          (r.position ?? '').toLowerCase().includes(needle) ||
+          String(r.squad_number ?? '').includes(needle),
+      )
+    : allRows;
+
   const wellness = await fetchWellnessRecency(db, rows.map((r) => r.id), windowFrom, today);
 
   /* Grouped by POSITIONAL group, which is what the design calls a unit and
@@ -51,6 +68,10 @@ export default async function AthleteReportPickerPage({ searchParams }: { search
     .map((name) => ({ name, rows: rows.filter((r) => unitOf(r.group_ids) === name) }))
     .filter((g) => g.rows.length > 0);
 
+  /* Exactly what the URL carried, or nothing at all. See the form below. */
+  const groupParam =
+    params.groups === undefined ? [] : Array.isArray(params.groups) ? params.groups : [params.groups];
+
   const counts = {
     available: rows.filter((r) => r.availability === 'available').length,
     modified: rows.filter((r) => r.availability === 'modified').length,
@@ -66,11 +87,30 @@ export default async function AthleteReportPickerPage({ searchParams }: { search
           </p>
           <h1>Pick an athlete</h1>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        {/* A real GET form, so it works with the keyboard and without JS and the
+            result is a shareable URL — the same reasoning `?groups=` already
+            uses. The group filter is carried across the submit ONLY when the
+            URL already names it: resolveGroupFilter() treats a present-but-
+            empty `groups` as "the user just cleared it", so echoing an empty
+            hidden field would silently wipe a filter that came from the
+            cookie. Absent means absent, and the cookie resolves it again. */}
+        <form method="get" role="search" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          {groupParam.map((value, i) => (
+            <input key={`${value}-${i}`} type="hidden" name="groups" value={value} />
+          ))}
+          <input
+            className="field"
+            type="search"
+            name="q"
+            defaultValue={q}
+            placeholder="Search name, position or number"
+            aria-label="Search athletes"
+            style={{ width: 260 }}
+          />
           <Link href="/reports" className="btn-ghost">
             Back
           </Link>
-        </div>
+        </form>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', marginBottom: 14 }}>
@@ -103,8 +143,25 @@ export default async function AthleteReportPickerPage({ searchParams }: { search
         </h2>
         {rows.length === 0 ? (
           <p className="tiny" style={{ padding: '0 0 14px' }}>
-            No athlete matches this filter ({groupScopeLabel(groups, groupIds)}) — clear it to see the
-            whole squad.
+            {q ? (
+              <>
+                No athlete matches &ldquo;{q}&rdquo; in {groupScopeLabel(groups, groupIds)}
+                {allRows.length > 0 ? (
+                  <>
+                    {' '}
+                    — {allRows.length} athlete{allRows.length === 1 ? '' : 's'} match the group filter
+                    alone.
+                  </>
+                ) : (
+                  '.'
+                )}
+              </>
+            ) : (
+              <>
+                No athlete matches this filter ({groupScopeLabel(groups, groupIds)}) — clear it to see
+                the whole squad.
+              </>
+            )}
           </p>
         ) : (
           <>
@@ -190,6 +247,12 @@ export default async function AthleteReportPickerPage({ searchParams }: { search
               </div>
             ))}
             <p className="inj-foot">
+              {q ? (
+                <>
+                  Showing {rows.length} of {allRows.length} athlete{allRows.length === 1 ? '' : 's'}{' '}
+                  matching &ldquo;{q}&rdquo;.{' '}
+                </>
+              ) : null}
               Wellness 7d counts morning entries submitted in the last seven days, not their scores.
               Modified athletes show the restriction only — diagnosis and treatment notes are visible to
               medical staff and the athlete concerned. {groupScopeLabel(groups, groupIds)} · {orgName}.

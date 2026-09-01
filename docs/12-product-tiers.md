@@ -658,6 +658,33 @@ rule that protects revenue must exist server-side, in RLS or in an Edge Function
 client check must be a mirror of it rather than the thing itself. This is the same rule as
 `CLAUDE.md` rule 2 for roles, applied to tier.
 
+> **Status, 2026-09-01: this requirement is NOT implemented as written, and the gap is
+> wider than it looks.** `tier` appears in no RLS policy anywhere in `supabase/migrations/`
+> — grep returns only comments (`0012_rls_policies.sql:76`, `0016_leaderboards.sql:22,37`).
+> Every tier gate in this app is application-layer, inside `requireStaff()`'s callers. That
+> is a real control against anything going through the app, and it is genuinely nothing at
+> all against a request made to PostgREST with the user's own JWT, because RLS is the only
+> thing in that path and RLS has never heard of tier.
+>
+> An audit on this date found what that costs in practice. The training report's page gated
+> correctly while `/reports/training/export` and `/reports/training/pdf` had no tier check
+> at all — the export buttons sit after the page's early return, so on Basic they were never
+> drawn and the routes looked gated to every reader. They were not: a bare GET returned the
+> complete per-athlete GPS board. Same shape on the GPS import upload route (which was also
+> missing its coach/medical role check), on GPS leaderboards and their CSV and PDF routes,
+> and on the GPS panel inside the otherwise-free athlete report. All are now closed at the
+> route, via `premiumOnlyResponse()` in `lib/session.ts`.
+>
+> **The lesson, stated once so it does not have to be relearned: a hidden button is not a
+> gate.** If a screen refuses, every route that screen would have called must refuse too, on
+> its own, without reference to whether any UI points at it.
+>
+> Still open: the Apple Health consent write (`HealthkitConsentToggle`) goes to PostgREST
+> from the browser, so it is reachable regardless of what the app renders. Closing that one
+> properly means either moving the write behind a server action or putting tier into the
+> RLS policy on `athlete_consents` — the second is what this section actually asks for, and
+> it needs a migration.
+
 ### 8.1 Schema additions
 
 Additions belong in `04-data-model.md` §17 as a follow-up delta. Recorded here as the origin.

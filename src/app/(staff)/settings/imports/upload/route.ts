@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { commitGpsImport, fetchImportRoster, parseGpsImportCsv } from '@/lib/queries/gpsImport';
 import { requireStaff } from '@/lib/session';
+import { isPremium } from '@/lib/tier';
 
 export type UploadResult = {
   ok: boolean;
@@ -18,7 +19,26 @@ const MAX_BYTES = 5 * 1024 * 1024; // a season of GPS data for a squad is a few 
  *  This route is deliberately thin: read the file, parse it, match against
  *  the live roster, commit whatever validates, report the rest. */
 export async function POST(request: Request): Promise<NextResponse<UploadResult>> {
-  const { db, orgId, claims } = await requireStaff();
+  const { db, orgId, claims, tier } = await requireStaff();
+
+  /* Mirrors settings/imports/page.tsx exactly — role first, then tier — because
+     that page is the only UI that posts here and a route reachable by a bare
+     POST must not be weaker than the screen in front of it. Neither check was
+     present: an admin-only staff member had a write path onto gps_records that
+     migration 0026's role table does not give them, and a Basic club could
+     commit GPS rows the rest of the product then refuses to show them. */
+  if (!claims.roles.includes('coach') && !claims.roles.includes('medical')) {
+    return NextResponse.json(
+      { ok: false, error: 'Importing GPS files is not part of this role.', batchId: null, filename: null, acceptedCount: 0, rejectedCount: 0, rejected: [] },
+      { status: 403 },
+    );
+  }
+  if (!isPremium(tier)) {
+    return NextResponse.json(
+      { ok: false, error: 'GPS import is a Premium feature, and this club is on Basic.', batchId: null, filename: null, acceptedCount: 0, rejectedCount: 0, rejected: [] },
+      { status: 403 },
+    );
+  }
 
   const form = await request.formData();
   const file = form.get('file');

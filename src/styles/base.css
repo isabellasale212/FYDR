@@ -7538,6 +7538,13 @@ button.dash-stat {
 .cmpl-stat[data-tone='bad'] {
   background: rgb(var(--bad-rgb) / 0.07);
 }
+.cmpl-stat[data-tone='warn'] {
+  background: rgb(var(--warn-rgb) / 0.11);
+}
+.cmpl-stat[data-tone='warn'] .cmpl-stat-label,
+.cmpl-stat[data-tone='warn'] .cmpl-stat-value {
+  color: var(--warn-pill-text);
+}
 .cmpl-stat-label {
   font-size: 10.5px;
   font-weight: 500;
@@ -7742,4 +7749,135 @@ button.dash-stat {
   height: 6px;
   border-radius: 20px;
   flex: none;
+}
+
+/* ---------------------------------------------------------------------------
+ * Injury & availability report — Fydr Injury and Availability.dc.html
+ *
+ * Status carries the grouping, so a row does not repeat it as a pill on every
+ * line. The restriction line is a COLUMN — "what they can do" is the thing a
+ * coach came to read, not a subtitle under a name.
+ * ------------------------------------------------------------------------ */
+.inj-head,
+.inj-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) 110px minmax(0, 1.6fr) 150px 20px;
+  gap: 14px;
+  align-items: baseline;
+  padding: 10px 4px;
+}
+@media (max-width: 1100px) {
+  .inj-head,
+  .inj-row {
+    grid-template-columns: minmax(0, 1.2fr) 96px minmax(0, 1.6fr) 130px 20px;
+    gap: 10px;
+  }
+}
+.inj-head {
+  padding: 0 4px 10px;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.inj-row {
+  border-radius: 8px;
+  text-align: left;
+  width: 100%;
+  border: none;
+  background: none;
+  font-family: inherit;
+  color: inherit;
+  text-decoration: none;
+}
+/* A group's wash is the quietest possible restatement of its status — enough
+   that a block of rows reads as one thing, not enough to fight the text. */
+.inj-row[data-status='unavailable'] { background: rgb(var(--bad-rgb) / 0.05); }
+.inj-row[data-status='modified'] { background: rgb(var(--warn-rgb) / 0.07); }
+:root[data-theme='dark'] .inj-row[data-status='unavailable'],
+.dark-tokens .inj-row[data-status='unavailable'] { background: rgb(var(--bad-rgb) / 0.08); }
+:root[data-theme='dark'] .inj-row[data-status='modified'],
+.dark-tokens .inj-row[data-status='modified'] { background: rgb(var(--warn-rgb) / 0.09); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .inj-row[data-status='unavailable'] { background: rgb(var(--bad-rgb) / 0.08); }
+  :root:not([data-theme='light']) .inj-row[data-status='modified'] { background: rgb(var(--warn-rgb) / 0.09); }
+}
+.inj-row:hover {
+  background: rgb(var(--accent-rgb) / 0.08);
+}
+.inj-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 4px 6px;
+  border-top: 1px solid var(--hair);
+}
+.inj-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+}
+.inj-dot[data-status='unavailable'] { background: var(--bad); }
+.inj-dot[data-status='modified'] { background: var(--warn); }
+.inj-dot[data-status='unknown'] { background: var(--domain-recovery); }
+.inj-group-name {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+.inj-group-name[data-status='unavailable'] { color: var(--bad-pill-text); }
+.inj-group-name[data-status='modified'] { color: var(--warn-pill-text); }
+.inj-group-name[data-status='unknown'] { color: var(--muted); }
+.inj-group-count {
+  margin-left: auto;
+  font-size: 10.5px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+.inj-name {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.inj-unit {
+  font-size: 11.5px;
+  color: var(--faint);
+}
+.inj-site {
+  font-size: 13px;
+}
+.inj-can {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+.inj-back {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+/* The flag under a return date. Never decorative: it says the date on file is
+   now in the past, or that nobody has recorded one at all. */
+.inj-flag {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.inj-flag[data-tone='warn'] { color: var(--warn-pill-text); }
+.inj-flag[data-tone='bad'] { color: var(--bad-pill-text); }
+.inj-chev {
+  text-align: right;
+  color: var(--faint);
+  font-size: 15px;
+}
+.inj-foot {
+  padding: 11px 4px 13px;
+  border-top: 1px solid var(--border);
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  text-wrap: pretty;
 }

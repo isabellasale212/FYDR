@@ -41,12 +41,6 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
  *    both handlers under this folder read the same module, so a PDF exported
  *    from a season-scoped page covers the season. */
 
-const AVAIL_PILL: Record<string, string> = {
-  modified: 'pill-warn',
-  unavailable: 'pill-bad',
-  unknown: 'pill-neutral',
-};
-
 /** screens/reports.md, report 4 of 5. The coach and medical versions are two
  *  different reads, not one report with hidden fields — the clinical
  *  breakdown only ever comes from fetchInjuryAvailabilityReport's own
@@ -75,6 +69,35 @@ export default async function InjuryAvailabilityReportPage({
     fetchGroups(db, orgId),
     fetchInjuryAvailabilityReport(db, orgId, groupIds, fromDate, today, isMedical),
   ]);
+
+  /* The five headline numbers, all counted off report.current so a card can
+   * never disagree with the rows beneath it. "Available now" is the squad
+   * minus everyone on that list, which is what the list is: only athletes who
+   * are NOT fully available appear on it. */
+  const byStatus = (s: string) => report.current.filter((r) => r.status === s);
+  const unavailable = byStatus('unavailable');
+  const modified = byStatus('modified');
+  const unknown = byStatus('unknown');
+  const availableNow = Math.max(0, report.summary.athleteCount - report.current.length);
+  const availablePct =
+    report.summary.athleteCount > 0 ? Math.round((100 * availableNow) / report.summary.athleteCount) : null;
+  /* "2 injury · 1 academic" — the reasons actually on file, counted, rather
+   * than a guess. An athlete with no reason recorded is not silently folded
+   * into one. */
+  const unavailableReasons = [...unavailable.reduce((m, r) => {
+    const key = r.reason_category ? enumLabel(r.reason_category).toLowerCase() : 'no reason recorded';
+    m.set(key, (m.get(key) ?? 0) + 1);
+    return m;
+  }, new Map<string, number>()).entries()].map(([k, n]) => `${n} ${k}`).join(' · ');
+  const daysLostAthletes = new Set(report.current.filter((r) => r.injury_id).map((r) => r.athlete_id)).size;
+
+  /* Status carries the grouping, worst first, so the row does not repeat it as
+   * a pill on every line. */
+  const STATUS_GROUPS: { key: string; name: string; rows: typeof report.current }[] = [
+    { key: 'unavailable', name: 'Unavailable', rows: unavailable },
+    { key: 'modified', name: 'Modified', rows: modified },
+    { key: 'unknown', name: 'Unknown', rows: unknown },
+  ];
 
   const actorRole = (isMedical ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   // The audit row records the RESOLVED window and the key that produced it,
@@ -150,112 +173,157 @@ export default async function InjuryAvailabilityReportPage({
           {
             label: 'Current',
             content: (
-              <div className="card flush">
-                {/* Said out loud now that the period control can read
-                    "This season" or "All on record" beside it. This list is
-                    NOT windowed and must not become so: fetchNotFullyAvailable
-                    answers "who cannot train today" from the live availability
-                    row, with no date bound anywhere in it, which is exactly
-                    what stops a longer period from appearing to change who is
-                    injured. Date-bounding it would hide an athlete whose
-                    injury started before `from` and who is still unavailable —
-                    the same false-reassurance class as the group-filter case
-                    below. The PDF carries this sentence too. */}
-                <p className="cap" style={{ padding: '14px 16px 0' }}>
-                  Availability as of {formatDate(today, timezone)} — not a snapshot of the
-                  selected period. The period applies to the summary and burden figures.
-                </p>
-                {report.current.length === 0 ? (
-                  /* The audit's worst S4 case (analysis finding 27): this said
-                   * "Everyone is available." while a forgotten group filter hid
-                   * two unavailable and three modified players. An empty list
-                   * under an active filter proves something about the scope,
-                   * never about the squad — so say which. */
-                  <p className="tiny" style={{ padding: 16 }}>
-                    {groupIds.length > 0
-                      ? `No unavailable or modified athletes in the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter to check the whole squad.`
-                      : 'Everyone is available.'}
-                  </p>
-                ) : (
-                  report.current.map((row, index) => {
-                    // Everything rendered below already comes from
-                    // NotFullyAvailableRow — availability.ts's own header:
-                    // "injury_clinical is not selected from, not joined to,
-                    // and is not named in the Database type this client is
-                    // built against, so it cannot be." Expanding this row
-                    // reveals more of that same coach-safe shape, never a
-                    // new, separately-fetched field.
-                    const hasDetail =
-                      Boolean(row.squad_number) ||
-                      Boolean(row.position) ||
-                      Boolean(row.body_area) ||
-                      row.restrictions.length > 0 ||
-                      Boolean(row.reason_category) ||
-                      Boolean(row.expected_return) ||
-                      Boolean(row.injury_id);
-                    return (
-                      <div key={row.athlete_id}>
-                        {index > 0 ? <div className="hair" /> : null}
-                        <details className="avail-row">
-                          <summary className="load-row" style={{ gridTemplateColumns: '1fr auto auto' }}>
-                            <div>
-                              <span className="nm">{row.name}</span>
-                              <div className="tiny">
-                                {row.body_area
-                                  ? enumLabel(row.body_area)
-                                  : row.restrictions.join(', ') ||
-                                    (row.reason_category ? enumLabel(row.reason_category) : 'Restricted')}
-                                {row.expected_return ? ` · back ${formatDate(row.expected_return, timezone)}` : ''}
-                              </div>
-                            </div>
-                            <span className={`pill ${AVAIL_PILL[row.status] ?? 'pill-neutral'}`}>{enumLabel(row.status)}</span>
-                            <span className="avail-row-caret" aria-hidden="true">
-                              ⌄
-                            </span>
-                          </summary>
-                          <div className="disclose-body" style={{ padding: '2px 4px 14px' }}>
-                            {[row.squad_number ? `Squad #${row.squad_number}` : null, row.position]
-                              .filter(Boolean).length > 0 ? (
-                              <p className="tiny">
-                                {[row.squad_number ? `Squad #${row.squad_number}` : null, row.position]
-                                  .filter(Boolean)
-                                  .join(' · ')}
-                              </p>
-                            ) : null}
-                            {row.body_area ? (
-                              <p className="tiny">
-                                {enumLabel(row.body_area)}
-                                {row.side ? ` · ${enumLabel(row.side)}` : ''}
-                              </p>
-                            ) : null}
-                            {row.restrictions.length > 0 ? (
-                              <div className="chiprow" style={{ marginTop: 4 }}>
-                                {row.restrictions.map((r) => (
-                                  <span key={r} className="chip-static">
-                                    {enumLabel(r)}
-                                  </span>
-                                ))}
-                              </div>
-                            ) : null}
-                            {row.reason_category ? (
-                              <p className="tiny">Reason: {enumLabel(row.reason_category)}</p>
-                            ) : null}
-                            {row.expected_return ? (
-                              <p className="tiny">Expected back {formatDate(row.expected_return, timezone)}</p>
-                            ) : null}
-                            {!hasDetail ? <p className="tiny">No further detail on record.</p> : null}
-                            {row.injury_id ? (
-                              <Link href={`/injuries/${row.injury_id}`} className="tiny" style={{ fontWeight: 700, display: 'inline-block', marginTop: 4 }}>
-                                View full injury record →
-                              </Link>
-                            ) : null}
-                          </div>
-                        </details>
+              <>
+                <div className="card cmpl-stats" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
+                  <div className="cmpl-stat">
+                    <span className="cmpl-stat-label">Available now</span>
+                    <span className="cmpl-stat-value">
+                      {availableNow}
+                      <small style={{ fontWeight: 400 }}>of {report.summary.athleteCount}</small>
+                    </span>
+                    <span className="cmpl-stat-sub">
+                      {availablePct === null ? 'no athletes in scope' : `${availablePct}% of the squad`}
+                    </span>
+                  </div>
+                  <div className="cmpl-stat" data-tone={unavailable.length > 0 ? 'bad' : undefined}>
+                    <span className="cmpl-stat-label">Unavailable</span>
+                    <span className="cmpl-stat-value">{unavailable.length}</span>
+                    <span className="cmpl-stat-sub">{unavailableReasons || 'nobody is out'}</span>
+                  </div>
+                  <div className="cmpl-stat" data-tone={modified.length > 0 ? 'warn' : undefined}>
+                    <span className="cmpl-stat-label">Modified</span>
+                    <span className="cmpl-stat-value">{modified.length}</span>
+                    <span className="cmpl-stat-sub">training with restrictions</span>
+                  </div>
+                  <div className="cmpl-stat">
+                    <span className="cmpl-stat-label">Unknown</span>
+                    <span className="cmpl-stat-value">{unknown.length}</span>
+                    <span className="cmpl-stat-sub">no medical entry on file</span>
+                  </div>
+                  <div className="cmpl-stat">
+                    <span className="cmpl-stat-label">Days lost</span>
+                    <span className="cmpl-stat-value">{report.summary.daysLost}</span>
+                    <span className="cmpl-stat-sub">
+                      across {daysLostAthletes} athlete{daysLostAthletes === 1 ? '' : 's'} · {period.label.toLowerCase()}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="card cmpl-table">
+                  {/* Said out loud now that the period control can read
+                      "This season" or "All on record" beside it. This list is
+                      NOT windowed and must not become so: fetchNotFullyAvailable
+                      answers "who cannot train today" from the live availability
+                      row, with no date bound anywhere in it, which is exactly
+                      what stops a longer period from appearing to change who is
+                      injured. Date-bounding it would hide an athlete whose
+                      injury started before `from` and who is still unavailable —
+                      the same false-reassurance class as the group-filter case
+                      below. The PDF carries this sentence too. */}
+                  {report.current.length === 0 ? (
+                    /* The audit's worst S4 case (analysis finding 27): this said
+                     * "Everyone is available." while a forgotten group filter hid
+                     * two unavailable and three modified players. An empty list
+                     * under an active filter proves something about the scope,
+                     * never about the squad — so say which. */
+                    <p className="tiny" style={{ padding: '0 0 14px' }}>
+                      {groupIds.length > 0
+                        ? `No unavailable or modified athletes in the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter to check the whole squad.`
+                        : 'Everyone is available.'}
+                    </p>
+                  ) : (
+                    <>
+                      <div className="inj-head">
+                        <span>Athlete</span>
+                        <span>Site</span>
+                        <span>What they can do</span>
+                        <span>Expected back</span>
+                        <span />
                       </div>
-                    );
-                  })
-                )}
-              </div>
+                      {STATUS_GROUPS.map((group) =>
+                        group.rows.length === 0 ? null : (
+                          <div key={group.key}>
+                            <div className="inj-group">
+                              <span className="inj-dot" data-status={group.key} aria-hidden="true" />
+                              <span className="inj-group-name" data-status={group.key}>
+                                {group.name}
+                              </span>
+                              <span className="inj-group-count">
+                                {group.rows.length} of {report.summary.athleteCount} athletes
+                              </span>
+                            </div>
+                            {group.rows.map((row) => {
+                              /* Every field below already comes from
+                                 NotFullyAvailableRow — availability.ts's own
+                                 header: "injury_clinical is not selected from,
+                                 not joined to, and is not named in the Database
+                                 type this client is built against, so it cannot
+                                 be." The site and the restriction line are the
+                                 coach-safe half by construction; diagnosis and
+                                 treatment notes are not reachable from here. */
+                              const overdue =
+                                row.expected_return !== null && row.expected_return < today;
+                              const canDo =
+                                row.restrictions.length > 0
+                                  ? row.restrictions.map((r) => enumLabel(r)).join(' · ')
+                                  : row.reason_category
+                                    ? enumLabel(row.reason_category)
+                                    : 'Marked restricted with no reason recorded';
+                              return (
+                                <Link
+                                  key={row.athlete_id}
+                                  href={row.injury_id ? `/injuries/${row.injury_id}` : `/squad/${row.athlete_id}`}
+                                  className="inj-row"
+                                  data-status={row.status}
+                                >
+                                  <span>
+                                    <span className="inj-name">{row.name}</span>
+                                    <span className="inj-unit" style={{ display: 'block' }}>
+                                      {row.position ?? '—'}
+                                    </span>
+                                  </span>
+                                  <span className="inj-site">
+                                    {row.body_area
+                                      ? `${enumLabel(row.body_area)}${row.side ? ` · ${enumLabel(row.side)}` : ''}`
+                                      : '—'}
+                                  </span>
+                                  <span className="inj-can">{canDo}</span>
+                                  <span className="inj-back">
+                                    {row.expected_return ? formatDate(row.expected_return, timezone) : '—'}
+                                    {/* An overdue date is not a failure of the
+                                        athlete, it is a record that needs
+                                        updating — and an unknown status with no
+                                        entry at all is the stronger of the two. */}
+                                    {row.status === 'unknown' ? (
+                                      <span className="inj-flag" data-tone="bad">
+                                        needs a medical entry
+                                      </span>
+                                    ) : overdue ? (
+                                      <span className="inj-flag" data-tone="warn">
+                                        return date passed
+                                      </span>
+                                    ) : null}
+                                  </span>
+                                  <span className="inj-chev" aria-hidden="true">
+                                    &rsaquo;
+                                  </span>
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        ),
+                      )}
+                      <p className="inj-foot">
+                        Coaching staff see availability, the site and a restriction line. Diagnosis and
+                        treatment notes are visible to medical staff and the athlete concerned, and to
+                        nobody else. Availability as of {formatDate(today, timezone)} — not a snapshot of
+                        the selected period; the period applies to the summary and burden figures. n ={' '}
+                        {report.summary.athleteCount} athletes.
+                      </p>
+                    </>
+                  )}
+                </div>
+              </>
             ),
           },
           {

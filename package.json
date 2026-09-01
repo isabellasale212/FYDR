@@ -14,6 +14,7 @@
     "test:timezone-followups": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-timezone-followups.ts",
     "test:session-local-date": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-session-local-date-derivation.ts",
     "test:safe-redirect": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-safe-redirect.ts",
+    "test:tier-preview": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-tier-preview.ts",
     "seed:auth": "node --experimental-strip-types scripts/seed-auth.ts"
   },
   "dependencies": {

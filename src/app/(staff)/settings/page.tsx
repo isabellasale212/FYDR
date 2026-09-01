@@ -9,6 +9,7 @@ import { fetchThresholds } from '@/lib/queries/thresholds';
 import { mfaRequiredForRoles } from '@/lib/mfa';
 import { requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
+import { PlanPreviewSwitch } from '@/components/PlanPreviewSwitch/PlanPreviewSwitch';
 
 export const metadata = { title: 'Settings · Fydr' };
 
@@ -39,7 +40,7 @@ export const metadata = { title: 'Settings · Fydr' };
  * or kept as their own real edit-in-place cards below, for the two things
  * that are forms rather than navigation (profile/avatar, club details). */
 export default async function SettingsPage() {
-  const { db, orgId, orgName, timezone, fullName, claims, tier } = await requireStaff();
+  const { db, orgId, orgName, timezone, fullName, claims, tier, realTier, previewingTier } = await requireStaff();
   const isAdmin = claims.roles.includes('admin');
   const isAdminOnly = isAdmin && !claims.roles.includes('coach') && !claims.roles.includes('medical');
   const onPremium = isPremium(tier);
@@ -105,18 +106,24 @@ export default async function SettingsPage() {
                   ? 'Premium · GPS, the training report, the analytics bar chart and Apple Health are on.'
                   : 'Basic · wellness, gym, nutrition, schedule, reports and exports.'}
               </p>
+              {/* Never let a preview be mistaken for the real plan. Without
+                  this, an admin who forgot the switch was on would find GPS
+                  and the training report gone and reasonably report it as a
+                  fault. Says what is happening and how to undo it. */}
+              {previewingTier ? (
+                <p className="pill" style={{ background: 'var(--wash-warn)', color: 'var(--warn-pill-text)', marginTop: 8 }}>
+                  Previewing Basic · this club’s real plan is still Premium
+                </p>
+              ) : null}
             </div>
-            <div className="plan-switch" title="Plan changes are a sales conversation with your Fydr contact, not a self-service toggle — see the note below.">
-              <span className="plan-switch-label plan-switch-label-basic" data-active={!onPremium}>
-                Basic
-              </span>
-              <div className="plan-switch-track" data-on={onPremium} aria-hidden="true">
-                <div className="plan-switch-knob" data-on={onPremium} />
-              </div>
-              <span className="plan-switch-label plan-switch-label-premium" data-active={onPremium}>
-                Premium
-              </span>
-            </div>
+            {/* Live for an admin whose club is really on Premium — it previews
+                the product on Basic, it does not change the plan. Everyone
+                else gets the same painted indicator as before, because there
+                is nothing they could preview: a coach has no business
+                downgrading their own view, and a Basic club can only preview
+                upward, which lib/tierPreview.ts refuses on entitlement
+                grounds. */}
+            <PlanPreviewSwitch onPremium={onPremium} canPreview={isAdmin && isPremium(realTier)} />
           </div>
 
           <div className="plan-compare">

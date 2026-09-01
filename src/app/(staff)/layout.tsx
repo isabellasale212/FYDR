@@ -8,11 +8,11 @@ export default async function StaffLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { claims, fullName, orgName } = await requireStaff();
+  const { claims, fullName, orgName, previewingTier } = await requireStaff();
 
   return (
     <div className="app">
-      <Sidebar roles={claims.roles} fullName={fullName} orgName={orgName} />
+      <Sidebar roles={claims.roles} fullName={fullName} orgName={orgName} previewingTier={previewingTier} />
       <main className="main" id="main">
         {children}
       </main>

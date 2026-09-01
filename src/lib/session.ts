@@ -1,5 +1,7 @@
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { TIER_PREVIEW_COOKIE, effectiveTier, isPreviewingTier } from '@/lib/tierPreview';
 import { getClaims, isAthlete, isStaff, type FydrClaims } from '@/lib/supabase/claims';
 import type { Db } from '@/lib/queries/groups';
 
@@ -17,8 +19,24 @@ export type StaffContext = {
    *  UI edge, the same enumLabel()-style split this app already uses
    *  everywhere else, rather than renaming the enum. 12-product-tiers.md
    *  §2 does recommend renaming the enum itself to club/premium; that's a
-   *  separate, larger, cross-cutting migration this pass didn't take on. */
+   *  separate, larger, cross-cutting migration this pass didn't take on.
+   *
+   *  THIS IS THE EFFECTIVE TIER, not necessarily the club's paid one. An
+   *  admin can preview the product on Basic (lib/tierPreview.ts), and this
+   *  field carries that preview so every existing gate honours it without
+   *  knowing it exists — analytics, reports/training, settings/imports and
+   *  the leaderboard metric picker all read `tier` from here and all four
+   *  started respecting the preview the moment this line did. A preview can
+   *  only ever resolve DOWNWARD; see effectiveTier(). */
   tier: 'core' | 'performance';
+  /** The club's real, paid tier, ignoring any preview. Only the Plan card
+   *  needs this — everything that gates a feature must use `tier` above, so
+   *  that a preview actually previews something. */
+  realTier: 'core' | 'performance';
+  /** True while `tier` is a preview rather than the real plan. The Plan card
+   *  renders a banner on this: a staff member must never be left wondering
+   *  whether a missing feature is un-bought or merely hidden. */
+  previewingTier: boolean;
 };
 
 export type AthleteContext = {
@@ -54,6 +72,16 @@ export async function requireStaff(): Promise<StaffContext> {
     supabase.from('users').select('full_name').eq('id', claims.userId).maybeSingle(),
   ]);
 
+  /* The preview is an ADMIN-ONLY affordance, checked here rather than only in
+   * the UI that offers it: the cookie is browser-written, so a coach who set
+   * it by hand would otherwise silently downgrade their own session and read
+   * it as the product being broken. Roles come from the verified session
+   * (CLAUDE.md rule 2), never from the client. */
+  const realTier = org.data?.tier ?? 'core';
+  const previewCookie = claims.roles.includes('admin')
+    ? (await cookies()).get(TIER_PREVIEW_COOKIE)?.value
+    : undefined;
+
   return {
     db: supabase,
     claims,
@@ -61,7 +89,9 @@ export async function requireStaff(): Promise<StaffContext> {
     orgName: org.data?.name ?? 'Your club',
     timezone: org.data?.timezone ?? 'Europe/London',
     fullName: user.data?.full_name ?? '',
-    tier: org.data?.tier ?? 'core',
+    tier: effectiveTier(realTier, previewCookie),
+    realTier,
+    previewingTier: isPreviewingTier(realTier, previewCookie),
   };
 }
 

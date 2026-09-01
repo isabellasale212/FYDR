@@ -170,12 +170,18 @@ export const SIDEBAR: readonly Row[] = [
 ];
 
 type Props = {
+  /** True while this admin is previewing the product on the Basic plan
+   *  (lib/tierPreview.ts). The Plan card in Settings says so too, but the
+   *  whole point of the preview is to go and look at other screens, and a
+   *  coach finding GPS missing with no explanation on any of them would
+   *  reasonably report it as a fault. This is the indicator that travels. */
+  previewingTier?: boolean;
   roles: readonly AppRole[];
   fullName: string;
   orgName: string;
 };
 
-export function Sidebar({ roles, fullName, orgName }: Props) {
+export function Sidebar({ roles, fullName, orgName, previewingTier = false }: Props) {
   const pathname = usePathname();
   const visible = SIDEBAR.filter((row) =>
     row.roles.some((r) => roles.includes(r)),
@@ -217,6 +223,21 @@ export function Sidebar({ roles, fullName, orgName }: Props) {
         })}
       </nav>
       <div className="nav-foot">
+        {previewingTier ? (
+          <Link
+            href="/settings#plan"
+            className="pill"
+            style={{
+              background: 'var(--wash-warn)',
+              color: 'var(--warn-pill-text)',
+              margin: '0 0 10px',
+              textDecoration: 'none',
+            }}
+            title="You are previewing the Basic plan. Your club’s real plan is unchanged. Opens the Plan card, where you can switch back."
+          >
+            Previewing Basic
+          </Link>
+        ) : null}
         <div className="nav-who">
           <b>{fullName}</b>
           {orgName} · {roles.join(', ')}

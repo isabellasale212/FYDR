@@ -78,10 +78,24 @@ export function WellnessChart({
 }: Props) {
   /* Compact reclaims the axis gutters as plot width and shortens the box —
      the same drawing, given the whole card. */
+  /* MARK SCALE. Removing the text fixed the labels but not the marks: this
+     880-unit box renders 320px wide inside the athlete's card, so a
+     `strokeWidth={2.5}` line paints at 0.9px and an `r={3.2}` dot at a 1.16px
+     radius — measured. A 2.3px-wide dot is a speck, which is exactly what an
+     isolated submitted day looked like next to two-digit type. Every mark is
+     scaled by the reciprocal of that render so it lands at the weight it was
+     drawn for. The full chart is unscaled: the staff pages render it near its
+     natural width, where 1 unit is about 1px already. */
+  const COMPACT_RENDER_PX = 320;
+  const k = compact ? W / COMPACT_RENDER_PX : 1;
   const h = compact ? 190 : H;
   const ml = compact ? 4 : ML;
   const mr = compact ? 4 : MR;
-  const mt = compact ? 12 : MT;
+  /* 30, not 12: the staff-note markers hang a triangle in the strip above the
+     plot, and scaling that triangle by k pushed its base to y = 12 - 9k =
+     -12.75 — off the top of the viewBox and clipped. The strip has to be
+     deeper than the mark it holds. */
+  const mt = compact ? 30 : MT;
   const mb = compact ? 8 : MB;
   if (series.length < 2) {
     return (
@@ -210,8 +224,8 @@ export function WellnessChart({
             d={meanPath}
             fill="none"
             stroke="var(--accent)"
-            strokeWidth={1.25}
-            strokeDasharray="3,4"
+            strokeWidth={1.25 * k}
+            strokeDasharray={`${3 * k},${4 * k}`}
             opacity={0.5}
             strokeLinejoin="round"
           />
@@ -224,7 +238,7 @@ export function WellnessChart({
             d={d}
             fill="none"
             stroke="var(--accent)"
-            strokeWidth={2.5}
+            strokeWidth={2.5 * k}
             strokeLinejoin="round"
             strokeLinecap="round"
           />
@@ -248,9 +262,9 @@ export function WellnessChart({
           return (
             <g key={b.date}>
               {isLast ? (
-                <circle cx={cx} cy={cy} r={7} fill="none" stroke={fill} strokeWidth={1.5} opacity={0.45} />
+                <circle cx={cx} cy={cy} r={7 * k} fill="none" stroke={fill} strokeWidth={1.5 * k} opacity={0.45} />
               ) : null}
-              <circle cx={cx} cy={cy} r={isLast ? 4.5 : 3.2} fill={fill} />
+              <circle cx={cx} cy={cy} r={(isLast ? 4.5 : 3.2) * k} fill={fill} />
             </g>
           );
         })}
@@ -283,12 +297,12 @@ export function WellnessChart({
                 x2={cx}
                 y2={h - mb + 6}
                 stroke="var(--accent2)"
-                strokeWidth={1}
-                strokeDasharray="2,3"
+                strokeWidth={1 * k}
+                strokeDasharray={`${2 * k},${3 * k}`}
                 opacity={0.45}
               />
               <polygon
-                points={`${cx},${mt - 1} ${cx - 4.5},${mt - 9} ${cx + 4.5},${mt - 9}`}
+                points={`${cx},${mt - 1} ${cx - 4.5 * k},${mt - 9 * k} ${cx + 4.5 * k},${mt - 9 * k}`}
                 fill="var(--accent2)"
               >
                 <title>{f.tooltip}</title>

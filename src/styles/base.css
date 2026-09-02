@@ -1700,7 +1700,7 @@ body:has(.phone) {
   border-radius: var(--r-field);
   border: 1px solid var(--border);
   background: var(--surf);
-  color: var(--accent);
+  color: var(--accent-text);
   font-size: 20px;
   display: flex;
   align-items: center;
@@ -2074,7 +2074,7 @@ body:has(.phone) {
   letter-spacing: -0.03em;
 }
 .signin-word i {
-  color: var(--accent);
+  color: var(--accent-text);
   font-style: normal;
 }
 .signin-head {
@@ -3424,7 +3424,7 @@ img.av {
 }
 .tr-mode-switch a[aria-current='true'] {
   background: var(--surf);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .tr-session-chip {
   display: inline-flex;
@@ -3441,7 +3441,7 @@ img.av {
 }
 .tr-session-chip[aria-current='true'] {
   background: rgb(var(--accent-rgb) / 0.1);
-  color: var(--accent);
+  color: var(--accent-text);
   border-color: rgb(var(--accent-rgb) / 0.55);
 }
 .tr-session-chip .suffix {
@@ -3685,7 +3685,7 @@ img.av {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--accent);
+  color: var(--accent-text);
   padding: 10px 6px 4px;
   display: flex;
   justify-content: space-between;
@@ -4765,16 +4765,19 @@ button.dash-stat {
   font-size: 20px;
   font-weight: 500;
 }
+/* --muted, not --faint. These two sit on the rule panel's own tint, and
+   --faint is derived for a plain surface: measured 4.07:1 there in dark.
+   One step up the hierarchy, still subordinate to body text, 5.89:1. */
 .nutr-rule-unit {
   font-size: 10px;
-  color: var(--faint);
+  color: var(--muted);
   margin-top: 2px;
 }
 .nutr-rule-footnote {
   font-family: var(--font-sora), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 10.5px;
-  color: var(--faint);
+  color: var(--muted);
   margin-top: 8px;
 }
 
@@ -5491,7 +5494,7 @@ button.dash-stat {
   font-size: 26px;
   font-weight: 500;
   letter-spacing: -0.02em;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .lbw-mover-delta-board {
   font-size: 12.5px;
@@ -5563,7 +5566,7 @@ button.dash-stat {
 }
 .lbw-segmented button[aria-selected='true'] {
   background: var(--surf);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .lbw-ranked-in {
@@ -5657,7 +5660,7 @@ button.dash-stat {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--accent-text);
   position: sticky;
   left: 0;
   background: var(--surf);
@@ -5791,7 +5794,7 @@ button.dash-stat {
 .lbw-profile-link {
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .lbw-sel-table {
@@ -6556,7 +6559,7 @@ button.dash-stat {
   border-radius: 11px;
   border: 1px solid var(--border);
   background: var(--surf);
-  color: var(--accent);
+  color: var(--accent-text);
   font-size: 16px;
   display: flex;
   align-items: center;
@@ -6790,7 +6793,7 @@ button.dash-stat {
   font-family: inherit;
   font-size: inherit;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent-text);
   text-decoration: underline;
   text-underline-offset: 2px;
   cursor: pointer;
@@ -6855,7 +6858,7 @@ button.dash-stat {
 }
 .signin-forgot a,
 .signin-return a {
-  color: var(--accent);
+  color: var(--accent-text);
   text-decoration: underline;
   text-underline-offset: 2px;
 }

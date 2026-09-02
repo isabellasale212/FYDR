@@ -57,7 +57,7 @@ export function GpsImportForm() {
       <h2 className="card-title">Import GPS data</h2>
       <p className="import-sub">
         A .csv file with the exact header row from the template below. One row per athlete per session. See{' '}
-        <a href="/settings/imports/template" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>
+        <a href="/settings/imports/template" style={{ color: 'var(--accent-text)', textDecoration: 'underline' }}>
           the template
         </a>{' '}
         for the columns and an example row.

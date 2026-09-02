@@ -523,7 +523,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
               <h2 className="card-title" style={{ margin: 0 }}>
                 Squad state
               </h2>
-              <Link href="/squad" className="tiny" style={{ color: 'var(--accent)', fontWeight: 600 }}>
+              <Link href="/squad" className="tiny" style={{ color: 'var(--accent-text)', fontWeight: 600 }}>
                 Squad ›
               </Link>
             </div>
@@ -611,7 +611,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                 <h2 className="card-title" style={{ margin: 0 }}>
                   Outstanding entries
                 </h2>
-                <Link href="/reports/compliance" className="tiny" style={{ color: 'var(--accent)', fontWeight: 600 }}>
+                <Link href="/reports/compliance" className="tiny" style={{ color: 'var(--accent-text)', fontWeight: 600 }}>
                   Compliance ›
                 </Link>
               </div>

@@ -145,7 +145,13 @@ function AthleteRow({
   onSelect: () => void;
 }) {
   const state = athlete.massKg !== null ? massState(athlete.massKg, athlete.massBand) : 'in_range';
-  const stateColour = state === 'above' ? 'var(--warn)' : state === 'below' ? 'var(--bad)' : 'var(--accent)';
+  /* The -text variants, not the raw fills. --warn/--bad/--accent are the
+     colours of a BLOCK of that tone; as text on a card they are only just
+     legible in light and fail outright in dark — the neutral state measured
+     3.54:1 there. The -text tokens are theme-split and derived for exactly
+     this: ink on a plain surface. */
+  const stateColour =
+    state === 'above' ? 'var(--warn-text)' : state === 'below' ? 'var(--bad-text)' : 'var(--accent-text)';
   const wash = selected
     ? 'rgb(var(--accent-rgb) / 0.07)'
     : athlete.change7d !== null && athlete.change7d <= -2

@@ -438,7 +438,7 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
                         {unitRank ? `${ordinal(unitRank.rank)}/${unitRank.n}` : '·'}
                       </div>
                       <div className="r lbw-sel-squad">{squadRank ? `#${squadRank.rank}` : '·'}</div>
-                      <div className="r" style={{ color: gain?.sortValue ? (gain.sortValue > 0 ? 'var(--accent)' : 'var(--bad)') : 'var(--faint)' }}>
+                      <div className="r" style={{ color: gain?.sortValue ? (gain.sortValue > 0 ? 'var(--accent-text)' : 'var(--bad-text)') : 'var(--faint)' }}>
                         {gain ? gain.value : '–'}
                       </div>
                     </div>

@@ -30,7 +30,7 @@ export const metadata = { title: 'Me · Fydr' };
  *  at (see lib/queries/avatar.ts). Privacy controls are still named
  *  honestly as not built. */
 export default async function MePage() {
-  const { db, orgId, athleteId, claims, firstName, lastName, timezone, tier } = await requireAthlete();
+  const { db, orgId, athleteId, claims, firstName, lastName, tier } = await requireAthlete();
 
   const [athlete, userRow, myBoards, healthkit] = await Promise.all([
     fetchAthlete(db, orgId, athleteId),
@@ -71,7 +71,11 @@ export default async function MePage() {
               userRow.data?.avatar_colour
                 ? {
                     background: `var(--group-${userRow.data.avatar_colour.toLowerCase()})`,
-                    color: 'var(--on-accent)',
+                    /* --on-group, not --on-accent: the group palette inverts
+                       between themes, so white initials measured under 3:1 on
+                       six of its seven colours in dark. Same fix the upload
+                       form took. */
+                    color: 'var(--on-group)',
                   }
                 : undefined
             }
@@ -83,9 +87,22 @@ export default async function MePage() {
           <div className="nm">
             {firstName} {lastName}
           </div>
+          {/* Fydr Athlete App.dc.html 23i: position, team and squad number —
+              who this athlete is at the club. It read "Jimmy · Europe/London":
+              a preferred name they already know and a timezone that is a
+              setting, not an identity. Each part is dropped when absent rather
+              than printed as a blank, so a squad with no teams set does not
+              read "· ·". */}
           <div className="sub">
-            {athlete?.preferred_name ? `${athlete.preferred_name} · ` : ''}
-            {timezone}
+            {[
+              athlete?.position,
+              athlete?.team_name,
+              athlete?.squad_number !== null && athlete?.squad_number !== undefined
+                ? `squad no. ${athlete.squad_number}`
+                : null,
+            ]
+              .filter(Boolean)
+              .join(' · ') || 'Squad details not set'}
           </div>
         </div>
       </div>

@@ -378,8 +378,13 @@ export default async function MyDataPage({
         <Link href={tabHref('nutrition')} className="seg" role="tab" aria-selected={tab === 'nutrition'}>
           Nutrition
         </Link>
+        {/* "Tests", per 23m, not "Testing". The route key stays `testing` — a
+            URL an athlete has already been sent must keep working — and this is
+            the label CLAUDE.md §6 actually defines ("Test: a standardised
+            measurement, repeated over time"). "Testing" named the staff
+            activity; this tab holds the athlete's results. */}
         <Link href={tabHref('testing')} className="seg" role="tab" aria-selected={tab === 'testing'}>
-          Testing
+          Tests
         </Link>
         <Link href={tabHref('gym')} className="seg" role="tab" aria-selected={tab === 'gym'}>
           Gym
@@ -1366,13 +1371,6 @@ async function TestingTab({
           </h2>
           <span className="hist-n">latest against your PB</span>
         </div>
-        <p className="cap" style={{ margin: 0, padding: '0 var(--pad-card) 12px' }}>
-          Your own results and personal bests only &mdash; never a squad comparison. This tab ignores
-          the period used on the other tabs on purpose: a personal best is the best you have{' '}
-          <em>ever</em> done, so showing it inside a window would show you a smaller number than the
-          truth. Anything staff have noted is from the last period you chose.
-        </p>
-
         <div style={{ padding: '0 var(--pad-card)' }}>
           <FlagNotice flags={flags} heading="Noted by staff" timezone={timezone} />
         </div>
@@ -1425,6 +1423,10 @@ async function TestingTab({
             );
           })
         )}
+        <p className="cap" style={{ margin: 0, padding: '12px var(--pad-card) var(--pad-card)' }}>
+          All-time, not the period on the other tabs: a personal best measured inside a window is
+          not a personal best. Your own results only &mdash; never a squad comparison.
+        </p>
       </section>
     </div>
   );
@@ -1575,12 +1577,6 @@ async function GymTab({
           * athlete's path would leave every mis-logged rep permanently wrong.
           * Building that staff path was out of scope for this change and is
           * recorded as O-31 in adr-005-immutable-entries.md. */}
-        <p className="cap" style={{ margin: 0, padding: '0 var(--pad-card) 12px' }}>
-          Open a session to fix a set you mis-logged &mdash; the original is kept, never
-          overwritten. Gym sets are still yours to correct; your check-ins and session ratings
-          are not.
-        </p>
-
         <div style={{ padding: '0 var(--pad-card)' }}>
           <FlagNotice flags={flags} heading="Noted by staff" timezone={timezone} />
         </div>
@@ -1626,7 +1622,11 @@ async function GymTab({
             </Fragment>
           ))
         )}
-        <div style={{ padding: '0 var(--pad-card)' }}>
+        <p className="cap" style={{ margin: 0, padding: '12px var(--pad-card) 0' }}>
+          Open a session to fix a set you mis-logged &mdash; the original is kept, never
+          overwritten. Gym sets stay yours to correct; your check-ins and session ratings do not.
+        </p>
+        <div style={{ padding: '0 var(--pad-card) var(--pad-card)' }}>
           <ListCapNote shown={sessions.length} more={more} noun="sessions" />
         </div>
       </section>

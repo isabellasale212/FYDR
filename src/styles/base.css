@@ -1331,7 +1331,10 @@ body:has(.phone) {
   grid-template-columns: repeat(4, 1fr);
   background: color-mix(in srgb, var(--elev) 94%, transparent);
   border-top: 1px solid var(--border);
-  padding: 8px 6px calc(10px + env(safe-area-inset-bottom, 0px));
+  /* Spec §6: 9px 6px 30px. That 30px is home-indicator clearance, which on a
+     real device is env(safe-area-inset-bottom) — ADDED to a base, never
+     substituted for it, so a browser with no inset still gets real padding. */
+  padding: 9px 6px calc(10px + env(safe-area-inset-bottom, 0px));
   backdrop-filter: blur(var(--blur));
   -webkit-backdrop-filter: blur(var(--blur));
 }
@@ -1340,10 +1343,11 @@ body:has(.phone) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 4px 0;
-  font-size: 10.5px;
-  font-weight: 700;
+  /* Spec §6: gap 5, padding 6px 0, label 11.5/600 — 700 only when active. */
+  gap: 5px;
+  padding: 6px 0;
+  font-size: 11.5px;
+  font-weight: 600;
   color: var(--tab-inactive);
   text-decoration: none;
   transition: color var(--t-state);
@@ -1354,8 +1358,9 @@ body:has(.phone) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  /* Spec §6: a 14-unit icon rendered at 23×23. */
+  width: 23px;
+  height: 23px;
   color: var(--tab-inactive);
   transition: color var(--t-state);
 }
@@ -1680,8 +1685,13 @@ a.hist-row:focus-visible {
    own elevated background rather than the plain --surf that --accent-text is
    derived against, and the current tab's label measured 4.49:1 on it in
    dark. */
+/* --accent-pill-text, not the raw accent the spec names — and for the spec's
+   own §2 rule 1. The tab bar has an elevated, translucent background rather
+   than the plain --surf that --accent-text is derived against, and the active
+   label measured 4.49:1 on it in dark. */
 .athlete-tab[aria-current='page'] {
   color: var(--accent-pill-text);
+  font-weight: 700;
 }
 .athlete-tab[aria-current='page'] .athlete-tab-glyph {
   color: var(--accent);
@@ -1726,9 +1736,10 @@ a.hist-row:focus-visible {
 .seg-track {
   display: flex;
   gap: 2px;
-  padding: 3px;
+  /* Spec §7.3: shell padding 4px, radius 16. */
+  padding: 4px;
   margin-top: 4px;
-  border-radius: var(--r-pill);
+  border-radius: 16px;
   background: var(--surf2);
   overflow-x: auto;
   /* No visible scrollbar over a 44px-tall control; the partial segment at the
@@ -1740,13 +1751,18 @@ a.hist-row:focus-visible {
   display: none;
 }
 .seg {
+  /* Spec §7.3: items are 14/600 muted, radius 12, 11px of vertical padding.
+     `flex: 1` is the spec's and assumes three segments; this track carries six
+     and scrolls, so items keep their own width — sharing 390px six ways gives
+     60px each and "Leaderboards" does not fit. min-height honours §8's 44px
+     floor, which 11px around a 14px line comes 4px short of on its own. */
   flex: 0 0 auto;
-  min-height: 38px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
-  padding: 0 14px;
-  border-radius: var(--r-pill);
-  font-size: 13.5px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--muted);
   text-decoration: none;
@@ -1756,9 +1772,12 @@ a.hist-row:focus-visible {
 .seg:hover {
   color: var(--text);
 }
+/* Spec §7.3: the active chip is card-coloured, takes the product shadow, and
+   its ink is the ACCENT — not --text. */
 .seg[aria-selected='true'] {
   background: var(--surf);
-  color: var(--text);
+  color: var(--accent-pill-text);
+  font-weight: 700;
   box-shadow: var(--shadow-card, 0 1px 2px rgb(16 18 23 / 0.08));
 }
 .seg:focus-visible {

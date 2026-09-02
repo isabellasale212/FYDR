@@ -27,44 +27,55 @@ const TABS = [
   { href: '/me', label: 'Me', icon: 'person' },
 ] as const;
 
+/** Spec §6's icon paths, verbatim: a 14-unit viewBox rendered at 23×23,
+ *  fill none / stroke currentColor / stroke-width 1.4, except the dumbbell.
+ *
+ *  These replace hand-drawn 24-unit equivalents. The difference is not
+ *  cosmetic in one case: the spec's clock hand runs 12→centre→4-o-clock as a
+ *  single stroked path, and the bar chart is three separate subpaths in one
+ *  `d` rather than three elements, so the round caps land identically. */
 function TabIcon({ name }: { name: (typeof TABS)[number]['icon'] }) {
   const common = {
-    viewBox: '0 0 24 24',
-    width: 22,
-    height: 22,
+    viewBox: '0 0 14 14',
+    width: 23,
+    height: 23,
     fill: 'none',
     stroke: 'currentColor',
-    strokeWidth: 2,
-    strokeLinecap: 'round' as const,
-    strokeLinejoin: 'round' as const,
+    strokeWidth: 1.4,
     'aria-hidden': true,
   };
   if (name === 'clock') {
     return (
       <svg {...common}>
-        <circle cx="12" cy="12" r="9" />
-        <path d="M12 7.5V12l3 2" />
+        <circle cx="7" cy="7" r="5.4" />
+        <path d="M7 4.2 L7 7 L9.2 8.4" strokeLinecap="round" />
       </svg>
     );
   }
   if (name === 'bars') {
     return (
       <svg {...common}>
-        <path d="M6 15v4M12 5v14M18 11v8" />
+        <path d="M2.4 11 L2.4 7.6 M7 11 L7 3.6 M11.6 11 L11.6 5.8" strokeLinecap="round" />
       </svg>
     );
   }
   if (name === 'dumbbell') {
+    /* Spec §6: "the only coloured icon in the product — gold in both themes,
+       inheriting nothing from the active state." Filled, not stroked, and the
+       colour is the literal --gym, which is #f5c518 in both themes. */
     return (
-      <svg {...common}>
-        <path d="M4 9v6M7.5 7v10M16.5 7v10M20 9v6M7.5 12h9" />
+      <svg viewBox="0 0 14 14" width={23} height={23} fill="var(--gym)" stroke="none" aria-hidden>
+        <path
+          d="M1 5.4 h1.7 v3.2 H1 Z M3.3 4.3 h1.9 v5.4 H3.3 Z M5.6 6.4 h2.8 v1.2 H5.6 Z
+             M8.8 4.3 h1.9 v5.4 H8.8 Z M11.3 5.4 H13 v3.2 h-1.7 Z"
+        />
       </svg>
     );
   }
   return (
     <svg {...common}>
-      <circle cx="12" cy="8" r="3.5" />
-      <path d="M5 19.5a7 7 0 0 1 14 0" />
+      <circle cx="7" cy="4.8" r="2.4" />
+      <path d="M2.6 12 C3 9.4 4.8 8.4 7 8.4 C9.2 8.4 11 9.4 11.4 12" strokeLinecap="round" />
     </svg>
   );
 }

@@ -20,6 +20,21 @@ svg text {
   font-variant-numeric: tabular-nums;
 }
 
+/* The container owns the distance to its own edge. A first child's top margin
+   ADDS to the container's padding, so the first line stops sitting where the
+   padding put it — and when that margin is the browser's default <p> 1em, the
+   inset silently tracks font size instead of the spacing token.
+   Measured case: .lbw-stats-card's first label is a <p> with no authored
+   margin rule at all, so it carried the UA default of 11px on top of the
+   cell's 16px and the first text sat 27px from the card's top edge.
+   Only the FIRST child, and only its top: margins BETWEEN siblings are
+   rhythm, which is a different job and is left alone. */
+.card > :first-child,
+.dash-stat > :first-child,
+.cmpl-stat > :first-child {
+  margin-top: 0;
+}
+
 html,
 body {
   margin: 0;

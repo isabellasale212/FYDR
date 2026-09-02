@@ -2711,13 +2711,14 @@ a.hist-row:focus-visible {
 }
 /* The exercise you are on, 23g. --gym rather than the accent, because this is
    the gym domain's own colour everywhere else in the product (the tab bar's
-   dumbbell, this screen's progress fill). The tint is mixed against --surf,
-   not left translucent, so it lands the same on both grounds. */
+   dumbbell, this screen's progress fill). The tint comes from --gym-tint,
+   which is defined per theme — see its note in tokens.css for why one
+   color-mix could not serve both grounds. */
 .gym-ex-card[data-active] {
   border-color: rgb(var(--gym-rgb) / 0.55);
 }
 .gym-ex-card[data-active] .gym-ex-head {
-  background: color-mix(in srgb, var(--gym) 12%, var(--surf));
+  background: var(--gym-tint);
   border-bottom-color: rgb(var(--gym-rgb) / 0.3);
 }
 .gym-ex-head {

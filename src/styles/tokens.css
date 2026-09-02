@@ -179,7 +179,13 @@
      Distinct from --surf2 (#f3f5f8), which is a RAISED alt surface: this one
      sits below --bg, --surf2 sits above it. */
   --surf-sunken: #dfe3e9;
+  /* The gym domain's tint, per theme rather than one color-mix used on both.
+     12% of --gym over --surf composites to cream here and to NEUTRAL GREY on
+     the dark ground — measured at color(srgb 0.1947 0.1962 0.1976), R≈G≈B —
+     because gold's near-zero blue cancels the dark surface's blue. The dark
+     value carries more gold to stay gold. */
   --surf2: #f3f5f8;
+  --gym-tint: #fef8e4;
   --elev: #ffffff;
   --text: #13161c;
   --muted: #484e57;
@@ -447,6 +453,7 @@ Every alpha here is the handoff's own figure (§4 and §5),
   --surf: #171e36;
   --surf-sunken: #121a33;
   --surf2: #1a2340;
+  --gym-tint: #48432f;
   --elev: #1a2340;
   --text: #e9edfa;
   --muted: #a6b3d2;
@@ -584,6 +591,7 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --surf: #171e36;
     --surf-sunken: #121a33;
     --surf2: #1a2340;
+    --gym-tint: #48432f;
     --elev: #1a2340;
     --text: #e9edfa;
     --muted: #a6b3d2;
@@ -703,6 +711,7 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --surf: #ffffff;
     --surf-sunken: #dfe3e9;
     --surf2: #f3f5f8;
+    --gym-tint: #fef8e4;
     --elev: #ffffff;
     --text: #13161c;
     --muted: #484e57;

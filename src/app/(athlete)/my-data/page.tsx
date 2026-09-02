@@ -1605,12 +1605,15 @@ async function GymTab({
         <div
           className="gb-chart"
           role="img"
+          /* The same > 0 rule as the visible line. A label that reads "2 of 0
+             sessions" is the identical nonsense, only audible — and a screen
+             reader is the one place nobody can see it is wrong. */
           aria-label={`Completed gym sessions by week: ${weeks
             .map(
               (w) =>
-                `${w.label}, ${w.count}${w.assigned !== null ? ` of ${w.assigned}` : ''} session${
-                  w.count === 1 ? '' : 's'
-                }${w.partial ? ', still running' : ''}`,
+                `${w.label}, ${w.count}${
+                  w.assigned !== null && w.assigned > 0 ? ` of ${w.assigned}` : ''
+                } session${w.count === 1 ? '' : 's'}${w.partial ? ', still running' : ''}`,
             )
             .join('; ')}`}
         >

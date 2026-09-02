@@ -356,23 +356,30 @@ export default async function MyDataPage({
        * (see fetchMyBoards's own header comment for why that's a real
        * distinction, not just a styling one). Leaderboards deliberately does
        * NOT carry the period: a board is a standing ranking, not a window. */}
-      <div className="chiprow" role="tablist" aria-label="Data segment" style={{ marginTop: 4 }}>
-        <Link href={tabHref('wellness')} className="squad-chip" role="tab" aria-selected={tab === 'wellness'}>
+      {/* A segmented track, Fydr Athlete App.dc.html 23e — one row, the current
+          segment raised, rather than six pills wrapping onto two lines.
+          The design draws three segments; this build has six real ones, and
+          dropping three to match the picture would delete the only route to
+          Training, Nutrition and Leaderboards. So the track SCROLLS instead:
+          the design's treatment, all six kept, and the active one is scrolled
+          into view on load by the browser's own anchor behaviour. */}
+      <div className="seg-track" role="tablist" aria-label="Data segment">
+        <Link href={tabHref('wellness')} className="seg" role="tab" aria-selected={tab === 'wellness'}>
           Wellness
         </Link>
-        <Link href={tabHref('training')} className="squad-chip" role="tab" aria-selected={tab === 'training'}>
+        <Link href={tabHref('training')} className="seg" role="tab" aria-selected={tab === 'training'}>
           Training
         </Link>
-        <Link href={tabHref('nutrition')} className="squad-chip" role="tab" aria-selected={tab === 'nutrition'}>
+        <Link href={tabHref('nutrition')} className="seg" role="tab" aria-selected={tab === 'nutrition'}>
           Nutrition
         </Link>
-        <Link href={tabHref('testing')} className="squad-chip" role="tab" aria-selected={tab === 'testing'}>
+        <Link href={tabHref('testing')} className="seg" role="tab" aria-selected={tab === 'testing'}>
           Testing
         </Link>
-        <Link href={tabHref('gym')} className="squad-chip" role="tab" aria-selected={tab === 'gym'}>
+        <Link href={tabHref('gym')} className="seg" role="tab" aria-selected={tab === 'gym'}>
           Gym
         </Link>
-        <Link href="/my-data/boards" className="squad-chip">
+        <Link href="/my-data/boards" className="seg">
           Leaderboards
         </Link>
       </div>

@@ -1465,6 +1465,75 @@ body:has(.phone) {
 }
 
 /* -------- week strip, §5 -------- */
+/* Me's two summary cards, Fydr Athlete App.dc.html 23i. Side by side and
+   equal width, above the settings list. */
+.me-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+.me-stat-value {
+  margin: 4px 0 0;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+.me-stat-sub {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* My data's segment picker, Fydr Athlete App.dc.html 23e: one grey track with
+   the current segment raised out of it, in place of six pills wrapping onto
+   two rows. Scrolls horizontally because this build has six segments and the
+   design's three would not hold them — the alternative was deleting the only
+   route to three of them. */
+.seg-track {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  margin-top: 4px;
+  border-radius: var(--r-pill);
+  background: var(--surf2);
+  overflow-x: auto;
+  /* No visible scrollbar over a 44px-tall control; the partial segment at the
+     edge is what says there is more. */
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.seg-track::-webkit-scrollbar {
+  display: none;
+}
+.seg {
+  flex: 0 0 auto;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px;
+  border-radius: var(--r-pill);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--t-state), color var(--t-state);
+}
+.seg:hover {
+  color: var(--text);
+}
+.seg[aria-selected='true'] {
+  background: var(--surf);
+  color: var(--text);
+  box-shadow: var(--shadow-card, 0 1px 2px rgb(16 18 23 / 0.08));
+}
+.seg:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
 /* The week card holds the strip and, when there is one, the fixture it is
    counting towards — one card, a hairline between them, per 23a. */
 .wk-card {
@@ -7256,13 +7325,18 @@ button.dash-stat {
   font-style: italic;
   color: var(--muted);
 }
-/* --muted, not --faint: this line sits on the notice's own accent wash, and
-   --faint is derived for a plain surface — 4.33:1 light, 3.95:1 dark on that
-   tint. Same one-step-up fix as the nutrition rule panel. */
+/* Everything quiet inside this notice steps up from --faint to --muted. The
+   notice carries its own accent wash and --faint is derived for a plain
+   surface: 4.33:1 light, 3.95:1 dark on that tint. Scoped to the card rather
+   than named element by element — the attribution line was fixed first and the
+   DATE, a plain .tiny, was still failing beside it. */
+.flag-notice .tiny,
+.flag-notice-attribution {
+  color: var(--muted);
+}
 .flag-notice-attribution {
   margin: 6px 0 0;
   font-size: 11px;
-  color: var(--muted);
 }
 
 /* Medical's triage notes on a problem report (ProblemReportsTriage, migration

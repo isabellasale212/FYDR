@@ -4,11 +4,13 @@ import { AvatarUploadForm } from '@/components/AvatarUploadForm/AvatarUploadForm
 import { ChangePasswordForm } from '@/components/ChangePasswordForm/ChangePasswordForm';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchAthlete } from '@/lib/queries/squad';
+import { fetchWellnessByAthlete } from '@/lib/queries/wellness';
+import { mondayOf } from '@/lib/queries/schedule';
 import { fetchMyBoards } from '@/lib/queries/leaderboards';
 import { fetchHealthkitConsent } from '@/lib/queries/healthkit';
 import { HealthkitConsentToggle } from '@/components/HealthkitConsentToggle/HealthkitConsentToggle';
 import { isPremium } from '@/lib/tier';
-import { initials } from '@/lib/format';
+import { addDays, BLANK, formatNumber, initials, todayIso } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
 
 export const metadata = { title: 'Me · Fydr' };
@@ -30,14 +32,34 @@ export const metadata = { title: 'Me · Fydr' };
  *  at (see lib/queries/avatar.ts). Privacy controls are still named
  *  honestly as not built. */
 export default async function MePage() {
-  const { db, orgId, athleteId, claims, firstName, lastName, tier } = await requireAthlete();
+  const { db, orgId, athleteId, claims, firstName, lastName, timezone, tier } = await requireAthlete();
 
-  const [athlete, userRow, myBoards, healthkit] = await Promise.all([
+  /* Ninety days, one query, two cards. The week count only needs this week,
+     but the latest body mass can be much older than that — an athlete who
+     last weighed in a month ago still has a last known weight, and showing a
+     dash because the window was seven days would report absence that is not
+     there. Bounded at both ends: a future-dated row must not become "the
+     latest". */
+  const today = todayIso(timezone);
+  const weekStart = mondayOf(today);
+  const [athlete, userRow, myBoards, healthkit, recentWellness] = await Promise.all([
     fetchAthlete(db, orgId, athleteId),
     db.from('users').select('full_name, phone, avatar_url, avatar_colour').eq('id', claims.userId).maybeSingle(),
     fetchMyBoards(db, orgId, athleteId),
     fetchHealthkitConsent(db, athleteId),
+    fetchWellnessByAthlete(db, athleteId, { from: addDays(today, -90), to: today }),
   ]);
+
+  /* Days elapsed so far this week, not seven: on a Wednesday the honest
+     denominator is three. Claiming "2 of 7" on a Wednesday reads as five
+     missed mornings that have not happened yet. */
+  const daysThisWeek =
+    Math.round((Date.parse(`${today}T00:00:00Z`) - Date.parse(`${weekStart}T00:00:00Z`)) / 86400000) + 1;
+  const entriesThisWeek = recentWellness.filter(
+    (e) => e.entry_date !== null && e.entry_date >= weekStart,
+  ).length;
+  const latestMass =
+    [...recentWellness].reverse().find((e) => e.body_mass_kg !== null)?.body_mass_kg ?? null;
 
   return (
     <>
@@ -104,6 +126,27 @@ export default async function MePage() {
               .filter(Boolean)
               .join(' · ') || 'Squad details not set'}
           </div>
+        </div>
+      </div>
+
+      {/* Fydr Athlete App.dc.html 23i: two things an athlete checks about
+          themselves, above the settings they rarely touch. Both are read from
+          their own check-ins, which is why body mass says self-reported —
+          nobody weighed them, they typed it. */}
+      <div className="me-stats">
+        <div className="card me-stat">
+          <p className="eyebrow">This week</p>
+          <p className="me-stat-value num">
+            {entriesThisWeek} of {daysThisWeek}
+          </p>
+          <p className="me-stat-sub">wellness entries</p>
+        </div>
+        <div className="card me-stat">
+          <p className="eyebrow">Body mass</p>
+          <p className="me-stat-value num">{latestMass !== null ? formatNumber(latestMass, 1) : BLANK}</p>
+          <p className="me-stat-sub">
+            {latestMass !== null ? 'kg · self-reported' : 'none recorded yet'}
+          </p>
         </div>
       </div>
 

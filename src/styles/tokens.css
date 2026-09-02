@@ -270,6 +270,14 @@
      So this is not --text with a tweak: it is ink either way, and dark theme
      is the case that needs saying. */
   --on-bright-tint: var(--text);
+  /* Ink for initials on a --group-* avatar. Its own token because the group
+     palette INVERTS between themes -- deep saturated colours in light, light
+     pastels in dark -- so the two want opposite inks and no existing token
+     spans both. --on-bright-tint is dark ink in BOTH themes, which is right
+     for the dark palette and wrong for this one.
+     Light, measured against all seven: white 3.40-6.29:1, dark ink
+     2.88-5.32:1. White, and the 3:1 large-text bar applies (20px, 700). */
+  --on-group: #ffffff;
   /* Text on a pill that itself sits on a tinted card — a tint over a tint,
      which the *-pill-text tokens were not derived for: they assume the pill
      sits on a plain surface. Measured on the gym programme's rehab card and
@@ -468,6 +476,9 @@ Every alpha here is the handoff's own figure (§4 and §5),
   --accent2-pill-text: #33b6ff;
   --good-pill-text: #4fd6ff;
   --on-bright-tint: #101219;
+  /* See :root. Dark's palette is pastel, so ink: white 1.89-4.11:1 here,
+     ink 4.55-9.90:1. */
+  --on-group: #101219;
   /* See :root — text on a tint over a tint. Lighter than *-pill-text, which
      assumes a plain surface underneath the pill. */
   --bad-on-tint: #ffb3a8;
@@ -602,6 +613,9 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --accent2-pill-text: #33b6ff;
     --good-pill-text: #4fd6ff;
     --on-bright-tint: #101219;
+    /* See :root. Dark's palette is pastel, so ink: white 1.89-4.11:1 here,
+       ink 4.55-9.90:1. */
+    --on-group: #101219;
     /* See :root — text on a tint over a tint. Lighter than *-pill-text, which
        assumes a plain surface underneath the pill. */
     --bad-on-tint: #ffb3a8;

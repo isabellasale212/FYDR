@@ -140,14 +140,13 @@ export function AvatarUploadForm({
               justifyContent: 'center',
               fontSize: 20,
               fontWeight: 700,
-              /* --on-bright-tint, not --on-accent. --on-accent is white,
-                 derived for the accent's deep blue. The avatar palette is
-                 deliberately light, so white initials measured 1.89:1 on
-                 olive, 1.96 on purple, 2.04 on cyan and 2.92 on indigo —
-                 six of the seven colours failed even the 3:1 large-text
-                 threshold, and slate passed only by accident. Dark ink
-                 clears every one, worst case 4.32:1 on slate. */
-              color: colour ? 'var(--on-bright-tint)' : 'var(--muted)',
+              /* --on-group: its own token because the --group-* palette
+                 inverts between themes, so one ink cannot serve both. It was
+                 --on-accent (white), which is derived for the accent's deep
+                 blue: on dark's pastel palette that measured 1.89:1 on olive,
+                 1.96 on purple and 2.04 on cyan — six of seven colours failing
+                 even the 3:1 large-text bar. */
+              color: colour ? 'var(--on-group)' : 'var(--muted)',
             }}
           >
             {initials(fullName)}

@@ -29,6 +29,20 @@ type Props = {
   title: string;
   decimals?: number;
   flags?: readonly FlagMarker[];
+  /** 23e's shape: line, band and end dot only — no axis, no date labels, no
+   *  callout. Not a taste setting. This SVG has a fixed 880-unit viewBox, so
+   *  every length inside it scales with the rendered width, TEXT INCLUDED: in
+   *  the athlete's My data card the chart renders 320px wide, a scale of
+   *  0.364, and `fontSize={10}` painted at 3.6px (measured render height
+   *  4.5px). Those labels were not small, they were unreadable — texture where
+   *  text was intended. Widening them would need ~27 user units each and a
+   *  44px gutter, on a chart 320px across.
+   *
+   *  Nothing is lost by dropping them here: the card's own headline states the
+   *  latest score, and the caption underneath states the window in words. The
+   *  three staff pages that use this chart render it far wider and keep the
+   *  full axis. */
+  compact?: boolean;
 };
 
 const W = 880;
@@ -60,7 +74,15 @@ export function WellnessChart({
   title,
   decimals = 0,
   flags = [],
+  compact = false,
 }: Props) {
+  /* Compact reclaims the axis gutters as plot width and shortens the box —
+     the same drawing, given the whole card. */
+  const h = compact ? 190 : H;
+  const ml = compact ? 4 : ML;
+  const mr = compact ? 4 : MR;
+  const mt = compact ? 12 : MT;
+  const mb = compact ? 8 : MB;
   if (series.length < 2) {
     return (
       <p className="cap">
@@ -70,10 +92,10 @@ export function WellnessChart({
     );
   }
 
-  const step = (W - ML - MR) / (series.length - 1);
-  const x = (i: number) => ML + i * step;
+  const step = (W - ml - mr) / (series.length - 1);
+  const x = (i: number) => ml + i * step;
   const y = (v: number) =>
-    MT + (H - MT - MB) - ((v - min) / (max - min)) * (H - MT - MB);
+    mt + (h - mt - mb) - ((v - min) / (max - min)) * (h - mt - mb);
 
   const clamp = (v: number) => Math.min(max, Math.max(min, v));
 
@@ -129,7 +151,7 @@ export function WellnessChart({
   const lastWithValue = [...series].reverse().find((b) => b.value !== null);
   const lastIndex = lastWithValue ? series.findIndex((b) => b.date === lastWithValue.date) : -1;
 
-  // Flag markers sit in the empty strip above the plot (0 to MT), a different vertical
+  // Flag markers sit in the empty strip above the plot (0 to mt), a different vertical
   // zone from the per-point above/below-band triangles drawn at the data value itself
   // below, and a different colour (--accent2, never used elsewhere in this chart) — two
   // channels an athlete could otherwise conflate: "this reading was outside your own
@@ -148,22 +170,24 @@ export function WellnessChart({
   return (
     <div className="chart">
       <svg
-        viewBox={`0 0 ${W} ${H}`}
+        viewBox={`0 0 ${W} ${h}`}
         role="img"
         aria-label={`${title}. ${series.filter((s) => s.value !== null).length} of ${series.length} days submitted.${flagMarkers.length > 0 ? ` ${flagMarkers.length} day${flagMarkers.length === 1 ? '' : 's'} with a note from staff, listed below the chart.` : ''}`}
       >
-        {ticks.map((t) => (
+        {/* Gridlines and their labels travel together: a gridline with no
+            number on it is a line, not a scale. Both go in compact. */}
+        {(compact ? [] : ticks).map((t) => (
           <g key={t}>
             <line
-              x1={ML}
+              x1={ml}
               y1={y(t)}
-              x2={W - MR}
+              x2={W - mr}
               y2={y(t)}
               stroke="var(--hair)"
               strokeWidth={1}
             />
             <text
-              x={ML - 8}
+              x={ml - 8}
               y={y(t) + 3.5}
               textAnchor="end"
               fontFamily="var(--font-sora)"
@@ -232,10 +256,12 @@ export function WellnessChart({
         })}
 
         {/* Today's number, spelled out — the one value most athletes open
-            this chart to read, rather than estimating it off the axis. */}
-        {lastWithValue && lastIndex >= 0 ? (
+            this chart to read, rather than estimating it off the axis. Not in
+            compact: there the card's own headline is already showing it at
+            40px, and printing it twice on one card is not emphasis. */}
+        {!compact && lastWithValue && lastIndex >= 0 ? (
           <text
-            x={Math.min(x(lastIndex) + 10, W - MR)}
+            x={Math.min(x(lastIndex) + 10, W - mr)}
             y={y(clamp(lastWithValue.value!)) - 10}
             textAnchor={lastIndex > series.length - 3 ? 'end' : 'start'}
             fontFamily="var(--font-sora)"
@@ -253,16 +279,16 @@ export function WellnessChart({
             <g key={`flag-${f.date}`}>
               <line
                 x1={cx}
-                y1={MT}
+                y1={mt}
                 x2={cx}
-                y2={H - MB + 6}
+                y2={h - mb + 6}
                 stroke="var(--accent2)"
                 strokeWidth={1}
                 strokeDasharray="2,3"
                 opacity={0.45}
               />
               <polygon
-                points={`${cx},${MT - 1} ${cx - 4.5},${MT - 9} ${cx + 4.5},${MT - 9}`}
+                points={`${cx},${mt - 1} ${cx - 4.5},${mt - 9} ${cx + 4.5},${mt - 9}`}
                 fill="var(--accent2)"
               >
                 <title>{f.tooltip}</title>
@@ -271,29 +297,36 @@ export function WellnessChart({
           );
         })}
 
-        <line
-          x1={ML}
-          y1={H - MB + 6}
-          x2={W - MR}
-          y2={H - MB + 6}
-          stroke="var(--border)"
-          strokeWidth={1}
-        />
+        {compact ? null : (
+          <line
+            x1={ml}
+            y1={h - mb + 6}
+            x2={W - mr}
+            y2={h - mb + 6}
+            stroke="var(--border)"
+            strokeWidth={1}
+          />
+        )}
 
-        {[
-          { point: first, i: 0, anchor: 'start' as const },
-          {
-            point: mid,
-            i: Math.floor(series.length / 2),
-            anchor: 'middle' as const,
-          },
-          { point: last, i: series.length - 1, anchor: 'end' as const },
-        ].map(({ point, i, anchor }) =>
+        {/* The window is stated in words in the caption under this card, so in
+            compact these three are a second, less legible copy of it. */}
+        {(compact
+          ? []
+          : [
+              { point: first, i: 0, anchor: 'start' as const },
+              {
+                point: mid,
+                i: Math.floor(series.length / 2),
+                anchor: 'middle' as const,
+              },
+              { point: last, i: series.length - 1, anchor: 'end' as const },
+            ]
+        ).map(({ point, i, anchor }) =>
           point ? (
             <text
               key={`${point.date}-${anchor}`}
               x={x(i)}
-              y={H - 8}
+              y={h - 8}
               textAnchor={anchor}
               fontFamily="var(--font-sora)"
               fontSize={10}

@@ -42,6 +42,17 @@ import { requireAthlete } from '@/lib/session';
 
 export const metadata = { title: 'My data · Fydr' };
 
+/** The absent-value marker in a history row, 23e. BLANK ('·', U+00B7) is the
+ *  right mark inside a dense table, where a row is one line and a dot reads as
+ *  a held space. In these lists it is not: measured at 22px it renders 5.5px
+ *  wide in --faint, a speck beside a two-digit score, and the eye reads it as
+ *  a rendering fault rather than as "nothing here". An em dash is the same
+ *  statement at a size that carries it.
+ *
+ *  Only the display changes. Absent is still absent and still never zero —
+ *  the row says "not submitted" in words beside it. */
+const NO_VALUE = '\u2014';
+
 /** The rolling band the readiness chart draws around the line. Also the reason
  *  `day` is not a legal period on this screen — see PERIOD_ALLOWED. */
 const ROLLING_DAYS = 14;
@@ -650,6 +661,11 @@ async function WellnessTab({
             body="Your check-ins appear here once you start submitting."
           />
         ) : (
+          /* compact, per 23e — and because the labels were unreadable here.
+             This SVG's 880-unit viewBox renders 320px wide inside the card, a
+             scale of 0.364, which painted every fontSize={10} label at 3.6px.
+             The staff pages that use this chart render it wide enough for the
+             axis and keep it. */
           <WellnessChart
             series={series}
             min={0}
@@ -658,6 +674,7 @@ async function WellnessTab({
             title="Your readiness"
             timezone={timezone}
             flags={flagMarkers}
+            compact
           />
         )}
 
@@ -725,7 +742,7 @@ async function WellnessTab({
                   </p>
                 </div>
                 <p className="hist-value num" data-missing={entry ? undefined : ''}>
-                  {entry ? formatNumber(entry.readiness_score, 0) : BLANK}
+                  {entry ? formatNumber(entry.readiness_score, 0) : NO_VALUE}
                 </p>
               </div>
               {corrected ? (
@@ -1143,7 +1160,7 @@ function dayMonth(iso: string, timezone: string): string {
  *  row states its own. Null is the blank marker, never 0 — a session logged
  *  without loads is not a session with no load in it. */
 function volumeLabel(kg: number | null): string {
-  if (kg === null) return BLANK;
+  if (kg === null) return NO_VALUE;
   return kg >= 1000 ? `${formatNumber(kg / 1000, 1)} t` : `${formatNumber(kg, 0)} kg`;
 }
 
@@ -1402,7 +1419,7 @@ async function TestingTab({
                     <p className="hist-value num" data-missing={s.latestValue === null ? '' : undefined}>
                       {s.latestValue !== null
                         ? withUnit(s.latestValue.toFixed(s.decimal_places), s.unit)
-                        : BLANK}
+                        : NO_VALUE}
                     </p>
                     {st.kind === 'off' ? (
                       <p className="hist-delta num">

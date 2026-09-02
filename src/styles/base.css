@@ -1432,20 +1432,21 @@ body:has(.phone) {
   font-size: 13px;
   font-weight: 700;
 }
-/* Direction carries the colour, and the glyph carries it too — a reader who
-   cannot separate the two hues still has the arrow. */
+/* 23e draws "▲ 6 on last week" in the accent, not in green, and the arrow is
+   left to carry the direction — which it does for a reader who cannot separate
+   two hues anyway. Green/red on a wellness delta overstates it: readiness
+   moving a few points between weeks is what readiness does, and a red number
+   for an ordinary dip reads as an alarm nobody raised. Down and 'off' share
+   the amber for the same reason — see below. */
 .rd-delta[data-dir='up'] {
-  color: var(--good-text);
+  color: var(--accent-text);
 }
-/* 'off' is not 'down'. Being 0.10 s off a personal best is the ordinary state
-   of every athlete on every day that is not their best day, and painting it in
-   --bad-text (a red reserved for a value that needs acting on) would make a
-   normal result look like an alert. 23m draws it in the amber this uses. */
-.rd-delta[data-dir='off'] {
-  color: var(--warn-text);
-}
+/* Being 0.10 s off a personal best is the ordinary state of every athlete on
+   every day that is not their best day, and --bad-text is a red reserved for a
+   value that needs acting on. 23m draws it in the amber this uses. */
+.rd-delta[data-dir='off'],
 .rd-delta[data-dir='down'] {
-  color: var(--bad-text);
+  color: var(--warn-text);
 }
 .rd-mean {
   margin: 3px 0 0;
@@ -1549,8 +1550,11 @@ body:has(.phone) {
   color: var(--muted);
   font-weight: 500;
 }
+/* Matches .rd-delta[data-dir='up'] above. The Tests headline and the row
+   beneath it state the same fact about the same result; two colours for it on
+   one screen is a difference that means nothing. */
 .hist-delta[data-ahead] {
-  color: var(--good-text);
+  color: var(--accent-text);
 }
 /* The chevron on a gym session row. The row is a link — it opens the session
    so a mis-logged set can be corrected — and an affordance with no mark is an

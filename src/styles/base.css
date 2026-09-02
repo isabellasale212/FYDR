@@ -6262,10 +6262,14 @@ button.dash-stat {
 }
 /* No top padding: .sg-grid-card already provides --pad-card above this row,
    and adding 12 on top of it put the first weekday 28px from the card's
-   border while the rest of the page sat at 16. Sides and bottom are the
-   cell's own rhythm and are unchanged. */
+   border while the rest of the page sat at 16.
+   The BOTTOM is the token too, so the header text is framed evenly — 16 above
+   from the card, 16 below to the rule. It was 10, which read top-heavy once
+   the top stopped being 28. The sides stay at 12: those are column rhythm
+   against the neighbouring day's divider, not a distance to the card's edge,
+   which is what the 16 rule is about. */
 .sg-day-head {
-  padding: 0 12px 10px;
+  padding: 0 12px var(--pad-card);
   border-left: 1px solid var(--hair);
   cursor: pointer;
   border: none;

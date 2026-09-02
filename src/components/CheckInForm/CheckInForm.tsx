@@ -148,22 +148,21 @@ export function CheckInForm({
 
   return (
     <form onSubmit={onSubmit} noValidate>
-      {/* Fydr Athlete App.dc.html 23c: how long it takes, then the one rule
-          that makes every scale readable. "always" is deliberate and is the
-          design's own word — it is what lets a reader work out that 5 on
-          Soreness means none, without a label under every scale. */}
-      <p className="dir">
-        45 seconds · <b>5 is always the best you can feel.</b>
-      </p>
+      {/* 23c's directive — how long it takes, then the one rule that makes
+          every scale readable — now sits in the sheet header where §7.2 puts
+          it, immediately under the title. "always" is the design's own word and
+          is what lets a reader work out that 5 on Soreness means none, without
+          a label under every scale. */}
 
       <div className="sleep-panel">
+        {/* Spec §7.2: "Sleep" at 16/700 with "hours last night" beside it. The
+            figure it replaces restated the number the stepper shows two rows
+            down. */}
         <div className="sp-head">
           <span className="k" id="sleep-hours-label">
             Sleep
           </span>
-          <span className="num" style={{ fontSize: 14, fontWeight: 700 }}>
-            {sleepHours.toFixed(1)} h
-          </span>
+          <span className="h">hours last night</span>
         </div>
 
         <div className="step">

@@ -2316,11 +2316,36 @@ a.hist-row:focus-visible {
 }
 
 /* -------- inset sleep panel, §6 -------- */
+/* 23c's sleep row: label and note left, stepper right, on ONE line — not a
+   heading with the control beneath it. */
 .sleep-panel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   background: var(--surf2);
   border: 1px solid var(--border);
   border-radius: var(--r-stat);
   padding: 14px;
+}
+.sleep-panel .sp-head {
+  flex: 1;
+  min-width: 0;
+  display: block;
+}
+.sleep-panel .sp-head .k {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+}
+.sleep-panel .sp-head .h {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.sleep-panel .step {
+  margin-top: 0;
+  flex: none;
 }
 .sleep-panel .sp-head {
   display: flex;
@@ -2331,11 +2356,14 @@ a.hist-row:focus-visible {
   font-size: 14px;
   font-weight: 700;
 }
+/* Spec §7.2: 44×44 keys either side of a 58px value box. The stepper sits at
+   the end of the sleep row rather than filling its width, as 23c draws it. */
 .step {
   display: grid;
-  grid-template-columns: 46px minmax(0, 1fr) 46px;
+  grid-template-columns: 44px 58px 44px;
+  justify-content: end;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   margin-top: 10px;
 }
 .step .btnc {
@@ -2362,8 +2390,8 @@ a.hist-row:focus-visible {
   line-height: 1.1;
 }
 .step .val .v {
-  font-size: 30px;
-  font-weight: 800;
+  font-size: 24px;
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
 .step .val .u {
@@ -2567,11 +2595,26 @@ a.hist-row:focus-visible {
   transform: rotate(180deg);
 }
 
+/* Spec §7.2: the footer sits under a hairline with the home-indicator
+   clearance below it, and its button is full width at 16/700, radius 16,
+   padding 17px 20px. Incomplete is 45% opacity with the count in the label —
+   it never silently does nothing. */
 .subm {
-  padding: 12px 0 0;
+  padding: 14px 0 calc(8px + env(safe-area-inset-bottom, 0px));
+  margin-top: 14px;
+  border-top: 1px solid var(--hair);
   position: sticky;
   bottom: 0;
   background: var(--surf);
+}
+.subm .btn-primary {
+  padding: 17px 20px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 700;
+}
+.subm .btn-primary:disabled {
+  opacity: var(--o-disabled);
 }
 .subm .btn-primary[disabled] {
   background: rgb(var(--accent-rgb) / 0.35);

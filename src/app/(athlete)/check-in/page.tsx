@@ -46,17 +46,29 @@ export default async function CheckInPage({
 
   return (
     <>
+      {/* Spec §7.2: a drag handle, then the title at 22/800 with its sub
+          beneath, and a 34px round close on the right. The title it replaces
+          was 16px and centred between the close and the date, which read as a
+          dialog's chrome rather than as the name of the thing being done.
+
+          "This morning" is 23c's title and is right for the common case; a
+          check-in opened for another day says which day instead, because
+          "this morning" would then be false. */}
       <div className="sheet-head">
-        <Link href={backHref} className="sheet-x" aria-label="Close the check-in">
-          <span aria-hidden="true">✕</span>
-        </Link>
-        <h1 className="t">Morning check-in</h1>
-        <span
-          className="tiny num"
-          style={{ width: 56, textAlign: 'end', whiteSpace: 'nowrap' }}
-        >
-          {formatDate(entryDate, timezone)}
-        </span>
+        <div className="sheet-grip" aria-hidden="true" />
+        <div className="sheet-head-row">
+          <div style={{ minWidth: 0 }}>
+            <h1 className="t">
+              {entryDate === today ? 'This morning' : formatDate(entryDate, timezone)}
+            </h1>
+            <p className="s">
+              45 seconds &middot; <b>5 is always the best you can feel</b>
+            </p>
+          </div>
+          <Link href={backHref} className="sheet-x" aria-label="Close the check-in">
+            <span aria-hidden="true">✕</span>
+          </Link>
+        </div>
       </div>
 
       {existing ? (

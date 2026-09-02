@@ -763,7 +763,22 @@ a {
   gap: 5px;
   white-space: nowrap;
   line-height: 1.6;
-  background: rgb(var(--pill-rgb) / var(--pill-fill-alpha));
+  /* OPAQUE, not translucent. --*-pill-text is derived against this tone at
+     this alpha over --surf, and a translucent fill only lands on that ground
+     when the pill happens to sit on a plain card. On a row that carries the
+     SAME hue as a status wash — the squad roster tints its rows — the two
+     tints stack, the ground moves toward the hue, and the text drops under
+     AA: measured 4.14:1 on warn and 4.20:1 on bad in dark, while good, which
+     sits on a plain card, read 5.80:1.
+     color-mix reproduces the intended composite exactly and pins it there, so
+     a pill now reads the same wherever it is put. That is a property worth
+     having outright: the next tinted surface someone adds cannot silently
+     break every pill sitting on it. */
+  background: color-mix(
+    in srgb,
+    rgb(var(--pill-rgb)) calc(var(--pill-fill-alpha) * 100%),
+    var(--surf)
+  );
   color: var(--pill-text);
   border-inline-start: 2px solid rgb(var(--pill-rgb));
 }

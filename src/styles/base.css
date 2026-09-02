@@ -2635,10 +2635,12 @@ a.hist-row:focus-visible {
   padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 12px;
   border-bottom: 1px solid var(--hair);
 }
+/* Close and the clock only — a utility line above the title, not a bar the
+   title has to share. 23g gives the session's name the full width. */
 .gym-head-row {
-  display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) 68px;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
 }
 .gym-close {
@@ -2647,31 +2649,38 @@ a.hist-row:focus-visible {
   color: var(--accent-text);
   text-decoration: none;
 }
-.gym-head-mid {
-  text-align: center;
-  min-width: 0;
+/* The session's name at display size, left, per 23g. It WRAPS rather than
+   ellipsing: the old centred rule truncated, and "Lower body A (rehab
+   variation)" cut to "Lower body A (rehab…" is a different session. */
+.gym-head-title {
+  margin: 4px 0 0;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-wrap: balance;
 }
-.gym-head-mid .nm {
-  font-size: 16px;
+/* The count sits beside the bar it counts, not under the title. */
+.gym-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+.gym-progress .prog {
+  font-size: 13px;
   font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
-}
-.gym-head-mid .prog {
-  font-size: 11.5px;
-  color: var(--muted);
-  margin-top: 2px;
 }
 .gym-clock {
   font-size: 13px;
   text-align: end;
 }
 .gym-progress-track {
-  height: 5px;
+  height: 6px;
   border-radius: var(--r-pill);
   background: var(--track);
-  margin-top: 12px;
+  flex: 1 1 auto;
   overflow: hidden;
 }
 .gym-head-eyebrow {
@@ -2700,24 +2709,41 @@ a.hist-row:focus-visible {
   overflow: hidden;
   margin-bottom: 14px;
 }
+/* The exercise you are on, 23g. --gym rather than the accent, because this is
+   the gym domain's own colour everywhere else in the product (the tab bar's
+   dumbbell, this screen's progress fill). The tint is mixed against --surf,
+   not left translucent, so it lands the same on both grounds. */
+.gym-ex-card[data-active] {
+  border-color: rgb(var(--gym-rgb) / 0.55);
+}
+.gym-ex-card[data-active] .gym-ex-head {
+  background: color-mix(in srgb, var(--gym) 12%, var(--surf));
+  border-bottom-color: rgb(var(--gym-rgb) / 0.3);
+}
 .gym-ex-head {
   background: var(--surf2);
   border-bottom: 1px solid var(--hair);
   padding: 12px 14px;
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
-  flex-wrap: wrap;
 }
+/* Name on its own line, prescription under it — 23g. Side by side, the
+   prescription was a nowrap string competing with the name for one row:
+   "3 × 8–10 @ 100 kg · 90s rest" is longer than most exercise names and was
+   winning. */
 .gym-ex-head .nm {
-  font-size: 14.5px;
+  display: block;
+  font-size: 16px;
   font-weight: 700;
+  letter-spacing: -0.01em;
 }
 .gym-ex-head .scheme {
-  font-size: 11.5px;
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
   color: var(--muted);
-  white-space: nowrap;
 }
 .gym-ex-adjust {
   padding: 8px 14px 0;

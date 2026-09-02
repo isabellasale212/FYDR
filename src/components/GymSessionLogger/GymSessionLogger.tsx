@@ -170,6 +170,16 @@ export function GymSessionLogger({
   const doneCount = loggedSets.length;
   const pct = totalSets > 0 ? Math.round((doneCount / totalSets) * 100) : 0;
 
+  /* The exercise being worked on, 23g's gold-bordered card: the FIRST with
+     sets still to log, in prescribed order. First rather than "the one most
+     recently touched" because a programme is an order — the athlete works
+     down it — and because "most recent" would move the highlight backwards
+     the moment somebody corrected an earlier set. Once every exercise is
+     complete nothing is active, which is correct: there is nothing to do. */
+  const activeExerciseId =
+    exercises.find((ex) => (setsByExercise.get(ex.programme_exercise_id) ?? []).length < ex.sets)
+      ?.programme_exercise_id ?? null;
+
   /* Bounded (ten seconds) and has a real onError — before this, a thrown network failure
    * showed nothing at all and a hung request pinned the tick button disabled forever
    * (audit S5's shape, on the screen whose footer promises "sets save as you log them").
@@ -289,22 +299,33 @@ export function GymSessionLogger({
         flexDirection: 'column',
       }}
     >
+      {/* Fydr Athlete App.dc.html 23g: the eyebrow and the session's name run
+          left, at size, and the count sits beside the bar it belongs to
+          rather than under the title. The centred title this replaces put
+          "Lower A" between a Close link and a running clock, which read as a
+          modal's chrome — three competing things on one line, none of them
+          the thing the screen is for.
+
+          Close and the clock stay, on a utility line of their own. Neither is
+          in the design because the design is a still; leaving a session and
+          knowing how long you have been in it are both real, and a picture
+          cannot show that they are missing. */}
       <div className="gym-head">
         <div className="gym-head-row">
           <Link href="/programme" className="gym-close" aria-label="Close">
             Close
           </Link>
-          <div className="gym-head-mid">
-            {sessionMeta ? <div className="gym-head-eyebrow">{sessionMeta}</div> : null}
-            <div className="nm">{sessionName}</div>
-            <div className="prog num">
-              {doneCount} of {totalSets} sets
-            </div>
-          </div>
           <span className="gym-clock num">{now !== null ? elapsed(startedAt, now) : '·'}</span>
         </div>
-        <div className="gym-progress-track">
-          <div className="gym-progress-fill" style={{ width: `${pct}%` }} />
+        {sessionMeta ? <div className="gym-head-eyebrow">{sessionMeta}</div> : null}
+        <h1 className="gym-head-title">{sessionName}</h1>
+        <div className="gym-progress">
+          <div className="gym-progress-track">
+            <div className="gym-progress-fill" style={{ width: `${pct}%` }} />
+          </div>
+          <span className="prog num">
+            {doneCount} of {totalSets} sets
+          </span>
         </div>
       </div>
 
@@ -318,6 +339,7 @@ export function GymSessionLogger({
 
           {exercises.map((ex) => {
             const done = setsByExercise.get(ex.programme_exercise_id) ?? [];
+            const isActive = ex.programme_exercise_id === activeExerciseId;
             const prefillReps = ex.reps_min !== null ? String(ex.reps_min) : '';
             // Prefilled from a real number in both cases: the prescribed
             // absolute kg, or (migration 0043) the athlete's own resolved
@@ -333,12 +355,44 @@ export function GymSessionLogger({
             const nextSetNumber = done.length + 1;
 
             return (
-              <div key={ex.programme_exercise_id} className="gym-ex-card">
+              <div
+                key={ex.programme_exercise_id}
+                className="gym-ex-card"
+                data-active={isActive ? '' : undefined}
+              >
                 <div className="gym-ex-head">
-                  <span className="nm">{ex.exercise_name}</span>
-                  <span className="scheme num">
-                    {schemeLabel(ex)} @ {loadLabel(ex, timezone)}
-                    {ex.rest_seconds ? ` · ${ex.rest_seconds}s rest` : ''}
+                  <div style={{ minWidth: 0 }}>
+                    <span className="nm">{ex.exercise_name}</span>
+                    <span className="scheme num">
+                      {schemeLabel(ex)} @ {loadLabel(ex, timezone)}
+                      {ex.rest_seconds ? ` · ${ex.rest_seconds}s rest` : ''}
+                    </span>
+                  </div>
+                  {/* 23g's per-exercise pill. Three states, because the count
+                      only means something once there is something to count:
+                      nothing logged says how many are PRESCRIBED, part-done
+                      says how far through, finished says so in the good tone.
+                      "0 of 3" would be a progress reading of a thing not
+                      started, which is not the same statement. */}
+                  <span
+                    className={
+                      done.length === 0
+                        ? 'pill pill-neutral'
+                        : done.length >= ex.sets
+                          ? 'pill pill-good'
+                          : 'pill pill-warn'
+                    }
+                  >
+                    {done.length === 0 ? (
+                      <>
+                        <span className="num">{ex.sets}</span> {ex.sets === 1 ? 'set' : 'sets'}
+                      </>
+                    ) : (
+                      <>
+                        <span className="num">{done.length}</span> of{' '}
+                        <span className="num">{ex.sets}</span>
+                      </>
+                    )}
                   </span>
                 </div>
 

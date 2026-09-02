@@ -2925,6 +2925,153 @@ a.hist-row:focus-visible {
   overflow: hidden;
   margin-bottom: 14px;
 }
+/* SPEC §7.4, the set keys. One box a set, flex: 1, 42px tall, radius 12 —
+   logged takes the gold fill, border and a tick; pending shows its index on
+   the card border. */
+.gym-set-keys {
+  display: flex;
+  gap: 8px;
+}
+.gym-set-key {
+  flex: 1;
+  min-width: 0;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  cursor: pointer;
+  transition: background var(--t-state), border-color var(--t-state), color var(--t-state);
+}
+.gym-set-key:disabled {
+  cursor: default;
+  opacity: var(--o-disabled);
+}
+/* --gym-on-tint, not --gym: §2 rule 1, a semantic colour is never text. The
+   gold reads about 1.9:1 on its own tint; §2 names #6b4708 / #ffdda6 for this
+   and those are the token's two values. */
+.gym-set-key[data-logged] {
+  background: rgb(var(--gym-rgb) / 0.22);
+  border-color: rgb(var(--gym-rgb) / 0.6);
+  color: var(--gym-on-tint);
+  opacity: 1;
+  cursor: pointer;
+}
+.gym-set-key:not(:disabled):hover {
+  border-color: var(--border-hover);
+  color: var(--text);
+}
+.gym-set-key:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* §7.4's weight row: label and note left, stepper right, under a hairline. */
+.gym-weight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--hair);
+}
+.gym-weight-label {
+  flex: 1;
+  min-width: 0;
+}
+.gym-weight-label .k {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.gym-weight-label .n {
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+/* §9 rule 4: when the athlete has overridden the prescription the coach's
+   number stays on screen, in warn ink so it reads as the thing departed from
+   rather than as another muted caption. */
+.gym-weight-label .n[data-warn] {
+  color: var(--warn-pill-text);
+  font-weight: 600;
+}
+.gym-stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+.gym-stepper button {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color var(--t-state), background var(--t-state);
+}
+.gym-stepper button:hover {
+  border-color: var(--border-hover);
+}
+.gym-stepper button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.gym-stepper .v {
+  width: 62px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.gym-stepper .v small {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0;
+}
+
+/* The inline correction. Not in 23g — see the note at its call site. */
+.gym-correct {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--surf2);
+  border: 1px solid var(--border);
+}
+.gym-correct-k {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.gym-correct-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.gym-correct-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.gym-correct-actions .btn-primary,
+.gym-correct-actions .btn-ghost {
+  flex: 1;
+  min-height: 44px;
+}
+
 /* The exercise you are on, 23g. --gym rather than the accent, because this is
    the gym domain's own colour everywhere else in the product (the tab bar's
    dumbbell, this screen's progress fill). The tint comes from --gym-tint,

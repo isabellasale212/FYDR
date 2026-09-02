@@ -147,6 +147,11 @@ export function GymSessionLogger({
    * place, mid-session or on the completed review — this build has no ConfirmSheet, so
    * both cases behave the same way, a real, small simplification against the fuller spec. */
   const [correcting, setCorrecting] = useState<string | null>(null);
+  /* The athlete's chosen weight per exercise, keyed by programme_exercise_id.
+     Empty until they touch a stepper — the recommendation is the value until
+     then, so an untouched exercise shows the coach's number rather than a copy
+     of it that has stopped tracking changes. */
+  const [weights, setWeights] = useState<Record<string, number>>({});
   const [correctionDrafts, setCorrectionDrafts] = useState<Record<string, { reps: string; load: string }>>({});
 
   useEffect(() => {
@@ -221,6 +226,49 @@ export function GymSessionLogger({
     onError: (err) => setError(toUserMessage(err, 'athlete')),
   });
 
+  /* One plate a side on a barbell. The brief does not name a step; 2.5 is the
+     smallest change most gyms can actually make. */
+  const WEIGHT_STEP_KG = 2.5;
+
+  /* What the coach set, resolved for this athlete: an absolute kg prescription,
+     or a percent_1rm already resolved against their own latest 1RM (migration
+     0043). Every other basis — bodyweight, percent of bodyweight, an RPE target
+     — has no kilogram to show, and returns null rather than a number this
+     screen would be inventing. */
+  function recommendedFor(ex: ResolvedExercise): number | null {
+    if (ex.load_basis === 'absolute') return ex.load_value;
+    if (ex.load_basis === 'percent_1rm') return ex.resolved_load_kg;
+    return null;
+  }
+
+  function weightFor(ex: ResolvedExercise): number | null {
+    const own = weights[ex.programme_exercise_id];
+    return own !== undefined ? own : recommendedFor(ex);
+  }
+
+  function bumpWeight(ex: ResolvedExercise, delta: number) {
+    const base = weightFor(ex);
+    if (base === null) return;
+    // Never below zero, and rounded to the step so a chain of taps cannot
+    // drift onto 0.30000000000000004.
+    const next = Math.max(0, Math.round((base + delta) * 100) / 100);
+    setWeights((w) => ({ ...w, [ex.programme_exercise_id]: next }));
+  }
+
+  const correctingRow = correcting ? (loggedSets.find((r) => r.id === correcting) ?? null) : null;
+
+  function openCorrection(row: LoggedSet) {
+    setError(null);
+    setCorrectionDrafts((d) => ({
+      ...d,
+      [row.id]: {
+        reps: row.reps_completed !== null ? String(row.reps_completed) : '',
+        load: row.load_kg !== null ? String(row.load_kg) : '',
+      },
+    }));
+    setCorrecting(row.id);
+  }
+
   function buildSetInput(
     ex: ResolvedExercise,
     setNumber: number,
@@ -285,10 +333,6 @@ export function GymSessionLogger({
     onError: (err) => setError(toUserMessage(err, 'athlete')),
   });
 
-  function draftFor(exerciseId: string, prefillReps: string, prefillLoad: string) {
-    return drafts[exerciseId] ?? { reps: prefillReps, load: prefillLoad };
-  }
-
   return (
     <div
       style={{
@@ -340,18 +384,11 @@ export function GymSessionLogger({
           {exercises.map((ex) => {
             const done = setsByExercise.get(ex.programme_exercise_id) ?? [];
             const isActive = ex.programme_exercise_id === activeExerciseId;
-            const prefillReps = ex.reps_min !== null ? String(ex.reps_min) : '';
-            // Prefilled from a real number in both cases: the prescribed
-            // absolute kg, or (migration 0043) the athlete's own resolved
-            // percent_1rm figure. Never prefilled from a guess — an
-            // unresolved percent_1rm leaves the field blank, same as before.
-            const prefillLoad =
-              ex.load_basis === 'absolute' && ex.load_value !== null
-                ? String(ex.load_value)
-                : ex.load_basis === 'percent_1rm' && ex.resolved_load_kg !== null
-                  ? String(ex.resolved_load_kg)
-                  : '';
-            const draft = draftFor(ex.programme_exercise_id, prefillReps, prefillLoad);
+            /* The prescription IS the prefill now, read at the moment a set
+               key is tapped (recommendedFor / reps_min) rather than copied into
+               a per-exercise draft first. The draft existed to hold what the
+               athlete typed into two inputs a set; there are no such inputs
+               any more. */
             const nextSetNumber = done.length + 1;
 
             return (
@@ -396,233 +433,197 @@ export function GymSessionLogger({
                   </span>
                 </div>
 
-                {Array.from({ length: ex.sets }, (_, i) => {
-                  const setNumber = i + 1;
-                  const loggedRow = done.find((s) => s.set_number === setNumber);
-                  const isNext = !alreadyComplete && setNumber === nextSetNumber;
-                  const isCorrecting = !!loggedRow && correcting === loggedRow.id;
-                  const correctionDraft = loggedRow
-                    ? (correctionDrafts[loggedRow.id] ?? {
-                        reps: loggedRow.reps_completed !== null ? String(loggedRow.reps_completed) : '',
-                        load: loggedRow.load_kg !== null ? String(loggedRow.load_kg) : '',
-                      })
-                    : null;
+                {/* 23g's SET KEYS. One box a set, tapped to log — not a row of
+                    reps and load inputs a set.
 
-                  function openCorrection() {
-                    if (!loggedRow) return;
-                    setError(null);
-                    setCorrectionDrafts((d) => ({
-                      ...d,
-                      [loggedRow.id]: {
-                        reps: loggedRow.reps_completed !== null ? String(loggedRow.reps_completed) : '',
-                        load: loggedRow.load_kg !== null ? String(loggedRow.load_kg) : '',
-                      },
-                    }));
-                    setCorrecting(loggedRow.id);
-                  }
-
-                  return (
-                    <div key={setNumber} className="gym-set-row" data-done={!!loggedRow}>
-                      {isCorrecting ? (
-                        <button
-                          type="button"
-                          className="n num"
-                          aria-label={`Cancel correcting set ${setNumber}`}
-                          onClick={() => setCorrecting(null)}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            padding: 0,
-                            /* The LONGHANDS, never `font: inherit`. The shorthand resets
-                               font-variant-numeric and font-feature-settings to normal, and it
-                               does it inline — which no class rule can outrank. This button
-                               carries .num, and it was rendering proportional digits anyway:
-                               "111" 18.45px against "888" 28.22px, in a column of logged
-                               loads. */
-                            fontFamily: 'inherit',
-                            fontSize: 'inherit',
-                            fontWeight: 'inherit',
-                            color: 'inherit',
-                            cursor: 'pointer',
-                            textDecoration: 'underline',
-                          }}
-                        >
-                          {setNumber}
-                        </button>
-                      ) : (
-                        <span className="n num">{setNumber}</span>
-                      )}
-                      {loggedRow && isCorrecting ? (
-                        <>
-                          <input
-                            className="field"
-                            type="number"
-                            inputMode="numeric"
-                            aria-label={`Set ${setNumber} corrected reps`}
-                            value={correctionDraft?.reps ?? ''}
-                            onChange={(e) =>
-                              setCorrectionDrafts((d) => ({
-                                ...d,
-                                [loggedRow.id]: { ...(correctionDraft ?? { reps: '', load: '' }), reps: e.target.value },
-                              }))
-                            }
-                          />
-                          <input
-                            className="field"
-                            type="number"
-                            step="0.5"
-                            inputMode="decimal"
-                            aria-label={`Set ${setNumber} corrected load in kg`}
-                            value={correctionDraft?.load ?? ''}
-                            onChange={(e) =>
-                              setCorrectionDrafts((d) => ({
-                                ...d,
-                                [loggedRow.id]: { ...(correctionDraft ?? { reps: '', load: '' }), load: e.target.value },
-                              }))
-                            }
-                          />
-                        </>
-                      ) : loggedRow ? (
-                        <>
-                          {/* screens/gym-logging.md: "Tapping [a completed set row]
-                           * re-opens it for correction." Buttons, not a click handler on
-                           * the display span alone, so this is reachable without a mouse. */}
-                          <button
-                            type="button"
-                            className="num"
-                            onClick={openCorrection}
-                            aria-label={`Correct set ${setNumber}, logged ${loggedRow.reps_completed ?? 'no'} reps`}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              padding: 0,
-                              /* The LONGHANDS, never `font: inherit`. The shorthand resets
-                                 font-variant-numeric and font-feature-settings to normal, and it
-                                 does it inline — which no class rule can outrank. This button
-                                 carries .num, and it was rendering proportional digits anyway:
-                                 "111" 18.45px against "888" 28.22px, in a column of logged
-                                 loads. */
-                              fontFamily: 'inherit',
-                              fontSize: 'inherit',
-                              fontWeight: 'inherit',
-                              color: 'inherit',
-                              textAlign: 'left',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            {loggedRow.reps_completed ?? '—'} reps
-                          </button>
-                          <button
-                            type="button"
-                            className="num"
-                            onClick={openCorrection}
-                            aria-label={`Correct set ${setNumber}, logged ${loggedRow.load_kg !== null ? `${loggedRow.load_kg} kg` : 'no load'}`}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              padding: 0,
-                              /* The LONGHANDS, never `font: inherit`. The shorthand resets
-                                 font-variant-numeric and font-feature-settings to normal, and it
-                                 does it inline — which no class rule can outrank. This button
-                                 carries .num, and it was rendering proportional digits anyway:
-                                 "111" 18.45px against "888" 28.22px, in a column of logged
-                                 loads. */
-                              fontFamily: 'inherit',
-                              fontSize: 'inherit',
-                              fontWeight: 'inherit',
-                              color: 'inherit',
-                              textAlign: 'left',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            {loggedRow.load_kg !== null ? `${loggedRow.load_kg} kg` : '—'}
-                          </button>
-                        </>
-                      ) : isNext ? (
-                        <>
-                          <input
-                            className="field"
-                            type="number"
-                            inputMode="numeric"
-                            aria-label={`Set ${setNumber} reps`}
-                            value={draft.reps}
-                            onChange={(e) =>
-                              setDrafts((d) => ({
-                                ...d,
-                                [ex.programme_exercise_id]: { ...draft, reps: e.target.value },
-                              }))
-                            }
-                          />
-                          <input
-                            className="field"
-                            type="number"
-                            step="0.5"
-                            inputMode="decimal"
-                            aria-label={`Set ${setNumber} load in kg`}
-                            value={draft.load}
-                            onChange={(e) =>
-                              setDrafts((d) => ({
-                                ...d,
-                                [ex.programme_exercise_id]: { ...draft, load: e.target.value },
-                              }))
-                            }
-                          />
-                        </>
-                      ) : (
-                        <>
-                          <span className="num" style={{ color: 'var(--faint)' }}>
-                            ·
-                          </span>
-                          <span className="num" style={{ color: 'var(--faint)' }}>
-                            ·
-                          </span>
-                        </>
-                      )}
+                    What this changes about what is recorded, stated plainly
+                    because it is the reason this was not built the first two
+                    times it was asked for: a tap logs the PRESCRIBED reps and
+                    the weight shown below, rather than making the athlete type
+                    what they actually did. The prescription is right on the
+                    overwhelming majority of sets — that is what a prescription
+                    is — and the athlete is standing under a bar with cold hands.
+                    Nothing is lost, because a logged key stays tappable and
+                    re-opens the set for correction underneath (ADR-005's
+                    revise path, unchanged), so a set that went 3 reps instead
+                    of 5 is two taps from being right. Fast by default, exact on
+                    demand, instead of slow always. */}
+                <div className="gym-set-keys">
+                  {Array.from({ length: ex.sets }, (_, i) => {
+                    const setNumber = i + 1;
+                    const loggedRow = done.find((s) => s.set_number === setNumber);
+                    const isNext = !alreadyComplete && setNumber === nextSetNumber;
+                    return (
                       <button
+                        key={setNumber}
                         type="button"
+                        className="gym-set-key"
+                        data-logged={loggedRow ? '' : undefined}
+                        aria-pressed={!!loggedRow}
+                        disabled={!loggedRow && (!isNext || logMutation.isPending)}
                         aria-label={
-                          isCorrecting
-                            ? `Save correction for set ${setNumber}`
-                            : loggedRow
-                              ? `Set ${setNumber} logged`
-                              : `Log set ${setNumber}`
+                          loggedRow
+                            ? `Set ${setNumber} logged, ${loggedRow.reps_completed ?? 'no'} reps at ${
+                                loggedRow.load_kg !== null ? `${loggedRow.load_kg} kg` : 'no load'
+                              }. Correct it.`
+                            : `Log set ${setNumber} of ${ex.sets}, ${ex.exercise_name}`
                         }
-                        aria-pressed={!!loggedRow && !isCorrecting}
-                        disabled={isCorrecting ? correctionMutation.isPending : !isNext || logMutation.isPending}
                         onClick={() => {
-                          if (isCorrecting && loggedRow) {
-                            correctionMutation.mutate({
-                              id: loggedRow.id,
-                              reps: correctionDraft?.reps ?? '',
-                              load: correctionDraft?.load ?? '',
-                            });
+                          if (loggedRow) {
+                            openCorrection(loggedRow);
                             return;
                           }
-                          const input = buildSetInput(ex, setNumber, draft.reps, draft.load);
+                          const input = buildSetInput(
+                            ex,
+                            setNumber,
+                            ex.reps_min !== null ? String(ex.reps_min) : '',
+                            weightFor(ex) !== null ? String(weightFor(ex)) : '',
+                          );
                           if (!input) {
                             setError('Something on this set did not check out. Try again.');
                             return;
                           }
                           logMutation.mutate(input);
                         }}
-                        style={{
-                          width: 24,
-                          height: 24,
-                          borderRadius: 8,
-                          border: `2px solid ${loggedRow ? 'var(--accent)' : 'var(--border-strong)'}`,
-                          background: loggedRow ? 'var(--accent)' : 'transparent',
-                          color: 'var(--on-accent)',
-                          fontSize: 13,
-                          fontFamily: 'inherit',
-                          cursor: isNext || isCorrecting ? 'pointer' : 'default',
-                          justifySelf: 'center',
-                        }}
                       >
-                        {isCorrecting ? '↵' : loggedRow ? '✓' : ''}
+                        {loggedRow ? '\u2713' : setNumber}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* The correction, inline and only for the set being corrected.
+                    23g has no such row because nothing in a still needs
+                    correcting; removing it would have made a mis-logged set
+                    unfixable until the session was closed, since the correction
+                    screen only lists COMPLETED sessions. */}
+                {correctingRow && correctingRow.programme_exercise_id === ex.programme_exercise_id ? (
+                  <div className="gym-correct">
+                    <p className="gym-correct-k">
+                      Correcting set <span className="num">{correctingRow.set_number}</span>
+                    </p>
+                    <div className="gym-correct-fields">
+                      <label>
+                        <span className="label">Reps</span>
+                        <input
+                          className="field num"
+                          type="number"
+                          inputMode="numeric"
+                          value={correctionDrafts[correctingRow.id]?.reps ?? ''}
+                          onChange={(e) =>
+                            setCorrectionDrafts((d) => ({
+                              ...d,
+                              [correctingRow.id]: {
+                                reps: e.target.value,
+                                load: d[correctingRow.id]?.load ?? '',
+                              },
+                            }))
+                          }
+                        />
+                      </label>
+                      <label>
+                        <span className="label">Load (kg)</span>
+                        <input
+                          className="field num"
+                          type="number"
+                          step="0.5"
+                          inputMode="decimal"
+                          value={correctionDrafts[correctingRow.id]?.load ?? ''}
+                          onChange={(e) =>
+                            setCorrectionDrafts((d) => ({
+                              ...d,
+                              [correctingRow.id]: {
+                                reps: d[correctingRow.id]?.reps ?? '',
+                                load: e.target.value,
+                              },
+                            }))
+                          }
+                        />
+                      </label>
+                    </div>
+                    <div className="gym-correct-actions">
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        disabled={correctionMutation.isPending}
+                        onClick={() =>
+                          correctionMutation.mutate({
+                            id: correctingRow.id,
+                            reps: correctionDrafts[correctingRow.id]?.reps ?? '',
+                            load: correctionDrafts[correctingRow.id]?.load ?? '',
+                          })
+                        }
+                      >
+                        Save correction
+                      </button>
+                      <button type="button" className="btn-ghost" onClick={() => setCorrecting(null)}>
+                        Cancel
                       </button>
                     </div>
+                    <p className="cap" style={{ margin: '8px 0 0' }}>
+                      The original is kept. My data marks the day corrected and shows what you
+                      first reported.
+                    </p>
+                  </div>
+                ) : null}
+
+                {/* 23g's weight row, and §9 rule 4 — an override never rewrites
+                    the parent. When the athlete has moved off the prescription
+                    BOTH numbers stay on screen: theirs as the value, the
+                    coach's as the note. */}
+                {(() => {
+                  const rec = recommendedFor(ex);
+                  const cur = weightFor(ex);
+                  if (cur === null) {
+                    return (
+                      <div className="gym-weight">
+                        <div className="gym-weight-label">
+                          <div className="k">{ex.load_basis === 'none' ? 'Bodyweight' : 'No load set'}</div>
+                          <div className="n">
+                            {ex.load_basis === 'none' ? 'no weight to set' : loadLabel(ex, timezone)}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  const overridden = rec !== null && cur !== rec;
+                  return (
+                    <div className="gym-weight">
+                      <div className="gym-weight-label">
+                        <div className="k">{overridden ? 'Your weight' : 'Recommended'}</div>
+                        <div className="n" data-warn={overridden ? '' : undefined}>
+                          {overridden ? (
+                            <>
+                              recommended <span className="num">{rec}</span> kg
+                            </>
+                          ) : (
+                            'change it if it is not right today'
+                          )}
+                        </div>
+                      </div>
+                      <div className="gym-stepper">
+                        <button
+                          type="button"
+                          onClick={() => bumpWeight(ex, -WEIGHT_STEP_KG)}
+                          aria-label={`Decrease the weight for ${ex.exercise_name}`}
+                        >
+                          &minus;
+                        </button>
+                        <span className="v num">
+                          {cur}
+                          <small>kg</small>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => bumpWeight(ex, WEIGHT_STEP_KG)}
+                          aria-label={`Increase the weight for ${ex.exercise_name}`}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
                   );
-                })}
+                })()}
               </div>
             );
           })}

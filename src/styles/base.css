@@ -7633,7 +7633,12 @@ button.dash-stat {
   }
 }
 .cmpl-stat {
-  padding: 15px 20px 16px;
+  /* The wrapper .cmpl-stats keeps padding 0 on purpose — it is a divided grid,
+     and the divider has to run to the card's edge. So the CELL is what owns
+     the inset, and it owes the same 16px every other card gives its text. It
+     was 15/20/16, putting these numbers 20px from the border while everything
+     else on the screen sat at 16. */
+  padding: var(--pad-card);
   border-right: 1px solid var(--hair);
   display: flex;
   flex-direction: column;

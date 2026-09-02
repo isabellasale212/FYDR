@@ -147,10 +147,11 @@ export function ExerciseForm({ orgId, strengthTests }: Props) {
             </select>
           </label>
         </div>
-        <p className="exlib-fhint">
-          Unit is fixed: a unit belongs to a prescription&rsquo;s load basis, not to the exercise
-          itself, so it is set in the programme builder.
-        </p>
+        {/* One line, not three. The design has no caption here at all, and the
+            club spent a session stripping explanatory prose out of these
+            screens — but a disabled control with no reason given is worse than
+            a short one. The full reasoning stays in this file's header. */}
+        <p className="exlib-fhint">Set per prescription, in the programme builder.</p>
 
         <label className="exlib-field">
           <span className="exlib-flabel">Coaching cues</span>

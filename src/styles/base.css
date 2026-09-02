@@ -1303,6 +1303,13 @@ body:has(.phone) {
 .phone-body .card {
   padding: var(--pad-card-y) var(--pad-card-x);
 }
+/* Spec §7.3 gives the hero card 16px 18px 14px — two pixels less underneath,
+   because a chart's own bottom padding already sits inside its box. Selected
+   off .rd-head rather than a class: the hero card IS the card with a headline
+   row in it, on all three tabs. */
+.phone-body .card:has(> .rd-head) {
+  padding-bottom: 14px;
+}
 /* Spec §3: 0.14em on the uppercase eyebrow, and a card title at 16/800. */
 .phone-body .eyebrow {
   letter-spacing: 0.14em;

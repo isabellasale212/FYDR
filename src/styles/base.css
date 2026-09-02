@@ -1782,6 +1782,32 @@ a.hist-row:focus-visible {
   font-size: 12.5px;
   color: var(--muted);
 }
+/* Spec §7.5: full width, radius 16, padding 16px 20px, the bad fill and border,
+   15/700 in bad ink. --bad-text, not --bad: §2 rule 1, a semantic colour is
+   never text. */
+.sign-out {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  background: rgb(var(--bad-rgb) / 0.1);
+  border: 1px solid rgb(var(--bad-rgb) / 0.5);
+  color: var(--bad-text);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--t-state), border-color var(--t-state);
+}
+.sign-out:hover {
+  background: rgb(var(--bad-rgb) / 0.16);
+}
+.sign-out:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
 /* Spec §7.5: 58px avatar, 19/700, and the role line at 14px muted. */
 .me-hd .me-avatar {
   width: 58px;

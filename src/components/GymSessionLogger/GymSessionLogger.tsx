@@ -433,7 +433,15 @@ export function GymSessionLogger({
                             background: 'none',
                             border: 'none',
                             padding: 0,
-                            font: 'inherit',
+                            /* The LONGHANDS, never `font: inherit`. The shorthand resets
+                               font-variant-numeric and font-feature-settings to normal, and it
+                               does it inline — which no class rule can outrank. This button
+                               carries .num, and it was rendering proportional digits anyway:
+                               "111" 18.45px against "888" 28.22px, in a column of logged
+                               loads. */
+                            fontFamily: 'inherit',
+                            fontSize: 'inherit',
+                            fontWeight: 'inherit',
                             color: 'inherit',
                             cursor: 'pointer',
                             textDecoration: 'underline',
@@ -488,7 +496,15 @@ export function GymSessionLogger({
                               background: 'none',
                               border: 'none',
                               padding: 0,
-                              font: 'inherit',
+                              /* The LONGHANDS, never `font: inherit`. The shorthand resets
+                                 font-variant-numeric and font-feature-settings to normal, and it
+                                 does it inline — which no class rule can outrank. This button
+                                 carries .num, and it was rendering proportional digits anyway:
+                                 "111" 18.45px against "888" 28.22px, in a column of logged
+                                 loads. */
+                              fontFamily: 'inherit',
+                              fontSize: 'inherit',
+                              fontWeight: 'inherit',
                               color: 'inherit',
                               textAlign: 'left',
                               cursor: 'pointer',
@@ -505,7 +521,15 @@ export function GymSessionLogger({
                               background: 'none',
                               border: 'none',
                               padding: 0,
-                              font: 'inherit',
+                              /* The LONGHANDS, never `font: inherit`. The shorthand resets
+                                 font-variant-numeric and font-feature-settings to normal, and it
+                                 does it inline — which no class rule can outrank. This button
+                                 carries .num, and it was rendering proportional digits anyway:
+                                 "111" 18.45px against "888" 28.22px, in a column of logged
+                                 loads. */
+                              fontFamily: 'inherit',
+                              fontSize: 'inherit',
+                              fontWeight: 'inherit',
                               color: 'inherit',
                               textAlign: 'left',
                               cursor: 'pointer',

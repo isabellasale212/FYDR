@@ -211,17 +211,16 @@ export default async function MePage() {
               ›
             </span>
           </Link>
-          <div className="hair" />
-          <form action="/auth/sign-out" method="post">
-            <button
-              type="submit"
-              className="me-row bad"
-              style={{ width: '100%', border: 'none', background: 'none', font: 'inherit', textAlign: 'left', cursor: 'pointer' }}
-            >
-              <span className="k">Log out</span>
-            </button>
-          </form>
         </div>
+
+        {/* Spec §7.5/§10: its own full-width button below the settings card, not
+            a row inside it — and "Sign out", the verb §10 names, which is also
+            the words on the screen it returns you to. */}
+        <form action="/auth/sign-out" method="post">
+          <button type="submit" className="sign-out">
+            Sign out
+          </button>
+        </form>
 
         {/* Apple Health lives HERE, not in club settings. The connection is to
          *  this athlete's own phone, so only they can make it — the staff

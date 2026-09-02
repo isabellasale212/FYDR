@@ -7573,6 +7573,15 @@ button.dash-stat {
   cursor: pointer;
   transition: color var(--t-state), border-color var(--t-state);
 }
+/* Inline variant: the exercise library's design puts Back in the topbar beside
+   the search field rather than above the page header, so it loses the stacked
+   spacing and stops stretching in the flex row. See BackButton.tsx. */
+.back-btn[data-inline] {
+  margin-bottom: 0;
+  flex: 0 0 auto;
+  align-self: center;
+}
+
 .back-btn:hover {
   color: var(--text);
   border-color: var(--border-accent);

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { BackButton } from '@/components/BackButton/BackButton';
 import { useMemo, useState, type ReactNode } from 'react';
 import type { Exercise } from '@/lib/queries/programmes';
 import type { ExerciseCategory } from '@/lib/types/database';
@@ -35,13 +36,18 @@ const CATEGORIES: ExerciseCategory[] = [
  *  right column. The export keeps its original name because that is what the
  *  page imports; it is the library screen's body, not only its list.
  *
- *  The Back button is NOT rendered here. `(staff)/layout.tsx` renders one
- *  `<BackButton />` above `{children}` for every staff screen, which is the
- *  house pattern (`.back-btn` in base.css: "sits above the page's own header
- *  rather than inside it, so no page has to make room for it and every one
- *  places it identically"). The design draws it inside the top bar to the
- *  right of the search field; moving it there is a change to the shared
- *  layout, not to this screen.
+ *  The Back button IS rendered here, as `<BackButton inline />` beside the
+ *  search field, because that is where the design draws it. It was above the
+ *  page header until 2026-09-02, following the house pattern `.back-btn`
+ *  describes ("sits above the page's own header rather than inside it, so no
+ *  page has to make room for it and every one places it identically"), and
+ *  the club asked for the design's placement on this screen.
+ *
+ *  Only this screen. `(staff)/layout.tsx` still renders one `<BackButton />`
+ *  above `{children}` for every other staff page, and BackButton's own
+ *  PLACES_ITS_OWN set is what makes that instance stand down here so there is
+ *  never one of each. If another screen moves its Back into a topbar, it
+ *  registers there too — the opt-out and the opt-in stay in one file.
  *
  *  The row chevron is decorative and marked aria-hidden. There is no
  *  `/programmes/exercises/[id]` route to open — the detail view is the other
@@ -120,6 +126,7 @@ export function ExerciseLibraryList({
               aria-label="Search exercises"
             />
           </div>
+          <BackButton inline />
         </div>
       </div>
 

@@ -22,7 +22,14 @@ import { usePathname, useRouter } from 'next/navigation';
 /** Screens that start a journey rather than sit inside one. */
 const ROOTS = new Set(['/dashboard', '/today']);
 
-export function BackButton() {
+/** Screens that render their OWN copy inside their topbar, because their
+ *  design places it there rather than above the page header. The layout's
+ *  instance stands down on these routes so there is never one of each. Listed
+ *  here rather than solved with CSS, so the two facts — who opts out and who
+ *  opts in — live in one file and cannot drift apart. */
+const PLACES_ITS_OWN = new Set(['/programmes/exercises']);
+
+export function BackButton({ inline = false }: { inline?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
   const [canGoBack, setCanGoBack] = useState(false);
@@ -32,9 +39,15 @@ export function BackButton() {
   }, [pathname]);
 
   if (ROOTS.has(pathname) || !canGoBack) return null;
+  if (!inline && PLACES_ITS_OWN.has(pathname)) return null;
 
   return (
-    <button type="button" className="back-btn" onClick={() => router.back()}>
+    <button
+      type="button"
+      className="back-btn"
+      data-inline={inline ? '' : undefined}
+      onClick={() => router.back()}
+    >
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.6} aria-hidden="true">
         <path d="M9.5 3.5 5 8l4.5 4.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>

@@ -7,7 +7,12 @@ import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { fetchWellnessByAthlete, wellnessSeries } from '@/lib/queries/wellness';
 import { fetchAthleteRecentSessions, fetchCurrentSeason } from '@/lib/queries/schedule';
 import { fetchRecentCheckins } from '@/lib/queries/nutrition';
-import { fetchMyTestSummary } from '@/lib/queries/testing';
+import {
+  fetchHistory,
+  fetchMyTestSummary,
+  type HistoryRow,
+  type MyTestSummary,
+} from '@/lib/queries/testing';
 import { fetchRecentGymSessions } from '@/lib/queries/programmes';
 import { fetchMyVisibleFlags, staffNoteLines, type VisibleFlag } from '@/lib/queries/flags';
 import {
@@ -464,7 +469,13 @@ export default async function MyDataPage({
           flags={flagsByDomain.get('nutrition') ?? []}
         />
       ) : tab === 'testing' ? (
-        <TestingTab db={db} athleteId={athleteId} flags={flagsByDomain.get('testing') ?? []} timezone={timezone} />
+        <TestingTab
+          db={db}
+          orgId={orgId}
+          athleteId={athleteId}
+          flags={flagsByDomain.get('testing') ?? []}
+          timezone={timezone}
+        />
       ) : (
         <GymTab
           db={db}
@@ -1096,63 +1107,345 @@ const TEST_NAME_EXPLAINER: Record<string, string> = {
  *  the most dangerous read on the page: descending on test_date, a silent 1000
  *  row cut drops the OLDEST results, which is where an athlete's real all-time
  *  best usually lives. */
+/** Fydr Athlete App.dc.html 23k/23m share one shape with 23e's readiness card:
+ *  an eyebrow, the number at display size, what it stands against on the right,
+ *  then the chart. These two helpers are what the Gym and Tests tabs need that
+ *  Wellness did not.
+ *
+ *  Monday-anchored, in UTC, off the date STRING rather than a local Date — the
+ *  athlete's `today` already arrives resolved in the org's timezone, and
+ *  re-reading it through the server's local clock is how a week boundary ends
+ *  up one day out for half the year. */
+function mondayOf(iso: string): string {
+  const dow = new Date(`${iso}T12:00:00Z`).getUTCDay(); // 0 Sun … 6 Sat
+  return addDays(iso, -((dow + 6) % 7));
+}
+
+/** "14 Jul". formatDate leads with the weekday, which is right for a single
+ *  date and wrong under a bar four columns wide — "w/c Mon 14 Jul" says Monday
+ *  twice, and at 11px on a 78px column it is the part that gets ellipsed. */
+function dayMonth(iso: string, timezone: string): string {
+  return new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    timeZone: timezone,
+  }).format(new Date(`${iso}T12:00:00Z`));
+}
+
+/** Tonnes once there are tonnes to speak of, kilograms below that.
+ *  A 360 kg session shown as "0.4 t" has lost a digit of real precision to
+ *  keep a unit consistent; the unit is the cheaper thing to vary, and every
+ *  row states its own. Null is the blank marker, never 0 — a session logged
+ *  without loads is not a session with no load in it. */
+function volumeLabel(kg: number | null): string {
+  if (kg === null) return BLANK;
+  return kg >= 1000 ? `${formatNumber(kg / 1000, 1)} t` : `${formatNumber(kg, 0)} kg`;
+}
+
+/** A value with its unit. Space before everything except a percentage, which
+ *  is the one unit English sets tight. */
+function withUnit(value: string, unit: string): string {
+  const u = unit.trim();
+  return u === '%' ? `${value}%` : `${value} ${u}`;
+}
+
+/** Where the latest result stands against the all-time best.
+ *
+ *  Direction-aware, because half these tests are won by the smaller number: on
+ *  a 10 m sprint a LARGER latest value is the worse one, and a comparison that
+ *  assumes higher-is-better prints a slower time as an improvement. Same
+ *  argument fetchMyTestSummary's header makes for carrying `higher_is_better`
+ *  through in the first place.
+ *
+ *  'ahead' is reachable and is not a contradiction: pbValue is picked from
+ *  `is_best` rows only, so a session whose best attempt was never flagged can
+ *  leave the latest result genuinely better than the recorded PB. Saying
+ *  "ahead of your recorded PB" is the honest reading — the record is what is
+ *  behind, not the athlete. */
+type PbStanding =
+  | { kind: 'none' }
+  | { kind: 'at' }
+  | { kind: 'off'; amount: number }
+  | { kind: 'ahead'; amount: number };
+
+function pbStanding(s: MyTestSummary): PbStanding {
+  if (s.latestValue === null || s.pbValue === null) return { kind: 'none' };
+  if (s.latestValue === s.pbValue) return { kind: 'at' };
+  const better = s.higher_is_better ? s.latestValue > s.pbValue : s.latestValue < s.pbValue;
+  const amount = Math.abs(s.latestValue - s.pbValue);
+  return better ? { kind: 'ahead', amount } : { kind: 'off', amount };
+}
+
+/** One point per test date, best attempt on that date, oldest first, most
+ *  recent 8. Per-side tests log two `is_best` rows a date (left and right);
+ *  taking whichever arrived first would draw a line that switches limbs
+ *  mid-chart, so the better of the two wins by the test's own direction. */
+function sparkPoints(rows: HistoryRow[], higherIsBetter: boolean): { date: string; value: number }[] {
+  const byDate = new Map<string, number>();
+  for (const r of rows) {
+    if (!r.is_best) continue;
+    const cur = byDate.get(r.test_date);
+    if (cur === undefined || (higherIsBetter ? r.value > cur : r.value < cur)) {
+      byDate.set(r.test_date, r.value);
+    }
+  }
+  return [...byDate.entries()]
+    .map(([date, value]) => ({ date, value }))
+    .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
+    .slice(-8);
+}
+
+/** 23m's sparkline: BETTER IS UP, whichever direction the test runs in.
+ *
+ *  That is an editorial choice and the caption underneath states it, because
+ *  the chart cannot. Plotting a sprint time on a raw axis draws improvement as
+ *  a fall, which reads as decline to everyone who has ever seen a chart; the
+ *  design's own caption ("Faster draws upward") is the design making the same
+ *  call.
+ *
+ *  Uniform scaling — no preserveAspectRatio="none" — so the points stay round
+ *  circles at every width instead of stretching into ellipses. */
+function TestSparkline({
+  points,
+  higherIsBetter,
+  pbValue,
+  label,
+}: {
+  points: { date: string; value: number }[];
+  higherIsBetter: boolean;
+  pbValue: number | null;
+  label: string;
+}) {
+  const W = 320;
+  const H = 56;
+  const PAD = 7;
+  const values = points.map((p) => p.value);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = max - min;
+
+  const x = (i: number) => (points.length === 1 ? W / 2 : PAD + (i * (W - PAD * 2)) / (points.length - 1));
+  const y = (v: number) => {
+    if (span === 0) return H / 2;
+    const t = (v - min) / span;
+    const good = higherIsBetter ? t : 1 - t; // 1 = the best point in the series
+    return PAD + (1 - good) * (H - PAD * 2);
+  };
+
+  const d = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)} ${y(p.value).toFixed(1)}`).join(' ');
+  const lastIdx = points.length - 1;
+  const pbIdx = pbValue === null ? -1 : points.findIndex((p) => p.value === pbValue);
+  const pbIsLatest = pbIdx === lastIdx;
+  const lastPoint = points[lastIdx];
+  const pbPoint = pbIdx >= 0 ? points[pbIdx] : undefined;
+  if (!lastPoint) return null;
+
+  return (
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      style={{ width: '100%', height: 'auto', display: 'block', marginTop: 12 }}
+      role="img"
+      aria-label={label}
+    >
+      <path d={d} fill="none" stroke="var(--accent-text)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      {pbPoint && !pbIsLatest ? (
+        <circle cx={x(pbIdx)} cy={y(pbPoint.value)} r="4.5" fill="var(--accent-text)" />
+      ) : null}
+      {/* When the latest result IS the PB the two markers coincide, so the
+          point is drawn once — gold, ringed in the PB's blue — rather than one
+          hidden under the other. */}
+      <circle
+        cx={x(lastIdx)}
+        cy={y(lastPoint.value)}
+        r="4.5"
+        fill="var(--warn-text)"
+        stroke={pbIsLatest ? 'var(--accent-text)' : 'none'}
+        strokeWidth={pbIsLatest ? 2 : 0}
+      />
+    </svg>
+  );
+}
+
 async function TestingTab({
   db,
+  orgId,
   athleteId,
   flags,
   timezone,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
+  orgId: string;
   athleteId: string;
   flags: VisibleFlag[];
   timezone: string;
 }) {
   const summary = await fetchMyTestSummary(db, athleteId);
 
+  /* The headline test is the one most recently done, ties broken by name so
+     the card does not reshuffle between two same-day tests on every render. */
+  const featured =
+    [...summary]
+      .filter((s) => s.latestValue !== null && s.latestDate !== null)
+      .sort((a, b) =>
+        a.latestDate! < b.latestDate! ? 1 : a.latestDate! > b.latestDate! ? -1 : a.name.localeCompare(b.name),
+      )[0] ?? null;
+
+  const history = featured ? await fetchHistory(db, orgId, athleteId, featured.test_definition_id) : [];
+  const spark = featured ? sparkPoints(history, featured.higher_is_better) : [];
+  const standing = featured ? pbStanding(featured) : ({ kind: 'none' } as PbStanding);
+  const upward = featured && !featured.higher_is_better && featured.unit.trim() === 's' ? 'Faster' : 'Better';
+
+  const sparkFirst = spark[0];
+  const sparkLast = spark[spark.length - 1];
+  const sparkLabel =
+    featured && sparkFirst && sparkLast
+      ? `${featured.name}, ${spark.length} results from ${formatDate(sparkFirst.date, timezone)} to ${formatDate(
+          sparkLast.date,
+          timezone,
+        )}: ${spark.map((p) => withUnit(p.value.toFixed(featured.decimal_places), featured.unit)).join(', ')}`
+      : '';
+
   return (
     <div className="stack" style={{ marginTop: 14 }}>
-      <section className="card" aria-labelledby="testing-title">
-        <h2 className="card-title" id="testing-title">
-          Test results
-        </h2>
-        <p className="import-sub">
-          Your own results and personal bests only &mdash; never a squad
-          comparison here.
-        </p>
-        <p className="cap">
-          This tab ignores the period used on the other tabs, on purpose: a personal best is
-          the best you have <em>ever</em> done, so showing it inside a window would show you a
-          smaller number than the truth. Latest and PB are both all-time. Anything staff have
-          noted below is from the last period you chose.
+      {featured ? (
+        <section className="card" aria-labelledby="test-headline">
+          <h2 className="eyebrow" id="test-headline">
+            {featured.name}
+          </h2>
+          <div className="rd-head">
+            <p className="rd-value">
+              <span className="num">{featured.latestValue!.toFixed(featured.decimal_places)}</span>
+              <span className="rd-unit">{featured.unit.trim()}</span>
+            </p>
+            <div className="rd-meta">
+              {standing.kind === 'off' ? (
+                <p className="rd-delta num" data-dir="off">
+                  ▼ {withUnit(standing.amount.toFixed(featured.decimal_places), featured.unit)} off your PB
+                </p>
+              ) : standing.kind === 'ahead' ? (
+                <p className="rd-delta num" data-dir="up">
+                  ▲ {withUnit(standing.amount.toFixed(featured.decimal_places), featured.unit)} ahead of your recorded PB
+                </p>
+              ) : standing.kind === 'at' ? (
+                <p className="rd-delta" data-dir="up">
+                  At your personal best
+                </p>
+              ) : null}
+              {featured.pbValue !== null ? (
+                <p className="rd-mean">
+                  PB <span className="num">{withUnit(featured.pbValue.toFixed(featured.decimal_places), featured.unit)}</span>
+                  {featured.pbDate ? <> &middot; {formatDate(featured.pbDate, timezone)}</> : null}
+                </p>
+              ) : null}
+            </div>
+          </div>
+
+          {spark.length >= 2 ? (
+            <>
+              <TestSparkline
+                points={spark}
+                higherIsBetter={featured.higher_is_better}
+                pbValue={featured.pbValue}
+                label={sparkLabel}
+              />
+              <p className="spark-cap">
+                {upward} draws upward.{' '}
+                {standing.kind === 'at'
+                  ? 'The gold point is your latest, and it is your PB.'
+                  : 'The gold point is your latest, the blue your PB.'}
+              </p>
+            </>
+          ) : null}
+        </section>
+      ) : null}
+
+      <section className="card flush" aria-labelledby="testing-title">
+        <div className="hist-head">
+          <h2 className="card-title" id="testing-title">
+            Your tests
+          </h2>
+          <span className="hist-n">latest against your PB</span>
+        </div>
+        <p className="cap" style={{ margin: 0, padding: '0 var(--pad-card) 12px' }}>
+          Your own results and personal bests only &mdash; never a squad comparison. This tab ignores
+          the period used on the other tabs on purpose: a personal best is the best you have{' '}
+          <em>ever</em> done, so showing it inside a window would show you a smaller number than the
+          truth. Anything staff have noted is from the last period you chose.
         </p>
 
-        <FlagNotice flags={flags} heading="Noted by staff" timezone={timezone} />
+        <div style={{ padding: '0 var(--pad-card)' }}>
+          <FlagNotice flags={flags} heading="Noted by staff" timezone={timezone} />
+        </div>
 
         {summary.length === 0 ? (
-          <EmptyState
-            headingLevel={3}
-            title="No results yet"
-            body="Nothing has been logged for you yet. Results are entered by your coach or physio at a testing session."
-          />
-        ) : (
-          <div className="stack" style={{ gap: 6, marginTop: 10 }}>
-            {summary.map((s) => (
-              <div key={s.test_definition_id} className="load-row" style={{ gridTemplateColumns: '1fr auto auto' }}>
-                <span className="nm" title={TEST_NAME_EXPLAINER[s.name.toLowerCase()]}>{s.name}</span>
-                <span className="tiny">
-                  {s.latestValue !== null ? `Latest ${s.latestValue.toFixed(s.decimal_places)}${s.unit}` : dash(null)}
-                </span>
-                <span className="pill pill-good">
-                  {s.pbValue !== null ? `PB ${s.pbValue.toFixed(s.decimal_places)}${s.unit}` : dash(null)}
-                </span>
-              </div>
-            ))}
+          <div style={{ padding: '0 var(--pad-card) var(--pad-card)' }}>
+            <EmptyState
+              headingLevel={3}
+              title="No results yet"
+              body="Nothing has been logged for you yet. Results are entered by your coach or physio at a testing session."
+            />
           </div>
+        ) : (
+          summary.map((s) => {
+            const st = pbStanding(s);
+            return (
+              <Fragment key={s.test_definition_id}>
+                <div className="hair" />
+                <div className="hist-row">
+                  <div style={{ minWidth: 0 }}>
+                    <p className="hist-name" title={TEST_NAME_EXPLAINER[s.name.toLowerCase()]}>
+                      {s.name}
+                    </p>
+                    <p className="hist-date">
+                      {s.latestDate ? formatDate(s.latestDate, timezone) : 'No result yet'}
+                    </p>
+                  </div>
+                  <div className="hist-right">
+                    <p className="hist-value num" data-missing={s.latestValue === null ? '' : undefined}>
+                      {s.latestValue !== null
+                        ? withUnit(s.latestValue.toFixed(s.decimal_places), s.unit)
+                        : BLANK}
+                    </p>
+                    {st.kind === 'off' ? (
+                      <p className="hist-delta num">
+                        {withUnit(st.amount.toFixed(s.decimal_places), s.unit)} off PB
+                      </p>
+                    ) : st.kind === 'at' ? (
+                      <p className="hist-delta" data-at-pb="">
+                        at PB
+                      </p>
+                    ) : st.kind === 'ahead' ? (
+                      <p className="hist-delta num" data-ahead="">
+                        {withUnit(st.amount.toFixed(s.decimal_places), s.unit)} ahead of PB
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+              </Fragment>
+            );
+          })
         )}
       </section>
     </div>
   );
 }
+
+/** The headline card's span, Fydr Athlete App.dc.html 23k ("last 4 weeks").
+ *
+ *  FIXED, and deliberately not the period control's window. Four calendar weeks
+ *  is what the four bars ARE — at `all` the same chart would be 105 bars three
+ *  pixels wide, and at `week` it would be one. The card says "last 4 weeks" on
+ *  its face so the two spans on this screen cannot be confused, and the list
+ *  below still honours whatever period was chosen. The Testing tab already sets
+ *  this precedent for the same kind of reason (see its own note on all-time
+ *  PBs); the difference here is that the span is stated in the card. */
+const GYM_HEADLINE_WEEKS = 4;
+
+/** Enough headroom that the four-week count is a count, not a cap.
+ *  fetchRecentGymSessions truncates most-recent-first at its limit, so a
+ *  number below the real total would read low and silently. Four weeks of
+ *  twice-daily gym is 56; 200 is well past anything a human body does. */
+const GYM_HEADLINE_CAP = 200;
 
 /** Blocker B3 (integration audit): the one segment this page had no read for at all.
  *  fetchRecentGymSessions is athlete-scoped by construction (gym_session_logs_current
@@ -1181,82 +1474,159 @@ async function GymTab({
   timezone: string;
   flags: VisibleFlag[];
 }) {
-  const fetched = await fetchRecentGymSessions(db, athleteId, from, today, LIST_LIMIT + 1);
+  const weekStarts = Array.from({ length: GYM_HEADLINE_WEEKS }, (_, i) =>
+    addDays(mondayOf(today), -7 * (GYM_HEADLINE_WEEKS - 1 - i)),
+  );
+
+  const headlineFrom = weekStarts[0] ?? mondayOf(today);
+
+  const [fetched, recent] = await Promise.all([
+    fetchRecentGymSessions(db, athleteId, from, today, LIST_LIMIT + 1),
+    fetchRecentGymSessions(db, athleteId, headlineFrom, today, GYM_HEADLINE_CAP),
+  ]);
   const sessions = fetched.slice(0, LIST_LIMIT);
   const more = fetched.length > LIST_LIMIT;
 
+  const countByWeek = new Map<string, number>();
+  let headlineSets = 0;
+  for (const s of recent) {
+    const wk = mondayOf(s.entry_date);
+    countByWeek.set(wk, (countByWeek.get(wk) ?? 0) + 1);
+    headlineSets += s.set_count;
+  }
+  const weeks = weekStarts.map((start, i) => ({
+    start,
+    count: countByWeek.get(start) ?? 0,
+    /* The last bucket runs to today, not to Sunday. A part-week drawn like a
+       whole one reads as a bad week rather than an unfinished one. */
+    partial: i === GYM_HEADLINE_WEEKS - 1,
+    label: i === GYM_HEADLINE_WEEKS - 1 ? 'This week' : `w/c ${dayMonth(start, timezone)}`,
+  }));
+  const done = weeks.reduce((a, w) => a + w.count, 0);
+  const peak = Math.max(1, ...weeks.map((w) => w.count));
+
   return (
     <div className="stack" style={{ marginTop: 14 }}>
-      <section className="card" aria-labelledby="gym-title">
-        <h2 className="card-title" id="gym-title">
+      <section className="card" aria-labelledby="gym-headline">
+        <h2 className="eyebrow" id="gym-headline">
           Sessions
         </h2>
-        {/* Like the nutrition check-in above and unlike wellness and RPE, gym set
+        <div className="rd-head">
+          <p className="rd-value num">{done}</p>
+          <div className="rd-meta">
+            {/* 23k reads "of 14 assigned" here. There is no honest count behind
+                that: programme sessions carry a week_number and a day_number,
+                never a calendar date (MyProgrammeSession), so nothing in the
+                schema says how many were assigned inside a date window — the
+                number would have to be inferred from the current programme's
+                shape and would be wrong for anyone reassigned mid-block. Sets
+                are counted from the same rows as the sessions and are true. */}
+            <p className="rd-delta">
+              <span className="num">{headlineSets}</span> set{headlineSets === 1 ? '' : 's'} logged
+            </p>
+            <p className="rd-mean">last {GYM_HEADLINE_WEEKS} weeks</p>
+          </div>
+        </div>
+
+        <div
+          className="gb-chart"
+          role="img"
+          aria-label={`Completed gym sessions by week: ${weeks
+            .map((w) => `${w.label}, ${w.count} session${w.count === 1 ? '' : 's'}${w.partial ? ', still running' : ''}`)
+            .join('; ')}`}
+        >
+          {weeks.map((w) => (
+            <div className="gb-col" key={w.start}>
+              <div className="gb-track">
+                <div
+                  className="gb-bar"
+                  data-partial={w.partial ? '' : undefined}
+                  data-zero={w.count === 0 ? '' : undefined}
+                  style={w.count === 0 ? undefined : { height: `${Math.round((w.count / peak) * 100)}%` }}
+                />
+              </div>
+              <div className="gb-label">{w.label}</div>
+            </div>
+          ))}
+        </div>
+
+        <p className="cap" style={{ marginTop: 10 }}>
+          Completed sessions, four calendar weeks &mdash; this card keeps its own span whatever
+          period you pick. This week is still running, so its bar is drawn lighter.
+        </p>
+      </section>
+
+      <section className="card flush" aria-labelledby="gym-title">
+        {/* 23k: a row list, not the six-column table this was. At 390px that
+            table scrolled sideways and cut the Correct link in half — the
+            screenshot that started this work shows it clipped mid-word. */}
+        <div className="hist-head">
+          <h2 className="card-title" id="gym-title">
+            Sessions
+          </h2>
+          <span className="hist-n">volume from logged sets</span>
+        </div>
+        {/* Like the nutrition check-in and unlike wellness and RPE, gym set
           * logs stay the athlete's own to correct. `gym_set_logs` has no staff
           * write path of any kind (migration 0045), so `revise_gym_set_log` could
           * not be widened to coaches without first building one — and removing the
           * athlete's path would leave every mis-logged rep permanently wrong.
           * Building that staff path was out of scope for this change and is
           * recorded as O-31 in adr-005-immutable-entries.md. */}
-        <p className="import-sub">
-          Completed gym sessions in this window. Tap Correct on a session to fix a set
-          you mis-logged &mdash; the original is kept, never overwritten. Gym sets are
-          still yours to correct; your check-ins and session ratings are not.
+        <p className="cap" style={{ margin: 0, padding: '0 var(--pad-card) 12px' }}>
+          Open a session to fix a set you mis-logged &mdash; the original is kept, never
+          overwritten. Gym sets are still yours to correct; your check-ins and session ratings
+          are not.
         </p>
 
-        <FlagNotice flags={flags} heading="Noted by staff" timezone={timezone} />
+        <div style={{ padding: '0 var(--pad-card)' }}>
+          <FlagNotice flags={flags} heading="Noted by staff" timezone={timezone} />
+        </div>
 
         {sessions.length === 0 ? (
-          <EmptyState
-            headingLevel={3}
-            title="Nothing logged yet"
-            body={`No completed gym sessions between ${formatDate(
-              range.from,
-              timezone,
-            )} and ${formatDate(range.to, timezone)}.`}
-          />
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table className="tbl">
-              <caption className="visually-hidden">Recent completed gym sessions</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Date</th>
-                  <th scope="col">Session</th>
-                  <th scope="col" className="r">
-                    Sets
-                  </th>
-                  <th scope="col" className="r">
-                    Volume
-                  </th>
-                  <th scope="col" className="r">
-                    RPE
-                  </th>
-                  <th scope="col">
-                    <span className="visually-hidden">Actions</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {sessions.map((s) => (
-                  <tr key={s.id}>
-                    <td className="num sub">{formatDate(s.entry_date, timezone)}</td>
-                    <td className="nm">{s.session_name ?? 'Gym session'}</td>
-                    <td className="r num">{s.set_count}</td>
-                    <td className="r num">
-                      {s.total_volume_kg !== null ? formatNumber(s.total_volume_kg, 0) : BLANK}
-                    </td>
-                    <td className="r num">{formatNumber(s.session_rpe, 1)}</td>
-                    <td className="sub">
-                      <Link href={`/my-data/gym/${s.id}`}>Correct</Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div style={{ padding: '0 var(--pad-card) var(--pad-card)' }}>
+            <EmptyState
+              headingLevel={3}
+              title="Nothing logged yet"
+              body={`No completed gym sessions between ${formatDate(
+                range.from,
+                timezone,
+              )} and ${formatDate(range.to, timezone)}.`}
+            />
           </div>
+        ) : (
+          sessions.map((s) => (
+            <Fragment key={s.id}>
+              <div className="hair" />
+              <Link href={`/my-data/gym/${s.id}`} className="hist-row">
+                <div style={{ minWidth: 0 }}>
+                  <p className="hist-date">{formatDate(s.entry_date, timezone)}</p>
+                  <p className="hist-detail">
+                    {s.session_name ?? 'Gym session'} &middot; <span className="num">{s.set_count}</span>{' '}
+                    {s.set_count === 1 ? 'set' : 'sets'}
+                    {s.session_rpe !== null ? (
+                      <>
+                        {' '}
+                        &middot; RPE <span className="num">{formatNumber(s.session_rpe, 1)}</span>
+                      </>
+                    ) : null}
+                  </p>
+                </div>
+                <div className="hist-go">
+                  <p className="hist-value num" data-missing={s.total_volume_kg === null ? '' : undefined}>
+                    {volumeLabel(s.total_volume_kg)}
+                  </p>
+                  <span className="hist-chev" aria-hidden="true">
+                    &rsaquo;
+                  </span>
+                </div>
+              </Link>
+            </Fragment>
+          ))
         )}
-        <ListCapNote shown={sessions.length} more={more} noun="sessions" />
+        <div style={{ padding: '0 var(--pad-card)' }}>
+          <ListCapNote shown={sessions.length} more={more} noun="sessions" />
+        </div>
       </section>
     </div>
   );

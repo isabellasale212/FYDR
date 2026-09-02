@@ -1428,6 +1428,13 @@ body:has(.phone) {
 .rd-delta[data-dir='up'] {
   color: var(--good-text);
 }
+/* 'off' is not 'down'. Being 0.10 s off a personal best is the ordinary state
+   of every athlete on every day that is not their best day, and painting it in
+   --bad-text (a red reserved for a value that needs acting on) would make a
+   normal result look like an alert. 23m draws it in the amber this uses. */
+.rd-delta[data-dir='off'] {
+  color: var(--warn-text);
+}
 .rd-delta[data-dir='down'] {
   color: var(--bad-text);
 }
@@ -1435,6 +1442,138 @@ body:has(.phone) {
   margin: 3px 0 0;
   font-size: 12px;
   color: var(--muted);
+}
+
+/* The unit after a display value — "1.90 s", Fydr Athlete App.dc.html 23m.
+   Its own element rather than part of the number so tabular-nums applies to
+   the digits only: a unit is not a figure and should not be padded like one.
+   Sized and weighted down so the value reads first and the unit qualifies it. */
+.rd-unit {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0;
+  margin-inline-start: 2px;
+}
+
+/* My data · Gym's four-week bar chart, Fydr Athlete App.dc.html 23k.
+   Four calendar weeks, one bar each, oldest first. The chart area is a fixed
+   72px so the bars share a baseline AND a ceiling — a percentage height on a
+   flex item only resolves against a definite container height, which is why
+   the track is a row of the column grid rather than the column itself. */
+.gb-chart {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 10px;
+  margin: 14px 0 0;
+}
+.gb-col {
+  display: grid;
+  grid-template-rows: 72px auto;
+  gap: 6px;
+  min-width: 0;
+}
+.gb-track {
+  display: flex;
+  align-items: flex-end;
+}
+.gb-bar {
+  width: 100%;
+  min-height: 10px;
+  border-radius: 10px;
+  background: var(--accent-text);
+}
+/* The current week is INCOMPLETE, not low. Drawn in a tint of the same hue so
+   it reads as the same measure part-finished rather than a different one — and
+   its label says "This week", which is the half a colour cannot carry. Mixed
+   against --surf rather than left translucent: the card it sits on is not the
+   page ground, so alpha would shift the bar's colour with the card. */
+.gb-bar[data-partial] {
+  background: color-mix(in srgb, var(--accent-text) 32%, var(--surf));
+}
+/* A week with nothing logged draws a baseline rule, not nothing. An absent bar
+   is ambiguous — zero sessions and no data look identical — and this page's
+   whole argument is that a blank is not a zero. */
+.gb-bar[data-zero] {
+  min-height: 0;
+  height: 3px;
+  background: var(--border-strong);
+  opacity: 0.35;
+}
+.gb-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* My data · Tests, Fydr Athlete App.dc.html 23m: the name reads first and the
+   date qualifies it, so the name carries the weight the score carries in the
+   wellness list. */
+.hist-name {
+  margin: 0 0 2px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.hist-right {
+  text-align: right;
+  min-width: 0;
+}
+/* Sits under the value: how this result stands against the personal best. The
+   words say the direction ("off PB", "new PB") as well as the colour — the
+   same reason .rd-delta keeps its arrow. */
+.hist-delta {
+  margin: 2px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--warn-text);
+}
+.hist-delta[data-at-pb] {
+  color: var(--muted);
+  font-weight: 500;
+}
+.hist-delta[data-ahead] {
+  color: var(--good-text);
+}
+/* The chevron on a gym session row. The row is a link — it opens the session
+   so a mis-logged set can be corrected — and an affordance with no mark is an
+   affordance nobody finds. */
+.hist-go {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 10px;
+}
+.hist-chev {
+  font-size: 17px;
+  color: var(--faint);
+  line-height: 1;
+}
+a.hist-row {
+  text-decoration: none;
+  color: inherit;
+}
+a.hist-row:hover {
+  background: var(--surf2);
+}
+a.hist-row:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: -2px;
+}
+
+/* The test sparkline's caption. Not a legend — it names which point is which,
+   and states the orientation, because "better is up" is an editorial choice
+   the chart cannot state by itself when the test is one where lower wins. */
+.spark-cap {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.45;
 }
 
 .todo-left {

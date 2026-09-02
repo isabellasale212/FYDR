@@ -1171,6 +1171,15 @@ table.tbl.lb-table td.r {
   width: 100%;
   height: auto;
 }
+/* Spec §7.3: the athlete's hero charts sit in a FIXED-HEIGHT wrapper and the
+   SVG fills it — which is what preserveAspectRatio="none" on the SVG is for.
+   height: auto would hand the box back to the viewBox's own aspect. */
+.chart[data-compact] {
+  height: 62px;
+}
+.chart[data-compact] svg {
+  height: 100%;
+}
 .legend {
   display: flex;
   gap: 16px;
@@ -1245,14 +1254,36 @@ body:has(.phone) {
      and should not be the one screen with a wash on it. */
   background-color: var(--bg);
 }
+/* Spec §1: horizontal page padding 22px on every athlete screen, body bottom
+   padding 8px. The tab bar is a flex sibling with its own home-indicator
+   clearance, so the body does not also have to reserve that space.
+
+   --pad-card-x / -y are scoped HERE rather than overriding --pad-card: the
+   spec gives athlete cards an 18px horizontal inset and a vertical one that
+   varies by card type (14/16/17), which a single square token cannot express.
+   Staff screens keep the global 16px. */
 .phone-body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 0 18px 18px;
+  padding: 0 22px 8px;
   display: flex;
   flex-direction: column;
   gap: var(--gap-stack);
+  --pad-card-x: 18px;
+  --pad-card-y: 16px;
+}
+.phone-body .card {
+  padding: var(--pad-card-y) var(--pad-card-x);
+}
+/* Spec §3: 0.14em on the uppercase eyebrow, and a card title at 16/800. */
+.phone-body .eyebrow {
+  letter-spacing: 0.14em;
+}
+.phone-body .card-title {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 /* -------- tab header, §4 -------- */
@@ -1351,40 +1382,74 @@ body:has(.phone) {
    a table: at 390px four columns left the readiness column reading "Missing"
    next to two columns of dots. Lives in a `card flush`, so the rows own the
    inset and the hairlines reach the card's edge. */
+/* Spec §7.3: header 14/18/10, rows 12/18, footer 14/18. */
 .hist-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  padding: var(--pad-card) var(--pad-card) 10px;
+  padding: 14px var(--pad-card-x, 18px) 10px;
 }
 .hist-n {
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--muted);
   white-space: nowrap;
 }
+/* The value column is a FIXED width, per tab — spec §7.3 gives 54px on
+   wellness, 62px on gym, 92px on tests. `auto` sized it to the widest row's
+   content, which meant the column's left edge moved when the data changed;
+   a fixed track is what actually holds a value column still. Set with
+   --hist-val-w on the card. */
 .hist-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) var(--hist-val-w, auto);
   gap: 12px;
   align-items: center;
-  padding: 12px var(--pad-card);
+  padding: 12px var(--pad-card-x, 18px);
 }
+/* Spec §7.3: "a two-line stack (12px/600 faint date over 13.5px evidence)". */
 .hist-date {
   margin: 0;
-  font-size: 13px;
-  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--faint);
 }
 .hist-detail {
   margin: 2px 0 0;
   font-size: 13.5px;
   color: var(--text);
 }
+/* 17px, not 22px. Spec §3 puts a row value at 16–17/700 and reserves 38px for
+   the hero figure alone; at 22px the row values were competing with the number
+   the card is built around. */
 .hist-value {
   margin: 0;
-  font-size: 22px;
+  font-size: 17px;
   font-weight: 700;
   letter-spacing: -0.01em;
+}
+/* Spec §7.3's footer row: flex: none, border-top hairline, and a 13.5/600
+   accent link. The size and weight live on the link rather than the row, so a
+   footer carrying a caption instead of a link keeps caption type. */
+.hist-foot {
+  flex: none;
+  padding: 14px var(--pad-card-x, 18px);
+  border-top: 1px solid var(--hair);
+}
+.hist-foot > :first-child {
+  margin-top: 0;
+}
+.hist-foot > :last-child {
+  margin-bottom: 0;
+}
+.hist-foot a {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--accent-text);
+  text-decoration: none;
+}
+.hist-foot a:hover {
+  text-decoration: underline;
 }
 /* A day with nothing logged shows the blank marker, quieter than a score —
    it is the absence of a number, not a low one. */
@@ -1393,43 +1458,50 @@ body:has(.phone) {
   font-weight: 500;
 }
 .hist-corrected {
-  padding: 0 var(--pad-card) 12px;
+  padding: 0 var(--pad-card-x, 18px) 12px;
   background: var(--surf2);
 }
 
 /* My data's readiness headline, Fydr Athlete App.dc.html 23e: the score on the
    left at display size, how it moved and what it moved against on the right. */
+/* Spec §7.3: the top row aligns on flex-end, so the eyebrow-plus-figure column
+   and the two-line meta column sit on a shared baseline at the bottom. */
 .rd-head {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 14px;
   margin: 2px 0 10px;
 }
-/* nowrap, and it does not shrink. Measured on the Tests tab: "41.5 cm" broke
-   after the number and dropped "cm" onto a line of its own, doubling the card's
-   headline to 84px — the flex row had handed the width to a long delta string
-   ("▲ 1.4 cm ahead of your recorded PB") and left the value 109px. The value is
-   the thing the card exists to show, so it takes the width it needs first and
-   the prose beside it wraps instead. */
+/* Spec §3: hero figure 38/800/−0.04em, line-height 1.
+   nowrap is kept from the measured fix that put it here: "41.5 cm" broke after
+   the number and dropped "cm" onto a line of its own, doubling the headline to
+   84px. */
 .rd-value {
   margin: 0;
-  font-size: 40px;
-  font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
   color: var(--accent-text);
   white-space: nowrap;
   flex: 0 0 auto;
 }
+/* Spec §7.3, verbatim: "margin-left: auto; text-align: right; flex: none (no
+   flex: 1 spacer — a spacer starves the caption and orphans its last word)".
+   This corrects a flex: 1 1 auto that shipped here: it stopped the value
+   wrapping, which was the bug, but it did it by handing the meta column every
+   spare pixel, which is the defect the spec is naming. */
 .rd-meta {
   text-align: right;
   min-width: 0;
-  flex: 1 1 auto;
+  flex: none;
+  margin-left: auto;
 }
+/* Spec §7.3: 14/700 over a 12.5px muted line. */
 .rd-delta {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 /* 23e draws "▲ 6 on last week" in the accent, not in green, and the arrow is
@@ -1450,7 +1522,7 @@ body:has(.phone) {
 }
 .rd-mean {
   margin: 3px 0 0;
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 
@@ -1458,8 +1530,9 @@ body:has(.phone) {
    Its own element rather than part of the number so tabular-nums applies to
    the digits only: a unit is not a figure and should not be padded like one.
    Sized and weighted down so the value reads first and the unit qualifies it. */
+/* Spec §3: hero unit suffix 18/600. */
 .rd-unit {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   letter-spacing: 0;
   margin-inline-start: 1px;
@@ -1477,9 +1550,10 @@ body:has(.phone) {
   gap: 10px;
   margin: 14px 0 0;
 }
+/* Spec §7.3: a 52px bar row, 6px gap, then the label row. */
 .gb-col {
   display: grid;
-  grid-template-rows: 72px auto;
+  grid-template-rows: 52px auto;
   gap: 6px;
   min-width: 0;
 }
@@ -1487,10 +1561,11 @@ body:has(.phone) {
   display: flex;
   align-items: flex-end;
 }
+/* Spec §4: chart bars are rounded at the top only — 7px 7px 3px 3px. */
 .gb-bar {
   width: 100%;
-  min-height: 10px;
-  border-radius: 10px;
+  min-height: 8px;
+  border-radius: 7px 7px 3px 3px;
   background: var(--accent-text);
 }
 /* The current week is INCOMPLETE, not low. Drawn in a tint of the same hue so
@@ -1514,7 +1589,8 @@ body:has(.phone) {
   background: color-mix(in srgb, var(--muted) 45%, var(--surf));
 }
 .gb-label {
-  font-size: 11px;
+  font-size: 10.5px;
+  font-weight: 600;
   color: var(--muted);
   text-align: center;
   white-space: nowrap;
@@ -1525,10 +1601,11 @@ body:has(.phone) {
 /* My data · Tests, Fydr Athlete App.dc.html 23m: the name reads first and the
    date qualifies it, so the name carries the weight the score carries in the
    wellness list. */
+/* Spec §3, "list row name": 14.5–16px / 600 — not the 700 a card title takes. */
 .hist-name {
   margin: 0 0 2px;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--text);
 }

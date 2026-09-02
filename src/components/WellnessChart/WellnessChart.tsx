@@ -76,27 +76,30 @@ export function WellnessChart({
   flags = [],
   compact = false,
 }: Props) {
-  /* Compact reclaims the axis gutters as plot width and shortens the box —
-     the same drawing, given the whole card. */
-  /* MARK SCALE. Removing the text fixed the labels but not the marks: this
-     880-unit box renders 320px wide inside the athlete's card, so a
-     `strokeWidth={2.5}` line paints at 0.9px and an `r={3.2}` dot at a 1.16px
-     radius — measured. A 2.3px-wide dot is a speck, which is exactly what an
-     isolated submitted day looked like next to two-digit type. Every mark is
-     scaled by the reciprocal of that render so it lands at the weight it was
-     drawn for. The full chart is unscaled: the staff pages render it near its
-     natural width, where 1 unit is about 1px already. */
-  const COMPACT_RENDER_PX = 320;
-  const k = compact ? W / COMPACT_RENDER_PX : 1;
-  const h = compact ? 190 : H;
-  const ml = compact ? 4 : ML;
-  const mr = compact ? 4 : MR;
-  /* 30, not 12: the staff-note markers hang a triangle in the strip above the
-     plot, and scaling that triangle by k pushed its base to y = 12 - 9k =
-     -12.75 — off the top of the viewBox and clipped. The strip has to be
-     deeper than the mark it holds. */
-  const mt = compact ? 30 : MT;
-  const mb = compact ? 8 : MB;
+  /* SPEC §7.3. The compact chart is drawn in a box the size it is rendered at,
+     not scaled down from an 880-unit one: viewBox "-6 0 352 92" in a fixed
+     62px wrapper, with preserveAspectRatio="none" and
+     vector-effect="non-scaling-stroke" on every stroked path.
+
+     That replaces a mark-scale multiplier that stood here. The multiplier was
+     a correct reading of a real defect — an 880-unit box rendered 320px wide
+     paints strokeWidth={2.5} at 0.9px and r={3.2} at a 1.16px radius, measured
+     — but non-scaling-stroke is the actual mechanism for it: a stroke width in
+     device pixels regardless of what the viewBox does. Radii still scale, so
+     the compact box is sized close to its render instead.
+
+     The viewBox starts at -6, not 0, and the spec is explicit about why: an end
+     marker at cx=340 with r=5 inside a "0 0 340" box has half its circle
+     outside the viewport. Pad the box, do not move the point. */
+  const w = compact ? 340 : W;
+  const h = compact ? 92 : H;
+  const viewBox = compact ? `-6 0 352 ${h}` : `0 0 ${W} ${h}`;
+  const ml = compact ? 0 : ML;
+  const mr = compact ? 0 : MR;
+  /* The staff-note triangle hangs in the strip above the plot and is 9 units
+     tall, so the strip has to be deeper than the mark it holds. */
+  const mt = compact ? 14 : MT;
+  const mb = compact ? 6 : MB;
   if (series.length < 2) {
     return (
       <p className="cap">
@@ -106,7 +109,7 @@ export function WellnessChart({
     );
   }
 
-  const step = (W - ml - mr) / (series.length - 1);
+  const step = (w - ml - mr) / (series.length - 1);
   const x = (i: number) => ml + i * step;
   const y = (v: number) =>
     mt + (h - mt - mb) - ((v - min) / (max - min)) * (h - mt - mb);
@@ -182,9 +185,10 @@ export function WellnessChart({
   const mid = series[Math.floor(series.length / 2)];
 
   return (
-    <div className="chart">
+    <div className="chart" data-compact={compact ? '' : undefined}>
       <svg
-        viewBox={`0 0 ${W} ${h}`}
+        viewBox={viewBox}
+        preserveAspectRatio={compact ? 'none' : undefined}
         role="img"
         aria-label={`${title}. ${series.filter((s) => s.value !== null).length} of ${series.length} days submitted.${flagMarkers.length > 0 ? ` ${flagMarkers.length} day${flagMarkers.length === 1 ? '' : 's'} with a note from staff, listed below the chart.` : ''}`}
       >
@@ -195,7 +199,7 @@ export function WellnessChart({
             <line
               x1={ml}
               y1={y(t)}
-              x2={W - mr}
+              x2={w - mr}
               y2={y(t)}
               stroke="var(--hair)"
               strokeWidth={1}
@@ -224,8 +228,9 @@ export function WellnessChart({
             d={meanPath}
             fill="none"
             stroke="var(--accent)"
-            strokeWidth={1.25 * k}
-            strokeDasharray={`${3 * k},${4 * k}`}
+            strokeWidth={1.25}
+            strokeDasharray="3,4"
+            vectorEffect="non-scaling-stroke"
             opacity={0.5}
             strokeLinejoin="round"
           />
@@ -238,9 +243,10 @@ export function WellnessChart({
             d={d}
             fill="none"
             stroke="var(--accent)"
-            strokeWidth={2.5 * k}
+            strokeWidth={compact ? 2.6 : 2.5}
             strokeLinejoin="round"
             strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
           />
         ))}
 
@@ -262,9 +268,9 @@ export function WellnessChart({
           return (
             <g key={b.date}>
               {isLast ? (
-                <circle cx={cx} cy={cy} r={7 * k} fill="none" stroke={fill} strokeWidth={1.5 * k} opacity={0.45} />
+                <circle cx={cx} cy={cy} r={compact ? 8 : 7} fill="none" stroke={fill} strokeWidth={1.5} vectorEffect="non-scaling-stroke" opacity={0.45} />
               ) : null}
-              <circle cx={cx} cy={cy} r={(isLast ? 4.5 : 3.2) * k} fill={fill} />
+              <circle cx={cx} cy={cy} r={compact ? (isLast ? 5 : 3.4) : isLast ? 4.5 : 3.2} fill={fill} />
             </g>
           );
         })}
@@ -275,7 +281,7 @@ export function WellnessChart({
             40px, and printing it twice on one card is not emphasis. */}
         {!compact && lastWithValue && lastIndex >= 0 ? (
           <text
-            x={Math.min(x(lastIndex) + 10, W - mr)}
+            x={Math.min(x(lastIndex) + 10, w - mr)}
             y={y(clamp(lastWithValue.value!)) - 10}
             textAnchor={lastIndex > series.length - 3 ? 'end' : 'start'}
             fontFamily="var(--font-sora)"
@@ -297,12 +303,13 @@ export function WellnessChart({
                 x2={cx}
                 y2={h - mb + 6}
                 stroke="var(--accent2)"
-                strokeWidth={1 * k}
-                strokeDasharray={`${2 * k},${3 * k}`}
+                strokeWidth={1}
+                strokeDasharray="2,3"
+                vectorEffect="non-scaling-stroke"
                 opacity={0.45}
               />
               <polygon
-                points={`${cx},${mt - 1} ${cx - 4.5 * k},${mt - 9 * k} ${cx + 4.5 * k},${mt - 9 * k}`}
+                points={`${cx},${mt - 1} ${cx - 4.5},${mt - 9} ${cx + 4.5},${mt - 9}`}
                 fill="var(--accent2)"
               >
                 <title>{f.tooltip}</title>
@@ -315,7 +322,7 @@ export function WellnessChart({
           <line
             x1={ml}
             y1={h - mb + 6}
-            x2={W - mr}
+            x2={w - mr}
             y2={h - mb + 6}
             stroke="var(--border)"
             strokeWidth={1}

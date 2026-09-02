@@ -1,4 +1,5 @@
 import { Fragment } from 'react';
+import type React from 'react';
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { WellnessChart, type FlagMarker } from '@/components/WellnessChart/WellnessChart';
@@ -700,7 +701,13 @@ async function WellnessTab({
         </p>
       </section>
 
-      <section className="card flush" aria-labelledby="wellness-entries-title">
+      <section
+        className="card flush"
+        aria-labelledby="wellness-entries-title"
+        /* Spec §7.3: the value column is a fixed 54px on wellness, so the
+           column's left edge does not move when a "—" replaces a score. */
+        style={{ '--hist-val-w': '54px' } as React.CSSProperties}
+      >
         {/* Fydr Athlete App.dc.html 23e: a row list, not a four-column table.
             At 390px the table was rendering "Missing" and two columns of dots
             squeezed against each other; the design puts the date and what was
@@ -1381,19 +1388,25 @@ async function TestingTab({
         </section>
       ) : null}
 
-      <section className="card flush" aria-labelledby="testing-title">
+      <section
+        className="card flush"
+        aria-labelledby="testing-title"
+        /* Spec §7.3: 92px — it holds a value over a standing line
+           ("0.10 s off PB"), which is the widest of the three. */
+        style={{ '--hist-val-w': '92px' } as React.CSSProperties}
+      >
         <div className="hist-head">
           <h2 className="card-title" id="testing-title">
             Your tests
           </h2>
           <span className="hist-n">latest against your PB</span>
         </div>
-        <div style={{ padding: '0 var(--pad-card)' }}>
+        <div style={{ padding: '0 var(--pad-card-x)' }}>
           <FlagNotice flags={flags} heading="Noted by staff" timezone={timezone} />
         </div>
 
         {summary.length === 0 ? (
-          <div style={{ padding: '0 var(--pad-card) var(--pad-card)' }}>
+          <div style={{ padding: '0 var(--pad-card-x) var(--pad-card-y)' }}>
             <EmptyState
               headingLevel={3}
               title="No results yet"
@@ -1440,10 +1453,16 @@ async function TestingTab({
             );
           })
         )}
-        <p className="cap" style={{ margin: 0, padding: '12px var(--pad-card) var(--pad-card)' }}>
-          All-time, not the period on the other tabs: a personal best measured inside a window is
-          not a personal best. Your own results only &mdash; never a squad comparison.
-        </p>
+        {/* Spec §7.3's footer row. 23m's link reads "See all 7 tests →" because
+            that card shows three of seven; this list shows all of them, so the
+            row carries the one fact the numbers above need instead. A link to a
+            page that does not exist is a worse footer than no link. */}
+        <div className="hist-foot">
+          <p className="cap" style={{ margin: 0 }}>
+            All-time, not the period on the other tabs: a personal best measured inside a window
+            is not a personal best. Your own results only &mdash; never a squad comparison.
+          </p>
+        </div>
       </section>
     </div>
   );
@@ -1584,7 +1603,14 @@ async function GymTab({
         </p>
       </section>
 
-      <section className="card flush" aria-labelledby="gym-title">
+      <section
+        className="card flush"
+        aria-labelledby="gym-title"
+        /* Spec §7.3 gives gym 62px for the tonnage alone. 78px here: these rows
+           are links to the correction screen and carry a chevron the design's
+           rows do not, which needs the gap plus its own glyph. */
+        style={{ '--hist-val-w': '78px' } as React.CSSProperties}
+      >
         {/* 23k: a row list, not the six-column table this was. At 390px that
             table scrolled sideways and cut the Correct link in half — the
             screenshot that started this work shows it clipped mid-word. */}
@@ -1601,12 +1627,12 @@ async function GymTab({
           * athlete's path would leave every mis-logged rep permanently wrong.
           * Building that staff path was out of scope for this change and is
           * recorded as O-31 in adr-005-immutable-entries.md. */}
-        <div style={{ padding: '0 var(--pad-card)' }}>
+        <div style={{ padding: '0 var(--pad-card-x)' }}>
           <FlagNotice flags={flags} heading="Noted by staff" timezone={timezone} />
         </div>
 
         {sessions.length === 0 ? (
-          <div style={{ padding: '0 var(--pad-card) var(--pad-card)' }}>
+          <div style={{ padding: '0 var(--pad-card-x) var(--pad-card-y)' }}>
             <EmptyState
               headingLevel={3}
               title="Nothing logged yet"
@@ -1646,11 +1672,12 @@ async function GymTab({
             </Fragment>
           ))
         )}
-        <p className="cap" style={{ margin: 0, padding: '12px var(--pad-card) 0' }}>
-          Open a session to fix a set you mis-logged &mdash; the original is kept, never
-          overwritten. Gym sets stay yours to correct; your check-ins and session ratings do not.
-        </p>
-        <div style={{ padding: '0 var(--pad-card) var(--pad-card)' }}>
+        <div className="hist-foot">
+          <p className="cap" style={{ margin: 0 }}>
+            Open a session to fix a set you mis-logged &mdash; the original is kept, never
+            overwritten. Gym sets stay yours to correct; your check-ins and session ratings do
+            not.
+          </p>
           <ListCapNote shown={sessions.length} more={more} noun="sessions" />
         </div>
       </section>

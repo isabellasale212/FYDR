@@ -966,6 +966,17 @@ a {
   align-items: center;
   font-size: 13px;
 }
+
+/* Inside a flush card there is no card padding to sit inside, so the row has
+   to supply the distance to the border itself. Its own 4px left the athlete
+   programme's session names 4px from the card edge. Scoped deliberately: on
+   /testing, /injuries, /reports/testing and /reports/squad this same row sits
+   in a normally padded card, where adding 16 again would inset it to 32.
+   Horizontal only — the 9px vertical is the rhythm between rows, which is a
+   different job, same as .cmpl-row. */
+.card.flush .load-row {
+  padding-inline: var(--pad-card);
+}
 .load-row:first-of-type {
   border-top: none;
 }
@@ -1073,10 +1084,12 @@ table.tbl.lb-table td.r {
   }
 }
 
+/* A bordered container in its own right, so its text owes the same distance to
+   its border as any card's does. It was 11px/14px. */
 .banner {
   border: 1px solid var(--border);
   border-radius: var(--r-tab);
-  padding: 11px 14px;
+  padding: var(--pad-card);
   background: var(--surf2);
   display: flex;
   gap: 11px;
@@ -1641,6 +1654,30 @@ body:has(.phone) {
 .card.flush {
   padding: 0;
   overflow: hidden;
+}
+
+/* A flush card pads nothing so its dividers and tables can reach the border,
+   which means every direct child has to supply its own inset. Most do —
+   .card-title carries 16, the row classes carry it now — but a trailing
+   caption had none, so /my-data's footnote sat ON the left border at 0.
+   Direct children only: a nested table or divider still bleeds, which is the
+   whole reason the card is flush. */
+.card.flush > .cap {
+  padding: 0 var(--pad-card) var(--pad-card);
+}
+
+/* A table in a flush card is meant to bleed — that is why the card pads
+   nothing — but its outer columns still have to line up with the card's other
+   content. The cells carry 8px of their own, so /my-data's Date column sat 8px
+   from the border while the card title above it sat at 16. Only the first and
+   last cell in each row: the interior 8px is column rhythm and is untouched. */
+.card.flush table.tbl th:first-child,
+.card.flush table.tbl td:first-child {
+  padding-inline-start: var(--pad-card);
+}
+.card.flush table.tbl th:last-child,
+.card.flush table.tbl td:last-child {
+  padding-inline-end: var(--pad-card);
 }
 /* ---------- check-in form, §6 ----------
  * The spec presents Wellness/RPE/Nutrition as bottom sheets over Today:
@@ -2368,12 +2405,16 @@ img.av {
   color: var(--muted);
   margin-top: 2px;
 }
+/* These rows live in a `.card flush`, so the CARD pads nothing — its hair
+   dividers have to reach the edge — and the row owns the inset. It was
+   15px/14px, so this screen's text sat 14px from the border while every other
+   card in the product sat at 16. */
 .me-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto 12px;
   gap: 8px;
   align-items: center;
-  padding: 15px 14px;
+  padding: var(--pad-card);
   text-decoration: none;
   color: inherit;
 }

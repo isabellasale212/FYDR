@@ -75,7 +75,11 @@ export default async function ReportProblemPage({
             {reports.map((r, index) => (
               <div key={r.id}>
                 {index > 0 ? <div className="hair" /> : null}
-                <div className="load-row" style={{ gridTemplateColumns: 'minmax(0, 1fr) auto', padding: '13px 14px' }}>
+                <div className="load-row" /* Horizontal from the token: this row is in a `card flush`, so it
+                    owes the distance to the card's border itself, and an inline
+                    14px was overriding the rule that does that. Vertical stays
+                    13 — that is this list's own row rhythm. */
+                style={{ gridTemplateColumns: 'minmax(0, 1fr) auto', padding: '13px var(--pad-card)' }}>
                   <div style={{ minWidth: 0 }}>
                     <div className="tiny" style={{ marginBottom: 3 }}>
                       {formatDateTime(r.created_at, timezone)}

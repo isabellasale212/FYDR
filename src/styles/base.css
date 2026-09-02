@@ -2951,10 +2951,12 @@ a.hist-row:focus-visible {
   align-items: center;
   gap: 13px;
 }
+/* Spec §7.5: round, not a rounded square — this is a person, and every other
+   avatar in the product (Today's header, the squad lists) is a circle. */
 .me-avatar {
   width: 46px;
   height: 46px;
-  border-radius: var(--r-stat);
+  border-radius: 50%;
   background: var(--avatar-bg);
   color: var(--avatar-text);
   font-size: 15px;

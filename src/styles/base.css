@@ -1783,8 +1783,15 @@ a.hist-row:focus-visible {
   color: var(--muted);
 }
 /* Spec §7.5: full width, radius 16, padding 16px 20px, the bad fill and border,
-   15/700 in bad ink. --bad-text, not --bad: §2 rule 1, a semantic colour is
-   never text. */
+   15/700 in bad ink.
+
+   --bad-on-tint, NOT --bad-text. This ink sits on the bad TINT, not on a plain
+   surface, which is the whole reason the on-tint rung of that ladder exists.
+   --bad-text is #f15a4a in dark — the raw semantic colour — and measured
+   3.76:1 on this button's own composited ground, the exact failure §2 rule 1
+   describes. --bad-on-tint is 7.29:1 in dark and 9.24:1 in light, and its two
+   values (#ffb3a8 / #7a1f14) are the ones §2 lists as "bad text" for each
+   theme. */
 .sign-out {
   display: block;
   width: 100%;
@@ -1793,7 +1800,7 @@ a.hist-row:focus-visible {
   border-radius: 16px;
   background: rgb(var(--bad-rgb) / 0.1);
   border: 1px solid rgb(var(--bad-rgb) / 0.5);
-  color: var(--bad-text);
+  color: var(--bad-on-tint);
   font-family: inherit;
   font-size: 15px;
   font-weight: 700;

@@ -1,6 +1,11 @@
 import { notFound } from 'next/navigation';
 import { GymSessionLogger } from '@/components/GymSessionLogger/GymSessionLogger';
-import { fetchLoggedSets, fetchSessionExercises, startOrGetSessionLog } from '@/lib/queries/programmes';
+import {
+  fetchLoggedSets,
+  fetchMyProgrammeSessions,
+  fetchSessionExercises,
+  startOrGetSessionLog,
+} from '@/lib/queries/programmes';
 import { requireAthlete } from '@/lib/session';
 
 export const metadata = { title: 'Gym session · Fydr' };
@@ -24,10 +29,18 @@ export default async function GymSessionPage({
   const { sessionId } = await params;
   const { db, orgId, athleteId, timezone } = await requireAthlete();
 
-  const [exercises, sessionRow] = await Promise.all([
+  /* The name comes from resolve_my_programme_sessions, the same RPC the
+     programme list uses, NOT from a direct read of programme_sessions. That
+     table's only SELECT policy is programme_sessions_staff_select, so an
+     athlete reading their own session got null back and this screen showed
+     the "Gym session" fallback while the list one tap earlier said "Lower A".
+     Verified against the row: it has always had a name. The RPC is the
+     sanctioned athlete path, so this needs no new policy. */
+  const [exercises, myProgramme] = await Promise.all([
     fetchSessionExercises(db, sessionId, athleteId),
-    db.from('programme_sessions').select('name').eq('id', sessionId).maybeSingle(),
+    fetchMyProgrammeSessions(db, athleteId),
   ]);
+  const mine = myProgramme.find((r) => r.session_id === sessionId) ?? null;
   if (exercises.length === 0) notFound();
 
   const { id: gymSessionLogId, status, startedAt, error } = await startOrGetSessionLog(
@@ -49,7 +62,20 @@ export default async function GymSessionPage({
       orgId={orgId}
       timezone={timezone}
       gymSessionLogId={gymSessionLogId}
-      sessionName={sessionRow.data?.name ?? 'Gym session'}
+      sessionName={mine?.session_name ?? 'Gym session'}
+      /* The design's eyebrow above the session name. Built from what the RPC
+         already returns, and each part dropped when absent rather than printed
+         as a gap. */
+      sessionMeta={
+        [
+          mine?.programme_name,
+          mine?.block_name,
+          mine?.week_number != null ? `Week ${mine.week_number}` : null,
+          mine?.day_number != null ? `Day ${mine.day_number}` : null,
+        ]
+          .filter(Boolean)
+          .join(' · ') || null
+      }
       startedAt={startedAt}
       totalSets={totalSets}
       exercises={exercises}

@@ -21,6 +21,8 @@ type Props = {
   orgId: string;
   gymSessionLogId: string;
   sessionName: string;
+  /** Programme, block, week and day — the design's eyebrow above the name. */
+  sessionMeta: string | null;
   startedAt: string | null;
   totalSets: number;
   timezone: string;
@@ -89,6 +91,7 @@ export function GymSessionLogger({
   orgId,
   gymSessionLogId,
   sessionName,
+  sessionMeta,
   startedAt,
   totalSets,
   timezone,
@@ -292,6 +295,7 @@ export function GymSessionLogger({
             Close
           </Link>
           <div className="gym-head-mid">
+            {sessionMeta ? <div className="gym-head-eyebrow">{sessionMeta}</div> : null}
             <div className="nm">{sessionName}</div>
             <div className="prog num">
               {doneCount} of {totalSets} sets

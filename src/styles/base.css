@@ -2434,9 +2434,20 @@ body:has(.phone) {
   margin-top: 12px;
   overflow: hidden;
 }
+.gym-head-eyebrow {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
 .gym-progress-fill {
   height: 100%;
-  background: var(--accent);
+  /* --gym, the domain colour, as the design draws it. It was the accent,
+     which is every other progress bar in the product; this one is the gym
+     session's own. */
+  background: var(--gym);
   border-radius: var(--r-pill);
   transition: width var(--t-state);
 }

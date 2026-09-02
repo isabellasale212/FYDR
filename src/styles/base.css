@@ -3916,13 +3916,20 @@ img.av {
   gap: 14px;
   align-items: start;
 }
+/* The same divided-strip shape as .cmpl-stats, and now built the same way:
+   the WRAPPER pads nothing so its cells' border-left dividers reach the card's
+   edge, and the CELL owns the inset. It used to inherit .card's 16px AND add
+   18px/22px of its own, so this strip's text sat 38px from the left border and
+   34px from the top while every other card on the page sat at 16 — and the
+   dividers stopped 16px short of the edge. */
 .dash-stats {
   display: flex;
   flex-wrap: wrap;
+  padding: 0;
 }
 .dash-stat {
   flex: 1 1 168px;
-  padding: 18px 22px;
+  padding: var(--pad-card);
   border-left: 1px solid var(--hair);
   cursor: pointer;
   text-decoration: none;

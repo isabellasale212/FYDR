@@ -1406,6 +1406,12 @@ body:has(.phone) {
   gap: 14px;
   margin: 2px 0 10px;
 }
+/* nowrap, and it does not shrink. Measured on the Tests tab: "41.5 cm" broke
+   after the number and dropped "cm" onto a line of its own, doubling the card's
+   headline to 84px — the flex row had handed the width to a long delta string
+   ("▲ 1.4 cm ahead of your recorded PB") and left the value 109px. The value is
+   the thing the card exists to show, so it takes the width it needs first and
+   the prose beside it wraps instead. */
 .rd-value {
   margin: 0;
   font-size: 40px;
@@ -1413,10 +1419,13 @@ body:has(.phone) {
   line-height: 1.05;
   letter-spacing: -0.02em;
   color: var(--accent-text);
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 .rd-meta {
   text-align: right;
   min-width: 0;
+  flex: 1 1 auto;
 }
 .rd-delta {
   margin: 0;
@@ -1494,11 +1503,14 @@ body:has(.phone) {
 /* A week with nothing logged draws a baseline rule, not nothing. An absent bar
    is ambiguous — zero sessions and no data look identical — and this page's
    whole argument is that a blank is not a zero. */
+/* Mixed to an explicit value rather than dimmed with opacity: --border-strong
+   at 0.35 composited to #d3d3d4 on white, which is a divider, not a reading.
+   This rule is carrying meaning — "you did none", as against "we have nothing"
+   — so it has to be as legible as the bars it sits beside. */
 .gb-bar[data-zero] {
   min-height: 0;
   height: 3px;
-  background: var(--border-strong);
-  opacity: 0.35;
+  background: color-mix(in srgb, var(--muted) 45%, var(--surf));
 }
 .gb-label {
   font-size: 11px;

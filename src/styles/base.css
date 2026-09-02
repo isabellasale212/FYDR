@@ -2316,10 +2316,14 @@ a.hist-row:focus-visible {
 }
 
 /* -------- the five scales, §6 -------- */
+/* Spec §7.2: each scale block sits under a hairline with 12px of padding
+   above it and 7px between its own parts. The rule is what separates five
+   questions that otherwise run together as one wall of numbers. */
 .sc {
-  margin-top: 18px;
+  margin-top: 12px;
+  padding-top: 12px;
   border: none;
-  padding: 0;
+  border-top: 1px solid var(--hair);
   min-inline-size: 0;
 }
 .sc-h {
@@ -2330,14 +2334,15 @@ a.hist-row:focus-visible {
   padding: 0;
   width: 100%;
 }
+/* Spec §7.2: question name 16/700, state 13.5/600. */
 .sc-l {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
 }
 .sc-v {
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--muted);
 }
 .sc-v .n {
   font-size: 12.5px;
@@ -2349,15 +2354,17 @@ a.hist-row:focus-visible {
 .sc-v.un {
   color: var(--warn-text);
 }
+/* Spec §7.2: five equal keys at gap 8. */
 .dots {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 4px;
-  margin-top: 10px;
+  gap: 8px;
+  margin-top: 7px;
 }
 .dots .opt {
   position: relative;
   height: 44px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2375,23 +2382,29 @@ a.hist-row:focus-visible {
    nothing in them: five identical dots give the reader nothing to aim at, and
    which one is 3 was a counting exercise. */
 .dots .opt > span {
+  /* Spec §7.2: 44px tall, radius 14, numeral 16/700. 44 is also §8's floor —
+     this is the control the whole 45-second promise runs through, tapped
+     twenty-five times a morning with cold hands. */
   width: 100%;
-  height: 40px;
-  border-radius: var(--r-field);
+  height: 44px;
+  border-radius: 14px;
   border: 1px solid var(--border);
-  background: var(--surf);
-  color: var(--text);
+  background: transparent;
+  color: var(--muted);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   pointer-events: none;
   transition: background var(--t-state), border-color var(--t-state), color var(--t-state);
 }
+/* Spec §7.2: selected is the accent FILL with the accent BORDER over it —
+   #3c85f7, a step lighter than the fill, which is what keeps the key's edge
+   visible against the fill instead of dissolving into it. */
 .dots .opt[data-selected] > span {
   background: var(--accent);
-  border-color: var(--accent);
+  border-color: var(--accent-border);
   color: var(--on-accent);
 }
 .dots .opt input:focus-visible + span {

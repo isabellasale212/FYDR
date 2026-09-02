@@ -21,6 +21,8 @@
    --------------------------------------------------------------------------- */
 :root {
   --accent: #1f6fea;
+  /* Spec §2: the accent's border, the same value in both themes. */
+  --accent-border: #3c85f7;
   --accent2: #33b6ff;
   /* Light-theme handoff §5: Good is #4fd6ff. Was #4dcbb2 (teal) site-wide with
      three scoped blocks (.phone, .nutrition-workspace, .sg) overriding it to

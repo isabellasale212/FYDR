@@ -1328,12 +1328,6 @@ body:has(.phone) {
   color: var(--tab-inactive);
   transition: color var(--t-state);
 }
-/* Gym keeps its domain colour whether or not it is the current tab. The other
-   three icons are navigation and follow the active state; this one names a
-   place that is amber everywhere else in the product. */
-.athlete-tab[data-domain='gym'] .athlete-tab-glyph {
-  color: var(--gym);
-}
 
 /* Today's "To do" heading: the label on the left, what is outstanding on the
    right. Sentence case and full size, per Fydr Athlete App.dc.html 23a — it
@@ -1459,6 +1453,15 @@ body:has(.phone) {
 }
 .athlete-tab[aria-current='page'] .athlete-tab-glyph {
   color: var(--accent);
+}
+
+/* Gym keeps its domain colour whether or not it is the current tab — the
+   design draws the dumbbell amber in every state. Placed AFTER the active
+   rule deliberately: the two selectors have identical specificity, so this is
+   settled by source order, and with the rule above it the dumbbell turned
+   blue the moment you were on the Gym tab. */
+.athlete-tab[data-domain='gym'] .athlete-tab-glyph {
+  color: var(--gym);
 }
 
 /* -------- week strip, §5 -------- */

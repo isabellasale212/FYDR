@@ -1,12 +1,9 @@
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { fetchMyProgrammeSessions } from '@/lib/queries/programmes';
-import { fetchOutstandingCount } from '@/lib/queries/compliance';
-import { fetchCheckinForWeek } from '@/lib/queries/nutrition';
 import { resolveTargetForDate } from '@/lib/queries/nutritionTargets';
-import { mondayOf } from '@/lib/queries/schedule';
 import { Toast } from '@/components/Toast/Toast';
-import { addDays, enumLabel, mdExplainer, mdLabel, todayIso } from '@/lib/format';
+import { enumLabel, mdExplainer, mdLabel, todayIso } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
 
 export const metadata = { title: 'My programme · Fydr' };
@@ -57,14 +54,14 @@ export default async function MyProgrammePage({
   const { db, athleteId, timezone } = await requireAthlete();
   const params = await searchParams;
   const today = todayIso(timezone);
-  const nutritionWeekStart = addDays(mondayOf(today), -7);
-
-  const [sessions, nutritionCheckin, target] = await Promise.all([
+  /* The nutrition check-in and outstanding-count queries went with the header
+     pill they fed. Nothing else on this screen asks what is still to do, and
+     that count belongs on Today, beside the list it counts. Two fewer round
+     trips, and one fewer sequential await after the parallel batch. */
+  const [sessions, target] = await Promise.all([
     fetchMyProgrammeSessions(db, athleteId),
-    fetchCheckinForWeek(db, athleteId, nutritionWeekStart),
     resolveTargetForDate(db, athleteId, today),
   ]);
-  const outstanding = await fetchOutstandingCount(db, athleteId, today, !!nutritionCheckin);
 
   const programmeName = sessions[0]?.programme_name ?? null;
   const programmeType = sessions[0]?.programme_type ?? null;
@@ -75,15 +72,6 @@ export default async function MyProgrammePage({
     <>
       <div className="hd">
         <h1 className="d">My programme</h1>
-        <span className={`pill status-pill ${outstanding > 0 ? 'pill-warn' : 'pill-good'}`}>
-          {outstanding > 0 ? (
-            <>
-              <span className="num">{outstanding}</span> to do
-            </>
-          ) : (
-            'Up to date'
-          )}
-        </span>
       </div>
 
       {typeof params.submitted === 'string' ? (

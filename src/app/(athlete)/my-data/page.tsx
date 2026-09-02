@@ -1579,7 +1579,15 @@ async function GymTab({
                 When it cannot be known — no programme assigned, or a week the
                 RPC returned nothing for — the line says what IS true (the sets)
                 rather than printing a denominator nobody can stand behind. */}
-            {assignedTotal !== null ? (
+            {/* > 0, not just non-null. A zero denominator beside a non-zero
+                count reads "3 of 0 assigned", which cannot be true of
+                anything — and it is what this club's data produces, because
+                only week 1 of each block has sessions authored while the
+                blocks run 4 to 12 weeks. Zero assigned does not mean the
+                athlete failed; it means nothing was scheduled, and the work
+                they did was off-programme. The sets line is the true statement
+                in that case. */}
+            {assignedTotal !== null && assignedTotal > 0 ? (
               <p className="rd-delta">
                 of <span className="num">{assignedTotal}</span> assigned
               </p>

@@ -140,7 +140,14 @@ export function AvatarUploadForm({
               justifyContent: 'center',
               fontSize: 20,
               fontWeight: 700,
-              color: colour ? 'var(--on-accent)' : 'var(--muted)',
+              /* --on-bright-tint, not --on-accent. --on-accent is white,
+                 derived for the accent's deep blue. The avatar palette is
+                 deliberately light, so white initials measured 1.89:1 on
+                 olive, 1.96 on purple, 2.04 on cyan and 2.92 on indigo —
+                 six of the seven colours failed even the 3:1 large-text
+                 threshold, and slate passed only by accident. Dark ink
+                 clears every one, worst case 4.32:1 on slate. */
+              color: colour ? 'var(--on-bright-tint)' : 'var(--muted)',
             }}
           >
             {initials(fullName)}

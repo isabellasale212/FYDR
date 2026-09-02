@@ -7743,9 +7743,13 @@ button.dash-stat {
   color: var(--muted);
   margin-left: 2px;
 }
+/* --muted, not --faint. These sub-labels sit inside the stat cells, and the
+   ones on a toned cell (.cmpl-stat[data-tone='bad'] carries a wash) put
+   --faint at 4.44:1 in dark — just under. Same one-step-up fix as the
+   nutrition rule panel. */
 .cmpl-stat-sub {
   font-size: 11.5px;
-  color: var(--faint);
+  color: var(--muted);
 }
 
 .cmpl-table {

@@ -5,11 +5,10 @@ import { WellnessChart, type FlagMarker } from '@/components/WellnessChart/Welln
 import { FlagNotice } from '@/components/FlagNotice/FlagNotice';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { fetchWellnessByAthlete, wellnessSeries } from '@/lib/queries/wellness';
-import { fetchAthleteRecentSessions, fetchCurrentSeason, mondayOf } from '@/lib/queries/schedule';
-import { fetchCheckinForWeek, fetchRecentCheckins } from '@/lib/queries/nutrition';
+import { fetchAthleteRecentSessions, fetchCurrentSeason } from '@/lib/queries/schedule';
+import { fetchRecentCheckins } from '@/lib/queries/nutrition';
 import { fetchMyTestSummary } from '@/lib/queries/testing';
 import { fetchRecentGymSessions } from '@/lib/queries/programmes';
-import { fetchOutstandingCount } from '@/lib/queries/compliance';
 import { fetchMyVisibleFlags, staffNoteLines, type VisibleFlag } from '@/lib/queries/flags';
 import {
   fetchTrainingRevisionChains,
@@ -298,9 +297,9 @@ export default async function MyDataPage({
   const from = range.from;
   const dates = dateRange(range.from, range.days);
 
-  const nutritionWeekStart = addDays(mondayOf(today), -7);
-  const nutritionCheckin = await fetchCheckinForWeek(db, athleteId, nutritionWeekStart);
-  const outstanding = await fetchOutstandingCount(db, athleteId, today, !!nutritionCheckin);
+  /* The outstanding count and the two queries feeding it went with the header
+     pill: they existed only to render it, and nothing else on this screen asks
+     what is still to do. Two fewer round trips on every load. */
 
   /* Integration-audit major finding: acknowledging a flag never became visible anywhere
    * on the athlete side. my-data.md line ~241 scopes it as "flags | 'flags' where
@@ -344,16 +343,10 @@ export default async function MyDataPage({
   return (
     <>
       <div className="hd">
+        {/* Just the title, per Fydr Athlete App.dc.html 23e. The outstanding
+            count lives on Today, beside the list it counts; repeating it on a
+            history screen is a number with nothing to do here. */}
         <h1 className="d">My data</h1>
-        <span className={`pill status-pill ${outstanding > 0 ? 'pill-warn' : 'pill-good'}`}>
-          {outstanding > 0 ? (
-            <>
-              <span className="num">{outstanding}</span> to do
-            </>
-          ) : (
-            'Up to date'
-          )}
-        </span>
       </div>
 
       {/* Five chips, §10: the four history segments this build has real
@@ -549,6 +542,26 @@ async function WellnessTab({
   );
   const series = wellnessSeries(entries, dates, 'readiness', ROLLING_DAYS);
   const submitted = series.filter((s) => s.value !== null).length;
+
+  /* The design's header numbers. All three are read off the series that
+     already drives the chart, so the headline and the picture cannot
+     disagree.
+     The delta compares the latest logged day with the nearest logged day at
+     least seven days before it — not "the value seven days ago", which is
+     null on any day the athlete missed, and not a week-to-week mean, which
+     would say something different from what the label claims. When there is
+     no such earlier day the delta is omitted rather than shown as zero. */
+  const logged = series.filter((s) => s.value !== null);
+  const latest = logged.length > 0 ? logged[logged.length - 1]! : null;
+  const latestReadiness = latest ? Math.round(latest.value!) : null;
+  const latestMean = latest && latest.mean !== null ? Math.round(latest.mean) : null;
+  const latestDate = latest ? latest.date : null;
+  const priorWeek =
+    latest === null
+      ? null
+      : [...logged].reverse().find((p) => p.date <= addDays(latest.date, -7)) ?? null;
+  const readinessDelta =
+    latest !== null && priorWeek !== null ? Math.round(latest.value!) - Math.round(priorWeek.value!) : null;
   const outside = series.filter((s) => {
     const p = bandPosition(s);
     return p === 'above' || p === 'below';
@@ -581,18 +594,31 @@ async function WellnessTab({
   return (
     <div className="stack" style={{ marginTop: 14 }}>
       <section className="card" aria-labelledby="wellness-title">
-        <h2 className="card-title" id="wellness-title">
+        {/* Fydr Athlete App.dc.html 23e leads with the VALUE, not with an
+            explanation of it: the score, how it moved, and the mean it moved
+            against. The paragraph that used to sit here described the shaded
+            band; the band is still drawn and still means the same thing, and
+            the footer below already states the one fact that changes how the
+            chart is read — that missed days are blank, never zero. */}
+        <h2 className="eyebrow" id="wellness-title">
           Readiness
         </h2>
-        {/* Was: "Against your own 28 day rolling mean and ±1SD band...".
-         *  Accurate, and unreadable for the audience — the club asked for
-         *  less wording and less complexity here. The statistics are
-         *  unchanged; only the explanation is. "Your usual range" is what
-         *  the ±1SD band actually means to the person reading it. */}
-        <p className="import-sub">
-          The shaded band is your usual range. What matters is whether today is
-          normal <em>for you</em>, not the number itself.
-        </p>
+        <div className="rd-head">
+          <p className="rd-value num">{latestReadiness !== null ? latestReadiness : BLANK}</p>
+          <div className="rd-meta">
+            {readinessDelta !== null ? (
+              <p className="rd-delta num" data-dir={readinessDelta >= 0 ? 'up' : 'down'}>
+                {readinessDelta >= 0 ? '▲' : '▼'} {Math.abs(readinessDelta)} on last week
+              </p>
+            ) : null}
+            {latestMean !== null && latestDate ? (
+              <p className="rd-mean">
+                your {ROLLING_DAYS}-day mean <span className="num">{latestMean}</span> · to{' '}
+                {formatDate(latestDate, timezone)}
+              </p>
+            ) : null}
+          </div>
+        </div>
 
         {submitted === 0 ? (
           <EmptyState
@@ -635,90 +661,85 @@ async function WellnessTab({
       </section>
 
       <section className="card flush" aria-labelledby="wellness-entries-title">
-        <h2 className="card-title" id="wellness-entries-title" style={{ padding: '16px 16px 0' }}>
-          Entries
-        </h2>
-        <div style={{ overflowX: 'auto' }}>
-          <table className="tbl">
-            <caption className="visually-hidden">Wellness entries, most recent first</caption>
-            <thead>
-              <tr>
-                <th scope="col">Date</th>
-                <th scope="col" className="r">
-                  Readiness
-                </th>
-                <th scope="col" className="r">
-                  Sleep
-                </th>
-                <th scope="col">Submitted</th>
-              </tr>
-            </thead>
-            <tbody>
-              {shownDates.map((date) => {
-                const entry = byDate.get(date);
-                const corrected = correctedByDate.get(date);
-                return (
-                  <Fragment key={date}>
-                    <tr>
-                      <td className="num sub">
-                        {formatDate(date, timezone)}
-                        {corrected ? (
-                          <span className="pill pill-neutral" style={{ marginInlineStart: 6 }}>
-                            Corrected
-                          </span>
-                        ) : null}
-                      </td>
-                      <td className="r num">
-                        {entry ? formatNumber(entry.readiness_score, 0) : 'Missing'}
-                      </td>
-                      <td className="r num">
-                        {entry ? `${dash(entry.sleep_hours)} h` : BLANK}
-                      </td>
-                      <td className="sub num">
-                        {entry?.submitted_at ? formatTime(entry.submitted_at, timezone) : BLANK}
-                      </td>
-                    </tr>
-                    {corrected ? (
-                      /* Shown open, not behind a disclosure. The coach's version of this
-                       * is expandable because a coach scans thirty athletes and wants the
-                       * current number by default; this is one person's own record, a
-                       * correction is rare, and the fact someone changed their answer is
-                       * not something to make them go looking for. No audit event either
-                       * — see recordRevisionChainView's note on why. */
-                      <tr>
-                        <td colSpan={4} style={{ background: 'var(--surf2)' }}>
-                          <p className="cap" style={{ margin: 0 }}>
-                            Corrected by {corrected.correctedBy ?? 'a member of staff'}
-                            {corrected.correctedAt
-                              ? ` on ${formatDate(corrected.correctedAt, timezone)}`
-                              : ''}
-                            .{' '}
-                            {corrected.priorRevisions.length === 0
-                              ? 'What you first reported is older than the window shown here.'
-                              : 'What you reported:'}
-                          </p>
-                          {corrected.priorRevisions.length > 0 ? (
-                            <ol className="cap" style={{ margin: '4px 0 0', paddingInlineStart: 18 }}>
-                              {corrected.priorRevisions.map((rev) => (
-                                <li key={rev.id} className="num">
-                                  {`sleep ${dash(rev.sleep_hours)} h · quality ${dash(
-                                    rev.sleep_quality,
-                                  )} · fatigue ${dash(rev.fatigue)} · soreness ${dash(
-                                    rev.soreness,
-                                  )} · stress ${dash(rev.stress)} · mood ${dash(rev.mood)}`}
-                                </li>
-                              ))}
-                            </ol>
-                          ) : null}
-                        </td>
-                      </tr>
-                    ) : null}
-                  </Fragment>
-                );
-              })}
-            </tbody>
-          </table>
+        {/* Fydr Athlete App.dc.html 23e: a row list, not a four-column table.
+            At 390px the table was rendering "Missing" and two columns of dots
+            squeezed against each other; the design puts the date and what was
+            logged on the left and the score on the right, which is the shape a
+            phone can actually hold. The correction disclosure below each row is
+            unchanged — it is the reason this list is not just a map(). */}
+        <div className="hist-head">
+          <h2 className="card-title" id="wellness-entries-title">
+            History
+          </h2>
+          <span className="hist-n num">
+            n = {submitted} of {range.days} days
+          </span>
         </div>
+        {shownDates.map((date) => {
+          const entry = byDate.get(date);
+          const corrected = correctedByDate.get(date);
+          return (
+            <Fragment key={date}>
+              <div className="hair" />
+              <div className="hist-row">
+                <div style={{ minWidth: 0 }}>
+                  <p className="hist-date">
+                    {formatDate(date, timezone)}
+                    {corrected ? (
+                      <span className="pill pill-neutral" style={{ marginInlineStart: 6 }}>
+                        Corrected
+                      </span>
+                    ) : null}
+                  </p>
+                  {/* "not submitted", never a row of zeros — the same rule the
+                      chart footer states. Sleep and soreness because those are
+                      the two the design shows, and the two an athlete recognises
+                      as the reason a score moved. */}
+                  <p className="hist-detail num">
+                    {entry
+                      ? `sleep ${dash(entry.sleep_hours)} h · soreness ${dash(entry.soreness)}`
+                      : 'not submitted'}
+                  </p>
+                </div>
+                <p className="hist-value num" data-missing={entry ? undefined : ''}>
+                  {entry ? formatNumber(entry.readiness_score, 0) : BLANK}
+                </p>
+              </div>
+              {corrected ? (
+                /* Shown open, not behind a disclosure. The coach's version of this
+                 * is expandable because a coach scans thirty athletes and wants the
+                 * current number by default; this is one person's own record, a
+                 * correction is rare, and the fact someone changed their answer is
+                 * not something to make them go looking for. */
+                <div className="hist-corrected">
+                  <p className="cap" style={{ margin: 0 }}>
+                    Corrected by {corrected.correctedBy ?? 'a member of staff'}
+                    {corrected.correctedAt
+                      ? ` on ${formatDate(corrected.correctedAt, timezone)}`
+                      : ''}
+                    .{' '}
+                    {corrected.priorRevisions.length === 0
+                      ? 'What you first reported is older than the window shown here.'
+                      : 'What you reported:'}
+                  </p>
+                  {corrected.priorRevisions.length > 0 ? (
+                    <ol className="cap" style={{ margin: '4px 0 0', paddingInlineStart: 18 }}>
+                      {corrected.priorRevisions.map((rev) => (
+                        <li key={rev.id} className="num">
+                          {`sleep ${dash(rev.sleep_hours)} h · quality ${dash(
+                            rev.sleep_quality,
+                          )} · fatigue ${dash(rev.fatigue)} · soreness ${dash(
+                            rev.soreness,
+                          )} · stress ${dash(rev.stress)} · mood ${dash(rev.mood)}`}
+                        </li>
+                      ))}
+                    </ol>
+                  ) : null}
+                </div>
+              ) : null}
+            </Fragment>
+          );
+        })}
         <ListCapNote
           shown={shownDates.length}
           more={tableDates.length > shownDates.length}

@@ -1353,6 +1353,96 @@ body:has(.phone) {
   text-transform: none;
   color: var(--text);
 }
+/* My data's history list, Fydr Athlete App.dc.html 23e. A row list rather than
+   a table: at 390px four columns left the readiness column reading "Missing"
+   next to two columns of dots. Lives in a `card flush`, so the rows own the
+   inset and the hairlines reach the card's edge. */
+.hist-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: var(--pad-card) var(--pad-card) 10px;
+}
+.hist-n {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.hist-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px var(--pad-card);
+}
+.hist-date {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.hist-detail {
+  margin: 2px 0 0;
+  font-size: 13.5px;
+  color: var(--text);
+}
+.hist-value {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+/* A day with nothing logged shows the blank marker, quieter than a score —
+   it is the absence of a number, not a low one. */
+.hist-value[data-missing] {
+  color: var(--faint);
+  font-weight: 500;
+}
+.hist-corrected {
+  padding: 0 var(--pad-card) 12px;
+  background: var(--surf2);
+}
+
+/* My data's readiness headline, Fydr Athlete App.dc.html 23e: the score on the
+   left at display size, how it moved and what it moved against on the right. */
+.rd-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 2px 0 10px;
+}
+.rd-value {
+  margin: 0;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--accent-text);
+}
+.rd-meta {
+  text-align: right;
+  min-width: 0;
+}
+.rd-delta {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+/* Direction carries the colour, and the glyph carries it too — a reader who
+   cannot separate the two hues still has the arrow. */
+.rd-delta[data-dir='up'] {
+  color: var(--good-text);
+}
+.rd-delta[data-dir='down'] {
+  color: var(--bad-text);
+}
+.rd-mean {
+  margin: 3px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
 .todo-left {
   font-size: 13px;
   font-weight: 700;
@@ -7121,10 +7211,13 @@ button.dash-stat {
   font-style: italic;
   color: var(--muted);
 }
+/* --muted, not --faint: this line sits on the notice's own accent wash, and
+   --faint is derived for a plain surface — 4.33:1 light, 3.95:1 dark on that
+   tint. Same one-step-up fix as the nutrition rule panel. */
 .flag-notice-attribution {
   margin: 6px 0 0;
   font-size: 11px;
-  color: var(--faint);
+  color: var(--muted);
 }
 
 /* Medical's triage notes on a problem report (ProblemReportsTriage, migration

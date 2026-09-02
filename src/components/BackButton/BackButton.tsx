@@ -19,8 +19,14 @@ import { usePathname, useRouter } from 'next/navigation';
  * a step out of the app.
  */
 
-/** Screens that start a journey rather than sit inside one. */
-const ROOTS = new Set(['/dashboard', '/today']);
+/** Screens that start a journey rather than sit inside one.
+ *
+ *  Every TAB ROOT belongs here, not just the two landing screens. /my-data,
+ *  /programme and /me are reached by tapping a tab, so "back" from one of them
+ *  means whichever tab you were on before — which is not a parent, and the tab
+ *  bar is already the way there. They were showing a Back button above their
+ *  own title, which the athlete design does not draw on any tab root. */
+const ROOTS = new Set(['/dashboard', '/today', '/my-data', '/programme', '/me']);
 
 /** Screens that render their OWN copy inside their topbar, because their
  *  design places it there rather than above the page header. The layout's

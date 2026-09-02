@@ -612,8 +612,12 @@ export function ScheduleWorkspace({
         </Link>
       </div>
 
+      {/* No status dot: it occupied a 10px grid column plus a 14px gap, which
+          put this card's first text 40px from its border while every other
+          card on the page sat at 16. The state it carried is now the card's
+          left border accent — the same thing .pill does with
+          border-inline-start — so it is still visible and costs no column. */}
       <div className="card sg-banner" data-dirty={dirtyCount > 0}>
-        <span className="sg-banner-dot" />
         <div>
           <div className="sg-banner-title">
             {dirtyCount > 0 ? `${dirtyCount} change${dirtyCount === 1 ? '' : 's'} not yet in the athlete app` : 'The athlete app is up to date'}

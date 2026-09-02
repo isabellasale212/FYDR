@@ -6071,22 +6071,19 @@ button.dash-stat {
 .sg-banner {
   padding: var(--pad-card);
   display: grid;
-  grid-template-columns: 10px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 14px;
   align-items: center;
+  /* Status as a border accent rather than a leading dot column. The dot cost
+     24px before the first word, so this card's text sat 40px from its border
+     against 16 everywhere else. */
+  border-inline-start: 3px solid var(--good);
 }
 .sg-banner[data-dirty='true'] {
   border-color: rgb(var(--warn-rgb) / 0.5);
+  border-inline-start-color: var(--warn);
 }
-.sg-banner-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--good);
-}
-.sg-banner[data-dirty='true'] .sg-banner-dot {
-  background: var(--warn);
-}
+
 .sg-banner-title {
   font-size: 13.5px;
   font-weight: 700;
@@ -6263,8 +6260,12 @@ button.dash-stat {
   grid-template-columns: 62px repeat(7, minmax(76px, 1fr));
   border-bottom: 1px solid var(--hair);
 }
+/* No top padding: .sg-grid-card already provides --pad-card above this row,
+   and adding 12 on top of it put the first weekday 28px from the card's
+   border while the rest of the page sat at 16. Sides and bottom are the
+   cell's own rhythm and are unchanged. */
 .sg-day-head {
-  padding: 12px 12px 10px;
+  padding: 0 12px 10px;
   border-left: 1px solid var(--hair);
   cursor: pointer;
   border: none;

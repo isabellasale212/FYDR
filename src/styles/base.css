@@ -1317,19 +1317,58 @@ body:has(.phone) {
   text-decoration: none;
   transition: color var(--t-state);
 }
+/* Holds a real icon now rather than being one. It used to BE the glyph — a
+   rounded square outline standing in for the four icons the design draws. */
 .athlete-tab-glyph {
-  width: 18px;
-  height: 18px;
-  border-radius: 6px;
-  border: 2px solid var(--tab-inactive);
-  transition: border-color var(--t-state), background var(--t-state);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  color: var(--tab-inactive);
+  transition: color var(--t-state);
 }
+/* Gym keeps its domain colour whether or not it is the current tab. The other
+   three icons are navigation and follow the active state; this one names a
+   place that is amber everywhere else in the product. */
+.athlete-tab[data-domain='gym'] .athlete-tab-glyph {
+  color: var(--gym);
+}
+
+/* Today's "To do" heading: the label on the left, what is outstanding on the
+   right. Sentence case and full size, per Fydr Athlete App.dc.html 23a — it
+   was a small uppercase section label with a bare number after it. */
+/* Overrides .sect's small uppercase label treatment: on Today this is a real
+   heading over the list beneath it, not a section eyebrow.
+   Written as .sect.todo-head so it wins on SPECIFICITY rather than order —
+   .sect is defined further down this file, so a single-class rule up here
+   loses to it and the heading stayed uppercase. */
+.sect.todo-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 19px;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--text);
+}
+.todo-left {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--warn-text);
+}
+/* --accent-pill-text, a step lighter than --accent-text: the tab bar has its
+   own elevated background rather than the plain --surf that --accent-text is
+   derived against, and the current tab's label measured 4.49:1 on it in
+   dark. */
 .athlete-tab[aria-current='page'] {
-  color: var(--accent-text);
+  color: var(--accent-pill-text);
 }
 .athlete-tab[aria-current='page'] .athlete-tab-glyph {
-  border-color: var(--accent);
-  background: var(--accent);
+  color: var(--accent);
 }
 
 /* -------- week strip, §5 -------- */
@@ -1480,17 +1519,24 @@ body:has(.phone) {
   font-size: 13px;
   font-weight: 500;
   background: rgb(var(--accent-rgb) / 0.1);
-  color: var(--accent-text);
+  /* The PILL variant, for the same reason as the per-domain glyphs below:
+     this sits on the accent's own tint, not on a plain surface. --accent-text
+     measured 4.35:1 here in dark. */
+  color: var(--accent-pill-text);
 }
 /* Per-domain tints, §5's to-do row table: RPE and Nutrition share the same
    dark-cyan glyph colour on two different tints, a literal spec detail. */
+/* --good-PILL-text, not --good-text: these glyphs sit on that colour's own
+   tint, which is exactly what the pill variant is derived against. The plain
+   variant is for body copy on a plain surface and measured 4.35:1 here in
+   dark. */
 .gl[data-domain='training_rpe'] {
   background: rgb(var(--accent2-rgb) / 0.16);
-  color: var(--good-text);
+  color: var(--good-pill-text);
 }
 .gl[data-domain='nutrition'] {
   background: rgb(var(--good-rgb) / 0.16);
-  color: var(--good-text);
+  color: var(--good-pill-text);
 }
 .gl[data-domain='gym'] {
   background: rgb(var(--gym-rgb) / 0.22);

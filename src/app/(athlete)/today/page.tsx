@@ -115,11 +115,16 @@ export default async function TodayPage({
     ...outstanding.map((item) => ({
       domain: item.domain,
       href: item.href,
-      name: item.domain === 'wellness' ? 'Wellness' : 'Training',
-      sub:
-        item.domain === 'wellness'
-          ? 'About 45 seconds'
-          : `${item.label} · about 20 seconds`,
+      /* The SESSION's name is the title for an RPE task — "Team run", not
+         "Training" — per Fydr Athlete App.dc.html 23a. It was in the subtitle,
+         which made every training row read identically until you got to the
+         second line.
+         The design's subtitle also carries a timing clause ("open since
+         07:00", "due by 19:45"). compliance_expectations holds no such times —
+         only domain, session, required and waived — so that half is left out
+         rather than invented. */
+      name: item.domain === 'wellness' ? 'Wellness' : (item.label || 'Training'),
+      sub: item.domain === 'wellness' ? '45 seconds' : '20 seconds',
     })),
     ...(!nutritionCheckin
       ? [
@@ -132,9 +137,16 @@ export default async function TodayPage({
         ]
       : []),
   ];
-  const outstandingCount = todoItems.length;
 
   const toastMessage = toastMessageFor(params, timezone);
+
+  /* Time-of-day aware in the ORGANISATION's timezone, not the server's. A
+     greeting that says "Morning" at nine at night is worse than no greeting,
+     and this app is read on a phone in the club's own country. */
+  const hourNow = Number(
+    new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hour12: false, timeZone: timezone }).format(new Date()),
+  );
+  const greeting = hourNow < 12 ? 'Morning' : hourNow < 18 ? 'Afternoon' : 'Evening';
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
@@ -144,6 +156,10 @@ export default async function TodayPage({
   // the day's session list — this replaces each session's raw, unanchored
   // md_offset, which could disagree with the week strip on this very page.
   const todayMdOffset = weekMd.get(today) ?? null;
+  /* Shown in the header eyebrow. Null when the club has no fixture bounding
+     this week, in which case the eyebrow is just the date — an MD offset with
+     no matchday to count towards would be a number about nothing. */
+  const todayMd = mdLabel(todayMdOffset);
 
   return (
     <>
@@ -170,16 +186,20 @@ export default async function TodayPage({
             {initials({ first_name: firstName, last_name: lastName })}
           </span>
         )}
-        <h1 className="d">{formatDate(today, timezone)}</h1>
-        <span className={`pill status-pill ${outstandingCount > 0 ? 'pill-warn' : 'pill-good'}`}>
-          {outstandingCount > 0 ? (
-            <>
-              <span className="num">{outstandingCount}</span> to do
-            </>
-          ) : (
-            'Up to date'
-          )}
-        </span>
+        {/* Fydr Athlete App.dc.html 23a: an eyebrow carrying the date and
+            today's matchday offset, then a greeting rather than the date as
+            the headline. The count that used to sit here as a pill moved to
+            the "To do" heading, where the design puts it — it belongs beside
+            the list it counts, not beside the athlete's name. */}
+        <div style={{ minWidth: 0 }}>
+          <p className="eyebrow">
+            {formatDate(today, timezone).toUpperCase()}
+            {todayMd ? ` · ${todayMd}` : ''}
+          </p>
+          <h1 className="d">
+            {greeting}, {firstName}
+          </h1>
+        </div>
       </div>
 
       <OutboxFlusher orgId={orgId} athleteId={athleteId} userId={claims.userId} timezone={timezone} />
@@ -255,8 +275,12 @@ export default async function TodayPage({
 
       {todoItems.length > 0 ? (
         <section aria-labelledby="todo-title">
-          <h2 className="sect" id="todo-title">
-            To do <span className="num">{todoItems.length}</span>
+          <h2 className="sect todo-head" id="todo-title">
+            <span>To do</span>
+            {/* "N left", not a bare count: the design puts the number beside
+                the list it counts and says what it means. Amber because an
+                outstanding item is a thing to act on, not a statistic. */}
+            <span className="todo-left num">{todoItems.length} left</span>
           </h2>
           <div className="card flush">
             {todoItems.map((item, index) => (
@@ -272,11 +296,12 @@ export default async function TodayPage({
                       {item.sub}
                     </span>
                   </span>
-                  {item.domain === 'nutrition' ? (
-                    <span className="pill-optional">Optional</span>
-                  ) : (
-                    <span className="pill pill-warn">Due</span>
-                  )}
+                  {/* No Due/Optional pill. Fydr Athlete App.dc.html 23a puts
+                      the same information in the row's own subtitle — "45
+                      seconds · open since 07:00" — where it reads as a fact
+                      about the task rather than a badge to decode, and it
+                      leaves the row a clean name-and-chevron shape. Whether a
+                      task is optional is already in item.sub. */}
                   <span className="chev" aria-hidden="true">
                     ›
                   </span>

@@ -528,7 +528,7 @@ Every alpha here is the handoff's own figure (§4 and §5),
      4.5:1 this text (and the glyph border it doubles as) needs, dimmer than
      --muted so the active/inactive tab hierarchy still reads, closer in hue
      to the light value above than a bare reuse of --muted would be. */
-  --tab-inactive: #8590bb;
+  --tab-inactive: #949ec9;
 
   --focus: #33b6ff;
   --skeleton: #33394e;
@@ -648,7 +648,7 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --band-3-wash: rgb(var(--warn-rgb) / 0.08);
     --band-4-wash: rgb(var(--good-rgb) / 0.07);
 
-    --tab-inactive: #8590bb;
+    --tab-inactive: #949ec9;
 
     --focus: #33b6ff;
     --skeleton: #33394e;

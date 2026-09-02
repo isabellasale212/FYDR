@@ -28,6 +28,12 @@ import { usePathname, useRouter } from 'next/navigation';
  *  own title, which the athlete design does not draw on any tab root. */
 const ROOTS = new Set(['/dashboard', '/today', '/my-data', '/programme', '/me']);
 
+/** Screens that already carry their own dismiss control. The check-in forms are
+ *  sheets over Today with an × in their own header, so a Back button above that
+ *  is a second, differently-worded way out of the same screen — and the design
+ *  draws only the ×. Prefixes, because /rpe and /gym take a session id. */
+const SELF_DISMISSING = ['/check-in', '/nutrition-check-in', '/rpe/', '/gym/'];
+
 /** Screens that render their OWN copy inside their topbar, because their
  *  design places it there rather than above the page header. The layout's
  *  instance stands down on these routes so there is never one of each. Listed
@@ -45,6 +51,7 @@ export function BackButton({ inline = false }: { inline?: boolean }) {
   }, [pathname]);
 
   if (ROOTS.has(pathname) || !canGoBack) return null;
+  if (SELF_DISMISSING.some((p) => pathname === p || pathname.startsWith(p))) return null;
   if (!inline && PLACES_ITS_OWN.has(pathname)) return null;
 
   return (

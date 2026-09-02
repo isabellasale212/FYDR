@@ -148,8 +148,12 @@ export function CheckInForm({
 
   return (
     <form onSubmit={onSubmit} noValidate>
+      {/* Fydr Athlete App.dc.html 23c: how long it takes, then the one rule
+          that makes every scale readable. "always" is deliberate and is the
+          design's own word — it is what lets a reader work out that 5 on
+          Soreness means none, without a label under every scale. */}
       <p className="dir">
-        On every scale, <b>5 is the best you can feel.</b>
+        45 seconds · <b>5 is always the best you can feel.</b>
       </p>
 
       <div className="sleep-panel">

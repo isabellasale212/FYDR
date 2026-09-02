@@ -31,12 +31,15 @@ export function ScaleInput({ name, value, onChange }: Props) {
     <fieldset className="sc">
       <div className="sc-h">
         <legend className="sc-l">{copy.label}</legend>
+        {/* "not answered", and amber — Fydr Athlete App.dc.html 23c makes this a
+            prompt rather than a status. "Not set" in grey reads as a setting
+            nobody has got to; this is a question still to answer, and the
+            submit button counts these. Answered reads "4 of 5", the scale
+            position, which is what the numbered buttons below now show. */}
         {value === null ? (
-          <span className="sc-v un">Not set</span>
+          <span className="sc-v un">not answered</span>
         ) : (
-          <span className="sc-v">
-            {copy.words[value - 1]} <span className="n num">· {value}</span>
-          </span>
+          <span className="sc-v num">{value} of 5</span>
         )}
       </div>
 
@@ -45,7 +48,10 @@ export function ScaleInput({ name, value, onChange }: Props) {
           <span
             className="opt"
             key={step}
-            data-filled={value !== null && step <= value}
+            /* Only the chosen one, not every step up to it. A cumulative fill
+               reads as a level being filled up; this is one answer out of five,
+               and the design fills exactly the key you picked. */
+            data-selected={value === step ? '' : undefined}
           >
             <input
               type="radio"
@@ -55,7 +61,13 @@ export function ScaleInput({ name, value, onChange }: Props) {
               checked={value === step}
               onChange={() => onChange(step)}
             />
-            <span aria-hidden="true" />
+            {/* The numeral itself, not a bare dot. Five unlabelled circles
+                gave the reader nothing to aim at — which one is 3? — and the
+                design draws numbered keys. aria-hidden because the real label
+                below already says "3, Moderate" to a screen reader. */}
+            <span aria-hidden="true" className="opt-n num">
+              {step}
+            </span>
             <label htmlFor={`${name}-${step}`} className="visually-hidden">
               {step}, {copy.words[step - 1]}
             </label>

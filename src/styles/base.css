@@ -1970,8 +1970,10 @@ body:has(.phone) {
   color: inherit;
   font-weight: 600;
 }
+/* Amber, not grey: an unanswered scale is a prompt, and the submit button
+   counts these. */
 .sc-v.un {
-  color: var(--faint);
+  color: var(--warn-text);
 }
 .dots {
   display: grid;
@@ -1995,19 +1997,28 @@ body:has(.phone) {
   opacity: 0;
   cursor: pointer;
 }
+/* Numbered keys, Fydr Athlete App.dc.html 23c. They were 26px circles with
+   nothing in them: five identical dots give the reader nothing to aim at, and
+   which one is 3 was a counting exercise. */
 .dots .opt > span {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 2px solid rgb(var(--accent-rgb) / 0.2);
-  background: transparent;
-  display: block;
+  width: 100%;
+  height: 40px;
+  border-radius: var(--r-field);
+  border: 1px solid var(--border);
+  background: var(--surf);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 600;
   pointer-events: none;
-  transition: background var(--t-state), border-color var(--t-state);
+  transition: background var(--t-state), border-color var(--t-state), color var(--t-state);
 }
-.dots .opt[data-filled='true'] > span {
+.dots .opt[data-selected] > span {
   background: var(--accent);
   border-color: var(--accent);
+  color: var(--on-accent);
 }
 .dots .opt input:focus-visible + span {
   outline: 2px solid var(--focus);

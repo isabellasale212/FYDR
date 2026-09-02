@@ -2364,15 +2364,6 @@ a.hist-row:focus-visible {
   margin-top: 0;
   flex: none;
 }
-.sleep-panel .sp-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-}
-.sleep-panel .sp-head .k {
-  font-size: 14px;
-  font-weight: 700;
-}
 /* Spec §7.2: 44×44 keys either side of a 58px value box. The stepper sits at
    the end of the sleep row rather than filling its width, as 23c draws it. */
 .step {
@@ -2383,10 +2374,12 @@ a.hist-row:focus-visible {
   gap: 8px;
   margin-top: 10px;
 }
+/* 44, not 46, and it matters: the grid above allots 44px tracks, so a 46px
+   button overflowed its own column by a pixel each side. Radius 14 per §7.2. */
 .step .btnc {
-  width: 46px;
-  height: 46px;
-  border-radius: var(--r-field);
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
   border: 1px solid var(--border);
   background: var(--surf);
   color: var(--accent-text);

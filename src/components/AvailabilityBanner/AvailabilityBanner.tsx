@@ -62,7 +62,10 @@ export function AvailabilityBanner({ status, restrictions, reasonCategory, note 
         {state.glyph}
       </span>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div className="k">{state.label} availability</div>
+        {/* Just the status word. Fydr Athlete App.dc.html 23a reads "Modified",
+            not "Modified availability" — the card is about availability, so
+            the noun was doing no work. */}
+        <div className="k">{state.label}</div>
         <div className="v">
           {status === 'available'
             ? 'Everything is on.'
@@ -74,10 +77,15 @@ export function AvailabilityBanner({ status, restrictions, reasonCategory, note 
         </div>
         {note ? <div className="s">{note}</div> : null}
         {status !== 'available' ? (
-          <div className="s">
-            Everything else is on. Speak to your coach or medical staff before
-            you change anything.
-          </div>
+          /* Seventeen words became eight. The design's line here is "Speak to
+             medical staff." — and medical IS the right authority, since
+             availability is medically determined (CLAUDE.md rule 3), so
+             naming the coach as an alternative was pointing at someone who
+             cannot change it.
+             "Everything else is on" is kept against the design: it is four
+             words, and without them a list of three restrictions invites the
+             reader to assume there is a fourth they have not been told. */
+          <div className="s">Everything else is on. Speak to medical staff.</div>
         ) : null}
       </div>
     </div>

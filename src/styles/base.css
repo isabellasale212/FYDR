@@ -1262,6 +1262,13 @@ body:has(.phone) {
    spec gives athlete cards an 18px horizontal inset and a vertical one that
    varies by card type (14/16/17), which a single square token cannot express.
    Staff screens keep the global 16px. */
+/* Spec §4: 16px between body cards on Today, 14px everywhere else. Selected
+   off the week card rather than a screen flag — Today is the only screen that
+   has one, and a class on the layout would have to be threaded through a page
+   that renders a fragment. */
+.phone-body:has(> .wk-card) {
+  gap: 16px;
+}
 .phone-body {
   flex: 1;
   min-height: 0;
@@ -1291,27 +1298,33 @@ body:has(.phone) {
   flex: none;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: calc(22px + env(safe-area-inset-top, 0px)) 0 10px;
+  /* Spec §7.1: gap 12, header padding 52px top / 14px bottom. The 52 clears
+     the notch, which on a real device is env(safe-area-inset-top) — added to
+     a base, never substituted, so a browser reporting no inset still clears
+     its own chrome. */
+  gap: 12px;
+  padding: calc(22px + env(safe-area-inset-top, 0px)) 0 14px;
   min-height: 44px;
 }
+/* Spec §7.1: 42px, round, 14/700. */
 .av {
-  width: 30px;
-  height: 30px;
-  border-radius: 10px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
   background: var(--avatar-bg);
   color: var(--avatar-text);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   flex: none;
 }
+/* Spec §3: screen title 24/800/−0.03em. */
 .hd .d {
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   flex: 1;
   min-width: 0;
   margin: 0;
@@ -1378,7 +1391,9 @@ body:has(.phone) {
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  font-size: 19px;
+  /* Spec §7.1: 17/800. */
+  font-size: 17px;
+  font-weight: 800;
   letter-spacing: -0.01em;
   text-transform: none;
   color: var(--text);
@@ -1805,36 +1820,61 @@ a.hist-row:focus-visible {
   font-size: 12.5px;
   color: var(--muted);
 }
+/* Spec §7.1: card padding 14px 14px 12px, a 7-column grid at gap 3. */
 .wk-strip {
-  padding: 12px 6px;
+  padding: 14px 14px 12px;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
+  gap: 3px;
 }
+/* Spec §7.1: each column carries its own state as a fill and a border —
+   training a wash, match a bordered outline, rest neither. That is what
+   retires the dot-and-legend row this used to need: a legend is a lookup
+   table for a colour, and a column that is itself the colour needs none.
+
+   The transparent border is not decoration. Only the match column takes a
+   visible one, and without a matching transparent border on every other
+   column that day would stand 2px taller than the six beside it. */
 .wk-day {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: 4px 0;
-  border-radius: var(--r-field);
+  gap: 5px;
+  padding: 6px 0;
+  border: 1px solid transparent;
+  border-radius: 12px;
+}
+.wk-day[data-kind='training'] {
+  background: var(--wk-fill);
+}
+/* Recovery is a training day the body is meant to absorb, so it reads as the
+   same family at half the weight rather than as a fourth colour. */
+.wk-day[data-kind='recovery'] {
+  background: color-mix(in srgb, var(--wk-fill) 50%, transparent);
+}
+.wk-day[data-kind='match'] {
+  background: transparent;
+  border-color: var(--wk-match-border);
 }
 .wk-day[data-today='true'] {
   background: rgb(var(--accent-rgb) / 0.06);
 }
+/* Spec §7.1: day letter 11/600 faint, circle 30×30 at 14/600, MD label
+   10.5/600. */
 .wk-day .wi {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--faint);
 }
 .wk-day .wn {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 600;
   border: 1px solid transparent;
   color: var(--text);
 }
@@ -1844,8 +1884,9 @@ a.hist-row:focus-visible {
   border-color: var(--accent);
 }
 .wk-day .wo {
-  font-size: 9.5px;
-  color: var(--faint);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--muted);
 }
 .wk-day .wo[data-tone='md'] {
   color: var(--bad-text);
@@ -1864,54 +1905,9 @@ a.hist-row:focus-visible {
  * is what a matchday is on this strip, not a warning), training the accent,
  * recovery the calm good, rest deliberately faint so an empty day recedes
  * instead of competing. */
-.wk-kind {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--faint);
-  opacity: 0.45;
-}
-.wk-day[data-kind='match'] .wk-kind {
-  background: var(--bad);
-  opacity: 1;
-}
-.wk-day[data-kind='training'] .wk-kind {
-  background: var(--accent);
-  opacity: 1;
-}
-.wk-day[data-kind='recovery'] .wk-kind {
-  background: var(--good);
-  opacity: 1;
-}
-.wk-day[data-kind='match'] .wn {
+.wk-day[data-kind='match'] .wk-day[data-kind='training'] .wk-day[data-kind='recovery'] .wk-day[data-kind='match'] .wn {
   border-color: var(--bad);
   font-weight: 700;
-}
-.wk-key {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  margin-inline-end: 3px;
-  margin-inline-start: 8px;
-  vertical-align: baseline;
-  background: var(--faint);
-  opacity: 0.45;
-}
-.wk-key:first-child {
-  margin-inline-start: 0;
-}
-.wk-key[data-kind='match'] {
-  background: var(--bad);
-  opacity: 1;
-}
-.wk-key[data-kind='training'] {
-  background: var(--accent);
-  opacity: 1;
-}
-.wk-key[data-kind='recovery'] {
-  background: var(--good);
-  opacity: 1;
 }
 
 /* -------- to do / sessions row list, §5 --------
@@ -1920,15 +1916,18 @@ a.hist-row:focus-visible {
  * so this is a CSS-only change at every call site. */
 .todo {
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr) auto 12px;
-  gap: 12px;
+  /* Spec §7.1: a 46px tile, the text, then a 14px chevron column. 46 is also
+     §8's raised floor for these specific tiles — this row is the one an
+     athlete taps first thing in a car park. */
+  grid-template-columns: 46px minmax(0, 1fr) auto 14px;
+  gap: 14px;
   align-items: center;
   /* .card.flush drops the card's own padding so a row's hover and its dividers
      can reach the edge — which makes the horizontal inset this row's job. It
      has to be the same token, or text inside a flush card sits closer to the
      border than text in every other card. It was 14px against 16. */
-  padding: 15px var(--pad-card);
-  min-height: 44px;
+  padding: 18px 16px;
+  min-height: 46px;
   width: 100%;
   background: none;
   border: none;
@@ -1941,16 +1940,18 @@ a.hist-row:focus-visible {
 .todo:hover {
   background: var(--surf2);
 }
+/* Spec §7.1: 46×46, radius 14, tag 12.5/700 tracked 0.04em. */
 .gl {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--r-field);
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex: none;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   background: rgb(var(--accent-rgb) / 0.1);
   /* The PILL variant, for the same reason as the per-domain glyphs below:
      this sits on the accent's own tint, not on a plain surface. --accent-text
@@ -2070,11 +2071,12 @@ a.hist-row:focus-visible {
  * detail screen in this build to open, so the chevron is dropped rather
  * than promising a tap that goes nowhere — plain flex, not the spec's
  * `1fr 14px` grid built to hold one. */
+/* Spec §7.1: padding 16px 18px, gap 14. */
 .avail-banner {
   border-radius: var(--r-card);
-  padding: 14px;
+  padding: 16px 18px;
   display: flex;
-  gap: 12px;
+  gap: 14px;
   align-items: flex-start;
   background: rgb(var(--state-rgb) / 0.12);
   border: 1px solid rgb(var(--state-rgb) / 0.4);
@@ -2084,16 +2086,18 @@ a.hist-row:focus-visible {
   line-height: 1.3;
   flex: none;
 }
+/* Spec §7.1: 17/700 status, 15px restrictions, 13px muted closing line. */
 .avail-banner .k {
-  font-size: 14px;
+  font-size: 17px;
   font-weight: 700;
+  letter-spacing: -0.01em;
 }
 .avail-banner .v {
-  font-size: 13px;
+  font-size: 15px;
   margin-top: 3px;
 }
 .avail-banner .s {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
   margin-top: 5px;
 }

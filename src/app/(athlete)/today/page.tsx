@@ -239,6 +239,11 @@ export default async function TodayPage({
                 : 'training';
           const kindLabel =
             kind === 'match' ? 'Match' : kind === 'training' ? 'Training' : kind === 'recovery' ? 'Recovery' : 'Rest';
+          /* Abbreviated for the 40px column the MD label shares. "Training" and
+             "Recovery" overrun it at 10.5px; the full word is still on the row
+             for screen readers and on hover. */
+          const kindShort =
+            kind === 'match' ? 'Match' : kind === 'training' ? 'Train' : kind === 'recovery' ? 'Rec' : 'Rest';
 
           return (
             <div key={date} className="wk-day" data-today={isToday} data-kind={kind}>
@@ -247,9 +252,17 @@ export default async function TodayPage({
               {/* Colour is never the only channel — the kind is also spelled
                   out for screen readers and on hover. */}
               <span className="visually-hidden">{kindLabel}</span>
-              <span className="wk-kind" aria-hidden="true" title={kindLabel} />
-              <span className="wo num" data-tone={tone} title={explainer ?? undefined}>
-                {md ?? ''}
+              {/* Spec §7.1 puts the MD label on this line and carries the day's
+                  kind in the column's own fill and border — so the dot that was
+                  here, and the legend under the card that explained the dot,
+                  both go.
+
+                  MD needs a fixture to count towards. When the calendar has
+                  none the line falls back to the kind in a word, which is the
+                  fact the legend was carrying anyway; an empty third line would
+                  drop it and leave the column's colour unexplained. */}
+              <span className="wo num" data-tone={tone} title={explainer ?? kindLabel}>
+                {md ?? kindShort}
               </span>
             </div>
             );
@@ -280,12 +293,6 @@ export default async function TodayPage({
           </div>
         ) : null}
       </div>
-      <p className="cap" style={{ marginTop: 6 }}>
-        <span className="wk-key" data-kind="match" aria-hidden="true" /> Match{' '}
-        <span className="wk-key" data-kind="training" aria-hidden="true" /> Training{' '}
-        <span className="wk-key" data-kind="recovery" aria-hidden="true" /> Recovery{' '}
-        <span className="wk-key" data-kind="rest" aria-hidden="true" /> Rest
-      </p>
 
       <AvailabilityBanner
         status={availability.current?.status ?? null}
@@ -323,7 +330,10 @@ export default async function TodayPage({
                     {item.domain === 'wellness' ? 'WEL' : item.domain === 'training_rpe' ? 'RPE' : 'NUT'}
                   </span>
                   <span style={{ minWidth: 0 }}>
-                    <span style={{ fontSize: 15, fontWeight: 600 }}>{item.name}</span>
+                    {/* Spec §7.1: row name 17/700. */}
+                    <span style={{ fontSize: 17, fontWeight: 700, letterSpacing: '-0.01em' }}>
+                      {item.name}
+                    </span>
                     <span className="tiny" style={{ display: 'block', marginTop: 2 }}>
                       {item.sub}
                     </span>

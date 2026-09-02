@@ -186,6 +186,8 @@
      value carries more gold to stay gold. */
   --surf2: #f3f5f8;
   --gym-tint: #fef8e4;
+  --wk-fill: rgba(31, 111, 234, 0.09);
+  --wk-match-border: #1f6fea;
   --elev: #ffffff;
   --text: #13161c;
   --muted: #484e57;
@@ -454,6 +456,8 @@ Every alpha here is the handoff's own figure (§4 and §5),
   --surf-sunken: #121a33;
   --surf2: #1a2340;
   --gym-tint: #48432f;
+  --wk-fill: rgba(79, 214, 255, 0.12);
+  --wk-match-border: #4fd6ff;
   --elev: #1a2340;
   --text: #e9edfa;
   --muted: #a6b3d2;
@@ -592,6 +596,8 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --surf-sunken: #121a33;
     --surf2: #1a2340;
     --gym-tint: #48432f;
+    --wk-fill: rgba(79, 214, 255, 0.12);
+    --wk-match-border: #4fd6ff;
     --elev: #1a2340;
     --text: #e9edfa;
     --muted: #a6b3d2;
@@ -712,6 +718,8 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --surf-sunken: #dfe3e9;
     --surf2: #f3f5f8;
     --gym-tint: #fef8e4;
+    --wk-fill: rgba(31, 111, 234, 0.09);
+    --wk-match-border: #1f6fea;
     --elev: #ffffff;
     --text: #13161c;
     --muted: #484e57;

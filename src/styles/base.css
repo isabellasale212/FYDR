@@ -2270,27 +2270,44 @@ a.hist-row:focus-visible {
  * works, a refresh doesn't lose place, and there is a real URL to link a
  * push notification or a "Correct this entry" row at. A drag handle
  * implies a swipe-to-dismiss gesture this build does not have, so it is
- * left out rather than faked; .sheet-head keeps the spec's literal
- * internal proportions (the 30px/1fr/auto grid, the centred 16px/700
- * title, the mono date) without the card-over-backdrop chrome around it. */
+ * left out rather than faked — that decision stands against spec §7.2's
+ * "42×4 radius-20 drag handle", and it is the one part of that header not
+ * built. A handle that does not drag is a lie about a gesture.
+ *
+ * Everything else in §7.2's header IS built: 14px above / 12px below, a
+ * hairline under it, the title at 22/800 with its sub beneath, and the close
+ * as a 34px circle on the right. The 30px/1fr/auto grid this replaces put a
+ * 16px centred title between the close and the date, which read as a dialog's
+ * chrome rather than as the name of the thing being done. */
 .sheet-head {
-  display: grid;
-  grid-template-columns: 30px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 8px;
-  padding: calc(10px + env(safe-area-inset-top, 0px)) 0 12px;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 0 12px;
+  border-bottom: 1px solid var(--hair);
+  margin-bottom: 12px;
+}
+.sheet-head-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
 }
 .sheet-head .t {
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  text-align: center;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   margin: 0;
 }
+.sheet-head .s {
+  margin: 3px 0 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+/* Spec §7.2: a 34px round close, inside 44px of tap area per §8 — the circle
+   is what you see, the hit box is what you hit. */
 .sheet-x {
-  width: 30px;
+  width: 44px;
   height: 44px;
-  margin: -12px 0;
+  margin: -5px -5px 0 0;
+  border-radius: 50%;
   border: none;
   background: none;
   color: var(--muted);

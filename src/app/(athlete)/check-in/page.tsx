@@ -54,8 +54,11 @@ export default async function CheckInPage({
           "This morning" is 23c's title and is right for the common case; a
           check-in opened for another day says which day instead, because
           "this morning" would then be false. */}
+      {/* No drag handle, against §7.2 and deliberately: this is a route, not a
+          sheet over a scrim, and it has no swipe-to-dismiss. A handle that does
+          not drag is a lie about a gesture. The rest of §7.2's header is
+          here. */}
       <div className="sheet-head">
-        <div className="sheet-grip" aria-hidden="true" />
         <div className="sheet-head-row">
           <div style={{ minWidth: 0 }}>
             <h1 className="t">

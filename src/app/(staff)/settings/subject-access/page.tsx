@@ -76,9 +76,9 @@ export default async function SubjectAccessPage({ searchParams }: { searchParams
                   <td className="nm">
                     {r.athlete_first_name} {r.athlete_last_name}
                   </td>
-                  <td className="mono sub">{formatLongDate(r.requested_at, timezone)}</td>
+                  <td className="num sub">{formatLongDate(r.requested_at, timezone)}</td>
                   <td className="sub">{r.requested_by_name}</td>
-                  <td className="mono sub">
+                  <td className="num sub">
                     {formatLongDate(r.due_at, timezone)}
                     {r.status !== 'released' ? (
                       <span className={`sub ${days <= 7 ? 'g-bad' : days <= 14 ? 'g-warn' : ''}`} style={{ marginInlineStart: 6 }}>

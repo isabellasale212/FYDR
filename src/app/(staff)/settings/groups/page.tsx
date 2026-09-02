@@ -140,7 +140,7 @@ export default async function GroupsPage() {
                 style={{ padding: '14px 16px 8px' }}
               >
                 {enumLabel(type)} groups
-                <span className="tiny mono">{rows.length}</span>
+                <span className="tiny num">{rows.length}</span>
               </h2>
               {rows.map((g, index) => (
                 <div
@@ -175,7 +175,7 @@ export default async function GroupsPage() {
                         </span>
                       ) : null}
                     </span>
-                    <span className="tiny mono">{g.member_count}</span>
+                    <span className="tiny num">{g.member_count}</span>
                     <span className="chev" aria-hidden="true">
                       ›
                     </span>

@@ -71,7 +71,7 @@ export function TestHistoryList({ orgId, testDefinitionId, athleteId, timezone, 
                   <span className="tiny">
                     {r.side ? `${r.side} ` : ''}Attempt {r.attempt_number}
                   </span>
-                  <span className="mono">
+                  <span className="num">
                     {r.value.toFixed(decimalPlaces)}
                     {unit}
                   </span>

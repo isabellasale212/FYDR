@@ -306,7 +306,7 @@ export default async function AthleteNutritionPage({
             <h2 className="card-title" id="n-today-title" style={{ margin: 0 }}>
               Targets in force today
             </h2>
-            <span className="mono s">
+            <span className="num s">
               {resolved
                 ? `${enumLabel(resolved.source_scope)} plan${
                     resolved.md_specific && resolved.md_offset !== null
@@ -327,7 +327,7 @@ export default async function AthleteNutritionPage({
                   { label: 'fluid ml', value: macro(resolved.fluid_ml) },
                 ].map((tile) => (
                   <div className="pp-macro-tile" key={tile.label}>
-                    <p className="mono pp-macro-value" style={{ margin: 0 }}>
+                    <p className="num pp-macro-value" style={{ margin: 0 }}>
                       {tile.value}
                     </p>
                     <p className="pp-macro-label" style={{ margin: 0 }}>
@@ -356,7 +356,7 @@ export default async function AthleteNutritionPage({
             <h2 className="card-title" id="n-plans-title" style={{ margin: 0 }}>
               Every plan that reaches him
             </h2>
-            <span className="mono s">
+            <span className="num s">
               {applicable.length} live row{applicable.length === 1 ? '' : 's'}
             </span>
           </div>
@@ -379,7 +379,7 @@ export default async function AthleteNutritionPage({
                       ? `${athlete.first_name} ${athlete.last_name}`
                       : (t.group_name ?? 'Club default')}
                   </span>
-                  <span className="mono pc-row-value">{macro(t.energy_kcal)} kcal</span>
+                  <span className="num pc-row-value">{macro(t.energy_kcal)} kcal</span>
                 </div>
                 <div className="pc-row-bottom">
                   <span className="pc-row-band">
@@ -388,7 +388,7 @@ export default async function AthleteNutritionPage({
                     {macro(t.protein_g)} · C {macro(t.carbs_g)} · F {macro(t.fat_g)}
                     {t.reason ? ` — ${t.reason}` : ''}
                   </span>
-                  <span className="mono pc-row-meta">
+                  <span className="num pc-row-meta">
                     from {formatDate(t.effective_from, timezone)}
                     {t.effective_to ? ` to ${formatDate(t.effective_to, timezone)}` : ''}
                   </span>
@@ -403,11 +403,11 @@ export default async function AthleteNutritionPage({
             <h2 className="card-title" id="n-mass-title" style={{ margin: 0 }}>
               Body mass
             </h2>
-            <span className="mono s">
+            <span className="num s">
               {latestOwn ? `last weighed ${formatDate(latestOwn.measured_on, timezone)}` : 'no weigh-in on record'}
             </span>
           </div>
-          <p className="pp-weight-value mono" style={{ margin: '6px 0 0' }}>
+          <p className="pp-weight-value num" style={{ margin: '6px 0 0' }}>
             {latestKg !== null ? formatNumber(latestKg, 1) : '—'}
             <span className="u"> kg</span>
           </p>
@@ -420,7 +420,7 @@ export default async function AthleteNutritionPage({
             <>
               <p className="pp-weight-note">
                 Staff target{' '}
-                <span className="mono">
+                <span className="num">
                   {liveRange.target_low_kg.toFixed(1)}&ndash;{liveRange.target_high_kg.toFixed(1)} kg
                 </span>
                 {targetState ? (
@@ -458,7 +458,7 @@ export default async function AthleteNutritionPage({
             <h2 className="card-title" id="n-checkin-title" style={{ margin: 0 }}>
               Weekly check-in
             </h2>
-            <span className="mono s">
+            <span className="num s">
               {checkins.length} answered in {range.label.toLowerCase()}
             </span>
           </div>

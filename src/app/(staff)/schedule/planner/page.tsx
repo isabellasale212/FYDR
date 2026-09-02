@@ -57,7 +57,7 @@ export default async function WeekTemplatesPage() {
                 <span className="nm" style={{ fontSize: 15 }}>
                   {t.name}
                 </span>
-                <span className="mono tiny" style={{ marginLeft: 'auto', color: 'var(--faint)' }}>
+                <span className="num tiny" style={{ marginLeft: 'auto', color: 'var(--faint)' }}>
                   {t.applyCount > 0 ? `Used ${t.applyCount} time${t.applyCount === 1 ? '' : 's'}` : 'Never applied'}
                 </span>
               </div>

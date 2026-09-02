@@ -78,7 +78,7 @@ export default async function MyProgrammePage({
         <span className={`pill status-pill ${outstanding > 0 ? 'pill-warn' : 'pill-good'}`}>
           {outstanding > 0 ? (
             <>
-              <span className="mono">{outstanding}</span> to do
+              <span className="num">{outstanding}</span> to do
             </>
           ) : (
             'Up to date'
@@ -182,7 +182,7 @@ export default async function MyProgrammePage({
               <div className="target-bar" key={row.key}>
                 <div className="th">
                   <span className="k">{row.label}</span>
-                  <span className="v mono">
+                  <span className="v num">
                     {value}
                     {row.unit}
                   </span>

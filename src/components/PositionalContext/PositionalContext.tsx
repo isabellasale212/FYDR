@@ -63,7 +63,7 @@ export function PositionalContext({ title, titleId, scopeLine, intro, rows }: Pr
         <h2 className="card-title" id={titleId} style={{ margin: 0 }}>
           {title}
         </h2>
-        <span className="mono s">{scopeLine}</span>
+        <span className="num s">{scopeLine}</span>
       </div>
       {intro ? <p className="pc-intro">{intro}</p> : null}
 
@@ -96,7 +96,7 @@ function PositionalRow({ row }: { row: PositionalBand }) {
     <div className="pc-row">
       <div className="pc-row-top">
         <span className="pc-row-name">{row.label}</span>
-        <span className="mono pc-row-value">{fmt(row.athleteValue)}</span>
+        <span className="num pc-row-value">{fmt(row.athleteValue)}</span>
       </div>
 
       {drawable && row.q1 !== null && row.q3 !== null ? (
@@ -132,7 +132,7 @@ function PositionalRow({ row }: { row: PositionalBand }) {
               ? `middle half ${fmt(row.q1)}–${fmt(row.q3)} · median ${fmt(row.median)}`
               : `median ${fmt(row.median)} — the middle half of the unit is a single value, so there is no band to draw`}
         </span>
-        <span className="mono pc-row-meta">n = {row.n}</span>
+        <span className="num pc-row-meta">n = {row.n}</span>
       </div>
     </div>
   );

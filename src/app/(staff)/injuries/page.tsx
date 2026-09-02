@@ -101,7 +101,7 @@ export default async function InjuriesPage({
           <h2 className="sect" id="problem-reports-title">
             Problem reports
             {problemReports.length > 0 ? (
-              <span className="pill pill-warn mono">{problemReports.length}</span>
+              <span className="pill pill-warn num">{problemReports.length}</span>
             ) : null}
           </h2>
           <ProblemReportsTriage

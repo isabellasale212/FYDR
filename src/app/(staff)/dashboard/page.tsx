@@ -348,13 +348,13 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                 </span>
                 {d.md ? (
                   <span
-                    className="mono dash-week-col-md"
+                    className="num dash-week-col-md"
                     style={{ color: d.md === 'MD' ? 'var(--bad-text)' : undefined }}
                   >
                     {d.md}
                   </span>
                 ) : null}
-                {d.durationMin !== null ? <span className="mono dash-week-col-dur">{d.durationMin} min</span> : null}
+                {d.durationMin !== null ? <span className="num dash-week-col-dur">{d.durationMin} min</span> : null}
               </div>
               {d.activities.length > 0 ? (
                 <div className="dash-week-col-acts">
@@ -387,7 +387,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
             <h2 style={{ fontSize: 17, fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>
               {dayTitle(selectedDay, wallClockToday)}
             </h2>
-            <span className="tiny mono" style={{ color: 'var(--muted)', marginLeft: 'auto' }}>
+            <span className="tiny num" style={{ color: 'var(--muted)', marginLeft: 'auto' }}>
               {selectedDayMd && selectedDayMd !== 'MD' ? `${selectedDayMd} · ` : ''}
               {dayCaption}
             </span>
@@ -473,7 +473,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                 </p>
               </div>
               <Dial size={62} pct={readiness.squad > 0 ? Math.round((100 * readiness.selectable) / readiness.squad) : null} tone="var(--accent)">
-                <span className="mono" style={{ fontSize: 15, fontWeight: 500 }}>
+                <span className="num" style={{ fontSize: 15, fontWeight: 500 }}>
                   {readiness.selectable}/{readiness.squad}
                 </span>
               </Dial>
@@ -489,7 +489,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                       {r.detail}
                     </div>
                   </div>
-                  <span className="mono" style={{ fontSize: 13, color: TONE_TEXT[r.tone === 'bad' ? 'bad' : r.tone === 'warn' ? 'warn' : ''] }}>
+                  <span className="num" style={{ fontSize: 13, color: TONE_TEXT[r.tone === 'bad' ? 'bad' : r.tone === 'warn' ? 'warn' : ''] }}>
                     {r.value}
                   </span>
                   <span>›</span>
@@ -502,7 +502,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                 <hr className="hr" />
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                   <span style={{ fontSize: 12, fontWeight: 700 }}>Week load so far</span>
-                  <span className="mono" style={{ fontSize: 12 }}>
+                  <span className="num" style={{ fontSize: 12 }}>
                     {readiness.weekLoad.pct !== null ? `${readiness.weekLoad.pct}%` : '—'}
                   </span>
                 </div>
@@ -511,7 +511,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                   <div className="dash-load-fill" style={{ width: `${readiness.weekLoad.fillPct}%`, background: TONE_VAR[readiness.weekLoad.tone] ?? 'var(--accent)' }} />
                   <div className="dash-load-tick" style={{ left: `${readiness.weekLoad.tickPct}%` }} />
                 </div>
-                <p className="tiny mono" style={{ marginTop: 6 }}>
+                <p className="tiny num" style={{ marginTop: 6 }}>
                   {readiness.weekLoad.foot}
                 </p>
               </>
@@ -544,7 +544,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                     full training
                   </div>
                 </div>
-                <span className="mono" style={{ fontSize: 14 }}>
+                <span className="num" style={{ fontSize: 14 }}>
                   {squad.available}
                 </span>
               </div>
@@ -556,7 +556,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                     {namedWithReason(squad.modifiedNames) || 'nobody'}
                   </div>
                 </div>
-                <span className="mono" style={{ fontSize: 14 }}>
+                <span className="num" style={{ fontSize: 14 }}>
                   {squad.modified}
                 </span>
               </div>
@@ -568,7 +568,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                     {namedWithReason(squad.unavailableNames) || 'nobody'}
                   </div>
                 </div>
-                <span className="mono" style={{ fontSize: 14 }}>
+                <span className="num" style={{ fontSize: 14 }}>
                   {squad.unavailable}
                 </span>
               </div>
@@ -593,7 +593,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                     <span style={{ fontSize: 13.5, fontWeight: 600 }}>{f.name}</span>
                     <span className="pill pill-neutral">{f.domain}</span>
-                    <span className="mono" style={{ fontSize: 12.5, marginLeft: 'auto', color: f.sev === 'bad' ? 'var(--bad-pill-text)' : 'var(--warn-pill-text)' }}>
+                    <span className="num" style={{ fontSize: 12.5, marginLeft: 'auto', color: f.sev === 'bad' ? 'var(--bad-pill-text)' : 'var(--warn-pill-text)' }}>
                       {f.value}
                     </span>
                   </div>
@@ -620,7 +620,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                   <div key={t.label}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                       <span style={{ fontSize: 12.5, fontWeight: 600 }}>{t.label}</span>
-                      <span className="mono" style={{ fontSize: 12.5 }}>
+                      <span className="num" style={{ fontSize: 12.5 }}>
                         {t.valueLeft} left
                       </span>
                     </div>

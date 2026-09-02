@@ -111,13 +111,13 @@ export function ApplyControls({ orgId, userId, templates, selectedTemplateId, we
             <tbody>
               {previewRows.map((r) => (
                 <tr key={r.date}>
-                  <td className="sub mono">
+                  <td className="sub num">
                     {formatDate(r.date, timezone)}
                     {r.md ? ` · ${r.md}` : ''}
                   </td>
                   <td className="tiny">{r.existingTitles.join(', ') || '—'}</td>
                   <td className="tiny">{r.templateTitles.join(', ') || '—'}</td>
-                  <td className="tiny mono">{r.result}</td>
+                  <td className="tiny num">{r.result}</td>
                 </tr>
               ))}
             </tbody>

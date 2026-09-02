@@ -40,15 +40,15 @@ export function FlagNotice({ flags, heading, timezone }: Props) {
               <span className="pill pill-neutral" style={{ fontSize: 10.5, padding: '2px 9px' }}>
                 {enumLabel(f.domain)}
               </span>
-              <span className="tiny mono">{formatDate(f.flag_date, timezone)}</span>
+              <span className="tiny num">{formatDate(f.flag_date, timezone)}</span>
             </div>
             <p className="flag-notice-line">
               {f.what}
-              {f.observed ? <span className="mono"> {f.observed}</span> : null}
+              {f.observed ? <span className="num"> {f.observed}</span> : null}
               {f.expected ? (
                 <>
                   {' '}
-                  vs <span className="mono">{f.expected}</span> expected
+                  vs <span className="num">{f.expected}</span> expected
                 </>
               ) : null}
             </p>

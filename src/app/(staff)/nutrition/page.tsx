@@ -350,7 +350,7 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
         <Link href={weekHref(prevWeekStart)} className="btn-ghost" aria-label="Previous week">
           ‹ Previous week
         </Link>
-        <p className="mono" style={{ fontWeight: 700, margin: 0, flex: 1, textAlign: 'center' }}>
+        <p className="num" style={{ fontWeight: 700, margin: 0, flex: 1, textAlign: 'center' }}>
           Week of {formatDate(weekStart, timezone)} to {formatDate(weekEnd, timezone)}
           {isCurrentWeek ? (
             <span className="tiny" style={{ fontWeight: 400 }}> · current week</span>

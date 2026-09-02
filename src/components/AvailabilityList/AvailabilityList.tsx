@@ -59,7 +59,7 @@ export function AvailabilityList({ rows, timezone }: Props) {
                 <span className="tiny">No restriction recorded</span>
               )}
             </div>
-            <div className="mono sub">
+            <div className="num sub">
               {row.expected_return ? (
                 <>Back {formatDate(row.expected_return, timezone)}</>
               ) : (

@@ -149,12 +149,12 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Sea
               <tbody>
                 {result.rows.map((r) => (
                   <tr key={r.id}>
-                    <td className="sub mono">{formatDateTime(r.occurredAt, timezone)}</td>
+                    <td className="sub num">{formatDateTime(r.occurredAt, timezone)}</td>
                     <td>
                       {r.actorName ?? '—'}
                       {r.actorRole ? <span className="tiny" style={{ color: 'var(--faint)' }}> · {r.actorRole}</span> : null}
                     </td>
-                    <td className="mono tiny">{r.action}</td>
+                    <td className="num tiny">{r.action}</td>
                     <td className="tiny">
                       {r.entityType}
                       {r.entityId ? <span style={{ color: 'var(--faint)' }}> · {r.entityId.slice(0, 8)}</span> : null}

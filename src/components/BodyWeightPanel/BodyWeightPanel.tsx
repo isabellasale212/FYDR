@@ -337,7 +337,7 @@ function TargetRangeForm({
           </p>
           {history.map((r) => (
             <p key={r.id} className="tiny" style={{ margin: 0 }}>
-              <span className="mono">
+              <span className="num">
                 {r.target_low_kg.toFixed(1)}–{r.target_high_kg.toFixed(1)} kg
               </span>{' '}
               · {formatDate(r.effective_from, timezone)} to{' '}
@@ -533,7 +533,7 @@ function EditRow({
 
   return (
     <div className="pp-weight-edit-row">
-      <span className="mono tiny" style={{ minWidth: 78 }}>
+      <span className="num tiny" style={{ minWidth: 78 }}>
         {formatDate(entry.measured_on, timezone)}
       </span>
       <input

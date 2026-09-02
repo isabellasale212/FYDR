@@ -156,13 +156,13 @@ export function BulkInviteForm({ unlinkedAthletes }: Props) {
             <tbody>
               {preview.map((row) => (
                 <tr key={row.line}>
-                  <td className="mono sub">{row.line}</td>
+                  <td className="num sub">{row.line}</td>
                   <td className="sub">{row.email || '—'}</td>
                   <td className="nm">
                     {row.firstName} {row.lastName}
                   </td>
-                  <td className="mono sub">{row.squadNumber ?? '—'}</td>
-                  <td className="mono sub">{row.dateOfBirth ?? '—'}</td>
+                  <td className="num sub">{row.squadNumber ?? '—'}</td>
+                  <td className="num sub">{row.dateOfBirth ?? '—'}</td>
                   <td>
                     {row.matchStatus === 'error' ? (
                       <span className="g-bad">{row.error}</span>
@@ -212,7 +212,7 @@ export function BulkInviteForm({ unlinkedAthletes }: Props) {
                 <tr key={r.email}>
                   <td className="sub">{r.email}</td>
                   <td>{r.ok ? <span className="g-good">Sent</span> : <span className="g-bad">{r.error}</span>}</td>
-                  <td className="mono">{r.temporaryPassword ?? '—'}</td>
+                  <td className="num">{r.temporaryPassword ?? '—'}</td>
                 </tr>
               ))}
             </tbody>

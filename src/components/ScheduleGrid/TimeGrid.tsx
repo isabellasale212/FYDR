@@ -142,16 +142,16 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
             >
               <span>
                 <span className="sg-day-head-weekday">{day.weekday}</span>
-                <span className="sg-day-head-date mono">{day.domLabel}</span>
+                <span className="sg-day-head-date num">{day.domLabel}</span>
               </span>
               <div className="sg-day-head-row2">
                 <span
-                  className="sg-day-head-md mono"
+                  className="sg-day-head-md num"
                   data-tone={day.mdOffset === 0 ? 'md' : day.mdOffset === -1 ? 'md-1' : undefined}
                 >
                   {mdLabel(day.mdOffset) ?? '—'}
                 </span>
-                <span className="sg-day-head-mins mono">{day.contactMins}m</span>
+                <span className="sg-day-head-mins num">{day.contactMins}m</span>
               </div>
             </button>
           ))}
@@ -160,7 +160,7 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
         <div className="sg-grid-body" ref={bodyRef}>
           <div className="sg-hour-gutter" style={{ height: gridHeightPx }}>
             {HOURS.map((h) => (
-              <span key={h} className="sg-hour-label mono" style={{ top: (h - h0) * PXH }}>
+              <span key={h} className="sg-hour-label num" style={{ top: (h - h0) * PXH }}>
                 {hourLabel(h)}
               </span>
             ))}
@@ -235,7 +235,7 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
                     {!b.stagger ? (
                       <>
                         <div className="sg-block-row">
-                          <span className="sg-block-time mono">{b.timeText}</span>
+                          <span className="sg-block-time num">{b.timeText}</span>
                           {b.showBadge ? <span className="sg-block-badge">Edited</span> : null}
                           {b.clashed ? <span className="sg-block-dot" aria-label="Clash" /> : null}
                         </div>
@@ -253,7 +253,7 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
                           {b.clashed ? <span className="sg-block-dot" aria-label="Clash" /> : null}
                           {b.showBadge ? <span className="sg-block-badge">Edited</span> : null}
                         </div>
-                        {b.showTime ? <div className="sg-block-time-below mono">{b.timeText}</div> : null}
+                        {b.showTime ? <div className="sg-block-time-below num">{b.timeText}</div> : null}
                       </>
                     )}
                   </button>

@@ -324,13 +324,13 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
           <div className="grid2" style={{ marginBottom: 14 }}>
             <div>
               <p className="tiny">Squad median readiness</p>
-              <p className="mono nm" style={{ fontSize: 18 }}>
+              <p className="num nm" style={{ fontSize: 18 }}>
                 {report.wellness.medianReadiness === null ? BLANK : formatNumber(report.wellness.medianReadiness, 0)}
               </p>
             </div>
             <div>
               <p className="tiny">More than 1.5 SD below their own norm</p>
-              <p className="mono nm" style={{ fontSize: 18 }}>
+              <p className="num nm" style={{ fontSize: 18 }}>
                 {report.wellness.outliers.length}
               </p>
             </div>
@@ -348,7 +348,7 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
             {report.wellness.complianceByDomain.map((d) => (
               <div key={d.domain}>
                 <p className="tiny">{enumLabel(d.domain)} compliance</p>
-                <p className="mono nm">{d.pct === null ? BLANK : `${d.pct}%`}</p>
+                <p className="num nm">{d.pct === null ? BLANK : `${d.pct}%`}</p>
               </div>
             ))}
           </div>
@@ -373,7 +373,7 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
                     {i > 0 ? <div className="hair" /> : null}
                     <div className="load-row" style={{ gridTemplateColumns: '1fr auto' }}>
                       <span className="sub">{g.name}</span>
-                      <span className="mono tiny">
+                      <span className="num tiny">
                         {g.sessionsCompleted} of {g.sessionsLogged} complete
                       </span>
                     </div>
@@ -395,7 +395,7 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
                       <span className="sub">
                         {t.name} &middot; {t.test_name}
                       </span>
-                      <span className="mono tiny">
+                      <span className="num tiny">
                         {formatNumber(t.value, 1)} {t.unit}
                       </span>
                     </div>

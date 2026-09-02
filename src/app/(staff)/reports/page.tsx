@@ -163,7 +163,7 @@ export default async function ReportsPage() {
                 </p>
                 {locked ? (
                   <span
-                    className="mono"
+                    className="num"
                     style={{
                       fontSize: 10,
                       fontWeight: 700,

@@ -92,7 +92,7 @@ export function RosterTable({ orgId, groupIds, initialRows }: Props) {
                    and tinting the majority would make the exceptions harder to
                    see rather than easier. */
                 <tr key={row.id} data-availability={row.availability}>
-                  <td className="r mono">{row.squad_number ?? BLANK}</td>
+                  <td className="r num">{row.squad_number ?? BLANK}</td>
                   <td>
                     <Link href={`/squad/${row.id}`} className="nm">
                       {row.first_name} {row.last_name}

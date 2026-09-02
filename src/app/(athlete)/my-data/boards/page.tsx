@@ -76,7 +76,7 @@ export default async function MyBoardsPage() {
                         really did assume session load, printing it as "1240.0" and, once
                         GPS metrics landed, a distance as "6260.0 m". metricDecimals reads
                         the metric's own unit instead. */}
-                    <span className="mono">{formatNumber(own.value, metricDecimals(metric))}</span>
+                    <span className="num">{formatNumber(own.value, metricDecimals(metric))}</span>
                     {metric?.unit ?? ''}
                   </p>
                 </Link>

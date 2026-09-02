@@ -111,7 +111,7 @@ export default async function MyBoardDetailPage({
                         : undefined
                     }
                   >
-                    <td className="mono sub">
+                    <td className="num sub">
                       {/* Top three carry a little weight so the head of the
                           board reads as the head of the board. Deliberately
                           restrained — no medals, no colour: this is a squad
@@ -133,7 +133,7 @@ export default async function MyBoardDetailPage({
                         `${row.first_name} ${row.last_name}`
                       )}
                     </td>
-                    <td className="r mono">
+                    <td className="r num">
                       {formatNumber(row.value, decimals)}
                       {metric?.unit ?? ''}
                     </td>
@@ -145,7 +145,7 @@ export default async function MyBoardDetailPage({
                   aria-current="true"
                   style={{ borderInlineStart: '3px solid var(--accent)', background: 'var(--surf2)' }}
                 >
-                  <td className="mono sub">
+                  <td className="num sub">
                     {own.is_tied ? '=' : ''}
                     {own.position}
                   </td>
@@ -155,7 +155,7 @@ export default async function MyBoardDetailPage({
                     </span>
                     {own.first_name} {own.last_name}
                   </td>
-                  <td className="r mono">
+                  <td className="r num">
                     {formatNumber(own.value, decimals)}
                     {metric?.unit ?? ''}
                   </td>

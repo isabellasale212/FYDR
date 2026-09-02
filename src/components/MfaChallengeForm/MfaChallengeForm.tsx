@@ -138,7 +138,7 @@ export function MfaChallengeForm() {
           </label>
           <input
             id="mfa-code"
-            className="field mono"
+            className="field num"
             type="text"
             inputMode="numeric"
             autoComplete="one-time-code"

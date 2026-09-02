@@ -257,7 +257,7 @@ export function MfaEnrollment({ timezone, roleRequiresMfa, initialFactors }: Pro
           {secret ? (
             <p className="tiny" style={{ marginBottom: 10 }}>
               Can&apos;t scan it? Enter this key by hand:{' '}
-              <span className="mono" style={{ userSelect: 'all' }}>
+              <span className="num" style={{ userSelect: 'all' }}>
                 {secret}
               </span>
             </p>
@@ -269,7 +269,7 @@ export function MfaEnrollment({ timezone, roleRequiresMfa, initialFactors }: Pro
             </label>
             <input
               id="mfa-enroll-code"
-              className="field mono"
+              className="field num"
               type="text"
               inputMode="numeric"
               autoComplete="one-time-code"

@@ -91,7 +91,7 @@ export function TestBests({ bestsBySide, unit, decimalPlaces, higherIsBetter, se
             <div className="grid3">
               <div>
                 <p className="tiny">Season&rsquo;s best{seasonName ? ` · ${seasonName}` : ''}</p>
-                <p className="mono" style={{ fontSize: 20, fontWeight: 800 }}>
+                <p className="num" style={{ fontSize: 20, fontWeight: 800 }}>
                   {valueWithUnit(bests.seasonValue, decimalPlaces, unit)}
                 </p>
                 <p className="tiny" style={{ color: 'var(--muted)' }}>
@@ -101,7 +101,7 @@ export function TestBests({ bestsBySide, unit, decimalPlaces, higherIsBetter, se
 
               <div>
                 <p className="tiny">All-time best</p>
-                <p className="mono" style={{ fontSize: 20, fontWeight: 800 }}>
+                <p className="num" style={{ fontSize: 20, fontWeight: 800 }}>
                   {valueWithUnit(bests.allTimeValue, decimalPlaces, unit)}
                 </p>
                 <p className="tiny" style={{ color: 'var(--muted)' }}>

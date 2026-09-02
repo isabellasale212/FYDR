@@ -218,7 +218,7 @@ function WindowLine({ range, timezone }: { range: ResolvedRange; timezone: strin
   return (
     <p className="cap" style={{ margin: '6px 0 0' }}>
       {formatDate(range.from, timezone)} &ndash; {formatDate(range.to, timezone)} &middot;{' '}
-      <span className="mono">{range.days}</span> day{range.days === 1 ? '' : 's'}
+      <span className="num">{range.days}</span> day{range.days === 1 ? '' : 's'}
       {range.clipped ? (
         <>
           {' '}
@@ -348,7 +348,7 @@ export default async function MyDataPage({
         <span className={`pill status-pill ${outstanding > 0 ? 'pill-warn' : 'pill-good'}`}>
           {outstanding > 0 ? (
             <>
-              <span className="mono">{outstanding}</span> to do
+              <span className="num">{outstanding}</span> to do
             </>
           ) : (
             'Up to date'
@@ -660,7 +660,7 @@ async function WellnessTab({
                 return (
                   <Fragment key={date}>
                     <tr>
-                      <td className="mono sub">
+                      <td className="num sub">
                         {formatDate(date, timezone)}
                         {corrected ? (
                           <span className="pill pill-neutral" style={{ marginInlineStart: 6 }}>
@@ -668,13 +668,13 @@ async function WellnessTab({
                           </span>
                         ) : null}
                       </td>
-                      <td className="r mono">
+                      <td className="r num">
                         {entry ? formatNumber(entry.readiness_score, 0) : 'Missing'}
                       </td>
-                      <td className="r mono">
+                      <td className="r num">
                         {entry ? `${dash(entry.sleep_hours)} h` : BLANK}
                       </td>
-                      <td className="sub mono">
+                      <td className="sub num">
                         {entry?.submitted_at ? formatTime(entry.submitted_at, timezone) : BLANK}
                       </td>
                     </tr>
@@ -700,7 +700,7 @@ async function WellnessTab({
                           {corrected.priorRevisions.length > 0 ? (
                             <ol className="cap" style={{ margin: '4px 0 0', paddingInlineStart: 18 }}>
                               {corrected.priorRevisions.map((rev) => (
-                                <li key={rev.id} className="mono">
+                                <li key={rev.id} className="num">
                                   {`sleep ${dash(rev.sleep_hours)} h · quality ${dash(
                                     rev.sleep_quality,
                                   )} · fatigue ${dash(rev.fatigue)} · soreness ${dash(
@@ -841,7 +841,7 @@ async function TrainingTab({
                     return (
                       <Fragment key={session.id}>
                         <tr style={{ opacity: session.status === 'cancelled' ? 0.55 : 1 }}>
-                          <td className="mono sub">
+                          <td className="num sub">
                             {formatDate(session.starts_at, timezone)} {formatTime(session.starts_at, timezone)}
                           </td>
                           <td className="nm">{session.title}</td>
@@ -858,9 +858,9 @@ async function TrainingTab({
                               </span>
                             ) : null}
                           </td>
-                          <td className="r mono">{session.duration_min ?? BLANK}</td>
-                          <td className="r mono">{formatNumber(session.rpe, 1)}</td>
-                          <td className="r mono">{formatNumber(session.session_load, 0)}</td>
+                          <td className="r num">{session.duration_min ?? BLANK}</td>
+                          <td className="r num">{formatNumber(session.rpe, 1)}</td>
+                          <td className="r num">{formatNumber(session.session_load, 0)}</td>
                         </tr>
                         {corrected ? (
                           <tr>
@@ -881,7 +881,7 @@ async function TrainingTab({
                                   style={{ margin: '4px 0 0', paddingInlineStart: 18 }}
                                 >
                                   {corrected.priorRevisions.map((rev) => (
-                                    <li key={rev.id} className="mono">
+                                    <li key={rev.id} className="num">
                                       {`RPE ${dash(rev.rpe)} · ${dash(rev.duration_min)} min · load ${dash(
                                         rev.session_load,
                                       )}`}
@@ -982,7 +982,7 @@ async function NutritionTab({
               <tbody>
                 {shown.map((c) => (
                   <tr key={c.id}>
-                    <td className="mono sub">{formatDate(c.week_start, timezone)}</td>
+                    <td className="num sub">{formatDate(c.week_start, timezone)}</td>
                     <td className="nm">{ANSWER_LABEL[c.answer] ?? c.answer}</td>
                     <td className="sub">
                       <Link href={`/nutrition-check-in?week=${c.week_start}&correct=1`}>
@@ -1212,13 +1212,13 @@ async function GymTab({
               <tbody>
                 {sessions.map((s) => (
                   <tr key={s.id}>
-                    <td className="mono sub">{formatDate(s.entry_date, timezone)}</td>
+                    <td className="num sub">{formatDate(s.entry_date, timezone)}</td>
                     <td className="nm">{s.session_name ?? 'Gym session'}</td>
-                    <td className="r mono">{s.set_count}</td>
-                    <td className="r mono">
+                    <td className="r num">{s.set_count}</td>
+                    <td className="r num">
                       {s.total_volume_kg !== null ? formatNumber(s.total_volume_kg, 0) : BLANK}
                     </td>
-                    <td className="r mono">{formatNumber(s.session_rpe, 1)}</td>
+                    <td className="r num">{formatNumber(s.session_rpe, 1)}</td>
                     <td className="sub">
                       <Link href={`/my-data/gym/${s.id}`}>Correct</Link>
                     </td>

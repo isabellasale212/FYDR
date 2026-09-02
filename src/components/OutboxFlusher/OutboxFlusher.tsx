@@ -333,7 +333,7 @@ export function OutboxFlusher({ orgId, athleteId, userId, timezone }: Props) {
       {pending > 0 ? (
         <p className="tiny" role="status">
           <span aria-hidden="true">☁ </span>
-          <span className="mono">{pending}</span> entr
+          <span className="num">{pending}</span> entr
           {pending === 1 ? 'y is' : 'ies are'} saved on this phone and will send when
           you have signal.
         </p>

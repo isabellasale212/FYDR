@@ -15,7 +15,7 @@ type Props = { row: Row; rank: number };
 export function AttentionRow({ row, rank }: Props) {
   return (
     <div className="attn">
-      <div className="rank mono">{rank}</div>
+      <div className="rank num">{rank}</div>
       <div>
         <p className="line">
           <Link href={`/squad/${row.athlete_id}`}>
@@ -26,13 +26,13 @@ export function AttentionRow({ row, rank }: Props) {
           {row.value ? (
             <>
               {' '}
-              <span className="v mono">{row.value}</span>
+              <span className="v num">{row.value}</span>
             </>
           ) : null}
           {row.baseline ? (
             <>
               {' '}
-              against his own <span className="base mono">{row.baseline}</span>
+              against his own <span className="base num">{row.baseline}</span>
             </>
           ) : null}
           , <span className="dur">{row.duration}</span>.
@@ -40,7 +40,7 @@ export function AttentionRow({ row, rank }: Props) {
         <div className="chiprow" style={{ marginTop: 6 }}>
           <Pill status={SEVERITY_STATUS[row.severity]} />
           {row.flag_count > 1 ? (
-            <span className="tiny mono">{row.flag_count} open flags</span>
+            <span className="tiny num">{row.flag_count} open flags</span>
           ) : null}
         </div>
       </div>

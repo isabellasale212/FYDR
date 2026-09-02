@@ -90,7 +90,7 @@ export function RetentionPanel() {
               {preview.categories.map((c) => (
                 <tr key={c.category}>
                   <td className="nm">{c.category}</td>
-                  <td className="r mono">{c.count}</td>
+                  <td className="r num">{c.count}</td>
                   <td className="sub">{c.cutoffDescription}</td>
                 </tr>
               ))}

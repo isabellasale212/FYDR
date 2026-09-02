@@ -119,7 +119,7 @@ export function TeamAllocationBoard({ orgId, userId, weekStart, teams, board, ca
         return (
           <section key={team.id} className="card" aria-labelledby={`team-${team.id}`}>
             <h2 className="card-title" id={`team-${team.id}`}>
-              {team.name} <span className="tiny mono">{rows.length}</span>
+              {team.name} <span className="tiny num">{rows.length}</span>
             </h2>
             {rows.length === 0 ? (
               <p className="tiny">No one allocated yet.</p>
@@ -155,7 +155,7 @@ export function TeamAllocationBoard({ orgId, userId, weekStart, teams, board, ca
 
       <section className="card" aria-labelledby="unallocated-title">
         <h2 className="card-title" id="unallocated-title">
-          Unallocated <span className="tiny mono">{board.unallocated.length}</span>
+          Unallocated <span className="tiny num">{board.unallocated.length}</span>
         </h2>
         {board.unallocated.length === 0 ? (
           <p className="tiny">Everyone is on a team this week.</p>

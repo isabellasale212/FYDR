@@ -33,7 +33,7 @@ export function SessionCard({ session, timezone, anchoredMdOffset }: Props) {
         opacity: cancelled ? 0.55 : 1,
       }}
     >
-      <div className="mono">{formatTime(session.starts_at, timezone)}</div>
+      <div className="num">{formatTime(session.starts_at, timezone)}</div>
       <div>
         <span className="nm" style={{ textDecoration: cancelled ? 'line-through' : 'none' }}>
           {session.title}
@@ -45,15 +45,15 @@ export function SessionCard({ session, timezone, anchoredMdOffset }: Props) {
           {md ? (
             <>
               {' · '}
-              <span className="mono">{md}</span>
+              <span className="num">{md}</span>
             </>
           ) : null}
         </div>
       </div>
-      <div className="load-val mono sub">
+      <div className="load-val num sub">
         {session.duration_min !== null ? `${session.duration_min} min` : BLANK}
       </div>
-      <div className="load-val mono">
+      <div className="load-val num">
         {session.expected !== null ? (
           `${session.expected} named`
         ) : (

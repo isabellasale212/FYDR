@@ -88,7 +88,7 @@ export default async function TeamAllocationPage({
         <Link href={weekHref(prevWeek)} className="btn-ghost" aria-label="Previous week">
           ‹ Previous
         </Link>
-        <span className="nm mono">
+        <span className="nm num">
           {formatDate(weekStart, timezone)} to {formatDate(weekEnd, timezone)}
         </span>
         <Link href={weekHref(nextWeek)} className="btn-ghost" aria-label="Next week">

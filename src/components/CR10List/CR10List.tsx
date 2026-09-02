@@ -35,7 +35,7 @@ export function CR10List({ value, onChange }: Props) {
               checked={selected}
               onChange={() => onChange(step)}
             />
-            <span className="cr10-n mono" aria-hidden="true">
+            <span className="cr10-n num" aria-hidden="true">
               {step}
             </span>
             <span className="cr10-a">

@@ -157,7 +157,7 @@ export function CheckInForm({
           <span className="k" id="sleep-hours-label">
             Sleep
           </span>
-          <span className="mono" style={{ fontSize: 14, fontWeight: 700 }}>
+          <span className="num" style={{ fontSize: 14, fontWeight: 700 }}>
             {sleepHours.toFixed(1)} h
           </span>
         </div>
@@ -173,7 +173,7 @@ export function CheckInForm({
           </button>
           <div className="val">
             <div
-              className="v mono"
+              className="v num"
               role="status"
               aria-live="polite"
               aria-labelledby="sleep-hours-label"
@@ -194,7 +194,7 @@ export function CheckInForm({
 
         {lastNightSleepHours !== null ? (
           <span className="sleep-ref">
-            Last night&rsquo;s entry: <span className="mono">{lastNightSleepHours}</span>
+            Last night&rsquo;s entry: <span className="num">{lastNightSleepHours}</span>
           </span>
         ) : null}
       </div>

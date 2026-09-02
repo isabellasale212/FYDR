@@ -105,9 +105,9 @@ export default async function RetentionPage() {
             <tbody>
               {nightlyReports.map((r) => (
                 <tr key={r.occurredAt}>
-                  <td className="mono sub">{formatDateTime(r.occurredAt, timezone)}</td>
-                  <td className="r mono">{r.importBatchesEligible}</td>
-                  <td className="r mono">{r.injuriesEligible}</td>
+                  <td className="num sub">{formatDateTime(r.occurredAt, timezone)}</td>
+                  <td className="r num">{r.importBatchesEligible}</td>
+                  <td className="r num">{r.injuriesEligible}</td>
                 </tr>
               ))}
             </tbody>

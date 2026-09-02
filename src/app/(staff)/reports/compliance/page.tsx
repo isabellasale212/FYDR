@@ -238,7 +238,7 @@ export default async function ComplianceReportPage({
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 16 }}>
                   {report.summary.map((s) => (
                     <div key={s.domain}>
-                      <div className="mono" style={{ fontSize: 24, fontWeight: 800 }}>
+                      <div className="num" style={{ fontSize: 24, fontWeight: 800 }}>
                         {s.pct === null ? '—' : `${s.pct}%`}
                       </div>
                       <div className="tiny">{enumLabel(s.domain)}</div>

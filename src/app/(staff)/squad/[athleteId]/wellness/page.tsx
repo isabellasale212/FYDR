@@ -260,7 +260,7 @@ export default async function AthleteWellnessPage({
             <h2 className="card-title" id="w-summary-title" style={{ margin: 0 }}>
               Readiness
             </h2>
-            <span className="mono s">
+            <span className="num s">
               {submitted} of {range.days} day{range.days === 1 ? '' : 's'} submitted
             </span>
           </div>
@@ -278,7 +278,7 @@ export default async function AthleteWellnessPage({
 
           <div className="pp-macro-tiles" style={{ marginTop: 12 }}>
             <div className="pp-macro-tile">
-              <p className="mono pp-macro-value" style={{ margin: 0 }}>
+              <p className="num pp-macro-value" style={{ margin: 0 }}>
                 {latestReadiness !== null ? Math.round(latestReadiness) : '—'}
               </p>
               <p className="pp-macro-label" style={{ margin: 0 }}>
@@ -286,7 +286,7 @@ export default async function AthleteWellnessPage({
               </p>
             </div>
             <div className="pp-macro-tile">
-              <p className="mono pp-macro-value" style={{ margin: 0 }}>
+              <p className="num pp-macro-value" style={{ margin: 0 }}>
                 {meanOf(visible, 'readiness') !== null ? Math.round(meanOf(visible, 'readiness') as number) : '—'}
               </p>
               <p className="pp-macro-label" style={{ margin: 0 }}>
@@ -294,7 +294,7 @@ export default async function AthleteWellnessPage({
               </p>
             </div>
             <div className="pp-macro-tile">
-              <p className="mono pp-macro-value" style={{ margin: 0 }}>
+              <p className="num pp-macro-value" style={{ margin: 0 }}>
                 {range.days > 0 ? Math.round((submitted / range.days) * 100) : 0}%
               </p>
               <p className="pp-macro-label" style={{ margin: 0 }}>
@@ -349,7 +349,7 @@ export default async function AthleteWellnessPage({
             <h2 className="card-title" id="w-scales-title" style={{ margin: 0 }}>
               What he reported
             </h2>
-            <span className="mono s">means over {range.label.toLowerCase()}</span>
+            <span className="num s">means over {range.label.toLowerCase()}</span>
           </div>
           <p className="pc-intro">
             Every scale runs <b>5 is the best</b>, soreness included &mdash; a high soreness score means
@@ -369,7 +369,7 @@ export default async function AthleteWellnessPage({
                 <div className="pc-row" key={s.key}>
                   <div className="pc-row-top">
                     <span className="pc-row-name">{s.label}</span>
-                    <span className="mono pc-row-value">
+                    <span className="num pc-row-value">
                       {m !== null ? `${formatNumber(m, s.decimals)}${s.unit}` : '—'}
                     </span>
                   </div>

@@ -89,7 +89,7 @@ export function TrainingScatter({ points, selectedAthleteId, lens, hrefFor }: Pr
               aria-hidden="true"
             />
             <span
-              className="tiny mono"
+              className="tiny num"
               style={{
                 position: 'absolute',
                 left: `${px(medianTd)}%`,

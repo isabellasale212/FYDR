@@ -35,7 +35,7 @@ export function ScaleInput({ name, value, onChange }: Props) {
           <span className="sc-v un">Not set</span>
         ) : (
           <span className="sc-v">
-            {copy.words[value - 1]} <span className="n mono">· {value}</span>
+            {copy.words[value - 1]} <span className="n num">· {value}</span>
           </span>
         )}
       </div>

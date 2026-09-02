@@ -484,19 +484,19 @@ export default async function AthleteReportPage({
                 <div className="grid3">
                   <div className="card">
                     <p className="tiny">Acute · trailing 7 days</p>
-                    <p className="mono" style={{ fontSize: 22, fontWeight: 800 }}>
+                    <p className="num" style={{ fontSize: 22, fontWeight: 800 }}>
                       {report.load.acute === null ? '—' : formatNumber(report.load.acute, 0)}
                     </p>
                   </div>
                   <div className="card">
                     <p className="tiny">Chronic · trailing 28 days, weekly</p>
-                    <p className="mono" style={{ fontSize: 22, fontWeight: 800 }}>
+                    <p className="num" style={{ fontSize: 22, fontWeight: 800 }}>
                       {report.load.chronic === null ? '—' : formatNumber(report.load.chronic, 0)}
                     </p>
                   </div>
                   <div className="card">
                     <p className="tiny">ACWR · trailing 7:28</p>
-                    <p className="mono" style={{ fontSize: 22, fontWeight: 800 }}>
+                    <p className="num" style={{ fontSize: 22, fontWeight: 800 }}>
                       {report.load.acwr === null ? '—' : formatNumber(report.load.acwr, 2)}
                     </p>
                   </div>
@@ -524,15 +524,15 @@ export default async function AthleteReportPage({
                     <div className="grid3">
                       <div>
                         <p className="tiny">Sessions with data</p>
-                        <p className="mono nm">{report.load.gps.sessionsWithData}</p>
+                        <p className="num nm">{report.load.gps.sessionsWithData}</p>
                       </div>
                       <div>
                         <p className="tiny">Total distance</p>
-                        <p className="mono nm">{formatNumber(report.load.gps.totalDistanceM, 0)} m</p>
+                        <p className="num nm">{formatNumber(report.load.gps.totalDistanceM, 0)} m</p>
                       </div>
                       <div>
                         <p className="tiny">High speed distance</p>
-                        <p className="mono nm">{formatNumber(report.load.gps.highSpeedDistanceM, 0)} m</p>
+                        <p className="num nm">{formatNumber(report.load.gps.highSpeedDistanceM, 0)} m</p>
                       </div>
                     </div>
                   )}
@@ -552,8 +552,8 @@ export default async function AthleteReportPage({
                       <div key={d.date}>
                         {i > 0 ? <div className="hair" /> : null}
                         <div className="load-row" style={{ gridTemplateColumns: '1fr auto' }}>
-                          <span className="sub mono">{formatDate(d.date, timezone)}</span>
-                          <span className="load-val mono">{formatNumber(d.load, 0)}</span>
+                          <span className="sub num">{formatDate(d.date, timezone)}</span>
+                          <span className="load-val num">{formatNumber(d.load, 0)}</span>
                         </div>
                       </div>
                     ))
@@ -569,13 +569,13 @@ export default async function AthleteReportPage({
                 <div className="grid3">
                   <div className="card">
                     <p className="tiny">Gym sessions logged</p>
-                    <p className="mono" style={{ fontSize: 22, fontWeight: 800 }}>
+                    <p className="num" style={{ fontSize: 22, fontWeight: 800 }}>
                       {report.gymAndTesting.sessionsLogged}
                     </p>
                   </div>
                   <div className="card">
                     <p className="tiny">Completed</p>
-                    <p className="mono" style={{ fontSize: 22, fontWeight: 800 }}>
+                    <p className="num" style={{ fontSize: 22, fontWeight: 800 }}>
                       {report.gymAndTesting.sessionsCompleted}
                     </p>
                   </div>
@@ -616,10 +616,10 @@ export default async function AthleteReportPage({
                             <td className="nm">
                               {t.name} <span className="tiny">({t.unit})</span>
                             </td>
-                            <td className="r mono">{t.pbValue === null ? BLANK : formatNumber(t.pbValue, t.decimal_places)}</td>
-                            <td className="sub mono">{t.pbDate ? formatDate(t.pbDate, timezone) : BLANK}</td>
-                            <td className="r mono">{t.latestValue === null ? BLANK : formatNumber(t.latestValue, t.decimal_places)}</td>
-                            <td className="sub mono">{t.latestDate ? formatDate(t.latestDate, timezone) : BLANK}</td>
+                            <td className="r num">{t.pbValue === null ? BLANK : formatNumber(t.pbValue, t.decimal_places)}</td>
+                            <td className="sub num">{t.pbDate ? formatDate(t.pbDate, timezone) : BLANK}</td>
+                            <td className="r num">{t.latestValue === null ? BLANK : formatNumber(t.latestValue, t.decimal_places)}</td>
+                            <td className="sub num">{t.latestDate ? formatDate(t.latestDate, timezone) : BLANK}</td>
                           </tr>
                         ))}
                       </tbody>

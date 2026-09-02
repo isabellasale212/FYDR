@@ -174,7 +174,7 @@ export default async function TodayPage({
         <span className={`pill status-pill ${outstandingCount > 0 ? 'pill-warn' : 'pill-good'}`}>
           {outstandingCount > 0 ? (
             <>
-              <span className="mono">{outstandingCount}</span> to do
+              <span className="num">{outstandingCount}</span> to do
             </>
           ) : (
             'Up to date'
@@ -216,12 +216,12 @@ export default async function TodayPage({
           return (
             <div key={date} className="wk-day" data-today={isToday} data-kind={kind}>
               <span className="wi">{WEEKDAY_INITIAL[i]}</span>
-              <span className="wn mono">{Number(date.slice(8, 10))}</span>
+              <span className="wn num">{Number(date.slice(8, 10))}</span>
               {/* Colour is never the only channel — the kind is also spelled
                   out for screen readers and on hover. */}
               <span className="visually-hidden">{kindLabel}</span>
               <span className="wk-kind" aria-hidden="true" title={kindLabel} />
-              <span className="wo mono" data-tone={tone} title={explainer ?? undefined}>
+              <span className="wo num" data-tone={tone} title={explainer ?? undefined}>
                 {md ?? ''}
               </span>
             </div>
@@ -256,7 +256,7 @@ export default async function TodayPage({
       {todoItems.length > 0 ? (
         <section aria-labelledby="todo-title">
           <h2 className="sect" id="todo-title">
-            To do <span className="mono">{todoItems.length}</span>
+            To do <span className="num">{todoItems.length}</span>
           </h2>
           <div className="card flush">
             {todoItems.map((item, index) => (
@@ -321,7 +321,7 @@ export default async function TodayPage({
                 <div key={session.id}>
                   {index > 0 ? <div className="hair" /> : null}
                   <div className="sess" style={{ opacity: cancelled ? 0.55 : 1 }}>
-                    <span className="tm mono">{formatTime(session.starts_at, timezone)}</span>
+                    <span className="tm num">{formatTime(session.starts_at, timezone)}</span>
                     <div>
                       <div className="ti">
                         <span style={{ textDecoration: cancelled ? 'line-through' : 'none' }}>
@@ -339,11 +339,11 @@ export default async function TodayPage({
                       </div>
                       <div className="lo">
                         {session.location ?? 'Location not set'} ·{' '}
-                        <span className="mono">{session.duration_min ?? BLANK}</span> min
+                        <span className="num">{session.duration_min ?? BLANK}</span> min
                       </div>
                     </div>
                     {md ? (
-                      <span className="pill pill-neutral mono" title={mdExplainer(todayMdOffset) ?? undefined}>
+                      <span className="pill pill-neutral num" title={mdExplainer(todayMdOffset) ?? undefined}>
                         {md}
                       </span>
                     ) : null}

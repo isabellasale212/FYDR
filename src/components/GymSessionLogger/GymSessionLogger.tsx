@@ -293,11 +293,11 @@ export function GymSessionLogger({
           </Link>
           <div className="gym-head-mid">
             <div className="nm">{sessionName}</div>
-            <div className="prog mono">
+            <div className="prog num">
               {doneCount} of {totalSets} sets
             </div>
           </div>
-          <span className="gym-clock mono">{now !== null ? elapsed(startedAt, now) : '·'}</span>
+          <span className="gym-clock num">{now !== null ? elapsed(startedAt, now) : '·'}</span>
         </div>
         <div className="gym-progress-track">
           <div className="gym-progress-fill" style={{ width: `${pct}%` }} />
@@ -332,7 +332,7 @@ export function GymSessionLogger({
               <div key={ex.programme_exercise_id} className="gym-ex-card">
                 <div className="gym-ex-head">
                   <span className="nm">{ex.exercise_name}</span>
-                  <span className="scheme mono">
+                  <span className="scheme num">
                     {schemeLabel(ex)} @ {loadLabel(ex, timezone)}
                     {ex.rest_seconds ? ` · ${ex.rest_seconds}s rest` : ''}
                   </span>
@@ -368,7 +368,7 @@ export function GymSessionLogger({
                       {isCorrecting ? (
                         <button
                           type="button"
-                          className="n mono"
+                          className="n num"
                           aria-label={`Cancel correcting set ${setNumber}`}
                           onClick={() => setCorrecting(null)}
                           style={{
@@ -384,7 +384,7 @@ export function GymSessionLogger({
                           {setNumber}
                         </button>
                       ) : (
-                        <span className="n mono">{setNumber}</span>
+                        <span className="n num">{setNumber}</span>
                       )}
                       {loggedRow && isCorrecting ? (
                         <>
@@ -423,7 +423,7 @@ export function GymSessionLogger({
                            * the display span alone, so this is reachable without a mouse. */}
                           <button
                             type="button"
-                            className="mono"
+                            className="num"
                             onClick={openCorrection}
                             aria-label={`Correct set ${setNumber}, logged ${loggedRow.reps_completed ?? 'no'} reps`}
                             style={{
@@ -440,7 +440,7 @@ export function GymSessionLogger({
                           </button>
                           <button
                             type="button"
-                            className="mono"
+                            className="num"
                             onClick={openCorrection}
                             aria-label={`Correct set ${setNumber}, logged ${loggedRow.load_kg !== null ? `${loggedRow.load_kg} kg` : 'no load'}`}
                             style={{
@@ -488,10 +488,10 @@ export function GymSessionLogger({
                         </>
                       ) : (
                         <>
-                          <span className="mono" style={{ color: 'var(--faint)' }}>
+                          <span className="num" style={{ color: 'var(--faint)' }}>
                             ·
                           </span>
-                          <span className="mono" style={{ color: 'var(--faint)' }}>
+                          <span className="num" style={{ color: 'var(--faint)' }}>
                             ·
                           </span>
                         </>

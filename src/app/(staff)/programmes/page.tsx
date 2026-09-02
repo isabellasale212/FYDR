@@ -290,7 +290,7 @@ export default async function ProgrammesPage({
                   </div>
                 )}
 
-                <p className="cap mono" style={{ marginTop: 14 }}>
+                <p className="cap num" style={{ marginTop: 14 }}>
                   This is the general programme, exactly as written — overrides are per athlete
                   and never rewrite it, so Override reads &ldquo;&mdash;&rdquo; on this squad-wide
                   view. See what one athlete actually gets, tailoring included, from &ldquo;View as

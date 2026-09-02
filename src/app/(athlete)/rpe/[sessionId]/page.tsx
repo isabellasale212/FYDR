@@ -81,7 +81,7 @@ export default async function RpePage({
         </Link>
         <h1 className="t">How hard was it?</h1>
         <span
-          className="tiny mono"
+          className="tiny num"
           style={{ width: 56, textAlign: 'end', whiteSpace: 'nowrap' }}
         >
           {formatDate(entryDate, timezone)}
@@ -89,7 +89,7 @@ export default async function RpePage({
       </div>
 
       <div className="sess" style={{ padding: '0 0 14px' }}>
-        <span className="tm mono">{formatTime(session.starts_at, timezone)}</span>
+        <span className="tm num">{formatTime(session.starts_at, timezone)}</span>
         <div>
           <div className="ti">
             {session.title}
@@ -102,7 +102,7 @@ export default async function RpePage({
             {md ? (
               <>
                 {' · '}
-                <span className="mono" title={mdExplainer(mdOffset) ?? undefined}>
+                <span className="num" title={mdExplainer(mdOffset) ?? undefined}>
                   {md}
                 </span>
               </>

@@ -303,7 +303,7 @@ function HistoryCell<T extends { id: string; submitted_at: string | null }>({
         ) : (
           <ol className="cap" style={{ margin: 0, paddingInlineStart: 18 }}>
             {row.priorRevisions.map((rev) => (
-              <li key={rev.id} className="mono">
+              <li key={rev.id} className="num">
                 {render(rev)}
                 {rev.submitted_at ? ` · recorded ${formatDateTime(rev.submitted_at, timezone)}` : ''}
               </li>
@@ -383,16 +383,16 @@ function WellnessRow({
   return (
     <>
       <tr>
-        <td className="mono sub">
+        <td className="num sub">
           {formatDate(e.entry_date, timezone)}
           {corrected ? <CorrectedPill by={row.correctedBy} at={row.correctedAt} timezone={timezone} /> : null}
         </td>
-        <td className="r mono">{e.sleep_hours !== null ? `${formatNumber(e.sleep_hours, 1)} h` : BLANK}</td>
-        <td className="r mono">{e.sleep_quality ?? BLANK}</td>
-        <td className="r mono">{e.fatigue ?? BLANK}</td>
-        <td className="r mono">{e.soreness ?? BLANK}</td>
-        <td className="r mono">{e.stress ?? BLANK}</td>
-        <td className="r mono">{e.mood ?? BLANK}</td>
+        <td className="r num">{e.sleep_hours !== null ? `${formatNumber(e.sleep_hours, 1)} h` : BLANK}</td>
+        <td className="r num">{e.sleep_quality ?? BLANK}</td>
+        <td className="r num">{e.fatigue ?? BLANK}</td>
+        <td className="r num">{e.soreness ?? BLANK}</td>
+        <td className="r num">{e.stress ?? BLANK}</td>
+        <td className="r num">{e.mood ?? BLANK}</td>
         <ActionsCell
           corrected={corrected}
           canCorrect={canCorrect}
@@ -442,14 +442,14 @@ function TrainingRow({
   return (
     <>
       <tr>
-        <td className="mono sub">
+        <td className="num sub">
           {formatDate(e.entry_date, timezone)}
           {corrected ? <CorrectedPill by={row.correctedBy} at={row.correctedAt} timezone={timezone} /> : null}
         </td>
         <td className="nm">{row.sessionTitle ?? 'Session no longer on the schedule'}</td>
-        <td className="r mono">{formatNumber(e.rpe, 1)}</td>
-        <td className="r mono">{e.duration_min ?? BLANK}</td>
-        <td className="r mono">{formatNumber(e.session_load, 0)}</td>
+        <td className="r num">{formatNumber(e.rpe, 1)}</td>
+        <td className="r num">{e.duration_min ?? BLANK}</td>
+        <td className="r num">{formatNumber(e.session_load, 0)}</td>
         <ActionsCell
           corrected={corrected}
           canCorrect={canCorrect}

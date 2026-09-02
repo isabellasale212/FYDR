@@ -185,7 +185,7 @@ export function TestLogGrid({ orgId, userId, testDefinitionId, testDate, default
                         {slot.side ? `${slot.side.charAt(0).toUpperCase()}${slot.attempt}` : slot.attempt}
                       </span>
                       <input
-                        className="field mono"
+                        className="field num"
                         style={{
                           width: 64,
                           padding: '6px 4px',
@@ -220,7 +220,7 @@ export function TestLogGrid({ orgId, userId, testDefinitionId, testDate, default
                       />
                       {cellStatus ? (
                         <span
-                          className="tiny mono"
+                          className="tiny num"
                           role="status"
                           style={{ textAlign: 'center', color: STATUS_GLYPH[cellStatus].color, fontSize: 9.5 }}
                         >

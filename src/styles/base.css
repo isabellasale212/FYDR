@@ -10,6 +10,16 @@
   box-sizing: border-box;
 }
 
+/* Chart labels are numbers on an axis — the one place a digit shifting width
+   is most visible, because the reader is comparing positions. They are SVG
+   <text>, so they inherit nothing from the .num/tabular rules that cover the
+   DOM. Until 2026-09-02 they asked for var(--font-mono), a token that stopped
+   existing when the mono face was removed, so ten labels across four charts were
+   rendering in the browser default with proportional digits. */
+svg text {
+  font-variant-numeric: tabular-nums;
+}
+
 html,
 body {
   margin: 0;
@@ -27,7 +37,7 @@ body {
 }
 
 /* §2.1. Every number and every data label. Body prose never uses it. */
-.mono {
+.num {
   font-family: var(--font-sora), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
@@ -2406,7 +2416,7 @@ img.av {
 /* ---------- Player profile, PLAYER-PROFILE-SPEC.md ----------
  *
  * Reuses this file's existing primitives everywhere they already cover a
- * spec requirement — .card, .pill/.pill-*, .squad-chip, .btn-ghost, .mono,
+ * spec requirement — .card, .pill/.pill-*, .squad-chip, .btn-ghost, .num,
  * the Pill component's status vocabulary — rather than parallel one-off
  * classes, so this page looks like it belongs to the same app as every
  * other screen rather than a mockup dropped in beside it. The classes below
@@ -4510,7 +4520,7 @@ button.dash-stat {
  * src/lib/nutritionRules.ts, src/lib/nutritionWorkspace.ts and
  * src/app/(staff)/nutrition/page.tsx's own header comments) — this block is pixel
  * values only, no data decisions. `.nutr-mono` is a thin alias of the existing
- * `.mono` (DM Mono, tabular numerals) rather than a rename across every component,
+ * `.num` (Sora with tabular numerals) rather than a rename across every component,
  * so nutrition-specific markup reads clearly as "this screen's own class" at a
  * glance without duplicating the font stack. Pills, chips, cards, buttons and fields
  * are the same house classes as everywhere else in this app (`.pill`, `.card`,
@@ -5930,7 +5940,7 @@ button.dash-stat {
  * .sg- prefixed, same convention as .pp- for the player profile rebuild:
  * reuse this file's existing primitives everywhere they already cover a
  * spec requirement (.card, .chiprow/.squad-chip, .pill/.pill-*, .btn-ghost,
- * .btn-primary, .mono, .cap, .field, .label, .hair) and only add classes
+ * .btn-primary, .num, .cap, .field, .label, .hair) and only add classes
  * for the pieces nothing existing already had — mainly the time grid itself
  * (§5), which has no precedent anywhere else in this app.
  *

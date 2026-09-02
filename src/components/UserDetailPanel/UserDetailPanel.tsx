@@ -326,7 +326,7 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezo
             <tbody>
               {history.map((h) => (
                 <tr key={h.id}>
-                  <td className="mono sub">{formatDateTime(h.occurred_at, timezone)}</td>
+                  <td className="num sub">{formatDateTime(h.occurred_at, timezone)}</td>
                   <td className="nm">{AUDIT_ACTION_LABEL[h.action] ?? h.action}</td>
                   <td className="sub">{h.actor_name ?? '—'}</td>
                 </tr>

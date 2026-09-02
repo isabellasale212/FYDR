@@ -52,7 +52,7 @@ export default async function CheckInPage({
         </Link>
         <h1 className="t">Morning check-in</h1>
         <span
-          className="tiny mono"
+          className="tiny num"
           style={{ width: 56, textAlign: 'end', whiteSpace: 'nowrap' }}
         >
           {formatDate(entryDate, timezone)}
@@ -65,7 +65,7 @@ export default async function CheckInPage({
           <p className="import-sub" style={{ marginBottom: 0 }}>
             {entryDate === today ? 'You sent today' : `You sent ${formatDate(entryDate, timezone)}`}
             &rsquo;s check-in at{' '}
-            <span className="mono">
+            <span className="num">
               {existing.submitted_at
                 ? new Intl.DateTimeFormat('en-GB', {
                     hour: '2-digit',

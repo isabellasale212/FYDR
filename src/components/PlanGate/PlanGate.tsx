@@ -90,7 +90,7 @@ export function PlanGateCard({
       </div>
 
       <p style={{ fontSize: 13.5, color: 'var(--text)', margin: '14px 0 0' }}>{body}</p>
-      <p className="mono" style={{ fontSize: 11.5, color: 'var(--muted)', marginTop: 12 }}>
+      <p className="num" style={{ fontSize: 11.5, color: 'var(--muted)', marginTop: 12 }}>
         {metadata}
       </p>
 

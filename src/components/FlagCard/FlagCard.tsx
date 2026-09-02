@@ -181,7 +181,7 @@ export function FlagCard({ flag, orgId, userId, today, timezone, viewerIsMedical
             <span className="pill pill-warn">Was escalated</span>
           )
         ) : null}
-        <span className="tiny mono" style={{ marginInlineStart: 'auto' }}>
+        <span className="tiny num" style={{ marginInlineStart: 'auto' }}>
           {raisedLabel}
         </span>
       </div>
@@ -191,17 +191,17 @@ export function FlagCard({ flag, orgId, userId, today, timezone, viewerIsMedical
           <b>{flag.name}</b>
         </Link>
         {flag.squad_number !== null ? (
-          <span className="tiny mono"> #{flag.squad_number}</span>
+          <span className="tiny num"> #{flag.squad_number}</span>
         ) : null}
       </p>
 
       <p className="flag-line">
         {flag.what}
-        {flag.observed ? <span className="v mono"> {flag.observed}</span> : null}
+        {flag.observed ? <span className="v num"> {flag.observed}</span> : null}
         {flag.expected ? (
           <>
             {' '}
-            vs <span className="base mono">{flag.expected}</span> expected
+            vs <span className="base num">{flag.expected}</span> expected
           </>
         ) : null}
       </p>

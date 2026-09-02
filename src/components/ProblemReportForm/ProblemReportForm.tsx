@@ -94,7 +94,7 @@ export function ProblemReportForm({ orgId, athleteId, userId }: Props) {
         placeholder="Tell us what you're noticing and when it started."
       />
       <p className="tiny" style={{ marginTop: 4 }}>
-        <span className="mono">{body.length}</span>/1000
+        <span className="num">{body.length}</span>/1000
       </p>
 
       {error ? (

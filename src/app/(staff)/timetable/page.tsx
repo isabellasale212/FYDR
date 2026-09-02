@@ -78,7 +78,7 @@ export default async function TimetablePage({ searchParams }: { searchParams: Se
         <Link href={dayHref(addDays(date, -1))} className="btn-ghost" aria-label="Previous day">
           ‹ Previous
         </Link>
-        <span className="nm mono">
+        <span className="nm num">
           {formatDate(date, timezone)} · {sessions.length} session{sessions.length === 1 ? '' : 's'}
         </span>
         <Link href={dayHref(addDays(date, 1))} className="btn-ghost" aria-label="Next day">

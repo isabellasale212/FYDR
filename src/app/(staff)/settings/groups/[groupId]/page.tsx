@@ -91,7 +91,7 @@ export default async function GroupDetailPage({
         <section className="card flush" aria-labelledby="past-title">
           <h2 className="card-title" id="past-title" style={{ padding: '16px 16px 8px' }}>
             Past members{' '}
-            <span className="tiny mono" style={{ fontWeight: 400 }}>
+            <span className="tiny num" style={{ fontWeight: 400 }}>
               {past.length}
             </span>
           </h2>

@@ -166,7 +166,7 @@ export function WellnessChart({
               x={ML - 8}
               y={y(t) + 3.5}
               textAnchor="end"
-              fontFamily="var(--font-mono)"
+              fontFamily="var(--font-sora)"
               fontSize={10}
               fill="var(--faint)"
             >
@@ -238,7 +238,7 @@ export function WellnessChart({
             x={Math.min(x(lastIndex) + 10, W - MR)}
             y={y(clamp(lastWithValue.value!)) - 10}
             textAnchor={lastIndex > series.length - 3 ? 'end' : 'start'}
-            fontFamily="var(--font-mono)"
+            fontFamily="var(--font-sora)"
             fontSize={13}
             fontWeight={700}
             fill="var(--text)"
@@ -295,7 +295,7 @@ export function WellnessChart({
               x={x(i)}
               y={H - 8}
               textAnchor={anchor}
-              fontFamily="var(--font-mono)"
+              fontFamily="var(--font-sora)"
               fontSize={10}
               fill="var(--faint)"
             >

@@ -557,7 +557,7 @@ function AthleteTable({
               <td className="nm">
                 {r.first_name} {r.last_name}
               </td>
-              <td className="r mono">
+              <td className="r num">
                 {/* Suppressed is a stated absence, never a blank cell that
                     could be mistaken for a zero or a rendering failure. */}
                 {r.suppressed ? (
@@ -569,7 +569,7 @@ function AthleteTable({
                   </>
                 )}
               </td>
-              <td className="r mono">
+              <td className="r num">
                 {formatNumber(r.latest, decimals)}
                 {r.latest !== null ? unit : ''}
                 {r.latest_date ? (
@@ -578,8 +578,8 @@ function AthleteTable({
                   </span>
                 ) : null}
               </td>
-              <td className="r mono">{r.days_with_data}</td>
-              <td className="r mono">
+              <td className="r num">{r.days_with_data}</td>
+              <td className="r num">
                 {/* z against the athlete's OWN band. |z| >= 1.5 is the same
                     outlier line the wellness preset has always used; below the
                     10-observation guard z is null and stays blank rather than
@@ -635,8 +635,8 @@ function SeriesTable({
         <tbody>
           {rows.map((b) => (
             <tr key={b.date}>
-              <td className="mono">{formatDate(b.date, timezone)}</td>
-              <td className="r mono">
+              <td className="num">{formatDate(b.date, timezone)}</td>
+              <td className="r num">
                 {b.value === null ? (
                   <span className="cap">no entry</span>
                 ) : (
@@ -646,8 +646,8 @@ function SeriesTable({
                   </>
                 )}
               </td>
-              <td className="r mono">{formatNumber(b.mean, decimals)}</td>
-              <td className="r mono">{formatNumber(b.sd, decimals)}</td>
+              <td className="r num">{formatNumber(b.mean, decimals)}</td>
+              <td className="r num">{formatNumber(b.sd, decimals)}</td>
             </tr>
           ))}
         </tbody>

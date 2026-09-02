@@ -174,7 +174,7 @@ export function ProgrammeBuilder({
       {blocks.map((block) => (
         <section key={block.id} className="card">
           <h2 className="card-title">
-            {block.name} <span className="tiny mono">{block.duration_weeks}w</span>
+            {block.name} <span className="tiny num">{block.duration_weeks}w</span>
           </h2>
           {block.sessions.length === 0 ? (
             <p className="tiny">No sessions yet.</p>
@@ -407,7 +407,7 @@ export function ProgrammeBuilder({
 
       <section className="card" aria-labelledby="assign-title">
         <h2 className="card-title" id="assign-title">
-          Assigned <span className="tiny mono">{assignees.length}</span>
+          Assigned <span className="tiny num">{assignees.length}</span>
         </h2>
         {assignees.length === 0 ? (
           <p className="tiny">Nobody assigned yet.</p>

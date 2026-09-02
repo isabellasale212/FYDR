@@ -303,7 +303,7 @@ export default async function SettingsPage() {
                 .pill-warn already resolves to — because the number of live
                 thresholds is a standing state a coach should be able to read
                 without hunting for it, and at --faint it read as a caption. */}
-            <span className="pill pill-warn mono">{activeThresholds.length} active</span>
+            <span className="pill pill-warn num">{activeThresholds.length} active</span>
             <span aria-hidden="true" style={{ fontSize: 16, color: 'var(--faint)' }}>
               ›
             </span>
@@ -314,7 +314,7 @@ export default async function SettingsPage() {
               <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block' }}>Password and two-factor</span>
               <span style={{ fontSize: 12, color: 'var(--faint)' }}>Staff sign in</span>
             </span>
-            <span className="mono" style={{ fontSize: 11.5, color: 'var(--faint)' }}>
+            <span className="num" style={{ fontSize: 11.5, color: 'var(--faint)' }}>
               {(mfaFactors.data?.totp.length ?? 0) > 0 ? 'On' : roleRequiresMfa ? 'Required' : '—'}
             </span>
             <span aria-hidden="true" style={{ fontSize: 16, color: 'var(--faint)' }}>
@@ -338,7 +338,7 @@ export default async function SettingsPage() {
                 <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block', color: 'var(--faint)' }}>Exports</span>
                 <span style={{ fontSize: 12, color: 'var(--faint)' }}>Coach or medical role required</span>
               </span>
-              <span className="mono" style={{ fontSize: 11.5, color: 'var(--faint)' }}>
+              <span className="num" style={{ fontSize: 11.5, color: 'var(--faint)' }}>
                 —
               </span>
               <span aria-hidden="true" style={{ fontSize: 16, color: 'var(--faint)' }} />

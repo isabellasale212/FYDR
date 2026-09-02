@@ -25,7 +25,7 @@ export function ReportPager({ pages }: { pages: Page[] }) {
         >
           ‹
         </button>
-        <span className="tiny mono">
+        <span className="tiny num">
           {index + 1} of {pages.length}
         </span>
         <div className="chiprow" style={{ flex: 1 }}>

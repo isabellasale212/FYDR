@@ -219,7 +219,7 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                               {byAthlete.definitions.map((d) => {
                                 const cell = row.cells.get(d.id);
                                 return (
-                                  <td key={d.id} className="r mono">
+                                  <td key={d.id} className="r num">
                                     {cell?.value === null || cell?.value === undefined ? BLANK : formatNumber(cell.value, d.decimal_places)}
                                   </td>
                                 );
@@ -261,19 +261,19 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                       <div className="grid3">
                         <div className="card">
                           <p className="tiny">Median</p>
-                          <p className="mono" style={{ fontSize: 20, fontWeight: 800 }}>
+                          <p className="num" style={{ fontSize: 20, fontWeight: 800 }}>
                             {byTest.median === null ? BLANK : formatNumber(byTest.median, byTest.definition.decimal_places)} {byTest.definition.unit}
                           </p>
                         </div>
                         <div className="card">
                           <p className="tiny">Q1</p>
-                          <p className="mono" style={{ fontSize: 20, fontWeight: 800 }}>
+                          <p className="num" style={{ fontSize: 20, fontWeight: 800 }}>
                             {byTest.q1 === null ? BLANK : formatNumber(byTest.q1, byTest.definition.decimal_places)}
                           </p>
                         </div>
                         <div className="card">
                           <p className="tiny">Q3</p>
-                          <p className="mono" style={{ fontSize: 20, fontWeight: 800 }}>
+                          <p className="num" style={{ fontSize: 20, fontWeight: 800 }}>
                             {byTest.q3 === null ? BLANK : formatNumber(byTest.q3, byTest.definition.decimal_places)}
                           </p>
                         </div>
@@ -302,12 +302,12 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                             <div key={`${r.athlete_id}-${r.side ?? ''}`}>
                               {i > 0 ? <div className="hair" /> : null}
                               <div className="load-row" style={{ gridTemplateColumns: '28px 1fr auto auto', padding: '9px 16px' }}>
-                                <span className="tiny mono">{r.rank}</span>
+                                <span className="tiny num">{r.rank}</span>
                                 <Link href={`/squad/${r.athlete_id}`} className="nm">
                                   {r.name}
                                 </Link>
                                 <span className="tiny">{r.side ?? ''}</span>
-                                <span className="mono nm">
+                                <span className="num nm">
                                   {formatNumber(r.value, byTest.definition.decimal_places)} {byTest.definition.unit}
                                 </span>
                               </div>
@@ -329,9 +329,9 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                             <div key={p.date}>
                               {i > 0 ? <div className="hair" /> : null}
                               <div className="load-row" style={{ gridTemplateColumns: '1fr auto auto', padding: '9px 16px' }}>
-                                <span className="sub mono">{formatDate(p.date, timezone)}</span>
+                                <span className="sub num">{formatDate(p.date, timezone)}</span>
                                 <span className="tiny">n={p.n}</span>
-                                <span className="mono nm">
+                                <span className="num nm">
                                   {p.median === null ? BLANK : formatNumber(p.median, byTest.definition.decimal_places)} {byTest.definition.unit}
                                 </span>
                               </div>

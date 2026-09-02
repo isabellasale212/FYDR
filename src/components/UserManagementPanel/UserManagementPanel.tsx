@@ -217,7 +217,7 @@ function CreateUserForm({
             invite email went out. They can change it once signed in.
           </p>
         )}
-        <p className="mono nm" style={{ fontSize: 18, padding: '10px 14px', background: 'var(--surf2)', borderRadius: 8 }}>
+        <p className="num nm" style={{ fontSize: 18, padding: '10px 14px', background: 'var(--surf2)', borderRadius: 8 }}>
           {result.temporaryPassword}
         </p>
         <p className="cap" style={{ marginBottom: 12 }}>
@@ -244,7 +244,7 @@ function CreateUserForm({
             !
           </span>
           <span>
-            {error} {result.temporaryPassword ? <>Temporary password: <b className="mono">{result.temporaryPassword}</b></> : null}
+            {error} {result.temporaryPassword ? <>Temporary password: <b className="num">{result.temporaryPassword}</b></> : null}
           </span>
         </div>
       ) : error ? (

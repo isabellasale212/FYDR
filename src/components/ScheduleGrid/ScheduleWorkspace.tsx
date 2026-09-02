@@ -595,7 +595,7 @@ export function ScheduleWorkspace({
             <Link href={prevHref} className="sg-weeknav-btn" aria-label="Previous week">
               ‹
             </Link>
-            <span className="sg-weeknav-range mono">{weekRangeLabel}</span>
+            <span className="sg-weeknav-range num">{weekRangeLabel}</span>
             <Link href={nextHref} className="sg-weeknav-btn" aria-label="Next week">
               ›
             </Link>

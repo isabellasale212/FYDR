@@ -82,7 +82,7 @@ export function GroupMemberManager({ orgId, groupId, timezone, current, candidat
         >
           <h2 className="card-title" id="members-title" style={{ margin: 0 }}>
             Members{' '}
-            <span className="tiny mono" style={{ fontWeight: 400 }}>
+            <span className="tiny num" style={{ fontWeight: 400 }}>
               {current.length}
             </span>
           </h2>

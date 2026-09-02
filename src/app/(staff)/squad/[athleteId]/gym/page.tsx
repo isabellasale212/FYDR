@@ -383,7 +383,7 @@ export default async function AthleteGymPage({
             <h2 className="card-title" id="g-prog-title" style={{ margin: 0 }}>
               Programme
             </h2>
-            <span className="mono s">
+            <span className="num s">
               {assignments.length} assignment{assignments.length === 1 ? '' : 's'} on record
             </span>
           </div>
@@ -409,7 +409,7 @@ export default async function AthleteGymPage({
                         {enumLabel(a.status)}
                       </span>
                     </span>
-                    <span className="mono pc-row-value">
+                    <span className="num pc-row-value">
                       {a.durationWeeks !== null ? `week ${weekNow} of ${a.durationWeeks}` : `week ${weekNow}`}
                     </span>
                   </div>
@@ -424,7 +424,7 @@ export default async function AthleteGymPage({
                         ? ' — suspended while he is on a rehab programme, not cancelled'
                         : ''}
                     </span>
-                    <span className="mono pc-row-meta">
+                    <span className="num pc-row-meta">
                       from {formatDate(a.startsOn, timezone)}
                       {a.endsOn ? ` to ${formatDate(a.endsOn, timezone)}` : ''}
                     </span>
@@ -445,7 +445,7 @@ export default async function AthleteGymPage({
             <h2 className="card-title" id="g-tailor-title" style={{ margin: 0 }}>
               Tailoring
             </h2>
-            <span className="mono s">
+            <span className="num s">
               {primary ? primary.name : 'no programme'} · {overrides.length} active
             </span>
           </div>
@@ -460,14 +460,14 @@ export default async function AthleteGymPage({
               <div className="pc-row" key={o.id}>
                 <div className="pc-row-top">
                   <span className="pc-row-name">{o.exercise_name}</span>
-                  <span className="mono pc-row-value">{enumLabel(o.override_type)}</span>
+                  <span className="num pc-row-value">{enumLabel(o.override_type)}</span>
                 </div>
                 <div className="pc-row-bottom">
                   <span className="pc-row-band">
                     {o.session_name}
                     {o.reason ? ` — ${o.reason}` : ''}
                   </span>
-                  <span className="mono pc-row-meta">
+                  <span className="num pc-row-meta">
                     {o.expires_at ? `until ${formatDate(o.expires_at, timezone)}` : 'no end date'}
                   </span>
                 </div>
@@ -481,7 +481,7 @@ export default async function AthleteGymPage({
             <h2 className="card-title" id="g-sessions-title" style={{ margin: 0 }}>
               Sessions logged
             </h2>
-            <span className="mono s">
+            <span className="num s">
               {visibleSessions.length}
               {truncated ? '+' : ''} completed in {range.label.toLowerCase()}
             </span>
@@ -501,7 +501,7 @@ export default async function AthleteGymPage({
               <div className="pc-row" key={s.id}>
                 <div className="pc-row-top">
                   <span className="pc-row-name">{s.session_name ?? 'Gym session'}</span>
-                  <span className="mono pc-row-value">
+                  <span className="num pc-row-value">
                     {s.total_volume_kg !== null ? `${formatNumber(s.total_volume_kg, 0)} kg` : '—'}
                   </span>
                 </div>
@@ -510,7 +510,7 @@ export default async function AthleteGymPage({
                     {s.set_count} set{s.set_count === 1 ? '' : 's'}
                     {s.session_rpe !== null ? ` · RPE ${formatNumber(s.session_rpe, 1)}` : ''}
                   </span>
-                  <span className="mono pc-row-meta">{formatDate(s.entry_date, timezone)}</span>
+                  <span className="num pc-row-meta">{formatDate(s.entry_date, timezone)}</span>
                 </div>
               </div>
             ))

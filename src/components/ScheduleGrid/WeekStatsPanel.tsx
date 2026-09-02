@@ -105,13 +105,13 @@ export function WeekStatsPanel({ sessions, typical, groups }: Props) {
                 <span className="sg-cmp-bar" style={{ '--tone': TYPE_STYLE[t].tone } as React.CSSProperties} />
                 {enumLabel(t)}
               </span>
-              <span className="sg-cmp-num mono">
+              <span className="sg-cmp-num num">
                 {row.count} · {row.mins}m
               </span>
-              <span className="sg-cmp-num sg-cmp-typical mono">
+              <span className="sg-cmp-num sg-cmp-typical num">
                 {typical.weeksUsed > 0 ? `${typ.count.toFixed(1)} · ${Math.round(typ.mins)}m` : '·'}
               </span>
-              <span className="sg-cmp-num sg-cmp-diff mono" data-tone={tone ?? undefined}>
+              <span className="sg-cmp-num sg-cmp-diff num" data-tone={tone ?? undefined}>
                 {tone ? `${signed(row.mins - typ.mins)}m` : '·'}
               </span>
             </div>
@@ -120,9 +120,9 @@ export function WeekStatsPanel({ sessions, typical, groups }: Props) {
 
         <div className="sg-cmp-total">
           <span>Contact minutes</span>
-          <span className="mono">{thisTotal}m</span>
-          <span className="mono">{typical.weeksUsed > 0 ? `${Math.round(typicalTotal)}m` : '·'}</span>
-          <span className="sg-cmp-diff mono" data-tone={totalTone ?? undefined}>
+          <span className="num">{thisTotal}m</span>
+          <span className="num">{typical.weeksUsed > 0 ? `${Math.round(typicalTotal)}m` : '·'}</span>
+          <span className="sg-cmp-diff num" data-tone={totalTone ?? undefined}>
             {totalTone ? `${signed(thisTotal - typicalTotal)}m` : '·'}
           </span>
         </div>
@@ -151,7 +151,7 @@ export function WeekStatsPanel({ sessions, typical, groups }: Props) {
               <div key={g.id}>
                 <div className="sg-group-row-head">
                   <span className="sg-group-name">{g.name}</span>
-                  <span className="sg-group-mins mono">{g.mins}m</span>
+                  <span className="sg-group-mins num">{g.mins}m</span>
                 </div>
                 <div className="sg-group-track">
                   <div

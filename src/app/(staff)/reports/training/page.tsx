@@ -104,7 +104,7 @@ function DialView({ dial }: { dial: DialScore }) {
         <div className="tiny" style={{ color: 'var(--faint)', fontWeight: 700 }}>
           Not scoreable
         </div>
-        <div className="tiny mono" style={{ color: 'var(--faint)' }}>
+        <div className="tiny num" style={{ color: 'var(--faint)' }}>
           {dial.raw === null ? 'no reading' : 'no reference'}
         </div>
       </div>
@@ -126,7 +126,7 @@ function DialView({ dial }: { dial: DialScore }) {
       <div className="tiny" style={{ color: TONE[tone], fontWeight: 700 }}>
         {statusLabel}
       </div>
-      <div className="tiny mono" style={{ color: 'var(--faint)' }}>
+      <div className="tiny num" style={{ color: 'var(--faint)' }}>
         {dial.raw === null ? '—' : dial.raw < 100 ? dial.raw.toFixed(2) : Math.round(dial.raw).toLocaleString()}
         {dial.raw === null ? '' : dial.unit}
       </div>
@@ -164,13 +164,13 @@ function ComparisonTableView({ table }: { table: ComparisonTable }) {
                 <div className="nm" style={{ fontSize: 13.5 }}>
                   {row.label}
                 </div>
-                {row.sublabel ? <div className="tiny mono" style={{ color: 'var(--faint)' }}>{row.sublabel}</div> : null}
+                {row.sublabel ? <div className="tiny num" style={{ color: 'var(--faint)' }}>{row.sublabel}</div> : null}
               </div>
               {row.cells.map((cell, i) => {
                 const tone = cell.pct !== null ? scoreTone(cell.pct).tone : null;
                 return (
                   <div key={i} className="tr-table-cell">
-                    <span className="mono" style={{ fontSize: 13.5, color: tone ? TONE[tone] : undefined }}>
+                    <span className="num" style={{ fontSize: 13.5, color: tone ? TONE[tone] : undefined }}>
                       {cell.value}
                     </span>
                     {cell.isScore && cell.pct !== null ? (
@@ -421,7 +421,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                     Scored per minute, not per session — a replacement on for 20 minutes is not comparable with an
                     80-minute starter any other way.
                   </p>
-                  <p className="tiny mono" style={{ color: 'var(--faint)', marginTop: 6 }}>
+                  <p className="tiny num" style={{ color: 'var(--faint)', marginTop: 6 }}>
                     {overview.referenceLine}
                   </p>
                 </div>
@@ -465,7 +465,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
 
             <div className="card" style={{ marginTop: 14 }}>
               <h2 className="card-title">Board</h2>
-              <p className="tiny mono" style={{ color: 'var(--faint)' }}>
+              <p className="tiny num" style={{ color: 'var(--faint)' }}>
                 Whole-match values · no H1/H2 split (see the Halves note above) · n = {board.rows.length} played
               </p>
               <div className="tr-board" style={{ marginTop: 10 }}>
@@ -491,11 +491,11 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                             <Link href={`/reports/athlete/${row.athlete_id}`} className="nm" style={{ fontSize: 13.5 }} title="Open this player's full report">
                               {row.last_name}, {row.first_name}
                             </Link>
-                            <span className="r mono">{row.mins ?? '—'}</span>
-                            <span className="r mono">{row.td !== null ? Math.round(row.td).toLocaleString() : '—'}</span>
-                            <span className="r mono">{row.hsr !== null ? Math.round(row.hsr).toLocaleString() : '—'}</span>
-                            <span className="r mono">{row.hsr_per_min ?? '—'}</span>
-                            <span className="r mono">{row.hie ?? '—'}</span>
+                            <span className="r num">{row.mins ?? '—'}</span>
+                            <span className="r num">{row.td !== null ? Math.round(row.td).toLocaleString() : '—'}</span>
+                            <span className="r num">{row.hsr !== null ? Math.round(row.hsr).toLocaleString() : '—'}</span>
+                            <span className="r num">{row.hsr_per_min ?? '—'}</span>
+                            <span className="r num">{row.hie ?? '—'}</span>
                           </div>
                         ))}
                     </div>
@@ -684,7 +684,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
               </div>
               <div className="tr-read">
                 <p style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>{overview.headline}</p>
-                <p className="tiny mono" style={{ color: 'var(--faint)', marginTop: 6 }}>
+                <p className="tiny num" style={{ color: 'var(--faint)', marginTop: 6 }}>
                   {overview.referenceLine}
                 </p>
               </div>
@@ -707,7 +707,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
             <div className="tr-lower-main">
 <div className="card" style={{ marginTop: 14 }}>
             <h2 className="card-title">Board</h2>
-            <p className="tiny mono" style={{ color: 'var(--faint)' }}>
+            <p className="tiny num" style={{ color: 'var(--faint)' }}>
               Raw session values · shading is this squad&rsquo;s spread for this session, HSR blue, HIE pink, %Max
               green · n = {board.rows.length} athletes
             </p>
@@ -743,7 +743,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                       <div className="tr-board-unit-header">
                         <span>{unit}</span>
                         {unitMean !== null ? (
-                          <span className="mono tr-unit-mean">unit mean {unitMean.toLocaleString()} m</span>
+                          <span className="num tr-unit-mean">unit mean {unitMean.toLocaleString()} m</span>
                         ) : null}
                       </div>
                       {inUnit.map((row) => (
@@ -770,15 +770,15 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                           <span className="nm" style={{ fontSize: 13.5 }}>
                             {row.last_name}, {row.first_name}
                           </span>
-                          <span className="r mono">{row.td !== null ? Math.round(row.td).toLocaleString() : '—'}</span>
-                          <span className="r mono tr-heat" data-band={heatOn ? heatBand(row.hsr, hsrP95) : null} data-ramp="hsr">
+                          <span className="r num">{row.td !== null ? Math.round(row.td).toLocaleString() : '—'}</span>
+                          <span className="r num tr-heat" data-band={heatOn ? heatBand(row.hsr, hsrP95) : null} data-ramp="hsr">
                             {row.hsr !== null ? Math.round(row.hsr).toLocaleString() : '—'}
                           </span>
-                          <span className="r mono tr-heat" data-band={heatOn ? heatBand(row.hie, hieP95) : null} data-ramp="hie">
+                          <span className="r num tr-heat" data-band={heatOn ? heatBand(row.hie, hieP95) : null} data-ramp="hie">
                             {row.hie ?? '—'}
                           </span>
-                          <span className="r mono">{row.maxv_kmh ?? '—'}</span>
-                          <span className="r mono tr-heat" data-band={heatOn ? pctMaxBand(row.pct_max) : null} data-ramp="pct">
+                          <span className="r num">{row.maxv_kmh ?? '—'}</span>
+                          <span className="r num tr-heat" data-band={heatOn ? pctMaxBand(row.pct_max) : null} data-ramp="pct">
                             {row.pct_max !== null ? `${row.pct_max}%` : '—'}
                           </span>
                         </Link>
@@ -866,9 +866,9 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                     {athletePanel.rows.map((r) => (
                       <Fragment key={r.metric}>
                         <span>{r.metric}</span>
-                        <span className="r mono">{r.today}</span>
-                        <span className="r mono">{r.vsSelf}</span>
-                        <span className="r mono">{r.vsUnit}</span>
+                        <span className="r num">{r.today}</span>
+                        <span className="r num">{r.vsSelf}</span>
+                        <span className="r num">{r.vsUnit}</span>
                       </Fragment>
                     ))}
                   </div>
@@ -881,7 +881,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                       points={athletePanel.sparkline}
                       endTone={BAND_TONE[scatter.find((p) => p.athleteId === selectedAthleteId)?.band ?? 'mid']}
                     />
-                    <p className="tiny mono" style={{ color: 'var(--faint)', marginTop: 4 }}>
+                    <p className="tiny num" style={{ color: 'var(--faint)', marginTop: 4 }}>
                       {athletePanel.footnote}
                     </p>
                   </div>
@@ -961,7 +961,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                               {r.last_name}, {r.first_name}
                             </span>
                             <span
-                              className="mono tr-outlier-delta"
+                              className="num tr-outlier-delta"
                               style={{ color: up ? 'var(--warn-text)' : 'var(--accent-text)' }}
                             >
                               {delta}
@@ -972,7 +972,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                             for {up ? 'them' : 'them'}.
                           </p>
                           {/* Fydr's copy rule: never shorten an evidence line. */}
-                          <p className="tiny mono" style={{ color: 'var(--faint)', margin: '3px 0 0' }}>
+                          <p className="tiny num" style={{ color: 'var(--faint)', margin: '3px 0 0' }}>
                             today {Math.round(r.hsr ?? 0).toLocaleString('en-GB')} m · their mean{' '}
                             {Math.round(r.hsr_self_mean ?? 0).toLocaleString('en-GB')} m · n = {r.hsr_self_n} sessions
                           </p>

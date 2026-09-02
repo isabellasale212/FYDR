@@ -172,16 +172,16 @@ export function PlayerProfileFlags({
                     </span>
                   ) : null}
                   {flag.observed ? (
-                    <span className="mono pp-flag-value" style={{ color: TONE_VAR[flag.severity] }}>
+                    <span className="num pp-flag-value" style={{ color: TONE_VAR[flag.severity] }}>
                       {flag.observed}
                     </span>
                   ) : null}
                   {flag.expected ? (
-                    <span className="mono pp-flag-threshold">against {flag.expected} expected</span>
+                    <span className="num pp-flag-threshold">against {flag.expected} expected</span>
                   ) : null}
                 </div>
                 <p className="pp-flag-rule">{flag.ruleSentence}</p>
-                <p className="mono pp-flag-evidence">{flag.evidence}</p>
+                <p className="num pp-flag-evidence">{flag.evidence}</p>
                 {/* Whatever's currently in flags.staff_note — see
                  *  FlagCard.tsx's identical addition for the full reasoning
                  *  (the engine's own explanation, and/or coach notes, which
@@ -261,7 +261,7 @@ export function PlayerProfileFlags({
                   </div>
                 ) : (
                   <div className="pp-flag-bottom">
-                    <span className="mono pp-flag-raised">raised {raisedLabel}</span>
+                    <span className="num pp-flag-raised">raised {raisedLabel}</span>
                     {/* The note button now sits OUTSIDE the canAck branch (it used
                         to be inside, which is why it vanished the moment a flag was
                         acknowledged). Acknowledged rows still show who saw it and

@@ -145,7 +145,7 @@ export function TimetableSessionCard({ orgId, userId, actorRole, session, timezo
           flexWrap: 'wrap',
         }}
       >
-        <span className="nm mono">{formatTime(session.starts_at, timezone)}</span>
+        <span className="nm num">{formatTime(session.starts_at, timezone)}</span>
         <span className="nm">{session.title}</span>
         <span className="tiny">
           {enumLabel(session.session_type)}
@@ -230,7 +230,7 @@ export function TimetableSessionCard({ orgId, userId, actorRole, session, timezo
                           <span className="nm">
                             {p.first_name} {p.last_name}
                           </span>
-                          {p.squad_number !== null ? <span className="tiny mono">#{p.squad_number}</span> : null}
+                          {p.squad_number !== null ? <span className="tiny num">#{p.squad_number}</span> : null}
                           <span
                             className={`pill ${
                               p.availability_status === 'available'

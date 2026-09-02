@@ -41,7 +41,7 @@ export function TestDateNav({ testDefinitionId, testDate, timezone, groupIds, da
       </button>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
-        <span className="nm mono">{formatDate(testDate, timezone)}</span>
+        <span className="nm num">{formatDate(testDate, timezone)}</span>
         <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span className="tiny" style={{ color: 'var(--muted)' }}>
             Jump to date

@@ -91,7 +91,7 @@ export function GymSessionSetsList({ sets }: Props) {
               const isCorrecting = correcting === s.id;
               return (
                 <tr key={s.id}>
-                  <td className="mono sub">{s.set_number}</td>
+                  <td className="num sub">{s.set_number}</td>
                   <td className="nm">{s.exercise_name}</td>
                   {isCorrecting ? (
                     <>
@@ -146,8 +146,8 @@ export function GymSessionSetsList({ sets }: Props) {
                     </>
                   ) : (
                     <>
-                      <td className="r mono">{s.reps_completed ?? '—'}</td>
-                      <td className="r mono">{s.load_kg !== null ? `${s.load_kg} kg` : '—'}</td>
+                      <td className="r num">{s.reps_completed ?? '—'}</td>
+                      <td className="r num">{s.load_kg !== null ? `${s.load_kg} kg` : '—'}</td>
                       <td className="sub">
                         <button
                           type="button"

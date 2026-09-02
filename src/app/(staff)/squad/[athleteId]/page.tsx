@@ -471,7 +471,7 @@ export default async function AthletePage({
               <span className="pp-banner-eyebrow">Development plan</span>
               <span className="pp-banner-title">{programme.name}</span>
             </div>
-            <span className="mono sub">
+            <span className="num sub">
               {programme.weekTotal !== null
                 ? `week ${programme.weekNow} of ${programme.weekTotal}`
                 : `week ${programme.weekNow}`}
@@ -513,7 +513,7 @@ export default async function AthletePage({
             wellnessMini={
               <div className="pp-wellness-mini" aria-label="Today's wellness entry">
                 <div>
-                  <div className="v mono">{headerWellness.pct !== null ? Math.round(headerWellness.pct) : EM_DASH}</div>
+                  <div className="v num">{headerWellness.pct !== null ? Math.round(headerWellness.pct) : EM_DASH}</div>
                   <div className="l">wellness</div>
                 </div>
               </div>
@@ -555,7 +555,7 @@ export default async function AthletePage({
                 <h2 className="card-title" id="pp-athleticism-title" style={{ margin: 0 }}>
                   Athleticism
                 </h2>
-                <span className="mono s">
+                <span className="num s">
                   {athleticism.positionGroupName
                     ? `vs ${athleticism.positionGroupName} · ${athleticism.positionGroupSize} player${athleticism.positionGroupSize === 1 ? '' : 's'}`
                     : 'not in a positional group'}
@@ -565,7 +565,7 @@ export default async function AthletePage({
               <div className="pp-athleticism-row">
                 <Dial size={88} pct={athleticism.compositePct} tone={TONE_VAR[athleticism.band.tone]}>
                   <div>
-                    <div className="mono pp-dial-value">{athleticism.compositePct ?? EM_DASH}</div>
+                    <div className="num pp-dial-value">{athleticism.compositePct ?? EM_DASH}</div>
                     <div className="pp-dial-unit">athleticism</div>
                   </div>
                 </Dial>
@@ -584,7 +584,7 @@ export default async function AthletePage({
                 <p className="t" style={{ margin: 0 }}>
                   Position benchmarks
                 </p>
-                <p className="mono s" style={{ margin: 0 }}>
+                <p className="num s" style={{ margin: 0 }}>
                   {athleticism.rows.length === 0
                     ? 'no tests defined for this club'
                     : `the ${athleticism.rows.length} measure${athleticism.rows.length === 1 ? '' : 's'} behind the score`}
@@ -613,7 +613,7 @@ export default async function AthletePage({
                 >
                   <div className="pp-bench-top">
                     <span className="pp-bench-name">{row.name}</span>
-                    <span className="mono pp-bench-value">
+                    <span className="num pp-bench-value">
                       {row.value !== null ? `${formatNumber(row.value, row.decimals)} ${row.unit}` : EM_DASH}
                     </span>
                   </div>
@@ -633,7 +633,7 @@ export default async function AthletePage({
                     >
                       {row.pct !== null ? `${ordinal(row.pct)} percentile` : 'No data'}
                     </span>
-                    <span className="mono pp-bench-meta">
+                    <span className="num pp-bench-meta">
                       {row.n > 0
                         ? `median ${formatNumber(row.median, row.decimals)} · best ${formatNumber(row.best, row.decimals)} · n=${row.n}`
                         : 'n=0'}
@@ -743,11 +743,11 @@ export default async function AthletePage({
                   {/* Names its own fixed windows, and now says they are fixed:
                     * the header's period control does not reach this dial and
                     * cannot, because ACWR IS the 7-over-28 ratio. */}
-                  <p className="mono pp-dial-window pp-dial-col-head">fixed · acute 7d over chronic 28d</p>
+                  <p className="num pp-dial-window pp-dial-col-head">fixed · acute 7d over chronic 28d</p>
                   <div className="pp-big-dial">
                     <Dial size={116} pct={acwr.pct} tone={TONE_VAR[acwr.status.tone]}>
                       <div>
-                        <div className="mono pp-big-dial-value">{acwr.value !== null ? acwr.value.toFixed(2) : EM_DASH}</div>
+                        <div className="num pp-big-dial-value">{acwr.value !== null ? acwr.value.toFixed(2) : EM_DASH}</div>
                         <div className="pp-big-dial-unit">ratio</div>
                       </div>
                     </Dial>
@@ -755,7 +755,7 @@ export default async function AthletePage({
                   <p className="pp-dial-status" style={{ color: TONE_TEXT_VAR[acwr.status.tone] }}>
                     {acwr.status.label}
                   </p>
-                  <p className="mono pp-dial-meta">
+                  <p className="num pp-dial-meta">
                     {acwr.flagRuleValue !== null
                       ? `flags above ${acwr.flagRuleValue.toFixed(2)}`
                       : 'no flag rule active'}
@@ -773,13 +773,13 @@ export default async function AthletePage({
                     * The mean is capped because readiness is a fast signal and
                     * a dial collapses its window to one number; see
                     * queries/playerProfile.ts's header. */}
-                  <p className="mono pp-dial-window pp-dial-col-head">
+                  <p className="num pp-dial-window pp-dial-col-head">
                     mean readiness · last {wellnessRating.meanWindowDays} days
                   </p>
                   <div className="pp-big-dial">
                     <Dial size={116} pct={wellnessRating.meanPct} tone="var(--accent)">
                       <div>
-                        <div className="mono pp-big-dial-value">
+                        <div className="num pp-big-dial-value">
                           {wellnessRating.meanPct !== null ? `${wellnessRating.meanPct}%` : EM_DASH}
                         </div>
                         <div className="pp-big-dial-unit">of 100</div>
@@ -789,7 +789,7 @@ export default async function AthletePage({
                   <p className="pp-dial-status" style={{ color: TONE_TEXT_VAR[wellnessRating.status.tone] }}>
                     {wellnessRating.status.label}
                   </p>
-                  <p className="mono pp-dial-meta">
+                  <p className="num pp-dial-meta">
                     {wellnessRating.submittedN} of {wellnessRating.windowDays} days submitted ·{' '}
                     {wellnessRating.windowLabel.toLowerCase()}
                     {wellnessRating.meanWindowDays < wellnessRating.windowDays
@@ -832,7 +832,7 @@ export default async function AthletePage({
               </div>
               <div className="pp-macro-tiles">
                 <div className="pp-macro-tile">
-                  <p className="mono pp-macro-value" style={{ margin: 0 }}>
+                  <p className="num pp-macro-value" style={{ margin: 0 }}>
                     {nutrition?.energy_kcal !== null && nutrition?.energy_kcal !== undefined ? formatNumber(nutrition.energy_kcal, 0) : EM_DASH}
                   </p>
                   <p className="pp-macro-label" style={{ margin: 0 }}>
@@ -840,7 +840,7 @@ export default async function AthletePage({
                   </p>
                 </div>
                 <div className="pp-macro-tile">
-                  <p className="mono pp-macro-value" style={{ margin: 0 }}>
+                  <p className="num pp-macro-value" style={{ margin: 0 }}>
                     {nutrition?.protein_g !== null && nutrition?.protein_g !== undefined ? formatNumber(nutrition.protein_g, 0) : EM_DASH}
                   </p>
                   <p className="pp-macro-label" style={{ margin: 0 }}>
@@ -848,7 +848,7 @@ export default async function AthletePage({
                   </p>
                 </div>
                 <div className="pp-macro-tile">
-                  <p className="mono pp-macro-value" style={{ margin: 0 }}>
+                  <p className="num pp-macro-value" style={{ margin: 0 }}>
                     {nutrition?.carbs_g !== null && nutrition?.carbs_g !== undefined ? formatNumber(nutrition.carbs_g, 0) : EM_DASH}
                   </p>
                   <p className="pp-macro-label" style={{ margin: 0 }}>
@@ -856,7 +856,7 @@ export default async function AthletePage({
                   </p>
                 </div>
                 <div className="pp-macro-tile">
-                  <p className="mono pp-macro-value" style={{ margin: 0 }}>
+                  <p className="num pp-macro-value" style={{ margin: 0 }}>
                     {nutrition?.fat_g !== null && nutrition?.fat_g !== undefined ? formatNumber(nutrition.fat_g, 0) : EM_DASH}
                   </p>
                   <p className="pp-macro-label" style={{ margin: 0 }}>
@@ -876,7 +876,7 @@ export default async function AthletePage({
                     Body weight
                   </h2>
                   {bodyWeight.latestKg !== null ? (
-                    <p className="pp-weight-value mono" style={{ margin: '2px 0 0' }}>
+                    <p className="pp-weight-value num" style={{ margin: '2px 0 0' }}>
                       {formatNumber(bodyWeight.latestKg, 1)}
                       <span className="u"> kg</span>
                     </p>
@@ -894,7 +894,7 @@ export default async function AthletePage({
                   {liveTargetRange ? (
                     <p className="pp-weight-note">
                       <span className="pp-target-swatch" aria-hidden="true" /> Staff target{' '}
-                      <span className="mono">
+                      <span className="num">
                         {liveTargetRange.target_low_kg.toFixed(1)}–
                         {liveTargetRange.target_high_kg.toFixed(1)} kg
                       </span>
@@ -930,7 +930,7 @@ export default async function AthletePage({
                 </div>
                 {bodyWeight.deltaKg !== null && bodyWeight.deltaDays !== null ? (
                   <div className="pp-weight-right">
-                    <p className="mono pp-weight-trend" style={{ margin: 0 }}>
+                    <p className="num pp-weight-trend" style={{ margin: 0 }}>
                       {bodyWeight.deltaKg === 0 ? '▬' : bodyWeight.deltaKg > 0 ? '▲' : '▼'}{' '}
                       {Math.abs(bodyWeight.deltaKg).toFixed(1)} kg · {bodyWeight.deltaDays}d
                     </p>

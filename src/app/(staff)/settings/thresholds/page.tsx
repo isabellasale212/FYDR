@@ -89,7 +89,7 @@ export default async function ThresholdsPage() {
                 style={{ padding: '14px 16px 8px' }}
               >
                 {enumLabel(domain)}
-                <span className="tiny mono">{rows.length}</span>
+                <span className="tiny num">{rows.length}</span>
               </h2>
               {rows.map((t) => (
                 <ThresholdRow key={t.id} threshold={t} orgId={orgId} sentence={describeThreshold(t)} />

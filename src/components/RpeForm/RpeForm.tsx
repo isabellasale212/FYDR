@@ -152,7 +152,7 @@ export function RpeForm({
         </button>
         <div className="val">
           <div
-            className="v mono"
+            className="v num"
             role="status"
             aria-live="polite"
             aria-labelledby="duration-label"

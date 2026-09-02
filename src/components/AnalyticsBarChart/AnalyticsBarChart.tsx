@@ -146,7 +146,7 @@ export function AnalyticsBarChart({ bars, unit, decimals, band = null, suggested
                   <text
                     x={Math.min(x(b.value) + 6, W - 4)}
                     y={cy + 3.5}
-                    fontFamily="var(--font-mono)"
+                    fontFamily="var(--font-sora)"
                     fontSize={10.5}
                     fill="var(--muted)"
                   >
@@ -163,14 +163,14 @@ export function AnalyticsBarChart({ bars, unit, decimals, band = null, suggested
             ranked bar chart is chart-junk — the printed value at the end of
             every bar is the precise read. */}
         <line x1={ML} y1={H - MB} x2={W - MR} y2={H - MB} stroke="var(--border)" strokeWidth={1} />
-        <text x={ML} y={H - MB + 14} fontFamily="var(--font-mono)" fontSize={10} fill="var(--faint)">
+        <text x={ML} y={H - MB + 14} fontFamily="var(--font-sora)" fontSize={10} fill="var(--faint)">
           0
         </text>
         <text
           x={W - MR}
           y={H - MB + 14}
           textAnchor="end"
-          fontFamily="var(--font-mono)"
+          fontFamily="var(--font-sora)"
           fontSize={10}
           fill="var(--faint)"
         >

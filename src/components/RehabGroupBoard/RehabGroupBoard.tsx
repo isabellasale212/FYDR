@@ -96,7 +96,7 @@ export function RehabGroupBoard({ orgId, userId, groups, timezone, members, canA
         return (
           <section key={group.id} className="card" aria-labelledby={`rehab-${group.id}`}>
             <h2 className="card-title" id={`rehab-${group.id}`}>
-              {group.name} <span className="tiny mono">{rows.length}</span>
+              {group.name} <span className="tiny num">{rows.length}</span>
               {groupPhase ? <span className="pill pill-neutral" style={{ marginLeft: 8 }}>{groupPhase}</span> : null}
             </h2>
             {rows.length === 0 ? (
@@ -131,7 +131,7 @@ export function RehabGroupBoard({ orgId, userId, groups, timezone, members, canA
 
       <section className="card" aria-labelledby="rehab-unallocated-title">
         <h2 className="card-title" id="rehab-unallocated-title">
-          Unallocated <span className="tiny mono">{unallocated.length}</span>
+          Unallocated <span className="tiny num">{unallocated.length}</span>
         </h2>
         {unallocated.length === 0 ? (
           <p className="tiny">Every athlete in rehabilitation is on a group.</p>

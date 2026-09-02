@@ -144,7 +144,7 @@ export function SelectedSessionPanel({
           ) : (
             <div className="sg-panel-name">{session.title}</div>
           )}
-          <div className="sg-panel-meta mono">
+          <div className="sg-panel-meta num">
             {weekday} {domFmt(timezone).format(new Date(`${session.dow}T12:00:00Z`))} · {clockLabel(session.start)} –{' '}
             {clockLabel(end)} · {session.location ?? 'Location not set'}
           </div>
@@ -175,19 +175,19 @@ export function SelectedSessionPanel({
         <div className="sg-panel-facts">
           <div>
             <div className="sg-fact-label">Group</div>
-            <div className="sg-fact-value mono">{groupLabel}</div>
+            <div className="sg-fact-value num">{groupLabel}</div>
           </div>
           <div>
             <div className="sg-fact-label">Duration</div>
-            <div className="sg-fact-value mono">{session.mins} min</div>
+            <div className="sg-fact-value num">{session.mins} min</div>
           </div>
           <div>
             <div className="sg-fact-label">MD</div>
-            <div className="sg-fact-value mono">{mdLabel(session.mdOffset) ?? '—'}</div>
+            <div className="sg-fact-value num">{mdLabel(session.mdOffset) ?? '—'}</div>
           </div>
           <div>
             <div className="sg-fact-label">Expects</div>
-            <div className="sg-fact-value mono">{EXPECTS[session.type]}</div>
+            <div className="sg-fact-value num">{EXPECTS[session.type]}</div>
           </div>
         </div>
       ) : (
@@ -218,7 +218,7 @@ export function SelectedSessionPanel({
                 <button type="button" className="sg-stepper-btn" onClick={() => onStart(-15)} aria-label="Earlier">
                   −
                 </button>
-                <span className="sg-stepper-value mono">{clockLabel(session.start)}</span>
+                <span className="sg-stepper-value num">{clockLabel(session.start)}</span>
                 <button type="button" className="sg-stepper-btn" onClick={() => onStart(15)} aria-label="Later">
                   +
                 </button>
@@ -238,7 +238,7 @@ export function SelectedSessionPanel({
                 >
                   −
                 </button>
-                <span className="sg-stepper-value mono">{session.mins} min</span>
+                <span className="sg-stepper-value num">{session.mins} min</span>
                 <button type="button" className="sg-stepper-btn" onClick={() => onDuration(5)} aria-label="Longer">
                   +
                 </button>
@@ -371,16 +371,16 @@ export function SelectedSessionPanel({
         </div>
         <div className="sg-preview-card">
           <div className="sess">
-            <span className="tm mono">{clockLabel(session.start)}</span>
+            <span className="tm num">{clockLabel(session.start)}</span>
             <div>
               <div className="ti">
                 {session.title}
-                <span className="pill pill-neutral mono" style={{ marginLeft: 'auto' }}>
+                <span className="pill pill-neutral num" style={{ marginLeft: 'auto' }}>
                   {mdLabel(session.mdOffset) ?? '—'}
                 </span>
               </div>
               <div className="lo">
-                {session.location ?? 'Location not set'} · <span className="mono">{session.mins}</span> min
+                {session.location ?? 'Location not set'} · <span className="num">{session.mins}</span> min
               </div>
               <div className="sg-preview-expects">{EXPECTS[session.type]}</div>
             </div>

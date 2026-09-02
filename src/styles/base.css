@@ -1700,12 +1700,17 @@ a.hist-row:focus-visible {
    own elevated background rather than the plain --surf that --accent-text is
    derived against, and the current tab's label measured 4.49:1 on it in
    dark. */
-/* --accent-pill-text, not the raw accent the spec names — and for the spec's
-   own §2 rule 1. The tab bar has an elevated, translucent background rather
-   than the plain --surf that --accent-text is derived against, and the active
-   label measured 4.49:1 on it in dark. */
+/* --accent-on-tint, not the raw accent the spec names and not --accent-pill-text
+   either. Spec §2 rule 1: a semantic colour is never text.
+   The tab bar has an elevated, translucent background rather than the plain
+   --surf the other accent inks are derived against. --accent-pill-text
+   measured 4.47:1 on it in dark — the comment that stood here said 4.49 and
+   treated that as passing, but 4.5 is the threshold and both numbers are under
+   it. --accent-on-tint (#8fb4ff in dark, the value spec §2 lists as dark's
+   accent TEXT) measures 7.45:1, and is unchanged in light where it resolves to
+   the same #0050c4 that already passed at 7.06:1. */
 .athlete-tab[aria-current='page'] {
-  color: var(--accent-pill-text);
+  color: var(--accent-on-tint);
   font-weight: 700;
 }
 .athlete-tab[aria-current='page'] .athlete-tab-glyph {

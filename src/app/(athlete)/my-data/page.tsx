@@ -1556,7 +1556,14 @@ async function GymTab({
 
         <p className="cap" style={{ marginTop: 10 }}>
           Completed sessions, four calendar weeks &mdash; this card keeps its own span whatever
-          period you pick. This week is still running, so its bar is drawn lighter.
+          period you pick.
+          {/* Only when there IS a lighter bar to explain. With nothing logged this
+              week the last column is a zero rule like any other empty week, and a
+              sentence pointing at a tint that is not on screen sends the reader
+              looking for something that is not there. */}
+          {weeks[GYM_HEADLINE_WEEKS - 1] && (weeks[GYM_HEADLINE_WEEKS - 1]?.count ?? 0) > 0
+            ? ' This week is still running, so its bar is drawn lighter.'
+            : ''}
         </p>
       </section>
 

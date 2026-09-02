@@ -8,6 +8,7 @@ import { fetchMyOutstanding } from '@/lib/queries/compliance';
 import {
   fetchAthleteDaySessions,
   fetchAthleteWeekSessionTypes,
+  fetchNextFixture,
   fetchWeekMdLabels,
   mondayOf,
 } from '@/lib/queries/schedule';
@@ -96,6 +97,7 @@ export default async function TodayPage({
     weekMd,
     userRow,
     weekSessionTypes,
+    nextFixture,
   ] = await Promise.all([
       fetchAthleteAvailability(db, orgId, athleteId),
       fetchMyOutstanding(db, athleteId, today),
@@ -109,6 +111,10 @@ export default async function TodayPage({
       db.from('users').select('avatar_url, avatar_colour').eq('id', claims.userId).maybeSingle(),
       // Match/training/recovery/rest colouring for the week strip.
       fetchAthleteWeekSessionTypes(db, orgId, athleteId, weekStart, timezone),
+      /* What the week is building towards. From today, not from the week's
+         Monday: on a Sunday the fixture that bounded this week has been and
+         gone, and "working towards" a match already played is nonsense. */
+      fetchNextFixture(db, orgId, new Date().toISOString()),
     ]);
 
   const todoItems = [
@@ -206,7 +212,8 @@ export default async function TodayPage({
 
       {toastMessage ? <Toast message={toastMessage} clearHref="/today" /> : null}
 
-      <div className="card wk-strip" aria-label="This week">
+      <div className="card wk-card">
+        <div className="wk-strip" aria-label="This week">
         {weekDays.map((date, i) => {
           const isToday = date === today;
           const offset = weekMd.get(date) ?? null;
@@ -245,8 +252,33 @@ export default async function TodayPage({
                 {md ?? ''}
               </span>
             </div>
-          );
-        })}
+            );
+          })}
+        </div>
+
+        {/* Fydr Athlete App.dc.html 23a: what the week is building towards,
+            inside the same card as the week it counts.
+            Not a link: there is no athlete-facing fixture screen to open, and
+            the design's chevron would promise one. Not showing a meet time
+            either — the design has "meet 12:15" but fixtures carry only a
+            kickoff_at, so that clause would be invented.
+            Absent entirely when nothing is scheduled, rather than an empty
+            heading: a club with no fixture on the calendar is not working
+            towards anything this app knows about, and saying so in a box is
+            noise on the screen an athlete opens every morning. */}
+        {nextFixture ? (
+          <div className="wk-towards">
+            <p className="eyebrow">Working towards</p>
+            <p className="wk-towards-name">
+              v {nextFixture.opponent} · {enumLabel(nextFixture.home_away)}
+            </p>
+            <p className="wk-towards-when num">
+              {formatDate(nextFixture.kickoff_at.slice(0, 10), timezone)} · kick-off{' '}
+              {formatTime(nextFixture.kickoff_at, timezone)}
+              {nextFixture.venue ? ` · ${nextFixture.venue}` : ''}
+            </p>
+          </div>
+        ) : null}
       </div>
       <p className="cap" style={{ marginTop: 6 }}>
         <span className="wk-key" data-kind="match" aria-hidden="true" /> Match{' '}

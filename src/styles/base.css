@@ -1465,6 +1465,26 @@ body:has(.phone) {
 }
 
 /* -------- week strip, §5 -------- */
+/* The week card holds the strip and, when there is one, the fixture it is
+   counting towards — one card, a hairline between them, per 23a. */
+.wk-card {
+  padding: 0;
+  overflow: hidden;
+}
+.wk-towards {
+  padding: 12px var(--pad-card) 14px;
+  border-top: 1px solid var(--hair);
+}
+.wk-towards-name {
+  margin: 3px 0 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+.wk-towards-when {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
 .wk-strip {
   padding: 12px 6px;
   display: grid;

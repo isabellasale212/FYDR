@@ -371,8 +371,18 @@ Every alpha here is the handoff's own figure (§4 and §5),
 :root {
   /* Rank-1's marker sits on its own coloured band (the accent tint) — darker
      than the existing --warn-text/--warn-pill-text derivations, which are
-     for a different surface (a status pill's own tint, or plain body text). */
-  --lb-rank1: #7a6205;
+     for a different surface (a status pill's own tint, or plain body text).
+     THEME-SPLIT since 2026-09-02. It was single-valued, and the note claiming
+     one literal could serve both themes was measured wrong: #7a6205 read
+     4.35:1 on the light band and 2.21:1 on the dark one — a dark gold on a
+     dark blue, effectively invisible. A band that flips from a near-white
+     wash to a deep fill cannot share one ink, exactly as
+     --lb-warn-tint-text/--lb-bad-tint-text below already concluded. */
+  --lb-rank1: #705a05;
+  /* The neutral marker for mid-table ranks. Was var(--faint), which is derived
+     for plain body surfaces and measured 4.39:1 light / 4.27:1 dark once a
+     rank band was under it. */
+  --lb-rank-neutral: #4a5160;
   /* The Standard lens's "met" checkmark. SUPERSEDED IN VALUE, KEPT AS A NAME:
      this was declared independently of the old .phone --good-text override it
      coincidentally matched, and since the light-theme handoff made #4fd6ff the
@@ -526,6 +536,9 @@ Every alpha here is the handoff's own figure (§4 and §5),
   --lb-tint-alpha: 0.24;
   --lb-warn-tint-text: #f6ab2f;
   --lb-bad-tint-text: #f5887d;
+  /* See :root. Gold has to LIGHTEN on a dark band, not darken. */
+  --lb-rank1: #e8c766;
+  --lb-rank-neutral: #a3adc9;
 }
 
 /* ---------------------------------------------------------------------------
@@ -640,6 +653,9 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --lb-tint-alpha: 0.24;
     --lb-warn-tint-text: #f6ab2f;
     --lb-bad-tint-text: #f5887d;
+    /* See :root. Gold has to LIGHTEN on a dark band, not darken. */
+    --lb-rank1: #e8c766;
+    --lb-rank-neutral: #a3adc9;
   }
 }
 

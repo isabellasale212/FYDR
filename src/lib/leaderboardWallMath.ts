@@ -63,9 +63,9 @@ export function rankBandColor(rank: number, n: number): string {
  *  --lb-bad-tint-text (see tokens.css) take over once the band itself turns warn/bad. */
 export function rankMarkerColor(rank: number, n: number): string {
   if (rank === 1) return 'var(--lb-rank1)';
-  if (n < 3) return 'var(--faint)';
+  if (n < 3) return 'var(--lb-rank-neutral)';
   const p = (n - rank) / (n - 1);
-  if (p >= 0.5) return 'var(--faint)';
+  if (p >= 0.5) return 'var(--lb-rank-neutral)';
   if (p >= 0.2) return 'var(--lb-warn-tint-text)';
   return 'var(--lb-bad-tint-text)';
 }

@@ -336,7 +336,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
               data-alert={d.alert?.sev ?? undefined}
             >
               <div className="dash-week-col-head">
-                <span className="dash-week-col-day" style={{ color: d.isToday ? 'var(--accent)' : undefined }}>
+                {/* --accent-on-tint, not --accent: when today is ALSO the selected
+                    column the ground is rgb(--accent-rgb / 0.1), and plain
+                    --accent on that measured 4.07:1 — under AA. The derived
+                    pair is darker and clears it on the plain surface too. */}
+                <span
+                  className="dash-week-col-day"
+                  style={{ color: d.isToday ? 'var(--accent-on-tint)' : undefined }}
+                >
                   {d.dayLabel}
                 </span>
                 {d.md ? (

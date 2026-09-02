@@ -3730,7 +3730,12 @@ img.av {
 }
 .dash-flags-row {
   display: grid;
-  grid-template-columns: 10px auto auto minmax(0, 1fr) auto 16px;
+  /* SEVEN tracks for seven children: dot, name, position, what, pill,
+     duration, chevron. It had six, so the chevron fell into an implicit
+     track and the duration was squeezed into the 16px one meant for the
+     chevron — 16px of box for 81px of text, clipping "open 20 days" to
+     nothing on every row. */
+  grid-template-columns: 10px auto auto minmax(0, 1fr) auto auto 16px;
   gap: 12px;
   align-items: center;
   width: 100%;
@@ -5738,7 +5743,11 @@ button.dash-stat {
 }
 .lbw-sel-thead {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 76px 58px 58px 72px;
+  /* The result column was a fixed 76px, which fits "1.7s" and clips
+     "5.55AU/min" — the width a value needs depends on the board's unit, which
+     this row cannot know. It keeps 76px as a floor so short values still line
+     up, and grows for long ones; the name column absorbs the difference. */
+  grid-template-columns: minmax(0, 1fr) minmax(76px, max-content) 58px 58px 72px;
   gap: 8px;
   padding: 16px 0 8px;
   font-size: 10px;
@@ -5749,7 +5758,11 @@ button.dash-stat {
 }
 .lbw-sel-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 76px 58px 58px 72px;
+  /* MUST match .lbw-sel-thead's tracks exactly, or the header labels stop
+     sitting over their own columns. Both grow the result column rather than
+     pinning it at 76px, which fits "1.7s" and clips "5.55AU/min" — how wide a
+     value needs to be depends on the board's unit, which the row cannot know. */
+  grid-template-columns: minmax(0, 1fr) minmax(76px, max-content) 58px 58px 72px;
   gap: 8px;
   padding: 9px 0;
   border-top: 1px solid var(--hair);
@@ -5965,7 +5978,7 @@ button.dash-stat {
 
 /* -------- §3 Publish banner -------- */
 .sg-banner {
-  padding: 14px 18px;
+  padding: var(--pad-card);
   display: grid;
   grid-template-columns: 10px minmax(0, 1fr) auto;
   gap: 14px;
@@ -7672,14 +7685,18 @@ button.dash-stat {
 }
 
 .cmpl-table {
-  padding: 14px 20px 0;
+  padding: var(--pad-card);
 }
 .cmpl-head,
 .cmpl-row {
   display: grid;
   gap: 12px;
   align-items: center;
-  padding: 8px 4px;
+  /* Vertical only. The 4px of horizontal padding this used to carry stacked on
+     top of the card's own inset and put every row's text 24px from the border
+     while the card's other children sat at 16 — the card owns the distance to
+     the edge, a row owns only the rhythm between rows. */
+  padding: 8px 0;
 }
 .cmpl-head {
   padding: 0 4px 10px;
@@ -8557,7 +8574,7 @@ button.dash-stat {
   }
 }
 .sw-kpi {
-  padding: 13px 16px 14px;
+  padding: var(--pad-card);
   display: flex;
   flex-direction: column;
   gap: 3px;

@@ -68,6 +68,18 @@ export default async function AthleteReportPickerPage({ searchParams }: { search
     .map((name) => ({ name, rows: rows.filter((r) => unitOf(r.group_ids) === name) }))
     .filter((g) => g.rows.length > 0);
 
+  /* When EVERY athlete in scope reads "0 of 7", 29 identical zeros are
+     technically honest and practically useless: they cannot distinguish "the
+     squad stopped submitting" from "the feed is broken" or "the window is
+     wrong". Said once, in words, with the date of the most recent entry that
+     does exist — which is the fact that tells those three apart. */
+  const recentTotal = rows.reduce((n, r) => n + (wellness.get(r.id)?.last7 ?? 0), 0);
+  const mostRecentEntry = rows.reduce<string | null>((acc, r) => {
+    const e = wellness.get(r.id)?.lastEntry ?? null;
+    return e !== null && (acc === null || e > acc) ? e : acc;
+  }, null);
+  const squadWideSilence = rows.length > 0 && recentTotal === 0;
+
   /* Exactly what the URL carried, or nothing at all. See the form below. */
   const groupParam =
     params.groups === undefined ? [] : Array.isArray(params.groups) ? params.groups : [params.groups];
@@ -136,6 +148,22 @@ export default async function AthleteReportPickerPage({ searchParams }: { search
           </span>
         </span>
       </div>
+
+      {squadWideSilence ? (
+        <div className="note" style={{ marginBottom: 14, borderColor: 'var(--warn)' }}>
+          <div className="note-glyph">i</div>
+          <p className="note-text">
+            <b>
+              No morning entries from anyone in this scope in the last {WELLNESS_WINDOW_DAYS} days.
+            </b>{' '}
+            {mostRecentEntry
+              ? `The most recent was ${formatDate(mostRecentEntry, timezone)}, so this is a squad that has stopped submitting rather than one with no history.`
+              : 'And none on record at all, so this scope has never submitted — a new squad, or a group filter that catches nobody who reports.'}{' '}
+            Every row below reads 0 of {WELLNESS_WINDOW_DAYS} for that reason, not because the
+            reports are empty.
+          </p>
+        </div>
+      ) : null}
 
       <section className="card cmpl-table" aria-labelledby="pick-title">
         <h2 className="visually-hidden" id="pick-title">

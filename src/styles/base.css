@@ -1452,7 +1452,7 @@ body:has(.phone) {
   font-size: 20px;
   font-weight: 600;
   letter-spacing: 0;
-  margin-inline-start: 2px;
+  margin-inline-start: 1px;
 }
 
 /* My data · Gym's four-week bar chart, Fydr Athlete App.dc.html 23k.

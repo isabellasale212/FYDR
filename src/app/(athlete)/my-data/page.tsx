@@ -1314,7 +1314,7 @@ async function TestingTab({
           </h2>
           <div className="rd-head">
             <p className="rd-value">
-              <span className="num">{featured.latestValue!.toFixed(featured.decimal_places)}</span>
+              <span className="num">{featured.latestValue!.toFixed(featured.decimal_places)}</span>{' '}
               <span className="rd-unit">{featured.unit.trim()}</span>
             </p>
             <div className="rd-meta">
@@ -1524,7 +1524,9 @@ async function GymTab({
             <p className="rd-delta">
               <span className="num">{headlineSets}</span> set{headlineSets === 1 ? '' : 's'} logged
             </p>
-            <p className="rd-mean">last {GYM_HEADLINE_WEEKS} weeks</p>
+            <p className="rd-mean">
+              last {GYM_HEADLINE_WEEKS} weeks &middot; from {dayMonth(headlineFrom, timezone)}
+            </p>
           </div>
         </div>
 

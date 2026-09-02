@@ -4483,6 +4483,17 @@ export type Database = {
           attempts_remaining: number
         }[]
     }
+    resolve_my_assigned_sessions_by_week: {
+      Args: {
+        p_athlete_id: string
+        p_from: string
+        p_to: string
+      }
+      Returns: {
+          week_start: string
+          assigned: number
+        }[]
+    }
     resolve_my_programme_sessions: {
       Args: {
         p_athlete_id: string

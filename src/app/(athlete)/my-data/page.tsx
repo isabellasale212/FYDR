@@ -14,7 +14,10 @@ import {
   type HistoryRow,
   type MyTestSummary,
 } from '@/lib/queries/testing';
-import { fetchRecentGymSessions } from '@/lib/queries/programmes';
+import {
+  fetchMyAssignedSessionsByWeek,
+  fetchRecentGymSessions,
+} from '@/lib/queries/programmes';
 import { fetchMyVisibleFlags, staffNoteLines, type VisibleFlag } from '@/lib/queries/flags';
 import {
   fetchTrainingRevisionChains,
@@ -1518,9 +1521,10 @@ async function GymTab({
 
   const headlineFrom = weekStarts[0] ?? mondayOf(today);
 
-  const [fetched, recent] = await Promise.all([
+  const [fetched, recent, assignedWeeks] = await Promise.all([
     fetchRecentGymSessions(db, athleteId, from, today, LIST_LIMIT + 1),
     fetchRecentGymSessions(db, athleteId, headlineFrom, today, GYM_HEADLINE_CAP),
+    fetchMyAssignedSessionsByWeek(db, athleteId, headlineFrom, today),
   ]);
   const sessions = fetched.slice(0, LIST_LIMIT);
   const more = fetched.length > LIST_LIMIT;
@@ -1532,15 +1536,30 @@ async function GymTab({
     countByWeek.set(wk, (countByWeek.get(wk) ?? 0) + 1);
     headlineSets += s.set_count;
   }
+  const assignedByWeek = new Map(assignedWeeks.map((w) => [w.week_start, w.assigned]));
   const weeks = weekStarts.map((start, i) => ({
     start,
     count: countByWeek.get(start) ?? 0,
+    assigned: assignedByWeek.get(start) ?? null,
     /* The last bucket runs to today, not to Sunday. A part-week drawn like a
        whole one reads as a bad week rather than an unfinished one. */
     partial: i === GYM_HEADLINE_WEEKS - 1,
     label: i === GYM_HEADLINE_WEEKS - 1 ? 'This week' : `w/c ${dayMonth(start, timezone)}`,
   }));
   const done = weeks.reduce((a, w) => a + w.count, 0);
+  /* Null, not 0, when the RPC returned no row for a week — "we do not know" and
+     "nothing was set" are different facts, and only the second is a
+     denominator. If ANY week is unknown the total is withheld rather than
+     quietly under-reported, because a denominator smaller than the truth makes
+     an athlete look more compliant than they are. */
+  const assignedTotal = weeks.every((w) => w.assigned !== null)
+    ? weeks.reduce((a, w) => a + (w.assigned ?? 0), 0)
+    : null;
+  /* Scaled to the tallest COMPLETED week, not to what was assigned. 23k's bars
+     are a volume trend — "3, 4, 2, 1 sessions" — and scaling them against the
+     denominator would quietly turn the same chart into a compliance ratio,
+     which is a different statement than the one the card is making. The
+     denominator has its own line above. */
   const peak = Math.max(1, ...weeks.map((w) => w.count));
 
   return (
@@ -1552,16 +1571,23 @@ async function GymTab({
         <div className="rd-head">
           <p className="rd-value num">{done}</p>
           <div className="rd-meta">
-            {/* 23k reads "of 14 assigned" here. There is no honest count behind
-                that: programme sessions carry a week_number and a day_number,
-                never a calendar date (MyProgrammeSession), so nothing in the
-                schema says how many were assigned inside a date window — the
-                number would have to be inferred from the current programme's
-                shape and would be wrong for anyone reassigned mid-block. Sets
-                are counted from the same rows as the sessions and are true. */}
-            <p className="rd-delta">
-              <span className="num">{headlineSets}</span> set{headlineSets === 1 ? '' : 's'} logged
-            </p>
+            {/* 23k's denominator, and §9 rule 2's: every aggregate states what
+                it is out of. Backed by migration 0062, which maps each calendar
+                week to its programme week through the assignment's start date
+                and the blocks' durations.
+
+                When it cannot be known — no programme assigned, or a week the
+                RPC returned nothing for — the line says what IS true (the sets)
+                rather than printing a denominator nobody can stand behind. */}
+            {assignedTotal !== null ? (
+              <p className="rd-delta">
+                of <span className="num">{assignedTotal}</span> assigned
+              </p>
+            ) : (
+              <p className="rd-delta">
+                <span className="num">{headlineSets}</span> set{headlineSets === 1 ? '' : 's'} logged
+              </p>
+            )}
             <p className="rd-mean">
               last {GYM_HEADLINE_WEEKS} weeks &middot; from {dayMonth(headlineFrom, timezone)}
             </p>
@@ -1572,7 +1598,12 @@ async function GymTab({
           className="gb-chart"
           role="img"
           aria-label={`Completed gym sessions by week: ${weeks
-            .map((w) => `${w.label}, ${w.count} session${w.count === 1 ? '' : 's'}${w.partial ? ', still running' : ''}`)
+            .map(
+              (w) =>
+                `${w.label}, ${w.count}${w.assigned !== null ? ` of ${w.assigned}` : ''} session${
+                  w.count === 1 ? '' : 's'
+                }${w.partial ? ', still running' : ''}`,
+            )
             .join('; ')}`}
         >
           {weeks.map((w) => (

@@ -555,6 +555,40 @@ export type MyProgrammeSession = {
   md_offset: number | null;
 };
 
+export type AssignedWeek = {
+  /** Monday of the calendar week, ISO date. */
+  week_start: string;
+  assigned: number;
+};
+
+/** How many gym/rehab sessions were ASSIGNED to this athlete in each calendar
+ *  week of a window — the denominator behind "of 14 assigned" on My data ·
+ *  Gym (Fydr Athlete App.dc.html 23k, implementation spec §9 rule 2).
+ *
+ *  An RPC rather than a query because nothing on this path is readable from
+ *  the client: an athlete has no select on programmes, programme_blocks or
+ *  programme_sessions (migration 0021, by design), and resolve_my_programme_
+ *  sessions returns week_number/day_number with no assignment dates, so it
+ *  cannot say WHICH calendar week a programme week fell in. Migration 0062
+ *  carries the mapping and the same whitelist guard as its neighbour.
+ *
+ *  Bounded at 400 days in the function itself; this caller asks for four
+ *  weeks. */
+export async function fetchMyAssignedSessionsByWeek(
+  db: Db,
+  athleteId: string,
+  from: string,
+  to: string,
+): Promise<AssignedWeek[]> {
+  const { data, error } = await db.rpc('resolve_my_assigned_sessions_by_week', {
+    p_athlete_id: athleteId,
+    p_from: from,
+    p_to: to,
+  });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => ({ week_start: r.week_start, assigned: r.assigned }));
+}
+
 export async function fetchMyProgrammeSessions(db: Db, athleteId: string): Promise<MyProgrammeSession[]> {
   const { data, error } = await db.rpc('resolve_my_programme_sessions', { p_athlete_id: athleteId });
   if (error) throw new Error(error.message);

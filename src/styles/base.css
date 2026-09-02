@@ -1724,23 +1724,39 @@ a.hist-row:focus-visible {
 /* -------- week strip, §5 -------- */
 /* Me's two summary cards, Fydr Athlete App.dc.html 23i. Side by side and
    equal width, above the settings list. */
+/* Spec §7.5: two tiles, gap 11, padding 15px 16px, figure 26/800/−0.03em. */
 .me-stats {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
   margin-top: 14px;
+}
+.me-stat {
+  padding: 15px 16px;
 }
 .me-stat-value {
   margin: 4px 0 0;
   font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   line-height: 1.1;
 }
 .me-stat-sub {
   margin: 2px 0 0;
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--muted);
+}
+/* Spec §7.5: 58px avatar, 19/700, and the role line at 14px muted. */
+.me-hd .me-avatar {
+  width: 58px;
+  height: 58px;
+  font-size: 19px;
+  font-weight: 700;
+}
+.me-hd .sub {
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 2px;
 }
 
 /* My data's segment picker, Fydr Athlete App.dc.html 23e: one grey track with
@@ -1883,10 +1899,13 @@ a.hist-row:focus-visible {
   color: var(--on-accent);
   border-color: var(--accent);
 }
+/* min-height holds the line whether or not it has text in it, so a week of
+   rest days does not render a shorter card than a week with fixtures. */
 .wk-day .wo {
   font-size: 10.5px;
   font-weight: 600;
   color: var(--muted);
+  min-height: 1.2em;
 }
 .wk-day .wo[data-tone='md'] {
   color: var(--bad-text);
@@ -2071,6 +2090,17 @@ a.hist-row:focus-visible {
  * detail screen in this build to open, so the chevron is dropped rather
  * than promising a tap that goes nowhere — plain flex, not the spec's
  * `1fr 14px` grid built to hold one. */
+/* Spec §7.1: an 11px ring, 3px of it border, in the card's own state colour.
+   Nudged down to sit on the 17px title's optical centre rather than its box
+   top. */
+.avail-ring {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 3px solid rgb(var(--state-rgb));
+  flex: none;
+  margin-top: 5px;
+}
 /* Spec §7.1: padding 16px 18px, gap 14. */
 .avail-banner {
   border-radius: var(--r-card);

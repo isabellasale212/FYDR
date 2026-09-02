@@ -63,12 +63,12 @@ export default async function MePage() {
 
   return (
     <>
-      <div className="hd">
-        <h1 className="d">Me</h1>
-        <ThemeToggle />
-      </div>
-
-      <div className="card me-profile" style={{ marginTop: 14 }}>
+      {/* Spec §7.5: this screen's header IS the athlete — a 58px avatar, their
+          name at 24/800, and their role beneath it. The "Me" title it replaces
+          named the tab, which the tab bar is already doing two inches below,
+          and the identity sat in a card of its own underneath it. One header,
+          one statement of who this is. */}
+      <div className="hd me-hd">
         {/* avatar_url was fetched and handed to AvatarUploadForm below, but
          *  this header always drew initials regardless — so an athlete who
          *  uploaded a photo still saw their initials here (and on Today).
@@ -82,8 +82,8 @@ export default async function MePage() {
             className="me-avatar"
             src={userRow.data.avatar_url}
             alt=""
-            width={46}
-            height={46}
+            width={58}
+            height={58}
           />
         ) : (
           <span
@@ -106,9 +106,9 @@ export default async function MePage() {
           </span>
         )}
         <div style={{ minWidth: 0 }}>
-          <div className="nm">
+          <h1 className="d">
             {firstName} {lastName}
-          </div>
+          </h1>
           {/* Fydr Athlete App.dc.html 23i: position, team and squad number —
               who this athlete is at the club. It read "Jimmy · Europe/London":
               a preferred name they already know and a timezone that is a
@@ -133,6 +133,13 @@ export default async function MePage() {
           themselves, above the settings they rarely touch. Both are read from
           their own check-ins, which is why body mass says self-reported —
           nobody weighed them, they typed it. */}
+      <div className="card" style={{ marginTop: 14 }}>
+        <p className="eyebrow" style={{ marginBottom: 8 }}>
+          Theme
+        </p>
+        <ThemeToggle />
+      </div>
+
       <div className="me-stats">
         <div className="card me-stat">
           <p className="eyebrow">This week</p>

@@ -262,7 +262,14 @@ export default async function TodayPage({
                   fact the legend was carrying anyway; an empty third line would
                   drop it and leave the column's colour unexplained. */}
               <span className="wo num" data-tone={tone} title={explainer ?? kindLabel}>
-                {md ?? kindShort}
+                {/* Rest prints nothing. The word only earns the line where
+                    there is something on: a week with no sessions rendered
+                    "Rest" seven times, which is a wall of identical text
+                    saying what seven empty columns already said. A day with
+                    nothing scheduled is shown by having nothing — no fill, no
+                    label — which is the same rule the rest of this app applies
+                    to an absent value. */}
+                {md ?? (kind === 'rest' ? '' : kindShort)}
               </span>
             </div>
             );

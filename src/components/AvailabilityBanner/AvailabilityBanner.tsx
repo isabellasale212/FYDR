@@ -18,13 +18,6 @@ const TONE_RGB = {
   neutral: 'var(--accent-rgb)',
 } as const;
 
-const TONE_TEXT = {
-  good: 'g-good',
-  warn: 'g-warn',
-  bad: 'g-bad',
-  accent: 'g-faint',
-  neutral: 'g-faint',
-} as const;
 
 /** What the athlete may do today, stated first, in words he can act on. He is
  *  told the restriction and never the diagnosis, which is the same rule that
@@ -58,9 +51,12 @@ export function AvailabilityBanner({ status, restrictions, reasonCategory, note 
       className="avail-banner"
       style={{ '--state-rgb': TONE_RGB[state.tone] } as CSSProperties}
     >
-      <span className={`g ${TONE_TEXT[state.tone]}`} aria-hidden="true">
-        {state.glyph}
-      </span>
+      {/* Spec §7.1: an 11px ring in the state's colour, not a glyph.
+          The glyph was a second channel beside the colour, which is a rule this
+          app applies everywhere — but not one that is needed here, because the
+          status WORD sits immediately to its right. "Modified" is the message;
+          the mark is punctuation. */}
+      <span className="avail-ring" aria-hidden="true" />
       <div style={{ flex: 1, minWidth: 0 }}>
         {/* Just the status word. Fydr Athlete App.dc.html 23a reads "Modified",
             not "Modified availability" — the card is about availability, so

@@ -91,13 +91,13 @@ export function SessionActions({ orgId, session }: Props) {
           </button>
         ) : (
           <>
-            <span className="tiny" style={{ color: 'var(--bad)' }}>
+            <span className="tiny" style={{ color: 'var(--bad-text)' }}>
               Delete this session? This cannot be undone.
             </span>
             <button
               type="button"
               className="btn-ghost"
-              style={{ color: 'var(--bad)', borderColor: 'var(--bad)' }}
+              style={{ color: 'var(--bad-text)', borderColor: 'var(--bad)' }}
               onClick={() => remove.mutate()}
               disabled={remove.isPending}
             >

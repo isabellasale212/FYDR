@@ -284,10 +284,10 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezo
                 </button>
               ) : (
                 <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                  <span className="tiny" style={{ color: 'var(--bad)' }}>
+                  <span className="tiny" style={{ color: 'var(--bad-text)' }}>
                     Remove this user&apos;s MFA factor?
                   </span>
-                  <button type="button" className="btn-ghost" style={{ color: 'var(--bad)', borderColor: 'var(--bad)' }} disabled={busyMfa} onClick={removeMfaFactor}>
+                  <button type="button" className="btn-ghost" style={{ color: 'var(--bad-text)', borderColor: 'var(--bad)' }} disabled={busyMfa} onClick={removeMfaFactor}>
                     {busyMfa ? 'Removing…' : 'Yes, remove it'}
                   </button>
                   <button type="button" className="btn-ghost" onClick={() => setConfirmingMfaRemove(false)}>

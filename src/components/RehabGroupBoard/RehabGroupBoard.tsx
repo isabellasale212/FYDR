@@ -246,7 +246,7 @@ function MemberRow({
         ) : null}
       </div>
       {mismatch ? (
-        <p className="tiny" style={{ marginTop: 2, color: 'var(--warn)' }}>
+        <p className="tiny" style={{ marginTop: 2, color: 'var(--warn-text)' }}>
           {member.phase}, the group is {groupPhase}.
         </p>
       ) : null}

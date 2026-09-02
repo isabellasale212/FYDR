@@ -108,13 +108,13 @@ export function LeaderboardStaffActions({ orgId, userId, boardId, visibility, is
           </button>
         ) : (
           <>
-            <span className="tiny" style={{ color: 'var(--bad)' }}>
+            <span className="tiny" style={{ color: 'var(--bad-text)' }}>
               Delete this board? This cannot be undone.
             </span>
             <button
               type="button"
               className="btn-ghost"
-              style={{ color: 'var(--bad)', borderColor: 'var(--bad)' }}
+              style={{ color: 'var(--bad-text)', borderColor: 'var(--bad)' }}
               onClick={() => deleteMutation.mutate()}
               disabled={deleteMutation.isPending}
             >

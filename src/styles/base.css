@@ -3754,7 +3754,7 @@ img.av {
   width: 15px;
   height: 15px;
   flex: none;
-  color: var(--bad);
+  color: var(--bad-text);
 }
 .dash-flags-count {
   font-size: 15px;
@@ -4674,7 +4674,7 @@ button.dash-stat {
   flex-shrink: 0;
 }
 .nutr-chase-bad {
-  color: var(--bad);
+  color: var(--bad-text);
 }
 .nutr-chase-warn {
   color: var(--warn-text);

@@ -212,10 +212,10 @@ export function MfaEnrollment({ timezone, roleRequiresMfa, initialFactors }: Pro
               </button>
             ) : (
               <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-                <span className="tiny" style={{ color: 'var(--bad)' }}>
+                <span className="tiny" style={{ color: 'var(--bad-text)' }}>
                   Turn off two-factor authentication for your account?
                 </span>
-                <button type="button" className="btn-ghost" style={{ color: 'var(--bad)', borderColor: 'var(--bad)' }} disabled={busy} onClick={removeFactor}>
+                <button type="button" className="btn-ghost" style={{ color: 'var(--bad-text)', borderColor: 'var(--bad)' }} disabled={busy} onClick={removeFactor}>
                   {busy ? 'Removing…' : 'Yes, remove it'}
                 </button>
                 <button type="button" className="btn-ghost" onClick={() => setConfirmingRemove(false)}>

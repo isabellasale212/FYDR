@@ -58,6 +58,26 @@ body {
   font-feature-settings: 'tnum' 1;
   letter-spacing: -0.01em;
 }
+/* FORM CONTROLS DROP BOTH OF THE ABOVE, and re-declaring them at (0,1,1) is
+   the whole fix. The user agent styles button/input/select/textarea with a
+   `font:` SHORTHAND, which resets font-variant-numeric and
+   font-feature-settings to normal; `.num` at (0,1,0) never restates them, so
+   a <button class="num"> rendered proportional digits while reporting the
+   class that should have made them tabular.
+   Measured on the gym set row before this rule: "111" 18.45px, "888" 28.22px,
+   "000" 32.99px — a 14.5px swing across three digits in a column of logged
+   loads. With tabular figures all three are 30.42px.
+   See docs 06-design-system: Sora has no tabular default, which is why every
+   figure in this product has to ask for them. */
+button.num,
+input.num,
+select.num,
+textarea.num,
+.num button,
+.num input {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
 
 /* §14.1. Two pixels, offset, outside the control, never removed. */
 :focus-visible {

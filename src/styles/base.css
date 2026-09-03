@@ -2025,12 +2025,16 @@ a.hist-row:focus-visible {
 .wk-day[data-today='true'] {
   background: rgb(var(--accent-rgb) / 0.06);
 }
-/* Spec §7.1: day letter 11/600 faint, circle 30×30 at 14/600, MD label
-   10.5/600. */
+/* Spec §7.1: day letter 11/600, circle 30×30 at 14/600, MD label 10.5/600.
+   --muted, not --faint: the spec's faint was chosen against a white card, and
+   the week card is tinted now — #929aa5 measures 1.98 on it. --muted takes
+   that to 4.24. Still short of 4.5 for 11px text, and recorded as such rather
+   than rounded up: clearing it needs either a darker grey than the design
+   system carries or a lighter tint than the design asks for. */
 .wk-day .wi {
   font-size: 11px;
   font-weight: 600;
-  color: var(--faint);
+  color: var(--muted);
 }
 .wk-day .wn {
   width: 30px;
@@ -2264,7 +2268,13 @@ a.hist-row:focus-visible {
   display: flex;
   gap: 14px;
   align-items: flex-start;
-  background: rgb(var(--state-rgb) / 0.12);
+  /* Mixed INTO the card surface, not laid over whatever is behind it. A 12%
+     amber wash reads amber on a neutral page and cancels to grey on the
+     athlete app's blue ground — 0.12 amber over #dbe7fb composites to
+     rgb(222,224,226), and no alpha reaches the intended cream, because amber
+     is darker than the target in red. Mixing against --surf gives
+     rgb(254,245,230) in light and a tinted card in dark, on any ground. */
+  background: color-mix(in srgb, rgb(var(--state-rgb)) 12%, var(--surf));
   border: 1px solid rgb(var(--state-rgb) / 0.4);
 }
 .avail-banner .g {
@@ -11035,10 +11045,10 @@ button.dash-stat {
 /* The athlete header's date line, and the "THIS WEEK" label on the tinted card
    below it. Both sit in accent so the top of the screen reads as one piece. */
 .eyebrow-accent {
-  color: var(--accent-text);
+  color: var(--accent-on-wash);
 }
 .wk-card-label {
-  color: var(--accent-text);
+  color: var(--accent-on-wash);
   /* The card is padding:0 so the strip can run edge to edge; the label puts
      its own inset back. */
   margin: 0;

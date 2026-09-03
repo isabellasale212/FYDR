@@ -317,6 +317,10 @@ Every alpha here is the handoff's own figure (§4 and §5),
      stack of cards that reads better on a blue wash. Per
      CHANGELOG-athlete-app-edits.md, "app-wide". */
   --phone-bg: #dbe7fb;
+  /* Accent ink for the phone's tinted grounds. --accent-text (#0064dc) is
+     tuned for a white card and measures 4.37 on --phone-bg and 3.80 on the
+     week card's wash — both under 4.5. This clears 5.46 and 4.75. */
+  --accent-on-wash: #0056bf;
   --border-accent: rgb(var(--accent-rgb) / 0.5);
   --border-accent-soft: rgb(var(--accent-rgb) / 0.42);
   --border-hover: rgb(var(--accent-rgb) / 0.4);
@@ -528,6 +532,8 @@ Every alpha here is the handoff's own figure (§4 and §5),
   --wash-accent: rgb(var(--accent-rgb) / 0.16);
   --wash-accent-strong: rgb(var(--accent-rgb) / 0.22);
   --phone-bg: #141b33;
+  /* Dark needs the opposite move: lighter, not darker, against #141b33. */
+  --accent-on-wash: #9dbcff;
   --border-accent: rgb(var(--accent-rgb) / 0.62);
   --border-accent-soft: rgb(var(--accent-rgb) / 0.52);
   --border-hover: rgb(var(--accent-rgb) / 0.52);

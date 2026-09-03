@@ -323,7 +323,7 @@ export async function fetchTrainingOverview(
   const n = priorSessionIds.size;
   const referenceLine =
     n > 0
-      ? `Typical = the mean of the ${n} other ${session.title} session${n === 1 ? '' : 's'} · ${refTd !== null ? Math.round(refTd).toLocaleString() : '—'} m, ${refHsr !== null ? Math.round(refHsr).toLocaleString() : '—'} m HSR, ${refHiePerMin !== null ? refHiePerMin.toFixed(2) : '—'} HIE/min`
+      ? `${refTd !== null ? Math.round(refTd).toLocaleString() : '—'} m, ${refHsr !== null ? Math.round(refHsr).toLocaleString() : '—'} m HSR, ${refHiePerMin !== null ? refHiePerMin.toFixed(2) : '—'} HIE/min · n = ${n}`
       : `No other ${session.title} session yet — this is the first on record.`;
 
   return {
@@ -402,7 +402,7 @@ export async function fetchMatchOverview(
   const n = priorSessionIds.size;
   const referenceLine =
     n > 0
-      ? `Typical = the mean of ${n} other match${n === 1 ? '' : 'es'} · ${refTdPerMin !== null ? refTdPerMin.toFixed(1) : '—'} m/min, ${refHsrPerMin !== null ? refHsrPerMin.toFixed(1) : '—'} m/min HSR, ${refHiePerMin !== null ? refHiePerMin.toFixed(2) : '—'} HIE/min`
+      ? `${refTdPerMin !== null ? refTdPerMin.toFixed(1) : '—'} m/min, ${refHsrPerMin !== null ? refHsrPerMin.toFixed(1) : '—'} m/min HSR, ${refHiePerMin !== null ? refHiePerMin.toFixed(2) : '—'} HIE/min · n = ${n}`
       : 'No other completed match on record yet.';
 
   return {
@@ -421,7 +421,11 @@ export async function fetchMatchOverview(
 
 export type ComparisonScope = 'restOfWeek' | 'comparableSessions' | 'position' | 'athlete';
 
-export type ComparisonColumn = { key: string; label: string };
+/* `pill` renders that column's cells as a tinted pill instead of a bare
+   figure. Set per column, not per table, because this same component draws the
+   session comparison too — where every cell is a score against typical and a
+   row of pills would say nothing the shading does not. */
+export type ComparisonColumn = { key: string; label: string; pill?: 'accent' | 'good' };
 export type ComparisonCell = { value: string; pct: number | null; isScore: boolean };
 export type ComparisonRow = { id: string; label: string; sublabel: string | null; cells: ComparisonCell[]; highlighted: boolean; href: string | null };
 export type ComparisonTable = { columns: ComparisonColumn[]; rows: ComparisonRow[]; caption: string };
@@ -593,15 +597,15 @@ export async function fetchRestOfWeekComparison(
     columns: [
       { key: 'name', label: 'Session' },
       { key: 'td', label: 'TD each' },
-      { key: 'hsr', label: 'HSR each' },
+      { key: 'hsr', label: 'HSR each', pill: 'accent' },
       { key: 'hie', label: 'HIE/min' },
-      { key: 'share', label: 'Share of week' },
+      { key: 'share', label: 'Share of week', pill: 'good' },
     ],
     rows: [...rowsWithShare, totalRow],
     caption:
       typicalWeek !== null
-        ? `Per athlete, squad mean · the last cell on the total row is the week against a typical week (${Math.round(typicalWeek).toLocaleString()} m, mean of ${priorWeekIds.length} other week${priorWeekIds.length === 1 ? '' : 's'})`
-        : 'Per athlete, squad mean · no other week on record yet to compare against',
+        ? `Typical week ${Math.round(typicalWeek).toLocaleString()} m · n = ${priorWeekIds.length}`
+        : 'No other week on record yet to compare against',
   };
 }
 

@@ -136,19 +136,6 @@ export default async function TestingReportPage({ searchParams }: { searchParams
 
       <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
         <GroupFilter groups={groups} selected={groupIds} />
-        {/* NOT sticky when this is the report's own default (`season`, or
-          * `year` for a club with no season row) rather than something the
-          * coach picked, and not sticky when their pick was clamped either —
-          * periodSticky() carries both halves and the reasoning. Writing a
-          * screen-specific default into the account-wide `fydr-period` cookie
-          * would re-scope every other screen to a window nobody chose. */}
-        <PeriodSelector
-          value={period.key}
-          allowed={period.allowed}
-          reasons={period.reasons}
-          season={period.season}
-          sticky={periodSticky(period)}
-        />
       </div>
 
       {byAthlete.definitions.length === 0 ? (
@@ -160,7 +147,25 @@ export default async function TestingReportPage({ searchParams }: { searchParams
           </p>
         </div>
       ) : (
+        /* The period scopes every tab, so it rides the tab row rather than a
+           row of its own above it. */
         <ReportPager
+          right={
+              /* NOT sticky when this is the report's own default (`season`,
+                 or `year` for a club with no season row) rather than something
+                 the coach picked, and not sticky when their pick was clamped
+                 either — periodSticky() carries both halves and the reasoning.
+                 Writing a screen-specific default into the account-wide
+                 `fydr-period` cookie would re-scope every other screen to a
+                 window nobody chose. */
+              <PeriodSelector
+                value={period.key}
+                allowed={period.allowed}
+                reasons={period.reasons}
+                season={period.season}
+                sticky={periodSticky(period)}
+              />
+          }
           pages={[
             {
               label: 'By athlete',

@@ -8,41 +8,46 @@ type Props = { row: Row; rank: number };
 /**
  * One ranked line on the attention list.
  *
- * The sentence is the point: the value, the athlete's own baseline for that
- * metric, and how long it has been like that. A number with no baseline beside
- * it is a number nobody can act on.
+ * A TABLE ROW, not a sentence. It used to read "Name position what value
+ * against his own baseline, open N days." — which is fine once and unreadable
+ * ten times: every row a different length, the numbers landing in a different
+ * place on each line, and nothing to scan down. The facts are unchanged; they
+ * are in columns now, so a coach can run an eye down "vs baseline" instead of
+ * reading ten sentences to find the worst one.
+ *
+ * The columns are fixed rather than content-sized (see .attn in base.css):
+ * severity is a stable width so the pills line up, and "open" is right-aligned
+ * so the durations compare as numbers.
  */
 export function AttentionRow({ row, rank }: Props) {
   return (
     <div className="attn">
       <div className="rank num">{rank}</div>
-      <div>
-        <p className="line">
-          <Link href={`/squad/${row.athlete_id}`}>
-            <b>{row.name}</b>
-          </Link>{' '}
-          {row.position ? <span className="tiny">{row.position}</span> : null}{' '}
-          {row.what}
-          {row.value ? (
-            <>
-              {' '}
-              <span className="v num">{row.value}</span>
-            </>
-          ) : null}
-          {row.baseline ? (
-            <>
-              {' '}
-              against his own <span className="base num">{row.baseline}</span>
-            </>
-          ) : null}
-          , <span className="dur">{row.duration}</span>.
-        </p>
-        <div className="chiprow" style={{ marginTop: 6 }}>
-          <Pill status={SEVERITY_STATUS[row.severity]} />
-          {row.flag_count > 1 ? (
-            <span className="tiny num">{row.flag_count} open flags</span>
-          ) : null}
-        </div>
+
+      <div className="attn-who">
+        <Link href={`/squad/${row.athlete_id}`} className="attn-name">
+          {row.name}
+        </Link>
+        {row.position ? <span className="attn-pos">{row.position}</span> : null}
+      </div>
+
+      <div className="attn-vs">
+        <span className="attn-what">{row.what}</span>
+        {row.value ? <span className="v num">{row.value}</span> : null}
+        {/* The baseline stays on the row. A reading with nothing to read it
+            against is the one number on this page nobody can act on. */}
+        {row.baseline ? (
+          <span className="base num" title={`${row.name}'s own baseline`}>
+            vs {row.baseline}
+          </span>
+        ) : null}
+      </div>
+
+      <div className="attn-open num">{row.duration}</div>
+
+      <div className="attn-sev">
+        <Pill status={SEVERITY_STATUS[row.severity]} />
+        {row.flag_count > 1 ? <span className="tiny num">{row.flag_count}</span> : null}
       </div>
     </div>
   );

@@ -182,10 +182,6 @@ export default async function SettingsPage() {
             </div>
           </div>
 
-          <p className="cap" style={{ marginTop: 14 }}>
-            Plan changes are a sales conversation with your Fydr contact, not a self-service toggle —
-            billing decisions like this one aren&apos;t something a club flips on its own.
-          </p>
         </section>
 
         {/* -------- §4 Integrations card -------- */}

@@ -53,7 +53,6 @@ type Board = {
   key: string;
   metric: MetricKey;
   title: string;
-  sub: string;
   days: number;
   colour: string;
   /** Weekly bars for athlete A behind the lines. The two rate/ratio boards do
@@ -78,7 +77,6 @@ const BOARDS: Board[] = [
     metric: 'gps_distance',
     gpsMetric: true,
     title: 'Training load',
-    sub: 'weeks as bars, a trend line per athlete',
     days: 84,
     colour: 'var(--accent)',
     bars: true,
@@ -88,7 +86,6 @@ const BOARDS: Board[] = [
     key: 'wellness',
     metric: 'readiness',
     title: 'Wellness',
-    sub: 'each against his own baseline, never the squad average',
     days: 28,
     colour: 'var(--good)',
     bars: false,
@@ -97,7 +94,6 @@ const BOARDS: Board[] = [
     key: 'gym',
     metric: 'gym_volume',
     title: 'Gym volume',
-    sub: 'tonnage lifted per week',
     days: 56,
     colour: 'var(--domain-gym)',
     bars: true,
@@ -106,8 +102,7 @@ const BOARDS: Board[] = [
   {
     key: 'acwr',
     metric: 'acwr',
-    title: 'Acute:chronic ratio',
-    sub: '7-day load over the 28-day weekly mean',
+    title: 'ACWR',
     days: 84,
     colour: 'var(--accent)',
     bars: false,
@@ -392,7 +387,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
               style={{ marginBottom: 14 }}
             />
           )}
-          {boardData.map(({ board, metric, days, seriesA, seriesB, daysWithData }) => {
+          {boardData.map(({ board, metric, days, seriesA, seriesB }) => {
             const all = [...seriesA.map((p) => p.value), ...(seriesB ?? []).map((p) => p.value)];
             const scale = board.acwrBand
               ? { min: 0.5, max: 2, ticks: [0.5, 1.0, 1.5, 2.0] }
@@ -419,14 +414,16 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
             return (
               <section key={board.key} className="card" aria-labelledby={`b-${board.key}`}>
                 <div className="cmp-card-head">
-                  <div style={{ minWidth: 0 }}>
-                    <h2 className="cmp-card-title" id={`b-${board.key}`}>
-                      {board.title}
-                    </h2>
-                    <p className="cmp-card-sub">{board.sub}</p>
-                  </div>
+                  {/* The title stands alone. The subtitle under it restated
+                      what the chart's own axes and legend already showed, on
+                      every one of the four cards, and cost the plot the height
+                      it took. */}
+                  <h2 className="cmp-card-title" id={`b-${board.key}`}>
+                    {board.title}
+                  </h2>
                   <div className="cmp-card-controls">
                     <ReportSelectNav
+                      stacked
                       label="Metric"
                       paramKey={`m${board.key}`}
                       value={metric.key}
@@ -435,6 +432,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
                       ariaLabel={`Metric for the ${board.title} chart`}
                     />
                     <ReportSelectNav
+                      stacked
                       label="Window"
                       paramKey={`w${board.key}`}
                       value={String(days)}
@@ -472,13 +470,6 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
                       {b.last_name}
                     </span>
                   ) : null}
-                  <span className="cmp-legend-note">
-                    {board.acwrBand
-                      ? `shaded ${ACWR_BAND_LOW}–${ACWR_BAND_HIGH} is a convention, not a threshold · n = ${daysWithData} days with data`
-                      : board.key === 'wellness'
-                        ? `band is ±1 SD of ${a.last_name}'s norm · n = ${daysWithData} of ${board.days} days`
-                        : `bars are ${a.last_name}'s weekly total · n = ${daysWithData} days with data`}
-                  </span>
                 </div>
               </section>
             );

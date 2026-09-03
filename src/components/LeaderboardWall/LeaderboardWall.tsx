@@ -102,7 +102,7 @@ const LEGEND: Record<Lens, { label: string; bg: string }[]> = {
 };
 
 const CAPTIONS: Record<Lens, string> = {
-  Result: 'Latest result per athlete, staff entered · tint is rank position inside the scope, not an absolute standard',
+  Result: 'Tint is rank position inside the scope, not an absolute standard',
   Improvement:
     'Change vs each athlete’s earliest result on file (2026-06-16 to 2026-08-10, this club’s real testing window) · a dash means the athlete has a result but nothing meaningful to report — inside the typical error of the protocol, exactly zero, or only one session on file so far · a plain dot means no result on file at all · wellness streak and compliance are not differenced, so Habits is unavailable here',
   Standard:

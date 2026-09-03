@@ -30,6 +30,11 @@ type Props = {
    *  same convention GroupFilter.tsx uses for "Whole squad". */
   clearValue?: string;
   ariaLabel?: string;
+  /** Label above the control on its own line, at a fixed width, instead of
+   *  beside it. Used where several of these sit in a row across cards that
+   *  each have a different title length — stacking is what makes the controls
+   *  line up in the same columns from one card to the next. */
+  stacked?: boolean;
 };
 
 /** A `<select>` that jumps to a different value of one query param, every
@@ -43,7 +48,7 @@ type Props = {
  *  own apply(), both already established for exactly this: a control that
  *  is real data-backed, not every possible date, only ones that actually
  *  have a session behind them. */
-export function ReportSelectNav({ label, paramKey, value, options, clearValue, ariaLabel }: Props) {
+export function ReportSelectNav({ label, paramKey, value, options, clearValue, ariaLabel, stacked }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -59,17 +64,27 @@ export function ReportSelectNav({ label, paramKey, value, options, clearValue, a
   if (options.length === 0) return null;
 
   return (
-    <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <span className="tiny" style={{ color: 'var(--muted)' }}>
-        {label}
+    <label className="rsel" data-stacked={stacked ? 'true' : undefined}>
+      <span className="rsel-label">{label}</span>
+      {/* The native select keeps every affordance a native select has — the
+          keyboard, the mobile picker, the screen reader — and only loses its
+          painted arrow, which is the one part of it that is drawn by the OS
+          rather than by us and so is the one part that looked foreign. The
+          chevron below is the app's own, and it is aria-hidden and
+          pointer-events:none, so it changes nothing about how the control
+          behaves. */}
+      <span className="rsel-wrap">
+        <select value={value} onChange={(e) => go(e.target.value)} aria-label={ariaLabel ?? label}>
+          {options.map((o) => (
+            <option key={o.value} value={o.value} disabled={o.disabled}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+        <span className="rsel-chev" aria-hidden="true">
+          &#9660;
+        </span>
       </span>
-      <select className="field" style={{ padding: '4px 8px' }} value={value} onChange={(e) => go(e.target.value)} aria-label={ariaLabel ?? label}>
-        {options.map((o) => (
-          <option key={o.value} value={o.value} disabled={o.disabled}>
-            {o.label}
-          </option>
-        ))}
-      </select>
     </label>
   );
 }

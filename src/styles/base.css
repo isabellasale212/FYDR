@@ -951,39 +951,77 @@ a {
 }
 
 /* ---------- attention list ---------- */
-.attn {
+/* The attention list: five columns, not a sentence.
+   "Open" is right-aligned so durations compare as figures, and severity is a
+   fixed 140px so the pills form a column instead of drifting with the text
+   beside them. A header row (.attn-head) names them once. */
+.attn,
+.attn-head {
   display: grid;
-  grid-template-columns: 26px minmax(0, 1fr);
+  grid-template-columns: 26px minmax(110px, 1fr) minmax(0, 1.8fr) 84px 140px;
   gap: 10px;
   padding: 11px 4px;
   border-top: 1px solid var(--hair);
-  align-items: start;
+  align-items: center;
 }
-.attn:first-of-type {
+.attn-head {
   border-top: none;
+  padding-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.attn-head .r,
+.attn .attn-open {
+  text-align: right;
 }
 .attn .rank {
   font-size: 12px;
   font-weight: 700;
   color: var(--faint);
   text-align: right;
-  padding-top: 1px;
 }
-.attn .line {
+.attn-name {
   font-size: 13.5px;
-  line-height: 1.5;
-}
-.attn .line b {
   font-weight: 700;
+  color: inherit;
+  text-decoration: none;
 }
-.attn .line .v {
-  font-weight: 700;
+.attn-name:hover {
+  text-decoration: underline;
 }
-.attn .line .base {
+.attn-pos {
+  display: block;
+  font-size: 11.5px;
+  color: var(--faint);
+}
+.attn-vs {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  min-width: 0;
+}
+.attn-what {
   color: var(--muted);
 }
-.attn .line .dur {
-  border-bottom: 1px solid var(--border);
+.attn-vs .v {
+  font-weight: 700;
+}
+.attn-vs .base {
+  color: var(--faint);
+}
+.attn-open {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.attn-sev {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* ---------- dense rows and tables ---------- */
@@ -4439,16 +4477,37 @@ img.av {
   padding-top: 14px;
   border-top: 1px solid var(--hair);
 }
-.tr-dials {
+/* The date navigator's own row. The session chips that shared it are gone —
+   "Jump to date" lists every session they did, so the chips were a second copy
+   of one control that wrapped into two ragged rows on a narrow window. The
+   select right-aligns; anything else on the row (the Day/Week switch) sits
+   beside it. */
+.tr-jumprow {
   display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+/* A fixed 104px per dial, not flex. Three circles with labels of different
+   lengths ("Intensity", "High speed", "Endurance") sized their own columns
+   under flex, so the rings sat at three different x-offsets and read as
+   misaligned. Equal tracks make the ring spacing a property of the row, not of
+   the words underneath it. */
+.tr-dials {
+  display: grid;
+  grid-template-columns: repeat(3, 104px);
   gap: 18px;
   padding-left: 26px;
   border-left: 1px solid var(--hair);
 }
+/* 18px. At 23 a three-digit value ("105%") ran into the ring it sits inside. */
 .tr-dial-value {
   font-family: var(--font-sora);
   font-variant-numeric: tabular-nums;
-  font-size: 23px;
+  font-size: 18px;
   font-weight: 500;
 }
 .tr-dial-pct {
@@ -10751,4 +10810,108 @@ button.dash-stat {
     transform: translate(calc(50vw - var(--claim-x) - 400px), calc(58vh - 92px - 175px))
       scale(4.082);
   }
+}
+
+/* --- Squad weekly: the wellness card ------------------------------------- */
+/* Figures lead, labels sit under them. */
+.sw-well-figs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 16px;
+}
+.sw-well-num {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+.sw-well-lab {
+  margin: 3px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.sw-well-flagged {
+  margin-bottom: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--hair);
+}
+/* Room to breathe, and each domain named. It was a three-column grid tight
+   enough that "Wellness compliance" wrapped under "Training compliance". */
+.sw-well-comp {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 32px;
+  padding-top: 12px;
+  border-top: 1px solid var(--hair);
+}
+
+/* --- ReportSelectNav ------------------------------------------------------
+   A native <select> wearing the app's own chevron. The browser's default
+   arrow is drawn by the OS, so it was the one control on these pages that
+   changed shape between a Mac and a Windows machine and matched neither the
+   date steppers nor the flag panel's chevron. `appearance: none` removes only
+   the paint; the keyboard, the mobile picker and the screen-reader semantics
+   are the native ones still. */
+.rsel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.rsel-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.rsel-wrap {
+  position: relative;
+  display: block;
+}
+.rsel-wrap select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  background: var(--field);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-field);
+  /* 26px on the end reserves the chevron's column so a long option label
+     stops at the arrow instead of running under it. */
+  padding: 5px 26px 5px 9px;
+  min-height: 30px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: border-color var(--t-state), color var(--t-state);
+}
+.rsel-wrap select:hover {
+  border-color: var(--border-hover);
+}
+.rsel-wrap select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+.rsel-chev {
+  position: absolute;
+  inset-inline-end: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 8px;
+  line-height: 1;
+  color: var(--faint);
+  pointer-events: none;
+}
+/* Stacked: label on its own line, control a fixed width. Two of these sit in
+   each Analytics card header, and the cards have titles of different lengths —
+   sized to content they landed on a different x on every card. 128px fits the
+   longest option ("26 weeks", "ACWR") with room to spare. */
+.rsel[data-stacked='true'] {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  width: 128px;
+  flex: none;
 }

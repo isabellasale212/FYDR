@@ -144,7 +144,6 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
               label: 'Wellness compliance',
               value: report.tiles.compliancePct === null ? BLANK : `${report.tiles.compliancePct}%`,
               trend: delta(report.tiles.compliancePct, prior.tiles.compliancePct, true, ' pts'),
-              note: 'submitted against expected, across every domain this week',
             },
             {
               label: 'Median readiness',
@@ -157,7 +156,6 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
                  entry was submitted, so this median says nothing about the
                  athletes who did not submit — the compliance tile beside it
                  is where they show up. */
-              note: `over the entries submitted · ${report.wellness.outliers.length} more than 1.5 SD below their own norm`,
             },
             {
               label: 'Available today',
@@ -166,13 +164,11 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
                   ? BLANK
                   : `${report.athleteCount - report.availability.length} of ${report.athleteCount}`,
               trend: delta(report.tiles.availablePct, prior.tiles.availablePct, true, '%'),
-              note: `${report.tiles.availablePct ?? 0}% · ${report.availability.filter((a) => a.status === 'modified').length} modified, ${report.availability.filter((a) => a.status === 'unavailable').length} unavailable`,
             },
             {
               label: 'Open flags',
               value: String(report.tiles.openFlagCount),
               trend: delta(report.tiles.openFlagCount, prior.tiles.openFlagCount, false),
-              note: `${report.attention.length} shown here, ranked by severity`,
             },
           ].map((k) => (
             <div key={k.label} className="card sw-kpi">
@@ -185,7 +181,6 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
                   </span>
                 ) : null}
               </span>
-              <span className="sw-kpi-note">{k.note}</span>
             </div>
           ))}
         </div>
@@ -195,11 +190,21 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
           <h2 className="card-title" id="attention-title">
             Needing attention
           </h2>
-          <p className="import-sub">Each against the athlete&rsquo;s own baseline. Capped at ten, ranked by severity.</p>
           {report.attention.length === 0 ? (
             <EmptyState headingLevel={3} title="Nothing is asking for attention" body="No open flag on any athlete in this filter." />
           ) : (
-            report.attention.map((row, i) => <AttentionRow key={row.athlete_id} row={row} rank={i + 1} />)
+            <>
+              {/* The description line is gone; these four words say the same
+                  thing in the place the reader needs them. */}
+              <div className="attn-head" aria-hidden="true">
+                <span />
+                <span>Athlete</span>
+                <span>Vs baseline</span>
+                <span className="r">Open</span>
+                <span>Severity</span>
+              </div>
+              {report.attention.map((row, i) => <AttentionRow key={row.athlete_id} row={row} rank={i + 1} />)}
+            </>
           )}
           {report.tiles.openFlagCount > report.attention.length ? (
             <p style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border)' }}>
@@ -227,9 +232,8 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
             {report.tiles.acwr.suppressed > 0 ? (
               <div className="ath-note" style={{ marginTop: 10 }}>
                 <span className="ath-note-body">
-                  {report.tiles.acwr.suppressed} athlete{report.tiles.acwr.suppressed === 1 ? ' is' : 's are'} still
-                  building a baseline — {acwrInsufficiencyNote()} Their acute and chronic figures are withheld,
-                  not zero.
+                  Building baseline — {report.tiles.acwr.suppressed} athlete
+                  {report.tiles.acwr.suppressed === 1 ? '' : 's'} need {acwrInsufficiencyNote()}
                 </span>
               </div>
             ) : null}
@@ -240,7 +244,7 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
               <p className="tiny" style={{ marginTop: 10, color: 'var(--muted)' }}>
                 {report.load.length === 0
                   ? 'No athlete in this filter.'
-                  : 'No athlete has enough trailing days for a ratio yet, so there is nothing to rank.'}
+                  : 'No ratio computable yet.'}
               </p>
             ) : (
               <>
@@ -321,33 +325,39 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
           <h2 className="card-title" id="wellness-title">
             Wellness
           </h2>
-          <div className="grid2" style={{ marginBottom: 14 }}>
+          {/* Number first, label under it. The label led before, which made a
+              reader parse a sentence-length caption before reaching the figure
+              it described — twice, side by side. */}
+          <div className="sw-well-figs">
             <div>
-              <p className="tiny">Squad median readiness</p>
-              <p className="num nm" style={{ fontSize: 18 }}>
+              <p className="sw-well-num num">
                 {report.wellness.medianReadiness === null ? BLANK : formatNumber(report.wellness.medianReadiness, 0)}
               </p>
+              <p className="sw-well-lab">Squad median readiness</p>
             </div>
             <div>
-              <p className="tiny">More than 1.5 SD below their own norm</p>
-              <p className="num nm" style={{ fontSize: 18 }}>
-                {report.wellness.outliers.length}
-              </p>
+              <p className="sw-well-num num">{report.wellness.outliers.length}</p>
+              <p className="sw-well-lab">Below their own norm</p>
             </div>
           </div>
           {report.wellness.outliers.length > 0 ? (
-            <div className="chiprow" style={{ marginBottom: 14 }}>
-              {report.wellness.outliers.map((o) => (
-                <Link key={o.athlete_id} href={`/squad/${o.athlete_id}`} className="chip-static">
-                  {o.first_name} {o.last_name}
-                </Link>
-              ))}
+            <div className="sw-well-flagged">
+              {/* The names sat loose under two figures with nothing saying
+                  which of the two they belonged to. */}
+              <p className="sw-well-lab">Below their own norm</p>
+              <div className="chiprow" style={{ marginTop: 6 }}>
+                {report.wellness.outliers.map((o) => (
+                  <Link key={o.athlete_id} href={`/squad/${o.athlete_id}`} className="chip-static">
+                    {o.first_name} {o.last_name}
+                  </Link>
+                ))}
+              </div>
             </div>
           ) : null}
-          <div className="grid3">
+          <div className="sw-well-comp">
             {report.wellness.complianceByDomain.map((d) => (
               <div key={d.domain}>
-                <p className="tiny">{enumLabel(d.domain)} compliance</p>
+                <p className="sw-well-lab">{enumLabel(d.domain)}</p>
                 <p className="num nm">{d.pct === null ? BLANK : `${d.pct}%`}</p>
               </div>
             ))}
@@ -359,7 +369,6 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
           <h2 className="card-title" id="gym-testing-title">
             Gym and testing
           </h2>
-          <p className="import-sub">Sessions logged this week, and any test result recorded this week.</p>
           <div className="grid2">
             <div>
               <p className="tiny" style={{ marginBottom: 6 }}>

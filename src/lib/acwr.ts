@@ -112,10 +112,8 @@ export function acwrSuppressedLabel(daysWithData: number): string {
 /** The one long insufficiency explanation, identical on every surface that
  *  has room for a sentence (analytics empty state, report captions). */
 export function acwrInsufficiencyNote(daysWithData?: number): string {
-  const base = `ACWR needs at least ${ACWR_MIN_DAYS_WITH_DATA} of the trailing ${ACWR_CHRONIC_WINDOW_DAYS} days to have a training entry`;
-  return daysWithData === undefined
-    ? `${base}. It is not estimated from less.`
-    : `${base}; only ${daysWithData} ${daysWithData === 1 ? 'is' : 'are'} on record. It is not estimated from less.`;
+  const base = `Needs ${ACWR_MIN_DAYS_WITH_DATA} of ${ACWR_CHRONIC_WINDOW_DAYS} trailing days`;
+  return daysWithData === undefined ? `${base}.` : `${base}; ${daysWithData} on record.`;
 }
 
 /** Squad-level headline for the ratio: never "0 outside the band" when the

@@ -324,11 +324,6 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
             Nutrition · {groupScopeLabel(groups, groupIds)} · {plans.length} plan{plans.length === 1 ? '' : 's'} · {assignedAthleteCount} athletes assigned
           </p>
           <h1>Nutrition</h1>
-          <p className="nutr-intro">
-            A plan is a set of rules per kilogram of body mass. Change the protein rule once and
-            every athlete&rsquo;s target moves with it, and it moves again on its own when they
-            next weigh in.
-          </p>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           {isCoach || isMedical ? (
@@ -367,14 +362,6 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
         )}
       </div>
 
-      <p className="cap" style={{ margin: '0 0 12px' }}>
-        The week above drives the weigh-in strip, the weekly check-in panel and the &ldquo;needs a
-        word&rdquo; list. The mass trend is read over {massRange.label.toLowerCase()} (
-        {formatDate(massRange.from, timezone)} to {formatDate(massRange.to, timezone)}) — a fixed
-        window, because a trend and a week are two different questions and only one of them is
-        yours to move here.
-        {massRange.clipped ? ' The trend is clipped to the two-year maximum this app reads in one window.' : ''}
-      </p>
 
       <NutritionWorkspace
         orgId={orgId}

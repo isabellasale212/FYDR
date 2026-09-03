@@ -168,11 +168,17 @@ function ComparisonTableView({ table }: { table: ComparisonTable }) {
               </div>
               {row.cells.map((cell, i) => {
                 const tone = cell.pct !== null ? scoreTone(cell.pct).tone : null;
+                // columns[0] is the row label, so cell i is column i + 1.
+                const pill = table.columns[i + 1]?.pill;
                 return (
                   <div key={i} className="tr-table-cell">
+                    {pill && cell.value !== '—' ? (
+                      <span className={`pill ${pill === 'good' ? 'pill-good' : 'pill-accent'} num`}>{cell.value}</span>
+                    ) : (
                     <span className="num" style={{ fontSize: 13.5, color: tone ? TONE[tone] : undefined }}>
                       {cell.value}
                     </span>
+                    )}
                     {cell.isScore && cell.pct !== null ? (
                       <div className="tr-bar-track">
                         <div
@@ -362,20 +368,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
         {groupFilterEl}
         {header}
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', marginBottom: 16 }}>
-          <div className="chiprow" style={{ margin: 0 }}>
-            {sessions.slice(0, 8).map((s) => (
-              <Link
-                key={s.sessionId}
-                href={`/reports/training${q({ mode: 'match', session: s.sessionId, groups: groupsQs })}`}
-                className="tr-session-chip"
-                aria-current={selected.sessionId === s.sessionId}
-              >
-                v {s.opponent}
-                <span className="suffix">{s.result ?? '—'}</span>
-              </Link>
-            ))}
-          </div>
+        <div className="tr-jumprow">
           <ReportSelectNav
             label="Jump to date"
             paramKey="session"
@@ -416,11 +409,6 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                   </div>
                 </div>
                 <div className="tr-read">
-                  <p style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>{overview.headline}</p>
-                  <p className="tiny" style={{ maxWidth: '76ch', marginTop: 4 }}>
-                    Scored per minute, not per session — a replacement on for 20 minutes is not comparable with an
-                    80-minute starter any other way.
-                  </p>
                   <p className="tiny num" style={{ color: 'var(--faint)', marginTop: 6 }}>
                     {overview.referenceLine}
                   </p>
@@ -439,14 +427,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                   Halves
                 </h2>
               </div>
-              <p className="tiny" style={{ marginTop: 8, maxWidth: '76ch' }}>
-                Not available. GPS is recorded as one whole-match total per athlete, with no
-                first-half/second-half split and no record of when substitutions happened, so
-                there is nothing real to draw a half-by-half comparison from. Showing one anyway
-                would mean presenting an invented split as if a device had measured it, for real,
-                named athletes. The dials and comparison above use whole-match totals and per-minute rates, both
-                real; only the half-by-half breakdown is a real, stated gap.
-              </p>
+              <p className="tiny" style={{ marginTop: 8 }}>Not available.</p>
             </div>
 
             <div className="card" style={{ marginTop: 14 }}>
@@ -455,7 +436,6 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                   <h2 className="card-title" style={{ margin: 0 }}>
                     Comparison
                   </h2>
-                  <p className="tiny">Every completed match on record, scored against the others.</p>
                 </div>
               </div>
               <div style={{ marginTop: 14 }}>
@@ -466,7 +446,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
             <div className="card" style={{ marginTop: 14 }}>
               <h2 className="card-title">Board</h2>
               <p className="tiny num" style={{ color: 'var(--faint)' }}>
-                Whole-match values · no H1/H2 split (see the Halves note above) · n = {board.rows.length} played
+                n = {board.rows.length} played
               </p>
               <div className="tr-board" style={{ marginTop: 10 }}>
                 <div className="tr-board-inner match">
@@ -502,10 +482,6 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                   ))}
                 </div>
               </div>
-              <p className="cap" style={{ marginTop: 10 }}>
-                Whole-match totals only, real per-athlete GPS · MaxV column omitted here, shown on the training
-                board · n = {board.rows.length} played.
-              </p>
             </div>
           </>
         )}
@@ -533,20 +509,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
   // two frames present an identical toolbar and neither can drift from the
   // other.
   const trainingToolbar = (activeRange: 'day' | 'week') => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', marginBottom: 16 }}>
-      <div className="chiprow" style={{ margin: 0 }}>
-        {sessions.slice(0, 8).map((s) => (
-          <Link
-            key={s.sessionId}
-            href={`/reports/training${q({ mode: 'training', session: s.sessionId, groups: groupsQs, range: activeRange })}`}
-            className="tr-session-chip"
-            aria-current={selected.sessionId === s.sessionId}
-          >
-            {formatDate(s.date, timezone)}
-            <span className="suffix">{mdLabel(s.mdOffset) ?? s.title}</span>
-          </Link>
-        ))}
-      </div>
+    <div className="tr-jumprow">
       <ReportSelectNav
         label="Jump to date"
         paramKey="session"
@@ -582,12 +545,6 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
           <h2 className="card-title" style={{ margin: 0 }}>
             Week of {formatDate(weekStart, timezone)} to {formatDate(weekEnd, timezone)}
           </h2>
-          <p className="tiny" style={{ marginTop: 4, maxWidth: '76ch' }}>
-            Every training and match session in this calendar week with GPS data, per-athlete squad mean, scored
-            against a typical week. Pick any date above to jump to a different week — this reuses the same
-            rest-of-week reference the Comparison card&rsquo;s own &ldquo;Rest of the week&rdquo; scope already
-            computes for a single day, shown here as the primary view instead of a lens on one session.
-          </p>
           <div style={{ marginTop: 14 }}>
             <ComparisonTableView table={weekComparison} />
           </div>
@@ -708,8 +665,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
 <div className="card" style={{ marginTop: 14 }}>
             <h2 className="card-title">Board</h2>
             <p className="tiny num" style={{ color: 'var(--faint)' }}>
-              Raw session values · shading is this squad&rsquo;s spread for this session, HSR blue, HIE pink, %Max
-              green · n = {board.rows.length} athletes
+              n = {board.rows.length} athletes
             </p>
             <div className="tr-board" style={{ marginTop: 10 }}>
               <div className="tr-board-inner">
@@ -989,10 +945,6 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
               stated once and the board's own caption can stay short. */}
           <div className="card" style={{ marginTop: 14 }}>
             <h2 className="card-title">Heat bands</h2>
-            <p className="tiny" style={{ color: 'var(--muted)', marginTop: 2 }}>
-              Five bands against this squad&rsquo;s p95 for this session. Shading is a rank inside today&rsquo;s
-              squad, never an absolute standard.
-            </p>
             {[
               { ramp: 'hsr', label: 'HSR', note: 'high speed running' },
               { ramp: 'hie', label: 'HIE', note: 'high intensity efforts' },
@@ -1069,10 +1021,6 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                   </Link>
                 </div>
               </div>
-              <p className="tiny" style={{ marginTop: 4 }}>
-                Dot size is high intensity efforts. Colour is distance from{' '}
-                {lens === 'self' ? 'their own recent mean' : 'their unit'}. Click any athlete.
-              </p>
               <div style={{ marginTop: 14 }}>
                 <TrainingScatter
                   points={scatter}

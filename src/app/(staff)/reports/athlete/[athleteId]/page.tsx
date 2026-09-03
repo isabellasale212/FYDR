@@ -8,7 +8,7 @@ import { WellnessChart } from '@/components/WellnessChart/WellnessChart';
 import { acwrInsufficiencyNote, acwrSuppressedLabel } from '@/lib/acwr';
 import { fetchAthleteReport } from '@/lib/queries/athleteReport';
 import { recordReportView } from '@/lib/queries/reports';
-import { BLANK, ageFrom, enumLabel, formatDate, formatNumber, formatTime } from '@/lib/format';
+import { BLANK, ageFrom, enumLabel, formatDate, formatNumber } from '@/lib/format';
 import { availabilityStatus, SEVERITY_STATUS } from '@/lib/status';
 import { requireReportAccess } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
@@ -128,11 +128,6 @@ export default async function AthleteReportPage({
   /* "N tests well below PB" — the same 10% threshold vsPb() uses for its own
      row wash, counted once here so the badge and the washes cannot disagree. */
   const wellBelowPb = report.gymAndTesting.tests.filter((t) => vsPb(t)?.heavy).length;
-  // fetchAthleteSessionsInWindow sorts most-recent-first (screens/schedule.md's
-  // own "recent sessions" convention), so index 0 is the latest, not the last.
-  // It is also no longer capped at 200 rows, so the count in the footer is the
-  // real one at a year or a season rather than a ceiling.
-  const mostRecentSession = report.sessions.length > 0 ? report.sessions[0] : undefined;
 
   return (
     <>
@@ -209,17 +204,6 @@ export default async function AthleteReportPage({
         <span className="eyebrow">
           {period.label} · {formatDate(report.from, timezone)} to {formatDate(report.to, timezone)}
         </span>
-        {/* `value` is the CLAMPED key, not the raw URL value — a select whose
-            value matches no option silently shows the first one instead.
-            `allowed` leaves `day` visible-but-disabled with its reason;
-            `season` is absent entirely when the club has no season row. */}
-        <PeriodSelector
-          value={period.key}
-          allowed={ATHLETE_PERIODS}
-          reasons={ATHLETE_PERIOD_REASONS}
-          season={period.season}
-          ariaLabel="Reporting period"
-        />
       </div>
 
       {caveat ? (
@@ -228,7 +212,23 @@ export default async function AthleteReportPage({
         </p>
       ) : null}
 
+      {/* The period scopes every tab, so it rides the tab row rather than a
+          row of its own above it. */}
       <ReportPager
+        right={
+            /* `value` is the CLAMPED key, not the raw URL value — a select
+               whose value matches no option silently shows the first one
+               instead. `allowed` leaves `day` visible-but-disabled with its
+               reason; `season` is absent entirely when the club has no season
+               row. */
+            <PeriodSelector
+              value={period.key}
+              allowed={ATHLETE_PERIODS}
+              reasons={ATHLETE_PERIOD_REASONS}
+              season={period.season}
+              ariaLabel="Reporting period"
+            />
+        }
         pages={[
           {
             label: 'Summary',
@@ -249,10 +249,6 @@ export default async function AthleteReportPage({
                           : `latest, ${formatDate(latestWellness.date, timezone)}`}
                       </span>
                     </div>
-                    <p className="tiny" style={{ color: 'var(--muted)', margin: '8px 0 10px' }}>
-                      Composite readiness against {athlete.first_name}&apos;s own 14-day rolling mean
-                      and &plusmn;1 SD band.
-                    </p>
                     {report.wellness.every((p) => p.value === null) ? (
                       <EmptyState
                         headingLevel={3}
@@ -417,11 +413,14 @@ export default async function AthleteReportPage({
                           </div>
                         );
                       })}
+                      {/* The "squad percentiles are not shown" half is gone per
+                          review — a one-athlete report showing one athlete is not
+                          news. What stays is the sign convention, which is the
+                          only place in the app that says a faster sprint counts
+                          as a gain. */}
                       <p className="inj-foot">
-                        Squad percentiles are not shown on a one-athlete report — see the Testing report
-                        for squad-wide comparisons. Vs PB compares the latest result with{' '}
-                        {athlete.first_name}&apos;s own best, and is direction-corrected for the tests
-                        where lower is better.
+                        Vs PB compares the latest result with {athlete.first_name}&apos;s own best,
+                        and is direction-corrected for the tests where lower is better.
                       </p>
                     </>
                   )}
@@ -455,9 +454,6 @@ export default async function AthleteReportPage({
                 <h2 className="card-title" id="wellness-title">
                   Wellness
                 </h2>
-                <p className="import-sub">
-                  Composite readiness against {athlete.first_name}&apos;s own 14 day rolling mean and &plusmn;1SD band.
-                </p>
                 {report.wellness.every((p) => p.value === null) ? (
                   <EmptyState headingLevel={3} title="No wellness entries in this period" body="Nothing submitted in this window." />
                 ) : (
@@ -503,9 +499,7 @@ export default async function AthleteReportPage({
                 </div>
                 <p className="cap">{ACWR_WINDOW_CAPTION}</p>
                 {report.load.suppressed ? (
-                  <p className="cap">
-                    {acwrSuppressedLabel(report.load.daysWithData)} — {acwrInsufficiencyNote(report.load.daysWithData)}
-                  </p>
+                  <p className="cap">{acwrInsufficiencyNote(report.load.daysWithData)}</p>
                 ) : null}
 
                 {/* The athlete report is free (reports/page.tsx marks it
@@ -625,10 +619,6 @@ export default async function AthleteReportPage({
                       </tbody>
                     </table>
                   )}
-                  <p className="cap" style={{ padding: 16 }}>
-                    Squad percentiles aren&apos;t shown on this one-athlete report &mdash; see the
-                    Testing report for squad-wide comparisons.
-                  </p>
                 </section>
               </div>
             ),
@@ -636,12 +626,6 @@ export default async function AthleteReportPage({
         ]}
       />
 
-      <p className="cap" style={{ marginTop: 14 }}>
-        {report.sessions.length} session{report.sessions.length === 1 ? '' : 's'} scheduled for {athlete.first_name} in this
-        period
-        {mostRecentSession ? `, most recent ${formatDate(mostRecentSession.starts_at, timezone)} ${formatTime(mostRecentSession.starts_at, timezone)}` : ''}
-        .
-      </p>
     </>
   );
 }

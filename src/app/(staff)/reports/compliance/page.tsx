@@ -100,11 +100,6 @@ export default async function ComplianceReportPage({
   const underHalf = measured.filter((x) => x.pct! < 50).length;
   const waivedDays = report.byAthlete.reduce((s, a) => s + a.waivedCount, 0);
   const waivedAthletes = report.byAthlete.filter((a) => a.waivedCount > 0).length;
-  const lastEntry = report.byAthlete.reduce<string | null>(
-    (best, a) => (a.lastSubmission && (best === null || a.lastSubmission > best) ? a.lastSubmission : best),
-    null,
-  );
-  const submittedOnLast = lastEntry === null ? 0 : report.byAthlete.filter((a) => a.lastSubmission === lastEntry).length;
 
   /* Bands, worst first. The fourth is not in the design and is not decoration:
    * an athlete with nothing expected of them, or with every expectation waived,
@@ -119,7 +114,12 @@ export default async function ComplianceReportPage({
 
   /* By day, pivoted onto one row per date. Domains keep REPORT_DOMAINS' own
    * order so the columns never reshuffle between periods. */
-  const DAY_DOMAINS = ['wellness', 'training_rpe', 'gym'] as const;
+  /* Wellness and gym only on this tab. Session RPE is expected per SESSION,
+     not per day, so a day with two sessions and one RPE scored 50% here while
+     meaning something different from a wellness entry that is one-per-day —
+     two denominators in one row. It keeps its place in the Summary tab, where
+     it is read as a domain rather than compared across a row. */
+  const DAY_DOMAINS = ['wellness', 'gym'] as const;
   const byDate = new Map<string, Map<string, { expected: number; submitted: number; waived: number }>>();
   for (const cell of report.byDay) {
     const forDate = byDate.get(cell.date) ?? new Map();
@@ -130,7 +130,6 @@ export default async function ComplianceReportPage({
     .sort((a, b) => a[0].localeCompare(b[0]))
     .map(([date, domains]) => ({
       date,
-      waived: DAY_DOMAINS.reduce((s, d) => s + (domains.get(d)?.waived ?? 0), 0),
       cells: DAY_DOMAINS.map((d) => {
         const cell = domains.get(d);
         const pct = cell && cell.expected > 0 ? Math.round((100 * cell.submitted) / cell.expected) : null;
@@ -145,7 +144,7 @@ export default async function ComplianceReportPage({
     m.set(wk, [...(m.get(wk) ?? []), r]);
     return m;
   }, new Map<string, typeof dayRows>()).entries()];
-  const DAY_GRID = { gridTemplateColumns: 'minmax(120px, 1fr) repeat(3, minmax(0, 1.35fr)) 64px' };
+  const DAY_GRID = { gridTemplateColumns: 'minmax(120px, 1fr) repeat(2, minmax(0, 1.35fr))' };
   const ATH_GRID = { gridTemplateColumns: 'minmax(0, 1.5fr) 96px 78px 116px minmax(180px, 218px)' };
 
 
@@ -209,27 +208,32 @@ export default async function ComplianceReportPage({
 
       <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
         <GroupFilter groups={groups} selected={groupIds} />
-        {/* `day` is offered DISABLED with its reason rather than hidden, per
-          * screens/analytics.md's "Illegal combinations are disabled with the
-          * reason, not hidden". "This season" is the one option that goes
-          * ABSENT instead, and only for a club with no current season row —
-          * a different fact, and one nothing a coach does in this control can
-          * fix. Both are also clamped server-side in resolveReportPeriod,
-          * because a disabled <option> does not stop a hand-typed URL. */}
-        {/* NOT sticky when this is the report's own default (`week`, which is
-          * deliberately not DEFAULT_RANGE) rather than something the coach
-          * picked, and not sticky when their pick was clamped either — see
-          * periodSticky(). */}
-        <PeriodSelector
-          value={period.key}
-          allowed={period.allowed}
-          reasons={period.reasons}
-          season={period.season}
-          sticky={periodSticky(period)}
-        />
       </div>
 
+      {/* The period scopes every tab, so it rides the tab row rather than a
+          row of its own above it. */}
       <ReportPager
+        right={
+          /* `day` is offered DISABLED with its reason rather than hidden, per
+           * screens/analytics.md's "Illegal combinations are disabled with the
+           * reason, not hidden". "This season" is the one option that goes
+           * ABSENT instead, and only for a club with no current season row —
+           * a different fact, and one nothing a coach does in this control can
+           * fix. Both are also clamped server-side in resolveReportPeriod,
+           * because a disabled <option> does not stop a hand-typed URL.
+           *
+           * NOT sticky when this is the report's own default (`week`, which is
+           * deliberately not DEFAULT_RANGE) rather than something the coach
+           * picked, and not sticky when their pick was clamped either — see
+           * periodSticky(). */
+          <PeriodSelector
+            value={period.key}
+            allowed={period.allowed}
+            reasons={period.reasons}
+            season={period.season}
+            sticky={periodSticky(period)}
+          />
+        }
         pages={[
           {
             label: 'Summary',
@@ -287,15 +291,6 @@ export default async function ComplianceReportPage({
                     <span className="cmpl-stat-value">{waivedDays}</span>
                     <span className="cmpl-stat-sub">
                       {waivedAthletes} athlete{waivedAthletes === 1 ? '' : 's'} · left out of their denominators
-                    </span>
-                  </div>
-                  <div className="cmpl-stat">
-                    <span className="cmpl-stat-label">Last entry</span>
-                    <span className="cmpl-stat-value">{lastEntry ? formatDate(lastEntry, timezone) : '—'}</span>
-                    <span className="cmpl-stat-sub">
-                      {lastEntry
-                        ? `${submittedOnLast} of ${report.byAthlete.length} submitted that day`
-                        : 'nothing submitted in this window'}
                     </span>
                   </div>
                 </div>
@@ -404,7 +399,6 @@ export default async function ComplianceReportPage({
                       {DAY_DOMAINS.map((d) => (
                         <span key={d}>{enumLabel(d)}</span>
                       ))}
-                      <span style={{ textAlign: 'right' }}>Waived</span>
                     </div>
                     {dayWeeks.map(([weekStart, rows]) => {
                       /* The week's own mean, over the cells that actually had
@@ -434,9 +428,6 @@ export default async function ComplianceReportPage({
                                   count={cell.count}
                                 />
                               ))}
-                              <span className="cmpl-num" data-quiet={r.waived === 0}>
-                                {r.waived === 0 ? '—' : `+${r.waived}`}
-                              </span>
                             </div>
                           ))}
                         </div>

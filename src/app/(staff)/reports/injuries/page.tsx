@@ -93,33 +93,12 @@ export default async function InjuryAvailabilityReportPage({
 
   /* Status carries the grouping, worst first, so the row does not repeat it as
    * a pill on every line. */
-  /* Burden facts. A part week is short because the window cuts it, not
-   * because the squad recovered, so the mean is taken over FULL weeks only
-   * and the trend reads the last three of them. */
-  const fullWeeks = report.burden.filter((w) => w.fullWeek);
-  const meanPerFullWeek =
-    fullWeeks.length > 0
-      ? Math.round((10 * fullWeeks.reduce((s, w) => s + w.daysLost, 0)) / fullWeeks.length) / 10
-      : null;
-  const lastThree = fullWeeks.slice(-3);
-  const trend =
-    lastThree.length < 2
-      ? { label: 'Not enough weeks', note: 'a trend needs at least two full weeks in the window' }
-      : (() => {
-          const first = lastThree[0]!.daysLost;
-          const last = lastThree[lastThree.length - 1]!.daysLost;
-          const spread = Math.max(...lastThree.map((w) => w.daysLost)) - Math.min(...lastThree.map((w) => w.daysLost));
-          // "Flat" is a real reading, not a fallback: a squad losing the same
-          // number of days each week is not improving, and saying "rising" or
-          // "falling" off a day or two of noise would be worse than saying so.
-          if (spread <= 2) return { label: 'Flat', note: `about ${last} days in each of the last ${lastThree.length} full weeks` };
-          return last > first
-            ? { label: 'Rising', note: `${first} to ${last} days across the last ${lastThree.length} full weeks` }
-            : { label: 'Falling', note: `${first} to ${last} days across the last ${lastThree.length} full weeks` };
-        })();
-  const peakWeek = report.burden.reduce((m, w) => Math.max(m, w.daysLost), 0);
-  const peakSite = report.bySite.reduce((m, s) => Math.max(m, s.days), 0);
-  const peakUnit = report.byUnit.reduce((m, u) => Math.max(m, u.days), 0);
+  /* The Burden tab is gone: its headline was the same days-lost figure the
+     Period summary already leads with, re-derived per week. What went with it
+     is dead here — meanPerFullWeek, the three-week trend, and the per-week,
+     per-site and per-unit peaks that scaled its bars. report.burden, .bySite
+     and .byUnit are still fetched and still correct; nothing on this screen
+     reads them now. */
   const peakAthlete = report.byAthlete.reduce((m, a) => Math.max(m, a.days), 0);
   const athleteDaysAvailable = report.summary.athleteCount * period.days;
 
@@ -177,19 +156,6 @@ export default async function InjuryAvailabilityReportPage({
 
       <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
         <GroupFilter groups={groups} selected={groupIds} />
-        {/* `value` is the CLAMPED key, not the raw URL value: a select whose
-            value matches no option silently displays the first one instead,
-            so the control must show what actually rendered. `allowed` leaves
-            `day` and `week` visible-but-disabled with their reasons; `season`
-            is passed through so the option is absent entirely when the club
-            has no current season row. */}
-        <PeriodSelector
-          value={period.key}
-          allowed={INJURY_PERIODS}
-          reasons={INJURY_PERIOD_REASONS}
-          season={period.season}
-          ariaLabel="Reporting period"
-        />
       </div>
 
       {caveat ? (
@@ -198,7 +164,24 @@ export default async function InjuryAvailabilityReportPage({
         </p>
       ) : null}
 
+      {/* The period scopes every tab, so it rides the tab row rather than a
+          row of its own above it. */}
       <ReportPager
+        right={
+            /* `value` is the CLAMPED key, not the raw URL value: a select
+               whose value matches no option silently displays the first one
+               instead, so the control must show what actually rendered.
+               `allowed` leaves `day` and `week` visible-but-disabled with their
+               reasons; `season` is passed through so the option is absent
+               entirely when the club has no current season row. */
+            <PeriodSelector
+              value={period.key}
+              allowed={INJURY_PERIODS}
+              reasons={INJURY_PERIOD_REASONS}
+              season={period.season}
+              ariaLabel="Reporting period"
+            />
+        }
         pages={[
           {
             label: 'Current',
@@ -343,12 +326,15 @@ export default async function InjuryAvailabilityReportPage({
                           </div>
                         ),
                       )}
+                      {/* The who-sees-what paragraph is gone per review. It
+                          described a rule the database enforces either way
+                          (CLAUDE.md §2 rule 3, in RLS), so it was telling a
+                          coach about a permission they cannot exercise.
+                          What survives is the one fact the period control makes
+                          easy to misread: this tab is live, not period-scoped. */}
                       <p className="inj-foot">
-                        Coaching staff see availability, the site and a restriction line. Diagnosis and
-                        treatment notes are visible to medical staff and the athlete concerned, and to
-                        nobody else. Availability as of {formatDate(today, timezone)} — not a snapshot of
-                        the selected period; the period applies to the summary and burden figures. n ={' '}
-                        {report.summary.athleteCount} athletes.
+                        Availability as of {formatDate(today, timezone)}, not the selected period.
+                        n = {report.summary.athleteCount} athletes.
                       </p>
                     </>
                   )}
@@ -391,79 +377,10 @@ export default async function InjuryAvailabilityReportPage({
                   </div>
                 </div>
 
-                <div className="ath-summary-grid">
-                  <section className="card" aria-labelledby="inj-site">
-                    <h2 className="ath-card-title" id="inj-site">
-                      Where the days went
-                    </h2>
-                    {/* BY SITE, NOT BY CAUSE. `injuries` records a body area;
-                        cause — injury against illness against academic — lives
-                        on availability rows over a different population, so a
-                        "by cause" split here would be counting one thing and
-                        labelling it another. */}
-                    <p className="tiny" style={{ color: 'var(--muted)', margin: '6px 0 12px' }}>
-                      Injury site, recorded by medical staff at onset.
-                    </p>
-                    {report.bySite.length === 0 ? (
-                      <p className="tiny" style={{ color: 'var(--muted)' }}>No days lost in this period.</p>
-                    ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                        {report.bySite.slice(0, 6).map((s, i) => (
-                          <div key={s.bodyArea}>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-                              <span style={{ fontSize: 13, fontWeight: 600 }}>
-                                {s.bodyArea === 'unrecorded' ? 'Site not recorded' : enumLabel(s.bodyArea)}
-                              </span>
-                              <span className="ath-test-num" style={{ marginLeft: 'auto', fontWeight: 700 }}>
-                                {s.days} days
-                              </span>
-                              <span className="tiny" style={{ color: 'var(--faint)', width: 92, textAlign: 'right' }}>
-                                {report.summary.daysLost > 0
-                                  ? `${Math.round((100 * s.days) / report.summary.daysLost)}% of the total`
-                                  : ''}
-                              </span>
-                            </div>
-                            <span className="cmpl-track" style={{ display: 'block', marginTop: 5 }}>
-                              <span
-                                className="cmpl-fill"
-                                data-tone={i === 0 ? 'bad' : i === 1 ? 'warn' : 'accent'}
-                                style={{ width: `${peakSite > 0 ? Math.round((100 * s.days) / peakSite) : 0}%` }}
-                              />
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </section>
-
-                  <section className="card" aria-labelledby="inj-unit">
-                    <h2 className="ath-card-title" id="inj-unit">
-                      By positional unit
-                    </h2>
-                    <p className="tiny" style={{ color: 'var(--muted)', margin: '6px 0 12px' }}>
-                      Where the squad is thin if it happens again.
-                    </p>
-                    {report.byUnit.length === 0 ? (
-                      <p className="tiny" style={{ color: 'var(--muted)' }}>No days lost in this period.</p>
-                    ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {report.byUnit.map((u) => (
-                          <div key={u.unit} className="ath-loadday">
-                            <span className="ath-loadday-day" style={{ width: 110 }}>{u.unit}</span>
-                            <span className="cmpl-track">
-                              <span
-                                className="cmpl-fill"
-                                data-tone="accent"
-                                style={{ width: `${peakUnit > 0 ? Math.round((100 * u.days) / peakUnit) : 0}%` }}
-                              />
-                            </span>
-                            <span className="ath-loadday-val">{u.days}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </section>
-                </div>
+                {/* "Where the days went" is gone. Every row of the card below
+                    already carries the athlete's own site, so the by-site bars were
+                    the same days counted a second way with no athlete attached —
+                    the less actionable of the two cuts of one number. */}
 
                 <section className="card" aria-labelledby="inj-who">
                   <h2 className="ath-card-title" id="inj-who">
@@ -519,93 +436,6 @@ export default async function InjuryAvailabilityReportPage({
                       ? ' Availability is measured against the current squad, so over a window this long it counts days for athletes who joined part-way through it.'
                       : ''}
                   </p>
-                </section>
-              </div>
-            ),
-          },
-          {
-            label: 'Burden',
-            content: (
-              <div className="stack">
-                <div className="card cmpl-stats" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
-                  <div className="cmpl-stat">
-                    <span className="cmpl-stat-label">Total burden</span>
-                    <span className="cmpl-stat-value">
-                      {report.summary.daysLost}
-                      <small style={{ fontWeight: 400 }}>days</small>
-                    </span>
-                    <span className="cmpl-stat-sub">
-                      across {report.byAthlete.length} athlete{report.byAthlete.length === 1 ? '' : 's'}
-                    </span>
-                  </div>
-                  <div className="cmpl-stat">
-                    <span className="cmpl-stat-label">Mean per full week</span>
-                    <span className="cmpl-stat-value">
-                      {meanPerFullWeek === null ? '—' : meanPerFullWeek}
-                      {meanPerFullWeek === null ? null : <small style={{ fontWeight: 400 }}>days</small>}
-                    </span>
-                    <span className="cmpl-stat-sub">
-                      {meanPerFullWeek === null
-                        ? 'no whole week falls inside the period'
-                        : `n = ${fullWeeks.length} · part weeks are left out`}
-                    </span>
-                  </div>
-                  <div className="cmpl-stat">
-                    <span className="cmpl-stat-label">Trend</span>
-                    <span className="cmpl-stat-value" style={{ fontSize: 24 }}>
-                      {trend.label}
-                    </span>
-                    <span className="cmpl-stat-sub">{trend.note}</span>
-                  </div>
-                </div>
-
-                <section className="card cmpl-table" aria-labelledby="inj-burden">
-                  <h2 className="ath-card-title" id="inj-burden">
-                    Athlete-days lost, by week
-                  </h2>
-                  {report.burden.length === 0 ? (
-                    <p className="tiny" style={{ padding: '10px 0 14px', color: 'var(--muted)' }}>
-                      No days lost in this period.
-                    </p>
-                  ) : (
-                    <>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 12 }}>
-                        {report.burden.map((w) => (
-                          <div key={w.weekStart}>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
-                              <span style={{ fontSize: 13.5, fontWeight: 700 }}>
-                                Week of {formatDate(w.weekStart, timezone)}
-                              </span>
-                              {/* A short bar on a part week is the window's
-                                  shape, not a recovering squad — so the row
-                                  says which before anyone reads the bar. */}
-                              {w.fullWeek ? null : (
-                                <span className="tiny" style={{ color: 'var(--faint)' }}>
-                                  {w.daysInPeriod} of 7 days fall inside the period
-                                </span>
-                              )}
-                              <span className="ath-test-num" style={{ marginLeft: 'auto', fontWeight: 700, fontSize: 13.5 }}>
-                                {w.daysLost} days
-                              </span>
-                            </div>
-                            <span className="cmpl-track" style={{ display: 'block', marginTop: 6, height: 8 }}>
-                              <span
-                                className="cmpl-fill"
-                                data-tone="bad"
-                                style={{ width: `${peakWeek > 0 ? Math.round((100 * w.daysLost) / peakWeek) : 0}%` }}
-                              />
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                      <p className="inj-foot" style={{ marginTop: 14 }}>
-                        A week is counted whole only when all seven of its days fall inside the period,
-                        so a short last row is the window&rsquo;s shape rather than an improvement. Bars
-                        share one scale · n = {report.byAthlete.length} athlete
-                        {report.byAthlete.length === 1 ? '' : 's'}.
-                      </p>
-                    </>
-                  )}
                 </section>
               </div>
             ),

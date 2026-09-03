@@ -95,7 +95,7 @@ const SCALE_1_5 = { axis: [1, 5] as const, ticks: [1, 2, 3, 4, 5] as const, deci
 export const METRICS: readonly MetricDef[] = [
   {
     key: 'acwr',
-    label: 'Acute:chronic workload ratio',
+    label: 'ACWR',
     source: 'training',
     column: null,
     unit: '',

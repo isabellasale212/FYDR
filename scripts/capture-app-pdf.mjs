@@ -4,6 +4,7 @@
  *   npm run capture:pdf -- --local      # http://localhost:3000 (run `npm run dev` first)
  *   npm run capture:pdf -- --width 1280 # viewport width for the capture
  *   npm run capture:pdf -- --base https://fydr.app   # the custom domain
+ *   npm run capture:pdf -- --fresh-profile            # forget the saved session
  *
  * A Chrome window opens on the sign-in page. SIGN IN, and the script does the
  * rest: it walks every route, screenshots each one full-page, and prints the
@@ -11,11 +12,15 @@
  * margin to write on.
  *
  * WHY IT ASKS YOU TO SIGN IN RATHER THAN DOING IT ITSELF. Every page worth
- * reviewing is behind auth, and this script never sees your password: Chrome
- * runs against a scratch profile in the system temp directory, you type into
- * Chrome's own window, and the script only ever reads `location.pathname` to
- * notice you are through. Nothing is stored in the repo. Delete the profile
- * and the session is gone.
+ * reviewing is behind auth, and this script never sees your password: you type
+ * into Chrome's own window, and the script only ever reads `location.pathname`
+ * to notice you are through.
+ *
+ * THE PROFILE PERSISTS between runs, in ~/.fydr-capture-profile — so you sign
+ * in once and every later run reuses that session instead of asking again. It
+ * holds a session cookie exactly the way your own logged-in browser does, it
+ * lives outside the repo, and `--fresh-profile` or deleting the directory ends
+ * it. Your password is never in it; only the session that signing in created.
  *
  * NO NEW DEPENDENCIES, per CLAUDE.md §4. It drives the copy of Chrome already
  * on the machine over the DevTools Protocol, using the WebSocket client built
@@ -30,7 +35,7 @@
  */
 import { spawn } from 'node:child_process';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { tmpdir, homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
@@ -177,7 +182,13 @@ function buildUrls(routes, params) {
 /* --------------------------------------------------------------- main ---- */
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-const profile = mkdtempSync(join(tmpdir(), 'fydr-capture-'));
+/* One profile, reused. A capture run is usually one of several in a sitting —
+   compare, fix, re-capture — and a scratch profile made that three sign-ins for
+   one piece of work. --fresh-profile restores the throwaway behaviour. */
+const FRESH = argv.includes('--fresh-profile');
+const PERSISTENT_PROFILE = join(homedir(), '.fydr-capture-profile');
+const profile = FRESH ? mkdtempSync(join(tmpdir(), 'fydr-capture-')) : PERSISTENT_PROFILE;
+if (!FRESH) mkdirSync(profile, { recursive: true });
 const chrome = spawn(CHROME, [
   `--remote-debugging-port=${PORT}`,
   `--user-data-dir=${profile}`,
@@ -192,7 +203,8 @@ function cleanup() {
   if (cleanedUp) return;
   cleanedUp = true;
   try { chrome.kill(); } catch {}
-  try { rmSync(profile, { recursive: true, force: true }); } catch {}
+  // Only a scratch profile is deleted; the persistent one is the point.
+  if (FRESH) { try { rmSync(profile, { recursive: true, force: true }); } catch {} }
 }
 process.on('exit', cleanup);
 process.on('SIGINT', () => { cleanup(); process.exit(130); });

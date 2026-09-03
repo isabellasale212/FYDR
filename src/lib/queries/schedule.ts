@@ -1,5 +1,11 @@
 import type { FixtureRow, SessionRow } from '@/lib/types/database';
-import { addDays, anchorMdOffsetsToWeek, dateInTz, zonedTimeToUtcIso } from '@/lib/format';
+import {
+  addDays,
+  dateInTz,
+  mdOffsetsForDays,
+  MD_MAX_SPAN_DAYS,
+  zonedTimeToUtcIso,
+} from '@/lib/format';
 import { humanizeDbError } from '@/lib/writeErrors';
 import { fetchCurrentAvailability } from './availability';
 import { fetchGroupAthleteIds, type Db } from './groups';
@@ -455,10 +461,27 @@ export async function fetchWeekMdLabels(
   weekStart: string,
   timezone: string,
 ): Promise<Map<string, number | null>> {
-  const bounds = rangeBounds(weekStart, addDays(weekStart, 6), timezone);
+  /* EVERY day of the week gets an entry, and the matchday it counts toward is
+     looked for OUTSIDE the week as well as in it.
+   *
+   * Both halves were bugs, and together they are why a week strip could render
+   * seven blank labels. The map used to be built from session rows, so a day
+   * with nothing scheduled — a rest day, which is most of them — was absent
+   * from it entirely and rendered no label at all. And matchdays were only
+   * collected from inside the seven days being labelled, so the Sunday after
+   * Saturday's fixture had no matchday to be MD+1 of, and the Friday before
+   * next Saturday's had none to be MD-1 of. 23a labels all seven days, MD-5
+   * through MD+1, off a single fixture. */
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+
+  /* Ten days either side. MD_MAX_SPAN_DAYS is 9, so this is the smallest
+     window that can still find every matchday able to label a day in it —
+     anything wider is rows fetched to be discarded. */
+  const bounds = rangeBounds(addDays(weekStart, -10), addDays(weekStart, 16), timezone);
 
   const sessions = await fetchSessionsBetween(db, orgId, bounds.from, bounds.to);
-  const byDate = new Map<string, { isMatch: boolean; storedMdOffset: number | null }>();
+  const matchDates = new Set<string>();
+  const storedByDate = new Map<string, number>();
   for (const s of sessions) {
     // Same bug class as this file's own dayBounds()/rangeBounds() (audit
     // Batch 2), a level down: `starts_at` is a stored UTC instant, and
@@ -467,15 +490,23 @@ export async function fetchWeekMdLabels(
     // would be bucketed under the wrong day here. dateInTz (format.ts) is
     // the shared primitive for this, same as every other fix below.
     const date = dateInTz(new Date(s.starts_at), timezone);
-    const cur = byDate.get(date) ?? { isMatch: false, storedMdOffset: null };
-    byDate.set(date, {
-      isMatch: cur.isMatch || s.session_type === 'match',
-      storedMdOffset: s.md_offset ?? cur.storedMdOffset,
-    });
+    if (s.session_type === 'match' || s.md_offset === 0) matchDates.add(date);
+    if (s.md_offset !== null && s.md_offset !== undefined) storedByDate.set(date, s.md_offset);
   }
-  return anchorMdOffsetsToWeek(
-    [...byDate.entries()].map(([date, v]) => ({ date, isMatch: v.isMatch, storedMdOffset: v.storedMdOffset })),
-  );
+
+  const out = mdOffsetsForDays(weekDays, [...matchDates]);
+
+  /* The stored countdown, only where no matchday was found in range and only
+     while it stays in range itself. A stored md_offset points at whichever
+     fixture the session was authored against, which can be weeks away — the
+     audit caught a real matchday labelled "MD-7" that way — so it is the last
+     resort, not the first, and it is capped like everything else. */
+  for (const date of weekDays) {
+    if (out.get(date) !== null && out.get(date) !== undefined) continue;
+    const stored = storedByDate.get(date);
+    if (stored !== undefined && Math.abs(stored) <= MD_MAX_SPAN_DAYS) out.set(date, stored);
+  }
+  return out;
 }
 
 export async function fetchWeekSessions(

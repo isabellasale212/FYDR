@@ -278,22 +278,84 @@ export function anchorMdOffsetsToWeek(
   days: readonly { date: string; isMatch: boolean; storedMdOffset: number | null }[],
 ): Map<string, number | null> {
   const matchDates = days.filter((d) => d.isMatch || d.storedMdOffset === 0).map((d) => d.date);
-  const out = new Map<string, number | null>();
   if (matchDates.length === 0) {
+    const out = new Map<string, number | null>();
     for (const d of days) out.set(d.date, d.storedMdOffset);
     return out;
   }
-  for (const d of days) {
-    let best: number | null = null;
-    for (const m of matchDates) {
-      const offset = daysBetween(m, d.date);
-      // Nearest matchday wins; on a tie, the upcoming one (negative offset,
-      // "building toward Saturday") reads better than the one just played.
-      if (best === null || Math.abs(offset) < Math.abs(best) || (Math.abs(offset) === Math.abs(best) && offset < best)) {
-        best = offset;
-      }
+  return mdOffsetsForDays(days.map((d) => d.date), matchDates);
+}
+
+/** How far a matchday can be and still label a day.
+ *
+ *  A weekly fixture cycle never puts a day more than 3 or 4 from a match, and
+ *  a fortnightly one never more than 7. Past that the club is between blocks,
+ *  and "MD-19" is not scheduling shorthand — it is a number pretending to be
+ *  one. CLAUDE.md §6 defines MD-n as "matchday minus n days"; a day with no
+ *  matchday in reach has no such number, and says nothing instead. */
+export const MD_MAX_SPAN_DAYS = 9;
+
+/** How many days AFTER a match can still be labelled MD+n.
+ *
+ *  Much tighter than the countdown, and deliberately. A build-up can
+ *  meaningfully be MD-9 — that is a two-week block with a name. "Days since
+ *  the last match" stops meaning anything almost immediately: MD+1 is the
+ *  recovery day every programme in the sport has a name for, MD+2 is
+ *  sometimes used, and MD+8 is just subtraction. */
+export const MD_MAX_AFTER_DAYS = 2;
+
+/** MD-n for an explicit set of days against an explicit set of matchdays.
+ *
+ *  Split out of anchorMdOffsetsToWeek because a week strip has to label EVERY
+ *  day, not only the days that happen to hold a session — and because the
+ *  matchday it counts toward is usually not inside the week being labelled.
+ *  The Sunday after a Saturday fixture is MD+1; the Friday before the next one
+ *  is MD-1; neither is discoverable from that week's own session rows.
+ *
+ *  THE RULE IS NOT "NEAREST MATCH", which is what this did while it only ever
+ *  saw one week at a time. Once the previous week's fixture is also in view,
+ *  nearest gives Monday MD+2 and Tuesday MD+3 before flipping to MD-3 on
+ *  Wednesday — a countdown that runs backwards through the middle of the week.
+ *  23a labels that same Monday MD-5.
+ *
+ *  A training week counts DOWN to the next match. That is what the label is
+ *  for: it says how much of the build-up is left. So:
+ *
+ *    1. the day after a match is MD+1, always — it is the recovery day, and
+ *       that identity outranks any countdown;
+ *    2. otherwise, count down to the next match within reach;
+ *    3. otherwise, count up from the last one, but only a day or two (see
+ *       MD_MAX_AFTER_DAYS);
+ *    4. otherwise there is no matchday in reach, and the day says nothing. */
+export function mdOffsetsForDays(
+  days: readonly string[],
+  matchDates: readonly string[],
+  maxSpanDays: number = MD_MAX_SPAN_DAYS,
+): Map<string, number | null> {
+  const out = new Map<string, number | null>();
+  for (const day of days) {
+    const offsets = matchDates.map((m) => daysBetween(m, day));
+
+    // 1. Matchday itself, then the recovery day after it.
+    if (offsets.some((o) => o === 0)) {
+      out.set(day, 0);
+      continue;
     }
-    out.set(d.date, best);
+    if (offsets.some((o) => o === 1)) {
+      out.set(day, 1);
+      continue;
+    }
+
+    // 2. The nearest match still to come.
+    const upcoming = offsets.filter((o) => o < 0 && -o <= maxSpanDays);
+    if (upcoming.length > 0) {
+      out.set(day, Math.max(...upcoming));
+      continue;
+    }
+
+    // 3. The most recent one behind, while it still means something.
+    const past = offsets.filter((o) => o > 0 && o <= MD_MAX_AFTER_DAYS);
+    out.set(day, past.length > 0 ? Math.min(...past) : null);
   }
   return out;
 }

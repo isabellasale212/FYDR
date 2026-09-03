@@ -622,11 +622,17 @@ export function ScheduleWorkspace({
           <div className="sg-banner-title">
             {dirtyCount > 0 ? `${dirtyCount} change${dirtyCount === 1 ? '' : 's'} not yet in the athlete app` : 'The athlete app is up to date'}
           </div>
-          <div className="sg-banner-sub">
-            {dirtyCount > 0
-              ? 'Athletes still see the schedule as it was before these edits. Nothing changes on their phone until you publish.'
-              : 'No local edits waiting — every earlier save here is already live on every phone.'}
-          </div>
+          {/* Only when there IS something to warn about. Design.pdf p9 shows the
+              clean banner as one line, and "no local edits waiting" was the
+              title above it said a second way. The dirty copy stays: that one
+              is a fact about the athletes' phones that the title does not
+              carry. */}
+          {dirtyCount > 0 ? (
+            <div className="sg-banner-sub">
+              Athletes still see the schedule as it was before these edits. Nothing changes on their
+              phone until you publish.
+            </div>
+          ) : null}
           {publishError ? (
             <div className="sg-banner-sub" style={{ color: 'var(--bad-text)' }}>
               {publishError}

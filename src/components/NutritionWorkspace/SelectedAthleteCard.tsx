@@ -195,9 +195,7 @@ export function SelectedAthleteCard({
 
         <div>
           <div className="nutr-checkin-title">Weekly check-in</div>
-          <p className="nutr-checkin-footnote">
-            asked once a week, not a daily log · a missed week is not counted against them
-          </p>
+          
           <CheckinStrip checkins={athlete.recentCheckins} />
           {overrideNote ? <p className="nutr-override-note">{overrideNote}</p> : null}
         </div>

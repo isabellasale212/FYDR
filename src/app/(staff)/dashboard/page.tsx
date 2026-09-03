@@ -619,13 +619,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         </div>
       </div>
 
-      <p className="cap" style={{ marginTop: 14 }}>
-        Squad · {orgName} · signed in as {claims.roles.join(', ')}. The dashboard navigates, it does not
-        act — every row and card above leads to the screen that owns the thing. Period covers the session
-        list only: one day. Availability, readiness and the entry
-        tracks are fixed by what they mean — &ldquo;today&rdquo;, &ldquo;yesterday&rdquo;, &ldquo;days to
-        Saturday&rdquo; — and anything longer than a week lives in Analytics.
-      </p>
+      {/* The closing paragraph is gone per Design.pdf p2. It explained how to
+          read the page rather than telling a coach anything about their squad,
+          and every card above already links to the screen that owns it. */}
     </>
   );
 }

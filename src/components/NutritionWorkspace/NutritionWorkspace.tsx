@@ -14,7 +14,7 @@ import {
   type DayTypeId,
   type MacroRule,
 } from '@/lib/nutritionRules';
-import { MEALS, scaleDay, scaleMeal, type Meal, type ScaledMeal } from '@/lib/nutritionMeals';
+import { scaleDay, scaleMeal, type Meal, type ScaledMeal } from '@/lib/nutritionMeals';
 import {
   createLibraryMeal,
   libraryMealToMeal,
@@ -470,9 +470,7 @@ export function NutritionWorkspace({
           </div>
 
           <p className="nutr-disclaimer">
-            Coach-set guidance from a body-mass rule, not a clinical or dietetic prescription. For a
-            diagnosed condition, an eating concern, or return-to-play fuelling, involve medical staff
-            or a registered dietitian before assigning.
+            Coach-set guidance, not a clinical prescription.
           </p>
         </div>
 
@@ -480,11 +478,12 @@ export function NutritionWorkspace({
           <div className="nutr-card-head">
             <div>
               <div className="nutr-plan-rules-title">The day, as food</div>
-              <div className="nutr-plan-rules-sub">
-                {selectedAthlete
-                  ? `Portions scale with body mass, so this is ${selectedAthlete.firstName}'s day${selectedAthlete.massKg !== null ? ` at ${selectedAthlete.massKg.toFixed(1)} kg` : ''}. Pick any athlete below to reprice it.`
-                  : 'Pick an athlete below to price this day.'}
-              </div>
+              {/* Only the prompt, and only when there is nothing priced yet.
+                  With an athlete selected the card's own header already names
+                  them and their mass. */}
+              {selectedAthlete ? null : (
+                <div className="nutr-plan-rules-sub">Pick an athlete below to price this day.</div>
+              )}
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button
@@ -544,12 +543,6 @@ export function NutritionWorkspace({
                   <MealCard key={`${meal.name}-${i}`} meal={meal} />
                 ))}
               </div>
-              <p className="nutr-mono nutr-meal-caption">
-                {MEALS.length} fixed{extraMeals.length > 0 ? ` + ${extraMeals.length} from the library` : ''} ·
-                authored once for a 110 kg reference athlete, scaled to this athlete by mass · the tick on
-                each bar is the target · a meal not re-tuned per athlete can land outside its own ±
-                {MACRO_TOLERANCE_PCT}% rule — see the warning above the bars if it has
-              </p>
             </>
           ) : (
             <p className="tiny" style={{ marginTop: 14 }}>
@@ -614,12 +607,10 @@ function TotalsBars({
     <>
       {offBars.length > 0 ? (
         <p className="nutr-totals-warning" role="alert">
-          Outside the ±{MACRO_TOLERANCE_PCT}% rule this day is meant to hold:{' '}
+          Outside ±{MACRO_TOLERANCE_PCT}%:{' '}
           {offBars
             .map((b) => `${b.label} ${b.deltaPct >= 0 ? '+' : ''}${b.deltaPct.toFixed(0)}%`)
             .join(', ')}
-          . This is the fixed reference meal set, not this athlete&rsquo;s own plan — reprice or swap
-          items rather than publishing it as-is.
         </p>
       ) : null}
       <div className="nutr-totals-grid">

@@ -290,22 +290,12 @@ export default async function ProgrammesPage({
                   </div>
                 )}
 
-                <p className="cap num" style={{ marginTop: 14 }}>
-                  This is the general programme, exactly as written — overrides are per athlete
-                  and never rewrite it, so Override reads &ldquo;&mdash;&rdquo; on this squad-wide
-                  view. See what one athlete actually gets, tailoring included, from &ldquo;View as
-                  an athlete&rdquo; on the programme&rsquo;s own page.
-                </p>
               </div>
             )}
           </div>
         </div>
       )}
 
-      <p className="cap">
-        Coach authors gym, conditioning and nutrition programmes. Medical authors rehab
-        programmes only, and reads every gym programme for context.
-      </p>
     </>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { MASS_FLAG_PCT_7D, massState, rangeBarMark, trendFlagSentence } from '@/lib/nutritionRules';
+import { massState, rangeBarMark, trendFlagSentence } from '@/lib/nutritionRules';
 import type { ComputedTargets, MacroRule } from '@/lib/nutritionRules';
 import type { WorkspaceAthlete } from '@/lib/nutritionWorkspace';
 
@@ -124,13 +124,7 @@ export function TargetsTable({ unitGroups, selectedAthleteId, onSelectAthlete }:
           want them, set by a named person, never shown to the athlete and never ranked
         </span>
       </p>
-      <p className="nutr-table-caption">
-        Targets recompute on the next weigh-in · an athlete override replaces the rule for that
-        athlete only · a missing log is never counted as zero · a {MASS_FLAG_PCT_7D}%+ drop in 7 days
-        moves an athlete onto the &ldquo;Needs a word&rdquo; chase list · &ldquo;Trending
-        above/below&rdquo; means outside their own recent range AND moved {MASS_FLAG_PCT_7D}%+ in
-        7 days, visible here only, never to the athlete
-      </p>
+      
     </div>
   );
 }

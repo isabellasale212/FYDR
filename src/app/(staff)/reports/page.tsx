@@ -205,10 +205,6 @@ export default async function ReportsPage() {
         })}
       </div>
 
-      <p className="cap">
-        Live pages, recomputed each time you open them. Every report exports to CSV and to PDF.
-        XLSX and scheduled email delivery aren&rsquo;t available yet.
-      </p>
     </>
   );
 }

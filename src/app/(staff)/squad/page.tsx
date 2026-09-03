@@ -76,11 +76,6 @@ export default async function SquadPage({
           {rows.length} athletes
           {groupIds.length > 0 ? ' in the selected groups' : ' in the squad'}
         </h2>
-        <p className="import-sub">
-          Injury-linked availability is set by medical staff. A coach can also record a
-          non-injury absence directly — illness, personal, academic, representative, or
-          other — from an athlete&rsquo;s profile.
-        </p>
         <RosterTable orgId={orgId} groupIds={groupIds} initialRows={rows} />
       </section>
     </>

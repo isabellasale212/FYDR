@@ -640,7 +640,13 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                 </div>
               </div>
               <div className="tr-read">
-                <p style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>{overview.headline}</p>
+                {/* The headline sentence ("A lighter session than usual, and
+                    high speed running is what made it lighter") is gone, as it
+                    is on the match-day view: the three dials directly beside it
+                    say the same thing per axis, with the numbers. The reference
+                    line stays — it is the only place the values the dials are
+                    scored AGAINST, and how many sessions are behind them,
+                    appear at all. */}
                 <p className="tiny num" style={{ color: 'var(--faint)', marginTop: 6 }}>
                   {overview.referenceLine}
                 </p>

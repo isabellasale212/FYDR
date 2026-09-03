@@ -205,6 +205,14 @@ export default async function ReportsPage() {
         })}
       </div>
 
+      {/* Design.pdf p11 has no caption here, and the two sentences that stood
+          with this one are gone for that reason: "live pages, recomputed each
+          time you open them" and "every report exports to CSV and to PDF" both
+          restated the cards above, which already print "CSV · PDF" on every
+          one. This sentence is not a restatement — it is the only place in the
+          app that says these two formats do not exist yet, and a coach looking
+          for them would otherwise go hunting. */}
+      <p className="cap">XLSX and scheduled email delivery aren&rsquo;t available yet.</p>
     </>
   );
 }

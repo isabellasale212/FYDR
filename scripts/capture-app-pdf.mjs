@@ -251,28 +251,41 @@ try {
   console.log('  SIGN IN there. Capture starts on its own the moment you are through.');
   console.log('  (Sign in as staff for the staff pages, or as an athlete for the athlete ones.)\n');
 
-  /* Wait for the login page to actually BE THERE before watching for it to go.
-     A tab that has not navigated yet reports about:blank, whose pathname is
-     "/" — which is not "/login", which the first version of this loop read as
-     "signed in". It then captured all 83 routes as redirects to the sign-in
-     page it had never left. */
+  /* Two things have to be told apart here, and the tab reports the same
+     pathname for one of them as for a state that means the opposite.
+
+     A tab that has not navigated yet is about:blank, whose pathname is "/" —
+     not "/login". Reading that as "signed in" is what made the first version
+     capture all 83 routes as redirects to a sign-in page it had never left, so
+     arrival is only ever judged once the tab is on the TARGET ORIGIN.
+
+     And with a saved session (the persistent profile), /login redirects to
+     /today before this loop can see it. Waiting for /login to appear then
+     hangs until it throws. So: wait for the origin, and whether we are already
+     past the sign-in page decides which of the two waits we do. */
+  const onOrigin = async () =>
+    (await evaluate(`location.origin === ${JSON.stringify(new URL(BASE).origin)}`).catch(() => false)) === true;
   const onLogin = async () =>
     (await evaluate(`location.origin === ${JSON.stringify(new URL(BASE).origin)} && location.pathname.startsWith('/login')`).catch(() => false)) === true;
 
-  for (let i = 0; i < 120 && !(await onLogin()); i++) await sleep(250);
-  if (!(await onLogin())) throw new Error('The sign-in page never loaded in the Chrome window.');
+  for (let i = 0; i < 120 && !(await onOrigin()); i++) await sleep(250);
+  if (!(await onOrigin())) throw new Error('The app never loaded in the Chrome window.');
 
-  let through = false;
-  for (let i = 0; i < 1200; i++) {           // up to 10 minutes
-    if (!(await onLogin())) {
-      // Two consecutive reads, so a redirect in flight is not mistaken for
-      // arrival.
-      await sleep(600);
-      if (!(await onLogin())) { through = true; break; }
+  if (await onLogin()) {
+    let through = false;
+    for (let i = 0; i < 1200; i++) {         // up to 10 minutes
+      if (!(await onLogin())) {
+        // Two consecutive reads, so a redirect in flight is not mistaken for
+        // arrival.
+        await sleep(600);
+        if (!(await onLogin())) { through = true; break; }
+      }
+      await sleep(500);
     }
-    await sleep(500);
+    if (!through) throw new Error('Timed out waiting for sign-in.');
+  } else {
+    console.log('  Saved session — no sign-in needed.');
   }
-  if (!through) throw new Error('Timed out waiting for sign-in.');
   who = await evaluate('document.title').catch(() => null);
   console.log('  Signed in. Capturing…\n');
   }

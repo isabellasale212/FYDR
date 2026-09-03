@@ -44,6 +44,11 @@ const BASE = argv.includes('--local') ? 'http://localhost:3000' : 'https://fydr.
    exercise this script without a password. */
 const SKIP_SIGNIN = argv.includes('--skip-signin');
 const WIDTH = Number(arg('width', 1280));
+/* Device pixel ratio for the capture. 2 is sharp enough to read small type on
+   paper and makes a ~46MB PDF across 80 pages; 1 is about a quarter of that and
+   is still fine at A4, because a 1280px-wide shot printed 190mm across is
+   already 170dpi. */
+const SCALE = Number(arg('scale', 2));
 const OUT_DIR = resolve('capture');
 const PORT = 9333;
 
@@ -189,12 +194,24 @@ try {
   if (!version) throw new Error('Chrome did not expose its debugging port.');
   await connect(version.webSocketDebuggerUrl);
 
-  const { targetId } = await send('Target.createTarget', { url: `${BASE}/login` });
+  /* ATTACH TO THE TAB CHROME ALREADY OPENED — do not create a second one.
+     The window Chrome opens from the command line is the one you can see and
+     will type into; a tab created over CDP is a different tab. The first run of
+     this script drove that second tab and watched it for a sign-in that was
+     happening in the first, which it could never have seen. */
+  let targetId = null;
+  for (let i = 0; i < 60 && !targetId; i++) {
+    const { targetInfos } = await send('Target.getTargets');
+    const page = targetInfos.find((t) => t.type === 'page' && t.url.startsWith(BASE));
+    if (page) targetId = page.targetId;
+    else await sleep(250);
+  }
+  if (!targetId) throw new Error('Could not find the Chrome tab showing the app.');
   const { sessionId } = await send('Target.attachToTarget', { targetId, flatten: true });
   const S = sessionId;
   await send('Page.enable', {}, S);
   await send('Runtime.enable', {}, S);
-  await send('Emulation.setDeviceMetricsOverride', { width: WIDTH, height: 900, deviceScaleFactor: 2, mobile: false }, S);
+  await send('Emulation.setDeviceMetricsOverride', { width: WIDTH, height: 900, deviceScaleFactor: SCALE, mobile: false }, S);
 
   const evaluate = async (expr) => {
     const r = await send('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true }, S);
@@ -210,17 +227,29 @@ try {
   console.log('  SIGN IN there. Capture starts on its own the moment you are through.');
   console.log('  (Sign in as staff for the staff pages, or as an athlete for the athlete ones.)\n');
 
+  /* Wait for the login page to actually BE THERE before watching for it to go.
+     A tab that has not navigated yet reports about:blank, whose pathname is
+     "/" — which is not "/login", which the first version of this loop read as
+     "signed in". It then captured all 83 routes as redirects to the sign-in
+     page it had never left. */
+  const onLogin = async () =>
+    (await evaluate(`location.origin === ${JSON.stringify(new URL(BASE).origin)} && location.pathname.startsWith('/login')`).catch(() => false)) === true;
+
+  for (let i = 0; i < 120 && !(await onLogin()); i++) await sleep(250);
+  if (!(await onLogin())) throw new Error('The sign-in page never loaded in the Chrome window.');
+
+  let through = false;
   for (let i = 0; i < 1200; i++) {           // up to 10 minutes
-    const path = await evaluate('location.pathname').catch(() => null);
-    if (path && !path.startsWith('/login')) {
-      who = await evaluate('document.title').catch(() => null);
-      break;
+    if (!(await onLogin())) {
+      // Two consecutive reads, so a redirect in flight is not mistaken for
+      // arrival.
+      await sleep(600);
+      if (!(await onLogin())) { through = true; break; }
     }
     await sleep(500);
   }
-  if ((await evaluate('location.pathname')).startsWith('/login')) {
-    throw new Error('Timed out waiting for sign-in.');
-  }
+  if (!through) throw new Error('Timed out waiting for sign-in.');
+  who = await evaluate('document.title').catch(() => null);
   console.log('  Signed in. Capturing…\n');
   }
 
@@ -311,7 +340,7 @@ try {
   <section class="cover">
     <h1>Fydr — every page</h1>
     <p><b>${esc(BASE)}</b> · captured ${esc(stamp)}${who ? ` · signed in as ${esc(who)}` : ''}</p>
-    <p>${ok} of ${shots.length} routes captured at ${WIDTH}px wide.</p>
+    <p>${ok} of ${shots.length} routes captured at ${WIDTH}px wide, ${SCALE}&times;.</p>
     <ul>
       <li>One route per sheet, with ruled space underneath for corrections.</li>
       <li>A page marked in amber was not reachable by the account used — the athlete and staff surfaces need separate sign-ins.</li>

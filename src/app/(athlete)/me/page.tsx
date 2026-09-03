@@ -245,7 +245,11 @@ export default async function MePage() {
                *  app, which this build does not have (CLAUDE.md §8) — a browser
                *  cannot reach HealthKit. Better to state that than to leave an
                *  athlete waiting for sleep data that cannot arrive. */}
-              <p className="tiny" style={{ color: 'var(--faint)', margin: '8px 0 0' }}>
+              {/* No inline --faint override: .tiny is caption ink now (--muted,
+                  6.0:1) and this is a sentence about a consent decision, which
+                  is the last text in the app that should be the palest on the
+                  screen. */}
+              <p className="tiny" style={{ margin: '8px 0 0' }}>
                 {healthkit.granted
                   ? 'Allowed. Nothing is being read yet — that needs the Fydr iPhone app, which is not out. You can withdraw this at any time.'
                   : 'You can turn this off again whenever you like. Your coach is never told either way.'}

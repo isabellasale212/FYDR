@@ -167,14 +167,21 @@ export function LoginForm() {
           />
         </div>
 
-        <p className="signin-forgot">
-          <Link href="/login/reset">Forgot your password?</Link>
-        </p>
       </div>
 
       <button className="btn-primary signin-submit" type="submit" disabled={busy || locked}>
         {locked ? `Locked · ${formatCountdown(secondsRemaining)}` : busy ? 'Signing in' : 'Sign in'}
       </button>
+
+      {/* BELOW the button, centred — Fydr App Launch.dc.html puts the secondary
+          action there, and it is also the fix for what this was: the link sat
+          inside the field stack, 14px under the password box, while the button
+          carried margin-top: auto that collapses to nothing in this layout. The
+          two ended up touching, so the link read as a caption on the button
+          rather than as a separate way out. */}
+      <p className="signin-forgot">
+        <Link href="/login/reset">Forgot your password?</Link>
+      </p>
     </form>
   );
 }

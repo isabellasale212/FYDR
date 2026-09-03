@@ -2864,8 +2864,12 @@ a.hist-row:focus-visible {
   flex: 1;
   min-height: 0;
 }
+/* 18px, the gap the scene uses between the sign-in block's children. It was
+   margin-top: auto, which pushed the button to the bottom of a card that filled
+   the screen — this layout is in normal flow, so auto resolved to zero and the
+   button sat flush against the fields above it. */
 .signin-submit {
-  margin-top: auto;
+  margin-top: 18px;
   width: 100%;
 }
 .signin-privacy {
@@ -7810,9 +7814,9 @@ button.dash-stat {
   color: var(--muted);
 }
 .signin-forgot {
-  margin: 0;
-  text-align: end;
-  font-size: 12.5px;
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 13px;
   font-weight: 600;
 }
 .signin-return {

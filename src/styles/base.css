@@ -3290,16 +3290,26 @@ img.av {
   font-size: 14.5px;
   font-weight: 600;
 }
+/* The settings row's value is content, not a mark — §7.5 gives it "14px/600
+   accent, or faint when the value is Not connected". Faint earns it there
+   because "Not connected" is the absence of a setting, and the row's name
+   carries the meaning; everywhere else it is the setting itself and takes
+   readable ink. */
 .me-row .v {
-  font-size: 12.5px;
-  color: var(--faint);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-text);
+}
+.me-row .v[data-off] {
+  font-weight: 400;
+  color: var(--muted);
 }
 .me-row.bad .k {
   color: var(--bad-text);
 }
 .me-footer {
-  font-size: 11.5px;
-  color: var(--faint);
+  font-size: 12.5px;
+  color: var(--muted);
   margin-top: 14px;
   padding: 0 4px;
 }

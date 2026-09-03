@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 
 type Page = { label: string; content: React.ReactNode };
 
@@ -60,7 +60,30 @@ export function ReportPager({ pages, right }: Props) {
         </button>
         {right ? <div style={{ marginLeft: 'auto' }}>{right}</div> : null}
       </div>
-      {page.content}
+      {/* KEYED, and the key is why this is a Fragment rather than a bare
+          `{page.content}`.
+
+          Two things it fixes, one of them invisible until you look for it.
+
+          The visible one is React's "Each child in a list should have a unique
+          key prop... Check the render method of `ReportPager`". This div's
+          children are the array [tab row, content], and the content element is
+          built by a SERVER component and arrives over the RSC wire. Flight
+          outlines a large element into its own chunk, so what lands here is a
+          lazy wrapper rather than the element itself; jsx's key check marks the
+          WRAPPER as validated, the reconciler unwraps it, and the element
+          inside still reads as an unkeyed child of a list. Hence the warning on
+          the tab whose content happened to be outlined — and only when you
+          switch to it, because an unvisited tab's chunk is never resolved. A
+          key on this slot ends it: React does not ask for one twice.
+
+          The other is real. Without a key, every tab's content occupies the
+          same position in the same parent, so React RECONCILES ONE TAB'S
+          SUBTREE INTO THE NEXT — a chart's internal state, a details/summary's
+          open flag, a scroll position, all carried across a switch into a
+          report that never asked for it. Keying by label makes each tab its own
+          subtree, which is what a tab set means. */}
+      <Fragment key={page.label}>{page.content}</Fragment>
     </div>
   );
 }

@@ -10388,8 +10388,18 @@ button.dash-stat {
 .launch[data-animate] .launch-lockup {
   animation: launch-lift 0.55s cubic-bezier(0.165, 0.84, 0.44, 1) 1.62s both;
 }
-.launch[data-animate] .launch-ground {
+/* Light only. In dark the splash ground and the page ground are the SAME
+   colour in the scene — `ground` is var(--bg) for the whole composition — so
+   nothing morphs and only the lockup moves. This rule was unscoped, which put
+   dark on #182241 for the splash and #202b4e after the handoff: a visible step
+   on a frame the file holds still. */
+:root:not([data-theme='dark']) .launch[data-animate] .launch-ground {
   animation: launch-ground 0.55s cubic-bezier(0.165, 0.84, 0.44, 1) 1.62s both;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .launch[data-animate] .launch-ground {
+    animation: none;
+  }
 }
 /* Only light morphs its ink — see the note on .launch above. */
 :root:not([data-theme='dark']) .launch[data-animate] .lockup-word {
@@ -10466,7 +10476,7 @@ button.dash-stat {
 /* The splash still-frame (login/loading.tsx): the lockup where the sequence
    starts it — centred, large, pale on navy — with no animation, so the page
    that follows continues the shot rather than cutting to a new one. */
-.launch-splash .launch-ground {
+:root:not([data-theme='dark']) .launch-splash .launch-ground {
   background: #182241;
 }
 .launch-splash .launch-lockup {

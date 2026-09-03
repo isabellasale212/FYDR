@@ -49,6 +49,11 @@ const WIDTH = Number(arg('width', 1280));
    is still fine at A4, because a 1280px-wide shot printed 190mm across is
    already 170dpi. */
 const SCALE = Number(arg('scale', 2));
+/* Capture a subset: --routes schedule,analytics grabs every route whose path
+   contains one of those. Faster than the full 83 when you only want to look at
+   one area, and the filter is a substring rather than an exact path so
+   "schedule" pulls the planner and a session detail in with it. */
+const ONLY = (arg('routes', '') || '').split(',').map((x) => x.trim()).filter(Boolean);
 const OUT_DIR = resolve('capture');
 const PORT = 9333;
 
@@ -253,7 +258,11 @@ try {
   console.log('  Signed in. Capturing…\n');
   }
 
-  const routes = findRoutes(resolve('src/app'));
+  let routes = findRoutes(resolve('src/app'));
+  if (ONLY.length) {
+    routes = routes.filter((r) => ONLY.some((o) => r.includes(o)));
+    console.log(`  --routes ${ONLY.join(',')} → ${routes.length} of 83 routes\n`);
+  }
   const params = await resolveParams().catch(() => null);
   const targets = buildUrls(routes, params);
 
@@ -341,6 +350,7 @@ try {
     <h1>Fydr — every page</h1>
     <p><b>${esc(BASE)}</b> · captured ${esc(stamp)}${who ? ` · signed in as ${esc(who)}` : ''}</p>
     <p>${ok} of ${shots.length} routes captured at ${WIDTH}px wide, ${SCALE}&times;.</p>
+    ${ONLY.length ? `<p><b>Filtered run</b> — only routes matching ${esc(ONLY.join(', '))}. This is not the whole app.</p>` : ''}
     <ul>
       <li>One route per sheet, with ruled space underneath for corrections.</li>
       <li>A page marked in amber was not reachable by the account used — the athlete and staff surfaces need separate sign-ins.</li>

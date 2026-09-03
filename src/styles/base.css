@@ -631,9 +631,18 @@ a {
   color: var(--muted);
   margin: 0 0 14px;
 }
+/* Caption prose is MUTED, not faint — §3 sizes it at 12.5px and calls the role
+   "Caption". §2's faint is the ink for day letters, chevrons, a rest-day MD
+   label and the em dash, none of which is a sentence.
+   Measured: --faint is #929aa5, 2.84:1 on a light card. Fine for a mark whose
+   meaning is carried by something beside it — the day letter above a date in
+   full ink, the chevron on a row that is itself the link — and not fine for a
+   line of text that is the only place its content appears. --muted is 6.0:1.
+   Every light-theme contrast failure in this app was one of these two
+   classes. */
 .cap {
-  font-size: 11.5px;
-  color: var(--faint);
+  font-size: 12.5px;
+  color: var(--muted);
   line-height: 1.5;
   margin: 10px 0 0;
 }
@@ -645,8 +654,8 @@ a {
   color: var(--muted);
 }
 .tiny {
-  font-size: 11.5px;
-  color: var(--faint);
+  font-size: 12.5px;
+  color: var(--muted);
 }
 .nm {
   font-weight: 700;

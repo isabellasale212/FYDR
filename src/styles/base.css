@@ -10172,10 +10172,15 @@ button.dash-stat {
    the inputs are in the DOM and focusable from the first frame.
    =========================================================================== */
 
+/* Sized by --lk-scale, a UNITLESS factor on the 1001x437 box — which is how
+   the scene expresses it too (0.30 on the splash, 0.155 in the header).
+   Not a width in px: scale() takes a number, and calc(155px / 1001) is a
+   length, so a px-based version silently produced no transform at all and the
+   lockup rendered at its full 1001px. */
 .lockup {
   position: relative;
-  width: var(--lk-w, 300px);
-  height: calc(var(--lk-w, 300px) * 437 / 1001);
+  width: calc(1001px * var(--lk-scale, 0.3));
+  height: calc(437px * var(--lk-scale, 0.3));
   flex: none;
 }
 .lockup-inner {
@@ -10184,7 +10189,7 @@ button.dash-stat {
   top: 0;
   width: 1001px;
   height: 437px;
-  transform: scale(calc(var(--lk-w, 300px) / 1001));
+  transform: scale(var(--lk-scale, 0.3));
   transform-origin: 0 0;
 }
 .lockup-word {
@@ -10313,27 +10318,32 @@ button.dash-stat {
   background: var(--bg);
   z-index: 0;
 }
-.launch > *:not(.launch-ground) {
-  position: relative;
-  z-index: 1;
-}
 
 /* The design's own placement, kept as absolute px inside a 402px column
    because that is the coordinate system it was drawn in: the lockup at
    (30, 92) at 155 wide, the page block at top 176 with 28px of side padding. */
+/* z-index stated on each child rather than through a `.launch > *` rule.
+   That rule also set `position: relative`, at a specificity that beat the
+   `absolute` on both of these — so they stacked in flow instead, and the sign-in
+   block landed at 243.7px where the scene puts it at 176. It looked right by
+   accident: `top` still offset each element, just from a flow position rather
+   than from the column. */
 .launch-lockup {
   position: absolute;
+  z-index: 1;
   left: 30px;
   top: 92px;
-  --lk-w: 155px;
+  --lk-scale: 0.155;
   transform-origin: 0 0;
 }
+/* The block is in NORMAL FLOW with the scene's 176px as padding, not absolute
+   at top: 176. Absolute would pin it to a fixed screen the way the mockup can
+   — but this is a real browser, where a small viewport or a large text size
+   has to be able to scroll the password field back into view. */
 .launch-page {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 176px;
-  padding: 0 28px 40px;
+  position: relative;
+  z-index: 1;
+  padding: 176px 28px 40px;
   display: grid;
   gap: 18px;
 }

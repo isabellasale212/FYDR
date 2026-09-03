@@ -10,9 +10,11 @@
  *  stagger far more cheaply than four <text> elements would. The trace and the
  *  mark are one SVG over the top because they are drawn, not typed.
  *
- *  SIZED BY --lk-w, in pixels. The inner box stays 1001 wide at every size and
- *  is scaled to fit, so the trace never has to be re-authored for a new width
- *  and the letters never reflow — a lockup that reflows is a different lockup.
+ *  SIZED BY --lk-scale, a unitless factor on the 1001-wide box — the same way
+ *  the scene expresses it (0.30 on the splash, 0.155 in the header). The inner
+ *  box stays 1001 wide at every size, so the trace never has to be re-authored
+ *  for a new width and the letters never reflow; a lockup that reflows is a
+ *  different lockup.
  *
  *  No client JS. The whole sequence is CSS, which is what lets it hold still
  *  under prefers-reduced-motion (spec §5) without a hydration boundary and

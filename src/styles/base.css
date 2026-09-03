@@ -10294,6 +10294,13 @@ button.dash-stat {
   --lk-ink: var(--text);
   --lk-trace: #c7dbfa;
   --lk-dot: var(--accent);
+  /* Where the splash STARTS, as data rather than as a theme-scoped rule. In
+     dark these equal the resting values, so the morph is a no-op and the
+     ground never changes — which is what the scene does — without the
+     animation itself having to be switched off per theme. See the note on the
+     keyframes for why that distinction turned out to matter. */
+  --splash-ground: #182241;
+  --splash-ink: #e9edfa;
   position: relative;
   width: 100%;
   max-width: 402px;
@@ -10305,12 +10312,16 @@ button.dash-stat {
   --lk-ink: #e9edfa;
   --lk-trace: #e9edfa;
   --lk-dot: #e9edfa;
+  --splash-ground: var(--bg);
+  --splash-ink: #e9edfa;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .launch {
     --lk-ink: #e9edfa;
     --lk-trace: #e9edfa;
     --lk-dot: #e9edfa;
+    --splash-ground: var(--bg);
+    --splash-ink: #e9edfa;
   }
 }
 
@@ -10371,22 +10382,22 @@ button.dash-stat {
 }
 @keyframes launch-ground {
   from {
-    background: #182241;
+    background: var(--splash-ground);
   }
 }
 @keyframes launch-ink {
   from {
-    color: #e9edfa;
+    color: var(--splash-ink);
   }
 }
 @keyframes launch-stroke {
   from {
-    stroke: #e9edfa;
+    stroke: var(--splash-ink);
   }
 }
 @keyframes launch-fill {
   from {
-    fill: #e9edfa;
+    fill: var(--splash-ink);
   }
 }
 @keyframes launch-step {
@@ -10399,35 +10410,32 @@ button.dash-stat {
 .launch[data-animate] .launch-lockup {
   animation: launch-lift 0.55s cubic-bezier(0.165, 0.84, 0.44, 1) 1.62s both;
 }
-/* Light only. In dark the splash ground and the page ground are the SAME
-   colour in the scene — `ground` is var(--bg) for the whole composition — so
-   nothing morphs and only the lockup moves. This rule was unscoped, which put
-   dark on #182241 for the splash and #202b4e after the handoff: a visible step
-   on a frame the file holds still. */
-:root:not([data-theme='dark']) .launch[data-animate] .launch-ground {
+/* APPLIED IN BOTH THEMES, with the difference carried by --splash-* rather
+   than by which rules match. These were scoped with :root:not([data-theme=
+   'dark']), and that scoping was itself a bug: changing theme changes which
+   rules match, so switching dark -> light NEWLY APPLIED these animations and
+   they restarted from their `from` state. The whole splash replayed — the page
+   flashed navy and the lockup went pale for 1.6 seconds — on nothing more than
+   an OS switching to light at sunrise with this page open.
+   Now the animations always run, and in dark they morph from a value to
+   itself, which is a no-op. */
+.launch[data-animate] .launch-ground {
   animation: launch-ground 0.55s cubic-bezier(0.165, 0.84, 0.44, 1) 1.62s both;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) .launch[data-animate] .launch-ground {
-    animation: none;
-  }
-}
-/* Only light morphs its ink — see the note on .launch above. */
-:root:not([data-theme='dark']) .launch[data-animate] .lockup-word {
+.launch[data-animate] .lockup-word {
   animation: launch-ink 0.55s cubic-bezier(0.165, 0.84, 0.44, 1) 1.62s both;
 }
-:root:not([data-theme='dark']) .launch[data-animate] .lk-trace,
-:root:not([data-theme='dark']) .launch[data-animate] .lk-ring {
+.launch[data-animate] .lk-trace {
   animation:
     lk-draw 0.91s cubic-bezier(0.45, 0, 0.55, 1) 0.14s both,
     launch-stroke 0.55s cubic-bezier(0.165, 0.84, 0.44, 1) 1.62s both;
 }
-:root:not([data-theme='dark']) .launch[data-animate] .lk-ring {
+.launch[data-animate] .lk-ring {
   animation:
     lk-draw 0.35s cubic-bezier(0.45, 0, 0.55, 1) 1.2s both,
     launch-stroke 0.55s cubic-bezier(0.165, 0.84, 0.44, 1) 1.62s both;
 }
-:root:not([data-theme='dark']) .launch[data-animate] .lk-dot {
+.launch[data-animate] .lk-dot {
   animation:
     lk-pop 0.24s cubic-bezier(0.34, 1.56, 0.64, 1) 1.15s both,
     launch-fill 0.55s cubic-bezier(0.165, 0.84, 0.44, 1) 1.62s both;
@@ -10487,8 +10495,8 @@ button.dash-stat {
 /* The splash still-frame (login/loading.tsx): the lockup where the sequence
    starts it — centred, large, pale on navy — with no animation, so the page
    that follows continues the shot rather than cutting to a new one. */
-:root:not([data-theme='dark']) .launch-splash .launch-ground {
-  background: #182241;
+.launch-splash .launch-ground {
+  background: var(--splash-ground);
 }
 .launch-splash .launch-lockup {
   transform: translate(calc(50vw - 30px - 150px), calc(45.6dvh - 92px - 65.5px))

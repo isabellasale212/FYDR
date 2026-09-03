@@ -43,6 +43,24 @@ type Props = {
    *  three staff pages that use this chart render it far wider and keep the
    *  full axis. */
   compact?: boolean;
+  /** Draw the daily value as a BAR per day instead of a joined line.
+   *
+   *  The staff athlete report reads one athlete's readiness day by day, and a
+   *  line invites the eye to read the slope between two points as a rate —
+   *  which for a self-reported daily score it is not. Bars say "these are
+   *  seven separate answers", and a day with no submission is then an obvious
+   *  gap in a row of bars rather than a slightly longer line segment that a
+   *  reader can miss entirely.
+   *
+   *  What does NOT change with it: the athlete's own +/-1SD band and rolling
+   *  mean still draw behind the bars, out-of-band days still take their own
+   *  colour, and a missing day still draws nothing at all. The band is the
+   *  reason a 62 is readable as low FOR THIS ATHLETE, and dropping it to fit
+   *  the bars would have made the chart simpler by making it say less.
+   *
+   *  Not available with `compact` — the athlete's own card is 320px across
+   *  and 62px tall, where 28 bars would be sub-pixel columns. */
+  bars?: boolean;
 };
 
 const W = 880;
@@ -75,7 +93,10 @@ export function WellnessChart({
   decimals = 0,
   flags = [],
   compact = false,
+  bars = false,
 }: Props) {
+  // Bars need room per day; the compact box has none. Compact wins.
+  const asBars = bars && !compact;
   /* SPEC §7.3. The compact chart is drawn in a box the size it is rendered at,
      not scaled down from an 880-unit one: viewBox "-6 0 352 92" in a fixed
      62px wrapper, with preserveAspectRatio="none" and
@@ -236,8 +257,9 @@ export function WellnessChart({
           />
         ) : null}
 
-        {/* The athlete's own readings, now the most prominent line. */}
-        {valueSegments.map((d) => (
+        {/* The athlete's own readings, now the most prominent line. Bars mode
+            draws them as columns below instead. */}
+        {(asBars ? [] : valueSegments).map((d) => (
           <path
             key={d.slice(0, 24)}
             d={d}
@@ -250,7 +272,61 @@ export function WellnessChart({
           />
         ))}
 
-        {series.map((b, i) => {
+        {/* One bar per day. Width is the day's own share of the plot less a
+            gap, floored so a long window still paints something rather than
+            thinning to nothing: 28 days across 820 units is 29.3 each, 182
+            days is 4.5. The bar sits on the axis, not on `min`, because a
+            readiness scale that starts at 0 is the one case where the two are
+            the same and a bar that floats would be a lie about its own
+            baseline. */}
+        {asBars
+          ? series.map((b, i) => {
+              if (b.value === null) return null;
+              const position = bandPosition(b);
+              const isLast = i === lastIndex;
+              const bw = Math.max(2, Math.min(26, step * 0.66));
+              /* The x scale places the first point AT the left margin and the
+                 last AT the right one, which is right for a line and wrong for
+                 a bar: centring on those two puts half a column outside the
+                 plot. The end bars are nudged inside instead of the scale
+                 being changed, so bar centres still line up with the band and
+                 mean drawn on the same scale behind them. */
+              const bx = Math.max(ml, Math.min(w - mr - bw, x(i) - bw / 2));
+              const top = y(clamp(b.value));
+              const base = y(min);
+              const fill =
+                position === 'above'
+                  ? 'var(--warn)'
+                  : position === 'below'
+                    ? 'var(--bad)'
+                    : 'var(--accent)';
+              return (
+                <rect
+                  key={b.date}
+                  x={bx}
+                  y={top}
+                  width={bw}
+                  height={Math.max(1, base - top)}
+                  rx={Math.min(2.5, bw / 3)}
+                  fill={fill}
+                  /* The most recent day is the one the report is opened to
+                     read. Every other bar is dimmed rather than the last one
+                     being brightened, so an out-of-band colour keeps its full
+                     strength on the day it applies to. */
+                  opacity={isLast ? 1 : 0.55}
+                >
+                  {/* Native tooltip. A hover-only affordance is never the only
+                      surface for a fact here — the axis and the printed latest
+                      value carry it too — so a touch device loses nothing. */}
+                  <title>
+                    {formatDate(b.date, timezone)}: {b.value.toFixed(decimals)}
+                  </title>
+                </rect>
+              );
+            })
+          : null}
+
+        {(asBars ? [] : series).map((b, i) => {
           if (b.value === null) return null;
           const position = bandPosition(b);
           const cx = x(i);

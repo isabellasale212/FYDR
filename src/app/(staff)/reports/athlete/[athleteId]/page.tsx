@@ -257,11 +257,20 @@ export default async function AthleteReportPage({
                       />
                     ) : (
                       <>
+                        {/* Bars, and three gridlines rather than five. A
+                            readiness score is one self-reported answer per
+                            day, not a continuous quantity sampled daily, so
+                            the slope between two points was never a rate to
+                            read — and a day nobody submitted now leaves an
+                            obvious gap in a row of columns. 0/50/100 is the
+                            whole scale plus its midpoint; 25 and 75 were
+                            gridlines nobody reads a readiness score against. */}
                         <WellnessChart
                           series={report.wellness}
+                          bars
                           min={0}
                           max={100}
-                          ticks={[0, 25, 50, 75, 100]}
+                          ticks={[0, 50, 100]}
                           title={`Readiness for ${athlete.first_name} ${athlete.last_name}`}
                           timezone={timezone}
                         />
@@ -457,7 +466,7 @@ export default async function AthleteReportPage({
                 {report.wellness.every((p) => p.value === null) ? (
                   <EmptyState headingLevel={3} title="No wellness entries in this period" body="Nothing submitted in this window." />
                 ) : (
-                  <WellnessChart series={report.wellness} min={0} max={100} ticks={[0, 25, 50, 75, 100]} title={`Readiness for ${athlete.first_name} ${athlete.last_name}`} timezone={timezone} />
+                  <WellnessChart series={report.wellness} bars min={0} max={100} ticks={[0, 50, 100]} title={`Readiness for ${athlete.first_name} ${athlete.last_name}`} timezone={timezone} />
                 )}
               </section>
             ),

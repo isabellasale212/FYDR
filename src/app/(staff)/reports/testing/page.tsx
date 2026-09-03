@@ -103,6 +103,13 @@ export default async function TestingReportPage({ searchParams }: { searchParams
           <Link href="/testing" className="btn-primary" aria-label="Log a result for any test">
             + Log a result
           </Link>
+          {/* Named separately from the button above even though both land on
+              /testing: that screen is both the logging grid and the library,
+              and a coach who wants to add or edit a DEFINITION had no word for
+              it anywhere on this page. */}
+          <Link href="/testing" className="linklike tst-manage">
+            Manage tests &rarr;
+          </Link>
           {/* The coach asked for "a print and download button ... at the top
             * right corner". Download already existed here as the two Export
             * links below; Print was the genuinely missing half. PrintButton
@@ -170,22 +177,24 @@ export default async function TestingReportPage({ searchParams }: { searchParams
             {
               label: 'By athlete',
               content: (
-                <section className="card flush" aria-labelledby="by-athlete-title">
-                  {/* The grid used to say "current personal best" over an
-                    * all-time read. Now that the report has a window, the best
-                    * shown is the best IN that window, and the copy names it —
-                    * printing "personal best" over a season-bounded number
-                    * would be a quietly wrong claim, and the whole reason this
-                    * report needed bounding is that nobody could tell which it
-                    * was. At `?period=all` the label reads "All on record",
-                    * which is the old behaviour, said out loud. */}
-                  <h2 className="card-title" id="by-athlete-title" style={{ padding: '16px 16px 0' }}>
-                    Best per test &mdash; {period.range.label.toLowerCase()}
+                <section className="card flush tst-pb" aria-labelledby="by-athlete-title">
+                  {/* Titled "Personal bests" per the review, WITH the window
+                    * still named beside it. The grid used to say "current
+                    * personal best" over an all-time read; now that the report
+                    * has a window, the best shown is the best IN that window,
+                    * and a bare "personal bests" over a season-bounded number
+                    * would put back the quietly wrong claim the bounding was
+                    * added to fix. At `?period=all` the scope reads "all on
+                    * record", which is the old behaviour said out loud.
+                    *
+                    * The description under it is gone: it said the same thing
+                    * at paragraph length, and the empty-cell rule it explained
+                    * is the ordinary meaning of a blank cell. */}
+                  <h2 className="card-title tst-pb-head" id="by-athlete-title">
+                    <span className="tst-pb-dot" aria-hidden="true" />
+                    Personal bests
+                    <span className="tst-pb-scope">{period.range.label.toLowerCase()}</span>
                   </h2>
-                  <p className="import-sub" style={{ padding: '0 16px' }}>
-                    Every athlete, every test, best result between {formatDate(reportWindow.from, timezone)} and {formatDate(reportWindow.to, timezone)}. A blank
-                    cell means no result recorded in this period.
-                  </p>
                   {byAthlete.rows.length === 0 ? (
                     <p className="tiny" style={{ padding: 16 }}>
                       {groupIds.length > 0
@@ -288,6 +297,18 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                         <h2 className="card-title" id="ranking-title" style={{ padding: '16px 16px 0' }}>
                           {byTest.definition.name} &mdash; ranked
                         </h2>
+                        {/* A named header row on a tinted ground, so the three
+                            values on each line below say what they are. They
+                            were an unlabelled number, a name, and another
+                            number. */}
+                        {byTest.rows.length > 0 ? (
+                          <div className="tst-rank-head">
+                            <span>Rank</span>
+                            <span>Athlete</span>
+                            <span />
+                            <span>Result</span>
+                          </div>
+                        ) : null}
                         {byTest.rows.length === 0 ? (
                           /* "…yet" was true when the read was all-time. It is
                            * not true of a bounded one: an empty ranking now
@@ -306,8 +327,14 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                           byTest.rows.map((r, i) => (
                             <div key={`${r.athlete_id}-${r.side ?? ''}`}>
                               {i > 0 ? <div className="hair" /> : null}
-                              <div className="load-row" style={{ gridTemplateColumns: '28px 1fr auto auto', padding: '9px 16px' }}>
-                                <span className="tiny num">{r.rank}</span>
+                              <div className="load-row tst-rank-row">
+                                {/* The rank carries a pill rather than a bare
+                                    digit — it is the one value on the row that
+                                    is a position rather than a measurement, and
+                                    it read as neither. The top three take the
+                                    accent; the rest stay neutral, because a
+                                    tint on every row would rank nothing. */}
+                                <span className={`pill ${r.rank <= 3 ? 'pill-accent' : 'pill-neutral'} num`}>{r.rank}</span>
                                 <Link href={`/squad/${r.athlete_id}`} className="nm">
                                   {r.name}
                                 </Link>

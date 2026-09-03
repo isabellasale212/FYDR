@@ -127,10 +127,10 @@ export function PlayerProfileFlags({
           Thresholds ›
         </Link>
       </div>
-      <p className="import-sub" style={{ margin: '4px 0 0' }}>
-        Raised automatically when a value crosses a threshold. Acknowledging one records who saw it
-        and when.
-      </p>
+      {/* The intro is gone per review. Both halves were already visible: the
+          pill above counts what is awaiting acknowledgement, and each row
+          carries its own rule and evidence, which is the "crossed a threshold"
+          fact stated about the actual reading rather than in the abstract. */}
 
       {error ? (
         <p className="form-error" role="alert" style={{ marginTop: 10 }}>

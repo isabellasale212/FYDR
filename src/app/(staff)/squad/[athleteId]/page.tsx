@@ -584,11 +584,15 @@ export default async function AthletePage({
                 <p className="t" style={{ margin: 0 }}>
                   Position benchmarks
                 </p>
-                <p className="num s" style={{ margin: 0 }}>
-                  {athleticism.rows.length === 0
-                    ? 'no tests defined for this club'
-                    : `the ${athleticism.rows.length} measure${athleticism.rows.length === 1 ? '' : 's'} behind the score`}
-                </p>
+                {/* Only the empty case now. "The 5 measures behind the score"
+                    counted the rows immediately underneath it, which the reader
+                    can see; "no tests defined for this club" is the one thing
+                    an empty list cannot say for itself. */}
+                {athleticism.rows.length === 0 ? (
+                  <p className="num s" style={{ margin: 0 }}>
+                    no tests defined for this club
+                  </p>
+                ) : null}
               </div>
 
               {/* Light-theme handoff §7's suppression notice. Shown only when
@@ -647,10 +651,6 @@ export default async function AthletePage({
               <h2 className="card-title" id="pp-sc-title">
                 S&amp;C history log
               </h2>
-              <p className="import-sub" style={{ margin: '4px 0 0' }}>
-                Injury history and training adaptations — a reminder of how to adjust this athlete&apos;s
-                sessions.
-              </p>
               <EmptyState
                 headingLevel={3}
                 title="No adaptation log entries"
@@ -864,9 +864,6 @@ export default async function AthletePage({
                   </p>
                 </div>
               </div>
-              <p className="cap" style={{ marginTop: 14 }}>
-                View only — plans are managed by the nutritionist.
-              </p>
             </section>
 
             <section className="card pp-card" aria-labelledby="pp-weight-title">

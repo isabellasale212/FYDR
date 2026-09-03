@@ -10915,3 +10915,69 @@ button.dash-stat {
   width: 128px;
   flex: none;
 }
+
+/* --- Testing report ------------------------------------------------------ */
+/* The personal-bests card carries an accent edge and a dot on its header, so
+   the one table a coach opens this report for is the one that reads first. */
+.card.tst-pb {
+  border-color: var(--accent-border);
+}
+.tst-pb-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 16px 16px 12px;
+}
+.tst-pb-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: none;
+}
+/* The window the "bests" are best WITHIN. Quieter than the title and never
+   absent — a personal best with no window named is a claim the report cannot
+   make once it is period-scoped. */
+.tst-pb-scope {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.tst-pb-scope::before {
+  content: '· ';
+}
+/* The ranked list: header on a tint, then rows on the same four tracks. */
+.tst-rank-head,
+.tst-rank-row {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+}
+.tst-rank-head {
+  padding: 10px 16px;
+  background: var(--surf2);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.tst-rank-head > span:last-child {
+  text-align: end;
+}
+.tst-rank-row {
+  padding: 9px 16px;
+}
+/* The pill sizes itself to one or two digits, so it is set to the width of the
+   widest rank the column can hold rather than shrinking on rank 9 and jumping
+   on rank 10. */
+.tst-rank-row .pill {
+  justify-content: center;
+  min-width: 34px;
+}
+.tst-manage {
+  font-size: 13.5px;
+  font-weight: 600;
+}

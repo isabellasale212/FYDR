@@ -1992,11 +1992,17 @@ a.hist-row:focus-visible {
   color: var(--muted);
   min-height: 1.2em;
 }
+/* Spec §7.1's three states for the MD label: "match day takes accent, rest day
+   faint, otherwise muted". Matchday was drawing in --bad-text — RED — which
+   says something has gone wrong on the one day of the week the whole schedule
+   is built around. MD-1's own accent goes with it: the file gives the accent
+   to matchday alone, and two blue labels in a row make neither of them mean
+   anything. */
 .wk-day .wo[data-tone='md'] {
-  color: var(--bad-text);
-}
-.wk-day .wo[data-tone='md-1'] {
   color: var(--accent-text);
+}
+.wk-day[data-kind='rest'] .wo {
+  color: var(--faint);
 }
 
 /* Match / training / recovery / rest, as a dot under each day's number.

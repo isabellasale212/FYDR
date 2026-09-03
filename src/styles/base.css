@@ -10357,9 +10357,16 @@ button.dash-stat {
    155px. The difference between those two, and nothing else, is this
    transform: 20px right, 213px down, 1.935× the size. One element the whole
    way, exactly as the scene has it. */
+/* The splash placement, expressed against the viewport rather than as the two
+   fixed offsets the scene has. Those are exact at its own 402x812 and drift
+   everywhere else; these land on the same numbers there (21 and 212.5 against
+   the scene's 20 and 213) and stay centred at any phone size.
+   150px and 65.5px are half the splash lockup (300x131); 30 and 92 are where
+   it comes to rest. */
 @keyframes launch-lift {
   from {
-    transform: translate(20px, 213px) scale(1.935);
+    transform: translate(calc(50vw - 30px - 150px), calc(45.6dvh - 92px - 65.5px))
+      scale(1.935);
   }
 }
 @keyframes launch-ground {
@@ -10484,7 +10491,8 @@ button.dash-stat {
   background: #182241;
 }
 .launch-splash .launch-lockup {
-  transform: translate(20px, 213px) scale(1.935);
+  transform: translate(calc(50vw - 30px - 150px), calc(45.6dvh - 92px - 65.5px))
+    scale(1.935);
 }
 .launch-splash {
   --lk-ink: #e9edfa;
@@ -10507,6 +10515,7 @@ button.dash-stat {
 .launch[data-animate] .launch-step:nth-child(3) { animation-delay: 2.59s; }
 
 @media (prefers-reduced-motion: reduce) {
+  .launch[data-animate] .launch-page,
   .launch[data-animate] .signin-fields > *,
   .launch[data-animate] .signin-submit,
   .launch[data-animate] .signin-forgot {
@@ -10523,4 +10532,158 @@ button.dash-stat {
   width: 100%;
   height: 48px;
   border-radius: 14px;
+}
+
+/* --- Fydr Staff Launch.dc.html: the same five beats, at desktop width ------
+   Not a second page. This app has one sign-in route for athletes and staff, so
+   the phone scene and the staff scene are the same screen narrow and wide.
+   900px is where the 560px form panel plus a claim column stops being cramped.
+   ------------------------------------------------------------------------- */
+.launch-claim {
+  display: none;
+}
+
+/* 1080, not 900. The panel is a fixed 560 whatever the window does, so the
+   breakpoint is really a question about what is LEFT: at 900 the claim column
+   is 340px, which a 44px headline cannot live in. 1080 leaves it 520. Below
+   that the phone layout is the better answer — a single centred column, which
+   is what a narrow browser window wants anyway. */
+@media (min-width: 1080px) {
+  .launch {
+    max-width: none;
+    display: grid;
+    /* The scene's own split: everything left, a fixed 560 panel right. */
+    grid-template-columns: minmax(0, 1fr) 560px;
+  }
+
+  /* Top-left of the left panel, at 0.196 of the 1001px box — 196px wide. */
+  /* ONE inset for the column, so the lockup and the text it sits above share
+     an edge at every width. They were 76 and a fluid clamp, which lined up only
+     at 1440 and left an 18px step at 1100. */
+  .launch {
+    --claim-x: clamp(40px, 5.3vw, 76px);
+  }
+  .launch-lockup {
+    left: var(--claim-x);
+    top: 92px;
+    --lk-scale: 0.196;
+  }
+
+  /* padding-top clears the lockup rather than centring underneath it. The
+     lockup is absolutely positioned at (76, 92) and 86 tall, so the claim
+     starts below 178 and centres in what is left. Without it the two occupy
+     the same space, and at any width where the headline wraps past four lines
+     they overlap — which is what happened at 1024 before this. */
+  .launch-claim {
+    display: grid;
+    align-content: center;
+    gap: 22px;
+    padding: 210px var(--claim-x) 40px;
+  }
+  .launch-claim-h {
+    margin: 0;
+    font-family: var(--font-sora), system-ui, sans-serif;
+    font-weight: 800;
+    /* 44px is the scene's, at its own 1440. It is a sixth of a 464px column at
+       1024, so it scales with the window and only reaches 44 where the scene
+       has the room for it. */
+    font-size: clamp(30px, 3.2vw, 44px);
+    line-height: 1.08;
+    letter-spacing: -0.033em;
+    color: var(--text);
+    max-width: 15ch;
+    text-wrap: pretty;
+  }
+  .launch-claim-sub {
+    margin: 0;
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--muted);
+    max-width: 46ch;
+    text-wrap: pretty;
+  }
+
+  /* The scene's three slots. Their CONTENT is not the scene's: it shows a named
+     club's live figures ("23 of 26 submitted this morning") on a page nobody
+     has signed in to, which is either invented or a tenant's data on the public
+     internet. These say what the screen behind the login shows instead, which
+     is true of every club and leaks none of them — so the numeral weight goes
+     with the numerals, and this reads as a list rather than a readout. */
+  .launch-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px 26px;
+    align-items: flex-start;
+    list-style: none;
+    margin: 0;
+    padding: 4px 0 0;
+  }
+  /* A floor, so three items wrap to two lines rather than squeezing into three
+     columns of one word each. */
+  .launch-facts li {
+    display: grid;
+    gap: 4px;
+    flex: 1 1 150px;
+    max-width: 22ch;
+  }
+  .launch-facts .k {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  .launch-facts .v {
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--muted);
+  }
+
+  /* The panel fades in WITH the sign-in block, background and all. In the
+     scene the whole <SignIn> element carries the opacity, so its surface does
+     not exist during the splash; here it was painted from the first frame and
+     split the splash into two shades — a white slab against the navy in light,
+     and #1d2643 against #202b4e in dark. */
+  @keyframes launch-panel {
+    from {
+      opacity: 0;
+    }
+  }
+  .launch[data-animate] .launch-page {
+    animation: launch-panel 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) 1.9s both;
+  }
+
+  /* The form panel: its own surface, a hairline against the claim, centred. */
+  .launch-page {
+    background: var(--surf);
+    border-left: 1px solid var(--border);
+    padding: 0 64px;
+    align-content: center;
+    gap: 20px;
+  }
+  .launch-title {
+    font-size: 26px;
+  }
+  /* "Athlete and staff" is the phone screen's own answer to a question the
+     desktop already answers in its left column. */
+  .launch-narrow-only {
+    display: none;
+  }
+
+  /* Splash centred on the viewport, landing at (76, 92). 400 and 175 are half
+     the splash lockup (0.80 of 1001x437 = 800x350); 58vh rather than 50 because
+     the scene sets it below centre, and 58% of its 854px stage is the 320 it
+     uses. */
+  @keyframes launch-lift-wide {
+    from {
+      transform: translate(calc(50vw - var(--claim-x) - 400px), calc(58vh - 92px - 175px))
+        scale(4.082);
+    }
+  }
+  .launch[data-animate] .launch-lockup {
+    animation-name: launch-lift-wide;
+  }
+  .launch-splash .launch-lockup {
+    transform: translate(calc(50vw - var(--claim-x) - 400px), calc(58vh - 92px - 175px))
+      scale(4.082);
+  }
 }

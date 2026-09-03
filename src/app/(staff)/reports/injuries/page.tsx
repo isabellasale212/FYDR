@@ -94,11 +94,11 @@ export default async function InjuryAvailabilityReportPage({
   /* Status carries the grouping, worst first, so the row does not repeat it as
    * a pill on every line. */
   /* The Burden tab is gone: its headline was the same days-lost figure the
-     Period summary already leads with, re-derived per week. What went with it
-     is dead here — meanPerFullWeek, the three-week trend, and the per-week,
-     per-site and per-unit peaks that scaled its bars. report.burden, .bySite
-     and .byUnit are still fetched and still correct; nothing on this screen
-     reads them now. */
+     Period summary already leads with, re-derived per week. meanPerFullWeek,
+     the three-week trend and the per-week and per-site peaks went with it.
+     report.burden and .bySite are still fetched and still correct; nothing on
+     this screen reads them now. */
+  const peakUnit = report.byUnit.reduce((m, u) => Math.max(m, u.days), 0);
   const peakAthlete = report.byAthlete.reduce((m, a) => Math.max(m, a.days), 0);
   const athleteDaysAvailable = report.summary.athleteCount * period.days;
 
@@ -377,11 +377,15 @@ export default async function InjuryAvailabilityReportPage({
                   </div>
                 </div>
 
-                {/* "Where the days went" is gone. Every row of the card below
-                    already carries the athlete's own site, so the by-site bars were
-                    the same days counted a second way with no athlete attached —
-                    the less actionable of the two cuts of one number. */}
+                {/* "Where the days went" is gone — every row of the card below
+                    already carries the athlete's own site, so the by-site bars
+                    were the same days counted a second way with no athlete
+                    attached. "By positional unit" is NOT the same cut and is
+                    back (Design.pdf p16): it answers where the squad is thin if
+                    this happens again, which no per-athlete row can. Removing
+                    it with the by-site card was my error. */}
 
+                <div className="ath-summary-grid">
                 <section className="card" aria-labelledby="inj-who">
                   <h2 className="ath-card-title" id="inj-who">
                     Who the days belong to
@@ -437,6 +441,35 @@ export default async function InjuryAvailabilityReportPage({
                       : ''}
                   </p>
                 </section>
+
+                <section className="card" aria-labelledby="inj-unit">
+                  <h2 className="ath-card-title" id="inj-unit">
+                    By positional unit
+                  </h2>
+                  <p className="tiny" style={{ color: 'var(--muted)', margin: '6px 0 12px' }}>
+                    Where the squad is thin if it happens again.
+                  </p>
+                  {report.byUnit.length === 0 ? (
+                    <p className="tiny" style={{ color: 'var(--muted)' }}>No days lost in this period.</p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {report.byUnit.map((u) => (
+                        <div key={u.unit} className="ath-loadday">
+                          <span className="ath-loadday-day" style={{ width: 110 }}>{u.unit}</span>
+                          <span className="cmpl-track">
+                            <span
+                              className="cmpl-fill"
+                              data-tone="accent"
+                              style={{ width: `${peakUnit > 0 ? Math.round((100 * u.days) / peakUnit) : 0}%` }}
+                            />
+                          </span>
+                          <span className="ath-loadday-val">{u.days}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+                </div>
               </div>
             ),
           },

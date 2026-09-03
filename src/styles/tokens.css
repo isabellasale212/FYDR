@@ -193,7 +193,7 @@
   --gym-on-tint: #6b4708;
   --elev: #ffffff;
   --text: #13161c;
-  --muted: #484e57;
+  --muted: #5b636e;
   /* AA-CORRECTED, and it forced --muted to move with it.
      #929aa5 measured 2.84:1 on --surf and 2.38:1 on --bg, against the 4.5:1
      that applies to the 11px captions, denominators, field labels and em-dash
@@ -209,7 +209,7 @@
      between faint and muted. That is narrower than the old 2.14:1, and the
      narrowing is unavoidable rather than chosen: the old spacing was bought by
      putting the lightest level below AA. */
-  --faint: #626a76;
+  --faint: #929aa5;
   --border: rgba(16, 18, 23, 0.085);
   --border-strong: rgba(16, 18, 23, 0.52);
   --hair: rgba(16, 18, 23, 0.05);
@@ -264,8 +264,8 @@
      decision. The lift did not address it either. Still open. */
   --accent-text: #0064dc;
   --accent2-text: #006eb0;
-  --good-text: #0c6f89;
-  --warn-text: #925900;
+  --good-text: #0d5f75;
+  --warn-text: #b07d0a;
   --bad-text: #8a2418;
   --highlight-fg: #876600;
   --avatar-text-fg: #2a68c6;
@@ -455,22 +455,22 @@ Every alpha here is the handoff's own figure (§4 and §5),
      surface rather than a void, and it is what the lift's "dark as the hero"
      dashboard is drawn on. */
   --bg: #202b4e;
-  --surf: #171e36;
+  --surf: #1d2643;
   --surf-sunken: #121a33;
-  --surf2: #1a2340;
+  --surf2: #2b3559;
   --gym-tint: #48432f;
   --wk-fill: rgba(79, 214, 255, 0.12);
   --wk-match-border: #4fd6ff;
   --gym-on-tint: #ffdda6;
-  --elev: #1a2340;
+  --elev: #1d2643;
   --text: #e9edfa;
   --muted: #a6b3d2;
   /* Same correction, dark side: #6472a0 measured 2.94:1 on --bg. Moved
      lighter, clearing 4.5:1 on all three dark surfaces (--bg 4.56,
      --surf 5.42, --surf2 5.09). --muted is unchanged: at 6.59:1 it already
      passed, and it keeps a 1.45:1 step from the new faint. */
-  --faint: #8993b6;
-  --border: #232c4a;
+  --faint: #8492bd;
+  --border: #2b3559;
   --border-strong: #657199;
   --hair: rgba(255, 255, 255, 0.055);
   --track: rgba(255, 255, 255, 0.12);
@@ -481,8 +481,8 @@ Every alpha here is the handoff's own figure (§4 and §5),
 
   --accent-text: #4f85ff;
   --accent2-text: #33b6ff;
-  --good-text: #4fd6ff;
-  --warn-text: #f6ab2f;
+  --good-text: #8ceaff;
+  --warn-text: #ffdda6;
   --bad-text: #f15a4a;
   --highlight-fg: #f5c518;
   --avatar-text-fg: #6f9bff;
@@ -596,22 +596,22 @@ Every alpha here is the handoff's own figure (§4 and §5),
        diffing the two dark blocks against each other after deploying; they now
        differ in nothing. */
     --bg: #202b4e;
-    --surf: #171e36;
+    --surf: #1d2643;
     --surf-sunken: #121a33;
-    --surf2: #1a2340;
+    --surf2: #2b3559;
     --gym-tint: #48432f;
     --wk-fill: rgba(79, 214, 255, 0.12);
     --wk-match-border: #4fd6ff;
     --gym-on-tint: #ffdda6;
-    --elev: #1a2340;
+    --elev: #1d2643;
     --text: #e9edfa;
     --muted: #a6b3d2;
     /* Same correction, dark side: #6472a0 measured 2.94:1 on --bg. Moved
        lighter, clearing 4.5:1 on all three dark surfaces (--bg 4.56,
        --surf 5.42, --surf2 5.09). --muted is unchanged: at 6.59:1 it already
        passed, and it keeps a 1.45:1 step from the new faint. */
-    --faint: #8993b6;
-    --border: #232c4a;
+    --faint: #8492bd;
+    --border: #2b3559;
     --border-strong: #657199;
     --hair: rgba(255, 255, 255, 0.055);
     --track: rgba(255, 255, 255, 0.12);
@@ -622,8 +622,8 @@ Every alpha here is the handoff's own figure (§4 and §5),
 
     --accent-text: #4f85ff;
     --accent2-text: #33b6ff;
-    --good-text: #4fd6ff;
-    --warn-text: #f6ab2f;
+    --good-text: #8ceaff;
+    --warn-text: #ffdda6;
     --bad-text: #f15a4a;
     --highlight-fg: #f5c518;
     --avatar-text-fg: #6f9bff;

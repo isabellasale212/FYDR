@@ -312,6 +312,11 @@ Every alpha here is the handoff's own figure (§4 and §5),
   --wash-accent-soft: rgb(var(--accent-rgb) / 0.07);
   --wash-accent: rgb(var(--accent-rgb) / 0.12);
   --wash-accent-strong: rgb(var(--accent-rgb) / 0.16);
+  /* The ground the athlete app's cards sit on. Its own value, not --bg: the
+     staff app is a neutral page of dense tables, and the phone is a short
+     stack of cards that reads better on a blue wash. Per
+     CHANGELOG-athlete-app-edits.md, "app-wide". */
+  --phone-bg: #dbe7fb;
   --border-accent: rgb(var(--accent-rgb) / 0.5);
   --border-accent-soft: rgb(var(--accent-rgb) / 0.42);
   --border-hover: rgb(var(--accent-rgb) / 0.4);
@@ -522,6 +527,7 @@ Every alpha here is the handoff's own figure (§4 and §5),
   --wash-accent-soft: rgb(var(--accent-rgb) / 0.1);
   --wash-accent: rgb(var(--accent-rgb) / 0.16);
   --wash-accent-strong: rgb(var(--accent-rgb) / 0.22);
+  --phone-bg: #141b33;
   --border-accent: rgb(var(--accent-rgb) / 0.62);
   --border-accent-soft: rgb(var(--accent-rgb) / 0.52);
   --border-hover: rgb(var(--accent-rgb) / 0.52);

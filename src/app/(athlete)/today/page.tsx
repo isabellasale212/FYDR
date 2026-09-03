@@ -198,7 +198,10 @@ export default async function TodayPage({
             the "To do" heading, where the design puts it — it belongs beside
             the list it counts, not beside the athlete's name. */}
         <div style={{ minWidth: 0 }}>
-          <p className="eyebrow">
+          {/* Accent, not muted: the date and today's matchday offset are the
+              one line on this screen that changes every morning, and the header
+              reads as the athlete's own rather than as a form label. */}
+          <p className="eyebrow eyebrow-accent">
             {formatDate(today, timezone).toUpperCase()}
             {todayMd ? ` · ${todayMd}` : ''}
           </p>
@@ -213,7 +216,12 @@ export default async function TodayPage({
       {toastMessage ? <Toast message={toastMessage} clearHref="/today" /> : null}
 
       <div className="card wk-card">
-        <div className="wk-strip" aria-label="This week">
+        {/* A visible "THIS WEEK", not just the strip's aria-label. The design
+            (01-final.png) heads this card with it, and a sighted athlete had
+            nothing naming the row of seven dates — the label existed for a
+            screen reader only. */}
+        <p className="eyebrow wk-card-label">This week</p>
+        <div className="wk-strip">
         {weekDays.map((date, i) => {
           const isToday = date === today;
           const offset = weekMd.get(date) ?? null;

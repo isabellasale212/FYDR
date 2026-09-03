@@ -1317,9 +1317,11 @@ body:has(.phone) {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  /* Same flat ground as the staff shell — the athlete app is the same product
-     and should not be the one screen with a wash on it. */
-  background-color: var(--bg);
+  /* A blue wash, not the staff app's neutral --bg. The two surfaces do
+     different jobs: the staff app is a dense page of tables where a neutral
+     ground keeps the data the only colour on screen, and the phone is a short
+     stack of cards that reads as grey and flat on the same token. */
+  background-color: var(--phone-bg);
 }
 /* Spec §1: horizontal page padding 22px on every athlete screen, body bottom
    padding 8px. The tab bar is a flex sibling with its own home-indicator
@@ -1380,19 +1382,32 @@ body:has(.phone) {
   padding: calc(22px + env(safe-area-inset-top, 0px)) 0 14px;
   min-height: 44px;
 }
-/* Spec §7.1: 42px, round, 14/700. */
+/* Spec §7.1: 42px, round. Filled with the accent rather than tinted with it,
+   white on top, and set in a soft accent ring — the athlete's own initials are
+   the first thing on their first screen, and a 12%-tint circle did not read as
+   anything. A gradient was tried here and rejected: this is a flat fill. */
 .av {
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: var(--avatar-bg);
-  color: var(--avatar-text);
-  font-size: 14px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 15px;
   font-weight: 700;
+  letter-spacing: 0.02em;
   display: flex;
   align-items: center;
   justify-content: center;
   flex: none;
+  box-shadow:
+    0 0 0 3px var(--wash-accent),
+    0 4px 12px rgb(var(--accent-rgb) / 0.4);
+}
+/* An uploaded photo keeps the ring and the lift, but not the fill — there is
+   nothing to fill behind an image. */
+img.av {
+  background: none;
+  object-fit: cover;
 }
 /* Spec §3: screen title 24/800/−0.03em. */
 .hd .d {
@@ -1953,6 +1968,9 @@ a.hist-row:focus-visible {
 .wk-card {
   padding: 0;
   overflow: hidden;
+  /* Tinted, not white. It is the card the athlete reads first and it sat as
+     one more grey panel among the rest. */
+  background: var(--wash-accent);
 }
 .wk-towards {
   padding: 12px var(--pad-card) 14px;
@@ -11012,4 +11030,24 @@ button.dash-stat {
 }
 .lbw-sel-none {
   color: var(--faint);
+}
+
+/* The athlete header's date line, and the "THIS WEEK" label on the tinted card
+   below it. Both sit in accent so the top of the screen reads as one piece. */
+.eyebrow-accent {
+  color: var(--accent-text);
+}
+.wk-card-label {
+  color: var(--accent-text);
+  /* The card is padding:0 so the strip can run edge to edge; the label puts
+     its own inset back. */
+  margin: 0;
+  padding: 14px var(--pad-card) 0;
+}
+
+/* The wellness sheet's comment field. Its own block above the submit button
+   rather than a row inside the disclosure. */
+.ci-comment {
+  display: block;
+  margin-top: 16px;
 }

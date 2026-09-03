@@ -214,7 +214,7 @@ export function CheckInForm({
       ))}
 
       <details className="disclose">
-        <summary>Add heart rate, weight or a note</summary>
+        <summary>Add heart rate or weight</summary>
         <div className="disclose-body">
           <label>
             <span className="label">Resting heart rate (bpm)</span>
@@ -241,18 +241,27 @@ export function CheckInForm({
               onChange={(e) => setBodyMassKg(e.target.value)}
             />
           </label>
-          <label>
-            <span className="label">Note</span>
-            <textarea
-              className="field"
-              rows={2}
-              maxLength={500}
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-            />
-          </label>
         </div>
       </details>
+
+      {/* Out of the disclosure and onto the sheet, per
+          CHANGELOG-athlete-app-edits.md. Heart rate and body mass are
+          occasional; "something hurts" is the one thing an athlete may need to
+          say on any given morning, and it was two taps down behind a summary
+          that did not mention injuries at all. The state and the payload are
+          unchanged — this only moves where the field is and what it is
+          called. */}
+      <label className="ci-comment">
+        <span className="label">Comment or injury issue (optional)</span>
+        <textarea
+          className="field"
+          rows={3}
+          maxLength={500}
+          placeholder="Anything you want your coach or medical staff to know."
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+        />
+      </label>
 
       {invalid ? (
         <p className="form-error" role="alert" style={{ marginTop: 14 }}>

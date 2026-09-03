@@ -109,10 +109,19 @@ export function acwrSuppressedLabel(daysWithData: number): string {
   return `Building baseline · ${daysWithData} of ${ACWR_MIN_DAYS_WITH_DATA} days`;
 }
 
+/** Just the requirement, with no verb in front of it — for a caller that
+ *  supplies its own ("29 athletes need ..."). Reaching for
+ *  acwrInsufficiencyNote() there produced "29 athletes need Needs 21 of 28
+ *  trailing days.", which is what shipped on /reports/squad until it was
+ *  caught in a screenshot. */
+export function acwrRequirementText(): string {
+  return `${ACWR_MIN_DAYS_WITH_DATA} of ${ACWR_CHRONIC_WINDOW_DAYS} trailing days`;
+}
+
 /** The one long insufficiency explanation, identical on every surface that
  *  has room for a sentence (analytics empty state, report captions). */
 export function acwrInsufficiencyNote(daysWithData?: number): string {
-  const base = `Needs ${ACWR_MIN_DAYS_WITH_DATA} of ${ACWR_CHRONIC_WINDOW_DAYS} trailing days`;
+  const base = `Needs ${acwrRequirementText()}`;
   return daysWithData === undefined ? `${base}.` : `${base}; ${daysWithData} on record.`;
 }
 

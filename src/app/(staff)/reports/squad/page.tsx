@@ -8,7 +8,7 @@ import { fetchSquadWeeklyReport } from '@/lib/queries/squadWeeklyReport';
 import { recordReportView } from '@/lib/queries/reports';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { ACWR_BAND_TEXT, acwrBandTone, acwrInsufficiencyNote } from '@/lib/acwr';
+import { ACWR_BAND_TEXT, acwrBandTone, acwrRequirementText } from '@/lib/acwr';
 import { BLANK, addDays, enumLabel, formatDate, formatNumber, todayIso } from '@/lib/format';
 import { availabilityStatus } from '@/lib/status';
 import { requireReportAccess } from '@/lib/session';
@@ -233,7 +233,7 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
               <div className="ath-note" style={{ marginTop: 10 }}>
                 <span className="ath-note-body">
                   Building baseline — {report.tiles.acwr.suppressed} athlete
-                  {report.tiles.acwr.suppressed === 1 ? '' : 's'} need {acwrInsufficiencyNote()}
+                  {report.tiles.acwr.suppressed === 1 ? '' : 's'} need {acwrRequirementText()}.
                 </span>
               </div>
             ) : null}

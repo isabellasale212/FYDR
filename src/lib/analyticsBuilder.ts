@@ -108,7 +108,7 @@ export const METRICS: readonly MetricDef[] = [
   },
   {
     key: 'readiness',
-    label: 'Wellness readiness',
+    label: 'Readiness',
     source: 'wellness',
     column: null,
     unit: '',
@@ -193,7 +193,7 @@ export const METRICS: readonly MetricDef[] = [
   { ...SCALE_1_5, key: 'mood', label: 'Mood', source: 'wellness', column: 'mood', unit: ' / 5', perDay: 'mean', aggregate: 'mean', note: 'One of the five readiness inputs, on its own. 5 is best.' },
   {
     key: 'resting_hr',
-    label: 'Resting heart rate',
+    label: 'Resting HR',
     source: 'wellness',
     column: 'resting_hr',
     unit: ' bpm',

@@ -10156,3 +10156,347 @@ button.dash-stat {
 .exlib-cancel {
   flex: 0 0 auto;
 }
+
+/* ===========================================================================
+   THE LOCKUP AND THE LAUNCH SEQUENCE
+   Fydr App Launch.dc.html — scenes Splash, Stop, Handoff, SignIn, Rest.
+
+   Every measurement below is the design's. The TIMINGS are not: the file
+   authors 9.0s of scene (2.6 splash, 1.2 stop, 1.2 handoff, 2.4 sign-in,
+   1.6 rest), which is a length for a render, not for an app whose whole
+   promise is that the morning takes 45 seconds. Five seconds of logo before
+   the email field exists would be the single slowest thing in the product.
+   The choreography is kept exactly — order, easings, offsets, the letter
+   stagger, what moves when — and played at roughly 2.2× the authored tempo,
+   so the form is built and still by ~2.4s. Nothing waits on it either way:
+   the inputs are in the DOM and focusable from the first frame.
+   =========================================================================== */
+
+.lockup {
+  position: relative;
+  width: var(--lk-w, 300px);
+  height: calc(var(--lk-w, 300px) * 437 / 1001);
+  flex: none;
+}
+.lockup-inner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1001px;
+  height: 437px;
+  transform: scale(calc(var(--lk-w, 300px) / 1001));
+  transform-origin: 0 0;
+}
+.lockup-word {
+  position: absolute;
+  left: 40px;
+  top: 0;
+  height: 343.8px;
+  display: flex;
+  align-items: flex-end;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 386px;
+  line-height: 1;
+  letter-spacing: -0.063em;
+  color: var(--lk-ink, var(--text));
+  white-space: pre;
+}
+.lockup-word span {
+  display: inline-block;
+}
+.lockup svg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+}
+.lk-trace,
+.lk-ring {
+  stroke: var(--lk-trace, var(--accent-border));
+}
+.lk-dot {
+  fill: var(--lk-dot, var(--accent));
+}
+
+/* The resting state IS the base style, and the keyframes run backwards out of
+   it. That is what makes the reduced-motion rule a one-liner: switch the
+   animations off and every element is already where it finishes. */
+@keyframes lk-letter {
+  from {
+    opacity: 0;
+    transform: translateY(54px);
+  }
+}
+@keyframes lk-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+@keyframes lk-pop {
+  from {
+    transform: scale(0);
+  }
+}
+@keyframes lk-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* easeOutQuart, easeInOutQuad and easeOutBack — the three the scene defines. */
+.lockup[data-animate] .lockup-word span {
+  animation: lk-letter 0.62s cubic-bezier(0.165, 0.84, 0.44, 1) both;
+}
+.lockup[data-animate] .lockup-word span:nth-child(1) {
+  animation-delay: 0.08s;
+}
+.lockup[data-animate] .lockup-word span:nth-child(2) {
+  animation-delay: 0.21s;
+}
+.lockup[data-animate] .lockup-word span:nth-child(3) {
+  animation-delay: 0.34s;
+}
+.lockup[data-animate] .lockup-word span:nth-child(4) {
+  animation-delay: 0.47s;
+}
+.lockup[data-animate] .lk-trace {
+  stroke-dasharray: 1;
+  animation: lk-draw 0.91s cubic-bezier(0.45, 0, 0.55, 1) 0.14s both;
+}
+.lockup[data-animate] .lk-mark {
+  animation: lk-fade 0.14s linear 1.13s both;
+}
+.lockup[data-animate] .lk-ring {
+  stroke-dasharray: 1;
+  animation: lk-draw 0.35s cubic-bezier(0.45, 0, 0.55, 1) 1.2s both;
+}
+.lockup[data-animate] .lk-dot {
+  animation: lk-pop 0.24s cubic-bezier(0.34, 1.56, 0.64, 1) 1.15s both;
+}
+
+/* --- The launch screen: splash, handoff, sign-in ------------------------- */
+
+/* The lockup's three inks. Light rests dark-on-pale with a blue trace and an
+   accent point; dark is one ink throughout, which is what the scene does —
+   in dark the splash ground and the page ground are the same colour, so
+   nothing morphs and only the lockup moves. */
+.launch {
+  --lk-ink: var(--text);
+  --lk-trace: #c7dbfa;
+  --lk-dot: var(--accent);
+  position: relative;
+  width: 100%;
+  max-width: 402px;
+  min-height: 100dvh;
+  margin: 0 auto;
+}
+:root[data-theme='dark'] .launch,
+.dark-tokens .launch {
+  --lk-ink: #e9edfa;
+  --lk-trace: #e9edfa;
+  --lk-dot: #e9edfa;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .launch {
+    --lk-ink: #e9edfa;
+    --lk-trace: #e9edfa;
+    --lk-dot: #e9edfa;
+  }
+}
+
+/* Fixed, so the splash navy covers the viewport rather than a 402px column,
+   and behind everything. */
+.launch-ground {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 0;
+}
+.launch > *:not(.launch-ground) {
+  position: relative;
+  z-index: 1;
+}
+
+/* The design's own placement, kept as absolute px inside a 402px column
+   because that is the coordinate system it was drawn in: the lockup at
+   (30, 92) at 155 wide, the page block at top 176 with 28px of side padding. */
+.launch-lockup {
+  position: absolute;
+  left: 30px;
+  top: 92px;
+  --lk-w: 155px;
+  transform-origin: 0 0;
+}
+.launch-page {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 176px;
+  padding: 0 28px 40px;
+  display: grid;
+  gap: 18px;
+}
+
+/* Splash -> handoff. The lockup's splash placement is (50, 305) at scale 0.30
+   of the 1001px box — 300px wide — against a header placement of (30, 92) at
+   155px. The difference between those two, and nothing else, is this
+   transform: 20px right, 213px down, 1.935× the size. One element the whole
+   way, exactly as the scene has it. */
+@keyframes launch-lift {
+  from {
+    transform: translate(20px, 213px) scale(1.935);
+  }
+}
+@keyframes launch-ground {
+  from {
+    background: #182241;
+  }
+}
+@keyframes launch-ink {
+  from {
+    color: #e9edfa;
+  }
+}
+@keyframes launch-stroke {
+  from {
+    stroke: #e9edfa;
+  }
+}
+@keyframes launch-fill {
+  from {
+    fill: #e9edfa;
+  }
+}
+@keyframes launch-step {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+.launch[data-animate] .launch-lockup {
+  animation: launch-lift 0.55s cubic-bezier(0.165, 0.84, 0.44, 1) 1.62s both;
+}
+.launch[data-animate] .launch-ground {
+  animation: launch-ground 0.55s cubic-bezier(0.165, 0.84, 0.44, 1) 1.62s both;
+}
+/* Only light morphs its ink — see the note on .launch above. */
+:root:not([data-theme='dark']) .launch[data-animate] .lockup-word {
+  animation: launch-ink 0.55s cubic-bezier(0.165, 0.84, 0.44, 1) 1.62s both;
+}
+:root:not([data-theme='dark']) .launch[data-animate] .lk-trace,
+:root:not([data-theme='dark']) .launch[data-animate] .lk-ring {
+  animation:
+    lk-draw 0.91s cubic-bezier(0.45, 0, 0.55, 1) 0.14s both,
+    launch-stroke 0.55s cubic-bezier(0.165, 0.84, 0.44, 1) 1.62s both;
+}
+:root:not([data-theme='dark']) .launch[data-animate] .lk-ring {
+  animation:
+    lk-draw 0.35s cubic-bezier(0.45, 0, 0.55, 1) 1.2s both,
+    launch-stroke 0.55s cubic-bezier(0.165, 0.84, 0.44, 1) 1.62s both;
+}
+:root:not([data-theme='dark']) .launch[data-animate] .lk-dot {
+  animation:
+    lk-pop 0.24s cubic-bezier(0.34, 1.56, 0.64, 1) 1.15s both,
+    launch-fill 0.55s cubic-bezier(0.165, 0.84, 0.44, 1) 1.62s both;
+}
+
+/* The page builds in behind it, six beats 0.09s apart from 2.05s. */
+.launch[data-animate] .launch-step {
+  animation: launch-step 0.32s cubic-bezier(0.165, 0.84, 0.44, 1) both;
+}
+.launch[data-animate] .launch-step:nth-child(1) { animation-delay: 2.05s; }
+.launch[data-animate] .launch-step:nth-child(2) { animation-delay: 2.14s; }
+.launch[data-animate] .launch-step:nth-child(3) { animation-delay: 2.23s; }
+.launch[data-animate] .launch-step:nth-child(4) { animation-delay: 2.32s; }
+.launch[data-animate] .launch-step:nth-child(5) { animation-delay: 2.41s; }
+
+/* Spec §5. The resting state is every element's base style, so switching the
+   animations off lands on the finished screen with nothing to unwind — and
+   the form was typeable throughout either way. */
+@media (prefers-reduced-motion: reduce) {
+  .launch[data-animate] .launch-lockup,
+  .launch[data-animate] .launch-ground,
+  .launch[data-animate] .launch-step,
+  .launch[data-animate] .lockup-word,
+  .launch[data-animate] .lockup-word span,
+  .launch[data-animate] .lk-trace,
+  .launch[data-animate] .lk-ring,
+  .launch[data-animate] .lk-dot,
+  .launch[data-animate] .lk-mark {
+    animation: none !important;
+  }
+}
+
+/* --- The sign-in block itself, per the scene ---------------------------- */
+.launch-title {
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin: 0;
+}
+.launch-sub {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  text-wrap: pretty;
+  margin: 0;
+}
+.launch-foot {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  text-align: center;
+  margin: 0;
+}
+
+/* The splash still-frame (login/loading.tsx): the lockup where the sequence
+   starts it — centred, large, pale on navy — with no animation, so the page
+   that follows continues the shot rather than cutting to a new one. */
+.launch-splash .launch-ground {
+  background: #182241;
+}
+.launch-splash .launch-lockup {
+  transform: translate(20px, 213px) scale(1.935);
+}
+.launch-splash {
+  --lk-ink: #e9edfa;
+  --lk-trace: #e9edfa;
+  --lk-dot: #e9edfa;
+}
+
+/* The form's own beats, so the stagger continues into it without LoginForm
+   having to know this screen exists. */
+.launch[data-animate] .signin-fields > *,
+.launch[data-animate] .signin-submit,
+.launch[data-animate] .signin-forgot {
+  animation: launch-step 0.32s cubic-bezier(0.165, 0.84, 0.44, 1) both;
+}
+.launch[data-animate] .signin-fields > *:nth-child(1) { animation-delay: 2.14s; }
+.launch[data-animate] .signin-fields > *:nth-child(2) { animation-delay: 2.23s; }
+.launch[data-animate] .signin-fields > *:nth-child(3) { animation-delay: 2.32s; }
+.launch[data-animate] .signin-submit { animation-delay: 2.41s; }
+.launch[data-animate] .signin-forgot { animation-delay: 2.5s; }
+.launch[data-animate] .launch-step:nth-child(3) { animation-delay: 2.59s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .launch[data-animate] .signin-fields > *,
+  .launch[data-animate] .signin-submit,
+  .launch[data-animate] .signin-forgot {
+    animation: none !important;
+  }
+}
+
+/* §7.2's field geometry, which the launch scene reuses: 48px tall, radius 14. */
+.launch .signin-fields .field {
+  height: 48px;
+  border-radius: 14px;
+}
+.launch .signin-submit {
+  width: 100%;
+  height: 48px;
+  border-radius: 14px;
+}

@@ -43,7 +43,9 @@ export function AttentionRow({ row, rank }: Props) {
         ) : null}
       </div>
 
-      <div className="attn-open num">{row.duration}</div>
+      {/* The compact age, not the sentence: ten rows of "open 21 days" is ten
+          widths to read past where the column wants a number to scan down. */}
+      <div className="attn-open num">{row.durationShort}</div>
 
       <div className="attn-sev">
         <Pill status={SEVERITY_STATUS[row.severity]} />

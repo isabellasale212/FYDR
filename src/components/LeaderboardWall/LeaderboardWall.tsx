@@ -14,7 +14,6 @@ import {
   rankMarkerColor,
   sparklinePath,
   standardCell,
-  standardFor,
   type Rank,
   type WallMover,
 } from '@/lib/leaderboardWallMath';
@@ -408,45 +407,47 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
               </div>
 
               <div className="lbw-sel-table">
+                {/* Four columns, named in full. "Unit" and "Squad" were two
+                    bare nouns over two different kinds of number — a position
+                    within the athlete's own positional unit, and a position in
+                    the whole squad — and neither label said which was which.
+                    "vs first" went with them: the wall's own Improvement view
+                    is where a change over time is read, and repeating it here
+                    made a four-number row out of a two-number question. */}
                 <div className="lbw-sel-thead">
                   <div>Test</div>
                   <div className="r">Result</div>
-                  <div className="r">Unit</div>
-                  <div className="r">Squad</div>
-                  <div className="r">vs first</div>
+                  <div className="r">In group</div>
+                  <div className="r">Squad rank</div>
                 </div>
                 {data.boards.map((b) => {
                   const v = selAthlete.values[b.key];
                   const current = v?.current ?? null;
                   const unitRank = rankAthletesInPool(selUnitPool, b).get(selAthlete.id) ?? null;
                   const squadRank = rankAthletesInPool(data.athletes, b).get(selAthlete.id) ?? null;
-                  const std = standardCell(b, current, selAthlete.unitIndex);
-                  const gain = b.gainable ? gainCell(b, current, v?.first ?? null) : null;
                   return (
                     <div key={b.key} className="lbw-sel-row">
-                      <div>
-                        <p className="lbw-sel-test">{b.label}</p>
-                        <p
-                          className="lbw-sel-std"
-                          title="Fydr-set placeholder standard, not club-specific norms · not yet configurable"
-                        >
-                          {(() => { const sv = standardFor(b, selAthlete.unitIndex); return sv === null ? 'no standard on file' : `standard ${fmt(sv, b.decimals)} · ${std ? (std.marker === '✓' ? 'met' : 'short') : '·'}`; })()}
-                        </p>
-                      </div>
+                      <p className="lbw-sel-test">{b.label}</p>
                       <div className="r lbw-sel-result">{current !== null ? `${fmt(current, b.decimals)}${b.unit}` : '·'}</div>
-                      <div className="r" style={unitRank?.rank === 1 ? { color: 'var(--lb-rank1)' } : undefined}>
-                        {unitRank ? `${ordinal(unitRank.rank)}/${unitRank.n}` : '·'}
+                      {/* The in-group placing is the one figure on this row that
+                          is a RANK rather than a measurement, and beside a
+                          column of "#11" it read as another one. The pill says
+                          which of the two you are looking at without a second
+                          word of explanation. */}
+                      <div className="r">
+                        {unitRank ? (
+                          <span className="pill pill-accent num">{`${ordinal(unitRank.rank)}/${unitRank.n}`}</span>
+                        ) : (
+                          <span className="lbw-sel-none">·</span>
+                        )}
                       </div>
                       <div className="r lbw-sel-squad">{squadRank ? `#${squadRank.rank}` : '·'}</div>
-                      <div className="r" style={{ color: gain?.sortValue ? (gain.sortValue > 0 ? 'var(--accent-text)' : 'var(--bad-text)') : 'var(--faint)' }}>
-                        {gain ? gain.value : '–'}
-                      </div>
                     </div>
                   );
                 })}
               </div>
               <p className="cap lbw-sel-foot">
-                ranked in {scope.toLowerCase()} · {totalN} athletes · change vs earliest result on file, typical error applied
+                ranked in {scope.toLowerCase()} · {totalN} athletes
               </p>
             </>
           ) : (

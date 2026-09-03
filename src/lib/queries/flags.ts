@@ -55,6 +55,9 @@ export type AttentionRow = {
   value: string;
   baseline: string;
   duration: string;
+  /** The same age in the compact form a table column wants — see
+   *  durationShortLabel(). */
+  durationShort: string;
   /** Every open flag this athlete has, not just the top one the sentence
    *  narrates — the row's own evidence, built from the SAME rows the count
    *  and the priority order come from, so an expanded row can never disagree
@@ -164,6 +167,18 @@ function durationLabel(flagDate: string, wallClockToday: string): string {
   if (age === 0) return 'raised today';
   if (age === 1) return 'open since yesterday';
   return `open ${age} days`;
+}
+
+/** The same age, as a table cell. "open 21 days" is a phrase, and a phrase in
+ *  a column of ten of them is ten different widths to read past — the squad
+ *  weekly attention table wants a number it can scan down. Derived from the
+ *  same daysBetween() as durationLabel so the two can never disagree; the
+ *  sentence form stays where a sentence reads better (the dashboard panel). */
+function durationShortLabel(flagDate: string, wallClockToday: string): string {
+  const age = daysBetween(flagDate, wallClockToday);
+  if (age < 0) return flagDate;
+  if (age === 0) return 'today';
+  return `${age}d`;
 }
 
 export type DashboardAttention = {
@@ -305,6 +320,7 @@ export async function fetchDashboardAttention(
           ? ''
           : `${formatNumber(f.expected_value, copy.decimals)}${copy.unit}`,
       duration: durationLabel(f.flag_date, wallClockToday),
+      durationShort: durationShortLabel(f.flag_date, wallClockToday),
       flags: athleteFlags.map((af) => {
         const c2 = metricCopy(af.metric);
         const observed = af.observed_value === null ? null : `${formatNumber(af.observed_value, c2.decimals)}${c2.unit}`;

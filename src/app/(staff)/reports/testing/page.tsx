@@ -103,13 +103,6 @@ export default async function TestingReportPage({ searchParams }: { searchParams
           <Link href="/testing" className="btn-primary" aria-label="Log a result for any test">
             + Log a result
           </Link>
-          {/* Named separately from the button above even though both land on
-              /testing: that screen is both the logging grid and the library,
-              and a coach who wants to add or edit a DEFINITION had no word for
-              it anywhere on this page. */}
-          <Link href="/testing" className="linklike tst-manage">
-            Manage tests &rarr;
-          </Link>
           {/* The coach asked for "a print and download button ... at the top
             * right corner". Download already existed here as the two Export
             * links below; Print was the genuinely missing half. PrintButton
@@ -130,10 +123,17 @@ export default async function TestingReportPage({ searchParams }: { searchParams
         </div>
       </div>
 
-      <p className="eyebrow" style={{ marginBottom: 10 }}>
+      <p className="eyebrow" style={{ marginBottom: 4 }}>
         {groupScopeLabel(groups, groupIds)} · {orgName} · {period.range.label} · {formatDate(reportWindow.from, timezone)} to{' '}
         {formatDate(reportWindow.to, timezone)} · {byAthlete.rows.length} athletes · {byAthlete.definitions.length} tests
       </p>
+      {/* Under the scope line, not in the action row beside "+ Log a result".
+          Both land on /testing, but one is "record a number today" and the
+          other is "change what the club measures" — the first is the primary
+          action on this report, the second is a way out of it. */}
+      <Link href="/testing" className="tst-manage">
+        Manage tests &rarr;
+      </Link>
 
       {caveat ? (
         <p className="sub" style={{ margin: '0 0 10px' }}>
@@ -193,7 +193,6 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                   <h2 className="card-title tst-pb-head" id="by-athlete-title">
                     <span className="tst-pb-dot" aria-hidden="true" />
                     Personal bests
-                    <span className="tst-pb-scope">{period.range.label.toLowerCase()}</span>
                   </h2>
                   {byAthlete.rows.length === 0 ? (
                     <p className="tiny" style={{ padding: 16 }}>
@@ -297,18 +296,6 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                         <h2 className="card-title" id="ranking-title" style={{ padding: '16px 16px 0' }}>
                           {byTest.definition.name} &mdash; ranked
                         </h2>
-                        {/* A named header row on a tinted ground, so the three
-                            values on each line below say what they are. They
-                            were an unlabelled number, a name, and another
-                            number. */}
-                        {byTest.rows.length > 0 ? (
-                          <div className="tst-rank-head">
-                            <span>Rank</span>
-                            <span>Athlete</span>
-                            <span />
-                            <span>Result</span>
-                          </div>
-                        ) : null}
                         {byTest.rows.length === 0 ? (
                           /* "…yet" was true when the read was all-time. It is
                            * not true of a bounded one: an empty ranking now
@@ -328,13 +315,7 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                             <div key={`${r.athlete_id}-${r.side ?? ''}`}>
                               {i > 0 ? <div className="hair" /> : null}
                               <div className="load-row tst-rank-row">
-                                {/* The rank carries a pill rather than a bare
-                                    digit — it is the one value on the row that
-                                    is a position rather than a measurement, and
-                                    it read as neither. The top three take the
-                                    accent; the rest stay neutral, because a
-                                    tint on every row would rank nothing. */}
-                                <span className={`pill ${r.rank <= 3 ? 'pill-accent' : 'pill-neutral'} num`}>{r.rank}</span>
+                                <span className="tst-rank-n num">{r.rank}</span>
                                 <Link href={`/squad/${r.athlete_id}`} className="nm">
                                   {r.name}
                                 </Link>

@@ -102,7 +102,9 @@ const BOARDS: Board[] = [
   {
     key: 'acwr',
     metric: 'acwr',
-    title: 'ACWR',
+    /* The BOARD is titled in full; only the metric dropdown is abbreviated,
+       where 128px has to hold it. */
+    title: 'Acute:chronic ratio',
     days: 84,
     colour: 'var(--accent)',
     bars: false,

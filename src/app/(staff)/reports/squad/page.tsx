@@ -333,21 +333,21 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
               <p className="sw-well-num num">
                 {report.wellness.medianReadiness === null ? BLANK : formatNumber(report.wellness.medianReadiness, 0)}
               </p>
-              <p className="sw-well-lab">Squad median readiness</p>
+              <p className="sw-well-lab">squad median readiness</p>
             </div>
             <div>
               <p className="sw-well-num num">{report.wellness.outliers.length}</p>
               {/* The rule, not the short label: the short one belongs to the
                   names below, and printing it twice on one card made the count
                   and the chips look like two readings of different things. */}
-              <p className="sw-well-lab">More than 1.5 SD below their own norm</p>
+              <p className="sw-well-lab">&gt;1.5 SD below own norm</p>
             </div>
           </div>
           {report.wellness.outliers.length > 0 ? (
             <div className="sw-well-flagged">
               {/* The names sat loose under two figures with nothing saying
                   which of the two they belonged to. */}
-              <p className="sw-well-lab">Below their own norm</p>
+              <p className="sw-well-eyebrow">Below their own norm</p>
               <div className="chiprow" style={{ marginTop: 6 }}>
                 {report.wellness.outliers.map((o) => (
                   <Link key={o.athlete_id} href={`/squad/${o.athlete_id}`} className="chip-static">
@@ -360,8 +360,10 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
           <div className="sw-well-comp">
             {report.wellness.complianceByDomain.map((d) => (
               <div key={d.domain}>
+                {/* Figure first, label under — the same order as the two
+                    figures above, so the whole card reads one way down. */}
+                <p className="num nm sw-well-pct">{d.pct === null ? BLANK : `${d.pct}%`}</p>
                 <p className="sw-well-lab">{enumLabel(d.domain)}</p>
-                <p className="num nm">{d.pct === null ? BLANK : `${d.pct}%`}</p>
               </div>
             ))}
           </div>

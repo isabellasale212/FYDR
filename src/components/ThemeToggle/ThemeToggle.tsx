@@ -2,37 +2,35 @@
 
 import { useEffect, useState } from 'react';
 
-type Choice = 'system' | 'light' | 'dark';
+type Choice = 'light' | 'dark';
 
 const STORAGE_KEY = 'fydr-theme';
 
-/** 06-design-system.md §2.4's three routes, made visible and reversible.
+/** 06-design-system.md §2.4's routes, made visible and reversible.
  *
- *  This was a blind two-state toggle labelled "◐ Theme". Two things were wrong
- *  with it, and they are the same thing twice:
+ *  TWO buttons, Light and Dark, per the design (Design.pdf p45). It had three;
+ *  "System" was dropped there and this follows it.
  *
- *    1. It never said which theme you were on. The only way to find out was to
- *       press it and see what changed.
- *    2. It could not express SYSTEM. Route 2 — no `data-theme`, the OS
- *       preference applying through `@media (prefers-color-scheme: dark)` — is
- *       the state every user starts in, and the old control had no way back to
- *       it. One press wrote a hard value to localStorage forever.
+ *  The reason System existed still has to be answered, though, and dropping the
+ *  BUTTON is not the same as dropping the STATE. Route 2 — no `data-theme`, the
+ *  OS preference applying through `@media (prefers-color-scheme: dark)` — is
+ *  where every user starts, and it is still where a user sits until they press
+ *  something here. A two-button control that assumed "Light" on load would tell
+ *  a user on an OS-dark machine that they are on Light while the app renders
+ *  dark around them. That is the exact complaint the three-state control was
+ *  built to answer ("the theme switches when I click on different pages"), and
+ *  it is not worth re-introducing to save a button.
  *
- *  Together those made the product look like it was switching theme on its
- *  own: a club on macOS auto (light by day, dark at night) IS on route 2, so
- *  the app correctly followed the OS, and nothing on screen explained why.
- *  Reported as "the theme switches when I click on different pages" — it does
- *  not; navigation was a coincidence of when people looked.
- *
- *  So: three explicit states, the live one marked with aria-pressed. Choosing
- *  System REMOVES both the attribute and the stored key, which is what hands
- *  control back to the media query rather than freezing today's OS value.
+ *  So: with nothing stored, the live button is whichever theme is ACTUALLY
+ *  showing, resolved from matchMedia. Pressing either writes an explicit choice
+ *  and pins it. The control therefore never claims a theme the user is not
+ *  looking at, and there are two buttons on screen, which is what the design
+ *  asks for.
  *
  *  The root layout's blocking inline script still applies a stored choice
  *  before first paint on every route; this component only reads and writes it.
  */
 const CHOICES: { key: Choice; label: string; hint: string }[] = [
-  { key: 'system', label: 'System', hint: 'Follow the device setting' },
   { key: 'light', label: 'Light', hint: 'Always light' },
   { key: 'dark', label: 'Dark', hint: 'Always dark' },
 ];
@@ -44,20 +42,18 @@ export function ThemeToggle() {
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY);
-    setChoice(stored === 'light' || stored === 'dark' ? stored : 'system');
+    if (stored === 'light' || stored === 'dark') {
+      setChoice(stored);
+      return;
+    }
+    /* Nothing stored: the OS is driving. Mark whichever theme is actually on
+       screen, so the control reports the truth rather than a default. */
+    setChoice(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
   }, []);
 
   function pick(next: Choice) {
     setChoice(next);
-    const root = document.documentElement;
-    if (next === 'system') {
-      // Both, not just one. Leaving either behind keeps the page pinned to a
-      // literal theme while the control claims it is following the device.
-      root.removeAttribute('data-theme');
-      window.localStorage.removeItem(STORAGE_KEY);
-      return;
-    }
-    root.setAttribute('data-theme', next);
+    document.documentElement.setAttribute('data-theme', next);
     window.localStorage.setItem(STORAGE_KEY, next);
   }
 

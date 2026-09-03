@@ -102,11 +102,9 @@ export default async function LeaderboardWallPage({
         </div>
       </div>
 
-      <p className="lbw-intro">
-        Every athlete, every board, one screen. Ranked inside their own positional unit by
-        default, because a hooker who is 24th in the squad on high speed running might be
-        the hardest-running front row you have.
-      </p>
+      {/* The intro paragraph is gone per review. The scope it explained is a
+          live control on the wall below and reads on every row; the sentence
+          was an argument for a default the reader can already see and change. */}
 
       <div style={{ marginBottom: 14 }}>
         <GroupFilter groups={groups} selected={groupIds} />

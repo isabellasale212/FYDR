@@ -337,7 +337,10 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
             </div>
             <div>
               <p className="sw-well-num num">{report.wellness.outliers.length}</p>
-              <p className="sw-well-lab">Below their own norm</p>
+              {/* The rule, not the short label: the short one belongs to the
+                  names below, and printing it twice on one card made the count
+                  and the chips look like two readings of different things. */}
+              <p className="sw-well-lab">More than 1.5 SD below their own norm</p>
             </div>
           </div>
           {report.wellness.outliers.length > 0 ? (

@@ -102,7 +102,16 @@ export function ComparisonChart({
       preserveAspectRatio="none"
       className="cmp-chart"
       role="img"
-      aria-label={`${primary.label}${secondary ? ` compared with ${secondary.label}` : ''}`}
+      /* The bar denominator lives here now. The footnote under each chart was
+         removed in the design review, and with it went "n = N days with data" —
+         which on a sparse board is the difference between a flat stretch and an
+         empty one. A week with no record draws no bar, and a missing bar and a
+         zero bar look identical, so the count says which. */
+      aria-label={`${primary.label}${secondary ? ` compared with ${secondary.label}` : ''}${
+        bars && bars.length > 0
+          ? `. ${bars.filter((b) => b.value !== null).length} of ${bars.length} weeks have a record; a week with none draws no bar.`
+          : ''
+      }`}
     >
       {shaded ? (
         <rect
@@ -138,7 +147,12 @@ export function ComparisonChart({
             height={Math.max(0, h)}
             rx={3}
             fill={b.tone === 'bad' ? 'rgb(var(--bad-rgb) / 0.45)' : 'rgb(var(--accent-rgb) / 0.22)'}
-          />
+          >
+            {/* Each bar names its own week and total on hover, so the card can
+                carry the fact without a caption line restating it for every
+                bar at once. */}
+            <title>{`${b.label}: ${fmt(b.value, decimals)}`}</title>
+          </rect>
         );
       })}
 

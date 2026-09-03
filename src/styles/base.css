@@ -1463,12 +1463,21 @@ body:has(.phone) {
   align-items: center;
   padding: 12px var(--pad-card-x, 18px);
 }
-/* Spec §7.3: "a two-line stack (12px/600 faint date over 13.5px evidence)". */
+/* §7.3 says "12px/600 faint date". Muted instead, and this is the one place
+   this app departs from a §2 literal on purpose.
+   --faint is #929aa5, 2.84:1 on a light card. That is the right ink for a mark
+   whose meaning is carried by something beside it — the day letter above a date
+   in full ink, the chevron on a row that is itself the link, the em dash beside
+   the words "not submitted". This date is none of those: it is the row's
+   identity, the only place it appears, and 28 of them stack down the wellness
+   list. --muted is 6.0:1 and reads at 12px.
+   The em dash keeps --faint (.hist-value[data-missing] below): §9 rule 1 asks
+   for it there, and "not submitted" sits next to it saying the same thing. */
 .hist-date {
   margin: 0;
   font-size: 12px;
   font-weight: 600;
-  color: var(--faint);
+  color: var(--muted);
 }
 .hist-detail {
   margin: 2px 0 0;

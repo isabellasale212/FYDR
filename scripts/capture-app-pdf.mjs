@@ -3,6 +3,7 @@
  *   npm run capture:pdf                 # production, https://fydr.vercel.app
  *   npm run capture:pdf -- --local      # http://localhost:3000 (run `npm run dev` first)
  *   npm run capture:pdf -- --width 1280 # viewport width for the capture
+ *   npm run capture:pdf -- --base https://fydr.app   # the custom domain
  *
  * A Chrome window opens on the sign-in page. SIGN IN, and the script does the
  * rest: it walks every route, screenshots each one full-page, and prints the
@@ -38,7 +39,13 @@ const arg = (name, fallback) => {
   const i = argv.indexOf(`--${name}`);
   return i >= 0 && argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[i + 1] : fallback;
 };
-const BASE = argv.includes('--local') ? 'http://localhost:3000' : 'https://fydr.vercel.app';
+/* --base https://fydr.app captures the custom domain rather than the
+   vercel.app one. They serve the same deployment, so this changes which
+   hostname appears in the shots, not what is in them — which matters when the
+   record is for someone who has never seen the vercel.app host. */
+const BASE = argv.includes('--local')
+  ? 'http://localhost:3000'
+  : arg('base', 'https://fydr.vercel.app').replace(/\/$/, '');
 /* Capture without signing in. Useful on its own — it is how you get a clean
    record of what a signed-out visitor can reach — and it is the only way to
    exercise this script without a password. */

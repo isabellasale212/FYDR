@@ -42,8 +42,11 @@ import { anchorMdOffsetsToWeek, daysBetween, dateInTz, formatTime, mdLabel, zone
  *    wellness/compliance/nutrition/testing flags are never inferred onto
  *    a session — they are not session-shaped facts to begin with (a sleep
  *    hours flag doesn't belong to Tuesday's skills session any more than
- *    Wednesday's) — they always surface in "Not tied to a session",
- *    which is what that card is for.
+ *    Wednesday's) — so they surface in the open-flags panel at the top of
+ *    the dashboard, which filters on nothing but org and open status. They
+ *    used to have a card of their own, "Not tied to a session"; it was
+ *    removed in design review because it was a second view of rows that panel
+ *    already showed.
  *  - "Doubtful" vs "ruled out" for Saturday selection has no structured
  *    field anywhere in this schema (no review-date column, nothing beyond
  *    a free-text `note`). Every `modified` athlete counts as doubtful and
@@ -430,8 +433,9 @@ export async function fetchTimeline(
 
     for (const p of s.participants) {
       // Only a gps-domain flag ever attaches to a session, and only the
-      // one it's inferred onto — every other domain belongs exclusively
-      // to "Not tied to a session" (fetchUntiedFlags), never here too.
+      // one it's inferred onto. Every other domain is not a session-shaped
+      // fact and is left to the open-flags panel, never duplicated onto a
+      // session row here.
       const flagsForAthlete = (flagsByAthlete.get(p.athlete_id) ?? []).filter((f) => f.domain === 'gps' && gpsSessionByAthlete.get(p.athlete_id) === s.id);
       for (const f of flagsForAthlete) {
         affected.push({
@@ -508,6 +512,12 @@ export type SaturdayReadiness = {
   selectable: number;
   squad: number;
   offset: number;
+  /* UNUSED SINCE DESIGN REVIEW removed the paragraph under the readiness ring
+     ("You can name 25 from 28. … are the selection questions."). Left in
+     place, and cheap — it is assembled from rows this function has already
+     read, not another query. The athletes it named are still on the card: the
+     Doubtful and Ruled out rows list them below the ring, with each one's
+     restriction, which is more than this sentence carried. */
   read: string;
   rows: ReadinessRow[];
   weekLoad: { pct: number | null; fillPct: number; tickPct: number; tone: string; foot: string } | null;
@@ -792,7 +802,13 @@ export async function fetchSquadState(db: Db, orgId: string, groupIds: readonly 
 }
 
 // ---------------------------------------------------------------------------
-// Not tied to a session
+// Untied flags — flags belonging to no timetable row
+//
+// UNUSED SINCE THE DASHBOARD'S "Not tied to a session" CARD WAS REMOVED in
+// design review. Kept rather than deleted: it is the only query that isolates
+// the non-session flag domains, and /flags is the screen that would want it if
+// that view comes back. Delete it if it is still unreferenced next time
+// someone is in here.
 // ---------------------------------------------------------------------------
 
 export type UntiedFlag = { athleteId: string; name: string; domain: string; rule: string; value: string; sev: 'bad' | 'warn' };

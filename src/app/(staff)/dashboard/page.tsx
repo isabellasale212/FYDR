@@ -11,7 +11,6 @@ import {
   fetchSaturdayReadiness,
   fetchSquadState,
   fetchTimeline,
-  fetchUntiedFlags,
   fetchWeekStrip,
     type SessionPip,
     type SquadStateEntry,
@@ -179,7 +178,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
    * it seeded the whole account with a key no report accepts. Longer windows
    * live on Analytics, which has its own per-board controls. */
 
-  const [groups, stats, week, timeline, readiness, squad, untied, outstanding] = await Promise.all([
+  const [groups, stats, week, timeline, readiness, squad, outstanding] = await Promise.all([
     fetchGroups(db, orgId),
     fetchHeadlineStats(db, orgId, groupIds, effectiveToday, wallClockToday, timezone),
     fetchWeekStrip(db, orgId, groupIds, weekStart, effectiveToday, timezone),
@@ -188,7 +187,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
     fetchTimeline(db, orgId, groupIds, selectedDay, new Date().toISOString(), timezone),
     fetchSaturdayReadiness(db, orgId, groupIds, effectiveToday, timezone),
     fetchSquadState(db, orgId, groupIds),
-    fetchUntiedFlags(db, orgId, groupIds),
     fetchOutstandingTracks(db, orgId, groupIds, effectiveToday),
   ]);
 
@@ -472,13 +470,19 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                   {readiness.opponent ? `v ${readiness.opponent} · ${readiness.homeAway ?? ''} · ${readiness.daysOut ?? '—'} days out` : 'No fixture scheduled'}
                 </p>
               </div>
-              <Dial size={62} pct={readiness.squad > 0 ? Math.round((100 * readiness.selectable) / readiness.squad) : null} tone="var(--accent)">
-                <span className="num" style={{ fontSize: 15, fontWeight: 500 }}>
-                  {readiness.selectable}/{readiness.squad}
+              {/* 76px, and the centre says what the fraction counts. "25/28"
+                  on its own is a ratio of nothing in particular; the ring is
+                  about SELECTION, and the second line is the only place that
+                  word appears. */}
+              <Dial size={76} pct={readiness.squad > 0 ? Math.round((100 * readiness.selectable) / readiness.squad) : null} tone="var(--accent)">
+                <span className="dash-ready-dial">
+                  <span className="v num">
+                    {readiness.selectable}/{readiness.squad}
+                  </span>
+                  <span className="k">Named</span>
                 </span>
               </Dial>
             </div>
-            <p style={{ fontSize: 13.5, marginTop: 12 }}>{readiness.read}</p>
 
             <div style={{ marginTop: 4 }}>
               {readiness.rows.map((r) => (
@@ -575,36 +579,13 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
             </div>
           </div>
 
-          {untied.length > 0 ? (
-            <div className="card" style={{ border: '1px solid rgba(246,171,47,0.5)' }}>
-              <div className="dash-ready-head">
-                <div>
-                  <h2 className="card-title" style={{ margin: 0 }}>
-                    Not tied to a session
-                  </h2>
-                  <p className="tiny" style={{ marginTop: 2 }}>
-                    Flags that belong to nothing on the timetable.
-                  </p>
-                </div>
-                <span className="pill pill-warn">{untied.length} open</span>
-              </div>
-              {untied.map((f, i) => (
-                <Link key={`${f.athleteId}-${i}`} href={`/squad/${f.athleteId}`} className="dash-untied-row" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                    <span style={{ fontSize: 13.5, fontWeight: 600 }}>{f.name}</span>
-                    <span className="pill pill-neutral">{f.domain}</span>
-                    <span className="num" style={{ fontSize: 12.5, marginLeft: 'auto', color: f.sev === 'bad' ? 'var(--bad-pill-text)' : 'var(--warn-pill-text)' }}>
-                      {f.value}
-                    </span>
-                  </div>
-                  <div className="tiny" style={{ color: 'var(--muted)', marginTop: 3 }}>
-                    {f.rule}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : null}
-
+          {/* "Not tied to a session" is gone, per the design review. It listed
+              wellness, compliance, nutrition and testing flags — the domains
+              that never attach to a timetable row — but fetchDashboardAttention
+              filters only on org and open status, so every one of them was
+              already in the open-flags panel at the top of this page. The card
+              was a second view of the same rows under a different heading, and
+              the right column now ends with Squad state. */}
           {outstanding.length > 0 ? (
             <div className="card">
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>

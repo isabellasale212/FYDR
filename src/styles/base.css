@@ -4699,13 +4699,45 @@ img.av {
   border-color: var(--border);
   color: var(--muted);
 }
+/* A button now, and the full width of the card: the header toggles the list.
+   The hairline moved to the list's top edge — on the header it drew a line
+   across the bottom of the card whenever the list was collapsed, with nothing
+   under it to divide. */
 .dash-flags-head {
   display: flex;
   align-items: center;
   gap: 9px;
   flex-wrap: wrap;
+  width: 100%;
   padding: 13px 18px;
-  border-bottom: 1px solid var(--border);
+  background: none;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  /* The longhands, never `font: inherit` — that shorthand resets
+     font-variant-numeric, and this row's count and meta are both figures. */
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  transition: background var(--t-state);
+}
+.dash-flags-head:hover {
+  background: var(--surf2);
+}
+.dash-flags-head:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+.dash-flags-head-chevron {
+  font-size: 13px;
+  line-height: 1;
+  color: var(--faint);
+  transform: rotate(0deg);
+  transition: transform 150ms ease;
+}
+.dash-flags-head-chevron[data-open='true'] {
+  transform: rotate(180deg);
 }
 .dash-flags-head .ic {
   width: 15px;
@@ -4734,6 +4766,7 @@ img.av {
 .dash-flags-list {
   display: flex;
   flex-direction: column;
+  border-top: 1px solid var(--border);
 }
 .dash-flags-item {
   border-bottom: 1px solid var(--hair);
@@ -5369,6 +5402,30 @@ button.dash-stat {
 .dash-ready-row > span {
   color: var(--muted);
 }
+/* The readiness ring's centre, two lines. line-height 1 so the pair sits as
+   one block on the ring's centre rather than as two rows with air between. */
+.dash-ready-dial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+.dash-ready-dial .v {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent-text);
+}
+/* Small caps by CSS, not by shouting in the markup — the word is "Named" in
+   the DOM, which is what a screen reader should say. */
+.dash-ready-dial .k {
+  margin-top: 2px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
 .dash-ready-head {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

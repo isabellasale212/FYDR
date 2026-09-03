@@ -39,6 +39,11 @@ function FlagIcon() {
  * replaced. */
 export function DashboardFlagsPanel({ rows, openTotal, awaitingAck, bySeverity }: Props) {
   const [openId, setOpenId] = useState<string | null>(null);
+  /* Collapsed on load, per the design review. The dashboard's job is to say
+     what needs attention; forty-two flags expanded by default pushed the rest
+     of the page below the fold to say it. The header still carries the count
+     and the severity split, so nothing is hidden — only the rows are. */
+  const [listOpen, setListOpen] = useState(false);
 
   if (openTotal === 0) {
     return (
@@ -54,7 +59,17 @@ export function DashboardFlagsPanel({ rows, openTotal, awaitingAck, bySeverity }
 
   return (
     <div className="dash-flags-panel">
-      <div className="dash-flags-head">
+      {/* The whole header is the toggle, not a chevron you have to hit — a
+          full-width target on a row that is already one line of related facts.
+          A <button> rather than a div with a handler, so it is reachable by
+          keyboard and announces its own state. */}
+      <button
+        type="button"
+        className="dash-flags-head"
+        aria-expanded={listOpen}
+        aria-controls="dash-flags-list"
+        onClick={() => setListOpen((v) => !v)}
+      >
         <FlagIcon />
         <span className="dash-flags-count">{openTotal}</span>
         <span className="dash-flags-word">open flag{openTotal === 1 ? '' : 's'}</span>
@@ -64,9 +79,13 @@ export function DashboardFlagsPanel({ rows, openTotal, awaitingAck, bySeverity }
           {awaitingAck === 0 ? 'all acknowledged' : `${awaitingAck} awaiting acknowledgement`}
           {rows.length < openTotal ? ` · top ${rows.length} athletes` : ''}
         </span>
-      </div>
+        <span className="dash-flags-head-chevron" data-open={listOpen} aria-hidden="true">
+          &#9660;
+        </span>
+      </button>
 
-      <div className="dash-flags-list">
+      {listOpen ? (
+      <div className="dash-flags-list" id="dash-flags-list">
         {rows.map((r) => {
           const isOpen = openId === r.athlete_id;
           return (
@@ -127,6 +146,7 @@ export function DashboardFlagsPanel({ rows, openTotal, awaitingAck, bySeverity }
           See every open flag →
         </Link>
       </div>
+      ) : null}
     </div>
   );
 }

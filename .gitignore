@@ -20,3 +20,10 @@ supabase/.temp/
 .env*
 !.env.example
 .claude/worktrees/
+
+# Screenshots of every page, and the PDF built from them (scripts/capture-app-pdf.mjs).
+# These hold real athlete records — names, wellness scores, injuries — the moment
+# they are captured from a signed-in session. They are a review artefact for one
+# person on one machine, never a repo file. CLAUDE.md §2 rule 1 and §10.
+capture/
+Fydr-pages-*.pdf

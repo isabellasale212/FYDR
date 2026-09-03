@@ -369,6 +369,26 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
         {header}
 
         <div className="tr-jumprow">
+          {/* The fixture chips belong to MATCH DAY and are back (Design.pdf
+              p23). The review's "session chips row removed" was about the
+              TRAINING chips — p17 shows that view correctly carrying nothing
+              but Day/Week and the date picker — and taking these with them was
+              my error. A season is a handful of matches, so the chips are the
+              whole list; a training block is dozens of sessions, which is why
+              only that one needed a dropdown instead. */}
+          <div className="chiprow" style={{ margin: 0 }}>
+            {sessions.slice(0, 8).map((s) => (
+              <Link
+                key={s.sessionId}
+                href={`/reports/training${q({ mode: 'match', session: s.sessionId, groups: groupsQs })}`}
+                className="tr-session-chip"
+                aria-current={selected.sessionId === s.sessionId}
+              >
+                v {s.opponent}
+                <span className="suffix">{s.result ?? '—'}</span>
+              </Link>
+            ))}
+          </div>
           <ReportSelectNav
             label="Jump to date"
             paramKey="session"
@@ -510,13 +530,9 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
   // other.
   const trainingToolbar = (activeRange: 'day' | 'week') => (
     <div className="tr-jumprow">
-      <ReportSelectNav
-        label="Jump to date"
-        paramKey="session"
-        value={selected.sessionId}
-        options={sessions.map((s) => ({ value: s.sessionId, label: `${formatDate(s.date, timezone)} · ${s.title}` }))}
-        ariaLabel="Jump to a training session with GPS data"
-      />
+      {/* Day/Week first, then the date picker at the far end — Design.pdf p17.
+          The two were the other way round, which put the thing that changes
+          WHAT you are looking at after the thing that changes WHICH ONE. */}
       <div className="tr-mode-switch">
         <Link href={`/reports/training${q({ mode: 'training', session: selected.sessionId, groups: groupsQs, range: 'day' })}`} aria-current={activeRange === 'day'}>
           Day
@@ -525,6 +541,13 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
           Week
         </Link>
       </div>
+      <ReportSelectNav
+        label="Jump to date"
+        paramKey="session"
+        value={selected.sessionId}
+        options={sessions.map((s) => ({ value: s.sessionId, label: `${formatDate(s.date, timezone)} · ${s.title}` }))}
+        ariaLabel="Jump to a training session with GPS data"
+      />
     </div>
   );
 

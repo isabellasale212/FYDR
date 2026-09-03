@@ -4482,13 +4482,17 @@ img.av {
    of one control that wrapped into two ragged rows on a narrow window. The
    select right-aligns; anything else on the row (the Day/Week switch) sits
    beside it. */
+/* Day/Week at the left end, the date picker pushed to the right — the row
+   holds the two controls apart rather than bunching both at one end. */
 .tr-jumprow {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
   gap: 14px;
   flex-wrap: wrap;
   margin-bottom: 16px;
+}
+.tr-jumprow > .rsel {
+  margin-inline-start: auto;
 }
 
 /* A fixed 104px per dial, not flex. Three circles with labels of different

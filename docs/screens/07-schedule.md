@@ -40,13 +40,22 @@ differs.
 
 ## 4. What you see
 
-**The top bar** holds the group filter and the week the grid is showing.
+**The header** is the same template the five reports carry, specified in
+`CHANGELOG-headers-spec.md`. Five rows, always in this order:
 
-**A read and edit switch.** The grid opens in read mode. Edit mode is entered
-deliberately rather than by accident, which is what keeps a stray drag from
-moving a session.
+1. **Back**, a pill at the top left.
+2. **The group chips**, Whole squad first with a tick when active.
+3. **The eyebrow** naming the week, the matchday, the fixture and the active
+   group scope, with the **read and edit switch** on the right. The grid opens
+   in read mode; edit is entered deliberately rather than by accident, which is
+   what keeps a stray drag from moving a session.
+4. **The title.**
+5. **Week plan and Today** as tabs on the left, with **week navigation** on the
+   right. The two tabs are two routes rather than two views of one screen:
+   Today is the timetable.
 
-**Week navigation**, previous and next, with the week in the address.
+**The week is in the address**, so a particular week can be sent to a
+colleague.
 
 **The grid itself.** Days across, time down, with each session drawn as a block
 at its real time and for its real length. Matchday labels sit on the days they
@@ -77,7 +86,9 @@ it.
 
 | Element and label | Where it sits | What happens when used | Where it takes you | What it writes | Permission | Confirmation | Disabled or hidden when |
 |---|---|---|---|---|---|---|---|
-| Group filter chips | Top bar | Narrows the week to a group | Stays here | Nothing. A cookie remembers it | Any staff | None | Never |
+| Back | Top left of the header | Returns to the screen you came from | Browser history | Nothing | Any staff | None | Never |
+| Group chips | Second row of the header | Narrows the week to a group | Stays here, group in the address | Nothing. A cookie remembers the choice | Any staff | None | Never |
+| Week plan / Today tabs | Last row of the header | Switches between the week grid and the day list | `/schedule`, `/timetable` | Nothing | Any staff | None | Never |
 | Read and Edit switch | Above the grid | Changes whether blocks can be moved | Stays here | Nothing by itself | Coach and sport scientist in the target model | None | Should be hidden for view only roles. **Not built** |
 | Previous and next week | Above the grid | Moves a week | Stays here, week in the address | Nothing | Any staff | None | Never |
 | A session block | The grid | Opens that session | `/schedule/[sessionId]` | Nothing | Any staff | None | Never |

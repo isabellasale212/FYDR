@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { ReportHeader } from '@/components/ReportHeader/ReportHeader';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import {
@@ -42,6 +43,9 @@ type Props = {
   timetableHref: string;
   initialSessions: readonly GridSession[];
   groups: readonly (GroupOption & { memberCount: number })[];
+  /** The group filter currently in force, for the header's chip row. Empty
+   *  means the whole squad. */
+  groupIds: readonly string[];
   groupMembership: Record<string, string[]>;
   templates: readonly TemplateOption[];
   applyTemplateHrefBase: string;
@@ -84,6 +88,7 @@ export function ScheduleWorkspace({
   timetableHref,
   initialSessions,
   groups,
+  groupIds,
   groupMembership,
   templates,
   applyTemplateHrefBase,
@@ -572,55 +577,70 @@ export function ScheduleWorkspace({
 
   return (
     <div className="sg">
-      <div className="sg-header">
-        <div>
-          <p className="eyebrow">{eyebrow}</p>
-          <h1 className="sg-title">Schedule</h1>
-        </div>
-        <div className="sg-header-right">
-          <div className="sg-segmented" role="group" aria-label="Read or edit">
+      <ReportHeader
+        groups={groups.map((g) => ({ id: g.id, name: g.name }))}
+        groupIds={groupIds}
+        eyebrow={eyebrow}
+        title="Schedule"
+        actions={
+          <>
+            <div className="sg-segmented" role="group" aria-label="Read or edit">
             <button type="button" className="sg-segment" aria-pressed={mode === 'read'} onClick={() => setMode('read')}>
-              Read
+            Read
             </button>
             <button
-              type="button"
-              className="sg-segment"
-              aria-pressed={mode === 'edit'}
-              onClick={() => setMode('edit')}
+            type="button"
+            className="sg-segment"
+            aria-pressed={mode === 'edit'}
+            onClick={() => setMode('edit')}
             >
-              Edit
+            Edit
             </button>
+            </div>
+          </>
+        }
+        tabsNode={
+          /* Week plan is this screen; Today is the timetable. A link and a
+             current-page marker rather than two buttons, because they are two
+             routes, not two views of one. */
+          <div className="sg-viewtabs" role="tablist">
+            <span className="sg-viewtab" role="tab" aria-selected="true">
+              Week plan
+            </span>
+            <Link href={timetableHref} className="sg-viewtab" role="tab" aria-selected="false">
+              Today
+            </Link>
           </div>
-          <div className="sg-weeknav">
+        }
+        period={
+          /* The week nav is this screen's period control: it names which week
+             everything below is about. */
+          <>
+            <div className="sg-weeknav">
             <Link href={prevHref} className="sg-weeknav-btn" aria-label="Previous week">
-              ‹
+            ‹
             </Link>
             <span className="sg-weeknav-range num">{weekRangeLabel}</span>
             <Link href={nextHref} className="sg-weeknav-btn" aria-label="Next week">
-              ›
+            ›
             </Link>
-          </div>
-        </div>
-      </div>
+            </div>
+          </>
+        }
+      />
 
       <div className="chiprow" style={{ marginBottom: 14 }}>
-        <span className="squad-chip" aria-current="page">
-          Week plan
-        </span>
-        <Link href={timetableHref} className="squad-chip">
-          Today
-        </Link>
-        {/* Both creation routes existed and neither was linked from anywhere —
-            /schedule/new could only be reached by typing it, and fixtures had
-            no create route at all until now. The two sit together because they
-            are the two halves of the same job: the fixture is the match, the
-            sessions are the week around it. */}
-        <Link href={`/schedule/new?date=${weekStart}`} className="squad-chip sg-add">
+          {/* Both creation routes existed and neither was linked from anywhere —
+          /schedule/new could only be reached by typing it, and fixtures had
+          no create route at all until now. The two sit together because they
+          are the two halves of the same job: the fixture is the match, the
+          sessions are the week around it. */}
+          <Link href={`/schedule/new?date=${weekStart}`} className="squad-chip sg-add">
           + Session
-        </Link>
-        <Link href={`/schedule/fixtures/new?date=${weekStart}`} className="squad-chip sg-add">
+          </Link>
+          <Link href={`/schedule/fixtures/new?date=${weekStart}`} className="squad-chip sg-add">
           + Fixture
-        </Link>
+          </Link>
       </div>
 
       {/* No status dot: it occupied a 10px grid column plus a 14px gap, which

@@ -11338,3 +11338,35 @@ main:has(.rhead) > .back-btn > :first-child {
 .rhead-sub > :first-child {
   margin-top: 0;
 }
+
+/* Week plan / Today on the schedule. Two routes rather than two views of one,
+   so the current page is a span and the other is a link — but they read as one
+   segmented control, so they take the canvas's tab measurements. */
+.rhead-tabrow .sg-viewtabs {
+  display: inline-flex;
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px;
+}
+.rhead-tabrow .sg-viewtab {
+  padding: 9px 18px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 14.5px;
+  color: var(--muted);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.rhead-tabrow .sg-viewtab[aria-selected='true'] {
+  background: #fff;
+  color: var(--accent);
+}
+/* The week nav is the schedule's period control, so it loses the boxed look it
+   wore when it sat in a toolbar and takes the select's shape instead. */
+.rhead-period .sg-weeknav {
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px 6px;
+}

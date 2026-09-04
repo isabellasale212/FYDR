@@ -1,4 +1,3 @@
-import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { ScheduleWorkspace } from '@/components/ScheduleGrid/ScheduleWorkspace';
 import { fetchGroupsWithCounts } from '@/lib/queries/groups';
 import {
@@ -109,10 +108,6 @@ export default async function SchedulePage({ searchParams }: { searchParams: Sea
 
   return (
     <>
-      <div className="sg-filterbar">
-        <GroupFilter groups={groups} selected={groupIds} />
-      </div>
-
       <ScheduleWorkspace
         orgId={orgId}
         userId={claims.userId}
@@ -127,6 +122,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Sea
         timetableHref={timetableHref}
         initialSessions={sessions}
         groups={groups.map((g) => ({ id: g.id, name: g.name, group_type: g.group_type, memberCount: g.member_count }))}
+        groupIds={groupIds}
         groupMembership={groupMembership}
         templates={templates.filter((t) => !t.archived).map((t) => ({ id: t.id, name: t.name }))}
         applyTemplateHrefBase={`/schedule/planner/apply?week=${weekStart}`}

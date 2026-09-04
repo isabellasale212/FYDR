@@ -54,9 +54,9 @@ export default async function ExportsPage({ searchParams }: { searchParams: Sear
       </div>
 
       <p className="sub" style={{ marginBottom: 14, maxWidth: '70ch' }}>
-        Pick what to include, pick who, pick a date range, and get a CSV file per domain — straight
-        to your downloads, no queue to check back on. {claims.roles.includes('medical') ? 'Medical' : 'Coach'} access:
-        every domain below, squad-wide.
+        A CSV per domain, straight to your downloads — no queue to check back on.{' '}
+        {claims.roles.includes('medical') ? 'Medical' : 'Coach'} access: every domain below,
+        squad-wide.
       </p>
 
       <div style={{ margin: '0 0 16px' }}>

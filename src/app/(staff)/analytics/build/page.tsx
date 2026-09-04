@@ -482,9 +482,8 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
       </section>
 
       <p className="cap">
-        Cross-metric correlation, scatter and heatmap views, and saved or shared views are
-        specified in screens/analytics.md and are not built. A correlation needs a second metric
-        slot, and a saved view needs a table this schema does not have.
+        Cross-metric correlation, scatter and heatmap views, and saved or shared views are not
+        built yet.
       </p>
     </>
   );

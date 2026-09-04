@@ -335,10 +335,9 @@ export default async function AthleteWellnessPage({
                 * not drawn describes something the reader cannot see and reads
                 * as a rendering failure. */}
               <p className="cap" style={{ marginTop: 6 }}>
-                Daily readiness, 0&ndash;100, as the solid line. A day with no entry is a gap, never a
-                zero. The shaded area and the dashed line behind it are his own {ROLLING_WINDOW}-day
-                mean &plusmn; 1 SD &mdash; what is normal for him &mdash; and a dot outside it is
-                coloured. That baseline is drawn only where there are enough observations to have one.
+                A day with no entry is a gap, never a zero. The shaded area and dashed line are his
+                own {ROLLING_WINDOW}-day mean &plusmn; 1 SD &mdash; what is normal for him &mdash;
+                drawn only where there are enough observations to have one.
               </p>
             </>
           )}

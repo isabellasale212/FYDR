@@ -49,7 +49,7 @@ export function StaffProfileEditForm({ userId, initialFullName, initialPhone }: 
     <form onSubmit={onSubmit} className="card" noValidate>
       <h2 className="card-title">Edit profile</h2>
       <p className="import-sub" style={{ marginBottom: 12 }}>
-        Display name and phone. Club, role and timezone are set by the club and aren&apos;t editable here.
+        Club, role and timezone are set by the club and aren&apos;t editable here.
       </p>
 
       {success ? (

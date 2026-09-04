@@ -209,9 +209,8 @@ export function ExportBuilderForm({ domains, groupIds, groupLabel, athleteCount,
         {busy ? 'Generating…' : 'Generate'}
       </button>
       <p className="cap" style={{ marginTop: 10 }}>
-        Format: CSV, one file per domain selected above — see lib/csv.ts&rsquo;s own header for why this build&rsquo;s
-        exports are CSV only. Generated immediately, not queued: nothing is saved on the server, and there is no
-        export history to come back to (a real, stated cut — see docs/screens/exports.md).
+        CSV, one file per domain selected above. Generated immediately, not queued: nothing is
+        saved on the server, and there is no export history to come back to.
       </p>
     </form>
   );

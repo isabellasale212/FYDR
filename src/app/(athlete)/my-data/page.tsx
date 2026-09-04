@@ -869,9 +869,8 @@ async function TrainingTab({
           Sessions
         </h2>
         <p className="import-sub">
-          What you were scheduled for and what you reported afterwards. A blank
-          RPE means no rating was submitted, which is not the same as an easy
-          session.
+          A blank RPE means no rating was submitted, which is not the same as an
+          easy session.
         </p>
 
         <FlagNotice flags={flags} heading="Noted by staff" timezone={timezone} />
@@ -1022,8 +1021,7 @@ async function NutritionTab({
           Weekly check-in
         </h2>
         <p className="import-sub">
-          Did you hit your protein target most days that week &mdash; one question,
-          answered once a week. No score, no streak, no comparison to anyone else.
+          No score, no streak, no comparison to anyone else.
         </p>
 
         <FlagNotice flags={flags} heading="Noted by staff" timezone={timezone} />

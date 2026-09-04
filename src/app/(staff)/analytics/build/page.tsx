@@ -321,10 +321,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
         <h2 className="card-title" id="builder-title">
           Build a view
         </h2>
-        <p className="import-sub">
-          One metric, one population, one window. Every control below re-runs the same query
-          &mdash; the chart type only changes how the answer is drawn, never what was asked.
-        </p>
+        
 
         <div
           style={{
@@ -413,13 +410,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
               title={scopeLine}
               decimals={metric.decimals}
             />
-            <p className="cap">
-              The solid line is {selectedAthlete ? 'this athlete’s' : 'the population’s'} daily
-              value; the shaded band and dashed line behind it are the trailing 28-day mean and
-              &plusmn;1 standard deviation of that same series &mdash; its own norm, never a
-              squad benchmark. A day with no submission breaks the line rather than being drawn
-              as zero.
-            </p>
+            
             {axis.extended ? (
               /* Say it, rather than letting a reader who has learnt this
                  metric's usual gridlines read a differently-scaled chart as

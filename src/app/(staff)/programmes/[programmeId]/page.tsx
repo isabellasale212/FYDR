@@ -81,10 +81,7 @@ export default async function ProgrammeBuilderPage({
       {assignedAthletes.length > 0 ? (
         <div className="card" style={{ marginBottom: 16 }}>
           <h2 className="card-title">View as an athlete</h2>
-          <p className="tiny" style={{ marginBottom: 10 }}>
-            A squad-generic load applies to everyone the same way below — see one athlete&rsquo;s
-            actual resolved sets, reps and load, including any tailoring, here instead.
-          </p>
+          
           <div className="chiprow">
             {assignedAthletes.map((a) => (
               <Link key={a.id} href={`/programmes/${programmeId}/athlete/${a.id}`} className="squad-chip">

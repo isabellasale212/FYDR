@@ -198,13 +198,7 @@ export default async function ProgrammeAthletePage({
         })}
       </div>
 
-      <p className="cap num" style={{ marginTop: 14 }}>
-        Non-lifting modalities (a jog, a hold) are still forced through this sets/reps/load
-        table because programme_exercises has no measurement_type column — a real, open
-        schema gap (audit finding 31), too large for this pass. What is shown above is honest
-        rather than complete: no fabricated kg on a plyo/conditioning row (see loadLabel’s own
-        comment), but a distance or duration still has nowhere structured to live except notes.
-      </p>
+      
     </>
   );
 }

@@ -16,7 +16,7 @@ export const metadata = { title: 'Groups · Fydr' };
  *  depends on — creating groups, and adding or removing members without
  *  ever losing history — is built and works. */
 export default async function GroupsPage() {
-  const { db, orgId, orgName, claims } = await requireStaff();
+  const { db, orgId, claims } = await requireStaff();
 
   const [groups, noGroup, teams] = await Promise.all([
     fetchGroupsWithCounts(db, orgId),
@@ -53,10 +53,7 @@ export default async function GroupsPage() {
         </div>
       </div>
 
-      <p className="import-sub" style={{ marginTop: -6 }}>
-        The named subsets of the squad every screen in {orgName} filters by. Get
-        these right and every other filter is right.
-      </p>
+      
 
       {/* "Different team selections."
         *
@@ -92,13 +89,7 @@ export default async function GroupsPage() {
         <h2 className="card-title" id="teams-title">
           Team selections
         </h2>
-        <p className="import-sub">
-          Groups are standing subsets an athlete belongs to many of at once, and they drive the
-          filter on every squad screen. Picking who plays for which team in a given week is a
-          separate thing, because an athlete plays for exactly one team on a weekend — that lives
-          in <b>Team allocation</b>, with its own draft and published states, so a selection is
-          never visible to athletes before it is published.
-        </p>
+        
 
         {teams.length > 0 ? (
           <p className="cap" style={{ marginTop: 8 }}>

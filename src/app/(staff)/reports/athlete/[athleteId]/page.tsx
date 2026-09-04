@@ -427,10 +427,7 @@ export default async function AthleteReportPage({
                           news. What stays is the sign convention, which is the
                           only place in the app that says a faster sprint counts
                           as a gain. */}
-                      <p className="inj-foot">
-                        Vs PB compares the latest result with {athlete.first_name}&apos;s own best,
-                        and is direction-corrected for the tests where lower is better.
-                      </p>
+                      
                     </>
                   )}
                 </section>

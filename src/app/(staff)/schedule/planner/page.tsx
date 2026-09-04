@@ -39,10 +39,7 @@ export default async function WeekTemplatesPage() {
         </div>
       </div>
 
-      <p className="tiny" style={{ marginBottom: 14 }}>
-        Define the shape of a training week once, then apply it to a real week — every position,
-        every session, the load it carries. <Link href="/schedule/planner/apply">Apply a template →</Link>
-      </p>
+      
 
       {templates.length === 0 ? (
         <EmptyState

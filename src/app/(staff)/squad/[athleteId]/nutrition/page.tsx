@@ -336,11 +336,7 @@ export default async function AthleteNutritionPage({
                   </div>
                 ))}
               </div>
-              <p className="cap" style={{ marginTop: 12 }}>
-                Resolved for {formatDate(today, timezone)} by resolve_nutrition_targets: an
-                athlete-specific plan beats a group plan, which beats the club default, and a plan
-                written for this matchday offset beats an any-day one.
-              </p>
+              
             </>
           ) : (
             <EmptyState

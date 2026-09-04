@@ -33,6 +33,16 @@ Four jobs, in strict priority order:
 
 Job 1 is the screen. Jobs 2 to 4 are the packaging.
 
+**Jobs 2 and 4 are one card, not two.** They were built as two — "Ready for Saturday" and
+"Squad state" — and the pair turned out to be one fact rendered twice: both were derived from
+the same `fetchCurrentAvailability` and `fetchNotFullyAvailable` reads, so the readiness ring's
+denominator *was* squad state's total, and its Fit-and-available / Doubtful / Ruled out rows
+*were* squad state's Available / Modified / Unavailable. `fetchSquadState` has been deleted and
+its split folded onto `SaturdayReadiness`; the stacked bar, the reason categories and the link
+through to Squad moved up into the readiness card, so nothing the second card showed was lost.
+The point is not tidiness: two derivations of one number can disagree, and a coach reading a
+selection ring next to a contradicting availability bar has no way to tell which is right.
+
 ---
 
 ## Roles and access
@@ -250,7 +260,7 @@ times the queries for detail nobody reads at week altitude. A caption says so, b
 flag list must never look like an absence of flags.
 
 **What the control does NOT touch, and why that is right rather than a gap.** The headline stats,
-Ready for Saturday, Squad state and Outstanding entries are not day-or-week-scoped by
+Ready for Saturday and Outstanding entries are not day-or-week-scoped by
 configuration — they are scoped by *definition*: "Wellness, today", "RPE, yesterday", availability
 as it stands right now, days to Saturday. Several are already week-scoped ("week load so far",
 sessions left this week). Re-pointing any of them at a period would not widen a window, it would

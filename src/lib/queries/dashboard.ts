@@ -4,7 +4,7 @@ import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchNextFixture, fetchWeekSessions, mondayOf, rangeBounds, type WeekSession } from './schedule';
 import { fetchAllPaged } from './paged';
 import { fetchTimetableDay } from './timetable';
-import { anchorMdOffsetsToWeek, daysBetween, dateInTz, formatTime, mdLabel, zonedTimeToUtcIso } from '../format';
+import { anchorMdOffsetsToWeek, availabilityLabel, daysBetween, dateInTz, formatTime, mdLabel, zonedTimeToUtcIso } from '../format';
 
 /* DASHBOARD-SPEC.md, the coach's 07:00 screen. Every section here composes
  * real, already-shipped query functions (schedule, availability,
@@ -503,7 +503,30 @@ function describeFlag(f: Pick<FlagRow, 'metric' | 'observed_value' | 'expected_v
 // Ready for Saturday
 // ---------------------------------------------------------------------------
 
-export type ReadinessRow = { label: string; detail: string; value: string; tone: 'text' | 'warn' | 'bad' };
+/** One athlete on the Doubtful or Ruled out row: the name, why (the raw
+ *  reason_category, enumLabel'd at the point of use) and the first recorded
+ *  restriction. Also handed to the Available headline tile, so that tile's
+ *  expand and this card cannot describe the same athlete two different ways.
+ *
+ *  Non-injury and injury-linked rows read identically here: this is squad
+ *  state at a glance, not the injury detail — see AvailabilityList and the
+ *  injuries report for where body area appears. ADR-008 / gameplan 2.6. */
+export type SquadStateEntry = { name: string; reason: string | null; restriction: string | null };
+
+export type ReadinessRow = {
+  label: string;
+  detail: string;
+  value: string;
+  tone: 'text' | 'warn' | 'bad';
+  /** Stable identity, so the page can hang the bar-segment colour and the
+   *  row's destination off the row without matching on its label text. The
+   *  first three ARE the availability bar's segments and carry its dots; the
+   *  last two are other selection inputs, and take none. Routes stay on the
+   *  page — this layer names the row, it does not know the sitemap. */
+  key: ReadinessRowKey;
+};
+
+export type ReadinessRowKey = 'available' | 'modified' | 'unavailable' | 'flags' | 'sessions';
 
 export type SaturdayReadiness = {
   opponent: string | null;
@@ -512,6 +535,19 @@ export type SaturdayReadiness = {
   selectable: number;
   squad: number;
   offset: number;
+  /* The availability split, folded in from what used to be a separate
+     fetchSquadState and its own "Squad state" card. Both were derived from
+     the SAME two reads this function already makes — fetchCurrentAvailability
+     and fetchNotFullyAvailable — which that card re-ran in full. So the merge
+     is four fewer round-trips per dashboard load, and, more to the point, the
+     two renderings of one fact can no longer drift apart: the ring's
+     denominator, the bar's segments and the three rows are now one
+     derivation, not two that happen to agree. */
+  available: number;
+  modified: number;
+  unavailable: number;
+  modifiedNames: SquadStateEntry[];
+  unavailableNames: SquadStateEntry[];
   /* UNUSED SINCE DESIGN REVIEW removed the paragraph under the readiness ring
      ("You can name 25 from 28. … are the selection questions."). Left in
      place, and cheap — it is assembled from rows this function has already
@@ -563,27 +599,48 @@ export async function fetchSaturdayReadiness(
   const flagsAffectingSelection = flagsThisWeek.filter((f) => selectionFlagAthletes.has(f.athlete_id));
   const sessionsLeft = weekSessions.filter((s) => s.entry_date > effectiveToday && s.session_type !== 'match');
 
+  const toEntry = (r: (typeof notFully)[number]): SquadStateEntry => ({
+    name: r.name,
+    reason: r.reason_category,
+    restriction: r.restrictions[0] ?? null,
+  });
+  const modifiedNames = modifiedRows.map(toEntry);
+  const unavailableNames = unavailableRows.map(toEntry);
+
+  /* Name, why, and what they can't do — in that order, because that is the
+     order a coach asks it in. The old pair of cards split this: "Ruled out"
+     listed bare names while "Unavailable" listed the same names with their
+     reason, so the fuller answer was the one NOT next to the selection ring.
+     Merged, every row carries both. */
+  /* Counted off the status, not inferred by subtracting the other two from
+     the squad. Same number today, but it reads what it claims to report. */
+  const available = availRows.filter((a) => a.status === 'available').length;
+
   const rows: ReadinessRow[] = [
-    { label: 'Fit and available', detail: 'no restriction recorded', value: String(availRows.length - modifiedRows.length - unavailableRows.length), tone: 'text' },
+    { key: 'available', label: 'Fit and available', detail: 'no restriction recorded', value: String(available), tone: 'text' },
     {
+      key: 'modified',
       label: 'Doubtful',
-      detail: modifiedRows.length > 0 ? modifiedRows.map((r) => `${r.name}${r.restrictions[0] ? ` · ${r.restrictions[0]}` : ''}`).join('; ') : 'nobody this week',
+      detail: modifiedNames.length > 0 ? modifiedNames.map(availabilityLabel).join('; ') : 'nobody this week',
       value: String(modifiedRows.length),
       tone: 'warn',
     },
     {
+      key: 'unavailable',
       label: 'Ruled out',
-      detail: unavailableRows.length > 0 ? unavailableRows.map((r) => r.name).join(', ') : 'nobody this week',
+      detail: unavailableNames.length > 0 ? unavailableNames.map(availabilityLabel).join('; ') : 'nobody this week',
       value: String(unavailableRows.length),
       tone: 'bad',
     },
     {
+      key: 'flags',
       label: 'Flags affecting selection',
       detail: flagsAffectingSelection.length > 0 ? [...new Set(flagsAffectingSelection.map((f) => f.metric.replace(/_/g, ' ')))].join(', ') : 'none this week',
       value: String(flagsAffectingSelection.length),
       tone: flagsAffectingSelection.length > 0 ? 'warn' : 'text',
     },
     {
+      key: 'sessions',
       label: 'Sessions left to run',
       detail: sessionsLeft.map((s) => s.title).join(', ') || 'none — the week is done',
       value: String(sessionsLeft.length),
@@ -604,6 +661,11 @@ export async function fetchSaturdayReadiness(
     selectable,
     squad,
     offset,
+    available,
+    modified: modifiedRows.length,
+    unavailable: unavailableRows.length,
+    modifiedNames,
+    unavailableNames,
     read,
     rows,
     weekLoad,
@@ -762,44 +824,18 @@ async function fetchWeekLoad(
 }
 
 // ---------------------------------------------------------------------------
-// Squad state
+// Squad state — MERGED INTO fetchSaturdayReadiness ABOVE
+//
+// fetchSquadState() was deleted, not moved. It re-ran the exact two reads
+// fetchSaturdayReadiness already makes (fetchCurrentAvailability and
+// fetchNotFullyAvailable) to produce numbers that same function was already
+// deriving: its `squad` WAS this total, and `selectable` WAS total minus
+// unavailable. Two cards, one fact, two code paths that could disagree.
+//
+// The split now lives on SaturdayReadiness (available / modified /
+// unavailable / modifiedNames / unavailableNames), and SquadStateEntry is
+// declared beside ReadinessRow. Nothing else read this section.
 // ---------------------------------------------------------------------------
-
-// Name plus the reason a coach or medical staff actually recorded, if any —
-// this tile used to show bare names (the audit's own S4 finding was about the
-// list disappearing under a filter, not about what the names lacked, but the
-// same rows already carried reason_category and it went unused). Non-injury
-// and injury-linked rows render identically here: this tile is squad state at
-// a glance, not the injury detail — see AvailabilityList and the injuries
-// report for where body area appears for the injury-linked case.
-export type SquadStateEntry = { name: string; reason: string | null };
-
-export type SquadState = {
-  total: number;
-  available: number;
-  modified: number;
-  unavailable: number;
-  modifiedNames: SquadStateEntry[];
-  unavailableNames: SquadStateEntry[];
-};
-
-export async function fetchSquadState(db: Db, orgId: string, groupIds: readonly string[]): Promise<SquadState> {
-  const rows = await fetchNotFullyAvailable(db, orgId, groupIds);
-  const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
-  const availRows = await fetchCurrentAvailability(db, orgId, scope);
-  const toEntry = (r: (typeof rows)[number]): SquadStateEntry => ({
-    name: r.name,
-    reason: r.reason_category,
-  });
-  return {
-    total: availRows.length,
-    available: availRows.filter((a) => a.status === 'available').length,
-    modified: rows.filter((r) => r.status === 'modified').length,
-    unavailable: rows.filter((r) => r.status === 'unavailable').length,
-    modifiedNames: rows.filter((r) => r.status === 'modified').map(toEntry),
-    unavailableNames: rows.filter((r) => r.status === 'unavailable').map(toEntry),
-  };
-}
 
 // ---------------------------------------------------------------------------
 // Untied flags — flags belonging to no timetable row

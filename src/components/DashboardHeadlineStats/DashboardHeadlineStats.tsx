@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import type { HeadlineStats, SquadStateEntry } from '@/lib/queries/dashboard';
-import { enumLabel } from '@/lib/format';
+import { availabilityLabel } from '@/lib/format';
 
 type Props = {
   stats: HeadlineStats;
@@ -13,22 +13,24 @@ type Props = {
   squadHref: string;
   flagsHref: string;
   toMatchdayHref: string;
-  /** Squad state's own already-fetched modified/unavailable lists (dashboard
-   *  page.tsx's fetchSquadState) — the Available tile's expand reuses this
-   *  exact data rather than re-deriving a second version of the same fact. */
+  /** The readiness card's own already-fetched modified/unavailable lists
+   *  (fetchSaturdayReadiness, which absorbed the deleted fetchSquadState) —
+   *  the Available tile's expand reuses that exact data rather than deriving
+   *  a second version of the same fact. */
   squadModified: SquadStateEntry[];
   squadUnavailable: SquadStateEntry[];
 };
 
 type ExpandKey = 'wellness' | 'available' | null;
 
-// Same formatting rule as page.tsx's own namedWithReason (Squad state card
-// below) — kept as a sibling copy, not a shared import, because a page.tsx
-// file can't be imported into a client component; the rule itself must stay
-// identical, not just similarly named, so this tile and that card never
-// describe the same athlete two different ways.
+// One line per athlete, formatted by lib/format's availabilityLabel — the
+// same call the readiness card's rows make. This used to be a hand-kept
+// sibling copy of that rule, justified by a comment saying the two must
+// "never describe the same athlete two different ways"; they diverged the
+// moment the card began rendering restrictions and this copy did not. The
+// shared function is the version of that promise the compiler can keep.
 function namedWithReason(entries: SquadStateEntry[]): string[] {
-  return entries.map((e) => (e.reason ? `${e.name} (${enumLabel(e.reason)})` : e.name));
+  return entries.map(availabilityLabel);
 }
 
 /** The five headline tiles, DASHBOARD-SPEC.md's own top strip. Per-tile

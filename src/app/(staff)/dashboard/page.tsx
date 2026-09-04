@@ -9,30 +9,19 @@ import {
   fetchHeadlineStats,
   fetchOutstandingTracks,
   fetchSaturdayReadiness,
-  fetchSquadState,
   fetchTimeline,
   fetchWeekStrip,
+    type ReadinessRowKey,
     type SessionPip,
-    type SquadStateEntry,
 } from '@/lib/queries/dashboard';
 import { fetchGroups } from '@/lib/queries/groups';
 import { mondayOf } from '@/lib/queries/schedule';
-import { addDays, enumLabel, formatDate, formatLongDate, todayIso } from '@/lib/format';
+import { addDays, formatDate, formatLongDate, todayIso } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Dashboard · Fydr' };
-
-/** "James Barnes (Academic), Priya Shah" — the reason only where one was
- *  actually recorded. An injury-linked row shows "(Injury)" here, generic on
- *  purpose: body area and expected return already have their own home on
- *  the injuries report, and this tile is squad state at a glance, not the
- *  injury detail. ADR-008 / gameplan 2.6: this reason field went
- *  unrendered entirely before this change, for medical-authored rows too. */
-function namedWithReason(entries: SquadStateEntry[]): string {
-  return entries.map((e) => (e.reason ? `${e.name} (${enumLabel(e.reason)})` : e.name)).join(', ');
-}
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -83,6 +72,37 @@ const TONE_VAR: Record<string, string> = { good: 'var(--accent2)', accent: 'var(
 const TONE_TEXT: Record<string, string> = {
   warn: 'var(--warn-pill-text)',
   bad: 'var(--bad-pill-text)',
+};
+
+/* The three rows that ARE segments of the availability bar directly above
+ * them, and the colour that says which. The other two readiness rows are
+ * selection inputs rather than slices of the squad, so they take no dot —
+ * absence here is the test, not a second list. */
+/* "1 days out" — what the card read once the merge put this line under a
+ * fixture one day away. 0 is matchday itself, which "0 days out" says badly. */
+function daysOutLabel(daysOut: number | null): string {
+  if (daysOut === null) return '\u2014 days out';
+  if (daysOut === 0) return 'today';
+  return daysOut === 1 ? '1 day out' : `${daysOut} days out`;
+}
+
+const ROW_DOT: Partial<Record<ReadinessRowKey, string>> = {
+  available: 'var(--accent2)',
+  modified: 'var(--warn)',
+  unavailable: 'var(--bad)',
+};
+
+/* Every readiness row already drew a chevron and a pointer cursor; none of
+ * them was a link. Merging the two cards forced the issue, because the "Squad
+ * ›" link on the deleted Squad state card was a real destination that would
+ * otherwise have gone with it — so the three availability rows inherit it,
+ * and the other two get the page they were pointing at all along. */
+const ROW_HREF: Record<ReadinessRowKey, string> = {
+  available: '/squad',
+  modified: '/squad',
+  unavailable: '/squad',
+  flags: '/flags',
+  sessions: '/schedule',
 };
 
 /* One day, and only one day. The week strip and the week list are gone: the
@@ -178,7 +198,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
    * it seeded the whole account with a key no report accepts. Longer windows
    * live on Analytics, which has its own per-board controls. */
 
-  const [groups, stats, week, timeline, readiness, squad, outstanding] = await Promise.all([
+  const [groups, stats, week, timeline, readiness, outstanding] = await Promise.all([
     fetchGroups(db, orgId),
     fetchHeadlineStats(db, orgId, groupIds, effectiveToday, wallClockToday, timezone),
     fetchWeekStrip(db, orgId, groupIds, weekStart, effectiveToday, timezone),
@@ -186,7 +206,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
     // clock, never against an end-of-day stand-in (audit S2).
     fetchTimeline(db, orgId, groupIds, selectedDay, new Date().toISOString(), timezone),
     fetchSaturdayReadiness(db, orgId, groupIds, effectiveToday, timezone),
-    fetchSquadState(db, orgId, groupIds),
     fetchOutstandingTracks(db, orgId, groupIds, effectiveToday),
   ]);
 
@@ -298,8 +317,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         squadHref="/squad"
         flagsHref="/flags"
         toMatchdayHref={stats.fixtureId ? `/schedule/fixtures/${stats.fixtureId}` : '/schedule'}
-        squadModified={squad.modifiedNames}
-        squadUnavailable={squad.unavailableNames}
+        squadModified={readiness.modifiedNames}
+        squadUnavailable={readiness.unavailableNames}
       />
 
       {/* The week strip, per the Visual Lift screenshots: one card, a header
@@ -467,7 +486,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                   Ready for Saturday
                 </h2>
                 <p className="tiny" style={{ marginTop: 2 }}>
-                  {readiness.opponent ? `v ${readiness.opponent} · ${readiness.homeAway ?? ''} · ${readiness.daysOut ?? '—'} days out` : 'No fixture scheduled'}
+                  {readiness.opponent ? `v ${readiness.opponent} · ${readiness.homeAway ?? ''} · ${daysOutLabel(readiness.daysOut)}` : 'No fixture scheduled'}
+                </p>
+                {/* Squad size and the active group scope, carried over from the
+                    Squad state card's subtitle. It sits better next to the ring
+                    than it did under its own heading — it is the ring's
+                    denominator, said in words. */}
+                <p className="tiny" style={{ marginTop: 2 }}>
+                  {readiness.squad} athletes · {groupScopeLabel(groups, groupIds)}
                 </p>
               </div>
               {/* 76px, and the centre says what the fraction counts. "25/28"
@@ -484,9 +510,27 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
               </Dial>
             </div>
 
+            {/* The stacked bar from the Squad state card. The ring does not
+                replace it: the ring is one number — how many you can name — and
+                the bar is the shape of the three-way split at a glance. The
+                dots on the three rows below are what ties each segment to the
+                names inside it. */}
+            <div className="dash-squad-bar">
+              <div style={{ flex: readiness.available, background: 'var(--accent2)' }} />
+              <div style={{ flex: readiness.modified, background: 'var(--warn)' }} />
+              <div style={{ flex: readiness.unavailable, background: 'var(--bad)' }} />
+            </div>
+
             <div style={{ marginTop: 4 }}>
               {readiness.rows.map((r) => (
-                <div key={r.label} className="dash-ready-row">
+                <Link
+                  key={r.key}
+                  href={ROW_HREF[r.key]}
+                  className={ROW_DOT[r.key] ? 'dash-ready-row dash-ready-row-dot' : 'dash-ready-row'}
+                >
+                  {ROW_DOT[r.key] ? (
+                    <span className="dash-squad-dot" style={{ background: ROW_DOT[r.key] }} aria-hidden="true" />
+                  ) : null}
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 600 }}>{r.label}</div>
                     <div className="tiny">
@@ -497,7 +541,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                     {r.value}
                   </span>
                   <span>›</span>
-                </div>
+                </Link>
               ))}
             </div>
 
@@ -521,71 +565,21 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
               </>
             ) : null}
           </div>
-
-          <div className="card">
-            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-              <h2 className="card-title" style={{ margin: 0 }}>
-                Squad state
-              </h2>
-              <Link href="/squad" className="tiny" style={{ color: 'var(--accent-text)', fontWeight: 600 }}>
-                Squad ›
-              </Link>
-            </div>
-            <p className="tiny" style={{ color: 'var(--muted)' }}>
-              {squad.total} athletes · {groupScopeLabel(groups, groupIds)}
-            </p>
-            <div className="dash-squad-bar">
-              <div style={{ flex: squad.available, background: 'var(--accent2)' }} />
-              <div style={{ flex: squad.modified, background: 'var(--warn)' }} />
-              <div style={{ flex: squad.unavailable, background: 'var(--bad)' }} />
-            </div>
-            <div className="stack" style={{ gap: 9, marginTop: 14 }}>
-              <div className="dash-squad-row">
-                <span className="dash-squad-dot" style={{ background: 'var(--accent2)' }} />
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>Available</div>
-                  <div className="tiny">
-                    full training
-                  </div>
-                </div>
-                <span className="num" style={{ fontSize: 14 }}>
-                  {squad.available}
-                </span>
-              </div>
-              <div className="dash-squad-row">
-                <span className="dash-squad-dot" style={{ background: 'var(--warn)' }} />
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>Modified</div>
-                  <div className="tiny">
-                    {namedWithReason(squad.modifiedNames) || 'nobody'}
-                  </div>
-                </div>
-                <span className="num" style={{ fontSize: 14 }}>
-                  {squad.modified}
-                </span>
-              </div>
-              <div className="dash-squad-row">
-                <span className="dash-squad-dot" style={{ background: 'var(--bad)' }} />
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>Unavailable</div>
-                  <div className="tiny">
-                    {namedWithReason(squad.unavailableNames) || 'nobody'}
-                  </div>
-                </div>
-                <span className="num" style={{ fontSize: 14 }}>
-                  {squad.unavailable}
-                </span>
-              </div>
-            </div>
-          </div>
-
           {/* "Not tied to a session" is gone, per the design review. It listed
               wellness, compliance, nutrition and testing flags — the domains
               that never attach to a timetable row — but fetchDashboardAttention
               filters only on org and open status, so every one of them was
               already in the open-flags panel at the top of this page. The card
-              was a second view of the same rows under a different heading, and
-              the right column now ends with Squad state. */}
+              was a second view of the same rows under a different heading.
+
+              "Squad state" is gone too, for the same reason one level down: it
+              re-rendered numbers Ready for Saturday was already showing. Its
+              total WAS that card's ring denominator, its Available/Modified/
+              Unavailable WERE that card's Fit-and-available/Doubtful/Ruled-out,
+              and both cards derived them from the same two reads. The bar, the
+              reason categories and the Squad link moved up into the readiness
+              card rather than being dropped; nothing that card showed was
+              lost. */}
           {outstanding.length > 0 ? (
             <div className="card">
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>

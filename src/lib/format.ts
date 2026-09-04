@@ -392,6 +392,30 @@ export function enumLabel(value: string | null | undefined): string {
   return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }
 
+/** "James Barnes (Injury) · no contact" — the name, why, and what they cannot
+ *  do, in the order a coach asks it. Each part appears only where it was
+ *  actually recorded.
+ *
+ *  One copy, because there were two. The dashboard's readiness rows and the
+ *  Available tile's expand each held their own version of this rule, with a
+ *  comment on the tile's copy promising the two would "never describe the
+ *  same athlete two different ways" — and they immediately did, the moment
+ *  the readiness rows started rendering the restriction and the tile did not.
+ *  A duplicated formatting rule guarded by a comment is not a shared rule.
+ *
+ *  Injury-linked and non-injury rows read identically: the reason is the
+ *  coarse category, never a diagnosis. Body area and expected return stay on
+ *  the injuries report. ADR-007 / ADR-008. */
+export function availabilityLabel(entry: {
+  name: string;
+  reason: string | null;
+  restriction: string | null;
+}): string {
+  const why = entry.reason ? ` (${enumLabel(entry.reason)})` : '';
+  const cannot = entry.restriction ? ` · ${entry.restriction}` : '';
+  return `${entry.name}${why}${cannot}`;
+}
+
 /** English ordinal suffix — 1st/2nd/3rd/4th..., with the 11th/12th/13th
  *  exception. Every percentile and rank label in the app should render
  *  through this rather than hard-coding "th" (found live on the squad

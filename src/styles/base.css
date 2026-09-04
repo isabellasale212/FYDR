@@ -11108,6 +11108,15 @@ button.dash-stat {
    --------------------------------------------------------------------------- */
 
 .rhead {
+  /* The gap down to whatever the screen puts first, a table or a card. The
+     canvas does not measure this, because its own sections are stacked
+     headers rather than a header above content. 20px is the app's own rhythm:
+     the .topbar this replaced carried 18, and the header now ends on a control
+     row rather than a line of text, which wants slightly more air beneath it.
+     Set here rather than on each screen's first block, so all six are equal by
+     construction rather than by six numbers agreeing. */
+  margin-bottom: 20px;
+
   /* No padding of its own. The canvas measures 30px from the container edge;
      `main` already provides 28px, and adding 30 on top indented the header
      past every other page. The 2px is the app's, not the canvas's, and
@@ -11327,16 +11336,19 @@ main:has(.rhead) > .back-btn > :first-child {
   font-size: 11px;
 }
 
-/* Page context under the header: the scope line and its way-out link. Kept
-   because it carries the date range and the counts, which nothing else on the
-   screen says, but demoted below the title where the canvas leaves room. */
+/* The scope line, DIRECTLY UNDER THE TITLE. 6px rather than the row rhythm
+   used elsewhere in this header, because this line belongs to the title
+   rather than being the next thing after it: it says who and over what
+   window, which only means anything once you have read what the report is.
+   The tab row keeps its own 16px below. */
 .rhead-sub {
-  margin: 18px 0 0;
+  margin: 6px 0 0;
 }
-/* When the slot holds several paragraphs, the first carries the gap and the
-   rest keep their own rhythm. */
 .rhead-sub > :first-child {
   margin-top: 0;
+}
+.rhead-sub > * + * {
+  margin-top: 6px;
 }
 
 /* Week plan / Today on the schedule. Two routes rather than two views of one,

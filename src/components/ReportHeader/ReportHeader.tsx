@@ -10,7 +10,9 @@ export type ReportHeaderProps = {
   groups: readonly ReportHeaderGroup[];
   /** The group ids currently in force. Empty means the whole squad. */
   groupIds: readonly string[];
-  eyebrow: React.ReactNode;
+  /** Optional: the training report and the schedule carry their scope line
+   *  under the title instead, so they have nothing to put here. */
+  eyebrow?: React.ReactNode;
   title: string;
   /** Rendered right of the eyebrow. Primary action first, then exports. */
   actions?: React.ReactNode;
@@ -25,9 +27,12 @@ export type ReportHeaderProps = {
   /** Right of the tabs. The period control on the reports that have one. It
    *  brings its own label, so none is passed here. */
   period?: React.ReactNode;
-  /** Page context that belongs under the header rather than in it: the scope
-   *  line, a caveat, a way out. The canvas does not draw these, but they carry
-   *  real information, so they are placed rather than dropped. */
+  /** The scope line, and anything that travels with it: a caveat, a way out.
+   *  It sits DIRECTLY UNDER THE TITLE, which is a change from the canvas: the
+   *  canvas puts this line above the title as the eyebrow, and reading it
+   *  there means reading the qualifier before knowing what it qualifies.
+   *  Under the title it answers "this report, for whom, over what window",
+   *  in that order. */
   sub?: React.ReactNode;
 };
 
@@ -102,11 +107,12 @@ export function ReportHeader({
       </div>
 
       <div className="rhead-eyerow">
-        <p className="rhead-eyebrow">{eyebrow}</p>
+        {eyebrow ? <p className="rhead-eyebrow">{eyebrow}</p> : null}
         {actions ? <div className="rhead-actions">{actions}</div> : null}
       </div>
 
       <h1 className="rhead-title">{title}</h1>
+      {sub}
 
       {tabs || tabsNode || period ? (
         <div className="rhead-tabrow">
@@ -132,7 +138,6 @@ export function ReportHeader({
           ) : null}
         </div>
       ) : null}
-      {sub}
     </header>
   );
 }

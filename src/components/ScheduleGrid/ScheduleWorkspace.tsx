@@ -580,8 +580,8 @@ export function ScheduleWorkspace({
       <ReportHeader
         groups={groups.map((g) => ({ id: g.id, name: g.name }))}
         groupIds={groupIds}
-        eyebrow={eyebrow}
         title="Schedule"
+        sub={<p className="eyebrow rhead-sub">{eyebrow}</p>}
         actions={
           <>
             <div className="sg-segmented" role="group" aria-label="Read or edit">

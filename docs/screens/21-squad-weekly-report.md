@@ -39,13 +39,19 @@ their own normal, and who is carrying something.
 2. **The group chips**, Whole squad first with a tick when it is active, then
    the club's own groups. The filter sits above everything now rather than over
    the table, which is the truth: it scopes every number on the screen.
-3. **The eyebrow** on the left with the **actions** on the right.
+3. **The eyebrow**, where the screen has one, on the left with the **actions**
+   on the right.
 4. **The title**.
-5. **The tabs** on the left with the **period control** on the right, so the
+5. **The scope subheading**, directly under the title: who this report covers,
+   over what window, and how many athletes. It sits **below** the title rather
+   than above it, which is a deliberate change from the canvas: a qualifier
+   read before the thing it qualifies is just a string of words.
+6. **The tabs** on the left with the **period control** on the right, so the
    control that scopes every tab rides the tab row rather than a row of its own.
 
-Page context that the header has no room for, the date range, the athlete count
-and any caveat, sits directly beneath it.
+**The gap from the header to whatever the screen puts first is 20px on every
+one of the six**, set once on the header rather than on each screen's first
+block, so they are equal by construction rather than by six numbers agreeing.
 
 **One row per athlete**, with:
 

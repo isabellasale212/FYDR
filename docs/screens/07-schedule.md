@@ -45,12 +45,13 @@ differs.
 
 1. **Back**, a pill at the top left.
 2. **The group chips**, Whole squad first with a tick when active.
-3. **The eyebrow** naming the week, the matchday, the fixture and the active
-   group scope, with the **read and edit switch** on the right. The grid opens
-   in read mode; edit is entered deliberately rather than by accident, which is
-   what keeps a stray drag from moving a session.
+3. **The read and edit switch**, on the right. The grid opens in read mode;
+   edit is entered deliberately rather than by accident, which is what keeps a
+   stray drag from moving a session.
 4. **The title.**
-5. **Week plan and Today** as tabs on the left, with **week navigation** on the
+5. **The scope subheading**, directly under the title, naming the week, the
+   matchday, the fixture and the active group scope.
+6. **Week plan and Today** as tabs on the left, with **week navigation** on the
    right. The two tabs are two routes rather than two views of one screen:
    Today is the timetable.
 

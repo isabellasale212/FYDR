@@ -295,8 +295,12 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
     <ReportHeader
       groups={groups}
       groupIds={groupIds}
-      eyebrow={`${orgName} · ${mode === 'training' ? 'Training' : 'Match day'} · ${groupScopeLabel(groups, groupIds)}`}
       title={mode === 'training' ? 'Training report' : 'Match day GPS report'}
+      sub={
+        <p className="eyebrow rhead-sub">
+          {`${orgName} · ${mode === 'training' ? 'Training' : 'Match day'} · ${groupScopeLabel(groups, groupIds)}`}
+        </p>
+      }
       actions={
         <>
             <div className="tr-mode-switch">

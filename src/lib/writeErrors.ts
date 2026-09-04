@@ -43,6 +43,30 @@ export class HumanError extends Error {
   }
 }
 
+/** Refuse to start a write the session cannot finish.
+ *
+ *  This file's rule is that no write may fail silently, and one did. A staff
+ *  member left the new-fixture form open past the 30-minute token, submitted,
+ *  and landed on the sign-in page with no message — the fixture was not
+ *  created, but nothing on screen said so, and re-submitting after signing in
+ *  risks a duplicate for anyone who assumes the opposite. A page rendered from
+ *  the client router cache looks perfectly alive while the session behind it
+ *  is gone, so the form cannot tell from its own state.
+ *
+ *  Calling this first turns that into an ordinary error the form already knows
+ *  how to show. It costs one round-trip on writes that create something, which
+ *  is the case where a silent failure is most expensive.
+ *
+ *  It is a guard, not a guarantee: a token can expire between this check and
+ *  the insert. That residual case still lands in humanizeDbError's `jwt`
+ *  branch, which now also says nothing was saved. */
+export async function assertLiveSession(db: {
+  auth: { getUser: () => Promise<{ data: { user: unknown | null }; error: unknown }> };
+}): Promise<void> {
+  const { data, error } = await db.auth.getUser();
+  if (error || !data?.user) throw new HumanError(SENTENCES.session);
+}
+
 /** Race a write against the clock so `isPending` can never be permanent.
  *  Rejects with `WriteTimeoutError` after `ms`; the promise itself is left
  *  running (fetch cannot be un-sent), which is why timeout copy says
@@ -73,7 +97,8 @@ const SENTENCES = {
     'That didn’t save — you may not have permission for this. If that seems wrong, ask your club admin to check your role.',
   permissionAthlete:
     'That didn’t save — this account isn’t allowed to. If that seems wrong, tell your coach.',
-  session: 'Your session has expired — refresh this page and sign in again.',
+  session:
+    'Your session has expired, so nothing was saved. Sign in again, then re-enter it.',
   duplicate: 'This looks like it was already saved. Refresh to check before sending it again.',
   connectionStaff:
     'That didn’t save — the connection dropped or timed out. Check your connection and try again.',

@@ -6,7 +6,7 @@ import {
   MD_MAX_SPAN_DAYS,
   zonedTimeToUtcIso,
 } from '@/lib/format';
-import { humanizeDbError } from '@/lib/writeErrors';
+import { assertLiveSession, humanizeDbError } from '@/lib/writeErrors';
 import { fetchCurrentAvailability } from './availability';
 import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchAllPaged } from './paged';
@@ -921,6 +921,9 @@ export async function createFixture(
   userId: string,
   input: NewFixtureInput,
 ): Promise<{ id: string | null; error: string | null }> {
+  // Before anything is written, so an expired token is an error on the form
+  // rather than a silent bounce to the sign-in page.
+  await assertLiveSession(db);
   const seasonId = await fetchCurrentSeasonId(db, orgId);
   if (!seasonId) return { id: null, error: 'No current season is set up for this club.' };
 
@@ -963,6 +966,7 @@ export async function createSession(
   userId: string,
   input: NewSessionInput,
 ): Promise<{ error: string | null }> {
+  await assertLiveSession(db);
   const seasonId = await fetchCurrentSeasonId(db, orgId);
   if (!seasonId) return { error: 'No current season is set up for this club.' };
 

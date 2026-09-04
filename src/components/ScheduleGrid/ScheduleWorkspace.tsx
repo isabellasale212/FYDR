@@ -610,6 +610,17 @@ export function ScheduleWorkspace({
         <Link href={timetableHref} className="squad-chip">
           Today
         </Link>
+        {/* Both creation routes existed and neither was linked from anywhere —
+            /schedule/new could only be reached by typing it, and fixtures had
+            no create route at all until now. The two sit together because they
+            are the two halves of the same job: the fixture is the match, the
+            sessions are the week around it. */}
+        <Link href={`/schedule/new?date=${weekStart}`} className="squad-chip sg-add">
+          + Session
+        </Link>
+        <Link href={`/schedule/fixtures/new?date=${weekStart}`} className="squad-chip sg-add">
+          + Fixture
+        </Link>
       </div>
 
       {/* No status dot: it occupied a 10px grid column plus a 14px gap, which

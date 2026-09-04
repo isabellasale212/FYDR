@@ -888,6 +888,65 @@ export async function fetchCurrentSeason(db: Db, orgId: string): Promise<Current
   return data ?? null;
 }
 
+/* ---------------------------------------------------------------------------
+ * Creating a fixture.
+ *
+ * Everything else about fixtures has been here since 0003 — they are read by
+ * fetchNextFixture, shown on the athlete's "working towards" card and the
+ * dashboard's matchday tile, updated by the result and status writers, and the
+ * week planner takes a fixtureId to hang an MD-n week off. The one thing
+ * missing was a way to make one: every fixtures call in this file was a select
+ * or an update, so the only fixtures a club could ever have were the ones its
+ * seed inserted.
+ *
+ * The permission was never the gap. 0012's `fixtures_staff_insert` has allowed
+ * coach and medical to insert since the policies landed; there was simply no
+ * caller. This is that caller.
+ * --------------------------------------------------------------------------- */
+export type NewFixtureInput = {
+  opponent: string;
+  /** Wall-clock kickoff at the club, already converted to UTC by the caller —
+   *  same contract as NewSessionInput.startsAt, and for the same reason
+   *  (CLAUDE.md rule 5: store the instant, display in the org's zone). */
+  kickoffAt: string;
+  venue: string | null;
+  homeAway: 'home' | 'away' | 'neutral';
+  competition: string | null;
+  importance: 'friendly' | 'normal' | 'key' | 'cup_final';
+};
+
+export async function createFixture(
+  db: Db,
+  orgId: string,
+  userId: string,
+  input: NewFixtureInput,
+): Promise<{ id: string | null; error: string | null }> {
+  const seasonId = await fetchCurrentSeasonId(db, orgId);
+  if (!seasonId) return { id: null, error: 'No current season is set up for this club.' };
+
+  const { data, error } = await db
+    .from('fixtures')
+    .insert({
+      org_id: orgId,
+      season_id: seasonId,
+      opponent: input.opponent.trim(),
+      kickoff_at: input.kickoffAt,
+      venue: input.venue,
+      home_away: input.homeAway,
+      competition: input.competition,
+      importance: input.importance,
+      // 'scheduled' is the column default, and a fixture being created cannot
+      // meaningfully be anything else. Result stays null until it is played.
+      created_by: userId,
+    })
+    .select('id')
+    .single();
+
+  if (error || !data)
+    return { id: null, error: error ? humanizeDbError(error.message, 'staff') : 'Could not create the fixture.' };
+  return { id: data.id, error: null };
+}
+
 export type NewSessionInput = {
   title: string;
   sessionType: string;

@@ -11061,3 +11061,14 @@ button.dash-stat {
   display: block;
   margin-top: 16px;
 }
+
+/* The two create links in the schedule's tab row. Chips like their siblings,
+   but tinted so "+ Session" and "+ Fixture" read as actions rather than as two
+   more views to switch between. */
+.sg-add {
+  color: var(--accent-text);
+  border-color: var(--accent-border);
+}
+.sg-add:hover {
+  background: var(--wash-accent);
+}

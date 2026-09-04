@@ -8,6 +8,40 @@ current conversation.
 
 ---
 
+## 0. The specification is binding
+
+`docs/screens/`, `docs/metrics.md` and `docs/access-matrix.md` define what this
+app is supposed to be. They are consulted before code is written and updated in
+the same commit when agreed behaviour changes.
+
+- **Read the relevant file in `docs/screens/` before changing any screen.** They
+  are numbered in route order, for example `docs/screens/19-athlete-report.md`.
+- **Read `docs/metrics.md` before touching any calculation. Never invent a metric
+  or change a formula without updating its registry entry.** Every number in the
+  app has an identifier such as MET-014. If two screens need the same quantity
+  computed differently, they are two metrics with two identifiers and two names,
+  and each entry must say how it differs from its twin.
+- **Read `docs/access-matrix.md` before touching any permission, route guard or
+  row level security policy.**
+- **Any change to displayed behaviour, a formula or a permission updates the
+  corresponding spec file in the same commit.** A code change that leaves the
+  specification stale is an incomplete change.
+- **If a request conflicts with the specification, stop and say so rather than
+  building it.** Ask whether to change the specification or drop the request.
+  Do not quietly do both.
+- **Files under `docs/screens/draft/` are exploratory and not binding.** Nothing
+  else in `docs/screens/` is a draft.
+
+Open questions live in `docs/decisions-required.md`, numbered D-01 onward. Queued
+work lives in `docs/spec-gaps.md`, ordered by risk. `docs/generated/` is generated
+output and is never hand edited: run `scripts/build-spec-docx.py` instead.
+
+**Two commands exist for this.** `/spec-drift` re-reads the code against the
+specification and reports differences without changing anything. `/spec-export`
+regenerates the Word document.
+
+---
+
 ## 1. Read this before you write code
 
 The full specification lives in `/docs`. You do **not** need to read all of it every

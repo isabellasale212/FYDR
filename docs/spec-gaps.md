@@ -1,0 +1,286 @@
+# Spec gaps: the work queue
+
+Stage B4. Where the code now differs from the agreed specification, ordered by
+risk, highest first. **No code has been changed.** This is a list of work, not a
+record of work done.
+
+**How risk is ranked here.** Security and data exposure first, then things that
+lose or corrupt data, then things that mislead a coach into a wrong decision, then
+things that are missing, then cosmetic. Within a band, the cheaper fix comes
+first, because clearing it costs less than leaving it.
+
+**Every row names its decision.** The reasoning lives in
+`docs/decisions-required.md`; this file is the queue.
+
+---
+
+## Band 1: data exposure
+
+### G-01. Injury information is visible to a role that must not see it
+
+**Risk: HIGH.** The agreed model says the nutritionist sees no injury or medical
+information anywhere. Today a nutritionist holds the `coach` role and sees all of
+it.
+
+**What the spec requires.** Nutritionist is X on every injury screen, and the
+injury derived regions are withheld on the dashboard, squad overview, flags, squad
+weekly report and reports hub.
+
+**What exists.** Four of the five injury screens call only the staff guard. The
+shared regions have no role condition at all.
+
+**Files.** `src/app/(staff)/injuries/page.tsx`,
+`.../injuries/[injuryId]/page.tsx`, `.../injuries/rehab-groups/page.tsx`,
+`.../injuries/team-allocation/page.tsx`, plus the shared regions named in
+`docs/access-matrix.md` §4.2.
+
+**Note.** `/injuries/new` is already medical only and needs no change beyond
+moving its rule into the shared guard.
+
+**Decision D-01.** **This cannot be done before G-02**, because the role it must
+exclude does not exist yet.
+
+### G-02. The role model itself
+
+**Risk: HIGH**, because every other access gap depends on it and because a partial
+implementation can silently open access.
+
+**What the spec requires.** Five roles, no admin, sport scientist with everything.
+
+**What exists.** Four roles: athlete, coach, medical, admin.
+
+**Files.** `supabase/migrations/0001_extensions_and_enums.sql:77`,
+`src/lib/supabase/claims.ts:22`, `:94`, `:124`, `src/lib/session.ts:120`, `:159`,
+eleven page and route checks, every row level security policy naming a role,
+`src/components/Sidebar/Sidebar.tsx:111`, `:163`, `:188`, every threshold's notify
+list, and the existing role rows in the live database, which need a migration.
+
+**Decision D-07.** **Write the tests first.** This is the one item that can open
+access if done in pieces.
+
+### G-03. Bulk invite hands out live credentials
+
+**Risk: HIGH.** Accounts are created with temporary passwords returned on screen,
+email addresses pre-confirmed, no forced change and no expiry. Squad credentials
+then travel by whatever channel is to hand.
+
+**What the spec requires.** An invitation the athlete acts on themselves.
+
+**Files.** `src/app/(staff)/settings/users/bulk-invite/send/route.ts:105`.
+
+**Decision D-38.** Cheaper interim: force a password change on first sign in.
+
+---
+
+## Band 2: loss or corruption of data
+
+### G-04. Nutrition targets do not follow an athlete's weight
+
+**Risk: MEDIUM-HIGH.** Not a loss of data, but a silently wrong number in front of
+a nutritionist, which is worse than a blank.
+
+**What the spec requires.** A target recomputes when the athlete next weighs in.
+
+**What exists.** It recomputes only when a plan is assigned. The recompute function
+has one caller.
+
+**Files.** `src/lib/queries/nutritionRules.ts:224` and `:387`.
+
+**Decision D-28.** Cheaper interim: compare the weight in the target's own reason
+text against the athlete's current weight and say when they differ.
+
+### G-05. Renaming a session detaches it from its own history
+
+**Risk: MEDIUM.** The training report groups by session title. A rename silently
+costs that session its comparability, with no warning.
+
+**Files.** `src/lib/queries/trainingReport.ts:12`, and the session edit form.
+
+**Decision D-33.** The fix is a warning, not a rebuild.
+
+### G-06. Deleting a session can fail with a message that does not help
+
+**Risk: MEDIUM.** Nothing is lost, but the coach is told "something went wrong"
+with no reason and no alternative.
+
+**Files.** `src/lib/writeErrors.ts:129` onward. The fix is one case in the message
+humaniser, which repairs this class of error everywhere at once.
+
+**Decision D-27.**
+
+### G-07. Editing a programme changes it for everyone on it, silently
+
+**Risk: MEDIUM.** No versioning, no history, no warning.
+
+**Files.** `src/lib/queries/programmes.ts:22`, and the programme edit screen.
+
+**Decision D-37.** The fix is a warning naming how many athletes are assigned.
+
+---
+
+## Band 3: misleading a coach into a wrong decision
+
+### G-08. Readiness is two different numbers under one name
+
+**Risk: MEDIUM.** Analytics shows nothing where every other screen shows a score,
+for any athlete who skipped one slider. An internal note claims the two match.
+
+**Files.** `src/lib/stats.ts:25`, `src/lib/analyticsBuilder.ts:120`.
+
+**Decision D-22.** Two fixes: rename one on screen, and correct the note.
+
+### G-09. An empty thresholds list looks like a calm squad
+
+**Risk: MEDIUM**, and highest for a new club, which is exactly when nobody notices.
+
+**Files.** The dashboard's open flags region.
+
+**Decision D-39.**
+
+### G-10. Four unexplained cutoffs decide every training report verdict
+
+**Risk: MEDIUM.** 122, 110, 92 and 82 decide whether a coach is told a session was
+much harder than usual. Nothing records where they came from.
+
+**Files.** `src/lib/queries/trainingReport.ts:165` to `:174`.
+
+**Decision D-11.** The work is agreeing them, then writing the reasoning down.
+
+### G-11. Two leaderboard measures can be ranked but never updated
+
+**Risk: LOW-MEDIUM.** A board built on running distance or high intensity efforts
+works today and quietly stops gaining entries.
+
+**Files.** `src/lib/queries/gpsImport.ts:40`,
+`supabase/migrations/0056_gps_leaderboard_metrics.sql:95` and `:101`.
+
+**Decision D-24.**
+
+### G-12. Publishing a week's selection has no confirmation
+
+**Risk: LOW-MEDIUM.** It discloses a week of selection to the whole squad and
+cannot be taken back.
+
+**Files.** `src/components/PublishWeekButton/PublishWeekButton.tsx`.
+
+**Decision D-36.**
+
+### G-13. Applying a week template leaves compliance blank until the next day
+
+**Risk: LOW-MEDIUM.** A week built on Sunday reads as unmeasured until Monday.
+
+**Files.** `src/lib/queries/weekTemplates.ts:22`. The generator exists and is safe
+to call more than once; only the call is missing.
+
+**Decision D-30.**
+
+---
+
+## Band 4: required but not built
+
+### G-14. There is no way to add a player to the squad
+
+**Risk: MEDIUM as a product gap, LOW as a defect.** A club that signs a player in
+October cannot record them. No screen, no route, no insert anywhere in `src/`.
+
+**Decision D-16.** Owner: sport scientist.
+
+### G-15. The role permission warning at the point of granting
+
+**Risk: MEDIUM**, because it is the only place the nutritionist rule can be lost.
+
+**Files.** `src/app/(staff)/settings/users/create/route.ts:107` and the user detail
+screen.
+
+**Decision D-25.**
+
+### G-16. Quiet hours for notifications
+
+**Risk: LOW.** The columns exist; no screen sets them.
+
+**Files.** `src/lib/queries/notificationPreferences.ts:20`. **Decision D-18.**
+
+### G-17. Billing
+
+**Risk: LOW as a defect, and possibly not a gap at all.** There is no billing
+surface and the app says plan changes are a sales conversation.
+
+**Decision D-17.** The decision needed is whether this is permanently out of scope
+or merely not yet built. These are different documents.
+
+---
+
+## Band 5: navigation and consistency
+
+### G-18. The injuries area is not in the sidebar
+
+**Risk: LOW as a defect, MEDIUM in practice.** A medic has no navigation route to
+the problem reports queue that only they can work.
+
+**Decision D-34.** This is also the natural place to enforce G-01.
+
+### G-19. Nothing links to the Timetable screen
+
+**Risk: LOW.** It works and is unreachable except by typing the address.
+
+**Decision D-31.** The recommendation is to retire it.
+
+### G-20. The reports hub uses a weaker guard than its own children
+
+**Risk: LOW**, and it becomes moot once G-02 removes admin.
+
+**Files.** `src/app/(staff)/reports/page.tsx`. **Decision D-08.** Sequence after
+G-02 rather than fixing twice.
+
+### G-21. Flag escalation is fixed at 24 hours for every club
+
+**Risk: LOW.** Unexplained, and not configurable, although a thresholds table
+exists for exactly this kind of rule.
+
+**Files.** `src/lib/queries/flags.ts:108`. **Decision D-12.**
+
+### G-22. The compliance "under half" line is unexplained
+
+**Risk: LOW.** **Decision D-32.**
+
+### G-23. One wellness window is declared in two files
+
+**Risk: LOW.** Both are currently 14. It is on the list because it is how one
+screen quietly starts disagreeing with another.
+
+**Files.** `src/lib/queries/playerProfile.ts:136`,
+`src/lib/queries/athleteReport.ts:136`. **Decision D-13.**
+
+### G-24. A 110 kg reference athlete is hard coded into nutrition, unexplained
+
+**Risk: LOW.** **Files.** `src/lib/nutritionMeals.ts:59`. **Decision D-10.**
+
+---
+
+## Still unverified, and worth resolving before sign-off
+
+These are not gaps. They are questions the specification could not answer from
+the code, each of which would change what a screen specification says.
+
+| Question | Where | Why it matters |
+|---|---|---|
+| Does re-uploading the same GPS file duplicate rows or replace them? | `src/lib/queries/gpsImport.ts` | Decides whether a coach correcting a file doubles a week's distances |
+| Is a new threshold applied to existing data? | `src/lib/queries/thresholds.ts` | Decides whether creating a rule is quiet or raises hundreds of flags at once |
+| Does deleting a group used by a session's expectations get refused? | `src/lib/queries/groups.ts` | Would silently change what compliance measures |
+| Does an export respect the current group filter? | `src/app/(staff)/settings/exports/generate/route.ts` | A coach may reasonably expect it to match what they were looking at |
+| Is the retention run all or nothing? | `src/app/(staff)/settings/retention/run/route.ts` | It permanently deletes athlete data |
+| Can a test's direction be changed after results exist? | `src/lib/queries/testing.ts` | It would silently re-decide every personal best |
+| Must a temporary password be changed on first sign in? | Bulk invite and sign in | Part of G-03 |
+
+---
+
+## Summary
+
+**24 gaps. 3 high risk, 5 medium-high to medium in bands 2 and 3, the rest low.**
+
+**The order that matters.** G-02 first, because G-01 depends on it and because a
+partial role change can open access. G-03 alongside it, because it is independent
+and the interim fix is small. Everything else after.
+
+**7 questions remain unverified** and should be answered before the specification
+is signed off, because each could change what a screen specification says.

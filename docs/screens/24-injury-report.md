@@ -24,6 +24,8 @@ injuries are happening.
 
 ---
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireReportAccess()` at `src/app/(staff)/reports/injuries/page.tsx:59`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The Injury and availability card on the reports hub.

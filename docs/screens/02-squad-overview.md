@@ -25,6 +25,8 @@ empty table and a line explaining why.
 
 ---
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/squad/page.tsx:19`; a **coach or medical** check at `src/app/(staff)/squad/page.tsx:26`, which renders a named refusal rather than redirecting. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - Squad overview, the second item in the sidebar.

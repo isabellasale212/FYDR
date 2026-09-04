@@ -20,6 +20,8 @@ The tests the club runs, and the way in to logging results.
 **Not in the sidebar.** The previous specification records testing as folded into
 Reports.
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/testing/page.tsx:17`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The Define a test link on the testing report.
@@ -65,7 +67,8 @@ Built on the server.
 
 - **The nutritionist should not reach testing.** Decision D-01.
 - **Not in the sidebar.** Part of decision D-34.
-- **UNVERIFIED: whether changing a test's direction after results exist is
-  prevented, warned about, or silently allowed.** Files searched:
-  `src/lib/queries/testing.ts`, `supabase/migrations/0024_testing.sql`. **Worth
-  resolving**, because it silently rewrites history.
+- **Resolved, and it is silently allowed with a real consequence.** Changing the
+  direction recalculates nothing: the rule that flags the best attempt runs when a
+  result is written, not when a definition changes
+  (`supabase/migrations/0024_testing.sql:163`). Every existing flag keeps pointing
+  at what used to be the best. Decision D-41.

@@ -25,6 +25,8 @@ else clinical data appears.
 was wrong, and the finding has been withdrawn. See the corrections section of
 `docs/decisions-required.md`.
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/settings/subject-access/[requestId]/review/page.tsx:18`; a **medical** check at `src/app/(staff)/settings/subject-access/[requestId]/review/page.tsx:19`, which redirects. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - A request awaiting review, from the subject access list.

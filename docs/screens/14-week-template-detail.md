@@ -21,6 +21,8 @@ One saved week shape: what it contains, and where it is changed.
 
 ---
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/schedule/planner/[templateId]/page.tsx:10`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - A template's name in the week templates list.

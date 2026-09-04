@@ -17,6 +17,8 @@ Where boards are edited, retired and reordered.
 | Nutritionist | **No** in the agreed model | Nothing | Nothing | The whole page | Base | **NOT BUILT** |
 | Athlete | **No** | Nothing | Nothing | The whole page | n/a | Middleware, then guard |
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/leaderboards/manage/page.tsx:38`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The Manage control on the leaderboard screen.

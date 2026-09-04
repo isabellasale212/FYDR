@@ -21,12 +21,20 @@ addresses.
 | Nutritionist | Yes | Five. **The injury and availability card is withheld** | Nothing | The injury card entirely | Same | **NOT BUILT.** Decision D-01 |
 | Athlete | **No** | Nothing | Nothing | The whole page | n/a | Middleware, then guard, then database |
 
-**This page uses a weaker guard than every report it links to.** The six reports
-each require coach or medic; the hub requires only staff. The practical effect
-today is that a person who can open the hub may be refused at every link on it.
-Decision D-08.
+**This page is deliberately open to every staff role, and that is the right
+answer.** The six reports each require coach or medic. The hub does not, but it
+works out report access anyway and **marks each card unavailable to a role that
+cannot open it** (`src/app/(staff)/reports/page.tsx:120`). Nobody is sent down a
+link that will refuse them.
+
+The reasoning is recorded in the file itself: redirecting away from the index
+entirely would hide that a reports feature exists at all, which is worse than
+naming the real reason it is closed to this role. It is the same principle the
+specification applies to product tier.
 
 ---
+
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireReportAccess()` at `src/app/(staff)/reports/page.tsx:108`; `requireStaff()` at `src/app/(staff)/reports/page.tsx:119`; a product package check at `src/app/(staff)/reports/page.tsx:121`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
 
 ## 3. How you get here
 
@@ -99,7 +107,8 @@ Premium card.
 worst mark the Premium card wrongly.
 
 **No permission.** Athletes are redirected. A staff member with no report access
-currently reaches the hub and is refused at the links. Decision D-08.
+sees all six cards marked unavailable to them, with the reason, rather than being
+turned away or sent down links that refuse.
 
 **Wrong tier.** The training report card is marked Premium.
 
@@ -109,7 +118,6 @@ currently reaches the hub and is refused at the links. Decision D-08.
 
 ## 9. Open issues
 
-- **The hub uses a weaker guard than its own children.** Decision D-08.
 - **The nutritionist should not see the injury card.** Decision D-01.
 - **UNVERIFIED: whether the Premium card is clickable on the Base package**, and
   what a coach sees if it is. Files searched: `src/app/(staff)/reports/page.tsx`.

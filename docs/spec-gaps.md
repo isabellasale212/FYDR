@@ -70,6 +70,23 @@ then travel by whatever channel is to hand.
 
 **Decision D-38.** Cheaper interim: force a password change on first sign in.
 
+### G-25. Re-uploading a GPS file duplicates every row
+
+**Risk: HIGH.** Silent data corruption on the data that feeds the whole GPS half
+of the app, invisible to the coach who caused it.
+
+**What the spec requires.** Re-uploading a corrected file replaces what it
+replaces.
+
+**What exists.** The import always inserts
+(`src/lib/queries/gpsImport.ts:234`). There is no replace and **no unique
+constraint** to catch it: the three indexes on the records table are ordinary
+(`supabase/migrations/0023_gps_records.sql:99`). Upload twice and every distance
+doubles.
+
+**Decision D-42.** The fix is a unique constraint on athlete, date and session,
+plus an upsert. Found in the verification pass, not the first pass.
+
 ---
 
 ## Band 2: loss or corruption of data
@@ -116,9 +133,40 @@ humaniser, which repairs this class of error everywhere at once.
 
 **Decision D-37.** The fix is a warning naming how many athletes are assigned.
 
+### G-26. The retention run is not all or nothing
+
+**Risk: MEDIUM-HIGH**, because it is the one screen that permanently deletes
+athlete data.
+
+**What exists.** Categories are processed in sequence and the run returns on the
+first error (`src/lib/retention/compute.ts:206` onward), leaving earlier
+categories deleted and later ones not.
+
+**Decision D-43.** Make it resumable rather than transactional.
+
+### G-27. Changing a test's direction leaves every existing best flag wrong
+
+**Risk: MEDIUM.** The rule that flags the best attempt runs when a result is
+written, not when a definition changes
+(`supabase/migrations/0024_testing.sql:163`).
+
+**Decision D-41.** The fix is a one line guard refusing the change once results
+exist.
+
 ---
 
 ## Band 3: misleading a coach into a wrong decision
+
+### G-28. "Personal best" is not a personal best
+
+**Risk: MEDIUM.** The flag marks the best attempt **on one day**, not a lifetime
+best (`supabase/migrations/0024_testing.sql:152`). Screens label it Personal best.
+
+**What the app computes is correct**; only the label is wrong. Gym weights take
+the most recent flagged attempt, which is right for a one repetition maximum.
+
+**Decision D-40.** Rename on screen, and give a true lifetime best its own name
+where one is wanted.
 
 ### G-08. Readiness is two different numbers under one name
 
@@ -225,12 +273,11 @@ the problem reports queue that only they can work.
 
 **Decision D-31.** The recommendation is to retire it.
 
-### G-20. The reports hub uses a weaker guard than its own children
+### G-20. WITHDRAWN. The reports hub is correct as built
 
-**Risk: LOW**, and it becomes moot once G-02 removes admin.
-
-**Files.** `src/app/(staff)/reports/page.tsx`. **Decision D-08.** Sequence after
-G-02 rather than fixing twice.
+The hub is deliberately open and marks each card unavailable to a role that cannot
+open it (`src/app/(staff)/reports/page.tsx:120`). Decision D-08 is withdrawn. The
+row is kept so the numbering does not shift under anyone who has quoted it.
 
 ### G-21. Flag escalation is fixed at 24 hours for every club
 
@@ -276,11 +323,21 @@ the code, each of which would change what a screen specification says.
 
 ## Summary
 
-**24 gaps. 3 high risk, 5 medium-high to medium in bands 2 and 3, the rest low.**
+**28 gaps, one of them withdrawn. 4 high risk, 2 medium-high, 8 medium, the rest
+low or low-medium.**
 
-**The order that matters.** G-02 first, because G-01 depends on it and because a
-partial role change can open access. G-03 alongside it, because it is independent
-and the interim fix is small. Everything else after.
+**The order that matters.** G-02 first, because G-01 depends on it and a partial
+role change can open access. **G-25 alongside it**, because it silently corrupts
+GPS data today and the fix is a constraint plus an upsert. G-03 next, independent
+and cheap to mitigate. Everything else after.
 
-**7 questions remain unverified** and should be answered before the specification
-is signed off, because each could change what a screen specification says.
+**Six of the seven open questions were resolved by the verification pass**, and
+four of them turned into gaps: G-25, G-26, G-27 and G-28. Three earlier findings
+were **withdrawn** as wrong: D-08 and D-09 claimed pages were unguarded when they
+guard correctly, and D-38's original claim that Fydr sends no invitation emails
+was false. G-20 is withdrawn with D-08.
+
+**One question remains open.** Whether the flag engine evaluates only new data or
+sweeps existing rows, which decides whether creating a threshold is a quiet act or
+raises a great many flags at once. Files searched:
+`src/lib/queries/thresholds.ts`, `supabase/migrations/0052*.sql`.

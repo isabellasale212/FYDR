@@ -14,6 +14,8 @@ One account: its roles, what those roles permit, and the controls to change them
 | Coach, Medic, S&C, Nutritionist | **No** | Nothing | Nothing | The whole page | Base | Same |
 | Athlete | **No** | Nothing | Nothing | The whole page | n/a | Middleware, then guard, then database |
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/settings/users/[userId]/page.tsx:24`; a **admin** check at `src/app/(staff)/settings/users/[userId]/page.tsx:31`, which redirects. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - A user's name in the users list.

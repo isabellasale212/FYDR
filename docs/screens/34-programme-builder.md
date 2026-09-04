@@ -17,6 +17,8 @@ One programme: its blocks, its sessions, its exercises, and who is on it.
 | Nutritionist | Yes | Everything | **View only** | None | Base | **NOT BUILT.** Decision D-04 |
 | Athlete | **No** | Nothing here | Nothing | The whole page | n/a | Middleware, then guard, then database |
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/programmes/[programmeId]/page.tsx:25`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - A programme's name in the list.

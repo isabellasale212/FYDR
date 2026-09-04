@@ -28,6 +28,8 @@ while this screen was correctly gated, because the buttons were simply never dra
 
 ---
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireReportAccess()` at `src/app/(staff)/reports/training/page.tsx:252`; a product package check at `src/app/(staff)/reports/training/page.tsx:254`; a product package check at `src/app/(staff)/reports/training/page.tsx:256`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The Training report card on the reports hub, marked Premium.

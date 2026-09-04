@@ -18,6 +18,8 @@ groups rather than as a list of individuals.
 | Nutritionist | **No** | Nothing | Nothing | **The whole page** | Base | **NOT BUILT.** Decision D-01 |
 | Athlete | **No** | Nothing | Nothing | The whole page | n/a | Middleware, then guard, then database |
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/injuries/rehab-groups/page.tsx:31`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - A link from the injuries area. **Not in the sidebar.** Decision D-34.

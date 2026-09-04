@@ -15,6 +15,8 @@ One group: its name and its members.
 | Medic, S&C, Nutritionist | Yes | The group | **View only** in the agreed model | None | Base | **NOT BUILT** |
 | Athlete | **No** | Nothing | Nothing | The whole page | n/a | Middleware, then guard |
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/settings/groups/[groupId]/page.tsx:23`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - A group's name in the groups list.
@@ -58,7 +60,11 @@ Surfaces as an error. **Offline.** Not handled.
 ## 9. Open issues
 
 - **Every role can edit and delete groups.**
-- **UNVERIFIED: whether deleting a group in use by a session's expectations is
-  refused or silently removes the expectation.** Files searched:
-  `src/lib/queries/groups.ts`, `supabase/migrations/0003_schedule.sql`. **Worth
-  resolving**, because it would silently change what compliance measures.
+- **Resolved: nothing is silently lost, but the message is unhelpful.** Group
+  membership rows are removed with the group
+  (`supabase/migrations/0002_tenancy_and_identity.sql:219`). **Seven other tables
+  reference a group and none of them cascade**: session participants, thresholds,
+  rehab assignments, leaderboards, programmes and two more. The database therefore
+  refuses the deletion. That refusal has no wording of its own, so the coach sees
+  the generic error, exactly as with sessions. The single fix in decision D-27
+  repairs both.

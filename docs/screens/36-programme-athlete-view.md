@@ -18,6 +18,8 @@ overrides, their logged work.
 | Nutritionist | Yes | Everything | Nothing | None | Base | **NOT BUILT.** Gym is not the nutritionist's, Decision D-04 |
 | Athlete | **No** | Nothing here. They see this in their own app | Nothing | The whole page | n/a | Middleware, then guard, then database |
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/programmes/[programmeId]/athlete/[athleteId]/page.tsx:65`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - An athlete's name on the programme.
@@ -37,7 +39,7 @@ original.
 | Metric ID | Label on screen | What it means | Time window | When missing |
 |---|---|---|---|---|
 | MET-030 | The weight beside each exercise | What this athlete should lift | Current | **Marked unresolvable**, with the reason, never a guess |
-| MET-029 | The best lift behind it, with its date | Their best for the linked test | All time | Blank, and the weight becomes unresolvable |
+| MET-029 | The best lift behind it, with its date | **The most recent flagged attempt**, not the highest ever. See D-40 | Most recent test date | Blank, and the weight becomes unresolvable |
 | MET-007 | Session load, where logged | How hard it was | Per session | Blank until logged |
 
 **The test date is shown deliberately.** A weight derived from a six month old

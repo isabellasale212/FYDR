@@ -17,6 +17,8 @@ Creates a board: what it ranks, over what period, for whom.
 | Nutritionist | **No** in the agreed model | Nothing | Nothing | The whole page | Same | **NOT BUILT** |
 | Athlete | **No** | Nothing | Nothing | The whole page | n/a | Middleware, then guard |
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/leaderboards/new/page.tsx:12`; a product package check at `src/app/(staff)/leaderboards/new/page.tsx:22`; a product package check at `src/app/(staff)/leaderboards/new/page.tsx:37`; a product package check at `src/app/(staff)/leaderboards/new/page.tsx:39`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The New leaderboard control. It redirects to the management screen when reached

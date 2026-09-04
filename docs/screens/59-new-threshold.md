@@ -20,6 +20,8 @@ Creates a rule that raises a flag.
 **This is the most tightly gated screen in the app: coach, and nobody else.**
 Under the agreed model the sport scientist must be added.
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/settings/thresholds/new/page.tsx:9`; a **coach** check at `src/app/(staff)/settings/thresholds/new/page.tsx:10`, which redirects. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The New threshold control on the thresholds screen.
@@ -65,8 +67,10 @@ connection sentence.
 ## 9. Open issues
 
 - **The sport scientist cannot create a threshold.** Part of decision D-07.
-- **UNVERIFIED: whether a new threshold is applied retrospectively to existing
-  data, and how many flags that could raise at once.** Files searched:
-  `src/lib/queries/thresholds.ts`, `supabase/migrations/0006_thresholds_flags_compliance.sql`.
-  **Worth resolving before sign-off**, because the answer decides whether creating
-  a rule is a quiet act or a noisy one.
+- **Partly resolved.** A separate flag engine evaluates rules
+  (`src/lib/queries/thresholds.ts:191`), and a club with no thresholds raises no
+  flags at all, which is decision D-39. **UNVERIFIED: whether the engine evaluates
+  only new data or sweeps existing rows**, which decides whether creating a rule is
+  quiet or raises a great many flags at once. Files searched:
+  `src/lib/queries/thresholds.ts`, `supabase/migrations/0052*.sql`. This is the one
+  question the verification pass could not close.

@@ -18,6 +18,8 @@ app.**
 | Coach, Medic, S&C, Nutritionist | **No** | Nothing | Nothing | The whole page | Base | Same |
 | Athlete | **No** | Nothing | Nothing | The whole page | n/a | Middleware, then guard, then database |
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/settings/retention/page.tsx:29`; a **admin** check at `src/app/(staff)/settings/retention/page.tsx:30`, which redirects. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The Data retention link in the Settings administration block.
@@ -81,6 +83,7 @@ nothing is removed. **Offline.** The connection sentence.
   D-07. **Of the eleven capabilities being moved, this is the one worth pausing
   over**: it permanently deletes athlete records, and it is moving to the role
   that does day to day performance analysis.
-- **UNVERIFIED: whether the run is all or nothing**, or whether a failure part way
-  through leaves some categories processed. Files searched:
-  `src/app/(staff)/settings/retention/run/route.ts`, `src/lib/retention/compute.ts`.
+- **Resolved: it is not all or nothing.** Categories are processed in sequence and
+  the run returns on the first error (`src/lib/retention/compute.ts:206` onward),
+  so a failure part way through leaves earlier categories deleted and later ones
+  not. Decision D-43.

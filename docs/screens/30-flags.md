@@ -22,6 +22,8 @@ acknowledged, noted and dismissed.
 here, unlike most screens. This is one of the few places a role check exists
 beyond the staff guard.
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/flags/page.tsx:21`; a **coach or medical** check at `src/app/(staff)/flags/page.tsx:33`, which renders a named refusal rather than redirecting. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The **Need you** and **Open flags** tiles on the dashboard.

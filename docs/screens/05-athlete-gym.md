@@ -25,6 +25,8 @@ role, rather than a blank page.
 
 ---
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `loadAthleteDomainContext()` at `src/app/(staff)/squad/[athleteId]/gym/page.tsx:150`; a shared coach-or-medical check at `src/lib/athleteDomain.server.ts:93`, refused at `src/app/(staff)/squad/[athleteId]/gym/page.tsx:151`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The Gym chip on the athlete's profile.
@@ -65,7 +67,7 @@ unit.
 | Metric ID | Label on screen | What it means in plain English | Time window | What shows when data is missing |
 |---|---|---|---|---|
 | MET-030 | The kilogram figure beside an exercise | What this athlete should lift, worked out from their own best | Current | **Marked unresolvable**, not guessed, when the exercise names no test or the athlete has no result for it |
-| MET-029 | The best lift behind that figure, with its date | The athlete's best ever result for the linked test | All time | Blank, and the prescribed weight becomes unresolvable |
+| MET-029 | The best lift behind that figure, with its date | **The most recent flagged attempt**, not the highest ever. See D-40 | Most recent test date | Blank, and the prescribed weight becomes unresolvable |
 | MET-007 | Session load, where shown | How hard a session was, rating times minutes | Per session | Blank if either rating or duration is missing |
 
 **The date matters and is shown on purpose.** A weight derived from a six month

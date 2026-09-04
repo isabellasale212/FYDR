@@ -7,9 +7,11 @@
 Creates accounts for many athletes at once and links each to an existing athlete
 record.
 
-**It does not send anything.** Despite the name, no email leaves Fydr. Each
-account is created with a **temporary password**, which is handed back on screen,
-and whoever ran the invite must pass it to the athlete themselves
+**Despite the name, this screen emails nobody.** Fydr does have an email
+subsystem, and creating a **single** user does send an invitation with it
+(`src/app/(staff)/settings/users/create/route.ts:140`). This bulk route does not
+call it. Each account is created with a **temporary password** handed back on
+screen, and whoever ran the invite must pass it to the athlete themselves
 (`src/app/(staff)/settings/users/bulk-invite/send/route.ts:105`). Read section 6
 before using it.
 
@@ -20,6 +22,8 @@ before using it.
 | Sport scientist | Yes | The invite form | Create accounts in bulk | None | Base | **Currently admin only**, `src/app/(staff)/settings/users/bulk-invite/page.tsx:17`. Decision D-07 |
 | Coach, Medic, S&C, Nutritionist | **No** | Nothing | Nothing | The whole page | Base | Same |
 | Athlete | **No** | Nothing | Nothing | The whole page | n/a | Middleware, then guard, then database |
+
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/settings/users/bulk-invite/page.tsx:16`; a **admin** check at `src/app/(staff)/settings/users/bulk-invite/page.tsx:17`, which redirects. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
 
 ## 3. How you get here
 
@@ -55,8 +59,8 @@ create an athlete record. Decision D-16.
 
 **The temporary passwords are the important part of this screen.** For every
 account created, a temporary password is generated and returned in the results.
-The email address is marked confirmed, so the athlete never receives anything and
-never has to prove they own the address. Whoever ran the invite is now holding a
+The email address is marked confirmed, so the athlete never has to prove they own
+it, and on this route they receive nothing at all. Whoever ran the invite is now holding a
 list of working credentials for members of their squad, and has to get each one to
 the right person by some means Fydr does not provide.
 
@@ -83,7 +87,12 @@ full. **Offline.** The connection sentence.
 - **This belongs to admin today.** Decision D-07.
 - **Resolved: no email is sent.** Accounts are created with temporary passwords
   returned on screen. Decision D-38 covers what should happen instead.
-- **UNVERIFIED: whether a temporary password must be changed on first sign in, or
-  ever expires.** Files searched:
-  `src/app/(staff)/settings/users/bulk-invite/send/route.ts`,
-  `src/components/LoginForm/LoginForm.tsx`.
+- **Resolved: no forced change and no expiry.** Nothing in the codebase records
+  that a password is temporary, so nothing can require it to be replaced.
+- **Also resolved, and it corrects an earlier claim in this file.** Fydr does have
+  an email subsystem, and **single** user creation uses it
+  (`src/app/(staff)/settings/users/create/route.ts:140`). Bulk invite does not:
+  `sendInviteEmail` has two call sites and neither is this route. Separately, the
+  default mail provider only logs rather than sends unless a provider key is
+  configured, which the code calls "the honest default every environment actually
+  runs" (`src/lib/email/provider.ts:22`). Decision D-38.

@@ -22,6 +22,8 @@ their own normal, and who is carrying something.
 
 ---
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireReportAccess()` at `src/app/(staff)/reports/squad/page.tsx:33`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The Squad weekly card on the reports hub.

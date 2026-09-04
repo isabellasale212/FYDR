@@ -20,8 +20,14 @@ first will under-report:
 - a `hasAccess` variable used to render a refusal in place of the page
 
 Counting how often a file mentions a role is **not** a way to detect a guard: it
-cannot tell a guard from a comment. This mistake was made once and produced a
-false finding.
+cannot tell a guard from a comment. Nor is finding the named guard enough on its
+own: a page may call `requireStaff` and then compute access on the very next line
+to shape what it renders.
+
+**This mistake was made three times while writing the specification**, and each
+time it produced a finding that was wrong in the same direction: a page reported
+as open when it guards correctly. Read the lines around the guard, not just the
+guard.
 
 Report any page whose real access differs from the matrix, and any page reachable
 by a role the matrix marks X.
@@ -60,8 +66,14 @@ data exposure, then loss or corruption, then misleading a coach, then missing,
 then cosmetic.
 
 **Never guess.** If something cannot be established from the code, write
-`UNVERIFIED: not found` and list the files searched. A false finding costs more
-than a missing one, because it sends somebody to fix working code.
+`UNVERIFIED: not found` and list the files searched. **A false finding costs more
+than a missing one**, because it sends somebody to fix working code, and because
+it makes every other finding in the report less believable. Three of the
+specification's original findings were withdrawn for exactly this reason.
+
+**Report withdrawals as prominently as findings.** If something previously
+reported as broken turns out to work, say so plainly rather than quietly dropping
+it.
 
 **End with the counts**: pages checked, differences found by risk band, and
 unverified items.

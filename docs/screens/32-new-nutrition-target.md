@@ -17,6 +17,8 @@ Creates a nutrition rule and chooses who it applies to.
 | Nutritionist | Yes | The form | Create a rule | None | Base | **NOT BUILT** |
 | Athlete | **No** | Nothing | Nothing | The whole page | n/a | Middleware, then guard, then database |
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/nutrition/new/page.tsx:15`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The create control on the Nutrition screen.

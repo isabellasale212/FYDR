@@ -24,6 +24,8 @@ puts GPS data in.
 **The upload route refuses on the Base package with a sentence**, not an empty
 result: *GPS import is a Premium feature, and this club is on Basic.*
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/settings/imports/page.tsx:29`; a **coach or medical** check at `src/app/(staff)/settings/imports/page.tsx:30`, which redirects; a product package check at `src/app/(staff)/settings/imports/page.tsx:32`; a product package check at `src/app/(staff)/settings/imports/page.tsx:34`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The Import GPS link in Settings.
@@ -99,7 +101,10 @@ rejection given a row number and a reason.
 - **The S&C cannot reach this**, although GPS is central to their work. Part of
   the role remap, decision D-07.
 - **Two displayed measures can never be uploaded.** Decision D-24.
-- **UNVERIFIED: whether re-uploading the same file duplicates its rows or replaces
-  them.** Files searched: `src/lib/queries/gpsImport.ts`. The file's own header
-  says re-uploading is expected, which implies it is handled, but the behaviour is
-  not stated. **Worth resolving before sign-off.**
+- **Resolved, and it is a serious defect. Re-uploading duplicates every row.**
+  The import always inserts (`src/lib/queries/gpsImport.ts:234`), there is no
+  replace or merge, and no unique constraint exists to catch it: the three indexes
+  on the records table are ordinary, not unique
+  (`supabase/migrations/0023_gps_records.sql:99`). Upload the same file twice and
+  every distance doubles, silently. Decision D-42, ranked with the high risk
+  items.

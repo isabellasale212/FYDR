@@ -151,19 +151,32 @@ requires a test before a permission rule. **Reason: this is the single largest
 item in the queue and the only one that can silently open access if done in
 pieces.**
 
-### D-08. The reports hub does not use the report guard its own children use
+### D-08. WITHDRAWN. The reports hub is deliberately open, and says why
 
-**Code.** Every page under `/reports` calls `requireReportAccess`
-(`src/lib/session.ts:120`), except the hub itself, which calls plain
-`requireStaff` (`src/app/(staff)/reports/page.tsx`).
+**This entry was wrong. It is retained rather than deleted so that anyone who read
+the earlier version can see it was corrected.**
 
-**Effect today.** An admin who holds no other role opens the reports hub and is
-then refused at every single link on it.
+**What it claimed.** That the hub used a weaker guard than its own children, so a
+person without report access would open it and then be refused at every link.
 
-**Recommendation.** Use the same guard on the hub. **Reason: a page whose every
-link refuses you is a worse answer than a clean refusal at the door.** Note that
-this becomes moot if D-07 removes admin, so sequence it after that decision
-rather than fixing it twice.
+**What is actually true.** The hub stays open on purpose, and computes report
+access anyway so it can **mark each card as unavailable to that role**
+(`src/app/(staff)/reports/page.tsx:120`). Nobody is sent down a link that will
+refuse them. The reasoning is written out in the file:
+
+> "Redirecting away from the index entirely would hide that a reports feature
+> exists at all, which is worse than naming the real reason it's closed to this
+> role."
+
+That is a better answer than the one this entry recommended, and it is the same
+principle applied elsewhere for product tier: name what is closed and why, rather
+than making it vanish.
+
+**How the error arose.** The same cause as D-09: the Stage A1 scan detected which
+named guard a file called and treated `requireStaff` as the whole answer. It could
+not see the access computed on the next line and used to shape the page.
+
+**No action required.**
 
 ### D-09. WITHDRAWN. The clinical review screen is correctly gated
 
@@ -725,27 +738,48 @@ assigned, naming how many. **Reason: versioning is a large build and the warning
 is a sentence; the risk is a coach changing a block without realising twenty
 athletes are mid-way through it.**
 
-### D-38. "Invite athletes" sends nothing, and hands out temporary passwords
+### D-38. Bulk invite hands out temporary passwords and, unlike single invites, emails nobody
 
-**What it means in plain English.** The bulk invite screen does not email anybody.
-It creates each account with a **temporary password**, marks the email address as
-already confirmed, and returns the passwords on screen. Whoever ran it is then
-holding working credentials for members of the squad and has to get each one to
-the right person by some means Fydr does not provide.
+**Corrected 4 September 2026.** An earlier version of this entry said Fydr sends
+no invitation emails at all. That was wrong: an email subsystem exists and single
+user creation uses it. The corrected finding is narrower and sharper.
 
-**Where.** `src/app/(staff)/settings/users/bulk-invite/send/route.ts:105`.
+**What is true.**
+
+- **Single user creation does send an invitation email**, containing the
+  temporary password (`src/app/(staff)/settings/users/create/route.ts:140`,
+  `src/lib/email/send.ts:20`, `src/lib/email/templates.ts:21`).
+- **Bulk invite does not.** `sendInviteEmail` has exactly two call sites and
+  neither is the bulk route. Bulk invite creates accounts, marks each address
+  confirmed, and returns the temporary passwords on screen for the operator to
+  distribute (`src/app/(staff)/settings/users/bulk-invite/send/route.ts:105`).
+- **In any environment without a mail provider key, nothing is delivered
+  anyway.** The default provider logs rather than sends, and the code says so:
+  it is "the honest default every environment actually runs"
+  (`src/lib/email/provider.ts:22`).
+
+**So there are two problems, not one.** Bulk invite has no email path at all, and
+the email path that does exist is inert unless a provider key is configured.
+
+**Either way the temporary password is the weak point**, because it is emailed in
+plain text on one path and read off a screen on the other, with no forced change
+and no expiry.
 
 **Why this needs a decision rather than a bug report.** It works, and for a club
 handing out logins in a room together it may be exactly what is wanted. But the
 screen is called "invite", which sets a different expectation, and squad
 credentials will in practice travel by group message or spreadsheet.
 
-**Recommendation.** Send a real invitation link instead, so the athlete sets their
-own password and proves they own the address, and stop returning passwords on
-screen. **Reason: it removes a set of live credentials from circulation entirely,
-and the authentication service already provides the mechanism.** If temporary
-passwords are kept for a good reason, then at minimum force a change on first sign
-in and rename the screen to say what it does.
+**Recommendation.** Send a link the athlete acts on, so they set their own
+password and prove they own the address, on **both** paths. Stop putting
+passwords in emails and on screens. **Reason: it removes a set of live
+credentials from circulation entirely, and the authentication service already
+provides the mechanism.** If temporary passwords are kept, then at minimum force
+a change on first sign in.
+
+**Separately, confirm whether a mail provider key is configured in production.**
+If it is not, the single invite path is silently delivering nothing, and a club
+would have no idea.
 
 ### D-39. An empty thresholds list looks exactly like a well behaved squad
 
@@ -764,11 +798,85 @@ watched yet, linking to the Thresholds screen. **Reason: a zero that means "no
 rules" and a zero that means "no problems" are opposite messages, and the app
 currently shows the same thing for both.**
 
+## Group 12: raised during the verification pass
+
+### D-40. "Personal best" is not a personal best
+
+**What it means for a coach.** The flag Fydr calls `is_best` marks the best
+attempt an athlete made **on one day**, not their best ever. An athlete has one
+flagged result per test **per test date**
+(`supabase/migrations/0024_testing.sql:152`).
+
+**Why this matters.** Screens that label it "Personal best" are telling a coach
+something the data does not say. A sprinter with results in March and June has two
+flagged results, and neither is described anywhere as the lifetime best.
+
+**What the app does with it is fine.** Gym weights take the most recent flagged
+attempt, which is right for a one repetition maximum. Leaderboard improvement
+compares earliest against latest, which only works because the flag is per day.
+Both are correct; only the label is wrong.
+
+**Recommendation.** Rename it on screen to "Best on the day", and where a true
+lifetime best is wanted, compute it as the best of the flagged results and give it
+its own name. **Reason: the calculation is right and the word is wrong, which is
+the cheapest kind of fix and the easiest to get wrong by changing the wrong one.**
+
+### D-41. Changing a test's direction leaves every existing flag wrong
+
+**What it means.** Each test records whether higher or lower is better. Change it
+after results exist and **nothing is recalculated**: the rule that sets the flag
+runs when a result is written, not when a definition changes
+(`supabase/migrations/0024_testing.sql:163`). Every flagged attempt keeps pointing
+at what used to be the best, until somebody enters a new result for that athlete
+on that day.
+
+**Recommendation.** Refuse the change once results exist, and offer creating a new
+test instead. **Reason: it is a one line guard, whereas recalculating correctly
+across every athlete and date is real work for a case that should be rare.**
+
+### D-42. Re-uploading a GPS file duplicates every row
+
+**What it means for a coach.** Upload the same file twice and every session's
+distances double. Correct a mistake in a file, re-upload it, and you now have both
+versions.
+
+**Why.** The import always inserts (`src/lib/queries/gpsImport.ts:234`). There is
+no replace, no merge, and **no unique constraint** on the records table to catch
+it: the three indexes on it are ordinary, not unique
+(`supabase/migrations/0023_gps_records.sql:99`). The import's own header says
+re-uploading is "a real thing coaches do", which makes the absence more striking.
+
+**Recommendation.** Add a unique constraint on athlete, date and session, and make
+the import replace rather than insert. **Reason: this is a silent data corruption
+that a coach cannot see, on the data that feeds the whole GPS half of the app.**
+Rank it with the high risk items.
+
+### D-43. The retention run is not all or nothing
+
+**What it means.** The run that permanently deletes athlete data works through
+categories in sequence, returning on the first error
+(`src/lib/retention/compute.ts:206` onward). A failure part way through leaves
+earlier categories deleted and later ones not, with no record of where it stopped
+beyond the audit entry for what did complete.
+
+**Recommendation.** Make it resumable rather than transactional: record progress
+per category so a re-run continues rather than repeating. **Reason: wrapping
+permanent deletions across several tables in one transaction is fragile, and a
+half completed retention run is recoverable if you can tell what finished.**
+
 ---
 
 ## Corrections to this file
 
 Recorded so that a reader can trust the rest of it.
+
+**Three findings were withdrawn, all from the same root cause, and all found by
+the verification pass rather than by a reader.** D-08 and D-09 claimed pages were
+unguarded when they guard correctly, and D-38 claimed Fydr sends no invitation
+emails when it has a full email subsystem. Each came from a scan that inferred
+behaviour from the shape of a file instead of reading the lines that mattered. The
+lesson is recorded in `.claude/commands/spec-drift.md` so the same scan is not
+repeated.
 
 **The Stage A1 role scan under-reported guards, and every affected document has
 been corrected.** That scan detected a page's guard by looking for calls to the
@@ -799,7 +907,7 @@ as a decision.
 
 | Group | Entries | Needs your answer |
 |---|---|---|
-| 1. Differs from the agreed role model | D-01 to D-09 | Yes, eight. D-09 withdrawn |
+| 1. Differs from the agreed role model | D-01 to D-09 | Yes, seven. D-08 and D-09 withdrawn |
 | 2. Unexplained constants | D-10 to D-13 | Yes, all four |
 | 3. Browser only permissions | D-14 | No, none found |
 | 4. Tables without row level security | D-15 | No, none found |
@@ -810,8 +918,19 @@ as a decision.
 | 9. Raised in Stage B1 | D-22, D-23, D-24 | Yes, all three |
 | 10. Raised in Stage B2 | D-25 | Yes |
 | 11. Raised in Stage B3 | D-26 to D-39 | Yes, all fourteen |
+| 12. Raised in the verification pass | D-40 to D-43 | Yes, all four |
 
-**39 entries, one of them withdrawn. 35 need an answer from you.**
+**39 entries. Their real status:**
+
+| Status | Count | Which |
+|---|---|---|
+| **Accepted by you** on 4 September 2026 | **19** | D-01 to D-21, less D-08 and D-09 |
+| **Withdrawn**, the finding was wrong | **2** | D-08, D-09 |
+| **Raised after your acceptance, still open** | **22** | D-22 to D-43 |
+
+**So 22 decisions are genuinely waiting on you**, not 35. The larger number was
+an error in an earlier version of this line: it counted the accepted ones as
+outstanding.
 
 **All recommendations were accepted by you on 4 September 2026 ("go ahead with
 all your recommendations"). D-22 and D-23 were raised afterwards, during the

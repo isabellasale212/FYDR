@@ -17,6 +17,8 @@ The club's boards. Who is top of what, over what period.
 | Nutritionist | Yes | Every board | **View only** | None | Same | **NOT BUILT** |
 | Athlete | **No** | Nothing here. Athletes see boards in their own app, subject to consent | Nothing | The whole page | n/a | Middleware, then guard, then database |
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/leaderboards/page.tsx:34`; a **coach or medical** check at `src/app/(staff)/leaderboards/page.tsx:50`, which renders a named refusal rather than redirecting. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - Leaderboard, the seventh item in the sidebar.

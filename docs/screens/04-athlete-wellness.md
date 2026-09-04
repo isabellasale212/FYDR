@@ -32,6 +32,8 @@ than a silent bounce, because the reader learns why.
 
 ---
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `loadAthleteDomainContext()` at `src/app/(staff)/squad/[athleteId]/wellness/page.tsx:153`; a shared coach-or-medical check at `src/lib/athleteDomain.server.ts:93`, refused at `src/app/(staff)/squad/[athleteId]/wellness/page.tsx:154`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The Wellness chip on the athlete's own profile.

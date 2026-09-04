@@ -26,6 +26,8 @@ erasure process, which is not a physio action
 
 ---
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/injuries/[injuryId]/page.tsx:32`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - An injury row on the injuries list.

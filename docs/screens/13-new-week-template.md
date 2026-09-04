@@ -21,6 +21,8 @@ Defines a week shape that can be applied to any week.
 
 ---
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/schedule/planner/new/page.tsx:9`; a **coach or medical** check at `src/app/(staff)/schedule/planner/new/page.tsx:10`, which redirects. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The create control on the week templates screen.

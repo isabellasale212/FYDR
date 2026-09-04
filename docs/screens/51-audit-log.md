@@ -17,6 +17,8 @@ Who did what, to whose data, and when.
 **Nobody can edit or delete an audit entry**, including the sport scientist. A log
 that can be edited is not a log.
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/settings/audit/page.tsx:43`; a **admin** check at `src/app/(staff)/settings/audit/page.tsx:44`, which redirects. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The Audit log link in the Settings administration block.

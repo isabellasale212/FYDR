@@ -21,6 +21,8 @@ him" actually comes from.**
 **The screen is labelled Coach only**, and creating a threshold enforces that:
 even a medic is sent back.
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/settings/thresholds/page.tsx:14`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The Thresholds link in Settings.

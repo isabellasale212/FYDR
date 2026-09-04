@@ -22,6 +22,8 @@ can be printed or handed over.
 
 ---
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireReportAccess()` at `src/app/(staff)/reports/athlete/[athleteId]/page.tsx:85`; a product package check at `src/app/(staff)/reports/athlete/[athleteId]/page.tsx:516`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - An athlete's name on the picker.
@@ -62,7 +64,7 @@ date of the most recent record, so a coach can see how current the picture is.
 | MET-010 | Acute to chronic ratio | This week's work against a typical week | 7 over 28 days | **Withheld entirely below 21 days with data**, rather than estimated |
 | MET-017 | Total distance | How far, from GPS | Per session and summed | Blank without an upload. **Premium** |
 | MET-018 | High speed distance | How far above the vendor's high speed threshold | Per session and summed | Blank. **Premium.** The threshold is the vendor's, not Fydr's |
-| MET-029 | Personal bests | Best ever per test | All time, not the period | Blank |
+| MET-029 | Best on the day | **The best attempt on a test day, not a lifetime best.** See D-40 | Per test date | Blank |
 | MET-013 | Availability | Whether they can train and play | Across the period | Unknown where no record exists |
 
 **Latest date** appears beside the GPS figures. It is not a metric: it is the date

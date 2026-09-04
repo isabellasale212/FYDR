@@ -25,6 +25,8 @@ that it currently admits every staff role.
 
 ---
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/injuries/page.tsx:42`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - A link from an injury named on another screen.

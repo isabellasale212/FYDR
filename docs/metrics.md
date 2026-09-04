@@ -1035,16 +1035,45 @@ leaderboards.
 
 ---
 
-## MET-029. Personal best
+## MET-029. Best attempt on a test day
 
-**Name on screen.** Personal best, or PB. Sometimes Best.
+**Name on screen.** Best. Often labelled Personal best, **which is misleading and
+is the subject of decision D-40**.
 
-**What it means.** The athlete's best ever result for a given test.
+**What it actually means.** The best of the attempts an athlete made **on one
+day**. It is **not** their best ever result.
 
-**Exact calculation.** Of all that athlete's results for that test which have not
-been deleted, the best one is marked. Which one counts as "best" depends on the
-test: for a sprint the lowest time wins, for a lift the highest weight wins. The
-test definition itself records which direction is better.
+**Exact calculation.** Among that athlete's results for one test, on **one test
+date**, on one side of the body, excluding deleted rows and any marked by hand,
+the best one is flagged. Which counts as best depends on the test: for a sprint
+the lowest time, for a lift the highest weight. The test definition records which.
+
+The scope is the important part, and it is explicit in the rule that sets the
+flag: athlete, test, **test date**, and side
+(`supabase/migrations/0024_testing.sql:152`).
+
+**So an athlete has one flagged result per test per day**, not one overall. A
+sprinter who ran 11.2 in March and 11.4 in June has **two** flagged results, not
+one. Anything wanting a true lifetime best has to take the best of the flagged
+ones itself.
+
+**How the app actually uses it.** Two ways, both correct for their purpose,
+neither of them "best ever":
+
+- **Prescribed gym weights (MET-030)** take the **most recent** flagged result,
+  not the highest (`supabase/migrations/0043_exercise_overrides_and_one_rm.sql:355`).
+  That is right for a one repetition maximum: you want what the athlete can lift
+  now, not what they lifted three years ago.
+- **Leaderboard improvement** compares an athlete's latest flagged result against
+  their earliest, which is only meaningful because the flag is per day
+  (`src/lib/queries/leaderboardWall.ts:410`).
+
+**A hazard.** Changing a test's direction does **not** re-flag anything. The rule
+runs when a result is written, not when a definition changes
+(`supabase/migrations/0024_testing.sql:163`). A test switched from "higher is
+better" to "lower is better" keeps every existing flag pointing at the wrong
+attempt until a new result is entered for that athlete on that day. Decision
+D-41.
 
 **One important exception.** A member of staff can mark a result as the best by
 hand, and when they do, the automatic rule **stops overriding it**
@@ -1090,10 +1119,16 @@ So an exercise written as 80 percent, for an athlete whose best back squat is
 140 kg, resolves to 112.0 kg. A different athlete on the same programme sees a
 different number.
 
-**Which test is used.** Each exercise can name the test that measures its one
-repetition maximum (`supabase/migrations/0043_exercise_overrides_and_one_rm.sql:96`).
-The athlete's most recent result marked as their personal best for that test is
-the one used (`:348`).
+**Which test is used, and which result.** Each exercise can name the test that
+measures its one repetition maximum
+(`supabase/migrations/0043_exercise_overrides_and_one_rm.sql:96`). The result used
+is the athlete's **most recent flagged attempt**, taken by ordering on test date
+and taking the first (`:355`).
+
+**Most recent, not highest.** An athlete whose best ever squat was 150 kg two
+years ago and who last tested at 130 kg is prescribed against 130. That is the
+right behaviour for a one repetition maximum, and it is worth stating plainly
+because the flag it reads is named `is_best`.
 
 **When data is missing, and this is handled explicitly.** If the exercise names
 no test, or the athlete has no result for it, the programme records the exercise

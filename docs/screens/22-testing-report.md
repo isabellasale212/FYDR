@@ -22,6 +22,8 @@ middle looks like.
 
 ---
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireReportAccess()` at `src/app/(staff)/reports/testing/page.tsx:33`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The Testing card on the reports hub.
@@ -48,7 +50,7 @@ one, rather than showing an empty table with no explanation.
 | Metric ID | Label on screen | What it means in plain English | Time window | What shows when data is missing |
 |---|---|---|---|---|
 | MET-028 | Each cell | One athlete's result for one test | The most recent, or the period | Blank. An athlete who has not done a test has no result, which is not a zero |
-| MET-029 | Where a best is marked | The athlete's best ever for that test | All time | Blank |
+| MET-029 | Where a best is marked | **The best attempt on that test date**, not a lifetime best. See D-40 | Per test date | Blank |
 | None | Median | The squad's middle value for a test | Across whoever has a result | Absent when too few have results |
 
 **Which direction is better is a property of the test**, not of this screen. For a

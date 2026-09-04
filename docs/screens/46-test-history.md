@@ -17,6 +17,8 @@ One athlete's results for one test, over time.
 | Nutritionist | **No** in the agreed model | Nothing | Nothing | The whole page | Base | **NOT BUILT.** Decision D-01 |
 | Athlete | **No** | Nothing here | Nothing | The whole page | n/a | Middleware, then guard, then database |
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/testing/[testDefId]/[athleteId]/page.tsx:28`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - An athlete's name on the result logging screen.
@@ -32,7 +34,7 @@ the best marked. Superseded results are not shown alongside their corrections.
 | Metric ID | Label on screen | What it means | Time window | When missing |
 |---|---|---|---|---|
 | MET-028 | Each result | One measurement on one day | All time | An athlete with none sees an empty state |
-| MET-029 | The marked best | Their best ever, automatic or set by hand | All time | Blank |
+| MET-029 | The marked best | **The best attempt on that day**, automatic or set by hand. Several dates each carry one. See D-40 | Per test date | Blank |
 
 ## 6. Every thing you can act on
 

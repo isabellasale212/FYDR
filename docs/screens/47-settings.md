@@ -21,6 +21,8 @@ What each role sees differs more here than anywhere else in the app.
 **Every role opens Settings**, because it holds their own password and two factor
 login. The administration blocks are simply absent for those without them.
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/settings/page.tsx:44`; a product package check at `src/app/(staff)/settings/page.tsx:47`; a product package check at `src/app/(staff)/settings/page.tsx:53`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - Settings, the ninth sidebar item.

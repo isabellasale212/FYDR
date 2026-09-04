@@ -18,6 +18,8 @@ one repetition maximum.
 | Nutritionist | Yes | The library | **View only** | None | Base | **NOT BUILT** |
 | Athlete | **No** | Nothing | Nothing | The whole page | n/a | Middleware, then guard, then database |
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/programmes/exercises/page.tsx:22`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - A link from the programme list.

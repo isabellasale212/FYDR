@@ -17,6 +17,8 @@ One board in full: the standings, the measure, the period.
 | Nutritionist | Yes | The standings | Nothing | None | Same | Same |
 | Athlete | **No** | Nothing here | Nothing | The whole page | n/a | Middleware, then guard, then database |
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/leaderboards/[leaderboardId]/page.tsx:47`; a **coach or medical** check at `src/app/(staff)/leaderboards/[leaderboardId]/page.tsx:59`, which renders a named refusal rather than redirecting; a product package check at `src/app/(staff)/leaderboards/[leaderboardId]/page.tsx:95`; a product package check at `src/app/(staff)/leaderboards/[leaderboardId]/page.tsx:97`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - A board on the leaderboard screen.

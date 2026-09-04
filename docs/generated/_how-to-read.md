@@ -39,3 +39,23 @@ decision from you.
 **Where a code reference appears**, such as `src/lib/session.ts:69`, it names the
 file and line that the statement was taken from. You do not need to read it. It is
 there so that anyone who doubts a claim can check it in one step.
+
+
+---
+
+**How thoroughly each part was checked, stated plainly so you can weigh it.**
+
+The screen specifications were written in two passes. The first wrote all 62. The
+second re-checked every page's access against the code, resolved six of the seven
+questions the first pass could not answer, and corrected what it found.
+
+**That second pass withdrew three findings as wrong** and found four new defects
+the first pass had missed, including one ranked high risk: re-uploading a GPS file
+duplicates every row. Every withdrawal is recorded in Appendix C rather than
+quietly removed, so you can see what changed and why.
+
+**Every page in this document now carries a "verified access" line** naming the
+exact guards that run and where they are, taken from the code rather than
+inferred. Where a statement elsewhere in a specification is less certain, it says
+UNVERIFIED and names the files searched. **An absent UNVERIFIED means it was
+checked**, not that nobody looked.

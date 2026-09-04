@@ -19,6 +19,8 @@ Every programme the club has, and who is on each.
 | Nutritionist | Yes | Every programme | **View only** | None | Base | **NOT BUILT.** Decision D-04 |
 | Athlete | **No** | Nothing here. Athletes see their own programme in their own app | Nothing | The whole page | n/a | Middleware, then guard, then database |
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/programmes/page.tsx:92`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - Gym programme, the sixth item in the sidebar.

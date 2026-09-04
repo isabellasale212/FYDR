@@ -20,6 +20,8 @@ Generates a data export for the club.
 **This screen uses the report guard**, so an administrator holding no other role
 cannot reach it. That is deliberate: an export is named athlete data.
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireReportAccess()` at `src/app/(staff)/settings/exports/page.tsx:23`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The Exports link in Settings.
@@ -60,7 +62,7 @@ connection sentence.
 ## 9. Open issues
 
 - **The nutritionist should not reach this.** Decision D-01.
-- **UNVERIFIED: whether an export includes athletes outside the current group
-  filter.** Files searched: `src/app/(staff)/settings/exports/generate/route.ts`.
-  **Worth resolving**, because a coach filtered to one group may reasonably expect
-  an export to match what they were looking at.
+- **Resolved, and the behaviour is correct.** The export takes the group scope
+  from the request and reports back both the athlete count and the group label it
+  used (`src/app/(staff)/settings/exports/generate/route.ts:74`, `:21`), so an
+  export matches what the coach was looking at and says so on the file.

@@ -22,6 +22,8 @@ in the agreed model, sport scientist only.**
 package** (`src/components/Sidebar/Sidebar.tsx:64`). Everything else that is
 Premium sits inside a destination that has Base content too.
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/analytics/page.tsx:207`; a product package check at `src/app/(staff)/analytics/page.tsx:220`; a product package check at `src/app/(staff)/analytics/page.tsx:232`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - Analytics, the eighth sidebar item, on Premium only.

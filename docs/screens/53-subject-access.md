@@ -20,6 +20,8 @@ them.
 gathering a person's whole record, including the clinical part, and only a medic
 may read that. So the process needs both.
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireSubjectAccess()` at `src/app/(staff)/settings/subject-access/page.tsx:26`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The Subject access link in the Settings administration block.

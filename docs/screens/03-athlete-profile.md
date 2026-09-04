@@ -30,6 +30,8 @@ mistake looks like a broken page even though no data crossed the boundary
 
 ---
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/squad/[athleteId]/page.tsx:242`; a **coach or medical** check at `src/app/(staff)/squad/[athleteId]/page.tsx:254`, which renders a named refusal rather than redirecting. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - Any row in the squad overview.
@@ -85,7 +87,7 @@ creates a new record and marks the old one superseded rather than overwriting it
 | MET-036 | Target range | The agreed weight range | As set, and it may move across a season | No band shown if none is set |
 | MET-010 | Acute to chronic ratio | This week's work against a typical week | 7 days over 28 | Withheld entirely below 21 days of data |
 | MET-013 | The availability pill | Whether they can train and play | Right now | Unknown |
-| MET-029 | Personal bests | Best ever result per test | All time | Blank |
+| MET-029 | Best on the day | **The best attempt on a test day, not a lifetime best.** See D-40 | Per test date | Blank |
 
 ---
 

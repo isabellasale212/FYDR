@@ -20,6 +20,8 @@ how the squad's weights sit against their target ranges.
 | Nutritionist | Yes | Everything | View, create, edit, delete | None | Base | **NOT BUILT** |
 | Athlete | **No** | Nothing | Nothing | The whole page | n/a | Middleware, then guard, then database |
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/nutrition/page.tsx:128`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - Nutrition, the fifth item in the sidebar.

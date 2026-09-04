@@ -22,6 +22,8 @@ meeting. Not a match. A match is a fixture, and fixtures are made on screen 11.
 
 ---
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/schedule/new/page.tsx:16`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The **+ Session** button on the schedule toolbar.

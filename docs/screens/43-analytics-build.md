@@ -17,6 +17,8 @@ Chooses what an analytics view contains.
 | Nutritionist | **No** in the agreed model | Nothing | Nothing | The whole page | **Premium** | **NOT BUILT** |
 | Athlete | **No** | Nothing | Nothing | The whole page | n/a | Middleware, then guard |
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: a product package check at `src/app/(staff)/analytics/build/page.tsx:85`; `requireStaff()` at `src/app/(staff)/analytics/build/page.tsx:118`; a product package check at `src/app/(staff)/analytics/build/page.tsx:123`; a product package check at `src/app/(staff)/analytics/build/page.tsx:125`; a **coach or medical** check at `src/app/(staff)/analytics/build/page.tsx:139`, which renders a named refusal rather than redirecting; a product package check at `src/app/(staff)/analytics/build/page.tsx:163`; a product package check at `src/app/(staff)/analytics/build/page.tsx:166`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The build control on Analytics.

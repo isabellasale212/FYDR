@@ -25,6 +25,8 @@ person without report access is refused here rather than at the next click.
 
 ---
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireReportAccess()` at `src/app/(staff)/reports/athlete/page.tsx:30`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - The Athlete report card on the reports hub.

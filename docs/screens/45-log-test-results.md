@@ -17,6 +17,8 @@ Records what the squad did on one test.
 | Nutritionist | **No** in the agreed model | Nothing | Nothing | The whole page | Base | **NOT BUILT.** Decision D-01 |
 | Athlete | **No** | Nothing | Nothing | The whole page | n/a | Middleware, then guard, then database |
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/testing/[testDefId]/page.tsx:26`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - A test's name on the testing screen.
@@ -32,7 +34,7 @@ day's result, and their previous best beside it for context.
 | Metric ID | Label on screen | What it means | Time window | When missing |
 |---|---|---|---|---|
 | MET-028 | The entered value | One result for one athlete on one day | That day | Blank. A blank is not a zero |
-| MET-029 | The best beside it | Their best ever for this test | All time | Blank for an athlete who has never done it |
+| MET-029 | The best beside it | **Their best attempt on that day.** See D-40 | Per test date | Blank for an athlete who has never done it |
 
 ## 6. Every thing you can act on
 

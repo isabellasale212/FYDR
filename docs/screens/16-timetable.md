@@ -24,6 +24,8 @@ Nothing on this page is withheld from anyone. A timetable is a timetable.
 
 ---
 
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/timetable/page.tsx:26`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+
 ## 3. How you get here
 
 - A direct link. **This screen is not in the sidebar**, and it is not linked from

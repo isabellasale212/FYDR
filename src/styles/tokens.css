@@ -174,8 +174,22 @@
      than #eaedf1 (relative luminance 0.828 vs 0.844) and dark text on it has
      less room, not more. Four tokens fell below 4.5:1 and were re-derived
      against it — see §3.7 below. White cards separate slightly better as a
-     side effect: 1.197:1, up from 1.174:1. */
-  --bg: #e4ebf9;
+     side effect: 1.197:1, up from 1.174:1.
+
+     AND MOVED BACK, 4 Sept 2026, on the client's instruction. The report
+     headers canvas (CHANGELOG-headers-spec.md) measures the ground as
+     #eaedf1, the handoff's original value, and the client asked for the
+     tokens to match it. So this is the handoff figure again rather than the
+     Visual Lift's.
+
+     The four re-derivations below are DELIBERATELY LEFT AS THEY ARE. They were
+     nudged darker because #e4ebf9 is the darker ground; on the lighter one
+     they simply have more margin than they need, which is safe. Undoing them
+     would be a second change chasing the first, and they are one hex step from
+     where they started. Measured after the change: nothing fell below 4.5:1.
+     If the Visual Lift's ground is meant to win after all, this is the line to
+     revert and the four below need no attention either way. */
+  --bg: #eaedf1;
   --surf: #ffffff;
   /* The desk behind the app frame, and any inset well. Light-theme handoff §1.
      Distinct from --surf2 (#f3f5f8), which is a RAISED alt surface: this one
@@ -210,7 +224,16 @@
      narrowing is unavoidable rather than chosen: the old spacing was bought by
      putting the lightest level below AA. */
   --faint: #929aa5;
-  --border: rgba(16, 18, 23, 0.085);
+  /* SOLID, not an ink alpha, 4 Sept 2026 — CHANGELOG-headers-spec.md measures
+     #dce1e8 and the client asked the tokens to match. It is the one token in
+     this group that no longer adapts to what is behind it: the old
+     rgba(16,18,23,0.085) composited to about #ebebeb on a white card and
+     #d3dae7 on the page ground, so a card's border was lighter than the page's.
+     A single value makes every border the same weight wherever it sits, which
+     is what the canvas draws. --border-strong and --hair keep the ink alpha,
+     because neither was measured and changing them would be my decision rather
+     than the canvas's. */
+  --border: #dce1e8;
   --border-strong: rgba(16, 18, 23, 0.52);
   --hair: rgba(16, 18, 23, 0.05);
   /* Handoff §3 raises the unfilled track from 0.07 to 0.10 so a bar reads as

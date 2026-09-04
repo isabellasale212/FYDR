@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { PrintButton } from '@/components/PrintButton/PrintButton';
 import { ReportPager } from '@/components/ReportPager/ReportPager';
@@ -79,71 +78,12 @@ export default async function TestingReportPage({ searchParams }: { searchParams
 
   return (
     <>
-      <div className="topbar">
-        <div className="page-head">
-          <p className="eyebrow">
-            <Link href="/reports">Reports</Link> · Testing
-          </p>
-          <h1>Testing report</h1>
-        </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          {/* One entry point for every test, not whichever one happened to
-           * be selected. It used to read "+ Log a 10m sprint result" and open
-           * that test's grid — which was an improvement on the bare "+ Log a
-           * result" it replaced (audit finding 39, where the label gave no clue
-           * which test it would open), but it still made the primary action on
-           * this page mean "log the test you are currently looking at". A coach
-           * arriving to enter a testing session's results wants whichever test
-           * they just ran, which is usually not the one the report defaulted to.
-           *
-           * /testing is already the list of every definition, each row linking
-           * to its own real logging grid, so this needs no new screen. The
-           * specific path is not lost either: the per-column "+" in the table
-           * below still jumps straight to today's grid for that one test. */}
-          <Link href="/testing" className="btn-primary" aria-label="Log a result for any test">
-            + Log a result
-          </Link>
-          {/* The coach asked for "a print and download button ... at the top
-            * right corner". Download already existed here as the two Export
-            * links below; Print was the genuinely missing half. PrintButton
-            * runs window.print() through base.css's existing @media print
-            * block, so there is no separate print view to keep in sync —
-            * with one real caveat this page has and the others don't: the
-            * report is paginated by ReportPager, so a print captures the
-            * tab currently open ("By athlete" or "By test"), not both. That
-            * is the honest behaviour of printing what is on screen; the PDF
-            * export is the one that contains everything. */}
-          <PrintButton />
-          <a href={`/reports/testing/export?${query}`} className="btn-ghost">
-            Export CSV
-          </a>
-          <a href={`/reports/testing/pdf?${query}`} className="btn-ghost">
-            Export PDF
-          </a>
-        </div>
-      </div>
-
-      <p className="eyebrow" style={{ marginBottom: 4 }}>
-        {groupScopeLabel(groups, groupIds)} · {orgName} · {period.range.label} · {formatDate(reportWindow.from, timezone)} to{' '}
-        {formatDate(reportWindow.to, timezone)} · {byAthlete.rows.length} athletes · {byAthlete.definitions.length} tests
-      </p>
-      {/* Under the scope line, not in the action row beside "+ Log a result".
-          Both land on /testing, but one is "record a number today" and the
-          other is "change what the club measures" — the first is the primary
-          action on this report, the second is a way out of it. */}
-      <Link href="/testing" className="tst-manage">
-        Manage tests &rarr;
-      </Link>
 
       {caveat ? (
         <p className="sub" style={{ margin: '0 0 10px' }}>
           {caveat}
         </p>
       ) : null}
-
-      <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
-        <GroupFilter groups={groups} selected={groupIds} />
-      </div>
 
       {byAthlete.definitions.length === 0 ? (
         <div className="empty">
@@ -157,6 +97,41 @@ export default async function TestingReportPage({ searchParams }: { searchParams
         /* The period scopes every tab, so it rides the tab row rather than a
            row of its own above it. */
         <ReportPager
+          header={{
+            groups,
+            groupIds,
+            eyebrow: 'Reports · Testing',
+            title: 'Testing report',
+            sub: (
+              <>
+                <p className="eyebrow rhead-sub">
+                  {groupScopeLabel(groups, groupIds)} · {orgName} · {period.range.label} ·{' '}
+                  {formatDate(reportWindow.from, timezone)} to {formatDate(reportWindow.to, timezone)} ·{' '}
+                  {byAthlete.rows.length} athletes · {byAthlete.definitions.length} tests
+                </p>
+                {/* Both land on /testing, but one is "record a number today"
+                    and the other is "change what the club measures" — the
+                    first is the primary action, the second is a way out. */}
+                <Link href="/testing" className="tst-manage">
+                  Manage tests &rarr;
+                </Link>
+              </>
+            ),
+            actions: (
+              <>
+                <Link href="/testing" className="rhead-btn-primary" aria-label="Log a result for any test">
+                  + Log a result
+                </Link>
+                <PrintButton className="rhead-btn" />
+                <a href={`/reports/testing/export?${query}`} className="rhead-btn">
+                  Export CSV
+                </a>
+                <a href={`/reports/testing/pdf?${query}`} className="rhead-btn">
+                  Export PDF
+                </a>
+              </>
+            ),
+          }}
           right={
               /* NOT sticky when this is the report's own default (`season`,
                  or `year` for a club with no season row) rather than something

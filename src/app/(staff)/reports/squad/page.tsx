@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { AttentionRow } from '@/components/AttentionRow/AttentionRow';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
-import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
+import { ReportHeader } from '@/components/ReportHeader/ReportHeader';
 import { Pill } from '@/components/Pill/Pill';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchSquadWeeklyReport } from '@/lib/queries/squadWeeklyReport';
@@ -88,54 +88,51 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
 
   return (
     <>
-      <div className="topbar">
-        <div className="page-head">
-          <p className="eyebrow">
-            <Link href="/reports">Reports</Link> · Squad weekly
-          </p>
-          <h1>Squad weekly</h1>
-          <p className="tiny" style={{ color: 'var(--muted)', marginTop: 4 }}>
-            {groupScopeLabel(groups, groupIds)} · {orgName} · {report.athleteCount} athlete
-            {report.athleteCount === 1 ? '' : 's'}
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          {/* The week nav sits with the exports rather than in a band of its
-              own: it names which week everything below is about, so it belongs
-              beside the title, not between the title and the numbers. */}
-          <span className="week-nav">
+      <ReportHeader
+        groups={groups}
+        groupIds={groupIds}
+        eyebrow="Reports · Squad weekly"
+        title="Squad weekly"
+        actions={
+          <>
+            <a href={`/reports/squad/export?${exportQuery}`} className="rhead-btn">
+              Export CSV
+            </a>
+            <a href={`/reports/squad/pdf?${exportQuery}`} className="rhead-btn">
+              Export PDF
+            </a>
+          </>
+        }
+        period={
+          /* The week nav is this report's period control: it names which week
+             everything below is about. The canvas puts that control at the far
+             end of the tab row, which is where it now sits. */
+            <span className="week-nav">
             <Link href={toQuery(prevWeek)} aria-label="Previous week">
-              &lsaquo;
+            &lsaquo;
             </Link>
             <b>
-              {formatDate(report.from, timezone)} – {formatDate(report.to, timezone)}
+            {formatDate(report.from, timezone)} – {formatDate(report.to, timezone)}
             </b>
             {isCurrentWeek ? (
-              <span aria-disabled="true" data-disabled="true">
-                &rsaquo;
-              </span>
+            <span aria-disabled="true" data-disabled="true">
+            &rsaquo;
+            </span>
             ) : (
-              <Link href={toQuery(nextWeek)} aria-label="Next week">
-                &rsaquo;
-              </Link>
+            <Link href={toQuery(nextWeek)} aria-label="Next week">
+            &rsaquo;
+            </Link>
             )}
-          </span>
-          <a href={`/reports/squad/export?${exportQuery}`} className="btn-ghost">
-            Export CSV
-          </a>
-          <a href={`/reports/squad/pdf?${exportQuery}`} className="btn-ghost">
-            Export PDF
-          </a>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', marginBottom: 14 }}>
-        <GroupFilter groups={groups} selected={groupIds} />
-        <span className="tiny" style={{ marginLeft: 'auto', color: 'var(--faint)' }}>
-          Compared with the previous week, {formatDate(prior.from, timezone)}–
-          {formatDate(prior.to, timezone)}
-        </span>
-      </div>
+            </span>
+        }
+        sub={
+          <p className="eyebrow rhead-sub">
+            {groupScopeLabel(groups, groupIds)} · {orgName} · {report.athleteCount} athlete
+            {report.athleteCount === 1 ? '' : 's'} · compared with the previous week,{' '}
+            {formatDate(prior.from, timezone)}–{formatDate(prior.to, timezone)}
+          </p>
+        }
+      />
 
       <div className="stack">
         <div className="sw-kpis">

@@ -2,7 +2,7 @@ import { Fragment } from 'react';
 import Link from 'next/link';
 import { Dial } from '@/components/Dial/Dial';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
-import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
+import { ReportHeader } from '@/components/ReportHeader/ReportHeader';
 import { PlanGate } from '@/components/PlanGate/PlanGate';
 import { ReportSelectNav } from '@/components/ReportSelectNav/ReportSelectNav';
 import { TrainingScatter } from '@/components/TrainingScatter/TrainingScatter';
@@ -291,48 +291,44 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
 
   const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
 
-  const header = (
-    <div className="topbar">
-      <div className="page-head">
-        <p className="eyebrow">
-          {orgName} · {mode === 'training' ? 'TRAINING' : 'MATCH DAY'} · {groupScopeLabel(groups, groupIds).toUpperCase()}
-        </p>
-        <h1>{mode === 'training' ? 'Training report' : 'Match day GPS report'}</h1>
-      </div>
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-        <div className="tr-mode-switch">
-          <Link href={`/reports/training${q({ mode: 'training', groups: groupsQs })}`} aria-current={mode === 'training'}>
+  const header = (tabsNode?: React.ReactNode, period?: React.ReactNode) => (
+    <ReportHeader
+      groups={groups}
+      groupIds={groupIds}
+      eyebrow={`${orgName} · ${mode === 'training' ? 'Training' : 'Match day'} · ${groupScopeLabel(groups, groupIds)}`}
+      title={mode === 'training' ? 'Training report' : 'Match day GPS report'}
+      actions={
+        <>
+            <div className="tr-mode-switch">
+            <Link href={`/reports/training${q({ mode: 'training', groups: groupsQs })}`} aria-current={mode === 'training'}>
             Training
-          </Link>
-          <Link href={`/reports/training${q({ mode: 'match', groups: groupsQs })}`} aria-current={mode === 'match'}>
+            </Link>
+            <Link href={`/reports/training${q({ mode: 'match', groups: groupsQs })}`} aria-current={mode === 'match'}>
             Match day
-          </Link>
-        </div>
-        {/* The design's own top-bar control. A link, not a checkbox: it is a
+            </Link>
+            </div>
+            {/* The design's own top-bar control. A link, not a checkbox: it is a
             view state, and this page keeps every view state in the URL. */}
-        <Link
-          href={`/reports/training${qs({ mode, session: sessionParam, groups: groupsQs, heat: heatOn ? 'off' : undefined })}`}
-          className="tr-heat-toggle"
-          role="switch"
-          aria-checked={heatOn}
-        >
-          Heat
-          <span className="tr-heat-toggle-track" aria-hidden />
-        </Link>
-        <a href={`/reports/training/export${q({ mode, session: sessionParam, groups: groupsQs })}`} className="btn-ghost">
-          Export CSV
-        </a>
-        <a href={`/reports/training/pdf${q({ mode, session: sessionParam, groups: groupsQs })}`} className="btn-ghost">
-          Export PDF
-        </a>
-      </div>
-    </div>
-  );
-
-  const groupFilterEl = (
-    <div style={{ margin: '10px 0 14px' }}>
-      <GroupFilter groups={groups} selected={groupIds} />
-    </div>
+            <Link
+            href={`/reports/training${qs({ mode, session: sessionParam, groups: groupsQs, heat: heatOn ? 'off' : undefined })}`}
+            className="tr-heat-toggle"
+            role="switch"
+            aria-checked={heatOn}
+            >
+            Heat
+            <span className="tr-heat-toggle-track" aria-hidden />
+            </Link>
+            <a href={`/reports/training/export${q({ mode, session: sessionParam, groups: groupsQs })}`} className="rhead-btn">
+            Export CSV
+            </a>
+            <a href={`/reports/training/pdf${q({ mode, session: sessionParam, groups: groupsQs })}`} className="rhead-btn">
+            Export PDF
+            </a>
+        </>
+      }
+      tabsNode={tabsNode}
+      period={period}
+    />
   );
 
   // -------------------------------------------------------------------------
@@ -343,8 +339,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
     if (!selected) {
       return (
         <>
-          {groupFilterEl}
-          {header}
+            {header()}
           <EmptyState
             title="No match GPS data yet"
             body="No completed match has a GPS record on file. This week's fixture is upcoming and has no record yet, by design — an unplayed session is never rendered as measured data."
@@ -365,38 +360,40 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
 
     return (
       <>
-        {groupFilterEl}
-        {header}
-
-        <div className="tr-jumprow">
+        {header(
+          <>
           {/* The fixture chips belong to MATCH DAY and are back (Design.pdf
-              p23). The review's "session chips row removed" was about the
-              TRAINING chips — p17 shows that view correctly carrying nothing
-              but Day/Week and the date picker — and taking these with them was
-              my error. A season is a handful of matches, so the chips are the
-              whole list; a training block is dozens of sessions, which is why
-              only that one needed a dropdown instead. */}
+          p23). The review's "session chips row removed" was about the
+          TRAINING chips — p17 shows that view correctly carrying nothing
+          but Day/Week and the date picker — and taking these with them was
+          my error. A season is a handful of matches, so the chips are the
+          whole list; a training block is dozens of sessions, which is why
+          only that one needed a dropdown instead. */}
           <div className="chiprow" style={{ margin: 0 }}>
-            {sessions.slice(0, 8).map((s) => (
-              <Link
-                key={s.sessionId}
-                href={`/reports/training${q({ mode: 'match', session: s.sessionId, groups: groupsQs })}`}
-                className="tr-session-chip"
-                aria-current={selected.sessionId === s.sessionId}
-              >
-                v {s.opponent}
-                <span className="suffix">{s.result ?? '—'}</span>
-              </Link>
-            ))}
+          {sessions.slice(0, 8).map((s) => (
+          <Link
+          key={s.sessionId}
+          href={`/reports/training${q({ mode: 'match', session: s.sessionId, groups: groupsQs })}`}
+          className="tr-session-chip"
+          aria-current={selected.sessionId === s.sessionId}
+          >
+          v {s.opponent}
+          <span className="suffix">{s.result ?? '—'}</span>
+          </Link>
+          ))}
           </div>
+          </>,
+          <>
           <ReportSelectNav
-            label="Jump to date"
-            paramKey="session"
-            value={selected.sessionId}
-            options={sessions.map((s) => ({ value: s.sessionId, label: `${formatDate(s.date, timezone)} · v ${s.opponent}` }))}
-            ariaLabel="Jump to a match with GPS data"
+          label="Jump to date"
+          paramKey="session"
+          value={selected.sessionId}
+          options={sessions.map((s) => ({ value: s.sessionId, label: `${formatDate(s.date, timezone)} · v ${s.opponent}` }))}
+          ariaLabel="Jump to a match with GPS data"
           />
-        </div>
+          </>,
+        )}
+
 
         {!overview ? (
           <EmptyState title="No athletes in this filter" body="No one in the current group filter played in this match." />
@@ -517,8 +514,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
   if (!selected) {
     return (
       <>
-        {groupFilterEl}
-        {header}
+        {header()}
         <EmptyState title="No GPS data yet" body="No GPS records have been imported. This build has no import pipeline yet — a direct insert is the only path in." />
       </>
     );
@@ -528,27 +524,29 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
   // day/week toggle — shared between the day and week returns below so the
   // two frames present an identical toolbar and neither can drift from the
   // other.
-  const trainingToolbar = (activeRange: 'day' | 'week') => (
-    <div className="tr-jumprow">
-      {/* Day/Week first, then the date picker at the far end — Design.pdf p17.
-          The two were the other way round, which put the thing that changes
-          WHAT you are looking at after the thing that changes WHICH ONE. */}
-      <div className="tr-mode-switch">
-        <Link href={`/reports/training${q({ mode: 'training', session: selected.sessionId, groups: groupsQs, range: 'day' })}`} aria-current={activeRange === 'day'}>
-          Day
-        </Link>
-        <Link href={`/reports/training${q({ mode: 'training', session: selected.sessionId, groups: groupsQs, range: 'week' })}`} aria-current={activeRange === 'week'}>
-          Week
-        </Link>
-      </div>
-      <ReportSelectNav
-        label="Jump to date"
-        paramKey="session"
-        value={selected.sessionId}
-        options={sessions.map((s) => ({ value: s.sessionId, label: `${formatDate(s.date, timezone)} · ${s.title}` }))}
-        ariaLabel="Jump to a training session with GPS data"
-      />
+  /* Day/Week and the date picker are the header's last row now, so the
+     toolbar hands them over as two slots rather than rendering a row of its
+     own. Day/Week first, then the picker at the far end — Design.pdf p17: the
+     thing that changes WHAT you are looking at comes before the thing that
+     changes WHICH ONE. */
+  const trainingTabs = (activeRange: 'day' | 'week') => (
+    <div className="tr-mode-switch">
+      <Link href={`/reports/training${q({ mode: 'training', session: selected.sessionId, groups: groupsQs, range: 'day' })}`} aria-current={activeRange === 'day'}>
+        Day
+      </Link>
+      <Link href={`/reports/training${q({ mode: 'training', session: selected.sessionId, groups: groupsQs, range: 'week' })}`} aria-current={activeRange === 'week'}>
+        Week
+      </Link>
     </div>
+  );
+  const trainingPeriod = (
+    <ReportSelectNav
+      label="Jump to date"
+      paramKey="session"
+      value={selected.sessionId}
+      options={sessions.map((s) => ({ value: s.sessionId, label: `${formatDate(s.date, timezone)} · ${s.title}` }))}
+      ariaLabel="Jump to a training session with GPS data"
+    />
   );
 
   if (range === 'week') {
@@ -560,9 +558,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
 
     return (
       <>
-        {groupFilterEl}
-        {header}
-        {trainingToolbar('week')}
+        {header(trainingTabs('week'), trainingPeriod)}
 
         <div className="card">
           <h2 className="card-title" style={{ margin: 0 }}>
@@ -629,10 +625,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
 
   return (
     <>
-      {groupFilterEl}
-      {header}
-
-      {trainingToolbar('day')}
+      {header(trainingTabs('day'), trainingPeriod)}
 
       {!overview ? (
         <EmptyState title="No athletes in this filter" body="No one in the current group filter has a GPS record for this session." />

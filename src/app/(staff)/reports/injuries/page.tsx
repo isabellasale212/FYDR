@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { ReportPager } from '@/components/ReportPager/ReportPager';
-import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchInjuryAvailabilityReport, recordReportView } from '@/lib/queries/reports';
@@ -123,50 +122,48 @@ export default async function InjuryAvailabilityReportPage({
 
   return (
     <>
-      <div className="topbar">
-        <div className="page-head">
-          <p className="eyebrow">
-            <Link href="/reports">Reports</Link> · Injury &amp; availability
-          </p>
-          <h1>Injury &amp; availability</h1>
-        </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <a href={`/reports/injuries/export?${exportQuery(period.key, groupIds)}`} className="btn-ghost">
-            Export CSV
-          </a>
-          <a href={`/reports/injuries/pdf?${exportQuery(period.key, groupIds)}`} className="btn-ghost">
-            Export PDF
-          </a>
-        </div>
-      </div>
-
-      {isMedical ? (
-        <div className="note" style={{ marginBottom: 14, borderColor: 'var(--warn)' }}>
-          <div className="note-glyph">i</div>
-          <p className="note-text">
-            <b>Medical in confidence.</b> This version includes clinical detail not shown to
-            coaching staff.
-          </p>
-        </div>
-      ) : null}
-
-      <p className="eyebrow" style={{ marginBottom: 10 }}>
-        {groupScopeLabel(groups, groupIds)} · {orgName} · {period.label} · {formatDate(fromDate, timezone)} to {formatDate(today, timezone)} · {report.summary.athleteCount} athletes
-      </p>
-
-      <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
-        <GroupFilter groups={groups} selected={groupIds} />
-      </div>
-
-      {caveat ? (
-        <p className="cap" style={{ marginBottom: 12 }}>
-          {caveat}
-        </p>
-      ) : null}
-
       {/* The period scopes every tab, so it rides the tab row rather than a
           row of its own above it. */}
       <ReportPager
+        header={{
+          groups,
+          groupIds,
+          eyebrow: 'Reports · Injury & availability',
+          title: 'Injury & availability',
+          sub: (
+            <div className="rhead-sub">
+              {isMedical ? (
+              <div className="note" style={{ marginBottom: 14, borderColor: 'var(--warn)' }}>
+              <div className="note-glyph">i</div>
+              <p className="note-text">
+              <b>Medical in confidence.</b> This version includes clinical detail not shown to
+              coaching staff.
+              </p>
+              </div>
+              ) : null}
+
+              <p className="eyebrow" style={{ marginBottom: 10 }}>
+              {groupScopeLabel(groups, groupIds)} · {orgName} · {period.label} · {formatDate(fromDate, timezone)} to {formatDate(today, timezone)} · {report.summary.athleteCount} athletes
+              </p>
+
+              {caveat ? (
+              <p className="cap" style={{ marginBottom: 12 }}>
+              {caveat}
+              </p>
+              ) : null}
+            </div>
+          ),
+          actions: (
+            <>
+              <a href={`/reports/injuries/export?${exportQuery(period.key, groupIds)}`} className="rhead-btn">
+                Export CSV
+              </a>
+              <a href={`/reports/injuries/pdf?${exportQuery(period.key, groupIds)}`} className="rhead-btn">
+                Export PDF
+              </a>
+            </>
+          ),
+        }}
         right={
             /* `value` is the CLAMPED key, not the raw URL value: a select
                whose value matches no option silently displays the first one

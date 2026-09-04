@@ -1,6 +1,7 @@
 'use client';
 
 import { Fragment, useState } from 'react';
+import { ReportHeader, type ReportHeaderProps } from '@/components/ReportHeader/ReportHeader';
 
 type Page = { label: string; content: React.ReactNode };
 
@@ -11,16 +12,40 @@ type Props = {
    *  of its own above, which read as if it belonged to the page rather than to
    *  the tabs, and cost a whole row to say one word. */
   right?: React.ReactNode;
+  /** The screen's header. Passed through rather than rendered by the page,
+   *  because the design puts the tab segment in the header's last row and the
+   *  tab state lives here. Everything except the tabs comes from the page. */
+  header?: Omit<ReportHeaderProps, 'tabs' | 'period'>;
 };
 
 /** screens/reports.md's own pager, web version: tabs plus a "N of M" indicator
  *  rather than swipe, which the spec itself frames as the mobile expression of
  *  the same control ("left/right reports... is where the swipe instruction
  *  actually lives" — on mobile; the web mock shows tabs and prev/next arrows). */
-export function ReportPager({ pages, right }: Props) {
+export function ReportPager({ pages, right, header }: Props) {
   const [index, setIndex] = useState(0);
   const page = pages[index] ?? pages[0];
   if (!page) return null;
+
+  /* With a header, the tab row moves into it and the prev/next arrows go with
+     the tabs they bracket. Without one, the old in-body row is kept, so the
+     screens that have not been reworked are unaffected. */
+  if (header) {
+    return (
+      <div>
+        <ReportHeader
+          {...header}
+          tabs={pages.map((p, i) => ({
+            label: p.label,
+            selected: i === index,
+            onSelect: () => setIndex(i),
+          }))}
+          period={right}
+        />
+        <Fragment key={page.label}>{page.content}</Fragment>
+      </div>
+    );
+  }
 
   return (
     <div>

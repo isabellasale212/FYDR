@@ -11088,3 +11088,253 @@ button.dash-stat {
 .sg-add:hover {
   background: var(--wash-accent);
 }
+
+/* ---------------------------------------------------------------------------
+   REPORT HEADER
+   One template shared by the six screens that carry it: Testing report, Squad
+   weekly, Training report, Injury & availability, Compliance and Schedule.
+   Built to CHANGELOG-headers-spec.md's measurements, which were taken off the
+   design canvas rather than described, so every number here is a measurement
+   and not a judgement. Where a value looks arbitrary it is because the canvas
+   says so.
+
+   TWO CANVAS COLOURS ARE NOT THE APP'S. The canvas measures --bg as #eaedf1
+   and --border as #dce1e8; this app's light theme has #e4ebf9 and
+   rgba(16,18,23,0.085), which composites to about #ebebeb on white. Those are
+   global tokens: changing them repaints all 62 screens, not these six. So this
+   block uses the app's tokens and the difference is recorded rather than
+   applied. It is a one-line change in tokens.css if the canvas is meant to
+   win.
+   --------------------------------------------------------------------------- */
+
+.rhead {
+  /* No padding of its own. The canvas measures 30px from the container edge;
+     `main` already provides 28px, and adding 30 on top indented the header
+     past every other page. The 2px is the app's, not the canvas's, and
+     matching it would move every screen.
+
+     The canvas's 40px top belongs to the Back button, which sits above this
+     element rather than inside it, so it is applied there. */
+  padding: 0;
+}
+
+/* 1. Back button ---------------------------------------------------------- */
+/* There is no back button in here. `(staff)/layout.tsx` already renders one
+   above every staff page, and adding a second put two on screen. The canvas's
+   Back IS that button, so it is restyled where it stands rather than
+   duplicated — and only on the screens that carry this header, because
+   restyling it globally would change 56 other pages that were not part of
+   this work. */
+main:has(.rhead) > .back-btn {
+  gap: 8px;
+  /* 26px comes from `main`; 14 more makes the canvas's 40px above Back. The
+     20px below it is the canvas's own gap down to the group chips, produced
+     once here rather than again on the chips. */
+  margin-top: 14px;
+  margin-bottom: 0;
+  padding: 8px 15px 8px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+main:has(.rhead) > .back-btn > :first-child {
+  font-size: 15px;
+}
+
+/* 2. Group chips ---------------------------------------------------------- */
+.rhead-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+.rhead-chip {
+  border-radius: 20px;
+  padding: 11px 20px;
+  background: var(--surf);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.rhead-chip[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* 3. Eyebrow + actions ---------------------------------------------------- */
+.rhead-eyerow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.rhead-eyebrow {
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin: 0;
+}
+.rhead-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.rhead-btn,
+.rhead-btn-primary {
+  border-radius: 14px;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.rhead-btn-primary {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 13px 22px;
+  font-weight: 700;
+  font-size: 16px;
+  color: #fff;
+}
+.rhead-btn {
+  background: var(--surf);
+  border: 1px solid var(--border);
+  padding: 13px 20px;
+  font-weight: 600;
+  font-size: 14.5px;
+  color: var(--muted);
+}
+
+/* 4. Title ---------------------------------------------------------------- */
+.rhead-title {
+  margin: 10px 0 0;
+  font-weight: 800;
+  font-size: 32px;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  line-height: 1.15;
+}
+
+/* 5. Tabs + period -------------------------------------------------------- */
+.rhead-tabrow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.rhead-tabs {
+  display: inline-flex;
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px;
+}
+/* The active tab carries NO background of its own: the canvas paints both the
+   wrapper and the active tab #ffffff, so the only thing separating them is the
+   accent text. Sampled off the reference screenshots to be sure, because a
+   raised white pill on a grey track is the more usual pattern and this is not
+   that. */
+.rhead-tab {
+  border: none;
+  background: transparent;
+  border-radius: 20px;
+  padding: 9px 18px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14.5px;
+  color: var(--muted);
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.rhead-tab[aria-selected='true'] {
+  background: #fff;
+  color: var(--accent);
+}
+/* The training report's Day/Week is a pair of links rather than buttons,
+   because it is real navigation and this page keeps every view state in the
+   address. It takes the canvas's tab measurements where it sits, rather than
+   being rebuilt as buttons to look the same. */
+.rhead-tabrow .tr-mode-switch {
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px;
+  gap: 0;
+}
+.rhead-tabrow .tr-mode-switch a {
+  padding: 9px 18px;
+  font-size: 14.5px;
+  font-weight: 700;
+  border-radius: 20px;
+  color: var(--muted);
+}
+.rhead-tabrow .tr-mode-switch a[aria-current='true'] {
+  background: #fff;
+  color: var(--accent);
+}
+
+.rhead-period {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+}
+/* The period control is ReportSelectNav, which already renders label, select
+   and chevron in the shape the canvas draws. So it is measured in place rather
+   than rebuilt: one control, styled twice, would be two controls to keep in
+   step. Scoped to .rhead so every other screen's period keeps its own size. */
+.rhead .rsel {
+  gap: 12px;
+}
+.rhead .rsel-label {
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.rhead .rsel select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 11px 40px 11px 16px;
+  min-width: 220px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text);
+  cursor: pointer;
+}
+.rhead .rsel-chev {
+  right: 14px;
+  color: var(--faint);
+  font-size: 11px;
+}
+
+/* Page context under the header: the scope line and its way-out link. Kept
+   because it carries the date range and the counts, which nothing else on the
+   screen says, but demoted below the title where the canvas leaves room. */
+.rhead-sub {
+  margin: 18px 0 0;
+}
+/* When the slot holds several paragraphs, the first carries the gap and the
+   rest keep their own rhythm. */
+.rhead-sub > :first-child {
+  margin-top: 0;
+}

@@ -38,7 +38,20 @@ while this screen was correctly gated, because the buttons were simply never dra
 
 ## 4. What you see
 
-**A header** with the session or match being read, and a way to change it.
+**The header is one template shared by all five reports** (and specified in
+`CHANGELOG-headers-spec.md`). Five rows, always in this order:
+
+1. **Back**, a pill at the top left, to the screen you came from.
+2. **The group chips**, Whole squad first with a tick when it is active, then
+   the club's own groups. The filter sits above everything now rather than over
+   the table, which is the truth: it scopes every number on the screen.
+3. **The eyebrow** on the left with the **actions** on the right.
+4. **The title**.
+5. **The tabs** on the left with the **period control** on the right, so the
+   control that scopes every tab rides the tab row rather than a row of its own.
+
+Page context that the header has no room for, the date range, the athlete count
+and any caveat, sits directly beneath it.
 
 **Two modes**, training and match, because the questions differ.
 
@@ -82,6 +95,8 @@ those cutoffs came from**, which is decision D-11.
 
 | Element and label | Where it sits | What happens when used | Where it takes you | What it writes | Permission | Confirmation | Disabled or hidden when |
 |---|---|---|---|---|---|---|---|
+| Back | Top left of the header | Returns to the screen you came from | Browser history | Nothing | Any staff who can reach the page | None | Never |
+| Group chips | Second row of the header | Narrows every number on the screen to a group | Stays here, group in the address | Nothing. A cookie remembers the choice | Same | None | Never |
 | Training and match mode | Header | Switches which question is being asked | Stays here, mode in the address | Nothing | Report access, Premium | None | Never |
 | Session chooser | Header | Picks the session to read | Stays here | Nothing | Same | None | Never |
 | Group filter chips | Header | Narrows to a group | Stays here | Nothing. A cookie remembers it | Same | None | Never |

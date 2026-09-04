@@ -10,9 +10,9 @@
  * trigger, since neither page had one. window.print() renders whatever is
  * on screen through that stylesheet — there is no separate print view to
  * keep in sync with the real one. */
-export function PrintButton() {
+export function PrintButton({ className = 'btn-ghost' }: { className?: string }) {
   return (
-    <button type="button" className="btn-ghost no-print" onClick={() => window.print()}>
+    <button type="button" className={`${className} no-print`} onClick={() => window.print()}>
       Print
     </button>
   );

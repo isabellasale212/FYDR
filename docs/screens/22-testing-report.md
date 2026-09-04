@@ -32,7 +32,20 @@ middle looks like.
 
 ## 4. What you see
 
-**A header** with the group filter and two download buttons.
+**The header is one template shared by all five reports** (and specified in
+`CHANGELOG-headers-spec.md`). Five rows, always in this order:
+
+1. **Back**, a pill at the top left, to the screen you came from.
+2. **The group chips**, Whole squad first with a tick when it is active, then
+   the club's own groups. The filter sits above everything now rather than over
+   the table, which is the truth: it scopes every number on the screen.
+3. **The eyebrow** on the left with the **actions** on the right.
+4. **The title**.
+5. **The tabs** on the left with the **period control** on the right, so the
+   control that scopes every tab rides the tab row rather than a row of its own.
+
+Page context that the header has no room for, the date range, the athlete count
+and any caveat, sits directly beneath it.
 
 **A table**, one row per athlete, one column per test the club has defined.
 
@@ -63,7 +76,8 @@ definition records which.
 
 | Element and label | Where it sits | What happens when used | Where it takes you | What it writes | Permission | Confirmation | Disabled or hidden when |
 |---|---|---|---|---|---|---|---|
-| Group filter chips | Header | Narrows the squad | Stays here | Nothing. A cookie remembers it | Report access | None | Never |
+| Back | Top left of the header | Returns to the screen you came from | Browser history | Nothing | Any staff who can reach the page | None | Never |
+| Group chips | Second row of the header | Narrows every number on the screen to a group | Stays here, group in the address | Nothing. A cookie remembers the choice | Same | None | Never |
 | An athlete's name | A row | Opens that athlete | `/squad/[athleteId]` | Nothing | Report access | None | Never |
 | A result | A cell | Opens that athlete's history for the test | `/testing/[testDefId]/[athleteId]` | Nothing | Report access | None | Blank cells are not links |
 | Define a test | Empty state | Opens the testing section to create one | `/testing` | Nothing | Report access | None | Shown only when no test exists |

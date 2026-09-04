@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { ReportPager } from '@/components/ReportPager/ReportPager';
-import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { fetchGroups } from '@/lib/queries/groups';
 import { complianceAthletePct, fetchComplianceReport, recordReportView } from '@/lib/queries/reports';
@@ -168,51 +167,49 @@ export default async function ComplianceReportPage({
 
   return (
     <>
-      <div className="topbar">
-        <div className="page-head">
-          <p className="eyebrow">
-            <Link href="/reports">Reports</Link> · Compliance
-          </p>
-          <h1>Compliance</h1>
-        </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <a href={`/reports/compliance/export?${query}`} className="btn-ghost">
-            Export CSV
-          </a>
-          <a href={`/reports/compliance/pdf?${query}`} className="btn-ghost">
-            Export PDF
-          </a>
-        </div>
-      </div>
-
-      <p className="eyebrow" style={{ marginBottom: 10 }}>
-        {groupScopeLabel(groups, groupIds)} · {orgName} · {period.range.label} · {formatDate(fromDate, timezone)} to{' '}
-        {formatDate(today, timezone)} · {report.athleteCount} athletes
-      </p>
-
-      {caveat ? (
-        <p className="sub" style={{ margin: '0 0 10px' }}>
-          {caveat}
-        </p>
-      ) : null}
-
-      {usingLatestDataDefault ? (
-        <p className="sub" style={{ margin: '0 0 10px' }}>
-          Showing the most recent window with data, ending <b>{formatDate(today, timezone)}</b> — real today is{' '}
-          {formatDate(realToday, timezone)}.{' '}
-          <Link href={`/reports/compliance?${complianceQuery(period.key, realToday, groupIds)}`} className="linklike">
-            Jump to today instead
-          </Link>
-        </p>
-      ) : null}
-
-      <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
-        <GroupFilter groups={groups} selected={groupIds} />
-      </div>
-
       {/* The period scopes every tab, so it rides the tab row rather than a
           row of its own above it. */}
       <ReportPager
+        header={{
+          groups,
+          groupIds,
+          eyebrow: 'Reports · Compliance',
+          title: 'Compliance',
+          sub: (
+            <div className="rhead-sub">
+              <p className="eyebrow" style={{ marginBottom: 10 }}>
+              {groupScopeLabel(groups, groupIds)} · {orgName} · {period.range.label} · {formatDate(fromDate, timezone)} to{' '}
+              {formatDate(today, timezone)} · {report.athleteCount} athletes
+              </p>
+
+              {caveat ? (
+              <p className="sub" style={{ margin: '0 0 10px' }}>
+              {caveat}
+              </p>
+              ) : null}
+
+              {usingLatestDataDefault ? (
+              <p className="sub" style={{ margin: '0 0 10px' }}>
+              Showing the most recent window with data, ending <b>{formatDate(today, timezone)}</b> — real today is{' '}
+              {formatDate(realToday, timezone)}.{' '}
+              <Link href={`/reports/compliance?${complianceQuery(period.key, realToday, groupIds)}`} className="linklike">
+              Jump to today instead
+              </Link>
+              </p>
+              ) : null}
+            </div>
+          ),
+          actions: (
+            <>
+              <a href={`/reports/compliance/export?${query}`} className="rhead-btn">
+                Export CSV
+              </a>
+              <a href={`/reports/compliance/pdf?${query}`} className="rhead-btn">
+                Export PDF
+              </a>
+            </>
+          ),
+        }}
         right={
           /* `day` is offered DISABLED with its reason rather than hidden, per
            * screens/analytics.md's "Illegal combinations are disabled with the

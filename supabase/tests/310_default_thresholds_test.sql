@@ -271,13 +271,12 @@ select throws_ok(
   'medical cannot provision defaults — coach-only, per 01-roles-and-permissions.md §2'
 );
 
-select tests.set_jwt(tests.uid('newclub', 'user_admin'));
-select throws_ok(
-  format($q$select public.seed_default_thresholds(%L)$q$, tests.uid('newclub','org')),
-  '42501',
-  null,
-  'admin cannot provision defaults'
-);
+/* The negative control that used to sit here asserted that an admin was
+   refused. 0063 renames that role to sport_scientist, which docs/access-matrix.md
+   §1 gives everything, so the refusal became a permission. It has not been
+   deleted: it moved to the end of this file, as a positive control, because
+   asserting it HERE would leave a row behind and every count below is written
+   against the state this file builds in order. */
 
 select tests.set_jwt(tests.uid('newclub', 'user_athlete'));
 select throws_ok(
@@ -520,6 +519,16 @@ select is(
   'the other four defaults stay silent: a missing entry is a gap, not a breach (0053)'
 );
 
+
+-- The moved control. 0068 puts the sport scientist alongside the coach on the
+-- thresholds write, per 3.6's "Thresholds | VECD | VECD | V | V | X", so this
+-- role provisions defaults now. It runs last because provisioning is exactly
+-- what the assertions above check has NOT happened yet.
+select tests.set_jwt(tests.uid('orga', 'user_admin'));
+select lives_ok(
+  format($q$select public.seed_default_thresholds(%L)$q$, tests.uid('orga','org')),
+  'a sport scientist CAN provision default thresholds'
+);
 
 select * from finish();
 rollback;

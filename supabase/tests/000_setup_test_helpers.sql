@@ -260,6 +260,14 @@ declare
   ucoa uuid := tests.uid(p_prefix, 'user_coach');
   umed uuid := tests.uid(p_prefix, 'user_medical');
   uadm uuid := tests.uid(p_prefix, 'user_admin');
+  /* The two roles the five-role model added. The fixtures covered four roles
+     because the enum had four; without these there is no way to write a test
+     for D-01, which is the rule that a nutritionist sees no injury or medical
+     information anywhere. user_admin keeps its label rather than being renamed
+     to user_sport_scientist: the label is only an input to md5(), and renaming
+     it would change every id it generates and every row keyed off them. */
+  usc  uuid := tests.uid(p_prefix, 'user_sc');
+  unut uuid := tests.uid(p_prefix, 'user_nutritionist');
   ua1  uuid := tests.uid(p_prefix, 'user_athlete_1');
   ua2  uuid := tests.uid(p_prefix, 'user_athlete_2');
   a1   uuid := tests.uid(p_prefix, 'athlete_1');
@@ -281,12 +289,15 @@ begin
   insert into users (id, org_id, email, full_name, status) values
     (ucoa, o, p_prefix || '.coach@fixture.example',    'Fixture Coach',    'active'),
     (umed, o, p_prefix || '.medical@fixture.example',  'Fixture Physio',   'active'),
-    (uadm, o, p_prefix || '.admin@fixture.example',    'Fixture Admin',    'active'),
+    (uadm, o, p_prefix || '.admin@fixture.example',    'Fixture Sport Sci','active'),
+    (usc,  o, p_prefix || '.sc@fixture.example',       'Fixture S&C',      'active'),
+    (unut, o, p_prefix || '.nutrition@fixture.example','Fixture Nutrition','active'),
     (ua1,  o, p_prefix || '.athlete1@fixture.example', 'James Barnes',     'active'),
     (ua2,  o, p_prefix || '.athlete2@fixture.example', 'Max Chapman',      'active');
 
   insert into user_roles (org_id, user_id, role) values
     (o, ucoa, 'coach'), (o, umed, 'medic'), (o, uadm, 'sport_scientist'),
+    (o, usc, 'strength_conditioning'), (o, unut, 'nutritionist'),
     (o, ua1, 'athlete'), (o, ua2, 'athlete');
 
   insert into athletes (id, org_id, user_id, first_name, last_name, date_of_birth,

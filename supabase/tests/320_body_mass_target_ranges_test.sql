@@ -117,14 +117,26 @@ select throws_ok(
   'nor for a teammate'
 );
 
+/* Was a refusal, citing the gap 0020 closed for nutrition_targets. That gap
+   defended against the admin, a club secretary with no per-athlete access.
+   0063 renames the role to sport_scientist and 1 gives it everything, so the
+   boundary is gone rather than broken.
+   
+   Asserted by the SQLSTATE rather than by a success, and the distinction is the
+   point: both athletes already hold a live range by this line, so the write is
+   stopped by body_mass_target_ranges_one_live. 23505 is the business rule
+   refusing a second live row. 42501 would be the policy refusing the person.
+   Getting the former proves RLS admitted them without leaving a row behind for
+   the counts below. */
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
 select throws_ok(
   format($q$insert into body_mass_target_ranges
               (org_id, athlete_id, target_low_kg, target_high_kg, set_by)
             values (%L, %L, 95.00, 98.00, %L)$q$,
          tests.uid('orga','org'), tests.uid('orga','athlete_1'), tests.uid('orga','user_admin')),
-  '42501', null,
-  'an admin cannot set a range — admin holds no per-athlete data access (the gap 0020 closed for nutrition_targets)'
+  '23505', null,
+  'a sport scientist is admitted by RLS and stopped only by the one-live rule, '
+  'not by 42501'
 );
 
 -- The setter cannot be spoofed: set_by = auth_user_id() is enforced in the WITH
@@ -197,10 +209,11 @@ select is(
 );
 
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
-select is(
+select cmp_ok(
   (select count(*) from body_mass_target_ranges where org_id = tests.uid('orga','org')),
-  0::bigint,
-  'an admin reads zero ranges — not the bounds, not the existence'
+  '>', 0::bigint,
+  'a sport scientist reads the ranges: body mass is not injury data and 1 gives '
+  'this role everything'
 );
 
 select tests.set_jwt(tests.uid('orga', 'user_coach'));

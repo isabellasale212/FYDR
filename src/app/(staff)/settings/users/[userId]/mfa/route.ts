@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { requireStaff } from '@/lib/session';
+import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 
 export type RemoveMfaFactorResult = { ok: boolean; error: string | null };
 
@@ -22,7 +23,7 @@ export type RemoveMfaFactorResult = { ok: boolean; error: string | null };
 export async function DELETE(request: Request, { params }: { params: Promise<{ userId: string }> }): Promise<NextResponse<RemoveMfaFactorResult>> {
   const { userId } = await params;
   const { db, orgId, claims } = await requireStaff();
-  if (!claims.roles.includes('sport_scientist')) {
+  if (!hasAnyRole(claims.roles, SETTINGS_ADMIN)) {
     return NextResponse.json({ ok: false, error: 'Admin access only.' }, { status: 403 });
   }
 

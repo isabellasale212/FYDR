@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { runRetention } from '@/lib/retention/compute';
 import { requireStaff } from '@/lib/session';
+import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 
 /** The one route in this feature that actually writes. Requires the
  *  client to send `{ confirm: true }` — a caller that gets this route's
@@ -11,7 +12,7 @@ import { requireStaff } from '@/lib/session';
  *  behind it. */
 export async function POST(request: Request) {
   const { db, orgId, claims } = await requireStaff();
-  if (!claims.roles.includes('sport_scientist')) {
+  if (!hasAnyRole(claims.roles, SETTINGS_ADMIN)) {
     return NextResponse.json({ error: 'Admin access only.' }, { status: 403 });
   }
 

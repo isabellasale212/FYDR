@@ -326,7 +326,22 @@ the code, each of which would change what a screen specification says.
 These four are the deliberate remainder of the role model push. Each one was
 found by running the suite, and each is written down rather than guessed at.
 
-### G-29. Most role checks in the app have never been read against the matrix
+### G-29. CLOSED, 2026-09-05. Role checks read against the matrix
+
+Was: 114 role checks in 77 files, none of which named `strength_conditioning`
+or `nutritionist`, so both roles were refused product-wide.
+
+Closed by `src/lib/access.ts`, which holds one named role set per distinct
+column pattern in §3, and by migrations 0066 to 0069, which move the database
+the same way. 27 route gates now name a set instead of writing role literals
+inline, and `npm run test:role-model` asserts each one against the matrix row it
+comes from. The remainder of the 114 are render flags implementing the partial
+cells of §4, not gates.
+
+**What is NOT closed is G-33 below**, which is the half of the matrix that would
+take access away rather than grant it.
+
+### G-29a. The original entry, kept for its reasoning
 
 114 role checks live in 77 files. The migration renamed the literals in all of
 them, so none names a role that no longer exists, and `npm run test:role-model`
@@ -351,7 +366,15 @@ per-report decision, not a wider list.
 
 **Risk: low.** A role sees less than it should.
 
-### G-31. `loadAthleteDomainContext` refuses the sport scientist
+### G-31. CLOSED, 2026-09-05. The athlete domain screens
+
+`loadAthleteDomainContext` gated on `coach || medic`, so all three athlete
+domain screens (wellness, gym, nutrition) refused the sport scientist, the S&C
+and the nutritionist. It now takes a role set, defaulting to every staff role,
+and the gym screen passes `ATHLETE_GYM` because §3.1 reads "VE V V VE X" on that
+row alone.
+
+### G-31a. The original entry
 
 `src/lib/athleteDomain.server.ts:93` admits coach or medic only. §1 gives the
 sport scientist everything. Left alone deliberately in the role push, because it
@@ -375,6 +398,46 @@ for: a test that asserts a refusal proves nothing unless the session is actually
 subject to RLS. Only `020_cross_tenant_test.sql` carried the line.
 
 **Risk when live: high.** Now closed.
+
+---
+
+## Band 7: decisions the matrix implies that nobody has taken
+
+### G-33. The matrix would take access away from the coach and the medic, and this build did not
+
+The five-role work was carried out **widen only**. Every role kept what it could
+do the day before the migration; the sport scientist gained everything, and the
+S&C and the nutritionist got their own domains. Nobody lost anything.
+
+`docs/access-matrix.md` §3 is stricter than that in five places, and each would
+remove something a person uses today:
+
+| Matrix row | Says | Today | Effect of applying it |
+|---|---|---|---|
+| §3.3 Programme builder | coach **V** | coach creates gym programmes | A coach could no longer build gym work |
+| §3.3 Nutrition targets | coach **V**, medic **V** | both write targets | Both would become read-only |
+| §3.4 Leaderboard | coach **V**, medic **V** | both create boards | Both would become read-only |
+| §3.6 Import GPS | coach **X**, medic **X** | both import | Neither could import GPS |
+| §3.1 New and edit session | medic **X** | medic creates sessions | A medic could no longer schedule |
+
+**Why it was not applied.** An earlier draft of migration 0067 did apply the
+first of these, and the tenancy suite failed on eleven assertions, every one of
+them a coach doing something a coach does today. That is the signal worth
+listening to rather than overruling.
+
+The grid is a **design**, not a description of the built product, and it says so
+about itself in §6: "The code has four roles, not five" and every nutritionist
+cell "is currently a **V**, because a nutritionist is a coach". It was written
+during the specification build to describe where the product is going. Removing
+an ability somebody relies on, on the strength of a cell in that document, is a
+decision for a person to take with the consequences in front of them.
+
+**What resolving it needs:** a yes or no on each of the five rows above. Nothing
+else is blocked by it, and the current state is safe in the direction that
+matters, since no role sees injury or medical data it should not.
+
+**Risk: low, and it is the risk of doing too little.** Some roles can do more
+than the matrix intends. None can see what D-01 forbids.
 
 ---
 

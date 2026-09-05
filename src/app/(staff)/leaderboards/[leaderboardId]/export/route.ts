@@ -16,7 +16,7 @@ import { formatNumber } from '@/lib/format';
 import { premiumOnlyResponse, requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
 import { isPremium } from '@/lib/tier';
-import type { AppRole } from '@/lib/types/database';
+import { actingRole } from '@/lib/access';
 
 /** The "download" half of the coach's request for a download and a print button on a
  *  board. CSV, via lib/csv.ts — the same export every report on this app already
@@ -57,12 +57,13 @@ export async function GET(
   if (!isUuid(leaderboardId)) notFound();
 
 
-  if (!claims.roles.includes('coach') && !claims.roles.includes('medic')) {
-    return new Response('A board ranking is named-athlete data and is not part of this role.', {
-      status: 403,
-      headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
-    });
-  }
+  /* No role narrowing here. docs/access-matrix.md §3.4 gives Leaderboard a V to
+     every staff role, and §3.5's rule is that "a download carries the same
+     permission as the screen it belongs to, without exception". This route used
+     to refuse anyone who was not a coach or a medic, which was narrower than the
+     screen above it: under the five-role model that refused the sport scientist,
+     the S&C and the nutritionist a board all three may read. requireStaff() is
+     the whole gate. */
 
   const url = new URL(request.url);
   const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
@@ -137,9 +138,7 @@ export async function GET(
       : ` (${ranking.length} ranked).`) +
     `\r\n# Athletes who opted out or did not qualify are not listed, and are not distinguished from each other.\r\n\r\n`;
 
-  const actorRole = (
-    claims.roles.includes('medic') ? 'medic' : 'coach'
-  ) as AppRole;
+  const actorRole = actingRole(claims.roles);
   await recordReportView(
     db,
     orgId,

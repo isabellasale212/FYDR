@@ -50,14 +50,12 @@ select throws_ok(
   'an athlete cannot create a meal'
 );
 
-select tests.set_jwt(tests.uid('orga', 'user_admin'));
-select throws_ok(
-  format($q$insert into meal_library (org_id, name, time_label, created_by)
-            values (%L, 'Admin attempt', '08:00', %L)$q$,
-         tests.uid('orga','org'), tests.uid('orga','user_admin')),
-  '42501', null,
-  'an admin cannot create a meal either — no performance-domain detail by default'
-);
+/* The negative control that used to sit here asserted that an admin was
+   refused. 0063 renames that role to sport_scientist, which docs/access-matrix.md
+   §1 gives everything, so the refusal became a permission. It has not been
+   deleted: it moved to the end of this file, as a positive control, because
+   asserting it HERE would leave a row behind and every count below is written
+   against the state this file builds in order. */
 
 select tests.set_jwt(tests.uid('orga', 'user_medical'));
 select throws_ok(
@@ -183,15 +181,15 @@ select throws_ok(
 );
 
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
-select is(
+select cmp_ok(
   (select count(*) from meal_library where org_id = tests.uid('orga','org')),
-  0::bigint,
-  'an admin reads zero meals — no performance-domain detail by default'
+  '>', 0::bigint,
+  'a sport scientist reads the meals'
 );
-select is(
+select cmp_ok(
   (select count(*) from meal_library_items where org_id = tests.uid('orga','org')),
-  0::bigint,
-  'an admin reads zero items'
+  '>', 0::bigint,
+  'and the items'
 );
 
 
@@ -283,6 +281,22 @@ select is(
   (select count(*) from meal_library_items where org_id = tests.uid('orga','org')),
   0::bigint,
   'migration 0054: orgb''s athlete cannot see orga''s items either'
+);
+
+-- The moved control. Every count above is written against exactly two meals.
+select tests.set_jwt(tests.uid('orga', 'user_admin'));
+select lives_ok(
+  format($q$insert into meal_library (org_id, name, time_label, created_by)
+            values (%L, 'Sport scientist meal', '08:00', %L)$q$,
+         tests.uid('orga','org'), tests.uid('orga','user_admin')),
+  'a sport scientist CAN create a meal'
+);
+select tests.set_jwt(tests.uid('orga', 'user_nutritionist'));
+select lives_ok(
+  format($q$insert into meal_library (org_id, name, time_label, created_by)
+            values (%L, 'Nutritionist meal', '12:00', %L)$q$,
+         tests.uid('orga','org'), tests.uid('orga','user_nutritionist')),
+  'and so CAN a nutritionist, which is the whole reason the role exists'
 );
 
 select * from finish();

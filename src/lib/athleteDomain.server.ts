@@ -9,6 +9,8 @@ import type { FydrClaims } from '@/lib/supabase/claims';
 import { fetchGroups, type Db, type Group } from '@/lib/queries/groups';
 import { fetchCurrentSeason, type CurrentSeason } from '@/lib/queries/schedule';
 import { fetchAthlete, type AthleteProfile } from '@/lib/queries/squad';
+import { ALL_STAFF, hasAnyRole } from '@/lib/access';
+import type { AppRole } from '@/lib/types/database';
 
 /* The three per-athlete domain pages — /squad/[athleteId]/nutrition, /wellness
  * and /gym — open identically: the same role gate, the same athlete lookup, the
@@ -84,13 +86,24 @@ export async function loadAthleteDomainContext(
     /** This screen's default when the reader has expressed nothing. Defaults
      *  to DEFAULT_RANGE. */
     screenDefault?: RangeKey;
+    /** Which roles may open this domain. Defaults to every staff role, which is
+     *  what docs/access-matrix.md §3.1 gives Athlete wellness and Athlete
+     *  nutrition: V in all five columns. Athlete gym is the one that narrows,
+     *  to ATHLETE_GYM, because that row reads "VE V V VE X". */
+    roles?: readonly AppRole[];
   },
 ): Promise<AthleteDomainContext> {
   const { db, orgId, orgName, timezone, claims } = await requireStaff();
 
-  // Same gate as /squad and squad/[athleteId], applied before any per-athlete
-  // query runs.
-  if (!claims.roles.includes('coach') && !claims.roles.includes('medic')) {
+  /* Same gate as /squad and squad/[athleteId], applied before any per-athlete
+     query runs.
+
+     This read `coach || medic`, which in the four-role model was the phrase for
+     "any staff". Once the S&C and the nutritionist stopped holding `coach`,
+     both were refused all three athlete domain screens: wellness, gym and
+     nutrition. Fail-closed, and the reason those two roles could not do their
+     jobs. */
+  if (!hasAnyRole(claims.roles, opts.roles ?? ALL_STAFF)) {
     return { denied: true, orgName };
   }
 

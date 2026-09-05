@@ -6,7 +6,7 @@ import { recordReportView } from '@/lib/queries/reports';
 import { formatDate, formatNumber, todayIso } from '@/lib/format';
 import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
 import { requireStaff } from '@/lib/session';
-import type { AppRole } from '@/lib/types/database';
+import { actingRole } from '@/lib/access';
 
 /** One athlete's testing report as a PDF, using the same lib/pdf.tsx
  *  primitives as the other five report PDFs — no new dependency, and the
@@ -98,7 +98,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tes
     </PdfReport>,
   );
 
-  const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
+  const actorRole = actingRole(claims.roles);
   await recordReportView(
     db,
     orgId,

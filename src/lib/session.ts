@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { TIER_PREVIEW_COOKIE, effectiveTier, isPreviewingTier } from '@/lib/tierPreview';
 import { getClaims, isAthlete, isStaff, type FydrClaims } from '@/lib/supabase/claims';
 import { isPlatformStaff } from '@/lib/platformStaff';
+import { INJURY_ACCESS, REPORT_ACCESS, SETTINGS_ADMIN, CLINICAL_ONLY, hasAnyRole } from '@/lib/access';
 import type { Db } from '@/lib/queries/groups';
 
 export type StaffContext = {
@@ -119,7 +120,7 @@ export async function requireStaff(): Promise<StaffContext> {
  *  admin is blocked the same way regardless of which door they try. */
 export async function requireReportAccess(): Promise<StaffContext> {
   const ctx = await requireStaff();
-  if (!REPORT_ROLES.some((r) => ctx.claims.roles.includes(r))) redirect('/settings?e=no-report-access');
+  if (!hasAnyRole(ctx.claims.roles, REPORT_ACCESS)) redirect('/settings?e=no-report-access');
   return ctx;
 }
 
@@ -136,7 +137,7 @@ export async function requireReportAccess(): Promise<StaffContext> {
  *  (Testing, Training, Athlete, Injury). One blanket gate cannot express a
  *  per-report split, so this keeps the pre-existing behaviour for that role
  *  rather than inventing a rule. Recorded in docs/spec-gaps.md. */
-const REPORT_ROLES = ['coach', 'medic', 'sport_scientist', 'strength_conditioning'] as const;
+
 
 /** The injury and availability gate, docs/access-matrix.md §3.2.
  *
@@ -156,11 +157,11 @@ const REPORT_ROLES = ['coach', 'medic', 'sport_scientist', 'strength_conditionin
  *  second role that can see injury information will let them see it." A deny
  *  test would refuse somebody who is a nutritionist AND a coach, which is the
  *  opposite of how every other gate here behaves. */
-const INJURY_ROLES = ['coach', 'medic', 'sport_scientist', 'strength_conditioning'] as const;
+
 
 export async function requireInjuryAccess(): Promise<StaffContext> {
   const ctx = await requireStaff();
-  if (!INJURY_ROLES.some((r) => ctx.claims.roles.includes(r))) redirect('/?e=no-injury-access');
+  if (!hasAnyRole(ctx.claims.roles, INJURY_ACCESS)) redirect('/?e=no-injury-access');
   return ctx;
 }
 
@@ -197,7 +198,7 @@ export function premiumOnlyResponse(feature: string): Response {
  *  pair of roles. */
 export async function requireSubjectAccess(): Promise<StaffContext> {
   const ctx = await requireStaff();
-  if (!ctx.claims.roles.includes('sport_scientist') && !ctx.claims.roles.includes('medic')) redirect('/settings?e=no-sar-access');
+  if (!hasAnyRole(ctx.claims.roles, SETTINGS_ADMIN) && !hasAnyRole(ctx.claims.roles, CLINICAL_ONLY)) redirect('/settings?e=no-sar-access');
   return ctx;
 }
 

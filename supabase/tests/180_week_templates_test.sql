@@ -29,12 +29,16 @@ select throws_ok(
   'an athlete cannot create a week template'
 );
 
+/* Was a refusal, on the reasoning that "the real RLS predicate names coach and
+   medical only". That predicate meant "any staff" in the four-role model and
+   0066 widened it, so the sport scientist creates templates now. A distinct
+   name, because the coach creates 'Standard week' further down and the two
+   would collide. */
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
-select throws_ok(
-  format($q$insert into week_templates (org_id, name, structure) values (%L, 'Standard week', '{}'::jsonb)$q$,
+select lives_ok(
+  format($q$insert into week_templates (org_id, name, structure) values (%L, 'Sport scientist week', '{}'::jsonb)$q$,
          tests.uid('orga','org')),
-  '42501', null,
-  'admin cannot create one either — the real RLS predicate names coach and medical only, matching screens/md-planner.md''s own role table'
+  'a sport scientist CAN create a week template'
 );
 
 select tests.set_jwt(tests.uid('orga', 'user_coach'));

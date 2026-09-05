@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { requireStaff } from '@/lib/session';
 import { MAX_BULK_INVITE_ROWS, type BulkInviteResult, type BulkInviteSendRow } from '@/lib/queries/bulkInvite';
+import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -27,7 +28,7 @@ function generateTemporaryPassword(): string {
  *  result list, never a single pass/fail for the whole batch. */
 export async function POST(request: Request) {
   const { db, orgId, claims } = await requireStaff();
-  if (!claims.roles.includes('sport_scientist')) {
+  if (!hasAnyRole(claims.roles, SETTINGS_ADMIN)) {
     return NextResponse.json({ error: 'Admin access only.' }, { status: 403 });
   }
 

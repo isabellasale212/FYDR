@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { sendInviteEmail } from '@/lib/email/send';
 import { requireStaff } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
+import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 
 const VALID_ROLES: AppRole[] = ['athlete', 'coach', 'medic', 'sport_scientist'];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -44,7 +45,7 @@ function generateTemporaryPassword(): string {
  *  delivered email is an addition to that, never a replacement for it. */
 export async function POST(request: Request): Promise<NextResponse<CreateUserResult>> {
   const { db, orgId, orgName, claims } = await requireStaff();
-  if (!claims.roles.includes('sport_scientist')) {
+  if (!hasAnyRole(claims.roles, SETTINGS_ADMIN)) {
     return NextResponse.json({ ok: false, error: 'Admin access only.', userId: null, temporaryPassword: null, emailDelivered: false }, { status: 403 });
   }
 

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { createSarRequest } from '@/lib/queries/sarPack';
 import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
+import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 
 /** exports.md's own entry-point table: `athlete-profile.md, "Generate
  *  subject access pack" (admin) → SAR flow, athlete_id`. Admin only — see
@@ -19,7 +20,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ at
      malformed id is a URL that does not name anything, not a server fault. */
   if (!isUuid(athleteId)) notFound();
 
-  if (!claims.roles.includes('sport_scientist')) redirect(`/squad/${athleteId}?e=no-sar-access`);
+  if (!hasAnyRole(claims.roles, SETTINGS_ADMIN)) redirect(`/squad/${athleteId}?e=no-sar-access`);
 
   const { id, error } = await createSarRequest(db, orgId, athleteId, claims.userId);
   if (error || !id) redirect(`/squad/${athleteId}?error=${encodeURIComponent(error ?? 'Could not open the request.')}`);

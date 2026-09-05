@@ -5,12 +5,15 @@ import { fetchMetricCatalogue } from '@/lib/queries/leaderboards';
 import { fetchGroups } from '@/lib/queries/groups';
 import { requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
+import { LEADERBOARD_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'New leaderboard · Fydr' };
 
 export default async function NewLeaderboardPage() {
   const { db, orgId, claims, tier } = await requireStaff();
-  if (!claims.roles.some((r) => r === 'coach' || r === 'medic')) {
+  /* docs/access-matrix.md §3.4, Leaderboard: VECD V V VECD V. Creating a board
+     is the C, and it belongs to the sport scientist and the S&C. */
+  if (!hasAnyRole(claims.roles, LEADERBOARD_EDIT)) {
     redirect('/leaderboards/manage');
   }
 

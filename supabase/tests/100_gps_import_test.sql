@@ -72,12 +72,15 @@ select is(
   'the committed record really does point at the batch that produced it'
 );
 
+/* Was a refusal. import_batches was gated on coach-or-medic, which 0066 read
+   as "any staff" and widened, so the sport scientist can now start an import.
+   docs/access-matrix.md 3.6 would go further and make GPS import theirs alone;
+   that half is a narrowing and is left to G-33. */
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
-select throws_ok(
-  format($q$insert into import_batches (org_id, filename, imported_by) values (%L, 'x.csv', %L)$q$,
+select lives_ok(
+  format($q$insert into import_batches (org_id, filename, imported_by) values (%L, 'sportsci.csv', %L)$q$,
          tests.uid('orga','org'), tests.uid('orga','user_admin')),
-  '42501', null,
-  'an admin cannot start a GPS import either — no access by default'
+  'a sport scientist CAN start a GPS import'
 );
 
 select * from finish();

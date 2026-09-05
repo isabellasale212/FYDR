@@ -317,10 +317,17 @@ what you hold, not what you are. That is deliberate and is stated at §2.
 | Guard | Admits | Where |
 |---|---|---|
 | `requireStaff` | any of the five staff roles | `src/lib/session.ts:69` |
-| `requireReportAccess` | coach, medic, sport scientist, S&C | `src/lib/session.ts:120` |
-| `requireInjuryAccess` | coach, medic, sport scientist, S&C | `src/lib/session.ts:161` |
-| `requireSubjectAccess` | sport scientist or medic | `src/lib/session.ts:198` |
-| `loadAthleteDomainContext` | coach or medic | `src/lib/athleteDomain.server.ts:93` |
+| `requireReportAccess` | `REPORT_ACCESS` | `src/lib/session.ts:120` |
+| `requireInjuryAccess` | `INJURY_ACCESS` | `src/lib/session.ts:161` |
+| `requireSubjectAccess` | `SETTINGS_ADMIN` or `CLINICAL_ONLY` | `src/lib/session.ts:198` |
+| `loadAthleteDomainContext` | any staff, or the set the caller passes | `src/lib/athleteDomain.server.ts:93` |
+
+**Every other gate names a set in `src/lib/access.ts`**, one constant per
+distinct column pattern in §3 above, rather than writing role literals inline.
+That file is this grid in the form the code can share, and
+`npm run test:role-model` asserts each gated route against the row it comes
+from. 27 route gates used to carry their own opinion; they now carry a
+reference.
 
 **`requireReportAccess` is knowingly incomplete for one role.** §4 gives a
 nutritionist real access to some reports (Compliance **V**, Reports hub and
@@ -329,10 +336,10 @@ per-report split, so that role is still refused at the door rather than admitted
 to the reports it should see. Tracked in `docs/spec-gaps.md`, not silently
 decided here.
 
-**`loadAthleteDomainContext` still admits only coach or medic**, which refuses
-the sport scientist although §1 gives that role everything. It is listed here
-rather than changed alongside the injury work, because it gates a different
-surface and this build deliberately does not bundle unrelated access changes.
+**The grid is enforced in the widening direction only.** Where §3 grants a role
+something it did not have, the code now grants it. Where §3 would take something
+away from the coach or the medic, it has not been applied: those five rows are
+listed in `docs/spec-gaps.md` G-33 and need a decision rather than a migration.
 
 **Most pages call only the first**, which is why the grid's fine distinctions do
 not exist yet. Of 62 screens, the great majority admit any staff member.

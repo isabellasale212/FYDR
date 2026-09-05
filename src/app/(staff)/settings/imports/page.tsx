@@ -6,6 +6,7 @@ import { countImportBatches, fetchRecentImportBatches } from '@/lib/queries/gpsI
 import { formatDateTime } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
+import { GPS_IMPORT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Import GPS · Fydr' };
 
@@ -27,7 +28,7 @@ const DEFAULT_LIMIT = 20;
  *  feature they couldn't use either way), tier check second. */
 export default async function ImportsPage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, claims, tier, timezone } = await requireStaff();
-  if (!claims.roles.includes('coach') && !claims.roles.includes('medic')) redirect('/settings');
+  if (!hasAnyRole(claims.roles, GPS_IMPORT)) redirect('/settings');
 
   if (!isPremium(tier)) {
     return (

@@ -5,6 +5,7 @@ import { AuditLogFilters } from '@/components/AuditLogFilters/AuditLogFilters';
 import { fetchAuditLog, fetchEntityTypes, fetchActors, fetchAthleteOptions, type AuditLogFilters as Filters } from '@/lib/queries/auditLog';
 import { formatDateTime, todayIso, addDays } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
+import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Audit log · Fydr' };
 
@@ -41,7 +42,7 @@ function qs(params: Record<string, string | undefined>): string {
  *  Access is unchanged — still admin-only, same redirect. */
 export default async function AuditLogPage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, claims, timezone } = await requireStaff();
-  if (!claims.roles.includes('sport_scientist')) redirect('/settings');
+  if (!hasAnyRole(claims.roles, SETTINGS_ADMIN)) redirect('/settings');
 
   const sp = await searchParams;
   const entityType = str(sp.type);

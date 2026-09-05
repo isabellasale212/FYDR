@@ -183,5 +183,121 @@ for (const f of injuryScreens) {
   );
 }
 
+// ---------------------------------------------------------------------------
+console.log('\n-- every route gate matches docs/access-matrix.md (G-29) --');
+
+/* G-29. 27 route gates decide access, and until now each was hand written with
+ * role literals inline. That is how the four injury screens ended up disagreeing
+ * with each other, and it is why none of the 114 role checks in this app
+ * mentioned strength_conditioning or nutritionist: there was no single place
+ * that had to be updated when the enum grew.
+ *
+ * So the sets live in src/lib/access.ts, one exported constant per distinct
+ * column pattern in the matrix's own grid, and this test asserts that each
+ * gated route names the right one.
+ *
+ * SAME RULE AS THE D-01 CHECK ABOVE: assert a named identifier is present, never
+ * infer intent from nearby code. A constant name either appears in a file or it
+ * does not. What this does NOT prove is that the constant is used in the right
+ * direction (a gate written `if (hasAnyRole(...)) redirect()` would pass), which
+ * is the same limit test-premium-routes.ts states about itself. It catches the
+ * regression that actually happens: a screen whose role list was never revisited.
+ */
+const EXPECTED_GATE: Record<string, string> = {
+  // 3.6 Settings and administration. "Everything in this block belonged to the
+  // removed admin role and now belongs to the sport scientist alone."
+  'settings/retention/page.tsx': 'SETTINGS_ADMIN',
+  'settings/retention/preview/route.ts': 'SETTINGS_ADMIN',
+  'settings/retention/run/route.ts': 'SETTINGS_ADMIN',
+  'settings/audit/page.tsx': 'SETTINGS_ADMIN',
+  'settings/users/page.tsx': 'SETTINGS_ADMIN',
+  'settings/users/bulk-invite/page.tsx': 'SETTINGS_ADMIN',
+  'settings/users/bulk-invite/send/route.ts': 'SETTINGS_ADMIN',
+  'settings/users/create/route.ts': 'SETTINGS_ADMIN',
+  'settings/users/[userId]/page.tsx': 'SETTINGS_ADMIN',
+  'settings/users/[userId]/mfa/route.ts': 'SETTINGS_ADMIN',
+  /* Import GPS is VC for the sport scientist and X for everyone else in the
+     matrix. This gate refused the sport scientist, which is the half that is
+     unambiguously wrong and is fixed. The other half, taking it away from the
+     coach and the medic who have it today, is a narrowing and is left to G-33. */
+  'settings/imports/page.tsx': 'GPS_IMPORT',
+  'settings/imports/template/route.ts': 'GPS_IMPORT',
+  'settings/imports/[batchId]/export/route.ts': 'GPS_IMPORT',
+  'settings/subject-access/[requestId]/release/route.ts': 'SETTINGS_ADMIN',
+  'squad/[athleteId]/subject-access/route.ts': 'SETTINGS_ADMIN',
+
+  // Clinical review of a request: X X V X X. The only row where the sport
+  // scientist is refused, because the screen shows the clinical record.
+  'settings/subject-access/[requestId]/review/page.tsx': 'CLINICAL_ONLY',
+
+  // 3.1 New and edit session: VEC VEC X X X. Was coach or medic.
+  'schedule/planner/new/page.tsx': 'SESSION_EDIT',
+  // 3.6 Thresholds: VECD VECD V V X. Creating is the C. Was coach only.
+  'settings/thresholds/new/page.tsx': 'THRESHOLD_EDIT',
+
+  /* 3.3 Programme builder: VEC V V VEC V, so the coach views and the S&C
+     builds. But this screen also creates REHAB programmes, which 0022 splits
+     out and 0067 gives to the medic and the sport scientist, so the gate is
+     the union: whoever may author a programme of some type. Gating it on
+     PROGRAMME_EDIT alone, which is what this line said first, would have shut
+     a medic out of the only screen that creates the rehab work they prescribe
+     while the database still let them write it. */
+  'programmes/new/page.tsx': 'PROGRAMME_AUTHOR',
+  'leaderboards/new/page.tsx': 'LEADERBOARD_EDIT',
+
+  // 3.3 New nutrition target: VC X X X VC.
+  'nutrition/new/page.tsx': 'NUTRITION_EDIT',
+};
+
+for (const [route, constant] of Object.entries(EXPECTED_GATE)) {
+  const f = `src/app/(staff)/${route}`;
+  assert(readFileSync(f, 'utf8').includes(constant), `${route} gates on ${constant}`);
+}
+
+/* 3.2 New injury is VC for all four injury roles, not medic only, so it takes
+ * the shared guard rather than a set of its own. */
+assert(
+  readFileSync('src/app/(staff)/injuries/new/page.tsx', 'utf8').includes(INJURY_GUARD),
+  `injuries/new/page.tsx calls ${INJURY_GUARD}()`,
+);
+
+/* 3.4 Leaderboard is V for every staff role, and 3.5's rule is that "a download
+ * carries the same permission as the screen it belongs to, without exception".
+ * Both downloads carried their own coach-or-medic test, which is narrower than
+ * the screen above them. requireStaff() is the whole gate they need. */
+for (const f of [
+  'src/app/(staff)/leaderboards/[leaderboardId]/export/route.ts',
+  'src/app/(staff)/leaderboards/[leaderboardId]/pdf/route.tsx',
+]) {
+  const src = readFileSync(f, 'utf8');
+  assert(
+    !/roles\.includes\('(coach|medic)'\)/.test(src),
+    `${f.replace('src/app/(staff)/', '')} does not narrow the board below its own screen`,
+  );
+}
+
+/* The sets themselves, checked against the matrix rather than against whatever
+ * access.ts happens to say. */
+const access = readFileSync('src/lib/access.ts', 'utf8');
+const SETS: Record<string, readonly string[]> = {
+  SETTINGS_ADMIN: ['sport_scientist'],
+  CLINICAL_ONLY: ['medic'],
+  SESSION_EDIT: ['sport_scientist', 'coach', 'medic'],
+  THRESHOLD_EDIT: ['sport_scientist', 'coach'],
+  PROGRAMME_EDIT: ['sport_scientist', 'coach', 'strength_conditioning'],
+  NUTRITION_EDIT: ['sport_scientist', 'coach', 'medic', 'nutritionist'],
+  GPS_IMPORT: ['sport_scientist', 'coach', 'medic'],
+  LEADERBOARD_EDIT: ['sport_scientist', 'coach', 'medic', 'strength_conditioning'],
+  INJURY_ACCESS: ['sport_scientist', 'coach', 'medic', 'strength_conditioning'],
+};
+for (const [name, want] of Object.entries(SETS)) {
+  const declared = access.match(new RegExp(`${name}[^=]*=\\s*\\[([^\\]]*)\\]`))?.[1] ?? '';
+  const got = [...declared.matchAll(/'(\w+)'/g)].map((m) => m[1]);
+  assert(
+    got.length === want.length && want.every((r) => got.includes(r)),
+    `${name} is exactly ${want.join(', ')} (found: ${got.join(', ') || 'nothing'})`,
+  );
+}
+
 console.log(`\n${passed} passed, ${failed} failed\n`);
 process.exit(failed > 0 ? 1 : 0);

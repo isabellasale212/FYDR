@@ -4,6 +4,7 @@ import { UserDetailPanel } from '@/components/UserDetailPanel/UserDetailPanel';
 import { fetchUnlinkedAthletes, fetchUserAuditHistory, fetchUserDetail } from '@/lib/queries/userManagement';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { requireStaff } from '@/lib/session';
+import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'User · Fydr' };
 
@@ -28,7 +29,7 @@ export const metadata = { title: 'User · Fydr' };
 export default async function UserDetailPage({ params }: { params: Promise<{ userId: string }> }) {
   const { userId } = await params;
   const { db, orgId, claims, timezone } = await requireStaff();
-  if (!claims.roles.includes('sport_scientist')) redirect('/settings');
+  if (!hasAnyRole(claims.roles, SETTINGS_ADMIN)) redirect('/settings');
 
   const [user, history, unlinked, mfaFactors] = await Promise.all([
     fetchUserDetail(db, orgId, userId),

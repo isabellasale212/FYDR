@@ -41,14 +41,12 @@ select throws_ok(
   'an athlete cannot set any nutrition target'
 );
 
-select tests.set_jwt(tests.uid('orga', 'user_admin'));
-select throws_ok(
-  format($q$insert into nutrition_targets (org_id, org_default, protein_g, effective_from, created_by)
-            values (%L, true, 160, current_date, %L)$q$,
-         tests.uid('orga','org'), tests.uid('orga','user_admin')),
-  '42501', null,
-  'an admin cannot set any nutrition target either'
-);
+/* The negative control that used to sit here asserted that an admin was
+   refused. 0063 renames that role to sport_scientist, which docs/access-matrix.md
+   §1 gives everything, so the refusal became a permission. It has not been
+   deleted: it moved to the end of this file, as a positive control, because
+   asserting it HERE would leave a row behind and every count below is written
+   against the state this file builds in order. */
 
 select tests.set_jwt(tests.uid('orga', 'user_coach'));
 select lives_ok(
@@ -151,10 +149,10 @@ select is(
 );
 
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
-select is(
+select cmp_ok(
   (select count(*) from nutrition_targets where org_id = tests.uid('orga','org')),
-  0::bigint,
-  'an admin reads zero rows too'
+  '>', 0::bigint,
+  'a sport scientist reads the targets too'
 );
 
 
@@ -213,6 +211,17 @@ select is(
      array[tests.uid('orga','athlete_2')]::uuid[], current_date, current_date)),
   'group',
   'a coach asking on athlete_2''s behalf gets the real answer, unrestricted by the athlete narrowing'
+);
+
+-- The moved control. A sport scientist writes nutrition targets now: 3.3 gives
+-- that role VECD on the row. Scoped to athlete_2, whose lack of a personal
+-- target the resolution tests above depend on, so it runs last.
+select tests.set_jwt(tests.uid('orga', 'user_admin'));
+select lives_ok(
+  format($q$insert into nutrition_targets (org_id, athlete_id, protein_g, effective_from, created_by)
+            values (%L, %L, 165, current_date, %L)$q$,
+         tests.uid('orga','org'), tests.uid('orga','athlete_2'), tests.uid('orga','user_admin')),
+  'a sport scientist CAN set a nutrition target'
 );
 
 select * from finish();

@@ -11,7 +11,9 @@ import { USER_STATUS } from '@/lib/status';
 import type { AppRole } from '@/lib/types/database';
 import type { CreateUserResult } from '@/app/(staff)/settings/users/create/route';
 
-const ALL_ROLES: AppRole[] = ['coach', 'medic', 'sport_scientist', 'athlete'];
+/* The tick boxes the user list offers when creating an account. Same list as
+ * UserDetailPanel's and same gap: neither new role could be offered. */
+const ALL_ROLES: AppRole[] = ['athlete', 'coach', 'medic', 'sport_scientist', 'strength_conditioning', 'nutritionist'];
 
 type Props = {
   orgId: string;

@@ -6,7 +6,11 @@ import { requireStaff } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 
-const VALID_ROLES: AppRole[] = ['athlete', 'coach', 'medic', 'sport_scientist'];
+/* The allow-list the submitted roles are filtered through, so anything absent
+ * here cannot be granted at all. It held four values and the enum now holds
+ * six, which meant an administrator could not give anybody the S&C or the
+ * nutritionist role through the only screen that grants roles. */
+const VALID_ROLES: AppRole[] = ['athlete', 'coach', 'medic', 'sport_scientist', 'strength_conditioning', 'nutritionist'];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export type CreateUserResult = {

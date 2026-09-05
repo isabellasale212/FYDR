@@ -17,7 +17,9 @@ import { USER_STATUS } from '@/lib/status';
 import { formatDate, formatDateTime, enumLabel } from '@/lib/format';
 import type { AppRole } from '@/lib/types/database';
 
-const ALL_ROLES: AppRole[] = ['coach', 'medic', 'sport_scientist', 'athlete'];
+/* The tick boxes this panel offers. Missing both new roles, so neither could
+ * be granted or revoked from the user detail screen. */
+const ALL_ROLES: AppRole[] = ['athlete', 'coach', 'medic', 'sport_scientist', 'strength_conditioning', 'nutritionist'];
 
 type Props = {
   orgId: string;

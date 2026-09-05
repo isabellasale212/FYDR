@@ -289,6 +289,7 @@ const SETS: Record<string, readonly string[]> = {
   GPS_IMPORT: ['sport_scientist', 'coach', 'medic'],
   LEADERBOARD_EDIT: ['sport_scientist', 'coach', 'medic', 'strength_conditioning'],
   INJURY_ACCESS: ['sport_scientist', 'coach', 'medic', 'strength_conditioning'],
+  ALL_STAFF: ['sport_scientist', 'coach', 'medic', 'strength_conditioning', 'nutritionist'],
 };
 for (const [name, want] of Object.entries(SETS)) {
   const declared = access.match(new RegExp(`${name}[^=]*=\\s*\\[([^\\]]*)\\]`))?.[1] ?? '';
@@ -297,6 +298,59 @@ for (const [name, want] of Object.entries(SETS)) {
     got.length === want.length && want.every((r) => got.includes(r)),
     `${name} is exactly ${want.join(', ')} (found: ${got.join(', ') || 'nothing'})`,
   );
+}
+
+// ---------------------------------------------------------------------------
+console.log('\n-- the role LISTS, not just the role checks --');
+
+/* The gate inventory above matched `roles.includes('x')` and `roles.some(...)`.
+ * It does not match a list of roles declared as data, and this app has six of
+ * those. Every one was written when the enum had four values, and every one is
+ * a place the two new roles simply do not appear:
+ *
+ *   the sidebar          nine rows, each with its own roles array. An S&C signs
+ *                        in and sees no navigation at all.
+ *   VALID_ROLES          the create-user route filters the submitted roles
+ *                        through it, so an admin cannot GRANT either new role.
+ *   ALL_ROLES            the two user-management panels build their tick boxes
+ *                        from it, so neither role can be offered in the first
+ *                        place.
+ *   STAFF_MFA_REQUIRED   two staff roles that are not required to enrol.
+ *
+ * The last one is the reason this section is not cosmetic. */
+function listIn(file: string, name: string): string[] {
+  const src = readFileSync(file, 'utf8');
+  const m = src.match(new RegExp(`${name}[^=]*=\\s*\\[([^\\]]*)\\]`));
+  return [...(m?.[1] ?? '').matchAll(/'(\w+)'/g)].map((x) => x[1] as string);
+}
+
+for (const [file, name, want] of [
+  ['src/app/(staff)/settings/users/create/route.ts', 'VALID_ROLES', ALL_ROLES],
+  ['src/components/UserDetailPanel/UserDetailPanel.tsx', 'ALL_ROLES', ALL_ROLES],
+  ['src/components/UserManagementPanel/UserManagementPanel.tsx', 'ALL_ROLES', ALL_ROLES],
+  ['src/lib/mfa.ts', 'STAFF_MFA_REQUIRED_ROLES', STAFF_ROLES],
+] as [string, string, readonly string[]][]) {
+  const got = listIn(file, name);
+  const missing = want.filter((r) => !got.includes(r));
+  assert(missing.length === 0, `${name} covers every role${missing.length ? ` (missing: ${missing.join(', ')})` : ''}`);
+}
+
+/* The sidebar. Each row carries its own array, and `['coach','medic']` there is
+ * the same phrase it was everywhere else: "any staff". Asserted per row so a
+ * failure names the destination rather than a count. */
+const sidebar = readFileSync('src/components/Sidebar/Sidebar.tsx', 'utf8');
+const rows = [...sidebar.matchAll(/label: '([^']+)',\s*\n\s*route: '([^']+)',\s*\n\s*roles: (\[[^\]]*\]|\w+),/g)];
+assert(rows.length > 0, 'the sidebar declares rows this test can read');
+for (const r of rows) {
+  /* A row may write its roles inline or name a set from access.ts. Resolve the
+     identifier rather than trusting it, so pointing a row at the wrong constant
+     fails here instead of shipping. */
+  const raw = r[3] as string;
+  const got = raw.startsWith('[')
+    ? [...raw.matchAll(/'(\w+)'/g)].map((m) => m[1] as string)
+    : listIn('src/lib/access.ts', raw);
+  const missing = STAFF_ROLES.filter((x) => !got.includes(x));
+  assert(missing.length === 0, `sidebar row ${r[1]} is reachable by every staff role${missing.length ? ` (missing: ${missing.join(', ')})` : ''}`);
 }
 
 console.log(`\n${passed} passed, ${failed} failed\n`);

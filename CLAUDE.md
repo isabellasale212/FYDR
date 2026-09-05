@@ -8,14 +8,35 @@ current conversation.
 
 ---
 
-## 0. The specification is binding
+## 0. The design is frozen
+
+**Signed off 4 September 2026: both the staff app and the athlete app.** Do not
+change visual design, layout, spacing, colour, typography or component structure
+unless the user explicitly asks for a design change in the current conversation.
+
+This includes changes that look like corrections: a spacing value that seems
+wrong, a token that seems off, a component that could be tidier. If you notice
+one, **say so and leave it alone.** The design has been measured against the
+canvas and signed off; an unrequested improvement is a regression against a
+decision somebody made.
+
+What is still in scope without asking: behaviour, correctness, data integrity,
+permissions, performance, and anything in `docs/spec-gaps.md`. If a correctness
+fix genuinely requires a visual change, say what it is and why before making it.
+
+---
+
+## 0.1 The specification is binding
 
 `docs/screens/`, `docs/metrics.md` and `docs/access-matrix.md` define what this
 app is supposed to be. They are consulted before code is written and updated in
 the same commit when agreed behaviour changes.
 
-- **Read the relevant file in `docs/screens/` before changing any screen.** They
-  are numbered in route order, for example `docs/screens/19-athlete-report.md`.
+- **Read the relevant numbered file in `docs/screens/` before changing any
+  screen.** They are numbered in route order, for example
+  `docs/screens/19-athlete-report.md`. **Only the numbered files are binding.**
+  `docs/screens/legacy/` holds 38 older documents kept for their reasoning; they
+  contradict the current app in places and must not be followed as instructions.
 - **Read `docs/metrics.md` before touching any calculation. Never invent a metric
   or change a formula without updating its registry entry.** Every number in the
   app has an identifier such as MET-014. If two screens need the same quantity
@@ -29,8 +50,9 @@ the same commit when agreed behaviour changes.
 - **If a request conflicts with the specification, stop and say so rather than
   building it.** Ask whether to change the specification or drop the request.
   Do not quietly do both.
-- **Files under `docs/screens/draft/` are exploratory and not binding.** Nothing
-  else in `docs/screens/` is a draft.
+- **Files under `docs/screens/draft/` are exploratory and not binding**, as is
+  everything in `docs/screens/legacy/`. Every numbered file in `docs/screens/` is
+  binding.
 
 Open questions live in `docs/decisions-required.md`, numbered D-01 onward. Queued
 work lives in `docs/spec-gaps.md`, ordered by risk. `docs/generated/` is generated

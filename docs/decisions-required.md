@@ -864,6 +864,46 @@ per category so a re-run continues rather than repeating. **Reason: wrapping
 permanent deletions across several tables in one transaction is fragile, and a
 half completed retention run is recoverable if you can tell what finished.**
 
+## Group 13: raised while writing the state machine and route appendices
+
+### D-44. Two flag states exist that nobody can reach, including the obvious one
+
+**What it means for a coach.** A flag can be **acknowledged** or **dismissed**.
+Those are the only two things the card offers
+(`src/components/FlagCard/FlagCard.tsx:45`).
+
+The database allows seven states: raised, notified, acknowledged, **actioned**,
+monitoring, **resolved**, dismissed
+(`supabase/migrations/0001_extensions_and_enums.sql:190`). Neither `actioned` nor
+`resolved` appears anywhere in the application source.
+
+**Why this matters more than an unused enum value usually would.** *Resolved* is
+the word a coach would reach for when they have dealt with something, and it is
+the one they cannot produce. What they get instead is *dismissed*, which reads as
+"this was not worth acting on" rather than "this was acted on". The two are
+opposite meanings and the app only offers the wrong one.
+
+**Recommendation.** Add **Resolve** to the flag card alongside Dismiss, and keep
+both open counts unchanged. **Reason: the state already exists, the distinction is
+one a coach will want to make, and dismissing something you actually fixed is a
+record that will mislead whoever reads it later.** Leave `actioned` unused or
+remove it; nothing suggests it is needed.
+
+### D-45. The retention preview is not audited, while the run is
+
+**What it means.** The retention screen has two actions. **Run** permanently
+deletes athlete data and writes an audit row. **Preview** shows exactly which
+records are about to be destroyed, changes nothing, and writes no audit row at
+all.
+
+**Why the asymmetry is arguably wrong.** A preview is how somebody finds out which
+athletes are near the end of their retention period without acting on it. That is
+a read of personal data, and "who looked at what was about to be deleted" is
+precisely the question an audit log exists to answer.
+
+**Recommendation.** Audit the preview too. **Reason: it is one row, and the case
+for auditing report views applies here with more force, not less.**
+
 ---
 
 ## Corrections to this file
@@ -919,6 +959,7 @@ as a decision.
 | 10. Raised in Stage B2 | D-25 | Yes |
 | 11. Raised in Stage B3 | D-26 to D-39 | Yes, all fourteen |
 | 12. Raised in the verification pass | D-40 to D-43 | Yes, all four |
+| 13. Raised writing the appendices | D-44, D-45 | Yes, both |
 
 **39 entries. Their real status:**
 
@@ -926,9 +967,9 @@ as a decision.
 |---|---|---|
 | **Accepted by you** on 4 September 2026 | **19** | D-01 to D-21, less D-08 and D-09 |
 | **Withdrawn**, the finding was wrong | **2** | D-08, D-09 |
-| **Raised after your acceptance, still open** | **22** | D-22 to D-43 |
+| **Raised after your acceptance, still open** | **24** | D-22 to D-45 |
 
-**So 22 decisions are genuinely waiting on you**, not 35. The larger number was
+**So 24 decisions are genuinely waiting on you**, not 35. The larger number was
 an error in an earlier version of this line: it counted the accepted ones as
 outstanding.
 

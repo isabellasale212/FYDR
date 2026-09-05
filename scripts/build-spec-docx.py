@@ -14,7 +14,7 @@ from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-VERSION = "1.0"
+VERSION = "1.1"
 TODAY = datetime.date.today().strftime("%d %B %Y")
 OUT = os.path.join(ROOT, "docs", "generated", "Fydr-Staff-App-Specification.docx")
 
@@ -155,10 +155,13 @@ def main():
     # Appendices
     for title, path in (("Appendix A: Access matrix", "docs/access-matrix.md"),
                         ("Appendix B: Metrics registry", "docs/metrics.md"),
-                        ("Appendix C: Decisions required and spec mismatches", "docs/decisions-required.md"),
-                        ("Appendix D: Spec gaps, ordered by risk", "docs/spec-gaps.md"),
-                        ("Appendix E: Role model", "docs/generated/00-role-model.md"),
-                        ("Appendix F: Route inventory", "docs/generated/01-route-inventory.md")):
+                        ("Appendix C: Server routes", "docs/server-routes.md"),
+                        ("Appendix D: State machines", "docs/state-machines.md"),
+                        ("Appendix E: Decisions required and spec mismatches", "docs/decisions-required.md"),
+                        ("Appendix F: Spec gaps, ordered by risk", "docs/spec-gaps.md"),
+                        ("Appendix G: What \"verified\" means", "docs/verification-standard.md"),
+                        ("Appendix H: Role model", "docs/generated/00-role-model.md"),
+                        ("Appendix I: Route inventory", "docs/generated/01-route-inventory.md")):
         doc.add_heading(title, level=1)
         render(doc, open(os.path.join(ROOT, path), encoding="utf-8").read(), base_level=1)
         doc.add_page_break()
@@ -167,7 +170,7 @@ def main():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     doc.save(OUT)
     print(f"wrote {OUT}")
-    print(f"{len(files)} screen specifications, 6 appendices")
+    print(f"{len(files)} screen specifications, 9 appendices")
 
 if __name__ == "__main__":
     main()

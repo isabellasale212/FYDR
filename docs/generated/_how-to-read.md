@@ -23,8 +23,15 @@ there is exactly one place to change a calculation and exactly one place to look
 it up.
 
 **Every difference between this specification and the code has a decision
-number**, such as D-01, in Appendix C, with a recommendation and a reason. Those
-same differences appear again in Appendix D as a work queue ordered by risk.
+number**, such as D-01, in Appendix E, with a recommendation and a reason. Those
+same differences appear again in Appendix F as a work queue ordered by risk.
+
+**Three appendices cover what the screen specifications do not.** The **server
+routes** appendix covers the 27 addresses that produce files or perform actions
+rather than render pages, which is where this app's one real access breach
+happened. The **state machines** appendix lists every set of named states a record
+moves through and which moves are allowed. The **verification standard** says what
+this document means when it claims something is verified.
 
 **Three phrases are used precisely.**
 
@@ -56,6 +63,12 @@ quietly removed, so you can see what changed and why.
 
 **Every page in this document now carries a "verified access" line** naming the
 exact guards that run and where they are, taken from the code rather than
-inferred. Where a statement elsewhere in a specification is less certain, it says
-UNVERIFIED and names the files searched. **An absent UNVERIFIED means it was
-checked**, not that nobody looked.
+inferred. Where a statement elsewhere is less certain, it says UNVERIFIED and
+names the files searched. **An absent UNVERIFIED means it was checked**, not that
+nobody looked.
+
+**This document is verified at the Read level throughout**, meaning somebody read
+the code that does the thing and can quote the line. A handful of dashboard
+measurements are verified at the Run level, meaning somebody made the app do it
+and saw the result. The difference matters and the standard explains it: Read
+cannot catch a control that looks interactive and is not.

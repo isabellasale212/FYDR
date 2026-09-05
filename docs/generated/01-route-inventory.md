@@ -88,8 +88,11 @@ page is presentation rather than access.
 refuses on Base. *Base, premium regions* means the page opens on Base with parts
 withheld.
 
-**Docs column.** The name of the file in `docs/screens/` that covers it, or
-NOT IN DOCS.
+**Docs column.** The name of the **legacy** document that covered this screen
+before the build specification, now in `docs/screens/legacy/`, or NOT IN DOCS.
+Every screen listed here now has a binding numbered specification in
+`docs/screens/` regardless of what this column says: the column records what
+existed beforehand, which is what made "NOT IN DOCS" worth knowing.
 
 ### 3.1 Dashboard
 
@@ -294,9 +297,10 @@ checked individually in Stage B3.
 | Parallel, intercepted or modal routes | 0 |
 | Sidebar destinations | 9 |
 | Screens not reachable from the sidebar | 53 |
-| Pages with no entry in `docs/screens/` | 8 |
+| Pages with no legacy document before this work | 8 |
 
-The eight with no documentation: `/squad/[athleteId]/wellness`,
+The eight that had no documentation at all before this work:
+`/squad/[athleteId]/wellness`,
 `/squad/[athleteId]/gym`, `/squad/[athleteId]/nutrition`, `/squad/roster`,
 `/schedule/fixtures/new`, `/programmes/exercises`,
 `/settings/notifications`, `/compliance`.

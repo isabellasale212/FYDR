@@ -23,7 +23,7 @@ export default async function SquadPage({
   // coach/medical only, no admin, no aggregate note. This page is the full
   // named roster plus availability and restrictions — exactly the
   // performance data §1 says admin doesn't read. Same pattern as /flags.
-  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medical');
+  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medic');
   if (!hasAccess) {
     return (
       <>

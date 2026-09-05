@@ -31,6 +31,8 @@ select tests.fixtures();
 -- From here the session is an ordinary application user. Nothing below runs with the
 -- privileges the fixtures were created with.
 set local role authenticated;
+select ok(tests.rls_is_engaged(),
+  'canary: this session is subject to RLS, so the assertions below measure something');
 
 -- ---------------------------------------------------------------------------
 -- COACH in organisation A reading organisation B

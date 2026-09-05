@@ -11,7 +11,9 @@ import { USER_STATUS } from '@/lib/status';
 import type { AppRole } from '@/lib/types/database';
 import type { CreateUserResult } from '@/app/(staff)/settings/users/create/route';
 
-const ALL_ROLES: AppRole[] = ['coach', 'medical', 'admin', 'athlete'];
+/* The tick boxes the user list offers when creating an account. Same list as
+ * UserDetailPanel's and same gap: neither new role could be offered. */
+const ALL_ROLES: AppRole[] = ['athlete', 'coach', 'medic', 'sport_scientist', 'strength_conditioning', 'nutritionist'];
 
 type Props = {
   orgId: string;
@@ -209,19 +211,20 @@ function CreateUserForm({
         <h2 className="card-title">Account created</h2>
         {result.emailDelivered ? (
           <p className="import-sub" style={{ marginBottom: 10 }}>
-            An invite email has also been sent to {fullName}. Keep the password below too, in case it doesn&apos;t arrive.
+            An invite email has been sent to {fullName}. Keep the link below too, in case it doesn&apos;t arrive.
           </p>
         ) : (
           <p className="import-sub" style={{ marginBottom: 10 }}>
-            Share this password with {fullName} directly &mdash; no email provider is configured in this environment, so no
-            invite email went out. They can change it once signed in.
+            Send this link to {fullName} yourself &mdash; no email provider is configured in this environment, so no invite
+            email went out. It signs them in once and lets them choose their own password.
           </p>
         )}
-        <p className="num nm" style={{ fontSize: 18, padding: '10px 14px', background: 'var(--surf2)', borderRadius: 8 }}>
-          {result.temporaryPassword}
+        <p className="nm" style={{ fontSize: 13, padding: '10px 14px', background: 'var(--surf2)', borderRadius: 8, wordBreak: 'break-all' }}>
+          {result.inviteUrl}
         </p>
         <p className="cap" style={{ marginBottom: 12 }}>
-          This is shown once and isn&apos;t stored anywhere &mdash; copy it now.
+          The link works once and confirms their email address at the same time. No password has been set for them, and
+          nobody here can see the one they choose.
         </p>
         <button type="button" className="btn-primary" onClick={onDone}>
           Done, I&apos;ve copied it
@@ -235,7 +238,7 @@ function CreateUserForm({
       <h2 className="card-title">Invite people</h2>
       <p className="import-sub" style={{ marginBottom: 12 }}>
         Creates a real account and tries to send an invite email; no SMS. Without an email provider configured, you&apos;ll
-        get a temporary password to share yourself instead.
+        get an invite link to pass on yourself instead.
       </p>
 
       {result && !result.ok ? (
@@ -244,7 +247,12 @@ function CreateUserForm({
             !
           </span>
           <span>
-            {error} {result.temporaryPassword ? <>Temporary password: <b className="num">{result.temporaryPassword}</b></> : null}
+            {error}{' '}
+            {result.inviteUrl ? (
+              <>
+                The account exists; their invite link is <b className="nm" style={{ wordBreak: 'break-all' }}>{result.inviteUrl}</b>
+              </>
+            ) : null}
           </span>
         </div>
       ) : error ? (

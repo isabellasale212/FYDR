@@ -26,6 +26,23 @@ fix genuinely requires a visual change, say what it is and why before making it.
 
 ---
 
+## 0.05 The three canonical reference documents
+
+**These three live in `docs/` and are canonical. Ignore any copy anywhere else,
+including `~/Downloads`, and any version held in memory from an earlier
+session.** Read from `docs/` every time.
+
+| Document | What it is for |
+|---|---|
+| `docs/FydrStaffAppSpecification_-_CLEAN_for_ClaudeCode.docx` | The specification. 5,496 paragraphs and 202 tables; read it with `python3` and `docx`, it parses cleanly. Its first page lists the 2026-09-04 edits. |
+| `docs/Fydr_-_Architecture_To-Do_List.md` | Build order, live bugs, and decisions taken but not built. **Update this file in place** when an item is resolved or a new one appears. Never keep a separate copy of it. |
+| `docs/Fydr_-_Claude_Code_Build_Handoff.md` | Build order and the verification standard. Its session log at the end wins over anything earlier in the same file. |
+
+`docs/spec-gaps.md` holds the numbered gap queue (G-01 onward) that the handoff
+references, and stays where it is.
+
+---
+
 ## 0.1 The specification is binding
 
 `docs/screens/`, `docs/metrics.md` and `docs/access-matrix.md` define what this

@@ -4,7 +4,7 @@ import { InjuryMedicalForm } from '@/components/InjuryMedicalForm/InjuryMedicalF
 import { SetAvailabilityForm } from '@/components/SetAvailabilityForm/SetAvailabilityForm';
 import { fetchInjuryDetail, fetchInjuryClinical } from '@/lib/queries/injuries';
 import { enumLabel, formatDate } from '@/lib/format';
-import { requireStaff } from '@/lib/session';
+import { requireInjuryAccess } from '@/lib/session';
 
 export const metadata = { title: 'Injury · Fydr' };
 
@@ -29,8 +29,8 @@ export default async function InjuryDetailPage({
   params: Promise<{ injuryId: string }>;
 }) {
   const { injuryId } = await params;
-  const { db, orgId, claims, timezone } = await requireStaff();
-  const isMedical = claims.roles.includes('medical');
+  const { db, orgId, claims, timezone } = await requireInjuryAccess();
+  const isMedical = claims.roles.includes('medic');
 
   const injury = await fetchInjuryDetail(db, orgId, injuryId);
   if (!injury) notFound();

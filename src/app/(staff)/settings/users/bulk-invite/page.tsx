@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { BulkInviteForm } from '@/components/BulkInviteForm/BulkInviteForm';
 import { fetchUnlinkedAthletes } from '@/lib/queries/userManagement';
 import { requireStaff } from '@/lib/session';
+import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Bulk invite · Fydr' };
 
@@ -14,7 +15,7 @@ export const metadata = { title: 'Bulk invite · Fydr' };
  *  the any-role InviteWizard already built into the main Users list. */
 export default async function BulkInvitePage() {
   const { db, orgId, claims } = await requireStaff();
-  if (!claims.roles.includes('admin')) redirect('/settings');
+  if (!hasAnyRole(claims.roles, SETTINGS_ADMIN)) redirect('/settings');
 
   const unlinked = await fetchUnlinkedAthletes(db, orgId);
 

@@ -14,7 +14,7 @@ import {
 import { fetchGroups } from '@/lib/queries/groups';
 import { recordReportView } from '@/lib/queries/reports';
 import { requireReportAccess } from '@/lib/session';
-import type { AppRole } from '@/lib/types/database';
+import { actingRole } from '@/lib/access';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -263,7 +263,7 @@ export async function POST(request: Request): Promise<NextResponse<GenerateResul
     files.push({ filename, content: caption + csv });
   }
 
-  const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
+  const actorRole = actingRole(claims.roles);
   await recordReportView(
     db,
     orgId,

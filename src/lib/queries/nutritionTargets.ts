@@ -187,14 +187,25 @@ export async function createTarget(
  *  as fetchTargets' own "not expired" filter just above, on the write side
  *  this time: a server-UTC date here could set effective_to to a day the
  *  coach doesn't recognise as "today" for an org with a non-UTC offset. */
+/* G-34. `.select('id')` is not decoration: without it this returned
+   { error: null } when RLS refused the write, because an UPDATE that fails a
+   USING clause matches no row and does not raise. A caller that only checks
+   `error` cannot tell "saved" from "silently refused", and this screen showed
+   the button to exactly the two roles 0070 stopped from writing. Asking for the
+   affected rows is what turns that into something sayable. */
 export async function expireTarget(db: Db, orgId: string, id: string, timezone: string): Promise<{ error: string | null }> {
-  const { error } = await db
+  const { data, error } = await db
     .from('nutrition_targets')
     .update({ effective_to: todayIso(timezone) })
     .eq('org_id', orgId)
     .eq('id', id)
-    .is('effective_to', null);
-  return { error: error ? humanizeDbError(error.message, 'staff') : null };
+    .is('effective_to', null)
+    .select('id');
+  if (error) return { error: humanizeDbError(error.message, 'staff') };
+  if (!data || data.length === 0) {
+    return { error: 'That target was not changed. Setting nutrition targets is the nutritionist\u2019s, and the sport scientist\u2019s.' };
+  }
+  return { error: null };
 }
 
 export type ResolvedTarget = {

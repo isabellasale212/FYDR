@@ -321,6 +321,372 @@ the code, each of which would change what a screen specification says.
 
 ---
 
+## Band 6: opened by the five-role migration, 2026-09-05
+
+These four are the deliberate remainder of the role model push. Each one was
+found by running the suite, and each is written down rather than guessed at.
+
+### G-29. CLOSED, 2026-09-05. Role checks read against the matrix
+
+Was: 114 role checks in 77 files, none of which named `strength_conditioning`
+or `nutritionist`, so both roles were refused product-wide.
+
+Closed by `src/lib/access.ts`, which holds one named role set per distinct
+column pattern in §3, and by migrations 0066 to 0069, which move the database
+the same way. 27 route gates now name a set instead of writing role literals
+inline, and `npm run test:role-model` asserts each one against the matrix row it
+comes from. The remainder of the 114 are render flags implementing the partial
+cells of §4, not gates.
+
+**What is NOT closed is G-33 below**, which is the half of the matrix that would
+take access away rather than grant it.
+
+### G-29a. The original entry, kept for its reasoning
+
+114 role checks live in 77 files. The migration renamed the literals in all of
+them, so none names a role that no longer exists, and `npm run test:role-model`
+proves that. What it does not prove is that any given check admits the right
+people now that there are five roles instead of four. **Not one of the 114
+mentions `strength_conditioning` or `nutritionist`**, so both roles are refused
+by every screen-level check that names roles explicitly.
+
+That is fail-closed and therefore safe, but it means an S&C coach currently
+cannot open most of the screens §3 grants them. The matrix already specifies the
+answer for every screen; this is the work of applying it.
+
+**Risk: medium-high.** Not a leak. A large amount of the product is invisible to
+two of the five roles.
+
+### G-30. `requireReportAccess` cannot express the nutritionist's partial access
+
+§4 gives a nutritionist **V** on the Compliance report and **VP** on the Reports
+hub and Squad weekly, and none on Testing, Training, Athlete or Injury. The guard
+is one blanket gate, so it refuses the role outright. Splitting it needs a
+per-report decision, not a wider list.
+
+**Risk: low.** A role sees less than it should.
+
+### G-31. CLOSED, 2026-09-05. The athlete domain screens
+
+`loadAthleteDomainContext` gated on `coach || medic`, so all three athlete
+domain screens (wellness, gym, nutrition) refused the sport scientist, the S&C
+and the nutritionist. It now takes a role set, defaulting to every staff role,
+and the gym screen passes `ATHLETE_GYM` because §3.1 reads "VE V V VE X" on that
+row alone.
+
+### G-31a. The original entry
+
+`src/lib/athleteDomain.server.ts:93` admits coach or medic only. §1 gives the
+sport scientist everything. Left alone deliberately in the role push, because it
+gates a different surface and this build does not bundle unrelated access
+changes.
+
+**Risk: low-medium.** The role that is meant to have no restrictions is refused.
+
+### G-32. Three test files asserted refusals without RLS switched on
+
+`330_tier_rls_test.sql` and `340_assigned_sessions_by_week_test.sql` set JWT
+claims but never ran `set local role authenticated`, so they executed as the
+table owner. An owner bypasses RLS unless the table is set to FORCE ROW LEVEL
+SECURITY, and no table here is. Every refusal those files asserted was therefore
+untested; the tier enforcement added by `0061_tier_in_rls.sql` had no working
+test at all. `340` additionally inserted into a `groups.created_by` column that
+has never existed, so three of its assertions had never passed.
+
+**Fixed in this push**, and recorded here because the shape is worth watching
+for: a test that asserts a refusal proves nothing unless the session is actually
+subject to RLS. Only `020_cross_tenant_test.sql` carried the line.
+
+**Risk when live: high.** Now closed.
+
+---
+
+## Band 7: decisions the matrix implies that nobody has taken
+
+### G-33. RESOLVED, 2026-09-05. All five rows decided and built
+
+The five-role migration was carried out **widen only**: every role kept what it
+could do the day before, the sport scientist gained everything, and the S&C and
+the nutritionist got their own domains. Five rows of `docs/access-matrix.md` §3
+would have gone further and **removed** something a person uses today, and an
+earlier draft that applied one of them broke eleven tenancy assertions, all of
+them a coach doing a coach's job. So the five were put to the owner rather than
+decided inside a migration.
+
+All five came back decided. Three different answers, which is the value of
+having asked rather than guessed:
+
+| Row | Decision | Reasoning given |
+|---|---|---|
+| §3.1 New and edit session | **Narrowed.** Medic loses scheduling | Not an intentional permission. The same "coach or medic actually meant not-admin" artefact 0066 found everywhere else, so a bug fix rather than a policy change |
+| §3.4 Leaderboard | **Split, not taken as written.** Medic loses create, **coach keeps it** | The medic's create is the same artefact. The coach's is a real permission somebody chose, so the **matrix was corrected** to VECD in the coach column rather than the code being built against a cell nobody meant |
+| §3.3 Nutrition targets | **Narrowed as written.** Coach and medic both read-only | Specialist territory in the original spec, not a casualty of the four-role bug |
+| §3.3 Programme builder | **Narrowed as written.** Gym authoring is the sport scientist's and the S&C's | See the lean-club note below |
+| §3.6 Import GPS | **Narrowed as written.** The sport scientist alone | See the lean-club note below |
+
+**Built in** `supabase/migrations/0070_specialist_writes.sql`, which narrows 28
+policies, and in `src/lib/access.ts`, where the named sets moved with them.
+Scheduling was applied to week templates as well as sessions: a week template is
+scheduling under another name, and a medic who cannot create a session but can
+create a week of them is not a rule anybody meant.
+
+**The lean club, and why it did not argue for a wider default.** The obvious
+objection to the last two rows is a club with no dedicated S&C: narrow the base
+role and somebody is locked out of a screen the day it ships, with nobody to
+hand it to. The answer is that an account already holds several roles at once. A
+coach who also does the S&C work holds both, and the S&C role satisfies the
+check. It is the same additive property §2 of the matrix warns about from the
+other direction, where a nutritionist holding coach can see injury data, and it
+is the reason D-25's combination warning exists at all.
+
+That answer is only worth giving if it is true for these exact screens, so it is
+asserted rather than assumed. `supabase/tests/070_programmes_test.sql` carries a
+fixture user holding **coach and strength_conditioning together** and checks
+they can author a gym programme that neither a plain coach nor a plain medic
+can, and that holding two roles grants exactly those two: rehab is still
+refused. It worked without any change, which is what "Fydr already supports
+this" needed to mean before it could be the answer.
+
+**What this cost, honestly.** 56 tenancy assertions changed, every one of them a
+coach or a medic doing something they no longer do. None of them was a defect
+being fixed; they were an accurate record of the old rules. The suite ends at
+1523 assertions, up from 1516.
+
+---
+
+## Band 8: found by the silent-save audit, 2026-09-05
+
+### G-34. FIXED, 2026-09-05. Screens that let somebody save a change that never happened
+
+**0070 is no longer blocked by this.** All of it is fixed and Run-verified with
+both controls: as a medic every one of these now returns a message, and as a
+coach every one still works.
+
+**A correction to the original finding, because it was the headline.** #1 named
+`expireTarget` and `NutritionTargetsList`, and that component is **dead code**:
+no page imports it, so nothing there was ever reachable. I checked reachability
+for some of the six and assumed it for that one, on the strength of the page
+gate alone. The real nutrition path is `assignPlan`
+(`src/lib/queries/nutritionRules.ts:281`): when a target already exists for
+TODAY it takes an UPDATE branch and returns success **without ever attempting an
+insert**. On any other day it inserts, which raises 42501 and is loud, which is
+exactly why the silent case hid. `/nutrition` renders `NutritionWorkspace`,
+whose `canEdit` was `isCoach || isMedical`.
+
+**Two other things the fix pass corrected in the finding.** `setTeamAllocation`
+is not silent: its update is followed by an insert that raises. And
+`TeamAllocationBoard` was never one of the six either, because it already gated
+on `canAllocate`; what was wrong there is that the page resolved it from
+`isCoach`, omitting the sport scientist. `PublishWeekButton` was the unguarded
+one.
+
+**Fixed in two independent halves**, because either alone leaves it reachable:
+the control is offered only to roles that may write, resolved from the matching
+set in `lib/access.ts`; and each write asks for its affected rows, so a future
+mismatch raises instead of lying. `npm run test:silent-saves` asserts both, per
+screen and per function.
+
+The one write that does not get a hard row-count rule is `publishWeek`: it is a
+bulk update over a week, so zero rows means either "no drafts" or "refused", and
+it runs a second query in that branch to say which rather than guessing.
+
+**The original finding follows, unedited.**
+
+### G-34a. As first written
+
+**DEPLOY BLOCKER FOR `0070_specialist_writes.sql`.** That migration must not go
+to production until this is fixed. It is not a nice-to-have: 0070 is what
+creates five of the six, and shipping it alone turns a working button into a
+button that lies.
+
+**The mechanism, which is why this is easy to miss.** Postgres raises `42501`
+when an INSERT violates a `WITH CHECK`. It does **not** raise when an UPDATE or
+DELETE fails a `USING` clause: the row is simply not matched, the statement
+succeeds, and zero rows change. supabase-js `.update()` returns
+`{ error: null }` with no row count unless asked. So the app sees success, calls
+`router.refresh()`, and the value reappears unchanged with no message.
+
+**All three conditions hold for these six**: RLS filters rather than raises, the
+call site never inspects the row count, and the UI offers the control to a role
+the policy excludes. Each was verified by running the real UPDATE as that role
+against seeded data and rolling back, not by reading policies.
+
+| # | Screen | Control | Reachable by | May write | **Silently fails for** |
+|---|---|---|---|---|---|
+| 1 | `/nutrition` | Expire a target | coach, medic | SS, nutritionist | **coach, medic** |
+| 2 | `/injuries/team-allocation` | Publish week, set/withdraw allocation | SS, coach, medic, S&C | SS, coach | **medic, S&C** |
+| 3 | `/settings/thresholds` | Activate / archive | all five | SS, coach | medic, S&C, nutritionist |
+| 4 | `/schedule/[sessionId]` | Cancel / reinstate | all five | SS, coach | medic, S&C, nutritionist |
+| 5 | `/schedule/planner/[templateId]` | Archive / restore template | all five | SS, coach | medic, S&C, nutritionist |
+| 6 | `/leaderboards/[id]` | Publish / delete board | all five | SS, coach, S&C | medic, nutritionist |
+
+**#1 is the worst.** `NutritionTargetsList.tsx:61` reads
+`canExpire = isCoach || (isMedical && …)`, so the button is shown to *exactly*
+the two roles for whom it now does nothing. Everybody who can see it is
+somebody it is broken for.
+
+**#2 matters because the rule was always right.** §4.4 says a medic views
+selection and does not set it. Only the feedback is wrong.
+
+**These were introduced by the role model work, not inherited.** Before it,
+"any staff" meant coach plus medic, which matched these policies exactly and
+left no gap. 0066 and 0070 changed who may write; the UI conditions did not move
+with them.
+
+**Not this finding, corrected after a bad first probe.** The programme edit
+screens raise `42501` loudly rather than failing silently, because those
+policies keep a permissive `USING` and put the restriction in `WITH CHECK`. Still
+a defect worth fixing, since a coach is offered an edit surface that always
+errors, but a different one. The first probe chained three statements in one
+transaction and read two `25P02` "in failed transaction" cascades as results.
+
+**Checked and cleared**, where the UI gates correctly and RLS is defence in
+depth doing its job: club details (`isAdmin`), athlete bio (`canEdit`),
+notification preferences (self-scoped), `session_attendance` and `test_results`
+(exclude nobody), `user_roles` delete and the route-handler `athletes` writes
+(all sport-scientist gated), and `meal_library` / `nutrition_rules` deletes,
+which are silent at the database but have no UI control that reaches them.
+
+### G-35. FIXED, 2026-09-05, by migration 0072
+
+Two things were missing, not one, and the first fix was wrong because it only
+addressed the visible half.
+
+**The policy.** `gps_records` had INSERT and SELECT policies and no UPDATE
+policy, so the upsert's conflict path had no rule permitting it.
+
+**The grant.** Adding the policy alone left the same `42501`, because
+`authenticated` held no UPDATE grant on the table at all. The two failures wear
+the same SQLSTATE and read almost alike:
+
+```
+missing GRANT   permission denied for table gps_records
+policy refusal  new row violates row-level security policy
+```
+
+A policy is permission to use a privilege you already hold. Writing one for a
+privilege nobody was granted produces a rule that reads correctly, passes any
+check run as a superuser, and cannot be exercised by a real user.
+
+**Generalised so it cannot recur.** `010_rls_coverage_test.sql` now asserts that
+every INSERT, UPDATE or DELETE policy in `public` has a matching grant, at table
+OR column level. The column half matters: 0045 deliberately gives an athlete
+UPDATE on exactly six columns of `gym_session_logs` rather than the whole row,
+and a table-level-only check would report that correct design as broken.
+
+**Verified end to end** through the app's own supabase-js upsert, as a signed-in
+sport scientist, canary first: first import ok, re-import ok, one row, value
+corrected to 5250. Plus six assertions in `100_gps_import_test.sql`, including
+the one that would have caught this on the day.
+
+The original entry follows.
+
+### G-35a. As first written
+
+**DEPLOY BLOCKER FOR `0064_gps_no_duplicate_rows.sql`.**
+
+`gps_records` has **INSERT and SELECT policies and no UPDATE policy at all**.
+0064 added the unique constraint and `lib/queries/gpsImport.ts` switched from
+insert to upsert, so the conflict path is an UPDATE, and it raises
+`42501 permission denied for table gps_records` for every caller. Verified as a
+sport scientist under RLS:
+
+```
+first import        : ok
+re-import (upsert)  : raised 42501 permission denied for table gps_records
+```
+
+**Why it was reported as working.** The original verification ran over the
+`postgres` connection, which owns the table, and an owner bypasses RLS unless
+the table is FORCE'd. It exercised the constraint and the upsert semantics and
+never exercised the policy. That is the same mistake G-32 records in three test
+files, made again in a hand-written probe, and it is the reason a Run-level
+check has to run as the role that will really do the thing.
+
+Loud rather than silent, so no data is corrupted: re-importing simply fails.
+
+### G-36. One shared write helper, and 84 call sites to route through it
+
+**83 of 84 update/delete/upsert call sites never look at what came back.** The
+single exception is `src/lib/retention/compute.ts:206`.
+
+The structural fix is one helper that checks the affected row count and throws
+when it is zero, on the same principle as `src/lib/access.ts`: one place that
+has to be right, rather than 84 that happen to agree. Then a mismatch between
+what the UI offers and what a policy permits raises instead of passing as
+success, and G-34's whole class stops being possible.
+
+Converting every call site is ongoing work and explicitly not a single pass.
+Not a blocker for 0070; G-34's six get a row-count check on their own writes as
+part of that fix.
+
+### G-37. The sport scientist cannot edit an athlete's biographical details
+
+`squad/[athleteId]/page.tsx:363` sets `canEditBio = claims.roles.includes('coach')`,
+while the `athletes` UPDATE policy admits coach **and** sport scientist. The
+inverse of G-34: an allowed action nobody can reach, rather than an offered
+action that does nothing.
+
+**Low priority.** No data loss and no silent failure, just a role that cannot do
+something §1 says it can.
+
+---
+
+### G-38. FIXED, 2026-09-05. The suite now proves it is subject to RLS
+
+36 canary assertions across 35 files, one after every `set local role
+authenticated`, plus a check in `scripts/test-tenancy.mjs` that refuses to run a
+suite where any file switches role without asserting the canary.
+
+**Both layers were proved to fire before being trusted**, because a canary that
+has never been seen to fail is just another assumption. Removing the role switch
+from `020_cross_tenant_test.sql`, which is exactly the G-32 defect, produced:
+
+```
+not ok 1 - canary: this session is subject to RLS, so the assertions below measure something
+not ok 2 - athlete_consents: coach in org A reads zero rows of org B
+```
+
+It fails FIRST, naming the real cause ahead of the cascade it produces. Removing
+a canary instead, leaving the switch, stops the runner before any statement
+executes.
+
+The original entry follows.
+
+### G-38a. As first written
+
+G-32 and G-35 are the same defect twice: a check that ran without RLS engaged
+and reported success. The suite is correct today, audited role by role on
+2026-09-05, but nothing in it would catch the line being removed again.
+
+`postgres` carries **`rolbypassrls = true`**, so it is not a question of table
+ownership: any statement on that connection without `set local role
+authenticated` is RLS-free, and `tests.set_jwt()` alone does not change that.
+Measured, on identical reads in one session:
+
+```
+as postgres, no role switch          wellness_entries visible: 830
+as postgres, claims set, no switch   wellness_entries visible: 830
+as authenticated, claims set         wellness_entries visible: 668
+  ...other organisations visible:      0
+```
+
+The middle line is the trap. Setting claims looks like the act that engages RLS
+and is not.
+
+**The fix is a canary**: before asserting anything, each file proves it is
+subject to RLS, by reading something a bypassing session would see and a
+constrained one would not. A signed-in user seeing more than one organisation
+means the run is void, and the file should fail loudly rather than pass
+vacuously. Cheap, one assertion per file.
+
+**Current state, audited rather than assumed:** every test file that sets claims
+also switches role; 230's apparent match is a comment; 231 and 232 bypass
+deliberately for fixture setup and switch before their assertions; `authenticated`
+has no BYPASSRLS, owns no tables, and all 65 public tables have RLS enabled.
+
+---
+
 ## Summary
 
 **28 gaps, one of them withdrawn. 4 high risk, 2 medium-high, 8 medium, the rest

@@ -9,7 +9,7 @@ import { fetchOpenProblemReports, fetchProblemReportNotes } from '@/lib/queries/
 import { enumLabel, formatDate } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { requireStaff } from '@/lib/session';
+import { requireInjuryAccess } from '@/lib/session';
 
 export const metadata = { title: 'Injuries · Fydr' };
 
@@ -39,10 +39,10 @@ export default async function InjuriesPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, orgId, orgName, claims, timezone } = await requireStaff();
+  const { db, orgId, orgName, claims, timezone } = await requireInjuryAccess();
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
-  const isMedical = claims.roles.includes('medical');
+  const isMedical = claims.roles.includes('medic');
 
   // fetchOpenProblemReports is medical-only by RLS (migration 0040) — a coach
   // calling it gets an empty array back, not an error, so this is only ever

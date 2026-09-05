@@ -278,19 +278,38 @@ export async function syncComputedTarget(
     reason,
   };
 
+  /* G-34. Both updates below ask for the affected rows, and the reason is the
+     first one: when a target already exists for TODAY this branch returns
+     success without ever attempting an insert. An UPDATE that RLS refuses
+     matches no row and does not raise, so before this the whole assign reported
+     success and changed nothing, on exactly the day a coach was most likely to
+     be adjusting a plan they had already set. On any other day the insert below
+     raises 42501 and the refusal is visible, which is why this was invisible.
+     Nutrition writes belong to the nutritionist and the sport scientist (0070,
+     access matrix §3.3). */
+  const REFUSED = 'Not saved: setting nutrition targets belongs to the nutritionist and the sport scientist.';
+
   if (existingRow && existingRow.effective_from === today) {
-    const { error } = await db.from('nutrition_targets').update(values).eq('id', existingRow.id).eq('org_id', orgId);
+    const { data, error } = await db
+      .from('nutrition_targets')
+      .update(values)
+      .eq('id', existingRow.id)
+      .eq('org_id', orgId)
+      .select('id');
     if (error) return { athleteId, skipped: true, reason: error.message };
+    if (!data || data.length === 0) return { athleteId, skipped: true, reason: REFUSED };
     return { athleteId, skipped: false };
   }
 
   if (existingRow) {
-    const { error: expireError } = await db
+    const { data: expired, error: expireError } = await db
       .from('nutrition_targets')
       .update({ effective_to: today })
       .eq('id', existingRow.id)
-      .eq('org_id', orgId);
+      .eq('org_id', orgId)
+      .select('id');
     if (expireError) return { athleteId, skipped: true, reason: expireError.message };
+    if (!expired || expired.length === 0) return { athleteId, skipped: true, reason: REFUSED };
   }
 
   const { error: insertError } = await db.from('nutrition_targets').insert({

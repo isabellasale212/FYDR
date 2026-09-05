@@ -31,6 +31,7 @@ import { resolvePeriod } from '@/lib/period.server';
 import { availabilityStatus } from '@/lib/status';
 import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
+import { ATHLETE_BIO_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Athlete · Fydr' };
 
@@ -251,7 +252,7 @@ export default async function AthletePage({
   // the roster page's own check. 01-roles-and-permissions.md §1/§2 — an
   // individual athlete profile is named performance, wellness, load and
   // injury-availability detail, admin's clearest "cannot" case.
-  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medical');
+  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medic');
   if (!hasAccess) {
     return (
       <>
@@ -336,7 +337,7 @@ export default async function AthletePage({
   // coach and medical only, same as the query functions this button calls —
   // gating the control on the same two roles means it never offers an
   // action RLS is just going to reject.
-  const canLogWeighIn = claims.roles.includes('coach') || claims.roles.includes('medical');
+  const canLogWeighIn = claims.roles.includes('coach') || claims.roles.includes('medic');
   const weighIns = canLogWeighIn ? await fetchBodyCompositionEntries(db, orgId, athleteId) : [];
   /* The staff-set body-mass target range (migration 0060). Gated on the SAME two
    * roles for the same reason as the weigh-in controls above: body_mass_target_ranges
@@ -353,14 +354,16 @@ export default async function AthletePage({
   // Same two roles, for the same reason: availability_coach_insert_noninjury
   // (0041) and availability_medical_insert (0012) between them cover exactly
   // coach and medical, so this never offers an action RLS would reject.
-  const canSetAvailability = claims.roles.includes('coach') || claims.roles.includes('medical');
+  const canSetAvailability = claims.roles.includes('coach') || claims.roles.includes('medic');
   // One role only, for the same reason again: athletes_manage_update
   // (migration 0012) grants coach and admin, never medical — "medical reads
   // for context and does not edit the roster," that migration's own words.
   // Admin never reaches this page (hasAccess above is coach/medical only),
   // so this is coach-only in practice, offered only where RLS actually
   // allows the write. See PlayerProfileBio's own header for the rest.
-  const canEditBio = claims.roles.includes('coach');
+  /* D-26: the medic edits biographical details too, and the sport scientist was
+     refused here although the policy allowed it. Both fixed; see 0071. */
+  const canEditBio = hasAnyRole(claims.roles, ATHLETE_BIO_EDIT);
 
   /* The coach-facing correction path the club asked for: "the athlete shouldnt be
    * able to edit an entry only the coach should be able to do it on the system —
@@ -381,7 +384,7 @@ export default async function AthletePage({
    * the card says which window it is showing rather than implying it is everything. */
   const CORRECTION_WINDOW_DAYS = 28;
   const correctionRange = { from: addDays(today, -(CORRECTION_WINDOW_DAYS - 1)), to: today };
-  const canCorrect = claims.roles.includes('coach') || claims.roles.includes('medical');
+  const canCorrect = claims.roles.includes('coach') || claims.roles.includes('medic');
   /* hasAccess above already restricted this whole page to coach/medical, so
    * canCorrect is true for every reader who gets here today. It is computed
    * explicitly anyway rather than hardcoded to true: if this page is ever opened
@@ -690,7 +693,7 @@ export default async function AthletePage({
                   </>
                 )}
               </div>
-              {claims.roles.includes('medical') ? (
+              {claims.roles.includes('medic') ? (
                 <Link href="/injuries/new" className="btn-ghost-pill" style={{ padding: '8px 16px' }}>
                   + Log injury
                 </Link>
@@ -723,7 +726,7 @@ export default async function AthletePage({
               userId={claims.userId}
               today={today}
               timezone={timezone}
-              viewerIsMedical={claims.roles.includes('medical')}
+              viewerIsMedical={claims.roles.includes('medic')}
             />
 
             {/* CORRECTED. This comment used to read "id is the Wellness domain chip's
@@ -1016,7 +1019,7 @@ export default async function AthletePage({
           training={trainingRevisions}
         />
 
-        {claims.roles.includes('admin') ? (
+        {claims.roles.includes('sport_scientist') ? (
           <section className="card pp-card" aria-labelledby="sar-title">
             <h2 className="card-title" id="sar-title">
               Subject access request

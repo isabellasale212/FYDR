@@ -19,7 +19,18 @@ import {
 import { WeekLoadChart } from '@/components/WeekLoadChart/WeekLoadChart';
 import { enumLabel, mdLabel } from '@/lib/format';
 
-type Props = { orgId: string; userId: string; templateId: string; name: string; structure: TemplateStructure; archived: boolean };
+type Props = {
+  orgId: string;
+  userId: string;
+  templateId: string;
+  name: string;
+  structure: TemplateStructure;
+  archived: boolean;
+  /** Whether this viewer may actually write. G-34: these controls were
+   *  unconditional, so a role the policy excludes pressed them and nothing
+   *  happened, with no error. */
+  canManage: boolean;
+};
 
 const SESSION_TYPES = ['training', 'gym', 'match', 'testing', 'recovery', 'meeting', 'rehab'] as const;
 
@@ -45,7 +56,7 @@ function positionsInOrder(structure: TemplateStructure): TemplateDay[] {
  *  update. Session reordering within a day is up/down buttons, not drag —
  *  the spec's own stated mobile fallback ("Move to..."), used here for
  *  both surfaces rather than building a second interaction only web gets. */
-export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialName, structure: initialStructure, archived }: Props) {
+export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialName, structure: initialStructure, archived, canManage }: Props) {
   const router = useRouter();
   const [name, setName] = useState(initialName);
   const [structure, setStructure] = useState<TemplateStructure>(initialStructure);
@@ -165,6 +176,12 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
           />
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {/* G-34: duplicate, archive/restore and save all write week_templates,
+              which 0070 leaves with the coach and the sport scientist. The rest
+              of the builder still renders, because §3.1 gives every staff role a
+              read on templates. */}
+          {canManage ? (
+          <>
           <button type="button" className="btn-ghost" onClick={() => duplicateMutation.mutate()} disabled={duplicateMutation.isPending}>
             Duplicate
           </button>
@@ -180,6 +197,8 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
           >
             {saveMutation.isPending ? 'Saving…' : 'Save changes'}
           </button>
+          </>
+          ) : null}
         </div>
       </div>
 

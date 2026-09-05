@@ -91,7 +91,7 @@ export default async function ProgrammesPage({
   const { p: selectedParam } = await searchParams;
   const { db, orgId, orgName, claims } = await requireStaff();
   const isCoach = claims.roles.includes('coach');
-  const isMedical = claims.roles.includes('medical');
+  const isMedical = claims.roles.includes('medic');
   const programmes = await fetchProgrammeListDetails(db, orgId);
 
   const selected = programmes.find((p) => p.id === selectedParam) ?? programmes[0] ?? null;

@@ -1,27 +1,29 @@
-import { randomBytes, randomUUID } from 'crypto';
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { sendInviteEmail } from '@/lib/email/send';
+import { deleteInvitedUser, issueInvite } from '@/lib/invite';
 import { requireStaff } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
+import { SETTINGS_ADMIN, actingRole, hasAnyRole } from '@/lib/access';
 
-const VALID_ROLES: AppRole[] = ['athlete', 'coach', 'medical', 'admin'];
+/* The allow-list the submitted roles are filtered through, so anything absent
+ * here cannot be granted at all. It held four values and the enum now holds
+ * six, which meant an administrator could not give anybody the S&C or the
+ * nutritionist role through the only screen that grants roles. */
+const VALID_ROLES: AppRole[] = ['athlete', 'coach', 'medic', 'sport_scientist', 'strength_conditioning', 'nutritionist'];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export type CreateUserResult = {
   ok: boolean;
   error: string | null;
   userId: string | null;
-  temporaryPassword: string | null;
+  /** The single-use link the new person follows to set their own password.
+   *  Replaces the temporary password this response used to carry. Returned
+   *  because no email provider exists yet, so without it the account would be
+   *  unreachable; see lib/invite.ts for why a link is not the same thing. */
+  inviteUrl: string | null;
   emailDelivered: boolean;
 };
-
-function generateTemporaryPassword(): string {
-  // 12 random bytes, base64url-encoded — readable enough to copy by hand,
-  // well above the 10-character minimum this build's own change-password
-  // form already enforces.
-  return randomBytes(12).toString('base64url');
-}
 
 /** docs/screens/user-management.md, the one write in this feature that
  *  can't go through an RLS-gated client at all: creating a real auth.users
@@ -44,13 +46,13 @@ function generateTemporaryPassword(): string {
  *  delivered email is an addition to that, never a replacement for it. */
 export async function POST(request: Request): Promise<NextResponse<CreateUserResult>> {
   const { db, orgId, orgName, claims } = await requireStaff();
-  if (!claims.roles.includes('admin')) {
-    return NextResponse.json({ ok: false, error: 'Admin access only.', userId: null, temporaryPassword: null, emailDelivered: false }, { status: 403 });
+  if (!hasAnyRole(claims.roles, SETTINGS_ADMIN)) {
+    return NextResponse.json({ ok: false, error: 'Admin access only.', userId: null, inviteUrl: null, emailDelivered: false }, { status: 403 });
   }
 
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== 'object') {
-    return NextResponse.json({ ok: false, error: 'Invalid request.', userId: null, temporaryPassword: null, emailDelivered: false }, { status: 400 });
+    return NextResponse.json({ ok: false, error: 'Invalid request.', userId: null, inviteUrl: null, emailDelivered: false }, { status: 400 });
   }
 
   const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
@@ -59,16 +61,25 @@ export async function POST(request: Request): Promise<NextResponse<CreateUserRes
   const athleteId = typeof body.athleteId === 'string' && body.athleteId ? body.athleteId : null;
 
   if (!EMAIL_RE.test(email)) {
-    return NextResponse.json({ ok: false, error: 'Enter a valid email address.', userId: null, temporaryPassword: null, emailDelivered: false }, { status: 400 });
+    return NextResponse.json({ ok: false, error: 'Enter a valid email address.', userId: null, inviteUrl: null, emailDelivered: false }, { status: 400 });
   }
   if (!fullName) {
-    return NextResponse.json({ ok: false, error: 'Enter a name.', userId: null, temporaryPassword: null, emailDelivered: false }, { status: 400 });
+    return NextResponse.json({ ok: false, error: 'Enter a name.', userId: null, inviteUrl: null, emailDelivered: false }, { status: 400 });
   }
   if (roles.length === 0) {
-    return NextResponse.json({ ok: false, error: 'Tick at least one role.', userId: null, temporaryPassword: null, emailDelivered: false }, { status: 400 });
+    return NextResponse.json({ ok: false, error: 'Tick at least one role.', userId: null, inviteUrl: null, emailDelivered: false }, { status: 400 });
   }
 
-  const newUserId = randomUUID();
+  /* The auth user is created FIRST now, and the application row second. That
+     is the reverse of the old order and it follows from the mechanism:
+     generateLink assigns the id, so there is no id to write a users row against
+     until the invite exists. The rollback runs the other way round to match. */
+  const admin = createAdminClient();
+  const invited = await issueInvite(admin, email, fullName, new URL(request.url).origin);
+  if (!invited.ok) {
+    return NextResponse.json({ ok: false, error: invited.error, userId: null, inviteUrl: null, emailDelivered: false }, { status: 400 });
+  }
+  const { userId: newUserId, inviteUrl } = invited.invite;
 
   const { error: insertErr } = await db.from('users').insert({
     id: newUserId,
@@ -78,30 +89,11 @@ export async function POST(request: Request): Promise<NextResponse<CreateUserRes
     status: 'active',
   });
   if (insertErr) {
+    // Cancel the invite rather than leave a sign-in with no application user
+    // behind it. Both were created by this request, seconds ago.
+    await deleteInvitedUser(admin, newUserId);
     const message = /duplicate key|already exists/i.test(insertErr.message) ? 'That email is already registered in this club.' : insertErr.message;
-    return NextResponse.json({ ok: false, error: message, userId: null, temporaryPassword: null, emailDelivered: false }, { status: 400 });
-  }
-
-  const temporaryPassword = generateTemporaryPassword();
-  const admin = createAdminClient();
-  const authResult = await admin.auth.admin.createUser({
-    id: newUserId,
-    email,
-    password: temporaryPassword,
-    email_confirm: true,
-    user_metadata: { full_name: fullName },
-  });
-
-  if (authResult.error) {
-    // Roll back the just-created row rather than leave an application user
-    // with no matching sign-in — this row never existed before this
-    // request, so removing it is cancelling a failed creation, not
-    // deleting a real user's data.
-    await db.from('users').delete().eq('id', newUserId);
-    const message = /already been registered|already exists/i.test(authResult.error.message)
-      ? 'That email is already registered on this project.'
-      : authResult.error.message;
-    return NextResponse.json({ ok: false, error: message, userId: null, temporaryPassword: null, emailDelivered: false }, { status: 400 });
+    return NextResponse.json({ ok: false, error: message, userId: null, inviteUrl: null, emailDelivered: false }, { status: 400 });
   }
 
   const { error: rolesErr } = await db.from('user_roles').insert(roles.map((role) => ({ org_id: orgId, user_id: newUserId, role, granted_by: claims.userId })));
@@ -110,17 +102,17 @@ export async function POST(request: Request): Promise<NextResponse<CreateUserRes
     // work) — say so plainly rather than report a clean failure, and hand
     // back the password and id so the admin isn't left with no way to
     // finish the job from the user list.
-    return NextResponse.json({ ok: false, error: `Account created, but roles failed to save: ${rolesErr.message}. Set roles for this user from the list.`, userId: newUserId, temporaryPassword, emailDelivered: false }, { status: 500 });
+    return NextResponse.json({ ok: false, error: `Account created, but roles failed to save: ${rolesErr.message}. Set roles for this user from the list.`, userId: newUserId, inviteUrl, emailDelivered: false }, { status: 500 });
   }
 
   if (athleteId) {
     const { error: linkErr } = await db.from('athletes').update({ user_id: newUserId }).eq('org_id', orgId).eq('id', athleteId).is('user_id', null);
     if (linkErr) {
-      return NextResponse.json({ ok: false, error: `Account and roles created, but linking the athlete record failed: ${linkErr.message}`, userId: newUserId, temporaryPassword, emailDelivered: false }, { status: 500 });
+      return NextResponse.json({ ok: false, error: `Account and roles created, but linking the athlete record failed: ${linkErr.message}`, userId: newUserId, inviteUrl, emailDelivered: false }, { status: 500 });
     }
   }
 
-  const actorRole = (claims.roles.includes('admin') ? 'admin' : claims.roles[0]) as AppRole;
+  const actorRole = actingRole(claims.roles);
 
   await db.from('audit_log').insert({
     org_id: orgId,
@@ -132,17 +124,15 @@ export async function POST(request: Request): Promise<NextResponse<CreateUserRes
     metadata: { roles, athlete_id: athleteId },
   });
 
-  // Attempts a real invite email — see lib/email/provider.ts for why this
-  // is almost always the honest no-op today (no RESEND_API_KEY anywhere
-  // in this project) rather than a real send. Either way, the temporary
-  // password is still returned below: this never becomes the only way to
-  // get a new account working, only an additional one when it's real.
+  /* Attempts a real invite email — see lib/email/provider.ts for why this is
+     almost always an honest no-op today rather than a real send. The link is
+     returned either way: with no provider configured, refusing to show it would
+     mean every account created is one nobody can ever sign in to. */
   const { delivered: emailDelivered } = await sendInviteEmail(db, orgId, claims.userId, actorRole, newUserId, email, {
     recipientName: fullName,
     clubName: orgName,
-    temporaryPassword,
-    signInUrl: new URL('/login', request.url).toString(),
+    inviteUrl,
   });
 
-  return NextResponse.json({ ok: true, error: null, userId: newUserId, temporaryPassword, emailDelivered });
+  return NextResponse.json({ ok: true, error: null, userId: newUserId, inviteUrl, emailDelivered });
 }

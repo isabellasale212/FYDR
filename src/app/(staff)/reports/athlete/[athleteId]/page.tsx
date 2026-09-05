@@ -101,7 +101,7 @@ export default async function AthleteReportPage({
   const age = ageFrom(athlete.date_of_birth, timezone);
   const openInjury = athlete.open_injuries[0];
 
-  const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
+  const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   await recordReportView(db, orgId, claims.userId, actorRole, 'athlete', {
     athlete_id: athleteId,
     from: report.from,

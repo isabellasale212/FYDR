@@ -5,6 +5,7 @@ import { RETENTION_SCHEDULE } from '@/lib/retention/schedule';
 import { fetchRetentionNightlyReports } from '@/lib/retention/history';
 import { formatDateTime } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
+import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Data retention · Fydr' };
 
@@ -27,7 +28,7 @@ export const metadata = { title: 'Data retention · Fydr' };
  *  The table below is where an admin actually reads them. */
 export default async function RetentionPage() {
   const { db, orgId, claims, timezone } = await requireStaff();
-  if (!claims.roles.includes('admin')) redirect('/settings');
+  if (!hasAnyRole(claims.roles, SETTINGS_ADMIN)) redirect('/settings');
 
   const nightlyReports = await fetchRetentionNightlyReports(db, orgId);
 

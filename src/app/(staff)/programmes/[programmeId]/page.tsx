@@ -29,7 +29,7 @@ export default async function ProgrammeBuilderPage({
   if (!isUuid(programmeId)) notFound();
 
   const isCoach = claims.roles.includes('coach');
-  const isMedical = claims.roles.includes('medical');
+  const isMedical = claims.roles.includes('medic');
 
   const detail = await fetchProgrammeDetail(db, orgId, programmeId);
   if (!detail) notFound();

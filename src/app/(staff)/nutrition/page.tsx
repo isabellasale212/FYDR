@@ -23,6 +23,7 @@ import { fetchSquadList } from '@/lib/queries/squad';
 import { buildChaseList, buildWorkspaceAthlete, groupByUnit, meanMass } from '@/lib/nutritionWorkspace';
 import { MASS_TREND_FLAG_WINDOW_DAYS } from '@/lib/nutritionRules';
 import { requireStaff } from '@/lib/session';
+import { NUTRITION_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Nutrition · Fydr' };
 
@@ -127,7 +128,7 @@ const MASS_TREND_FALLBACK_NO_SEASON: RangeKey = 'year';
 export default async function NutritionPage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, claims, timezone } = await requireStaff();
   const isCoach = claims.roles.includes('coach');
-  const isMedical = claims.roles.includes('medical');
+  const isMedical = claims.roles.includes('medic');
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
 
@@ -367,7 +368,7 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
         orgId={orgId}
         userId={claims.userId}
         isCoach={isCoach}
-        isMedical={isMedical}
+        canManageNutrition={hasAnyRole(claims.roles, NUTRITION_EDIT)}
         plans={plans.map((p) => ({
           ruleId: p.rule.id,
           name: p.name,

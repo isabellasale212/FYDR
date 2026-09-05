@@ -153,13 +153,18 @@ create policy problem_report_notes_medical_insert on public.problem_report_notes
 -- that predates its own acknowledgement.
 -- ---------------------------------------------------------------------------
 
+-- GUARDED for the same reason as 0040's own starter insert, and additionally on
+-- the report itself: if 0040 skipped its row because the database was never
+-- seeded, this note has no parent to hang off and would fail the run.
 insert into problem_report_notes
   (id, org_id, report_id, body, created_by, created_at)
-values
-  ('fa0c0000-0000-4000-8000-000000000001',
-   'a0000000-0000-4000-8000-000000000001',
-   'fa0b0000-0000-4000-8000-000000000001',
-   'Rang him straight away. Headache came on about an hour after the bike, no visual symptoms, slept fine. Holding him at the current GRTP stage rather than progressing Thursday, reviewing before the session.',
-   'e5e20000-0000-4000-8000-00000000000d',
-   now() - interval '2 days' + interval '3 hours')
+select
+  'fa0c0000-0000-4000-8000-000000000001'::uuid,
+  'a0000000-0000-4000-8000-000000000001'::uuid,
+  'fa0b0000-0000-4000-8000-000000000001'::uuid,
+  'Rang him straight away. Headache came on about an hour after the bike, no visual symptoms, slept fine. Holding him at the current GRTP stage rather than progressing Thursday, reviewing before the session.',
+  'e5e20000-0000-4000-8000-00000000000d'::uuid,
+  now() - interval '2 days' + interval '3 hours'
+where exists (select 1 from problem_reports r where r.id = 'fa0b0000-0000-4000-8000-000000000001')
+  and exists (select 1 from users          u where u.id = 'e5e20000-0000-4000-8000-00000000000d')
 on conflict (id) do nothing;

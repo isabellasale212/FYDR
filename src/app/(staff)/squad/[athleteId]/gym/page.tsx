@@ -24,6 +24,7 @@ import {
   summarisePositional,
   type PositionalBand,
 } from '@/lib/queries/positionalContext';
+import { ATHLETE_GYM } from '@/lib/access';
 
 export const metadata = { title: 'Gym · Fydr' };
 
@@ -147,7 +148,10 @@ export default async function AthleteGymPage({
 }) {
   const { athleteId } = await params;
   const sp = await searchParams;
-  const ctx = await loadAthleteDomainContext(athleteId, sp, { allowed: GYM_PERIODS });
+  /* docs/access-matrix.md §3.1, Athlete gym: VE V V VE X. The one athlete
+     domain screen the nutritionist does not open; its two siblings are V in
+     every column. */
+  const ctx = await loadAthleteDomainContext(athleteId, sp, { allowed: GYM_PERIODS, roles: ATHLETE_GYM });
   if (ctx.denied) return <AthleteDomainDenied orgName={ctx.orgName} domain="Gym" />;
 
   const { db, orgId, timezone, today, athlete, groups, groupIds, season, periodKey } = ctx;

@@ -4633,7 +4633,7 @@ export type Database = {
     }
     }
     Enums: {
-    app_role: "athlete" | "coach" | "medical" | "admin"
+    app_role: "athlete" | "coach" | "medic" | "sport_scientist" | "strength_conditioning" | "nutritionist"
     assignment_status: "active" | "suspended" | "completed" | "cancelled"
     athlete_status: "active" | "injured_long_term" | "left_club"
     attendance_status: "full" | "modified" | "absent" | "excused"

@@ -28,7 +28,7 @@ export default async function GroupsPage() {
    * page's own role gate), so the link is only offered to those two. Hiding
    * UI only — the real gate is on that route and in teams' RLS, never here.
    * CLAUDE.md rule 2. */
-  const canAllocate = claims.roles.includes('coach') || claims.roles.includes('medical');
+  const canAllocate = claims.roles.includes('coach') || claims.roles.includes('medic');
 
   const sections = new Map<string, typeof groups>();
   for (const g of groups) {

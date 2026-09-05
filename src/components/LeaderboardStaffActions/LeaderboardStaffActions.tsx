@@ -14,6 +14,10 @@ type Props = {
   boardId: string;
   visibility: string;
   isMedical: boolean;
+  /** Whether this viewer may actually write. G-34: these controls were
+   *  unconditional, so a role the policy excludes pressed them and nothing
+   *  happened, with no error. */
+  canManage: boolean;
   ranking: readonly RankedRow[];
 };
 
@@ -21,7 +25,7 @@ type Props = {
  *  on clinical grounds. screens/leaderboards.md's publish confirmation names what is
  *  about to be disclosed; this build's version of that is the plain-language note on
  *  the builder page rather than a second confirm sheet here, a real, documented cut. */
-export function LeaderboardStaffActions({ orgId, userId, boardId, visibility, isMedical, ranking }: Props) {
+export function LeaderboardStaffActions({ orgId, userId, boardId, visibility, isMedical, ranking, canManage }: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -83,6 +87,11 @@ export function LeaderboardStaffActions({ orgId, userId, boardId, visibility, is
         </p>
       ) : null}
       <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
+        {/* G-34: publish and delete belong to whoever may write the board. The
+            medic's suppression control below is deliberately NOT gated on this:
+            a medical suppression is the medic's own act and lives under a
+            different policy. */}
+        {canManage ? (
         <button
           type="button"
           className="btn-ghost"
@@ -95,6 +104,7 @@ export function LeaderboardStaffActions({ orgId, userId, boardId, visibility, is
               ? 'Unpublish'
               : 'Publish to athletes'}
         </button>
+        ) : null}
 
         {isMedical ? (
           <button type="button" className="btn-ghost" onClick={() => setSuppressing((v) => !v)}>
@@ -102,7 +112,7 @@ export function LeaderboardStaffActions({ orgId, userId, boardId, visibility, is
           </button>
         ) : null}
 
-        {!confirmingDelete ? (
+        {!canManage ? null : !confirmingDelete ? (
           <button type="button" className="btn-ghost" onClick={() => setConfirmingDelete(true)}>
             Delete board
           </button>

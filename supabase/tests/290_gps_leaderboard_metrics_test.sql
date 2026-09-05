@@ -173,6 +173,8 @@ begin
 end $$;
 
 set local role authenticated;
+select ok(tests.rls_is_engaged(),
+  'canary: this session is subject to RLS, so the assertions below measure something');
 select tests.set_jwt(tests.uid('orga', 'user_coach'));
 
 
@@ -429,12 +431,17 @@ select is(
   0::bigint,
   'and the opted-out athlete sees nothing of the board they left');
 
+-- This fixture user held 'admin' and now holds 'sport_scientist' (0063). The
+-- reasoning in the old assertion was that admin had no athlete_id, so the
+-- own-row gate could never pass. That half is still true. The other half, that
+-- admin was not staff, is not: a sport scientist is staff and sees the whole
+-- board, so the own-row gate is never the thing deciding their answer.
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
-select is(
+select cmp_ok(
   (select count(*) from compute_leaderboard(tests.uid('orga', 'lb_best_gps.total_distance_m'))),
-  0::bigint,
-  'an admin reads no named GPS ranking: no athlete_id to match, so the own-row gate '
-  'can never pass for them');
+  '>', 0::bigint,
+  'a sport scientist reads the named GPS ranking in full: staff, so the own-row '
+  'gate never applies to them');
 
 select * from finish();
 rollback;

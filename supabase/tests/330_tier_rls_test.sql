@@ -50,6 +50,16 @@ select is(
   'org B is Premium'
 );
 
+-- From here the session is an ordinary application user. Without this the file
+-- runs as the table owner, and an owner bypasses RLS unless the table is set to
+-- FORCE ROW LEVEL SECURITY, which none of these are. Every refusal asserted
+-- below was therefore not being tested at all: the write simply succeeded.
+-- 020_cross_tenant_test.sql has carried this line since it was written; this
+-- file was missing it.
+set local role authenticated;
+select ok(tests.rls_is_engaged(),
+  'canary: this session is subject to RLS, so the assertions below measure something');
+
 -- ---------------------------------------------------------------------------
 -- 1. A Basic club cannot grant HealthKit sync, whoever asks
 -- ---------------------------------------------------------------------------

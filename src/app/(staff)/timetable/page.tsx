@@ -25,9 +25,9 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 export default async function TimetablePage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, orgName, claims, timezone } = await requireStaff();
   const isCoach = claims.roles.includes('coach');
-  const isMedical = claims.roles.includes('medical');
+  const isMedical = claims.roles.includes('medic');
   if (!isCoach && !isMedical) redirect('/dashboard');
-  const actorRole: 'coach' | 'medical' = isMedical ? 'medical' : 'coach';
+  const actorRole: 'coach' | 'medic' = isMedical ? 'medic' : 'coach';
 
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);

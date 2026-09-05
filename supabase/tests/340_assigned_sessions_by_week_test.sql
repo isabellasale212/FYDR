@@ -31,16 +31,31 @@ select * from no_plan();
 
 select tests.fixtures();
 
+-- G-33 row 1, decided 2026-09-05: authoring gym work belongs to the sport
+-- scientist and the S&C, and a coach reads it. Every authoring step in this
+-- file was a coach's and is now the S&C's; the cross-tenant checks below still
+-- use the other club's coach, because reading is unchanged.
+
+-- From here the session is an ordinary application user. Without this the file
+-- runs as the table owner, and an owner bypasses RLS unless the table is set to
+-- FORCE ROW LEVEL SECURITY, which none of these are. Every refusal asserted
+-- below was therefore not being tested at all: the write simply succeeded.
+-- 020_cross_tenant_test.sql has carried this line since it was written; this
+-- file was missing it.
+set local role authenticated;
+select ok(tests.rls_is_engaged(),
+  'canary: this session is subject to RLS, so the assertions below measure something');
+
 -- ===========================================================================
 -- Build a two-block programme: block 1 runs 2 weeks, block 2 runs 2 weeks.
 -- Week 1 has two sessions, week 2 has three, block 2 week 1 has one.
 -- ===========================================================================
-select tests.set_jwt(tests.uid('orga', 'user_coach'));
+select tests.set_jwt(tests.uid('orga', 'user_sc'));
 
 select lives_ok(format($q$
   insert into programmes (id, org_id, name, programme_type, status, created_by)
   values (%L, %L, 'Pre-season', 'gym', 'active', %L)$q$,
-  tests.uid('orga','p1'), tests.uid('orga','org'), tests.uid('orga','user_coach')),
+  tests.uid('orga','p1'), tests.uid('orga','org'), tests.uid('orga','user_sc')),
   'coach creates the gym programme');
 
 select lives_ok(format($q$
@@ -71,7 +86,7 @@ select lives_ok(format($q$
   insert into programme_assignments (org_id, programme_id, athlete_id, starts_on, assigned_by)
   values (%L, %L, %L, date '2026-01-05', %L)$q$,
   tests.uid('orga','org'), tests.uid('orga','p1'), tests.uid('orga','athlete_1'),
-  tests.uid('orga','user_coach')),
+  tests.uid('orga','user_sc')),
   'assigned to athlete_1 from Monday 5 Jan 2026');
 
 
@@ -138,20 +153,29 @@ select is_empty(
 -- ===========================================================================
 -- 6. A duplicate assignment path must not double count
 -- ===========================================================================
+/* The group itself is the coach's to create, not the S&C's: docs/access-matrix.md
+   §3.6 reads "Groups | VECD | VECD | V | V | V", so an S&C reads groups and does
+   not make them. Incidental setup for the assignment below, which IS the S&C's. */
 select tests.set_jwt(tests.uid('orga', 'user_coach'));
+-- groups has no created_by column and never has (id, org_id, name, description,
+-- colour, group_type, sort_order, timestamps), and group_type is NOT NULL, so
+-- the original three-column insert here raised 42703 and this assertion had
+-- never once passed. The name also has to differ from the fixtures' own
+-- 'Forwards', because groups carries UNIQUE (org_id, name).
 select lives_ok(format($q$
-  insert into groups (id, org_id, name, created_by) values (%L, %L, 'Forwards', %L)$q$,
-  tests.uid('orga','grp'), tests.uid('orga','org'), tests.uid('orga','user_coach')),
+  insert into groups (id, org_id, name, group_type) values (%L, %L, 'Pack', 'positional')$q$,
+  tests.uid('orga','grp'), tests.uid('orga','org')),
   'a group exists');
 select lives_ok(format($q$
   insert into group_memberships (org_id, group_id, athlete_id) values (%L, %L, %L)$q$,
   tests.uid('orga','org'), tests.uid('orga','grp'), tests.uid('orga','athlete_1')),
   'athlete_1 is in it');
+select tests.set_jwt(tests.uid('orga', 'user_sc'));
 select lives_ok(format($q$
   insert into programme_assignments (org_id, programme_id, group_id, starts_on, assigned_by)
   values (%L, %L, %L, date '2026-01-05', %L)$q$,
   tests.uid('orga','org'), tests.uid('orga','p1'), tests.uid('orga','grp'),
-  tests.uid('orga','user_coach')),
+  tests.uid('orga','user_sc')),
   'the SAME programme is also assigned to the group — the 0038 shape');
 
 select tests.set_jwt(tests.uid('orga', 'user_athlete_1'));
@@ -167,7 +191,7 @@ select is(
 -- ===========================================================================
 -- 7. A suspended assignment asks for nothing
 -- ===========================================================================
-select tests.set_jwt(tests.uid('orga', 'user_coach'));
+select tests.set_jwt(tests.uid('orga', 'user_sc'));
 select lives_ok(format($q$
   update programme_assignments set status = 'suspended'
   where org_id = %L and programme_id = %L$q$,
@@ -187,11 +211,11 @@ select is(
 -- ===========================================================================
 -- 8. Nutrition programmes are not gym work
 -- ===========================================================================
-select tests.set_jwt(tests.uid('orga', 'user_coach'));
+select tests.set_jwt(tests.uid('orga', 'user_sc'));
 select lives_ok(format($q$
   insert into programmes (id, org_id, name, programme_type, status, created_by)
   values (%L, %L, 'Fuelling', 'nutrition', 'active', %L)$q$,
-  tests.uid('orga','pn'), tests.uid('orga','org'), tests.uid('orga','user_coach')),
+  tests.uid('orga','pn'), tests.uid('orga','org'), tests.uid('orga','user_sc')),
   'a nutrition programme exists');
 select lives_ok(format($q$
   insert into programme_blocks (id, org_id, programme_id, name, sequence, duration_weeks)
@@ -207,7 +231,7 @@ select lives_ok(format($q$
   insert into programme_assignments (org_id, programme_id, athlete_id, starts_on, assigned_by)
   values (%L, %L, %L, date '2026-01-05', %L)$q$,
   tests.uid('orga','org'), tests.uid('orga','pn'), tests.uid('orga','athlete_1'),
-  tests.uid('orga','user_coach')),
+  tests.uid('orga','user_sc')),
   'assigned to athlete_1');
 
 select tests.set_jwt(tests.uid('orga', 'user_athlete_1'));

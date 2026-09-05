@@ -1,7 +1,6 @@
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 import { NewInjuryForm } from '@/components/NewInjuryForm/NewInjuryForm';
-import { requireStaff } from '@/lib/session';
+import { requireInjuryAccess } from '@/lib/session';
 
 export const metadata = { title: 'New injury · Fydr' };
 
@@ -9,8 +8,8 @@ export const metadata = { title: 'New injury · Fydr' };
  *  athlete picker". Medical only — a coach reaching this URL directly is sent back,
  *  the same treatment as every other medical-only write path in this build. */
 export default async function NewInjuryPage() {
-  const { db, orgId, claims, timezone } = await requireStaff();
-  if (!claims.roles.includes('medical')) redirect('/injuries');
+  const { db, orgId, claims, timezone } = await requireInjuryAccess();
+
 
   const { data: athletes, error } = await db
     .from('athletes')

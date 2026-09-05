@@ -27,7 +27,7 @@ export async function POST(request: Request): Promise<NextResponse<UploadResult>
      present: an admin-only staff member had a write path onto gps_records that
      migration 0026's role table does not give them, and a Basic club could
      commit GPS rows the rest of the product then refuses to show them. */
-  if (!claims.roles.includes('coach') && !claims.roles.includes('medical')) {
+  if (!claims.roles.includes('coach') && !claims.roles.includes('medic')) {
     return NextResponse.json(
       { ok: false, error: 'Importing GPS files is not part of this role.', batchId: null, filename: null, acceptedCount: 0, rejectedCount: 0, rejected: [] },
       { status: 403 },

@@ -4,6 +4,7 @@ import { ThresholdRow } from '@/components/ThresholdRow/ThresholdRow';
 import { describeThreshold, fetchThresholds } from '@/lib/queries/thresholds';
 import { enumLabel } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
+import { THRESHOLD_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Thresholds · Fydr' };
 
@@ -92,7 +93,8 @@ export default async function ThresholdsPage() {
                 <span className="tiny num">{rows.length}</span>
               </h2>
               {rows.map((t) => (
-                <ThresholdRow key={t.id} threshold={t} orgId={orgId} sentence={describeThreshold(t)} />
+                <ThresholdRow
+              canManage={hasAnyRole(claims.roles, THRESHOLD_EDIT)} key={t.id} threshold={t} orgId={orgId} sentence={describeThreshold(t)} />
               ))}
             </section>
           ))}

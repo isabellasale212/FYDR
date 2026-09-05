@@ -1227,12 +1227,20 @@ export async function cancelSession(
   orgId: string,
   sessionId: string,
 ): Promise<{ error: string | null }> {
-  const { error } = await db
+/* G-34. `.select('id')` so a refusal is sayable. An UPDATE that RLS filters
+   matches no row and does NOT raise, so checking `error` alone reported success
+   and changed nothing. This is a single row addressed by id that was on screen a
+   moment ago, so zero rows can only mean refused. */
+  const { data, error } = await db
     .from('sessions')
     .update({ status: 'cancelled' })
     .eq('id', sessionId)
-    .eq('org_id', orgId);
+    .eq('org_id', orgId)
+    .select('id');
   if (error) return { error: humanizeDbError(error.message, 'staff') };
+  if (!data || data.length === 0) {
+    return { error: 'Not saved: changing the schedule belongs to the coach and the sport scientist.' };
+  }
 
   const { error: waiveError } = await db
     .from('compliance_expectations')
@@ -1252,12 +1260,21 @@ export async function reinstateSession(
   orgId: string,
   sessionId: string,
 ): Promise<{ error: string | null }> {
-  const { error } = await db
+/* G-34. `.select('id')` so a refusal is sayable. An UPDATE that RLS filters
+   matches no row and does NOT raise, so checking `error` alone reported success
+   and changed nothing. This is a single row addressed by id that was on screen a
+   moment ago, so zero rows can only mean refused. */
+  const { data, error } = await db
     .from('sessions')
     .update({ status: 'planned' })
     .eq('id', sessionId)
-    .eq('org_id', orgId);
-  return { error: error ? humanizeDbError(error.message, 'staff') : null };
+    .eq('org_id', orgId)
+    .select('id');
+  if (error) return { error: humanizeDbError(error.message, 'staff') };
+  if (!data || data.length === 0) {
+    return { error: 'Not saved: changing the schedule belongs to the coach and the sport scientist.' };
+  }
+  return { error: null };
 }
 
 /** Soft delete, and only when it is safe: screens/schedule.md's own rule is

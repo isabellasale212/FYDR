@@ -153,7 +153,7 @@ export default async function ComplianceReportPage({
   // goes missing from a hand-built href.
   const query = complianceQuery(period.key, today, groupIds);
 
-  const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
+  const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   await recordReportView(db, orgId, claims.userId, actorRole, 'compliance', {
     from: fromDate,
     to: today,

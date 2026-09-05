@@ -2,12 +2,13 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { ThresholdEditorForm } from '@/components/ThresholdEditorForm/ThresholdEditorForm';
 import { requireStaff } from '@/lib/session';
+import { THRESHOLD_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'New threshold · Fydr' };
 
 export default async function NewThresholdPage() {
   const { orgId, claims } = await requireStaff();
-  if (!claims.roles.includes('coach')) redirect('/settings/thresholds');
+  if (!hasAnyRole(claims.roles, THRESHOLD_EDIT)) redirect('/settings/thresholds');
 
   return (
     <>

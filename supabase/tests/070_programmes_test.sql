@@ -36,6 +36,8 @@ begin
 end $$;
 
 set local role authenticated;
+select ok(tests.rls_is_engaged(),
+  'canary: this session is subject to RLS, so the assertions below measure something');
 
 
 -- ===========================================================================
@@ -77,12 +79,27 @@ select throws_ok(
 );
 
 select tests.set_jwt(tests.uid('orga', 'user_coach'));
+/* G-33 row 1, decided 2026-09-05: gym authorship belongs to the sport
+   scientist and the S&C. A plain coach reads gym programmes and no longer
+   writes them. This assertion used to be `lives_ok` for a coach and is the
+   single clearest statement of what changed. */
+select throws_ok(
+  format($q$insert into programmes (org_id, name, programme_type, created_by)
+            values (%L, 'Coach gym attempt', 'gym', %L)$q$,
+         tests.uid('orga','org'), tests.uid('orga','user_coach')),
+  '42501', null,
+  'a plain coach can no longer create a gym programme'
+);
+
+select tests.set_jwt(tests.uid('orga', 'user_sc'));
 select lives_ok(
   format($q$insert into programmes (id, org_id, name, programme_type, status, created_by)
             values (%L, %L, 'Pre-season strength', 'gym', 'active', %L)$q$,
-         tests.uid('orga','prog_gym'), tests.uid('orga','org'), tests.uid('orga','user_coach')),
-  'a coach creates a gym programme'
+         tests.uid('orga','prog_gym'), tests.uid('orga','org'), tests.uid('orga','user_sc')),
+  'an S&C creates the gym programme instead'
 );
+
+select tests.set_jwt(tests.uid('orga', 'user_coach'));
 select throws_ok(
   format($q$insert into programmes (org_id, name, programme_type, created_by)
             values (%L, 'Coach rehab attempt', 'rehab', %L)$q$,
@@ -117,12 +134,15 @@ select is(
 -- 3. The split cascades: a block on a GYM programme refuses medical
 -- ===========================================================================
 
-select tests.set_jwt(tests.uid('orga', 'user_coach'));
+/* The gym side of every cascade below belongs to the S&C now, not the coach.
+   G-33 row 1: authoring gym work is the sport scientist's and the S&C's, and a
+   coach reads it. The rehab side is untouched and is still the medic's. */
+select tests.set_jwt(tests.uid('orga', 'user_sc'));
 select lives_ok(
   format($q$insert into programme_blocks (id, org_id, programme_id, name, sequence)
             values (%L, %L, %L, 'Accumulation', 1)$q$,
          tests.uid('orga','block_gym'), tests.uid('orga','org'), tests.uid('orga','prog_gym')),
-  'a coach adds a block to the gym programme'
+  'an S&C adds a block to the gym programme'
 );
 
 select tests.set_jwt(tests.uid('orga', 'user_medical'));
@@ -146,26 +166,29 @@ select lives_ok(
 -- ===========================================================================
 
 select tests.set_jwt(tests.uid('orga', 'user_coach'));
+select tests.set_jwt(tests.uid('orga', 'user_sc'));
 select lives_ok(
   format($q$insert into programme_sessions (id, org_id, block_id, name, week_number, day_number, sequence)
             values (%L, %L, %L, 'Lower A', 1, 1, 1)$q$,
          tests.uid('orga','session_gym'), tests.uid('orga','org'), tests.uid('orga','block_gym')),
-  'a coach adds a session to the block'
+  'an S&C adds a session to the block'
 );
+select tests.set_jwt(tests.uid('orga', 'user_sc'));
 select lives_ok(
   format($q$insert into programme_exercises
               (org_id, programme_session_id, exercise_id, sequence, sets, reps_min, reps_max,
                load_basis, load_value, rest_seconds)
             values (%L, %L, %L, 1, 4, 3, 5, 'percent_1rm', 80, 180)$q$,
          tests.uid('orga','org'), tests.uid('orga','session_gym'), tests.uid('orga','exercise')),
-  'a coach prescribes an exercise on the session'
+  'an S&C prescribes an exercise on the session'
 );
+select tests.set_jwt(tests.uid('orga', 'user_sc'));
 select lives_ok(
   format($q$insert into programme_assignments (org_id, programme_id, athlete_id, assigned_by)
             values (%L, %L, %L, %L)$q$,
          tests.uid('orga','org'), tests.uid('orga','prog_gym'), tests.uid('orga','athlete_1'),
-         tests.uid('orga','user_coach')),
-  'a coach assigns the gym programme to athlete_1'
+         tests.uid('orga','user_sc')),
+  'an S&C assigns the gym programme to athlete_1'
 );
 
 
@@ -280,6 +303,31 @@ select throws_ok(
          tests.uid('orga','org'), tests.uid('orga','athlete_2')),
   '42501', null,
   'a coach has no write path onto gym_session_logs at all — staff-entered logging is a different, unbuilt surface'
+);
+
+
+
+-- ===========================================================================
+/* THE LEAN CLUB, asserted rather than asserted-about. G-33's answer to "what
+   about a club with no dedicated S&C" is that one account holds both roles,
+   not that the coach role keeps a write it should not have. That answer is only
+   worth giving if granting two roles actually works for this exact screen, so
+   here is a person holding coach AND strength_conditioning doing the thing
+   neither a plain coach nor a plain medic can. */
+select tests.set_jwt(tests.uid('orga', 'user_dual'));
+select lives_ok(
+  format($q$insert into programmes (org_id, name, programme_type, created_by)
+            values (%L, 'Lean club gym block', 'gym', %L)$q$,
+         tests.uid('orga','org'), tests.uid('orga','user_dual')),
+  'a coach who ALSO holds the S&C role authors gym work: the lean club is '
+  'answered by roles, not by a wider default'
+);
+select throws_ok(
+  format($q$insert into programmes (org_id, name, programme_type, created_by)
+            values (%L, 'Lean club rehab attempt', 'rehab', %L)$q$,
+         tests.uid('orga','org'), tests.uid('orga','user_dual')),
+  '42501', null,
+  'and holding two roles grants exactly those two: rehab is still the medic''s'
 );
 
 select * from finish();

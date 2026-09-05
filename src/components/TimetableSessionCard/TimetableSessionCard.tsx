@@ -16,7 +16,7 @@ import { enumLabel, formatTime, mdLabel } from '@/lib/format';
 type Props = {
   orgId: string;
   userId: string;
-  actorRole: 'coach' | 'medical';
+  actorRole: 'coach' | 'medic';
   session: TimetableSession;
   // IANA zone used to display session.starts_at in the organisation's local time.
   timezone: string;

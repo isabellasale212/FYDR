@@ -96,7 +96,7 @@ export async function GET(request: Request) {
     `Scope: ${groupScopeLabel(groups, groupIds)} ` +
     `(${byAthlete.rows.length} athletes), ${byAthlete.definitions.length} tests.\r\n\r\n# By athlete — best in period\r\n`;
 
-  const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
+  const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   await recordReportView(
     db,
     orgId,

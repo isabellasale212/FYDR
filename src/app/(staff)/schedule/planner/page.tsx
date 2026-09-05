@@ -18,7 +18,7 @@ export const metadata = { title: 'Week templates · Fydr' };
  *  in the builder, not a database restriction that exists yet. */
 export default async function WeekTemplatesPage() {
   const { db, orgId, orgName, claims, timezone } = await requireStaff();
-  const canWrite = claims.roles.includes('coach') || claims.roles.includes('medical');
+  const canWrite = claims.roles.includes('coach') || claims.roles.includes('medic');
   const templates = await fetchTemplates(db, orgId, timezone);
 
   return (

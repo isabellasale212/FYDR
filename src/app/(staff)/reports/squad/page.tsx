@@ -79,7 +79,7 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
   const toQuery = (d: string) => `/reports/squad?to=${d}${groupQuery}`;
   const exportQuery = `${groupIds.length ? `groups=${groupIds.join(',')}&` : ''}to=${endDate}`;
 
-  const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
+  const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   await recordReportView(db, orgId, claims.userId, actorRole, 'squad_weekly', {
     from: report.from,
     to: report.to,

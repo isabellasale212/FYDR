@@ -42,8 +42,8 @@ export const metadata = { title: 'Settings · Fydr' };
  * that are forms rather than navigation (profile/avatar, club details). */
 export default async function SettingsPage() {
   const { db, orgId, orgName, timezone, fullName, claims, tier, realTier, previewingTier } = await requireStaff();
-  const isAdmin = claims.roles.includes('admin');
-  const isAdminOnly = isAdmin && !claims.roles.includes('coach') && !claims.roles.includes('medical');
+  const isAdmin = claims.roles.includes('sport_scientist');
+  const isAdminOnly = isAdmin && !claims.roles.includes('coach') && !claims.roles.includes('medic');
   const onPremium = isPremium(tier);
   /* Not `isAdmin`: a club's own administrator does not get to try the other
      plan on. lib/platformStaff.ts has the reasoning; requireStaff() enforces
@@ -318,7 +318,7 @@ export default async function SettingsPage() {
             </span>
           </a>
 
-          {claims.roles.includes('coach') || claims.roles.includes('medical') ? (
+          {claims.roles.includes('coach') || claims.roles.includes('medic') ? (
             <Link href="/settings/exports" className="set-list-row">
               <span>
                 <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block' }}>Exports</span>
@@ -351,7 +351,7 @@ export default async function SettingsPage() {
             </span>
           </Link>
 
-          {claims.roles.includes('coach') || claims.roles.includes('medical') ? (
+          {claims.roles.includes('coach') || claims.roles.includes('medic') ? (
             <Link href="/settings/imports" className="set-list-row">
               <span>
                 <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block' }}>GPS imports</span>
@@ -386,7 +386,7 @@ export default async function SettingsPage() {
             </Link>
           ) : null}
 
-          {isAdmin || claims.roles.includes('medical') ? (
+          {isAdmin || claims.roles.includes('medic') ? (
             <Link href="/settings/subject-access" className="set-list-row">
               <span>
                 <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block' }}>Subject access requests</span>

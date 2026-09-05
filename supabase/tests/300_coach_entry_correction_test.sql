@@ -29,6 +29,8 @@ select * from no_plan();
 
 select tests.fixtures();
 set local role authenticated;
+select ok(tests.rls_is_engaged(),
+  'canary: this session is subject to RLS, so the assertions below measure something');
 
 
 -- ===========================================================================
@@ -85,17 +87,11 @@ select is((select count(*) from wellness_entries
 --    the two an admin is expected to hit so a future reader is not surprised.
 -- ===========================================================================
 
-select tests.set_jwt(tests.uid('orga', 'user_admin'));
-
-select throws_ok(
-  format($q$select revise_wellness_entry(
-              (select id from wellness_entries where athlete_id = %L
-                 and superseded_by is null),
-              gen_random_uuid(), '{"sleep_hours": 9.0}'::jsonb)$q$,
-         tests.uid('orga', 'athlete_1')),
-  'P0001', null,
-  'an ADMIN cannot revise a wellness entry'
-);
+/* This asserted that an admin was refused, on the reasoning that an admin is
+   not performance staff. 0065 rebuilt revise_wellness_entry's staff test around
+   the five roles, so a sport scientist passes it. The control has not been
+   dropped, it has moved to the end of this file: revising here would create the
+   second row that the assertions below are counting. */
 
 
 -- ===========================================================================
@@ -363,6 +359,18 @@ select throws_ok(
          tests.uid('orga', 'athlete_1')),
   'P0001', null,
   'a COACH still cannot correct a nutrition check-in — 0058 deliberately did not go there'
+);
+
+-- The moved control.
+select tests.set_jwt(tests.uid('orga', 'user_admin'));
+select lives_ok(
+  format($q$select revise_wellness_entry(
+              (select id from wellness_entries where athlete_id = %L
+                 and superseded_by is null),
+              gen_random_uuid(), '{"sleep_hours": 9.0}'::jsonb)$q$,
+         tests.uid('orga', 'athlete_1')),
+  'a sport scientist CAN revise a wellness entry: 0065 counts all five staff '
+  'roles as staff, and 1 gives this one everything'
 );
 
 select * from finish();

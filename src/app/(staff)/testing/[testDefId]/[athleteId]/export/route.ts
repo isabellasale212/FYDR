@@ -4,7 +4,7 @@ import { fetchCurrentSeason } from '@/lib/queries/schedule';
 import { recordReportView } from '@/lib/queries/reports';
 import { formatNumber } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
-import type { AppRole } from '@/lib/types/database';
+import { actingRole } from '@/lib/access';
 
 /** CSV of one athlete's whole history on one test, plus the same three
  *  bests figures the page shows, as a caption block.
@@ -101,7 +101,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tes
     bestsLines +
     '\r\n';
 
-  const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
+  const actorRole = actingRole(claims.roles);
   await recordReportView(
     db,
     orgId,

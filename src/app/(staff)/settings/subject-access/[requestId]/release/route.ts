@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { fetchSarRequest, releaseSarRequest } from '@/lib/queries/sarPack';
 import { assembleSarPack } from '@/lib/queries/sarPackAssembly';
 import { requireStaff } from '@/lib/session';
+import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 
 /** screens/exports.md: "The pack cannot be released while review is
  *  pending" — assembleSarPack itself refuses to run if any clinical
@@ -15,7 +16,7 @@ import { requireStaff } from '@/lib/session';
 export async function POST(_request: Request, { params }: { params: Promise<{ requestId: string }> }) {
   const { requestId } = await params;
   const { db, orgId, claims } = await requireStaff();
-  if (!claims.roles.includes('admin')) redirect('/settings/subject-access?e=no-sar-access');
+  if (!hasAnyRole(claims.roles, SETTINGS_ADMIN)) redirect('/settings/subject-access?e=no-sar-access');
 
   const request = await fetchSarRequest(db, orgId, requestId);
   if (!request) redirect('/settings/subject-access?error=Request+not+found.');
@@ -35,7 +36,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ re
     await db.from('audit_log').insert({
       org_id: orgId,
       actor_id: claims.userId,
-      actor_role: 'admin',
+      actor_role: 'sport_scientist',
       action: 'sar.release',
       entity_type: 'sar_request',
       entity_id: requestId,

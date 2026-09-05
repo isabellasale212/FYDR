@@ -37,6 +37,8 @@ begin
 end $$;
 
 set local role authenticated;
+select ok(tests.rls_is_engaged(),
+  'canary: this session is subject to RLS, so the assertions below measure something');
 
 
 -- ===========================================================================
@@ -153,11 +155,23 @@ select is(
   'an athlete reads zero rehab_assignments rows, even their own — no self-select policy exists yet'
 );
 
+/* Was "an admin reads zero rehab_assignments rows". 0063 renames that role to
+   sport_scientist, which §1 gives everything, so the zero becomes a positive.
+   The role that IS zero here now is the nutritionist, §3.2's X column, and it
+   is asserted below rather than losing the negative control entirely. */
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
+select cmp_ok(
+  (select count(*) from rehab_assignments where org_id = tests.uid('orga','org')),
+  '>', 0::bigint,
+  'a sport scientist DOES read rehab_assignments'
+);
+
+select tests.set_jwt(tests.uid('orga', 'user_nutritionist'));
 select is(
   (select count(*) from rehab_assignments where org_id = tests.uid('orga','org')),
   0::bigint,
-  'an admin reads zero rehab_assignments rows, same as every other clinical-adjacent table'
+  'a nutritionist reads zero rehab_assignments rows: rehab is injury work and '
+  'docs/access-matrix.md 3.2 is X for that role on every row'
 );
 
 select * from finish();

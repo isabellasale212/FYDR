@@ -572,7 +572,7 @@ export async function acknowledgeFlag(
  *  ever offered on the pre-acknowledgement card.
  *
  *  RLS: checked, not assumed. flags_staff_update (migration 0012) is
- *  `using (org_id = auth_org_id() and auth_has_any_role(['coach','medical']))
+ *  `using (org_id = auth_org_id() and auth_has_any_role(['coach','medic']))
  *   with check (org_id = auth_org_id())` — no status predicate and no column
  *  list, so coach/medical may update this one column on any flag in their own
  *  org whatever its status. There is no other UPDATE policy on flags for

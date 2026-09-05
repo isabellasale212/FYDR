@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ClinicalReviewForm } from '@/components/ClinicalReviewForm/ClinicalReviewForm';
 import { fetchInjuriesForReview, fetchSarRequest } from '@/lib/queries/sarPack';
 import { requireStaff } from '@/lib/session';
+import { CLINICAL_ONLY, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Clinical review · Fydr' };
 
@@ -16,7 +17,7 @@ export const metadata = { title: 'Clinical review · Fydr' };
 export default async function ClinicalReviewPage({ params }: { params: Promise<{ requestId: string }> }) {
   const { requestId } = await params;
   const { db, orgId, claims, timezone } = await requireStaff();
-  if (!claims.roles.includes('medical')) redirect('/settings/subject-access?e=no-sar-access');
+  if (!hasAnyRole(claims.roles, CLINICAL_ONLY)) redirect('/settings/subject-access?e=no-sar-access');
 
   const request = await fetchSarRequest(db, orgId, requestId);
   if (!request) notFound();

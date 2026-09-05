@@ -196,7 +196,7 @@ export async function recordAttendance(
   db: Db,
   orgId: string,
   userId: string,
-  actorRole: 'coach' | 'medical',
+  actorRole: 'coach' | 'medic',
   input: {
     sessionId: string;
     athleteId: string;

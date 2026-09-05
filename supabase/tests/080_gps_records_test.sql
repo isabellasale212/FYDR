@@ -28,6 +28,8 @@ begin
 end $$;
 
 set local role authenticated;
+select ok(tests.rls_is_engaged(),
+  'canary: this session is subject to RLS, so the assertions below measure something');
 
 
 -- ===========================================================================
@@ -67,14 +69,19 @@ select is(
 
 
 -- ===========================================================================
--- 3. Admin has no access at all
+-- 3. The sport scientist reads everything, and so does the nutritionist here
+--
+-- This section was "Admin has no access at all". GPS is the clearest case of
+-- the inversion: §4.2 lists GPS among the things a nutritionist explicitly
+-- KEEPS ("compliance, wellness, body mass, testing and GPS"), and §1 gives the
+-- sport scientist everything.
 -- ===========================================================================
 
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
-select is(
+select cmp_ok(
   (select count(*) from gps_records where org_id = tests.uid('orga','org')),
-  0::bigint,
-  'an admin reads zero GPS records — no access by default, per the role table'
+  '>', 0::bigint,
+  'a sport scientist DOES read GPS records'
 );
 
 select * from finish();

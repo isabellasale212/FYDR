@@ -8,11 +8,15 @@ import { createProgramme } from '@/lib/queries/programmes';
 import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import type { ProgrammeType } from '@/lib/types/database';
 
-type Props = { orgId: string; userId: string; isCoach: boolean; isMedical: boolean };
+type Props = { orgId: string; userId: string; canCreateGym: boolean; canCreateRehab: boolean };
 
-export function ProgrammeForm({ orgId, userId, isCoach, isMedical }: Props) {
+export function ProgrammeForm({ orgId, userId, canCreateGym, canCreateRehab }: Props) {
   const router = useRouter();
-  const defaultType: ProgrammeType = isCoach ? 'gym' : 'rehab';
+  /* The two writes are separate policies with separate role sets (0067), so
+     the form asks which the viewer holds rather than which job title they
+     have. These used to be isCoach and isMedical, which stopped being the
+     right question when the S&C got a role of their own. */
+  const defaultType: ProgrammeType = canCreateGym ? 'gym' : 'rehab';
   const [programmeType, setProgrammeType] = useState<ProgrammeType>(defaultType);
   const [name, setName] = useState('');
   const [goal, setGoal] = useState('');
@@ -59,7 +63,7 @@ export function ProgrammeForm({ orgId, userId, isCoach, isMedical }: Props) {
         </p>
       ) : null}
 
-      {isCoach && isMedical ? (
+      {canCreateGym && canCreateRehab ? (
         <div>
           <p className="label">Type</p>
           <div className="chiprow">
@@ -83,7 +87,7 @@ export function ProgrammeForm({ orgId, userId, isCoach, isMedical }: Props) {
         </div>
       ) : (
         <p className="tiny">
-          {isCoach ? 'This will be a gym programme.' : 'This will be a rehab programme.'}
+          {canCreateGym ? 'This will be a gym programme.' : 'This will be a rehab programme.'}
         </p>
       )}
 

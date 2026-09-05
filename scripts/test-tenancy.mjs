@@ -23,6 +23,13 @@ const dbUrl =
   process.env.SUPABASE_DB_URL ??
   'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
 
+/* Stop at the first failing file, which is the right default: a suite this
+ * size is unreadable once a broken fixture cascades. TENANCY_CONTINUE=1 runs
+ * every file anyway and reports the full list, which is what you want when a
+ * single change (a role rename, say) is expected to touch many files at once.
+ * It never changes the verdict, only how much of the picture you get. */
+const CONTINUE_ON_FAIL = process.env.TENANCY_CONTINUE === '1';
+
 const testDir = join(process.cwd(), 'supabase', 'tests');
 
 const files = readdirSync(testDir)
@@ -31,6 +38,27 @@ const files = readdirSync(testDir)
 
 if (files.length === 0) {
   console.error(`No .sql files in ${testDir}`);
+  process.exit(1);
+}
+
+/* G-38. Every file that switches to `authenticated` must also assert the canary,
+ * because the canary is what proves the switch happened at all. Checked before a
+ * single statement runs: a file that quietly loses its switch would otherwise
+ * pass everything vacuously, which is exactly what G-32 and G-35 were. */
+const SWITCH = /set local role authenticated;/g;
+const CANARY = /rls_is_engaged\(\)/g;
+const unguarded = files
+  .map((f) => {
+    const src = readFileSync(join(testDir, f), 'utf8');
+    return { f, sw: (src.match(SWITCH) ?? []).length, cn: (src.match(CANARY) ?? []).length };
+  })
+  .filter((x) => x.sw > 0 && x.sw !== x.cn);
+
+if (unguarded.length > 0) {
+  console.error('\nA test file switches role without asserting the canary:\n');
+  for (const u of unguarded) console.error(`  ${u.f}: ${u.sw} role switch(es), ${u.cn} canary assertion(s)`);
+  console.error('\nAdd `select ok(tests.rls_is_engaged(), ...)` after each switch. Without it,');
+  console.error('a file that loses its switch passes everything while testing nothing.\n');
   process.exit(1);
 }
 
@@ -58,7 +86,7 @@ async function runWithPsql() {
     );
     if (run.status !== 0) {
       failed = true;
-      break;
+      if (!CONTINUE_ON_FAIL) break;
     }
   }
   finish(failed);
@@ -104,7 +132,7 @@ async function runWithPg() {
 
     if (fileFailed) {
       failed = true;
-      break;
+      if (!CONTINUE_ON_FAIL) break;
     }
   }
 

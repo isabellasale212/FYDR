@@ -19,6 +19,7 @@ import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
 import { isPremium } from '@/lib/tier';
 import { PlanGate } from '@/components/PlanGate/PlanGate';
+import { LEADERBOARD_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Board · Fydr' };
 
@@ -56,7 +57,7 @@ export default async function LeaderboardDetailPage({
   // all, aggregate or otherwise. Checked before fetchBoard() runs, so an
   // admin-only visitor gets the same denial regardless of whether the
   // board id resolves, matching /flags and /squad/[athleteId].
-  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medical');
+  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medic');
   if (!hasAccess) {
     return (
       <>
@@ -130,7 +131,7 @@ export default async function LeaderboardDetailPage({
 
   const metric = catalogue.find((m) => m.key === board.metric_key);
   const decimals = metricDecimals(metric);
-  const isMedical = claims.roles.includes('medical');
+  const isMedical = claims.roles.includes('medic');
 
   // Both exports carry the group filter, so a downloaded or printed board matches the
   // one on screen rather than silently widening back out to the whole squad — same
@@ -209,6 +210,7 @@ export default async function LeaderboardDetailPage({
         </div>
         <div className="lb-meta-actions">
           <LeaderboardStaffActions
+            canManage={hasAnyRole(claims.roles, LEADERBOARD_EDIT)}
             orgId={orgId}
             userId={claims.userId}
             boardId={board.id}

@@ -56,7 +56,7 @@ export default async function TestingReportPage({ searchParams }: { searchParams
       ])
     : [null, []];
 
-  const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
+  const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   await recordReportView(db, orgId, claims.userId, actorRole, 'testing', {
     group_ids: groupIds,
     test_definition_id: selectedTestId,

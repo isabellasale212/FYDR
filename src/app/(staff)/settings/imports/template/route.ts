@@ -2,6 +2,7 @@ import { csvResponse, toCsv } from '@/lib/csv';
 import { GPS_IMPORT_HEADERS } from '@/lib/queries/gpsImport';
 import { premiumOnlyResponse, requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
+import { GPS_IMPORT, hasAnyRole } from '@/lib/access';
 
 /** The fixed header row the import route requires, with one worked example
  *  row, so a coach who cannot get their vendor export to match can rebuild a
@@ -15,7 +16,7 @@ export async function GET() {
      and it is not a thing a role without a write path onto gps_records has any
      use for either. No athlete data in it, which is exactly why it was missed —
      "harmless" is not the same as "in this plan". */
-  if (!claims.roles.includes('coach') && !claims.roles.includes('medical')) {
+  if (!hasAnyRole(claims.roles, GPS_IMPORT)) {
     return premiumOnlyResponse('The GPS import template');
   }
   if (!isPremium(tier)) return premiumOnlyResponse('GPS import');

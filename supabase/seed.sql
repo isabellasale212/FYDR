@@ -82,23 +82,30 @@ insert into users (id, org_id, email, full_name, status, claims_version) values
 insert into user_roles (org_id, user_id, role) values
   -- Head coach.
   ('a0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-00000000000a', 'coach'),
-  -- S&C lead.
-  ('a0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-00000000000b', 'coach'),
-  -- Nutritionist. There is no nutritionist role: 01-roles-and-permissions.md §1 has four
-  -- roles and a nutritionist is a coach for authorisation purposes.
-  ('a0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-00000000000c', 'coach'),
+  -- S&C lead. Held 'coach' until the five-role model landed, because there was no
+  -- strength_conditioning value to hold.
+  ('a0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-00000000000b', 'strength_conditioning'),
+  -- Nutritionist. This row used to read 'coach', with a comment explaining that there was
+  -- no nutritionist role and that a nutritionist was a coach for authorisation purposes.
+  -- There is one now, and the difference is the whole point of D-01: as a coach this user
+  -- could read injury and availability data, and as a nutritionist they cannot.
+  ('a0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-00000000000c', 'nutritionist'),
   -- Club physiotherapist. The only person who can set availability or read clinical notes.
-  ('a0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-00000000000d', 'medical'),
+  ('a0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-00000000000d', 'medic'),
   -- Performance analyst who is also a physio: roles are additive, not exclusive, and this
   -- row exists so a developer can see the union case working.
   ('a0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-00000000000e', 'coach'),
-  ('a0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-00000000000e', 'medical'),
-  -- Club secretary. Admin only: no wellness, no flags, no medical detail.
-  ('a0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-00000000000f', 'admin'),
+  ('a0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-00000000000e', 'medic'),
+  -- Club secretary. This row read 'admin' and its comment promised "no wellness, no flags,
+  -- no medical detail". 0063 renames admin to sport_scientist, and a sport scientist sees
+  -- everything, injury data included. So this persona's access is inverted by the rename,
+  -- not preserved by it. Kept as the rename left it, because that is what happened to every
+  -- real admin row too, and flagged here rather than quietly reassigned.
+  ('a0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-00000000000f', 'sport_scientist'),
 
   ('b0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-0000000000ba', 'coach'),
-  ('b0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-0000000000bb', 'medical'),
-  ('b0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-0000000000bc', 'admin');
+  ('b0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-0000000000bb', 'medic'),
+  ('b0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-0000000000bc', 'sport_scientist');
 
 
 -- ===========================================================================
@@ -717,7 +724,7 @@ insert into thresholds (id, org_id, name, description, domain, metric, compariso
   ('7472000a-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000001',
    'Readiness below personal norm', 'Composite readiness more than 1.5 SD below own 28 day norm',
    'wellness', 'wellness.readiness_score', 'z_score', -1.5,
-   'personal_rolling', 28, 2, 10, 3, 'high', '{coach,medical}', 'default',
+   'personal_rolling', 28, 2, 10, 3, 'high', '{coach,medic}', 'default',
    'e5e20000-0000-4000-8000-00000000000b'),
   ('7472000a-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000001',
    'Sleep dropped', 'Sleep more than 20 per cent below own 28 day mean, two days running',
@@ -727,7 +734,7 @@ insert into thresholds (id, org_id, name, description, domain, metric, compariso
   ('7472000a-0000-4000-8000-000000000003', 'a0000000-0000-4000-8000-000000000001',
    'Soreness elevated', 'Soreness at 2 or below for three days running',
    'wellness', 'wellness.soreness', 'below', 2,
-   'absolute', null, 3, 0, 2, 'medium', '{coach,medical}', 'custom',
+   'absolute', null, 3, 0, 2, 'medium', '{coach,medic}', 'custom',
    'e5e20000-0000-4000-8000-00000000000b'),
   ('7472000a-0000-4000-8000-000000000004', 'a0000000-0000-4000-8000-000000000001',
    'Acute chronic ratio high', 'Seven to twenty eight day EWMA load ratio above own 1SD band',
@@ -865,17 +872,17 @@ where u.org_id = 'a0000000-0000-4000-8000-000000000001';
 insert into audit_log (org_id, actor_id, actor_role, action, entity_type, entity_id,
                        athlete_id, metadata, occurred_at) values
   ('a0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-00000000000d',
-   'medical', 'availability.set', 'availability',
+   'medic', 'availability.set', 'availability',
    '19700000-0000-4000-8000-000000000001', 'a71e0000-0000-4000-8000-000000000002',
    '{"from":"available","to":"modified","restrictions":["no contact"]}'::jsonb,
    now() - interval '9 days'),
   ('a0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-00000000000d',
-   'medical', 'injury_clinical.read', 'injury_clinical',
+   'medic', 'injury_clinical.read', 'injury_clinical',
    '19700000-0000-4000-8000-000000000003', 'a71e0000-0000-4000-8000-000000000007',
    '{"reason":"daily review"}'::jsonb, now() - interval '2 hours'),
   ('a0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-00000000000f',
-   'admin', 'user_roles.granted', 'user_roles', null, null,
-   '{"user":"a.whitmore@ashcomberfc.example","role":"medical"}'::jsonb,
+   'sport_scientist', 'user_roles.granted', 'user_roles', null, null,
+   '{"user":"a.whitmore@ashcomberfc.example","role":"medic"}'::jsonb,
    now() - interval '40 days'),
   ('a0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-00000000000a',
    'coach', 'team_allocation.published', 'team_allocations', null, null,
@@ -1101,7 +1108,7 @@ from users u where u.org_id = 'a0000000-0000-4000-8000-000000000001';
 insert into audit_log (org_id, actor_id, actor_role, action, entity_type, athlete_id,
                        metadata)
 values ('b0000000-0000-4000-8000-000000000001', 'e5e20000-0000-4000-8000-0000000000bb',
-        'medical', 'injury_clinical.read', 'injury_clinical',
+        'medic', 'injury_clinical.read', 'injury_clinical',
         'b71e0000-0000-4000-8000-000000000001', '{"reason":"weekly review"}'::jsonb);
 
 

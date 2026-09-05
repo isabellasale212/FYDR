@@ -12,8 +12,11 @@ type Props = {
   orgId: string;
   timezone: string;
   targets: readonly TargetWithNames[];
-  isCoach: boolean;
-  isMedical: boolean;
+  /* Was isCoach + isMedical, which described who the WRITE used to belong to.
+     0070 moved it to the nutritionist and the sport scientist and this prop did
+     not follow, so the button was shown to precisely the two roles it no longer
+     worked for. One boolean, resolved from NUTRITION_EDIT by the page. */
+  canManageTargets: boolean;
 };
 
 function macroSummary(t: TargetWithNames): string {
@@ -26,7 +29,7 @@ function macroSummary(t: TargetWithNames): string {
   return parts.length > 0 ? parts.join(' · ') : 'No values set';
 }
 
-export function NutritionTargetsList({ orgId, timezone, targets, isCoach, isMedical }: Props) {
+export function NutritionTargetsList({ orgId, timezone, targets, canManageTargets }: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -58,7 +61,7 @@ export function NutritionTargetsList({ orgId, timezone, targets, isCoach, isMedi
       <div className="card flush">
         {targets.map((t, index) => {
           const scopeLabel = t.athlete_name ?? t.group_name ?? 'Whole squad';
-          const canExpire = isCoach || (isMedical && t.athlete_id !== null);
+          const canExpire = canManageTargets;
           return (
             <div key={t.id}>
               {index > 0 ? <div className="hair" /> : null}

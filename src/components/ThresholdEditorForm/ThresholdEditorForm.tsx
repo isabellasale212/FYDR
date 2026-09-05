@@ -36,7 +36,11 @@ const BASELINES: { value: BaselineType; label: string; hint: string }[] = [
 ];
 
 const SEVERITIES = ['low', 'medium', 'high'] as const;
-const NOTIFY_OPTIONS: AppRole[] = ['coach', 'medical'];
+/* Who a threshold can notify. Offered, not enforced: a club picks from these
+ * when writing a rule. It listed two roles because the enum had four, so no club
+ * could choose to tell their S&C about a gym flag or their nutritionist about a
+ * body mass one. The athlete is not here and never was: a flag notifies staff. */
+const NOTIFY_OPTIONS: AppRole[] = ['sport_scientist', 'coach', 'medic', 'strength_conditioning', 'nutritionist'];
 const DEFAULT_METRIC = 'wellness.readiness_score';
 
 type Props = { orgId: string; userId: string };

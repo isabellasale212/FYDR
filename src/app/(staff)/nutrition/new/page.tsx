@@ -8,14 +8,17 @@ import { fetchSquadList } from '@/lib/queries/squad';
 import { buildWorkspaceAthlete } from '@/lib/nutritionWorkspace';
 import { MASS_TREND_FLAG_WINDOW_DAYS, trendFlagSentence } from '@/lib/nutritionRules';
 import { requireStaff } from '@/lib/session';
+import { NUTRITION_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'New nutrition target · Fydr' };
 
 export default async function NewNutritionTargetPage() {
   const { db, orgId, orgName, claims, timezone } = await requireStaff();
-  const isCoach = claims.roles.includes('coach');
-  const isMedical = claims.roles.includes('medical');
-  if (!isCoach && !isMedical) {
+  /* docs/access-matrix.md §3.3, New nutrition target: VC X X X VC. The only
+     row in the grid where the nutritionist holds a write the coach does not.
+     This gate used to admit coach or medic and refuse the nutritionist, which
+     is exactly backwards now that the role exists. */
+  if (!hasAnyRole(claims.roles, NUTRITION_EDIT)) {
     redirect('/nutrition');
   }
 
@@ -107,7 +110,7 @@ export default async function NewNutritionTargetPage() {
           userId={claims.userId}
           athletes={athletes}
           groups={groups}
-          canPickAnyScope={isCoach}
+          canPickAnyScope={hasAnyRole(claims.roles, NUTRITION_EDIT)}
           timezone={timezone}
           athleteTrends={athleteTrends}
         />

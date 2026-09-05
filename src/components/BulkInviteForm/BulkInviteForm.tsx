@@ -195,8 +195,9 @@ export function BulkInviteForm({ unlinkedAthletes }: Props) {
             {results.filter((r) => r.ok).length} sent, {results.filter((r) => !r.ok).length} failed
           </h2>
           <p className="import-sub" style={{ marginBottom: 10 }}>
-            Each temporary password is shown once, here only — copy them now. There is no invite email; hand these to
-            the athletes directly.
+            Each invite link is shown once, here only &mdash; copy them now. There is no invite email; send each link to
+            its athlete directly. A link works once, confirms their email address, and lets them choose their own
+            password, which nobody here ever sees.
           </p>
           <table className="tbl">
             <caption className="visually-hidden">Bulk invite results</caption>
@@ -204,7 +205,7 @@ export function BulkInviteForm({ unlinkedAthletes }: Props) {
               <tr>
                 <th scope="col">Email</th>
                 <th scope="col">Result</th>
-                <th scope="col">Temporary password</th>
+                <th scope="col">Invite link</th>
               </tr>
             </thead>
             <tbody>
@@ -212,7 +213,7 @@ export function BulkInviteForm({ unlinkedAthletes }: Props) {
                 <tr key={r.email}>
                   <td className="sub">{r.email}</td>
                   <td>{r.ok ? <span className="g-good">Sent</span> : <span className="g-bad">{r.error}</span>}</td>
-                  <td className="num">{r.temporaryPassword ?? '—'}</td>
+                  <td className="nm" style={{ wordBreak: 'break-all' }}>{r.inviteUrl ?? '—'}</td>
                 </tr>
               ))}
             </tbody>

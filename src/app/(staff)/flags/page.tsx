@@ -30,7 +30,7 @@ export default async function FlagsPage({
    * than thrown, since a malformed date here should just show everything. */
   const dateParam = typeof params.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(params.date) ? params.date : null;
 
-  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medical');
+  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medic');
 
   if (!hasAccess) {
     return (
@@ -119,7 +119,7 @@ export default async function FlagsPage({
                  come from the server-resolved session either way. A clinician
                  writing a note here is writing into a column every coach in the
                  club reads, and the card says so. */
-              viewerIsMedical={claims.roles.includes('medical')}
+              viewerIsMedical={claims.roles.includes('medic')}
             />
           ))
         )}

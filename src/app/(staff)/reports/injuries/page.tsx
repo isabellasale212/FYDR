@@ -56,7 +56,7 @@ export default async function InjuryAvailabilityReportPage({
   searchParams: SearchParams;
 }) {
   const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
-  const isMedical = claims.roles.includes('medical');
+  const isMedical = claims.roles.includes('medic');
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
   const period = await resolveInjuryPeriod(db, orgId, timezone, periodParamsFrom(params));
@@ -107,7 +107,7 @@ export default async function InjuryAvailabilityReportPage({
     { key: 'unknown', name: 'Unknown', rows: unknown },
   ];
 
-  const actorRole = (isMedical ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
+  const actorRole = (isMedical ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   // The audit row records the RESOLVED window and the key that produced it,
   // not the raw param: "a report is a data disclosure that leaves the system"
   // (screens/reports.md), and `period=all` alone does not say what was

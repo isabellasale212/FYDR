@@ -12,7 +12,15 @@ import {
 } from '@/lib/queries/schedule';
 import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 
-type Props = { orgId: string; session: SessionDetail };
+type Props = {
+  orgId: string;
+  session: SessionDetail;
+  /** Whether this viewer may actually write. G-34: the control used to be
+   *  unconditional, so a role the policy excludes pressed it and nothing
+   *  happened, with no error. Resolved from the matching set in lib/access.ts
+   *  by the page. */
+  canManage: boolean;
+};
 
 /** Cancel, reinstate, delete. screens/schedule.md: "Cancelling requires no
  *  confirmation text, deleting does" — so cancel fires straight away, like
@@ -20,7 +28,7 @@ type Props = { orgId: string; session: SessionDetail };
  *  confirmation rather than a browser `confirm()` dialog, matching this
  *  app's existing tone elsewhere. The server is the real gate on delete
  *  (recorded data, or a past session): this only surfaces what it says. */
-export function SessionActions({ orgId, session }: Props) {
+export function SessionActions({ orgId, session, canManage }: Props) {
   const router = useRouter();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -62,6 +70,11 @@ export function SessionActions({ orgId, session }: Props) {
       setConfirmingDelete(false);
     },
   });
+
+  /* After every hook, never before: an early return above them changes the
+     hook order between renders. G-34 gates the control, not the component's
+     lifecycle. */
+  if (!canManage) return null;
 
   return (
     <div className="card">

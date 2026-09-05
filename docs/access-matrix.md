@@ -121,9 +121,17 @@ open it. See section 4.1.
 |---|---|---|---|---|---|
 | Analytics **[Pr]** | V | **X** | **X** | **X** | **X** |
 | Build an analytics view **[Pr]** | VEC | **X** | **X** | **X** | **X** |
-| Leaderboard | VECD | V | V | VECD | V |
+| Leaderboard | VECD | VECD | V | VECD | V |
 | Testing | VEC | VEC | V | VEC | X |
 | Test history | V | V | V | V | X |
+
+**The coach column on Leaderboard was corrected on 2026-09-05, not worked
+around.** It read **V**, which would have made a coach a reader of boards they
+create today. That was wrong: creating a leaderboard is a real permission
+somebody chose, unlike the medic's create, which was the "coach or medic
+actually meant not-admin" artefact the five-role migration found throughout. The
+row was split rather than applied as written, and this document is the half that
+changed. G-33 in `docs/spec-gaps.md` records the reasoning.
 
 ### 3.5 Reports
 
@@ -296,23 +304,58 @@ age. The subject access process applies identically.
 section describes the present, so that the difference is visible rather than
 implied.
 
-**The code has four roles, not five: athlete, coach, medical, admin.** There is
-no sport scientist, no S&C and no nutritionist. People doing those jobs hold the
-`coach` role, and the seed data says so deliberately
-(`supabase/seed.sql:87`).
+**The code now has the five roles.** This paragraph used to say the opposite,
+and was correct when written: there were four values (athlete, coach, medical,
+admin), people doing the S&C and nutrition jobs held `coach`, and the seed data
+said so deliberately. Migration `0063_role_model_enum.sql` renamed medical to
+medic and admin to sport_scientist and added strength_conditioning and
+nutritionist, and `supabase/seed.sql` now gives the S&C lead and the
+nutritionist their own roles.
 
-**The practical effect.** Every "nutritionist is X" cell in the grid above is
-currently a **V**, because a nutritionist is a coach. Nothing in the app can tell
-them apart.
+**The practical effect has reversed.** Every "nutritionist is X" cell in §3.2 is
+now enforced by a guard rather than being aspirational, because a nutritionist is
+no longer a coach. See `requireInjuryAccess` below.
+
+**One caveat that has not gone away.** Roles are additive. A person who holds
+nutritionist AND coach still sees injury information, because the guards ask
+what you hold, not what you are. That is deliberate and is stated at §2.
 
 **Guards that exist today**, and what each admits:
 
 | Guard | Admits | Where |
 |---|---|---|
-| `requireStaff` | coach, medical or admin | `src/lib/session.ts:69` |
-| `requireReportAccess` | coach or medical | `src/lib/session.ts:120` |
-| `requireSubjectAccess` | admin or medical | `src/lib/session.ts:159` |
-| `loadAthleteDomainContext` | coach or medical | `src/lib/athleteDomain.server.ts:93` |
+| `requireStaff` | any of the five staff roles | `src/lib/session.ts:69` |
+| `requireReportAccess` | `REPORT_ACCESS` | `src/lib/session.ts:120` |
+| `requireInjuryAccess` | `INJURY_ACCESS` | `src/lib/session.ts:161` |
+| `requireSubjectAccess` | `SETTINGS_ADMIN` or `CLINICAL_ONLY` | `src/lib/session.ts:198` |
+| `loadAthleteDomainContext` | any staff, or the set the caller passes | `src/lib/athleteDomain.server.ts:93` |
+
+**Every other gate names a set in `src/lib/access.ts`**, one constant per
+distinct column pattern in §3 above, rather than writing role literals inline.
+That file is this grid in the form the code can share, and
+`npm run test:role-model` asserts each gated route against the row it comes
+from. 27 route gates used to carry their own opinion; they now carry a
+reference.
+
+**`requireReportAccess` is knowingly incomplete for one role.** §4 gives a
+nutritionist real access to some reports (Compliance **V**, Reports hub and
+Squad weekly **VP**) and none to others. A single blanket gate cannot express a
+per-report split, so that role is still refused at the door rather than admitted
+to the reports it should see. Tracked in `docs/spec-gaps.md`, not silently
+decided here.
+
+**The grid is enforced in both directions as of 2026-09-05.** The five-role
+migration was carried out widening-only, and the five rows that would have taken
+something away were held for a decision rather than applied inside a migration.
+All five came back decided and are built: migration `0070_specialist_writes.sql`
+is the narrowing half, and G-33 in `docs/spec-gaps.md` records what was decided
+and why, including the one row where this document was found to be wrong.
+
+**A club with no dedicated specialist is answered by roles, not by a wider
+default.** A coach who also does the S&C work holds both roles on one account,
+and the S&C role satisfies the check. That is the same additive property §2
+warns about from the other direction for the nutritionist, and it is asserted
+end to end in `supabase/tests/070_programmes_test.sql`.
 
 **Most pages call only the first**, which is why the grid's fine distinctions do
 not exist yet. Of 62 screens, the great majority admit any staff member.

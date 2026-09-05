@@ -18,6 +18,8 @@ select * from no_plan();
 
 select tests.fixtures();
 set local role authenticated;
+select ok(tests.rls_is_engaged(),
+  'canary: this session is subject to RLS, so the assertions below measure something');
 
 
 -- ===========================================================================
@@ -406,34 +408,90 @@ select throws_ok(
 
 
 -- ===========================================================================
--- 9. Admin has less data access than staff, by design
+-- 9. The sport scientist has MORE data access than anyone, by design
+--
+-- This section used to be called "Admin has less data access than staff" and
+-- asserted five zeroes: no wellness, no training entries, no check-ins, no
+-- flags, no injuries. That was right for the admin, who was a club secretary.
+--
+-- 0063 renames admin to sport_scientist and the role's whole definition
+-- inverts. docs/access-matrix.md §1: "Everything. The role with no
+-- restrictions, including club administration." So every one of those zeroes
+-- becomes a positive, and the fixture user has not changed at all: only the
+-- meaning of the value they hold.
+--
+-- The negative controls that used to live here have not been deleted, they
+-- have moved to section 9a, where there is a role they are actually true of.
 -- ===========================================================================
 
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
 
-select is((select count(*) from wellness_entries), 0::bigint,
-  'an ADMIN reads zero wellness entries. The chairman does not read sleep scores');
-select is((select count(*) from training_entries), 0::bigint,
-  'an admin reads zero training entries');
-select is((select count(*) from nutrition_checkins), 0::bigint,
-  'an admin reads zero nutrition check ins');
-select is((select count(*) from flags), 0::bigint,
-  'an admin reads zero flags');
-select is((select count(*) from injuries), 0::bigint,
-  'an admin reads zero injury rows, availability level is delivered as an aggregate');
+select cmp_ok((select count(*) from wellness_entries), '>', 0::bigint,
+  'a sport scientist DOES read wellness entries');
+select cmp_ok((select count(*) from training_entries), '>', 0::bigint,
+  'a sport scientist DOES read training entries');
+select cmp_ok((select count(*) from flags), '>', 0::bigint,
+  'a sport scientist DOES read flags');
+select cmp_ok((select count(*) from injuries), '>', 0::bigint,
+  'a sport scientist DOES read injury rows, in the limited view of section 4.1');
 select cmp_ok((select count(*) from users), '>', 0::bigint,
-  'positive control: an admin DOES read the user directory they manage');
+  'and still reads the user directory they manage');
 select cmp_ok((select count(*) from audit_log), '>', 0::bigint,
-  'positive control: an admin DOES read the audit log, which no other role can');
+  'and still reads the audit log, which no other role can');
+select is((select count(*) from injury_clinical), 0::bigint,
+  'but reads ZERO clinical records: 4.1, the one boundary "everything" does not '
+  'reach, because it is a database rule and not a role setting');
+
+
+-- ===========================================================================
+-- 9a. The nutritionist sees no injury or medical information anywhere
+--
+-- D-01, the highest ranked decision in the queue, and until the five-role
+-- model there was no way to write this test: a nutritionist held the coach
+-- role, so the database could not tell them apart from one.
+--
+-- docs/access-matrix.md §3.2 is X in the nutritionist column on every row, and
+-- §4.2 says what they keep: "compliance, wellness, body mass, testing and GPS".
+-- Both halves are asserted, because a rule that only refuses is indistinguish-
+-- able from a role that cannot read anything at all.
+-- ===========================================================================
+
+select tests.set_jwt(tests.uid('orga', 'user_nutritionist'));
+
+select is((select count(*) from injuries), 0::bigint,
+  'a nutritionist reads ZERO injury rows');
+select is((select count(*) from injury_clinical), 0::bigint,
+  'a nutritionist reads ZERO clinical records');
+select is((select count(*) from availability), 0::bigint,
+  'a nutritionist reads ZERO availability rows: the status is as much injury '
+  'information as the diagnosis, for a role that is X on the whole block');
+select is((select count(*) from rehab_assignments), 0::bigint,
+  'a nutritionist reads ZERO rehab assignments');
+select is((select count(*) from team_allocations), 0::bigint,
+  'a nutritionist reads ZERO team allocations');
+select cmp_ok((select count(*) from wellness_entries), '>', 0::bigint,
+  'positive control: a nutritionist DOES read wellness, per 4.2 "they keep '
+  'everything else"');
+select cmp_ok((select count(*) from athletes), '>', 0::bigint,
+  'positive control: and DOES read the squad, or the role could do no job at all');
 
 
 -- ===========================================================================
 -- 10. Thresholds are coach only, and the audit log is append only
 -- ===========================================================================
 
+/* Thresholds stopped being coach-only in 0068. docs/access-matrix.md §3.6
+   reads "Thresholds | VECD | VECD | V | V | X": the sport scientist and the
+   coach write them, the medic and the S&C read them, and the nutritionist is
+   the only role shut out. Writing is still not the medic's, which is what the
+   next block checks. */
 select tests.set_jwt(tests.uid('orga', 'user_medical'));
+select cmp_ok((select count(*) from thresholds), '>', 0::bigint,
+  'a medic DOES read thresholds now, per docs/access-matrix.md 3.6''s V column');
+
+select tests.set_jwt(tests.uid('orga', 'user_nutritionist'));
 select is((select count(*) from thresholds), 0::bigint,
-  'MEDICAL reads zero thresholds, per the matrix in 01-roles-and-permissions.md §2');
+  'a nutritionist reads zero thresholds: the X on that row');
 
 select tests.set_jwt(tests.uid('orga', 'user_coach'));
 select is((select count(*) from audit_log), 0::bigint,
@@ -451,6 +509,48 @@ select throws_ok(
   $q$delete from audit_log$q$,
   '42501', null,
   'an admin cannot delete an audit row'
+);
+
+
+-- ===========================================================================
+-- 9b. D-26: a medic edits an athlete's biographical details, same as a coach
+--
+-- The specification's own front page, edit 1 of 2026-09-04: "Medics can now edit
+-- an athlete's biographical details, the same as coaches. Previously coach-only,
+-- medics were explicitly excluded." Migration 0071.
+--
+-- Both directions, because the gap ran both ways before it was fixed: the medic
+-- was refused by the policy, and the sport scientist by the screen. The S&C
+-- stays out, which is §4.3 in its own words, "cannot edit an athlete's
+-- biographical details".
+-- ===========================================================================
+
+select tests.set_jwt(tests.uid('orga', 'user_medical'));
+select is(
+  tests.rows_affected(format($q$update athletes set height_cm = 181.0 where id = %L$q$, tests.uid('orga','athlete_1'))),
+  1::bigint,
+  'a medic edits an athlete''s biographical details (D-26)'
+);
+
+select tests.set_jwt(tests.uid('orga', 'user_admin'));
+select is(
+  tests.rows_affected(format($q$update athletes set height_cm = 181.0 where id = %L$q$, tests.uid('orga','athlete_1'))),
+  1::bigint,
+  'and so does a sport scientist, who the screen used to refuse'
+);
+
+select tests.set_jwt(tests.uid('orga', 'user_sc'));
+select is(
+  tests.rows_affected(format($q$update athletes set height_cm = 999.0 where id = %L$q$, tests.uid('orga','athlete_1'))),
+  0::bigint,
+  'an S&C does not: 4.3, "cannot edit an athlete''s biographical details"'
+);
+
+select tests.set_jwt(tests.uid('orga', 'user_nutritionist'));
+select is(
+  tests.rows_affected(format($q$update athletes set height_cm = 999.0 where id = %L$q$, tests.uid('orga','athlete_1'))),
+  0::bigint,
+  'nor does a nutritionist'
 );
 
 

@@ -40,7 +40,11 @@ type Props = {
   orgId: string;
   userId: string;
   isCoach: boolean;
-  isMedical: boolean;
+  /* Who may actually WRITE nutrition, resolved from NUTRITION_EDIT by the page.
+     canEdit below used to be isCoach || isMedical, which described the write as
+     it stood before 0070 moved it to the nutritionist and the sport scientist.
+     The controls stayed visible to the two roles that had just lost it. */
+  canManageNutrition: boolean;
   plans: PlanDTO[];
   groupsWithoutPlan: { id: string; name: string }[];
   rules: RuleWithNames[];
@@ -74,7 +78,7 @@ export function NutritionWorkspace({
   orgId,
   userId,
   isCoach,
-  isMedical,
+  canManageNutrition,
   plans,
   groupsWithoutPlan,
   rules,
@@ -87,7 +91,7 @@ export function NutritionWorkspace({
   mealLibrary,
 }: Props) {
   const router = useRouter();
-  const canEdit = isCoach || isMedical;
+  const canEdit = canManageNutrition;
 
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(plans[0]?.ruleId ?? null);
   const selectedPlan = plans.find((p) => p.ruleId === selectedPlanId) ?? plans[0] ?? null;

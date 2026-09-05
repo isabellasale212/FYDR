@@ -38,7 +38,10 @@ select tests.fixtures();
 do $$
 declare
   o     uuid := tests.uid('orga', 'org');
-  ucoa  uuid := tests.uid('orga', 'user_coach');
+  /* G-33 row 1: gym authoring, overrides included, is the S&C's now. The name
+     is left as ucoa rather than renamed through 40 uses; what it holds is what
+     matters and it is asserted at every call site. */
+  ucoa  uuid := tests.uid('orga', 'user_sc');
   umed  uuid := tests.uid('orga', 'user_medical');
   a1    uuid := tests.uid('orga', 'athlete_1');
   a2    uuid := tests.uid('orga', 'athlete_2');
@@ -93,6 +96,8 @@ begin
 end $$;
 
 set local role authenticated;
+select ok(tests.rls_is_engaged(),
+  'canary: this session is subject to RLS, so the assertions below measure something');
 
 
 -- ===========================================================================
@@ -120,13 +125,13 @@ select throws_ok(
   'medical cannot override an exercise on a coach-owned gym programme, even though medical can read it'
 );
 
-select tests.set_jwt(tests.uid('orga', 'user_coach'));
+select tests.set_jwt(tests.uid('orga', 'user_sc'));
 select lives_ok(
   format($q$insert into exercise_overrides
               (id, org_id, programme_exercise_id, athlete_id, override_type, load_value, reason, created_by)
             values (%L, %L, %L, %L, 'load_cap', 70, 'post-op knee', %L)$q$,
          tests.uid('orga','ov_cap'), tests.uid('orga','org'), tests.uid('orga','pe_1rm'),
-         tests.uid('orga','athlete_1'), tests.uid('orga','user_coach')),
+         tests.uid('orga','athlete_1'), tests.uid('orga','user_sc')),
   'a coach caps athlete_1''s load on the gym programme'
 );
 select throws_ok(
@@ -134,7 +139,7 @@ select throws_ok(
               (org_id, programme_exercise_id, athlete_id, override_type, load_value, reason, created_by)
             values (%L, %L, %L, 'load_cap', 60, 'second cap attempt', %L)$q$,
          tests.uid('orga','org'), tests.uid('orga','pe_1rm'), tests.uid('orga','athlete_1'),
-         tests.uid('orga','user_coach')),
+         tests.uid('orga','user_sc')),
   '23505', null,
   'a second load_cap on the same athlete and element violates the one-per-type unique key'
 );
@@ -147,7 +152,7 @@ select lives_ok(
               (org_id, programme_exercise_id, athlete_id, override_type, reason, created_by)
             values (%L, %L, %L, 'note', 'coach note on a rehab exercise', %L)$q$,
          tests.uid('orga','org'), tests.uid('orga','pe_rehab'), tests.uid('orga','athlete_2'),
-         tests.uid('orga','user_coach')),
+         tests.uid('orga','user_sc')),
   'a coach CAN override an exercise on a rehab programme too — write is coach-unrestricted, medical-restricted'
 );
 
@@ -175,7 +180,7 @@ select is(
   'athlete_1 reads zero override rows directly, even the load_cap that names them'
 );
 
-select tests.set_jwt(tests.uid('orga', 'user_coach'));
+select tests.set_jwt(tests.uid('orga', 'user_sc'));
 select is(
   (select count(*) from exercise_overrides where org_id = tests.uid('orga','org')),
   3::bigint,
@@ -188,7 +193,7 @@ select is(
 --    p_athlete_id) — the existing staff list view must not regress.
 -- ===========================================================================
 
-select tests.set_jwt(tests.uid('orga', 'user_coach'));
+select tests.set_jwt(tests.uid('orga', 'user_sc'));
 select is(
   (select load_value from resolve_programme_exercises(tests.uid('orga','session_gym'))
     where programme_exercise_id = tests.uid('orga','pe_1rm')),
@@ -327,7 +332,7 @@ select throws_ok(
   'medical cannot publish a coach-owned gym programme'
 );
 
-select tests.set_jwt(tests.uid('orga', 'user_coach'));
+select tests.set_jwt(tests.uid('orga', 'user_sc'));
 select lives_ok(
   format($q$update programmes set status = 'active' where id = %L$q$, tests.uid('orga','prog_draft')),
   'the coach who owns it publishes the draft programme'

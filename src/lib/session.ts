@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { TIER_PREVIEW_COOKIE, effectiveTier, isPreviewingTier } from '@/lib/tierPreview';
 import { getClaims, isAthlete, isStaff, type FydrClaims } from '@/lib/supabase/claims';
 import { isPlatformStaff } from '@/lib/platformStaff';
+import { INJURY_ACCESS, REPORT_ACCESS, SETTINGS_ADMIN, CLINICAL_ONLY, hasAnyRole } from '@/lib/access';
 import type { Db } from '@/lib/queries/groups';
 
 export type StaffContext = {
@@ -119,7 +120,48 @@ export async function requireStaff(): Promise<StaffContext> {
  *  admin is blocked the same way regardless of which door they try. */
 export async function requireReportAccess(): Promise<StaffContext> {
   const ctx = await requireStaff();
-  if (!ctx.claims.roles.includes('coach') && !ctx.claims.roles.includes('medical')) redirect('/settings?e=no-report-access');
+  if (!hasAnyRole(ctx.claims.roles, REPORT_ACCESS)) redirect('/settings?e=no-report-access');
+  return ctx;
+}
+
+/** The four roles the access matrix gives broad report access, §4 rows.
+ *  sport_scientist is here because the matrix's own one-line summary for it is
+ *  "Everything. The role with no restrictions" — before the five-role model
+ *  this gate said `coach or medical`, and admin was excluded deliberately.
+ *  Renaming admin to sport_scientist therefore locked the new owner of the
+ *  product out of every report, which is the wrong direction.
+ *
+ *  Nutritionist is NOT here, and that is knowingly incomplete rather than a
+ *  decision: the matrix gives a nutritionist real access to some reports
+ *  (Compliance report V, Reports hub and Squad weekly VP) and none to others
+ *  (Testing, Training, Athlete, Injury). One blanket gate cannot express a
+ *  per-report split, so this keeps the pre-existing behaviour for that role
+ *  rather than inventing a rule. Recorded in docs/spec-gaps.md. */
+
+
+/** The injury and availability gate, docs/access-matrix.md §3.2.
+ *
+ *  One shared guard rather than four hand-written copies, which is G-01's whole
+ *  point. Before this the four injury screens disagreed with each other and
+ *  both of them were wrong, in opposite directions:
+ *
+ *    /injuries and /injuries/[injuryId]  had no role check at all beyond
+ *        requireStaff(), so a nutritionist could open either one. That is the
+ *        D-01 hole, the highest-ranked item in the gap queue.
+ *    /injuries/rehab-groups and /injuries/team-allocation  each carried their
+ *        own `coach || medic` test, which refused the sport scientist and the
+ *        S&C coach even though §3.2 grants both (VE and VP on those rows).
+ *
+ *  Written as an ALLOW list, never as "not a nutritionist". Roles are additive
+ *  and the matrix says so in its own words at §2: "Giving a nutritionist any
+ *  second role that can see injury information will let them see it." A deny
+ *  test would refuse somebody who is a nutritionist AND a coach, which is the
+ *  opposite of how every other gate here behaves. */
+
+
+export async function requireInjuryAccess(): Promise<StaffContext> {
+  const ctx = await requireStaff();
+  if (!hasAnyRole(ctx.claims.roles, INJURY_ACCESS)) redirect('/?e=no-injury-access');
   return ctx;
 }
 
@@ -156,7 +198,7 @@ export function premiumOnlyResponse(feature: string): Response {
  *  pair of roles. */
 export async function requireSubjectAccess(): Promise<StaffContext> {
   const ctx = await requireStaff();
-  if (!ctx.claims.roles.includes('admin') && !ctx.claims.roles.includes('medical')) redirect('/settings?e=no-sar-access');
+  if (!hasAnyRole(ctx.claims.roles, SETTINGS_ADMIN) && !hasAnyRole(ctx.claims.roles, CLINICAL_ONLY)) redirect('/settings?e=no-sar-access');
   return ctx;
 }
 

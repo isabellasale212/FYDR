@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { PublishWeekButton } from '@/components/PublishWeekButton/PublishWeekButton';
 import { TeamAllocationBoard } from '@/components/TeamAllocationBoard/TeamAllocationBoard';
@@ -9,7 +8,8 @@ import { mondayOf } from '@/lib/queries/schedule';
 import { addDays, formatDate, todayIso } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { requireStaff } from '@/lib/session';
+import { requireInjuryAccess } from '@/lib/session';
+import { SESSION_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Team allocation · Fydr' };
 
@@ -33,10 +33,7 @@ export default async function TeamAllocationPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, orgId, orgName, claims, timezone } = await requireStaff();
-  if (!claims.roles.some((r) => r === 'coach' || r === 'medical')) {
-    redirect('/injuries');
-  }
+  const { db, orgId, orgName, claims, timezone } = await requireInjuryAccess();
   const isCoach = claims.roles.includes('coach');
 
   const params = await searchParams;
@@ -74,7 +71,8 @@ export default async function TeamAllocationPage({
           <h1>Team allocation</h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          {isCoach ? <PublishWeekButton orgId={orgId} userId={claims.userId} weekStart={weekStart} draftCount={draftCount} /> : null}
+          {isCoach ? <PublishWeekButton
+          canManage={hasAnyRole(claims.roles, SESSION_EDIT)} orgId={orgId} userId={claims.userId} weekStart={weekStart} draftCount={draftCount} /> : null}
         </div>
       </div>
 
@@ -114,7 +112,7 @@ export default async function TeamAllocationPage({
           weekStart={weekStart}
           teams={teams}
           board={filteredBoard}
-          canAllocate={isCoach}
+          canAllocate={hasAnyRole(claims.roles, SESSION_EDIT)}
         />
       </div>
 

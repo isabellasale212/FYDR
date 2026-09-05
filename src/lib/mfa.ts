@@ -17,12 +17,12 @@ import type { AppRole } from '@/lib/types/database';
  * invent a recovery-code system Supabase doesn't provide.
  */
 
-export /* Which roles must enrol in two factor login. This is the one stale role list
- * with a security consequence rather than a usability one: an S&C coach and a
- * nutritionist were not required to enrol, so two staff roles with real access
- * to athlete data could sign in with a password alone. Every staff role is
- * required; the athlete is not, which is unchanged. */
-const STAFF_MFA_REQUIRED_ROLES: readonly AppRole[] = ['coach', 'medic', 'sport_scientist', 'strength_conditioning', 'nutritionist'];
+/** Which roles must enrol in two factor login. This was the one stale role list
+ *  with a security consequence rather than a usability one: an S&C coach and a
+ *  nutritionist were not required to enrol, so two staff roles with real access
+ *  to athlete data could sign in with a password alone. Every staff role is
+ *  required; the athlete is not, which is unchanged. */
+export const STAFF_MFA_REQUIRED_ROLES: readonly AppRole[] = ['coach', 'medic', 'sport_scientist', 'strength_conditioning', 'nutritionist'];
 
 export function mfaRequiredForRoles(roles: readonly AppRole[]): boolean {
   return roles.some((r) => STAFF_MFA_REQUIRED_ROLES.includes(r));

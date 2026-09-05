@@ -598,6 +598,40 @@ something §1 says it can.
 
 ---
 
+### G-38. Nothing in the tenancy suite would notice if a role switch were deleted
+
+G-32 and G-35 are the same defect twice: a check that ran without RLS engaged
+and reported success. The suite is correct today, audited role by role on
+2026-09-05, but nothing in it would catch the line being removed again.
+
+`postgres` carries **`rolbypassrls = true`**, so it is not a question of table
+ownership: any statement on that connection without `set local role
+authenticated` is RLS-free, and `tests.set_jwt()` alone does not change that.
+Measured, on identical reads in one session:
+
+```
+as postgres, no role switch          wellness_entries visible: 830
+as postgres, claims set, no switch   wellness_entries visible: 830
+as authenticated, claims set         wellness_entries visible: 668
+  ...other organisations visible:      0
+```
+
+The middle line is the trap. Setting claims looks like the act that engages RLS
+and is not.
+
+**The fix is a canary**: before asserting anything, each file proves it is
+subject to RLS, by reading something a bypassing session would see and a
+constrained one would not. A signed-in user seeing more than one organisation
+means the run is void, and the file should fail loudly rather than pass
+vacuously. Cheap, one assertion per file.
+
+**Current state, audited rather than assumed:** every test file that sets claims
+also switches role; 230's apparent match is a comment; 231 and 232 bypass
+deliberately for fixture setup and switch before their assertions; `authenticated`
+has no BYPASSRLS, owns no tables, and all 65 public tables have RLS enabled.
+
+---
+
 ## Summary
 
 **28 gaps, one of them withdrawn. 4 high risk, 2 medium-high, 8 medium, the rest

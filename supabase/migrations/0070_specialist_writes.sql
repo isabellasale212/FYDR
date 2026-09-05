@@ -1,3 +1,15 @@
+-- ===========================================================================
+-- !! DO NOT APPLY TO PRODUCTION YET. HARD BLOCKER, not a nice-to-have.
+--
+-- This migration narrows five sets of writes. Six screens still OFFER those
+-- writes to roles it removes, and an UPDATE that RLS filters does not raise:
+-- it matches nothing, returns no error, and the app reports success. Shipping
+-- this alone turns six working buttons into buttons that lie.
+--
+-- Blocked on docs/spec-gaps.md G-34, which names all six with the roles each
+-- fails for. Clear that first, then this is free to ship.
+-- ===========================================================================
+
 -- ---------------------------------------------------------------------------
 -- 0070: the five G-33 rows, decided.
 --

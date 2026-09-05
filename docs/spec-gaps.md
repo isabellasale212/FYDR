@@ -454,6 +454,114 @@ being fixed; they were an accurate record of the old rules. The suite ends at
 
 ---
 
+## Band 8: found by the silent-save audit, 2026-09-05
+
+### G-34. Six screens let somebody save a change that never happens
+
+**DEPLOY BLOCKER FOR `0070_specialist_writes.sql`.** That migration must not go
+to production until this is fixed. It is not a nice-to-have: 0070 is what
+creates five of the six, and shipping it alone turns a working button into a
+button that lies.
+
+**The mechanism, which is why this is easy to miss.** Postgres raises `42501`
+when an INSERT violates a `WITH CHECK`. It does **not** raise when an UPDATE or
+DELETE fails a `USING` clause: the row is simply not matched, the statement
+succeeds, and zero rows change. supabase-js `.update()` returns
+`{ error: null }` with no row count unless asked. So the app sees success, calls
+`router.refresh()`, and the value reappears unchanged with no message.
+
+**All three conditions hold for these six**: RLS filters rather than raises, the
+call site never inspects the row count, and the UI offers the control to a role
+the policy excludes. Each was verified by running the real UPDATE as that role
+against seeded data and rolling back, not by reading policies.
+
+| # | Screen | Control | Reachable by | May write | **Silently fails for** |
+|---|---|---|---|---|---|
+| 1 | `/nutrition` | Expire a target | coach, medic | SS, nutritionist | **coach, medic** |
+| 2 | `/injuries/team-allocation` | Publish week, set/withdraw allocation | SS, coach, medic, S&C | SS, coach | **medic, S&C** |
+| 3 | `/settings/thresholds` | Activate / archive | all five | SS, coach | medic, S&C, nutritionist |
+| 4 | `/schedule/[sessionId]` | Cancel / reinstate | all five | SS, coach | medic, S&C, nutritionist |
+| 5 | `/schedule/planner/[templateId]` | Archive / restore template | all five | SS, coach | medic, S&C, nutritionist |
+| 6 | `/leaderboards/[id]` | Publish / delete board | all five | SS, coach, S&C | medic, nutritionist |
+
+**#1 is the worst.** `NutritionTargetsList.tsx:61` reads
+`canExpire = isCoach || (isMedical && …)`, so the button is shown to *exactly*
+the two roles for whom it now does nothing. Everybody who can see it is
+somebody it is broken for.
+
+**#2 matters because the rule was always right.** §4.4 says a medic views
+selection and does not set it. Only the feedback is wrong.
+
+**These were introduced by the role model work, not inherited.** Before it,
+"any staff" meant coach plus medic, which matched these policies exactly and
+left no gap. 0066 and 0070 changed who may write; the UI conditions did not move
+with them.
+
+**Not this finding, corrected after a bad first probe.** The programme edit
+screens raise `42501` loudly rather than failing silently, because those
+policies keep a permissive `USING` and put the restriction in `WITH CHECK`. Still
+a defect worth fixing, since a coach is offered an edit surface that always
+errors, but a different one. The first probe chained three statements in one
+transaction and read two `25P02` "in failed transaction" cascades as results.
+
+**Checked and cleared**, where the UI gates correctly and RLS is defence in
+depth doing its job: club details (`isAdmin`), athlete bio (`canEdit`),
+notification preferences (self-scoped), `session_attendance` and `test_results`
+(exclude nobody), `user_roles` delete and the route-handler `athletes` writes
+(all sport-scientist gated), and `meal_library` / `nutrition_rules` deletes,
+which are silent at the database but have no UI control that reaches them.
+
+### G-35. The GPS re-import fix cannot work for any real user
+
+**DEPLOY BLOCKER FOR `0064_gps_no_duplicate_rows.sql`.**
+
+`gps_records` has **INSERT and SELECT policies and no UPDATE policy at all**.
+0064 added the unique constraint and `lib/queries/gpsImport.ts` switched from
+insert to upsert, so the conflict path is an UPDATE, and it raises
+`42501 permission denied for table gps_records` for every caller. Verified as a
+sport scientist under RLS:
+
+```
+first import        : ok
+re-import (upsert)  : raised 42501 permission denied for table gps_records
+```
+
+**Why it was reported as working.** The original verification ran over the
+`postgres` connection, which owns the table, and an owner bypasses RLS unless
+the table is FORCE'd. It exercised the constraint and the upsert semantics and
+never exercised the policy. That is the same mistake G-32 records in three test
+files, made again in a hand-written probe, and it is the reason a Run-level
+check has to run as the role that will really do the thing.
+
+Loud rather than silent, so no data is corrupted: re-importing simply fails.
+
+### G-36. One shared write helper, and 84 call sites to route through it
+
+**83 of 84 update/delete/upsert call sites never look at what came back.** The
+single exception is `src/lib/retention/compute.ts:206`.
+
+The structural fix is one helper that checks the affected row count and throws
+when it is zero, on the same principle as `src/lib/access.ts`: one place that
+has to be right, rather than 84 that happen to agree. Then a mismatch between
+what the UI offers and what a policy permits raises instead of passing as
+success, and G-34's whole class stops being possible.
+
+Converting every call site is ongoing work and explicitly not a single pass.
+Not a blocker for 0070; G-34's six get a row-count check on their own writes as
+part of that fix.
+
+### G-37. The sport scientist cannot edit an athlete's biographical details
+
+`squad/[athleteId]/page.tsx:363` sets `canEditBio = claims.roles.includes('coach')`,
+while the `athletes` UPDATE policy admits coach **and** sport scientist. The
+inverse of G-34: an allowed action nobody can reach, rather than an offered
+action that does nothing.
+
+**Low priority.** No data loss and no silent failure, just a role that cannot do
+something §1 says it can.
+
+---
+
 ## Summary
 
 **28 gaps, one of them withdrawn. 4 high risk, 2 medium-high, 8 medium, the rest

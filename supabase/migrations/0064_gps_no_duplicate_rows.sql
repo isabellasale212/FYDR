@@ -1,3 +1,15 @@
+-- ===========================================================================
+-- !! DO NOT APPLY TO PRODUCTION YET. HARD BLOCKER.
+--
+-- This constraint is correct, but the upsert that goes with it cannot run:
+-- gps_records has INSERT and SELECT policies and NO UPDATE POLICY, so the
+-- on-conflict path raises 42501 for every caller. Verified as a sport
+-- scientist under RLS. The original check ran as the table owner, which
+-- bypasses RLS, and so never exercised the policy at all.
+--
+-- Blocked on docs/spec-gaps.md G-35.
+-- ===========================================================================
+
 -- 0064_gps_no_duplicate_rows.sql
 --
 -- G-25 / D-42: re-uploading a GPS file duplicated every row it contained.

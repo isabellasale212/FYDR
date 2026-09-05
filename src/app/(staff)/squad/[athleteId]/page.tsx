@@ -31,7 +31,7 @@ import { resolvePeriod } from '@/lib/period.server';
 import { availabilityStatus } from '@/lib/status';
 import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
-import { ATHLETE_BIO_EDIT, hasAnyRole } from '@/lib/access';
+import { ALL_STAFF, ATHLETE_BIO_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Athlete · Fydr' };
 
@@ -252,7 +252,11 @@ export default async function AthletePage({
   // the roster page's own check. 01-roles-and-permissions.md §1/§2 — an
   // individual athlete profile is named performance, wellness, load and
   // injury-availability detail, admin's clearest "cannot" case.
-  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medic');
+  /* Was `coach || medic`, which in the four-role model was the phrase for "any
+     staff who is not an admin". The sport scientist, the S&C and the
+     nutritionist are none of those, so this screen refused all three. The
+     access matrix gives every staff role this page. */
+  const hasAccess = hasAnyRole(claims.roles, ALL_STAFF);
   if (!hasAccess) {
     return (
       <>

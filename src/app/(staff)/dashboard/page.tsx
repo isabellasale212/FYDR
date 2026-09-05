@@ -20,6 +20,7 @@ import { addDays, formatDate, formatLongDate, todayIso } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
+import { ALL_STAFF, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Dashboard · Fydr' };
 
@@ -148,7 +149,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
   // that hidden row — homeRoute() in lib/supabase/claims.ts no longer
   // lands an admin-only sign-in here, but a typed URL still could without
   // this. Same pattern as /flags, /squad and /analytics.
-  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medic');
+  /* Was `coach || medic`, which in the four-role model was the phrase for "any
+     staff who is not an admin". The sport scientist, the S&C and the
+     nutritionist are none of those, so this screen refused all three. The
+     access matrix gives every staff role this page. */
+  const hasAccess = hasAnyRole(claims.roles, ALL_STAFF);
   if (!hasAccess) {
     return (
       <>
@@ -162,8 +167,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           <h2>Not part of this role</h2>
           <p>
             The dashboard is availability, load and flag detail for every named athlete.
-            Admin manages the club and does not read athlete performance data &mdash; see
-            01-roles-and-permissions.md §1. Reports, Leaderboard and Settings are still open
+            This role does not read athlete performance detail; see the access matrix. Reports, Leaderboard and Settings are still open
             from the sidebar.
           </p>
         </div>

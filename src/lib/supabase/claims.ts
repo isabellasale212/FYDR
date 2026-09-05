@@ -144,10 +144,13 @@ export function isAthlete(claims: FydrClaims): boolean {
  *  still lands on /dashboard: the squad-facing shell is the bigger tool for
  *  them, same reasoning as the staff-vs-athlete choice above. */
 export function homeRoute(claims: FydrClaims): string {
-  if (isStaff(claims)) {
-    const hasSquadAccess = claims.roles.includes('coach') || claims.roles.includes('medic');
-    return hasSquadAccess ? '/dashboard' : '/settings';
-  }
+  /* Every staff role lands on the dashboard. This used to send anyone who was
+     not a coach or a medic to /settings, which was correct while "anyone else"
+     meant the admin, a club secretary with no squad data. That role is gone,
+     its duties folded into the sport scientist, and the sport scientist has no
+     restrictions at all, so the old branch sent the least restricted role in
+     the product to the one page that assumed it could see almost nothing. */
+  if (isStaff(claims)) return '/dashboard';
   if (isAthlete(claims)) return '/today';
   return '/login?e=no-roles';
 }

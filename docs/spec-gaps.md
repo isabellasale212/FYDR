@@ -687,6 +687,52 @@ has no BYPASSRLS, owns no tables, and all 65 public tables have RLS enabled.
 
 ---
 
+### G-39. FIXED, 2026-09-05. Refusals that a scanner does not recognise as refusals
+
+**This one reached production and locked three roles out of most of the app.**
+
+Eight screens read `coach || medic` and, instead of redirecting, RENDERED a
+message: "Not part of this role... Admin manages the club and does not read
+athlete performance data, see 01-roles-and-permissions.md §1." `homeRoute()`
+refused a ninth way again, by returning a different destination, sending every
+non-coach non-medic to `/settings`.
+
+Affected: `/dashboard`, `/flags`, `/squad`, `/squad/[athleteId]`,
+`/leaderboards`, `/leaderboards/[leaderboardId]`, `/settings/thresholds`,
+`settings/imports/upload`, and the landing route. Sport scientist, S&C and
+nutritionist, all three.
+
+**Why the G-29 audit missed it, which is the part worth keeping.** That
+inventory decided whether a role check was a "gate" by looking for `redirect(`,
+`notFound(` or a 403 nearby. These refuse by rendering, so all eight were
+classified as render flags and never individually reviewed; `homeRoute` returns
+a path, so it was filed the same way. 86 of 113 sites were classified that way
+and only the 27 were read. G-34 had already shown that a refusal need not look
+like one, and the lesson was not generalised.
+
+**Not a competing design.** The rule it encoded was real and deliberate, with a
+written rationale: a club chairman should not read sleep scores. It went stale
+because the role it protected against was ABOLISHED rather than renamed, and its
+duties handed to the one role with no restrictions at all. `admin` had no
+successor to inherit the restriction.
+
+`docs/01-roles-and-permissions.md` now carries a superseded banner naming what
+in it is wrong, and CLAUDE.md's "Permissions, who-sees-what" row points at
+`docs/access-matrix.md` and `src/lib/access.ts` instead of a four-role document.
+
+### G-40. Open: 18 role checks that hide a section with no message
+
+The shape the G-39 sweep turned up and did NOT rule out. Eighteen sites gate a
+region and render nothing at all for the excluded role, so there is no refusal
+text for any scan to find and nothing on screen to tell somebody a thing exists.
+
+Many will be correct: §4's partial-visibility cells are supposed to withhold
+regions silently, and the medic-only clinical panel is the clearest example.
+Some will be the same four-role artefact as G-39. They have not been read one by
+one, and this entry exists so that gap is written down rather than assumed away.
+
+---
+
 ## Summary
 
 **28 gaps, one of them withdrawn. 4 high risk, 2 medium-high, 8 medium, the rest

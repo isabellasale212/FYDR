@@ -6,6 +6,7 @@ import { fetchLeaderboardWall } from '@/lib/queries/leaderboardWall';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
+import { ALL_STAFF, hasAnyRole } from '@/lib/access';
 
 /* Renamed from "Testing wall". That name was accurate when every board came
  * from test_results; the wall now ranks GPS and wellness too, and the design
@@ -47,7 +48,11 @@ export default async function LeaderboardWallPage({
   // (board configuration: name, metric, population, window, publish state
   // — never a named result) and is reachable from here. See that page's
   // own header for the other half of this split.
-  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medic');
+  /* Was `coach || medic`, which in the four-role model was the phrase for "any
+     staff who is not an admin". The sport scientist, the S&C and the
+     nutritionist are none of those, so this screen refused all three. The
+     access matrix gives every staff role this page. */
+  const hasAccess = hasAnyRole(claims.roles, ALL_STAFF);
   if (!hasAccess) {
     return (
       <>

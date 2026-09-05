@@ -19,7 +19,7 @@ import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
 import { isPremium } from '@/lib/tier';
 import { PlanGate } from '@/components/PlanGate/PlanGate';
-import { LEADERBOARD_EDIT, hasAnyRole } from '@/lib/access';
+import { ALL_STAFF, LEADERBOARD_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Board · Fydr' };
 
@@ -57,7 +57,11 @@ export default async function LeaderboardDetailPage({
   // all, aggregate or otherwise. Checked before fetchBoard() runs, so an
   // admin-only visitor gets the same denial regardless of whether the
   // board id resolves, matching /flags and /squad/[athleteId].
-  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medic');
+  /* Was `coach || medic`, which in the four-role model was the phrase for "any
+     staff who is not an admin". The sport scientist, the S&C and the
+     nutritionist are none of those, so this screen refused all three. The
+     access matrix gives every staff role this page. */
+  const hasAccess = hasAnyRole(claims.roles, ALL_STAFF);
   if (!hasAccess) {
     return (
       <>

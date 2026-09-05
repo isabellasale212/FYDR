@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { commitGpsImport, fetchImportRoster, parseGpsImportCsv } from '@/lib/queries/gpsImport';
 import { requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
+import { GPS_IMPORT, hasAnyRole } from '@/lib/access';
 
 export type UploadResult = {
   ok: boolean;
@@ -27,7 +28,10 @@ export async function POST(request: Request): Promise<NextResponse<UploadResult>
      present: an admin-only staff member had a write path onto gps_records that
      migration 0026's role table does not give them, and a Basic club could
      commit GPS rows the rest of the product then refuses to show them. */
-  if (!claims.roles.includes('coach') && !claims.roles.includes('medic')) {
+  /* §3.6 Import GPS is VC for the sport scientist alone. This one narrows
+     rather than widens: it was the same coach-or-medic phrase, but the
+     matrix answer here is the opposite of the six pages above. */
+  if (!hasAnyRole(claims.roles, GPS_IMPORT)) {
     return NextResponse.json(
       { ok: false, error: 'Importing GPS files is not part of this role.', batchId: null, filename: null, acceptedCount: 0, rejectedCount: 0, rejected: [] },
       { status: 403 },

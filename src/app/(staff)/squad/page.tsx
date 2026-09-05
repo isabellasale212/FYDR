@@ -6,6 +6,7 @@ import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchSquadList } from '@/lib/queries/squad';
 import { requireStaff } from '@/lib/session';
+import { ALL_STAFF, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Squad overview · Fydr' };
 
@@ -23,7 +24,11 @@ export default async function SquadPage({
   // coach/medical only, no admin, no aggregate note. This page is the full
   // named roster plus availability and restrictions — exactly the
   // performance data §1 says admin doesn't read. Same pattern as /flags.
-  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medic');
+  /* Was `coach || medic`, which in the four-role model was the phrase for "any
+     staff who is not an admin". The sport scientist, the S&C and the
+     nutritionist are none of those, so this screen refused all three. The
+     access matrix gives every staff role this page. */
+  const hasAccess = hasAnyRole(claims.roles, ALL_STAFF);
   if (!hasAccess) {
     return (
       <>

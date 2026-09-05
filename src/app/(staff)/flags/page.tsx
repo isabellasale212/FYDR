@@ -8,6 +8,7 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, todayIso } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
+import { ALL_STAFF, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Flags · Fydr' };
 
@@ -30,7 +31,11 @@ export default async function FlagsPage({
    * than thrown, since a malformed date here should just show everything. */
   const dateParam = typeof params.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(params.date) ? params.date : null;
 
-  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medic');
+  /* Was `coach || medic`, which in the four-role model was the phrase for "any
+     staff who is not an admin". The sport scientist, the S&C and the
+     nutritionist are none of those, so this screen refused all three. The
+     access matrix gives every staff role this page. */
+  const hasAccess = hasAnyRole(claims.roles, ALL_STAFF);
 
   if (!hasAccess) {
     return (
@@ -44,9 +49,7 @@ export default async function FlagsPage({
         <div className="empty">
           <h2>Not part of this role</h2>
           <p>
-            Flags carry wellness and load detail. Admin manages the club and
-            does not read athlete performance data &mdash; see
-            01-roles-and-permissions.md §1.
+            Flags carry wellness and load detail. This role does not read athlete performance detail; see the access matrix.
           </p>
         </div>
       </>

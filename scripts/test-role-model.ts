@@ -373,5 +373,62 @@ for (const r of rows) {
   );
 }
 
+// ---------------------------------------------------------------------------
+console.log('\n-- refusals that are RENDERED, not redirected --');
+
+/* The shape my own G-29 inventory missed, and it locked three roles out of most
+ * of the app in production.
+ *
+ * That inventory classified a role check as a "gate" by looking for redirect(),
+ * notFound() or a 403 nearby. These screens refuse by RENDERING a message
+ * instead, so all of them were filed as render flags and never reviewed. Same
+ * for homeRoute(), which refuses by returning a different destination.
+ *
+ * Each one read `coach || medic`, which in the four-role model was the phrase
+ * for "any staff who is not an admin". The sport scientist, the S&C and the
+ * nutritionist are none of those, so every one of these screens told them
+ * "Not part of this role", quoting a document describing a role that no longer
+ * exists.
+ */
+const RENDERED_REFUSALS: Record<string, string> = {
+  'dashboard/page.tsx': 'ALL_STAFF',
+  'flags/page.tsx': 'ALL_STAFF',
+  'squad/page.tsx': 'ALL_STAFF',
+  'squad/[athleteId]/page.tsx': 'ALL_STAFF',
+  'leaderboards/page.tsx': 'ALL_STAFF',
+  'leaderboards/[leaderboardId]/page.tsx': 'ALL_STAFF',
+  // The one refusal in this group that is an HTTP response rather than a
+  // rendered page, and the one that stays narrow: GPS import is §3.6's VC for
+  // the sport scientist alone.
+  'settings/imports/upload/route.ts': 'GPS_IMPORT',
+  // The eighth, found while fixing the seven: it refused anyone who was not a
+  // coach, including the sport scientist that THRESHOLD_EDIT contains.
+  'settings/thresholds/page.tsx': 'THRESHOLD_EDIT',
+};
+
+for (const [route, set] of Object.entries(RENDERED_REFUSALS)) {
+  const f = `src/app/(staff)/${route}`;
+  const src = readFileSync(f, 'utf8');
+  assert(src.includes(set), `${route} resolves its refusal from ${set}`);
+  assert(
+    !/(hasAccess|isCoach)\s*=\s*claims\.roles\.includes\('coach'\);?\s*\n\s*if \(!\1\)/.test(src) &&
+      !/hasAccess\s*=\s*claims\.roles\.includes/.test(src),
+    `${route} no longer hand-writes its own role test`,
+  );
+}
+
+/* homeRoute decides where a signed-in person lands, so getting it wrong is not
+ * a hidden panel, it is the first thing they see. It sent every role that was
+ * not coach or medic to /settings, which was right when "not coach or medic"
+ * meant the club secretary. */
+const claimsSrc = readFileSync('src/lib/supabase/claims.ts', 'utf8');
+const homeBody = claimsSrc.match(/export function homeRoute[\s\S]*?\n}/)?.[0] ?? '';
+assert(homeBody.length > 0, 'homeRoute() exists');
+assert(
+  !/includes\('coach'\)\s*\|\|\s*claims\.roles\.includes\('medic'\)/.test(homeBody),
+  'homeRoute() no longer splits staff into coach-or-medic and everyone else',
+);
+assert(!/'\/settings'/.test(homeBody), 'homeRoute() no longer lands any staff role on /settings');
+
 console.log(`\n${passed} passed, ${failed} failed\n`);
 process.exit(failed > 0 ? 1 : 0);

@@ -13,9 +13,10 @@ export const metadata = { title: 'Thresholds · Fydr' };
  *  on. */
 export default async function ThresholdsPage() {
   const { db, orgId, claims } = await requireStaff();
-  const isCoach = claims.roles.includes('coach');
-
-  if (!isCoach) {
+  /* §3.6 Thresholds is VECD for the coach AND the sport scientist. This read
+     `isCoach` alone, so it refused the sport scientist from configuring the
+     rules that raise flags. */
+  if (!hasAnyRole(claims.roles, THRESHOLD_EDIT)) {
     return (
       <>
         <div className="topbar">
@@ -27,11 +28,11 @@ export default async function ThresholdsPage() {
           </div>
         </div>
         <div className="empty">
-          <h2>Coach only</h2>
+          <h2>Not part of this role</h2>
           <p>
-            Setting the rules that raise flags is a coaching decision.
-            Medical staff are notified by several thresholds but do not
-            configure them &mdash; 01-roles-and-permissions.md §2.
+            Setting the rules that raise flags belongs to the coach and the
+            sport scientist. Other staff are notified by several thresholds and
+            can read them, but do not configure them &mdash; access matrix §3.6.
           </p>
         </div>
       </>

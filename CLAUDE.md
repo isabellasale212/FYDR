@@ -89,7 +89,7 @@ session, but you **must** read the relevant file before touching the correspondi
 | If you are working on... | Read first |
 |---|---|
 | Anything at all | `docs/00-product-overview.md` |
-| Permissions, who-sees-what | `docs/01-roles-and-permissions.md` |
+| Permissions, who-sees-what | **`docs/access-matrix.md`**, and `src/lib/access.ts` for the sets the code resolves from. **Not `docs/01-roles-and-permissions.md`**, which describes the retired four-role model and carries a superseded banner. |
 | Navigation, adding a screen | `docs/02-information-architecture.md` |
 | Any user journey | `docs/03-flows.md` |
 | Database, queries, migrations | `docs/04-data-model.md` |

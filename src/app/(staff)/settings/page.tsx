@@ -43,7 +43,6 @@ export const metadata = { title: 'Settings · Fydr' };
 export default async function SettingsPage() {
   const { db, orgId, orgName, timezone, fullName, claims, tier, realTier, previewingTier } = await requireStaff();
   const isAdmin = claims.roles.includes('sport_scientist');
-  const isAdminOnly = isAdmin && !claims.roles.includes('coach') && !claims.roles.includes('medic');
   const onPremium = isPremium(tier);
   /* Not `isAdmin`: a club's own administrator does not get to try the other
      plan on. lib/platformStaff.ts has the reasoning; requireStaff() enforces
@@ -82,23 +81,10 @@ export default async function SettingsPage() {
         <ThemeToggle />
       </div>
 
-      {isAdminOnly ? (
-        // Governance finding 8 / lib/supabase/claims.ts homeRoute(): an
-        // admin-only sign-in lands here now instead of /dashboard, which
-        // isn't in this sidebar at all. Worth saying so in the same honest
-        // register /flags and /reports already use for the reverse case —
-        // this is the "here's why your nav is small" line, not an apology.
-        <div className="note" style={{ marginBottom: 14 }}>
-          <div className="note-glyph">i</div>
-          <p className="note-text">
-            <b>Your sidebar has three rows on purpose.</b> Admin manages the club — users,
-            billing, retention, the audit log — and deliberately does not read athlete
-            wellness, load, gym, nutrition or medical detail, see
-            01-roles-and-permissions.md §1. Reports and Leaderboard show what admin can see
-            of each; hold a coach or medical role as well to open the rest.
-          </p>
-        </div>
-      ) : null}
+      {/* A notice used to sit here telling an admin-only user their sidebar had
+          three rows on purpose. Removed 2026-09-05: the sport scientist that role
+          became has every row, so the notice was telling the least restricted
+          role in the product that it was the most restricted. */}
 
       <div className="set-body">
         {/* -------- §3 Plan card -------- */}
@@ -329,7 +315,7 @@ export default async function SettingsPage() {
               </span>
             </Link>
           ) : (
-            <div className="set-list-row" data-disabled="true" aria-disabled="true" title="Requires the coach or medical role, per 01-roles-and-permissions.md §1.">
+            <div className="set-list-row" data-disabled="true" aria-disabled="true" title="Requires a role with athlete-level export access, see the access matrix.">
               <span>
                 <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block', color: 'var(--faint)' }}>Exports</span>
                 <span style={{ fontSize: 12, color: 'var(--faint)' }}>Coach or medical role required</span>

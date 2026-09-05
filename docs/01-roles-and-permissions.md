@@ -1,3 +1,34 @@
+> # SUPERSEDED, 2026-09-05. Do not build against this file.
+>
+> **This document describes the FOUR-role model: athlete, coach, medical, admin.
+> That model no longer exists.** It was last edited on 2026-08-13, three weeks
+> before the five-role decision, and is kept only for the reasoning in it.
+>
+> The binding sources are now:
+>
+> | For | Read |
+> |---|---|
+> | Who may do what, per screen | `docs/access-matrix.md` |
+> | The specification itself | `docs/FydrStaffAppSpecification_-_CLEAN_for_ClaudeCode.docx` |
+> | The role sets the code resolves from | `src/lib/access.ts` |
+>
+> **What is wrong here, specifically**, because this file was cited in live code
+> and locked three roles out of most of the app in production:
+>
+> - The `admin` role in §1 does not exist. It was abolished, not renamed, and its
+>   administrative duties went to the **sport scientist**, which by contrast has
+>   **no restrictions at all**.
+> - So §1's "Admin... deliberately has *less* data access than staff" and §2's
+>   `| View squad dashboard | no | Y | Y | no |` are the exact opposite of the
+>   current rule for the role that inherited those duties.
+> - There is no S&C role and no nutritionist role in this document. Both exist,
+>   and the nutritionist's exclusion from injury data (D-01) is the single
+>   highest-risk rule in the product. None of it is written here.
+>
+> The reasoning in §1 is still worth reading, and was sound: a club chairman does
+> not need a player's sleep scores. It stopped applying when the chairman's role
+> stopped existing.
+
 # 01. Roles and Permissions
 
 Authorisation is the area of Fydr most likely to cause real harm if it is wrong: leaked

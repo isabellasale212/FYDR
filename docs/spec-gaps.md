@@ -547,7 +547,41 @@ notification preferences (self-scoped), `session_attendance` and `test_results`
 (all sport-scientist gated), and `meal_library` / `nutrition_rules` deletes,
 which are silent at the database but have no UI control that reaches them.
 
-### G-35. The GPS re-import fix cannot work for any real user
+### G-35. FIXED, 2026-09-05, by migration 0072
+
+Two things were missing, not one, and the first fix was wrong because it only
+addressed the visible half.
+
+**The policy.** `gps_records` had INSERT and SELECT policies and no UPDATE
+policy, so the upsert's conflict path had no rule permitting it.
+
+**The grant.** Adding the policy alone left the same `42501`, because
+`authenticated` held no UPDATE grant on the table at all. The two failures wear
+the same SQLSTATE and read almost alike:
+
+```
+missing GRANT   permission denied for table gps_records
+policy refusal  new row violates row-level security policy
+```
+
+A policy is permission to use a privilege you already hold. Writing one for a
+privilege nobody was granted produces a rule that reads correctly, passes any
+check run as a superuser, and cannot be exercised by a real user.
+
+**Generalised so it cannot recur.** `010_rls_coverage_test.sql` now asserts that
+every INSERT, UPDATE or DELETE policy in `public` has a matching grant, at table
+OR column level. The column half matters: 0045 deliberately gives an athlete
+UPDATE on exactly six columns of `gym_session_logs` rather than the whole row,
+and a table-level-only check would report that correct design as broken.
+
+**Verified end to end** through the app's own supabase-js upsert, as a signed-in
+sport scientist, canary first: first import ok, re-import ok, one row, value
+corrected to 5250. Plus six assertions in `100_gps_import_test.sql`, including
+the one that would have caught this on the day.
+
+The original entry follows.
+
+### G-35a. As first written
 
 **DEPLOY BLOCKER FOR `0064_gps_no_duplicate_rows.sql`.**
 

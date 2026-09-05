@@ -1,13 +1,13 @@
 -- ===========================================================================
--- !! DO NOT APPLY TO PRODUCTION YET. HARD BLOCKER.
+-- BLOCKER CLEARED 2026-09-05 by migration 0072. Safe to apply, and this note is
+-- kept rather than deleted because the reason it was blocked is worth carrying.
 --
--- This constraint is correct, but the upsert that goes with it cannot run:
--- gps_records has INSERT and SELECT policies and NO UPDATE POLICY, so the
--- on-conflict path raises 42501 for every caller. Verified as a sport
--- scientist under RLS. The original check ran as the table owner, which
--- bypasses RLS, and so never exercised the policy at all.
---
--- Blocked on docs/spec-gaps.md G-35.
+-- This constraint was correct and the upsert that goes with it could not run:
+-- gps_records had INSERT and SELECT policies, no UPDATE policy, and no UPDATE
+-- grant, so the on-conflict path raised 42501 for every caller. The original
+-- check ran as the table owner, which carries rolbypassrls, and so never
+-- consulted a policy at all. docs/spec-gaps.md G-35, and G-38 is the canary that
+-- now makes that mistake fail loudly instead of passing.
 -- ===========================================================================
 
 -- 0064_gps_no_duplicate_rows.sql

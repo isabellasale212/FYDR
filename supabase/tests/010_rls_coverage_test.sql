@@ -203,5 +203,46 @@ select ok(
 );
 
 
+-- ===========================================================================
+-- A policy without a matching GRANT is a write nobody can perform.
+--
+-- G-35, generalised. gps_records had an INSERT policy, two SELECT policies and
+-- no UPDATE policy, and when the UPDATE policy was finally added the upsert
+-- STILL failed, because `authenticated` held no UPDATE grant on the table
+-- either. The two failures are different things wearing the same number:
+--
+--     missing GRANT   42501 "permission denied for table gps_records"
+--     policy refusal  42501 "new row violates row-level security policy"
+--
+-- A policy is permission to use a privilege you already hold. Writing one for a
+-- privilege nobody has been granted produces a rule that reads correctly, tests
+-- clean against a superuser, and cannot be exercised by any real user.
+--
+-- Column-level grants count. 0045 deliberately gives an athlete UPDATE on
+-- exactly six columns of gym_session_logs rather than the whole row, so a
+-- table-level check alone would report that correct design as broken. It was
+-- checked and it is not: the grant is the restriction there, which is a
+-- different and equally valid shape.
+-- ===========================================================================
+
+select is(
+  (select count(*)::int
+     from pg_policies p
+    where p.schemaname = 'public'
+      and p.cmd in ('INSERT', 'UPDATE', 'DELETE')
+      and not exists (
+        select 1 from information_schema.table_privileges g
+         where g.table_schema = 'public' and g.table_name = p.tablename
+           and g.grantee = 'authenticated' and g.privilege_type = p.cmd)
+      and not exists (
+        select 1 from information_schema.column_privileges cg
+         where cg.table_schema = 'public' and cg.table_name = p.tablename
+           and cg.grantee = 'authenticated' and cg.privilege_type = p.cmd)),
+  0,
+  'every write policy has a matching grant, at table or column level: a policy '
+  'without one is a rule no real user can ever exercise'
+);
+
+
 select * from finish();
 rollback;

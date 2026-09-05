@@ -102,5 +102,72 @@ select lives_ok(
   'a sport scientist CAN start a GPS import'
 );
 
+-- ===========================================================================
+-- G-35. Re-importing a file must REPLACE the row, not fail and not duplicate.
+--
+-- This is what migration 0064 was for, and what it could not actually do. 0064
+-- added the unique constraint and gpsImport.ts switched to an upsert, so the
+-- conflict path is an UPDATE, and gps_records had INSERT and SELECT policies
+-- and no UPDATE policy at all. Every re-import raised 42501 for every real user.
+--
+-- It was reported as verified because the check ran over a connection carrying
+-- rolbypassrls, which never consulted a policy. That is the same defect as G-32
+-- and it is why every file in this suite now opens with a canary.
+-- ===========================================================================
+
+select tests.set_jwt(tests.uid('orga', 'user_admin'));
+
+select lives_ok(
+  format($q$insert into gps_records
+              (org_id, athlete_id, record_date, session_id, total_distance_m, import_batch_id, source)
+            values (%L, %L, date '2026-05-04', null, 5000, %L, 'file_import')$q$,
+         tests.uid('orga','org'), tests.uid('orga','athlete_2'), tests.uid('orga','batch_1')),
+  'the first import of a day writes a row'
+);
+
+select throws_ok(
+  format($q$insert into gps_records
+              (org_id, athlete_id, record_date, session_id, total_distance_m, import_batch_id, source)
+            values (%L, %L, date '2026-05-04', null, 9999, %L, 'file_import')$q$,
+         tests.uid('orga','org'), tests.uid('orga','athlete_2'), tests.uid('orga','batch_1')),
+  '23505', null,
+  'a plain second insert is refused by the 0064 constraint, which is the duplicate bug fixed'
+);
+
+select lives_ok(
+  format($q$insert into gps_records
+              (org_id, athlete_id, record_date, session_id, total_distance_m, import_batch_id, source)
+            values (%L, %L, date '2026-05-04', null, 5250, %L, 'file_import')
+            on conflict (org_id, athlete_id, record_date, session_id)
+            do update set total_distance_m = excluded.total_distance_m$q$,
+         tests.uid('orga','org'), tests.uid('orga','athlete_2'), tests.uid('orga','batch_1')),
+  'and the re-import upsert SUCCEEDS: this is the assertion that would have caught G-35'
+);
+
+select is(
+  (select count(*) from gps_records where org_id = tests.uid('orga','org')
+     and athlete_id = tests.uid('orga','athlete_2') and record_date = date '2026-05-04'),
+  1::bigint,
+  'still one row, not two'
+);
+
+select is(
+  (select total_distance_m from gps_records where org_id = tests.uid('orga','org')
+     and athlete_id = tests.uid('orga','athlete_2') and record_date = date '2026-05-04'),
+  5250::numeric,
+  'and it carries the corrected figure, which is the whole point of replace-on-conflict'
+);
+
+-- The write stays the import owner's. A coach reads GPS and does not write it.
+select tests.set_jwt(tests.uid('orga', 'user_coach'));
+select is(
+  tests.rows_affected(format($q$update gps_records set total_distance_m = 1
+                              where org_id = %L and athlete_id = %L and record_date = date '2026-05-04'$q$,
+                              tests.uid('orga','org'), tests.uid('orga','athlete_2'))),
+  0::bigint,
+  'a coach cannot rewrite a GPS row: the new UPDATE policy is the import owner''s alone'
+);
+
+
 select * from finish();
 rollback;

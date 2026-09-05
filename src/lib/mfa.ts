@@ -17,7 +17,7 @@ import type { AppRole } from '@/lib/types/database';
  * invent a recovery-code system Supabase doesn't provide.
  */
 
-export const STAFF_MFA_REQUIRED_ROLES: readonly AppRole[] = ['coach', 'medical', 'admin'];
+export const STAFF_MFA_REQUIRED_ROLES: readonly AppRole[] = ['coach', 'medic', 'sport_scientist'];
 
 export function mfaRequiredForRoles(roles: readonly AppRole[]): boolean {
   return roles.some((r) => STAFF_MFA_REQUIRED_ROLES.includes(r));

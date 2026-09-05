@@ -14,7 +14,7 @@ export const metadata = { title: 'Bulk invite · Fydr' };
  *  the any-role InviteWizard already built into the main Users list. */
 export default async function BulkInvitePage() {
   const { db, orgId, claims } = await requireStaff();
-  if (!claims.roles.includes('admin')) redirect('/settings');
+  if (!claims.roles.includes('sport_scientist')) redirect('/settings');
 
   const unlinked = await fetchUnlinkedAthletes(db, orgId);
 

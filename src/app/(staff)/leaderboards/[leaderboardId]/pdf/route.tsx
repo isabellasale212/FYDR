@@ -54,7 +54,7 @@ export async function GET(
   if (!isUuid(leaderboardId)) notFound();
 
 
-  if (!claims.roles.includes('coach') && !claims.roles.includes('medical')) {
+  if (!claims.roles.includes('coach') && !claims.roles.includes('medic')) {
     return new Response('A board ranking is named-athlete data and is not part of this role.', {
       status: 403,
       headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
@@ -176,7 +176,7 @@ export async function GET(
     </PdfReport>,
   );
 
-  const actorRole = (claims.roles.includes('medical') ? 'medical' : 'coach') as AppRole;
+  const actorRole = (claims.roles.includes('medic') ? 'medic' : 'coach') as AppRole;
   await recordReportView(
     db,
     orgId,

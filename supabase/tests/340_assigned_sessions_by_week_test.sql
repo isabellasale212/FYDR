@@ -31,6 +31,14 @@ select * from no_plan();
 
 select tests.fixtures();
 
+-- From here the session is an ordinary application user. Without this the file
+-- runs as the table owner, and an owner bypasses RLS unless the table is set to
+-- FORCE ROW LEVEL SECURITY, which none of these are. Every refusal asserted
+-- below was therefore not being tested at all: the write simply succeeded.
+-- 020_cross_tenant_test.sql has carried this line since it was written; this
+-- file was missing it.
+set local role authenticated;
+
 -- ===========================================================================
 -- Build a two-block programme: block 1 runs 2 weeks, block 2 runs 2 weeks.
 -- Week 1 has two sessions, week 2 has three, block 2 week 1 has one.
@@ -139,9 +147,14 @@ select is_empty(
 -- 6. A duplicate assignment path must not double count
 -- ===========================================================================
 select tests.set_jwt(tests.uid('orga', 'user_coach'));
+-- groups has no created_by column and never has (id, org_id, name, description,
+-- colour, group_type, sort_order, timestamps), and group_type is NOT NULL, so
+-- the original three-column insert here raised 42703 and this assertion had
+-- never once passed. The name also has to differ from the fixtures' own
+-- 'Forwards', because groups carries UNIQUE (org_id, name).
 select lives_ok(format($q$
-  insert into groups (id, org_id, name, created_by) values (%L, %L, 'Forwards', %L)$q$,
-  tests.uid('orga','grp'), tests.uid('orga','org'), tests.uid('orga','user_coach')),
+  insert into groups (id, org_id, name, group_type) values (%L, %L, 'Pack', 'positional')$q$,
+  tests.uid('orga','grp'), tests.uid('orga','org')),
   'a group exists');
 select lives_ok(format($q$
   insert into group_memberships (org_id, group_id, athlete_id) values (%L, %L, %L)$q$,

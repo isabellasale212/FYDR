@@ -57,7 +57,7 @@ export async function GET(
   if (!isUuid(leaderboardId)) notFound();
 
 
-  if (!claims.roles.includes('coach') && !claims.roles.includes('medical')) {
+  if (!claims.roles.includes('coach') && !claims.roles.includes('medic')) {
     return new Response('A board ranking is named-athlete data and is not part of this role.', {
       status: 403,
       headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
@@ -138,7 +138,7 @@ export async function GET(
     `\r\n# Athletes who opted out or did not qualify are not listed, and are not distinguished from each other.\r\n\r\n`;
 
   const actorRole = (
-    claims.roles.includes('medical') ? 'medical' : 'coach'
+    claims.roles.includes('medic') ? 'medic' : 'coach'
   ) as AppRole;
   await recordReportView(
     db,

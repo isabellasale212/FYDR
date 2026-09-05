@@ -8,7 +8,7 @@ export const metadata = { title: 'New programme · Fydr' };
 export default async function NewProgrammePage() {
   const { orgId, orgName, claims } = await requireStaff();
   const isCoach = claims.roles.includes('coach');
-  const isMedical = claims.roles.includes('medical');
+  const isMedical = claims.roles.includes('medic');
   if (!isCoach && !isMedical) {
     redirect('/programmes');
   }

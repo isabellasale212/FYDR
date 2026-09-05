@@ -321,6 +321,63 @@ the code, each of which would change what a screen specification says.
 
 ---
 
+## Band 6: opened by the five-role migration, 2026-09-05
+
+These four are the deliberate remainder of the role model push. Each one was
+found by running the suite, and each is written down rather than guessed at.
+
+### G-29. Most role checks in the app have never been read against the matrix
+
+114 role checks live in 77 files. The migration renamed the literals in all of
+them, so none names a role that no longer exists, and `npm run test:role-model`
+proves that. What it does not prove is that any given check admits the right
+people now that there are five roles instead of four. **Not one of the 114
+mentions `strength_conditioning` or `nutritionist`**, so both roles are refused
+by every screen-level check that names roles explicitly.
+
+That is fail-closed and therefore safe, but it means an S&C coach currently
+cannot open most of the screens §3 grants them. The matrix already specifies the
+answer for every screen; this is the work of applying it.
+
+**Risk: medium-high.** Not a leak. A large amount of the product is invisible to
+two of the five roles.
+
+### G-30. `requireReportAccess` cannot express the nutritionist's partial access
+
+§4 gives a nutritionist **V** on the Compliance report and **VP** on the Reports
+hub and Squad weekly, and none on Testing, Training, Athlete or Injury. The guard
+is one blanket gate, so it refuses the role outright. Splitting it needs a
+per-report decision, not a wider list.
+
+**Risk: low.** A role sees less than it should.
+
+### G-31. `loadAthleteDomainContext` refuses the sport scientist
+
+`src/lib/athleteDomain.server.ts:93` admits coach or medic only. §1 gives the
+sport scientist everything. Left alone deliberately in the role push, because it
+gates a different surface and this build does not bundle unrelated access
+changes.
+
+**Risk: low-medium.** The role that is meant to have no restrictions is refused.
+
+### G-32. Three test files asserted refusals without RLS switched on
+
+`330_tier_rls_test.sql` and `340_assigned_sessions_by_week_test.sql` set JWT
+claims but never ran `set local role authenticated`, so they executed as the
+table owner. An owner bypasses RLS unless the table is set to FORCE ROW LEVEL
+SECURITY, and no table here is. Every refusal those files asserted was therefore
+untested; the tier enforcement added by `0061_tier_in_rls.sql` had no working
+test at all. `340` additionally inserted into a `groups.created_by` column that
+has never existed, so three of its assertions had never passed.
+
+**Fixed in this push**, and recorded here because the shape is worth watching
+for: a test that asserts a refusal proves nothing unless the session is actually
+subject to RLS. Only `020_cross_tenant_test.sql` carried the line.
+
+**Risk when live: high.** Now closed.
+
+---
+
 ## Summary
 
 **28 gaps, one of them withdrawn. 4 high risk, 2 medium-high, 8 medium, the rest

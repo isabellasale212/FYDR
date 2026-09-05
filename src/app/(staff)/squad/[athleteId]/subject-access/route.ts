@@ -19,7 +19,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ at
      malformed id is a URL that does not name anything, not a server fault. */
   if (!isUuid(athleteId)) notFound();
 
-  if (!claims.roles.includes('admin')) redirect(`/squad/${athleteId}?e=no-sar-access`);
+  if (!claims.roles.includes('sport_scientist')) redirect(`/squad/${athleteId}?e=no-sar-access`);
 
   const { id, error } = await createSarRequest(db, orgId, athleteId, claims.userId);
   if (error || !id) redirect(`/squad/${athleteId}?error=${encodeURIComponent(error ?? 'Could not open the request.')}`);
@@ -27,7 +27,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ at
   await db.from('audit_log').insert({
     org_id: orgId,
     actor_id: claims.userId,
-    actor_role: 'admin',
+    actor_role: 'sport_scientist',
     action: 'sar.request',
     entity_type: 'sar_request',
     entity_id: id,

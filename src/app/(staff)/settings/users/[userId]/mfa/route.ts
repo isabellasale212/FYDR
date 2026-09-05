@@ -22,7 +22,7 @@ export type RemoveMfaFactorResult = { ok: boolean; error: string | null };
 export async function DELETE(request: Request, { params }: { params: Promise<{ userId: string }> }): Promise<NextResponse<RemoveMfaFactorResult>> {
   const { userId } = await params;
   const { db, orgId, claims } = await requireStaff();
-  if (!claims.roles.includes('admin')) {
+  if (!claims.roles.includes('sport_scientist')) {
     return NextResponse.json({ ok: false, error: 'Admin access only.' }, { status: 403 });
   }
 
@@ -51,7 +51,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ u
   await db.from('audit_log').insert({
     org_id: orgId,
     actor_id: claims.userId,
-    actor_role: 'admin',
+    actor_role: 'sport_scientist',
     action: 'user.mfa_removed',
     entity_type: 'user',
     entity_id: userId,

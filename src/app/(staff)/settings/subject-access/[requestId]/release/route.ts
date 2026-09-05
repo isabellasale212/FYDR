@@ -15,7 +15,7 @@ import { requireStaff } from '@/lib/session';
 export async function POST(_request: Request, { params }: { params: Promise<{ requestId: string }> }) {
   const { requestId } = await params;
   const { db, orgId, claims } = await requireStaff();
-  if (!claims.roles.includes('admin')) redirect('/settings/subject-access?e=no-sar-access');
+  if (!claims.roles.includes('sport_scientist')) redirect('/settings/subject-access?e=no-sar-access');
 
   const request = await fetchSarRequest(db, orgId, requestId);
   if (!request) redirect('/settings/subject-access?error=Request+not+found.');
@@ -35,7 +35,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ re
     await db.from('audit_log').insert({
       org_id: orgId,
       actor_id: claims.userId,
-      actor_role: 'admin',
+      actor_role: 'sport_scientist',
       action: 'sar.release',
       entity_type: 'sar_request',
       entity_id: requestId,

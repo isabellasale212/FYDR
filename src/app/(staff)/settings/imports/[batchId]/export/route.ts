@@ -59,7 +59,7 @@ export async function GET(
   if (!isUuid(batchId)) notFound();
 
 
-  if (!claims.roles.includes('coach') && !claims.roles.includes('medical')) {
+  if (!claims.roles.includes('coach') && !claims.roles.includes('medic')) {
     return new Response('GPS records are named-athlete performance data and are not part of this role.', {
       status: 403,
       headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
@@ -159,7 +159,7 @@ export async function GET(
     `# This is a record of what was imported, not an import file — it has extra columns and these caption lines. ` +
     `To import, start from the template at /settings/imports/template.\r\n\r\n`;
 
-  const actorRole = claims.roles.includes('medical') && !claims.roles.includes('coach') ? 'medical' : 'coach';
+  const actorRole = claims.roles.includes('medic') && !claims.roles.includes('coach') ? 'medic' : 'coach';
   await recordImportExport(db, orgId, claims.userId, actorRole, batchId, records.length);
 
   /* The source filename in the download name, not a fixed gps-import.csv: a

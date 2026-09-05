@@ -98,8 +98,8 @@ insert into public.users (id, org_id, email, full_name, status) values
 
 insert into public.user_roles (org_id, user_id, role) values
   (tests.uid('newclub','org'), tests.uid('newclub','user_coach'),   'coach'),
-  (tests.uid('newclub','org'), tests.uid('newclub','user_medical'), 'medical'),
-  (tests.uid('newclub','org'), tests.uid('newclub','user_admin'),   'admin'),
+  (tests.uid('newclub','org'), tests.uid('newclub','user_medical'), 'medic'),
+  (tests.uid('newclub','org'), tests.uid('newclub','user_admin'),   'sport_scientist'),
   (tests.uid('newclub','org'), tests.uid('newclub','user_athlete'), 'athlete');
 
 insert into public.athletes (id, org_id, user_id, first_name, last_name, date_of_birth, status)

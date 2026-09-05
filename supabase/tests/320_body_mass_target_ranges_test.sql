@@ -634,11 +634,11 @@ select is(
   'exactly three policies exist on this table — select, insert and update, all staff'
 );
 select ok(
-  (select bool_and(qual like '%coach%' and qual like '%medical%')
+  (select bool_and(qual like '%coach%' and qual like '%medic%')
      from pg_policies
     where schemaname = 'public' and tablename = 'body_mass_target_ranges'
       and cmd in ('SELECT', 'UPDATE')),
-  'every readable-path policy requires coach or medical'
+  'every readable-path policy requires coach or medic'
 );
 
 select * from finish();

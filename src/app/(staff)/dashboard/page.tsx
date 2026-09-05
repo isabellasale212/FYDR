@@ -148,7 +148,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
   // that hidden row — homeRoute() in lib/supabase/claims.ts no longer
   // lands an admin-only sign-in here, but a typed URL still could without
   // this. Same pattern as /flags, /squad and /analytics.
-  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medical');
+  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medic');
   if (!hasAccess) {
     return (
       <>

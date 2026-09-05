@@ -23,6 +23,13 @@ const dbUrl =
   process.env.SUPABASE_DB_URL ??
   'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
 
+/* Stop at the first failing file, which is the right default: a suite this
+ * size is unreadable once a broken fixture cascades. TENANCY_CONTINUE=1 runs
+ * every file anyway and reports the full list, which is what you want when a
+ * single change (a role rename, say) is expected to touch many files at once.
+ * It never changes the verdict, only how much of the picture you get. */
+const CONTINUE_ON_FAIL = process.env.TENANCY_CONTINUE === '1';
+
 const testDir = join(process.cwd(), 'supabase', 'tests');
 
 const files = readdirSync(testDir)
@@ -58,7 +65,7 @@ async function runWithPsql() {
     );
     if (run.status !== 0) {
       failed = true;
-      break;
+      if (!CONTINUE_ON_FAIL) break;
     }
   }
   finish(failed);
@@ -104,7 +111,7 @@ async function runWithPg() {
 
     if (fileFailed) {
       failed = true;
-      break;
+      if (!CONTINUE_ON_FAIL) break;
     }
   }
 

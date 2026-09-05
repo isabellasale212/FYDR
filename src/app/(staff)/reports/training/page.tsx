@@ -289,7 +289,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
   const q = (params: Record<string, string | undefined>): string =>
     qs({ ...params, heat: heatOn ? undefined : 'off' });
 
-  const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
+  const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
 
   const header = (tabsNode?: React.ReactNode, period?: React.ReactNode) => (
     <ReportHeader

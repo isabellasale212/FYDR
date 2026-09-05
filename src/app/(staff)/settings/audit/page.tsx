@@ -41,7 +41,7 @@ function qs(params: Record<string, string | undefined>): string {
  *  Access is unchanged — still admin-only, same redirect. */
 export default async function AuditLogPage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, claims, timezone } = await requireStaff();
-  if (!claims.roles.includes('admin')) redirect('/settings');
+  if (!claims.roles.includes('sport_scientist')) redirect('/settings');
 
   const sp = await searchParams;
   const entityType = str(sp.type);

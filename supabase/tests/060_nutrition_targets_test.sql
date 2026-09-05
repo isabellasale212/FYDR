@@ -186,13 +186,25 @@ select is(
   'athlete_2 has no personal target, so the Forwards group target wins over the squad default'
 );
 
--- The gap 0020 closes: before it, this returned athlete_1's real resolved target.
+-- REVERSED DELIBERATELY, and this is the one place the role migration changes a
+-- security answer rather than just its vocabulary.
+--
+-- 0020_nutrition_targets_resolve_admin_gap.sql exists to make this return zero:
+-- an admin was a club secretary, and a club secretary has no business reading an
+-- athlete's nutrition target. That was correct for the four-role model.
+--
+-- 0063 renames admin to sport_scientist, and a sport scientist is a performance
+-- professional who sees everything. The fixture user did not change; the meaning
+-- of the value they hold did. So the boundary 0020 defended no longer exists,
+-- because the role it defended against was removed rather than renamed into
+-- something equivalent. Asserted the other way round here so the reversal is
+-- visible in the suite instead of silently deleted.
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
 select is(
   (select count(*) from resolve_nutrition_targets(
      array[tests.uid('orga','athlete_1')]::uuid[], current_date, current_date)),
-  0::bigint,
-  'an admin asking the function directly for athlete_1''s target gets zero rows, not a real answer'
+  1::bigint,
+  'a sport scientist asking the function directly for athlete_1''s target gets the real answer'
 );
 
 select tests.set_jwt(tests.uid('orga', 'user_coach'));

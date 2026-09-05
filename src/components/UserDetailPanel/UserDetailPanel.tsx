@@ -17,7 +17,7 @@ import { USER_STATUS } from '@/lib/status';
 import { formatDate, formatDateTime, enumLabel } from '@/lib/format';
 import type { AppRole } from '@/lib/types/database';
 
-const ALL_ROLES: AppRole[] = ['coach', 'medical', 'admin', 'athlete'];
+const ALL_ROLES: AppRole[] = ['coach', 'medic', 'sport_scientist', 'athlete'];
 
 type Props = {
   orgId: string;
@@ -42,12 +42,12 @@ type Props = {
  *  ("This user has the union of Coach and Medical permissions"). */
 function permissionSummary(roles: readonly AppRole[]): { label: string; yes: boolean }[] {
   const has = (r: AppRole) => roles.includes(r);
-  const anyStaffRole = has('coach') || has('medical') || has('admin');
+  const anyStaffRole = has('coach') || has('medic') || has('sport_scientist');
   return [
-    { label: 'Squad performance data', yes: has('coach') || has('medical') },
-    { label: 'Clinical detail', yes: has('medical') },
-    { label: 'Availability, set', yes: has('medical') },
-    { label: 'Users and billing', yes: has('admin') },
+    { label: 'Squad performance data', yes: has('coach') || has('medic') },
+    { label: 'Clinical detail', yes: has('medic') },
+    { label: 'Availability, set', yes: has('medic') },
+    { label: 'Users and billing', yes: has('sport_scientist') },
     { label: 'Own data only', yes: !anyStaffRole },
   ];
 }

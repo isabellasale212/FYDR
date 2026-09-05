@@ -35,8 +35,8 @@ const REPORTS = [
   },
   {
     key: 'injuries',
-    tone: 'medical',
-    source: 'medical',
+    tone: 'medic',
+    source: 'medic',
     exports: 'CSV · PDF',
     title: 'Injury & availability',
     body: 'Who is out, for how long, and what it is costing.',
@@ -117,7 +117,7 @@ const REPORTS = [
  *  reason it's closed to this role. */
 export default async function ReportsPage() {
   const { orgName, claims, tier } = await requireStaff();
-  const hasReportAccess = claims.roles.includes('coach') || claims.roles.includes('medical');
+  const hasReportAccess = claims.roles.includes('coach') || claims.roles.includes('medic');
   const onPremium = isPremium(tier);
 
   return (

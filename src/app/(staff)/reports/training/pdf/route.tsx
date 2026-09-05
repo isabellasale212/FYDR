@@ -51,7 +51,7 @@ export async function GET(request: Request) {
 
   const groups = await fetchGroups(db, orgId);
   const scopeLabel = groupScopeLabel(groups, groupIds);
-  const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
+  const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
 
   // Same bands scoreTone() already gives the on-screen dials — 'accent' and
   // 'accent2' have no PdfTile equivalent (both render as the default,

@@ -90,7 +90,7 @@ export async function loadAthleteDomainContext(
 
   // Same gate as /squad and squad/[athleteId], applied before any per-athlete
   // query runs.
-  if (!claims.roles.includes('coach') && !claims.roles.includes('medical')) {
+  if (!claims.roles.includes('coach') && !claims.roles.includes('medic')) {
     return { denied: true, orgName };
   }
 

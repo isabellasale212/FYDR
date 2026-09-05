@@ -25,8 +25,8 @@ export default async function SubjectAccessPage({ searchParams }: { searchParams
   const { error } = await searchParams;
   const { db, orgId, claims, timezone } = await requireSubjectAccess();
   const requests = await fetchSarRequests(db, orgId);
-  const isAdmin = claims.roles.includes('admin');
-  const isMedical = claims.roles.includes('medical');
+  const isAdmin = claims.roles.includes('sport_scientist');
+  const isMedical = claims.roles.includes('medic');
 
   return (
     <>

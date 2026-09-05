@@ -10,7 +10,7 @@ export const metadata = { title: 'New leaderboard · Fydr' };
 
 export default async function NewLeaderboardPage() {
   const { db, orgId, claims, tier } = await requireStaff();
-  if (!claims.roles.some((r) => r === 'coach' || r === 'medical')) {
+  if (!claims.roles.some((r) => r === 'coach' || r === 'medic')) {
     redirect('/leaderboards/manage');
   }
 

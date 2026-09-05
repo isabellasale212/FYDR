@@ -47,7 +47,7 @@ export default async function LeaderboardWallPage({
   // (board configuration: name, metric, population, window, publish state
   // — never a named result) and is reachable from here. See that page's
   // own header for the other half of this split.
-  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medical');
+  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medic');
   if (!hasAccess) {
     return (
       <>

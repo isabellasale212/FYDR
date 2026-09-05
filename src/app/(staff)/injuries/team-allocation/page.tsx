@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { PublishWeekButton } from '@/components/PublishWeekButton/PublishWeekButton';
 import { TeamAllocationBoard } from '@/components/TeamAllocationBoard/TeamAllocationBoard';
@@ -9,7 +8,7 @@ import { mondayOf } from '@/lib/queries/schedule';
 import { addDays, formatDate, todayIso } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { requireStaff } from '@/lib/session';
+import { requireInjuryAccess } from '@/lib/session';
 
 export const metadata = { title: 'Team allocation · Fydr' };
 
@@ -33,10 +32,7 @@ export default async function TeamAllocationPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, orgId, orgName, claims, timezone } = await requireStaff();
-  if (!claims.roles.some((r) => r === 'coach' || r === 'medical')) {
-    redirect('/injuries');
-  }
+  const { db, orgId, orgName, claims, timezone } = await requireInjuryAccess();
   const isCoach = claims.roles.includes('coach');
 
   const params = await searchParams;

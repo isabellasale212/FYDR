@@ -27,7 +27,7 @@ function generateTemporaryPassword(): string {
  *  result list, never a single pass/fail for the whole batch. */
 export async function POST(request: Request) {
   const { db, orgId, claims } = await requireStaff();
-  if (!claims.roles.includes('admin')) {
+  if (!claims.roles.includes('sport_scientist')) {
     return NextResponse.json({ error: 'Admin access only.' }, { status: 403 });
   }
 
@@ -138,7 +138,7 @@ export async function POST(request: Request) {
   await db.from('audit_log').insert({
     org_id: orgId,
     actor_id: claims.userId,
-    actor_role: 'admin',
+    actor_role: 'sport_scientist',
     action: 'user.bulk_invite',
     entity_type: 'user',
     entity_id: null,

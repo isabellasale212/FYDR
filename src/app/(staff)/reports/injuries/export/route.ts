@@ -20,7 +20,7 @@ import { periodParamsFromUrl, resolveInjuryPeriod } from '../period';
  *  exactly as the page does, and the `# Scope:` caption line states it. */
 export async function GET(request: Request) {
   const { db, orgId, claims, timezone } = await requireReportAccess();
-  const isMedical = claims.roles.includes('medical');
+  const isMedical = claims.roles.includes('medic');
   const url = new URL(request.url);
   const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
 
@@ -63,7 +63,7 @@ export async function GET(request: Request) {
     ['expected_return', 'Expected return'],
   ]);
 
-  const actorRole = (isMedical ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
+  const actorRole = (isMedical ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   await recordReportView(
     db,
     orgId,

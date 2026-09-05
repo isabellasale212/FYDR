@@ -101,7 +101,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tes
     bestsLines +
     '\r\n';
 
-  const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
+  const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   await recordReportView(
     db,
     orgId,

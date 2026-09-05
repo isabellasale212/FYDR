@@ -254,7 +254,22 @@ export async function commitGpsImport(
   if (batchError || !batch) return { batchId: null, error: batchError?.message ?? 'Could not start the import batch' };
 
   if (accepted.length > 0) {
-    const { error: rowsError } = await db.from('gps_records').insert(
+    /* UPSERT, not insert. G-25: this always inserted, and nothing in the
+       schema stopped it, so re-uploading a corrected file doubled every
+       distance in it — silently, on the data the whole GPS half of the app
+       reads. Migration 0064 adds the unique constraint this targets.
+
+       onConflict names the constraint's columns, not its name, because that is
+       what PostgREST takes. It must stay in step with
+       gps_records_one_per_athlete_session; the constraint's own comment says
+       the same thing from the other side.
+
+       A re-upload REPLACES the row it matches rather than being rejected,
+       because correcting a file is the reason a coach re-uploads. The new
+       import_batch_id goes with it, so the history still records which upload
+       last wrote each row. created_at is deliberately not in the update: it is
+       when this measurement first arrived, not when it was last corrected. */
+    const { error: rowsError } = await db.from('gps_records').upsert(
       accepted.map((r) => ({
         org_id: orgId,
         athlete_id: r.athlete_id,
@@ -270,6 +285,7 @@ export async function commitGpsImport(
         source: 'file_import' as const,
         import_batch_id: batch.id,
       })),
+      { onConflict: 'org_id,athlete_id,record_date,session_id' },
     );
     if (rowsError) return { batchId: batch.id, error: rowsError.message };
   }

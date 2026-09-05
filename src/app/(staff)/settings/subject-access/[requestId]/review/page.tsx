@@ -16,7 +16,7 @@ export const metadata = { title: 'Clinical review · Fydr' };
 export default async function ClinicalReviewPage({ params }: { params: Promise<{ requestId: string }> }) {
   const { requestId } = await params;
   const { db, orgId, claims, timezone } = await requireStaff();
-  if (!claims.roles.includes('medical')) redirect('/settings/subject-access?e=no-sar-access');
+  if (!claims.roles.includes('medic')) redirect('/settings/subject-access?e=no-sar-access');
 
   const request = await fetchSarRequest(db, orgId, requestId);
   if (!request) notFound();

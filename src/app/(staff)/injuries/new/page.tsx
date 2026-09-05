@@ -10,7 +10,7 @@ export const metadata = { title: 'New injury · Fydr' };
  *  the same treatment as every other medical-only write path in this build. */
 export default async function NewInjuryPage() {
   const { db, orgId, claims, timezone } = await requireStaff();
-  if (!claims.roles.includes('medical')) redirect('/injuries');
+  if (!claims.roles.includes('medic')) redirect('/injuries');
 
   const { data: athletes, error } = await db
     .from('athletes')

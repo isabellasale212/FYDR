@@ -68,7 +68,7 @@ export const SIDEBAR: readonly Row[] = [
     id: 'staff.dashboard',
     label: 'Dashboard',
     route: '/dashboard',
-    roles: ['coach', 'medical'],
+    roles: ['coach', 'medic'],
     icon: icon(
       <>
         <rect x="0.8" y="0.8" width="5.2" height="12.4" rx="1.4" />
@@ -81,7 +81,7 @@ export const SIDEBAR: readonly Row[] = [
     id: 'staff.squad',
     label: 'Squad overview',
     route: '/squad',
-    roles: ['coach', 'medical'],
+    roles: ['coach', 'medic'],
     icon: icon(
       <>
         <circle cx="5.2" cy="4" r="2.9" />
@@ -95,7 +95,7 @@ export const SIDEBAR: readonly Row[] = [
     id: 'staff.schedule',
     label: 'Schedule',
     route: '/schedule',
-    roles: ['coach', 'medical'],
+    roles: ['coach', 'medic'],
     icon: icon(
       <g fillRule="evenodd">
         <path d="M7 0.7a6.3 6.3 0 1 0 0 12.6A6.3 6.3 0 0 0 7 0.7zm0 2a4.3 4.3 0 1 1 0 8.6 4.3 4.3 0 0 1 0-8.6z" />
@@ -108,7 +108,7 @@ export const SIDEBAR: readonly Row[] = [
     id: 'staff.reports',
     label: 'Reports',
     route: '/reports',
-    roles: ['coach', 'medical', 'admin'],
+    roles: ['coach', 'medic', 'sport_scientist'],
     icon: icon(
       <g fillRule="evenodd">
         <path d="M5.1 0.6h3.8c0.9 0 1.6 0.7 1.6 1.6v0.9h-1.7V2.3H5.2v0.8H3.5V2.2c0-0.9 0.7-1.6 1.6-1.6z" />
@@ -121,7 +121,7 @@ export const SIDEBAR: readonly Row[] = [
     id: 'staff.nutrition',
     label: 'Nutrition',
     route: '/nutrition',
-    roles: ['coach', 'medical'],
+    roles: ['coach', 'medic'],
     icon: icon(
       <g fillRule="evenodd">
         <path d="M1.1 0.6h1.5v3.6h0.8V0.6h1.5v3.6h0.8V0.6h1.5v4.3c0 1-0.6 1.8-1.5 2.1v6.4H2.6V7c-0.9-0.3-1.5-1.1-1.5-2.1z" />
@@ -133,7 +133,7 @@ export const SIDEBAR: readonly Row[] = [
     id: 'staff.programmes',
     label: 'Gym programme',
     route: '/programmes',
-    roles: ['coach', 'medical'],
+    roles: ['coach', 'medic'],
     icon: icon(
       <>
         <rect x="0.4" y="4" width="2.2" height="6" rx="0.9" />
@@ -146,7 +146,7 @@ export const SIDEBAR: readonly Row[] = [
   },
   {
     // Admin stays in this row's roles deliberately — 20-route-map.md's own
-    // sidebar array keeps it (`roles: ["coach", "medical", "admin"]`), and
+    // sidebar array keeps it (`roles: ["coach", "medic", "sport_scientist"]`), and
     // 01-roles-and-permissions.md §2 gives admin `A` (aggregate), not `no`,
     // for "View leaderboards". /leaderboards/manage (board config, no named
     // data) is genuinely admin's to use, and this row is the only door to
@@ -160,7 +160,7 @@ export const SIDEBAR: readonly Row[] = [
     id: 'staff.leaderboards',
     label: 'Leaderboard',
     route: '/leaderboards',
-    roles: ['coach', 'medical', 'admin'],
+    roles: ['coach', 'medic', 'sport_scientist'],
     icon: icon(
       <>
         <rect x="0.6" y="7.8" width="3.8" height="5.6" rx="1.2" />
@@ -173,7 +173,7 @@ export const SIDEBAR: readonly Row[] = [
     id: 'staff.analytics',
     label: 'Analytics',
     route: '/analytics',
-    roles: ['coach', 'medical'],
+    roles: ['coach', 'medic'],
     icon: icon(
       <>
         <path d="M1.4 9.5 5.3 5.6l2.5 2.5 3.3-3.3 1.4 1.4-4.7 4.7-2.5-2.5-2.5 2.5z" />
@@ -185,7 +185,7 @@ export const SIDEBAR: readonly Row[] = [
     id: 'staff.settings',
     label: 'Settings',
     route: '/settings',
-    roles: ['coach', 'medical', 'admin'],
+    roles: ['coach', 'medic', 'sport_scientist'],
     icon: icon(
       <path
         fillRule="evenodd"

@@ -27,7 +27,7 @@ export const metadata = { title: 'Data retention · Fydr' };
  *  The table below is where an admin actually reads them. */
 export default async function RetentionPage() {
   const { db, orgId, claims, timezone } = await requireStaff();
-  if (!claims.roles.includes('admin')) redirect('/settings');
+  if (!claims.roles.includes('sport_scientist')) redirect('/settings');
 
   const nightlyReports = await fetchRetentionNightlyReports(db, orgId);
 

@@ -14,7 +14,7 @@ export const metadata = { title: 'New nutrition target · Fydr' };
 export default async function NewNutritionTargetPage() {
   const { db, orgId, orgName, claims, timezone } = await requireStaff();
   const isCoach = claims.roles.includes('coach');
-  const isMedical = claims.roles.includes('medical');
+  const isMedical = claims.roles.includes('medic');
   if (!isCoach && !isMedical) {
     redirect('/nutrition');
   }

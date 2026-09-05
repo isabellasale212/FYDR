@@ -11,7 +11,7 @@ import { USER_STATUS } from '@/lib/status';
 import type { AppRole } from '@/lib/types/database';
 import type { CreateUserResult } from '@/app/(staff)/settings/users/create/route';
 
-const ALL_ROLES: AppRole[] = ['coach', 'medical', 'admin', 'athlete'];
+const ALL_ROLES: AppRole[] = ['coach', 'medic', 'sport_scientist', 'athlete'];
 
 type Props = {
   orgId: string;

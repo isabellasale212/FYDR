@@ -22,7 +22,8 @@
     "verify:tier-rls": "node --env-file=.env.local scripts/verify-tier-rls.mjs",
     "db:push": "node --env-file=.env.local scripts/db-push.mjs",
     "retire:future-wellness": "node --env-file=.env.local scripts/retire-future-wellness.mjs",
-    "capture:pdf": "node --env-file-if-exists=.env.local scripts/capture-app-pdf.mjs"
+    "capture:pdf": "node --env-file-if-exists=.env.local scripts/capture-app-pdf.mjs",
+    "test:role-model": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-role-model.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.5.1",

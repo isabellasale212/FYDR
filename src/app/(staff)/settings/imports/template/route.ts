@@ -15,7 +15,7 @@ export async function GET() {
      and it is not a thing a role without a write path onto gps_records has any
      use for either. No athlete data in it, which is exactly why it was missed —
      "harmless" is not the same as "in this plan". */
-  if (!claims.roles.includes('coach') && !claims.roles.includes('medical')) {
+  if (!claims.roles.includes('coach') && !claims.roles.includes('medic')) {
     return premiumOnlyResponse('The GPS import template');
   }
   if (!isPremium(tier)) return premiumOnlyResponse('GPS import');

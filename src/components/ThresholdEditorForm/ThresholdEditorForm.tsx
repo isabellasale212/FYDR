@@ -36,7 +36,7 @@ const BASELINES: { value: BaselineType; label: string; hint: string }[] = [
 ];
 
 const SEVERITIES = ['low', 'medium', 'high'] as const;
-const NOTIFY_OPTIONS: AppRole[] = ['coach', 'medical'];
+const NOTIFY_OPTIONS: AppRole[] = ['coach', 'medic'];
 const DEFAULT_METRIC = 'wellness.readiness_score';
 
 type Props = { orgId: string; userId: string };

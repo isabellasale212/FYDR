@@ -286,7 +286,7 @@ begin
     (ua2,  o, p_prefix || '.athlete2@fixture.example', 'Max Chapman',      'active');
 
   insert into user_roles (org_id, user_id, role) values
-    (o, ucoa, 'coach'), (o, umed, 'medical'), (o, uadm, 'admin'),
+    (o, ucoa, 'coach'), (o, umed, 'medic'), (o, uadm, 'sport_scientist'),
     (o, ua1, 'athlete'), (o, ua2, 'athlete');
 
   insert into athletes (id, org_id, user_id, first_name, last_name, date_of_birth,
@@ -392,7 +392,7 @@ begin
 
   insert into audit_log (org_id, actor_id, actor_role, action, entity_type, entity_id,
                          athlete_id, metadata)
-    values (o, umed, 'medical', 'injury_clinical.read', 'injury_clinical', inj, a1,
+    values (o, umed, 'medic', 'injury_clinical.read', 'injury_clinical', inj, a1,
             '{"reason":"daily review"}'::jsonb);
 
   insert into notification_preferences (org_id, user_id, notification_id, push_enabled)

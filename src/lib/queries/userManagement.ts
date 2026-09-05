@@ -171,13 +171,13 @@ export async function setUserRoles(
   const current = new Set((currentRows ?? []).map((r) => r.role));
   const next = new Set(nextRoles);
 
-  const removingAdmin = current.has('admin') && !next.has('admin');
+  const removingAdmin = current.has('sport_scientist') && !next.has('sport_scientist');
   if (removingAdmin) {
     const { count, error: countErr } = await db
       .from('user_roles')
       .select('user_id', { count: 'exact', head: true })
       .eq('org_id', orgId)
-      .eq('role', 'admin');
+      .eq('role', 'sport_scientist');
     if (countErr) return { error: countErr.message, primaryOk: false };
     if ((count ?? 0) <= 1) {
       return { error: 'This is the only admin in the club — remove the role from someone else first, or grant it to another user before removing it here.', primaryOk: false };

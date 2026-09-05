@@ -19,7 +19,24 @@ export type FydrClaims = {
   roles: readonly AppRole[];
 };
 
-const ROLES: readonly string[] = ['athlete', 'coach', 'medical', 'admin'];
+/** The allow-list a JWT's roles are filtered through. It must hold every value
+ *  in the app_role enum, because anything missing is silently DROPPED from the
+ *  claims rather than rejected: a user whose only role is absent here arrives
+ *  with an empty roles array and is treated as holding nothing at all.
+ *
+ *  That is exactly how auth_roles() broke in the database when 0063 renamed the
+ *  enum (see 0065_role_model_function_bodies.sql). This is the same list, on the
+ *  other side of the wire, and it drifted the same way: strength_conditioning
+ *  and nutritionist existed in the enum and were missing here, so both roles
+ *  were refused everywhere in the app. Fail-closed, but broken. */
+const ROLES: readonly string[] = [
+  'athlete',
+  'coach',
+  'medic',
+  'sport_scientist',
+  'strength_conditioning',
+  'nutritionist',
+];
 
 function decodePayload(token: string): Record<string, unknown> | null {
   const part = token.split('.')[1];
@@ -91,11 +108,16 @@ export async function getClaims(
   };
 }
 
+/** Staff is every role that is not the athlete, docs/access-matrix.md §1.
+ *  Written as an explicit list rather than `!isAthlete()` so that a role added
+ *  to the enum in future does not become staff by default. */
 export function isStaff(claims: FydrClaims): boolean {
   return (
     claims.roles.includes('coach') ||
-    claims.roles.includes('medical') ||
-    claims.roles.includes('admin')
+    claims.roles.includes('medic') ||
+    claims.roles.includes('sport_scientist') ||
+    claims.roles.includes('strength_conditioning') ||
+    claims.roles.includes('nutritionist')
   );
 }
 
@@ -113,7 +135,7 @@ export function isAthlete(claims: FydrClaims): boolean {
  *  dashboard") in the matrix's favour: "an admin-only user does not open
  *  /dashboard". This function used to send every staff member there
  *  regardless, which put an admin-only sign-in on a page not in their own
- *  sidebar (`Sidebar.tsx`'s `staff.dashboard` row is `['coach', 'medical']`,
+ *  sidebar (`Sidebar.tsx`'s `staff.dashboard` row is `['coach', 'medic']`,
  *  no admin) full of the named-athlete panels §1 says admin doesn't read.
  *  `/settings` is the one sidebar row that is entirely admin's own —
  *  users, subject access, retention and the audit log are admin-exclusive
@@ -123,7 +145,7 @@ export function isAthlete(claims: FydrClaims): boolean {
  *  them, same reasoning as the staff-vs-athlete choice above. */
 export function homeRoute(claims: FydrClaims): string {
   if (isStaff(claims)) {
-    const hasSquadAccess = claims.roles.includes('coach') || claims.roles.includes('medical');
+    const hasSquadAccess = claims.roles.includes('coach') || claims.roles.includes('medic');
     return hasSquadAccess ? '/dashboard' : '/settings';
   }
   if (isAthlete(claims)) return '/today';

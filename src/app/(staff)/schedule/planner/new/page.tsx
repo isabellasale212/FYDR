@@ -7,7 +7,7 @@ export const metadata = { title: 'New week template · Fydr' };
 
 export default async function NewWeekTemplatePage() {
   const { orgId, claims } = await requireStaff();
-  if (!claims.roles.includes('coach') && !claims.roles.includes('medical')) redirect('/schedule/planner');
+  if (!claims.roles.includes('coach') && !claims.roles.includes('medic')) redirect('/schedule/planner');
 
   return (
     <>

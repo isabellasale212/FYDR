@@ -87,7 +87,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
 
   const testHeader = `\r\n# Testing — latest and personal best\r\n`;
 
-  const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
+  const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   await recordReportView(
     db,
     orgId,

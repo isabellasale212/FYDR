@@ -19,7 +19,7 @@ import { periodCaveat, periodParamsFromUrl, resolveInjuryPeriod } from '../perio
  *  three are here, not just the on-screen note the page itself carries. */
 export async function GET(request: Request) {
   const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
-  const isMedical = claims.roles.includes('medical');
+  const isMedical = claims.roles.includes('medic');
   const url = new URL(request.url);
   // resolveGroupFilter, not parseGroupParam: a PDF handed to someone else is
   // the exact artefact the audit's S4 finding warned about — it must resolve
@@ -110,7 +110,7 @@ export async function GET(request: Request) {
     </PdfReport>,
   );
 
-  const actorRole = (isMedical ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
+  const actorRole = (isMedical ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   await recordReportView(
     db,
     orgId,

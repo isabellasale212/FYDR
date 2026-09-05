@@ -136,7 +136,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
    * still be denied after an upgrade, so showing them a "buy Premium" panel
    * would be selling them something that does not unlock this. Role is the
    * boundary that cannot be purchased, so it answers first. */
-  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medical');
+  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medic');
   if (!hasAccess) {
     return (
       <>

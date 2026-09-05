@@ -127,7 +127,7 @@ const MASS_TREND_FALLBACK_NO_SEASON: RangeKey = 'year';
 export default async function NutritionPage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, claims, timezone } = await requireStaff();
   const isCoach = claims.roles.includes('coach');
-  const isMedical = claims.roles.includes('medical');
+  const isMedical = claims.roles.includes('medic');
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
 

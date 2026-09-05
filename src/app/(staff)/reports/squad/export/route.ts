@@ -94,7 +94,7 @@ export async function GET(request: Request) {
 
   const csv = caption + loadCsv + `\r\n# Gym sessions\r\n` + gymCsv + `\r\n# Testing\r\n` + testsCsv + `\r\n# Availability\r\n` + availabilityCsv;
 
-  const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
+  const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   await recordReportView(
     db,
     orgId,

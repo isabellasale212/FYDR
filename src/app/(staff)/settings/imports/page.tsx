@@ -27,7 +27,7 @@ const DEFAULT_LIMIT = 20;
  *  feature they couldn't use either way), tier check second. */
 export default async function ImportsPage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, claims, tier, timezone } = await requireStaff();
-  if (!claims.roles.includes('coach') && !claims.roles.includes('medical')) redirect('/settings');
+  if (!claims.roles.includes('coach') && !claims.roles.includes('medic')) redirect('/settings');
 
   if (!isPremium(tier)) {
     return (

@@ -192,10 +192,14 @@ select is(
 select ok(
   (select p.roles::text[] = array['authenticated']
        and p.cmd = 'ALL'
-       and p.qual like '%medical%'
+       and p.qual like '%''medic''::app_role%'
+       and p.qual not like '%''coach''%'
+       and p.qual not like '%''sport_scientist''%'
+       and p.qual not like '%''strength_conditioning''%'
+       and p.qual not like '%''nutritionist''%'
      from pg_policies p
     where p.schemaname = 'public' and p.tablename = 'injury_clinical'),
-  'injury_clinical: the one policy is FOR ALL and requires the medical role'
+  'injury_clinical: the one policy is FOR ALL, requires medic, and names no other role'
 );
 
 

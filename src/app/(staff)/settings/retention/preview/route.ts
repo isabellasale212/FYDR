@@ -8,7 +8,7 @@ import { requireStaff } from '@/lib/session';
  *  count it). */
 export async function POST() {
   const { orgId, claims } = await requireStaff();
-  if (!claims.roles.includes('admin')) {
+  if (!claims.roles.includes('sport_scientist')) {
     return NextResponse.json({ error: 'Admin access only.' }, { status: 403 });
   }
   const preview = await computeRetentionPreview(orgId);

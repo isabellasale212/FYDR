@@ -296,23 +296,43 @@ age. The subject access process applies identically.
 section describes the present, so that the difference is visible rather than
 implied.
 
-**The code has four roles, not five: athlete, coach, medical, admin.** There is
-no sport scientist, no S&C and no nutritionist. People doing those jobs hold the
-`coach` role, and the seed data says so deliberately
-(`supabase/seed.sql:87`).
+**The code now has the five roles.** This paragraph used to say the opposite,
+and was correct when written: there were four values (athlete, coach, medical,
+admin), people doing the S&C and nutrition jobs held `coach`, and the seed data
+said so deliberately. Migration `0063_role_model_enum.sql` renamed medical to
+medic and admin to sport_scientist and added strength_conditioning and
+nutritionist, and `supabase/seed.sql` now gives the S&C lead and the
+nutritionist their own roles.
 
-**The practical effect.** Every "nutritionist is X" cell in the grid above is
-currently a **V**, because a nutritionist is a coach. Nothing in the app can tell
-them apart.
+**The practical effect has reversed.** Every "nutritionist is X" cell in §3.2 is
+now enforced by a guard rather than being aspirational, because a nutritionist is
+no longer a coach. See `requireInjuryAccess` below.
+
+**One caveat that has not gone away.** Roles are additive. A person who holds
+nutritionist AND coach still sees injury information, because the guards ask
+what you hold, not what you are. That is deliberate and is stated at §2.
 
 **Guards that exist today**, and what each admits:
 
 | Guard | Admits | Where |
 |---|---|---|
-| `requireStaff` | coach, medical or admin | `src/lib/session.ts:69` |
-| `requireReportAccess` | coach or medical | `src/lib/session.ts:120` |
-| `requireSubjectAccess` | admin or medical | `src/lib/session.ts:159` |
-| `loadAthleteDomainContext` | coach or medical | `src/lib/athleteDomain.server.ts:93` |
+| `requireStaff` | any of the five staff roles | `src/lib/session.ts:69` |
+| `requireReportAccess` | coach, medic, sport scientist, S&C | `src/lib/session.ts:120` |
+| `requireInjuryAccess` | coach, medic, sport scientist, S&C | `src/lib/session.ts:161` |
+| `requireSubjectAccess` | sport scientist or medic | `src/lib/session.ts:198` |
+| `loadAthleteDomainContext` | coach or medic | `src/lib/athleteDomain.server.ts:93` |
+
+**`requireReportAccess` is knowingly incomplete for one role.** §4 gives a
+nutritionist real access to some reports (Compliance **V**, Reports hub and
+Squad weekly **VP**) and none to others. A single blanket gate cannot express a
+per-report split, so that role is still refused at the door rather than admitted
+to the reports it should see. Tracked in `docs/spec-gaps.md`, not silently
+decided here.
+
+**`loadAthleteDomainContext` still admits only coach or medic**, which refuses
+the sport scientist although §1 gives that role everything. It is listed here
+rather than changed alongside the injury work, because it gates a different
+surface and this build deliberately does not bundle unrelated access changes.
 
 **Most pages call only the first**, which is why the grid's fine distinctions do
 not exist yet. Of 62 screens, the great majority admit any staff member.

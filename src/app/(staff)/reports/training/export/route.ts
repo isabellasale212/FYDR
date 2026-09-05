@@ -36,7 +36,7 @@ export async function GET(request: Request) {
   const groups = await fetchGroups(db, orgId);
   const scopeLabel = groupScopeLabel(groups, groupIds);
 
-  const actorRole = (claims.roles.includes('medical') ? 'medical' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
+  const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
 
   if (mode === 'match') {
     const sessions = await fetchMatchSessions(db, orgId, timezone);

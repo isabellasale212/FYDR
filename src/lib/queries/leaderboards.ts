@@ -360,7 +360,7 @@ export async function suppressAthlete(
     athlete_id: athleteId,
     leaderboard_id: boardId,
     opted_out_by: userId,
-    opt_out_source: 'medical',
+    opt_out_source: 'medic',
     reason,
   });
   return { error: error?.message ?? null };

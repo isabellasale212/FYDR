@@ -231,18 +231,33 @@ create trigger problem_reports_update_rules
 -- creates live through the athlete app to watch the badge appear.
 -- ---------------------------------------------------------------------------
 
+-- GUARDED, and why. This insert used to be a bare `values` row. It names four
+-- rows that only seed.sql creates (the org, Adam Selby, the athlete's own login
+-- and Ruth Callaghan), so on a database that has never been seeded it does not
+-- no-op, it raises a foreign key violation and stops the whole migration run at
+-- statement 16. Production never hit it because production was seeded long
+-- before 0040 was written. Any NEW environment hit it immediately, which meant
+-- the migration set could not build a database from scratch at all: no staging,
+-- no CI, no restore. 0039 and 0060 already guard their own starter data this
+-- way; this is the same shape, so that a missing parent skips the row instead of
+-- failing the run. Where the parents exist the result is byte for byte what the
+-- bare `values` produced.
 insert into problem_reports
   (id, org_id, athlete_id, category, body, status,
    created_by, created_at, acknowledged_at, acknowledged_by)
-values
-  ('fa0b0000-0000-4000-8000-000000000001',
-   'a0000000-0000-4000-8000-000000000001',
-   'a71e0000-0000-4000-8000-000000000007',
-   'injury_or_pain',
-   'The headaches came back yesterday evening after the bike session. Not as bad as two weeks ago, but I thought you should know before Thursday.',
-   'acknowledged',
-   'e5e20000-0000-4000-8000-000000000107',
-   now() - interval '2 days',
-   now() - interval '2 days' + interval '3 hours',
-   'e5e20000-0000-4000-8000-00000000000d')
+select
+  'fa0b0000-0000-4000-8000-000000000001'::uuid,
+  'a0000000-0000-4000-8000-000000000001'::uuid,
+  'a71e0000-0000-4000-8000-000000000007'::uuid,
+  'injury_or_pain',
+  'The headaches came back yesterday evening after the bike session. Not as bad as two weeks ago, but I thought you should know before Thursday.',
+  'acknowledged',
+  'e5e20000-0000-4000-8000-000000000107'::uuid,
+  now() - interval '2 days',
+  now() - interval '2 days' + interval '3 hours',
+  'e5e20000-0000-4000-8000-00000000000d'::uuid
+where exists (select 1 from organisations o where o.id = 'a0000000-0000-4000-8000-000000000001')
+  and exists (select 1 from athletes     a where a.id = 'a71e0000-0000-4000-8000-000000000007')
+  and exists (select 1 from users        u where u.id = 'e5e20000-0000-4000-8000-000000000107')
+  and exists (select 1 from users        u where u.id = 'e5e20000-0000-4000-8000-00000000000d')
 on conflict (id) do nothing;

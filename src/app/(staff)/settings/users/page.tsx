@@ -18,7 +18,7 @@ export const metadata = { title: 'Users · Fydr' };
  *  two-layer pattern GPS import's coach/medical gate already uses. */
 export default async function UsersPage() {
   const { db, orgId, claims, timezone } = await requireStaff();
-  if (!claims.roles.includes('admin')) redirect('/settings');
+  if (!claims.roles.includes('sport_scientist')) redirect('/settings');
 
   const [users, unlinked] = await Promise.all([fetchUsersWithRoles(db, orgId), fetchUnlinkedAthletes(db, orgId)]);
 
@@ -36,7 +36,7 @@ export default async function UsersPage() {
       <UserManagementPanel
         orgId={orgId}
         currentUserId={claims.userId}
-        currentActorRole={'admin' as AppRole}
+        currentActorRole={'sport_scientist' as AppRole}
         initialUsers={users}
         initialUnlinked={unlinked}
         timezone={timezone}

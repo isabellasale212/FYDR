@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { RehabGroupBoard } from '@/components/RehabGroupBoard/RehabGroupBoard';
@@ -7,7 +6,7 @@ import { fetchRehabBoard, fetchRehabGroups } from '@/lib/queries/rehabGroups';
 import { fetchGroupAthleteIds, fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { requireStaff } from '@/lib/session';
+import { requireInjuryAccess } from '@/lib/session';
 
 export const metadata = { title: 'Rehab groups · Fydr' };
 
@@ -28,11 +27,8 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
  *  from fetchGroups) the filter narrows the pool *by*. Named rehabGroups/squadGroups
  *  below specifically so that distinction can't get silently crossed. */
 export default async function RehabGroupsPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, orgName, claims, timezone } = await requireStaff();
-  if (!claims.roles.some((r) => r === 'coach' || r === 'medical')) {
-    redirect('/injuries');
-  }
-  const isMedical = claims.roles.includes('medical');
+  const { db, orgId, orgName, claims, timezone } = await requireInjuryAccess();
+  const isMedical = claims.roles.includes('medic');
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
 

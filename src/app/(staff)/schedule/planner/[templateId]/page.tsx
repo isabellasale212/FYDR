@@ -12,7 +12,7 @@ export default async function WeekTemplateBuilderPage({ params }: { params: Prom
   const template = await fetchTemplate(db, orgId, templateId);
   if (!template) notFound();
 
-  const canWrite = claims.roles.includes('coach') || claims.roles.includes('medical');
+  const canWrite = claims.roles.includes('coach') || claims.roles.includes('medic');
   if (!canWrite) {
     return (
       <>

@@ -5,7 +5,7 @@ import { sendInviteEmail } from '@/lib/email/send';
 import { requireStaff } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
-const VALID_ROLES: AppRole[] = ['athlete', 'coach', 'medical', 'admin'];
+const VALID_ROLES: AppRole[] = ['athlete', 'coach', 'medic', 'sport_scientist'];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export type CreateUserResult = {
@@ -44,7 +44,7 @@ function generateTemporaryPassword(): string {
  *  delivered email is an addition to that, never a replacement for it. */
 export async function POST(request: Request): Promise<NextResponse<CreateUserResult>> {
   const { db, orgId, orgName, claims } = await requireStaff();
-  if (!claims.roles.includes('admin')) {
+  if (!claims.roles.includes('sport_scientist')) {
     return NextResponse.json({ ok: false, error: 'Admin access only.', userId: null, temporaryPassword: null, emailDelivered: false }, { status: 403 });
   }
 
@@ -120,7 +120,7 @@ export async function POST(request: Request): Promise<NextResponse<CreateUserRes
     }
   }
 
-  const actorRole = (claims.roles.includes('admin') ? 'admin' : claims.roles[0]) as AppRole;
+  const actorRole = (claims.roles.includes('sport_scientist') ? 'sport_scientist' : claims.roles[0]) as AppRole;
 
   await db.from('audit_log').insert({
     org_id: orgId,

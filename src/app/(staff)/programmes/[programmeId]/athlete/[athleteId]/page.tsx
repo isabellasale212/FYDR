@@ -69,7 +69,7 @@ export default async function ProgrammeAthletePage({
   if (!isUuid(programmeId) || !isUuid(athleteId)) notFound();
 
   const isCoach = claims.roles.includes('coach');
-  const isMedical = claims.roles.includes('medical');
+  const isMedical = claims.roles.includes('medic');
 
   const [detail, athleteRow] = await Promise.all([
     fetchProgrammeDetail(db, orgId, programmeId),

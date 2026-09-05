@@ -739,8 +739,10 @@ A deliberate sweep, prompted by noticing that the programmes bug had been
 found, understood, described accurately in conversation, and then left with no
 home. Everything below was known and untracked until 2026-09-05.
 
-**Live, and the reason this sweep happened.**
-`programmes/[programmeId]/page.tsx:37` still reads
+**FIXED 2026-09-05, deployed with G-40's seven.** Kept in full below because the
+way it was lost matters more than the fix.
+
+`programmes/[programmeId]/page.tsx:37` read
 `(isCoach && type !== 'rehab') || (isMedical && type === 'rehab')`. Since 0070,
 gym authoring belongs to the sport scientist and the S&C, so a **coach opening
 any gym programme is shown the full edit surface and gets 42501 on save**, while

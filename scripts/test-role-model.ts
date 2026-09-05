@@ -483,5 +483,23 @@ assert(
   'neither "+ New programme" link is offered on a hand-written coach-or-medic test',
 );
 
+// ---------------------------------------------------------------------------
+console.log('\n-- the programme detail screen (G-41) --');
+
+/* The one that was diagnosed during the silent-save audit, correctly called a
+ * LOUD failure rather than a silent one, and then dropped because it was the
+ * wrong shape for the list it turned up in. It stayed live: since 0070 a coach
+ * opening a gym programme was shown the whole edit surface and got 42501 on
+ * save, while the sport scientist and the S&C who may edit saw nothing.
+ *
+ * Asserted on the detail screen specifically. The list screen was fixed with
+ * G-40 and passing there says nothing about this file. */
+const progDetail = readFileSync('src/app/(staff)/programmes/[programmeId]/page.tsx', 'utf8');
+const canEditExpr = progDetail.match(/const canEdit =[\s\S]*?;/)?.[0] ?? '';
+assert(canEditExpr.length > 0, 'the programme detail screen computes canEdit');
+assert(!/isCoach|isMedical/.test(canEditExpr), 'canEdit is not a hand-written coach-or-medic test');
+assert(/PROGRAMME_EDIT/.test(canEditExpr), 'gym authoring resolves from PROGRAMME_EDIT');
+assert(/REHAB_PROGRAMME/.test(canEditExpr), 'and the rehab branch from REHAB_PROGRAMME, still the medic\'s');
+
 console.log(`\n${passed} passed, ${failed} failed\n`);
 process.exit(failed > 0 ? 1 : 0);

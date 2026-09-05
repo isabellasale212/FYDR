@@ -8,6 +8,7 @@ import { fetchSquadList } from '@/lib/queries/squad';
 import { enumLabel } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
+import { PROGRAMME_EDIT, REHAB_PROGRAMME, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Programme · Fydr' };
 
@@ -27,16 +28,24 @@ export default async function ProgrammeBuilderPage({
      first, so this never becomes a probe; then 404 rather than 500, because a
      malformed id is a URL that does not name anything, not a server fault. */
   if (!isUuid(programmeId)) notFound();
-
-  const isCoach = claims.roles.includes('coach');
   const isMedical = claims.roles.includes('medic');
 
   const detail = await fetchProgrammeDetail(db, orgId, programmeId);
   if (!detail) notFound();
 
+  /* G-41. The same split 0067 enforces, resolved from the sets rather than
+     restated: gym authoring is the sport scientist and the S&C, rehab is the
+     medic and the sport scientist.
+
+     This kept the pre-0070 rule after the migration narrowed the policy, so a
+     coach opening a gym programme was shown the whole edit surface and got a
+     42501 on saving, while the two roles that may edit were shown nothing. It
+     was found during the silent-save audit, correctly identified as a loud
+     failure rather than a silent one, and then not queued anywhere because the
+     audit's output was a list of silent saves and this was not one. */
   const canEdit =
-    (isCoach && detail.programme.programme_type !== 'rehab') ||
-    (isMedical && detail.programme.programme_type === 'rehab');
+    (hasAnyRole(claims.roles, PROGRAMME_EDIT) && detail.programme.programme_type !== 'rehab') ||
+    (hasAnyRole(claims.roles, REHAB_PROGRAMME) && detail.programme.programme_type === 'rehab');
 
   const [exercises, assignees, assignedAthletes, athletes, groups] = await Promise.all([
     fetchExercises(db, orgId),

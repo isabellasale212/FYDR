@@ -59,6 +59,8 @@ begin
 end $$;
 
 set local role authenticated;
+select ok(tests.rls_is_engaged(),
+  'canary: this session is subject to RLS, so the assertions below measure something');
 
 
 -- ===========================================================================
@@ -336,6 +338,8 @@ select throws_ok(
 );
 
 set local role authenticated;
+select ok(tests.rls_is_engaged(),
+  'canary: this session is subject to RLS, so the assertions below measure something');
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
 select throws_ok(
   format($q$select athlete_is_minor(%L)$q$, tests.uid('orga','athlete_4_minor')),

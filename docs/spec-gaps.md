@@ -598,7 +598,28 @@ something §1 says it can.
 
 ---
 
-### G-38. Nothing in the tenancy suite would notice if a role switch were deleted
+### G-38. FIXED, 2026-09-05. The suite now proves it is subject to RLS
+
+36 canary assertions across 35 files, one after every `set local role
+authenticated`, plus a check in `scripts/test-tenancy.mjs` that refuses to run a
+suite where any file switches role without asserting the canary.
+
+**Both layers were proved to fire before being trusted**, because a canary that
+has never been seen to fail is just another assumption. Removing the role switch
+from `020_cross_tenant_test.sql`, which is exactly the G-32 defect, produced:
+
+```
+not ok 1 - canary: this session is subject to RLS, so the assertions below measure something
+not ok 2 - athlete_consents: coach in org A reads zero rows of org B
+```
+
+It fails FIRST, naming the real cause ahead of the cascade it produces. Removing
+a canary instead, leaving the switch, stops the runner before any statement
+executes.
+
+The original entry follows.
+
+### G-38a. As first written
 
 G-32 and G-35 are the same defect twice: a check that ran without RLS engaged
 and reported success. The suite is correct today, audited role by role on

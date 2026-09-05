@@ -30,6 +30,8 @@ select tests.fixtures();
 -- ===========================================================================
 
 set local role authenticated;
+select ok(tests.rls_is_engaged(),
+  'canary: this session is subject to RLS, so the assertions below measure something');
 
 select tests.clear_jwt();
 select is(

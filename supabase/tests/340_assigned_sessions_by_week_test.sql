@@ -43,6 +43,8 @@ select tests.fixtures();
 -- 020_cross_tenant_test.sql has carried this line since it was written; this
 -- file was missing it.
 set local role authenticated;
+select ok(tests.rls_is_engaged(),
+  'canary: this session is subject to RLS, so the assertions below measure something');
 
 -- ===========================================================================
 -- Build a two-block programme: block 1 runs 2 weeks, block 2 runs 2 weeks.

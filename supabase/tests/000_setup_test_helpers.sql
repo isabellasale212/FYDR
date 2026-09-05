@@ -223,7 +223,66 @@ begin
 end;
 $$;
 
+-- ---------------------------------------------------------------------------
+-- The canary: proof that this session is actually subject to RLS.
+--
+-- G-38, and it exists because the same defect happened twice. 330 and 340 set
+-- JWT claims and never ran `set local role authenticated`, so every refusal
+-- they asserted was measured on a connection that ignores RLS entirely (G-32).
+-- Then the GPS re-import fix was "Run-verified" the same way and shipped a
+-- constraint whose upsert cannot execute for any real user (G-35).
+--
+-- The trap is that setting claims LOOKS like the act that engages RLS. It is
+-- not. Measured on identical reads in one session:
+--
+--     as postgres, no role switch          wellness_entries visible: 830
+--     as postgres, claims set, no switch    wellness_entries visible: 830
+--     as authenticated, claims set          wellness_entries visible: 668
+--
+-- postgres carries rolbypassrls, so this is not about table ownership and
+-- FORCE ROW LEVEL SECURITY would not save it either.
+--
+-- How it works. total_orgs() is security definer, so it reports the true count
+-- however the caller is constrained. rls_is_engaged() is security INVOKER, so
+-- its own count is whatever the caller may see. A session subject to RLS sees
+-- fewer organisations than exist: none without claims, one with them. A session
+-- that bypasses RLS sees all of them, and the two counts match.
+--
+-- It refuses to answer at all with fewer than two organisations, because with
+-- one the comparison cannot distinguish the two cases and a canary that returns
+-- a comforting answer it did not earn is worse than none.
+-- ---------------------------------------------------------------------------
+
+create or replace function tests.total_orgs()
+returns integer
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select count(*)::int from public.organisations;
+$$;
+
+create or replace function tests.rls_is_engaged()
+returns boolean
+language plpgsql
+stable
+as $$
+declare
+  v_total   int := tests.total_orgs();
+  v_visible int;
+begin
+  if v_total < 2 then
+    raise exception 'canary needs at least two organisations to be meaningful, found %', v_total;
+  end if;
+  select count(*)::int into v_visible from public.organisations;
+  return v_visible < v_total;
+end;
+$$;
+
 grant execute on function tests.uid(text, text)              to public;
+grant execute on function tests.total_orgs()                 to public;
+grant execute on function tests.rls_is_engaged()             to public;
 grant execute on function tests.set_jwt(uuid, text)          to public;
 grant execute on function tests.clear_jwt()                  to public;
 grant execute on function tests.club_tables()                to public;

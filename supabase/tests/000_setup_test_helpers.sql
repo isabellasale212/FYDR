@@ -267,6 +267,12 @@ declare
      to user_sport_scientist: the label is only an input to md5(), and renaming
      it would change every id it generates and every row keyed off them. */
   usc  uuid := tests.uid(p_prefix, 'user_sc');
+  /* One account, two roles. The lean club: a coach who also does the S&C work.
+     G-33's answer to "what about a club with no dedicated S&C" is that this
+     person exists and holds both roles, not that the coach role keeps writes it
+     should not have. That answer is only worth giving if it is true, so there
+     is a fixture for it. */
+  udul uuid := tests.uid(p_prefix, 'user_dual');
   unut uuid := tests.uid(p_prefix, 'user_nutritionist');
   ua1  uuid := tests.uid(p_prefix, 'user_athlete_1');
   ua2  uuid := tests.uid(p_prefix, 'user_athlete_2');
@@ -291,6 +297,7 @@ begin
     (umed, o, p_prefix || '.medical@fixture.example',  'Fixture Physio',   'active'),
     (uadm, o, p_prefix || '.admin@fixture.example',    'Fixture Sport Sci','active'),
     (usc,  o, p_prefix || '.sc@fixture.example',       'Fixture S&C',      'active'),
+    (udul, o, p_prefix || '.dual@fixture.example',     'Fixture Dual Role','active'),
     (unut, o, p_prefix || '.nutrition@fixture.example','Fixture Nutrition','active'),
     (ua1,  o, p_prefix || '.athlete1@fixture.example', 'James Barnes',     'active'),
     (ua2,  o, p_prefix || '.athlete2@fixture.example', 'Max Chapman',      'active');
@@ -298,6 +305,7 @@ begin
   insert into user_roles (org_id, user_id, role) values
     (o, ucoa, 'coach'), (o, umed, 'medic'), (o, uadm, 'sport_scientist'),
     (o, usc, 'strength_conditioning'), (o, unut, 'nutritionist'),
+    (o, udul, 'coach'), (o, udul, 'strength_conditioning'),
     (o, ua1, 'athlete'), (o, ua2, 'athlete');
 
   insert into athletes (id, org_id, user_id, first_name, last_name, date_of_birth,

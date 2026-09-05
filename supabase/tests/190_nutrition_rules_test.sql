@@ -41,21 +41,35 @@ select throws_ok(
    asserting it HERE would leave a row behind and every count below is written
    against the state this file builds in order. */
 
+/* G-33 row 2, decided 2026-09-05. Nutrition rules follow nutrition targets:
+   specialist territory in the original spec, so the coach and the medic become
+   read-only and the nutritionist writes. The coach refusal here is new, and so
+   is the medic's on their former personal-rule lane below. */
 select tests.set_jwt(tests.uid('orga', 'user_coach'));
+select throws_ok(
+  format($q$insert into nutrition_rules
+              (org_id, org_default, protein_g_per_kg, carb_g_per_kg, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
+            values (%L, true, 1.9, 6.0, 1.0, 40, current_date, %L)$q$,
+         tests.uid('orga','org'), tests.uid('orga','user_coach')),
+  '42501', null,
+  'a coach can no longer set a nutrition rule'
+);
+
+select tests.set_jwt(tests.uid('orga', 'user_nutritionist'));
 select lives_ok(
   format($q$insert into nutrition_rules
               (id, org_id, org_default, protein_g_per_kg, carb_g_per_kg, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
             values (%L, %L, true, 1.9, 6.0, 1.0, 40, current_date - 10, %L)$q$,
-         tests.uid('orga','rule_org'), tests.uid('orga','org'), tests.uid('orga','user_coach')),
-  'a coach sets an org-default rule'
+         tests.uid('orga','rule_org'), tests.uid('orga','org'), tests.uid('orga','user_nutritionist')),
+  'a nutritionist sets an org-default rule'
 );
 select lives_ok(
   format($q$insert into nutrition_rules
               (id, org_id, group_id, protein_g_per_kg, carb_g_per_kg, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
             values (%L, %L, %L, 1.9, 6.0, 1.0, 40, current_date - 10, %L)$q$,
          tests.uid('orga','rule_group'), tests.uid('orga','org'), tests.uid('orga','group'),
-         tests.uid('orga','user_coach')),
-  'a coach sets a group rule'
+         tests.uid('orga','user_nutritionist')),
+  'and a group rule'
 );
 
 select tests.set_jwt(tests.uid('orga', 'user_medical'));
@@ -65,7 +79,7 @@ select throws_ok(
             values (%L, true, 1.9, 6.0, 1.0, 40, current_date, %L)$q$,
          tests.uid('orga','org'), tests.uid('orga','user_medical')),
   '42501', null,
-  'medical cannot set an org-default rule — write access is personal only'
+  'medical cannot set an org-default rule'
 );
 select throws_ok(
   format($q$insert into nutrition_rules
@@ -73,7 +87,7 @@ select throws_ok(
             values (%L, %L, 1.9, 6.0, 1.0, 40, current_date, %L)$q$,
          tests.uid('orga','org'), tests.uid('orga','group'), tests.uid('orga','user_medical')),
   '42501', null,
-  'medical cannot set a group rule either'
+  'nor a group rule'
 );
 select throws_ok(
   format($q$insert into nutrition_rules
@@ -83,13 +97,27 @@ select throws_ok(
   '42501', null,
   'medical cannot set a personal rule for an athlete with no open injury (athlete_2)'
 );
+/* Was a lives_ok, and was the medic's whole former lane: a personal rule for an
+   athlete with an open injury. Refused now like every other nutrition write
+   that is not the specialist's. Reads are untouched, which the next section
+   checks for both roles. */
+select throws_ok(
+  format($q$insert into nutrition_rules
+              (org_id, athlete_id, protein_g_per_kg, carb_g_per_kg, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
+            values (%L, %L, 2.2, 6.0, 1.0, 40, current_date, %L)$q$,
+         tests.uid('orga','org'), tests.uid('orga','athlete_1'), tests.uid('orga','user_medical')),
+  '42501', null,
+  'nor a personal rule for an injured athlete, which used to be theirs alone'
+);
+
+select tests.set_jwt(tests.uid('orga', 'user_nutritionist'));
 select lives_ok(
   format($q$insert into nutrition_rules
               (id, org_id, athlete_id, protein_g_per_kg, carb_g_per_kg, fat_g_per_kg, fluid_ml_per_kg, reason, effective_from, created_by)
             values (%L, %L, %L, 2.2, 6.0, 1.0, 40, 'Protein raised while returning from injury', current_date - 5, %L)$q$,
          tests.uid('orga','rule_personal'), tests.uid('orga','org'), tests.uid('orga','athlete_1'),
-         tests.uid('orga','user_medical')),
-  'medical DOES set a personal rule for athlete_1, who has an open injury from the shared fixture'
+         tests.uid('orga','user_nutritionist')),
+  'the nutritionist sets the personal rule instead'
 );
 
 
@@ -97,13 +125,15 @@ select lives_ok(
 -- 2. The two unique indexes
 -- ===========================================================================
 
-select tests.set_jwt(tests.uid('orga', 'user_coach'));
+-- Stay as the nutritionist: only that role writes these rows now, and a 42501
+-- would fire first and mask the 23505 this section is actually testing.
+select tests.set_jwt(tests.uid('orga', 'user_nutritionist'));
 
 select throws_ok(
   format($q$insert into nutrition_rules
               (org_id, org_default, protein_g_per_kg, carb_g_per_kg, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
             values (%L, true, 2.0, 6.0, 1.0, 40, current_date - 3, %L)$q$,
-         tests.uid('orga','org'), tests.uid('orga','user_coach')),
+         tests.uid('orga','org'), tests.uid('orga','user_nutritionist')),
   '23505', null,
   'a second live org-default rule is refused'
 );
@@ -112,7 +142,7 @@ select throws_ok(
   format($q$insert into nutrition_rules
               (org_id, group_id, protein_g_per_kg, carb_g_per_kg, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
             values (%L, %L, 2.0, 6.0, 1.0, 40, current_date - 3, %L)$q$,
-         tests.uid('orga','org'), tests.uid('orga','group'), tests.uid('orga','user_coach')),
+         tests.uid('orga','org'), tests.uid('orga','group'), tests.uid('orga','user_nutritionist')),
   '23505', null,
   'a second live rule for the same group is refused the same way'
 );

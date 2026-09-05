@@ -403,41 +403,54 @@ subject to RLS. Only `020_cross_tenant_test.sql` carried the line.
 
 ## Band 7: decisions the matrix implies that nobody has taken
 
-### G-33. The matrix would take access away from the coach and the medic, and this build did not
+### G-33. RESOLVED, 2026-09-05. All five rows decided and built
 
-The five-role work was carried out **widen only**. Every role kept what it could
-do the day before the migration; the sport scientist gained everything, and the
-S&C and the nutritionist got their own domains. Nobody lost anything.
+The five-role migration was carried out **widen only**: every role kept what it
+could do the day before, the sport scientist gained everything, and the S&C and
+the nutritionist got their own domains. Five rows of `docs/access-matrix.md` §3
+would have gone further and **removed** something a person uses today, and an
+earlier draft that applied one of them broke eleven tenancy assertions, all of
+them a coach doing a coach's job. So the five were put to the owner rather than
+decided inside a migration.
 
-`docs/access-matrix.md` §3 is stricter than that in five places, and each would
-remove something a person uses today:
+All five came back decided. Three different answers, which is the value of
+having asked rather than guessed:
 
-| Matrix row | Says | Today | Effect of applying it |
-|---|---|---|---|
-| §3.3 Programme builder | coach **V** | coach creates gym programmes | A coach could no longer build gym work |
-| §3.3 Nutrition targets | coach **V**, medic **V** | both write targets | Both would become read-only |
-| §3.4 Leaderboard | coach **V**, medic **V** | both create boards | Both would become read-only |
-| §3.6 Import GPS | coach **X**, medic **X** | both import | Neither could import GPS |
-| §3.1 New and edit session | medic **X** | medic creates sessions | A medic could no longer schedule |
+| Row | Decision | Reasoning given |
+|---|---|---|
+| §3.1 New and edit session | **Narrowed.** Medic loses scheduling | Not an intentional permission. The same "coach or medic actually meant not-admin" artefact 0066 found everywhere else, so a bug fix rather than a policy change |
+| §3.4 Leaderboard | **Split, not taken as written.** Medic loses create, **coach keeps it** | The medic's create is the same artefact. The coach's is a real permission somebody chose, so the **matrix was corrected** to VECD in the coach column rather than the code being built against a cell nobody meant |
+| §3.3 Nutrition targets | **Narrowed as written.** Coach and medic both read-only | Specialist territory in the original spec, not a casualty of the four-role bug |
+| §3.3 Programme builder | **Narrowed as written.** Gym authoring is the sport scientist's and the S&C's | See the lean-club note below |
+| §3.6 Import GPS | **Narrowed as written.** The sport scientist alone | See the lean-club note below |
 
-**Why it was not applied.** An earlier draft of migration 0067 did apply the
-first of these, and the tenancy suite failed on eleven assertions, every one of
-them a coach doing something a coach does today. That is the signal worth
-listening to rather than overruling.
+**Built in** `supabase/migrations/0070_specialist_writes.sql`, which narrows 28
+policies, and in `src/lib/access.ts`, where the named sets moved with them.
+Scheduling was applied to week templates as well as sessions: a week template is
+scheduling under another name, and a medic who cannot create a session but can
+create a week of them is not a rule anybody meant.
 
-The grid is a **design**, not a description of the built product, and it says so
-about itself in §6: "The code has four roles, not five" and every nutritionist
-cell "is currently a **V**, because a nutritionist is a coach". It was written
-during the specification build to describe where the product is going. Removing
-an ability somebody relies on, on the strength of a cell in that document, is a
-decision for a person to take with the consequences in front of them.
+**The lean club, and why it did not argue for a wider default.** The obvious
+objection to the last two rows is a club with no dedicated S&C: narrow the base
+role and somebody is locked out of a screen the day it ships, with nobody to
+hand it to. The answer is that an account already holds several roles at once. A
+coach who also does the S&C work holds both, and the S&C role satisfies the
+check. It is the same additive property §2 of the matrix warns about from the
+other direction, where a nutritionist holding coach can see injury data, and it
+is the reason D-25's combination warning exists at all.
 
-**What resolving it needs:** a yes or no on each of the five rows above. Nothing
-else is blocked by it, and the current state is safe in the direction that
-matters, since no role sees injury or medical data it should not.
+That answer is only worth giving if it is true for these exact screens, so it is
+asserted rather than assumed. `supabase/tests/070_programmes_test.sql` carries a
+fixture user holding **coach and strength_conditioning together** and checks
+they can author a gym programme that neither a plain coach nor a plain medic
+can, and that holding two roles grants exactly those two: rehab is still
+refused. It worked without any change, which is what "Fydr already supports
+this" needed to mean before it could be the answer.
 
-**Risk: low, and it is the risk of doing too little.** Some roles can do more
-than the matrix intends. None can see what D-01 forbids.
+**What this cost, honestly.** 56 tenancy assertions changed, every one of them a
+coach or a medic doing something they no longer do. None of them was a defect
+being fixed; they were an accurate record of the old rules. The suite ends at
+1523 assertions, up from 1516.
 
 ---
 

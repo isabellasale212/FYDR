@@ -18,21 +18,34 @@ import type { AppRole } from '@/lib/types/database';
  *  same members today stay separate when the matrix gives them different
  *  reasons, because they will not move together.
  *
- *  WIDEN ONLY, in this stage. Every set here is a superset of who could do the
- *  thing the day before the five-role migration, plus whoever the user's own
- *  two rules add: the sport scientist sees everything, and the S&C and the
- *  nutritionist get their own domains back.
+ *  NO LONGER WIDEN ONLY. The five-role migration was carried out widen-only,
+ *  because the matrix's stricter cells would have taken abilities away from
+ *  people using them and that was not a decision to take inside a migration.
+ *  All five were put to the owner as G-33 and all five came back decided, on
+ *  2026-09-05, with reasons that are worth keeping next to the code:
  *
- *  The matrix's grid is stricter than that in places. It gives a coach V rather
- *  than VECD on the programme builder, on nutrition targets and on leaderboards,
- *  and it takes GPS import away from the coach and the medic entirely. Those
- *  cells are DESIGN rather than description: the document says so itself, that
- *  "the code has four roles, not five" and that every nutritionist cell "is
- *  currently a V, because a nutritionist is a coach". Applying them would take
- *  abilities away from people who use them today, on the strength of a grid
- *  written to describe where the product is going. That is a decision to put to
- *  somebody, not one to make inside a migration, so it is recorded as a gap
- *  instead. docs/spec-gaps.md G-33.
+ *    New and edit session   narrowed. The medic loses scheduling. Not an
+ *                           intentional permission, the same "coach or medic
+ *                           actually meant not-admin" artefact 0066 found
+ *                           everywhere else.
+ *    Leaderboard            SPLIT, not taken as written. The medic loses
+ *                           create, same artefact. The coach KEEPS it, because
+ *                           that one is a real permission somebody chose. The
+ *                           matrix itself was corrected to say so.
+ *    Nutrition targets      narrowed as written. Coach and medic become
+ *                           read-only. Specialist territory in the original
+ *                           spec, not a casualty of the four-role bug.
+ *    Programme builder      narrowed as written.
+ *    Import GPS             narrowed as written.
+ *
+ *  THE LEAN CLUB IS ANSWERED BY ROLES, NOT BY A WIDER DEFAULT. A club whose one
+ *  coach also does the S&C work does not need `coach` to carry programme
+ *  authoring for everybody. That person's account holds both roles. Roles are
+ *  additive and always have been, which is the same property §2 of the matrix
+ *  warns about from the other direction for the nutritionist. Asserted rather
+ *  than assumed: supabase/tests/070_programmes_test.sql carries a fixture user
+ *  holding coach and strength_conditioning together, and checks they can author
+ *  a gym programme that neither a plain coach nor a plain medic can.
  *
  *  ALWAYS AN ALLOW LIST, never a deny list. Roles are additive: the matrix says
  *  so at §2, "Giving a nutritionist any second role that can see injury
@@ -54,20 +67,12 @@ export const CLINICAL_ONLY = ['medic'] as const;
 /** §3.1 New and edit session (VEC VEC X X X) and week templates, plus §3.6
  *  Thresholds where the C belongs to the same pair. The people who decide what
  *  the squad is asked to do. */
-export const SESSION_EDIT = [
-  'sport_scientist',
-  'coach',
-  'medic',
-] as const;
+export const SESSION_EDIT = ['sport_scientist', 'coach'] as const;
 
 /** §3.3 Programme builder and exercise library (VEC V V VEC V) and §3.4
  *  Leaderboard (VECD V V VECD V). Physical development: the S&C builds it, the
  *  coach and the medic read it. */
-export const PROGRAMME_EDIT = [
-  'sport_scientist',
-  'coach',
-  'strength_conditioning',
-] as const;
+export const PROGRAMME_EDIT = ['sport_scientist', 'strength_conditioning'] as const;
 
 /** Who may create a REHAB programme, as opposed to a gym one. Migration 0022
  *  split programme writes by type and 0067 kept that split: rehab is clinical
@@ -84,19 +89,13 @@ export const REHAB_PROGRAMME = ['sport_scientist', 'medic'] as const;
  *  policy behind it does not fail closed, it fails confusing. */
 export const PROGRAMME_AUTHOR = [
   'sport_scientist',
-  'coach',
-  'medic',
   'strength_conditioning',
+  'medic',
 ] as const;
 
 /** §3.3 New nutrition target (VC X X X VC). The only set where the nutritionist
  *  has a write the coach does not. */
-export const NUTRITION_EDIT = [
-  'sport_scientist',
-  'coach',
-  'medic',
-  'nutritionist',
-] as const;
+export const NUTRITION_EDIT = ['sport_scientist', 'nutritionist'] as const;
 
 /** §3.6 Thresholds: VECD VECD V V X. Writing, which today is the coach alone. */
 export const THRESHOLD_EDIT = ['sport_scientist', 'coach'] as const;
@@ -104,14 +103,13 @@ export const THRESHOLD_EDIT = ['sport_scientist', 'coach'] as const;
 /** §3.6 Import GPS: VC X X X X. Today the gate is coach or medic, and the
  *  matrix would remove both. See the WIDEN ONLY note at the top of this file:
  *  they keep it and the sport scientist joins them. */
-export const GPS_IMPORT = ['sport_scientist', 'coach', 'medic'] as const;
+export const GPS_IMPORT = ['sport_scientist'] as const;
 
 /** §3.4 Leaderboard: VECD V V VECD V. Creating a board, which today is the
  *  coach or the medic. */
 export const LEADERBOARD_EDIT = [
   'sport_scientist',
   'coach',
-  'medic',
   'strength_conditioning',
 ] as const;
 

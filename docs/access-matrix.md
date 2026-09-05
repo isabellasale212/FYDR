@@ -121,9 +121,17 @@ open it. See section 4.1.
 |---|---|---|---|---|---|
 | Analytics **[Pr]** | V | **X** | **X** | **X** | **X** |
 | Build an analytics view **[Pr]** | VEC | **X** | **X** | **X** | **X** |
-| Leaderboard | VECD | V | V | VECD | V |
+| Leaderboard | VECD | VECD | V | VECD | V |
 | Testing | VEC | VEC | V | VEC | X |
 | Test history | V | V | V | V | X |
+
+**The coach column on Leaderboard was corrected on 2026-09-05, not worked
+around.** It read **V**, which would have made a coach a reader of boards they
+create today. That was wrong: creating a leaderboard is a real permission
+somebody chose, unlike the medic's create, which was the "coach or medic
+actually meant not-admin" artefact the five-role migration found throughout. The
+row was split rather than applied as written, and this document is the half that
+changed. G-33 in `docs/spec-gaps.md` records the reasoning.
 
 ### 3.5 Reports
 
@@ -336,10 +344,18 @@ per-report split, so that role is still refused at the door rather than admitted
 to the reports it should see. Tracked in `docs/spec-gaps.md`, not silently
 decided here.
 
-**The grid is enforced in the widening direction only.** Where §3 grants a role
-something it did not have, the code now grants it. Where §3 would take something
-away from the coach or the medic, it has not been applied: those five rows are
-listed in `docs/spec-gaps.md` G-33 and need a decision rather than a migration.
+**The grid is enforced in both directions as of 2026-09-05.** The five-role
+migration was carried out widening-only, and the five rows that would have taken
+something away were held for a decision rather than applied inside a migration.
+All five came back decided and are built: migration `0070_specialist_writes.sql`
+is the narrowing half, and G-33 in `docs/spec-gaps.md` records what was decided
+and why, including the one row where this document was found to be wrong.
+
+**A club with no dedicated specialist is answered by roles, not by a wider
+default.** A coach who also does the S&C work holds both roles on one account,
+and the S&C role satisfies the check. That is the same additive property §2
+warns about from the other direction for the nutritionist, and it is asserted
+end to end in `supabase/tests/070_programmes_test.sql`.
 
 **Most pages call only the first**, which is why the grid's fine distinctions do
 not exist yet. Of 62 screens, the great majority admit any staff member.

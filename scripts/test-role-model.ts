@@ -282,12 +282,19 @@ const access = readFileSync('src/lib/access.ts', 'utf8');
 const SETS: Record<string, readonly string[]> = {
   SETTINGS_ADMIN: ['sport_scientist'],
   CLINICAL_ONLY: ['medic'],
-  SESSION_EDIT: ['sport_scientist', 'coach', 'medic'],
+  /* The five G-33 rows, decided 2026-09-05. Three narrowed as the matrix wrote
+     them, one narrowed as a bug fix, and Leaderboard SPLIT rather than taken as
+     written: the medic loses create, the coach keeps it, and the matrix itself
+     was corrected. Asserted here against the decision, not against whatever
+     access.ts currently says. */
+  SESSION_EDIT: ['sport_scientist', 'coach'],
   THRESHOLD_EDIT: ['sport_scientist', 'coach'],
-  PROGRAMME_EDIT: ['sport_scientist', 'coach', 'strength_conditioning'],
-  NUTRITION_EDIT: ['sport_scientist', 'coach', 'medic', 'nutritionist'],
-  GPS_IMPORT: ['sport_scientist', 'coach', 'medic'],
-  LEADERBOARD_EDIT: ['sport_scientist', 'coach', 'medic', 'strength_conditioning'],
+  PROGRAMME_EDIT: ['sport_scientist', 'strength_conditioning'],
+  NUTRITION_EDIT: ['sport_scientist', 'nutritionist'],
+  GPS_IMPORT: ['sport_scientist'],
+  LEADERBOARD_EDIT: ['sport_scientist', 'coach', 'strength_conditioning'],
+  REHAB_PROGRAMME: ['sport_scientist', 'medic'],
+  PROGRAMME_AUTHOR: ['sport_scientist', 'strength_conditioning', 'medic'],
   INJURY_ACCESS: ['sport_scientist', 'coach', 'medic', 'strength_conditioning'],
   ALL_STAFF: ['sport_scientist', 'coach', 'medic', 'strength_conditioning', 'nutritionist'],
 };

@@ -66,10 +66,22 @@ select isnt(
   null,
   'medical can read the coach''s template'
 );
-select lives_ok(
-  format($q$update week_templates set name = 'Standard 1-game week (edited)' where id = %L$q$,
-         tests.uid('orga','template_standard')),
-  'medical can also write it — the real RLS grants both roles equally'
+/* G-33 row 5, decided 2026-09-05: the medic loses scheduling. A week template
+   is scheduling under another name, so this assertion has inverted. It used to
+   read "medical can also write it, the real RLS grants both roles equally",
+   which was true and was the artefact: coach-or-medic meant not-admin.
+
+   rows_affected, not lives_ok. An UPDATE that RLS filters out does not raise:
+   it matches nothing and succeeds quietly, so lives_ok would still pass here
+   and prove nothing at all. Counting the rows is what tells a refusal from a
+   no-op, and this whole block was only caught because a later assertion read
+   the name back. */
+select is(
+  tests.rows_affected(
+    format($q$update week_templates set name = 'Standard 1-game week (edited)' where id = %L$q$,
+           tests.uid('orga','template_standard'))),
+  0::bigint,
+  'medical can no longer write it: the update matches no row rather than erroring'
 );
 
 select tests.set_jwt(tests.uid('orga', 'user_athlete_1'));
@@ -98,8 +110,9 @@ select lives_ok(
 select tests.set_jwt(tests.uid('orga', 'user_coach'));
 select is(
   (select name from week_templates where id = tests.uid('orga','template_standard')),
-  'Standard 1-game week (edited)',
-  'and back in orga, the name orgb''s coach tried to overwrite is untouched'
+  'Standard 1-game week',
+  'and back in orga, the name is the coach''s original: neither orgb''s coach '
+  'nor orga''s own medic changed it'
 );
 
 

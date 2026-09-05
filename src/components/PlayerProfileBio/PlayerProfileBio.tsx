@@ -53,11 +53,12 @@ type Props = {
  *
  *  "Edit" used to be permanently disabled — "Staff-side profile editing
  *  isn't available yet." It already can be: athletes_manage_update
- *  (migration 0012) grants exactly coach and admin an update on this row
- *  ("coach manages the squad... medical reads for context and does not
- *  edit the roster," that migration's own comment). Admin never reaches
- *  this page at all (AthletePage's hasAccess gate is coach/medical only),
- *  so canEdit below is coach-only in practice, enforced twice: the UI
+ *  0012 granted exactly coach and admin an update on this row ("coach manages
+ *  the squad... medical reads for context and does not edit the roster"). That
+ *  is no longer the rule: the specification's 2026-09-04 edit 1 resolves D-26 by
+ *  giving the medic the same edit as the coach, and 0071 grants it. canEdit now
+ *  resolves from ATHLETE_BIO_EDIT, which is the sport scientist, the coach and
+ *  the medic. Still enforced twice: the UI
  *  disables the control for anyone else (CLAUDE.md rule 2 — a display
  *  choice, not the boundary) and RLS rejects the write regardless of what a
  *  client sends. No new migration — this wires up a write path the schema

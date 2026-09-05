@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { AppRole } from '@/lib/types/database';
-import { ALL_STAFF } from '@/lib/access';
+import { ALL_STAFF, ANALYTICS } from '@/lib/access';
 
 /* The sidebar rows, from 20-route-map.md §3, since narrowed from that map's
  * count: Groups, Timetable and Testing each used to have their own row and
@@ -75,9 +75,9 @@ const PREMIUM_ONLY = new Set<string>(['staff.analytics']);
  * have no restrictions at all, was missing six of the nine rows: Dashboard,
  * Squad overview, Schedule, Nutrition, Gym programme and Analytics.
  *
- * docs/access-matrix.md §3.4 does make Analytics the sport scientist's alone.
- * Taking it from the coach and the medic is a narrowing and is left to G-33
- * with the other four, so for now the row follows the same rule as the rest. */
+ * Analytics is the exception, and the only one: §3.4 and D-02 both make it the
+ * sport scientist's alone, which was confirmed on 2026-09-05. Every other row
+ * is reachable by every staff role. */
 
 export const SIDEBAR: readonly Row[] = [
   {
@@ -189,7 +189,7 @@ export const SIDEBAR: readonly Row[] = [
     id: 'staff.analytics',
     label: 'Analytics',
     route: '/analytics',
-    roles: ALL_STAFF,
+    roles: ANALYTICS,
     icon: icon(
       <>
         <path d="M1.4 9.5 5.3 5.6l2.5 2.5 3.3-3.3 1.4 1.4-4.7 4.7-2.5-2.5-2.5 2.5z" />

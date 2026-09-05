@@ -297,6 +297,8 @@ const SETS: Record<string, readonly string[]> = {
   PROGRAMME_AUTHOR: ['sport_scientist', 'strength_conditioning', 'medic'],
   INJURY_ACCESS: ['sport_scientist', 'coach', 'medic', 'strength_conditioning'],
   ALL_STAFF: ['sport_scientist', 'coach', 'medic', 'strength_conditioning', 'nutritionist'],
+  ANALYTICS: ['sport_scientist'],
+  ATHLETE_BIO_EDIT: ['sport_scientist', 'coach', 'medic'],
 };
 for (const [name, want] of Object.entries(SETS)) {
   const declared = access.match(new RegExp(`${name}[^=]*=\\s*\\[([^\\]]*)\\]`))?.[1] ?? '';
@@ -348,6 +350,12 @@ for (const [file, name, want] of [
 const sidebar = readFileSync('src/components/Sidebar/Sidebar.tsx', 'utf8');
 const rows = [...sidebar.matchAll(/label: '([^']+)',\s*\n\s*route: '([^']+)',\s*\n\s*roles: (\[[^\]]*\]|\w+),/g)];
 assert(rows.length > 0, 'the sidebar declares rows this test can read');
+/* One row narrows, and only one. §3.4 and D-02 both make Analytics the sport
+   scientist's alone, confirmed 2026-09-05. It is named here rather than skipped
+   by a general rule, so a SECOND row quietly narrowing still fails. */
+const SIDEBAR_EXCEPTIONS: Record<string, readonly string[]> = {
+  Analytics: ['sport_scientist'],
+};
 for (const r of rows) {
   /* A row may write its roles inline or name a set from access.ts. Resolve the
      identifier rather than trusting it, so pointing a row at the wrong constant
@@ -356,8 +364,13 @@ for (const r of rows) {
   const got = raw.startsWith('[')
     ? [...raw.matchAll(/'(\w+)'/g)].map((m) => m[1] as string)
     : listIn('src/lib/access.ts', raw);
-  const missing = STAFF_ROLES.filter((x) => !got.includes(x));
-  assert(missing.length === 0, `sidebar row ${r[1]} is reachable by every staff role${missing.length ? ` (missing: ${missing.join(', ')})` : ''}`);
+  const want = SIDEBAR_EXCEPTIONS[r[1] as string] ?? STAFF_ROLES;
+  const missing = want.filter((x) => !got.includes(x));
+  const extra = want === STAFF_ROLES ? [] : got.filter((x) => !want.includes(x));
+  assert(
+    missing.length === 0 && extra.length === 0,
+    `sidebar row ${r[1]} is reachable by exactly ${want.join(', ')}${missing.length ? ` (missing: ${missing.join(', ')})` : ''}${extra.length ? ` (unexpectedly also: ${extra.join(', ')})` : ''}`,
+  );
 }
 
 console.log(`\n${passed} passed, ${failed} failed\n`);

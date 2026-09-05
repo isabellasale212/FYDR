@@ -38,6 +38,7 @@ import { BLANK, formatDate, formatNumber, todayIso } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import type { Band } from '@/lib/stats';
+import { ANALYTICS, hasAnyRole } from '@/lib/access';
 
 /* MOVED from /analytics, which is now the four fixed comparison boards the
  * Analytics design specifies. This builder is not deleted: it is a working,
@@ -136,7 +137,9 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
    * still be denied after an upgrade, so showing them a "buy Premium" panel
    * would be selling them something that does not unlock this. Role is the
    * boundary that cannot be purchased, so it answers first. */
-  const hasAccess = claims.roles.includes('coach') || claims.roles.includes('medic');
+  /* D-02: was coach-or-medic, which is the four-role model's "any staff" and the
+     opposite of what this screen is meant to be. The sport scientist alone. */
+  const hasAccess = hasAnyRole(claims.roles, ANALYTICS);
   if (!hasAccess) {
     return (
       <>

@@ -139,6 +139,24 @@ export const REPORT_ACCESS = [
   'strength_conditioning',
 ] as const;
 
+/** §3.4 Analytics and Build an analytics view: V/VEC for the sport scientist and
+ *  X for everyone else, which is the tightest restriction in the product.
+ *
+ *  D-02 in the architecture to-do list, and the five-role migration briefly moved
+ *  it the WRONG WAY: running widen-only meant the sidebar row ended up admitting
+ *  all five roles, so the tightest restriction became the loosest. Confirmed and
+ *  narrowed 2026-09-05. */
+export const ANALYTICS = ['sport_scientist'] as const;
+
+/** §3.1 Athlete profile, and the spec's own 2026-09-04 front page, edit 1
+ *  (resolves D-26): "Medics can now edit an athlete's biographical details, the
+ *  same as coaches. Previously coach-only, medics were explicitly excluded."
+ *
+ *  Two roles were missing, not one. The screen gated on coach alone and the
+ *  policy admitted coach and sport scientist, so a medic was refused by the
+ *  database and a sport scientist by the UI. G-37. */
+export const ATHLETE_BIO_EDIT = ['sport_scientist', 'coach', 'medic'] as const;
+
 /** Every staff role. Not a gate on its own: `requireStaff()` already guarantees
  *  it, and a screen that admits all five needs no further test. Exported for the
  *  screens that must name the set explicitly, such as the athlete domain pages

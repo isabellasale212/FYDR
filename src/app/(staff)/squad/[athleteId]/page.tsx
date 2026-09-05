@@ -31,6 +31,7 @@ import { resolvePeriod } from '@/lib/period.server';
 import { availabilityStatus } from '@/lib/status';
 import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
+import { ATHLETE_BIO_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Athlete · Fydr' };
 
@@ -360,7 +361,9 @@ export default async function AthletePage({
   // Admin never reaches this page (hasAccess above is coach/medical only),
   // so this is coach-only in practice, offered only where RLS actually
   // allows the write. See PlayerProfileBio's own header for the rest.
-  const canEditBio = claims.roles.includes('coach');
+  /* D-26: the medic edits biographical details too, and the sport scientist was
+     refused here although the policy allowed it. Both fixed; see 0071. */
+  const canEditBio = hasAnyRole(claims.roles, ATHLETE_BIO_EDIT);
 
   /* The coach-facing correction path the club asked for: "the athlete shouldnt be
    * able to edit an entry only the coach should be able to do it on the system —

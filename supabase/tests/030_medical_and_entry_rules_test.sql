@@ -512,5 +512,47 @@ select throws_ok(
 );
 
 
+-- ===========================================================================
+-- 9b. D-26: a medic edits an athlete's biographical details, same as a coach
+--
+-- The specification's own front page, edit 1 of 2026-09-04: "Medics can now edit
+-- an athlete's biographical details, the same as coaches. Previously coach-only,
+-- medics were explicitly excluded." Migration 0071.
+--
+-- Both directions, because the gap ran both ways before it was fixed: the medic
+-- was refused by the policy, and the sport scientist by the screen. The S&C
+-- stays out, which is §4.3 in its own words, "cannot edit an athlete's
+-- biographical details".
+-- ===========================================================================
+
+select tests.set_jwt(tests.uid('orga', 'user_medical'));
+select is(
+  tests.rows_affected(format($q$update athletes set height_cm = 181.0 where id = %L$q$, tests.uid('orga','athlete_1'))),
+  1::bigint,
+  'a medic edits an athlete''s biographical details (D-26)'
+);
+
+select tests.set_jwt(tests.uid('orga', 'user_admin'));
+select is(
+  tests.rows_affected(format($q$update athletes set height_cm = 181.0 where id = %L$q$, tests.uid('orga','athlete_1'))),
+  1::bigint,
+  'and so does a sport scientist, who the screen used to refuse'
+);
+
+select tests.set_jwt(tests.uid('orga', 'user_sc'));
+select is(
+  tests.rows_affected(format($q$update athletes set height_cm = 999.0 where id = %L$q$, tests.uid('orga','athlete_1'))),
+  0::bigint,
+  'an S&C does not: 4.3, "cannot edit an athlete''s biographical details"'
+);
+
+select tests.set_jwt(tests.uid('orga', 'user_nutritionist'));
+select is(
+  tests.rows_affected(format($q$update athletes set height_cm = 999.0 where id = %L$q$, tests.uid('orga','athlete_1'))),
+  0::bigint,
+  'nor does a nutritionist'
+);
+
+
 select * from finish();
 rollback;

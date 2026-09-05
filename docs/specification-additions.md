@@ -3,25 +3,72 @@
 What is missing from the specification set, why each gap matters, and what it
 would cost to close.
 
-**Status, 4 September 2026. Items 1, 2, 3 and 7 were agreed and are now done.**
-Items 4, 5 and 6 remain proposals. The four completed sections are left in place
-rather than deleted, because they record why each was worth doing and what it was
-expected to cost, which is worth comparing against what it actually turned up.
+**Status, 4 September 2026. Six of the seven are done.** Only item 6, the athlete
+app, remains, and it is a separate commission rather than an appendix. The
+completed sections are left in place rather than deleted, because they record what
+each was expected to cost, which is worth comparing against what it actually
+turned up.
 
 | # | What | Status |
 |---|---|---|
 | 1 | Retire the old spec set | **Done.** 38 files moved to `docs/screens/legacy/` with a banner and a README |
 | 2 | Server route specifications | **Done.** `docs/server-routes.md`, all 27 verified |
 | 3 | State machine appendix | **Done.** `docs/state-machines.md`, 15 machines |
-| 4 | First run and empty club | Proposed |
-| 5 | Journeys across screens | Proposed |
-| 6 | The athlete app | Proposed, separate commission |
+| 4 | First run and empty club | **Done.** `docs/first-run.md` |
+| 5 | Journeys across screens | **Done.** `docs/journeys.md`, five journeys |
+| 6 | The athlete app | **Not started.** Separate commission |
 | 7 | A verification standard | **Done.** `docs/verification-standard.md` |
 
-**What the four turned up that the proposal did not predict.** Two new decisions,
-D-44 and D-45, and three previously unverified questions closed. The state machine
-work found that **four states exist in the database that no screen can reach**,
-which was not something the proposal anticipated finding.
+### One loose end, deliberately left for you
+
+**`docs/first-run.md` and `docs/journeys.md` are on disk but are not yet in the
+Word document.** Adding them is two lines in `scripts/build-spec-docx.py`, but it
+shifts the appendix lettering again, and that is your call rather than mine. Run
+`/spec-export` after adding them.
+
+### What items 4 and 5 turned up that the proposal did not predict
+
+**Decision D-39 needed correcting, and I have amended rather than withdrawn it.**
+The proposal treated "a club with no thresholds looks like a calm squad" as an
+unmitigated gap. It is not: the thresholds screen detects a club with no rules and
+**offers five sensible defaults in one click**, with the fifth deliberately
+switched off because it would flag the whole squad on day one
+(`src/components/SeedDefaultThresholds/SeedDefaultThresholds.tsx`,
+`src/lib/queries/thresholds.ts:206`).
+
+The narrower finding stands: that prompt lives on a settings screen nobody has a
+reason to open in their first week, and a club that cleared its rules on purpose
+never gets it at all, deliberately. **The dashboard is where the silence needs
+breaking.** See `docs/first-run.md` §5.
+
+**The journeys made three defects visible that no screen specification could.**
+Each one is a case where every screen involved is correct and the connection
+between them is not:
+
+- **The medic's triage queue has no route to it.** Every screen is right; nothing
+  navigates there (D-34).
+- **Nutrition targets stop following the athlete.** Both screens are right; the
+  recompute between them is missing (D-28).
+- **A club cannot be started.** Six of the eight onboarding steps work, and the
+  second does not (D-16).
+
+**That is the argument for keeping journeys in the set.** A screen specification
+guarantees each part is right. It cannot tell you the parts do not join up.
+
+**What items 4 and 5 did not turn up.** No new decisions. Everything they found
+was already numbered, which is a reasonable sign that the earlier passes were
+thorough.
+
+### What is left, honestly
+
+**Item 6, the athlete app**, and it should be scoped as its own piece of work
+rather than bolted on. It is where wellness, rating of perceived exertion, gym
+logging and the nutrition check-in are actually created: every number the staff
+specification describes reading.
+
+**And 24 open decisions**, which remain the thing that would improve the
+specification most. Adding more material now has diminishing returns against
+answering those.
 
 Written 4 September 2026, after the specification's own verification pass. Two of
 these seven items are hazards created by that work rather than pre-existing gaps,

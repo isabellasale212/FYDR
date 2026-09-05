@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { ResetConfirmForm } from '@/components/ResetConfirmForm/ResetConfirmForm';
 
-export const metadata = { title: 'Choose a new password · Fydr' };
+export const metadata = { title: 'Choose a password · Fydr' };
 
 /** Self-serve password recovery, step two of two (audit S9): where the
  *  emailed reset link lands. Public route — the visitor is signed out until
@@ -9,7 +9,18 @@ export const metadata = { title: 'Choose a new password · Fydr' };
  *  shell prefix in src/lib/supabase/middleware.ts (and is not the exact
  *  `/login` match that bounces signed-in users), so a fresh recovery
  *  session is not redirected away before it can set a password. */
-export default function ResetConfirmPage() {
+export default async function ResetConfirmPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  /* One screen, two arrivals. A reset is somebody who has a password and wants
+     a different one; an invite is somebody who has never had one, arriving from
+     /auth/confirm after their token was verified. The form below is identical
+     either way, and so is the design, which is frozen: only the two lines that
+     would otherwise tell an invited person they are resetting something they
+     have never had. */
+  const isInvite = (await searchParams).invite === '1';
   return (
     <main className="login-wrap" id="main">
       <div className="login-card">
@@ -21,8 +32,8 @@ export default function ResetConfirmPage() {
         </div>
 
         <div className="signin-head">
-          <p className="signin-eyebrow">Password reset</p>
-          <h1 className="signin-title">Choose a new password.</h1>
+          <p className="signin-eyebrow">{isInvite ? 'Welcome to Fydr' : 'Password reset'}</p>
+          <h1 className="signin-title">{isInvite ? 'Choose your password.' : 'Choose a new password.'}</h1>
           <p className="signin-sub">You will be signed in as soon as it is set.</p>
         </div>
 

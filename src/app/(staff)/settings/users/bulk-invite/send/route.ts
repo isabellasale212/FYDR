@@ -1,15 +1,11 @@
-import { randomBytes, randomUUID } from 'crypto';
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { deleteInvitedUser, issueInvite } from '@/lib/invite';
 import { requireStaff } from '@/lib/session';
 import { MAX_BULK_INVITE_ROWS, type BulkInviteResult, type BulkInviteSendRow } from '@/lib/queries/bulkInvite';
 import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function generateTemporaryPassword(): string {
-  return randomBytes(12).toString('base64url');
-}
 
 /** docs/screens/user-management.md's "Bulk invite": up to 100 rows in one
  *  submission, each creating a real athlete account the same way a single
@@ -42,6 +38,7 @@ export async function POST(request: Request) {
   }
 
   const admin = createAdminClient();
+  const origin = new URL(request.url).origin;
   const results: BulkInviteResult[] = [];
   const createdUserIds: string[] = [];
 
@@ -54,7 +51,7 @@ export async function POST(request: Request) {
     const linkAthleteId = typeof raw.athleteId === 'string' ? raw.athleteId : null;
 
     if (!EMAIL_RE.test(email) || !firstName || !lastName || !dateOfBirth) {
-      results.push({ email: email || '(no email)', ok: false, error: 'Invalid row.', temporaryPassword: null });
+      results.push({ email: email || '(no email)', ok: false, error: 'Invalid row.', inviteUrl: null });
       continue;
     }
 
@@ -75,64 +72,59 @@ export async function POST(request: Request) {
         .select('id')
         .single();
       if (athleteErr) {
-        results.push({ email, ok: false, error: `Could not create an athlete record: ${athleteErr.message}`, temporaryPassword: null });
+        results.push({ email, ok: false, error: `Could not create an athlete record: ${athleteErr.message}`, inviteUrl: null });
         continue;
       }
       athleteId = newAthlete.id;
     } else {
       const { data: existing, error: existingErr } = await db.from('athletes').select('date_of_birth').eq('org_id', orgId).eq('id', athleteId).single();
       if (existingErr) {
-        results.push({ email, ok: false, error: `Could not read the matched athlete record: ${existingErr.message}`, temporaryPassword: null });
+        results.push({ email, ok: false, error: `Could not read the matched athlete record: ${existingErr.message}`, inviteUrl: null });
         continue;
       }
       if (!existing.date_of_birth) {
         const { error: dobErr } = await db.from('athletes').update({ date_of_birth: dateOfBirth }).eq('org_id', orgId).eq('id', athleteId);
         if (dobErr) {
-          results.push({ email, ok: false, error: `Could not set date of birth on the matched record: ${dobErr.message}`, temporaryPassword: null });
+          results.push({ email, ok: false, error: `Could not set date of birth on the matched record: ${dobErr.message}`, inviteUrl: null });
           continue;
         }
       }
     }
 
-    const newUserId = randomUUID();
-    const { error: insertErr } = await db.from('users').insert({ id: newUserId, org_id: orgId, email, full_name: `${firstName} ${lastName}`, status: 'active' });
-    if (insertErr) {
-      const message = /duplicate key|already exists/i.test(insertErr.message) ? 'That email is already registered in this club.' : insertErr.message;
-      results.push({ email, ok: false, error: message, temporaryPassword: null });
+    /* Same order as the single path, and for the same reason: the invite
+       assigns the id, so it has to exist before a users row can reference it.
+       See lib/invite.ts. */
+    const invited = await issueInvite(admin, email, `${firstName} ${lastName}`, origin);
+    if (!invited.ok) {
+      results.push({ email, ok: false, error: invited.error, inviteUrl: null });
       continue;
     }
+    const { userId: newUserId, inviteUrl } = invited.invite;
 
-    const temporaryPassword = generateTemporaryPassword();
-    const authResult = await admin.auth.admin.createUser({
-      id: newUserId,
-      email,
-      password: temporaryPassword,
-      email_confirm: true,
-      user_metadata: { full_name: `${firstName} ${lastName}` },
-    });
-    if (authResult.error) {
-      await db.from('users').delete().eq('id', newUserId);
-      const message = /already been registered|already exists/i.test(authResult.error.message) ? 'That email is already registered on this project.' : authResult.error.message;
-      results.push({ email, ok: false, error: message, temporaryPassword: null });
+    const { error: insertErr } = await db.from('users').insert({ id: newUserId, org_id: orgId, email, full_name: `${firstName} ${lastName}`, status: 'active' });
+    if (insertErr) {
+      await deleteInvitedUser(admin, newUserId);
+      const message = /duplicate key|already exists/i.test(insertErr.message) ? 'That email is already registered in this club.' : insertErr.message;
+      results.push({ email, ok: false, error: message, inviteUrl: null });
       continue;
     }
 
     const { error: rolesErr } = await db.from('user_roles').insert({ org_id: orgId, user_id: newUserId, role: 'athlete', granted_by: claims.userId });
     if (rolesErr) {
-      results.push({ email, ok: false, error: `Account created but the athlete role failed to save: ${rolesErr.message}. Fix roles from the user list.`, temporaryPassword });
+      results.push({ email, ok: false, error: `Account created but the athlete role failed to save: ${rolesErr.message}. Fix roles from the user list.`, inviteUrl });
       createdUserIds.push(newUserId);
       continue;
     }
 
     const { error: linkErr } = await db.from('athletes').update({ user_id: newUserId }).eq('org_id', orgId).eq('id', athleteId).is('user_id', null);
     if (linkErr) {
-      results.push({ email, ok: false, error: `Account created but linking the athlete record failed: ${linkErr.message}.`, temporaryPassword });
+      results.push({ email, ok: false, error: `Account created but linking the athlete record failed: ${linkErr.message}.`, inviteUrl });
       createdUserIds.push(newUserId);
       continue;
     }
 
     createdUserIds.push(newUserId);
-    results.push({ email, ok: true, error: null, temporaryPassword });
+    results.push({ email, ok: true, error: null, inviteUrl });
   }
 
   const succeeded = results.filter((r) => r.ok).length;

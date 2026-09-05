@@ -134,5 +134,8 @@ export type BulkInviteResult = {
   email: string;
   ok: boolean;
   error: string | null;
-  temporaryPassword: string | null;
+  /** The single-use link the invited athlete follows to set their own password.
+   *  Was `temporaryPassword` until build handoff step 2; nothing in this app
+   *  generates a password for anybody now. See lib/invite.ts. */
+  inviteUrl: string | null;
 };

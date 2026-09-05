@@ -1,13 +1,16 @@
 -- ===========================================================================
--- !! DO NOT APPLY TO PRODUCTION YET. HARD BLOCKER, not a nice-to-have.
+-- BLOCKER CLEARED 2026-09-05. Safe to apply. Kept rather than deleted, because
+-- the reason it was blocked is the reason the guards exist.
 --
--- This migration narrows five sets of writes. Six screens still OFFER those
--- writes to roles it removes, and an UPDATE that RLS filters does not raise:
--- it matches nothing, returns no error, and the app reports success. Shipping
--- this alone turns six working buttons into buttons that lie.
+-- This migration narrows five sets of writes. Screens still OFFERED those
+-- writes to roles it removes, and an UPDATE that RLS filters does not raise: it
+-- matches nothing, returns no error, and the app reports success. Applying this
+-- alone would have turned working buttons into buttons that lie.
 --
--- Blocked on docs/spec-gaps.md G-34, which names all six with the roles each
--- fails for. Clear that first, then this is free to ship.
+-- docs/spec-gaps.md G-34 has the detail. Every affected control is now resolved
+-- from lib/access.ts, and every affected write asks for its affected rows, so
+-- the next mismatch raises instead of failing silently. Verified as a signed-in
+-- medic and a signed-in coach, both directions.
 -- ===========================================================================
 
 -- ---------------------------------------------------------------------------

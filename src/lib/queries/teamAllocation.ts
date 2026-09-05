@@ -171,12 +171,21 @@ export async function setTeamAllocation(
 }
 
 export async function withdrawAllocation(db: Db, orgId: string, allocationId: string): Promise<{ error: string | null }> {
-  const { error } = await db
+/* G-34. `.select('id')` so a refusal is sayable. An UPDATE that RLS filters
+   matches no row and does NOT raise, so checking `error` alone reported success
+   and changed nothing. This is a single row addressed by id that was on screen a
+   moment ago, so zero rows can only mean refused. */
+  const { data, error } = await db
     .from('team_allocations')
     .update({ status: 'withdrawn' })
     .eq('id', allocationId)
-    .eq('org_id', orgId);
-  return { error: error ? humanizeDbError(error.message, 'staff') : null };
+    .eq('org_id', orgId)
+    .select('id');
+  if (error) return { error: humanizeDbError(error.message, 'staff') };
+  if (!data || data.length === 0) {
+    return { error: 'Not saved: selection belongs to the coach and the sport scientist. A medic sets availability, not selection.' };
+  }
+  return { error: null };
 }
 
 /** Publish is a batch action: every draft row for this week becomes visible to the
@@ -184,13 +193,32 @@ export async function withdrawAllocation(db: Db, orgId: string, allocationId: st
  *  athletes told, others not) is exactly the confusion the spec's own "publish
  *  discloses the whole board" framing exists to avoid. */
 export async function publishWeek(db: Db, orgId: string, userId: string, weekStart: string): Promise<{ error: string | null }> {
-  const { error } = await db
+  /* G-34, and the one case where zero rows does NOT settle it. This is a bulk
+     update over a week, so nothing changing can mean two different things: the
+     week had no drafts, which is fine, or RLS refused, which is not. Guessing
+     either way produces a wrong message, so the ambiguous branch asks. The extra
+     query only runs when nothing changed. */
+  const { data, error } = await db
     .from('team_allocations')
     .update({ status: 'published', published_at: new Date().toISOString(), published_by: userId })
     .eq('org_id', orgId)
     .eq('week_start', weekStart)
-    .eq('status', 'draft');
-  return { error: error ? humanizeDbError(error.message, 'staff') : null };
+    .eq('status', 'draft')
+    .select('id');
+  if (error) return { error: humanizeDbError(error.message, 'staff') };
+  if (!data || data.length === 0) {
+    const { count } = await db
+      .from('team_allocations')
+      .select('id', { count: 'exact', head: true })
+      .eq('org_id', orgId)
+      .eq('week_start', weekStart)
+      .eq('status', 'draft');
+    if ((count ?? 0) > 0) {
+      return { error: 'Not saved: publishing a selection belongs to the coach and the sport scientist. A medic sets availability, not selection.' };
+    }
+    return { error: 'There were no draft selections to publish for this week.' };
+  }
+  return { error: null };
 }
 
 export type MyAllocation = { team_name: string; week_start: string };

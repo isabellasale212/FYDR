@@ -104,12 +104,20 @@ export async function setThresholdActive(
   orgId: string,
   isActive: boolean,
 ): Promise<void> {
-  const { error } = await db
+/* G-34. `.select('id')` so a refusal is sayable. An UPDATE that RLS filters
+   matches no row and does NOT raise, so checking `error` alone reported success
+   and changed nothing. This is a single row addressed by id that was on screen a
+   moment ago, so zero rows can only mean refused. */
+  const { data, error } = await db
     .from('thresholds')
     .update({ is_active: isActive })
     .eq('id', id)
-    .eq('org_id', orgId);
+    .eq('org_id', orgId)
+    .select('id');
   if (error) throw new Error(error.message);
+  if (!data || data.length === 0) {
+    throw new Error('Not saved: thresholds belong to the coach and the sport scientist.');
+  }
 }
 
 /** screens/thresholds.md job 1: "make the rules legible... the UI renders it
@@ -236,10 +244,18 @@ export async function seedDefaultThresholds(
  *  flags keep their threshold_id and render "threshold no longer exists"
  *  rather than losing what a coach was told at the time. */
 export async function archiveThreshold(db: Db, id: string, orgId: string): Promise<void> {
-  const { error } = await db
+/* G-34. `.select('id')` so a refusal is sayable. An UPDATE that RLS filters
+   matches no row and does NOT raise, so checking `error` alone reported success
+   and changed nothing. This is a single row addressed by id that was on screen a
+   moment ago, so zero rows can only mean refused. */
+  const { data, error } = await db
     .from('thresholds')
     .update({ deleted_at: new Date().toISOString(), is_active: false })
     .eq('id', id)
-    .eq('org_id', orgId);
+    .eq('org_id', orgId)
+    .select('id');
   if (error) throw new Error(error.message);
+  if (!data || data.length === 0) {
+    throw new Error('Not saved: thresholds belong to the coach and the sport scientist.');
+  }
 }

@@ -19,6 +19,7 @@ import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
 import { isPremium } from '@/lib/tier';
 import { PlanGate } from '@/components/PlanGate/PlanGate';
+import { LEADERBOARD_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Board · Fydr' };
 
@@ -209,6 +210,7 @@ export default async function LeaderboardDetailPage({
         </div>
         <div className="lb-meta-actions">
           <LeaderboardStaffActions
+            canManage={hasAnyRole(claims.roles, LEADERBOARD_EDIT)}
             orgId={orgId}
             userId={claims.userId}
             boardId={board.id}

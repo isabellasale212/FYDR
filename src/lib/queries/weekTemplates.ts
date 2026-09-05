@@ -341,13 +341,39 @@ export async function updateTemplate(
 }
 
 export async function archiveTemplate(db: Db, orgId: string, templateId: string): Promise<{ error: string | null }> {
-  const { error } = await db.from('week_templates').update({ deleted_at: new Date().toISOString() }).eq('org_id', orgId).eq('id', templateId);
-  return { error: error ? humanizeDbError(error.message, 'staff') : null };
+/* G-34. `.select('id')` so a refusal is sayable. An UPDATE that RLS filters
+   matches no row and does NOT raise, so checking `error` alone reported success
+   and changed nothing. This is a single row addressed by id that was on screen a
+   moment ago, so zero rows can only mean refused. */
+  const { data, error } = await db
+    .from('week_templates')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('org_id', orgId)
+    .eq('id', templateId)
+    .select('id');
+  if (error) return { error: humanizeDbError(error.message, 'staff') };
+  if (!data || data.length === 0) {
+    return { error: 'Not saved: week templates belong to the coach and the sport scientist.' };
+  }
+  return { error: null };
 }
 
 export async function restoreTemplate(db: Db, orgId: string, templateId: string): Promise<{ error: string | null }> {
-  const { error } = await db.from('week_templates').update({ deleted_at: null }).eq('org_id', orgId).eq('id', templateId);
-  return { error: error ? humanizeDbError(error.message, 'staff') : null };
+/* G-34. `.select('id')` so a refusal is sayable. An UPDATE that RLS filters
+   matches no row and does NOT raise, so checking `error` alone reported success
+   and changed nothing. This is a single row addressed by id that was on screen a
+   moment ago, so zero rows can only mean refused. */
+  const { data, error } = await db
+    .from('week_templates')
+    .update({ deleted_at: null })
+    .eq('org_id', orgId)
+    .eq('id', templateId)
+    .select('id');
+  if (error) return { error: humanizeDbError(error.message, 'staff') };
+  if (!data || data.length === 0) {
+    return { error: 'Not saved: week templates belong to the coach and the sport scientist.' };
+  }
+  return { error: null };
 }
 
 export async function duplicateTemplate(db: Db, orgId: string, userId: string, templateId: string): Promise<{ id: string | null; error: string | null }> {

@@ -285,12 +285,21 @@ export async function setBoardVisibility(
   boardId: string,
   visibility: 'staff' | 'published',
 ): Promise<{ error: string | null }> {
-  const { error } = await db
+/* G-34. `.select('id')` so a refusal is sayable. An UPDATE that RLS filters
+   matches no row and does NOT raise, so checking `error` alone reported success
+   and changed nothing. This is a single row addressed by id that was on screen a
+   moment ago, so zero rows can only mean refused. */
+  const { data, error } = await db
     .from('leaderboards')
     .update({ visibility })
     .eq('id', boardId)
-    .eq('org_id', orgId);
-  return { error: error?.message ?? null };
+    .eq('org_id', orgId)
+    .select('id');
+  if (error) return { error: error.message };
+  if (!data || data.length === 0) {
+    return { error: 'Not saved: boards belong to the coach, the S&C and the sport scientist.' };
+  }
+  return { error: null };
 }
 
 export async function deleteBoard(
@@ -298,12 +307,21 @@ export async function deleteBoard(
   orgId: string,
   boardId: string,
 ): Promise<{ error: string | null }> {
-  const { error } = await db
+/* G-34. `.select('id')` so a refusal is sayable. An UPDATE that RLS filters
+   matches no row and does NOT raise, so checking `error` alone reported success
+   and changed nothing. This is a single row addressed by id that was on screen a
+   moment ago, so zero rows can only mean refused. */
+  const { data, error } = await db
     .from('leaderboards')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', boardId)
-    .eq('org_id', orgId);
-  return { error: error?.message ?? null };
+    .eq('org_id', orgId)
+    .select('id');
+  if (error) return { error: error.message };
+  if (!data || data.length === 0) {
+    return { error: 'Not saved: boards belong to the coach, the S&C and the sport scientist.' };
+  }
+  return { error: null };
 }
 
 /** "Leave this leaderboard", or the global "leave every board" when boardId is null.

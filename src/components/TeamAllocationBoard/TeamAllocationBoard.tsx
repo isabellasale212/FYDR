@@ -15,6 +15,9 @@ import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { enumLabel } from '@/lib/format';
 
 type Props = { orgId: string; userId: string; weekStart: string; teams: readonly Team[]; board: WeekBoard; canAllocate: boolean };
+/* canAllocate is the board's own gate and already worked: it was never one of
+   G-34's six. What was wrong is what the PAGE resolved it from — isCoach, which
+   omits the sport scientist that 0070 grants. Fixed at the call site. */
 
 const AVAIL_PILL: Record<string, string> = {
   available: 'pill-good',

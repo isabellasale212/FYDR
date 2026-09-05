@@ -456,7 +456,43 @@ being fixed; they were an accurate record of the old rules. The suite ends at
 
 ## Band 8: found by the silent-save audit, 2026-09-05
 
-### G-34. Six screens let somebody save a change that never happens
+### G-34. FIXED, 2026-09-05. Screens that let somebody save a change that never happened
+
+**0070 is no longer blocked by this.** All of it is fixed and Run-verified with
+both controls: as a medic every one of these now returns a message, and as a
+coach every one still works.
+
+**A correction to the original finding, because it was the headline.** #1 named
+`expireTarget` and `NutritionTargetsList`, and that component is **dead code**:
+no page imports it, so nothing there was ever reachable. I checked reachability
+for some of the six and assumed it for that one, on the strength of the page
+gate alone. The real nutrition path is `assignPlan`
+(`src/lib/queries/nutritionRules.ts:281`): when a target already exists for
+TODAY it takes an UPDATE branch and returns success **without ever attempting an
+insert**. On any other day it inserts, which raises 42501 and is loud, which is
+exactly why the silent case hid. `/nutrition` renders `NutritionWorkspace`,
+whose `canEdit` was `isCoach || isMedical`.
+
+**Two other things the fix pass corrected in the finding.** `setTeamAllocation`
+is not silent: its update is followed by an insert that raises. And
+`TeamAllocationBoard` was never one of the six either, because it already gated
+on `canAllocate`; what was wrong there is that the page resolved it from
+`isCoach`, omitting the sport scientist. `PublishWeekButton` was the unguarded
+one.
+
+**Fixed in two independent halves**, because either alone leaves it reachable:
+the control is offered only to roles that may write, resolved from the matching
+set in `lib/access.ts`; and each write asks for its affected rows, so a future
+mismatch raises instead of lying. `npm run test:silent-saves` asserts both, per
+screen and per function.
+
+The one write that does not get a hard row-count rule is `publishWeek`: it is a
+bulk update over a week, so zero rows means either "no drafts" or "refused", and
+it runs a second query in that branch to say which rather than guessing.
+
+**The original finding follows, unedited.**
+
+### G-34a. As first written
 
 **DEPLOY BLOCKER FOR `0070_specialist_writes.sql`.** That migration must not go
 to production until this is fixed. It is not a nice-to-have: 0070 is what

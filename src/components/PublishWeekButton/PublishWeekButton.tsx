@@ -7,11 +7,21 @@ import { createClient } from '@/lib/supabase/client';
 import { publishWeek } from '@/lib/queries/teamAllocation';
 import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 
-type Props = { orgId: string; userId: string; weekStart: string; draftCount: number };
+type Props = {
+  orgId: string;
+  userId: string;
+  weekStart: string;
+  draftCount: number;
+  /** Whether this viewer may actually write. G-34: the control used to be
+   *  unconditional, so a role the policy excludes pressed it and nothing
+   *  happened, with no error. Resolved from the matching set in lib/access.ts
+   *  by the page. */
+  canManage: boolean;
+};
 
 /** Publish discloses the whole week at once — screens/team-allocation.md: this is
  *  "the act that makes the allocation visible to athletes", coach only. */
-export function PublishWeekButton({ orgId, userId, weekStart, draftCount }: Props) {
+export function PublishWeekButton({ orgId, userId, weekStart, draftCount, canManage }: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -26,6 +36,11 @@ export function PublishWeekButton({ orgId, userId, weekStart, draftCount }: Prop
   });
 
   if (draftCount === 0) return null;
+
+  /* After every hook, never before: an early return above them changes the
+     hook order between renders. G-34 gates the control, not the component's
+     lifecycle. */
+  if (!canManage) return null;
 
   return (
     <div>

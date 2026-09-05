@@ -6,6 +6,7 @@ import { fetchGroups } from '@/lib/queries/groups';
 import { fetchSessionDetail, fetchWeekMdLabels, mondayOf } from '@/lib/queries/schedule';
 import { dateInTz, enumLabel, formatLongDate, formatTime, mdLabel } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
+import { SESSION_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Session · Fydr' };
 
@@ -20,7 +21,7 @@ export default async function SessionDetailPage({
   params: Promise<{ sessionId: string }>;
 }) {
   const { sessionId } = await params;
-  const { db, orgId, timezone } = await requireStaff();
+  const { db, orgId, timezone, claims } = await requireStaff();
 
   const session = await fetchSessionDetail(db, orgId, sessionId);
   if (!session) notFound();
@@ -101,7 +102,8 @@ export default async function SessionDetailPage({
       </div>
 
       <div style={{ marginTop: 14 }}>
-        <SessionActions orgId={orgId} session={session} />
+        <SessionActions
+          canManage={hasAnyRole(claims.roles, SESSION_EDIT)} orgId={orgId} session={session} />
       </div>
 
       {!cancelled ? (

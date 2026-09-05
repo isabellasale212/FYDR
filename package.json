@@ -24,7 +24,8 @@
     "retire:future-wellness": "node --env-file=.env.local scripts/retire-future-wellness.mjs",
     "capture:pdf": "node --env-file-if-exists=.env.local scripts/capture-app-pdf.mjs",
     "test:role-model": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-role-model.ts",
-    "test:credentials": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-credentials.ts"
+    "test:credentials": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-credentials.ts",
+    "test:silent-saves": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-silent-saves.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.5.1",

@@ -11,9 +11,18 @@ import { Pill } from '@/components/Pill/Pill';
 import { SEVERITY_STATUS } from '@/lib/status';
 import { enumLabel } from '@/lib/format';
 
-type Props = { threshold: Threshold; orgId: string; sentence: string };
+type Props = {
+  threshold: Threshold;
+  orgId: string;
+  sentence: string;
+  /** Whether this viewer may actually write. G-34: the control used to be
+   *  unconditional, so a role the policy excludes pressed it and nothing
+   *  happened, with no error. Resolved from the matching set in lib/access.ts
+   *  by the page. */
+  canManage: boolean;
+};
 
-export function ThresholdRow({ threshold, orgId, sentence }: Props) {
+export function ThresholdRow({ threshold, orgId, sentence, canManage }: Props) {
   const router = useRouter();
   const [confirmingArchive, setConfirmingArchive] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -80,7 +89,11 @@ export function ThresholdRow({ threshold, orgId, sentence }: Props) {
           </span>
         ) : null}
 
-        {confirmingArchive ? (
+        {/* G-34: the row stays visible to every staff role, because §3.6 gives the
+            medic and the S&C a V on thresholds. Only the two write controls go,
+            for the roles that cannot write. Hiding the row instead would take
+            away a read the matrix grants. */}
+        {!canManage ? null : confirmingArchive ? (
           <span style={{ display: 'flex', gap: 8, marginTop: 8 }}>
             <span className="tiny">Retire this threshold for good?</span>
             <button

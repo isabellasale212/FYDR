@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { WeekTemplateBuilder } from '@/components/WeekTemplateBuilder/WeekTemplateBuilder';
 import { fetchTemplate } from '@/lib/queries/weekTemplates';
 import { requireStaff } from '@/lib/session';
+import { SESSION_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Week template · Fydr' };
 
@@ -27,5 +28,5 @@ export default async function WeekTemplateBuilderPage({ params }: { params: Prom
     );
   }
 
-  return <WeekTemplateBuilder orgId={orgId} userId={claims.userId} templateId={template.id} name={template.name} structure={template.structure} archived={template.archived} />;
+  return <WeekTemplateBuilder orgId={orgId} userId={claims.userId} templateId={template.id} name={template.name} structure={template.structure} archived={template.archived} canManage={hasAnyRole(claims.roles, SESSION_EDIT)} />;
 }

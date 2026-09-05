@@ -7,6 +7,7 @@ import { fetchGroupAthleteIds, fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireInjuryAccess } from '@/lib/session';
+import { REHAB_ALLOCATION, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Rehab groups · Fydr' };
 
@@ -29,6 +30,10 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 export default async function RehabGroupsPage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, orgName, claims, timezone } = await requireInjuryAccess();
   const isMedical = claims.roles.includes('medic');
+  /* Allocation is wider than the medic alone: 0068 grants rehab_assignments to
+     the sport scientist and the S&C too, so the screen was narrower than its own
+     policy. Approved 2026-09-05. */
+  const canAllocate = hasAnyRole(claims.roles, REHAB_ALLOCATION);
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
 
@@ -94,7 +99,7 @@ export default async function RehabGroupsPage({ searchParams }: { searchParams: 
             userId={claims.userId}
             groups={rehabGroups}
             members={filteredMembers}
-            canAllocate={isMedical}
+            canAllocate={canAllocate}
             timezone={timezone}
           />
         ) : null}

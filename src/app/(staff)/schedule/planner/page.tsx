@@ -3,6 +3,7 @@ import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { fetchTemplates, weekTotalLoad } from '@/lib/queries/weekTemplates';
 import { mdLabel } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
+import { SESSION_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Week templates · Fydr' };
 
@@ -18,7 +19,10 @@ export const metadata = { title: 'Week templates · Fydr' };
  *  in the builder, not a database restriction that exists yet. */
 export default async function WeekTemplatesPage() {
   const { db, orgId, orgName, claims, timezone } = await requireStaff();
-  const canWrite = claims.roles.includes('coach') || claims.roles.includes('medic');
+  /* week_templates is coach and sport scientist (0070). This read coach or
+     medic, so it offered writing to a medic and withheld it from the sport
+     scientist. */
+  const canWrite = hasAnyRole(claims.roles, SESSION_EDIT);
   const templates = await fetchTemplates(db, orgId, timezone);
 
   return (

@@ -430,5 +430,58 @@ assert(
 );
 assert(!/'\/settings'/.test(homeBody), 'homeRoute() no longer lands any staff role on /settings');
 
+// ---------------------------------------------------------------------------
+console.log('\n-- refusals that show nothing at all (G-40) --');
+
+/* The shape after G-39's: a role check that hides a region and renders NOTHING.
+ * No refusal text, so no scan looking for refusal copy finds it, and nothing on
+ * screen tells anybody the thing exists.
+ *
+ * Seventeen were read one at a time. Seven were §4 partial-visibility working
+ * as designed and are deliberately absent from this list; two more log an audit
+ * actor and are correct if inconsistent. These seven were wrong, and all seven
+ * were approved on 2026-09-05 before being changed, because two of them are
+ * real access decisions rather than obvious artefacts: the S&C gaining rehab
+ * allocation, and the GPS import link NARROWING away from coach and medic. */
+const HIDDEN_REGIONS: [string, string][] = [
+  ['settings/page.tsx', 'GPS_IMPORT'],
+  ['schedule/planner/page.tsx', 'SESSION_EDIT'],
+  ['injuries/rehab-groups/page.tsx', 'REHAB_ALLOCATION'],
+  ['squad/[athleteId]/page.tsx', 'ALL_STAFF'],
+  ['programmes/page.tsx', 'PROGRAMME_EDIT'],
+];
+for (const [route, set] of HIDDEN_REGIONS) {
+  const src = readFileSync(`src/app/(staff)/${route}`, 'utf8');
+  assert(src.includes(set), `${route} resolves its hidden region from ${set}`);
+}
+
+/* Named individually because one file carries three of them and a file-level
+ * check would pass on any one. */
+const athlete = readFileSync('src/app/(staff)/squad/[athleteId]/page.tsx', 'utf8');
+for (const [name, want] of [
+  ['canLogWeighIn', 'ALL_STAFF'],
+  ['canCorrect', 'ALL_STAFF'],
+] as [string, string][]) {
+  const m = athlete.match(new RegExp(`const ${name} = ([^;]*);`));
+  assert((m?.[1] ?? '').includes(want), `${name} resolves from ${want}`);
+}
+assert(
+  /INJURY_ACCESS[\s\S]{0,300}Log injury/.test(athlete),
+  'the "+ Log injury" link is offered to INJURY_ACCESS, not the medic alone',
+);
+const progList = readFileSync('src/app/(staff)/programmes/page.tsx', 'utf8');
+assert(
+  !/const canEditSelected[\s\S]{0,200}isCoach/.test(progList),
+  'the programmes list no longer offers Edit on a hand-written coach test',
+);
+/* Two more in the same file that the sweep collapsed into the declaration line:
+   the "+ New programme" link appears twice, on the empty state and under the
+   list, and both gated on isCoach || isMedical while /programmes/new admits
+   PROGRAMME_AUTHOR. A file-level check would have missed a second one. */
+assert(
+  !/isCoach \|\| isMedical/.test(progList),
+  'neither "+ New programme" link is offered on a hand-written coach-or-medic test',
+);
+
 console.log(`\n${passed} passed, ${failed} failed\n`);
 process.exit(failed > 0 ? 1 : 0);

@@ -8,6 +8,7 @@ import {
 } from '@/lib/queries/programmes';
 import { enumLabel, mdLabel } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
+import { PROGRAMME_AUTHOR, PROGRAMME_EDIT, REHAB_PROGRAMME, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Gym programme · Fydr' };
 
@@ -90,8 +91,6 @@ export default async function ProgrammesPage({
 }) {
   const { p: selectedParam } = await searchParams;
   const { db, orgId, orgName, claims } = await requireStaff();
-  const isCoach = claims.roles.includes('coach');
-  const isMedical = claims.roles.includes('medic');
   const programmes = await fetchProgrammeListDetails(db, orgId);
 
   const selected = programmes.find((p) => p.id === selectedParam) ?? programmes[0] ?? null;
@@ -102,8 +101,14 @@ export default async function ProgrammesPage({
     await Promise.all(sessionsFlat.map(async (s) => [s.id, await fetchSessionExercises(db, s.id)] as const)),
   );
 
+  /* The same split 0067 enforces, resolved from the sets rather than restated:
+     gym authoring is the sport scientist and the S&C, rehab is the medic and the
+     sport scientist. Before this a coach was offered "Edit this programme" on
+     every gym programme and got a 42501 on saving. */
   const canEditSelected =
-    !!selected && ((isCoach && selected.programme_type !== 'rehab') || (isMedical && selected.programme_type === 'rehab'));
+    !!selected &&
+    ((hasAnyRole(claims.roles, PROGRAMME_EDIT) && selected.programme_type !== 'rehab') ||
+      (hasAnyRole(claims.roles, REHAB_PROGRAMME) && selected.programme_type === 'rehab'));
 
   return (
     <>
@@ -122,7 +127,7 @@ export default async function ProgrammesPage({
       {programmes.length === 0 ? (
         <div className="card">
           <p className="tiny">No programmes yet.</p>
-          {isCoach || isMedical ? (
+          {hasAnyRole(claims.roles, PROGRAMME_AUTHOR) ? (
             <Link href="/programmes/new" className="btn-primary" style={{ marginTop: 12, display: 'inline-flex' }}>
               + New programme
             </Link>
@@ -160,7 +165,7 @@ export default async function ProgrammesPage({
                 </Link>
               ))}
             </div>
-            {isCoach || isMedical ? (
+            {hasAnyRole(claims.roles, PROGRAMME_AUTHOR) ? (
               <Link
                 href="/programmes/new"
                 className="btn-primary"

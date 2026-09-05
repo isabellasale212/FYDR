@@ -31,7 +31,7 @@ import { resolvePeriod } from '@/lib/period.server';
 import { availabilityStatus } from '@/lib/status';
 import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
-import { ALL_STAFF, ATHLETE_BIO_EDIT, hasAnyRole } from '@/lib/access';
+import { ALL_STAFF, ATHLETE_BIO_EDIT, INJURY_ACCESS, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Athlete · Fydr' };
 
@@ -341,7 +341,9 @@ export default async function AthletePage({
   // coach and medical only, same as the query functions this button calls —
   // gating the control on the same two roles means it never offers an
   // action RLS is just going to reject.
-  const canLogWeighIn = claims.roles.includes('coach') || claims.roles.includes('medic');
+  /* body_composition and body_mass_target_ranges admit all five staff roles
+     since 0066, so this was narrower than the policy behind it. */
+  const canLogWeighIn = hasAnyRole(claims.roles, ALL_STAFF);
   const weighIns = canLogWeighIn ? await fetchBodyCompositionEntries(db, orgId, athleteId) : [];
   /* The staff-set body-mass target range (migration 0060). Gated on the SAME two
    * roles for the same reason as the weigh-in controls above: body_mass_target_ranges
@@ -388,7 +390,12 @@ export default async function AthletePage({
    * the card says which window it is showing rather than implying it is everything. */
   const CORRECTION_WINDOW_DAYS = 28;
   const correctionRange = { from: addDays(today, -(CORRECTION_WINDOW_DAYS - 1)), to: today };
-  const canCorrect = claims.roles.includes('coach') || claims.roles.includes('medic');
+  /* revise_wellness_entry and revise_training_entry count all five staff roles
+     as staff (0065). The comment that used to sit here said this page was
+     restricted to coach and medical so the value was true for every reader, and
+     warned that the controls must not follow if the page were ever opened wider.
+     G-39 opened it wider; this is that warning being honoured. */
+  const canCorrect = hasAnyRole(claims.roles, ALL_STAFF);
   /* hasAccess above already restricted this whole page to coach/medical, so
    * canCorrect is true for every reader who gets here today. It is computed
    * explicitly anyway rather than hardcoded to true: if this page is ever opened
@@ -697,7 +704,9 @@ export default async function AthletePage({
                   </>
                 )}
               </div>
-              {claims.roles.includes('medic') ? (
+              {/* §3.2 New injury is VC for all four injury roles, and /injuries/new
+                  already admits them. The link was medic only. */}
+              {hasAnyRole(claims.roles, INJURY_ACCESS) ? (
                 <Link href="/injuries/new" className="btn-ghost-pill" style={{ padding: '8px 16px' }}>
                   + Log injury
                 </Link>

@@ -11,6 +11,7 @@ import { requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import { PlanPreviewSwitch } from '@/components/PlanPreviewSwitch/PlanPreviewSwitch';
 import { isPlatformStaff } from '@/lib/platformStaff';
+import { GPS_IMPORT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Settings · Fydr' };
 
@@ -337,7 +338,10 @@ export default async function SettingsPage() {
             </span>
           </Link>
 
-          {claims.roles.includes('coach') || claims.roles.includes('medic') ? (
+          {/* §3.6 Import GPS is VC for the sport scientist alone. This link was
+              shown to the coach and the medic, whom the route refuses, and hidden
+              from the role that owns it. Approved 2026-09-05. */}
+          {hasAnyRole(claims.roles, GPS_IMPORT) ? (
             <Link href="/settings/imports" className="set-list-row">
               <span>
                 <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block' }}>GPS imports</span>

@@ -124,6 +124,21 @@ export const INJURY_ACCESS = [
   'strength_conditioning',
 ] as const;
 
+/** §3.2 Rehab groups: VE VP VE VE X. Who may ALLOCATE an athlete to a rehab
+ *  group, as opposed to reading the board. The medic and the S&C both do real
+ *  rehab work, and the sport scientist has everything; the coach reads it (VP)
+ *  and the nutritionist is X with the rest of §3.2.
+ *
+ *  Matches what 0068 already granted on rehab_assignments. The screen was medic
+ *  only, so it was narrower than its own policy: an S&C could allocate through
+ *  the database and not through the page. Approved 2026-09-05 as a real access
+ *  decision rather than an artefact. */
+export const REHAB_ALLOCATION = [
+  'sport_scientist',
+  'medic',
+  'strength_conditioning',
+] as const;
+
 /** §3.5. Deliberately the same members as INJURY_ACCESS and deliberately a
  *  separate name: these rows move for different reasons.
  *

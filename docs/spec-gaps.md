@@ -733,6 +733,62 @@ one, and this entry exists so that gap is written down rather than assumed away.
 
 ---
 
+### G-41. Diagnosed correctly today and never written down anywhere
+
+A deliberate sweep, prompted by noticing that the programmes bug had been
+found, understood, described accurately in conversation, and then left with no
+home. Everything below was known and untracked until 2026-09-05.
+
+**Live, and the reason this sweep happened.**
+`programmes/[programmeId]/page.tsx:37` still reads
+`(isCoach && type !== 'rehab') || (isMedical && type === 'rehab')`. Since 0070,
+gym authoring belongs to the sport scientist and the S&C, so a **coach opening
+any gym programme is shown the full edit surface and gets 42501 on save**, while
+the two roles that may edit are shown nothing. It was diagnosed during the
+silent-save audit, correctly classified as a LOUD failure rather than a silent
+one, and then dropped, because the audit's output was a list of silent saves and
+this was not one. Being the wrong shape for the list it was found in is a bad
+reason to lose a live bug.
+
+**Also untracked until now:**
+
+- **Meal library authoring** (`NutritionWorkspace.tsx:506`) is `disabled={!isCoach}`
+  with the tooltip "only coaching staff author it". `meal_library` admits coach,
+  nutritionist and sport scientist, so the nutritionist is refused by the screen
+  from writing the nutrition content that is their job.
+- **`NutritionTargetsList` is dead code.** No page imports it, confirmed again
+  here: zero importers. It carries a working `expireTarget` mutation, so it
+  reads like a live screen to anyone who finds it. It was the headline of the
+  G-34 audit before the reachability check corrected that.
+- **`reports/training/pdf` and `/export`** still derive `actorRole` with the old
+  ternary instead of `actingRole()`. Not a defect, both have an honest
+  `claims.roles[0]` fallback, unlike the leaderboard pair that fell back to
+  'coach'. Inconsistency only.
+- **Seven code comments still cite `01-roles-and-permissions.md`** as authority.
+  The document now carries a superseded banner, so the citations point at a
+  file that says "do not build against this".
+- **`settings/exports/page.tsx:58`** prints "Medical access" or "Coach access"
+  from a two-way check, so a sport scientist or an S&C is told they have "Coach
+  access".
+
+### G-42. Two more hidden regions, found while fixing G-40, NOT yet approved
+
+Same shape as G-40's seven and the same four-role artefact, but outside what was
+approved on 2026-09-05, so both are left alone deliberately:
+
+- **`settings/page.tsx:308`, the Exports link**, shown on `coach || medic`. The
+  page itself gates on `requireReportAccess()`, and §3.6 reads
+  `| Exports | V | V | V | V | X |`, so the sport scientist and the S&C are shown
+  no link to a page they can open.
+- **`squad/[athleteId]/page.tsx:363`, `canSetAvailability`**, on `coach || medic`.
+  The availability write policies are now coach+sport_scientist for the
+  non-injury path and medic for the injury one, so the union is three roles and
+  the sport scientist is missing. Worth a decision rather than an assumption,
+  because D-35 says availability is the medic's, and 0042's coach path is the
+  documented exception to that.
+
+---
+
 ## Summary
 
 **28 gaps, one of them withdrawn. 4 high risk, 2 medium-high, 8 medium, the rest

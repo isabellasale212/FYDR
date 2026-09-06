@@ -4,6 +4,7 @@ import type { Db } from './groups';
 import type { Json } from '../types/database';
 import { mondayOf, rangeBounds } from './schedule';
 import { dateInTz, daysBetween, zonedTimeToUtcIso } from '../format';
+import { mustAffect } from '@/lib/write';
 
 /* screens/md-planner.md, cut down hard from a screen the spec's own header
  * calls "provisional. Awaiting client design photographs" and closes with
@@ -336,8 +337,10 @@ export async function updateTemplate(
     patch.structure = serializeStructure(parsed.data);
   }
 
-  const { error } = await db.from('week_templates').update(patch).eq('org_id', orgId).eq('id', templateId);
-  return { error: error ? humanizeDbError(error.message, 'staff') : null };
+  return mustAffect(
+    db.from('week_templates').update(patch).eq('org_id', orgId).eq('id', templateId).select('id'),
+    { refusal: 'Not saved: week templates belong to the coach and the sport scientist.', onError: (m) => humanizeDbError(m, 'staff') },
+  );
 }
 
 export async function archiveTemplate(db: Db, orgId: string, templateId: string): Promise<{ error: string | null }> {

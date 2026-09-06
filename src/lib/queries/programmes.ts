@@ -12,6 +12,7 @@ import { todayIso } from '@/lib/format';
 import { humanizeDbError } from '@/lib/writeErrors';
 import type { Db } from './groups';
 import { fetchAllPaged } from './paged';
+import { mustAffect } from '@/lib/write';
 
 /* screens/gym-programmes.md, screens/programme-builder.md, screens/my-programme.md
  * and screens/gym-logging.md, cut down hard. Migration 0021's own header has the
@@ -256,18 +257,20 @@ export async function updateProgrammeStatus(
   programmeId: string,
   status: ProgrammeStatus,
 ): Promise<{ error: string | null }> {
-  const { error } = await db
-    .from('programmes')
-    .update({ status })
-    .eq('org_id', orgId)
-    .eq('id', programmeId);
-  if (error) {
-    if (error.message.toLowerCase().includes('row-level security') || error.message.toLowerCase().includes('policy')) {
-      return { error: 'You do not have permission to change this programme’s status.' };
-    }
-    return { error: humanizeDbError(error.message, 'staff') };
-  }
-  return { error: null };
+  /* G-36, and this one already TRIED. It sniffed the error message for "row
+     level security" or "policy" and returned a permission sentence, which is a
+     hand-rolled version of what mustAffect does. It could never fire: an UPDATE
+     that RLS filters does not raise, so there is no message to sniff, and the
+     branch only ran for an INSERT-shaped failure that never reaches here. Good
+     instinct, wrong mechanism, and it made the function look like it handled
+     the case it was actually blind to. */
+  return mustAffect(
+    db.from('programmes').update({ status }).eq('org_id', orgId).eq('id', programmeId).select('id'),
+    {
+      refusal: 'You do not have permission to change this programme’s status.',
+      onError: (m) => humanizeDbError(m, 'staff'),
+    },
+  );
 }
 
 export type ProgrammeDetail = {
@@ -739,12 +742,18 @@ function enumLikeOverrideLabel(t: OverrideType): string {
  *  resolve_programme_exercises stop applying it on its very next call; the
  *  row stays as a record of what once applied and to whom. */
 export async function expireOverride(db: Db, orgId: string, overrideId: string): Promise<{ error: string | null }> {
-  const { error } = await db
-    .from('exercise_overrides')
-    .update({ expires_at: new Date().toISOString() })
-    .eq('org_id', orgId)
-    .eq('id', overrideId);
-  return { error: error ? humanizeDbError(error.message, 'staff') : null };
+  return mustAffect(
+    db
+      .from('exercise_overrides')
+      .update({ expires_at: new Date().toISOString() })
+      .eq('org_id', orgId)
+      .eq('id', overrideId)
+      .select('id'),
+    {
+      refusal: 'Not saved: gym programme work belongs to the sport scientist and the S&C.',
+      onError: (m) => humanizeDbError(m, 'staff'),
+    },
+  );
 }
 
 export type ProgrammeExerciseOption = {

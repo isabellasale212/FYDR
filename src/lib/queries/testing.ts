@@ -1,6 +1,7 @@
 import type { BodySide, SideMode, TestCategory } from '@/lib/types/database';
 import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchAllPaged } from './paged';
+import { mustAffect } from '@/lib/write';
 
 /* screens/testing.md, cut down hard — see migration 0024's header for the
  * full list of what this pass does and does not build (no batteries, no
@@ -272,12 +273,15 @@ export async function logAttempt(
 }
 
 export async function deleteResult(db: Db, orgId: string, resultId: string): Promise<{ error: string | null }> {
-  const { error } = await db
+  return mustAffect(
+    db
     .from('test_results')
     .update({ deleted_at: new Date().toISOString() })
     .eq('org_id', orgId)
-    .eq('id', resultId);
-  return { error: error?.message ?? null };
+    .eq('id', resultId)
+      .select('id'),
+    { refusal: 'Not saved: test results belong to the coach, the S&C and the sport scientist.' },
+  );
 }
 
 /** Two statements, not one — see this file's header. */

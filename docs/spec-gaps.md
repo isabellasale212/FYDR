@@ -864,6 +864,50 @@ approved on 2026-09-05, so both are left alone deliberately:
 
 ---
 
+### G-43. OPEN, needs a decision. 0066 widened writes the matrix never widened
+
+Found on 2026-09-06 by a Run-level check during G-36 batch 2, when a medic and a
+nutritionist both successfully changed a fixture's status.
+
+**`fixtures` is the confirmed case.** §3.1 reads
+`| Fixtures | VEC | VEC | V | V | V |`: the sport scientist and the coach create
+and edit, the other three read. Production admits **all five** to both INSERT and
+UPDATE. 0066 widened it in the blanket `coach+medic -> any staff` sweep, on the
+reasoning that the pair had meant "any staff" in the four-role model, and 0070
+did not narrow it because Fixtures was never one of the five rows put to the
+owner as G-33.
+
+So this is not a bug in either migration. It is the seam between them: 0066
+widened everything that matched a pattern, and 0070 narrowed only the five rows
+somebody had looked at.
+
+**Twenty tables now admit all five staff roles to a write:**
+
+`body_composition, body_mass_target_ranges, compliance_expectations,
+exercise_overrides, exercises, fixtures, flag_actions, flags,
+leaderboard_opt_outs, programme_assignments, programme_blocks,
+programme_exercises, programme_sessions, programmes, session_attendance,
+session_participants, test_definitions, test_results, training_entries,
+wellness_entries`
+
+Several are certainly right. `wellness_entries` and `training_entries` are
+athlete self-writes plus staff corrections; `body_composition` matches §3.1's
+weigh-in; `flags` is VE in all five columns. The programme tables carry the
+gym/rehab split in their WITH CHECK, so their effective rule is narrower than
+the role array suggests.
+
+Others look wrong on the same reading as fixtures: `exercises` and
+`test_definitions` are authored content, and §3.3/§3.4 give authoring to
+specific roles.
+
+**What this needs is a row-by-row comparison of every write policy against the
+matrix column that governs it, and a decision on each**, not another sweep. The
+last sweep is what produced this. Nothing here is a leak: no injury or clinical
+data is involved, and D-01 is unaffected. It is roles able to change things the
+specification does not give them.
+
+---
+
 ## Summary
 
 **28 gaps, one of them withdrawn. 4 high risk, 2 medium-high, 8 medium, the rest

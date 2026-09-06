@@ -55,11 +55,28 @@ const CONVERTED: [string, string, string][] = [
   ['identity', 'src/lib/queries/squad.ts', 'updateAthleteBio'],
   ['identity', 'src/lib/queries/userManagement.ts', 'setUserStatus'],
   ['identity', 'src/lib/queries/userManagement.ts', 'setUserRoles'],
+  // Batch 2: performance writes.
+  ['performance', 'src/lib/queries/groups.ts', 'archiveGroup'],
+  ['performance', 'src/lib/queries/groups.ts', 'restoreGroup'],
+  ['performance', 'src/lib/queries/programmes.ts', 'updateProgrammeStatus'],
+  ['performance', 'src/lib/queries/programmes.ts', 'expireOverride'],
+  ['performance', 'src/lib/queries/schedule.ts', 'updateFixture'],
+  ['performance', 'src/lib/queries/schedule.ts', 'setFixtureStatus'],
+  ['performance', 'src/lib/queries/testing.ts', 'deleteResult'],
+  ['performance', 'src/lib/queries/weekTemplates.ts', 'updateTemplate'],
 ];
 
 /** Deliberately left alone, with the reason. Asserted to still NOT use the
  *  helper, so "finishing the sweep" fails loudly instead of silently breaking
  *  a site where zero rows is a legitimate outcome. */
+/** Converted, but with the check written inline rather than through the helper,
+ *  and for a reason worth keeping: these carry a business-rule branch that
+ *  mustAffect cannot express, because it receives a message and not a code. */
+const CONVERTED_INLINE: [string, string, string][] = [
+  ['src/lib/queries/groups.ts', 'updateGroup',
+   'keeps its own 23505 branch: a duplicate group name refuses the ROW, not the PERSON'],
+];
+
 const NOT_CONVERTED: [string, string, string][] = [
   ['src/lib/queries/injuries.ts', 'setAvailability',
    'closes any open availability row first; an athlete with none matches nothing'],
@@ -72,6 +89,12 @@ for (const [batch, file, fn] of CONVERTED) {
   const b = body(file, fn);
   assert(b.length > 0, `${fn}() exists`);
   assert(/mustAffect/.test(b), `[${batch}] ${fn}() reports a refusal rather than a silent success`);
+}
+
+console.log('\n-- converted with an inline check, for a stated reason --');
+for (const [file, fn, why] of CONVERTED_INLINE) {
+  const b = body(file, fn);
+  assert(/data\.length === 0|!data/.test(b), `${fn}() checks its own row count: ${why}`);
 }
 
 console.log('\n-- writes deliberately NOT converted, and still not --');

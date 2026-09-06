@@ -11,6 +11,7 @@ import { fetchCurrentAvailability } from './availability';
 import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchAllPaged } from './paged';
 import { computeConflicts } from './restrictionConflicts';
+import { mustAffect } from '@/lib/write';
 
 export type Session = Pick<
   SessionRow,
@@ -1432,7 +1433,8 @@ export async function updateFixture(
   fixtureId: string,
   input: UpdateFixtureInput,
 ): Promise<{ error: string | null }> {
-  const { error } = await db
+  return mustAffect(
+    db
     .from('fixtures')
     .update({
       opponent: input.opponent.trim(),
@@ -1444,8 +1446,10 @@ export async function updateFixture(
       result: input.result,
     })
     .eq('id', fixtureId)
-    .eq('org_id', orgId);
-  return { error: error ? humanizeDbError(error.message, 'staff') : null };
+    .eq('org_id', orgId)
+      .select('id'),
+    { refusal: 'Not saved: fixtures belong to the coach and the sport scientist.', onError: (m) => humanizeDbError(m, 'staff') },
+  );
 }
 
 /** One setter for every status a fixture can be in, rather than one
@@ -1458,10 +1462,13 @@ export async function setFixtureStatus(
   fixtureId: string,
   status: Fixture['status'],
 ): Promise<{ error: string | null }> {
-  const { error } = await db
+  return mustAffect(
+    db
     .from('fixtures')
     .update({ status })
     .eq('id', fixtureId)
-    .eq('org_id', orgId);
-  return { error: error ? humanizeDbError(error.message, 'staff') : null };
+    .eq('org_id', orgId)
+      .select('id'),
+    { refusal: 'Not saved: fixtures belong to the coach and the sport scientist.', onError: (m) => humanizeDbError(m, 'staff') },
+  );
 }

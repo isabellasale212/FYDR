@@ -71,6 +71,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, GroupRow } from '@/lib/types/database';
 import { humanizeDbError } from '@/lib/writeErrors';
 import { fetchAllPaged, type PagedResponse } from './paged';
+import { mustAffectOrThrow } from '@/lib/write';
 
 export type Db = SupabaseClient<Database>;
 
@@ -376,7 +377,7 @@ export async function updateGroup(
   orgId: string,
   input: { name: string; description: string | null; colour: string | null },
 ): Promise<{ error: string | null }> {
-  const { error } = await db
+  const { data, error } = await db
     .from('groups')
     .update({
       name: input.name.trim(),
@@ -384,13 +385,21 @@ export async function updateGroup(
       colour: input.colour,
     })
     .eq('id', id)
-    .eq('org_id', orgId);
+    .eq('org_id', orgId)
+    .select('id');
 
   if (error) {
     if (error.code === '23505') {
       return { error: `A group called "${input.name.trim()}" already exists.` };
     }
     return { error: humanizeDbError(error.message, 'staff') };
+  }
+  /* G-36. The 23505 branch above stays: a duplicate name is a business rule
+     refusing the ROW, not a policy refusing the PERSON, and collapsing the two
+     into one message would lose the only one a user can act on. This checks the
+     other case, where nothing raised and nothing changed. */
+  if (!data || data.length === 0) {
+    return { error: 'Not saved: creating and changing squad groups belongs to the coach and the sport scientist.' };
   }
   return { error: null };
 }
@@ -455,21 +464,21 @@ export async function moveGroup(
 }
 
 export async function archiveGroup(db: Db, id: string, orgId: string): Promise<void> {
-  const { error } = await db
-    .from('groups')
-    .update({ deleted_at: new Date().toISOString() })
-    .eq('id', id)
-    .eq('org_id', orgId);
-  if (error) throw new Error(error.message);
+  /* G-36. This function throws rather than returning, so it takes the throwing
+     form of the same rule. */
+  await mustAffectOrThrow(
+    db.from('groups').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('org_id', orgId).select('id'),
+    'Not saved: creating and changing squad groups belongs to the coach and the sport scientist.',
+  );
 }
 
 export async function restoreGroup(db: Db, id: string, orgId: string): Promise<void> {
-  const { error } = await db
-    .from('groups')
-    .update({ deleted_at: null })
-    .eq('id', id)
-    .eq('org_id', orgId);
-  if (error) throw new Error(error.message);
+  /* G-36. This function throws rather than returning, so it takes the throwing
+     form of the same rule. */
+  await mustAffectOrThrow(
+    db.from('groups').update({ deleted_at: null }).eq('id', id).eq('org_id', orgId).select('id'),
+    'Not saved: creating and changing squad groups belongs to the coach and the sport scientist.',
+  );
 }
 
 export type GroupDetail = {

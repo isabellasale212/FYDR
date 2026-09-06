@@ -18,6 +18,7 @@
     "test:session-local-date": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-session-local-date-derivation.ts",
     "test:safe-redirect": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-safe-redirect.ts",
     "test:tier-preview": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-tier-preview.ts",
+    "seed:demo-extras": "node scripts/seed-demo-extras.mjs",
     "reset:scratch": "node scripts/reset-scratch.mjs",
     "seed:auth": "node --experimental-strip-types scripts/seed-auth.ts",
     "test:premium-routes": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-premium-routes.ts",

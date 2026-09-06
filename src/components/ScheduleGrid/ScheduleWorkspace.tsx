@@ -641,6 +641,24 @@ export function ScheduleWorkspace({
           <Link href={`/schedule/fixtures/new?date=${weekStart}`} className="squad-chip sg-add">
           + Fixture
           </Link>
+          {/* Same problem as the two above, found by a coach who could not
+              create a week template and assumed they were gated out of it.
+              They were not — SESSION_EDIT is the sport scientist and the coach,
+              and /schedule/planner renders "+ New template" for them. The page
+              was just unreachable: it is in no sidebar row, and the only link
+              to it from here read "Save this week as a template", which is a
+              different action (seed a template FROM this week) sitting in the
+              toolbar, which only renders in Edit mode. Nothing about templates
+              was on screen in the mode you land in.
+
+              So the link belongs HERE and not in that toolbar: this row renders
+              in both modes. It is navigation only — who may CREATE a template
+              is still SESSION_EDIT, decided on the planner page itself, and
+              whether a medic should see scheduling surfaces at all belongs to
+              the Schedule access pass, not to a link. */}
+          <Link href="/schedule/planner" className="squad-chip">
+          Week templates
+          </Link>
       </div>
 
       {/* No status dot: it occupied a 10px grid column plus a 14px gap, which

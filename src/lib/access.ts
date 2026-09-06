@@ -124,6 +124,23 @@ export const INJURY_ACCESS = [
   'strength_conditioning',
 ] as const;
 
+/** Who may set an athlete's availability. Three roles, and the shape is worth
+ *  stating because it is not "any staff" and not "the medic" either.
+ *
+ *  D-35 is explicit that availability belongs to the medic, and 0042's
+ *  non-injury path is the documented exception for the coach: an absence or a
+ *  rest day is not a clinical judgement. 0068 added the sport scientist to that
+ *  coach path. So the union of who can actually write the table is the medic
+ *  through availability_medical_*, and the coach and the sport scientist through
+ *  availability_coach_*_noninjury. The S&C and the nutritionist hold neither.
+ *
+ *  The screen was `coach || medic`, which was right before 0068 and left the
+ *  sport scientist unable to reach a write the database had already granted
+ *  them. Approved 2026-09-06 rather than assumed, because "add the role that has
+ *  everything" and "availability is the medic's" are both true here and only one
+ *  of them can win. */
+export const AVAILABILITY_EDIT = ['sport_scientist', 'coach', 'medic'] as const;
+
 /** §3.2 Rehab groups: VE VP VE VE X. Who may ALLOCATE an athlete to a rehab
  *  group, as opposed to reading the board. The medic and the S&C both do real
  *  rehab work, and the sport scientist has everything; the coach reads it (VP)

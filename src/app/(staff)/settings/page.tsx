@@ -11,7 +11,7 @@ import { requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import { PlanPreviewSwitch } from '@/components/PlanPreviewSwitch/PlanPreviewSwitch';
 import { isPlatformStaff } from '@/lib/platformStaff';
-import { GPS_IMPORT, hasAnyRole } from '@/lib/access';
+import { GPS_IMPORT, REPORT_ACCESS, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Settings · Fydr' };
 
@@ -305,7 +305,11 @@ export default async function SettingsPage() {
             </span>
           </a>
 
-          {claims.roles.includes('coach') || claims.roles.includes('medic') ? (
+          {/* §3.6 Exports is V for four roles and X for the nutritionist, and the
+              page behind this gates on requireReportAccess(). This link was
+              coach-or-medic, so the sport scientist and the S&C were shown no way
+              in to a page that would have let them straight through. */}
+          {hasAnyRole(claims.roles, REPORT_ACCESS) ? (
             <Link href="/settings/exports" className="set-list-row">
               <span>
                 <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block' }}>Exports</span>

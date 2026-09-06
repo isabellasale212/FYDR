@@ -501,5 +501,33 @@ assert(!/isCoach|isMedical/.test(canEditExpr), 'canEdit is not a hand-written co
 assert(/PROGRAMME_EDIT/.test(canEditExpr), 'gym authoring resolves from PROGRAMME_EDIT');
 assert(/REHAB_PROGRAMME/.test(canEditExpr), 'and the rehab branch from REHAB_PROGRAMME, still the medic\'s');
 
+// ---------------------------------------------------------------------------
+console.log('\n-- G-42, the two held back for a decision --');
+
+/* Both were found while fixing G-40 and deliberately left alone until approved,
+ * because neither is an obvious artefact. */
+const settingsSrc = readFileSync('src/app/(staff)/settings/page.tsx', 'utf8');
+assert(
+  /REPORT_ACCESS[\s\S]{0,200}\/settings\/exports/.test(settingsSrc),
+  'the Exports link is offered to REPORT_ACCESS, matching the page behind it',
+);
+
+/* Availability is the interesting one. D-35 says availability is the medic's,
+ * and 0042's non-injury path for the coach is the documented exception to that,
+ * so the union is three roles rather than "any staff": the coach and the sport
+ * scientist through availability_coach_*_noninjury, and the medic through
+ * availability_medical_*. The nutritionist and the S&C hold neither. */
+const athleteSrc = readFileSync('src/app/(staff)/squad/[athleteId]/page.tsx', 'utf8');
+const avail = athleteSrc.match(/const canSetAvailability = ([^;]*);/)?.[1] ?? '';
+assert(avail.includes('AVAILABILITY_EDIT'), 'canSetAvailability resolves from AVAILABILITY_EDIT');
+
+const accessSrc = readFileSync('src/lib/access.ts', 'utf8');
+const availDeclared = [...(accessSrc.match(/AVAILABILITY_EDIT[^=]*=\s*\[([^\]]*)\]/)?.[1] ?? '').matchAll(/'(\w+)'/g)].map((m) => m[1]);
+const wantAvail = ['sport_scientist', 'coach', 'medic'];
+assert(
+  availDeclared.length === wantAvail.length && wantAvail.every((r) => availDeclared.includes(r)),
+  `AVAILABILITY_EDIT is exactly ${wantAvail.join(', ')} (found: ${availDeclared.join(', ') || 'nothing'})`,
+);
+
 console.log(`\n${passed} passed, ${failed} failed\n`);
 process.exit(failed > 0 ? 1 : 0);

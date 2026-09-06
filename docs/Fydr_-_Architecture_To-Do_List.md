@@ -75,7 +75,7 @@
 - [ ] **`npm run deploy` needs `--scope fydr`.** The bare command fails with "Not authorized" even when the CLI is authenticated and the project is linked. Costs a confusing minute every deploy; one-line fix in package.json.
 - [x] **FIXED and deployed 2026-09-05. G-41, found today and nearly lost.** `programmes/[programmeId]/page.tsx:37` still uses the pre-0070 rule, so a coach opening a gym programme gets the full edit surface and a 42501 on save, and the sport scientist and S&C who may edit are shown nothing. Diagnosed during the silent-save audit, correctly called a loud failure rather than a silent one, then dropped because it was the wrong shape for the list it turned up in.
 - [ ] **G-41 backlog, smaller items now tracked:** meal library authoring refuses the nutritionist though the policy admits them; `NutritionTargetsList` is dead code with a live-looking mutation in it; two report routes still hand-roll `actorRole`; seven code comments cite the now-superseded `01-roles-and-permissions.md`; the exports page tells a sport scientist they have "Coach access".
-- [ ] **G-42, awaiting your decision:** the Exports link and `canSetAvailability` are the same four-role artefact as G-40's seven but were found after that approval, so both are untouched. See docs/spec-gaps.md G-42.
+- [x] **G-42, DONE 2026-09-06, both approved and deployed:** the Exports link and `canSetAvailability` are the same four-role artefact as G-40's seven but were found after that approval, so both are untouched. See docs/spec-gaps.md G-42.
 - [ ] Decide retention period for athlete data after they leave a club — open question in the data model doc, same question as the compliance item below.
 
 ## 1. Data & Schema — confirmed already built by reading the raw files directly

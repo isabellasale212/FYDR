@@ -31,7 +31,7 @@ import { resolvePeriod } from '@/lib/period.server';
 import { availabilityStatus } from '@/lib/status';
 import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
-import { ALL_STAFF, ATHLETE_BIO_EDIT, INJURY_ACCESS, hasAnyRole } from '@/lib/access';
+import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, INJURY_ACCESS, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Athlete · Fydr' };
 
@@ -357,10 +357,13 @@ export default async function AthletePage({
    * rule that only one layer enforces is a rule one refactor away from being gone. */
   const targetRanges = canLogWeighIn ? await fetchTargetRangeHistory(db, orgId, athleteId) : [];
   const liveTargetRange = targetRanges.find((r) => r.effective_to === null) ?? null;
-  // Same two roles, for the same reason: availability_coach_insert_noninjury
-  // (0041) and availability_medical_insert (0012) between them cover exactly
-  // coach and medical, so this never offers an action RLS would reject.
-  const canSetAvailability = claims.roles.includes('coach') || claims.roles.includes('medic');
+  /* The comment here used to say availability_coach_insert_noninjury and
+     availability_medical_insert "between them cover exactly coach and medical",
+     which was true until 0068 added the sport scientist to the coach path. The
+     union is three roles now, and the principle the old comment stated is the
+     one being kept: never offer an action RLS would reject, and never withhold
+     one it would allow. */
+  const canSetAvailability = hasAnyRole(claims.roles, AVAILABILITY_EDIT);
   // One role only, for the same reason again: athletes_manage_update
   // (migration 0012) grants coach and admin, never medical — "medical reads
   // for context and does not edit the roster," that migration's own words.

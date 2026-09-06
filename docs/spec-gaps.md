@@ -773,7 +773,24 @@ reason to lose a live bug.
   from a two-way check, so a sport scientist or an S&C is told they have "Coach
   access".
 
-### G-42. Two more hidden regions, found while fixing G-40, NOT yet approved
+### G-42. FIXED, 2026-09-06. Both approved, both Run-verified
+
+The Exports link resolves from `REPORT_ACCESS`, matching the page behind it.
+`canSetAvailability` resolves from a new `AVAILABILITY_EDIT`, which is three
+roles rather than "any staff" or "the medic": D-35 gives availability to the
+medic, 0042's non-injury path is the documented exception for the coach, and
+0068 added the sport scientist to that path. The S&C and the nutritionist hold
+neither and stay out.
+
+Verified as each of the five roles against the real policy, and the
+classification matters: 42501 is the policy refusing the person, 23505 is the
+policy admitting them and the one-live-row rule refusing the row. Only the first
+is a permission. The first probe called all three admitted roles a failure
+because it read a 23505 as a refusal.
+
+The original entry follows.
+
+### G-42a. As first written
 
 Same shape as G-40's seven and the same four-role artefact, but outside what was
 approved on 2026-09-05, so both are left alone deliberately:

@@ -125,13 +125,22 @@ export function DashboardFlagsPanel({ rows, openTotal, awaitingAck, bySeverity }
                       </span>
                     </div>
                   ))}
-                  {/* Acknowledging is a real write and belongs where the flags
-                      are managed, not behind a dashboard button that would have
-                      to duplicate its rules. Both links carry the athlete so
-                      the destination opens on them. */}
+                  {/* The first click goes to the PERSON, not the task. Changed
+                      2026-09-06: this was "Review N flags", straight into flag
+                      handling, which answered a question the reader had not
+                      asked yet. Someone opening a flag from the dashboard is
+                      usually working out who this is and what else is going on
+                      with them, and the profile carries that — availability,
+                      recent wellness, load, and the flags themselves.
+
+                      Acknowledging is still a real write and still belongs
+                      where the flags are managed. It has not moved: the profile
+                      carries the same flag card, and /flags is one click from
+                      the sidebar. Both links here carry the athlete so the
+                      destination opens on them. */}
                   <div className="dash-flags-actions">
-                    <Link href={`/flags?athlete=${r.athlete_id}`} className="btn-primary">
-                      Review {r.flags.length} flag{r.flags.length === 1 ? '' : 's'}
+                    <Link href={`/squad/${r.athlete_id}`} className="btn-primary">
+                      View player profile
                     </Link>
                     <Link href={`/reports/athlete/${r.athlete_id}`} className="btn-ghost">
                       Open athlete report

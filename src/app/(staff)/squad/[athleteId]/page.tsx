@@ -6,6 +6,9 @@ import { Dial } from '@/components/Dial/Dial';
 import { DomainChips } from '@/components/DomainChips/DomainChips';
 import { PlayerProfileBio } from '@/components/PlayerProfileBio/PlayerProfileBio';
 import { PlayerProfileFlags } from '@/components/PlayerProfileFlags/PlayerProfileFlags';
+import { InjuryCard } from '@/components/InjuryCard/InjuryCard';
+import { fetchCurrentAvailability } from '@/lib/queries/availability';
+import { fetchInjuryClinical } from '@/lib/queries/injuries';
 import { BodyWeightPanel } from '@/components/BodyWeightPanel/BodyWeightPanel';
 import { SetAvailabilityFormCoach } from '@/components/SetAvailabilityFormCoach/SetAvailabilityFormCoach';
 import { EntryCorrectionPanel } from '@/components/EntryCorrectionPanel/EntryCorrectionPanel';
@@ -31,7 +34,7 @@ import { resolvePeriod } from '@/lib/period.server';
 import { availabilityStatus } from '@/lib/status';
 import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
-import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, ENTRY_CORRECTION, INJURY_ACCESS, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
+import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, CLINICAL_ONLY, ENTRY_CORRECTION, INJURY_ACCESS, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Athlete · Fydr' };
 
@@ -411,6 +414,22 @@ export default async function AthletePage({
   ]);
 
   const { athlete, athleticism, acwr, wellnessRating, headerWellness, programme, nutrition, bodyWeight } = profile;
+
+  /* The clinical record is fetched ONLY for a medic. Not fetched-then-hidden:
+     clinical_medical_only (0012) would return nothing to anyone else anyway, so
+     asking would be a wasted round trip whose empty result could later be
+     mistaken for "this injury has no clinical detail". Asking only when the
+     answer is meaningful keeps those two states distinguishable. */
+  const activeInjury = profile.injuries.find((i) => i.status !== 'closed') ?? null;
+  const viewerIsClinical = hasAnyRole(claims.roles, CLINICAL_ONLY);
+  const activeInjuryClinical =
+    viewerIsClinical && activeInjury ? await fetchInjuryClinical(db, orgId, activeInjury.id) : null;
+
+  /* Restrictions for the limited view come from the CURRENT availability record,
+     which is where plain-language restrictions live — never from the clinical
+     reason behind them. */
+  const currentAvailability = await fetchCurrentAvailability(db, orgId, [athlete.id]);
+  const currentRestrictions = currentAvailability[0]?.restrictions ?? [];
   const spark = sparklinePaths(
     bodyWeight.history,
     liveTargetRange
@@ -429,7 +448,6 @@ export default async function AthletePage({
           high: liveTargetRange.target_high_kg,
         })
       : null;
-  const openInjuries = profile.injuries.filter((i) => i.status !== 'closed');
 
   return (
     <>
@@ -677,54 +695,35 @@ export default async function AthletePage({
               />
             </section>
 
-            <section className="card pp-card pp-injuries-card" aria-labelledby="pp-injuries-title">
-              <div>
-                <h2 className="card-title" id="pp-injuries-title">
-                  Injuries
-                </h2>
-                {profile.injuries.length === 0 ? (
-                  <p className="import-sub" style={{ margin: '4px 0 0' }}>
-                    No injuries on record.
-                  </p>
-                ) : (
-                  <>
-                    <p className="import-sub" style={{ margin: '4px 0 0' }}>
-                      {openInjuries.length} open of {profile.injuries.length} on record.
-                    </p>
-                    <div className="pp-injury-list">
-                      {profile.injuries.map((injury) => (
-                        <p className="sub" key={injury.id} style={{ margin: 0 }}>
-                          <b className="nm" style={{ fontSize: 13 }}>
-                            {enumLabel(injury.body_area)}
-                          </b>
-                          {injury.side ? ` (${enumLabel(injury.side)})` : ''} — {enumLabel(injury.status)}
-                          {injury.actual_return
-                            ? `, returned ${formatDate(injury.actual_return, timezone)}`
-                            : injury.expected_return
-                              ? `, back ${formatDate(injury.expected_return, timezone)}`
-                              : ''}
-                        </p>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-              {/* §3.2 New injury is VC for all four injury roles, and /injuries/new
-                  already admits them. The link was medic only. */}
-              {hasAnyRole(claims.roles, INJURY_ACCESS) ? (
-                <Link
-                  /* Carries the athlete so the form opens on them: this link is
-                     pressed from one player's own profile, and asking for their
-                     name again is asking a question the app already knows the
-                     answer to. The page validates the id before using it. */
-                  href={`/injuries/new?athlete=${athlete.id}`}
-                  className="btn-ghost-pill"
-                  style={{ padding: '8px 16px' }}
-                >
-                  + Log injury
-                </Link>
-              ) : null}
-            </section>
+            {/* The injury card, CHANGELOG-injury-card-spec.md. Position is
+                unchanged and already what the spec asks for: directly after the
+                S&C history log and before Flags, verified against this file
+                rather than against the reference build, which does not exist on
+                disk — see the spec's own "Reference build" section and the note
+                in InjuryCard's header. */}
+            <InjuryCard
+              injuries={profile.injuries}
+              /* Null for everyone but the medic, and not fetched at all for
+                 them — see the fetch above. The component never has the data to
+                 leak. */
+              clinical={activeInjuryClinical}
+              restrictions={currentRestrictions}
+              canEditClinical={hasAnyRole(claims.roles, CLINICAL_ONLY)}
+              timezone={timezone}
+            />
+
+            {/* Logging an injury is separate from the card above: the card shows
+                the current one, this creates a new record, and §3.2 gives that
+                to all four injury roles rather than the medic alone. */}
+            {hasAnyRole(claims.roles, INJURY_ACCESS) ? (
+              <Link
+                href={`/injuries/new?athlete=${athlete.id}`}
+                className="btn-ghost-pill"
+                style={{ padding: '8px 16px', alignSelf: 'flex-start' }}
+              >
+                + Log injury
+              </Link>
+            ) : null}
 
             {/* ADR-008 / migration 0041: non-injury availability, reachable by
              * coach or medical, without an injury record existing at all —

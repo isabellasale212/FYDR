@@ -41,6 +41,12 @@ export type AthleteInjuryRow = {
   status: InjuryStatus;
   expected_return: string | null;
   actual_return: string | null;
+  /* Where it happened, for the injury card's onset line ("Onset 21 Jul 2026 ·
+     Team run, Pitch 1"). Not clinical: injuries.occurred_in is on the base
+     table that every injury role reads, alongside body area and dates. The
+     clinical record is injury_clinical, a different table with a medic-only
+     policy, and nothing here reaches it. */
+  occurred_in: string | null;
 };
 
 /** The full history for one athlete, closed injuries included — unlike
@@ -49,7 +55,7 @@ export type AthleteInjuryRow = {
 export async function fetchAthleteInjuries(db: Db, orgId: string, athleteId: string): Promise<AthleteInjuryRow[]> {
   const { data, error } = await db
     .from('injuries')
-    .select('id, body_area, side, onset_date, status, expected_return, actual_return')
+    .select('id, body_area, side, onset_date, status, expected_return, actual_return, occurred_in')
     .eq('org_id', orgId)
     .eq('athlete_id', athleteId)
     .is('deleted_at', null)

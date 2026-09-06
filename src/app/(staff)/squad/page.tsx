@@ -6,7 +6,7 @@ import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchSquadList } from '@/lib/queries/squad';
 import { requireStaff } from '@/lib/session';
-import { ALL_STAFF, hasAnyRole } from '@/lib/access';
+import { ALL_STAFF, SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Squad overview · Fydr' };
 
@@ -66,6 +66,17 @@ export default async function SquadPage({
           <h1>Squad overview</h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          {/* D-16, resolved by screen 63. Until now there was no way to put a
+              player on the roster from anywhere in this app. Sport scientist
+              only, the same set that gates Club details and Users: creating an
+              athlete is an administration action, while EDITING one once they
+              exist stays with the coach (ATHLETE_BIO_EDIT). The two must not be
+              collapsed into one set. */}
+          {hasAnyRole(claims.roles, SETTINGS_ADMIN) ? (
+            <Link href="/squad/new" className="btn-primary">
+              Add athlete
+            </Link>
+          ) : null}
           <Link href="/settings/groups" className="btn-ghost">
             Manage groups
           </Link>

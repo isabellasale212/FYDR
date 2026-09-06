@@ -249,3 +249,96 @@ export async function fetchAthlete(
     open_injuries: injuries,
   };
 }
+
+/* ---------------------------------------------------------------------------
+ * Screen 63, Add athlete. The first and only place this app creates an athlete.
+ * ------------------------------------------------------------------------- */
+
+export type NewAthleteInput = {
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
+  position: string | null;
+  squadNumber: number | null;
+};
+
+export type SquadNumberHolder = { squad_number: number; name: string };
+
+/** The live squad numbers and who holds them.
+ *
+ *  Read for the form so a clash can be named as it is typed, which is what the
+ *  spec asks for: "refused with a sentence naming the athlete who already holds
+ *  it". A count would satisfy the constraint; only a name satisfies the person
+ *  standing there wondering which number to use instead.
+ *
+ *  Not sensitive: the squad list already shows every name and number to every
+ *  staff role, so this hands the form nothing the reader cannot already see. */
+export async function fetchSquadNumbersInUse(db: Db, orgId: string): Promise<SquadNumberHolder[]> {
+  const { data, error } = await db
+    .from('athletes')
+    .select('squad_number, first_name, last_name')
+    .eq('org_id', orgId)
+    .is('deleted_at', null)
+    .not('squad_number', 'is', null)
+    .order('squad_number');
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => ({
+    squad_number: r.squad_number as number,
+    name: `${r.first_name} ${r.last_name}`,
+  }));
+}
+
+export type CreateAthleteResult =
+  | { ok: true; athleteId: string }
+  | { ok: false; error: string };
+
+/** Create the athlete record.
+ *
+ *  `.select('id')` and a row-count check, per lib/write.ts: athletes_manage_insert
+ *  is a WITH CHECK, so a refused INSERT does raise rather than pass silently --
+ *  but the id is needed anyway to link an invite, and asking for it means the
+ *  "no rows" case is handled rather than assumed.
+ *
+ *  23505 is the squad number, and it is reported as the business rule it is
+ *  rather than as a permission problem. That distinction has bitten this project
+ *  repeatedly in the other direction: 42501 means the policy refused the PERSON,
+ *  23505 means a rule refused the ROW, and a message that confuses them sends
+ *  somebody to ask for access they already have. */
+export async function createAthlete(
+  db: Db,
+  orgId: string,
+  input: NewAthleteInput,
+): Promise<CreateAthleteResult> {
+  const { data, error } = await db
+    .from('athletes')
+    .insert({
+      org_id: orgId,
+      first_name: input.firstName,
+      last_name: input.lastName,
+      date_of_birth: input.dateOfBirth,
+      position: input.position,
+      squad_number: input.squadNumber,
+      status: 'active',
+    })
+    .select('id');
+
+  if (error) {
+    if (/athletes_org_squad_number_live|duplicate key/i.test(error.message)) {
+      return {
+        ok: false,
+        error: `Squad number ${input.squadNumber} is already taken. Choose another, or free it up on the athlete who holds it.`,
+      };
+    }
+    if (/athletes_dob_plausible/.test(error.message)) {
+      return { ok: false, error: 'Check the date of birth: it must be in the past and within the last 80 years.' };
+    }
+    if (/row-level security|42501/i.test(error.message)) {
+      return { ok: false, error: 'Not saved: adding an athlete belongs to the sport scientist.' };
+    }
+    return { ok: false, error: error.message };
+  }
+
+  const id = data?.[0]?.id;
+  if (!id) return { ok: false, error: 'Not saved: adding an athlete belongs to the sport scientist.' };
+  return { ok: true, athleteId: id };
+}

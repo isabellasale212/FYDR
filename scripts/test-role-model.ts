@@ -459,12 +459,43 @@ const HIDDEN_REGIONS: [string, string][] = [
   ['nutrition/page.tsx', 'NUTRITION_EDIT'],
   ['programmes/[programmeId]/athlete/[athleteId]/page.tsx', 'PROGRAMME_EDIT'],
   ['timetable/page.tsx', 'SESSION_EDIT'],
+  /* Screen 63, built 2026-09-06. Both the button and the page it opens, because
+     a button hidden from a role who can still type the URL is not a gate. */
+  ['squad/page.tsx', 'SETTINGS_ADMIN'],
+  ['squad/new/page.tsx', 'SETTINGS_ADMIN'],
+  ['squad/new/create/route.ts', 'SETTINGS_ADMIN'],
 ];
 
 /* The timetable is the one place where seeing and doing were separated rather
    than narrowed together, so both halves are asserted. Checking only the
    SESSION_EDIT gate above would pass just as well if the page had been closed to
    everyone, which is the outcome this decision explicitly rejected. */
+/* Screen 63's own shape. Asserted separately from the gate above because the
+   spec draws a distinction that a single set would erase: CREATING an athlete is
+   the sport scientist's, EDITING one that exists stays with the coach. If these
+   two ever resolve from the same constant, that distinction is gone. */
+const addAthletePage = readFileSync('src/app/(staff)/squad/new/page.tsx', 'utf8');
+const addAthleteRoute = readFileSync('src/app/(staff)/squad/new/create/route.ts', 'utf8');
+/* Comments stripped for the negative below. Both files EXPLAIN the distinction
+   in prose and name ATHLETE_BIO_EDIT while doing so, which a scan that cannot
+   tell code from commentary reads as the bug. Getting this backwards would
+   pressure the next person to delete the explanation to make the suite pass. */
+const stripComments = (src: string): string =>
+  src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '').replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
+assert(
+  /redirect\('\/squad'\)/.test(addAthletePage),
+  'the Add athlete page redirects a role that may not create, rather than rendering a form they cannot submit',
+);
+assert(
+  !/ATHLETE_BIO_EDIT/.test(stripComments(addAthletePage)) && !/ATHLETE_BIO_EDIT/.test(stripComments(addAthleteRoute)),
+  'creating an athlete does NOT resolve from ATHLETE_BIO_EDIT: editing a record and creating one are different rules',
+);
+const profilePage = readFileSync('src/app/(staff)/squad/[athleteId]/page.tsx', 'utf8');
+assert(
+  /ATHLETE_BIO_EDIT/.test(profilePage),
+  'and the profile still edits bio from ATHLETE_BIO_EDIT, which keeps the coach in',
+);
+
 const timetable = readFileSync('src/app/(staff)/timetable/page.tsx', 'utf8');
 assert(
   !/redirect\('\/dashboard'\)/.test(timetable),

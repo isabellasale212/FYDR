@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { EXPECTS, TYPE_STYLE, clockLabel, type DbSessionType } from '@/lib/scheduleGeometry';
 import { enumLabel, mdLabel } from '@/lib/format';
 import type { GroupOption } from './types';
@@ -101,6 +101,16 @@ export function SelectedSessionPanel({
   onDuplicate,
 }: Props) {
   const [confirmingRemove, setConfirmingRemove] = useState(false);
+
+  /* When the card opens over the grid, the caret belongs in the name field:
+     the coach has already said WHEN by clicking, and the next thing they have
+     to say is WHAT. Keyed on the precommit id so it fires once per draft and
+     does not steal focus back while they are using the steppers. */
+  const nameRef = useRef<HTMLInputElement>(null);
+  const isPrecommitId = session?.id === '__new';
+  useEffect(() => {
+    if (isPrecommitId) nameRef.current?.focus();
+  }, [isPrecommitId]);
   // A fresh selection should never inherit a stale confirmation from
   // whatever was selected before it.
   useEffect(() => {
@@ -134,6 +144,7 @@ export function SelectedSessionPanel({
         <div style={{ minWidth: 0 }}>
           {isDraft && mode === 'edit' ? (
             <input
+              ref={nameRef}
               className="field"
               value={session.title}
               onChange={(e) => onNameChange(e.target.value)}

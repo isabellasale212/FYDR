@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 
 import { PXH, TYPE_STYLE, clockLabel, type DbSessionType } from '@/lib/scheduleGeometry';
 import { enumLabel, mdLabel } from '@/lib/format';
@@ -47,6 +47,15 @@ type Props = {
   onDayHeaderClick: (date: string) => void;
   /** A click on empty grid: the day, and the hour the pointer was over. */
   onGridClick: (date: string, startHour: number) => void;
+  /** A card to float over one day column, at `top` pixels down it — the draft
+   *  editor, shown where the coach clicked rather than in the rail below.
+   *
+   *  The NODE and the ARITHMETIC both come from the workspace on purpose. This
+   *  file's header states it is pure layout with no math, because every
+   *  geometric value in it is a literal port of the spec; computing the offset
+   *  here would put half the placement logic in one file and half in the
+   *  other. */
+  overlay?: { date: string; top: number; node: ReactNode } | null;
 };
 
 function hourLabel(h: number): string {
@@ -63,7 +72,7 @@ function hourLabel(h: number): string {
  *  base.css's `.sg-grid-inner`/`.sg-grid-header`/`.sg-grid-body`, which now
  *  shrink to fit the available viewport down to a real per-column minimum
  *  instead of forcing a flat 1440px scroll). */
-export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridHeightPx, onSelect, onDayHeaderClick, onGridClick }: Props) {
+export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridHeightPx, onSelect, onDayHeaderClick, onGridClick, overlay = null }: Props) {
   const HOURS = Array.from({ length: h1 - h0 + 1 }, (_, i) => h0 + i);
   const bodyRef = useRef<HTMLDivElement>(null);
 
@@ -194,6 +203,22 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
                   <div className="sg-now-line" style={{ top: (nowDecimalHour - h0) * PXH }} />
                   <div className="sg-now-dot" style={{ top: (nowDecimalHour - h0) * PXH }} />
                 </>
+              ) : null}
+
+              {/* The draft card, floating over the column the coach clicked.
+                  Inside the column so it tracks the grid on scroll and resize
+                  rather than needing viewport coordinates re-measured; the
+                  column stops propagation so a click inside the card is not
+                  read as a click on empty grid, which would restart the draft
+                  underneath it. */}
+              {overlay && overlay.date === day.date ? (
+                <div
+                  className="sg-draft-pop"
+                  style={{ top: overlay.top }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {overlay.node}
+                </div>
               ) : null}
 
               {day.blocks.map((b) => {

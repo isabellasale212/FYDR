@@ -318,6 +318,32 @@ export function ScheduleWorkspace({
     setSel(id);
   }
 
+  /* Has the coach typed anything into the open draft? Everything here is
+     compared against what startDraft sets, so "untouched" means genuinely
+     nothing entered — not merely "no name yet". Used only to decide whether a
+     click outside the card may discard it: losing a half-filled session to a
+     stray click is the same "loses a coach's work" defect class §9 warns
+     about, one step earlier than publish. */
+  const draftUntouched =
+    newDraft !== null &&
+    newDraft.title.trim() === '' &&
+    newDraft.type === 'training' &&
+    newDraft.location === null &&
+    newDraft.mdOffset === null &&
+    newDraft.groupIds.length === 0 &&
+    newDraft.mins === 60;
+
+  /* Escape always closes, typed or not — it is an explicit "get rid of this",
+     unlike a click that merely landed elsewhere. */
+  useEffect(() => {
+    if (sel !== '__new') return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') handleCancelDraft();
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
   /* Creating a session starts here, from the grid itself: a coach who wants a
    * session at 14:30 on Thursday points at 14:30 on Thursday. `startHour` is
    * where they clicked, already snapped and clamped by the grid; the day
@@ -329,6 +355,14 @@ export function ScheduleWorkspace({
    * change is not a surprise. */
   function startDraft(dow: string, startHour?: number) {
     if (!canEdit) return;
+    /* A click on empty grid while a draft is already open is the "outside
+       click" for this card, because the card sits inside the grid and stops
+       its own clicks. If anything has been typed, that click does nothing: it
+       would otherwise move the draft to the new slot and silently discard the
+       work, which is the failure the card most needs to not have. An untouched
+       draft moves freely — there is nothing to lose and repositioning is
+       exactly what the click meant. */
+    if (newDraft && !draftUntouched) return;
     const start = startHour ?? 9;
     // A 60-minute draft must still fit inside the visible grid.
     const clamped = clamp(start, h0, Math.max(h0, h1 - 1));
@@ -581,6 +615,42 @@ export function ScheduleWorkspace({
     domLabel: domFmt(timezone).format(new Date(`${d}T12:00:00Z`)),
   }));
 
+  /* ONE panel, two homes. For a brand-new draft it floats over the slot that
+     was clicked; for anything else it stays in the rail. Held as a single node
+     rather than written out twice, because a second copy of this form would
+     fork the two fixes it already carries — the functional-setState fix for
+     batched edits dropping one another, and finding 11's fix for fields going
+     read-only the moment "Add to day" is pressed. */
+  const panelNode = (
+    <SelectedSessionPanel
+    mode={mode}
+    timezone={timezone}
+    session={panelSession}
+    groups={groups}
+    dayOptions={dayOptions}
+    hourRange={{ h0, h1 }}
+    onStart={handleStart}
+    onDuration={handleDuration}
+    onToggleGroup={handleToggleGroup}
+    onDayChange={(date) => updateDraftField('dow', date)}
+    onNameChange={(title) => updateDraftField('title', title)}
+    onTypeChange={(type: DbSessionType) => updateDraftField('type', type)}
+    onLocationChange={(location) => updateDraftField('location', location)}
+    onAddToDay={handleAddToDay}
+    onCancelDraft={handleCancelDraft}
+    onRemove={handleRemove}
+    onDuplicate={handleDuplicate}
+    />
+  );
+
+  /* Anchored to the draft's own day and start, so the card tracks the grid
+     rather than the mouse: still correct after a scroll, a resize, or a
+     stepper nudging the time. */
+  const draftOverlay =
+    canEdit && sel === '__new' && newDraft
+      ? { date: newDraft.dow, top: (newDraft.start - h0) * PXH, node: panelNode }
+      : null;
+
   return (
     <div className="sg">
       <ReportHeader
@@ -803,28 +873,11 @@ export function ScheduleWorkspace({
         onSelect={selectSession}
         onDayHeaderClick={startDraft}
         onGridClick={startDraft}
+        overlay={draftOverlay}
       />
 
       <div className="sg-panels">
-        <SelectedSessionPanel
-          mode={mode}
-          timezone={timezone}
-          session={panelSession}
-          groups={groups}
-          dayOptions={dayOptions}
-          hourRange={{ h0, h1 }}
-          onStart={handleStart}
-          onDuration={handleDuration}
-          onToggleGroup={handleToggleGroup}
-          onDayChange={(date) => updateDraftField('dow', date)}
-          onNameChange={(title) => updateDraftField('title', title)}
-          onTypeChange={(type: DbSessionType) => updateDraftField('type', type)}
-          onLocationChange={(location) => updateDraftField('location', location)}
-          onAddToDay={handleAddToDay}
-          onCancelDraft={handleCancelDraft}
-          onRemove={handleRemove}
-          onDuplicate={handleDuplicate}
-        />
+        {draftOverlay ? null : panelNode}
         <WeekStatsPanel sessions={effective} typical={typical} groups={groups} />
       </div>
     </div>

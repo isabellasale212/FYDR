@@ -449,6 +449,15 @@ const HIDDEN_REGIONS: [string, string][] = [
   ['injuries/rehab-groups/page.tsx', 'REHAB_ALLOCATION'],
   ['squad/[athleteId]/page.tsx', 'ALL_STAFF'],
   ['programmes/page.tsx', 'PROGRAMME_EDIT'],
+  /* Added 2026-09-06 by the access-gate sweep. Every one of these decided access
+     from a role literal and every one disagreed with a rule already deployed --
+     four of them found only because the guard enumerated them, not because
+     anybody suspected these files. */
+  ['schedule/planner/[templateId]/page.tsx', 'SESSION_EDIT'],
+  ['settings/groups/page.tsx', 'SESSION_EDIT'],
+  ['injuries/team-allocation/page.tsx', 'SESSION_EDIT'],
+  ['nutrition/page.tsx', 'NUTRITION_EDIT'],
+  ['programmes/[programmeId]/athlete/[athleteId]/page.tsx', 'PROGRAMME_EDIT'],
 ];
 for (const [route, set] of HIDDEN_REGIONS) {
   const src = readFileSync(`src/app/(staff)/${route}`, 'utf8');
@@ -476,6 +485,30 @@ for (const [name, want] of [
   const m = athlete.match(new RegExp(`const ${name} = ([^;]*);`));
   assert((m?.[1] ?? '').includes(want), `${name} resolves from ${want}`);
 }
+/* The two sites that were INVERTED rather than merely stale, asserted on their
+   own because "the file mentions the right set" would pass while the control
+   still resolved from the wrong one. */
+const nutritionPage = readFileSync('src/app/(staff)/nutrition/page.tsx', 'utf8');
+assert(
+  /canManualTarget[\s\S]{0,120}nutrition\/new/.test(nutritionPage),
+  'the Manual target link resolves from canManualTarget, not from coach-or-medical',
+);
+assert(
+  !/\{isCoach \|\| isMedical \?/.test(nutritionPage),
+  'and the old coach-or-medical condition is gone: it offered the control to exactly the two roles that may not write a target',
+);
+
+const programmeAthlete = readFileSync(
+  'src/app/(staff)/programmes/[programmeId]/athlete/[athleteId]/page.tsx', 'utf8');
+assert(
+  /programme_type === 'rehab'[\s\S]{0,140}REHAB_PROGRAMME[\s\S]{0,80}PROGRAMME_EDIT/.test(programmeAthlete),
+  'the per-athlete programme split is by TYPE (rehab vs not), not by coach vs medic',
+);
+assert(
+  !/isCoach && detail\.programme\.programme_type/.test(programmeAthlete),
+  'and the coach-versus-medic split is gone from it',
+);
+
 assert(
   /INJURY_ACCESS[\s\S]{0,300}Log injury/.test(athlete),
   'the "+ Log injury" link is offered to INJURY_ACCESS, not the medic alone',

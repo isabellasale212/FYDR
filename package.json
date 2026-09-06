@@ -5,6 +5,7 @@
   "description": "Fydr, athlete performance management. Phase 1a thin slice: staff web and athlete mobile web.",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "npm run test:access-gates",
     "build": "next build",
     "start": "next start",
     "deploy": "npx --yes vercel@59.11.0 deploy --prod",
@@ -29,6 +30,7 @@
     "test:write-helper": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-write-helper.ts",
     "test:write-coverage": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-write-coverage.ts",
     "test:link-athlete": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-link-athlete.ts",
+    "test:access-gates": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-access-gates.ts",
     "test:report-visibility": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-report-visibility.ts",
     "seed:staff-account": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/seed-staff-account.ts"
   },

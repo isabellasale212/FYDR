@@ -11,6 +11,7 @@ import {
   type ResolvedExercise,
 } from '@/lib/queries/programmes';
 import { enumLabel, formatDate, mdLabel } from '@/lib/format';
+import { PROGRAMME_EDIT, REHAB_PROGRAMME, hasAnyRole } from '@/lib/access';
 import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
 
@@ -68,8 +69,12 @@ export default async function ProgrammeAthletePage({
      malformed id is a URL that does not name anything, not a server fault. */
   if (!isUuid(programmeId) || !isUuid(athleteId)) notFound();
 
-  const isCoach = claims.roles.includes('coach');
-  const isMedical = claims.roles.includes('medic');
+  /* G-33 split programme authorship by TYPE, not by coach-versus-medic: a gym
+     or conditioning programme belongs to the sport scientist and the S&C, and
+     the rehab branch stays the medic's. This page still asked the pre-five-role
+     question, so an S&C could not edit the programme they wrote and a coach
+     could edit one they no longer own. The same split was corrected on the
+     programme page itself (G-41); this per-athlete view was missed then. */
 
   const [detail, athleteRow] = await Promise.all([
     fetchProgrammeDetail(db, orgId, programmeId),
@@ -79,8 +84,9 @@ export default async function ProgrammeAthletePage({
 
   const athleteName = `${athleteRow.data.first_name} ${athleteRow.data.last_name}`;
   const canEdit =
-    (isCoach && detail.programme.programme_type !== 'rehab') ||
-    (isMedical && detail.programme.programme_type === 'rehab');
+    detail.programme.programme_type === 'rehab'
+      ? hasAnyRole(claims.roles, REHAB_PROGRAMME)
+      : hasAnyRole(claims.roles, PROGRAMME_EDIT);
 
   const sessionsFlat = detail.blocks.flatMap((b) => b.sessions.map((s) => ({ ...s, blockName: b.name })));
   const sessionIds = sessionsFlat.map((s) => s.id);

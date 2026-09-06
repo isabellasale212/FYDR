@@ -818,10 +818,23 @@ reason to lose a live bug.
   here: zero importers. It carries a working `expireTarget` mutation, so it
   reads like a live screen to anyone who finds it. It was the headline of the
   G-34 audit before the reachability check corrected that.
-- **`reports/training/pdf` and `/export`** still derive `actorRole` with the old
-  ternary instead of `actingRole()`. Not a defect, both have an honest
-  `claims.roles[0]` fallback, unlike the leaderboard pair that fell back to
-  'coach'. Inconsistency only.
+- **Sixteen report pages, exports and PDF routes** still derive `actorRole` with
+  the old ternary instead of `actingRole()`. COUNT CORRECTED 2026-09-06: this
+  entry said "`reports/training/pdf` and `/export`", two sites. The real figure
+  is sixteen -- every report page plus its export and its pdf route, each
+  repeating `medic ? 'medic' : coach ? 'coach' : claims.roles[0]`. The
+  assessment is unchanged and still right: NOT A DEFECT, because the
+  `claims.roles[0]` fallback resolves correctly for all five roles, unlike the
+  leaderboard pair that fell back to 'coach'. Inconsistency only, and tidy-up
+  when something else is already open in those files -- `access.ts` exports
+  `actingRole()`, which does the same thing with a stated precedence instead of
+  sixteen copies of an implicit one.
+
+  Worth noting how the undercount happened, since it is the same failure the
+  access-gate guard was built for: the two named sites were the ones an earlier
+  audit happened to open, and nothing enumerated the rest. The access-gate guard
+  does not catch these -- `actorRole` is not a gate-shaped name, deliberately --
+  so this stays a list somebody has to keep honest.
 - **Seven code comments still cite `01-roles-and-permissions.md`** as authority.
   The document now carries a superseded banner, so the citations point at a
   file that says "do not build against this".

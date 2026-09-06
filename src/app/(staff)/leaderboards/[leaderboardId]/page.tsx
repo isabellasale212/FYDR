@@ -19,7 +19,7 @@ import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
 import { isPremium } from '@/lib/tier';
 import { PlanGate } from '@/components/PlanGate/PlanGate';
-import { ALL_STAFF, LEADERBOARD_EDIT, hasAnyRole } from '@/lib/access';
+import { ALL_STAFF, CLINICAL_ONLY, LEADERBOARD_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Board · Fydr' };
 
@@ -135,7 +135,7 @@ export default async function LeaderboardDetailPage({
 
   const metric = catalogue.find((m) => m.key === board.metric_key);
   const decimals = metricDecimals(metric);
-  const isMedical = claims.roles.includes('medic');
+  const isMedical = hasAnyRole(claims.roles, CLINICAL_ONLY);
 
   // Both exports carry the group filter, so a downloaded or printed board matches the
   // one on screen rather than silently widening back out to the whole squad — same

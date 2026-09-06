@@ -73,7 +73,7 @@ export default async function MealIdeasPage() {
           <>
             We don&rsquo;t have a recent weigh-in on file for you, so portions are shown at a
             standard reference weight (<span className="nutr-mono">{REFERENCE_MASS_KG} kg</span>)
-            until your coach or medical staff log one.
+            until your club&rsquo;s staff log one.
           </>
         )}{' '}
         Reference only — nothing here is logged or tracked.

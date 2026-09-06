@@ -24,7 +24,25 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
  *  database's actual refusal agree. */
 export default async function TimetablePage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, orgName, claims, timezone } = await requireStaff();
+  /* access-exempt: LEFT AS IT IS ON PURPOSE, pending a decision, 2026-09-06.
+     This is the pre-five-role `coach || medic` phrase and it redirects the sport
+     scientist away from a page /schedule already shows them -- the same sessions,
+     a different layout, and that page gates on requireStaff() alone. So the
+     narrowing looks like an artefact.
+
+     It is not only an artefact, which is why it is marked rather than fixed. The
+     timetable carries the attendance control, so opening the page hands a WRITE
+     to whoever can see it, and who may record attendance is a decision nobody
+     has taken. The database would not object -- audit_log.actor_role is app_role
+     and already holds all five -- and access.ts's actingRole() would label the
+     audit row correctly. The blocker is the product question, not the plumbing.
+
+     Two candidate answers, both defensible: open the page to all staff and gate
+     the attendance control separately, or keep the page narrow and add the sport
+     scientist alone. Tracked in the to-do list. */
+  // access-exempt: see the note above — pending a decision on attendance writes.
   const isCoach = claims.roles.includes('coach');
+  // access-exempt: same note.
   const isMedical = claims.roles.includes('medic');
   if (!isCoach && !isMedical) redirect('/dashboard');
   const actorRole: 'coach' | 'medic' = isMedical ? 'medic' : 'coach';

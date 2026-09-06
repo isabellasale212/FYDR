@@ -1,4 +1,5 @@
 import { csvResponse, toCsv } from '@/lib/csv';
+import { CLINICAL_ONLY, hasAnyRole } from '@/lib/access';
 import { fetchInjuryAvailabilityReport, recordReportView } from '@/lib/queries/reports';
 import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
@@ -20,7 +21,7 @@ import { periodParamsFromUrl, resolveInjuryPeriod } from '../period';
  *  exactly as the page does, and the `# Scope:` caption line states it. */
 export async function GET(request: Request) {
   const { db, orgId, claims, timezone } = await requireReport('injuries');
-  const isMedical = claims.roles.includes('medic');
+  const isMedical = hasAnyRole(claims.roles, CLINICAL_ONLY);
   const url = new URL(request.url);
   const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
 

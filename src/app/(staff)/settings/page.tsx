@@ -11,7 +11,7 @@ import { requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import { PlanPreviewSwitch } from '@/components/PlanPreviewSwitch/PlanPreviewSwitch';
 import { isPlatformStaff } from '@/lib/platformStaff';
-import { GPS_IMPORT, REPORT_ACCESS, hasAnyRole } from '@/lib/access';
+import { GPS_IMPORT, REPORT_ACCESS, SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Settings · Fydr' };
 
@@ -43,7 +43,7 @@ export const metadata = { title: 'Settings · Fydr' };
  * that are forms rather than navigation (profile/avatar, club details). */
 export default async function SettingsPage() {
   const { db, orgId, orgName, timezone, fullName, claims, tier, realTier, previewingTier } = await requireStaff();
-  const isAdmin = claims.roles.includes('sport_scientist');
+  const isAdmin = hasAnyRole(claims.roles, SETTINGS_ADMIN);
   const onPremium = isPremium(tier);
   /* Not `isAdmin`: a club's own administrator does not get to try the other
      plan on. lib/platformStaff.ts has the reasoning; requireStaff() enforces

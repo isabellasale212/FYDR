@@ -13,7 +13,15 @@ export default async function WeekTemplateBuilderPage({ params }: { params: Prom
   const template = await fetchTemplate(db, orgId, templateId);
   if (!template) notFound();
 
-  const canWrite = claims.roles.includes('coach') || claims.roles.includes('medic');
+  /* Was `coach || medic`, the pre-five-role phrase for "any staff who is not an
+     admin". Two things were wrong with it and they pointed opposite ways. The
+     SPORT SCIENTIST was refused outright, by the rendered branch below, while
+     schedule/planner/page.tsx -- this page's own list -- had already been
+     corrected to SESSION_EDIT: so that role saw the list with its write
+     affordances and hit a refusal on clicking through. And the MEDIC was let in,
+     though G-33 took scheduling off that role including week templates, so their
+     writes met an RLS policy that refuses them. */
+  const canWrite = hasAnyRole(claims.roles, SESSION_EDIT);
   if (!canWrite) {
     return (
       <>
@@ -23,7 +31,7 @@ export default async function WeekTemplateBuilderPage({ params }: { params: Prom
             <h1>{template.name}</h1>
           </div>
         </div>
-        <p className="tiny">Read only. Templates are authored by coaching and medical staff.</p>
+        <p className="tiny">Read only. Templates are authored by the sport scientist and the coach.</p>
       </>
     );
   }

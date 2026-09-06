@@ -98,7 +98,7 @@ export default function LoginPage() {
         </div>
 
         <p className="launch-step launch-foot">
-          Your wellness answers are visible to your coaching and medical staff. Injury
+          Your wellness answers are visible to your club&rsquo;s staff. Injury
           detail is medical only.
         </p>
       </div>

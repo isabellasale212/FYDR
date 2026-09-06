@@ -5,6 +5,7 @@ import { GroupReorderButtons } from '@/components/GroupReorderButtons/GroupReord
 import { fetchAthletesInNoGroup, fetchGroupsWithCounts } from '@/lib/queries/groups';
 import { fetchTeams } from '@/lib/queries/teamAllocation';
 import { enumLabel } from '@/lib/format';
+import { SESSION_EDIT, hasAnyRole } from '@/lib/access';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Groups · Fydr' };
@@ -24,11 +25,13 @@ export default async function GroupsPage() {
     fetchTeams(db, orgId),
   ]);
 
-  /* Team allocation redirects anyone who is not coach or medical (see that
-   * page's own role gate), so the link is only offered to those two. Hiding
-   * UI only — the real gate is on that route and in teams' RLS, never here.
-   * CLAUDE.md rule 2. */
-  const canAllocate = claims.roles.includes('coach') || claims.roles.includes('medic');
+  /* The comment here used to say team allocation "redirects anyone who is not
+   * coach or medical", and justified this link's condition by that. It stopped
+   * being true when that page moved to SESSION_EDIT: the link was then hidden
+   * from the sport scientist, who may allocate, and offered to the medic, who
+   * may not. Reading the destination's gate rather than describing it is what
+   * keeps the two from drifting again. Hiding UI only, CLAUDE.md rule 2. */
+  const canAllocate = hasAnyRole(claims.roles, SESSION_EDIT);
 
   const sections = new Map<string, typeof groups>();
   for (const g of groups) {

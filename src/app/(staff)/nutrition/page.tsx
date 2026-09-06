@@ -127,8 +127,16 @@ const MASS_TREND_FALLBACK_NO_SEASON: RangeKey = 'year';
 
 export default async function NutritionPage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, claims, timezone } = await requireStaff();
+  /* isCoach and isMedical remain for the two places that genuinely mean "is
+     this reader a coach" as wording or as a component's own prop. What they must
+     NOT decide is who may write a target: G-33 narrowed that to the sport
+     scientist and the nutritionist, and the Manual target link below was still
+     offered to coach-or-medical -- precisely the two roles that may not, and
+     hidden from the two that may. */
+  // access-exempt: passed to NutritionWorkspace as a display prop, not a gate; the
+  // write gate on this page is canManageNutrition below, from NUTRITION_EDIT.
   const isCoach = claims.roles.includes('coach');
-  const isMedical = claims.roles.includes('medic');
+  const canManualTarget = hasAnyRole(claims.roles, NUTRITION_EDIT);
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
 
@@ -327,7 +335,7 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
           <h1>Nutrition</h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          {isCoach || isMedical ? (
+          {canManualTarget ? (
             <Link href="/nutrition/new" className="btn-ghost" title="Set one absolute target by hand, outside the rule engine">
               Manual target
             </Link>

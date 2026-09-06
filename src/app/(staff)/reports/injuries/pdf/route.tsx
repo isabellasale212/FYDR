@@ -1,4 +1,5 @@
 import { renderToBuffer } from '@react-pdf/renderer';
+import { CLINICAL_ONLY, hasAnyRole } from '@/lib/access';
 import { fetchInjuryAvailabilityReport, recordReportView } from '@/lib/queries/reports';
 import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
@@ -19,7 +20,7 @@ import { periodCaveat, periodParamsFromUrl, resolveInjuryPeriod } from '../perio
  *  three are here, not just the on-screen note the page itself carries. */
 export async function GET(request: Request) {
   const { db, orgId, orgName, claims, timezone } = await requireReport('injuries');
-  const isMedical = claims.roles.includes('medic');
+  const isMedical = hasAnyRole(claims.roles, CLINICAL_ONLY);
   const url = new URL(request.url);
   // resolveGroupFilter, not parseGroupParam: a PDF handed to someone else is
   // the exact artefact the audit's S4 finding warned about — it must resolve

@@ -8,7 +8,7 @@ import { fetchSquadList } from '@/lib/queries/squad';
 import { enumLabel } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
-import { PROGRAMME_EDIT, REHAB_PROGRAMME, hasAnyRole } from '@/lib/access';
+import { CLINICAL_ONLY, PROGRAMME_EDIT, REHAB_PROGRAMME, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Programme · Fydr' };
 
@@ -28,7 +28,7 @@ export default async function ProgrammeBuilderPage({
      first, so this never becomes a probe; then 404 rather than 500, because a
      malformed id is a URL that does not name anything, not a server fault. */
   if (!isUuid(programmeId)) notFound();
-  const isMedical = claims.roles.includes('medic');
+  const isMedical = hasAnyRole(claims.roles, CLINICAL_ONLY);
 
   const detail = await fetchProgrammeDetail(db, orgId, programmeId);
   if (!detail) notFound();

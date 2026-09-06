@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { CLINICAL_ONLY, hasAnyRole } from '@/lib/access';
 import Link from 'next/link';
 import { InjuryMedicalForm } from '@/components/InjuryMedicalForm/InjuryMedicalForm';
 import { SetAvailabilityForm } from '@/components/SetAvailabilityForm/SetAvailabilityForm';
@@ -30,7 +31,7 @@ export default async function InjuryDetailPage({
 }) {
   const { injuryId } = await params;
   const { db, orgId, claims, timezone } = await requireInjuryAccess();
-  const isMedical = claims.roles.includes('medic');
+  const isMedical = hasAnyRole(claims.roles, CLINICAL_ONLY);
 
   const injury = await fetchInjuryDetail(db, orgId, injuryId);
   if (!injury) notFound();

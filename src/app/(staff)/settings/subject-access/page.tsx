@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { SETTINGS_ADMIN, CLINICAL_ONLY, hasAnyRole } from '@/lib/access';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { Pill } from '@/components/Pill/Pill';
 import { fetchSarRequests } from '@/lib/queries/sarPack';
@@ -25,8 +26,8 @@ export default async function SubjectAccessPage({ searchParams }: { searchParams
   const { error } = await searchParams;
   const { db, orgId, claims, timezone } = await requireSubjectAccess();
   const requests = await fetchSarRequests(db, orgId);
-  const isAdmin = claims.roles.includes('sport_scientist');
-  const isMedical = claims.roles.includes('medic');
+  const isAdmin = hasAnyRole(claims.roles, SETTINGS_ADMIN);
+  const isMedical = hasAnyRole(claims.roles, CLINICAL_ONLY);
 
   return (
     <>

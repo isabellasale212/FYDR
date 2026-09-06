@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { CLINICAL_ONLY, hasAnyRole } from '@/lib/access';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { PrintButton } from '@/components/PrintButton/PrintButton';
@@ -42,7 +43,7 @@ export default async function InjuriesPage({
   const { db, orgId, orgName, claims, timezone } = await requireInjuryAccess();
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
-  const isMedical = claims.roles.includes('medic');
+  const isMedical = hasAnyRole(claims.roles, CLINICAL_ONLY);
 
   // fetchOpenProblemReports is medical-only by RLS (migration 0040) — a coach
   // calling it gets an empty array back, not an error, so this is only ever

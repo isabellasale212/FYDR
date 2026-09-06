@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { CLINICAL_ONLY, hasAnyRole } from '@/lib/access';
 import { ReportPager } from '@/components/ReportPager/ReportPager';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { fetchGroups } from '@/lib/queries/groups';
@@ -56,7 +57,7 @@ export default async function InjuryAvailabilityReportPage({
   searchParams: SearchParams;
 }) {
   const { db, orgId, orgName, claims, timezone } = await requireReport('injuries');
-  const isMedical = claims.roles.includes('medic');
+  const isMedical = hasAnyRole(claims.roles, CLINICAL_ONLY);
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
   const period = await resolveInjuryPeriod(db, orgId, timezone, periodParamsFrom(params));

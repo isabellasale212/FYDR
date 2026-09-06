@@ -34,7 +34,11 @@ export default async function TeamAllocationPage({
   searchParams: SearchParams;
 }) {
   const { db, orgId, orgName, claims, timezone } = await requireInjuryAccess();
-  const isCoach = claims.roles.includes('coach');
+  /* Was `isCoach`, while the PublishWeekButton it wraps resolves canManage from
+     SESSION_EDIT. Outer gate and inner gate disagreeing meant the sport
+     scientist never saw a control they were entitled to use. One set, read
+     once. */
+  const canManageWeek = hasAnyRole(claims.roles, SESSION_EDIT);
 
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
@@ -71,7 +75,7 @@ export default async function TeamAllocationPage({
           <h1>Team allocation</h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          {isCoach ? <PublishWeekButton
+          {canManageWeek ? <PublishWeekButton
           canManage={hasAnyRole(claims.roles, SESSION_EDIT)} orgId={orgId} userId={claims.userId} weekStart={weekStart} draftCount={draftCount} /> : null}
         </div>
       </div>
@@ -94,7 +98,7 @@ export default async function TeamAllocationPage({
         </Link>
       </div>
 
-      {!isCoach ? (
+      {!canManageWeek ? (
         <div className="note" style={{ marginTop: 14 }}>
           <div className="note-glyph">i</div>
           <p className="note-text">

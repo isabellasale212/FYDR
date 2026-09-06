@@ -1,4 +1,5 @@
 import type { Db } from './groups';
+import { mustAffect } from '@/lib/write';
 
 /* screens/settings.md, "Profile": "Editable by the user themselves: display
  * name, phone, avatar, and for athletes the fields they own. Not editable
@@ -34,17 +35,17 @@ import type { Db } from './groups';
  */
 
 export async function updateMyContactDetails(db: Db, userId: string, input: { fullName: string; phone: string | null }): Promise<{ error: string | null }> {
-  const { error } = await db
-    .from('users')
-    .update({ full_name: input.fullName, phone: input.phone })
-    .eq('id', userId);
-  return { error: error?.message ?? null };
+  /* G-36. Self-update, one row by id: users_self_update requires id =
+     auth_user_id(), so zero rows means the session is not who it claims. */
+  return mustAffect(
+    db.from('users').update({ full_name: input.fullName, phone: input.phone }).eq('id', userId).select('id'),
+    { refusal: 'Not saved. You can only change your own profile.' },
+  );
 }
 
 export async function updateMyPreferredName(db: Db, athleteId: string, preferredName: string | null): Promise<{ error: string | null }> {
-  const { error } = await db
-    .from('athletes')
-    .update({ preferred_name: preferredName })
-    .eq('id', athleteId);
-  return { error: error?.message ?? null };
+  return mustAffect(
+    db.from('athletes').update({ preferred_name: preferredName }).eq('id', athleteId).select('id'),
+    { refusal: 'Not saved. You can only change your own profile.' },
+  );
 }

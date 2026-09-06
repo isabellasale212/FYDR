@@ -1,4 +1,5 @@
 import type { Db } from './groups';
+import { mustAffect } from '@/lib/write';
 
 /* migration 0031's own header covers the schema and policy decisions. This
  * file is the thin query layer on top of the real Storage API, the same
@@ -36,8 +37,13 @@ export async function uploadOrgLogo(db: Db, orgId: string, file: File): Promise<
   } = db.storage.from('logos').getPublicUrl(path);
   const bustedUrl = `${publicUrl}?v=${Date.now()}`;
 
-  const { error: dbErr } = await db.from('organisations').update({ logo_url: bustedUrl }).eq('id', orgId);
-  if (dbErr) return { url: null, error: dbErr.message };
+  /* G-36. The file is already in storage by this point, so a silent no-op here
+     leaves an uploaded logo the club never sees. */
+  const wrote = await mustAffect(
+    db.from('organisations').update({ logo_url: bustedUrl }).eq('id', orgId).select('id'),
+    { refusal: 'Not saved: club details belong to the sport scientist.' },
+  );
+  if (wrote.error) return { url: null, error: wrote.error };
 
   return { url: bustedUrl, error: null };
 }
@@ -50,6 +56,8 @@ export async function removeOrgLogo(db: Db, orgId: string, currentUrl: string): 
   const { error: removeErr } = await db.storage.from('logos').remove([path]);
   if (removeErr) return { error: removeErr.message };
 
-  const { error: dbErr } = await db.from('organisations').update({ logo_url: null }).eq('id', orgId);
-  return { error: dbErr?.message ?? null };
+  return mustAffect(
+    db.from('organisations').update({ logo_url: null }).eq('id', orgId).select('id'),
+    { refusal: 'Not saved: club details belong to the sport scientist.' },
+  );
 }

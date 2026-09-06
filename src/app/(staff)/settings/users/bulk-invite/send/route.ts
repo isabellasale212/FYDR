@@ -4,6 +4,7 @@ import { deleteInvitedUser, issueInvite } from '@/lib/invite';
 import { requireStaff } from '@/lib/session';
 import { MAX_BULK_INVITE_ROWS, type BulkInviteResult, type BulkInviteSendRow } from '@/lib/queries/bulkInvite';
 import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
+import { mustAffect } from '@/lib/write';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -83,9 +84,16 @@ export async function POST(request: Request) {
         continue;
       }
       if (!existing.date_of_birth) {
-        const { error: dobErr } = await db.from('athletes').update({ date_of_birth: dateOfBirth }).eq('org_id', orgId).eq('id', athleteId);
-        if (dobErr) {
-          results.push({ email, ok: false, error: `Could not set date of birth on the matched record: ${dobErr.message}`, inviteUrl: null });
+        /* G-36. One matched athlete by id. This route is sport-scientist
+           gated and athletes UPDATE admits that role, so zero rows here means
+           the record moved underneath us rather than a refusal, but either way
+           the invite should not report success on a row it did not write. */
+        const dobWrote = await mustAffect(
+          db.from('athletes').update({ date_of_birth: dateOfBirth }).eq('org_id', orgId).eq('id', athleteId).select('id'),
+          { refusal: 'Could not set date of birth on the matched record: it was not updated.' },
+        );
+        if (dobWrote.error) {
+          results.push({ email, ok: false, error: dobWrote.error, inviteUrl: null });
           continue;
         }
       }

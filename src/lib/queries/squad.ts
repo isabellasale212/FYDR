@@ -11,6 +11,7 @@ import {
 } from './availability';
 import { fetchGroupAthleteIds, fetchMembershipsByAthlete, type Db } from './groups';
 import { fetchAllPaged } from './paged';
+import { mustAffect } from '@/lib/write';
 
 export type SquadRow = {
   id: string;
@@ -167,17 +168,23 @@ export async function updateAthleteBio(
     dominantSide: DominantSide | null;
   },
 ): Promise<{ error: string | null }> {
-  const { error } = await db
-    .from('athletes')
-    .update({
-      position: input.position,
-      squad_number: input.squadNumber,
-      height_cm: input.heightCm,
-      dominant_side: input.dominantSide,
-    })
-    .eq('org_id', orgId)
-    .eq('id', athleteId);
-  return { error: error?.message ?? null };
+  /* G-36. athletes UPDATE is the coach, the medic and the sport scientist
+     (0071). The screen gates on ATHLETE_BIO_EDIT, so this is the second lock
+     and the one that speaks up when the two disagree. */
+  return mustAffect(
+    db
+      .from('athletes')
+      .update({
+        position: input.position,
+        squad_number: input.squadNumber,
+        height_cm: input.heightCm,
+        dominant_side: input.dominantSide,
+      })
+      .eq('org_id', orgId)
+      .eq('id', athleteId)
+      .select('id'),
+    { refusal: 'Not saved: editing an athlete\u2019s details belongs to the coach, the medic and the sport scientist.' },
+  );
 }
 
 export async function fetchAthlete(

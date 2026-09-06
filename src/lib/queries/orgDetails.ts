@@ -1,5 +1,6 @@
 import type { Db } from './groups';
 import type { OrgSport } from '@/lib/types/database';
+import { mustAffect } from '@/lib/write';
 
 /* screens/settings.md §"Organisation settings" and migration 0012's own
  * comment: "'Manage organisation settings: name, timezone, sport, season
@@ -23,9 +24,14 @@ export async function updateOrgDetails(
   orgId: string,
   input: { name: string; sport: OrgSport; timezone: string; countryCode: string },
 ): Promise<{ error: string | null }> {
-  const { error } = await db
-    .from('organisations')
-    .update({ name: input.name, sport: input.sport, timezone: input.timezone, country_code: input.countryCode })
-    .eq('id', orgId);
-  return { error: error?.message ?? null };
+  /* G-36. organisations UPDATE is the sport scientist's alone (§3.6). The
+     screen already hides this behind isAdmin, so this is the second lock. */
+  return mustAffect(
+    db
+      .from('organisations')
+      .update({ name: input.name, sport: input.sport, timezone: input.timezone, country_code: input.countryCode })
+      .eq('id', orgId)
+      .select('id'),
+    { refusal: 'Not saved: club details belong to the sport scientist.' },
+  );
 }

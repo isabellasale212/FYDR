@@ -1,5 +1,6 @@
 import type { AppRole, Json, UserStatus } from '@/lib/types/database';
 import type { Db } from './groups';
+import { mustAffect } from '@/lib/write';
 
 /* docs/screens/user-management.md, screen 32, admin only, cut down hard —
  * see src/app/(staff)/settings/users/create/route.ts's header for the
@@ -192,8 +193,15 @@ export async function setUserRoles(
     if (error) return { error: error.message, primaryOk: false };
   }
   for (const role of toRemove) {
-    const { error } = await db.from('user_roles').delete().eq('org_id', orgId).eq('user_id', targetUserId).eq('role', role);
-    if (error) return { error: error.message, primaryOk: false };
+    /* G-36. `toRemove` is computed from the roles this user was just read as
+       holding, so a delete matching nothing means the policy refused, not that
+       the role was absent. Revoking a role and having it stay is exactly the
+       failure that matters on this screen. */
+    const removed = await mustAffect(
+      db.from('user_roles').delete().eq('org_id', orgId).eq('user_id', targetUserId).eq('role', role).select('role'),
+      { refusal: 'Not saved: granting and revoking roles belongs to the sport scientist.' },
+    );
+    if (removed.error) return { error: removed.error, primaryOk: false };
   }
 
   // The role change itself has already committed by this point — an
@@ -217,8 +225,13 @@ export async function setUserStatus(
   targetUserId: string,
   status: Extract<UserStatus, 'active' | 'deactivated'>,
 ): Promise<{ error: string | null; primaryOk: boolean }> {
-  const { error } = await db.from('users').update({ status }).eq('org_id', orgId).eq('id', targetUserId);
-  if (error) return { error: error.message, primaryOk: false };
+  /* G-36. Deactivating somebody who stays active is the worst kind of silent
+     no-op: the list shows the new status until the next refresh. */
+  const wrote = await mustAffect(
+    db.from('users').update({ status }).eq('org_id', orgId).eq('id', targetUserId).select('id'),
+    { refusal: 'Not saved: changing a user\u2019s status belongs to the sport scientist.' },
+  );
+  if (wrote.error) return { error: wrote.error, primaryOk: false };
   const { error: auditErr } = await recordUserAudit(db, orgId, actorId, actorRole, status === 'deactivated' ? 'user.deactivated' : 'user.reactivated', targetUserId, {});
   if (auditErr) return { error: `Status was changed, but the audit log entry failed to save: ${auditErr}`, primaryOk: true };
   return { error: null, primaryOk: true };

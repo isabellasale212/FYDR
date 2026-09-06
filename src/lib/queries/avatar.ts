@@ -1,4 +1,5 @@
 import type { Db } from './groups';
+import { mustAffect } from '@/lib/write';
 
 /* screens/settings.md's Profile section names "avatar" alongside display
  * name and phone as something a user edits themselves. Every earlier
@@ -49,8 +50,13 @@ export async function uploadMyAvatar(db: Db, orgId: string, userId: string, file
   // of Storage would keep serving the old image under the same URL.
   const bustedUrl = `${publicUrl}?v=${Date.now()}`;
 
-  const { error: dbErr } = await db.from('users').update({ avatar_url: bustedUrl }).eq('id', userId);
-  if (dbErr) return { url: null, error: dbErr.message };
+  /* G-36. Same as the club logo: the image is already uploaded, so a silent
+     no-op strands it. */
+  const wrote = await mustAffect(
+    db.from('users').update({ avatar_url: bustedUrl }).eq('id', userId).select('id'),
+    { refusal: 'Not saved. You can only change your own profile.' },
+  );
+  if (wrote.error) return { url: null, error: wrote.error };
 
   return { url: bustedUrl, error: null };
 }
@@ -65,6 +71,8 @@ export async function removeMyAvatar(db: Db, orgId: string, userId: string, curr
   const { error: removeErr } = await db.storage.from('avatars').remove([path]);
   if (removeErr) return { error: removeErr.message };
 
-  const { error: dbErr } = await db.from('users').update({ avatar_url: null }).eq('id', userId);
-  return { error: dbErr?.message ?? null };
+  return mustAffect(
+    db.from('users').update({ avatar_url: null }).eq('id', userId).select('id'),
+    { refusal: 'Not saved. You can only change your own profile.' },
+  );
 }

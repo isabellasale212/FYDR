@@ -588,9 +588,24 @@ assert(
   'and the coach-versus-medic split is gone from it',
 );
 
+/* Structural rather than proximity-based. This was
+   `/INJURY_ACCESS[\s\S]{0,300}Log injury/`, which broke on 2026-09-06 when a
+   comment was added between the two — the gate was untouched and the test failed
+   anyway. A character budget between two strings measures how much prose sits
+   between them, which is not the property worth protecting.
+
+   What matters is that the link is inside the INJURY_ACCESS conditional and no
+   OTHER role set intervenes, which would mean it had been re-gated on something
+   narrower. Comments are stripped first so explaining a rule cannot break it. */
+const athleteCode = athlete.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
+const injuryGate = athleteCode.indexOf('hasAnyRole(claims.roles, INJURY_ACCESS)');
+const logInjury = athleteCode.indexOf('Log injury');
+assert(injuryGate > -1 && logInjury > injuryGate, 'the "+ Log injury" link sits inside the INJURY_ACCESS conditional');
 assert(
-  /INJURY_ACCESS[\s\S]{0,300}Log injury/.test(athlete),
-  'the "+ Log injury" link is offered to INJURY_ACCESS, not the medic alone',
+  !/[A-Z][A-Z_]{4,}/.test(
+    athleteCode.slice(injuryGate + 'hasAnyRole(claims.roles, INJURY_ACCESS)'.length, logInjury).replace(/INJURY_ACCESS/g, ''),
+  ),
+  'and no other role set intervenes, so it has not been quietly re-gated on something narrower',
 );
 const progList = readFileSync('src/app/(staff)/programmes/page.tsx', 'utf8');
 assert(

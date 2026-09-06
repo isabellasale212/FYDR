@@ -5,7 +5,7 @@
   "description": "Fydr, athlete performance management. Phase 1a thin slice: staff web and athlete mobile web.",
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run test:access-gates",
+    "prebuild": "npm run test:access-gates && npm run check:policy-replacements && npm run test:policy-guard",
     "build": "next build",
     "start": "next start",
     "deploy": "npx --yes vercel@59.11.0 deploy --prod",
@@ -36,6 +36,8 @@
     "test:injury-card": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-injury-card.ts",
     "test:injury-timeline": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-injury-timeline.ts",
     "verify:assignment-authorship": "node scripts/verify-assignment-authorship.mjs",
+    "check:policy-replacements": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/check-policy-replacements.ts",
+    "test:policy-guard": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-policy-replacement-guard.ts",
     "test:access-gates": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-access-gates.ts",
     "test:report-visibility": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-report-visibility.ts",
     "seed:staff-account": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/seed-staff-account.ts"

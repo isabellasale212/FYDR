@@ -712,7 +712,15 @@ export default async function AthletePage({
               {/* §3.2 New injury is VC for all four injury roles, and /injuries/new
                   already admits them. The link was medic only. */}
               {hasAnyRole(claims.roles, INJURY_ACCESS) ? (
-                <Link href="/injuries/new" className="btn-ghost-pill" style={{ padding: '8px 16px' }}>
+                <Link
+                  /* Carries the athlete so the form opens on them: this link is
+                     pressed from one player's own profile, and asking for their
+                     name again is asking a question the app already knows the
+                     answer to. The page validates the id before using it. */
+                  href={`/injuries/new?athlete=${athlete.id}`}
+                  className="btn-ghost-pill"
+                  style={{ padding: '8px 16px' }}
+                >
                   + Log injury
                 </Link>
               ) : null}

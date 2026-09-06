@@ -23,11 +23,27 @@ function label(value: string): string {
 
 type Athlete = { id: string; first_name: string; last_name: string };
 
-type Props = { orgId: string; userId: string; timezone: string; athletes: readonly Athlete[] };
+type Props = {
+  orgId: string;
+  userId: string;
+  timezone: string;
+  athletes: readonly Athlete[];
+  /** Pre-selected when this form is opened from one athlete's own context —
+   *  their profile's "+ Log injury" — so their name does not have to be found
+   *  again in a list of twenty-nine. Resolved and VALIDATED by the page against
+   *  the athletes it already fetched, so an id that is missing, deleted, or from
+   *  another organisation arrives here as undefined and the picker simply opens
+   *  unset rather than pre-filling something wrong.
+   *
+   *  Still a select rather than a fixed label: the person may have clicked into
+   *  the wrong profile, and taking the choice away to save a click is a bad
+   *  trade on a medical record. */
+  initialAthleteId?: string;
+};
 
-export function NewInjuryForm({ orgId, userId, timezone, athletes }: Props) {
+export function NewInjuryForm({ orgId, userId, timezone, athletes, initialAthleteId }: Props) {
   const router = useRouter();
-  const [athleteId, setAthleteId] = useState('');
+  const [athleteId, setAthleteId] = useState(initialAthleteId ?? '');
   const [bodyArea, setBodyArea] = useState<(typeof BODY_AREAS)[number]>('hamstring');
   const [side, setSide] = useState('');
   const [onsetDate, setOnsetDate] = useState(todayIso(timezone));

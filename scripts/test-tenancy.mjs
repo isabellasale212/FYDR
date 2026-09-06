@@ -18,10 +18,25 @@
 import { spawnSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { resolveDbUrl } from './lib/db-url.mjs';
 
-const dbUrl =
-  process.env.SUPABASE_DB_URL ??
-  'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
+/* Falls back to the IPv4 pooler when the direct host cannot be reached, and
+   SAYS which route it took — see scripts/lib/db-url.mjs for why that failure
+   mode deserves a named check rather than a retry. Announcing the route matters
+   here more than anywhere: a tenancy suite that quietly measured a different
+   connection than you assumed would be worse than one that did not run. */
+const resolved = await resolveDbUrl({
+  direct: process.env.SUPABASE_DB_URL,
+  pooler: process.env.SUPABASE_DB_POOLER_URL,
+  label: 'tenancy target',
+}).catch((err) => {
+  console.error(err.message);
+  process.exit(1);
+});
+const dbUrl = resolved.url ?? 'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
+if (resolved.via === 'pooler') {
+  console.log(`Connecting through the session pooler (${resolved.note}).`);
+}
 
 /* Stop at the first failing file, which is the right default: a suite this
  * size is unreadable once a broken fixture cascades. TENANCY_CONTINUE=1 runs

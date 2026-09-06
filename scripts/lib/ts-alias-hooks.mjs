@@ -19,7 +19,31 @@ import { pathToFileURL } from 'node:url';
 
 const root = pathToFileURL(process.cwd() + '/');
 
+/* `server-only` throws on import outside a React Server Component, which is the
+   whole point of it: a module carrying that marker must never reach the browser.
+   A Node script is neither, so the marker fires on a context it was not written
+   about and blocks the import.
+   
+   Stubbed rather than removed from the module being imported. The alternative
+   was to copy that module's logic into the script, and for lib/invite.ts in
+   particular that would mean a SECOND way this repo creates a sign-in — which is
+   exactly what its header says must not exist. A script importing the real one
+   keeps the guarantee testable; a script reimplementing it quietly voids it.
+   
+   Narrow on purpose: only this one specifier, and only in scripts that opt in by
+   loading these hooks. Nothing here weakens the marker for the app itself, which
+   uses Next's resolution and never loads this file. */
+export async function load(url, context, nextLoad) {
+  if (url === 'stub:server-only') {
+    return { format: 'module', shortCircuit: true, source: 'export {};' };
+  }
+  return nextLoad(url, context);
+}
+
 export async function resolve(specifier, context, nextResolve) {
+  if (specifier === 'server-only') {
+    return { url: 'stub:server-only', format: 'module', shortCircuit: true };
+  }
   if (specifier.startsWith('@/')) {
     const target = new URL('src/' + specifier.slice(2) + '.ts', root);
     return nextResolve(target.href, context);

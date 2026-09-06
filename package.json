@@ -28,7 +28,8 @@
     "test:silent-saves": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-silent-saves.ts",
     "test:write-helper": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-write-helper.ts",
     "test:write-coverage": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-write-coverage.ts",
-    "test:link-athlete": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-link-athlete.ts"
+    "test:link-athlete": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-link-athlete.ts",
+    "seed:staff-account": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/seed-staff-account.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.5.1",

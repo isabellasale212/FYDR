@@ -39,7 +39,9 @@ import type { PlanDTO, RuleWithNames, UnitGroupDTO, WorkspaceAthlete } from './t
 type Props = {
   orgId: string;
   userId: string;
-  isCoach: boolean;
+  /** May this viewer author the meal library, from MEAL_LIBRARY_EDIT. Was
+   *  `isCoach`, which is why the nutritionist could not add a meal. */
+  canAuthorMeals: boolean;
   /* Who may actually WRITE nutrition, resolved from NUTRITION_EDIT by the page.
      canEdit below used to be isCoach || isMedical, which described the write as
      it stood before 0070 moved it to the nutritionist and the sport scientist.
@@ -77,7 +79,7 @@ type Props = {
 export function NutritionWorkspace({
   orgId,
   userId,
-  isCoach,
+  canAuthorMeals,
   canManageNutrition,
   plans,
   groupsWithoutPlan,
@@ -503,8 +505,12 @@ export function NutritionWorkspace({
               <button
                 type="button"
                 className="btn-ghost"
-                disabled={!isCoach}
-                title={isCoach ? undefined : 'Medical reads the meal library for context — only coaching staff author it'}
+                disabled={!canAuthorMeals}
+                title={
+                  canAuthorMeals
+                    ? undefined
+                    : 'The meal library is authored by the sport scientist, the coach and the nutritionist. Everyone else reads it for context.'
+                }
                 onClick={() => {
                   setShowLibraryPicker(false);
                   setShowMealForm((s) => !s);

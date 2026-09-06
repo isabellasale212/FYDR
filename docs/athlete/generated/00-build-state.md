@@ -286,4 +286,34 @@ browser.
 
 ---
 
-**STOP. Waiting on questions 1 to 4 before Stage A1.**
+---
+
+## 10. Your answers, recorded 6 September 2026
+
+**Question 1: both, separated.** The specification describes the responsive web
+app that exists. A separate appendix covers what a native shell would
+additionally need. Option C.
+
+**Question 2: Stage B5 stays, rewritten as what a native app would need.** It
+becomes forward looking rather than a readiness check on something that cannot be
+submitted. The privacy label answers are derivable now from the tables the web app
+already writes, and will not change when a native shell wraps them.
+
+**Questions 3 and 4 were not answered, so I have taken my own recommendations and
+am flagging them rather than burying them.**
+
+**Question 3, account deletion: the specification will require it.** An athlete
+currently cannot delete their own account in either surface. It is an Apple
+requirement for a native app and a reasonable expectation for a web one. Carried
+as a decision in Stage A2 rather than assumed into a screen specification. **Say
+if you would rather it stayed out.**
+
+**Question 4, the accessibility section: translated, not dropped.** Section 11 of
+each screen specification becomes text scaling, screen reader labels for charts
+and scales, supported browsers, and thumb reach at common phone viewport sizes.
+The underlying concerns are real on a phone browser; only the Apple specific
+framing was not.
+
+---
+
+**Stage A0 is closed. Proceeding to Stage A1.**

@@ -23,7 +23,7 @@ import { fetchSquadList } from '@/lib/queries/squad';
 import { buildChaseList, buildWorkspaceAthlete, groupByUnit, meanMass } from '@/lib/nutritionWorkspace';
 import { MASS_TREND_FLAG_WINDOW_DAYS } from '@/lib/nutritionRules';
 import { requireStaff } from '@/lib/session';
-import { NUTRITION_EDIT, hasAnyRole } from '@/lib/access';
+import { MEAL_LIBRARY_EDIT, NUTRITION_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Nutrition · Fydr' };
 
@@ -127,16 +127,14 @@ const MASS_TREND_FALLBACK_NO_SEASON: RangeKey = 'year';
 
 export default async function NutritionPage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, claims, timezone } = await requireStaff();
-  /* isCoach and isMedical remain for the two places that genuinely mean "is
-     this reader a coach" as wording or as a component's own prop. What they must
-     NOT decide is who may write a target: G-33 narrowed that to the sport
-     scientist and the nutritionist, and the Manual target link below was still
-     offered to coach-or-medical -- precisely the two roles that may not, and
-     hidden from the two that may. */
-  // access-exempt: passed to NutritionWorkspace as a display prop, not a gate; the
-  // write gate on this page is canManageNutrition below, from NUTRITION_EDIT.
-  const isCoach = claims.roles.includes('coach');
+  /* Two different nutrition writes, two different sets, and they are not the
+     same question. A nutrition TARGET is a prescription for one athlete
+     (NUTRITION_EDIT: sport scientist, nutritionist). The meal LIBRARY is the
+     club's shared list of food (MEAL_LIBRARY_EDIT: those two plus the coach).
+     Both were previously decided by `isCoach`, which got each of them wrong in
+     the opposite direction. */
   const canManualTarget = hasAnyRole(claims.roles, NUTRITION_EDIT);
+  const canAuthorMeals = hasAnyRole(claims.roles, MEAL_LIBRARY_EDIT);
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
 
@@ -375,7 +373,7 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
       <NutritionWorkspace
         orgId={orgId}
         userId={claims.userId}
-        isCoach={isCoach}
+        canAuthorMeals={canAuthorMeals}
         canManageNutrition={hasAnyRole(claims.roles, NUTRITION_EDIT)}
         plans={plans.map((p) => ({
           ruleId: p.rule.id,

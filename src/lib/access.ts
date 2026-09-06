@@ -262,6 +262,22 @@ export const ATHLETE_BIO_EDIT = ['sport_scientist', 'coach', 'medic'] as const;
  *  it, and a screen that admits all five needs no further test. Exported for the
  *  screens that must name the set explicitly, such as the athlete domain pages
  *  where one domain narrows it. */
+/** Who may author the meal library. Matches meal_library_coach_insert and
+ *  meal_library_coach_update (migration 0051), which have admitted these three
+ *  all along.
+ *
+ *  This is NOT NUTRITION_EDIT, and the difference is the point. A nutrition
+ *  TARGET is a prescription for one athlete and belongs to the sport scientist
+ *  and the nutritionist; the meal LIBRARY is the club's shared list of what food
+ *  is available, which a coach building a week around a fixture has a real
+ *  reason to add to. The database drew that distinction in 0051 and the screen
+ *  never did.
+ *
+ *  What the screen did instead, until 2026-09-06: `disabled={!isCoach}`, so the
+ *  NUTRITIONIST was refused from writing nutrition content, which is their job,
+ *  and so was the sport scientist. The policy admitted both the whole time. */
+export const MEAL_LIBRARY_EDIT = ['sport_scientist', 'coach', 'nutritionist'] as const;
+
 /** Who may CORRECT a wellness entry or a training entry, decided 2026-09-06.
  *
  *  training_entries.rpe is where an RPE score lives, so "cannot edit wellness

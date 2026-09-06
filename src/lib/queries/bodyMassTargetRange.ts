@@ -1,6 +1,7 @@
 import { todayIso } from '@/lib/format';
 import { humanizeDbError } from '@/lib/writeErrors';
 import type { Db } from './groups';
+import { mustAffect } from '@/lib/write';
 
 /* body_mass_target_ranges (migration 0060). The body-mass range STAFF want an
  * athlete in — the thing the client asked for and that this schema genuinely
@@ -208,13 +209,15 @@ export async function retractTargetRange(
   orgId: string,
   id: string,
 ): Promise<{ error: string | null }> {
-  const { error } = await db
-    .from('body_mass_target_ranges')
-    .update({ deleted_at: new Date().toISOString() })
-    .eq('org_id', orgId)
-    .eq('id', id);
-  if (error) return { error: writeMessage(error) };
-  return { error: null };
+  return mustAffect(
+    db
+      .from('body_mass_target_ranges')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('org_id', orgId)
+      .eq('id', id)
+      .select('id'),
+    { refusal: 'Not saved: retracting a target range belongs to staff who set them.', onError: (m) => writeMessage({ message: m } as never) },
+  );
 }
 
 /** Audit S5: a raw driver string never leaves this file. The two cases worth naming

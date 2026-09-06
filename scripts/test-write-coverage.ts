@@ -64,6 +64,11 @@ const CONVERTED: [string, string, string][] = [
   ['performance', 'src/lib/queries/schedule.ts', 'setFixtureStatus'],
   ['performance', 'src/lib/queries/testing.ts', 'deleteResult'],
   ['performance', 'src/lib/queries/weekTemplates.ts', 'updateTemplate'],
+  // Batch 3: nutrition, gym and body composition.
+  ['nutrition/gym', 'src/lib/queries/bodyComposition.ts', 'updateWeighIn'],
+  ['nutrition/gym', 'src/lib/queries/bodyMassTargetRange.ts', 'retractTargetRange'],
+  ['nutrition/gym', 'src/lib/queries/mealLibrary.ts', 'deleteLibraryMeal'],
+  ['nutrition/gym', 'src/lib/queries/programmes.ts', 'completeSessionLog'],
 ];
 
 /** Deliberately left alone, with the reason. Asserted to still NOT use the
@@ -77,11 +82,48 @@ const CONVERTED_INLINE: [string, string, string][] = [
    'keeps its own 23505 branch: a duplicate group name refuses the ROW, not the PERSON'],
 ];
 
+/* Batch 4. The twelve bulk writes, each read and given its own verdict rather
+ * than one rule applied to all of them to move faster. Three answers came out,
+ * and the split is the useful part:
+ *
+ *   ALREADY LOUD   the update is followed by an INSERT, and an insert that
+ *                  violates a WITH CHECK raises 42501. The whole call fails
+ *                  visibly, so a row-count check on the update adds nothing.
+ *   NOTHING TO DO  the filter itself makes zero rows the normal case: .is(x,
+ *                  null) matches only rows in a state that often does not
+ *                  exist. Asserting a refusal here would invent one.
+ *   AMBIGUOUS      zero rows has two plausible meanings and the code cannot
+ *                  tell them apart. Listed in docs/spec-gaps.md rather than
+ *                  guessed at.
+ */
 const NOT_CONVERTED: [string, string, string][] = [
+  // ALREADY LOUD: an insert follows and raises on refusal.
   ['src/lib/queries/injuries.ts', 'setAvailability',
-   'closes any open availability row first; an athlete with none matches nothing'],
+   'ALREADY LOUD: closes the open row, then inserts; the insert raises'],
+  ['src/lib/queries/teamAllocation.ts', 'setTeamAllocation',
+   'ALREADY LOUD: withdraws a prior allocation that often does not exist, then inserts'],
+  ['src/lib/queries/rehabGroups.ts', 'allocateToRehabGroup',
+   'ALREADY LOUD: removes from other rehab groups, then inserts'],
+  ['src/lib/queries/bodyMassTargetRange.ts', 'setTargetRange',
+   'ALREADY LOUD: closes the open range, then inserts'],
+  ['src/lib/queries/flags.ts', 'dismissFlag',
+   'ALREADY LOUD: inserts a flag_action first, which raises on refusal'],
+
+  // NOTHING TO DO: the filter makes zero rows the ordinary outcome.
+  ['src/lib/queries/groups.ts', 'removeGroupMember',
+   'NOTHING TO DO: .is(removed_at, null) matches only a current member'],
+  ['src/lib/queries/leaderboards.ts', 'optBackIn',
+   'NOTHING TO DO: .is(ended_at, null) matches only a live opt-out'],
+  ['src/lib/queries/flags.ts', 'acknowledgeFlag',
+   'NOTHING TO DO: .in(status, raised|notified) misses a flag somebody already handled'],
+  ['src/lib/queries/healthkit.ts', 'withdrawHealthkitSync',
+   'NOTHING TO DO: withdrawing a consent never granted matches nothing, correctly'],
+  ['src/lib/queries/leaderboards.ts', 'withdrawLeaderboardVisibility',
+   'NOTHING TO DO: same shape as the healthkit withdrawal'],
+
+  // AMBIGUOUS: written up in spec-gaps G-44 rather than guessed at.
   ['src/lib/queries/userManagement.ts', 'linkAthleteToUser',
-   'filters .is(user_id, null); zero rows means already linked, not refused'],
+   'AMBIGUOUS: .is(user_id, null) means zero rows is EITHER already linked OR refused'],
 ];
 
 console.log('\n-- writes routed through mustAffect --');

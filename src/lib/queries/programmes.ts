@@ -1019,11 +1019,19 @@ export async function completeSessionLog(
   gymSessionLogId: string,
   sessionRpe: number | null,
 ): Promise<{ error: string | null }> {
-  const { error } = await db
-    .from('gym_session_logs')
-    .update({ status: 'complete', completed_at: new Date().toISOString(), session_rpe: sessionRpe })
-    .eq('id', gymSessionLogId);
-  return { error: error ? humanizeDbError(error.message, 'athlete') : null };
+  /* G-36. An athlete finishing their own session. gym_session_logs grants
+     UPDATE on exactly six columns to the athlete themselves (0045), and the
+     policy narrows it further to their own un-superseded row, so zero rows means
+     this is not their log. Finishing a session and having it stay open is the
+     athlete-side version of the bug this whole gap is about. */
+  return mustAffect(
+    db
+      .from('gym_session_logs')
+      .update({ status: 'complete', completed_at: new Date().toISOString(), session_rpe: sessionRpe })
+      .eq('id', gymSessionLogId)
+      .select('id'),
+    { refusal: 'That session was not saved as complete. Open it again and retry.', onError: (m) => humanizeDbError(m, 'athlete') },
+  );
 }
 
 /* ---------------------------------------------------------------------------

@@ -1,6 +1,7 @@
 import { humanizeDbError } from '@/lib/writeErrors';
 import { fetchAllPaged } from './paged';
 import type { Db } from './groups';
+import { mustAffect } from '@/lib/write';
 
 /* body_composition (migration 0024). Same shape as test_results: staff
  * (coach/medical) select/insert/update, athlete self-select only — see
@@ -265,22 +266,26 @@ export async function updateWeighIn(
   const invalid = validate(input);
   if (invalid) return { error: invalid };
 
-  const { error } = await db
-    .from('body_composition')
-    .update({
-      measured_on: input.measuredOn,
-      body_mass_kg: input.bodyMassKg,
-      body_fat_pct: input.bodyFatPct,
-      method: input.method,
-    })
-    .eq('id', input.id)
-    .eq('org_id', orgId);
-
-  if (error) {
-    if (error.message.toLowerCase().includes('row-level security') || error.message.toLowerCase().includes('policy')) {
-      return { error: 'Only coaching or medical staff can edit a weigh-in.' };
-    }
-    return { error: humanizeDbError(error.message, 'staff') };
-  }
-  return { error: null };
+  /* G-36, and the SECOND function found sniffing an error message for 'row
+     level security' to detect a refusal. Like updateProgrammeStatus, that branch
+     could never run: an UPDATE that RLS filters does not raise, so there was no
+     message to match. The sentence it wanted to show is now the refusal, reached
+     the way that actually works. */
+  return mustAffect(
+    db
+      .from('body_composition')
+      .update({
+        measured_on: input.measuredOn,
+        body_mass_kg: input.bodyMassKg,
+        body_fat_pct: input.bodyFatPct,
+        method: input.method,
+      })
+      .eq('id', input.id)
+      .eq('org_id', orgId)
+      .select('id'),
+    {
+      refusal: 'Only coaching or medical staff can edit a weigh-in.',
+      onError: (m) => humanizeDbError(m, 'staff'),
+    },
+  );
 }

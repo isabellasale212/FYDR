@@ -900,11 +900,50 @@ Others look wrong on the same reading as fixtures: `exercises` and
 `test_definitions` are authored content, and §3.3/§3.4 give authoring to
 specific roles.
 
-**What this needs is a row-by-row comparison of every write policy against the
-matrix column that governs it, and a decision on each**, not another sweep. The
-last sweep is what produced this. Nothing here is a leak: no injury or clinical
-data is involved, and D-01 is unaffected. It is roles able to change things the
-specification does not give them.
+**The comparison, done 2026-09-06.** All twenty read one at a time against the
+matrix column that governs them, because fixtures was found by accident and an
+unchecked table looks exactly like a checked-and-correct one until something
+trips over it.
+
+**Six need narrowing.** Every one is a role able to change something the
+specification does not give it. None involves injury or clinical data.
+
+| Table | Governing rule | Now | Should be |
+|---|---|---|---|
+| `fixtures` | §3.1 `Fixtures VEC VEC V V V` | all five | sport scientist, coach |
+| `exercises` | §3.3 `Exercise library VEC V V VEC V` | all five | sport scientist, S&C |
+| `body_mass_target_ranges` | §3.3 `Body mass target ranges VEC V V V VEC` | all five | sport scientist, nutritionist |
+| `session_participants` | §3.1 `New and edit session VEC VEC X X X` | all five | sport scientist, coach |
+| `test_definitions` | To-do 2026-09-04: "created and completed by any staff role except the nutritionist" | all five | everyone but the nutritionist |
+| `test_results` | Same decision, which supersedes §3.4's `V` for the medic | all five | everyone but the nutritionist |
+
+**One is genuinely ambiguous and wants a decision rather than a reading.**
+`body_composition`. §3.1 gives the S&C and the nutritionist `VP` on the athlete
+profile, which argues they should not log a weigh-in. But a weigh-in is the
+input to the nutrition target the nutritionist owns (§3.3 `VECD`), and the
+clean spec's own screen table lists "logs a weigh in" among what the sport
+scientist does. The two readings disagree and the document does not settle it.
+
+**Thirteen are right as they stand**, and the reasons differ:
+
+- `flags`, `flag_actions` — §3.1 gives Flags `VE` in all five columns.
+- `wellness_entries`, `training_entries` — athlete self-writes, and the policies
+  additionally require the caller's own row. Staff corrections go through
+  `revise_*`, which 0065 gave all five deliberately.
+- `session_attendance` — §3.1 Timetable is `V` for all five.
+- `leaderboard_opt_outs` — insert is the medic's alone (medical suppression),
+  update is own-row scoped.
+- `compliance_expectations` — no matrix row and no screen writes it; 0044
+  generates it.
+- `programmes`, `programme_blocks`, `programme_sessions`,
+  `programme_exercises`, `programme_assignments`, `exercise_overrides` — right
+  IN EFFECT rather than on the face of it. Their INSERT is already narrow and
+  every one carries the gym/rehab split in its WITH CHECK, so an update by the
+  wrong role passes USING and is then refused loudly. The USING clause is wider
+  than it needs to be, which is untidy rather than wrong.
+
+**Nothing fixed.** Six narrowings and one decision, reported the way G-40 and
+G-42 were.
 
 ---
 

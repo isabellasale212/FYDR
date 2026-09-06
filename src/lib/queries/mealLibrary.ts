@@ -1,6 +1,7 @@
 import { dominant, type Meal, type MealItem, type MealUnit } from '@/lib/nutritionMeals';
 import { humanizeDbError } from '@/lib/writeErrors';
 import type { Db } from './groups';
+import { mustAffect } from '@/lib/write';
 
 /* Query layer for meal_library / meal_library_items (migration 0051). See that
  * migration's own header for what this table is, why it is org-scoped only (O-892) and
@@ -171,10 +172,11 @@ export async function createLibraryMeal(
 /** Soft delete only — CLAUDE.md rule 4. No hard delete path exists anywhere in
  *  migration 0051 (no delete policy, no delete grant to authenticated). */
 export async function deleteLibraryMeal(db: Db, orgId: string, mealId: string): Promise<{ error: string | null }> {
-  const { error } = await db
-    .from('meal_library')
-    .update({ deleted_at: new Date().toISOString() })
-    .eq('id', mealId)
-    .eq('org_id', orgId);
-  return { error: error ? humanizeDbError(error.message, 'staff') : null };
+  return mustAffect(
+    db.from('meal_library').update({ deleted_at: new Date().toISOString() }).eq('id', mealId).eq('org_id', orgId).select('id'),
+    {
+      refusal: 'Not saved: the meal library belongs to the nutritionist, the coach and the sport scientist.',
+      onError: (m) => humanizeDbError(m, 'staff'),
+    },
+  );
 }

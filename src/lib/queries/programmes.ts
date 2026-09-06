@@ -12,6 +12,7 @@ import { todayIso } from '@/lib/format';
 import { humanizeDbError } from '@/lib/writeErrors';
 import type { Db } from './groups';
 import { fetchAllPaged } from './paged';
+import { recordInjuryEvent } from './injuryTimeline';
 import { mustAffect } from '@/lib/write';
 
 /* screens/gym-programmes.md, screens/programme-builder.md, screens/my-programme.md
@@ -506,7 +507,26 @@ export async function assignProgramme(
   db: Db,
   orgId: string,
   userId: string,
-  input: { programmeId: string; athleteId: string | null; groupId: string | null; programmeType: ProgrammeType },
+  input: {
+    programmeId: string;
+    athleteId: string | null;
+    groupId: string | null;
+    programmeType: ProgrammeType;
+    /* The injury <-> S&C link (migrations 0079-0081). Set only when an S&C is
+       assigning to an athlete with an open injury: the assignment is then
+       written as a PROPOSAL rather than going live, and only the medic can
+       activate it. Null everywhere else, which is every other assignment this
+       app makes, and those behave exactly as they did.
+    
+       Scoped to the S&C on purpose, and it is the one thing about this feature
+       left open: a SPORT SCIENTIST assigning to the same injured athlete still
+       creates a live assignment with no sign-off. Widening it would mean
+       admitting the sport scientist to injury_timeline_event's INSERT policy,
+       which is an access-control change and does not belong bundled with this. */
+    proposeAgainstInjuryId?: string | null;
+    /** Only used to write a readable timeline line. */
+    programmeName?: string;
+  },
 ): Promise<{ error: string | null }> {
   if (input.programmeType === 'rehab' && input.athleteId) {
     // suspend_assignments_for_rehab (migration 0050), not a plain client
@@ -525,19 +545,51 @@ export async function assignProgramme(
     if (suspendErr) return { error: humanizeDbError(suspendErr.message, 'staff') };
   }
 
-  const { error } = await db.from('programme_assignments').insert({
-    org_id: orgId,
-    programme_id: input.programmeId,
-    athlete_id: input.athleteId,
-    group_id: input.groupId,
-    assigned_by: userId,
-  });
+  /* Narrowed to a plain string here so the event write below needs no cast:
+     a proposal is an injury id AND an athlete, never one without the other. */
+  const proposeAgainst = input.athleteId ? (input.proposeAgainstInjuryId ?? null) : null;
+
+  const { data, error } = await db
+    .from('programme_assignments')
+    .insert({
+      org_id: orgId,
+      programme_id: input.programmeId,
+      athlete_id: input.athleteId,
+      group_id: input.groupId,
+      assigned_by: userId,
+      ...(proposeAgainst
+        ? { status: 'proposed' as const, injury_id: proposeAgainst }
+        : {}),
+    })
+    .select('id');
   if (error) {
     if (error.message.toLowerCase().includes('row-level security') || error.message.toLowerCase().includes('policy')) {
       return { error: 'Only medical staff can assign a rehab programme.' };
     }
     return { error: humanizeDbError(error.message, 'staff') };
   }
+  const created = data?.[0];
+  if (!created) {
+    return { error: 'Not assigned: nothing was written. Check you still have access to this programme.' };
+  }
+
+  if (proposeAgainst) {
+    /* The assignment exists and is inert either way, so a failed event write is
+       reported rather than rolled back: the S&C's draft is safely NOT live, and
+       telling them the log entry is missing is more useful than telling them the
+       proposal failed when it did not. */
+    const logged = await recordInjuryEvent(db, orgId, userId, 'strength_conditioning', {
+      injuryId: proposeAgainst,
+      type: 'programme_proposed',
+      payload: {
+        assignment_id: created.id,
+        programme_id: input.programmeId,
+        programme: input.programmeName ?? '',
+      },
+    });
+    if (logged.error) return { error: `Proposed, but not recorded on the injury timeline: ${logged.error}` };
+  }
+
   return { error: null };
 }
 

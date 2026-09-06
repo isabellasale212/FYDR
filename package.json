@@ -34,6 +34,8 @@
     "test:link-athlete": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-link-athlete.ts",
     "test:add-athlete-outcomes": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-add-athlete-outcomes.ts",
     "test:injury-card": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-injury-card.ts",
+    "test:injury-timeline": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-injury-timeline.ts",
+    "verify:assignment-authorship": "node scripts/verify-assignment-authorship.mjs",
     "test:access-gates": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-access-gates.ts",
     "test:report-visibility": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-report-visibility.ts",
     "seed:staff-account": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/seed-staff-account.ts"

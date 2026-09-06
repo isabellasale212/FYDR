@@ -1509,6 +1509,61 @@ export type Database = {
         }
       ]
     }
+    injury_timeline_event: {
+      Row: {
+        id: string
+        org_id: string
+        injury_id: string
+        created_by: string | null
+        created_by_role: Database["public"]["Enums"]["app_role"]
+        type: Database["public"]["Enums"]["injury_timeline_event_type"]
+        payload: Json
+        created_at: string
+      }
+      Insert: {
+        id?: string
+        org_id: string
+        injury_id: string
+        created_by?: string | null
+        created_by_role: Database["public"]["Enums"]["app_role"]
+        type: Database["public"]["Enums"]["injury_timeline_event_type"]
+        payload?: Json
+        created_at?: string
+      }
+      Update: {
+        id?: string
+        org_id?: string
+        injury_id?: string
+        created_by?: string | null
+        created_by_role?: Database["public"]["Enums"]["app_role"]
+        type?: Database["public"]["Enums"]["injury_timeline_event_type"]
+        payload?: Json
+        created_at?: string
+      }
+      Relationships: [
+        {
+          foreignKeyName: "injury_timeline_event_created_by_fkey"
+          columns: ["created_by"]
+          isOneToOne: false
+          referencedRelation: "users"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "injury_timeline_event_injury_id_fkey"
+          columns: ["injury_id"]
+          isOneToOne: false
+          referencedRelation: "injuries"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "injury_timeline_event_org_id_fkey"
+          columns: ["org_id"]
+          isOneToOne: false
+          referencedRelation: "organisations"
+          referencedColumns: ["id"]
+        }
+      ]
+    }
     leaderboard_opt_outs: {
       Row: {
         id: string
@@ -2395,6 +2450,7 @@ export type Database = {
         suspended_reason: string | null
         assigned_by: string | null
         created_at: string
+        injury_id: string | null
       }
       Insert: {
         id?: string
@@ -2408,6 +2464,7 @@ export type Database = {
         suspended_reason?: string | null
         assigned_by?: string | null
         created_at?: string
+        injury_id?: string | null
       }
       Update: {
         id?: string
@@ -2421,6 +2478,7 @@ export type Database = {
         suspended_reason?: string | null
         assigned_by?: string | null
         created_at?: string
+        injury_id?: string | null
       }
       Relationships: [
         {
@@ -2442,6 +2500,13 @@ export type Database = {
           columns: ["group_id"]
           isOneToOne: false
           referencedRelation: "groups"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "programme_assignments_injury_id_fkey"
+          columns: ["injury_id"]
+          isOneToOne: false
+          referencedRelation: "injuries"
           referencedColumns: ["id"]
         },
         {
@@ -4388,6 +4453,10 @@ export type Database = {
       Args: Record<string, never>
       Returns: string
     }
+    auth_org_is_premium: {
+      Args: Record<string, never>
+      Returns: boolean
+    }
     auth_org_timezone: {
       Args: Record<string, never>
       Returns: string
@@ -4414,6 +4483,14 @@ export type Database = {
           is_tied: boolean
           previous_position: number
         }[]
+    }
+    consent_write_allowed: {
+      Args: {
+        p_purpose: Database["public"]["Enums"]["consent_purpose"]
+        p_granted_at: string
+        p_withdrawn_at: string
+      }
+      Returns: boolean
     }
     default_threshold_set: {
       Args: Record<string, never>
@@ -4604,10 +4681,6 @@ export type Database = {
       }
       Returns: string
     }
-    rls_auto_enable: {
-      Args: Record<string, never>
-      Returns: unknown
-    }
     seed_default_thresholds: {
       Args: {
         p_org_id: string
@@ -4634,7 +4707,7 @@ export type Database = {
     }
     Enums: {
     app_role: "athlete" | "coach" | "medic" | "sport_scientist" | "strength_conditioning" | "nutritionist"
-    assignment_status: "active" | "suspended" | "completed" | "cancelled"
+    assignment_status: "active" | "suspended" | "completed" | "cancelled" | "proposed"
     athlete_status: "active" | "injured_long_term" | "left_club"
     attendance_status: "full" | "modified" | "absent" | "excused"
     availability_reason: "injury" | "illness" | "personal" | "suspension" | "load_management" | "academic" | "representative" | "other"
@@ -4658,6 +4731,7 @@ export type Database = {
     home_away: "home" | "away" | "neutral"
     injury_severity: "minor" | "moderate" | "severe"
     injury_status: "open" | "rehab" | "return_to_play" | "closed"
+    injury_timeline_event_type: "injury_logged" | "stage_change" | "programme_proposed" | "programme_signed_off" | "note"
     load_basis: "absolute" | "percent_1rm" | "percent_bw" | "rpe" | "none"
     meal_unit: "g" | "ml" | "ea"
     nutrition_checkin_answer: "yes" | "roughly" | "no"
@@ -4699,6 +4773,7 @@ export type FlagSeverity = Database["public"]["Enums"]["flag_severity"];
 export type BodyArea = Database["public"]["Enums"]["body_area"];
 export type BodySide = Database["public"]["Enums"]["body_side"];
 export type InjuryStatus = Database["public"]["Enums"]["injury_status"];
+export type InjuryTimelineEventType = Database["public"]["Enums"]["injury_timeline_event_type"];
 export type ComplianceDomain = Database["public"]["Enums"]["compliance_domain"];
 export type AthleteStatus = Database["public"]["Enums"]["athlete_status"];
 export type DominantSide = Database["public"]["Enums"]["dominant_side"];

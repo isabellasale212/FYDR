@@ -31,6 +31,12 @@ type Props = {
   assignees: readonly Assignee[];
   athletes: readonly Athlete[];
   groups: readonly Group[];
+  programmeName: string;
+  /* athlete id -> their open injury id. Empty for every viewer who is not an
+     S&C, which is what makes the proposal path theirs alone. Passed as DATA
+     rather than as a predicate: a function prop on a Client Component
+     typechecks and then throws at runtime. */
+  openInjuryByAthlete: Record<string, string>;
 };
 
 const LOAD_BASES: LoadBasis[] = ['absolute', 'percent_1rm', 'percent_bw', 'rpe', 'none'];
@@ -53,6 +59,8 @@ export function ProgrammeBuilder({
   assignees,
   athletes,
   groups,
+  programmeName,
+  openInjuryByAthlete,
 }: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -144,6 +152,13 @@ export function ProgrammeBuilder({
     onError: (err) => setError(toUserMessage(err, 'staff')),
   });
 
+  /* An injured athlete, chosen by an S&C, makes this a proposal rather than an
+     assignment: it is written as 'proposed', linked to the injury, and reaches
+     the athlete only when the medic signs it off. Group assignments are never
+     proposals — a group is not one person with one injury. */
+  const proposedInjuryId =
+    assignScope === 'athlete' ? (openInjuryByAthlete[assignAthleteId] ?? null) : null;
+
   const assignMutation = useMutation({
     mutationFn: () =>
       withWriteTimeout(
@@ -152,6 +167,8 @@ export function ProgrammeBuilder({
           athleteId: assignScope === 'athlete' ? assignAthleteId : null,
           groupId: assignScope === 'group' ? assignGroupId : null,
           programmeType,
+          programmeName,
+          proposeAgainstInjuryId: proposedInjuryId,
         }),
       ),
     onSuccess: (result) => {
@@ -462,9 +479,25 @@ export function ProgrammeBuilder({
                   athlete is already on.
                 </p>
               ) : null}
+              {/* Said BEFORE the button, not after the write. The S&C should know
+                  the block is going to sit and wait for the medic while they are
+                  still choosing, rather than pressing Assign and finding out from
+                  a changed label. */}
+              {proposedInjuryId ? (
+                <p className="tiny" style={{ marginTop: 6 }}>
+                  This athlete has an open injury, so this goes to the medic as a
+                  proposal. It will not reach him until they sign it off.
+                </p>
+              ) : null}
               <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
                 <button type="button" className="btn-primary" onClick={() => assignMutation.mutate()} disabled={assignMutation.isPending}>
-                  {assignMutation.isPending ? 'Assigning…' : 'Assign'}
+                  {assignMutation.isPending
+                    ? proposedInjuryId
+                      ? 'Proposing…'
+                      : 'Assigning…'
+                    : proposedInjuryId
+                      ? 'Propose'
+                      : 'Assign'}
                 </button>
                 <button type="button" className="btn-ghost" onClick={() => setAssigning(false)}>
                   Cancel

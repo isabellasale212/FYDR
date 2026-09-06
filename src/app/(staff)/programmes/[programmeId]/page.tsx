@@ -5,10 +5,17 @@ import { ProgrammeStatusControl } from '@/components/ProgrammeStatusControl/Prog
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchAssignedAthletes, fetchAssignments, fetchExercises, fetchProgrammeDetail } from '@/lib/queries/programmes';
 import { fetchSquadList } from '@/lib/queries/squad';
+import { fetchOpenInjuryIdsByAthlete } from '@/lib/queries/injuryTimeline';
 import { enumLabel } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
-import { CLINICAL_ONLY, PROGRAMME_EDIT, REHAB_PROGRAMME, hasAnyRole } from '@/lib/access';
+import {
+  CLINICAL_ONLY,
+  INJURY_PROGRAMME_PROPOSER,
+  PROGRAMME_EDIT,
+  REHAB_PROGRAMME,
+  hasAnyRole,
+} from '@/lib/access';
 
 export const metadata = { title: 'Programme · Fydr' };
 
@@ -47,13 +54,23 @@ export default async function ProgrammeBuilderPage({
     (hasAnyRole(claims.roles, PROGRAMME_EDIT) && detail.programme.programme_type !== 'rehab') ||
     (hasAnyRole(claims.roles, REHAB_PROGRAMME) && detail.programme.programme_type === 'rehab');
 
-  const [exercises, assignees, assignedAthletes, athletes, groups] = await Promise.all([
-    fetchExercises(db, orgId),
-    fetchAssignments(db, orgId, programmeId),
-    fetchAssignedAthletes(db, orgId, programmeId),
-    fetchSquadList(db, orgId, []),
-    fetchGroups(db, orgId),
-  ]);
+  /* Who turns an assignment into a proposal (migrations 0079-0081). The S&C,
+     and not when they are also the medic — a medic assigning to an injured
+     athlete IS the sign-off, so making them propose to themselves would be a
+     loop with no second person in it. INJURY_ACCESS covers the read: this is
+     `injuries` only, never injury_clinical. */
+  const proposesAgainstInjury =
+    hasAnyRole(claims.roles, INJURY_PROGRAMME_PROPOSER) && !isMedical;
+
+  const [exercises, assignees, assignedAthletes, athletes, groups, openInjuryByAthlete] =
+    await Promise.all([
+      fetchExercises(db, orgId),
+      fetchAssignments(db, orgId, programmeId),
+      fetchAssignedAthletes(db, orgId, programmeId),
+      fetchSquadList(db, orgId, []),
+      fetchGroups(db, orgId),
+      proposesAgainstInjury ? fetchOpenInjuryIdsByAthlete(db, orgId) : Promise.resolve({}),
+    ]);
 
   return (
     <>
@@ -112,6 +129,8 @@ export default async function ProgrammeBuilderPage({
         assignees={assignees}
         athletes={athletes}
         groups={groups}
+        programmeName={detail.programme.name}
+        openInjuryByAthlete={openInjuryByAthlete}
       />
     </>
   );

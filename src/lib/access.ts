@@ -124,6 +124,23 @@ export const INJURY_ACCESS = [
   'strength_conditioning',
 ] as const;
 
+/** Who proposes gym work against an open injury rather than assigning it.
+ *
+ *  The S&C, alone. An assignment made by this role for an athlete with an open
+ *  injury is written as a proposal (status 'proposed', linked to the injury) and
+ *  reaches the athlete only when a medic signs it off — migrations 0079-0081.
+ *
+ *  A medic holding this role too is excluded at the call site rather than here:
+ *  they ARE the sign-off, so making them propose would be a loop with one person
+ *  in it. The set answers "who proposes", not "who proposes right now".
+ *
+ *  The sport scientist is deliberately NOT here, and this is the open edge of the
+ *  feature: they can still assign a live programme to an injured athlete with no
+ *  sign-off. Adding them means admitting them to injury_timeline_event's INSERT
+ *  policy, which is an access-control change and is not bundled with this one.
+ *  Decided 2026-09-06. */
+export const INJURY_PROGRAMME_PROPOSER = ['strength_conditioning'] as const;
+
 /** Who may LOG or edit a weigh-in. The one rule in the matrix the documents
  *  could not settle between them, decided 2026-09-06 as the union of what both
  *  claim rather than by picking one.

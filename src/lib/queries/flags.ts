@@ -7,7 +7,7 @@ import { mustAffectOrThrow } from '@/lib/write';
 
 /* Flags. Roles and access from screens/flags.md: coach and medical get full
  * view, acknowledge and dismiss; the athlete_visible_at gate (carve-out 2,
- * 01-roles-and-permissions.md §3) means an athlete never sees a flag until a
+ * 01-roles-and-permissions.md (superseded) §3) means an athlete never sees a flag until a
  * staff member has acknowledged it.
  *
  * Simplified against the full spec for this pass: no recalibration engine (a

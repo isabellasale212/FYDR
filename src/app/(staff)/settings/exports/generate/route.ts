@@ -41,7 +41,7 @@ function athleteLabel(athleteId: string | null, nameById: Map<string, string>): 
  *  only, exactly the same check every report page and report export/route.ts
  *  in this build already uses. An admin with neither role is redirected
  *  before this handler ever runs, matching
- *  01-roles-and-permissions.md §1: "not athlete-level performance detail by
+ *  01-roles-and-permissions.md (superseded) §1: "not athlete-level performance detail by
  *  default." All six domains this builder offers (lib/exportDomains.ts) are
  *  athlete-level performance detail, so gating the whole route this way,
  *  rather than per-domain, is the correct, real version of the spec's role

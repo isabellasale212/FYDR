@@ -28,7 +28,7 @@
  * meaningful role split lives one level up, at the route itself
  * (requireReportAccess(), same as every report page) — an admin with
  * neither role never reaches this list at all, matching
- * 01-roles-and-permissions.md §1's deliberate admin/coach friction.
+ * 01-roles-and-permissions.md (superseded) §1's deliberate admin/coach friction.
  *
  * One shared module (not 'use client', not server-only) so the checklist
  * the builder renders and the allow-list the generate route validates

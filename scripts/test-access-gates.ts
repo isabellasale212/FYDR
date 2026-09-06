@@ -80,6 +80,42 @@ for (const root of ROOTS) {
   }
 }
 
+/* SUPERSEDED DOCUMENTS CITED AS AUTHORITY.
+ *
+ *  Same family of problem as the gates above and the same remedy: a rule the
+ *  build enforces rather than one an audit has to notice. docs/01-roles-and-
+ *  permissions.md describes the FOUR-role model and opens with "Do not build
+ *  against this file", yet 28 comments across 21 files still cited it as the
+ *  reason for a check — and six of those checks had themselves become
+ *  unreachable, so the code and its justification were both describing a world
+ *  that no longer exists.
+ *
+ *  Citations are not banned, because the reasoning in that document is often
+ *  still the reason a thing was built the way it was, and deleting it would cost
+ *  more than it saves. What is banned is citing it WITHOUT the marker, so no
+ *  reader mistakes history for authority. */
+const SUPERSEDED_DOC = '01-roles-and-permissions.md';
+const SUPERSEDED_MARK = `${SUPERSEDED_DOC} (superseded)`;
+const unmarked: Violation[] = [];
+for (const root of ROOTS.concat(['src/lib'])) {
+  for (const file of walk(root)) {
+    if (!/\.(tsx?|ts)$/.test(file)) continue;
+    readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
+      if (!line.includes(SUPERSEDED_DOC)) return;
+      if (line.includes(SUPERSEDED_MARK)) return;
+      unmarked.push({ file, line: i + 1, text: SUPERSEDED_DOC });
+    });
+  }
+}
+if (unmarked.length > 0) {
+  console.error(`\n${SUPERSEDED_DOC} is cited without the "(superseded)" marker.`);
+  console.error('That document describes the four-role model and says not to build against it.');
+  console.error('Cite docs/access-matrix.md for a current rule, or mark the citation as history:\n');
+  for (const v of unmarked) console.error(`  ${v.file}:${v.line}`);
+  console.error('');
+  process.exit(1);
+}
+
 console.log(`access gates: ${checked} gate-shaped booleans built from roles.includes()`);
 console.log(`  ${exempted} carry an access-exempt reason`);
 console.log(`  ${violations.length} do not`);

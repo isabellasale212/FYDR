@@ -810,14 +810,22 @@ reason to lose a live bug.
 
 **Also untracked until now:**
 
-- **Meal library authoring** (`NutritionWorkspace.tsx:506`) is `disabled={!isCoach}`
-  with the tooltip "only coaching staff author it". `meal_library` admits coach,
-  nutritionist and sport scientist, so the nutritionist is refused by the screen
-  from writing the nutrition content that is their job.
-- **`NutritionTargetsList` is dead code.** No page imports it, confirmed again
-  here: zero importers. It carries a working `expireTarget` mutation, so it
-  reads like a live screen to anyone who finds it. It was the headline of the
-  G-34 audit before the reachability check corrected that.
+- **Meal library authoring — FIXED 2026-09-06.** Was `disabled={!isCoach}` with
+  the tooltip "only coaching staff author it", while `meal_library` has admitted
+  the coach, the nutritionist and the sport scientist since 0051. Now resolves
+  from `MEAL_LIBRARY_EDIT`, which is deliberately NOT `NUTRITION_EDIT`: a target
+  is a prescription for one athlete, the library is the club's shared list of
+  food, and a coach has a real reason to add to the second and not the first.
+  Both sets asserted together in 370_meal_library_authoring_test.sql, since the
+  bug was treating them as one question.
+- **`NutritionTargetsList` — REMOVED 2026-09-06**, with `expireTarget`, its only
+  caller's only mutation. Checked first for static imports, dynamic imports,
+  `next/dynamic`, `require`, barrel files and any string that could name a chunk:
+  every mention outside its own file was a comment or a doc. Proven by removal —
+  typecheck and `next build` both pass, 117 routes emitted, unchanged. NOT merely
+  unused: `expireTarget` was SUPERSEDED, because assigning a new target already
+  expires the old one in the same write (`nutritionRules.ts`), which is what the
+  specification describes and the only path any screen offers.
 - **Sixteen report pages, exports and PDF routes** still derive `actorRole` with
   the old ternary instead of `actingRole()`. COUNT CORRECTED 2026-09-06: this
   entry said "`reports/training/pdf` and `/export`", two sites. The real figure

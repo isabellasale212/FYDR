@@ -4,23 +4,13 @@ import { DashboardHeadlineStats } from '@/components/DashboardHeadlineStats/Dash
 import { Dial } from '@/components/Dial/Dial';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { PrintButton } from '@/components/PrintButton/PrintButton';
-import {
-  fetchEffectiveToday,
-  fetchHeadlineStats,
-  fetchOutstandingTracks,
-  fetchSaturdayReadiness,
-  fetchTimeline,
-  fetchWeekStrip,
-    type ReadinessRowKey,
-    type SessionPip,
-} from '@/lib/queries/dashboard';
+import { fetchEffectiveToday, fetchHeadlineStats, fetchOutstandingTracks, fetchSaturdayReadiness, fetchTimeline, fetchWeekStrip, type ReadinessRowKey, type SessionPip } from '@/lib/queries/dashboard';
 import { fetchGroups } from '@/lib/queries/groups';
 import { mondayOf } from '@/lib/queries/schedule';
 import { addDays, formatDate, formatLongDate, todayIso } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
-import { ALL_STAFF, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Dashboard · Fydr' };
 
@@ -137,9 +127,9 @@ function dayTitle(date: string, wallClockToday: string): string {
  *  file's header before extending this page — most of the judgement calls
  *  live there, not here. */
 export default async function DashboardPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, orgName, claims, timezone } = await requireStaff();
+  const { db, orgId, timezone } = await requireStaff();
 
-  // 01-roles-and-permissions.md §2: admin gets `no` for "View squad
+  // 01-roles-and-permissions.md (superseded) §2: admin gets `no` for "View squad
   // dashboard" — every panel below is named-athlete availability, load and
   // flag detail. docs/20-route-map.md §11 G-1 resolves the one place the
   // docs disagree (02-information-architecture.md §4.2 sketches an admin
@@ -153,27 +143,19 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
      staff who is not an admin". The sport scientist, the S&C and the
      nutritionist are none of those, so this screen refused all three. The
      access matrix gives every staff role this page. */
-  const hasAccess = hasAnyRole(claims.roles, ALL_STAFF);
-  if (!hasAccess) {
-    return (
-      <>
-        <div className="topbar">
-          <div className="page-head">
-            <p className="eyebrow">Squad · {orgName}</p>
-            <h1>Dashboard</h1>
-          </div>
-        </div>
-        <div className="empty">
-          <h2>Not part of this role</h2>
-          <p>
-            The dashboard is availability, load and flag detail for every named athlete.
-            This role does not read athlete performance detail; see the access matrix. Reports, Leaderboard and Settings are still open
-            from the sidebar.
-          </p>
-        </div>
-      </>
-    );
-  }
+    /* No role gate here, and that is the rule rather than an omission. This page
+     is open to every staff role: requireStaff() has already turned away anyone
+     who is not staff, and ALL_STAFF is by definition the rest.
+
+     There WAS a gate, keyed on the four-role model's `coach || medic` — the
+     phrase that model used for "any staff who is not an admin". The five-role
+     model has no admin, so that phrase excluded the sport scientist, the S&C and
+     the nutritionist, and G-39 corrected it to ALL_STAFF. What it left behind was
+     a refusal branch that could no longer fire, rendering "Not part of this role"
+     for a condition nothing satisfies, explained by a comment citing a document
+     that now says do not build against it. Removed 2026-09-06: unreachable code
+     that reads as a live rule is worse than no code, because the next audit
+     believes it. */
 
   const sp = await searchParams;
   const groupIds = await resolveGroupFilter(sp.groups);
@@ -212,7 +194,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
     fetchSaturdayReadiness(db, orgId, groupIds, effectiveToday, timezone),
     fetchOutstandingTracks(db, orgId, groupIds, effectiveToday),
   ]);
-
 
   /* The week strip's header line, derived from the strip's own days rather
    * than re-queried: the count is literally the number of activities rendered

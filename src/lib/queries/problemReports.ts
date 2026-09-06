@@ -3,7 +3,7 @@ import type { Db } from './groups';
 import { mustAffect } from '@/lib/write';
 
 /* migration 0040, problem_reports — 03-flows.md §6 ("Athlete reports a problem
- * from Today tab -> notification to Medical") and 01-roles-and-permissions.md
+ * from Today tab -> notification to Medical") and 01-roles-and-permissions.md (superseded)
  * §1 ("Report a problem or injury concern to medical staff"). See that
  * migration's own header for the full visibility reasoning: athlete inserts
  * and reads their own; medical reads org-wide and owns the status walk;

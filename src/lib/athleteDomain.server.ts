@@ -24,7 +24,7 @@ import type { AppRole } from '@/lib/types/database';
  *   THE ROLE GATE. squad/[athleteId]/page.tsx checks coach-or-medical before
  *   any per-athlete query runs, because a direct link or a bookmark reaches
  *   these routes without passing the roster page's own check
- *   (01-roles-and-permissions.md §1/§2: an athlete's performance, wellness,
+ *   (01-roles-and-permissions.md (superseded) §1/§2: an athlete's performance, wellness,
  *   load and injury-availability detail is admin's clearest "cannot"). These
  *   three routes are that same detail, split by domain, so they take the same
  *   gate at the same point — before the athlete row is even read. Client rule

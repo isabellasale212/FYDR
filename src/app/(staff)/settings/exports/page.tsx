@@ -24,7 +24,7 @@ const DEFAULT_WINDOW_DAYS = 30;
  *  gate every report page in this build already uses, and the correct one
  *  here — every domain this builder offers is athlete-level performance
  *  detail, so an admin with neither role is turned away before reaching
- *  this page at all, per 01-roles-and-permissions.md §1.
+ *  this page at all, per 01-roles-and-permissions.md (superseded) §1.
  *
  *  Who: the same global group filter every multi-athlete screen in this app
  *  already uses (CLAUDE.md §3) — resolveGroupFilter/GroupFilter, unchanged

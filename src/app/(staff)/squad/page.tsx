@@ -6,7 +6,7 @@ import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchSquadList } from '@/lib/queries/squad';
 import { requireStaff } from '@/lib/session';
-import { ALL_STAFF, SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
+import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Squad overview · Fydr' };
 
@@ -19,7 +19,7 @@ export default async function SquadPage({
 }) {
   const { db, orgId, orgName, claims } = await requireStaff();
 
-  // 01-roles-and-permissions.md §2: admin gets `no` for "View squad
+  // 01-roles-and-permissions.md (superseded) §2: admin gets `no` for "View squad
   // dashboard", and docs/20-route-map.md §2.3 lists /squad's own roles as
   // coach/medical only, no admin, no aggregate note. This page is the full
   // named roster plus availability and restrictions — exactly the
@@ -28,27 +28,19 @@ export default async function SquadPage({
      staff who is not an admin". The sport scientist, the S&C and the
      nutritionist are none of those, so this screen refused all three. The
      access matrix gives every staff role this page. */
-  const hasAccess = hasAnyRole(claims.roles, ALL_STAFF);
-  if (!hasAccess) {
-    return (
-      <>
-        <div className="topbar">
-          <div className="page-head">
-            <p className="eyebrow">Squad · {orgName}</p>
-            <h1>Squad overview</h1>
-          </div>
-        </div>
-        <div className="empty">
-          <h2>Not part of this role</h2>
-          <p>
-            The squad overview is the full named roster, plus availability and
-            restrictions. Admin manages the club and does not read athlete performance
-            data &mdash; see 01-roles-and-permissions.md §1.
-          </p>
-        </div>
-      </>
-    );
-  }
+    /* No role gate here, and that is the rule rather than an omission. This page
+     is open to every staff role: requireStaff() has already turned away anyone
+     who is not staff, and ALL_STAFF is by definition the rest.
+
+     There WAS a gate, keyed on the four-role model's `coach || medic` — the
+     phrase that model used for "any staff who is not an admin". The five-role
+     model has no admin, so that phrase excluded the sport scientist, the S&C and
+     the nutritionist, and G-39 corrected it to ALL_STAFF. What it left behind was
+     a refusal branch that could no longer fire, rendering "Not part of this role"
+     for a condition nothing satisfies, explained by a comment citing a document
+     that now says do not build against it. Removed 2026-09-06: unreachable code
+     that reads as a live rule is worse than no code, because the next audit
+     believes it. */
 
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);

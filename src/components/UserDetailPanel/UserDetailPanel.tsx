@@ -37,7 +37,7 @@ type Props = {
 };
 
 /** screens/user-management.md's own "WHAT THIS USER CAN SEE" panel, from
- *  01-roles-and-permissions.md §2's permission matrix, reduced to the
+ *  01-roles-and-permissions.md (superseded) §2's permission matrix, reduced to the
  *  wireframe's own five rows. Roles are additive, so this is a plain OR
  *  across whatever roles are held, not a lookup keyed to one role — the
  *  same "union of permissions" rule the wireframe states in words

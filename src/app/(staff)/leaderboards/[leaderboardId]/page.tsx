@@ -3,15 +3,7 @@ import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { LeaderboardStaffActions } from '@/components/LeaderboardStaffActions/LeaderboardStaffActions';
-import {
-  fetchBoard,
-  fetchBoardRanking,
-  fetchMetricCatalogue,
-  fetchAthleteNames,
-  fetchAthletePositions,
-  metricDecimals,
-  populationLabel,
-} from '@/lib/queries/leaderboards';
+import { fetchBoard, fetchBoardRanking, fetchMetricCatalogue, fetchAthleteNames, fetchAthletePositions, metricDecimals, populationLabel } from '@/lib/queries/leaderboards';
 import { fetchGroupAthleteIds, fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
@@ -19,7 +11,7 @@ import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
 import { isPremium } from '@/lib/tier';
 import { PlanGate } from '@/components/PlanGate/PlanGate';
-import { ALL_STAFF, CLINICAL_ONLY, LEADERBOARD_EDIT, hasAnyRole } from '@/lib/access';
+import { CLINICAL_ONLY, LEADERBOARD_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Board · Fydr' };
 
@@ -51,7 +43,6 @@ export default async function LeaderboardDetailPage({
      malformed id is a URL that does not name anything, not a server fault. */
   if (!isUuid(leaderboardId)) notFound();
 
-
   // docs/20-route-map.md §2.3: board detail's roles are `coach, medical`
   // only — unlike the wall one level up, there's no admin row_note here at
   // all, aggregate or otherwise. Checked before fetchBoard() runs, so an
@@ -61,30 +52,19 @@ export default async function LeaderboardDetailPage({
      staff who is not an admin". The sport scientist, the S&C and the
      nutritionist are none of those, so this screen refused all three. The
      access matrix gives every staff role this page. */
-  const hasAccess = hasAnyRole(claims.roles, ALL_STAFF);
-  if (!hasAccess) {
-    return (
-      <>
-        <div className="topbar">
-          <div className="page-head">
-            <p className="eyebrow">
-              <Link href="/leaderboards/manage">Leaderboard</Link> · Board
-            </p>
-            <h1>Board detail</h1>
-          </div>
-        </div>
-        <div className="empty">
-          <h2>Not part of this role</h2>
-          <p>
-            A board&apos;s ranking is named-athlete data. Admin manages the club and does
-            not read athlete performance data &mdash; see 01-roles-and-permissions.md §1.
-            The board list at <Link href="/leaderboards/manage">Manage leaderboards</Link>{' '}
-            shows configuration only, with no ranking.
-          </p>
-        </div>
-      </>
-    );
-  }
+    /* No role gate here, and that is the rule rather than an omission. This page
+     is open to every staff role: requireStaff() has already turned away anyone
+     who is not staff, and ALL_STAFF is by definition the rest.
+
+     There WAS a gate, keyed on the four-role model's `coach || medic` — the
+     phrase that model used for "any staff who is not an admin". The five-role
+     model has no admin, so that phrase excluded the sport scientist, the S&C and
+     the nutritionist, and G-39 corrected it to ALL_STAFF. What it left behind was
+     a refusal branch that could no longer fire, rendering "Not part of this role"
+     for a condition nothing satisfies, explained by a comment citing a document
+     that now says do not build against it. Removed 2026-09-06: unreachable code
+     that reads as a live rule is worse than no code, because the next audit
+     believes it. */
 
   const sp = await searchParams;
   const groupIds = await resolveGroupFilter(sp.groups);

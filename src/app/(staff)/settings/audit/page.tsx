@@ -28,7 +28,7 @@ function qs(params: Record<string, string | undefined>): string {
 }
 
 /** docs/10-roadmap.md's own gap list: "Audit log viewer (new screen 35) —
- *  01-roles-and-permissions.md §2 grants admins access to the audit log
+ *  01-roles-and-permissions.md (superseded) §2 grants admins access to the audit log
  *  and no screen exists." lib/queries/auditLog.ts's header has the rest —
  *  the table and its admin-only RLS were both already real. Admin only,
  *  same gate as the rest of Settings' admin-only sections.

@@ -3,7 +3,7 @@ import { isUuid } from '@/lib/uuid';
 import { rangeBounds } from './schedule';
 
 /* docs/10-roadmap.md's own gap list: "Audit log viewer (new screen 35) —
- * 01-roles-and-permissions.md §2 grants admins access to the audit log and
+ * 01-roles-and-permissions.md (superseded) §2 grants admins access to the audit log and
  * no screen exists." The table (migration 0007) and its RLS (migration 0012,
  * audit_admin_select: admin, own org, no update or delete policy for any
  * role) were both already real and already being written to by a dozen

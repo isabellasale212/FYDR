@@ -8,7 +8,7 @@ import Link from 'next/link';
 /** The role refusal. Identical wording to squad/[athleteId]/page.tsx's own,
  *  because it is the identical refusal for the identical reason: an athlete's
  *  performance, wellness, load and injury-availability detail is admin's
- *  clearest "cannot" (01-roles-and-permissions.md §1/§2). Naming the domain
+ *  clearest "cannot" (01-roles-and-permissions.md (superseded) §1/§2). Naming the domain
  *  rather than saying "this page" so a reader who followed a link from
  *  somewhere knows what they were refused. */
 export function AthleteDomainDenied({ orgName, domain }: { orgName: string; domain: string }) {
@@ -25,7 +25,7 @@ export function AthleteDomainDenied({ orgName, domain }: { orgName: string; doma
         <p>
           An athlete&apos;s {domain.toLowerCase()} detail is named performance and wellness data.
           Admin manages the club and does not read athlete performance data &mdash; see
-          01-roles-and-permissions.md §1.
+          01-roles-and-permissions.md (superseded) §1.
         </p>
       </div>
     </>

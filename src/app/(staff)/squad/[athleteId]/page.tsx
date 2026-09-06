@@ -240,7 +240,7 @@ export default async function AthletePage({
   searchParams: SearchParams;
 }) {
   const { athleteId } = await params;
-  const { db, orgId, orgName, timezone, claims } = await requireStaff();
+  const { db, orgId, timezone, claims } = await requireStaff();
   /* Shape-check the route param before it reaches a query. Authenticated
      first, so this never becomes a probe; then 404 rather than 500, because a
      malformed id is a URL that does not name anything, not a server fault. */
@@ -249,34 +249,26 @@ export default async function AthletePage({
 
   // Same gate as /squad, applied before any per-athlete query runs: a
   // direct link or a bookmark can reach this route without passing through
-  // the roster page's own check. 01-roles-and-permissions.md §1/§2 — an
+  // the roster page's own check. 01-roles-and-permissions.md (superseded) §1/§2 — an
   // individual athlete profile is named performance, wellness, load and
   // injury-availability detail, admin's clearest "cannot" case.
   /* Was `coach || medic`, which in the four-role model was the phrase for "any
      staff who is not an admin". The sport scientist, the S&C and the
      nutritionist are none of those, so this screen refused all three. The
      access matrix gives every staff role this page. */
-  const hasAccess = hasAnyRole(claims.roles, ALL_STAFF);
-  if (!hasAccess) {
-    return (
-      <>
-        <div className="topbar">
-          <div className="page-head">
-            <p className="eyebrow">Squad · {orgName}</p>
-            <h1>Athlete</h1>
-          </div>
-        </div>
-        <div className="empty">
-          <h2>Not part of this role</h2>
-          <p>
-            An athlete profile is named performance, wellness, load and injury-availability
-            detail. Admin manages the club and does not read athlete performance data
-            &mdash; see 01-roles-and-permissions.md §1.
-          </p>
-        </div>
-      </>
-    );
-  }
+    /* No role gate here, and that is the rule rather than an omission. This page
+     is open to every staff role: requireStaff() has already turned away anyone
+     who is not staff, and ALL_STAFF is by definition the rest.
+
+     There WAS a gate, keyed on the four-role model's `coach || medic` — the
+     phrase that model used for "any staff who is not an admin". The five-role
+     model has no admin, so that phrase excluded the sport scientist, the S&C and
+     the nutritionist, and G-39 corrected it to ALL_STAFF. What it left behind was
+     a refusal branch that could no longer fire, rendering "Not part of this role"
+     for a condition nothing satisfies, explained by a comment citing a document
+     that now says do not build against it. Removed 2026-09-06: unreachable code
+     that reads as a live rule is worse than no code, because the next audit
+     believes it. */
 
   const today = todayIso(timezone);
 

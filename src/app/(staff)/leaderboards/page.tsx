@@ -6,7 +6,6 @@ import { fetchLeaderboardWall } from '@/lib/queries/leaderboardWall';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
-import { ALL_STAFF, hasAnyRole } from '@/lib/access';
 
 /* Renamed from "Testing wall". That name was accurate when every board came
  * from test_results; the wall now ranks GPS and wellness too, and the design
@@ -32,11 +31,11 @@ export default async function LeaderboardWallPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { db, orgId, orgName, timezone, claims } = await requireStaff();
+  const { db, orgId, timezone } = await requireStaff();
 
   // docs/20-route-map.md §2.3/§3: the wall's own roles list is
   // `coach, medical, admin`, with a role_note — "board and participant
-  // counts only, no names against values" — and 01-roles-and-permissions.md
+  // counts only, no names against values" — and 01-roles-and-permissions.md (superseded)
   // §2 gives admin `A` (aggregate) rather than `no` for "View leaderboards".
   // That aggregate-only rendering doesn't exist in this build: the wall is
   // LeaderboardWall, a named-athlete ranking per test, full stop, the same
@@ -52,33 +51,19 @@ export default async function LeaderboardWallPage({
      staff who is not an admin". The sport scientist, the S&C and the
      nutritionist are none of those, so this screen refused all three. The
      access matrix gives every staff role this page. */
-  const hasAccess = hasAnyRole(claims.roles, ALL_STAFF);
-  if (!hasAccess) {
-    return (
-      <>
-        <div className="topbar">
-          <div className="page-head">
-            <p className="eyebrow">TESTING · GPS · WELLNESS · {orgName}</p>
-            <h1>Leaderboard</h1>
-          </div>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <Link href="/leaderboards/manage" className="btn-ghost">
-              Manage published boards →
-            </Link>
-          </div>
-        </div>
-        <div className="empty">
-          <h2>Not part of this role</h2>
-          <p>
-            The leaderboard ranks every athlete, by name, against every board. Admin
-            manages the club and does not read athlete performance data &mdash; see
-            01-roles-and-permissions.md §1. Board management, which never shows a named
-            result, is still open above.
-          </p>
-        </div>
-      </>
-    );
-  }
+    /* No role gate here, and that is the rule rather than an omission. This page
+     is open to every staff role: requireStaff() has already turned away anyone
+     who is not staff, and ALL_STAFF is by definition the rest.
+
+     There WAS a gate, keyed on the four-role model's `coach || medic` — the
+     phrase that model used for "any staff who is not an admin". The five-role
+     model has no admin, so that phrase excluded the sport scientist, the S&C and
+     the nutritionist, and G-39 corrected it to ALL_STAFF. What it left behind was
+     a refusal branch that could no longer fire, rendering "Not part of this role"
+     for a condition nothing satisfies, explained by a comment citing a document
+     that now says do not build against it. Removed 2026-09-06: unreachable code
+     that reads as a live rule is worse than no code, because the next audit
+     believes it. */
 
   const sp = await searchParams;
   const groupIds = await resolveGroupFilter(sp.groups);

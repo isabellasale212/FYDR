@@ -29,7 +29,7 @@ import { actingRole } from '@/lib/access';
  *
  *   - The role gate. requireStaff() is not enough on its own: the board page refuses
  *     an admin-only visitor by hand (a ranking is named-athlete data, and admin does
- *     not read athlete performance data — 01-roles-and-permissions.md §1). Repeated
+ *     not read athlete performance data — 01-roles-and-permissions.md (superseded) §1). Repeated
  *     here, because a route is a separate front door and RLS on `leaderboards` alone
  *     would let an admin through to the config, even though compute_leaderboard would
  *     then hand them an empty ranking.

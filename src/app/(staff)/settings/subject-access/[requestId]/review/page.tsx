@@ -10,7 +10,7 @@ export const metadata = { title: 'Clinical review · Fydr' };
 /** 09-security-and-compliance.md §6: "the SAR pack generation must route
  *  through the medical role" — this is that route. Medical only, not
  *  admin: the whole reason this step exists is that admin does not, and
- *  should not, read clinical detail directly (01-roles-and-permissions.md
+ *  should not, read clinical detail directly (01-roles-and-permissions.md (superseded)
  *  §1). An admin who lands here via a stale link is turned away the same
  *  way requireReportAccess turns an admin away from a report, just the
  *  opposite role. */

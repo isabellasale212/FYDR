@@ -181,32 +181,20 @@ export async function createTarget(
   return { error: null };
 }
 
-/** Sets effective_to to today rather than deleting — the table's own history is
- *  kept, matching every other interval-style table in this build. "Today" is
- *  the org's local date (todayIso), not the server's UTC one — the same fix
- *  as fetchTargets' own "not expired" filter just above, on the write side
- *  this time: a server-UTC date here could set effective_to to a day the
- *  coach doesn't recognise as "today" for an org with a non-UTC offset. */
-/* G-34. `.select('id')` is not decoration: without it this returned
-   { error: null } when RLS refused the write, because an UPDATE that fails a
-   USING clause matches no row and does not raise. A caller that only checks
-   `error` cannot tell "saved" from "silently refused", and this screen showed
-   the button to exactly the two roles 0070 stopped from writing. Asking for the
-   affected rows is what turns that into something sayable. */
-export async function expireTarget(db: Db, orgId: string, id: string, timezone: string): Promise<{ error: string | null }> {
-  const { data, error } = await db
-    .from('nutrition_targets')
-    .update({ effective_to: todayIso(timezone) })
-    .eq('org_id', orgId)
-    .eq('id', id)
-    .is('effective_to', null)
-    .select('id');
-  if (error) return { error: humanizeDbError(error.message, 'staff') };
-  if (!data || data.length === 0) {
-    return { error: 'That target was not changed. Setting nutrition targets is the nutritionist\u2019s, and the sport scientist\u2019s.' };
-  }
-  return { error: null };
-}
+/* expireTarget was here, and went with NutritionTargetsList on 2026-09-06.
+ *
+ *  It was not simply unused: it was SUPERSEDED. Ending a nutrition target is not
+ *  a standalone action in this product — assigning a new one expires the old one
+ *  as part of the same write (nutritionRules.ts's assignPlan), which is what the
+ *  specification describes and the only path any screen offers. So a separate
+ *  expire had no caller and no screen that wanted one.
+ *
+ *  Recorded rather than deleted quietly because the function looked healthy: it
+ *  had been through the G-34 silent-write fix and carried a correct row-count
+ *  check, which is exactly what makes an unreachable write convincing to the
+ *  next person who finds it. If a "end this target without replacing it" action
+ *  is ever specified, it wants writing against the rules of that day, not
+ *  resurrecting from git. */
 
 export type ResolvedTarget = {
   target_date: string;

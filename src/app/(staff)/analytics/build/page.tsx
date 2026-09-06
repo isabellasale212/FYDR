@@ -132,7 +132,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
   }
 
   /* Role BEFORE tier, deliberately. docs/20-route-map.md §2.3 gives /analytics
-   * to coach and medical only, and 01-roles-and-permissions.md §2 gives admin
+   * to coach and medical only, and 01-roles-and-permissions.md (superseded) §2 gives admin
    * a flat `no` for "Build custom analytics". An admin denied by role would
    * still be denied after an upgrade, so showing them a "buy Premium" panel
    * would be selling them something that does not unlock this. Role is the
@@ -153,7 +153,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
           <h2>Not part of this role</h2>
           <p>
             Analytics is named-athlete performance data. Admin manages the club and does not
-            read athlete performance data &mdash; see 01-roles-and-permissions.md §1.
+            read athlete performance data &mdash; see 01-roles-and-permissions.md (superseded) §1.
           </p>
         </div>
       </>

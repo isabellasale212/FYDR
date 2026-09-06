@@ -31,7 +31,7 @@ const AVAIL_PILL: Record<string, string> = {
  *  reports" section added on top of it (migration 0040, 03-flows.md §6) is the one
  *  part of this page that does branch: medical only, per that migration's own
  *  visibility reasoning — the athlete capability that files a report is worded "to
- *  medical staff" (01-roles-and-permissions.md §1), so a coach gets no section, no
+ *  medical staff" (01-roles-and-permissions.md (superseded) §1), so a coach gets no section, no
  *  badge, and no count, the same way this page's own hub — the place medical
  *  triages what an athlete has sent — is where this build puts it rather than
  *  inventing a new nav destination for it. */
@@ -95,7 +95,7 @@ export default async function InjuriesPage({
 
       {/* Medical-only, per this migration 0040 header's own reasoning: a
        * report is routed to medical staff by name in
-       * 01-roles-and-permissions.md §1, so a coach sees no section, no
+       * 01-roles-and-permissions.md (superseded) §1, so a coach sees no section, no
        * badge, and no count here at all — not a filtered view of one. */}
       {isMedical ? (
         <section aria-labelledby="problem-reports-title" style={{ marginBottom: 18 }}>

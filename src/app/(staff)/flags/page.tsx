@@ -8,7 +8,7 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, todayIso } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
-import { ALL_STAFF, canEditFlag, hasAnyRole } from '@/lib/access';
+import { canEditFlag } from '@/lib/access';
 
 export const metadata = { title: 'Flags · Fydr' };
 
@@ -35,26 +35,19 @@ export default async function FlagsPage({
      staff who is not an admin". The sport scientist, the S&C and the
      nutritionist are none of those, so this screen refused all three. The
      access matrix gives every staff role this page. */
-  const hasAccess = hasAnyRole(claims.roles, ALL_STAFF);
+    /* No role gate here, and that is the rule rather than an omission. This page
+     is open to every staff role: requireStaff() has already turned away anyone
+     who is not staff, and ALL_STAFF is by definition the rest.
 
-  if (!hasAccess) {
-    return (
-      <>
-        <div className="topbar">
-          <div className="page-head">
-            <p className="eyebrow">Squad · {orgName}</p>
-            <h1>Flags</h1>
-          </div>
-        </div>
-        <div className="empty">
-          <h2>Not part of this role</h2>
-          <p>
-            Flags carry wellness and load detail. This role does not read athlete performance detail; see the access matrix.
-          </p>
-        </div>
-      </>
-    );
-  }
+     There WAS a gate, keyed on the four-role model's `coach || medic` — the
+     phrase that model used for "any staff who is not an admin". The five-role
+     model has no admin, so that phrase excluded the sport scientist, the S&C and
+     the nutritionist, and G-39 corrected it to ALL_STAFF. What it left behind was
+     a refusal branch that could no longer fire, rendering "Not part of this role"
+     for a condition nothing satisfies, explained by a comment citing a document
+     that now says do not build against it. Removed 2026-09-06: unreachable code
+     that reads as a live rule is worse than no code, because the next audit
+     believes it. */
 
   const [groups, allFlags] = await Promise.all([
     fetchGroups(db, orgId),

@@ -163,7 +163,7 @@ export const SIDEBAR: readonly Row[] = [
   {
     // Admin stays in this row's roles deliberately — 20-route-map.md's own
     // sidebar array keeps it (`roles: ["coach", "medic", "sport_scientist"]`), and
-    // 01-roles-and-permissions.md §2 gives admin `A` (aggregate), not `no`,
+    // 01-roles-and-permissions.md (superseded) §2 gives admin `A` (aggregate), not `no`,
     // for "View leaderboards". /leaderboards/manage (board config, no named
     // data) is genuinely admin's to use, and this row is the only door to
     // it. The wall itself (/leaderboards, LeaderboardWall) still denies an

@@ -11382,3 +11382,17 @@ main:has(.rhead) > .back-btn > :first-child {
   border-radius: 12px;
   padding: 4px 6px;
 }
+
+/* Injury card, "Past injuries (N)". Reuses .disclose for the caret-after-label
+   behaviour and the rotate-on-open, with two differences the reference card
+   shows: the caret sits beside the label rather than pushed to the far edge, and
+   the label reads as a link. Scoped so no other .disclose changes. */
+.pp-past-injuries > summary {
+  justify-content: flex-start;
+  gap: 6px;
+  min-height: 0;
+  color: var(--accent-text);
+}
+.pp-past-injuries > summary::after {
+  color: var(--accent-text);
+}

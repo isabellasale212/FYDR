@@ -181,10 +181,15 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
                 /* Collapsed by default and native rather than stateful: a medic
                    working the current injury does not need last season taking up
                    space, and <details> keeps this a server component. */
-                <details style={{ marginTop: 14 }}>
-                  <summary className="linklike" style={{ cursor: 'pointer' }}>
-                    Past injuries ({past.length})
-                  </summary>
+                <details className="disclose pp-past-injuries" style={{ marginTop: 14 }}>
+                  {/* The app's own disclosure pattern rather than a bespoke one:
+                      .disclose already hides the native marker, puts a caret
+                      AFTER the label and rotates it on open, which is what the
+                      reference card shows. Two overrides in pp-past-injuries:
+                      the caret sits next to the label instead of being pushed to
+                      the far edge, and the label is accent-coloured, both as in
+                      the reference. */}
+                  <summary>Past injuries ({past.length})</summary>
                   <div className="pp-injury-list" style={{ marginTop: 8 }}>
                     {past.map((p) => (
                       <p className="sub" key={p.id} style={{ margin: '0 0 6px' }}>

@@ -444,27 +444,44 @@ select is((select count(*) from injury_clinical), 0::bigint,
 
 
 -- ===========================================================================
--- 9a. The nutritionist sees no injury or medical information anywhere
+-- 9a. The nutritionist sees no DIAGNOSIS anywhere
 --
--- D-01, the highest ranked decision in the queue, and until the five-role
--- model there was no way to write this test: a nutritionist held the coach
--- role, so the database could not tell them apart from one.
+-- WHAT THIS SECTION USED TO ASSERT, and why it changed on 2026-09-06. D-01 read
+-- "nutritionist excluded from all injury/availability data, everywhere", and
+-- this section asserted exactly that: zero injuries, zero availability, zero
+-- clinical records. The first two are now wrong on purpose. That role sees the
+-- censored injury and availability view a coach and an S&C already see -- body
+-- area, status, restrictions, expected return -- so it can do its own job around
+-- an injured athlete without asking somebody to read the report out.
 --
--- docs/access-matrix.md §3.2 is X in the nutritionist column on every row, and
--- §4.2 says what they keep: "compliance, wellness, body mass, testing and GPS".
--- Both halves are asserted, because a rule that only refuses is indistinguish-
--- able from a role that cannot read anything at all.
+-- The old assertion carried its own reasoning: "the status is as much injury
+-- information as the diagnosis". That is the sentence the decision overturned,
+-- and it is kept here rather than deleted, because a reader who finds only the
+-- new rule cannot tell whether the old one was considered or merely forgotten.
+--
+-- WHAT DID NOT CHANGE, and is now the whole of the rule: injury_clinical. The
+-- diagnosis, mechanism, imaging, referral, clinical notes and treatment plan all
+-- live there, the policy is clinical_medical_only, and nothing in the reversal
+-- touches it. So the boundary moved from "this role sees nothing about injuries"
+-- to "this role sees no diagnosis", which is the same boundary every other
+-- non-medic staff role already sits behind. Detail in
+-- 330_nutritionist_injury_view_test.sql.
+--
+-- §4.2's positive controls below are unchanged and still matter: a rule that
+-- only refuses is indistinguishable from a role that cannot read anything.
 -- ===========================================================================
 
 select tests.set_jwt(tests.uid('orga', 'user_nutritionist'));
 
-select is((select count(*) from injuries), 0::bigint,
-  'a nutritionist reads ZERO injury rows');
+select cmp_ok((select count(*) from injuries), '>', 0::bigint,
+  'a nutritionist DOES read injury rows now -- D-01 reversed 2026-09-06, the '
+  'censored view only');
 select is((select count(*) from injury_clinical), 0::bigint,
-  'a nutritionist reads ZERO clinical records');
-select is((select count(*) from availability), 0::bigint,
-  'a nutritionist reads ZERO availability rows: the status is as much injury '
-  'information as the diagnosis, for a role that is X on the whole block');
+  'and still reads ZERO clinical records: the diagnosis is the part that never '
+  'moved');
+select cmp_ok((select count(*) from availability), '>', 0::bigint,
+  'and DOES read availability -- status and expected return are the other half '
+  'of the same censored report');
 select is((select count(*) from rehab_assignments), 0::bigint,
   'a nutritionist reads ZERO rehab assignments');
 select is((select count(*) from team_allocations), 0::bigint,

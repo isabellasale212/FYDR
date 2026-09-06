@@ -6,7 +6,7 @@ import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatNumber } from '@/lib/format';
-import { requireReportAccess } from '@/lib/session';
+import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
 /** CSV only, see lib/csv.ts's header. Four small tables, one per section
@@ -15,7 +15,7 @@ import type { AppRole } from '@/lib/types/database';
  *  reports/athlete/[athleteId]/export/route.ts already uses. The headline
  *  tiles and the attention list aren't tabular data and stay on the page. */
 export async function GET(request: Request) {
-  const { db, orgId, claims, timezone } = await requireReportAccess();
+  const { db, orgId, claims, timezone } = await requireReport('squad');
   const url = new URL(request.url);
   // resolveGroupFilter, not parseGroupParam: the export resolves the sticky
   // filter cookie exactly as the on-screen report does (audit S4), and the

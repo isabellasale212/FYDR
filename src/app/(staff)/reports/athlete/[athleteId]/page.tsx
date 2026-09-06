@@ -10,7 +10,7 @@ import { fetchAthleteReport } from '@/lib/queries/athleteReport';
 import { recordReportView } from '@/lib/queries/reports';
 import { BLANK, ageFrom, enumLabel, formatDate, formatNumber } from '@/lib/format';
 import { availabilityStatus, SEVERITY_STATUS } from '@/lib/status';
-import { requireReportAccess } from '@/lib/session';
+import { requireReport } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
 import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
@@ -82,7 +82,7 @@ export default async function AthleteReportPage({
   searchParams: SearchParams;
 }) {
   const { athleteId } = await params;
-  const { db, orgId, claims, timezone, tier } = await requireReportAccess();
+  const { db, orgId, claims, timezone, tier } = await requireReport('athlete');
   /* Shape-check the route param before it reaches a query. Authenticated
      first, so this never becomes a probe; then 404 rather than 500, because a
      malformed id is a URL that does not name anything, not a server fault. */

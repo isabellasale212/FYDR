@@ -8,7 +8,7 @@ import { formatDate, formatNumber, todayIso } from '@/lib/format';
 import { resolveTestingPeriod, testingWindow } from '../period';
 import { periodParamsFromUrl } from '@/lib/reportPeriod.server';
 import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
-import { requireReportAccess } from '@/lib/session';
+import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
 /** lib/pdf.tsx has the "this was actually buildable" story. Fifth and last
@@ -17,7 +17,7 @@ import type { AppRole } from '@/lib/types/database';
  *  widths shrink to fit rather than overflow the page, same trade-off the
  *  on-screen table's own horizontal scroll makes differently. */
 export async function GET(request: Request) {
-  const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
+  const { db, orgId, orgName, claims, timezone } = await requireReport('testing');
   const url = new URL(request.url);
   // resolveGroupFilter, not parseGroupParam: the PDF resolves the sticky
   // filter cookie exactly as the on-screen report does (audit S4), and the

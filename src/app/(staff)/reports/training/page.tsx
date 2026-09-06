@@ -32,7 +32,7 @@ import { recordReportView } from '@/lib/queries/reports';
 import { addDays, formatDate, mdLabel } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { requireReportAccess } from '@/lib/session';
+import { requireReport } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
 
@@ -249,7 +249,7 @@ function pctMaxBand(pct: number | null): number | null {
 }
 
 export default async function TrainingReportPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, orgName, claims, tier, timezone } = await requireReportAccess();
+  const { db, orgId, orgName, claims, tier, timezone } = await requireReport('training');
 
   if (!isPremium(tier)) {
     return (

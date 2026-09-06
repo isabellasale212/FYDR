@@ -6,7 +6,7 @@ import { fetchInjuryAvailabilityReport, recordReportView } from '@/lib/queries/r
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { enumLabel, formatDate } from '@/lib/format';
-import { requireReportAccess } from '@/lib/session';
+import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 import {
   exportQuery,
@@ -55,7 +55,7 @@ export default async function InjuryAvailabilityReportPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
+  const { db, orgId, orgName, claims, timezone } = await requireReport('injuries');
   const isMedical = claims.roles.includes('medic');
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);

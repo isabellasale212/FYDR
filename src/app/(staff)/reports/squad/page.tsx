@@ -11,7 +11,7 @@ import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { ACWR_BAND_TEXT, acwrBandTone, acwrRequirementText } from '@/lib/acwr';
 import { BLANK, addDays, enumLabel, formatDate, formatNumber, todayIso } from '@/lib/format';
 import { availabilityStatus } from '@/lib/status';
-import { requireReportAccess } from '@/lib/session';
+import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
 export const metadata = { title: 'Squad weekly report · Fydr' };
@@ -30,7 +30,7 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
  *  Added because a permanently-"today" window could never show a week that
  *  actually had data (audit B4). */
 export default async function SquadWeeklyReportPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
+  const { db, orgId, orgName, claims, timezone } = await requireReport('squad');
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
 

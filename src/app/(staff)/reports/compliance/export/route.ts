@@ -6,7 +6,7 @@ import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { todayIso } from '@/lib/format';
 import { complianceAnchor, resolveCompliancePeriod } from '../period';
 import { periodParamsFromUrl } from '@/lib/reportPeriod.server';
-import { requireReportAccess } from '@/lib/session';
+import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
 /** CSV only — see lib/csv.ts's header for why PDF and XLSX are cut. Runs
@@ -17,7 +17,7 @@ import type { AppRole } from '@/lib/types/database';
  *  whole of what tracks the export, the same simplification recordReportView
  *  already made for an ordinary report open. */
 export async function GET(request: Request) {
-  const { db, orgId, claims, timezone } = await requireReportAccess();
+  const { db, orgId, claims, timezone } = await requireReport('compliance');
   const url = new URL(request.url);
   // resolveGroupFilter, not parseGroupParam: the export must resolve the
   // sticky filter cookie exactly as the on-screen report does (audit S4),

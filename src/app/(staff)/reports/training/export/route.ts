@@ -9,7 +9,7 @@ import {
 import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { premiumOnlyResponse, requireReportAccess } from '@/lib/session';
+import { premiumOnlyResponse, requireReport } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
 
@@ -21,7 +21,7 @@ import type { AppRole } from '@/lib/types/database';
  *  lib/queries/trainingReport.ts's header for why there is no H1/H2 split
  *  to export either). */
 export async function GET(request: Request) {
-  const { db, orgId, claims, timezone, tier } = await requireReportAccess();
+  const { db, orgId, claims, timezone, tier } = await requireReport('training');
   /* The page this exports refuses on Basic (reports/training/page.tsx), but a
      route handler is reachable by URL whether or not a button was drawn. */
   if (!isPremium(tier)) return premiumOnlyResponse('The training report');

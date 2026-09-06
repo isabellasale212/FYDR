@@ -14,7 +14,7 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, todayIso } from '@/lib/format';
 import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
-import { premiumOnlyResponse, requireReportAccess } from '@/lib/session';
+import { premiumOnlyResponse, requireReport } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
 
@@ -37,7 +37,7 @@ import type { AppRole } from '@/lib/types/database';
  *    the session before the full board, same reasoning squad/pdf's own
  *    tile row gives for its four headline numbers. */
 export async function GET(request: Request) {
-  const { db, orgId, orgName, claims, timezone, tier } = await requireReportAccess();
+  const { db, orgId, orgName, claims, timezone, tier } = await requireReport('training');
   /* Same reasoning as the CSV route beside this one: the page gates, the URL
      did not, and a PDF is the whole board rather than a summary of it. */
   if (!isPremium(tier)) return premiumOnlyResponse('The training report');

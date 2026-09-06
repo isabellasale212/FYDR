@@ -7,7 +7,7 @@ import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatNumber } from '@/lib/format';
 import { resolveTestingPeriod, testingWindow } from '../period';
 import { periodParamsFromUrl } from '@/lib/reportPeriod.server';
-import { requireReportAccess } from '@/lib/session';
+import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
 /** CSV only, see lib/csv.ts's header. Exports the "By athlete" grid always
@@ -21,7 +21,7 @@ import type { AppRole } from '@/lib/types/database';
  *  import, so a coach who exports "this season" gets a season — and a file that
  *  states which window it covers in its own caption. */
 export async function GET(request: Request) {
-  const { db, orgId, claims, timezone } = await requireReportAccess();
+  const { db, orgId, claims, timezone } = await requireReport('testing');
   const url = new URL(request.url);
   // resolveGroupFilter, not parseGroupParam: the export resolves the sticky
   // filter cookie exactly as the on-screen report does (audit S4), and the

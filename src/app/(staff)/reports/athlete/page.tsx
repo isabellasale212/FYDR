@@ -5,7 +5,7 @@ import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchSquadList, fetchWellnessRecency } from '@/lib/queries/squad';
 import { addDays, BLANK, enumLabel, formatDate, todayIso } from '@/lib/format';
-import { requireReportAccess } from '@/lib/session';
+import { requireReport } from '@/lib/session';
 
 export const metadata = { title: 'Athlete report · Fydr' };
 
@@ -27,7 +27,7 @@ const WELLNESS_WINDOW_DAYS = 7;
  *  train — so the two signals that answer it are in the row now instead of one
  *  click inside the report. */
 export default async function AthleteReportPickerPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, orgName, timezone } = await requireReportAccess();
+  const { db, orgId, orgName, timezone } = await requireReport('athlete');
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
 

@@ -10,7 +10,7 @@ import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { BLANK, formatDate, formatNumber } from '@/lib/format';
 import { resolveTestingPeriod, testingQuery, testingWindow } from './period';
 import { periodCaveat, periodParamsFrom, periodSticky } from '@/lib/reportPeriod.server';
-import { requireReportAccess } from '@/lib/session';
+import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
 export const metadata = { title: 'Testing report · Fydr' };
@@ -29,7 +29,7 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
  *  silent 1000-row ceiling, a series arbitrarily truncated with no error. It
  *  now has a period, defaulting to the season. */
 export default async function TestingReportPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
+  const { db, orgId, orgName, claims, timezone } = await requireReport('testing');
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
 

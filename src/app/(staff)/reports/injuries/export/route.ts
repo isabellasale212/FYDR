@@ -3,7 +3,7 @@ import { fetchInjuryAvailabilityReport, recordReportView } from '@/lib/queries/r
 import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { requireReportAccess } from '@/lib/session';
+import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 import { periodParamsFromUrl, resolveInjuryPeriod } from '../period';
 
@@ -19,7 +19,7 @@ import { periodParamsFromUrl, resolveInjuryPeriod } from '../period';
  *  scoped rows and no hint either way. The export now resolves the scope
  *  exactly as the page does, and the `# Scope:` caption line states it. */
 export async function GET(request: Request) {
-  const { db, orgId, claims, timezone } = await requireReportAccess();
+  const { db, orgId, claims, timezone } = await requireReport('injuries');
   const isMedical = claims.roles.includes('medic');
   const url = new URL(request.url);
   const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);

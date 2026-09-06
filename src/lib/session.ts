@@ -4,7 +4,8 @@ import { createClient } from '@/lib/supabase/server';
 import { TIER_PREVIEW_COOKIE, effectiveTier, isPreviewingTier } from '@/lib/tierPreview';
 import { getClaims, isAthlete, isStaff, type FydrClaims } from '@/lib/supabase/claims';
 import { isPlatformStaff } from '@/lib/platformStaff';
-import { INJURY_ACCESS, REPORT_ACCESS, SETTINGS_ADMIN, CLINICAL_ONLY, hasAnyRole } from '@/lib/access';
+import { INJURY_ACCESS, REPORT_ACCESS, REPORT_VISIBILITY, SETTINGS_ADMIN, CLINICAL_ONLY, hasAnyRole } from '@/lib/access';
+import type { ReportKey } from '@/lib/access';
 import type { Db } from '@/lib/queries/groups';
 
 export type StaffContext = {
@@ -121,6 +122,25 @@ export async function requireStaff(): Promise<StaffContext> {
 export async function requireReportAccess(): Promise<StaffContext> {
   const ctx = await requireStaff();
   if (!hasAnyRole(ctx.claims.roles, REPORT_ACCESS)) redirect('/settings?e=no-report-access');
+  return ctx;
+}
+
+/** The gate for one named report, access.ts's REPORT_VISIBILITY grid.
+ *
+ *  Every report page and every one of their export/pdf Route Handlers goes
+ *  through this, so a role admitted to the page is admitted to its CSV and its
+ *  PDF and no other report's. That matters more than it sounds: the reports hub
+ *  is a list of links, and a gate that lives only on the index is not a gate at
+ *  all — the URLs are guessable and the export routes were always reachable
+ *  directly. This is why the fix could not simply be "hide the cards".
+ *
+ *  requireReportAccess above is kept, unchanged, for the surfaces that are not
+ *  one of the six: settings/exports, the subject-access review queue, and the
+ *  per-athlete testing exports. Those have their own rule and no per-report
+ *  grid to consult. */
+export async function requireReport(key: ReportKey): Promise<StaffContext> {
+  const ctx = await requireStaff();
+  if (!hasAnyRole(ctx.claims.roles, REPORT_VISIBILITY[key])) redirect('/reports?e=no-report-access');
   return ctx;
 }
 

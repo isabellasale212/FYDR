@@ -183,17 +183,56 @@ export const REHAB_ALLOCATION = [
 /** §3.5. Deliberately the same members as INJURY_ACCESS and deliberately a
  *  separate name: these rows move for different reasons.
  *
- *  Knowingly incomplete for one role. §3.5 gives a nutritionist real access to
- *  some reports (Compliance V, Reports hub and Squad weekly VP) and none to
- *  others. One blanket set cannot express a per-report split, so that role is
- *  still refused at the door rather than admitted to the reports it should see.
- *  docs/spec-gaps.md G-30. */
+ *  This is the BROAD set: the roles that see the whole reports shelf. It is no
+ *  longer the whole story, because a nutritionist sees two of the six and not
+ *  the other four. REPORT_VISIBILITY below is the per-report grid; this set
+ *  remains the answer for every report that has no narrower rule, and for the
+ *  export surfaces outside the reports hub. */
 export const REPORT_ACCESS = [
   'sport_scientist',
   'coach',
   'medic',
   'strength_conditioning',
 ] as const;
+
+/** Which roles may open which report. G-30, closed 2026-09-06.
+ *
+ *  WHY A MAP RATHER THAN A SET. REPORT_ACCESS could not express the
+ *  nutritionist, so the code took the only option a single set leaves and
+ *  refused that role at the door — all six reports, including the two the
+ *  matrix plainly gives them. The fix is not a wider set, which would hand over
+ *  the four they should not see; it is a grid, because the specification is a
+ *  grid.
+ *
+ *  THE NUTRITIONIST'S INJURY REPORT IS NOT A NEW REDACTION TIER, and that is
+ *  the load-bearing part. /reports/injuries never selects injury_clinical: it
+ *  is not joined to, not selected from, and not in the Database type this
+ *  client is built against (see queries/availability.ts's header). Body area,
+ *  status, restrictions and expected return are the whole of what the page can
+ *  reach, for every role that opens it. So admitting the nutritionist gives
+ *  them the same censored view a coach and an S&C already get, by construction
+ *  rather than by a filter somebody has to remember to apply. Diagnosis stays
+ *  medic-only in the database, in injury_clinical's own policy, which this does
+ *  not touch.
+ *
+ *  This DOES reverse D-01 ("nutritionist excluded from all injury and
+ *  availability data, everywhere"), and reversing it needs the database to
+ *  agree, not just this file — see migration 0074. Decided 2026-09-06.
+ *
+ *  The S&C is in every row here. §3.5 gives that role the same report set as
+ *  the coach, and the coach's own injury view is the censored one above, so
+ *  "every report except the medic's clinical detail" is already what the pages
+ *  hand them. Nothing narrows for the S&C; what was broken was the hub. */
+export type ReportKey = 'compliance' | 'injuries' | 'training' | 'athlete' | 'squad' | 'testing';
+
+export const REPORT_VISIBILITY: Record<ReportKey, readonly AppRole[]> = {
+  compliance: ['sport_scientist', 'coach', 'medic', 'strength_conditioning', 'nutritionist'],
+  injuries: ['sport_scientist', 'coach', 'medic', 'strength_conditioning', 'nutritionist'],
+  training: REPORT_ACCESS,
+  athlete: REPORT_ACCESS,
+  squad: REPORT_ACCESS,
+  testing: REPORT_ACCESS,
+};
 
 /** §3.4 Analytics and Build an analytics view: V/VEC for the sport scientist and
  *  X for everyone else, which is the tightest restriction in the product.

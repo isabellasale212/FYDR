@@ -7,7 +7,7 @@ import { enumLabel, formatDate, todayIso } from '@/lib/format';
 import { complianceAnchor, resolveCompliancePeriod } from '../period';
 import { periodParamsFromUrl } from '@/lib/reportPeriod.server';
 import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
-import { requireReportAccess } from '@/lib/session';
+import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
 /** lib/pdf.tsx has the "this was actually buildable" story. Second report
@@ -21,7 +21,7 @@ import type { AppRole } from '@/lib/types/database';
  *  clicked it from, with the header meta stating the wrong window confidently.
  *  All three surfaces now resolve through resolveReportPeriod. */
 export async function GET(request: Request) {
-  const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
+  const { db, orgId, orgName, claims, timezone } = await requireReport('compliance');
   const url = new URL(request.url);
   // resolveGroupFilter, not parseGroupParam: the PDF resolves the sticky
   // filter cookie exactly as the on-screen report does (audit S4), and the

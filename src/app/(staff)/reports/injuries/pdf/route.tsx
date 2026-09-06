@@ -5,7 +5,7 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { enumLabel, formatDate } from '@/lib/format';
 import { PdfHeader, PdfMedicalBanner, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
-import { requireReportAccess } from '@/lib/session';
+import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 import { periodCaveat, periodParamsFromUrl, resolveInjuryPeriod } from '../period';
 
@@ -18,7 +18,7 @@ import { periodCaveat, periodParamsFromUrl, resolveInjuryPeriod } from '../perio
  *  every page, in the header and footer, and the filename states it — all
  *  three are here, not just the on-screen note the page itself carries. */
 export async function GET(request: Request) {
-  const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
+  const { db, orgId, orgName, claims, timezone } = await requireReport('injuries');
   const isMedical = claims.roles.includes('medic');
   const url = new URL(request.url);
   // resolveGroupFilter, not parseGroupParam: a PDF handed to someone else is

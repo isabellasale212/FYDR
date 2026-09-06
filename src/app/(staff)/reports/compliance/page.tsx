@@ -9,7 +9,7 @@ import { enumLabel, formatDate, todayIso } from '@/lib/format';
 import { mondayOf } from '@/lib/queries/schedule';
 import { complianceAnchor, complianceQuery, resolveCompliancePeriod } from './period';
 import { periodCaveat, periodParamsFrom, periodSticky } from '@/lib/reportPeriod.server';
-import { requireReportAccess } from '@/lib/session';
+import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
 export const metadata = { title: 'Compliance report · Fydr' };
@@ -61,7 +61,7 @@ export default async function ComplianceReportPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
+  const { db, orgId, orgName, claims, timezone } = await requireReport('compliance');
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
   const realToday = todayIso(timezone);

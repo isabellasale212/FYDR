@@ -7,7 +7,7 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, formatNumber } from '@/lib/format';
 import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
-import { requireReportAccess } from '@/lib/session';
+import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
 /** lib/pdf.tsx has the full "this was actually buildable" story. Squad
@@ -19,7 +19,7 @@ import type { AppRole } from '@/lib/types/database';
  *  small wrappers in lib/pdf.tsx) — its custom reconciler has no host
  *  config for a plain HTML tag, so this file never reaches for one. */
 export async function GET(request: Request) {
-  const { db, orgId, orgName, claims, timezone } = await requireReportAccess();
+  const { db, orgId, orgName, claims, timezone } = await requireReport('squad');
   const url = new URL(request.url);
   // resolveGroupFilter, not parseGroupParam: the PDF resolves the sticky
   // filter cookie exactly as the on-screen report does (audit S4), and the

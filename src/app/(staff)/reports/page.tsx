@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { requireStaff } from '@/lib/session';
+import { REPORT_VISIBILITY, hasAnyRole } from '@/lib/access';
+import type { ReportKey } from '@/lib/access';
 import { isPremium } from '@/lib/tier';
 
 export const metadata = { title: 'Reports · Fydr' };
@@ -104,20 +106,31 @@ const REPORTS = [
  *  on 2026-09-01, once all six pdf routes were confirmed present. See each
  *  query file's own header for what it cuts against the full spec.
  *
- *  This index page itself stays open to every staff role — lib/session.ts's
- *  requireReportAccess() is what actually gates each report, and it's
- *  applied on every report page and export/pdf route, not here. An
- *  admin-only staff member sees the same six cards, correctly marked
- *  unavailable to them specifically: the spec gives admin "aggregate
- *  compliance and usage only", and this build has no aggregate-only view
- *  built to show them instead of the named-athlete data every one of these
- *  six reports actually is — see requireReportAccess's own comment for the
- *  quote. Redirecting away from the index entirely would hide that a
- *  reports feature exists at all, which is worse than naming the real
- *  reason it's closed to this role. */
+ *  This index page stays open to every staff role, and each CARD is gated
+ *  individually from access.ts's REPORT_VISIBILITY — the same grid
+ *  lib/session.ts's requireReport() enforces on the report pages and on
+ *  every export/pdf route. One grid, consulted in both places, because the
+ *  hub is only a list of links: hiding a card refuses nobody on its own.
+ *
+ *  WHAT THIS REPLACED, 2026-09-06. A single `hasReportAccess` computed here
+ *  as `roles.includes('coach') || roles.includes('medic')`, predating the
+ *  five-role model, which disabled all six cards for anybody else and
+ *  explained itself with a note about what an "admin" may see. Three things
+ *  were wrong with it. The role it named no longer exists — admin became
+ *  sport_scientist in 0063, so the note was addressed to nobody. It
+ *  disagreed with the pages it linked to, which had been corrected to
+ *  REPORT_ACCESS and would happily open for a sport scientist or an S&C
+ *  who typed the URL. And it was a rendered refusal that never redirects,
+ *  which is why the sweeps that fixed the redirecting gates went straight
+ *  past it.
+ *
+ *  A role that may open NOTHING still sees the shelf, with each card
+ *  disabled and saying so. Redirecting away entirely would hide that a
+ *  reports feature exists at all, which is worse than naming the reason. */
 export default async function ReportsPage() {
   const { orgName, claims, tier } = await requireStaff();
-  const hasReportAccess = claims.roles.includes('coach') || claims.roles.includes('medic');
+  const canOpen = (key: ReportKey): boolean => hasAnyRole(claims.roles, REPORT_VISIBILITY[key]);
+  const openCount = REPORTS.filter((r) => canOpen(r.key)).length;
   const onPremium = isPremium(tier);
 
   return (
@@ -129,13 +142,22 @@ export default async function ReportsPage() {
         </div>
       </div>
 
-      {!hasReportAccess ? (
+      {openCount === 0 ? (
         <div className="note" style={{ marginBottom: 14, borderColor: 'var(--warn)' }}>
           <div className="note-glyph">i</div>
           <p className="note-text">
-            <b>Admin sees aggregate compliance and usage only, per the product&apos;s own access model.</b> Every report
-            below is named-athlete data, which isn&apos;t in an admin&apos;s report set — hold a coach or medical role as
-            well to open them, the same deliberate friction Users describes for reaching squad data at all.
+            <b>No reports are open to your role.</b> Every report here reads named-athlete data. Ask the sport
+            scientist if you need one of them.
+          </p>
+        </div>
+      ) : openCount < REPORTS.length ? (
+        /* Said once, above the grid, rather than repeated on each closed card:
+           a nutritionist sees four of these disabled and the reason is the same
+           for all four. */
+        <div className="note" style={{ marginBottom: 14 }}>
+          <div className="note-glyph">i</div>
+          <p className="note-text">
+            Some reports below aren&apos;t open to your role. The ones that are, are marked.
           </p>
         </div>
       ) : null}
@@ -148,7 +170,8 @@ export default async function ReportsPage() {
              0.62 before the handoff named the rule; --o-gated is the same
              number, now stated once in tokens.css. */
           const gatedOpacity = locked ? 'var(--o-gated)' : 1;
-          return r.available && r.href && hasReportAccess ? (
+          const open = canOpen(r.key);
+          return r.available && r.href && open ? (
             <Link
               key={r.key}
               href={r.href}
@@ -198,7 +221,7 @@ export default async function ReportsPage() {
               <p className="card-title">{r.title}</p>
               <p className="tiny">{r.body}</p>
               <p className="tiny" style={{ marginTop: 8 }}>
-                {hasReportAccess ? 'Not built yet.' : 'Not available to admin.'}
+                {open ? 'Not built yet.' : 'Not open to your role.'}
               </p>
             </div>
           );

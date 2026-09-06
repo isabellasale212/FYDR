@@ -57,12 +57,19 @@ select is(
   'athlete''s attempted rename matched zero rows under RLS — the group is untouched'
 );
 
-select tests.set_jwt(tests.uid('orga', 'user_medical'));
+/* The MEDIC made this edit until 2026-09-06. Screens 55-57 confirm group
+   management as the sport scientist's and the coach's, with the medic, S&C and
+   nutritionist view only, and migration 0078 narrows groups' own policies to
+   match. The medic's refusal is asserted in 380_group_management_test.sql; here
+   the edit is simply made by a role that still owns it, so the rest of this
+   section keeps testing what it was written to test — that all three fields move
+   together in one write. */
+select tests.set_jwt(tests.uid('orga', 'user_coach'));
 select lives_ok(
   format($q$update groups set name = 'Backs (Senior)', description = 'Backline, first team', colour = 'Cyan'
             where id = %L$q$,
          tests.uid('orga','group_backs')),
-  'medical renames, redescribes and recolours the group — the shared staff role, no coach/medical split'
+  'the coach renames, redescribes and recolours the group'
 );
 select is(
   (select name from groups where id = tests.uid('orga','group_backs')),

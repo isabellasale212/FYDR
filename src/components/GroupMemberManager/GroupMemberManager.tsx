@@ -16,6 +16,15 @@ type Props = {
   timezone: string;
   current: MemberRow[];
   candidates: Candidate[];
+  /** May this viewer change who is in THIS group.
+   *
+   *  Resolved by the page from group_memberships' own policies, which are not
+   *  the same rule as who may edit the group itself: the medic may write
+   *  membership for any group, the coach and sport scientist for any group that
+   *  is not a rehab group. Passed in rather than derived here so the component
+   *  never has to know about the rehab carve-out, and so the page can mirror the
+   *  policy in one place. */
+  canManage?: boolean;
 };
 
 /**
@@ -24,7 +33,14 @@ type Props = {
  * existing member is a no-op reported as a skip, backed by the migration
  * 0014 partial unique index, not just by the client checking first.
  */
-export function GroupMemberManager({ orgId, groupId, timezone, current, candidates }: Props) {
+export function GroupMemberManager({
+  orgId,
+  groupId,
+  timezone,
+  current,
+  candidates,
+  canManage = true,
+}: Props) {
   const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -86,7 +102,7 @@ export function GroupMemberManager({ orgId, groupId, timezone, current, candidat
               {current.length}
             </span>
           </h2>
-          {!adding ? (
+          {canManage && !adding ? (
             <button type="button" className="btn-ghost" onClick={() => setAdding(true)}>
               + Add
             </button>
@@ -131,15 +147,17 @@ export function GroupMemberManager({ orgId, groupId, timezone, current, candidat
                   {formatDate(member.added_at, timezone)}
                 </span>
               </span>
-              <button
-                type="button"
-                className="btn-ghost"
-                onClick={() => remove.mutate(member.athlete_id)}
-                disabled={remove.isPending}
-                aria-label={`Remove ${member.first_name} ${member.last_name}`}
-              >
-                Remove
-              </button>
+              {canManage ? (
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => remove.mutate(member.athlete_id)}
+                  disabled={remove.isPending}
+                  aria-label={`Remove ${member.first_name} ${member.last_name}`}
+                >
+                  Remove
+                </button>
+              ) : null}
             </div>
           ))
         )}

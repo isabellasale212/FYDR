@@ -5,7 +5,7 @@ import { GroupReorderButtons } from '@/components/GroupReorderButtons/GroupReord
 import { fetchAthletesInNoGroup, fetchGroupsWithCounts } from '@/lib/queries/groups';
 import { fetchTeams } from '@/lib/queries/teamAllocation';
 import { enumLabel } from '@/lib/format';
-import { SESSION_EDIT, hasAnyRole } from '@/lib/access';
+import { GROUP_EDIT, SESSION_EDIT, hasAnyRole } from '@/lib/access';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Groups · Fydr' };
@@ -32,6 +32,7 @@ export default async function GroupsPage() {
    * may not. Reading the destination's gate rather than describing it is what
    * keeps the two from drifting again. Hiding UI only, CLAUDE.md rule 2. */
   const canAllocate = hasAnyRole(claims.roles, SESSION_EDIT);
+  const canEditGroups = hasAnyRole(claims.roles, GROUP_EDIT);
 
   const sections = new Map<string, typeof groups>();
   for (const g of groups) {
@@ -50,9 +51,15 @@ export default async function GroupsPage() {
           <h1>Groups</h1>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <Link href="/settings/groups/new" className="btn-primary">
-            + New group
-          </Link>
+          {/* Screens 55-57: creating a group is the sport scientist's and the
+              coach's. Hiding the link is the courtesy; /settings/groups/new
+              turns the other three away itself, and 0078 is what actually
+              refuses the write. */}
+          {canEditGroups ? (
+            <Link href="/settings/groups/new" className="btn-primary">
+              + New group
+            </Link>
+          ) : null}
         </div>
       </div>
 

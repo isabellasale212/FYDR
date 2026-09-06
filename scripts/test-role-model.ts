@@ -464,7 +464,36 @@ const HIDDEN_REGIONS: [string, string][] = [
   ['squad/page.tsx', 'SETTINGS_ADMIN'],
   ['squad/new/page.tsx', 'SETTINGS_ADMIN'],
   ['squad/new/create/route.ts', 'SETTINGS_ADMIN'],
+  /* Screens 55-57, enforced 2026-09-06. All three, because the decision names
+     all three and two of them had no role check whatsoever. */
+  ['settings/groups/page.tsx', 'GROUP_EDIT'],
+  ['settings/groups/new/page.tsx', 'GROUP_EDIT'],
+  ['settings/groups/[groupId]/page.tsx', 'GROUP_EDIT'],
 ];
+
+/* GROUP_EDIT and SESSION_EDIT hold the same two roles today and must stay
+   separate constants: they answer different questions, and a future change to
+   one must not silently move the other. Asserted rather than trusted to a
+   comment, because "these are the same, let's merge them" is exactly the tidy-up
+   somebody makes at speed. */
+const accessForGroups = readFileSync('src/lib/access.ts', 'utf8');
+assert(
+  /export const GROUP_EDIT = \[/.test(accessForGroups),
+  'GROUP_EDIT is its own constant, not an alias of SESSION_EDIT',
+);
+assert(
+  !/export const GROUP_EDIT = SESSION_EDIT/.test(accessForGroups),
+  'and is not assigned from SESSION_EDIT',
+);
+
+/* The group detail screen carries TWO rules: editing the group, and membership,
+   which has a rehab carve-out predating this decision. If membership ever
+   resolves from GROUP_EDIT alone, that carve-out has been silently dropped. */
+const groupDetail = readFileSync('src/app/(staff)/settings/groups/[groupId]/page.tsx', 'utf8');
+assert(
+  /group_type === 'rehab'/.test(groupDetail),
+  'the detail screen still distinguishes rehab groups when gating membership',
+);
 
 /* The timetable is the one place where seeing and doing were separated rather
    than narrowed together, so both halves are asserted. Checking only the

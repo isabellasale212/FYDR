@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { CLINICAL_ONLY, GROUP_EDIT, hasAnyRole } from '@/lib/access';
 import Link from 'next/link';
 import { GroupMemberManager } from '@/components/GroupMemberManager/GroupMemberManager';
 import { GroupArchiveButton } from '@/components/GroupArchiveButton/GroupArchiveButton';
@@ -20,7 +21,23 @@ export default async function GroupDetailPage({
   params: Promise<{ groupId: string }>;
 }) {
   const { groupId } = await params;
-  const { db, orgId, timezone } = await requireStaff();
+  const { db, orgId, timezone, claims } = await requireStaff();
+
+  /* TWO different rules on one screen, and they are not the same question.
+
+     EDITING THE GROUP ITSELF — its name, colour, and whether it is archived —
+     is the sport scientist's and the coach's, screens 55-57. Migration 0078
+     narrows groups' own policies to match; until today neither this page nor
+     the database enforced it.
+
+     MEMBERSHIP is governed separately by group_memberships, which carries a
+     rehab carve-out that predates this decision: the medic may write membership
+     for any group, the coach and sport scientist for any group that is not a
+     rehab group. Mirrored exactly rather than replaced by GROUP_EDIT, so this
+     screen never offers a control the database refuses and never hides one it
+     allows. Widening or narrowing THAT rule is a separate decision nobody has
+     taken. */
+  const canEditGroup = hasAnyRole(claims.roles, GROUP_EDIT);
 
   const group = await fetchGroupDetail(db, orgId, groupId);
   if (!group) notFound();
@@ -52,16 +69,22 @@ export default async function GroupDetailPage({
             {group.name}
           </h1>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <GroupEditForm
-            orgId={orgId}
-            groupId={group.id}
-            initialName={group.name}
-            initialDescription={group.description}
-            initialColour={group.colour}
-          />
-          <GroupArchiveButton orgId={orgId} groupId={group.id} archived={group.archived} />
-        </div>
+        {canEditGroup ? (
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <GroupEditForm
+              orgId={orgId}
+              groupId={group.id}
+              initialName={group.name}
+              initialDescription={group.description}
+              initialColour={group.colour}
+            />
+            <GroupArchiveButton orgId={orgId} groupId={group.id} archived={group.archived} />
+          </div>
+        ) : (
+          /* Named, not blank. A row where controls used to be reads as a
+             rendering fault; a sentence reads as a rule. */
+          <span className="tiny">Groups are named and archived by the sport scientist and the coach.</span>
+        )}
       </div>
 
       {group.archived ? (
@@ -86,6 +109,11 @@ export default async function GroupDetailPage({
           current={current}
           candidates={candidates}
           timezone={timezone}
+          canManage={
+            group.group_type === 'rehab'
+              ? hasAnyRole(claims.roles, CLINICAL_ONLY)
+              : hasAnyRole(claims.roles, GROUP_EDIT) || hasAnyRole(claims.roles, CLINICAL_ONLY)
+          }
         />
 
         <section className="card flush" aria-labelledby="past-title">

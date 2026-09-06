@@ -262,6 +262,32 @@ export const ATHLETE_BIO_EDIT = ['sport_scientist', 'coach', 'medic'] as const;
  *  it, and a screen that admits all five needs no further test. Exported for the
  *  screens that must name the set explicitly, such as the athlete domain pages
  *  where one domain narrows it. */
+/** Who may CREATE, EDIT or DELETE a squad group. Confirmed as a firm decision
+ *  in the specification's screens 55, 56 and 57: "only sport scientist and coach
+ *  may create, edit, or delete a group. Medic, S&C and nutritionist stay view
+ *  only. Real build work across all three screens, the code today does not
+ *  enforce this."
+ *
+ *  It did not: /settings/groups/new and /settings/groups/[groupId] had no role
+ *  check at all, only requireStaff(), so any staff role could open the form and
+ *  save. The database was wider too — groups_staff_insert and _update admitted
+ *  the medic — so this was not even a case of the UI offering what RLS refused.
+ *  Both narrowed together in migration 0078.
+ *
+ *  IDENTICAL TO SESSION_EDIT TODAY, AND DELIBERATELY A SEPARATE CONSTANT. Both
+ *  happen to be the sport scientist and the coach. They answer different
+ *  questions — who runs a training week, versus who owns the squad's structure —
+ *  and collapsing them would mean a future change to one silently moving the
+ *  other. This file exists because that kind of coincidence used to be written
+ *  as a role literal in twenty-seven places.
+ *
+ *  NOT membership. Adding an athlete to a group is governed separately by
+ *  group_memberships' own policies, which carry a rehab carve-out: the medic may
+ *  write membership for any group, the coach and sport scientist for any group
+ *  that is not a rehab group. That rule predates this decision and is not part
+ *  of it. */
+export const GROUP_EDIT = ['sport_scientist', 'coach'] as const;
+
 /** Who may author the meal library. Matches meal_library_coach_insert and
  *  meal_library_coach_update (migration 0051), which have admitted these three
  *  all along.

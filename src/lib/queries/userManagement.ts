@@ -238,8 +238,38 @@ export async function setUserStatus(
 }
 
 export async function linkAthleteToUser(db: Db, orgId: string, actorId: string, actorRole: AppRole, userId: string, athleteId: string): Promise<{ error: string | null; primaryOk: boolean }> {
-  const { error } = await db.from('athletes').update({ user_id: userId }).eq('org_id', orgId).eq('id', athleteId).is('user_id', null);
+  /* G-36. Zero rows here has TWO meanings and the filter is why: .is(user_id,
+     null) matches only an unlinked athlete, so nothing changing means either the
+     record was already linked to somebody, or the policy refused. Reporting
+     plain success for the first was the old behaviour and it is the more
+     dangerous of the two, because an administrator walks away believing a link
+     exists that does not.
+     
+     So the empty branch asks which it was, rather than guessing. One extra
+     query, and only when nothing changed. */
+  const { data: linked, error } = await db
+    .from('athletes')
+    .update({ user_id: userId })
+    .eq('org_id', orgId)
+    .eq('id', athleteId)
+    .is('user_id', null)
+    .select('id');
   if (error) return { error: error.message, primaryOk: false };
+  if (!linked || linked.length === 0) {
+    const { data: existing } = await db
+      .from('athletes')
+      .select('user_id')
+      .eq('org_id', orgId)
+      .eq('id', athleteId)
+      .maybeSingle();
+    if (existing?.user_id === userId) {
+      return { error: 'That athlete record is already linked to this person. Nothing changed.', primaryOk: false };
+    }
+    if (existing?.user_id) {
+      return { error: 'That athlete record is already linked to a different account. Unlink it first.', primaryOk: false };
+    }
+    return { error: 'Not saved: linking an athlete record belongs to the sport scientist.', primaryOk: false };
+  }
   const { error: auditErr } = await recordUserAudit(db, orgId, actorId, actorRole, 'user.athlete_linked', userId, { athlete_id: athleteId });
   if (auditErr) return { error: `The athlete was linked, but the audit log entry failed to save: ${auditErr}`, primaryOk: true };
   return { error: null, primaryOk: true };

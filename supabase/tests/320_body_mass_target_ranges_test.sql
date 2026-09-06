@@ -75,27 +75,52 @@ select ok(tests.rls_is_engaged(),
 
 
 -- ===========================================================================
--- 1. Writing a range: coach and medical only, in their own name
+-- 1. Writing a range: sport scientist and nutritionist only, in their own name
 -- ===========================================================================
 
-select tests.set_jwt(tests.uid('orga', 'user_coach'));
+/* The coach and the medic wrote these two rows until G-43 narrowed the table to
+   the sport scientist and the nutritionist, decided 2026-09-06: a body-mass
+   TARGET is a nutrition prescription, which is not the same thing as the
+   body_composition MEASUREMENT the medic still writes. The two tables diverge
+   here on purpose, so both refusals are asserted rather than assumed. */
+select tests.set_jwt(tests.uid('orga', 'user_nutritionist'));
 select lives_ok(
   format($q$insert into body_mass_target_ranges
               (id, org_id, athlete_id, target_low_kg, target_high_kg, rationale, set_by)
             values (%L, %L, %L, 102.00, 105.50, 'Pre-season lean phase, holding front-row mass.', %L)$q$,
          tests.uid('orga','range_1'), tests.uid('orga','org'), tests.uid('orga','athlete_1'),
-         tests.uid('orga','user_coach')),
-  'a coach sets a body-mass target range for an athlete in their own organisation'
+         tests.uid('orga','user_nutritionist')),
+  'the nutritionist sets a body-mass target range for an athlete in their own organisation'
 );
 
-select tests.set_jwt(tests.uid('orga', 'user_medical'));
+select tests.set_jwt(tests.uid('orga', 'user_admin'));
 select lives_ok(
   format($q$insert into body_mass_target_ranges
               (id, org_id, athlete_id, target_low_kg, target_high_kg, set_by)
             values (%L, %L, %L, 116.00, 120.00, %L)$q$,
          tests.uid('orga','range_2'), tests.uid('orga','org'), tests.uid('orga','athlete_2'),
-         tests.uid('orga','user_medical')),
-  'medical sets a range too — return-to-play mass management, same pair that may write body_composition'
+         tests.uid('orga','user_admin')),
+  'the sport scientist sets a range too'
+);
+
+select tests.set_jwt(tests.uid('orga', 'user_coach'));
+select throws_ok(
+  format($q$insert into body_mass_target_ranges
+              (org_id, athlete_id, target_low_kg, target_high_kg, set_by)
+            values (%L, %L, 99.00, 103.00, %L)$q$,
+         tests.uid('orga','org'), tests.uid('orga','athlete_1'), tests.uid('orga','user_coach')),
+  '42501', null,
+  'a coach can no longer set a target range — narrowed 2026-09-06'
+);
+
+select tests.set_jwt(tests.uid('orga', 'user_medical'));
+select throws_ok(
+  format($q$insert into body_mass_target_ranges
+              (org_id, athlete_id, target_low_kg, target_high_kg, set_by)
+            values (%L, %L, 99.00, 103.00, %L)$q$,
+         tests.uid('orga','org'), tests.uid('orga','athlete_1'), tests.uid('orga','user_medical')),
+  '42501', null,
+  'nor medical — the medic keeps the weigh-in, not the target derived from it'
 );
 
 -- Rule 1, the athlete half. The subject of the range is the one person who must
@@ -143,14 +168,14 @@ select throws_ok(
 
 -- The setter cannot be spoofed: set_by = auth_user_id() is enforced in the WITH
 -- CHECK, the same way 0055 enforces created_by, not taken on trust from the client.
-select tests.set_jwt(tests.uid('orga', 'user_coach'));
+select tests.set_jwt(tests.uid('orga', 'user_nutritionist'));
 select throws_ok(
   format($q$insert into body_mass_target_ranges
               (org_id, athlete_id, target_low_kg, target_high_kg, set_by)
             values (%L, %L, 99.00, 102.00, %L)$q$,
          tests.uid('orga','org'), tests.uid('orga','athlete_1'), tests.uid('orga','user_medical')),
   '42501', null,
-  'a coach cannot attribute a range to the physio — set_by must be the acting user'
+  'the nutritionist cannot attribute a range to the physio — set_by must be the acting user'
 );
 select throws_ok(
   format($q$insert into body_mass_target_ranges
@@ -257,12 +282,12 @@ select is(
   'there is NO single-target column on this table — client rule 3, a range and only a range'
 );
 
-select tests.set_jwt(tests.uid('orga', 'user_coach'));
+select tests.set_jwt(tests.uid('orga', 'user_nutritionist'));
 select throws_ok(
   format($q$insert into body_mass_target_ranges
               (org_id, athlete_id, target_low_kg, target_high_kg, set_by)
             values (%L, %L, 105.00, 102.00, %L)$q$,
-         tests.uid('orga','org'), tests.uid('orga','athlete_1'), tests.uid('orga','user_coach')),
+         tests.uid('orga','org'), tests.uid('orga','athlete_1'), tests.uid('orga','user_nutritionist')),
   '23514', null,
   'the high bound must exceed the low bound'
 );
@@ -270,7 +295,7 @@ select throws_ok(
   format($q$insert into body_mass_target_ranges
               (org_id, athlete_id, target_low_kg, target_high_kg, set_by)
             values (%L, %L, 102.00, 102.00, %L)$q$,
-         tests.uid('orga','org'), tests.uid('orga','athlete_1'), tests.uid('orga','user_coach')),
+         tests.uid('orga','org'), tests.uid('orga','athlete_1'), tests.uid('orga','user_nutritionist')),
   '23514', null,
   'a zero-width range is refused — that is a single target wearing a range''s clothes'
 );
@@ -278,7 +303,7 @@ select throws_ok(
   format($q$insert into body_mass_target_ranges
               (org_id, athlete_id, target_low_kg, target_high_kg, set_by)
             values (%L, %L, 4.00, 400.00, %L)$q$,
-         tests.uid('orga','org'), tests.uid('orga','athlete_1'), tests.uid('orga','user_coach')),
+         tests.uid('orga','org'), tests.uid('orga','athlete_1'), tests.uid('orga','user_nutritionist')),
   '23514', null,
   'the bounds are held inside a plausible human range — a fat-fingered decimal is not a target'
 );
@@ -289,7 +314,7 @@ select throws_ok(
   format($q$insert into body_mass_target_ranges
               (org_id, athlete_id, target_low_kg, target_high_kg, set_by)
             values (%L, %L, 103.00, 106.00, %L)$q$,
-         tests.uid('orga','org'), tests.uid('orga','athlete_1'), tests.uid('orga','user_coach')),
+         tests.uid('orga','org'), tests.uid('orga','athlete_1'), tests.uid('orga','user_nutritionist')),
   '23505', null,
   'an athlete has at most ONE live range — a new one requires closing the old'
 );
@@ -307,7 +332,7 @@ select throws_ok(
   format($q$update body_mass_target_ranges set target_low_kg = 90.00 where id = %L$q$,
          tests.uid('orga','range_1')),
   '42501', null,
-  'a coach cannot rewrite the low bound in place — a correction is a new row'
+  'the nutritionist cannot rewrite the low bound in place — a correction is a new row'
 );
 select throws_ok(
   format($q$update body_mass_target_ranges set target_high_kg = 130.00 where id = %L$q$,
@@ -333,7 +358,7 @@ select throws_ok(
 select lives_ok(
   format($q$update body_mass_target_ranges set effective_to = current_date where id = %L$q$,
          tests.uid('orga','range_1')),
-  'a coach closes a range by setting effective_to — the supported way to change a target'
+  'the nutritionist closes a range by setting effective_to — the supported way to change a target'
 );
 select lives_ok(
   format($q$insert into body_mass_target_ranges
@@ -342,7 +367,7 @@ select lives_ok(
             values (%L, %L, %L, 104.00, 107.50, 'In-season, carrying more mass for the scrum.', %L,
                     current_date + 1)$q$,
          tests.uid('orga','range_3'), tests.uid('orga','org'), tests.uid('orga','athlete_1'),
-         tests.uid('orga','user_coach')),
+         tests.uid('orga','user_nutritionist')),
   'and opens a new one — the closed row no longer blocks the one-live-range index'
 );
 select is(
@@ -363,7 +388,7 @@ select is(
 select lives_ok(
   format($q$update body_mass_target_ranges set deleted_at = now() where id = %L$q$,
          tests.uid('orga','range_3')),
-  'a coach may retract a range with a soft delete'
+  'the nutritionist may retract a range with a soft delete'
 );
 select throws_ok(
   format($q$delete from body_mass_target_ranges where id = %L$q$, tests.uid('orga','range_1')),
@@ -431,19 +456,25 @@ select is(
   'orgb''s coach reads zero naming orga''s athlete id directly'
 );
 
+/* The actor becomes orgb's nutritionist for the writes below. Using orgb's coach
+   would still produce 42501 and the section would still pass — but it would pass
+   for the wrong reason, proving only that a coach cannot write anywhere. A role
+   that DOES hold the write in its own organisation is what makes the refusal
+   attributable to tenancy. */
+select tests.set_jwt(tests.uid('orgb', 'user_nutritionist'));
 select throws_ok(
   format($q$insert into body_mass_target_ranges
               (org_id, athlete_id, target_low_kg, target_high_kg, set_by)
             values (%L, %L, 100.00, 103.00, %L)$q$,
-         tests.uid('orga','org'), tests.uid('orga','athlete_1'), tests.uid('orgb','user_coach')),
+         tests.uid('orga','org'), tests.uid('orga','athlete_1'), tests.uid('orgb','user_nutritionist')),
   '42501', null,
-  'orgb''s coach cannot set a range on orga''s athlete naming orga''s org_id'
+  'orgb''s nutritionist cannot set a range on orga''s athlete naming orga''s org_id'
 );
 select throws_ok(
   format($q$insert into body_mass_target_ranges
               (org_id, athlete_id, target_low_kg, target_high_kg, set_by)
             values (%L, %L, 100.00, 103.00, %L)$q$,
-         tests.uid('orgb','org'), tests.uid('orga','athlete_1'), tests.uid('orgb','user_coach')),
+         tests.uid('orgb','org'), tests.uid('orga','athlete_1'), tests.uid('orgb','user_nutritionist')),
   '42501', null,
   'nor naming orgb''s own org_id — the parent-athlete exists() check cannot find orga''s athlete under orgb'
 );
@@ -454,9 +485,10 @@ select lives_ok(
               (id, org_id, athlete_id, target_low_kg, target_high_kg, set_by)
             values (%L, %L, %L, 98.00, 101.00, %L)$q$,
          tests.uid('orgb','range_1'), tests.uid('orgb','org'), tests.uid('orgb','athlete_1'),
-         tests.uid('orgb','user_coach')),
-  'orgb''s coach sets a range on orgb''s own athlete — the policy works, tenancy is what refused above'
+         tests.uid('orgb','user_nutritionist')),
+  'orgb''s nutritionist sets a range on orgb''s own athlete — the policy works, tenancy is what refused above'
 );
+select tests.set_jwt(tests.uid('orgb', 'user_coach'));
 select is(
   (select count(*) from body_mass_target_ranges where org_id = tests.uid('orgb','org')),
   1::bigint,
@@ -648,12 +680,24 @@ select is(
   3,
   'exactly three policies exist on this table — select, insert and update, all staff'
 );
+/* Was one assertion over SELECT and UPDATE together, requiring both to name
+   coach and medic. G-43 split those two apart, so one assertion can no longer
+   describe both: reading a target is still every staff role, writing one is the
+   sport scientist and the nutritionist. Asserted as two, which is the more
+   useful shape anyway — it now says which way each policy may not drift. */
 select ok(
-  (select bool_and(qual like '%coach%' and qual like '%medic%')
+  (select bool_and(qual like '%coach%' and qual like '%medic%' and qual like '%nutritionist%')
      from pg_policies
     where schemaname = 'public' and tablename = 'body_mass_target_ranges'
-      and cmd in ('SELECT', 'UPDATE')),
-  'every readable-path policy requires coach or medic'
+      and cmd = 'SELECT'),
+  'the readable path still admits every staff role — a target is not injury data'
+);
+select ok(
+  (select bool_and(qual not like '%coach%' and qual not like '%medic%')
+     from pg_policies
+    where schemaname = 'public' and tablename = 'body_mass_target_ranges'
+      and cmd = 'UPDATE'),
+  'the writable path admits neither coach nor medic — narrowed 2026-09-06'
 );
 
 select * from finish();

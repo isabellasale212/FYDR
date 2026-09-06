@@ -284,7 +284,10 @@ export async function updateWeighIn(
       .eq('org_id', orgId)
       .select('id'),
     {
-      refusal: 'Only coaching or medical staff can edit a weigh-in.',
+      /* This sentence used to say "Only coaching or medical staff can edit a
+         weigh-in", which 0073 makes exactly backwards: those are now the two
+         roles that cannot. */
+      refusal: 'Not saved: logging a weigh-in belongs to the sport scientist, the medic, the S&C and the nutritionist.',
       onError: (m) => humanizeDbError(m, 'staff'),
     },
   );

@@ -106,7 +106,28 @@ export async function POST(request: Request): Promise<NextResponse<CreateUserRes
   }
 
   if (athleteId) {
-    const { error: linkErr } = await db.from('athletes').update({ user_id: newUserId }).eq('org_id', orgId).eq('id', athleteId).is('user_id', null);
+    /* Same two meanings as linkAthleteToUser, and the same answer: say which.
+       An invite that silently fails to link leaves an account with no athlete
+       record behind it, which reads as a working invite until somebody looks. */
+    const { data: linkedRows, error: linkErr } = await db
+      .from('athletes')
+      .update({ user_id: newUserId })
+      .eq('org_id', orgId)
+      .eq('id', athleteId)
+      .is('user_id', null)
+      .select('id');
+    if (!linkErr && (!linkedRows || linkedRows.length === 0)) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'Account and roles created, but that athlete record was already linked to another account, so it was left alone.',
+          userId: newUserId,
+          inviteUrl,
+          emailDelivered: false,
+        },
+        { status: 409 },
+      );
+    }
     if (linkErr) {
       return NextResponse.json({ ok: false, error: `Account and roles created, but linking the athlete record failed: ${linkErr.message}`, userId: newUserId, inviteUrl, emailDelivered: false }, { status: 500 });
     }

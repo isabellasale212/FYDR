@@ -458,8 +458,14 @@ for (const [route, set] of HIDDEN_REGIONS) {
 /* Named individually because one file carries three of them and a file-level
  * check would pass on any one. */
 const athlete = readFileSync('src/app/(staff)/squad/[athleteId]/page.tsx', 'utf8');
+/* canSeeWeighIns and canLogWeighIn were one flag until G-43. Reading the section
+   is ALL_STAFF and always was; logging a weigh-in is WEIGH_IN_EDIT, decided
+   2026-09-06 as every staff role but the coach. Kept as two assertions rather
+   than one, because the failure that matters is the two drifting back together:
+   a single flag would silently hand the write back to whoever may read. */
 for (const [name, want] of [
-  ['canLogWeighIn', 'ALL_STAFF'],
+  ['canSeeWeighIns', 'ALL_STAFF'],
+  ['canLogWeighIn', 'WEIGH_IN_EDIT'],
   ['canCorrect', 'ALL_STAFF'],
 ] as [string, string][]) {
   const m = athlete.match(new RegExp(`const ${name} = ([^;]*);`));

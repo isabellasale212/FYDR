@@ -124,6 +124,30 @@ export const INJURY_ACCESS = [
   'strength_conditioning',
 ] as const;
 
+/** Who may LOG or edit a weigh-in. The one rule in the matrix the documents
+ *  could not settle between them, decided 2026-09-06 as the union of what both
+ *  claim rather than by picking one.
+ *
+ *  §3.1 gives the S&C and the nutritionist VP on the athlete profile, which
+ *  argues neither should write here. But a weigh-in is the input to the
+ *  nutrition target the nutritionist owns at VECD in §3.3, and the
+ *  specification's own screen table lists "logs a weigh in" among what the sport
+ *  scientist does. The medic keeps it too: body mass is clinical context during
+ *  a return to play, and §3.1 gives the medic VE on the athlete profile outright
+ *  rather than the VP the S&C and nutritionist have.
+ *
+ *  The coach is the only staff role excluded. Decided 2026-09-06.
+ *
+ *  READING a weigh-in is a different question and stays open to every staff
+ *  role: body mass is not injury data, and the athlete profile is V or better in
+ *  all five columns. The page keeps the two apart. */
+export const WEIGH_IN_EDIT = [
+  'sport_scientist',
+  'strength_conditioning',
+  'nutritionist',
+  'medic',
+] as const;
+
 /** Who may set an athlete's availability. Three roles, and the shape is worth
  *  stating because it is not "any staff" and not "the medic" either.
  *

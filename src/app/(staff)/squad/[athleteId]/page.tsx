@@ -31,7 +31,7 @@ import { resolvePeriod } from '@/lib/period.server';
 import { availabilityStatus } from '@/lib/status';
 import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
-import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, INJURY_ACCESS, hasAnyRole } from '@/lib/access';
+import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, INJURY_ACCESS, WEIGH_IN_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Athlete · Fydr' };
 
@@ -343,8 +343,14 @@ export default async function AthletePage({
   // action RLS is just going to reject.
   /* body_composition and body_mass_target_ranges admit all five staff roles
      since 0066, so this was narrower than the policy behind it. */
-  const canLogWeighIn = hasAnyRole(claims.roles, ALL_STAFF);
-  const weighIns = canLogWeighIn ? await fetchBodyCompositionEntries(db, orgId, athleteId) : [];
+  /* Two questions, not one. Reading a weigh-in is open to every staff role,
+     because body mass is not injury data and §3.1 gives the athlete profile V or
+     better in all five columns. WRITING one is the sport scientist, the S&C and
+     the nutritionist (0073). This was a single flag gating both, so narrowing it
+     wholesale would have taken the weigh-in HISTORY away from a coach. */
+  const canSeeWeighIns = hasAnyRole(claims.roles, ALL_STAFF);
+  const canLogWeighIn = hasAnyRole(claims.roles, WEIGH_IN_EDIT);
+  const weighIns = canSeeWeighIns ? await fetchBodyCompositionEntries(db, orgId, athleteId) : [];
   /* The staff-set body-mass target range (migration 0060). Gated on the SAME two
    * roles for the same reason as the weigh-in controls above: body_mass_target_ranges
    * grants select, insert and update to coach and medical and to nobody else, so
@@ -355,7 +361,7 @@ export default async function AthletePage({
    * is (staff), and the table has no athlete select policy at all. Two independent
    * reasons, which is the point: client rule 2 says the athlete NEVER sees this, and a
    * rule that only one layer enforces is a rule one refactor away from being gone. */
-  const targetRanges = canLogWeighIn ? await fetchTargetRangeHistory(db, orgId, athleteId) : [];
+  const targetRanges = canSeeWeighIns ? await fetchTargetRangeHistory(db, orgId, athleteId) : [];
   const liveTargetRange = targetRanges.find((r) => r.effective_to === null) ?? null;
   /* The comment here used to say availability_coach_insert_noninjury and
      availability_medical_insert "between them cover exactly coach and medical",

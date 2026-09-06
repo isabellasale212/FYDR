@@ -213,8 +213,8 @@ select is(
 );
 
 -- ===========================================================================
--- 4. body_composition: staff write for any athlete, athlete reads only
---    their own, same shape as test_results — plus the update path
+-- 4. body_composition: every staff role but the coach writes for any athlete,
+--    athlete reads only their own, same shape as test_results — plus the update path
 --    playerProfile.ts's "Edit entries" panel actually uses, which
 --    test_results above never exercises (it only ever inserts).
 -- ===========================================================================
@@ -228,13 +228,36 @@ select throws_ok(
   'an athlete cannot log their own weigh-in — staff-entered, same rule as test_results'
 );
 
+/* The coach used to log this row. G-43 narrowed body_composition to the sport
+   scientist, the medic, the S&C and the nutritionist, decided 2026-09-06: a
+   weigh-in is the input to the nutrition target and to return-to-play mass
+   management, and the coach is the one staff role outside both. Asserted as a
+   refusal rather than deleted, because "the coach cannot" is the decision, and a
+   deleted assertion would let a future widening pass unnoticed. */
 select tests.set_jwt(tests.uid('orga', 'user_coach'));
+select throws_ok(
+  format($q$insert into body_composition (org_id, athlete_id, measured_on, body_mass_kg, recorded_by)
+            values (%L, %L, current_date - 14, 82.4, %L)$q$,
+         tests.uid('orga','org'), tests.uid('orga','athlete_1'), tests.uid('orga','user_coach')),
+  '42501', null,
+  'a coach cannot log a weigh-in — narrowed 2026-09-06, the only staff role excluded'
+);
+
+select tests.set_jwt(tests.uid('orga', 'user_sc'));
 select lives_ok(
   format($q$insert into body_composition (id, org_id, athlete_id, measured_on, body_mass_kg, body_fat_pct, method, recorded_by)
             values (%L, %L, %L, current_date - 14, 82.4, 14.1, 'skinfold', %L)$q$,
          tests.uid('orga','bc_1'), tests.uid('orga','org'), tests.uid('orga','athlete_1'),
-         tests.uid('orga','user_coach')),
-  'a coach logs a weigh-in for athlete_1'
+         tests.uid('orga','user_sc')),
+  'the S&C logs a weigh-in for athlete_1'
+);
+
+select tests.set_jwt(tests.uid('orga', 'user_nutritionist'));
+select lives_ok(
+  format($q$insert into body_composition (org_id, athlete_id, measured_on, body_mass_kg, recorded_by)
+            values (%L, %L, current_date - 21, 83.0, %L)$q$,
+         tests.uid('orga','org'), tests.uid('orga','athlete_1'), tests.uid('orga','user_nutritionist')),
+  'and so does the nutritionist — the weigh-in is the input to the target they own'
 );
 
 select tests.set_jwt(tests.uid('orga', 'user_athlete_2'));
@@ -260,7 +283,7 @@ select tests.set_jwt(tests.uid('orga', 'user_medical'));
 select lives_ok(
   format($q$update body_composition set body_mass_kg = 82.9, method = 'bioimpedance' where id = %L$q$,
          tests.uid('orga','bc_1')),
-  'medical corrects the same weigh-in — the shared staff role, no coach/medical split here either'
+  'medical corrects the same weigh-in — the medic keeps the write, clinical context during a return to play'
 );
 select is(
   (select body_mass_kg from body_composition where id = tests.uid('orga','bc_1')),

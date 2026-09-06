@@ -124,7 +124,23 @@ export async function POST(request: Request) {
       continue;
     }
 
-    const { error: linkErr } = await db.from('athletes').update({ user_id: newUserId }).eq('org_id', orgId).eq('id', athleteId).is('user_id', null);
+    /* Same two meanings as linkAthleteToUser: .is(user_id, null) matches only an
+       unlinked record, so nothing changing means either already linked or
+       refused. Reported distinctly rather than as plain success, because a bulk
+       run reporting "sent" for a row it never linked is the version of this that
+       nobody goes back and checks. */
+    const { data: linkedRows, error: linkErr } = await db
+      .from('athletes')
+      .update({ user_id: newUserId })
+      .eq('org_id', orgId)
+      .eq('id', athleteId)
+      .is('user_id', null)
+      .select('id');
+    if (!linkErr && (!linkedRows || linkedRows.length === 0)) {
+      results.push({ email, ok: false, error: 'Account created, but that athlete record was already linked to another account.', inviteUrl });
+      createdUserIds.push(newUserId);
+      continue;
+    }
     if (linkErr) {
       results.push({ email, ok: false, error: `Account created but linking the athlete record failed: ${linkErr.message}.`, inviteUrl });
       createdUserIds.push(newUserId);

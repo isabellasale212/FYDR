@@ -57,11 +57,25 @@ select throws_ok(
   'an athlete cannot add an exercise'
 );
 
+/* The medic could add an exercise until G-43 narrowed the library to the sport
+   scientist and the S&C, decided 2026-09-06. Note this does NOT follow the
+   programmes rule directly above: programmes are type-split, so the medic keeps
+   the rehab branch there. The library has no such split, so narrowing it takes
+   the medic out entirely — which is exactly why the medic's refusal is asserted
+   here rather than left implied by the S&C's success. */
 select tests.set_jwt(tests.uid('orga', 'user_medical'));
+select throws_ok(
+  format($q$insert into exercises (org_id, name, category) values (%L, 'Deadlift', 'hinge')$q$,
+         tests.uid('orga','org')),
+  '42501', null,
+  'medical cannot add an exercise — narrowed 2026-09-06 to the sport scientist and the S&C'
+);
+
+select tests.set_jwt(tests.uid('orga', 'user_sc'));
 select lives_ok(
   format($q$insert into exercises (org_id, name, category) values (%L, 'Deadlift', 'hinge')$q$,
          tests.uid('orga','org')),
-  'medical CAN add an exercise — the library is not type-split like programmes are'
+  'the S&C adds an exercise — the library belongs to whoever writes the programmes'
 );
 
 

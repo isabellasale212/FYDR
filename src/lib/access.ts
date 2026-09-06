@@ -230,6 +230,12 @@ export const REPORT_VISIBILITY: Record<ReportKey, readonly AppRole[]> = {
   injuries: ['sport_scientist', 'coach', 'medic', 'strength_conditioning', 'nutritionist'],
   training: REPORT_ACCESS,
   athlete: REPORT_ACCESS,
+  /* SQUAD WEEKLY IS CLOSED TO THE NUTRITIONIST ON PURPOSE, and this note exists
+     because the obvious "correction" is to open it. docs/access-matrix.md §3.5
+     lists Squad weekly as VP for that role. The matrix is STALE on this row: the
+     decision was taken twice, most recently 2026-09-06, and both times it went
+     the other way. Do not widen this to match the document. If the document is
+     ever regenerated, this row is the one to check rather than trust. */
   squad: REPORT_ACCESS,
   testing: REPORT_ACCESS,
 };

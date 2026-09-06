@@ -4,6 +4,16 @@
  * (GenericTable / GenericView / GenericSchema), so it is a drop-in replacement.
  *
  * Run with env vars loaded: `set -a && source .env.local && set +a && node scripts/gen-types-from-db.mjs`
+ *
+ * WHICH DATABASE. process.env.SUPABASE_DB_URL wins over the .env.local file, and
+ * the host is printed before anything is written. This used to read the file and
+ * nothing else, so `SUPABASE_DB_URL=<scratch> node scripts/gen-types-from-db.mjs`
+ * silently introspected PRODUCTION instead and reported success -- the generated
+ * types then described a schema that was not the one just migrated, and the only
+ * symptom was a type error somewhere unrelated. Introspection is read-only, so
+ * nothing was ever at risk, but "the env var I set was ignored" is the same shape
+ * as the rule that test:tenancy must never point at production, and it should
+ * fail loudly rather than quietly pick the other database.
  */
 
 import pg from 'pg';
@@ -19,7 +29,14 @@ const env = Object.fromEntries(
     }),
 );
 
-const client = new pg.Client({ connectionString: env.SUPABASE_DB_URL });
+const dbUrl = process.env.SUPABASE_DB_URL || env.SUPABASE_DB_URL;
+if (!dbUrl) {
+  console.error('No SUPABASE_DB_URL, in the environment or in .env.local. Nothing written.');
+  process.exit(1);
+}
+console.log(`Introspecting ${new URL(dbUrl).host} (${process.env.SUPABASE_DB_URL ? 'from the environment' : 'from .env.local'})`);
+
+const client = new pg.Client({ connectionString: dbUrl });
 await client.connect();
 
 // ---------------------------------------------------------------------------
@@ -400,6 +417,7 @@ export type FlagSeverity = Database["public"]["Enums"]["flag_severity"];
 export type BodyArea = Database["public"]["Enums"]["body_area"];
 export type BodySide = Database["public"]["Enums"]["body_side"];
 export type InjuryStatus = Database["public"]["Enums"]["injury_status"];
+export type InjuryTimelineEventType = Database["public"]["Enums"]["injury_timeline_event_type"];
 export type ComplianceDomain = Database["public"]["Enums"]["compliance_domain"];
 export type AthleteStatus = Database["public"]["Enums"]["athlete_status"];
 export type DominantSide = Database["public"]["Enums"]["dominant_side"];

@@ -41,7 +41,7 @@ console.log('\nit is reachable in READ mode, which is where you land');
   /* The toolbar is inside `mode === 'edit' ? (...) : null`. The whole point of
      this change is that the link is NOT in there — a control you can only see
      after finding a toggle is the bug, not the fix. */
-  const toolbarAt = code.indexOf("{mode === 'edit' ? (");
+  const toolbarAt = code.indexOf("mode === 'edit' ? (");
   const linkAt = code.indexOf('href="/schedule/planner"');
   assert(toolbarAt > -1, 'the edit-only toolbar is still present');
   assert(linkAt > -1 && linkAt < toolbarAt, 'and the Week templates link sits BEFORE it, outside the mode check');
@@ -69,7 +69,7 @@ console.log('\nthe destination still gates CREATION on SESSION_EDIT');
 console.log('\nthe existing "save this week" route is untouched');
 assert(/saveTemplateHref/.test(code), 'Save this week as a template is still passed in');
 assert(
-  code.indexOf('saveTemplateHref') > -1 && code.lastIndexOf('saveTemplateHref') > code.indexOf("{mode === 'edit' ? ("),
+  code.indexOf('saveTemplateHref') > -1 && code.lastIndexOf('saveTemplateHref') > code.indexOf("mode === 'edit' ? ("),
   'and still lives in the edit toolbar — seeding from the current week is a different action',
 );
 

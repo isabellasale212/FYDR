@@ -1,7 +1,9 @@
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { NewFixtureForm } from '@/components/NewFixtureForm/NewFixtureForm';
 import { todayIso } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
+import { SESSION_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'New fixture · Fydr' };
 
@@ -16,6 +18,8 @@ export default async function NewFixturePage({
   searchParams: SearchParams;
 }) {
   const { orgId, claims, timezone } = await requireStaff();
+  /* creating a fixture was narrowed to the same two roles by 0073. Offering the form and refusing the save is the G-34 shape. */
+  if (!hasAnyRole(claims.roles, SESSION_EDIT)) redirect('/schedule');
   const params = await searchParams;
   const defaultDate = typeof params.date === 'string' ? params.date : todayIso(timezone);
 

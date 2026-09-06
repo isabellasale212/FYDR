@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { fetchTemplates, weekTotalLoad } from '@/lib/queries/weekTemplates';
 import { mdLabel } from '@/lib/format';
+import { redirect } from 'next/navigation';
 import { requireStaff } from '@/lib/session';
 import { SESSION_EDIT, hasAnyRole } from '@/lib/access';
 
@@ -23,6 +24,13 @@ export default async function WeekTemplatesPage() {
      medic, so it offered writing to a medic and withheld it from the sport
      scientist. */
   const canWrite = hasAnyRole(claims.roles, SESSION_EDIT);
+  /* And the list itself is now behind the same gate, not just the create button.
+     G-33 is explicit — "Medic loses scheduling, INCLUDING WEEK TEMPLATES" — and a
+     page that renders read-only for a role that has lost the feature is the
+     "hidden button is not a gate" mistake from the tier work: the URL is still
+     there. The Schedule chip linking here is hidden for the same roles, so this
+     closes the typed-URL route to match. */
+  if (!canWrite) redirect('/schedule');
   const templates = await fetchTemplates(db, orgId, timezone);
 
   return (

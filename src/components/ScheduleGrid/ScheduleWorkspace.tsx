@@ -41,6 +41,10 @@ type Props = {
   prevHref: string;
   nextHref: string;
   timetableHref: string;
+  /** SESSION_EDIT, resolved by the page. False hides every write control here
+   *  AND makes the grid click inert — a disabled-looking screen that still
+   *  responds to clicks is the same bug one step quieter. */
+  canEdit: boolean;
   initialSessions: readonly GridSession[];
   groups: readonly (GroupOption & { memberCount: number })[];
   /** The group filter currently in force, for the header's chip row. Empty
@@ -86,6 +90,7 @@ export function ScheduleWorkspace({
   prevHref,
   nextHref,
   timetableHref,
+  canEdit,
   initialSessions,
   groups,
   groupIds,
@@ -323,6 +328,7 @@ export function ScheduleWorkspace({
    * click, one failed attempt earlier, and the toggle is visible so the mode
    * change is not a surprise. */
   function startDraft(dow: string, startHour?: number) {
+    if (!canEdit) return;
     const start = startHour ?? 9;
     // A 60-minute draft must still fit inside the visible grid.
     const clamped = clamp(start, h0, Math.max(h0, h1 - 1));
@@ -584,6 +590,7 @@ export function ScheduleWorkspace({
         sub={<p className="eyebrow rhead-sub">{eyebrow}</p>}
         actions={
           <>
+            {canEdit ? (
             <div className="sg-segmented" role="group" aria-label="Read or edit">
             <button type="button" className="sg-segment" aria-pressed={mode === 'read'} onClick={() => setMode('read')}>
             Read
@@ -597,6 +604,7 @@ export function ScheduleWorkspace({
             Edit
             </button>
             </div>
+            ) : null}
           </>
         }
         tabsNode={
@@ -629,6 +637,7 @@ export function ScheduleWorkspace({
         }
       />
 
+      {canEdit ? (
       <div className="chiprow" style={{ marginBottom: 14 }}>
           {/* Both creation routes existed and neither was linked from anywhere —
           /schedule/new could only be reached by typing it, and fixtures had
@@ -660,6 +669,7 @@ export function ScheduleWorkspace({
           Week templates
           </Link>
       </div>
+      ) : null}
 
       {/* No status dot: it occupied a 10px grid column plus a 14px gap, which
           put this card's first text 40px from its border while every other
@@ -688,6 +698,10 @@ export function ScheduleWorkspace({
             </div>
           ) : null}
         </div>
+        {/* The banner TEXT stays for everyone — whether the athlete app is up to
+            date is information, not a permission. The actions do not: publishing
+            is a write, and a reader has no dirty changes to publish anyway. */}
+        {canEdit ? (
         <div className="sg-banner-actions">
           {dirtyCount > 0 ? (
             confirmingDiscard ? (
@@ -729,9 +743,10 @@ export function ScheduleWorkspace({
             </button>
           )}
         </div>
+        ) : null}
       </div>
 
-      {mode === 'edit' ? (
+      {canEdit && mode === 'edit' ? (
         <div className="card sg-toolbar">
           <button type="button" className="sg-btn-add" onClick={() => startDraft(defaultDraftDay)}>
             + Session

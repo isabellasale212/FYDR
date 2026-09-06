@@ -36,6 +36,7 @@
     "test:injury-card": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-injury-card.ts",
     "test:injury-timeline": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-injury-timeline.ts",
     "test:schedule-template-link": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-schedule-template-link.ts",
+    "test:schedule-access": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-schedule-access.ts",
     "verify:assignment-authorship": "node scripts/verify-assignment-authorship.mjs",
     "check:policy-replacements": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/check-policy-replacements.ts",
     "test:policy-guard": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-policy-replacement-guard.ts",

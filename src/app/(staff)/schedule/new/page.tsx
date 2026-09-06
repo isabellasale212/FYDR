@@ -1,8 +1,10 @@
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { NewSessionForm } from '@/components/NewSessionForm/NewSessionForm';
 import { fetchGroups } from '@/lib/queries/groups';
 import { todayIso } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
+import { SESSION_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'New session · Fydr' };
 
@@ -14,6 +16,8 @@ export default async function NewSessionPage({
   searchParams: SearchParams;
 }) {
   const { db, orgId, claims, timezone } = await requireStaff();
+  /* creating a session is sessions_staff_insert — the sport scientist and the coach (0070). Offering the form and refusing the save is the G-34 shape. */
+  if (!hasAnyRole(claims.roles, SESSION_EDIT)) redirect('/schedule');
   const params = await searchParams;
   const defaultDate =
     typeof params.date === 'string' ? params.date : todayIso(timezone);

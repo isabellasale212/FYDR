@@ -6,6 +6,7 @@ import { SessionCard } from '@/components/SessionCard/SessionCard';
 import { fetchFixtureDetail, fetchWeekMdLabels, mondayOf } from '@/lib/queries/schedule';
 import { enumLabel, formatLongDate, formatTime } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
+import { SESSION_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Fixture · Fydr' };
 
@@ -26,7 +27,12 @@ export default async function FixtureDetailPage({
   params: Promise<{ fixtureId: string }>;
 }) {
   const { fixtureId } = await params;
-  const { db, orgId, timezone } = await requireStaff();
+  const { db, orgId, claims, timezone } = await requireStaff();
+  /* Not a redirect, unlike /schedule/fixtures/new. A match in the calendar is
+     information every staff role may read — a medic wants to know when the game
+     is. Only the write controls go, and they go because 0073 narrowed
+     fixtures_staff_insert/update to the sport scientist and the coach. */
+  const canEdit = hasAnyRole(claims.roles, SESSION_EDIT);
 
   const fixture = await fetchFixtureDetail(db, orgId, fixtureId, timezone);
   if (!fixture) notFound();
@@ -84,7 +90,7 @@ export default async function FixtureDetailPage({
       </div>
 
       <div style={{ marginTop: 14 }}>
-        <FixtureActions orgId={orgId} fixture={fixture} />
+        {canEdit ? <FixtureActions orgId={orgId} fixture={fixture} /> : null}
       </div>
 
       <section style={{ marginTop: 14 }} aria-labelledby="fixture-sessions">
@@ -116,7 +122,7 @@ export default async function FixtureDetailPage({
         <p className="sect" style={{ marginBottom: 8 }}>
           Edit this fixture
         </p>
-        <FixtureEditForm orgId={orgId} fixture={fixture} timezone={timezone} />
+        {canEdit ? <FixtureEditForm orgId={orgId} fixture={fixture} timezone={timezone} /> : null}
       </div>
     </>
   );

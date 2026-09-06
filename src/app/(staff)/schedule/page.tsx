@@ -12,6 +12,7 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { addDays, decimalHourInTz, todayIso } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
+import { SESSION_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Schedule · Fydr' };
 
@@ -55,6 +56,11 @@ function weekRangeLabel(weekStart: string, weekEnd: string, timezone: string): s
  *  replaces the spec's literal 'Staff'/'Academy' name exception. */
 export default async function SchedulePage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, claims, timezone } = await requireStaff();
+  /* G-33 narrowed scheduling to the sport scientist and the coach, and 0070/0073
+     enforce it on sessions, fixtures, week_templates and session_participants
+     alike. This screen had no check at all, so a medic, a nutritionist or an S&C
+     was shown the Edit toggle and every create control on it. */
+  const canEdit = hasAnyRole(claims.roles, SESSION_EDIT);
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
 
@@ -111,6 +117,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Sea
       <ScheduleWorkspace
         orgId={orgId}
         userId={claims.userId}
+        canEdit={canEdit}
         timezone={timezone}
         weekStart={weekStart}
         days={days}

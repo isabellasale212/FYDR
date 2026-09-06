@@ -1,9 +1,11 @@
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { ApplyControls } from '@/components/ApplyControls/ApplyControls';
 import { buildApplyPlan, fetchTemplates, type ApplyStrategy } from '@/lib/queries/weekTemplates';
 import { fetchNextFixture, mondayOf, rangeBounds } from '@/lib/queries/schedule';
 import { dateInTz, daysBetween, formatDate, mdLabel, todayIso, zonedTimeToUtcIso } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
+import { SESSION_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Apply a week template · Fydr' };
 
@@ -17,6 +19,8 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
  *  target week, or none. */
 export default async function ApplyTemplatePage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, orgName, claims, timezone } = await requireStaff();
+  /* applying a template CREATES sessions, so it is the same gate as + Session. Offering the form and refusing the save is the G-34 shape. */
+  if (!hasAnyRole(claims.roles, SESSION_EDIT)) redirect('/schedule');
   const sp = await searchParams;
 
   const weekStart = typeof sp.week === 'string' ? mondayOf(sp.week) : mondayOf(todayIso(timezone));

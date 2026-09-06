@@ -54,12 +54,19 @@ select is(
 --    existed for exactly this: a coach fixing a mis-tap mid-session.
 -- ===========================================================================
 
-select tests.set_jwt(tests.uid('orga', 'user_medical'));
+/* The medic made this correction until 2026-09-06. Recording and amending
+   attendance is now SESSION_EDIT -- the sport scientist and the coach -- because
+   the timetable opened to every staff role in the same change and the write had
+   to be gated on its own rather than inherited from who can see the page. The
+   medic's own refusal is asserted in 350_attendance_recording_test.sql; here the
+   correction is simply made by a role that still owns it, so the rest of this
+   section keeps testing what it was written to test. */
+select tests.set_jwt(tests.uid('orga', 'user_admin'));
 select lives_ok(
   format($q$update session_attendance set attendance = 'modified', modified_reason = 'left early, family'
             where session_id = %L and athlete_id = %L$q$,
          tests.uid('orga','session'), tests.uid('orga','athlete_2')),
-  'medical corrects it to modified with a reason — the shared staff role, no coach/medical split here'
+  'the sport scientist corrects it to modified with a reason'
 );
 select is(
   (select attendance::text from session_attendance where session_id = tests.uid('orga','session') and athlete_id = tests.uid('orga','athlete_2')),

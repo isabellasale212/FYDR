@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
+import type { AppRole } from '@/lib/types/database';
 import {
   bulkMarkPresent,
   recordAttendance,
@@ -16,7 +17,18 @@ import { enumLabel, formatTime, mdLabel } from '@/lib/format';
 type Props = {
   orgId: string;
   userId: string;
-  actorRole: 'coach' | 'medic';
+  /** Stamped on the audit row for the attendance write, via actingRole(). Was
+   *  'coach' | 'medic', which was fine while only those two roles could reach
+   *  this card and became wrong the moment the page opened to all staff: a
+   *  sport scientist would have been recorded as a coach. audit_log.actor_role
+   *  is app_role and already holds all five. */
+  actorRole: AppRole;
+  /** May this viewer RECORD attendance, as opposed to read it. Decided
+   *  2026-09-06: the page is open to every staff role because /schedule already
+   *  shows them the same sessions, but recording is SESSION_EDIT — the sport
+   *  scientist and the coach. Migration 0076 narrows session_attendance to
+   *  match, so this hides controls the database would refuse. */
+  canRecord: boolean;
   session: TimetableSession;
   // IANA zone used to display session.starts_at in the organisation's local time.
   timezone: string;
@@ -60,7 +72,7 @@ type WriteFailure =
  *  table; router.refresh() re-pulls server state after each mutation,
  *  same pattern as GymSessionLogger.tsx rather than a hand-rolled
  *  optimistic cache. */
-export function TimetableSessionCard({ orgId, userId, actorRole, session, timezone, anchoredMdOffset, defaultExpanded }: Props) {
+export function TimetableSessionCard({ orgId, userId, actorRole, canRecord, session, timezone, anchoredMdOffset, defaultExpanded }: Props) {
   const router = useRouter();
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [reasonDrafts, setReasonDrafts] = useState<Record<string, string>>({});
@@ -176,14 +188,22 @@ export function TimetableSessionCard({ orgId, userId, actorRole, session, timezo
                   borderBottom: '1px solid var(--hair)',
                 }}
               >
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  disabled={bulkMutation.isPending}
-                  onClick={() => bulkMutation.mutate(session.participants.map((p) => p.athlete_id))}
-                >
-                  Mark all present
-                </button>
+                {canRecord ? (
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    disabled={bulkMutation.isPending}
+                    onClick={() => bulkMutation.mutate(session.participants.map((p) => p.athlete_id))}
+                  >
+                    Mark all present
+                  </button>
+                ) : (
+                  /* Says who it belongs to rather than leaving a gap where a
+                     button was. The counts beside it stay visible: reading who
+                     turned up is the whole reason this page is open to every
+                     staff role now. */
+                  <span className="tiny">Recording attendance belongs to the sport scientist and the coach.</span>
+                )}
                 <span className="tiny">
                   {counts.full} full · {counts.modified} modified · {counts.absent} absent · {counts.excused} excused
                 </span>
@@ -248,7 +268,9 @@ export function TimetableSessionCard({ orgId, userId, actorRole, session, timezo
                             <span className="pill pill-warn">⚠ {p.conflicts.join(', ')}</span>
                           ) : null}
                           <div className="chiprow" style={{ marginLeft: 'auto' }} role="group" aria-label={`Attendance for ${p.first_name} ${p.last_name}`}>
-                            {SEGMENTS.map((seg) => (
+                            {!canRecord ? (
+                              <span className="tiny">{p.attendance ? enumLabel(p.attendance) : '—'}</span>
+                            ) : SEGMENTS.map((seg) => (
                               <button
                                 key={seg.value}
                                 type="button"

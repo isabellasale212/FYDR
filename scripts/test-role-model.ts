@@ -458,7 +458,26 @@ const HIDDEN_REGIONS: [string, string][] = [
   ['injuries/team-allocation/page.tsx', 'SESSION_EDIT'],
   ['nutrition/page.tsx', 'NUTRITION_EDIT'],
   ['programmes/[programmeId]/athlete/[athleteId]/page.tsx', 'PROGRAMME_EDIT'],
+  ['timetable/page.tsx', 'SESSION_EDIT'],
 ];
+
+/* The timetable is the one place where seeing and doing were separated rather
+   than narrowed together, so both halves are asserted. Checking only the
+   SESSION_EDIT gate above would pass just as well if the page had been closed to
+   everyone, which is the outcome this decision explicitly rejected. */
+const timetable = readFileSync('src/app/(staff)/timetable/page.tsx', 'utf8');
+assert(
+  !/redirect\('\/dashboard'\)/.test(timetable),
+  'the timetable no longer redirects any staff role away: /schedule shows them the same sessions',
+);
+assert(
+  /canRecordAttendance = hasAnyRole\(claims\.roles, SESSION_EDIT\)/.test(timetable),
+  'recording attendance is gated separately on SESSION_EDIT',
+);
+assert(
+  /actingRole\(claims\.roles\)/.test(timetable),
+  'and the audit actor comes from actingRole(), not a coach-or-medic ternary that would mislabel the new roles',
+);
 for (const [route, set] of HIDDEN_REGIONS) {
   const src = readFileSync(`src/app/(staff)/${route}`, 'utf8');
   assert(src.includes(set), `${route} resolves its hidden region from ${set}`);

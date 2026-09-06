@@ -1,4 +1,5 @@
 import type { AvailabilityStatus, Database } from '@/lib/types/database';
+import type { AppRole } from '@/lib/types/database';
 import { humanizeDbError } from '@/lib/writeErrors';
 import { fetchCurrentAvailability } from './availability';
 import { fetchGroupAthleteIds, type Db } from './groups';
@@ -196,7 +197,12 @@ export async function recordAttendance(
   db: Db,
   orgId: string,
   userId: string,
-  actorRole: 'coach' | 'medic',
+  /* Widened from 'coach' | 'medic' on 2026-09-06, when the timetable opened to
+     every staff role. The narrow type was not protecting anything -- it fed
+     audit_log.actor_role, which is app_role and already held all five -- it was
+     just guaranteeing that any new role got mislabelled as one of the two. Use
+     actingRole() to derive it rather than a ternary. */
+  actorRole: AppRole,
   input: {
     sessionId: string;
     athleteId: string;

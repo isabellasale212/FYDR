@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { SESSION_EDIT, actingRole, hasAnyRole } from '@/lib/access';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { TimetableSessionCard } from '@/components/TimetableSessionCard/TimetableSessionCard';
@@ -24,28 +24,22 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
  *  database's actual refusal agree. */
 export default async function TimetablePage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, orgName, claims, timezone } = await requireStaff();
-  /* access-exempt: LEFT AS IT IS ON PURPOSE, pending a decision, 2026-09-06.
-     This is the pre-five-role `coach || medic` phrase and it redirects the sport
-     scientist away from a page /schedule already shows them -- the same sessions,
-     a different layout, and that page gates on requireStaff() alone. So the
-     narrowing looks like an artefact.
+  /* Two separate questions, settled 2026-09-06, and conflating them is what the
+     old `coach || medic` redirect did.
 
-     It is not only an artefact, which is why it is marked rather than fixed. The
-     timetable carries the attendance control, so opening the page hands a WRITE
-     to whoever can see it, and who may record attendance is a decision nobody
-     has taken. The database would not object -- audit_log.actor_role is app_role
-     and already holds all five -- and access.ts's actingRole() would label the
-     audit row correctly. The blocker is the product question, not the plumbing.
+     WHO MAY SEE IT: every staff role. /schedule already shows all of them the
+     same sessions in a different layout and gates on requireStaff() alone, so
+     the narrower rule here was an artefact of the four-role model rather than a
+     decision anybody took.
 
-     Two candidate answers, both defensible: open the page to all staff and gate
-     the attendance control separately, or keep the page narrow and add the sport
-     scientist alone. Tracked in the to-do list. */
-  // access-exempt: see the note above — pending a decision on attendance writes.
-  const isCoach = claims.roles.includes('coach');
-  // access-exempt: same note.
-  const isMedical = claims.roles.includes('medic');
-  if (!isCoach && !isMedical) redirect('/dashboard');
-  const actorRole: 'coach' | 'medic' = isMedical ? 'medic' : 'coach';
+     WHO MAY RECORD ATTENDANCE: the sport scientist and the coach, SESSION_EDIT.
+     Opening the page hands a write to whoever can see it unless the write is
+     gated on its own, and this one NARROWS -- the medic could record attendance
+     before today and no longer can. Migration 0076 narrows session_attendance
+     to match, so this hides a control the database refuses rather than guarding
+     it. */
+  const canRecordAttendance = hasAnyRole(claims.roles, SESSION_EDIT);
+  const actorRole = actingRole(claims.roles);
 
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
@@ -121,6 +115,7 @@ export default async function TimetablePage({ searchParams }: { searchParams: Se
                 orgId={orgId}
                 userId={claims.userId}
                 actorRole={actorRole}
+                canRecord={canRecordAttendance}
                 session={session}
                 anchoredMdOffset={anchoredMdOffset}
                 defaultExpanded={isLive}

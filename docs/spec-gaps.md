@@ -605,7 +605,63 @@ check has to run as the role that will really do the thing.
 
 Loud rather than silent, so no data is corrupted: re-importing simply fails.
 
-### G-36. One shared write helper, and 84 call sites to route through it
+### G-36. IN PROGRESS, 2026-09-06. Helper built, medical batch converted
+
+`src/lib/write.ts` holds `mustAffect` and `mustAffectOrThrow`. Chain `.select()`
+onto the write and hand the builder over; an empty result becomes a stated
+refusal instead of a silent success. Unit tested with stubbed results, because
+the three outcomes it separates are awkward to produce on demand against a real
+database and trivial to state as stubs.
+
+**Batch 1, done: medical and injury.** Five converted, each a single row
+addressed by an id the caller was just looking at, so zero rows can only mean a
+refusal: editing an injury record, marking a subject access request reviewed,
+releasing one, and acknowledging or closing a problem report. Run-verified both
+directions, and the releasing one matters most: a silent no-op there is a GDPR
+deadline missed with a green tick beside it.
+
+**Six of the eleven medical sites were deliberately NOT converted**, because
+zero rows is legitimate for them and asserting a refusal would produce a
+confident wrong message:
+
+- `injuries.ts:358` and `rehabGroups.ts:159` close an open row before inserting
+  a new one. An athlete with nothing open matches nothing, correctly.
+- `teamAllocation.ts:141` withdraws a previous allocation that often does not
+  exist, and the insert after it raises anyway.
+- `injuries.ts:293` is an upsert; its insert branch raises, so it is already loud.
+- `retention/compute.ts:241` and `:246` run as the service role over a list of
+  ids, so no policy is consulted and some injuries legitimately have no clinical
+  row.
+
+**One thing the conversion turned up.** A coach and a sport scientist cannot
+even SELECT an open problem report, so the acknowledge path was never reachable
+for them through the UI. The guard is belt and braces rather than a live fix,
+which is worth knowing when judging how urgent the rest of this is.
+
+### G-36a. The plan for the remaining 72, not yet done
+
+Classified rather than counted, because the shape decides whether a row-count
+check is right at all:
+
+| Shape | Count | What to do |
+|---|---|---|
+| Single row by id | **50** | Convert. Zero rows is unambiguous |
+| Bulk or range | **12** | Do NOT blanket-convert. Each needs the `publishWeek` treatment: ask a second question in the empty branch, or leave it |
+| Upsert | **10** | Mostly already loud, since the insert branch raises. Convert only where the update branch can be reached alone |
+
+Proposed batches, each its own commit and review:
+
+1. **Squad and athlete records** (`athletes`, `users`, `user_roles`,
+   `organisations`) — 17 sites. Highest remaining consequence: identity, roles
+   and club settings.
+2. **Performance writes** (`sessions`, `thresholds`, `leaderboards`,
+   `programmes` and their children) — the bulk of the 50.
+3. **Nutrition and gym**, which are lower consequence and mostly already
+   guarded by the G-34 work.
+4. **The 12 bulk sites**, one at a time, each with a written judgement about
+   what zero rows means there.
+
+
 
 **83 of 84 update/delete/upsert call sites never look at what came back.** The
 single exception is `src/lib/retention/compute.ts:206`.

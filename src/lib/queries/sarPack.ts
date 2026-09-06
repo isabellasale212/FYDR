@@ -1,4 +1,5 @@
 import type { Db } from './groups';
+import { mustAffect } from '@/lib/write';
 
 /* 09-security-and-compliance.md §6 and screens/exports.md's "Admin, subject
  * access pack" section. migration 0032's own header explains the reduced,
@@ -165,15 +166,25 @@ export async function submitClinicalReview(
 }
 
 export async function markRequestReviewed(db: Db, orgId: string, requestId: string): Promise<{ error: string | null }> {
-  const { error } = await db.from('sar_requests').update({ status: 'reviewed' }).eq('org_id', orgId).eq('id', requestId);
-  return { error: error?.message ?? null };
+  /* G-36. sar_requests UPDATE is the medic's and the sport scientist's. */
+  return mustAffect(
+    db.from('sar_requests').update({ status: 'reviewed' }).eq('org_id', orgId).eq('id', requestId).select('id'),
+    { refusal: 'Not saved: marking a subject access request reviewed belongs to the medic and the sport scientist.' },
+  );
 }
 
 export async function releaseSarRequest(db: Db, orgId: string, requestId: string, releasedBy: string): Promise<{ error: string | null }> {
-  const { error } = await db
-    .from('sar_requests')
-    .update({ status: 'released', released_by: releasedBy, released_at: new Date().toISOString() })
-    .eq('org_id', orgId)
-    .eq('id', requestId);
-  return { error: error?.message ?? null };
+  /* G-36. Releasing a pack is the sport scientist's action (§3.6 gives the
+     medic V and the sport scientist VE), and it is the one that actually hands
+     an athlete their data, so a silent no-op here is a GDPR deadline missed
+     with a green tick beside it. */
+  return mustAffect(
+    db
+      .from('sar_requests')
+      .update({ status: 'released', released_by: releasedBy, released_at: new Date().toISOString() })
+      .eq('org_id', orgId)
+      .eq('id', requestId)
+      .select('id'),
+    { refusal: 'Not saved: releasing a subject access request belongs to the sport scientist.' },
+  );
 }

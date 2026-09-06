@@ -1,5 +1,6 @@
 import type { ProblemReportInput } from '@/lib/validation/problemReport';
 import type { Db } from './groups';
+import { mustAffect } from '@/lib/write';
 
 /* migration 0040, problem_reports — 03-flows.md §6 ("Athlete reports a problem
  * from Today tab -> notification to Medical") and 01-roles-and-permissions.md
@@ -175,11 +176,17 @@ export async function acknowledgeProblemReport(
   reportId: string,
   userId: string,
 ): Promise<{ error: string | null }> {
-  const { error } = await db
-    .from('problem_reports')
-    .update({ status: 'acknowledged', acknowledged_at: new Date().toISOString(), acknowledged_by: userId })
-    .eq('id', reportId);
-  return { error: error?.message ?? null };
+  /* G-36. problem_reports UPDATE is the medic's. An athlete reporting pain and
+     seeing it acknowledged, when nothing was recorded, is the worst version of
+     this bug in the product. */
+  return mustAffect(
+    db
+      .from('problem_reports')
+      .update({ status: 'acknowledged', acknowledged_at: new Date().toISOString(), acknowledged_by: userId })
+      .eq('id', reportId)
+      .select('id'),
+    { refusal: 'Not saved: acknowledging a problem report belongs to the medic.' },
+  );
 }
 
 export async function closeProblemReport(
@@ -187,9 +194,12 @@ export async function closeProblemReport(
   reportId: string,
   userId: string,
 ): Promise<{ error: string | null }> {
-  const { error } = await db
-    .from('problem_reports')
-    .update({ status: 'closed', closed_at: new Date().toISOString(), closed_by: userId })
-    .eq('id', reportId);
-  return { error: error?.message ?? null };
+  return mustAffect(
+    db
+      .from('problem_reports')
+      .update({ status: 'closed', closed_at: new Date().toISOString(), closed_by: userId })
+      .eq('id', reportId)
+      .select('id'),
+    { refusal: 'Not saved: closing a problem report belongs to the medic.' },
+  );
 }

@@ -8,6 +8,7 @@ import type {
 } from '@/lib/types/database';
 import { fetchCurrentAvailability, fetchOpenInjuries } from './availability';
 import { fetchGroupAthleteIds, type Db } from './groups';
+import { mustAffect } from '@/lib/write';
 
 /* screens/injury-dashboard.md and injury-record.md, screens 12 and 13, cut down hard —
  * see each function's own comment for what and why. No new schema at all: injuries,
@@ -257,19 +258,25 @@ export async function updateInjuryFields(
   injuryId: string,
   input: InjuryFieldsInput,
 ): Promise<{ error: string | null }> {
-  const { error } = await db
-    .from('injuries')
-    .update({
-      body_area: input.bodyArea,
-      side: input.side,
-      status: input.status,
-      expected_return: input.expectedReturn,
-      actual_return: input.actualReturn,
-      occurred_in: input.occurredIn,
-    })
-    .eq('id', injuryId)
-    .eq('org_id', orgId);
-  return { error: error?.message ?? null };
+  /* G-36. One row, addressed by id, that the caller was just looking at, so no
+     rows changed can only mean the policy refused. injuries UPDATE is the
+     medic's alone; §3.2 gives everyone else the limited view and no edit. */
+  return mustAffect(
+    db
+      .from('injuries')
+      .update({
+        body_area: input.bodyArea,
+        side: input.side,
+        status: input.status,
+        expected_return: input.expectedReturn,
+        actual_return: input.actualReturn,
+        occurred_in: input.occurredIn,
+      })
+      .eq('id', injuryId)
+      .eq('org_id', orgId)
+      .select('id'),
+    { refusal: 'Not saved: editing an injury record belongs to the medic.' },
+  );
 }
 
 export type ClinicalInput = {

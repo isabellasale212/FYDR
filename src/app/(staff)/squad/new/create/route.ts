@@ -19,15 +19,21 @@ import { issueInvite, deleteInvitedUser } from '@/lib/invite';
  *  later from their profile. The alternative -- rolling the athlete back because
  *  an email bounced -- would throw away the part that worked.
  *
- *  WHAT IS NOT HANDLED, deliberately, and flagged rather than guessed: an email
- *  belonging to somebody who already has a Fydr account at another club. Screen
- *  63's own open issue. issueInvite refuses that address, so the athlete is
- *  created and the invite is not, and the response says exactly that. It is the
- *  safe failure of the three available -- it neither invents a second athlete
- *  record for one person nor silently attaches this club's record to an account
- *  somebody else administers. athletes.user_id is UNIQUE, so the "link to their
- *  existing record" option is a schema change and not a form change, which is
- *  why the spec says to decide it before building rather than after. */
+ *  TRANSFERS, screen 63's open issue, DECIDED 2026-09-06: a fresh record, no
+ *  link. An athlete arriving from another club on the platform gets this club's
+ *  own squad record, and their existing Fydr account is not attached to it.
+ *
+ *  This is reported as its own OUTCOME rather than as a failed invite, because
+ *  it is neither a failure nor something the person can fix by retrying. The
+ *  record they asked for exists; what did not happen is an account, and the
+ *  reason is a rule rather than a fault. Saying "the invite could not be sent"
+ *  would send somebody to check a mail provider that is working perfectly.
+ *
+ *  Why not link the two: athletes.user_id is UNIQUE, so one account cannot
+ *  belong to two athlete records. Changing that is schema work with a design
+ *  pass of its own -- every query that assumes one athlete per account has to be
+ *  revisited -- and it is not a decision that should ride on a form. Deferred
+ *  deliberately, not overlooked. */
 export async function POST(request: Request): Promise<NextResponse> {
   const { db, orgId, claims } = await requireStaff();
 
@@ -73,20 +79,33 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (!created.ok) return bad(created.error);
 
   if (!email) {
-    return NextResponse.json({ ok: true, athleteId: created.athleteId, inviteUrl: null, error: null });
+    return NextResponse.json({ ok: true, athleteId: created.athleteId, inviteUrl: null, outcome: 'created', error: null });
   }
 
   const admin = createAdminClient();
   const invited = await issueInvite(admin, email, `${firstName} ${lastName}`, new URL(request.url).origin);
   if (!invited.ok) {
-    /* The athlete stands. Reported as a partial success rather than an error,
-       because calling this a failure would send somebody to add an athlete who
-       is already on the roster. */
+    if (invited.reason === 'already_registered') {
+      return NextResponse.json(
+        {
+          ok: true,
+          athleteId: created.athleteId,
+          inviteUrl: null,
+          outcome: 'squad_record_only',
+          existingAccountEmail: email,
+          error: null,
+        },
+        { status: 200 },
+      );
+    }
+    /* A real failure, and distinct from the above on purpose: this one somebody
+       can act on. The athlete still stands. */
     return NextResponse.json(
       {
         ok: true,
         athleteId: created.athleteId,
         inviteUrl: null,
+        outcome: 'invite_failed',
         error: `${firstName} was added to the squad, but the invite could not be sent: ${invited.error} Invite them from their profile once that is sorted.`,
       },
       { status: 200 },
@@ -148,5 +167,5 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
   }
 
-  return NextResponse.json({ ok: true, athleteId: created.athleteId, inviteUrl, error: null });
+  return NextResponse.json({ ok: true, athleteId: created.athleteId, inviteUrl, outcome: 'invited', error: null });
 }

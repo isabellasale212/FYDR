@@ -30,6 +30,7 @@
     "test:write-helper": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-write-helper.ts",
     "test:write-coverage": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-write-coverage.ts",
     "test:link-athlete": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-link-athlete.ts",
+    "test:add-athlete-outcomes": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-add-athlete-outcomes.ts",
     "test:access-gates": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-access-gates.ts",
     "test:report-visibility": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-report-visibility.ts",
     "seed:staff-account": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/seed-staff-account.ts"

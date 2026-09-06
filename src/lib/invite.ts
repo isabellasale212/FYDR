@@ -43,9 +43,19 @@ export type IssuedInvite = {
   inviteUrl: string;
 };
 
+/** Why an invite could not be issued.
+ *
+ *  'already_registered' is separated from everything else because it is not a
+ *  fault: it is an athlete who already has a Fydr account, which today means one
+ *  transferring from another club on the platform. Screen 63 has to say
+ *  something quite different about that than about a genuine failure, and a
+ *  caller matching on the wording of an error message would break the first time
+ *  somebody improved the sentence. */
+export type InviteFailureReason = 'already_registered' | 'failed';
+
 export type InviteResult =
   | { ok: true; invite: IssuedInvite }
-  | { ok: false; error: string };
+  | { ok: false; error: string; reason: InviteFailureReason };
 
 /** Where the recipient is sent once the token is verified. A query flag rather
  *  than a separate screen: the page's own copy already reads "Choose a new
@@ -68,10 +78,10 @@ export async function issueInvite(
   });
 
   if (error) {
-    const message = /already been registered|already exists|User already/i.test(error.message)
-      ? 'That email is already registered on this project.'
-      : error.message;
-    return { ok: false, error: message };
+    const alreadyRegistered = /already been registered|already exists|User already/i.test(error.message);
+    return alreadyRegistered
+      ? { ok: false, reason: 'already_registered', error: 'That email already belongs to a Fydr account.' }
+      : { ok: false, reason: 'failed', error: error.message };
   }
 
   const userId = data?.user?.id;
@@ -79,7 +89,7 @@ export async function issueInvite(
   if (!userId || !tokenHash) {
     /* Never seen, but the alternative is returning a link that verifies
        nothing and reads as a working invite. */
-    return { ok: false, error: 'The invite link could not be issued. Nothing was created.' };
+    return { ok: false, reason: 'failed', error: 'The invite link could not be issued. Nothing was created.' };
   }
 
   /* Built against this app's own /auth/confirm rather than using

@@ -25,6 +25,10 @@ export function AddAthleteForm({ takenNumbers }: Props) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [invite, setInvite] = useState<string | null>(null);
+  /* The transfer case gets its own state rather than being folded into `error`,
+     because it is not one. Nothing went wrong, nothing can be retried, and the
+     thing the club asked for exists. */
+  const [squadRecordOnly, setSquadRecordOnly] = useState<string | null>(null);
 
   const byNumber = useMemo(
     () => new Map(takenNumbers.map((t) => [t.squad_number, t.name])),
@@ -55,6 +59,11 @@ export function AddAthleteForm({ takenNumbers }: Props) {
         setSaving(false);
         return;
       }
+      if (json.outcome === 'squad_record_only') {
+        setSquadRecordOnly(json.existingAccountEmail ?? email);
+        setSaving(false);
+        return;
+      }
       /* A partial success: the athlete exists, something after it did not. The
          invite link is shown when there is one, because this project has no mail
          provider and the link would otherwise be unreachable. */
@@ -74,6 +83,41 @@ export function AddAthleteForm({ takenNumbers }: Props) {
       setError('That did not save. Check your connection and try again.');
       setSaving(false);
     }
+  }
+
+  if (squadRecordOnly) {
+    /* Explains what happened, why, and what to do about it -- in that order,
+       and without calling any of it an error. The reason matters as much as the
+       outcome here: told only "no account was created", a person reasonably
+       assumes something broke and tries again, which produces a second athlete
+       record rather than an account. */
+    return (
+      <div className="card">
+        <p className="card-title">
+          {firstName} {lastName} is on your squad.
+        </p>
+        <p className="tiny" style={{ marginTop: 8 }}>
+          They have <b>no app access at this club</b>, and that is not a failure &mdash; it is what happens when an
+          athlete is already on Fydr somewhere else. {squadRecordOnly} already belongs to a Fydr account, most
+          likely at a previous club.
+        </p>
+        <p className="tiny" style={{ marginTop: 8 }}>
+          A Fydr account belongs to one squad record, so their old club&rsquo;s account cannot also be yours. The
+          record you have just created is your club&rsquo;s own, and it starts empty: nothing from their previous
+          club comes across, and nothing you record here goes back.
+        </p>
+        <p className="tiny" style={{ marginTop: 8 }}>
+          Everything staff do works already &mdash; availability, injuries, weigh-ins, attendance, testing, reports.
+          The only thing missing is {firstName} signing in to submit their own wellness check-ins. If you need that,
+          invite them from their profile using a <b>different email address</b>.
+        </p>
+        <div className="flag-actions" style={{ marginTop: 14 }}>
+          <button type="button" className="btn-primary" onClick={() => router.push(`/squad`)}>
+            Back to the squad
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (invite || (error && !saving && invite !== null)) {

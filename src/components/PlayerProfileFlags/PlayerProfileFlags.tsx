@@ -19,6 +19,18 @@ type Props = {
    *  written here lands in flags.staff_note, which flags_staff_select (0012) exposes
    *  to every coach in the organisation, so a clinician is told that before typing. */
   viewerIsMedical?: boolean;
+  /** Which flag DOMAINS this viewer may act on, decided 2026-09-06.
+   *
+   *  Data, not a predicate, and that is a constraint rather than a preference:
+   *  this is a Client Component, and Next refuses a function prop across that
+   *  boundary at RUNTIME -- the first version of this passed
+   *  `(domain) => canEditFlag(...)` and the profile returned a 500 the moment a
+   *  nutritionist opened it. It has to be a list because this component owns its
+   *  own loop; the page cannot answer per flag before handing the list over.
+   *
+   *  'all' rather than an array of every domain, so a domain added to the enum
+   *  later is included by default for the roles that hold everything. */
+  editableFlagDomains?: readonly string[] | 'all';
 };
 
 const TONE_VAR: Record<'high' | 'medium' | 'low', string> = {
@@ -42,7 +54,10 @@ export function PlayerProfileFlags({
   today,
   timezone,
   viewerIsMedical = false,
+  editableFlagDomains = 'all',
 }: Props) {
+  const canEditFlagDomain = (domain: string): boolean =>
+    editableFlagDomains === 'all' || editableFlagDomains.includes(domain);
   const router = useRouter();
   const [showAcked, setShowAcked] = useState(false);
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -267,7 +282,10 @@ export function PlayerProfileFlags({
                         acknowledged). Acknowledged rows still show who saw it and
                         when — the note button is added beside that, not instead. */}
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      {canAck ? (
+                      {!canEditFlagDomain(flag.domain) ? (
+                        /* Same rule as the Flags screen, said the same way. */
+                        <span className="tiny">Read-only for your role &mdash; you can act on nutrition flags.</span>
+                      ) : canAck ? (
                         <button
                           type="button"
                           className="pp-ack-btn"
@@ -286,18 +304,20 @@ export function PlayerProfileFlags({
                           {flag.acknowledged_at ? ` · ${formatDateTime(flag.acknowledged_at, timezone)}` : ''}
                         </span>
                       )}
-                      <button
-                        type="button"
-                        className="btn-ghost"
-                        onClick={() => {
-                          setNoteDraftId(flag.id);
-                          setNoteText('');
-                          setError(null);
-                        }}
-                        aria-label={`Add a note to ${flag.name}'s ${enumLabel(flag.domain).toLowerCase()} flag`}
-                      >
-                        {staffNoteLines(flag.staff_note).length > 0 ? '+ Another note' : '+ Add note'}
-                      </button>
+                      {canEditFlagDomain(flag.domain) ? (
+                        <button
+                          type="button"
+                          className="btn-ghost"
+                          onClick={() => {
+                            setNoteDraftId(flag.id);
+                            setNoteText('');
+                            setError(null);
+                          }}
+                          aria-label={`Add a note to ${flag.name}'s ${enumLabel(flag.domain).toLowerCase()} flag`}
+                        >
+                          {staffNoteLines(flag.staff_note).length > 0 ? '+ Another note' : '+ Add note'}
+                        </button>
+                      ) : null}
                     </div>
                   </div>
                 )}

@@ -466,7 +466,12 @@ const athlete = readFileSync('src/app/(staff)/squad/[athleteId]/page.tsx', 'utf8
 for (const [name, want] of [
   ['canSeeWeighIns', 'ALL_STAFF'],
   ['canLogWeighIn', 'WEIGH_IN_EDIT'],
-  ['canCorrect', 'ALL_STAFF'],
+  /* Was ALL_STAFF. Narrowed 2026-09-06: the S&C may raise a flag but not edit a
+     wellness entry or an RPE score, and the nutritionist's writes on this
+     profile are bodyweight and the nutrition plan. Migration 0075 narrows
+     revise_wellness_entry and revise_training_entry to match, so this is the
+     control matching the authorisation rather than guarding it. */
+  ['canCorrect', 'ENTRY_CORRECTION'],
 ] as [string, string][]) {
   const m = athlete.match(new RegExp(`const ${name} = ([^;]*);`));
   assert((m?.[1] ?? '').includes(want), `${name} resolves from ${want}`);

@@ -31,7 +31,7 @@ import { resolvePeriod } from '@/lib/period.server';
 import { availabilityStatus } from '@/lib/status';
 import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
-import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, INJURY_ACCESS, WEIGH_IN_EDIT, hasAnyRole } from '@/lib/access';
+import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, ENTRY_CORRECTION, INJURY_ACCESS, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Athlete · Fydr' };
 
@@ -385,11 +385,12 @@ export default async function AthletePage({
    * show me exactly how they can do this and is this a feature in the system for
    * each player profile." It is, and this is where: one card per player profile.
    *
-   * Same two roles again, and for once the client check and the server check are
-   * genuinely the same predicate — migration 0058 narrowed revise_wellness_entry
-   * and revise_training_entry to coach-or-medical, so `canCorrect` hides a control
-   * that the RPC would refuse anyway. CLAUDE.md §2 rule 2: the RPC is the
-   * authorisation, this boolean is only the tidiness.
+   * The client check and the server check are the same predicate again, after a
+   * detour: 0058 narrowed the two RPCs to coach-or-medical, 0065 widened them to
+   * all five staff roles with the five-role model, and 0075 settles them at the
+   * sport scientist, the coach and the medic. `canCorrect` hides a control the
+   * RPC would refuse anyway. CLAUDE.md §2 rule 2: the RPC is the authorisation,
+   * this boolean is only the tidiness.
    *
    * 28 days, not the profile's other windows. Long enough that a coach reviewing a
    * block finds the entry they remember being wrong, short enough that the base-
@@ -399,16 +400,19 @@ export default async function AthletePage({
    * the card says which window it is showing rather than implying it is everything. */
   const CORRECTION_WINDOW_DAYS = 28;
   const correctionRange = { from: addDays(today, -(CORRECTION_WINDOW_DAYS - 1)), to: today };
-  /* revise_wellness_entry and revise_training_entry count all five staff roles
-     as staff (0065). The comment that used to sit here said this page was
-     restricted to coach and medical so the value was true for every reader, and
-     warned that the controls must not follow if the page were ever opened wider.
-     G-39 opened it wider; this is that warning being honoured. */
-  const canCorrect = hasAnyRole(claims.roles, ALL_STAFF);
-  /* hasAccess above already restricted this whole page to coach/medical, so
-   * canCorrect is true for every reader who gets here today. It is computed
-   * explicitly anyway rather than hardcoded to true: if this page is ever opened
-   * to another role, the correction controls must not come along by accident. */
+  /* Was ALL_STAFF, because 0065 made all five staff roles count as staff inside
+     revise_wellness_entry and revise_training_entry. Narrowed 2026-09-06: the
+     S&C may raise a flag but may not edit a wellness entry or an RPE score, and
+     the nutritionist's writes on this profile are bodyweight and the nutrition
+     plan only. training_entries.rpe is what makes the training half an RPE
+     question rather than a separate one.
+
+     Migration 0075 narrows both RPCs to the same three roles, so this hides a
+     control the database would refuse anyway -- which is the right order:
+     the RPC is the authorisation, this is the tidiness. */
+  const canCorrect = hasAnyRole(claims.roles, ENTRY_CORRECTION);
+  /* No longer true for every reader, which is the point: this page is open to all
+   * five staff roles and two of them now see the panel read-only. */
   const [wellnessRevisions, trainingRevisions] = await Promise.all([
     fetchWellnessWithRevisions(db, orgId, athleteId, correctionRange),
     fetchTrainingWithRevisions(db, orgId, athleteId, correctionRange),
@@ -749,6 +753,11 @@ export default async function AthletePage({
               today={today}
               timezone={timezone}
               viewerIsMedical={claims.roles.includes('medic')}
+              /* A list rather than a predicate: this card loops over its own
+                 flags, so the answer differs per row and only the component
+                 knows which row it is drawing -- but it is a Client Component,
+                 and a function prop across that boundary is a runtime 500. */
+              editableFlagDomains={editableFlagDomains(claims.roles)}
             />
 
             {/* CORRECTED. This comment used to read "id is the Wellness domain chip's

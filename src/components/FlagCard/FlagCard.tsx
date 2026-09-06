@@ -36,6 +36,18 @@ type Props = {
    *  medical — so it is a shared staff note, and a physio needs to know that in the
    *  moment rather than infer it. See this file's note-audience comment below. */
   viewerIsMedical?: boolean;
+  /** May this viewer act on THIS flag, decided 2026-09-06.
+   *
+   *  Unlike viewerIsMedical above, this is not wording: it decides whether the
+   *  controls appear at all. It is still not the authorisation -- 0075's
+   *  flags_staff_update is, and carries the same rule -- but the two must agree
+   *  or the card offers an Acknowledge that throws.
+   *
+   *  Resolved per FLAG, not per viewer, which is the unusual part: the same
+   *  nutritionist gets true on a nutrition flag and false on the wellness flag
+   *  below it. Computed by the page from access.ts's canEditFlag so the rule
+   *  lives in one file rather than being restated here. */
+  canEdit?: boolean;
 };
 
 /**
@@ -50,7 +62,15 @@ type Props = {
  * shows the flag's new state, same mechanism OutboxFlusher uses after a
  * successful send.
  */
-export function FlagCard({ flag, orgId, userId, today, timezone, viewerIsMedical = false }: Props) {
+export function FlagCard({
+  flag,
+  orgId,
+  userId,
+  today,
+  timezone,
+  viewerIsMedical = false,
+  canEdit = true,
+}: Props) {
   const router = useRouter();
   const [dismissing, setDismissing] = useState(false);
   const [reason, setReason] = useState<string>('');
@@ -164,7 +184,14 @@ export function FlagCard({ flag, orgId, userId, today, timezone, viewerIsMedical
   const raisedLabel =
     raisedDate === today ? formatTime(flag.raised_at, timezone) : formatDate(flag.raised_at, timezone);
 
-  const canAcknowledge = flag.status === 'raised' || flag.status === 'notified';
+  /* TWO booleans, not one, and the split is not cosmetic. `isOpen` is a fact
+     about the FLAG; `canAcknowledge` is a fact about this VIEWER looking at it.
+     They were briefly the same expression, and the escalation tag below reads
+     off the first: a nutritionist opening a still-escalated GPS flag was told
+     "Was escalated", because the only thing that had changed was their own
+     permission to act. A flag's history must not rewrite itself per reader. */
+  const isOpen = flag.status === 'raised' || flag.status === 'notified';
+  const canAcknowledge = canEdit && isOpen;
 
   return (
     <div className="card flag-card">
@@ -175,7 +202,7 @@ export function FlagCard({ flag, orgId, userId, today, timezone, viewerIsMedical
             24h unseen stays marked after acknowledgement (the tag used to
             vanish on acknowledge — audit coach finding 21). */}
         {flag.escalated ? (
-          canAcknowledge ? (
+          isOpen ? (
             <span className="pill pill-bad">Escalated</span>
           ) : (
             <span className="pill pill-warn">Was escalated</span>
@@ -359,6 +386,11 @@ export function FlagCard({ flag, orgId, userId, today, timezone, viewerIsMedical
             </button>
           </div>
         </div>
+      ) : !canEdit ? (
+        /* Read-only, and it names what this role CAN act on rather than only
+           saying no. A card with its buttons quietly missing reads as a
+           rendering fault; one that explains itself reads as a rule. */
+        <p className="tiny">Read-only for your role &mdash; you can act on nutrition flags.</p>
       ) : (
         <div className="flag-actions">
           {canAcknowledge ? (

@@ -102,7 +102,7 @@ export function EntryCorrectionPanel({
         The {WINDOW_LABEL} of {athleteFirstName}&rsquo;s wellness check-ins and session
         ratings. {canCorrect
           ? 'Correcting one keeps the original and records a new, dated revision against your name — entries are never overwritten.'
-          : 'Only coaching or medical staff can correct an entry.'}
+          : 'Correcting an entry belongs to the sport scientist, the coach and the medic.'}
       </p>
       <p className="cap" style={{ margin: '6px 0 0' }}>
         {correctedWellness + correctedTraining === 0
@@ -358,7 +358,7 @@ function ActionsCell({
         disabled={!canCorrect}
         aria-disabled={!canCorrect}
         aria-expanded={formOpen}
-        title={canCorrect ? undefined : 'Only coaching or medical staff can correct an entry.'}
+        title={canCorrect ? undefined : 'Correcting an entry belongs to the sport scientist, the coach and the medic.'}
         onClick={onToggleForm}
       >
         {formOpen ? 'Cancel' : `Correct ${label}`}

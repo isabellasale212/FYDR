@@ -234,7 +234,7 @@ function writeMessage(error: { code?: string; message: string }): string {
     return 'A target range cannot be edited once set. Set a new one instead — the old one is kept as history.';
   }
   if (lower.includes('row-level security') || lower.includes('policy')) {
-    return 'Only coaching or medical staff can set a body-mass target range.';
+    return 'Setting a body-mass target range belongs to the sport scientist and the nutritionist.';
   }
   return humanizeDbError(error.message, 'staff');
 }

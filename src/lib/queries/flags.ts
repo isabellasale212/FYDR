@@ -3,6 +3,7 @@ import { daysBetween, formatNumber } from '@/lib/format';
 import { fetchCurrentAvailability } from './availability';
 import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchAllPaged } from './paged';
+import { mustAffectOrThrow } from '@/lib/write';
 
 /* Flags. Roles and access from screens/flags.md: coach and medical get full
  * view, acknowledge and dismiss; the athlete_visible_at gate (carve-out 2,
@@ -545,19 +546,26 @@ export async function acknowledgeFlag(
   if (trimmedNote) await addFlagNote(db, flagId, orgId, trimmedNote);
 
   const now = new Date().toISOString();
-  const { error } = await db
-    .from('flags')
-    .update({
-      status: 'acknowledged',
-      acknowledged_at: now,
-      acknowledged_by: userId,
-      athlete_visible_at: now,
-    })
-    .eq('id', flagId)
-    .eq('org_id', orgId)
-    .in('status', ['raised', 'notified']);
-
-  if (error) throw new Error(error.message);
+  /* Zero rows has TWO meanings here and always did: the flag was already
+     acknowledged (the .in() guard), or the policy refused this person. Since
+     0075 the second is reachable for a real reason rather than only by mistake
+     -- a nutritionist may act on a nutrition flag and not on the wellness flag
+     beside it -- so the two are separated instead of both passing silently. */
+  await mustAffectOrThrow(
+    db
+      .from('flags')
+      .update({
+        status: 'acknowledged',
+        acknowledged_at: now,
+        acknowledged_by: userId,
+        athlete_visible_at: now,
+      })
+      .eq('id', flagId)
+      .eq('org_id', orgId)
+      .in('status', ['raised', 'notified'])
+      .select('id'),
+    'Not acknowledged. Either this flag was already acknowledged, or acting on it belongs to another role.',
+  );
 }
 
 /** Add a staff note to a flag WITHOUT touching its status.
@@ -644,13 +652,10 @@ export async function addFlagNote(
 
   // No status change, no acknowledged_by, no athlete_visible_at — this write
   // must be able to happen before, after, or entirely without acknowledgement.
-  const { error } = await db
-    .from('flags')
-    .update({ staff_note: next })
-    .eq('id', flagId)
-    .eq('org_id', orgId);
-
-  if (error) throw new Error(error.message);
+  await mustAffectOrThrow(
+    db.from('flags').update({ staff_note: next }).eq('id', flagId).eq('org_id', orgId).select('id'),
+    'That note was not saved: leaving a note on this flag belongs to another role.',
+  );
 }
 
 /** staff_note holds one or more notes separated by newlines (see addFlagNote).
@@ -788,6 +793,28 @@ export async function dismissFlag(
   userId: string,
   reason: string,
 ): Promise<void> {
+  /* ORDER CHANGED 2026-09-06, and it is a correctness change rather than a
+     tidy-up. The flag_actions insert used to run first. Once 0075 lets the
+     policy refuse a dismissal on the row, that order writes an audit record
+     saying somebody dismissed a flag that is still open -- a false entry in the
+     one table whose whole job is to be believed later. Dismissing first means a
+     refusal throws before anything is recorded.
+
+     The remaining failure, an action insert that fails after a successful
+     dismissal, leaves a dismissed flag with no audit row. That is visibly
+     incomplete rather than actively wrong, and it is the better direction to
+     fail in. */
+  await mustAffectOrThrow(
+    db
+      .from('flags')
+      .update({ status: 'dismissed', resolved_at: new Date().toISOString() })
+      .eq('id', flagId)
+      .eq('org_id', orgId)
+      .in('status', [...OPEN_FLAG_STATUSES])
+      .select('id'),
+    'Not dismissed. Either this flag is already closed, or dismissing it belongs to another role.',
+  );
+
   const { error: actionError } = await db.from('flag_actions').insert({
     org_id: orgId,
     flag_id: flagId,
@@ -796,13 +823,4 @@ export async function dismissFlag(
     taken_by: userId,
   });
   if (actionError) throw new Error(actionError.message);
-
-  const { error } = await db
-    .from('flags')
-    .update({ status: 'dismissed', resolved_at: new Date().toISOString() })
-    .eq('id', flagId)
-    .eq('org_id', orgId)
-    .in('status', [...OPEN_FLAG_STATUSES]);
-
-  if (error) throw new Error(error.message);
 }

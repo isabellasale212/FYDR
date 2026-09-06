@@ -262,6 +262,63 @@ export const ATHLETE_BIO_EDIT = ['sport_scientist', 'coach', 'medic'] as const;
  *  it, and a screen that admits all five needs no further test. Exported for the
  *  screens that must name the set explicitly, such as the athlete domain pages
  *  where one domain narrows it. */
+/** Who may CORRECT a wellness entry or a training entry, decided 2026-09-06.
+ *
+ *  training_entries.rpe is where an RPE score lives, so "cannot edit wellness
+ *  reports or RPE scores" is this one set: the S&C is out, and so is the
+ *  nutritionist, whose player-profile writes are bodyweight and the nutrition
+ *  plan and nothing else.
+ *
+ *  This mirrors revise_wellness_entry and revise_training_entry, which migration
+ *  0075 narrows to the same three. The RPC is the authorisation and this
+ *  constant is the tidiness, per CLAUDE.md §2 rule 2 -- but they must agree, or
+ *  the panel offers a control the database will refuse. */
+export const ENTRY_CORRECTION = ['sport_scientist', 'coach', 'medic'] as const;
+
+/** Acting on a flag: the first rule in this file that is not a role set.
+ *
+ *  WHY IT CANNOT BE ONE. "The nutritionist may edit a flag only when it involves
+ *  nutrition information" makes the answer depend on the ROW, not only on the
+ *  person: the same nutritionist may act on a nutrition flag and not on the
+ *  wellness flag beside it in the same list. Every other rule here answers
+ *  "which roles"; this one answers "which roles, for which rows", so it is a
+ *  function taking the row's domain rather than an array to be membership-tested.
+ *
+ *  WHAT COUNTS AS NUTRITION is the flag's own domain and nothing looser. A
+ *  compliance flag about missed wellness check-ins is not a nutrition flag even
+ *  though the nutritionist reads compliance; the domain column is the product's
+ *  own answer to "what is this flag about", and second-guessing it here would
+ *  put a different definition in the app from the one in the database. */
+export const FLAG_EDIT_ANY_DOMAIN = [
+  'sport_scientist',
+  'coach',
+  'medic',
+  'strength_conditioning',
+] as const;
+
+/** The domain a nutritionist is confined to. Named rather than inlined so the
+ *  policy in 0075, the UI and the tests can be seen to mean the same thing. */
+export const NUTRITIONIST_FLAG_DOMAIN = 'nutrition';
+
+/** The domains this viewer may act on: 'all', or the explicit list.
+ *
+ *  Exists because a Client Component cannot be handed a predicate. The obvious
+ *  shape for a per-row rule is a function, and PlayerProfileFlags loops over its
+ *  own rows so it wants one -- but passing a function across that boundary is a
+ *  runtime error in Next, not a type error, so it fails when the page is opened
+ *  rather than when it is built. Returning DATA keeps the rule here and lets the
+ *  component do its own membership test. */
+export function editableFlagDomains(roles: readonly AppRole[]): readonly string[] | 'all' {
+  if (hasAnyRole(roles, FLAG_EDIT_ANY_DOMAIN)) return 'all';
+  if (roles.includes('nutritionist')) return [NUTRITIONIST_FLAG_DOMAIN];
+  return [];
+}
+
+export function canEditFlag(roles: readonly AppRole[], domain: string): boolean {
+  const allowed = editableFlagDomains(roles);
+  return allowed === 'all' || allowed.includes(domain);
+}
+
 export const ALL_STAFF = [
   'sport_scientist',
   'coach',

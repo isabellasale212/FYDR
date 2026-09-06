@@ -238,7 +238,7 @@ export async function logWeighIn(
 
   if (error) {
     if (error.message.toLowerCase().includes('row-level security') || error.message.toLowerCase().includes('policy')) {
-      return { error: 'Only coaching or medical staff can log a weigh-in.' };
+      return { error: 'Not saved: logging a weigh-in belongs to the sport scientist, the medic, the S&C and the nutritionist.' };
     }
     /* Raw driver strings never leave this file — audit S5. */
     return { error: humanizeDbError(error.message, 'staff') };

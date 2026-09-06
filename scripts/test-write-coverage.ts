@@ -77,6 +77,24 @@ const CONVERTED: [string, string, string][] = [
 /** Converted, but with the check written inline rather than through the helper,
  *  and for a reason worth keeping: these carry a business-rule branch that
  *  mustAffect cannot express, because it receives a message and not a code. */
+/* The three flag writes moved out of NOT_CONVERTED on 2026-09-06, and the reason
+   is worth keeping: NEITHER of the original judgments was wrong when it was made.
+
+   dismissFlag was filed ALREADY LOUD because it inserted a flag_action first and
+   that insert raised on refusal. True — until 0075 made the refusal depend on the
+   flag's own domain, at which point "insert the audit row first" stopped being a
+   safety net and became a way to record a dismissal that never happened. The
+   order is now reversed and the flag write is checked.
+
+   acknowledgeFlag was filed NOTHING TO DO because .in(status, raised|notified)
+   makes zero rows the ordinary outcome for an already-handled flag. Also true —
+   and also no longer the only meaning, since the same zero now covers "this role
+   may not act on this domain". Two meanings, so the call has to say which.
+
+   The lesson is about the shape of these judgments rather than about flags: every
+   NOT_CONVERTED entry below is conditional on the policies as they stand, and a
+   policy change can turn a correct "nothing to do" into a silent refusal without
+   touching the call site at all. */
 const CONVERTED_INLINE: [string, string, string][] = [
   ['src/lib/queries/groups.ts', 'updateGroup',
    'keeps its own 23505 branch: a duplicate group name refuses the ROW, not the PERSON'],
@@ -106,24 +124,37 @@ const NOT_CONVERTED: [string, string, string][] = [
    'ALREADY LOUD: removes from other rehab groups, then inserts'],
   ['src/lib/queries/bodyMassTargetRange.ts', 'setTargetRange',
    'ALREADY LOUD: closes the open range, then inserts'],
-  ['src/lib/queries/flags.ts', 'dismissFlag',
-   'ALREADY LOUD: inserts a flag_action first, which raises on refusal'],
 
   // NOTHING TO DO: the filter makes zero rows the ordinary outcome.
   ['src/lib/queries/groups.ts', 'removeGroupMember',
    'NOTHING TO DO: .is(removed_at, null) matches only a current member'],
   ['src/lib/queries/leaderboards.ts', 'optBackIn',
    'NOTHING TO DO: .is(ended_at, null) matches only a live opt-out'],
-  ['src/lib/queries/flags.ts', 'acknowledgeFlag',
-   'NOTHING TO DO: .in(status, raised|notified) misses a flag somebody already handled'],
   ['src/lib/queries/healthkit.ts', 'withdrawHealthkitSync',
    'NOTHING TO DO: withdrawing a consent never granted matches nothing, correctly'],
   ['src/lib/queries/leaderboards.ts', 'withdrawLeaderboardVisibility',
    'NOTHING TO DO: same shape as the healthkit withdrawal'],
 
-  // AMBIGUOUS: written up in spec-gaps G-44 rather than guessed at.
+  /* RESOLVED 2026-09-06, and still correctly absent from mustAffect. The
+     ambiguity was real: .is(user_id, null) means zero rows is EITHER already
+     linked OR refused. mustAffect cannot express that, because it has exactly
+     two outcomes and this site has three. It asks a second question in the empty
+     branch instead and names which of the three happened, which is why it stays
+     here rather than moving to the converted list. */
   ['src/lib/queries/userManagement.ts', 'linkAthleteToUser',
-   'AMBIGUOUS: .is(user_id, null) means zero rows is EITHER already linked OR refused'],
+   'THREE OUTCOMES: asks a second question in the empty branch instead, see test:link-athlete'],
+];
+
+/* Converted 2026-09-06 alongside the flag-domain rule. Listed rather than merely
+   removed from the list above, so the file records that they were reconsidered
+   rather than quietly dropped. */
+const CONVERTED_LATER: [string, string, string][] = [
+  ['src/lib/queries/flags.ts', 'acknowledgeFlag',
+   'zero rows now means already-acknowledged OR domain-refused; says which'],
+  ['src/lib/queries/flags.ts', 'addFlagNote',
+   'a note silently not saved is the worst of the three, since nothing else changes on screen'],
+  ['src/lib/queries/flags.ts', 'dismissFlag',
+   'flag write moved BEFORE the flag_actions insert, so a refusal cannot leave a false audit row'],
 ];
 
 console.log('\n-- writes routed through mustAffect --');
@@ -137,6 +168,12 @@ console.log('\n-- converted with an inline check, for a stated reason --');
 for (const [file, fn, why] of CONVERTED_INLINE) {
   const b = body(file, fn);
   assert(/data\.length === 0|!data/.test(b), `${fn}() checks its own row count: ${why}`);
+}
+
+console.log('\n-- reconsidered later, once a policy change changed the answer --');
+for (const [file, fn, why] of CONVERTED_LATER) {
+  const b = body(file, fn);
+  assert(/mustAffect/.test(b), `${fn}() now checks its row count: ${why}`);
 }
 
 console.log('\n-- writes deliberately NOT converted, and still not --');

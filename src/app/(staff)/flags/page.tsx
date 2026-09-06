@@ -8,7 +8,7 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, todayIso } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
-import { ALL_STAFF, hasAnyRole } from '@/lib/access';
+import { ALL_STAFF, canEditFlag, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Flags · Fydr' };
 
@@ -123,6 +123,11 @@ export default async function FlagsPage({
                  writing a note here is writing into a column every coach in the
                  club reads, and the card says so. */
               viewerIsMedical={claims.roles.includes('medic')}
+              /* Per flag, not per viewer: a nutritionist gets true on a
+                 nutrition flag and false on the wellness flag beneath it. This
+                 is the one gate on this page that cannot be hoisted out of the
+                 map. */
+              canEdit={canEditFlag(claims.roles, flag.domain)}
             />
           ))
         )}

@@ -187,7 +187,7 @@ export async function reviseWellnessEntry(
     if (error.message.includes('not_permitted')) {
       return {
         error:
-          'Only coaching or medical staff can correct an entry. Refresh and sign in again if you believe you hold that role.',
+          'Correcting an entry belongs to the sport scientist, the coach and the medic. Refresh and sign in again if you believe you hold that role.',
       };
     }
     /* Anything else is humanized here so no caller can leak a raw driver

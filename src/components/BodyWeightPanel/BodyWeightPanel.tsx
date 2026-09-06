@@ -80,7 +80,7 @@ export function BodyWeightPanel({
           className="btn-ghost"
           disabled={!canLog}
           aria-disabled={!canLog}
-          title={canLog ? undefined : 'Only coaching or medical staff can log a weigh-in.'}
+          title={canLog ? undefined : 'Logging a weigh-in belongs to the sport scientist, the medic, the S&C and the nutritionist.'}
           onClick={() => setMode((m) => (m === 'log' ? 'closed' : 'log'))}
           aria-pressed={mode === 'log'}
         >
@@ -94,7 +94,7 @@ export function BodyWeightPanel({
           title={
             canLog
               ? 'Staff only — an athlete never sees their target range.'
-              : 'Only coaching or medical staff can set a target range.'
+              : 'Setting a body-mass target range belongs to the sport scientist and the nutritionist.'
           }
           onClick={() => setMode((m) => (m === 'target' ? 'closed' : 'target'))}
           aria-pressed={mode === 'target'}
@@ -108,7 +108,7 @@ export function BodyWeightPanel({
           aria-disabled={!canLog || entries.length === 0}
           title={
             !canLog
-              ? 'Only coaching or medical staff can edit a weigh-in.'
+              ? 'Editing a weigh-in belongs to the sport scientist, the medic, the S&C and the nutritionist.'
               : entries.length === 0
                 ? 'Nothing logged yet.'
                 : undefined

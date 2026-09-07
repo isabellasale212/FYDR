@@ -45,6 +45,7 @@
     "test:nutrition-day-types": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-nutrition-day-types.ts",
     "test:weigh-in-edit": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-weigh-in-edit.ts",
     "test:fixture-visibility": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-fixture-visibility.ts",
+    "test:template-list-actions": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-template-list-actions.ts",
     "test:publish-clarity": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-publish-clarity.ts",
     "test:injury-card-programme": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-injury-card-programme.ts",
     "verify:assignment-authorship": "node scripts/verify-assignment-authorship.mjs",

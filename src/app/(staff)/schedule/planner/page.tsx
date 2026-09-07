@@ -61,7 +61,11 @@ export default async function WeekTemplatesPage() {
       ) : (
         <div className="stack">
           {templates.map((t) => (
-            <Link key={t.id} href={`/schedule/planner/${t.id}`} className="card" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+            /* Was a single <Link> wrapping the whole card, so the list had one
+               verb and never said which. It cannot stay one: an anchor may not
+               contain the two controls below it, and a browser recovering from
+               that reflows them somewhere the source never described. */
+            <div key={t.id} className="card">
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
                 <span className="nm" style={{ fontSize: 15 }}>
                   {t.name}
@@ -84,7 +88,22 @@ export default async function WeekTemplatesPage() {
                     </span>
                   ))}
               </div>
-            </Link>
+
+              <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+                {/* Apply carries the template it sits next to. The apply screen
+                    accepts ?template= and its picker filters archived ones out,
+                    so offering Apply on an archived row would land somebody on a
+                    select that cannot select what they asked for. */}
+                {t.archived ? null : (
+                  <Link href={`/schedule/planner/apply?template=${t.id}`} className="btn-primary">
+                    Apply
+                  </Link>
+                )}
+                <Link href={`/schedule/planner/${t.id}`} className="btn-ghost">
+                  Edit
+                </Link>
+              </div>
+            </div>
           ))}
         </div>
       )}

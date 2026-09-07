@@ -119,9 +119,15 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
       const result = await withWriteTimeout(updateTemplate(createClient(), orgId, templateId, { name, structure }));
       if (result.error) throw new HumanError(result.error);
     },
+    /* Save used to mark the structure clean and refresh in place, which made
+       the builder somewhere you stayed. The queue asks for the opposite: Edit
+       is a round trip that ends back at the schedule. setSaved still fires
+       first so the "Unsaved changes" marker cannot be the last thing on screen
+       if the navigation is slow. No refresh() — /schedule is a fresh server
+       render, and refreshing the page being left just races it. */
     onSuccess: () => {
       setSaved(true);
-      router.refresh();
+      router.push('/schedule');
     },
     onError: (err: Error) => setError(toUserMessage(err, 'staff')),
   });

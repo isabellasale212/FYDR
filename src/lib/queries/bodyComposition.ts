@@ -5,13 +5,15 @@ import { mustAffect } from '@/lib/write';
 
 /* body_composition (migration 0024). Same shape as test_results: staff
  * (coach/medical) select/insert/update, athlete self-select only — see
- * that migration's own policies. No delete grant exists on this table at
- * all (unlike the soft-deleted athlete-data tables CLAUDE.md rule 4
- * describes), and it has no deleted_at column either, so there is no
- * delete path here and none should be built — a logged weigh-in is
- * permanent once written, editable but not removable, matching the "Edit
- * entries" (not "Delete entries") wording the player profile spec itself
- * uses.
+ * that migration's own policies.
+ *
+ * DELETING, reversed 2026-09-07. This file used to say a weigh-in was permanent
+ * once written and that no delete path should be built — no DELETE grant, no
+ * deleted_at, and the profile spec says "Edit entries". That is no longer the
+ * rule, but the thing it protected still is: migration 0084 allows a delete only
+ * on the day the row was LOGGED (created_at, in the org's timezone), so a typo
+ * can be taken back within the day and nothing older can be removed at all.
+ * There is still no deleted_at — a same-day delete is a real one.
  *
  * This is the write half of what playerProfile.ts already reads: that
  * file's fetchPlayerProfile() keeps its own inline history query (a
@@ -22,6 +24,10 @@ import { mustAffect } from '@/lib/write';
 
 export type BodyCompositionEntry = {
   id: string;
+  /** When the row was LOGGED, not the date it describes. The same-day delete
+   *  window is keyed on this, so the screen needs it to decide whether to offer
+   *  the control at all. */
+  created_at: string;
   measured_on: string;
   body_mass_kg: number | null;
   body_fat_pct: number | null;
@@ -70,7 +76,7 @@ export async function fetchBodyCompositionForAthletes(
   const data = await fetchAllPaged<Row>((pageFrom, pageTo) =>
     db
       .from('body_composition')
-      .select('id, athlete_id, measured_on, body_mass_kg, body_fat_pct, method')
+      .select('id, athlete_id, created_at, measured_on, body_mass_kg, body_fat_pct, method')
       .eq('org_id', orgId)
       .in('athlete_id', [...athleteIds])
       .gte('measured_on', sinceIso)
@@ -84,6 +90,7 @@ export async function fetchBodyCompositionForAthletes(
     const list = byAthlete.get(row.athlete_id) ?? [];
     list.push({
       id: row.id,
+      created_at: row.created_at,
       measured_on: row.measured_on,
       body_mass_kg: row.body_mass_kg,
       body_fat_pct: row.body_fat_pct,
@@ -186,7 +193,7 @@ export async function fetchBodyCompositionEntries(
 ): Promise<BodyCompositionEntry[]> {
   const { data, error } = await db
     .from('body_composition')
-    .select('id, measured_on, body_mass_kg, body_fat_pct, method')
+    .select('id, created_at, measured_on, body_mass_kg, body_fat_pct, method')
     .eq('org_id', orgId)
     .eq('athlete_id', athleteId)
     .order('measured_on', { ascending: false });
@@ -289,6 +296,33 @@ export async function updateWeighIn(
          roles that cannot. */
       refusal: 'Not saved: logging a weigh-in belongs to the sport scientist, the medic, the S&C and the nutritionist.',
       onError: (m) => humanizeDbError(m, 'staff'),
+    },
+  );
+}
+
+/** Remove a weigh-in. Only ever succeeds on the day it was logged.
+ *
+ *  THROUGH mustAffect, because the refusal is silent. 0084 gates the delete in a
+ *  USING clause, so a row outside the window is simply not matched: the
+ *  statement succeeds, nothing is removed, and supabase-js returns no error. A
+ *  caller checking only `error` would tell somebody yesterday's entry was
+ *  deleted when it is still there. The .select() is what makes the affected
+ *  rows visible; an empty array is the refusal.
+ *
+ *  The screen also hides the control on rows it cannot remove, so this message
+ *  is the second layer rather than the first — the same two-layer shape used for
+ *  every other gated write here. */
+export async function deleteWeighIn(
+  db: Db,
+  orgId: string,
+  id: string,
+): Promise<{ error: string | null }> {
+  return mustAffect(
+    db.from('body_composition').delete().eq('org_id', orgId).eq('id', id).select('id'),
+    {
+      refusal:
+        'Not deleted: a weigh-in can only be removed on the day it was logged. Edit it instead.',
+      onError: (message) => humanizeDbError(message, 'staff'),
     },
   );
 }

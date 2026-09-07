@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import {
   logWeighIn,
+  deleteWeighIn,
   updateWeighIn,
   type BodyCompositionEntry,
 } from '@/lib/queries/bodyComposition';
@@ -15,7 +16,7 @@ import {
 } from '@/lib/queries/bodyMassTargetRange';
 import { createClient } from '@/lib/supabase/client';
 import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
-import { formatDate, todayIso } from '@/lib/format';
+import { addDays, dateInTz, formatDate, todayIso } from '@/lib/format';
 
 type Props = {
   orgId: string;
@@ -471,6 +472,10 @@ function LogForm({
   );
 }
 
+/** The edit list opens on a fortnight. Named rather than inline so the copy
+ *  below and the filter cannot drift apart. */
+const RECENT_DAYS = 14;
+
 function EditList({
   orgId,
   timezone,
@@ -482,11 +487,42 @@ function EditList({
   entries: BodyCompositionEntry[];
   onDone: () => void;
 }) {
+  const [showAll, setShowAll] = useState(false);
+
+  /* Two weeks by DATE MEASURED, not the newest N rows. Ashcombe weighs in
+     fortnightly (see squad/[athleteId]/gym's own note), so "the last 14 entries"
+     would be six months of history for them and three weeks for a club that
+     weighs daily — the same control meaning something different per club. A date
+     range means the same thing everywhere. */
+  const cutoff = addDays(todayIso(timezone), -RECENT_DAYS);
+  const recent = entries.filter((e) => e.measured_on >= cutoff);
+  const hiddenCount = entries.length - recent.length;
+  const shown = showAll ? entries : recent;
+
   return (
     <div className="pp-weight-edit-list">
-      {entries.map((entry) => (
+      {shown.map((entry) => (
         <EditRow key={entry.id} orgId={orgId} timezone={timezone} entry={entry} onDone={onDone} />
       ))}
+
+      {shown.length === 0 ? (
+        <p className="tiny" style={{ color: 'var(--faint)' }}>
+          Nothing in the last {RECENT_DAYS} days.
+        </p>
+      ) : null}
+
+      {/* Only when there is something behind it. A "View all" that reveals
+          nothing is a control that teaches people not to trust controls. */}
+      {!showAll && hiddenCount > 0 ? (
+        <button type="button" className="btn-ghost" onClick={() => setShowAll(true)}>
+          View all ({hiddenCount} older)
+        </button>
+      ) : null}
+      {showAll && hiddenCount > 0 ? (
+        <button type="button" className="btn-ghost" onClick={() => setShowAll(false)}>
+          Show last {RECENT_DAYS} days only
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -508,6 +544,31 @@ function EditRow({
   const [method, setMethod] = useState(entry.method ?? '');
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+
+  /* Was this row LOGGED today, in the club's own timezone? Migration 0084 gates
+     the delete on exactly this, so the control appears only where the write will
+     land. Computed from created_at, not measured_on: the window is about when
+     the row was entered, so a backdated weigh-in is removable on the day it is
+     typed and permanent after — and yesterday's entry has no delete at all, no
+     matter what date it describes.
+
+     The timezone matters: at 00:30 BST a UTC comparison still says yesterday,
+     and the button would vanish half an hour early. */
+  const loggedToday = dateInTz(new Date(entry.created_at), timezone) === todayIso(timezone);
+
+  const remove = useMutation({
+    mutationFn: () => withWriteTimeout(deleteWeighIn(createClient(), orgId, entry.id)),
+    onSuccess: (result) => {
+      if (result.error) {
+        setError(result.error);
+        setConfirming(false);
+        return;
+      }
+      onDone();
+    },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
+  });
 
   const save = useMutation({
     mutationFn: () =>
@@ -592,10 +653,44 @@ function EditRow({
           setError(null);
           save.mutate();
         }}
-        disabled={save.isPending}
+        disabled={save.isPending || remove.isPending}
       >
         {save.isPending ? 'Saving…' : saved ? 'Saved' : 'Save'}
       </button>
+      {/* Only on a row logged today. Nothing older renders this at all — not a
+          disabled button, which invites a click and explains nothing. */}
+      {loggedToday ? (
+        confirming ? (
+          <>
+            <button
+              type="button"
+              className="btn-ghost"
+              style={{ color: 'var(--bad-text)' }}
+              onClick={() => {
+                setError(null);
+                remove.mutate();
+              }}
+              disabled={remove.isPending}
+            >
+              {remove.isPending ? 'Deleting…' : 'Yes, delete'}
+            </button>
+            <button type="button" className="btn-ghost" onClick={() => setConfirming(false)}>
+              Keep
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            className="btn-ghost"
+            style={{ color: 'var(--bad-text)' }}
+            onClick={() => setConfirming(true)}
+            disabled={save.isPending}
+            aria-label={`Delete the ${formatDate(entry.measured_on, timezone)} entry`}
+          >
+            Delete
+          </button>
+        )
+      ) : null}
       {error ? (
         <span className="form-error" role="alert" style={{ gridColumn: '1 / -1' }}>
           {error}

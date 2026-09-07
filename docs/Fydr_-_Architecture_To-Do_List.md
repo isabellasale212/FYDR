@@ -63,7 +63,7 @@
 
   So the fix needs a destination that survives a successful login: its own column on something that records successes, or forwarding the real address to Supabase on the sign-in call so `auth.sessions.ip` means what it says again. The second repairs the field people already read, rather than adding a second place they have to know to look.
 
-  **BUILT 2026-09-07, awaiting deploy.** The second option, and it works: GoTrue
+  **BUILT AND DEPLOYED 2026-09-07.** The second option, and it works: GoTrue
   honours a forwarded address. Established before writing any of it, by creating
   a session through supabase-js with `X-Forwarded-For: 203.0.113.45` and reading
   `auth.sessions` back — it recorded `203.0.113.45/32`, and the forwarded
@@ -105,7 +105,7 @@
 
   Not investigated further on purpose: found mid-way through audit item 1, which was being worked one at a time.
 
-- [x] **RESOLVED for three tables 2026-09-07, verified on production; widening is the remaining work. Injury creation and availability changes write nothing to `audit_log` (found 2026-09-07).** Proven on production during an incident review, not inferred: an injury and an availability row were created on production at 12:10:44 and 12:10:59 on 2026-09-07, and `audit_log` held **no user actions at all** for that day — six rows, every one an overnight job (compliance expectations 02:05, retention preview 03:15, thresholds evaluated 04:30, each twice, once per org). There was no actor, no role, no IP and no origin recorded for either write.
+- [x] **RESOLVED 2026-09-07 for ten tables, all verified on production (0085 then 0086). Injury creation and availability changes write nothing to `audit_log` (found 2026-09-07).** Widening was the remaining work when this was first marked and it is now done; the ~40 tables still unaudited are a further sweep, not this item's residue. Proven on production during an incident review, not inferred: an injury and an availability row were created on production at 12:10:44 and 12:10:59 on 2026-09-07, and `audit_log` held **no user actions at all** for that day — six rows, every one an overnight job (compliance expectations 02:05, retention preview 03:15, thresholds evaluated 04:30, each twice, once per org). There was no actor, no role, no IP and no origin recorded for either write.
 
   Why it matters more than the missing rows did: those two writes could not be attributed to a client. The account was known from `reported_by`, but nothing recorded WHERE the write came from, and at that moment a dev server on localhost was pointed at production while the deployed app was also live — so the same credentials worked from two places and the log could not tell them apart. An injury is exactly the record this table exists to cover: `audit_log` already carries actor, role at time of action, entity, athlete, metadata and IP, and it is what a club would be asked for if a clinical record were ever disputed.
 
@@ -128,7 +128,7 @@
   metadata, and whether to write at all. A self-reported trail is advisory.
   Second, 105 call sites is 105 places to forget, and new ones arrive weekly.
 
-  **BUILT 2026-09-07 as migration 0085, awaiting deploy: audited by trigger.**
+  **BUILT AND DEPLOYED 2026-09-07 as migration 0085: audited by trigger.**
   Fires whichever path wrote, cannot be skipped by a client, one place instead
   of 105 — and it gets a REAL client address, because the browser talks to
   PostgREST directly so `request.headers` carries the visitor rather than a
@@ -161,7 +161,22 @@
   athlete and the real client address; the disclosure check confirmed no
   clinical value reached the metadata.
 
-  **WIDENED 2026-09-07 as migration 0086, awaiting deploy: ten tables now.**
+  **WIDENED AND DEPLOYED 2026-09-07 as migration 0086: ten tables now.**
+
+  **How all three above were confirmed, and by whom.** Isabella ran `db:push`
+  for 0085 and 0086 against production herself and re-ran
+  `scripts/verify-audit-trail.mjs`, which passed against real production data
+  for both — not against a fixture and not on scratch. The script is read-only
+  (`begin; set transaction read only`) and excludes its own probe agents by
+  name, so a pass is a statement about real sign-ins and real clinical edits,
+  not about its own traffic. The sign-in forwarding above rode the same day's
+  application deploy and is what the script's session check reads.
+
+  **What the passing run also established, which is why it has its own item
+  below:** the trail is now attributable but not durable. `auth.sessions` holds
+  live sessions only, and production showed 372 inserts against 362 deletes
+  over 45 days — so roughly 97% of sign-ins have already left no trace. A
+  passing check here does not mean sign-in history exists.
   The seven named above joined the original three. It was NOT mechanical, which
   is the useful finding: two of the seven had shapes the function had never met,
   and neither would have failed loudly — both would have written a row with a

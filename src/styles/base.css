@@ -7447,6 +7447,39 @@ button.dash-stat {
  * z-index sits above .sg-now-line and the session blocks; cursor returns to
  * default because the column below it is a giant click target for creating
  * sessions and the card is not. */
+/* The stepped draft card's progress indicator. Pips rather than numbers: the
+   count is already stated in words above them ("Step 2 of 3 · When & where"),
+   so these carry position at a glance without repeating it. */
+.sg-wiz-step {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
+.sg-wiz-pips {
+  display: flex;
+  gap: 5px;
+  /* Space above as well as below: sitting flush under the header's date line
+     it read as an underline of that text rather than as progress. */
+  margin: 12px 0 14px;
+}
+
+.sg-wiz-pip {
+  height: 3px;
+  flex: 1;
+  border-radius: 2px;
+  background: rgb(var(--ink-rgb) / 0.14);
+}
+
+.sg-wiz-pip[data-state='done'] {
+  background: rgb(var(--ink-rgb) / 0.34);
+}
+
+.sg-wiz-pip[data-state='current'] {
+  background: var(--accent);
+}
+
 .sg-draft-pop {
   position: absolute;
   left: 8px;

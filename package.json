@@ -38,6 +38,7 @@
     "test:schedule-template-link": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-schedule-template-link.ts",
     "test:schedule-access": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-schedule-access.ts",
     "test:schedule-draft-card": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-schedule-draft-card.ts",
+    "test:schedule-draft-wizard": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-schedule-draft-wizard.ts",
     "verify:assignment-authorship": "node scripts/verify-assignment-authorship.mjs",
     "check:policy-replacements": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/check-policy-replacements.ts",
     "test:policy-guard": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-policy-replacement-guard.ts",

@@ -403,7 +403,15 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   Concrete trigger for this: a programmatic sign-in as the athlete `j.barnes@ashcomberfc.example` at 10:49:51 on 2026-09-07 from 18.204.19.96 (AWS), user agent `node`, session created and never used again. Nothing in this repository accounts for it — no `vercel.json`, so no declared crons; the overnight jobs are SECURITY DEFINER Postgres functions that never authenticate; and the only script that signs in with a password targets scratch. It could not be attributed because there was no auth audit trail to attribute it with. Note that `node` sign-ins from cloud IPs are the NORM here, not the exception — of every session in production's history, exactly one came from a browser.
 
-- [ ] **Sign-in attempts against emails that match no account are recorded nowhere (2026-09-07). Not urgent; its own feature when it comes.** The residue of the item above, and a deliberate omission rather than an oversight.
+- [ ] **APPROVED AND QUEUED 2026-09-07: build the platform-level view. Sign-in attempts against emails that match no account are recorded nowhere.** Isabella chose the platform view over an org-less read path in the existing viewer, which is the shape argued for below.
+
+  **Scope as approved:** a platform-level view, gated by `isPlatformStaff()`, showing attempts against addresses that belong to no organisation — so enumeration patterns are visible ACROSS clubs rather than invisible or wrongly scoped to one tenant.
+
+  **Two things to settle while building, both raised below and neither decided:** what is stored in place of the raw attacker-controlled email (hash, truncation, or the address itself behind the platform gate), and whether the write happens on every unmatched attempt or only on a streak boundary — noting that the lockout does NOT bound this case the way it bounds the known-account one, because `login_attempts` keys on an email that will never succeed and so never clears.
+
+  Standard: tests first, Run-verified, screenshot of the view before finalising, tell her before deploying.
+
+  The original scoping follows, and the reasoning in it is what was approved.
 
   **What happens today.** `/auth/sign-in` writes `auth.sign_in_failed` only when the submitted email resolves to a real account. An attempt against an address the database has never heard of leaves no durable trace at all — `login_attempts` keys on the email and would hold a streak, but it deletes on success and carries no IP, so it answers "is this address being hammered right now" and nothing afterwards.
 

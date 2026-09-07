@@ -11,12 +11,11 @@ import {
   duplicateTemplate,
   restoreTemplate,
   updateTemplate,
-  weekTotalLoad,
   type TemplateDay,
   type TemplateSession,
   type TemplateStructure,
 } from '@/lib/queries/weekTemplates';
-import { WeekLoadChart } from '@/components/WeekLoadChart/WeekLoadChart';
+import { WeekTemplatePreview } from '@/components/WeekTemplatePreview/WeekTemplatePreview';
 import { enumLabel, mdLabel } from '@/lib/format';
 
 type Props = {
@@ -66,15 +65,6 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
   const [saved, setSaved] = useState(true);
 
   const positions = useMemo(() => positionsInOrder(structure), [structure]);
-  const chartBars = useMemo(
-    () =>
-      positions.map((p) => ({
-        mdOffset: p.mdOffset,
-        total: p.sessions.reduce((s, sess) => s + (sess.plannedRpe !== null && sess.durationMin !== null ? sess.durationMin * sess.plannedRpe : 0), 0),
-        unscored: p.sessions.length > 0 && p.sessions.some((s) => s.plannedRpe === null || s.durationMin === null),
-      })),
-    [positions],
-  );
 
   function mutatePosition(mdOffset: number, fn: (day: TemplateDay) => TemplateDay) {
     setStructure((prev) => {
@@ -248,11 +238,17 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
             </select>
           </label>
         </div>
+        {/* A miniature of the week this template produces, in place of the
+            load chart that used to sit here. Load per position answered a
+            sports-science question; the question while BUILDING is "what does
+            this week look like", and two very different weeks with the same
+            load drew the same bars. Preview only — every edit, including
+            removing a session, is in the day cards below. */}
         <div style={{ marginTop: 14 }}>
-          <WeekLoadChart bars={chartBars} title="Weekly load" />
+          <WeekTemplatePreview days={positions} />
         </div>
         <p className="cap" style={{ marginTop: 6 }}>
-          Total planned load {weekTotalLoad(structure).toLocaleString()} · {positions.filter((p) => p.sessions.length > 0).length} of {positions.length} days planned
+          {positions.filter((p) => p.sessions.length > 0).length} of {positions.length} days planned
         </p>
       </div>
 

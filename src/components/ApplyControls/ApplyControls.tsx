@@ -161,7 +161,8 @@ export function ApplyControls({ orgId, userId, templates, selectedTemplateId, we
       <p className="cap" style={{ marginTop: 14 }}>
         Applying a template can&rsquo;t be undone, and there is no conflict check if someone
         else edits this week while you have this page open. Review the plan above before
-        applying.
+        applying. The sessions it creates are in the athlete app straight away, for the
+        groups each one names.
       </p>
     </>
   );

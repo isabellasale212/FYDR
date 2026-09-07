@@ -215,6 +215,15 @@ export function SessionEditForm({ orgId, session, groups, timezone }: Props) {
         </div>
       </fieldset>
 
+      {/* Same rule as NewSessionForm, worded for a save rather than a
+          create. An edit is the case where a second step feels most
+          plausible — the session is already out there — so leaving it
+          unsaid here would undo the sentence on the create form. */}
+      <p className="cap" style={{ marginTop: 14 }}>
+        Athletes named in this session see the change in their athlete app as
+        soon as you save. There is no separate publish step.
+      </p>
+
       {error ? (
         <p className="form-error" role="alert" style={{ marginTop: 14 }}>
           {error}

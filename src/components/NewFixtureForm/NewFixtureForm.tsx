@@ -188,6 +188,22 @@ export function NewFixtureForm({ orgId, userId, defaultDate, timezone }: Props) 
         </p>
       </fieldset>
 
+      {/* Deliberately NOT the sentence on the session form, because a fixture
+          reaches athletes on different terms. It carries no participants; the
+          athlete app shows it through fetchNextFixture, which takes the single
+          nearest scheduled fixture for the whole club and puts it on everyone's
+          Today screen as "Working towards". So it is immediate and it is
+          club-wide, but it is not a roster, and nobody is named in it. Both
+          halves have to be said: the first stops somebody assuming a further
+          publish step, the second stops them assuming the squad has been told
+          to turn up. */}
+      <p className="cap" style={{ marginTop: 14 }}>
+        Every athlete sees the club&rsquo;s next fixture on their Today screen as soon
+        as you create it, with the opponent, kick-off and venue. There is no
+        separate publish step. Nobody is named in a fixture, though — create a
+        session for anything athletes have to turn up to.
+      </p>
+
       {error ? (
         <p className="form-error" role="alert" style={{ marginTop: 14 }}>
           {error}

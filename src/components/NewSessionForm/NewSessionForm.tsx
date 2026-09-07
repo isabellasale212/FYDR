@@ -219,6 +219,16 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone }:
         </p>
       </fieldset>
 
+      {/* The reported gap: somebody adds a session, is returned to the
+          schedule, and has no idea whether a further step is needed before the
+          squad sees it. There isn't one — the row is the visibility. Said here,
+          at the moment of committing, rather than as a toast afterwards, so it
+          answers the question before it is asked. */}
+      <p className="cap" style={{ marginTop: 14 }}>
+        Athletes named in it see this in their athlete app as soon as you create
+        it. There is no separate publish step.
+      </p>
+
       {error ? (
         <p className="form-error" role="alert" style={{ marginTop: 14 }}>
           {error}

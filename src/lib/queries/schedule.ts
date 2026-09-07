@@ -1097,9 +1097,13 @@ export async function updateSession(
    *
    * Audit finding (Part A): ScheduleWorkspace.handlePublish resends every
    * field from a `baseById` snapshot frozen at page load for whichever
-   * fields the local edit patch didn't touch (only start/duration/groups
-   * are ever in that patch — see ScheduleGrid/types.ts's EditOverlay
-   * comment). If another tab or another staff member (SessionEditForm on
+   * fields the local edit patch didn't touch (whatever EditOverlay does not
+   * carry for that session — see ScheduleGrid/types.ts. That used to be
+   * everything except start/duration/groups; since the card grew an Edit
+   * action it also carries title/type/location, so the resend window is
+   * narrower than it was, but mdOffset is still resent from the snapshot and
+   * the lock is still what makes that safe). If another tab or another staff
+   * member (SessionEditForm on
    * `/schedule/[sessionId]`, a genuinely concurrent live write) changed
    * this session's title/location/type/mdOffset after this tab's page
    * loaded, publishing an unrelated start-time change here would silently

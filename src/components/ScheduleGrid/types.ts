@@ -41,7 +41,19 @@ export type BaseSession = {
  *  real sessions have stable UUIDs, which is strictly safer than a name
  *  key when two sessions on the same day happen to share a title (this
  *  org's real seed data does: 'Fixture', 'Recovery' repeat weekly). */
-export type EditOverlay = { start?: number; mins?: number; groupIds?: string[] };
+export type EditOverlay = {
+  start?: number;
+  mins?: number;
+  groupIds?: string[];
+  /* Added when the card grew an Edit action. These three were absent, which is
+     why Name, Location and Type were read-only on a saved session: there was
+     nowhere for the change to go. `location` is optional AND nullable, and every
+     consumer must therefore apply it by PRESENCE ('location' in patch) rather
+     than with ??, or clearing a location silently restores the old one. */
+  title?: string;
+  type?: DbSessionType;
+  location?: string | null;
+};
 
 export type DraftSession = {
   id: string; // synthetic 'new-<uuid>'

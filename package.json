@@ -41,6 +41,7 @@
     "test:schedule-draft-wizard": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-schedule-draft-wizard.ts",
     "test:week-template-preview": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-week-template-preview.ts",
     "test:create-form-return": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-create-form-return.ts",
+    "test:session-edit-unlock": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-session-edit-unlock.ts",
     "verify:assignment-authorship": "node scripts/verify-assignment-authorship.mjs",
     "check:policy-replacements": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/check-policy-replacements.ts",
     "test:policy-guard": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-policy-replacement-guard.ts",

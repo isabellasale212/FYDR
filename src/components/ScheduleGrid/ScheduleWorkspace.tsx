@@ -155,6 +155,12 @@ export function ScheduleWorkspace({
           ...s,
           start: e.start ?? s.start,
           mins: e.mins ?? s.mins,
+          title: e.title ?? s.title,
+          type: e.type ?? s.type,
+          /* By presence, not ??: clearing a location is a real edit, and ??
+             would quietly put the old value back the moment somebody emptied
+             the field. */
+          location: 'location' in e ? (e.location ?? null) : s.location,
           groupIds,
           groupNames: groupIds.map((id) => groupNameById.get(id) ?? 'Unnamed group'),
           athleteIds,
@@ -468,7 +474,13 @@ export function ScheduleWorkspace({
     }
     if (sel && sel.startsWith('new-')) {
       setAdded((cur) => cur.map((d) => (d.id === sel ? { ...d, [key]: value } : d)));
+      return;
     }
+    /* A SAVED session. This used to fall off the end and do nothing, which is
+       why the card offered Start, Duration and Group and nothing else — those
+       three had their own handlers straight into the overlay, and anything
+       routed here was accepted and discarded. */
+    if (sel) patchEdit(sel, { [key]: value } as EditOverlay);
   }
 
   function handleCancelDraft() {
@@ -540,11 +552,11 @@ export function ScheduleWorkspace({
       if (!b) continue;
       const startsAt = zonedTimeToUtcIso(b.dow, clockLabel(patch.start ?? b.start), timezone);
       const res = await updateSession(client, orgId, id, {
-        title: b.title,
-        sessionType: b.type,
+        title: patch.title ?? b.title,
+        sessionType: patch.type ?? b.type,
         startsAt,
         durationMin: patch.mins ?? b.mins,
-        location: b.location,
+        location: 'location' in patch ? (patch.location ?? null) : b.location,
         mdOffset: b.mdOffset,
         groupIds: patch.groupIds ?? b.groupIds,
         // Optimistic lock: b.updatedAt is this session's updated_at as of

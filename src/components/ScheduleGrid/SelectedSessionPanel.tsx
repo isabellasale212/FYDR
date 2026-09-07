@@ -127,6 +127,17 @@ export function SelectedSessionPanel({
   const nameRef = useRef<HTMLInputElement>(null);
   const isPrecommitId = session?.id === '__new';
   const [step, setStep] = useState(0);
+  /* Name, location and type are what a session IS; start, duration and groups
+     are adjustments to it. The schedule is a screen people click around on, so
+     the first three sit behind an explicit Edit rather than being live the
+     moment a session is selected. Relocked whenever the selection moves, so an
+     unlock cannot leak from the session you meant to edit onto the next one you
+     merely looked at. */
+  const [unlocked, setUnlocked] = useState(false);
+  const onUnlock = () => setUnlocked(true);
+  useEffect(() => {
+    setUnlocked(false);
+  }, [session?.id]);
   useEffect(() => {
     if (isPrecommitId) nameRef.current?.focus();
     /* A fresh card starts at the beginning. Keyed on the precommit id so it
@@ -269,7 +280,7 @@ export function SelectedSessionPanel({
   const locationField = (
     <div className="sg-edit-field">
       <span className="label">Location</span>
-      {isDraft ? (
+      {isDraft || unlocked ? (
         <input
           className="field"
           style={{ marginTop: 6, height: 40 }}
@@ -286,7 +297,7 @@ export function SelectedSessionPanel({
   const typeField = (
     <div className="sg-edit-field">
       <span className="label">Type</span>
-      {isDraft ? (
+      {isDraft || unlocked ? (
         <div className="chiprow" style={{ marginTop: 6 }}>
           {SESSION_TYPES.map((t) => (
             <button
@@ -318,7 +329,7 @@ export function SelectedSessionPanel({
             <div className="sg-wiz-step">
               Step {step + 1} of {WIZARD_STEPS.length} · {WIZARD_STEPS[step]?.label}
             </div>
-          ) : isDraft && mode === 'edit' ? (
+          ) : (isDraft || unlocked) && mode === 'edit' ? (
             nameField
           ) : (
             <div className="sg-panel-name">{session.title}</div>
@@ -335,6 +346,14 @@ export function SelectedSessionPanel({
              on every step. Discards the draft, same as Cancel and Escape. */
           <button type="button" className="sheet-x" onClick={onCancelDraft} aria-label="Discard this session">
             ×
+          </button>
+        ) : !isDraft && mode === 'edit' && !unlocked ? (
+          /* Name, location and type are read-only until asked for. They are what
+             the session IS, and this is a screen people click around on — the
+             three below (start, duration, groups) are adjustments and stay
+             live. Opening these needs one deliberate press. */
+          <button type="button" className="btn-ghost" style={{ minHeight: 32, padding: '5px 12px' }} onClick={onUnlock}>
+            Edit
           </button>
         ) : (
           <span

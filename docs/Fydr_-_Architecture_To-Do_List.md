@@ -197,6 +197,27 @@
 
   What to establish first, before assuming it is a bug: whether Supabase prunes this table on the current plan (a retention window would explain an empty table without anything being misconfigured), whether it needs enabling, and whether the hosted dashboard's Auth logs are populated independently of it — the dashboard viewer may retain data this table does not. If the dashboard has the history and the table does not, the fix is knowing where to look rather than changing anything. If neither has it, this is a real gap in the only trail that can answer "who signed in".
 
+  **PRUNING RULED OUT, 2026-09-07, on scratch. It is not being cleaned up — it
+  is never written to.** `pg_stat_all_tables.n_tup_ins` for
+  `auth.audit_log_entries` is **0** across a statistics window of 12 days 19
+  hours, during which `auth.sessions` took 174 inserts and 150 deletes and
+  `auth.refresh_tokens` 186 and 160. A retention window leaves inserts followed
+  by deletes, exactly as those two do; this leaves nothing at all. The counters
+  demonstrably work, and a sign-in made during the check added no row either.
+  Counting live rows cannot tell those two cases apart, which is why the item
+  had been stuck on "empty".
+
+  That closes the first of the three questions and moves the other two: whether
+  GoTrue needs the table enabled (a Supabase-side configuration question, not
+  something in this repository), and whether the dashboard retains the history
+  independently (still needs the dashboard).
+
+  `scripts/verify-audit-trail.mjs` check 3 makes this reproducible on either
+  project, read-only. It prints the statistics window alongside the counts,
+  because a zero over a short window means nothing, and it reports INCONCLUSIVE
+  rather than a pass when the window carries no session inserts to compare
+  against.
+
   Concrete trigger for this: a programmatic sign-in as the athlete `j.barnes@ashcomberfc.example` at 10:49:51 on 2026-09-07 from 18.204.19.96 (AWS), user agent `node`, session created and never used again. Nothing in this repository accounts for it — no `vercel.json`, so no declared crons; the overnight jobs are SECURITY DEFINER Postgres functions that never authenticate; and the only script that signs in with a password targets scratch. It could not be attributed because there was no auth audit trail to attribute it with. Note that `node` sign-ins from cloud IPs are the NORM here, not the exception — of every session in production's history, exactly one came from a browser.
 
 - [ ] **D-24 resolved, 2026-09-05, real build work**: running distance and high intensity efforts added to the GPS import's accepted upload headings, twelve columns now instead of ten. Both were already rankable leaderboard measures with real data (512 of 597 rows) that could never be updated through the import screen, they'd have gone silently stale. Update the parser and the on-screen column list together.

@@ -14,6 +14,10 @@
  *  2. Editing an injury leaves an audit_log row. Until migration 0085 nothing
  *     did — a sweep found 4 write paths reaching audit_log and 105 that did
  *     not, injuries and availability among them.
+ *  3. Whether auth.audit_log_entries — Supabase's OWN auth trail, written by
+ *     GoTrue rather than by us — is empty because it is pruned or because
+ *     nothing ever writes to it. Those are different problems with different
+ *     owners, and the table looks identical either way.
  *
  * HOW IT AVOIDS WRITING. Everything runs inside `begin; set transaction read
  * only`, so Postgres refuses INSERT/UPDATE/DELETE at the server: the guarantee
@@ -201,6 +205,59 @@ try {
     verdict(leaks.rows[0].n === 0 ? 'PASS' : 'FAIL',
       'no clinical VALUE has been copied into audit_log',
       leaks.rows[0].n === 0 ? undefined : `${leaks.rows[0].n} row(s) carry a clinical field as metadata`);
+  }
+
+  /* --------------------------------------------------- 3. auth.audit_log_entries */
+  console.log('\n3. auth.audit_log_entries — pruned, or never written?\n');
+
+  /* n_tup_ins is the discriminator, and it is why this check is worth running
+     rather than just counting rows. A RETENTION WINDOW leaves inserts followed
+     by deletes; a table nothing writes to leaves zero inserts. Counting live
+     rows cannot tell those apart, and they have different owners: pruning is
+     Supabase's plan, silence is a configuration question.
+
+     The counters reset with pg_stat_reset() or a restore, so the window they
+     cover is printed alongside them — a short window makes a zero meaningless,
+     and the comparison rows are what make a real one legible. */
+  const stats = await client.query(`
+    select relname, n_tup_ins, n_tup_del, n_live_tup
+    from pg_stat_all_tables
+    where schemaname = 'auth' and relname in ('audit_log_entries', 'sessions', 'refresh_tokens')
+    order by relname
+  `);
+  /* Cast in SQL: node-postgres returns an interval as an object, which
+     stringifies to [object Object]. */
+  const win = await client.query(
+    "select stats_reset, date_trunc('minute', now() - stats_reset)::text as window from pg_stat_database where datname = current_database()",
+  );
+  const byName = Object.fromEntries(stats.rows.map((r) => [r.relname, r]));
+  const entries = byName['audit_log_entries'];
+  const sessionsStat = byName['sessions'];
+
+  console.log(`   statistics window: ${win.rows[0]?.window ?? 'unknown'} (since ${
+    win.rows[0]?.stats_reset ? new Date(win.rows[0].stats_reset).toISOString().slice(0, 16).replace('T', ' ') : '?'})`);
+  for (const r of stats.rows) {
+    console.log(`     auth.${String(r.relname).padEnd(20)} inserted ${String(r.n_tup_ins).padStart(6)}  deleted ${String(r.n_tup_del).padStart(6)}  live ${String(r.n_live_tup).padStart(5)}`);
+  }
+  console.log('');
+
+  if (!entries) {
+    verdict('INCONCLUSIVE', 'auth.audit_log_entries has no statistics row — cannot tell.');
+  } else if (Number(sessionsStat?.n_tup_ins ?? 0) === 0) {
+    verdict('INCONCLUSIVE',
+      'no sessions were written during the statistics window either, so a zero here means nothing.',
+      'The counters were probably reset recently. Sign in a few times and re-run.');
+  } else if (Number(entries.n_tup_ins) === 0) {
+    verdict('PASS',
+      'NOT pruning — nothing has ever been written to auth.audit_log_entries.',
+      `Sessions took ${sessionsStat.n_tup_ins} inserts over the same window, so the counters work. ` +
+        'This is a configuration question for Supabase, not a retention window, and not something this repo can fix.');
+  } else if (Number(entries.n_live_tup) === 0) {
+    verdict('PASS',
+      `pruned, not silent — ${entries.n_tup_ins} rows were written and ${entries.n_tup_del} removed.`,
+      'The history exists upstream; the fix is knowing where to look rather than changing anything.');
+  } else {
+    verdict('PASS', `populated: ${entries.n_live_tup} live entries. Nothing to chase.`);
   }
 
   await client.query('rollback');

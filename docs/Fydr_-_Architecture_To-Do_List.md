@@ -161,12 +161,35 @@
   athlete and the real client address; the disclosure check confirmed no
   clinical value reached the metadata.
 
-  **REMAINING: widen by table.** The pattern is proved, so this is now
-  mechanical — attach `audit_row_change()` to the next set and extend
-  430_audit_triggers_test.sql. The sweep's own table list is the queue, and the
-  highest-value next ones are the write paths a club would be asked about:
-  `athletes`, `athlete_consents`, `body_composition`, `test_results`,
-  `programme_assignments`, `team_allocations`, `user_roles`.
+  **WIDENED 2026-09-07 as migration 0086, awaiting deploy: ten tables now.**
+  The seven named above joined the original three. It was NOT mechanical, which
+  is the useful finding: two of the seven had shapes the function had never met,
+  and neither would have failed loudly — both would have written a row with a
+  null where the answer goes, exactly as injury_clinical would have.
+
+  * `athletes` has no `athlete_id` column, because the row IS the athlete. The
+    one field saying who a roster change concerns would have been null.
+  * `user_roles` has none either, and correctly — a role grant is not about an
+    athlete. But `audit_log` has no column for the USER a grant concerns, so the
+    row would have said somebody's roles changed without saying whose or to
+    what, in the table that grants privilege.
+
+  So `metadata` gained an identity allowlist of exactly two keys, `user_id` and
+  `role`. The disclosure rule is unchanged and now asserted across all ten
+  tables rather than the clinical three: metadata may carry identity, never
+  content. Adding a third key needs the same argument, which is why it is an
+  explicit list rather than a heuristic.
+
+  Verified against scratch through RLS with a real write to every one of the
+  seven — attachment checks would have proved they were created, not that they
+  record anything useful. 13 new pgTAP assertions, 1758 across the full suite,
+  all passing.
+
+  **STILL REMAINING:** roughly forty tables from the sweep are unaudited. The
+  ones done are the write paths a club would be asked about; the rest are
+  lower-stakes (scheduling, programme authoring, thresholds, leaderboards) and
+  can go in batches now that two shape surprises in ten tables suggest the
+  function will keep meeting new ones.
 
 - [ ] **HIGH PRIORITY, and a SECOND, DIFFERENT blindness from the `audit_log` item above: Supabase's own `auth.audit_log_entries` is empty (found 2026-09-07).** Measured on both projects on the same day: production has **0** rows in `auth.audit_log_entries` against 11 rows in `auth.sessions` and 46 in `auth.users`; scratch has **0** against 6 sessions and 44 users. So it is not something about production, and it is not that nobody has signed in — sessions are being created and recorded, and the auth audit table beside them is not.
 

@@ -24,8 +24,18 @@ function assert(cond: boolean, label: string): void {
 const read = (p: string): string => readFileSync(p, 'utf8');
 
 const MIGRATION = 'supabase/migrations/0085_audit_clinical_writes.sql';
+const WIDEN = 'supabase/migrations/0086_audit_widen.sql';
 const ACCESS = 'src/lib/access.ts';
 const sql = read(MIGRATION);
+const widen = read(WIDEN);
+
+/** Every table the trigger is attached to, across both migrations. */
+const AUDITED = [
+  ['injuries', MIGRATION], ['injury_clinical', MIGRATION], ['availability', MIGRATION],
+  ['athletes', WIDEN], ['athlete_consents', WIDEN], ['body_composition', WIDEN],
+  ['test_results', WIDEN], ['programme_assignments', WIDEN], ['team_allocations', WIDEN],
+  ['user_roles', WIDEN],
+] as const;
 
 console.log('the two role orderings are the same ordering');
 {
@@ -48,19 +58,45 @@ console.log('the two role orderings are the same ordering');
   assert(actingRole(['strength_conditioning', 'coach']) === 'coach', 'coach outranks strength_conditioning, which the pgTAP file asserts through user_dual');
 }
 
-console.log('\nthe trigger is attached to the three tables, for all three operations');
+console.log('\nthe trigger is attached to every audited table, for all three operations');
 {
-  for (const t of ['injuries', 'injury_clinical', 'availability']) {
-    const m = new RegExp(`create trigger ${t}_audit\\s+after insert or update or delete on public\\.${t}`).exec(sql);
+  for (const [t, file] of AUDITED) {
+    const body = read(file);
+    const m = new RegExp(`create trigger ${t}_audit\\s+after insert or update or delete on public\\.${t}`).exec(body);
     assert(m !== null, `${t} has an after-insert/update/delete trigger`);
   }
+  const perRow = (sql.match(/for each row execute function public\.audit_row_change\(\)/g) ?? []).length
+    + (widen.match(/for each row execute function public\.audit_row_change\(\)/g) ?? []).length;
+  assert(perRow === AUDITED.length, `all ${AUDITED.length} run per row (saw ${perRow}) — a multi-row update must not collapse into one entry`);
   assert(
-    (sql.match(/for each row execute function public\.audit_row_change\(\)/g) ?? []).length === 3,
-    'all three run per row — a multi-row update must not collapse into one entry',
+    !/before insert or update/i.test(sql + widen),
+    'and they are AFTER, so a write refused by RLS or a constraint never leaves a row claiming it happened',
+  );
+}
+
+console.log('\nthe two row shapes the widening had to learn');
+{
+  assert(
+    /tg_table_name = 'athletes'[\s\S]{0,120}v_row ->> 'id'/.test(widen),
+    "athletes: the row IS the athlete, so athlete_id comes from its own id rather than a column it does not have",
   );
   assert(
-    !/before insert or update/i.test(sql),
-    'and they are AFTER, so a write refused by RLS or a constraint never leaves a row claiming it happened',
+    /unnest\(array\['user_id', 'role'\]\)/.test(widen),
+    'user_roles: an identity allowlist, because audit_log has no column for the user a grant concerns',
+  );
+  assert(
+    !/jsonb_object_agg\(k, v_row -> k\)[\s\S]{0,200}(diagnosis|clinical_notes|treatment_plan|value|body_mass)/.test(widen),
+    'and the allowlist is exactly two identity keys — no content column may be added to it without the same argument',
+  );
+  /* 0086 replaces the function 0085 created, so the clinical rules have to
+     survive the rewrite rather than being assumed to. */
+  assert(
+    /jsonb_build_object\('changed', to_jsonb\(v_changed\)\)/.test(widen),
+    'the changed-fields rule survived the function being replaced',
+  );
+  assert(
+    /if v_changed = '\{\}'::text\[\] then return/.test(widen),
+    'and so did the no-op-update rule',
   );
 }
 

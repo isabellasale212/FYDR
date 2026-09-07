@@ -22,6 +22,7 @@ import {
   detectClashes,
   fixtureTop,
   fixturesToDraw,
+  labelsMdOffset,
   placeBlocks,
   computeBlockDisplay,
 } from '@/lib/scheduleGeometry';
@@ -303,6 +304,8 @@ export function ScheduleWorkspace({
     const contactMins = daySessions.filter((s) => s.athleteIds.length > 0).reduce((sum, s) => sum + s.mins, 0);
     const dateObj = new Date(`${date}T12:00:00Z`);
 
+    const dayFixtures = drawnFixtures.filter((f) => f.dow === date);
+
     dayColumns.push({
       date,
       weekday: weekdayFmt(timezone).format(dateObj),
@@ -310,16 +313,19 @@ export function ScheduleWorkspace({
       isToday: date === today,
       isPast: date < today,
       isMatch: isMatchDay(date, daySessions),
-      mdOffset: daySessions.length > 0 ? (anchoredMd.get(date) ?? null) : null,
-      fixtures: drawnFixtures
-        .filter((f) => f.dow === date)
-        .map((f) => ({
-          id: f.id,
-          top: fixtureTop(f.start, h0),
-          timeText: clockLabel(f.start),
-          homeAway: f.homeAway,
-          opponent: f.opponent,
-        })),
+      /* Was `daySessions.length > 0`, which printed "—" on a fixture-only
+         matchday: a correctly red header on the day the countdown points at,
+         declining to say MD. See labelsMdOffset for the rule and its limits. */
+      mdOffset: labelsMdOffset({ sessionCount: daySessions.length, fixtureCount: dayFixtures.length })
+        ? (anchoredMd.get(date) ?? null)
+        : null,
+      fixtures: dayFixtures.map((f) => ({
+        id: f.id,
+        top: fixtureTop(f.start, h0),
+        timeText: clockLabel(f.start),
+        homeAway: f.homeAway,
+        opponent: f.opponent,
+      })),
       contactMins,
       blocks,
     });

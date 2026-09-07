@@ -31,6 +31,7 @@ import {
   computeHourRange,
   fixtureTop,
   fixturesToDraw,
+  labelsMdOffset,
 } from '@/lib/scheduleGeometry';
 
 let passed = 0, failed = 0;
@@ -131,6 +132,34 @@ console.log('\nthe day header finally lights up for a fixture');
     /data-match=/.test(flat(read(GRID))),
     'the header attribute the CSS already styles is still what gets set',
   );
+}
+
+console.log('\na fixture-only matchday names itself');
+{
+  assert(
+    labelsMdOffset({ sessionCount: 0, fixtureCount: 1 }) === true,
+    'a day holding only a fixture prints its MD label — it was "—" on the day the countdown points at',
+  );
+  assert(
+    labelsMdOffset({ sessionCount: 2, fixtureCount: 0 }) === true,
+    'a day holding only sessions is unchanged',
+  );
+  assert(
+    labelsMdOffset({ sessionCount: 1, fixtureCount: 1 }) === true,
+    'and a day holding both, obviously',
+  );
+  assert(
+    labelsMdOffset({ sessionCount: 0, fixtureCount: 0 }) === false,
+    'a day holding NOTHING still says nothing — this widens the rule, it does not delete it',
+  );
+
+  const w = flat(read(WORK));
+  assert(/labelsMdOffset\(/.test(w), 'the grid asks the named rule rather than inlining a second copy of it');
+  assert(
+    !/mdOffset: daySessions\.length > 0 \?/.test(w),
+    'and the old sessions-only guard is gone, not merely bypassed',
+  );
+  assert(/anchoredMd\.get\(date\)/.test(w), 'the offset still comes from the week-anchoring helper, not a recomputation');
 }
 
 console.log('\nthe fixture is a link out, not a block you can edit in place');

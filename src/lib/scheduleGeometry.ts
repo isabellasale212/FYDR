@@ -359,3 +359,26 @@ export function fixturesToDraw<F extends { id: string }>(
   );
   return fixtures.filter((f) => !representedBySession.has(f.id));
 }
+
+/** Whether a day column prints its MD-n label.
+ *
+ *  The grid used to ask `daySessions.length > 0`, which was a reasonable
+ *  reading of "this day has something on it" right up until fixtures started
+ *  being drawn. A fixture-only matchday then rendered as a correctly red
+ *  header with "—" where the word MD belongs — the day the whole countdown
+ *  points at, refusing to name itself.
+ *
+ *  So the rule is unchanged in spirit and widened in fact: a day labels itself
+ *  when it holds ANYTHING, and a fixture is something. It is not "label every
+ *  day": Wednesday with nothing on it still says nothing, which is the grid's
+ *  existing restraint and not a thing to undo while fixing this.
+ *
+ *  The offset itself still comes from anchorMdOffsetsToWeek, which already
+ *  computes one for every day in the window (see mdOffsetsForDays — "a week
+ *  strip has to label EVERY day, not only the days that happen to hold a
+ *  session"). This only decides whether to print what that helper already
+ *  worked out, and the helper's own MD_MAX_SPAN_DAYS/MD_MAX_AFTER_DAYS caps
+ *  still decide whether there is anything worth printing. */
+export function labelsMdOffset(day: { sessionCount: number; fixtureCount: number }): boolean {
+  return day.sessionCount > 0 || day.fixtureCount > 0;
+}

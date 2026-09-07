@@ -77,7 +77,15 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   Tests first, Run-verified, screenshot before deploying. Show her before finalising.
 
-- [ ] **2. AUDITED 2026-09-07, nothing changed pending Isabella's call. Three mismatches and one absence.**
+- [x] **2. FIXED AND DEPLOYED 2026-09-07. Audited, then all three closed.** Verified on production after the deploy: `/login/reset` renders `lockup-word` and carries no `signin-mark`; `/icon.svg`, `/apple-icon.png`, `/opengraph-image.png` and `/manifest.webmanifest` all return 200 with the right content types, and Next wires `rel="icon"`, `rel="apple-touch-icon"`, `rel="manifest"` and `og:image` into the head; and a probe of the deployed stylesheet at a 900px viewport computes `.brand .wm` and `.wm-trace` at 40px against a control div of 900px, so the rail rules are really being served.
+
+  **One thing worth keeping.** The first attempt at fix 1 used the right component and still drew the wrong thing: `.lk-trace` falls back to `--accent-border` when nothing declares `--lk-trace`, and only `.launch` declared it, so the lockup on a new surface rendered its trace in full-strength blue instead of the pale tint. The same class of error as the blue square, one layer down, and invisible to every assertion that had been written at that point — it was caught by looking at the render. The three inks are now pinned equal to the splash's by test.
+
+  **Left open deliberately, needs Isabella's judgement:** at 40px the collapsed rail's ringed dot is 5.6px across. It is correct and no longer overflows, but the detail is faint. Showing a larger CROPPED dot rather than the whole trace shrunk is a different fix and was not assumed.
+
+  The audit that produced these follows.
+
+- [x] **2b. The audit, 2026-09-07.**
 
   **The word is right everywhere. The MARK is not.** All five text wordmarks measure Sora 800 at -0.035em, which is why the production check earlier that day reported `/login/reset` as correct — it measured `.signin-word`, the typography, and the thing that is wrong is the graphic sitting next to it. A check that passes on the half you looked at.
 

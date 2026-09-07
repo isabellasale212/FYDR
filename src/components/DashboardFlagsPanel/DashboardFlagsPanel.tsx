@@ -70,15 +70,33 @@ export function DashboardFlagsPanel({ rows, openTotal, awaitingAck, bySeverity }
         aria-controls="dash-flags-list"
         onClick={() => setListOpen((v) => !v)}
       >
-        <FlagIcon />
-        <span className="dash-flags-count">{openTotal}</span>
-        <span className="dash-flags-word">open flag{openTotal === 1 ? '' : 's'}</span>
-        {high > 0 ? <span className="pill pill-bad">{high} high</span> : null}
-        {medium > 0 ? <span className="pill pill-warn">{medium} medium</span> : null}
-        <span className="dash-flags-head-meta">
-          {awaitingAck === 0 ? 'all acknowledged' : `${awaitingAck} awaiting acknowledgement`}
-          {rows.length < openTotal ? ` · top ${rows.length} athletes` : ''}
+        <span className="dash-flags-badge" aria-hidden="true">
+          <FlagIcon />
         </span>
+        <span className="dash-flags-headtext">
+          <span className="dash-flags-headline">
+            <span className="dash-flags-count">{openTotal}</span>
+            <span className="dash-flags-word">open flag{openTotal === 1 ? '' : 's'}</span>
+          </span>
+          {high > 0 || medium > 0 ? (
+            <span className="dash-flags-pills">
+              {high > 0 ? <span className="pill pill-bad">{high} high priority</span> : null}
+              {medium > 0 ? <span className="pill pill-warn">{medium} medium priority</span> : null}
+            </span>
+          ) : null}
+          {/* LOW-SEVERITY FLAGS GET NO PILL, which is existing behaviour kept
+              deliberately rather than an omission: they are counted in the
+              total above, and a third pill on every card would spend the row's
+              attention on the tier that least needs it. */}
+          <span className="dash-flags-head-meta">
+            {awaitingAck === 0
+              ? 'all of these have been reviewed'
+              : `${awaitingAck} of these haven't been reviewed by anyone yet`}
+          </span>
+        </span>
+        {rows.length < openTotal ? (
+          <span className="dash-flags-head-scope">top {rows.length} athletes</span>
+        ) : null}
         <span className="dash-flags-head-chevron" data-open={listOpen} aria-hidden="true">
           &#9660;
         </span>
@@ -89,24 +107,42 @@ export function DashboardFlagsPanel({ rows, openTotal, awaitingAck, bySeverity }
         {rows.map((r) => {
           const isOpen = openId === r.athlete_id;
           return (
-            <div key={r.athlete_id} className="dash-flags-item" data-open={isOpen}>
+            <div
+              key={r.athlete_id}
+              className="dash-flags-item"
+              data-open={isOpen}
+              /* The severity moves from an 8px dot to the row's own left edge.
+                 Same three tiers, same tokens — high --bad, medium --warn, low
+                 --domain-recovery — so a low flag still reads as a low flag. */
+              data-severity={r.severity}
+            >
               <button
                 type="button"
                 className="dash-flags-row"
                 aria-expanded={isOpen}
                 onClick={() => setOpenId((cur) => (cur === r.athlete_id ? null : r.athlete_id))}
               >
-                <span className="dash-flags-dot" data-severity={r.severity} aria-hidden="true" />
-                <span className="dash-flags-name">{r.name}</span>
-                <span className="dash-flags-position">{r.position ?? enumLabel(r.domain)}</span>
-                <span className="dash-flags-what">
-                  {r.what} {r.value}
-                  {r.baseline ? ` vs his own ${r.baseline}` : ''}
+                <span className="dash-flags-main">
+                  <span className="dash-flags-nameline">
+                    <span className="dash-flags-name">{r.name}</span>
+                    <span className="dash-flags-position">{r.position ?? enumLabel(r.domain)}</span>
+                  </span>
+                  <span className="dash-flags-what">
+                    {r.what} {r.value}
+                    {r.baseline ? ` vs his own ${r.baseline}` : ''}
+                  </span>
                 </span>
-                {r.escalated ? <span className="pill pill-bad">Escalated</span> : null}
-                <span className="dash-flags-duration">{r.duration}</span>
+                <span className="dash-flags-meta">
+                  {/* NOT "Sent to medical staff". `escalated` means the flag has
+                      gone 24 hours unacknowledged (screens/30-flags.md §55) —
+                      a timer, not a handover. Nothing routes it to anybody, and
+                      a pill saying otherwise would be a false claim on the card
+                      a medic reads first. */}
+                  {r.escalated ? <span className="pill pill-bad">Unacknowledged 24h+</span> : null}
+                  <span className="dash-flags-duration">{r.unreviewed}</span>
+                </span>
                 <span className="dash-flags-chevron" data-open={isOpen} aria-hidden="true">
-                  ⌄
+                  ›
                 </span>
               </button>
 

@@ -56,6 +56,8 @@ export type AttentionRow = {
   value: string;
   baseline: string;
   duration: string;
+  /** The same age phrased as what has not happened — see unreviewedLabel(). */
+  unreviewed: string;
   /** The same age in the compact form a table column wants — see
    *  durationShortLabel(). */
   durationShort: string;
@@ -168,6 +170,30 @@ function durationLabel(flagDate: string, wallClockToday: string): string {
   if (age === 0) return 'raised today';
   if (age === 1) return 'open since yesterday';
   return `open ${age} days`;
+}
+
+/** The same age again, phrased as what has NOT happened to the flag.
+ *
+ *  Added 2026-09-07 with the dashboard card redesign, which asks the row to say
+ *  "unreviewed for 21 days" rather than "open 21 days" — a sharper sentence,
+ *  because a flag nobody has looked at for three weeks is the actual problem
+ *  and "open" does not say that.
+ *
+ *  IT IS A SIBLING OF durationLabel AND NOT A FORMAT STRING, and the three
+ *  cases that are not "N days" are the reason. `unreviewed for ${age} days`
+ *  would render "unreviewed for 0 days" the morning a flag is raised, "1 days"
+ *  the day after, and — for a flag dated ahead of the wall clock — "unreviewed
+ *  for -3 days". That last one is not hypothetical here: durationLabel carries
+ *  the same guard because audit finding S2 caught flags dated the 6th labelled
+ *  "raised this morning" on a dashboard whose today was the 5th, and this data
+ *  genuinely holds future-dated rows. A flag from the future has not been
+ *  unreviewed for anything; it names its date instead. */
+export function unreviewedLabel(flagDate: string, wallClockToday: string): string {
+  const age = daysBetween(flagDate, wallClockToday);
+  if (age < 0) return `dated ${flagDate}`;
+  if (age === 0) return 'raised today';
+  if (age === 1) return 'unreviewed for 1 day';
+  return `unreviewed for ${age} days`;
 }
 
 /** The same age, as a table cell. "open 21 days" is a phrase, and a phrase in
@@ -321,6 +347,7 @@ export async function fetchDashboardAttention(
           ? ''
           : `${formatNumber(f.expected_value, copy.decimals)}${copy.unit}`,
       duration: durationLabel(f.flag_date, wallClockToday),
+      unreviewed: unreviewedLabel(f.flag_date, wallClockToday),
       durationShort: durationShortLabel(f.flag_date, wallClockToday),
       flags: athleteFlags.map((af) => {
         const c2 = metricCopy(af.metric);

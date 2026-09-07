@@ -4839,10 +4839,18 @@ img.av {
    card on the dashboard that names problems — and each athlete row expands in
    place onto the flags behind it, rather than sending a coach to a profile to
    find out why the row exists. */
+/* REDESIGNED 2026-09-07. The spec gave literal colours — #f2c1ba for this
+   border, #fce8e5/#8a2f22 and #fdf1dc/#8a6a12 for the pills, #f6d9d5 for the
+   escalated one. They are not hard-coded here: CLAUDE.md says to style through
+   the tokens, and .pill-bad/.pill-warn already express exactly those pairs via
+   --bad-rgb / --bad-pill-text / --pill-fill-alpha-bad. The literals were that
+   system re-specified rather than a new palette, so they map onto it and stay
+   correct in dark mode, which fixed hexes would not. */
 .dash-flags-panel {
   border: 1px solid rgb(var(--bad-rgb) / 0.4);
-  border-radius: var(--r-card);
+  border-radius: 10px;
   background: var(--surf);
+  box-shadow: 0 1px 3px rgb(16 18 23 / 0.08);
   overflow: hidden;
   margin-bottom: 14px;
 }
@@ -4861,10 +4869,9 @@ img.av {
 .dash-flags-head {
   display: flex;
   align-items: center;
-  gap: 9px;
-  flex-wrap: wrap;
+  gap: 14px;
   width: 100%;
-  padding: 13px 18px;
+  padding: 18px 20px;
   background: none;
   border: 0;
   text-align: left;
@@ -4884,6 +4891,41 @@ img.av {
   outline: 2px solid var(--focus);
   outline-offset: -2px;
 }
+/* The icon in a tinted badge rather than loose in the row. Same flag glyph. */
+.dash-flags-badge {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 9px;
+  background: rgb(var(--bad-rgb) / var(--pill-fill-alpha-bad));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dash-flags-headtext {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.dash-flags-headline {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.dash-flags-pills {
+  display: flex;
+  gap: 8px;
+  margin-top: 5px;
+}
+/* Pushed right by the text block's own growth rather than a margin on itself,
+   so it stays on the first line's optical row at every width. */
+.dash-flags-head-scope {
+  margin-left: auto;
+  flex: none;
+  font-size: 13px;
+  color: var(--faint);
+  white-space: nowrap;
+}
 .dash-flags-head-chevron {
   font-size: 13px;
   line-height: 1;
@@ -4895,23 +4937,26 @@ img.av {
   transform: rotate(180deg);
 }
 .dash-flags-head .ic {
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
   flex: none;
   color: var(--bad-text);
 }
 .dash-flags-count {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
 .dash-flags-word {
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 700;
 }
+/* Third line of the header block now, not a right-aligned scrap: it is the
+   sentence that says how much of the count nobody has looked at. */
 .dash-flags-head-meta {
-  margin-left: auto;
-  font-size: 11.5px;
+  margin-top: 6px;
+  font-size: 13px;
   color: var(--faint);
   font-variant-numeric: tabular-nums;
 }
@@ -4923,24 +4968,30 @@ img.av {
   flex-direction: column;
   border-top: 1px solid var(--border);
 }
+/* The severity bar is the row's own left edge now, replacing the 8px dot. The
+   three tiers keep their tokens exactly — a low flag still reads as low. */
 .dash-flags-item {
   border-bottom: 1px solid var(--hair);
+  border-left: 3px solid transparent;
 }
+.dash-flags-item[data-severity='high'] { border-left-color: var(--bad); }
+.dash-flags-item[data-severity='medium'] { border-left-color: var(--warn); }
+.dash-flags-item[data-severity='low'] { border-left-color: var(--domain-recovery); }
 .dash-flags-item[data-open='true'] {
   background: rgb(var(--accent-rgb) / 0.05);
 }
+/* FLEX WITH THREE CHILDREN, not the old seven-track grid. That grid existed
+   because the row was one line of seven things and the tracks had to be counted
+   exactly — its own comment records the chevron falling into an implicit track
+   and clipping "open 20 days" to nothing. The row is now two blocks and a
+   chevron, each managing its own stacking, so there is nothing left to
+   miscount. */
 .dash-flags-row {
-  display: grid;
-  /* SEVEN tracks for seven children: dot, name, position, what, pill,
-     duration, chevron. It had six, so the chevron fell into an implicit
-     track and the duration was squeezed into the 16px one meant for the
-     chevron — 16px of box for 81px of text, clipping "open 20 days" to
-     nothing on every row. */
-  grid-template-columns: 10px auto auto minmax(0, 1fr) auto auto 16px;
-  gap: 12px;
-  align-items: center;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
   width: 100%;
-  padding: 12px 18px;
+  padding: 16px 20px 16px 17px;
   border: none;
   background: none;
   font-family: inherit;
@@ -4951,47 +5002,68 @@ img.av {
 .dash-flags-row:hover {
   background: rgb(var(--accent-rgb) / 0.08);
 }
-.dash-flags-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex: none;
+/* .dash-flags-dot is gone: the severity it carried is the row's left border
+   now (.dash-flags-item[data-severity]), so the same three tokens say the same
+   three things without an 8px circle competing with the name beside it. */
+.dash-flags-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
 }
-.dash-flags-dot[data-severity='high'] { background: var(--bad); }
-.dash-flags-dot[data-severity='medium'] { background: var(--warn); }
-.dash-flags-dot[data-severity='low'] { background: var(--domain-recovery); }
+.dash-flags-nameline {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
 .dash-flags-name {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
   white-space: nowrap;
 }
 .dash-flags-position {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--faint);
   white-space: nowrap;
 }
+/* Its own line now, so it wraps instead of being ellipsised. The old row put
+   it in a 1fr track between the name and the pill and truncated the evidence
+   — the one part of the row that says WHY the flag fired. */
 .dash-flags-what {
-  font-size: 12.5px;
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 1.45;
   color: var(--muted);
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
+.dash-flags-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex: none;
+}
 .dash-flags-duration {
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--faint);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
+/* A right chevron now, not a rotating caret: the row opens downward but the
+   affordance sits beside a two-line block, where a caret reads as pointing at
+   the second line rather than at the row. */
 .dash-flags-chevron {
-  text-align: right;
+  flex: none;
+  font-size: 16px;
+  line-height: 1.4;
   color: var(--faint);
   transition: transform var(--t-state);
 }
 .dash-flags-chevron[data-open='true'] {
-  transform: rotate(180deg);
+  transform: rotate(90deg);
 }
 /* Indented to the dot, so the evidence reads as belonging to the row above
    rather than as a new list. */

@@ -325,6 +325,26 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   The original recommendation, which was followed, is kept below.
 
+- [ ] **THE OTHER HALF, never written down as its own item until now (2026-09-07): a FAILED sign-in leaves nothing durable either.** Needs a decision, not investigation.
+
+  **Not the same as the open finding further up.** That one says a failed sign-in records nothing in `login_attempts` on scratch, which is a bug — the limiter may not be running there at all. This is about what happens when `login_attempts` works exactly as designed, which on production it does.
+
+  **The design deletes the evidence, on purpose.** `login_attempt_record_result` **removes the row on success**. The table tracks a failure STREAK so the backoff can escalate, and clearing it on a good password is what stops yesterday's typo locking somebody out today. That is right for rate limiting and it means the table answers "is this account being brute-forced right now" and cannot answer "who tried and failed last month". There is no IP column either — the schema is `email, org_id, attempt_count, lock_count, locked_until, last_attempt_at, created_at` — so even mid-streak it does not record where the attempts came from.
+
+  So the sign-in trail is now durable and attributable in one direction only. `auth.signed_in` says who got in, from which address, on which browser. Nothing says who tried and did not, and a run of failures against a real account followed by a success is the shape of the thing somebody would actually want to find afterwards — and it is the half that currently vanishes.
+
+  **Recommendation, if it is wanted: `auth.sign_in_failed` in `audit_log`, beside the success.** The same table, the same dotted action convention, `clientAddress()` already resolving the caller in the same route. It costs one more write on a path that already writes one.
+
+  **But it does NOT fit the existing insert policy, and that is the whole difficulty.** `audit_authenticated_insert` is `org_id = auth_org_id() and actor_id = auth_user_id()`, and a failed sign-in has neither: there is no session, so `auth_org_id()` and `auth_user_id()` are null and the row is refused. Three ways out, and they are not equivalent:
+
+  * **Write it with the service role**, from the route, bypassing RLS. The route already holds `createAdminClient()` for the rate limiter, so nothing new is introduced. But it is the first row in this table written by something the policy does not check, which weakens a guarantee currently worth having.
+  * **A separate policy for anonymous inserts** restricted to `action = 'auth.sign_in_failed'` and a null actor. Narrow, checkable, and a policy on the one table whose job is being true — which is also the argument against, since it is the first policy that lets an unauthenticated caller write to it at all, and the caller controls how often.
+  * **A different table entirely**, `sign_in_failures`, with its own retention. Keeps `audit_log`'s guarantees untouched at the cost of a second place to look.
+
+  **Rate limiting is the real question underneath**, whichever is chosen: an unauthenticated writer means anybody can grow the table by failing to sign in. `login_attempts` already knows the streak, so writing only on a streak boundary — say the first failure and each lockout — records the shape of an attack without recording every keystroke of it.
+
+  **Not started, and deliberately not bundled with the sign-in-history work** — that item is closed, deployed and verified, and this needs a decision about the policy before any of it is buildable.
+
   **The gap, measured on production.** `auth.sessions` holds a row per LIVE session and nothing else. Over a 45-day window it took **372 inserts and 362 deletes**: roughly 97% of all sign-ins have already left no trace whatsoever, and the ten rows that survive are simply the ones not yet expired. `auth.audit_log_entries` would have been the durable record of sign-ins, sign-outs and token refreshes, and it has never received a single row on either project — that is a Supabase-side configuration question and not something this repository can fix.
 
   So the question "who signed in, and when" is answerable for about a week and unanswerable before that. That is precisely what could not be answered on 2026-09-07, when a single athlete sign-in had to be reconstructed from a surviving session row and the deployed route's source.

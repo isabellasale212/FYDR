@@ -1,8 +1,20 @@
 # Spec gaps: the work queue
 
 Stage B4. Where the code now differs from the agreed specification, ordered by
-risk, highest first. **No code has been changed.** This is a list of work, not a
-record of work done.
+risk, highest first.
+
+**This file is now BOTH a queue and a record, and the heading of each item says
+which.** It opened as a pure queue — "no code has been changed" was true when it
+was written, and stayed at the top of the file for days after it stopped being
+true. A reader who trusted that line read every item as outstanding, including
+the ones marked done further in. That is exactly how G-01 and G-02 came to be
+read as open on 2026-09-07, a day and a half after they shipped.
+
+**So read the heading, not the body.** An item whose heading carries FIXED,
+CLOSED, RESOLVED or WITHDRAWN is history: the body under it describes the world
+before the fix, deliberately, and a preserved original sits under an `a` suffix
+(G-02a and the rest). An item with a bare heading, or one marked OPEN or IN
+PROGRESS, is live work.
 
 **How risk is ranked here.** Security and data exposure first, then things that
 lose or corrupt data, then things that mislead a coach into a wrong decision, then
@@ -16,7 +28,28 @@ first, because clearing it costs less than leaving it.
 
 ## Band 1: data exposure
 
-### G-01. Injury information is visible to a role that must not see it
+### G-01. FIXED. The nutritionist is gated out of the injury screens
+
+Unblocked the moment G-02 landed, since the role it had to exclude then existed.
+
+`requireInjuryAccess` (`src/lib/session.ts:184`) redirects to `/?e=no-injury-access`
+unless the caller holds a role in `INJURY_ACCESS`, and `INJURY_ACCESS`
+(`src/lib/access.ts:120`) is sport scientist, coach, medic and S&C — the
+nutritionist is absent by construction rather than by a check somebody has to
+remember to write. The injuries list page imports that guard directly; the
+clinical record itself is medic-only and enforced in the database, not here.
+
+The nutritionist's one remaining sight of injury information is the censored
+Injury & availability report decided on 2026-09-06: body area, status,
+restrictions, expected return, never diagnosis. That is a decision, not this
+gap's leak.
+
+**Marked at the same time as G-02 and for the same reason** — its "cannot be
+done before G-02" note had been false since 2026-09-05.
+
+The original entry follows.
+
+### G-01a. As first written
 
 **Risk: HIGH.** The agreed model says the nutritionist sees no injury or medical
 information anywhere. Today a nutritionist holds the `coach` role and sees all of
@@ -40,7 +73,29 @@ moving its rule into the shared guard.
 **Decision D-01.** **This cannot be done before G-02**, because the role it must
 exclude does not exist yet.
 
-### G-02. The role model itself
+### G-02. FIXED, 2026-09-05, by migrations 0063, 0065 and 0066
+
+The five-role model is built and live. `0063_role_model_enum.sql` is headed
+"G-02 / D-07, part one of two" and does the enum: `medical` renamed to `medic`,
+`admin` renamed to `sport_scientist`, `strength_conditioning` and `nutritionist`
+added. RENAME rather than add-and-backfill because Postgres has no DROP VALUE,
+and the rename carries the existing rows with it. `0065_role_model_function_bodies.sql`
+follows with the function bodies and `0066_five_role_policies.sql` with the
+policies, split because Postgres refuses to use an enum value in the same
+transaction that added it.
+
+`src/lib/access.ts` now contains no occurrence of `'admin'` or `'medical'` at
+all, and is the single place role sets are defined — which is what G-41 and the
+access-gate guard were then able to enforce from.
+
+**This entry read as open until 2026-09-07**, a day and a half after the work
+shipped, which is how it was found: the four-role text below was still being
+read as current. Every G-item that depends on it (G-01 first) was blocked by a
+line that had stopped being true.
+
+The original entry follows.
+
+### G-02a. As first written
 
 **Risk: HIGH**, because every other access gap depends on it and because a partial
 implementation can silently open access.

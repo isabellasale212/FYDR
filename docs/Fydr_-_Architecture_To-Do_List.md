@@ -49,7 +49,7 @@
 - [x] Confirm `coachkitstudio <isale4567@gmail.com>` is your own account/session — confirmed. Deployment history under your personal Vercel account (`isabellasale212@gmail.com`, confirmed as your own email) shows the same identity across the last 20 production deploys, all `READY`, most recent from today. Two independent systems agreeing, plus your own confirmation.
 
 ## 0b. Urgent, found while reading the raw files (2026-09-04) — not waiting on any product decision
-- [ ] **MOST URGENT OF THE THREE AUDIT GAPS. `auth.sessions.ip` no longer records the signer — it records Vercel (found 2026-09-07).** Ahead of the two below on purpose: those are MISSING data, and missing data announces itself. This is MISLEADING data. Every production login since the switch to server-side sign-in carries an IP address that looks like an ordinary record of where somebody signed in from, and means nothing.
+- [x] **RESOLVED 2026-09-07, verified on production. `auth.sessions.ip` no longer records the signer — it records Vercel (found 2026-09-07).** Ahead of the two below on purpose: those are MISSING data, and missing data announces itself. This is MISLEADING data. Every production login since the switch to server-side sign-in carries an IP address that looks like an ordinary record of where somebody signed in from, and means nothing.
 
   The cause is not a bug, it is a side effect of a deliberate change. Login moved out of the browser and into `POST /auth/sign-in` so that an unforgeable attempt count could exist for rate limiting (that route's own header states it: "LoginForm.tsx used to call it directly from the browser"). Supabase therefore sees the Vercel serverless function, not the visitor: the recorded IP is the function's, the user agent is `node`, and the Referer is the site's own origin.
 
@@ -84,12 +84,18 @@
   does not parse as an IP literal is discarded. When nothing survives, nothing
   is forwarded and the behaviour is exactly what it is today.
 
-  **Not yet verified end to end**, and this is the honest gap: the password
-  sign-in path could not be exercised, because doing so means handling a real
-  credential. Everything up to it is verified — the header selection by unit
-  test, and the recording by creating real sessions on scratch through the same
-  client the route builds. After deploy, one real sign-in and one look at
-  `auth.sessions.ip` closes it.
+  **CLOSED. A real password sign-in on fydr.app at 16:04 on 2026-09-07 recorded
+  `90.210.217.210` and a Mozilla user agent.** Every session before it reads
+  `node`, across four distinct addresses — the symptom this item described,
+  visible one line above the fix in `scripts/verify-audit-trail.mjs`'s output.
+
+  **A second route was missed on the first pass and is also fixed.**
+  `/auth/confirm` creates sessions server-side too, so every invite acceptance,
+  password reset and magic-link sign-in was still recording the function — and
+  an invite acceptance is the FIRST session a new club's account ever has. Found
+  by writing the verification script rather than by review. The test now sweeps
+  for routes calling verifyOtp / signInWithPassword / exchangeCodeForSession
+  instead of listing the ones known at the time.
 
 - [ ] **A failed sign-in records nothing in `login_attempts` on scratch (found 2026-09-07).** Noticed while smoke-testing the sign-in route for audit item 1, and confirmed NOT to be caused by that change: with the change stashed, a POST to `/auth/sign-in` with a wrong password returns 401 with the right message and leaves `login_attempts` at zero rows, exactly as it does with the change applied. So this is pre-existing.
 
@@ -99,7 +105,7 @@
 
   Not investigated further on purpose: found mid-way through audit item 1, which was being worked one at a time.
 
-- [ ] **HIGH PRIORITY. Injury creation and availability changes write nothing to `audit_log` (found 2026-09-07).** Proven on production during an incident review, not inferred: an injury and an availability row were created on production at 12:10:44 and 12:10:59 on 2026-09-07, and `audit_log` held **no user actions at all** for that day — six rows, every one an overnight job (compliance expectations 02:05, retention preview 03:15, thresholds evaluated 04:30, each twice, once per org). There was no actor, no role, no IP and no origin recorded for either write.
+- [x] **RESOLVED for three tables 2026-09-07, verified on production; widening is the remaining work. Injury creation and availability changes write nothing to `audit_log` (found 2026-09-07).** Proven on production during an incident review, not inferred: an injury and an availability row were created on production at 12:10:44 and 12:10:59 on 2026-09-07, and `audit_log` held **no user actions at all** for that day — six rows, every one an overnight job (compliance expectations 02:05, retention preview 03:15, thresholds evaluated 04:30, each twice, once per org). There was no actor, no role, no IP and no origin recorded for either write.
 
   Why it matters more than the missing rows did: those two writes could not be attributed to a client. The account was known from `reported_by`, but nothing recorded WHERE the write came from, and at that moment a dev server on localhost was pointed at production while the deployed app was also live — so the same credentials worked from two places and the log could not tell them apart. An injury is exactly the record this table exists to cover: `audit_log` already carries actor, role at time of action, entity, athlete, metadata and IP, and it is what a club would be asked for if a clinical record were ever disputed.
 
@@ -144,6 +150,23 @@
   Verified against scratch through RLS, 16 pgTAP assertions plus 17 in
   TypeScript. The deletion caveat in the paragraph above still stands unchanged:
   a superuser connection bypasses triggers as completely as it bypassed the app.
+
+  **CLOSED ON PRODUCTION 2026-09-07.** Creating one injury as the medic
+  r.callaghan produced FOUR audit rows at 16:09, which is the useful part:
+  `injuries.insert`, `availability.update` (closing the standing row),
+  `availability.insert` (opening the new one) and `injury_clinical.insert`.
+  One clinical action is four writes, and it is the exact shape of the incident
+  that prompted this item — an injury and an availability row seconds apart,
+  which at the time left nothing at all. All four carry actor, role medic, the
+  athlete and the real client address; the disclosure check confirmed no
+  clinical value reached the metadata.
+
+  **REMAINING: widen by table.** The pattern is proved, so this is now
+  mechanical — attach `audit_row_change()` to the next set and extend
+  430_audit_triggers_test.sql. The sweep's own table list is the queue, and the
+  highest-value next ones are the write paths a club would be asked about:
+  `athletes`, `athlete_consents`, `body_composition`, `test_results`,
+  `programme_assignments`, `team_allocations`, `user_roles`.
 
 - [ ] **HIGH PRIORITY, and a SECOND, DIFFERENT blindness from the `audit_log` item above: Supabase's own `auth.audit_log_entries` is empty (found 2026-09-07).** Measured on both projects on the same day: production has **0** rows in `auth.audit_log_entries` against 11 rows in `auth.sessions` and 46 in `auth.users`; scratch has **0** against 6 sessions and 44 users. So it is not something about production, and it is not that nobody has signed in — sessions are being created and recorded, and the auth audit table beside them is not.
 

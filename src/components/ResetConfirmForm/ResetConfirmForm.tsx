@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { PasswordField } from '@/components/PasswordField/PasswordField';
+import { reportSignIn } from '@/lib/signInAudit';
 
 /** Same rule and copy as ChangePasswordForm — the app's one password standard.
  *  12, matching docs/09-security-and-compliance.md §8 (audit: was 10). */
@@ -76,7 +77,17 @@ export function ResetConfirmForm() {
 
   useEffect(() => {
     let cancelled = false;
-    establishRef.current ??= establishRecoverySession();
+    /* Chained onto the ref rather than onto the effect, so the report fires
+       exactly once: establishRef is assigned once, so this .then is built once,
+       and React strict-mode's double effect attaches only the setPhase handler
+       below a second time. A reset that reaches 'ready' IS a sign-in — the
+       session exists whether or not a new password is then chosen — and it is
+       the one sign-in flow that never passes through a server route, so
+       without this it is the account-takeover path with no record. */
+    establishRef.current ??= establishRecoverySession().then((result) => {
+      if (result === 'ready') reportSignIn('recovery');
+      return result;
+    });
     void establishRef.current.then((result) => {
       if (!cancelled) setPhase(result);
     });

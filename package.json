@@ -5,7 +5,7 @@
   "description": "Fydr, athlete performance management. Phase 1a thin slice: staff web and athlete mobile web.",
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run check:env-files && npm run test:env-guard && npm run check:surface-tokens && npm run check:control-radius && npm run test:access-gates && npm run check:policy-replacements && npm run test:policy-guard",
+    "prebuild": "npm run check:env-files && npm run test:env-guard && npm run check:surface-tokens && npm run check:control-radius && npm run test:access-gates && npm run check:policy-replacements && npm run test:policy-guard && npm run test:sign-in-audit",
     "build": "next build",
     "start": "next start",
     "deploy": "npx --yes vercel@59.11.0 deploy --prod",
@@ -68,7 +68,8 @@
     "test:policy-guard": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-policy-replacement-guard.ts",
     "test:access-gates": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-access-gates.ts",
     "test:report-visibility": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-report-visibility.ts",
-    "seed:staff-account": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/seed-staff-account.ts"
+    "seed:staff-account": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/seed-staff-account.ts",
+    "test:sign-in-audit": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-sign-in-audit.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.5.1",

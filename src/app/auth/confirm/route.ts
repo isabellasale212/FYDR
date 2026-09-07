@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import type { EmailOtpType } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import { forwardedIdentityHeaders } from '@/lib/clientAddress';
+import { claimsFromSession, sessionIdFromAccessToken } from '@/lib/supabase/claims';
+import { recordSignIn } from '@/lib/signInAudit';
 
 /** Where an invite link lands, build handoff step 2.
  *
@@ -54,10 +56,25 @@ export async function GET(request: Request): Promise<NextResponse> {
      acceptance, password reset and magic-link sign-in comes through here, and
      an invite acceptance is the FIRST session a new club's account ever has. */
   const supabase = await createClient(forwardedIdentityHeaders(request.headers));
-  const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
+  const { data, error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
 
   if (error) {
     return NextResponse.redirect(new URL('/login?e=invite-link', url.origin));
+  }
+
+  /* The durable record, as on /auth/sign-in. `type` is carried into the row's
+     metadata rather than flattened, because an INVITE ACCEPTANCE is the first
+     session a new club's account ever has and is worth telling apart from an
+     ordinary sign-in when somebody reads the log back. */
+  const claims = claimsFromSession(data.session);
+  if (claims) {
+    await recordSignIn(
+      supabase,
+      claims,
+      request.headers,
+      type,
+      sessionIdFromAccessToken(data.session?.access_token),
+    );
   }
 
   return NextResponse.redirect(new URL(next, url.origin));

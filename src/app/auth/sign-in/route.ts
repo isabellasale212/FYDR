@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { forwardedIdentityHeaders } from '@/lib/clientAddress';
+import { claimsFromSession, sessionIdFromAccessToken } from '@/lib/supabase/claims';
+import { recordSignIn } from '@/lib/signInAudit';
 
 /** login-security checklist item 4: /login has no rate limiting.
  *  09-security-and-compliance.md §8.1 / §9.4: exponential backoff after 5 failed
@@ -117,7 +119,7 @@ export async function POST(request: Request): Promise<NextResponse<SignInResult>
      finds nothing trustworthy this is an empty object and the behaviour is
      exactly what it is today. */
   const supabase = await createClient(forwardedIdentityHeaders(request.headers));
-  const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+  const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
   let record: { is_locked: boolean; locked_until: string; seconds_remaining: number } | undefined;
   if (admin) {
@@ -141,6 +143,22 @@ export async function POST(request: Request): Promise<NextResponse<SignInResult>
   }
 
   if (!signInError) {
+    /* THE DURABLE RECORD. auth.sessions holds live sessions only — 372 inserts
+       against 362 deletes over 45 days on production — so without this row,
+       97% of sign-ins leave no trace and "who signed in, and when" is
+       answerable for about a week. recordSignIn never throws: a logging
+       failure must not become an authentication outage, the same promise the
+       rate limiter above already makes. */
+    const claims = claimsFromSession(signInData.session);
+    if (claims) {
+      await recordSignIn(
+        supabase,
+        claims,
+        request.headers,
+        'password',
+        sessionIdFromAccessToken(signInData.session?.access_token),
+      );
+    }
     return NextResponse.json({ ok: true });
   }
 

@@ -62,6 +62,13 @@ export function ChangePasswordForm() {
       return;
     }
 
+    // sign-in-audit-exempt: re-authentication of somebody already signed in, to
+    // prove they know the current password before it is changed. It creates a
+    // session, which is why the sweep finds it, but it is not a sign-in event:
+    // recording it would put a second 'auth.signed_in' in the log for a person
+    // who never left, and reading that back as two sign-ins would be wrong.
+    // The password CHANGE that follows is the auditable act here, and if that
+    // wants a row it is a different action with a different name.
     const { error: reauthError } = await supabase.auth.signInWithPassword({
       email: user.email,
       password: current,

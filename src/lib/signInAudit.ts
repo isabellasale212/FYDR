@@ -1,0 +1,170 @@
+import { actingRole } from '@/lib/access';
+import { clientAddress, clientUserAgent } from '@/lib/clientAddress';
+import type { FydrClaims } from '@/lib/supabase/claims';
+import type { AppRole } from '@/lib/types/database';
+
+/** A durable record of a successful sign-in.
+ *
+ *  WHY THE APPLICATION WRITES THIS AND NOT A TRIGGER. Ten tables are audited by
+ *  trigger (0085, 0086) precisely because an application-level write is
+ *  self-reported: the client chooses the action, the metadata, and whether to
+ *  write at all. The same objection applies here and it is not answered — it is
+ *  accepted, because there is nothing better to hook. `auth.sessions` lives in
+ *  Supabase's own schema, outside the migration history they manage, and a
+ *  trigger there is the kind of thing that survives until it silently does not
+ *  across a platform upgrade. This is the honest second-best.
+ *
+ *  WHAT IT REPLACES: nothing, which is the point. `auth.sessions` holds only
+ *  LIVE sessions — 372 inserts against 362 deletes over 45 days on production —
+ *  so roughly 97% of sign-ins have already left no trace, and
+ *  `auth.audit_log_entries` has never taken a row on either project. The
+ *  question "who signed in, and when" was answerable for about a week.
+ *
+ *  WHY `audit_log` AND NOT A NEW TABLE. That table already records reads as
+ *  well as writes — `injury_clinical.read`, `report.athlete.view` — so it is
+ *  the "who did what" trail rather than a write log, and a sign-in belongs
+ *  beside the actions it made possible. It is already append-only (0007's three
+ *  triggers refuse UPDATE, DELETE and TRUNCATE), already read by a real screen
+ *  (`lib/queries/auditLog.ts`), and already carries actor, role, IP and org. A
+ *  second table would rebuild all of that and add a second place to look. */
+
+export const SIGN_IN_ACTION = 'auth.signed_in';
+export const SIGN_IN_ENTITY = 'session';
+
+/** How the session came to exist. `password` is the sign-in form; the rest are
+ *  GoTrue's own OTP types, passed through from /auth/confirm, so an invite
+ *  acceptance is distinguishable from an ordinary sign-in without a second
+ *  action name. */
+export type SignInMethod = 'password' | string;
+
+export type SignInAuditRow = {
+  org_id: string;
+  actor_id: string;
+  actor_role: AppRole;
+  action: string;
+  entity_type: string;
+  entity_id: string | null;
+  metadata: Record<string, unknown>;
+  ip_address: string | null;
+};
+
+/** The minimum of a Supabase client this needs, written structurally so the
+ *  tests can drive it with a stub and so a caller cannot accidentally hand it
+ *  the admin client.
+ *
+ *  `PromiseLike` and not `Promise`: PostgREST's `.insert()` returns a builder
+ *  that is thenable but has no `catch`/`finally`, so a `Promise` return type
+ *  refuses the real client while happily accepting the test stubs — a shape
+ *  that typechecks against everything except production. */
+type AuditWriter = {
+  from: (table: string) => { insert: (row: SignInAuditRow) => PromiseLike<{ error: unknown } | void> };
+};
+
+/**
+ * The row, or null if it is one the database would refuse.
+ *
+ * THE REFUSAL IS THE INTERESTING HALF. `audit_log`'s insert policy is
+ *
+ *     with check (org_id = auth_org_id() and actor_id = auth_user_id())
+ *
+ * and `org_id = auth_org_id()` evaluates to NULL — so, not true — when org_id
+ * is null. The column is nullable and 0007's comment explains why ("a platform
+ * support access or a failed sign in has no organisation yet"), but the policy
+ * cannot accept the null the column allows.
+ *
+ * So a claimless or org-less sign-in is refused HERE rather than sent and lost.
+ * The caller fails open, which means a 42501 from PostgREST would be swallowed
+ * and look exactly like a successful write. Refusing in our own code is what
+ * keeps the log's silence honest: no row means no row was attempted.
+ */
+export function signInAuditRow(
+  claims: FydrClaims,
+  headers: Headers,
+  method: SignInMethod,
+  sessionId: string | null = null,
+): SignInAuditRow | null {
+  if (!claims.userId || !claims.orgId) return null;
+
+  const userAgent = clientUserAgent(headers);
+
+  return {
+    org_id: claims.orgId,
+    actor_id: claims.userId,
+    /* actingRole falls back to 'athlete' when none of the five staff roles
+       matches. Its own comment says that case "can only be an athlete, and an
+       athlete cannot reach any caller of this" — true until this file, since
+       athletes sign in and most sign-ins are theirs. The fallback is
+       load-bearing here, not defensive. */
+    actor_role: actingRole(claims.roles),
+    action: SIGN_IN_ACTION,
+    entity_type: SIGN_IN_ENTITY,
+    entity_id: sessionId,
+    metadata: {
+      method,
+      ...(userAgent ? { user_agent: userAgent } : {}),
+    },
+    ip_address: clientAddress(headers),
+  };
+}
+
+/**
+ * Write it, and never let failing to write it cost somebody their sign-in.
+ *
+ * The sign-in route already degrades to "not currently rate limited" rather
+ * than "nobody can sign in" when the rate limiter is unreachable, and this gets
+ * the same treatment for the same reason: logging infrastructure failing must
+ * not become an authentication outage. Logged to the console so a real outage
+ * is still visible rather than merely survivable.
+ */
+export async function recordSignIn(
+  db: AuditWriter,
+  claims: FydrClaims,
+  headers: Headers,
+  method: SignInMethod,
+  sessionId: string | null = null,
+): Promise<void> {
+  const row = signInAuditRow(claims, headers, method, sessionId);
+  if (!row) {
+    console.error('sign-in audit skipped: no org or actor in the fresh session claims', {
+      hasUser: Boolean(claims.userId),
+      hasOrg: Boolean(claims.orgId),
+      method,
+    });
+    return;
+  }
+
+  try {
+    const result = await db.from('audit_log').insert(row);
+    const error = result && typeof result === 'object' && 'error' in result ? result.error : null;
+    if (error) throw error;
+  } catch (err) {
+    console.error('sign-in audit write failed, sign-in itself unaffected', err);
+  }
+}
+
+/**
+ * The browser's half: ask the server to record a sign-in that happened here.
+ *
+ * WHY A ROUND TRIP RATHER THAN WRITING FROM THE BROWSER. The password reset
+ * establishes its session client-side — PKCE, `exchangeCodeForSession`, often
+ * already exchanged by the SDK's own URL detection before any of our code runs
+ * — so there is no server route to hang the write on. The browser COULD insert
+ * the row itself, holding a valid session and passing the RLS policy. It would
+ * be the one row in this table with a null address, because a page cannot know
+ * its own public IP; the server reading `x-forwarded-for` can. An unattributed
+ * sign-in row is most of the way to no sign-in row.
+ *
+ * Fire and forget, and deliberately so: this is called on a screen somebody is
+ * about to type a new password into, and it must not block, fail it, or show
+ * anything. A lost row here is the same fail-open trade the server side makes.
+ */
+export function reportSignIn(method: SignInMethod): void {
+  void fetch('/auth/record-sign-in', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ method }),
+    keepalive: true,
+  }).catch(() => {
+    /* Fail open. See recordSignIn. */
+  });
+}

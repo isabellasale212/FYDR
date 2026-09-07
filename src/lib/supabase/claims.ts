@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Session, SupabaseClient } from '@supabase/supabase-js';
 import type { AppRole, Database } from '@/lib/types/database';
 
 /* The claims the custom access token hook writes into every JWT.
@@ -106,6 +106,49 @@ export async function getClaims(
     athleteId: asString(fromToken.athlete_id) ?? asString(fromUser.athlete_id),
     roles,
   };
+}
+
+/**
+ * The same claims, read from a session the auth server has just issued rather
+ * than from a cookie that arrived with a request.
+ *
+ * WHY THIS SKIPS `getUser()` AND `getClaims` DOES NOT. getClaims is handed a
+ * session cookie by a visitor and cannot trust it, so it round-trips to the
+ * auth server before reading a single claim. The two callers here are the
+ * sign-in and confirm routes, holding the session object that
+ * `signInWithPassword` / `verifyOtp` just returned — the authenticating call
+ * has already happened, one line earlier, and this is its answer. A second
+ * round trip would authenticate the same token twice and put a network hop on
+ * the sign-in path for nothing.
+ *
+ * Never call this on a session that came from anywhere but a just-resolved
+ * auth call.
+ */
+export function claimsFromSession(session: Session | null | undefined): FydrClaims | null {
+  const user = session?.user;
+  if (!user) return null;
+
+  const fromToken = session?.access_token
+    ? readAppMetadata(decodePayload(session.access_token))
+    : {};
+  const fromUser = readAppMetadata(user);
+
+  return {
+    userId: user.id,
+    email: user.email ?? null,
+    orgId: asString(fromToken.org_id) ?? asString(fromUser.org_id),
+    athleteId: asString(fromToken.athlete_id) ?? asString(fromUser.athlete_id),
+    roles: asRoles(fromToken.roles ?? fromUser.roles),
+  };
+}
+
+/** GoTrue's own id for the session, from the `session_id` claim every access
+ *  token carries. Recorded as the audit row's entity_id so a durable sign-in
+ *  row can be joined back to `auth.sessions` for as long as that row survives
+ *  — which is the point: the join stops working, the audit row does not. */
+export function sessionIdFromAccessToken(accessToken: string | null | undefined): string | null {
+  if (!accessToken) return null;
+  return asString(decodePayload(accessToken)?.session_id);
 }
 
 /** Staff is every role that is not the athlete, docs/access-matrix.md §1.

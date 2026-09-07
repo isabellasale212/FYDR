@@ -43,6 +43,41 @@ references, and stays where it is.
 
 ---
 
+## 0.06 The athlete app has its own specification, and one shared metrics registry
+
+**The athlete app is responsive web, not iOS.** `docs/athlete/generated/00-build-state.md`
+establishes it and re-verified it on 2026-09-07. There is no Xcode project, no
+Swift, no React Native and no Expo anywhere. Do not write native code or specify
+native behaviour as though a shell exists.
+
+| Document | What it is for |
+|---|---|
+| `docs/athlete/screens/NN-*.md` | One file per athlete screen, eighteen of them. **Read the relevant one before changing any athlete app screen.** |
+| `docs/athlete/visibility.md` | **Read before changing anything an athlete can read about themselves or a teammate.** |
+| `docs/metrics.md` | **Shared by both apps.** Every entry carries a `Surfaces` field. |
+| `docs/metrics-parity.md` | Every metric both apps show, and confirmation they compute the same way. |
+| `docs/athlete/decisions-required.md` | Open decisions. Do not settle one silently. |
+| `docs/athlete/spec-gaps.md` | The athlete gap queue, ordered by risk. |
+
+**Never define a metric in one app that the other already defines differently.**
+Changing a formula means updating the registry entry AND re-checking
+`docs/metrics-parity.md` in the same commit. An athlete and a coach looking at the
+same quantity must see the same number under the same name, or the athlete stops
+believing the app.
+
+**Any change to displayed behaviour, a formula, an input field or its wording, or
+a permission updates the corresponding spec file in the same commit.** Wording
+counts: the wording of a wellness question changes what the answer means.
+
+**If a request conflicts with the athlete specification, stop and say so.** Ask
+whether to change the specification or drop the request. Do not quietly do both.
+
+Two commands: `/spec-drift-athlete` reads the code against the athlete
+specification and reports differences. `/spec-export-athlete` regenerates the Word
+document.
+
+---
+
 ## 0.1 The specification is binding
 
 `docs/screens/`, `docs/metrics.md` and `docs/access-matrix.md` define what this

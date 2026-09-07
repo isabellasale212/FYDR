@@ -31,6 +31,8 @@ every window below is measured in the club's own local days.
 
 **Name on screen.** Readiness score. Sometimes just Readiness.
 
+**Surfaces.** Both, staff app and athlete app.
+
 **What it means, in plain English.** How ready an athlete says they feel today,
 on a scale of 0 to 100. It comes entirely from the athlete's own morning
 check-in. It is not a medical judgement and it is not measured by any device: it
@@ -86,6 +88,8 @@ way, and only Analytics uses it. See below.
 **Name on screen.** Readiness. It is **not** labelled differently anywhere,
 which is the problem this entry records.
 
+**Surfaces.** Staff app only.
+
 **What it means, in plain English.** The same five self-ratings as MET-001, but
 with one strict difference: **if the athlete skipped even one of the five, this
 version reports nothing at all for that day.** MET-001 would have given a score.
@@ -131,6 +135,8 @@ numbers and concludes one is broken? Recorded as **decision D-22**.
 
 **Name on screen.** Sleep hours.
 
+**Surfaces.** Both, staff app and athlete app.
+
 **What it means.** How many hours the athlete says they slept, from the same
 morning check-in. Their own estimate, not a device reading.
 
@@ -160,6 +166,8 @@ a readiness score for a day and no sleep figure at all
 
 **Name on screen.** Soreness.
 
+**Surfaces.** Both, staff app and athlete app.
+
 **What it means.** How sore the athlete reports feeling, from 1 to 5. **5 means
 least sore**, in common with the other four scales, so a high number is always
 good anywhere in Fydr.
@@ -185,6 +193,8 @@ every chart points one way" (`supabase/migrations/0004_athlete_entries.sql:25`).
 
 **Name on screen.** Body mass, or Weight.
 
+**Surfaces.** Both, staff app and athlete app.
+
 **What it means.** The athlete's weight in kilograms, recorded on the check-in.
 
 **Exact calculation.** None, recorded as entered.
@@ -209,6 +219,8 @@ rather than an access rule.
 
 **Name on screen.** Usually unlabelled: it is the shaded band behind a wellness
 chart.
+
+**Surfaces.** Both, staff app and athlete app.
 
 **What it means.** The athlete's own normal range, drawn behind their daily
 figures, so a coach can see whether today is unusual **for that athlete** rather
@@ -252,6 +264,8 @@ Both are currently 14. Recorded as **decision D-13**.
 
 **Name on screen.** Session load. Sometimes just Load.
 
+**Surfaces.** Both, staff app and athlete app. **UNVERIFIED which athlete screen renders it; the inputs are read by athlete screens.**
+
 **What it means.** How hard a single session was for one athlete, as one number.
 It combines how hard the athlete said it felt with how long it lasted, so an
 easy long session and a hard short one can be compared.
@@ -291,6 +305,8 @@ a database trigger.
 
 **Name on screen.** Acute load, or "this week".
 
+**Surfaces.** Staff app only.
+
 **What it means.** How much work an athlete has done in the last seven days,
 added up.
 
@@ -315,6 +331,8 @@ whether this is shown at all.
 ## MET-009. Chronic load
 
 **Name on screen.** Chronic load, or "typical week".
+
+**Surfaces.** Staff app only.
 
 **What it means.** What a normal week looks like for this athlete, worked out
 from the last four weeks. It is the yardstick the current week gets measured
@@ -344,6 +362,8 @@ chronic load = (total load over 28 days) / 4
 ## MET-010. Acute to chronic load ratio
 
 **Name on screen.** Acute:chronic load ratio. Often shortened to ACWR.
+
+**Surfaces.** Staff app only.
 
 **What it means.** This week's work divided by a typical week's work. Around 1.0
 means this week is normal for that athlete. Well above 1.0 means a sudden jump
@@ -386,6 +406,8 @@ that table rather than assume 0.8 to 1.5.
 
 **Name on screen.** Sessions attended.
 
+**Surfaces.** Staff app only.
+
 **What it means.** How many sessions the athlete was actually present for.
 
 **Exact calculation.** A count of attendance rows for the athlete in the chosen
@@ -411,6 +433,8 @@ a rankable metric at `:72`.
 
 **Name on screen.** Wellness in. Also "Wellness, today" on the outstanding
 entries card.
+
+**Surfaces.** Staff app only.
 
 **What it means.** What share of the athletes who were expected to complete a
 check-in actually did. It answers "how much of today's picture do I actually
@@ -455,6 +479,8 @@ names can never disagree (`src/lib/queries/dashboard.ts:255`).
 **Name on screen.** Fit and available, Doubtful, Ruled out. Shown as three rows
 and a single stacked bar.
 
+**Surfaces.** Staff app only.
+
 **What it means.** How many of the squad can train and play fully, how many are
 carrying a restriction, and how many cannot be selected.
 
@@ -490,6 +516,8 @@ decision D-01.
 
 **Name on screen.** Named. Shown as a ring reading, for example, 25/28.
 
+**Surfaces.** Staff app only.
+
 **What it means.** How many of the squad you could pick for the next match. It
 is the squad size minus the players who are ruled out. **Doubtful players are
 counted as available**, because they can be selected.
@@ -518,6 +546,8 @@ percentage.
 ## MET-015. Week load so far
 
 **Name on screen.** Week load so far, shown as a percentage against a marker.
+
+**Surfaces.** Staff app only.
 
 **What it means.** How much running the squad has done this week compared with a
 normal week. 100 percent means a normal week's work by this point.
@@ -568,6 +598,8 @@ D-23: what does this card show on the Base package?**
 ## MET-016. Open flags
 
 **Name on screen.** Open flags.
+
+**Surfaces.** Staff app only.
 
 **What it means.** How many automatic alerts are currently unresolved.
 
@@ -648,6 +680,8 @@ measurement, and it is applied on the way in and reversed on the way out.
 
 **Name on screen.** Total distance. Sometimes Distance.
 
+**Surfaces.** Staff app only.
+
 **What it means.** How far an athlete travelled in a session, in metres. Every
 step counts, walking included.
 
@@ -679,6 +713,8 @@ analytics, athlete report, squad weekly report.
 ## MET-018. High speed distance
 
 **Name on screen.** High speed distance.
+
+**Surfaces.** Staff app only.
 
 **What it means.** How far the athlete ran above a speed the vendor treats as
 "high speed". It is a measure of how much fast running a session contained,
@@ -712,6 +748,8 @@ that are not comparable, and nothing in the app can detect that.
 
 **Name on screen.** Sprint distance.
 
+**Surfaces.** Staff app only.
+
 **What it means.** How far the athlete ran at sprinting speed. The same caveat as
 MET-018 applies in full: **the definition of a sprint is the vendor's**, and Fydr
 records the result without knowing the threshold behind it.
@@ -735,6 +773,8 @@ records the result without knowing the threshold behind it.
 ## MET-020. Maximum speed
 
 **Name on screen.** Max speed.
+
+**Surfaces.** Staff app only.
 
 **What it means.** The fastest the athlete travelled at any point in the session,
 in metres per second.
@@ -770,6 +810,8 @@ spreadsheet (`src/lib/queries/gpsImport.ts:63`).
 
 **Name on screen.** Player load.
 
+**Surfaces.** Staff app only.
+
 **What it means.** The vendor's own summary of how much physical work the session
 involved, built from the movement the unit measured. Unlike session load
 (MET-007), which comes from the athlete's own rating, this comes from the device.
@@ -795,6 +837,8 @@ meaningful compared with other sessions recorded by the same vendor.
 ---
 
 ## MET-022. Accelerations, and MET-023. Decelerations
+
+**Surfaces.** Staff app only.
 
 **Names on screen.** Accelerations. Decelerations.
 
@@ -828,6 +872,8 @@ change of vendor setting.
 
 **Name on screen.** Duration.
 
+**Surfaces.** Both, staff app and athlete app.
+
 **What it means.** How long the athlete's GPS unit recorded for, in minutes.
 
 **Not the same as the session's scheduled length**, and not the same as the
@@ -854,6 +900,8 @@ looks like a bug and is not one, so nobody needs to check it twice.
 ---
 
 ## MET-025. Running distance and high intensity efforts
+
+**Surfaces.** Staff app only.
 
 **Names on screen.** Running distance. High intensity efforts.
 
@@ -889,6 +937,8 @@ board that will silently stop updating.
 
 **Name on screen.** Shown as a percentage on a dial, with a sentence beneath it
 such as "A typical session" or "Much harder than usual".
+
+**Surfaces.** Staff app only.
 
 **What it means, in plain English.** How hard this session was compared with a
 typical session **of the same kind** for **this athlete**. 100 percent means
@@ -959,6 +1009,8 @@ this is a coach and sport scientist screen.
 
 ## MET-027. Halves split
 
+**Surfaces.** Staff app only.
+
 **Status: NOT BUILT, deliberately, and labelled as absent on screen.**
 
 **What it would mean.** How an athlete's output in the first half of a match
@@ -1009,6 +1061,8 @@ in MET-024 so the question is not re-opened.
 **Name on screen.** Whatever the test is called: Bench press, 10 metre sprint,
 Yo-yo, and so on. Each club defines its own.
 
+**Surfaces.** Both, staff app and athlete app.
+
 **What it means.** One recorded measurement of one athlete on one day, for one
 standardised test.
 
@@ -1039,6 +1093,8 @@ leaderboards.
 
 **Name on screen.** Best. Often labelled Personal best, **which is misleading and
 is the subject of decision D-40**.
+
+**Surfaces.** Both, staff app and athlete app.
 
 **What it actually means.** The best of the attempts an athlete made **on one
 day**. It is **not** their best ever result.
@@ -1101,6 +1157,8 @@ programmes, where it feeds MET-030.
 **Name on screen.** The weight shown against an exercise in a programme, in
 kilograms.
 
+**Surfaces.** Both, staff app and athlete app. **UNVERIFIED which athlete screen renders it; the inputs are read by athlete screens.**
+
 **What it means.** How much an athlete should lift for this exercise today. When
 a programme is written as a percentage rather than a fixed weight, this is that
 percentage turned into a real number using **that athlete's own** best lift.
@@ -1152,6 +1210,8 @@ scientist edit, everyone views.
 ## MET-031. Protein target
 
 **Name on screen.** Protein, in grams per day.
+
+**Surfaces.** Both, staff app and athlete app.
 
 **What it means.** How much protein an athlete should aim for in a day.
 
@@ -1211,6 +1271,8 @@ is the nutritionist's, decision D-03.
 
 **Name on screen.** Carbohydrate, or Carbs, in grams per day.
 
+**Surfaces.** Both, staff app and athlete app.
+
 **What it means.** How much carbohydrate an athlete should aim for **today
 specifically**. Unlike protein, this one changes with what the athlete is doing
 that day.
@@ -1248,6 +1310,8 @@ change is which of the three applies on a given day.
 
 **Name on screen.** Fat, in grams per day.
 
+**Surfaces.** Both, staff app and athlete app.
+
 **Exact calculation.** Rate per kilogram times body weight, with no day
 multiplier.
 
@@ -1261,6 +1325,8 @@ multiplier.
 ## MET-034. Energy target
 
 **Name on screen.** Energy, or Calories, in kilocalories per day.
+
+**Surfaces.** Both, staff app and athlete app.
 
 **What it means.** How much food energy the day's targets add up to.
 
@@ -1295,6 +1361,8 @@ explain it.
 
 **Name on screen.** Fluid, in millilitres per day.
 
+**Surfaces.** Both, staff app and athlete app.
+
 **Exact calculation.** A rate per kilogram times body weight.
 
 **Inputs.** `nutrition_rules.fluid_ml_per_kg`, and MET-005.
@@ -1306,6 +1374,8 @@ explain it.
 ## MET-036. Body mass target range
 
 **Name on screen.** Target range, shown as a band around an athlete's weight.
+
+**Surfaces.** Both, staff app and athlete app.
 
 **What it means.** The weight range agreed for this athlete, so their current
 weight can be read against it rather than in isolation.
@@ -1326,6 +1396,8 @@ excluded from what is shown (`src/lib/queries/bodyMassTargetRange.ts:79`).
 ## MET-037. Leaderboard rank
 
 **Name on screen.** The position number on a board.
+
+**Surfaces.** Both, staff app and athlete app.
 
 **What it means.** Where an athlete sits against the others on one measure, over
 a chosen period.
@@ -1369,6 +1441,8 @@ Under the agreed model, S&C and sport scientist edit boards.
 **Name on screen.** Not shown as a number. It is the reason a board sometimes
 says it cannot be shown.
 
+**Surfaces.** Both, staff app and athlete app.
+
 **What it means.** A board will not display unless enough athletes qualify. With
 two or three people on a board, a rank is not really a rank, it is a public
 comparison of named individuals.
@@ -1388,6 +1462,8 @@ covering leaderboards must state what the coach sees at that moment.
 ---
 
 ## MET-039. Wellness readiness is deliberately not rankable
+
+**Surfaces.** Both, staff app and athlete app.
 
 **Status: excluded by design, recorded so nobody adds it.**
 

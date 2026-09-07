@@ -77,3 +77,21 @@ it.
 
 **End with the counts**: pages checked, differences found by risk band, and
 unverified items.
+
+
+---
+
+## Metric parity across both apps
+
+`docs/metrics.md` is shared by the staff app and the athlete app. Every entry
+carries a `Surfaces` field.
+
+For every metric marked `Surfaces: both`, check that the two surfaces read the
+same definition, window, rounding and label, and confirm the result against
+`docs/metrics-parity.md`. **Report any difference as a parity break rather than a
+note**: an athlete and a coach looking at the same quantity under the same name
+and seeing different numbers is how an athlete stops trusting the app.
+
+Watch MET-001 and MET-002 in particular. They are two definitions of the word
+"readiness", and today only MET-001 reaches an athlete. If that ever changes, the
+two meet.

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
@@ -40,6 +40,22 @@ export function NewFixtureForm({ orgId, userId, defaultDate, timezone }: Props) 
   const [importance, setImportance] = useState<(typeof IMPORTANCE)[number]>('normal');
   const [error, setError] = useState<string | null>(null);
 
+  /* A refused submit has to be findable. The message alone was not enough: it
+     renders inside a long form, and somebody who has just pressed the button at
+     the bottom is looking at the button, not at a line that may be off screen.
+     Reported as "it stays on the same page" — which it does, correctly, but with
+     no visible reason. Focus moves to the field at fault and scrolls it into
+     view, so the refusal lands where the fix has to happen. */
+  const opponentRef = useRef<HTMLInputElement>(null);
+  const dateRef = useRef<HTMLInputElement>(null);
+
+  function focusField(el: HTMLInputElement | null, message: string): void {
+    setError(message);
+    el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    el?.focus({ preventScroll: true });
+  }
+
+
   const mutation = useMutation({
     mutationFn: async () => {
       const result = await withWriteTimeout(
@@ -63,8 +79,8 @@ export function NewFixtureForm({ orgId, userId, defaultDate, timezone }: Props) 
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!opponent.trim()) return setError('Name the opponent.');
-    if (!date || !time) return setError('Set a date and kick-off time.');
+    if (!opponent.trim()) return focusField(opponentRef.current, 'Name the opponent.');
+    if (!date || !time) return focusField(dateRef.current, 'Set a date and kick-off time.');
     setError(null);
     mutation.mutate();
   }
@@ -76,6 +92,7 @@ export function NewFixtureForm({ orgId, userId, defaultDate, timezone }: Props) 
       </label>
       <input
         id="f-opponent"
+        ref={opponentRef}
         className="field"
         value={opponent}
         onChange={(event) => setOpponent(event.target.value)}
@@ -92,6 +109,7 @@ export function NewFixtureForm({ orgId, userId, defaultDate, timezone }: Props) 
             id="f-date"
             className="field"
             type="date"
+            ref={dateRef}
             value={date}
             onChange={(event) => setDate(event.target.value)}
           />

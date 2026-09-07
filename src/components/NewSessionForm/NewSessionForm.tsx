@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
@@ -39,6 +39,22 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone }:
   const [selectedGroups, setSelectedGroups] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
 
+  /* A refused submit has to be findable. The message alone was not enough: it
+     renders inside a long form, and somebody who has just pressed the button at
+     the bottom is looking at the button, not at a line that may be off screen.
+     Reported as "it stays on the same page" — which it does, correctly, but with
+     no visible reason. Focus moves to the field at fault and scrolls it into
+     view, so the refusal lands where the fix has to happen. */
+  const titleRef = useRef<HTMLInputElement>(null);
+  const dateRef = useRef<HTMLInputElement>(null);
+
+  function focusField(el: HTMLInputElement | null, message: string): void {
+    setError(message);
+    el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    el?.focus({ preventScroll: true });
+  }
+
+
   const mutation = useMutation({
     mutationFn: async () => {
       const result = await withWriteTimeout(
@@ -72,8 +88,8 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone }:
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!title.trim()) return setError('Give the session a name.');
-    if (!date || !time) return setError('Set a date and time.');
+    if (!title.trim()) return focusField(titleRef.current, 'Give the session a name.');
+    if (!date || !time) return focusField(dateRef.current, 'Set a date and time.');
     setError(null);
     mutation.mutate();
   }
@@ -85,6 +101,7 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone }:
       </label>
       <input
         id="s-title"
+        ref={titleRef}
         className="field"
         value={title}
         onChange={(event) => setTitle(event.target.value)}
@@ -118,6 +135,7 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone }:
             id="s-date"
             className="field"
             type="date"
+            ref={dateRef}
             value={date}
             onChange={(event) => setDate(event.target.value)}
           />

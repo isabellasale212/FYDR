@@ -1,0 +1,28 @@
+<!-- The Fydr mark at icon tier.
+
+     WHY THIS IS THE TRACE AND THE RINGED DOT AND NOT THE WORD. There was no
+     favicon at all until 2026-09-07 — /favicon.ico, /icon.png, /apple-icon.png,
+     /opengraph-image.png and /manifest.webmanifest all returned 404 on
+     production, so every tab showed the browser's generic globe and every
+     shared link previewed with nothing. A lettermark was the obvious fix and is
+     the wrong one: the word is set in Sora, and an SVG favicon cannot carry a
+     webfont, so "F" would render in whatever face the browser fell back to.
+
+     The mark's own vocabulary survives being small in a way type does not: a
+     load trace stepping up into a ringed dot, which is the shape every chart in
+     this product draws. Redrawn for a 32px box rather than scaled down from the
+     242x66 sidebar geometry, because at 16px the full trace collapses into a
+     line and the r=17 ring becomes two pixels.
+
+     ONE FLAT INK ON THE DARK GROUND, which is the treatment base.css already
+     specifies for dark: "an accent tint on a dark panel goes muddy rather than
+     quiet". A browser tab is somebody else's chrome, light or dark, so the tile
+     carries its own ground and the mark sits on it in white. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <rect width="32" height="32" rx="7" fill="#202b4e" />
+  <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4.5 24.5 H10 L13.5 18.5 H16.5" stroke-width="2.4" />
+    <circle cx="22" cy="13" r="7.4" stroke-width="2.2" />
+  </g>
+  <circle cx="22" cy="13" r="3.3" fill="#ffffff" />
+</svg>

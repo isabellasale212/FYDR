@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ResetConfirmForm } from '@/components/ResetConfirmForm/ResetConfirmForm';
+import { FydrLockup } from '@/components/FydrLockup/FydrLockup';
 
 export const metadata = { title: 'Choose a password · Fydr' };
 
@@ -24,11 +25,13 @@ export default async function ResetConfirmPage({
   return (
     <main className="login-wrap" id="main">
       <div className="login-card">
+        {/* The real mark, the same component the splash draws, at a scale
+            suited to a 480px card. This was a 26x26 rounded blue square beside
+            a second, separately-declared wordmark until 2026-09-07 — a shape
+            that appears nowhere else in the brand, on the three screens
+            somebody reaches when they are already locked out. */}
         <div className="signin-logo">
-          <div className="signin-mark" aria-hidden="true" />
-          <span className="signin-word">
-            Fydr<i>.</i>
-          </span>
+          <FydrLockup title="Fydr" />
         </div>
 
         <div className="signin-head">

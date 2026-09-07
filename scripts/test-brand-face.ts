@@ -6,11 +6,21 @@
  * right up until the app face changes, at which point the brand mark silently
  * becomes whatever the UI is wearing. It is a fixed mark, not UI text.
  *
- * THREE SURFACES RENDER THE WORDMARK AS TEXT, and all three are now identical:
+ * TWO SURFACES RENDER THE WORDMARK AS TEXT, and both are identical:
  *
- *   .lockup-word   sign-in splash, 386px · Sora 800 · -0.035em
- *   .signin-word   reset / MFA,     21px · Sora 800 · -0.035em
- *   .brand .wm     sidebar,         50px · Sora 800 · -0.035em
+ *   .lockup-word   sign-in splash AND the reset/MFA screens · Sora 800 · -0.035em
+ *   .brand .wm     sidebar, 50px                            · Sora 800 · -0.035em
+ *
+ * IT WAS THREE UNTIL 2026-09-07. `.signin-word` was a third declaration at
+ * 21px, sitting beside `.signin-mark` — a rounded blue square that was not the
+ * Fydr mark at all. The reset, reset-confirm and MFA screens now render the
+ * FydrLockup component itself, so the word and the drawing beside it are the
+ * splash's, at a smaller scale. One fewer implementation to keep in step, and
+ * the reason this file's own count moved from three to two.
+ *
+ * See scripts/test-mark-consistency.ts for the other half of this: the face is
+ * checked here, the DRAWING is checked there, and it was the drawing that was
+ * wrong on three pages while every measurement of the type came back correct.
  *
  * THIS FILE ARGUED THE OPPOSITE FIRST, and the argument is worth keeping because
  * it is the one a later tidy-up will make again. The three carried -0.063em,
@@ -40,12 +50,11 @@ const rule = (name: string): string => {
   return i === -1 ? '' : css.slice(i, css.indexOf('}', i));
 };
 
-/** Every surface the wordmark appears on. All three, identically. */
+/** Every surface the wordmark appears on. Both, identically. */
 const TRACKING = '-0.035em';
 const WORDMARKS: { sel: string; where: string }[] = [
   { sel: '.brand .wm', where: 'the sidebar, 50px' },
-  { sel: '.signin-word', where: 'the reset and MFA screens, 21px' },
-  { sel: '.lockup-word', where: 'the sign-in splash, 386px' },
+  { sel: '.lockup-word', where: 'the splash and the reset/MFA screens, 386px scaled' },
 ];
 
 console.log('two faces are loaded, and they are named for their jobs');
@@ -87,6 +96,20 @@ console.log('\nall three carry the same tracking, which is the point');
   assert(
     values.size === 1 && values.has(TRACKING),
     `one tracking across every instance (saw ${[...values].join(', ')})`,
+  );
+}
+
+console.log('\nthe third wordmark declaration stays gone');
+{
+  /* Deleting .signin-word is what took this file from three surfaces to two.
+     A new rule under that name means somebody has re-declared a wordmark
+     instead of using the component, which is exactly how the three drifted
+     apart in the first place. */
+  assert(rule('.signin-word') === '', '.signin-word is not back');
+  assert(rule('.signin-mark') === '', 'and neither is the blue square that sat next to it');
+  assert(
+    /--lk-scale/.test(rule('.signin-logo')),
+    'the auth screens size the real lockup instead, so they cannot drift from it',
   );
 }
 

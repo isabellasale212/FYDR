@@ -350,6 +350,23 @@ a {
     margin: 0;
     clip-path: none;
   }
+  /* THE MARK HAS TO SHRINK WITH THE RAIL, and until 2026-09-07 it did not.
+     `.brand .wm` and `.wm-trace` are both 132px, sized for the 235px expanded
+     sidebar, and nothing narrowed them here — so the trace ran to 132px inside
+     a 63px rail and overflowed it by 68px, clipped. Sidebar.tsx claimed the
+     trace was hidden at this width; no rule ever did that.
+
+     40px rather than the full 64: the rail centres its contents, and the trace
+     wants to read as a mark under the "F" rather than as a line touching both
+     edges. Height follows the 242x66 viewBox so the drawing is scaled, not
+     squashed. */
+  .brand .wm {
+    width: 40px;
+  }
+  .wm-trace {
+    width: 40px;
+    height: 11px;
+  }
 }
 
 .nav {
@@ -2890,32 +2907,43 @@ a.hist-row:focus-visible {
   flex: 1;
   min-height: 0;
 }
+/* THE MARK, NOT A BADGE BESIDE ONE. This block used to hold two things that
+   between them made a logo the rest of the app does not have: `.signin-mark`,
+   a 26x26 rounded square filled with the accent, and `.signin-word`, a second
+   wordmark declaration at 21px. Both are gone. These screens now render
+   FydrLockup — the same component the splash uses — so there is one drawing of
+   the mark and one wordmark implementation behind it.
+
+   0.13 puts the word at 50px and the whole lockup at 130px, which is what the
+   sidebar already proved is a legible small format for this mark; the card is
+   432px of content, so it sits at under a third of the width. */
 .signin-logo {
+  --lk-scale: 0.13;
+  /* THE SAME THREE INKS THE SPLASH SETS, and they have to be set rather than
+     inherited: `.lk-trace` falls back to --accent-border when nothing declares
+     --lk-trace, which is a solid blue, so an unthemed lockup draws its trace at
+     full strength instead of as the pale tint the mark actually uses. Copied
+     from `.launch` deliberately — light rests dark-on-pale with a blue trace
+     and an accent point; dark is one flat ink, because an accent tint on a dark
+     panel goes muddy. test-mark-consistency.ts asserts the two stay equal. */
+  --lk-ink: var(--text);
+  --lk-trace: #c7dbfa;
+  --lk-dot: var(--accent);
   display: flex;
   align-items: center;
-  gap: 11px;
 }
-.signin-mark {
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
-  background: var(--accent);
-  box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / 0.14);
-  flex: none;
+:root[data-theme='dark'] .signin-logo,
+.dark-tokens .signin-logo {
+  --lk-ink: #e9edfa;
+  --lk-trace: #e9edfa;
+  --lk-dot: #e9edfa;
 }
-.signin-word {
-  /* Brand face, and the SAME tracking as every other instance of the mark.
-     This carried -0.03em on the reasoning that 21px wants looser tracking than
-     50px does; the decision is that the wordmark is one fixed mark and its
-     tracking is part of it, not something re-derived per size. */
-  font-family: var(--font-brand), system-ui, sans-serif;
-  font-size: 21px;
-  font-weight: 800;
-  letter-spacing: -0.035em;
-}
-.signin-word i {
-  color: var(--accent-text);
-  font-style: normal;
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .signin-logo {
+    --lk-ink: #e9edfa;
+    --lk-trace: #e9edfa;
+    --lk-dot: #e9edfa;
+  }
 }
 .signin-head {
   margin-top: 40px;

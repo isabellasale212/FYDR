@@ -256,7 +256,10 @@ export function Sidebar({ roles, fullName, orgName, premium, previewingTier = fa
               ending in a ringed dot. Light draws trace and ring as accent
               tints with a solid accent dot; dark is one flat colour, because
               a tint of the accent on a dark panel reads as muddy rather than
-              quiet. Hidden on the 64px collapsed rail with the wordmark. */}
+              quiet. SCALED TO 40px on the 64px collapsed rail, not hidden —
+              this comment said "hidden" for months and no CSS ever did it, so
+              the trace rendered at its full 132px and overflowed the rail by
+              68px. See the rail block in base.css. */}
           <svg
             className="wm-trace"
             viewBox="0 0 242 66"

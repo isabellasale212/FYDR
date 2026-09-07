@@ -222,6 +222,32 @@ export async function requireSubjectAccess(): Promise<StaffContext> {
   return ctx;
 }
 
+/** Fydr's own staff, not a club's — the ONLY gate in this product that is not
+ *  a role, and the only one RLS cannot help with.
+ *
+ *  `lib/platformStaff.ts` explains why there is no `platform` role: it would
+ *  live in `app_metadata.roles`, which is club-scoped data on a club's user,
+ *  and granting one to a Fydr employee would put them inside a customer's org
+ *  and inside its RLS boundary. The consequence is that no policy can express
+ *  "platform staff", so a platform surface reads with the service role and THIS
+ *  FUNCTION IS THE WHOLE PROTECTION. A page that forgets it is a cross-tenant
+ *  leak rather than a missing feature.
+ *
+ *  Built on requireStaff() rather than beside it, so a platform surface still
+ *  requires a real authenticated session first and the email is the VERIFIED
+ *  one — getClaims() round-trips to the auth server before it is read, so this
+ *  satisfies CLAUDE.md rule 2 exactly as roles do.
+ *
+ *  UNSET MEANS NOBODY. With `FYDR_PLATFORM_EMAILS` absent — which is its state
+ *  on both projects today — every caller is redirected. That is the correct
+ *  default and it means shipping this surface changes nothing for anybody until
+ *  the variable is deliberately set. */
+export async function requirePlatformStaff(): Promise<StaffContext> {
+  const ctx = await requireStaff();
+  if (!isPlatformStaff(ctx.claims.email)) redirect('/?e=not-platform-staff');
+  return ctx;
+}
+
 export async function requireAthlete(): Promise<AthleteContext> {
   const { supabase, claims, orgId } = await base();
   if (!isAthlete(claims)) redirect('/dashboard');

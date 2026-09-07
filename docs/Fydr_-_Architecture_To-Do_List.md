@@ -346,7 +346,22 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   The original recommendation, which was followed, is kept below.
 
-- [ ] **THE OTHER HALF, never written down as its own item until now (2026-09-07): a FAILED sign-in leaves nothing durable either.** Needs a decision, not investigation.
+- [x] **BUILT 2026-09-07, Run-verified on scratch, awaiting deploy. A FAILED sign-in leaves nothing durable either.** Decided in favour of the service-role write into `audit_log`; the reasoning that was put to Isabella is kept below, and what building it settled is here.
+
+  **The deciding argument was the schema's own comment.** `0007:26` reads "Nullable: a platform support access or **a failed sign in** has no organisation yet." The column was made nullable for this row; only the insert policy blocks it. A service-role write uses the schema as designed rather than working around it, and no anonymous caller gains write access to `audit_log` — which the policy alternative would have cost permanently, for a caller who controls the rate.
+
+  **The cost, stated rather than glossed:** this is the first `audit_log` row the database does not check. One call site, a constant action, and 0007's append-only triggers still apply — but it is trusted where every other row is verified.
+
+  **Two things building it settled that the recommendation had left open.**
+
+  * **Only accounts that exist get a row.** Not only because an unmatched email is attacker-controlled text going into the table whose job is being true, but because `lib/queries/auditLog.ts` filters every read by `org_id` — so a row with no org could never be seen in the app meant to surface it. An unknown address stays `login_attempts`' business.
+  * **Volume needs no streak logic.** The recommendation proposed writing only on streak boundaries. Unnecessary: once the fifth failure locks the account, `login_attempt_gate` returns 429 **before** `signInWithPassword`, so no further rows are written. Verified — six failures produced five rows and then nothing. The lockout is the rate limit.
+
+  **`actor_id` is the account somebody tried to reach, and is claimed rather than proven** — the sign-in failed, so nothing establishes they are that person. Recorded anyway because "what happened around this account" is the question a review asks, and the viewer's actor filter is how it gets asked. `actor_role` is null: nobody acted. `entity_type` is `sign_in`, not `session`, because no session exists to point at.
+
+  Run-verified: three failures wrote three rows with the forwarded visitor address and the streak position (`attempts_remaining` 4, 3, 2); an unknown email wrote nothing; a success still wrote `auth.signed_in`; six failures recorded 4/3/2/1/0 with the last marked `locked`.
+
+  The reasoning as it was put follows.
 
   **Not the same as the open finding further up.** That one says a failed sign-in records nothing in `login_attempts` on scratch, which is a bug — the limiter may not be running there at all. This is about what happens when `login_attempts` works exactly as designed, which on production it does.
 

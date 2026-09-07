@@ -280,6 +280,11 @@ a {
   height: 36px;
   stroke: rgb(var(--accent-rgb) / 0.45);
 }
+/* The icon-tier crop, hidden at every width except the 64px rail — the same
+   shape of rule as .wm-mono, which is the wordmark's icon tier. */
+.wm-trace-mono {
+  display: none;
+}
 .wm-ring {
   stroke: rgb(var(--accent-rgb) / 0.34);
 }
@@ -350,22 +355,31 @@ a {
     margin: 0;
     clip-path: none;
   }
-  /* THE MARK HAS TO SHRINK WITH THE RAIL, and until 2026-09-07 it did not.
-     `.brand .wm` and `.wm-trace` are both 132px, sized for the 235px expanded
-     sidebar, and nothing narrowed them here — so the trace ran to 132px inside
-     a 63px rail and overflowed it by 68px, clipped. Sidebar.tsx claimed the
-     trace was hidden at this width; no rule ever did that.
+  /* THE MARK SWAPS FOR ITS ICON TIER HERE, the way the wordmark above it does.
+     Two fixes are recorded in this one rule, because the first was not enough.
 
-     40px rather than the full 64: the rail centres its contents, and the trace
-     wants to read as a mark under the "F" rather than as a line touching both
-     edges. Height follows the 242x66 viewBox so the drawing is scaled, not
-     squashed. */
+     Until 2026-09-07 nothing narrowed the mark at all: `.brand .wm` and
+     `.wm-trace` are both 132px, sized for the 235px expanded sidebar, so the
+     trace ran to 132px inside a 63px rail and overflowed it by 68px, clipped.
+     Sidebar.tsx claimed the trace was hidden at this width; no rule ever did.
+
+     Scaling the whole drawing to 40px fixed the overflow and produced a ringed
+     dot 6px across — contained, correct, and too faint to read as the mark. So
+     the full trace is hidden and the CROPPED svg takes its place: same path,
+     same circles, a viewBox showing only the tail. At 30px wide the ring lands
+     near 18px, three times what the reduction gave. */
   .brand .wm {
     width: 40px;
   }
-  .wm-trace {
-    width: 40px;
-    height: 11px;
+  .wm-trace-full {
+    display: none;
+  }
+  .wm-trace-mono {
+    display: block;
+    width: 30px;
+    height: 21px;
+    left: 3px;
+    bottom: -10px;
   }
 }
 

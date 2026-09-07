@@ -97,35 +97,56 @@ console.log('\n   ...and it is the SAME component the splash and sidebar use');
   );
 }
 
-console.log('\n2. the collapsed 64px rail contains its own mark');
+console.log('\n2. the collapsed 64px rail shows a CROPPED mark, not a shrunken one');
 {
-  /* The bug: .brand .wm and .wm-trace are both 132px, and nothing narrowed
-     them for the 64px rail, so the trace ran 68px past the sidebar. The rail
-     block already hides .wm-full and reveals .wm-mono; it has to size the
-     drawing too. */
+  /* TWO BUGS, ONE AFTER THE OTHER. First: .brand .wm and .wm-trace are both
+     132px, sized for the 235px sidebar, and nothing narrowed them for the 64px
+     rail — so the trace ran 68px past the sidebar, clipped, while Sidebar.tsx
+     claimed it was hidden there.
+
+     Then the obvious fix made a second problem. Scaling the whole 242x66
+     drawing down to 40px does fit, but the ringed dot it ends in came out
+     5.6px across — present, correct, and too faint to read as the mark.
+
+     So the rail gets a CROP rather than a reduction: a second SVG over the
+     tail of the trace and the ringed dot, at a size where the ring is legible.
+     That is the same swap the wordmark beside it already does — .wm-full and
+     .wm-mono both sit in the DOM and the media query picks one — rather than a
+     third mechanism. */
   const railAt = css.indexOf('@media (min-width: 768px) and (max-width: 1023px)', css.indexOf('.wm-mono {'));
   assert(railAt !== -1, 'the collapsed-rail block exists');
   const rail = css.slice(railAt, css.indexOf('\n}\n', railAt));
-
-  const wmInRail = ruleFrom(rail, '.brand .wm');
-  const traceInRail = ruleFrom(rail, '.wm-trace');
-  assert(wmInRail !== '', '.brand .wm is resized inside the rail block');
-  assert(traceInRail !== '', 'and so is .wm-trace');
-
-  const px = (r: string): number => Number((/width: (\d+(?:\.\d+)?)px/.exec(r) ?? [])[1] ?? NaN);
-  const RAIL = 64;
-  assert(px(wmInRail) <= RAIL, `.brand .wm fits the ${RAIL}px rail (saw ${px(wmInRail)}px)`);
-  assert(px(traceInRail) <= RAIL, `.wm-trace fits it too (saw ${px(traceInRail)}px)`);
-  assert(px(traceInRail) > 0, 'and is still drawn — "fits" means sized, not deleted');
-
-  /* The stale claim that started this: the component said the trace was
-     hidden here and no CSS did that. If it is ever really hidden, this
-     assertion should be the thing that gets edited. */
-  assert(
-    !/display: none/.test(traceInRail),
-    'the trace is scaled to fit rather than hidden, so the comment describing it must say so',
-  );
   const sidebar = read('src/components/Sidebar/Sidebar.tsx');
+
+  assert(/wm-trace-full/.test(sidebar) && /wm-trace-mono/.test(sidebar),
+    'the sidebar renders both a full and a cropped trace, the way it already renders both wordmarks');
+  assert(/display: none/.test(ruleFrom(rail, '.wm-trace-full')),
+    'the full trace is hidden on the rail');
+  assert(/display: block/.test(ruleFrom(rail, '.wm-trace-mono')),
+    'and the cropped one is shown');
+
+  const px = (r: string, prop = 'width'): number =>
+    Number((new RegExp(`${prop}: (\\d+(?:\\.\\d+)?)px`).exec(r) ?? [])[1] ?? NaN);
+  const RAIL = 64;
+  assert(px(ruleFrom(rail, '.brand .wm')) <= RAIL, `.brand .wm fits the ${RAIL}px rail`);
+  const monoW = px(ruleFrom(rail, '.wm-trace-mono'));
+  assert(monoW > 0 && monoW <= RAIL, `the cropped mark fits it too (saw ${monoW}px)`);
+
+  /* THE POINT OF THE CROP, asserted as a number rather than trusted. The mark
+     is a ring of r=17 with a 3-wide stroke, so it occupies 37 units of
+     whatever viewBox it is drawn in. Scaled from the full 242-wide box into
+     40px it renders at 6.1px; cropped, it should be several times that. */
+  const monoBox = (/viewBox="([^"]+)"[^>]*className="[^"]*wm-trace-mono|wm-trace-mono[^>]*viewBox="([^"]+)"/.exec(sidebar) ?? []);
+  const box = (monoBox[1] ?? monoBox[2] ?? '').split(/\s+/).map(Number);
+  assert(box.length === 4, `the cropped SVG declares a viewBox (saw ${JSON.stringify(monoBox[1] ?? monoBox[2] ?? null)})`);
+  assert(box[2] !== undefined && box[2] < 242,
+    `and it is a CROP of the 242-wide drawing, not the whole thing (saw width ${box[2]})`);
+
+  const RING_UNITS = 17 * 2 + 3;
+  const renderedRing = box[2] ? (RING_UNITS * monoW) / box[2] : 0;
+  assert(renderedRing >= 14,
+    `the ring renders at ${renderedRing.toFixed(1)}px — legible, against 6.1px for the shrunken whole drawing`);
+
   assert(
     !/Hidden on the 64px collapsed rail/.test(sidebar),
     'and Sidebar.tsx no longer claims the trace is hidden there, which was never true',

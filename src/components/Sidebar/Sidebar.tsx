@@ -261,8 +261,35 @@ export function Sidebar({ roles, fullName, orgName, premium, previewingTier = fa
               the trace rendered at its full 132px and overflowed the rail by
               68px. See the rail block in base.css. */}
           <svg
-            className="wm-trace"
+            className="wm-trace wm-trace-full"
             viewBox="0 0 242 66"
+            aria-hidden="true"
+          >
+            <path
+              d="M3 36 L44 36 L56 54 L92 54 L104 36 L188 36 L206 27"
+              fill="none"
+              strokeWidth={5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <circle className="wm-ring" cx="220" cy="21" r="17" fill="none" strokeWidth={3} />
+            <circle className="wm-dot" cx="220" cy="21" r="7" />
+          </svg>
+          {/* THE SAME DRAWING, CROPPED, for the 64px rail — the icon tier of the
+              mark, exactly as .wm-mono is the icon tier of the wordmark. Both
+              sit in the DOM and the media query picks one, rather than a third
+              mechanism for the same idea.
+
+              WHY A CROP AND NOT A SMALLER FULL TRACE. Scaling the whole 242x66
+              drawing to fit 64px does fit, and renders the ringed dot at 6px:
+              correct, contained, and too faint to be the mark. The viewBox here
+              is the same geometry at the same coordinates, showing only the
+              tail — the rise out of the last trough and the dot it ends in — so
+              the ring lands near 18px instead. Same path data, same circles,
+              same numbers; only the window onto them changes. */}
+          <svg
+            className="wm-trace wm-trace-mono"
+            viewBox="184 2 56 40"
             aria-hidden="true"
           >
             <path

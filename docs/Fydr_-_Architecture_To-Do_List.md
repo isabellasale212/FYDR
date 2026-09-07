@@ -117,6 +117,20 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   Known starting points, not the answer: `.lockup-word` (`FydrLockup`, used by `/login` and `/login/loading`), `.signin-word` (`/login/reset`, `/login/reset/confirm`, `/login/mfa`), `.brand .wm` (`Sidebar`). The forgot-password page she names is `/login/reset`, which measured correct on production today — so either the mismatch is on a different route than the one it looks like, or it is an asset (favicon, og image, email template, PWA icon) rather than a CSS-set wordmark. **Sweep by import, not by route folder** — a route-folder grep has already answered a question like this confidently and wrongly once.
 
+- [ ] **QUEUED 2026-09-07: widen the audit triggers to the rest of the sweep, in small batches.** 0085 and 0086 covered ten tables. Measured on production today: **49 unaudited, not ~40**, of 59 public tables.
+
+  Isabella's terms: check each table's actual shape before assuming the pattern fits, no more than a handful per batch given two shape surprises last round (`athletes` has no `athlete_id` because the row IS the athlete; `user_roles` has none and correctly so), tests first, Run-verified with a REAL write per table, report back after each batch rather than at the end, tell her before deploying.
+
+  **THREE THINGS THE PRODUCTION NUMBERS SAY BEFORE ANY OF THIS STARTS**, and they change the batching rather than just informing it:
+
+  * **`audit_log` is in the unaudited list and must stay there.** A trigger on it would audit its own writes. Obvious once said, easy to sweep into a batch mechanically.
+  * **Volume is the real constraint, not shape.** Inserts over the 45-day window: `wellness_entries` 25,083, `flags` 17,750, `group_memberships` 17,692, `training_entries` 13,894, `compliance_expectations` 11,658, `session_participants` 9,086. A per-row trigger on those adds an `audit_log` row per write, and `audit_log` itself has already taken 9,803. Auditing the six largest would roughly ten-times the table. Decide per table whether the answer is "audit it", "audit updates and deletes but not inserts", or "do not audit; it is machine-generated".
+  * **Much of that volume has no human actor.** `flags` and `compliance_expectations` are written by the nightly SECURITY DEFINER jobs, which never authenticate — so `auth_user_id()` is null and the rows would record that nobody did something, thousands of times a night. That is noise in the table whose value is that every row means something. The clinical tables were worth auditing because a person writes them; these are not the same case and should not inherit the decision.
+
+  **Suggested first batch, all low-volume and human-written:** `injury_clinical_attachments` if it exists, `athlete_consents` follow-ups, `subject_access_requests`, `retention_policies`, `thresholds`. Confirm shapes first — `thresholds` shows 8,761 inserts against 7 live rows, which is a re-seed pattern worth understanding before attaching anything to it.
+
+  **The count itself is worth re-measuring at the start**, not taken from here: `scripts/verify-audit-trail.mjs`'s approach (`pg_stat_all_tables`, plus `pg_trigger` for coverage) is what produced these numbers.
+
 ## 0a. Hard gate — do this before the first real person touches the app
 - [ ] **Upgrade Supabase from Free to Pro tier before inviting the first real club, design partner, or any person whose data isn't something you typed in yourself.** Not "before full completion", before the first real account. Free tier has no automated backups and no point-in-time recovery; confirmed 2026-09-05 that Claude Code also cannot take a manual backup from its own environment (no `pg_dump`/`psql` on PATH, `supabase db dump` needs Docker, not available). As of 2026-09-05 all production accounts are synthetic test data created by you, so this is not yet urgent, it becomes urgent the moment that stops being true.
 

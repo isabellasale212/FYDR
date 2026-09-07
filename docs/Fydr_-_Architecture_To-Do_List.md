@@ -179,6 +179,33 @@ Both come after the sign-in-history item in 0b, which is in progress.
 - [x] Confirm `coachkitstudio <isale4567@gmail.com>` is your own account/session — confirmed. Deployment history under your personal Vercel account (`isabellasale212@gmail.com`, confirmed as your own email) shows the same identity across the last 20 production deploys, all `READY`, most recent from today. Two independent systems agreeing, plus your own confirmation.
 
 ## 0b. Urgent, found while reading the raw files (2026-09-04) — not waiting on any product decision
+
+- [ ] **THE PRODUCT CALLS EVERY ATHLETE "he" (found 2026-09-07). Fix before it is shown to a women's club — this is a real priority, not a polish item.** Rugby union's fastest-growing participation is women's and girls', `docs/07-integrations.md` names "semi-professional squad sport in the UK and Ireland" as the market, and a readiness card that says "vs **his** own 68" in front of a women's squad is the kind of thing that ends a demo in the first thirty seconds.
+
+  **There is no gender or pronoun column anywhere in the schema.** Checked directly: no `gender`, no `pronouns`, nothing on `athletes`. So the copy is not defaulting from data that happens to be male — it is hardcoded, and there is currently nothing it could read instead.
+
+  **SIX RENDERED STRINGS IN FOUR FILES.** This is a correction to what was said in the moment, which named five files: four of those five were COMMENTS rather than user-facing copy, and three real ones were missed. The rendered set:
+
+  | File | Line | String |
+  |---|---|---|
+  | `src/lib/status.ts` | 48 | `Above his own band` |
+  | `src/lib/status.ts` | 49 | `Below his own band` |
+  | `src/lib/status.ts` | 50 | `Inside his own band` |
+  | `src/app/(staff)/squad/[athleteId]/page.tsx` | 840 | `status vs his own 14-day baseline` |
+  | `src/app/(staff)/squad/[athleteId]/nutrition/page.tsx` | 443 | `never sees this range in his own app` |
+  | `src/components/DashboardFlagsPanel/DashboardFlagsPanel.tsx` | 132 | `vs his own ${r.baseline}` |
+
+  **`lib/status.ts` is the one that spreads.** It is a shared status-label map, so those three strings surface wherever a body-composition band status is rendered rather than on one screen. Fixing the three obvious card strings and leaving it would leave the phrase in the product.
+
+  **Two ways, and the second is better.**
+
+  * **Add a pronoun field** and interpolate. Honest, and it buys a data-collection question nobody has asked for, a migration, a settings UI, an import path, and a default for the 35 athletes already in production. It also gets it wrong until somebody fills it in.
+  * **Rewrite the copy so no pronoun is needed**, which is usually shorter as well as correct: "vs his own 68" → "vs their 68" or simply "vs baseline 68"; "Above his own band" → "Above band"; "never sees this range in his own app" → "never sees this range in the athlete app". **Recommended.** No schema, no migration, no per-athlete data, correct for everybody on day one, and the possessive was carrying almost no meaning in most of these — the card already names the athlete directly above the sentence.
+
+  **Also worth a sweep at the same time, but NOT the same problem:** nine or so comments use "he/his" about a hypothetical athlete. Those are internal prose, not shipped copy, and should be corrected for the same reason rather than urgently.
+
+  Cost: perhaps an hour including the sweep and an assertion that no rendered string in `src/` matches `\b(his|her|him|she)\b`, which is what stops it coming back.
+
 - [x] **RESOLVED 2026-09-07, verified on production. `auth.sessions.ip` no longer records the signer — it records Vercel (found 2026-09-07).** Ahead of the two below on purpose: those are MISSING data, and missing data announces itself. This is MISLEADING data. Every production login since the switch to server-side sign-in carries an IP address that looks like an ordinary record of where somebody signed in from, and means nothing.
 
   The cause is not a bug, it is a side effect of a deliberate change. Login moved out of the browser and into `POST /auth/sign-in` so that an unforgeable attempt count could exist for rate limiting (that route's own header states it: "LoginForm.tsx used to call it directly from the browser"). Supabase therefore sees the Vercel serverless function, not the visitor: the recorded IP is the function's, the user agent is `node`, and the Referer is the site's own origin.

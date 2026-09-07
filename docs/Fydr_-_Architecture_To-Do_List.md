@@ -77,7 +77,35 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   Tests first, Run-verified, screenshot before deploying. Show her before finalising.
 
-- [ ] **2. Audit every logo and wordmark instance across the app.** "Some pages, including a forgot-password page, are showing the wrong logo." Find every place a logo or wordmark renders, list them by page/route AND by the asset or CSS class each one uses, and say which do not match the current Sora treatment (Sora 800, tracking -0.035em, per ce2e52d). Screenshot each mismatch before changing anything.
+- [ ] **2. AUDITED 2026-09-07, nothing changed pending Isabella's call. Three mismatches and one absence.**
+
+  **The word is right everywhere. The MARK is not.** All five text wordmarks measure Sora 800 at -0.035em, which is why the production check earlier that day reported `/login/reset` as correct — it measured `.signin-word`, the typography, and the thing that is wrong is the graphic sitting next to it. A check that passes on the half you looked at.
+
+  **The reference mark** (`FydrLockup` on `/login`, and `.wm-trace` in the sidebar) is a GPS trace — down into a trough, along, up — ending in a ringed dot. Both draw the same shape at two scales.
+
+  | Surface | Route(s) | Word | Mark | |
+  |---|---|---|---|---|
+  | `FydrLockup` | `/login`, `/login/loading` | Sora 800 -0.035em | trace + ringed dot | reference |
+  | Sidebar `.brand .wm` | every staff/athlete page, >=1024px | Sora 800 -0.035em | trace + ringed dot | ok |
+  | Sidebar collapsed `.wm-mono` | same, 768-1023px | Sora 800, bare "F" | **trace renders 132px inside a 63px rail** | **MISMATCH** |
+  | `.signin-logo` | `/login/reset` | Sora 800 -0.035em | **plain blue rounded square** | **MISMATCH** |
+  | `.signin-logo` | `/login/reset/confirm` | same | same square | **MISMATCH** |
+  | `.signin-logo` | `/login/mfa` | same | same square | **MISMATCH** |
+  | favicon, apple-icon, OG image, manifest | every page, and every shared link | — | **absent** | **MISSING** |
+
+  **1. `.signin-mark` is not the Fydr mark.** It is a 26x26 div, `border-radius: 8px`, filled `var(--accent)` with a glow ring — a generic rounded blue square that appears nowhere else in the brand. Three public pages use it, including the forgot-password page. The wordmark beside it also differs in content: these write "Fydr**.**" with a typographic full stop, where the lockup's dot IS the ringed dot of the mark.
+
+  **2. The collapsed rail leaks its trace.** `Sidebar.tsx` says the trace is "Hidden on the 64px collapsed rail with the wordmark". **No CSS does that.** Measured at 900px: the rail is 63px, `.wm-full` is correctly hidden, `.wm-mono` shows the bare "F" — and `.wm-trace` still renders at its full 132px, overflowing the rail by 68px and clipping. The comment describes a fix that was never written.
+
+  **3. There is no favicon at all.** `public/` is empty, `src/app/` has no `icon.*`, `apple-icon.*`, `opengraph-image.*` or `favicon.ico`, and `layout.tsx`'s metadata declares no `icons`. Confirmed on production: `/favicon.ico`, `/icon.png`, `/icon.svg`, `/apple-icon.png`, `/apple-touch-icon.png`, `/opengraph-image.png`, `/manifest.webmanifest` and `/site.webmanifest` all return **404**. Every browser tab shows the browser's generic icon and every shared link previews with none. This is the most likely thing "the wrong logo" actually refers to, since it is the only mark visible on every page at once.
+
+  **Deliberately NOT in scope:** `organisations.logo_url` / `OrgLogoField` / `ClubDetailsEditForm` is a CLUB's own uploaded logo, not the Fydr mark, and is correct as built.
+
+  **Not screenshotted:** `/login/mfa` is behind auth and redirects signed-out, so its mark is confirmed from source (identical `.signin-logo` markup) rather than from a render.
+
+  Original brief follows.
+
+- [ ] **2a. As first written.** "Some pages, including a forgot-password page, are showing the wrong logo." Find every place a logo or wordmark renders, list them by page/route AND by the asset or CSS class each one uses, and say which do not match the current Sora treatment (Sora 800, tracking -0.035em, per ce2e52d). Screenshot each mismatch before changing anything.
 
   Known starting points, not the answer: `.lockup-word` (`FydrLockup`, used by `/login` and `/login/loading`), `.signin-word` (`/login/reset`, `/login/reset/confirm`, `/login/mfa`), `.brand .wm` (`Sidebar`). The forgot-password page she names is `/login/reset`, which measured correct on production today — so either the mismatch is on a different route than the one it looks like, or it is an asset (favicon, og image, email template, PWA icon) rather than a CSS-set wordmark. **Sweep by import, not by route folder** — a route-folder grep has already answered a question like this confidently and wrongly once.
 

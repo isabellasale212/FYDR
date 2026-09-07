@@ -27,17 +27,34 @@ import { readFileSync } from 'node:fs';
 
 const stripComments = (s: string): string => s.replace(/\/\*[\s\S]*?\*\//g, '');
 
-/** Selector families that are controls: you click, tap or type into them. */
+/** Selector families that are controls: you click, tap or type into them.
+ *
+ *  THIS LIST UNDER-MATCHED ONCE AND PRODUCTION IS WHAT CAUGHT IT. After the
+ *  6px sweep shipped, the sign-in button on fydr.app still computed to 14px:
+ *  `.launch .signin-submit` overrides `.btn-primary`, and none of the words
+ *  below appeared in either half of that selector. Six more like it turned up
+ *  by reviewing every remaining raw radius by hand rather than adding another
+ *  guess — .skip-link, .week-nav and its links, .tr-board-row-link, and two
+ *  <select> rules.
+ *
+ *  So this is a net, not a proof. It cannot know that an element carrying
+ *  .signin-submit also carries .btn-primary, because that fact lives in JSX
+ *  rather than in CSS. When adding a control whose class name says nothing
+ *  about being one, add the word here — and test-control-styling.ts pins the
+ *  overrides already found, so they cannot quietly come back. */
 export const INTERACTIVE =
-  /btn|chip|pill|\btab\b|tabs|segment|toggle|\bfield\b|input|search|sg-add|filter|action|stepper|squad-|weeknav|set-row|mode-switch|lbw-segmented|rhead-btn|exlib-cat/i;
+  /btn|chip|pill|\btab\b|tabs|segment|toggle|\bfield\b|input|search|select|signin|submit|launch|skip-link|week-nav|row-link|sg-add|filter|action|stepper|squad-|weeknav|set-row|mode-switch|lbw-segmented|rhead-btn|exlib-cat/i;
 
 /** Shapes that are round on purpose and are not buttons, chips, pills or tabs. */
 /* Round on purpose, and each name here is a decision rather than a number.
    `track` and `knob` cover switches: .tr-heat-toggle-track is a 999px pill with
    a 50% knob riding in it, which is what a switch IS — the spec bans pill
    BUTTONS, and a 6px track around a round knob would just look broken. Bars
-   (.gym-progress-track, .pp-bench-bar) are the same argument. */
-export const SHAPED_ON_PURPOSE = /swatch|knob|track|avatar|bar\b|sg-fixture|sg-legend|dot\b/i;
+   (.gym-progress-track, .pp-bench-bar) are the same argument. `mark` is here
+   because widening INTERACTIVE with `signin` immediately caught .signin-mark,
+   which is the logo on the sign-in screen — the guard over-matching and being
+   told so, which is the trade this heuristic is supposed to make. */
+export const SHAPED_ON_PURPOSE = /swatch|knob|track|avatar|bar\b|mark\b|sg-fixture|sg-legend|dot\b/i;
 
 export type Violation = { selector: string; value: string };
 

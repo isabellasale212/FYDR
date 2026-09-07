@@ -81,6 +81,36 @@ console.log('\nnothing clickable is pill-shaped any more');
   );
 }
 
+console.log('\nthe overrides that hid from the name heuristic stay fixed');
+{
+  /* Every one of these sets a radius on an element that is a control without
+     saying so in its class name. .launch .signin-submit is the one that
+     shipped at 14px and was found by measuring the deployed sign-in button,
+     not by any test here — the rest came from reviewing every remaining raw
+     radius by hand afterwards. Pinned individually because the guard's
+     selector heuristic is what missed them in the first place. */
+  for (const sel of [
+    '.launch .signin-submit',
+    '.skip-link',
+    '.tr-board-row-link',
+    '.week-nav',
+    '.rhead .rsel select',
+    '.rsel-wrap select',
+  ]) {
+    const i = css.indexOf(`${sel} {`);
+    const body = i === -1 ? '' : css.slice(i, css.indexOf('}', i));
+    assert(
+      i !== -1 && (!/border-radius/.test(body) || /border-radius: var\(--r-control\)/.test(body)),
+      `${sel} does not override the control radius`,
+    );
+  }
+  const signin = css.slice(css.indexOf('.launch .signin-submit {'));
+  assert(
+    /border-radius: var\(--r-control\)/.test(signin.slice(0, signin.indexOf('}'))),
+    'and the sign-in button specifically reads the token — it computed to 14px on production after the first deploy',
+  );
+}
+
 console.log('\nthe guard has teeth');
 {
   const dir = mkdtempSync(join(tmpdir(), 'fydr-radius-'));

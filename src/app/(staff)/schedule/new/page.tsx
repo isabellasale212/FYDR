@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { fetchEstablishedTitles } from '@/lib/queries/sessionTitles';
 import Link from 'next/link';
 import { NewSessionForm } from '@/components/NewSessionForm/NewSessionForm';
 import { fetchGroups } from '@/lib/queries/groups';
@@ -24,6 +25,11 @@ export default async function NewSessionPage({
 
   const groups = await fetchGroups(db, orgId);
 
+  /* The club's own established session names, for the title field's
+     datalist. Read here rather than in the client component so it is one
+     server-side query on a page that is already fetching groups. */
+  const titleSuggestions = await fetchEstablishedTitles(db, orgId);
+
   return (
     <>
       <div className="topbar">
@@ -36,6 +42,7 @@ export default async function NewSessionPage({
       </div>
 
       <NewSessionForm
+        titleSuggestions={titleSuggestions}
         orgId={orgId}
         userId={claims.userId}
         groups={groups}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { TitleSuggestion } from '@/lib/queries/sessionTitles';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
@@ -24,6 +25,8 @@ type Props = {
   session: SessionDetail;
   groups: readonly Group[];
   timezone: string;
+  /** This club's established session names, for the title datalist. */
+  titleSuggestions: readonly TitleSuggestion[];
 };
 
 /** The edit half of session-detail.md's `SessionEditorSheet`, kept as a
@@ -33,7 +36,7 @@ type Props = {
  *  class of bug the timezone helper below was written to fix. Prefilled
  *  from the stored UTC instant via `dateInTz`/`timeInTz`, the read side of
  *  the same conversion `zonedTimeToUtcIso` writes. */
-export function SessionEditForm({ orgId, session, groups, timezone }: Props) {
+export function SessionEditForm({ orgId, session, groups, timezone, titleSuggestions }: Props) {
   const router = useRouter();
   const startsAt = new Date(session.starts_at);
 
@@ -105,11 +108,27 @@ export function SessionEditForm({ orgId, session, groups, timezone }: Props) {
       </label>
       <input
         id="e-title"
+        list="e-title-options"
         className="field"
         value={title}
         onChange={(event) => setTitle(event.target.value)}
         maxLength={80}
       />
+      {/* A suggestion, not a constraint. The title is a display name AND the
+          Training report's grouping key (see lib/queries/sessionTitles.ts), so
+          drift here silently splits a session's history — but a fixed
+          vocabulary would be hardening a taxonomy no real club has tested yet.
+          A datalist is the exact middle: the club's own established names are
+          one keystroke away, and anything else can still be typed. Filtered to
+          the selected type, because offering "Team run" for a Gym session is
+          how an autocomplete gets ignored. */}
+      <datalist id="e-title-options">
+        {titleSuggestions
+          .filter((t) => t.type === sessionType)
+          .map((t) => (
+            <option key={t.title} value={t.title} />
+          ))}
+      </datalist>
 
       <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
         <legend className="label">Type</legend>

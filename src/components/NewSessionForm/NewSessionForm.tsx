@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import type { TitleSuggestion } from '@/lib/queries/sessionTitles';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
@@ -25,9 +26,11 @@ type Props = {
   groups: readonly Group[];
   defaultDate: string;
   timezone: string;
+  /** This club's established session names, for the title datalist. */
+  titleSuggestions: readonly TitleSuggestion[];
 };
 
-export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone }: Props) {
+export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, titleSuggestions }: Props) {
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [sessionType, setSessionType] = useState<(typeof SESSION_TYPES)[number]>('training');
@@ -101,6 +104,7 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone }:
       </label>
       <input
         id="s-title"
+        list="s-title-options"
         ref={titleRef}
         className="field"
         value={title}
@@ -108,6 +112,21 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone }:
         maxLength={80}
         placeholder="Captain's run"
       />
+      {/* A suggestion, not a constraint. The title is a display name AND the
+          Training report's grouping key (see lib/queries/sessionTitles.ts), so
+          drift here silently splits a session's history — but a fixed
+          vocabulary would be hardening a taxonomy no real club has tested yet.
+          A datalist is the exact middle: the club's own established names are
+          one keystroke away, and anything else can still be typed. Filtered to
+          the selected type, because offering "Team run" for a Gym session is
+          how an autocomplete gets ignored. */}
+      <datalist id="s-title-options">
+        {titleSuggestions
+          .filter((t) => t.type === sessionType)
+          .map((t) => (
+            <option key={t.title} value={t.title} />
+          ))}
+      </datalist>
 
       <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
         <legend className="label">Type</legend>

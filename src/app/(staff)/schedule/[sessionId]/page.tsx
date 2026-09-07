@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { fetchEstablishedTitles } from '@/lib/queries/sessionTitles';
 import Link from 'next/link';
 import { SessionEditForm } from '@/components/SessionEditForm/SessionEditForm';
 import { SessionActions } from '@/components/SessionActions/SessionActions';
@@ -41,6 +42,11 @@ export default async function SessionDetailPage({
   ]);
   const md = mdLabel(weekMd.get(sessionDate) ?? null);
   const cancelled = session.status === 'cancelled';
+
+  /* The club's own established session names, for the title field's
+     datalist. Read here rather than in the client component so it is one
+     server-side query on a page that is already fetching groups. */
+  const titleSuggestions = await fetchEstablishedTitles(db, orgId);
 
   return (
     <>
@@ -112,6 +118,7 @@ export default async function SessionDetailPage({
             Edit this session
           </p>
           <SessionEditForm
+        titleSuggestions={titleSuggestions}
             orgId={orgId}
             session={session}
             groups={groups}

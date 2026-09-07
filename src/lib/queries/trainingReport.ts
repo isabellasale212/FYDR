@@ -1,6 +1,7 @@
 import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchWeekMdLabels, mondayOf, rangeBounds } from './schedule';
 import { addDays, dateInTz, mdLabel } from '../format';
+import { resolveTitleVariants } from './sessionTitles';
 
 /* TRAINING-REPORT-SPEC.md, a full rebuild of the previous heat-mapped
  * board (screens/training-report.md) into the two-mode scoring model the
@@ -213,12 +214,17 @@ export type TrainingOverview = {
 };
 
 async function fetchTypedTrainingRecords(db: Db, orgId: string, title: string, excludeSessionId: string | null) {
+  /* Every spelling of this title, not just the stored one. Exact equality here
+     is what let a typo become a session type with no history — see
+     sessionTitles.ts. `.in()` rather than a transformed column so the match
+     stays exact and a title containing % cannot become a wildcard. */
+  const variants = await resolveTitleVariants(db, orgId, title);
   let q = db
     .from('gps_records')
     .select('session_id, athlete_id, total_distance_m, high_speed_distance_m, high_intensity_efforts, duration_s, sessions!inner(id, title, session_type)')
     .eq('org_id', orgId)
     .eq('sessions.session_type', 'training')
-    .eq('sessions.title', title);
+    .in('sessions.title', variants);
   if (excludeSessionId) q = q.neq('session_id', excludeSessionId);
   const { data, error } = await q;
   if (error) throw new Error(error.message);
@@ -625,7 +631,8 @@ export async function fetchComparableSessionsComparison(
     .eq('org_id', orgId)
     .eq('session_type', mode === 'match' ? 'match' : 'training')
     .is('deleted_at', null);
-  if (mode === 'training' && trainingTitle) sessionsQuery = sessionsQuery.eq('title', trainingTitle);
+  if (mode === 'training' && trainingTitle)
+    sessionsQuery = sessionsQuery.in('title', await resolveTitleVariants(db, orgId, trainingTitle));
   const { data: sessions, error: sessErr } = await sessionsQuery.order('starts_at', { ascending: false });
   if (sessErr) throw new Error(sessErr.message);
 
@@ -735,7 +742,8 @@ export async function fetchPositionComparison(
     .eq('org_id', orgId)
     .eq('session_type', mode === 'match' ? 'match' : 'training')
     .is('deleted_at', null);
-  if (mode === 'training' && trainingTitle) sessionsQuery = sessionsQuery.eq('title', trainingTitle);
+  if (mode === 'training' && trainingTitle)
+    sessionsQuery = sessionsQuery.in('title', await resolveTitleVariants(db, orgId, trainingTitle));
   const { data: sessionRows, error: sessErr } = await sessionsQuery;
   if (sessErr) throw new Error(sessErr.message);
   const relevantSessionIds = (sessionRows ?? []).filter((s) => mode === 'training' || s.fixtures).map((s) => s.id);
@@ -823,7 +831,8 @@ export async function fetchAthleteComparison(
     .eq('org_id', orgId)
     .eq('session_type', mode === 'match' ? 'match' : 'training')
     .is('deleted_at', null);
-  if (mode === 'training' && trainingTitle) sessionsQuery = sessionsQuery.eq('title', trainingTitle);
+  if (mode === 'training' && trainingTitle)
+    sessionsQuery = sessionsQuery.in('title', await resolveTitleVariants(db, orgId, trainingTitle));
   const { data: sessionRows, error: sessErr } = await sessionsQuery;
   if (sessErr) throw new Error(sessErr.message);
   const relevantSessionIds = (sessionRows ?? []).filter((s) => mode === 'training' || s.fixtures).map((s) => s.id);
@@ -949,6 +958,9 @@ export async function fetchScatterData(
   lens: 'self' | 'position',
 ): Promise<ScatterPoint[]> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
+  /* Resolved once, above the parallel block: an await inside a Promise.all
+     array reads as concurrent work and is not. */
+  const titleVariants = await resolveTitleVariants(db, orgId, session.title);
 
   let curQuery = db
     .from('gps_records')
@@ -970,7 +982,7 @@ export async function fetchScatterData(
       .select('athlete_id, total_distance_m, session_id, sessions!inner(session_type, title)')
       .eq('org_id', orgId)
       .eq('sessions.session_type', 'training')
-      .eq('sessions.title', session.title)
+      .in('sessions.title', titleVariants)
       .neq('session_id', session.sessionId)
       .in('athlete_id', athleteIds),
   ]);
@@ -1044,6 +1056,9 @@ export async function fetchSelectedAthletePanel(
   session: TrainingSessionOption,
   athleteId: string,
 ): Promise<SelectedAthletePanel | null> {
+  /* Resolved once, above the parallel block: an await inside a Promise.all
+     array reads as concurrent work and is not. */
+  const titleVariants = await resolveTitleVariants(db, orgId, session.title);
   const [athleteRes, curRes, membershipRes] = await Promise.all([
     db.from('athletes').select('id, first_name, last_name').eq('org_id', orgId).eq('id', athleteId).maybeSingle(),
     db
@@ -1081,7 +1096,7 @@ export async function fetchSelectedAthletePanel(
       .eq('org_id', orgId)
       .eq('athlete_id', athleteId)
       .eq('sessions.session_type', 'training')
-      .eq('sessions.title', session.title)
+      .in('sessions.title', titleVariants)
       .order('record_date', { ascending: false })
       .limit(30),
     positionalMembership
@@ -1204,6 +1219,9 @@ export async function fetchTrainingBoard(
   session: TrainingSessionOption,
 ): Promise<{ rows: TrainingBoardRow[]; unitOrder: string[] }> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
+  /* Resolved once, above the parallel block: an await inside a Promise.all
+     array reads as concurrent work and is not. */
+  const titleVariants = await resolveTitleVariants(db, orgId, session.title);
 
   let curQuery = db
     .from('gps_records')
@@ -1225,7 +1243,7 @@ export async function fetchTrainingBoard(
       .select('athlete_id, total_distance_m, high_speed_distance_m, max_speed_ms, session_id, sessions!inner(session_type, title)')
       .eq('org_id', orgId)
       .eq('sessions.session_type', 'training')
-      .eq('sessions.title', session.title)
+      .in('sessions.title', titleVariants)
       .neq('session_id', session.sessionId)
       .in('athlete_id', athleteIds),
   ]);

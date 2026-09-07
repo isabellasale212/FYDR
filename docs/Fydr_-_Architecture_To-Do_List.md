@@ -143,6 +143,17 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   **So the order is: settle this, then buy Pro.** Buying Pro on a project that is then abandoned for a London one wastes the purchase, and it is the one decision on the 0a path whose cost rises sharply rather than staying flat.
 
+  **DOCUMENTS CORRECTED 2026-09-07.** Seven statements across five files, not the four first counted — `05-architecture.md` (the environment table, and O-15 itself, now closed with the real answer), `09-security-and-compliance.md` (the sub-processor diagram, the sub-processor table's legal conclusion, the "choose London" instruction, and the launch-checklist item), `11-open-questions.md`, and three more in `10-roadmap.md` that the first sweep missed. Every one now states eu-west-1 or is explicitly marked as an intention that was not met. `Europe/London` as a TIMEZONE is a different thing and was left alone.
+
+  **THE MOVE ITSELF IS BLOCKED ON TWO CAPABILITIES, not on a decision.** Attempted 2026-09-07 and stopped before anything was changed:
+
+  1. **Creating the London project needs a Supabase management credential that is not present.** No `SUPABASE_ACCESS_TOKEN` in any env file or the environment, and the CLI is not logged in (`LegacyPlatformAuthRequiredError`). A project's region is fixed at creation, so nothing can begin without this.
+  2. **The `auth` schema cannot be migrated by the rehearsed method.** The drill's dump covers `public` only. Production has 13 other schemas, and two matter: `auth` (46 users and their password hashes) and `auth_hooks` (the `custom_access_token_hook` that puts `org_id` and `roles` into every JWT — without it `auth_org_id()` returns null and **every RLS policy in the product fails closed**). Dumping `auth` was refused by the environment's safety classifier because it extracts credential material; that refusal is correct and was not worked around.
+
+  **So "confirm the restored auth works exactly like the drill did" cannot be satisfied, and should not be.** The drill's auth step was `npm run seed:auth`, which sets ONE SHARED KNOWN PASSWORD on every account. That is right for synthetic scratch data and would be indefensible on production — which is why the guard added the same day refuses to run it anywhere else.
+
+  **What a real move therefore needs, none of it started:** the new project; a decision on how accounts transfer (an `auth` migration performed by somebody who can extract it, or re-inviting all 46 accounts); `auth_hooks` recreated AND the hook re-registered in Supabase's auth settings, which is dashboard configuration rather than SQL; the `retention`, `cron`, `storage` and `vault` schemas assessed; new URL and keys into Vercel; and redirect URLs and the custom domain repointed.
+
   Also worth knowing: "our data stays in the UK" is described in that same paragraph as removing "an entire conversation with every club".
 
 ## 0a. Hard gate — do this before the first real person touches the app

@@ -3,7 +3,7 @@
 > **Current phase line, corrected: this document's "Phase 0, not started" banner is stale
 > and, per CLAUDE.md §8, the code is the fact here, not the doc.** A real, running,
 > deployed product exists — Next.js staff web app and a real athlete web app (both live on
-> Vercel, real Supabase Postgres/Auth/RLS in the London region, a passing cross-tenant
+> Vercel, real Supabase Postgres/Auth/RLS in eu-west-1 (Ireland — London was assumed and never chosen, see O-15), a passing cross-tenant
 > suite in CI-equivalent form) — that covers most of what this document schedules across
 > Phase 0 through Phase 2, plus pieces of Phase 3 (the training report is GPS-derived
 > already, per the GPS note directly below). Concretely, as of this note: wellness and RPE
@@ -174,7 +174,7 @@ the phase whose absence costs the most later.
 - `04-data-model.md` accepted, including the open questions that affect the schema: O-9
   (height as a time series), O-951 (consent field renaming). Resolve these before the first
   migration, not after.
-- Supabase project created **in the London region** (irreversible, see
+- Supabase project created — **in eu-west-1 (Ireland), NOT the London region this line assumed**; irreversible in place, see
   `09-security-and-compliance.md` §5).
 - Decision recorded on `02-information-architecture.md` O-6 (staff web only for v1).
 
@@ -540,7 +540,7 @@ Two things to read off this chart:
 
 ```mermaid
 graph TD
-    SUPA[Supabase project<br/>London region] --> SCHEMA[Schema and enums]
+    SUPA[Supabase project<br/>eu-west-1 Ireland] --> SCHEMA[Schema and enums]
     SCHEMA --> RLS[RLS policies and helpers]
     AUTH[Supabase Auth<br/>+ JWT claims hook] --> RLS
     SCHEMA --> AUTH

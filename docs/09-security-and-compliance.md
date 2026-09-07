@@ -137,7 +137,7 @@ graph TB
     end
 
     subgraph SUB["Sub-processors"]
-        SB[(Supabase, London region)]
+        SB[(Supabase, eu-west-1 Ireland)]
         VC[Vercel]
         AP[APNs / FCM]
         SE[Sentry]
@@ -712,7 +712,7 @@ Publish it at a stable URL and reference it from the DPA. Minimum contents:
 
 | Sub-processor | Purpose | Location | Transfer mechanism |
 |---|---|---|---|
-| Supabase | Database, auth, storage, functions | Choose the **London (eu-west-2)** region | UK, none needed for the data at rest. Supabase Inc is US-incorporated, so an International Data Transfer Addendum still applies to support access. `[medium]` |
+| Supabase | Database, auth, storage, functions | **Currently eu-west-1 (Ireland)**, measured 2026-09-07. London was assumed, never chosen — see O-15 in `05-architecture.md`. | **EEA, not the UK.** Covered by the UK's adequacy regulations for the EEA rather than by the data being held in the UK, which is what this row claimed until 2026-09-07. Supabase Inc is US-incorporated, so an International Data Transfer Addendum still applies to support access. `[medium on the adequacy reading, high on the region — it is measured]` |
 | Vercel | Staff web hosting | Configure functions to a London or EU region | UK IDTA / UK Addendum to EU SCCs |
 | Apple APNs, Google FCM | Push notification delivery | US | UK Addendum. Note push payloads must never contain health data. See §7. |
 | Sentry or equivalent | Error monitoring | Use the EU region if you adopt it | UK Addendum |
@@ -722,6 +722,12 @@ Publish it at a stable URL and reference it from the DPA. Minimum contents:
 **Choose the London Supabase region at project creation.** You cannot change it later
 without a migration, and "our data stays in the UK" removes an entire conversation with
 every club. `[high]`
+
+> **This was not done, and was not noticed until 2026-09-07.** Both existing projects are in
+> eu-west-1 (Ireland). The advice above stands for any project created from here; for the
+> existing one it is a migration, and the reasoning about removing a conversation with every
+> club is exactly what makes it worth doing while the data is still synthetic. O-15 in
+> `05-architecture.md` records how the assumption became four statements of fact.
 
 ---
 
@@ -1865,7 +1871,7 @@ and none of it takes longer than a day.
 
 ### Infrastructure
 
-- [ ] Supabase project in the **London** region
+- [ ] Supabase project in the **London** region — **NOT met: it is in eu-west-1 (Ireland)**, found 2026-09-07
 - [ ] Point-in-time recovery enabled
 - [ ] Independent weekly encrypted dump to a different provider and account, alerting on failure
 - [ ] Storage bucket backup decided and documented

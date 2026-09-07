@@ -81,7 +81,7 @@ Do not try to answer all of these at once. Work through them in this order:
 | ID | Question |
 |---|---|
 | **O-14** | Staff offline scope. |
-| **O-15** | Data residency. |
+| **O-15** | Data residency. **CLOSED 2026-09-07: eu-west-1 (Ireland), not the assumed London.** |
 | **O-16** | Push delivery route. |
 | **O-17** | Whether staff web needs a session-replay style debugging tool. |
 | **O-18** | Force-upgrade window. |

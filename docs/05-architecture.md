@@ -228,7 +228,7 @@ the local stack runs the whole system.
 | | Local | Staging | Production |
 |---|---|---|---|
 | Postgres / Auth / Storage | `supabase start`, Docker | Supabase project `fydr-staging` | Supabase project `fydr-prod` |
-| Region | localhost | eu-west-2 (London) | eu-west-2 (London) |
+| Region | localhost | **eu-west-1 (Ireland)** | **eu-west-1 (Ireland)** |
 | Mobile | Expo dev client, Metro | EAS `preview` channel, internal distribution | EAS `production` channel, App Store / Play |
 | Web | `next dev` | Vercel preview deployment per PR | Vercel production, `app.fydr.io` |
 | Migrations applied by | `supabase db reset` | CI on merge to `main` | CI on tag, with manual approval |
@@ -1514,11 +1514,28 @@ are writing to loses data. If a migration is wrong, the fix is another migration
   no single author and therefore no defensible conflict rule. Decide before Phase 2m starts,
   not during it. `[high confidence that read-mostly is right, medium on whether coaches will
   accept it once they have the app in their hand]`
-- **O-15**: Data residency. I have assumed eu-west-2 (London) for both Supabase projects. If
-  any prospective club requires contractual UK-only storage, confirm that Supabase's stated
-  region guarantees plus its subprocessor list satisfy it. This no longer reopens ADR-001: the
-  pooled project is in London, and a club that needs something else is a new ADR against a real
-  contract, not a branch carried in the codebase.
+- **O-15: CLOSED 2026-09-07, and the answer is that the assumption was wrong.** Both Supabase
+  projects are in **eu-west-1 (Ireland)**, not eu-west-2 (London). Measured: the production
+  pooler host is `aws-1-eu-west-1.pooler.supabase.com` and the server's address is in AWS's
+  `2a05:d018::/32` range; scratch is the same.
+
+  This entry originally read "I have assumed eu-west-2 (London) for both Supabase projects",
+  and that assumption was never checked against either project. It then propagated into four
+  places that stated it as settled fact — the environment table above, the sentence below this
+  one, and two claims in `09-security-and-compliance.md`, one of them a legal conclusion. The
+  region was never deliberately chosen: production was created on 2026-08-06 (predating this
+  repository's git history), no ADR discusses region, and `eu-west-1` appeared nowhere in any
+  tracked file until this was found.
+
+  **What actually follows.** Ireland is in the EEA, which the UK's adequacy regulations cover,
+  so a transfer mechanism is very probably still unnecessary — but on adequacy grounds rather
+  than the "data stays in the UK" grounds every document claimed. A club contractually
+  requiring UK-only storage cannot be served from this project, and the region cannot be
+  changed in place: it needs a new project and a migration.
+
+  **A move to London is not blocked on a decision; it is blocked on two capabilities.** See
+  the open item in the architecture to-do list. `[the region is measured; the adequacy
+  reading is not legal advice]`
 - **O-16**: Push delivery route. Expo Push Service is the easy path, and it means device
   tokens and notification titles pass through Expo's infrastructure. Notification bodies will
   therefore never contain health content (`08-notifications.md` will state this), but if a club

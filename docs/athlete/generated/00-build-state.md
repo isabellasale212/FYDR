@@ -317,3 +317,31 @@ framing was not.
 ---
 
 **Stage A0 is closed. Proceeding to Stage A1.**
+
+---
+
+## 11. Re-verified 7 September 2026
+
+The brief was re-issued, so every headline claim in this document was checked
+again against the code as it stands today rather than taken from yesterday.
+**All of them still hold.**
+
+| Claim | Re-checked how | Result |
+|---|---|---|
+| No iOS app anywhere | `find` for `.xcodeproj`, `.xcworkspace`, `Info.plist`, `*.swift`, `app.json`, `app.config.*`, `eas.json`, `Podfile`, `metro.config.*`, `PrivacyInfo.xcprivacy` | nothing matched |
+| No React Native or Expo | every dependency and devDependency read from `package.json` | none |
+| Only one repository | `find /Users/isabellasale/Developer -maxdepth 3 -name .git` | one, this repo |
+| Fifteen athlete pages, none stubs | line count per file | 15 pages, 49 to 1,726 lines |
+| HealthKit is consent only | every `healthkit` reference is `athlete_consents.purpose = 'healthkit_sync'`; no table holds device-sourced sleep, resting heart rate or HRV | no ingestion exists |
+| No App Store artefacts | no bundle identifier, provisioning profile or privacy manifest anywhere | none |
+
+**One line of drift since this was written**, and it is not a behaviour change:
+`programme/nutrition/page.tsx` changed two lines on 7 September, replacing
+gendered copy ("his" to "their") across the product. Screen behaviour, data and
+navigation are untouched.
+
+**Where the process actually stands:** Stage A1 is written and ends at its own
+STOP, waiting for approval before Stage A2. It carries five open items forward,
+the first of which is a Run level access test. Nothing in this re-check changes
+those five.
+

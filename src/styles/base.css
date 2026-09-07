@@ -11002,25 +11002,43 @@ button.dash-stat {
   .launch-claim {
     display: grid;
     align-content: center;
-    gap: 22px;
-    padding: 210px var(--claim-x) 40px;
+    /* NO FLOW GAP. Every space in this column is specified in the brief as a
+       margin from the thing above it — 56px below the wordmark, 48px below the
+       headline — and a gap would silently add itself to both. */
+    gap: 0;
+    /* 56px below the wordmark, stated rather than pre-added: the lockup is
+       absolutely positioned at top 92px and is 86px tall, so its bottom edge is
+       at 178px. */
+    --claim-lead: 56px;
+    padding: calc(178px + var(--claim-lead)) var(--claim-x) 40px;
   }
+  /* THE BRAND FACE, ON SOMETHING THAT IS NOT THE MARK. Asked for explicitly,
+     and worth naming as a decision rather than leaving to be inferred: until
+     now Sora meant "this is the logo" and nothing else, so the page's claim now
+     shares a face with its wordmark. See scripts/test-brand-face.ts, which pins
+     the mark's own rules and is unaffected — this is a headline set in Sora,
+     not an instance of the mark, which is why it carries -0.03em rather than
+     the mark's -0.035em. */
   .launch-claim-h {
     margin: 0;
-    font-family: var(--font-sans), system-ui, sans-serif;
+    font-family: var(--font-brand), system-ui, sans-serif;
     font-weight: 800;
-    /* 44px is the scene's, at its own 1440. It is a sixth of a 464px column at
-       1024, so it scales with the window and only reaches 44 where the scene
-       has the room for it. */
-    font-size: clamp(30px, 3.2vw, 44px);
-    line-height: 1.08;
-    letter-spacing: -0.033em;
+    font-size: 48px;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
     color: var(--text);
-    max-width: 15ch;
-    text-wrap: pretty;
+    /* 11ch as specified, but capped at the column. MEASURED, not guessed: at
+       48px this text is 406.1px wide at 11ch, against 405.5px of content at
+       1080px — the exact width where this column first appears — so a bare 11ch
+       over-runs by 0.6px there and nowhere else. The previous rule was a clamp
+       for the same reason, and its comment said so; min() keeps the requested
+       48px everywhere instead of shrinking the type to avoid a hairline. */
+    max-width: min(11ch, 100%);
+    text-wrap: balance;
   }
   .launch-claim-sub {
-    margin: 0;
+    /* Sits below the features now rather than above them. */
+    margin: 32px 0 0;
     font-size: 14.5px;
     line-height: 1.55;
     color: var(--muted);
@@ -11028,38 +11046,63 @@ button.dash-stat {
     text-wrap: pretty;
   }
 
-  /* The scene's three slots. Their CONTENT is not the scene's: it shows a named
-     club's live figures ("23 of 26 submitted this morning") on a page nobody
-     has signed in to, which is either invented or a tenant's data on the public
-     internet. These say what the screen behind the login shows instead, which
-     is true of every club and leaks none of them — so the numeral weight goes
-     with the numerals, and this reads as a list rather than a readout. */
-  .launch-facts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 18px 26px;
-    align-items: flex-start;
-    list-style: none;
-    margin: 0;
-    padding: 4px 0 0;
-  }
-  /* A floor, so three items wrap to two lines rather than squeezing into three
-     columns of one word each. */
-  .launch-facts li {
+  /* The scene's three slots, as a three-column grid. Their CONTENT is not the
+     scene's: it showed a named club's live figures ("23 of 26 submitted this
+     morning") on a page nobody has signed in to, which is either invented or a
+     tenant's data on the public internet. These say what the screen behind the
+     login shows instead, which is true of every club and leaks none of them.
+
+     NO MEDIA QUERY, AND THAT IS THE ANSWER RATHER THAN AN OMISSION. The worry
+     was that 140 x 3 + 2 x 24 = 468px would not fit a narrow screen. Two things
+     mean it does. `.launch-claim` is display:none below 1080px, so this grid
+     never renders on a phone at all — "narrow" is the 1080-1150px band. And
+     `minmax(0, 140px)` is a MAXIMUM: the tracks shrink on their own to 119.2px
+     at 1080, reach the full 140px at 1150, and STAY at 140px above that — the
+     cap is what 140px means here, so the slack at wider windows falls to the
+     right of the grid rather than into the columns. Verified in the browser at
+     both ends, not calculated.
+
+     Measured against that, the two things that could still break do not. The
+     widest nowrap label is "This morning" at 95.4px — not "Availability" at
+     79.1px, which is what guessing would have said — clearing the narrowest
+     column with 23.8px to spare. Captions wrap to three lines at 1080 and two
+     from 1150, and never overflow.
+
+     SO THIS RULE AND THE 1080px BREAKPOINT ARE ONE DECISION. Showing the claim
+     column on tablets would make this grid real work; do not lower one without
+     reworking the other. */
+  .launch-features {
     display: grid;
-    gap: 4px;
-    flex: 1 1 150px;
-    max-width: 22ch;
+    grid-template-columns: repeat(3, minmax(0, 140px));
+    gap: 24px;
+    align-items: start;
+    list-style: none;
+    /* Specified as a margin-top from the headline, so it is written as one. */
+    margin: 0;
+    margin-top: 48px;
+    padding: 0;
   }
-  .launch-facts .k {
-    font-size: 17px;
+  .launch-features li {
+    display: block;
+    min-width: 0;
+  }
+  .launch-features .i {
+    display: block;
+    color: var(--accent);
+  }
+  .launch-features .k {
+    display: block;
+    margin-top: 8px;
+    font-size: 16px;
     font-weight: 700;
-    letter-spacing: -0.01em;
+    white-space: nowrap;
     color: var(--text);
   }
-  .launch-facts .v {
-    font-size: 12px;
-    line-height: 1.45;
+  .launch-features .v {
+    display: block;
+    margin-top: 3px;
+    font-size: 13.5px;
+    line-height: 1.35;
     color: var(--muted);
   }
 

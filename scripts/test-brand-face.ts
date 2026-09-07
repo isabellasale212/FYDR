@@ -55,7 +55,7 @@ console.log('two faces are loaded, and they are named for their jobs');
   assert(/variable: '--font-sans'/.test(l), "the UI face is --font-sans");
   assert(/variable: '--font-brand'/.test(l), 'and the mark has its own --font-brand');
   const soraBlock = l.slice(l.indexOf('Sora({'), l.indexOf('});', l.indexOf('Sora({')));
-  assert(/weight: \['800'\]/.test(soraBlock), 'Sora is loaded at 800 only — the mark uses one weight and nothing else should use it');
+  assert(/weight: \['800'\]/.test(soraBlock), 'Sora is loaded at 800 only — every brand-face element uses that one weight');
   assert(
     /className=\{`\$\{roboto\.variable\} \$\{sora\.variable\}`\}|className=\{[^}]*sora\.variable/.test(l),
     'and both variables reach the document',
@@ -87,6 +87,34 @@ console.log('\nall three carry the same tracking, which is the point');
   assert(
     values.size === 1 && values.has(TRACKING),
     `one tracking across every instance (saw ${[...values].join(', ')})`,
+  );
+}
+
+console.log('\nthe brand face is used by ONE thing that is not the mark, deliberately');
+{
+  /* Added 2026-09-07 with the launch page rewrite, and recorded here because
+     this file previously said the brand face meant "this is the logo" and
+     nothing else. It no longer does: the sign-in claim is set in Sora 800 by
+     explicit instruction.
+
+     THE DISTINCTION THAT KEEPS THAT HONEST is tracking. The mark is -0.035em
+     wherever it appears; the headline is -0.03em, which is what was asked for
+     and is also what stops it reading as a fourth instance of the wordmark. If
+     somebody later unifies these two numbers "for consistency", the headline
+     becomes the mark, which is the thing the three wordmark surfaces were
+     unified to prevent. */
+  const h = rule('.launch-claim-h');
+  assert(h !== '', '.launch-claim-h exists');
+  assert(/font-family: var\(--font-brand\)/.test(h), 'the launch headline is set in the brand face, by instruction');
+  assert(/font-weight: 800/.test(h), 'at the one weight Sora is loaded at');
+  assert(
+    /letter-spacing: -0\.03em/.test(h) && !/letter-spacing: -0\.035em/.test(h),
+    'but at -0.03em, NOT the mark\'s -0.035em — a headline in the brand face is not an instance of the mark',
+  );
+  const marks = WORDMARKS.map((w) => rule(w.sel));
+  assert(
+    marks.every((r) => /letter-spacing: -0\.035em/.test(r)),
+    'and the three marks keep their own tracking, unaffected by it',
   );
 }
 

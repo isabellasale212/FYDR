@@ -46,33 +46,98 @@ export default function LoginPage() {
 
       {/* Wide only. The phone scene has no claim column — its whole screen is
           the form — so this is hidden below the breakpoint rather than
-          restyled. */}
+          restyled. That is also what makes the three-column grid below safe at
+          every width it renders in; see base.css's own note.
+
+          THE EYEBROW IS GONE ON PURPOSE. "Staff web app" sat between the
+          wordmark and the headline, and the headline is specified as sitting
+          56px below the wordmark, which it cannot do with a line in between. It
+          was also the least true string on the page: athletes sign in here too.
+
+          THE THREE CAPTIONS ARE UNCHANGED COPY, re-presented. See this file's
+          header for why that matters — the design scene put a named club's live
+          figures on a page nobody has signed in to, and these are the honest
+          replacements. A redesign is not a licence to reopen that. */}
       <section className="launch-claim">
-        <div className="launch-step">
-          <p className="eyebrow">Staff web app</p>
-          <h2 className="launch-claim-h">
-            The data you already collect, finally worth opening at 07:00.
-          </h2>
-          <p className="launch-claim-sub">
-            Sign in to see this morning&rsquo;s entries against each athlete&rsquo;s
-            baseline. Coaching staff see availability and restrictions; diagnosis and
-            treatment notes stay with medical staff and the athlete.
-          </p>
-        </div>
-        <ul className="launch-facts launch-step">
+        <h2 className="launch-claim-h launch-step">Data, finally worth reading.</h2>
+
+        <ul className="launch-features launch-step">
           <li>
-            <span className="k">This morning</span>
-            <span className="v">entries against each athlete&rsquo;s baseline</span>
-          </li>
-          <li>
+            <svg
+              className="i"
+              data-feature="flags"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              {/* Sized against the two circles beside it rather than drawn on
+                  its own: they span y 3.6-20.4 at r=8.4, and a flag with a
+                  short banner read visibly lighter than them at 24px. The pole
+                  stays left, which is what makes it a flag rather than a
+                  pennant, but the banner is deep enough to carry the same
+                  optical weight. */}
+              <path d="M5.75 20.75V3.9" />
+              <path d="M5.75 4.6h12.5l-2.3 4 2.3 4H5.75" />
+            </svg>
             <span className="k">Flags</span>
             <span className="v">raised when a value crosses your threshold</span>
           </li>
           <li>
+            <svg
+              className="i"
+              data-feature="availability"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="8.4" />
+              <path d="M8.3 12.3l2.6 2.5 4.8-5.1" />
+            </svg>
             <span className="k">Availability</span>
             <span className="v">who can train, and what they can&rsquo;t do</span>
           </li>
+          <li>
+            <svg
+              className="i"
+              data-feature="this-morning"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="8.4" />
+              <path d="M12 7.3V12l3.3 2" />
+            </svg>
+            <span className="k">This morning</span>
+            <span className="v">entries against each athlete&rsquo;s baseline</span>
+          </li>
         </ul>
+
+        {/* Kept, and moved below the grid rather than deleted with the eyebrow.
+            The brief pins wordmark -> headline -> grid and says nothing about
+            what follows, and this is the only sentence on the public page that
+            states the medical-visibility rule. */}
+        <p className="launch-claim-sub launch-step">
+          Coaching staff see availability and restrictions; diagnosis and treatment
+          notes stay with medical staff and the athlete.
+        </p>
       </section>
 
       <div className="launch-page">

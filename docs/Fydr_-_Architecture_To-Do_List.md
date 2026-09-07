@@ -60,7 +60,7 @@ Both come after the sign-in-history item in 0b, which is in progress.
   **THE RESPONSIVE ANSWER SHE ASKED FOR, AND IT INVERTS THE PREMISE.** Measured on production before proposing, not estimated. The worry was that 140×3 + gaps = 468px "won't fit smaller screens". Two things make that not the problem:
 
   * **`.launch-claim` is `display: none` below 1080px.** This grid never renders on a phone at all. "Narrow" here means the 1080–1150px band, not 360px.
-  * **`minmax(0, 140px)` is a MAXIMUM, not a fixed width.** The tracks shrink on their own. Column widths across the range the grid actually renders in: 119.2px at 1080, 140px at 1150 (where it first reaches the full size), 178.8px at 1280, 226.7px at 1440. Nothing overflows at any of them.
+  * **`minmax(0, 140px)` is a MAXIMUM, not a fixed width.** The tracks shrink on their own. Column widths across the range the grid actually renders in: 119.2px at 1080, and the full 140px from 1150 up, where they stay — the cap is what 140px means, so slack at wider windows falls to the right of the grid rather than into the columns. Nothing overflows at any of them.
 
   Measured against that, the two things that could still break do not:
 

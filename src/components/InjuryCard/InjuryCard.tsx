@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { AthleteInjuryRow, InjuryClinical } from '@/lib/queries/injuries';
+import type { InjuryProgrammeStatus } from '@/lib/queries/injuryTimeline';
 import { enumLabel, formatDate } from '@/lib/format';
 
 /** The injury card on the player profile. One card, role-driven content.
@@ -37,6 +38,9 @@ type Props = {
    *  ["No contact", "Conditioning only"]. Never the clinical reason. */
   restrictions: readonly string[];
   canEditClinical: boolean;
+  /** Rehab programme state for the active injury. Non-null only for a medic,
+   *  fetched by the page on the same condition as `clinical`. */
+  programmeStatus: InjuryProgrammeStatus | null;
   timezone: string;
 };
 
@@ -70,7 +74,7 @@ function ClinicalField({ label, value }: { label: string; value: string | null }
   );
 }
 
-export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, timezone }: Props) {
+export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, programmeStatus, timezone }: Props) {
   const active = injuries.find((i) => i.status !== 'closed') ?? null;
   const past = injuries.filter((i) => i.status === 'closed');
 
@@ -174,6 +178,52 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
                   <p className="sub" style={{ margin: '2px 0 0' }}>
                     {clinical.clinical_notes}
                   </p>
+                </>
+              ) : null}
+
+              {/* RETURN TO PLAY, and the route to where it is actually done.
+                  The card told a medic somebody was injured and stopped. The
+                  proposal, the sign-off and the timeline all live on
+                  /injuries/[id], and nothing here said so — so a medic could not
+                  tell from the profile whether a programme had been proposed,
+                  was running, or did not exist.
+
+                  Deliberately a SUMMARY plus a link. No stage control, no
+                  timeline, no sign-off button: that work stays on the dedicated
+                  screen. "No rehab programme yet" is a state a medic acts on,
+                  not an absence to render as nothing. */}
+              {canEditClinical && active ? (
+                <>
+                  <hr className="hr" />
+                  <div style={{ marginTop: 12 }}>
+                    <span className="label">Rehab programme</span>
+                    <p className="import-sub" style={{ margin: '4px 0 0' }}>
+                      {programmeStatus === null || programmeStatus.kind === 'none' ? (
+                        'No rehab programme yet.'
+                      ) : programmeStatus.kind === 'proposed' ? (
+                        <>
+                          S&amp;C proposed: <b>{programmeStatus.name}</b>, awaiting your sign-off.
+                        </>
+                      ) : (
+                        <>
+                          Active programme: <b>{programmeStatus.name}</b>
+                          {programmeStatus.week !== null
+                            ? programmeStatus.totalWeeks !== null
+                              ? `, week ${programmeStatus.week} of ${programmeStatus.totalWeeks}`
+                              : `, week ${programmeStatus.week}`
+                            : ''}
+                          .
+                        </>
+                      )}
+                    </p>
+                    <Link
+                      href={`/injuries/${active.id}`}
+                      className="pp-link"
+                      style={{ display: 'inline-block', marginTop: 8 }}
+                    >
+                      Manage injury &amp; programme →
+                    </Link>
+                  </div>
                 </>
               ) : null}
 

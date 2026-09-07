@@ -8,6 +8,7 @@ import { PlayerProfileBio } from '@/components/PlayerProfileBio/PlayerProfileBio
 import { PlayerProfileFlags } from '@/components/PlayerProfileFlags/PlayerProfileFlags';
 import { InjuryCard } from '@/components/InjuryCard/InjuryCard';
 import { fetchCurrentAvailability } from '@/lib/queries/availability';
+import { fetchInjuryProgrammeStatus } from '@/lib/queries/injuryTimeline';
 import { fetchInjuryClinical } from '@/lib/queries/injuries';
 import { BodyWeightPanel } from '@/components/BodyWeightPanel/BodyWeightPanel';
 import { SetAvailabilityFormCoach } from '@/components/SetAvailabilityFormCoach/SetAvailabilityFormCoach';
@@ -424,6 +425,13 @@ export default async function AthletePage({
   const viewerIsClinical = hasAnyRole(claims.roles, CLINICAL_ONLY);
   const activeInjuryClinical =
     viewerIsClinical && activeInjury ? await fetchInjuryClinical(db, orgId, activeInjury.id) : null;
+  /* Same condition as the clinical fetch above, for the same reason: a coach's
+     render pass never asks for it. The card's programme line and its link to the
+     injury record are medic-only. */
+  const programmeStatus =
+    viewerIsClinical && activeInjury
+      ? await fetchInjuryProgrammeStatus(db, orgId, activeInjury.id)
+      : null;
 
   /* Restrictions for the limited view come from the CURRENT availability record,
      which is where plain-language restrictions live — never from the clinical
@@ -707,6 +715,7 @@ export default async function AthletePage({
                  them — see the fetch above. The component never has the data to
                  leak. */
               clinical={activeInjuryClinical}
+              programmeStatus={programmeStatus}
               restrictions={currentRestrictions}
               canEditClinical={hasAnyRole(claims.roles, CLINICAL_ONLY)}
               timezone={timezone}

@@ -275,3 +275,60 @@ export async function requestProposalChanges(
     payload: { assignment_id: input.assignmentId, text: reason, kind: 'changes_requested' },
   });
 }
+
+/** What the profile card says about this injury's rehab programme.
+ *
+ *  Three states, and 'none' is one of them rather than a null. A medic looking
+ *  at the profile needs to tell "nothing proposed yet" apart from "something is
+ *  waiting on me", and rendering nothing for the first is indistinguishable from
+ *  a card that failed to load.
+ *
+ *  Week N of M is derived, not stored, and degrades rather than invents: a
+ *  programme with no duration_weeks reports its name and no week count instead of
+ *  guessing one. N is clamped to M so a block that has run over does not read
+ *  "week 6 of 4".
+ *
+ *  A PROPOSAL WINS OVER A RUNNING PROGRAMME when both exist, because it is the
+ *  one with an action attached — the medic can read "active" any time, but a
+ *  proposal is waiting on them specifically. */
+export type InjuryProgrammeStatus =
+  | { kind: 'none' }
+  | { kind: 'proposed'; name: string }
+  | { kind: 'active'; name: string; week: number | null; totalWeeks: number | null };
+
+export async function fetchInjuryProgrammeStatus(
+  db: Db,
+  orgId: string,
+  injuryId: string,
+): Promise<InjuryProgrammeStatus> {
+  const { data, error } = await db
+    .from('programme_assignments')
+    .select('status, starts_on, programmes(name, duration_weeks)')
+    .eq('org_id', orgId)
+    .eq('injury_id', injuryId)
+    .in('status', ['proposed', 'active'])
+    .order('starts_on', { ascending: false });
+  if (error) throw new Error(error.message);
+
+  type Row = {
+    status: 'proposed' | 'active';
+    starts_on: string;
+    programmes: { name: string; duration_weeks: number | null } | null;
+  };
+  const rows = (data ?? []) as unknown as Row[];
+  if (rows.length === 0) return { kind: 'none' };
+
+  const proposed = rows.find((r) => r.status === 'proposed');
+  if (proposed) return { kind: 'proposed', name: proposed.programmes?.name ?? 'a programme' };
+
+  const live = rows[0]!;
+  const totalWeeks = live.programmes?.duration_weeks ?? null;
+  const started = Date.parse(`${live.starts_on}T12:00:00Z`);
+  const elapsed = Number.isNaN(started)
+    ? null
+    : Math.floor((Date.now() - started) / (7 * 24 * 60 * 60 * 1000)) + 1;
+  const week =
+    elapsed === null || elapsed < 1 ? null : totalWeeks === null ? elapsed : Math.min(elapsed, totalWeeks);
+
+  return { kind: 'active', name: live.programmes?.name ?? 'a programme', week, totalWeeks };
+}

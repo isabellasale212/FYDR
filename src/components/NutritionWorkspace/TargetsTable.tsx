@@ -158,7 +158,7 @@ function AthleteRow({
   // what? by whom?"). The pill now reads as a sentence fragment with a subject and an
   // object — "Override — 2.2 g/kg protein" — and the full rule is one hover away.
   const overrideTitle = athlete.overrideRule
-    ? `Personal override — ${athlete.overrideRule.proteinGPerKg} g/kg protein · ${athlete.overrideRule.carbGPerKg} g/kg carb · ${athlete.overrideRule.fatGPerKg} g/kg fat · ${athlete.overrideRule.fluidMlPerKg} ml/kg fluid`
+    ? `Personal override — ${athlete.overrideRule.proteinGPerKg} g/kg protein · ${athlete.overrideRule.carbGPerKgByDay.training}/${athlete.overrideRule.carbGPerKgByDay.match}/${athlete.overrideRule.carbGPerKgByDay.rest} g/kg carb (train/match/rest) · ${athlete.overrideRule.fatGPerKg} g/kg fat · ${athlete.overrideRule.fluidMlPerKg} ml/kg fluid`
     : undefined;
 
   // Finding 40: the resolved Energy figure was a number with no visible working. This

@@ -21,7 +21,7 @@ type Props = {
 
 function describeOverride(reason: string | null, rule: MacroRule | null): string | null {
   const numbers = rule
-    ? `${rule.proteinGPerKg} g/kg protein · ${rule.carbGPerKg} g/kg carb · ${rule.fatGPerKg} g/kg fat · ${rule.fluidMlPerKg} ml/kg fluid`
+    ? `${rule.proteinGPerKg} g/kg protein · ${rule.carbGPerKgByDay.training}/${rule.carbGPerKgByDay.match}/${rule.carbGPerKgByDay.rest} g/kg carb (train/match/rest) · ${rule.fatGPerKg} g/kg fat · ${rule.fluidMlPerKg} ml/kg fluid`
     : null;
   if (reason && numbers) return `Personal override — ${reason} (${numbers})`;
   if (reason) return `Personal override — ${reason}`;

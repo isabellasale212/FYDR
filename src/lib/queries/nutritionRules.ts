@@ -1,4 +1,4 @@
-import { computeTargets, DAY_TYPES, mdOffsetForDayType, type DayTypeId, type MacroRule } from '@/lib/nutritionRules';
+import { computeTargets, mdOffsetForDayType, type DayTypeId, type MacroRule } from '@/lib/nutritionRules';
 import { humanizeDbError } from '@/lib/writeErrors';
 import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchBodyCompositionForAthletes } from './bodyComposition';
@@ -17,7 +17,9 @@ export type NutritionRuleRow = {
   group_id: string | null;
   org_default: boolean;
   protein_g_per_kg: number;
-  carb_g_per_kg: number;
+  carb_g_per_kg_training: number;
+  carb_g_per_kg_match: number;
+  carb_g_per_kg_rest: number;
   fat_g_per_kg: number;
   fluid_ml_per_kg: number;
   energy_kcal_cap: number | null;
@@ -35,7 +37,11 @@ export type RuleWithNames = NutritionRuleRow & {
 export function ruleToMacroRule(r: NutritionRuleRow): MacroRule {
   return {
     proteinGPerKg: r.protein_g_per_kg,
-    carbGPerKg: r.carb_g_per_kg,
+    carbGPerKgByDay: {
+      training: r.carb_g_per_kg_training,
+      match: r.carb_g_per_kg_match,
+      rest: r.carb_g_per_kg_rest,
+    },
     fatGPerKg: r.fat_g_per_kg,
     fluidMlPerKg: r.fluid_ml_per_kg,
     energyKcalCap: r.energy_kcal_cap,
@@ -47,7 +53,7 @@ export async function fetchRules(db: Db, orgId: string): Promise<RuleWithNames[]
   const { data, error } = await db
     .from('nutrition_rules')
     .select(
-      'id, athlete_id, group_id, org_default, protein_g_per_kg, carb_g_per_kg, fat_g_per_kg, fluid_ml_per_kg, energy_kcal_cap, reason, effective_from, created_by, athletes(first_name, last_name), groups(name, sort_order)',
+      'id, athlete_id, group_id, org_default, protein_g_per_kg, carb_g_per_kg_training, carb_g_per_kg_match, carb_g_per_kg_rest, fat_g_per_kg, fluid_ml_per_kg, energy_kcal_cap, reason, effective_from, created_by, athletes(first_name, last_name), groups(name, sort_order)',
     )
     .eq('org_id', orgId)
     .is('deleted_at', null)
@@ -61,7 +67,9 @@ export async function fetchRules(db: Db, orgId: string): Promise<RuleWithNames[]
     group_id: r.group_id,
     org_default: r.org_default,
     protein_g_per_kg: Number(r.protein_g_per_kg),
-    carb_g_per_kg: Number(r.carb_g_per_kg),
+    carb_g_per_kg_training: Number(r.carb_g_per_kg_training),
+    carb_g_per_kg_match: Number(r.carb_g_per_kg_match),
+    carb_g_per_kg_rest: Number(r.carb_g_per_kg_rest),
     fat_g_per_kg: Number(r.fat_g_per_kg),
     fluid_ml_per_kg: Number(r.fluid_ml_per_kg),
     energy_kcal_cap: r.energy_kcal_cap === null ? null : Number(r.energy_kcal_cap),
@@ -110,7 +118,9 @@ export type RuleInput = {
   athleteId: string | null;
   groupId: string | null;
   protein: number;
-  carb: number;
+  /* Three independent numbers, not a rate. See MacroRule in lib/nutritionRules.ts
+     for why the shared carb rate and its per-day multipliers were removed. */
+  carbByDay: Record<DayTypeId, number>;
   fat: number;
   fluid: number;
   energyCap: number | null;
@@ -155,7 +165,9 @@ export async function versionRule(
 
   const values = {
     protein_g_per_kg: input.protein,
-    carb_g_per_kg: input.carb,
+    carb_g_per_kg_training: input.carbByDay.training,
+    carb_g_per_kg_match: input.carbByDay.match,
+    carb_g_per_kg_rest: input.carbByDay.rest,
     fat_g_per_kg: input.fat,
     fluid_ml_per_kg: input.fluid,
     energy_kcal_cap: input.energyCap,
@@ -251,8 +263,7 @@ export async function syncComputedTarget(
     }
   }
 
-  const multiplier = DAY_TYPES.find((d) => d.id === dayType)?.multiplier ?? 1;
-  const computed = computeTargets(rule, massKg, multiplier);
+  const computed = computeTargets(rule, massKg, dayType);
   // The org's real local today, not the server's UTC clock — same bug
   // class as versionRule above.
   const today = todayIso(timezone);
@@ -339,7 +350,9 @@ export type AssignPlanInput = {
   athleteId: string | null;
   groupId: string | null;
   protein: number;
-  carb: number;
+  /* Three independent numbers, not a rate. See MacroRule in lib/nutritionRules.ts
+     for why the shared carb rate and its per-day multipliers were removed. */
+  carbByDay: Record<DayTypeId, number>;
   fat: number;
   fluid: number;
   energyCap: number | null;
@@ -367,7 +380,7 @@ export async function assignPlan(
       athleteId: input.athleteId,
       groupId: input.groupId,
       protein: input.protein,
-      carb: input.carb,
+      carbByDay: input.carbByDay,
       fat: input.fat,
       fluid: input.fluid,
       energyCap: input.energyCap,
@@ -388,7 +401,7 @@ export async function assignPlan(
 
   const rule: MacroRule = {
     proteinGPerKg: input.protein,
-    carbGPerKg: input.carb,
+    carbGPerKgByDay: input.carbByDay,
     fatGPerKg: input.fat,
     fluidMlPerKg: input.fluid,
     energyKcalCap: input.energyCap,
@@ -466,7 +479,9 @@ export async function createPlan(
       athleteId: null,
       groupId,
       protein: 1.9,
-      carb: 6.0,
+      /* A brand-new group rule starts at the printed guidelines. Written once,
+         at creation; from then on each day type is edited on its own. */
+      carbByDay: { training: 6.0, match: 7.5, rest: 3.5 },
       fat: 1.0,
       fluid: 40,
       energyCap: null,

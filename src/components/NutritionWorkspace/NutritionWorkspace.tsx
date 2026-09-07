@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import {
   DAY_TYPES,
+  mealPortionRatio,
   MACRO_TOLERANCE_PCT,
   RULE_BOUNDS,
   computeTargets,
@@ -102,14 +103,19 @@ export function NutritionWorkspace({
   const dayTypeInfo = DAY_TYPES.find((d) => d.id === dayType) ?? DAY_TYPES[0]!;
 
   const [protein, setProtein] = useState(selectedPlan?.protein ?? RULE_BOUNDS.protein.default);
-  const [carb, setCarb] = useState(selectedPlan?.carb ?? RULE_BOUNDS.carb.default);
+  /* Three values, edited one at a time. There is no shared rate and no factor
+     between them: setCarbForDay patches the selected day's key and copies the
+     other two through unchanged, which is the whole point of the change. */
+  const [carbByDay, setCarbByDay] = useState<Record<DayTypeId, number>>(
+    selectedPlan?.carbByDay ?? { training: 6.0, match: 7.5, rest: 3.5 },
+  );
   const [fat, setFat] = useState(selectedPlan?.fat ?? RULE_BOUNDS.fat.default);
   const [fluid, setFluid] = useState(selectedPlan?.fluid ?? RULE_BOUNDS.fluid.default);
 
   useEffect(() => {
     if (!selectedPlan) return;
     setProtein(selectedPlan.protein);
-    setCarb(selectedPlan.carb);
+    setCarbByDay(selectedPlan.carbByDay);
     setFat(selectedPlan.fat);
     setFluid(selectedPlan.fluid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -132,8 +138,8 @@ export function NutritionWorkspace({
   const [mealFormError, setMealFormError] = useState<string | null>(null);
 
   const currentRule: MacroRule = useMemo(
-    () => ({ proteinGPerKg: protein, carbGPerKg: carb, fatGPerKg: fat, fluidMlPerKg: fluid, energyKcalCap: selectedPlan?.energyCap ?? null }),
-    [protein, carb, fat, fluid, selectedPlan],
+    () => ({ proteinGPerKg: protein, carbGPerKgByDay: carbByDay, fatGPerKg: fat, fluidMlPerKg: fluid, energyKcalCap: selectedPlan?.energyCap ?? null }),
+    [protein, carbByDay, fat, fluid, selectedPlan],
   );
 
   const athletesWithTargets: AthleteWithTargets[] = useMemo(
@@ -143,7 +149,7 @@ export function NutritionWorkspace({
         if (!resolved) return { ...a, resolvedSource: null, targets: null, overrideRule: null };
         const isPreviewed = selectedPlan !== null && resolved.rule.id === selectedPlan.ruleId;
         const macroRule = isPreviewed ? currentRule : ruleToMacroRule(resolved.rule);
-        const targets = a.massKg !== null ? computeTargets(macroRule, a.massKg, dayTypeInfo.multiplier) : null;
+        const targets = a.massKg !== null ? computeTargets(macroRule, a.massKg, dayType) : null;
         // Finding 42: the raw per-kg rule behind a personal override, threaded through
         // so the table can say what "Override" actually means instead of leaving it a
         // bare pill. Only kept for athlete-scoped overrides — group/org rows show the
@@ -151,7 +157,7 @@ export function NutritionWorkspace({
         const overrideRule = resolved.source === 'athlete' ? macroRule : null;
         return { ...a, resolvedSource: resolved.source, targets, overrideRule };
       }),
-    [athletes, rules, selectedPlan, currentRule, dayTypeInfo.multiplier],
+    [athletes, rules, selectedPlan, currentRule, dayType],
   );
 
   const unitGroupsWithTargets = useMemo(() => {
@@ -175,14 +181,28 @@ export function NutritionWorkspace({
   // extraMeals is additive only: it never replaces or reorders the fixed five. Memoized
   // (not a plain ternary) so dayTotals' own useMemo below sees a stable reference and
   // does not recompute every render.
+  /* The one writer for a carbohydrate number. It patches the SELECTED day's key
+     and spreads the other two through untouched — there is no factor, no shared
+     rate, and no path by which editing match day can move training or rest. */
+  function setCarbForDay(next: number): void {
+    setCarbByDay((cur) => ({ ...cur, [dayType]: next }));
+  }
+
   const massKg = selectedAthlete?.massKg ?? null;
+  /* The EXAMPLE MEALS still have to shrink and grow with the day type, or the
+     meal card would show a rest-day plate against a match-day target. This is a
+     display ratio derived from the numbers the nutritionist set — the day's own
+     carb value over the training day's — NOT a rate the three targets are
+     computed from. The three remain independent; this only decides how big the
+     illustrative portions are drawn. */
+  const mealCarbRatio = mealPortionRatio(carbByDay, dayType);
   const scaledMeals: ScaledMeal[] | null = useMemo(() => {
     if (massKg === null) return null;
     return [
-      ...scaleDay(massKg, dayTypeInfo.multiplier),
-      ...extraMeals.map((m) => scaleMeal(m.meal, massKg, dayTypeInfo.multiplier)),
+      ...scaleDay(massKg, mealCarbRatio),
+      ...extraMeals.map((m) => scaleMeal(m.meal, massKg, mealCarbRatio)),
     ];
-  }, [massKg, dayTypeInfo.multiplier, extraMeals]);
+  }, [massKg, mealCarbRatio, extraMeals]);
 
   const dayTotals = useMemo(() => {
     if (!scaledMeals) return null;
@@ -205,7 +225,7 @@ export function NutritionWorkspace({
         athleteId: null,
         groupId: selectedPlan.groupId,
         protein,
-        carb,
+        carbByDay,
         fat,
         fluid,
         energyCap: selectedPlan.energyCap,
@@ -257,7 +277,7 @@ export function NutritionWorkspace({
     setExtraMeals((prev) => [...prev, { id: meal.id, meal: libraryMealToMeal(meal) }]);
   }
 
-  const exampleTargets = computeTargets(currentRule, 100, dayTypeInfo.multiplier);
+  const exampleTargets = computeTargets(currentRule, 100, dayType);
   const squadMeanN = athletesWithTargets.filter((a) => a.targets !== null).length;
   const squadMeanEnergy = (() => {
     const withTargets = athletesWithTargets.filter((a) => a.targets !== null);
@@ -333,7 +353,7 @@ export function NutritionWorkspace({
                 onClick={() => setDayType(dt.id)}
               >
                 <span className="nutr-daytype-name">{dt.label}</span>
-                <span className="nutr-mono nutr-daytype-carb">{(carb * dt.multiplier).toFixed(1)} g/kg</span>
+                <span className="nutr-mono nutr-daytype-carb">{carbByDay[dt.id].toFixed(1)} g/kg</span>
               </button>
             ))}
           </div>
@@ -423,14 +443,14 @@ export function NutritionWorkspace({
             <RuleStepper
               macro="carb"
               label="Carbohydrate"
-              value={carb * dayTypeInfo.multiplier}
-              displayValue={(carb * dayTypeInfo.multiplier).toFixed(1)}
+              value={carbByDay[dayType]}
+              displayValue={carbByDay[dayType].toFixed(1)}
               unit={RULE_BOUNDS.carb.unit}
-              footnote={`${dayTypeInfo.label} · ${RULE_BOUNDS.carb.footnote}`}
+              footnote={`${dayTypeInfo.label} · guideline ${dayTypeInfo.guideline} g/kg`}
               min={RULE_BOUNDS.carb.min}
               max={RULE_BOUNDS.carb.max}
               step={RULE_BOUNDS.carb.step}
-              onChange={(next) => setCarb(Math.round((next / dayTypeInfo.multiplier) * 100) / 100)}
+              onChange={(next) => setCarbForDay(next)}
               disabled={!canEdit}
             />
             <RuleStepper

@@ -1,3 +1,4 @@
+import type { DayTypeId } from '@/lib/nutritionRules';
 import type { WorkspaceAthlete } from '@/lib/nutritionWorkspace';
 import type { LibraryMeal } from '@/lib/queries/mealLibrary';
 import type { RuleWithNames } from '@/lib/queries/nutritionRules';
@@ -11,7 +12,8 @@ export type PlanDTO = {
   overrideCount: number;
   referenceMassKg: number | null;
   protein: number;
-  carb: number;
+  /* One per day type. Replaced a single shared rate — see MacroRule. */
+  carbByDay: Record<DayTypeId, number>;
   fat: number;
   fluid: number;
   energyCap: number | null;

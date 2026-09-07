@@ -2081,7 +2081,6 @@ export type Database = {
         group_id: string | null
         org_default: boolean
         protein_g_per_kg: number
-        carb_g_per_kg: number
         fat_g_per_kg: number
         fluid_ml_per_kg: number
         energy_kcal_cap: number | null
@@ -2092,6 +2091,9 @@ export type Database = {
         created_at: string
         updated_at: string
         deleted_at: string | null
+        carb_g_per_kg_training: number
+        carb_g_per_kg_match: number
+        carb_g_per_kg_rest: number
       }
       Insert: {
         id?: string
@@ -2100,7 +2102,6 @@ export type Database = {
         group_id?: string | null
         org_default?: boolean
         protein_g_per_kg: number
-        carb_g_per_kg: number
         fat_g_per_kg: number
         fluid_ml_per_kg: number
         energy_kcal_cap?: number | null
@@ -2111,6 +2112,9 @@ export type Database = {
         created_at?: string
         updated_at?: string
         deleted_at?: string | null
+        carb_g_per_kg_training: number
+        carb_g_per_kg_match: number
+        carb_g_per_kg_rest: number
       }
       Update: {
         id?: string
@@ -2119,7 +2123,6 @@ export type Database = {
         group_id?: string | null
         org_default?: boolean
         protein_g_per_kg?: number
-        carb_g_per_kg?: number
         fat_g_per_kg?: number
         fluid_ml_per_kg?: number
         energy_kcal_cap?: number | null
@@ -2130,6 +2133,9 @@ export type Database = {
         created_at?: string
         updated_at?: string
         deleted_at?: string | null
+        carb_g_per_kg_training?: number
+        carb_g_per_kg_match?: number
+        carb_g_per_kg_rest?: number
       }
       Relationships: [
         {

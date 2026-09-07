@@ -384,7 +384,11 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
           overrideCount: p.overrideCount,
           referenceMassKg: p.referenceMassKg,
           protein: p.rule.protein_g_per_kg,
-          carb: p.rule.carb_g_per_kg,
+          carbByDay: {
+            training: p.rule.carb_g_per_kg_training,
+            match: p.rule.carb_g_per_kg_match,
+            rest: p.rule.carb_g_per_kg_rest,
+          },
           fat: p.rule.fat_g_per_kg,
           fluid: p.rule.fluid_ml_per_kg,
           energyCap: p.rule.energy_kcal_cap,

@@ -8,7 +8,14 @@
 
 export type MacroRule = {
   proteinGPerKg: number;
-  carbGPerKg: number;
+  /* One carbohydrate number per day type, and no shared rate between them.
+     Replaced a single carbGPerKg plus a fixed per-day multiplier (training x1,
+     match x1.25, rest x0.58) on 2026-09-07. Under that model the editor divided
+     an entered value back into the shared field, so setting a match-day number
+     moved training and rest too, and "match 7.5, rest 3.0" was unrepresentable
+     unless the ratio happened to be 1.25 : 0.58. Deliberately a removal: there
+     is nothing shared left for a later simplification to re-derive them from. */
+  carbGPerKgByDay: Record<DayTypeId, number>;
   fatGPerKg: number;
   fluidMlPerKg: number;
   /** NUTRITION-SPEC.md §8 OVERRIDE.kcalCap: clamps the derived total, never sets it. */
@@ -25,7 +32,7 @@ export type ComputedTargets = {
 
 /** NUTRITION-SPEC.md §4's own targets() function, unchanged:
  *    protein = mass * rule.protein
- *    carb    = mass * rule.carb * dayMultiplier
+ *    carb    = mass * rule.carbByDay[dayType]   (no multiplier: see MacroRule)
  *    fat     = mass * rule.fat
  *    kcal    = protein*4 + carb*4 + fat*9, clamped by an explicit cap only
  *    fluid   = mass * rule.fluid   (this build stores/returns millilitres, not litres —
@@ -34,9 +41,9 @@ export type ComputedTargets = {
  * Energy is always derived, never an independent input — that is the one property this
  * function exists to guarantee, per the spec: "a target can never contradict its own
  * macros." */
-export function computeTargets(rule: MacroRule, massKg: number, dayMultiplier: number): ComputedTargets {
+export function computeTargets(rule: MacroRule, massKg: number, dayType: DayTypeId): ComputedTargets {
   const proteinG = massKg * rule.proteinGPerKg;
-  const carbsG = massKg * rule.carbGPerKg * dayMultiplier;
+  const carbsG = massKg * rule.carbGPerKgByDay[dayType];
   const fatG = massKg * rule.fatGPerKg;
   let energyKcal = proteinG * 4 + carbsG * 4 + fatG * 9;
   if (rule.energyKcalCap !== null) energyKcal = Math.min(energyKcal, rule.energyKcalCap);
@@ -44,18 +51,42 @@ export function computeTargets(rule: MacroRule, massKg: number, dayMultiplier: n
   return { energyKcal, proteinG, carbsG, fatG, fluidMl };
 }
 
-/** NUTRITION-SPEC.md §3's three fixed day types. Not a table (see migration 0039's
- *  header, "What is NOT stored here") — there is no edit affordance on these three rows
- *  anywhere in the spec, so they are an application constant. The `carb` field is the
- *  reference number the Day type list itself displays (rule.carb x multiplier at the
- *  default 6.0 g/kg rule); the multiplier is the number targets() actually uses. */
+/** NUTRITION-SPEC.md §3's three day types. Still an application constant rather than a
+ *  table — there is no affordance anywhere for adding a fourth.
+ *
+ *  `guideline` is a PRINTED REFERENCE and nothing else: shown beside the field so a
+ *  nutritionist has a starting point, never written, never defaulted onto an existing
+ *  rule, and nothing clamps or validates against it. It is the number the old fixed
+ *  multipliers produced from a 6.0 g/kg rule, kept because it was a reasonable
+ *  suggestion, not because anything depends on it. */
 export type DayTypeId = 'training' | 'match' | 'rest';
 
-export const DAY_TYPES: { id: DayTypeId; label: string; multiplier: number; referenceCarb: number }[] = [
-  { id: 'training', label: 'Training day', multiplier: 1, referenceCarb: 6.0 },
-  { id: 'match', label: 'Match day', multiplier: 1.25, referenceCarb: 7.5 },
-  { id: 'rest', label: 'Rest day', multiplier: 0.58, referenceCarb: 3.5 },
+export const DAY_TYPES: { id: DayTypeId; label: string; guideline: number }[] = [
+  { id: 'training', label: 'Training day', guideline: 6.0 },
+  { id: 'match', label: 'Match day', guideline: 7.5 },
+  { id: 'rest', label: 'Rest day', guideline: 3.5 },
 ];
+
+/** How big to draw the EXAMPLE MEAL portions for a day type, relative to a
+ *  training day.
+ *
+ *  Display only. The three carbohydrate targets are independent and are never
+ *  computed from this — it exists so the meal card does not show a rest-day
+ *  plate against a match-day target. Derived from the nutritionist's own three
+ *  numbers where they are to hand; where they are not (the athlete's own page
+ *  resolves a target, not a rule) it falls back to the printed guidelines,
+ *  whose ratios are the ones the old fixed multipliers produced, so that card
+ *  draws exactly as it did before. */
+export function mealPortionRatio(
+  carbByDay: Record<DayTypeId, number> | null,
+  dayType: DayTypeId,
+): number {
+  const source =
+    carbByDay ??
+    (Object.fromEntries(DAY_TYPES.map((d) => [d.id, d.guideline])) as Record<DayTypeId, number>);
+  const base = source.training;
+  return base > 0 ? source[dayType] / base : 1;
+}
 
 /** Touchpoint 6: day types map onto the real md_offset column, imperfectly.
  *  Match day is real and exact — md_offset = 0 is the schema's own definition of
@@ -74,7 +105,9 @@ export function mdOffsetForDayType(dayType: DayTypeId): number | null {
 /** Stepper bounds, NUTRITION-SPEC.md §4's own table. */
 export const RULE_BOUNDS = {
   protein: { min: 1.2, max: 2.6, step: 0.1, default: 1.9, unit: 'g per kg', footnote: 'held on every day type' },
-  carb: { min: 2, max: 10, step: 0.5, default: 6.0, unit: 'g per kg', footnote: 'periodised' },
+  /* One bound for all three day types. `default` is only the starting value for a
+     brand-new rule; each day type is entered and stored on its own. */
+  carb: { min: 2, max: 12.5, step: 0.5, default: 6.0, unit: 'g per kg', footnote: 'set per day type' },
   fat: { min: 0.6, max: 1.8, step: 0.1, default: 1.0, unit: 'g per kg', footnote: 'fills the remainder' },
   fluid: { min: 25, max: 60, step: 5, default: 40, unit: 'ml per kg', footnote: 'raised in hot weather' },
 } as const;

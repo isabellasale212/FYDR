@@ -29,8 +29,8 @@ select ok(tests.rls_is_engaged(),
 select tests.set_jwt(tests.uid('orga', 'user_athlete_1'));
 select throws_ok(
   format($q$insert into nutrition_rules
-              (org_id, org_default, protein_g_per_kg, carb_g_per_kg, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
-            values (%L, true, 1.9, 6.0, 1.0, 40, current_date, %L)$q$,
+              (org_id, org_default, protein_g_per_kg, carb_g_per_kg_training, carb_g_per_kg_match, carb_g_per_kg_rest, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
+            values (%L, true, 1.9, 6.0, 7.5, 3.5, 1.0, 40, current_date, %L)$q$,
          tests.uid('orga','org'), tests.uid('orga','user_athlete_1')),
   '42501', null,
   'an athlete cannot set any nutrition rule'
@@ -50,8 +50,8 @@ select throws_ok(
 select tests.set_jwt(tests.uid('orga', 'user_coach'));
 select throws_ok(
   format($q$insert into nutrition_rules
-              (org_id, org_default, protein_g_per_kg, carb_g_per_kg, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
-            values (%L, true, 1.9, 6.0, 1.0, 40, current_date, %L)$q$,
+              (org_id, org_default, protein_g_per_kg, carb_g_per_kg_training, carb_g_per_kg_match, carb_g_per_kg_rest, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
+            values (%L, true, 1.9, 6.0, 7.5, 3.5, 1.0, 40, current_date, %L)$q$,
          tests.uid('orga','org'), tests.uid('orga','user_coach')),
   '42501', null,
   'a coach can no longer set a nutrition rule'
@@ -60,15 +60,15 @@ select throws_ok(
 select tests.set_jwt(tests.uid('orga', 'user_nutritionist'));
 select lives_ok(
   format($q$insert into nutrition_rules
-              (id, org_id, org_default, protein_g_per_kg, carb_g_per_kg, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
-            values (%L, %L, true, 1.9, 6.0, 1.0, 40, current_date - 10, %L)$q$,
+              (id, org_id, org_default, protein_g_per_kg, carb_g_per_kg_training, carb_g_per_kg_match, carb_g_per_kg_rest, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
+            values (%L, %L, true, 1.9, 6.0, 7.5, 3.5, 1.0, 40, current_date - 10, %L)$q$,
          tests.uid('orga','rule_org'), tests.uid('orga','org'), tests.uid('orga','user_nutritionist')),
   'a nutritionist sets an org-default rule'
 );
 select lives_ok(
   format($q$insert into nutrition_rules
-              (id, org_id, group_id, protein_g_per_kg, carb_g_per_kg, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
-            values (%L, %L, %L, 1.9, 6.0, 1.0, 40, current_date - 10, %L)$q$,
+              (id, org_id, group_id, protein_g_per_kg, carb_g_per_kg_training, carb_g_per_kg_match, carb_g_per_kg_rest, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
+            values (%L, %L, %L, 1.9, 6.0, 7.5, 3.5, 1.0, 40, current_date - 10, %L)$q$,
          tests.uid('orga','rule_group'), tests.uid('orga','org'), tests.uid('orga','group'),
          tests.uid('orga','user_nutritionist')),
   'and a group rule'
@@ -77,24 +77,24 @@ select lives_ok(
 select tests.set_jwt(tests.uid('orga', 'user_medical'));
 select throws_ok(
   format($q$insert into nutrition_rules
-              (org_id, org_default, protein_g_per_kg, carb_g_per_kg, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
-            values (%L, true, 1.9, 6.0, 1.0, 40, current_date, %L)$q$,
+              (org_id, org_default, protein_g_per_kg, carb_g_per_kg_training, carb_g_per_kg_match, carb_g_per_kg_rest, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
+            values (%L, true, 1.9, 6.0, 7.5, 3.5, 1.0, 40, current_date, %L)$q$,
          tests.uid('orga','org'), tests.uid('orga','user_medical')),
   '42501', null,
   'medical cannot set an org-default rule'
 );
 select throws_ok(
   format($q$insert into nutrition_rules
-              (org_id, group_id, protein_g_per_kg, carb_g_per_kg, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
-            values (%L, %L, 1.9, 6.0, 1.0, 40, current_date, %L)$q$,
+              (org_id, group_id, protein_g_per_kg, carb_g_per_kg_training, carb_g_per_kg_match, carb_g_per_kg_rest, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
+            values (%L, %L, 1.9, 6.0, 7.5, 3.5, 1.0, 40, current_date, %L)$q$,
          tests.uid('orga','org'), tests.uid('orga','group'), tests.uid('orga','user_medical')),
   '42501', null,
   'nor a group rule'
 );
 select throws_ok(
   format($q$insert into nutrition_rules
-              (org_id, athlete_id, protein_g_per_kg, carb_g_per_kg, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
-            values (%L, %L, 2.2, 6.0, 1.0, 40, current_date, %L)$q$,
+              (org_id, athlete_id, protein_g_per_kg, carb_g_per_kg_training, carb_g_per_kg_match, carb_g_per_kg_rest, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
+            values (%L, %L, 2.2, 6.0, 7.5, 3.5, 1.0, 40, current_date, %L)$q$,
          tests.uid('orga','org'), tests.uid('orga','athlete_2'), tests.uid('orga','user_medical')),
   '42501', null,
   'medical cannot set a personal rule for an athlete with no open injury (athlete_2)'
@@ -105,8 +105,8 @@ select throws_ok(
    checks for both roles. */
 select throws_ok(
   format($q$insert into nutrition_rules
-              (org_id, athlete_id, protein_g_per_kg, carb_g_per_kg, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
-            values (%L, %L, 2.2, 6.0, 1.0, 40, current_date, %L)$q$,
+              (org_id, athlete_id, protein_g_per_kg, carb_g_per_kg_training, carb_g_per_kg_match, carb_g_per_kg_rest, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
+            values (%L, %L, 2.2, 6.0, 7.5, 3.5, 1.0, 40, current_date, %L)$q$,
          tests.uid('orga','org'), tests.uid('orga','athlete_1'), tests.uid('orga','user_medical')),
   '42501', null,
   'nor a personal rule for an injured athlete, which used to be theirs alone'
@@ -115,8 +115,8 @@ select throws_ok(
 select tests.set_jwt(tests.uid('orga', 'user_nutritionist'));
 select lives_ok(
   format($q$insert into nutrition_rules
-              (id, org_id, athlete_id, protein_g_per_kg, carb_g_per_kg, fat_g_per_kg, fluid_ml_per_kg, reason, effective_from, created_by)
-            values (%L, %L, %L, 2.2, 6.0, 1.0, 40, 'Protein raised while returning from injury', current_date - 5, %L)$q$,
+              (id, org_id, athlete_id, protein_g_per_kg, carb_g_per_kg_training, carb_g_per_kg_match, carb_g_per_kg_rest, fat_g_per_kg, fluid_ml_per_kg, reason, effective_from, created_by)
+            values (%L, %L, %L, 2.2, 6.0, 7.5, 3.5, 1.0, 40, 'Protein raised while returning from injury', current_date - 5, %L)$q$,
          tests.uid('orga','rule_personal'), tests.uid('orga','org'), tests.uid('orga','athlete_1'),
          tests.uid('orga','user_nutritionist')),
   'the nutritionist sets the personal rule instead'
@@ -133,8 +133,8 @@ select tests.set_jwt(tests.uid('orga', 'user_nutritionist'));
 
 select throws_ok(
   format($q$insert into nutrition_rules
-              (org_id, org_default, protein_g_per_kg, carb_g_per_kg, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
-            values (%L, true, 2.0, 6.0, 1.0, 40, current_date - 3, %L)$q$,
+              (org_id, org_default, protein_g_per_kg, carb_g_per_kg_training, carb_g_per_kg_match, carb_g_per_kg_rest, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
+            values (%L, true, 2.0, 6.0, 7.5, 3.5, 1.0, 40, current_date - 3, %L)$q$,
          tests.uid('orga','org'), tests.uid('orga','user_nutritionist')),
   '23505', null,
   'a second live org-default rule is refused'
@@ -142,8 +142,8 @@ select throws_ok(
 
 select throws_ok(
   format($q$insert into nutrition_rules
-              (org_id, group_id, protein_g_per_kg, carb_g_per_kg, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
-            values (%L, %L, 2.0, 6.0, 1.0, 40, current_date - 3, %L)$q$,
+              (org_id, group_id, protein_g_per_kg, carb_g_per_kg_training, carb_g_per_kg_match, carb_g_per_kg_rest, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
+            values (%L, %L, 2.0, 6.0, 7.5, 3.5, 1.0, 40, current_date - 3, %L)$q$,
          tests.uid('orga','org'), tests.uid('orga','group'), tests.uid('orga','user_nutritionist')),
   '23505', null,
   'a second live rule for the same group is refused the same way'
@@ -195,8 +195,8 @@ select is(
 );
 select throws_ok(
   format($q$insert into nutrition_rules
-              (org_id, group_id, protein_g_per_kg, carb_g_per_kg, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
-            values (%L, %L, 1.9, 6.0, 1.0, 40, current_date, %L)$q$,
+              (org_id, group_id, protein_g_per_kg, carb_g_per_kg_training, carb_g_per_kg_match, carb_g_per_kg_rest, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
+            values (%L, %L, 1.9, 6.0, 7.5, 3.5, 1.0, 40, current_date, %L)$q$,
          tests.uid('orga','org'), tests.uid('orga','group'), tests.uid('orgb','user_coach')),
   '42501', null,
   'orgb''s coach cannot write a rule into orga naming orga''s own ids explicitly'
@@ -206,8 +206,8 @@ select throws_ok(
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
 select lives_ok(
   format($q$insert into nutrition_rules
-              (org_id, athlete_id, protein_g_per_kg, carb_g_per_kg, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
-            values (%L, %L, 2.1, 6.0, 1.0, 40, current_date, %L)$q$,
+              (org_id, athlete_id, protein_g_per_kg, carb_g_per_kg_training, carb_g_per_kg_match, carb_g_per_kg_rest, fat_g_per_kg, fluid_ml_per_kg, effective_from, created_by)
+            values (%L, %L, 2.1, 6.0, 7.5, 3.5, 1.0, 40, current_date, %L)$q$,
          tests.uid('orga','org'), tests.uid('orga','athlete_2'), tests.uid('orga','user_admin')),
   'a sport scientist CAN set a nutrition rule'
 );

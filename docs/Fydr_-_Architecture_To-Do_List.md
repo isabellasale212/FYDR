@@ -131,6 +131,20 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   **The count itself is worth re-measuring at the start**, not taken from here: `scripts/verify-audit-trail.mjs`'s approach (`pg_stat_all_tables`, plus `pg_trigger` for coverage) is what produced these numbers.
 
+- [ ] **PRODUCTION IS IN THE WRONG REGION, or the compliance document is (found 2026-09-07). Decide this BEFORE buying Pro, because the fix is a new project.**
+
+  **Measured.** `.env.production.explicit`'s pooler host is `aws-1-eu-west-1.pooler.supabase.com`. `eu-west-1` is **Ireland**. The server's own address is in AWS's `2a05:d018::/32` range. Scratch is in eu-west-1 too.
+
+  **`docs/09-security-and-compliance.md` says London (eu-west-2) in four places**: the architecture diagram (§line 140), the sub-processor table's transfer-mechanism column — "UK, none needed for the data at rest" (line 715) — an explicit instruction (line 722), and a launch checklist item (line 1868) that would otherwise be ticked untruthfully.
+
+  **What is and is not at stake.** The *factual* claim is wrong: the data is in the EEA, not the UK. The *legal* conclusion may well survive — the UK's adequacy regulations cover the EEA, so a transfer mechanism is probably still unnecessary — but that is a different reason than the document gives, and it is not my call to make. Either the region moves or the document is corrected to say Ireland and to state the actual basis.
+
+  **Why it is urgent in a way it will not be later.** Line 722 of that document says: *"You cannot change it later without a migration."* Migrating today means moving **26 MB and 7,859 rows of synthetic data** — the dump/restore drill on 2026-09-07 took about four minutes end to end and is written up in `docs/runbook-backup-and-recovery.md`. Migrating after a club is on it means real athlete data, real sign-ins, and a re-invite for every account, because a `public`-schema dump does not carry `auth.users`.
+
+  **So the order is: settle this, then buy Pro.** Buying Pro on a project that is then abandoned for a London one wastes the purchase, and it is the one decision on the 0a path whose cost rises sharply rather than staying flat.
+
+  Also worth knowing: "our data stays in the UK" is described in that same paragraph as removing "an entire conversation with every club".
+
 ## 0a. Hard gate — do this before the first real person touches the app
 - [ ] **Upgrade Supabase from Free to Pro tier before inviting the first real club, design partner, or any person whose data isn't something you typed in yourself.** Not "before full completion", before the first real account. Free tier has no automated backups and no point-in-time recovery; confirmed 2026-09-05 that Claude Code also cannot take a manual backup from its own environment (no `pg_dump`/`psql` on PATH, `supabase db dump` needs Docker, not available). As of 2026-09-05 all production accounts are synthetic test data created by you, so this is not yet urgent, it becomes urgent the moment that stops being true.
 

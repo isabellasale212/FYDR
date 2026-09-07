@@ -138,7 +138,21 @@ from unnest(array['team_allocations', 'injuries', 'injury_clinical', 'availabili
                   'exercises', 'programmes', 'programme_blocks', 'programme_sessions',
                   'programme_exercises', 'programme_assignments', 'gym_session_logs',
                   'gym_set_logs', 'gps_records', 'import_batches', 'vendor_profiles',
-                  'test_definitions', 'test_results', 'body_composition']) t;
+                  'test_definitions', 'test_results']) t;
+
+-- body_composition is DELIBERATELY NOT in that list, as of migration 0084.
+-- It gained a delete policy on 2026-09-07 so a weigh-in logged today can be
+-- removed by the person who logged it, same day only — the correction path for
+-- a number typed wrong, which the immutability rule (CLAUDE.md rule 6) never
+-- meant to forbid. Asserted here as its own shape rather than removed silently:
+-- exactly one delete policy, not the blanket "none" the tables above hold, and
+-- 420_weigh_in_same_day_delete_test.sql is where its terms are proved.
+select is(
+  (select count(*) from pg_policies p
+    where p.schemaname = 'public' and p.tablename = 'body_composition' and p.cmd = 'DELETE')::int,
+  1,
+  'body_composition: has exactly one delete policy, the same-day correction path from 0084'
+);
 
 
 -- ---------------------------------------------------------------------------

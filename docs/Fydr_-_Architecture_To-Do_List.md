@@ -107,6 +107,44 @@
 
   Note the deletion side too: the two rows were removed on 2026-09-07 by a direct superuser connection, below the application layer, so nothing logged the removal either. The app itself cannot delete an injury at all — `injuries` has a `deleted_at` column and no DELETE policy — so any hard delete will always be invisible to the audit trail unless it is done through a path that writes one.
 
+  **THE SWEEP, done 2026-09-07: 4 write paths reach `audit_log` and 105 do not.**
+  The suspicion in the paragraph above was right and understated. Unaudited
+  alongside `createInjury`, `updateInjuryFields`, `upsertClinical` and
+  `setAvailability` are roughly a hundred more across fifty tables — every
+  session, group, programme, threshold, leaderboard, consent and weigh-in write.
+  The four that do audit are `settings/users/create`, `bulk-invite/send`,
+  `recordAttendance` and `applyTemplate`, each hand-rolled, no shared helper.
+
+  **Two findings changed the fix.** First, `audit_log`'s insert policy is
+  `org_id = auth_org_id() AND actor_id = auth_user_id()`, and the mutations in
+  `src/lib/queries` run IN THE BROWSER through the anon key — so an audit row is
+  written by the same client doing the thing, which chooses the action, the
+  metadata, and whether to write at all. A self-reported trail is advisory.
+  Second, 105 call sites is 105 places to forget, and new ones arrive weekly.
+
+  **BUILT 2026-09-07 as migration 0085, awaiting deploy: audited by trigger.**
+  Fires whichever path wrote, cannot be skipped by a client, one place instead
+  of 105 — and it gets a REAL client address, because the browser talks to
+  PostgREST directly so `request.headers` carries the visitor rather than a
+  serverless function. That is the exact inverse of the `auth.sessions.ip`
+  item above, where our own server was the caller.
+
+  Three tables to start, on Isabella's call — `injuries`, `injury_clinical`,
+  `availability` — proving the pattern before widening by table.
+
+  Details worth knowing before widening: `injury_clinical` has neither an `id`
+  nor an `athlete_id` (its key is `injury_id`, and the athlete is reachable only
+  through the injury), so the trigger is generic over the row shape rather than
+  written against one. `metadata` records WHICH fields changed and never their
+  values, because `audit_log` is sport-scientist readable and clinical detail is
+  separately gated (CLAUDE.md rule 3). A no-op update writes nothing. The role
+  is chosen by the same precedence `lib/access.ts` uses, and the two lists are
+  asserted equal so the trigger and a route cannot disagree about who acted.
+
+  Verified against scratch through RLS, 16 pgTAP assertions plus 17 in
+  TypeScript. The deletion caveat in the paragraph above still stands unchanged:
+  a superuser connection bypasses triggers as completely as it bypassed the app.
+
 - [ ] **HIGH PRIORITY, and a SECOND, DIFFERENT blindness from the `audit_log` item above: Supabase's own `auth.audit_log_entries` is empty (found 2026-09-07).** Measured on both projects on the same day: production has **0** rows in `auth.audit_log_entries` against 11 rows in `auth.sessions` and 46 in `auth.users`; scratch has **0** against 6 sessions and 44 users. So it is not something about production, and it is not that nobody has signed in — sessions are being created and recorded, and the auth audit table beside them is not.
 
   These are two separate systems and both are currently blind, which is why this is its own item rather than part of the `audit_log` one. `public.audit_log` is the APPLICATION's trail — who did what to an athlete's record, written by our own code. `auth.audit_log_entries` is SUPABASE'S trail — sign-ins, sign-outs, token refreshes, password changes, recovery requests — written by GoTrue, not by us. Fixing the first does nothing for the second. Together their absence means that during the 2026-09-07 incident the only surviving evidence of who signed in was `auth.sessions`, which holds a row per session with an IP and user agent and **no action history at all** — no record of what any of those sessions then did, and no record of sign-ins that did not create a durable session.

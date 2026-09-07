@@ -86,18 +86,26 @@ export default async function SchedulePage({ searchParams }: { searchParams: Sea
   const dateQuery = (d: string) => `/schedule?date=${d}${groupQuery}`;
   const timetableHref = groupIds.length > 0 ? `/timetable?groups=${groupIds.join(',')}` : '/timetable';
 
-  const matchDayLabel = weekFixtures[0]
-    ? (() => {
-        // The fixture's real local calendar day/date, not the UTC one —
-        // kickoff_at is a stored UTC instant, and a kickoff between
-        // 23:00-00:00 UTC (00:00-01:00 local in BST) is the NEXT local
-        // day. getUTCDate() read the UTC day-of-month directly; both
-        // fields now go through the org's real timezone, like every
-        // other formatter here.
-        const kickoff = new Date(weekFixtures[0]!.kickoff_at);
-        return `MD ${weekdayLongFmt(timezone).format(kickoff).toUpperCase()} ${rangeFmt(timezone).format(kickoff)} · ${weekFixtures[0]!.home_away === 'away' ? 'AT' : 'V'} ${weekFixtures[0]!.opponent.toUpperCase()}`;
-      })()
-    : null;
+  /* EVERY fixture in the week, not just the earliest.
+   *
+   * This read weekFixtures[0]. Ashcombe's week already held a Tuesday fixture,
+   * so a second one created for the Saturday was written, fetched, sorted
+   * second and then never shown anywhere — reported as "creating a fixture does
+   * nothing, nothing appears afterward". The row was always there; the screen
+   * only ever named one of them, and fixtures do not render on the grid at all.
+   *
+   * The kickoff is formatted in the org's timezone rather than UTC: kickoff_at
+   * is a stored instant, and one between 23:00-00:00 UTC is the NEXT local day.
+   * That fix is preserved here per fixture. */
+  const matchDayLabel =
+    weekFixtures.length === 0
+      ? null
+      : weekFixtures
+          .map((f) => {
+            const kickoff = new Date(f.kickoff_at);
+            return `MD ${weekdayLongFmt(timezone).format(kickoff).toUpperCase()} ${rangeFmt(timezone).format(kickoff)} · ${f.home_away === 'away' ? 'AT' : 'V'} ${f.opponent.toUpperCase()}`;
+          })
+          .join(' · ');
   const eyebrow = [
     `WEEK OF ${weekdayLongFmt(timezone).format(new Date(`${weekStart}T12:00:00Z`)).toUpperCase()} ${dayMonthFmt(timezone).format(
       new Date(`${weekStart}T12:00:00Z`),

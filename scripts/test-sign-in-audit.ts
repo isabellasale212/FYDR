@@ -24,7 +24,7 @@
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { signInAuditRow, recordSignIn, SIGN_IN_ACTION, SIGN_IN_ENTITY } from '@/lib/signInAudit';
+import { signInAuditRow, recordSignIn, recordSignInFailure, signInFailureRow, SIGN_IN_ACTION, SIGN_IN_ENTITY, SIGN_IN_FAILED_ACTION } from '@/lib/signInAudit';
 import { claimsFromSession, sessionIdFromAccessToken } from '@/lib/supabase/claims';
 import type { FydrClaims } from '@/lib/supabase/claims';
 
@@ -184,6 +184,97 @@ console.log('\nclaims are read from the session the auth server just issued');
   assert(fallback?.orgId === 'org-from-user', 'falls back to the user object, the same precedence getClaims uses');
   assert(claimsFromSession(null) === null, 'and no session is no claims rather than a throw');
   assert(sessionIdFromAccessToken('not-a-jwt') === null, 'a malformed token yields null rather than throwing on the sign-in path');
+}
+
+console.log('\nA FAILED sign-in is recorded too, and by the service role');
+{
+  /* WHY THIS ROW NEEDS A DIFFERENT WRITER. audit_authenticated_insert is
+     `org_id = auth_org_id() and actor_id = auth_user_id()`, and a failed
+     sign-in has no session at all — both are null, so the policy refuses it.
+     The route already holds createAdminClient() for the rate limiter, so the
+     row is written with the service role, which bypasses RLS. Nothing about
+     the policy is loosened: no anonymous caller gains write access to this
+     table, which is what the alternative would have cost. */
+  const target = { orgId: '22222222-2222-4222-8222-222222222222', userId: '11111111-1111-4111-8111-111111111111' };
+  const row = signInFailureRow(target, h({ 'x-real-ip': '88.98.10.1' }), { attemptsRemaining: 4, locked: false });
+
+  assert(row?.action === 'auth.sign_in_failed', `action is auth.sign_in_failed (saw ${row?.action})`);
+  assert(SIGN_IN_FAILED_ACTION === 'auth.sign_in_failed', 'exported under that name');
+  assert(/^[a-z_]+\.[a-z_]+$/.test(row?.action ?? ''), 'same dotted convention as the success row');
+  assert(row?.entity_type === 'sign_in', `entity_type is sign_in, NOT session — no session was created (saw ${row?.entity_type})`);
+  assert(row?.entity_id === null, 'and there is no session id to point at');
+  assert(row?.ip_address === '88.98.10.1', 'the address is the visitor, resolved the same way');
+  assert(row?.metadata.attempts_remaining === 4, 'metadata carries where in the streak this was');
+  assert(row?.metadata.locked === false, 'and whether it tripped the lockout');
+
+  /* THE ACTOR IS CLAIMED, NOT PROVEN, and that is the one thing about this row
+     that could mislead. actor_id is the account somebody tried to sign in TO;
+     nothing establishes that they are that person — the sign-in failed. It is
+     recorded anyway because the useful question is "what happened around this
+     account", which the audit viewer's actor filter then answers. The action
+     name is what says the identity was never established. */
+  assert(row?.actor_id === target.userId, 'actor_id is the targeted account');
+  assert(row?.actor_role === null, 'actor_role is null — nobody acted, so there is no role they acted in');
+}
+
+console.log('\n   ...and only for an account that actually exists');
+{
+  /* TWO REASONS, and the second is the load-bearing one.
+
+     A row with no org is invisible: lib/queries/auditLog.ts filters every read
+     by `.eq('org_id', orgId)`, so an unattributable row could never be seen in
+     the app that is supposed to surface it.
+
+     And the email is attacker-controlled. Writing an unmatched address into
+     audit_log verbatim would let anybody put arbitrary text into the one table
+     whose job is being true, at the rate they can POST. Unknown addresses are
+     login_attempts' problem, not this table's. */
+  assert(signInFailureRow({ orgId: null, userId: null }, h({}), { attemptsRemaining: 4, locked: false }) === null,
+    'an unknown email writes nothing');
+  assert(signInFailureRow({ orgId: 'o', userId: null }, h({}), { attemptsRemaining: 4, locked: false }) === null,
+    'and so does a half-resolved one');
+
+  const row = signInFailureRow({ orgId: 'o', userId: 'u' }, h({}), { attemptsRemaining: 4, locked: false });
+  assert(row !== null && !JSON.stringify(row.metadata).includes('@'),
+    'no email string reaches the metadata — actor_id already identifies the account');
+}
+
+console.log('\n   ...and failing to record it never costs anything either');
+{
+  const rejects = { from: () => ({ insert: async () => { throw new Error('down'); } }) };
+  let threw = false;
+  try {
+    await recordSignInFailure(rejects as never, { orgId: 'o', userId: 'u' }, h({}), { attemptsRemaining: 4, locked: false });
+  } catch { threw = true; }
+  assert(!threw, 'a thrown insert is caught, like every other write on this route');
+
+  // Positive control, for the same reason as the success path's.
+  let sent: unknown = null;
+  const working = { from: () => ({ insert: async (r: unknown) => { sent = r; return { error: null }; } }) };
+  await recordSignInFailure(working as never, { orgId: 'o', userId: 'u' }, h({}), { attemptsRemaining: 0, locked: true });
+  assert((sent as { action: string })?.action === 'auth.sign_in_failed', 'and the working case really does write');
+
+  sent = null;
+  await recordSignInFailure(working as never, { orgId: null, userId: null }, h({}), { attemptsRemaining: 4, locked: false });
+  assert(sent === null, 'while an unattributable failure is not sent at all');
+}
+
+console.log('\n   ...wired into the route on the failure path only');
+{
+  const route = readFileSync('src/app/auth/sign-in/route.ts', 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ');
+  assert(/recordSignInFailure\(/.test(route), 'the route calls it');
+  assert(/admin/.test(route) && /recordSignInFailure\(\s*admin/.test(route),
+    'with the ADMIN client — the anon one would be refused by the insert policy');
+  assert(/select\('id, org_id'\)/.test(route),
+    "and resolves the account's id alongside its org, which the lookup did not do before");
+  /* The success path writes auth.signed_in with the request-scoped client and
+     the failure path writes auth.sign_in_failed with the admin one. Confusing
+     them would either lose the row or write a success row for a failure. */
+  assert(
+    route.indexOf('recordSignInFailure(') > route.indexOf('signInError'),
+    'on the failure branch, after the sign-in result is known',
+  );
 }
 
 console.log('\nEVERY site that creates a session records one, or says in writing why not');

@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { forwardedIdentityHeaders } from '@/lib/clientAddress';
 import { claimsFromSession, sessionIdFromAccessToken } from '@/lib/supabase/claims';
-import { recordSignIn } from '@/lib/signInAudit';
+import { recordSignIn, recordSignInFailure } from '@/lib/signInAudit';
 
 /** login-security checklist item 4: /login has no rate limiting.
  *  09-security-and-compliance.md §8.1 / §9.4: exponential backoff after 5 failed
@@ -121,14 +121,14 @@ export async function POST(request: Request): Promise<NextResponse<SignInResult>
   const supabase = await createClient(forwardedIdentityHeaders(request.headers));
   const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
-  let record: { is_locked: boolean; locked_until: string; seconds_remaining: number } | undefined;
+  let record: { is_locked: boolean; locked_until: string; seconds_remaining: number; attempts_remaining: number } | undefined;
   if (admin) {
     try {
       // Resolved for login_attempts.org_id only -- an admin-visibility/support
       // convenience (migration 0048's login_attempts_admin_select policy), never used to
       // change the error message returned below. An unmatched email resolves to null
       // org_id, same as today.
-      const { data: userRow } = await admin.from('users').select('org_id').eq('email', email).is('deleted_at', null).maybeSingle();
+      const { data: userRow } = await admin.from('users').select('id, org_id').eq('email', email).is('deleted_at', null).maybeSingle();
 
       const { data: recordRows, error: recordError } = await admin.rpc('login_attempt_record_result', {
         p_email: email,
@@ -137,6 +137,28 @@ export async function POST(request: Request): Promise<NextResponse<SignInResult>
       });
       if (recordError) throw recordError;
       record = recordRows?.[0];
+
+      /* THE DURABLE RECORD OF A FAILURE, and the one row on this route that
+         cannot be written by the request-scoped client. audit_authenticated_insert
+         is `org_id = auth_org_id() and actor_id = auth_user_id()`; a failed
+         sign-in has no session, so both are null and the policy refuses it. The
+         alternative was a policy admitting anonymous inserts for this action,
+         which would have made it the first row in that table an unauthenticated
+         caller could write, at whatever rate they can POST. `admin` is already
+         here for the rate limiter, so the service role writes it and the policy
+         stays exactly as strict as it was.
+
+         Only for accounts that exist: userRow is null for an unmatched email,
+         and recordSignInFailure declines the row. See its own header for why
+         that is two decisions rather than one. */
+      if (signInError) {
+        await recordSignInFailure(
+          admin,
+          { orgId: userRow?.org_id ?? null, userId: userRow?.id ?? null },
+          request.headers,
+          { attemptsRemaining: record?.attempts_remaining ?? null, locked: Boolean(record?.is_locked) },
+        );
+      }
     } catch (err) {
       console.error('login_attempt_record_result unavailable, real sign-in result unaffected', err);
     }

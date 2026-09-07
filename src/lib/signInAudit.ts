@@ -31,6 +31,20 @@ import type { AppRole } from '@/lib/types/database';
 export const SIGN_IN_ACTION = 'auth.signed_in';
 export const SIGN_IN_ENTITY = 'session';
 
+/** The other half, added 2026-09-07. `auth.sessions` never recorded a failure
+ *  and `login_attempts` deliberately forgets one: it tracks a failure STREAK
+ *  and `login_attempt_record_result` deletes the row on success, because
+ *  clearing it is what stops yesterday's typo locking somebody out today. Right
+ *  for rate limiting, and it means nothing durable said who tried and did not
+ *  get in — the half of the sign-in trail that vanished. */
+export const SIGN_IN_FAILED_ACTION = 'auth.sign_in_failed';
+/** NOT `session`. The success row points at a session that exists; this one
+ *  points at nothing, because no session was created. Calling it a session to
+ *  group the two in the audit viewer's entity filter would be a small lie in
+ *  the table whose job is being true — and the viewer's free-text search covers
+ *  `action`, so "auth." still finds both. */
+export const SIGN_IN_FAILED_ENTITY = 'sign_in';
+
 /** How the session came to exist. `password` is the sign-in form; the rest are
  *  GoTrue's own OTP types, passed through from /auth/confirm, so an invite
  *  acceptance is distinguishable from an ordinary sign-in without a second
@@ -40,7 +54,8 @@ export type SignInMethod = 'password' | string;
 export type SignInAuditRow = {
   org_id: string;
   actor_id: string;
-  actor_role: AppRole;
+  /** Null for a failed sign-in: nobody acted, so there is no role they acted in. */
+  actor_role: AppRole | null;
   action: string;
   entity_type: string;
   entity_id: string | null;
@@ -167,4 +182,88 @@ export function reportSignIn(method: SignInMethod): void {
   }).catch(() => {
     /* Fail open. See recordSignIn. */
   });
+}
+
+/** Who the attempt was against. Resolved from the email by the route's existing
+ *  `users` lookup — the one it already does to give login_attempts an org. */
+export type SignInTarget = { orgId: string | null; userId: string | null };
+
+/** What the rate limiter already knows about this attempt, so the row can say
+ *  where in a streak it sits without a second query. */
+export type FailureContext = { attemptsRemaining: number | null; locked: boolean };
+
+/**
+ * The row for a sign-in that did not succeed, or null if it should not be written.
+ *
+ * WHY THIS ONE NEEDS THE SERVICE ROLE. `audit_authenticated_insert` is
+ * `org_id = auth_org_id() and actor_id = auth_user_id()`, and a failed sign-in
+ * has no session — both are null and the row is refused. The alternative was a
+ * policy admitting anonymous inserts for this one action, which would have made
+ * this the first table row an unauthenticated caller could write, at whatever
+ * rate they can POST. Writing it as the service role from a route we control
+ * keeps the policy exactly as strict as it was.
+ *
+ * THE ACTOR IS CLAIMED, NOT PROVEN. `actor_id` is the account somebody tried to
+ * reach; the sign-in failed, so nothing establishes that they are that person.
+ * It is recorded anyway because "what happened around this account" is the
+ * question a review actually asks, and the audit viewer's actor filter is how
+ * it gets asked. The action name is what carries the caveat.
+ *
+ * ONLY FOR ACCOUNTS THAT EXIST, for two reasons. A row without an org can never
+ * be read — `lib/queries/auditLog.ts` filters every query by `org_id` — so an
+ * unattributable row is invisible in the app meant to surface it. And the
+ * submitted email is attacker-controlled: writing an unmatched address verbatim
+ * would let anybody put arbitrary text into this table at will. An unknown
+ * address is `login_attempts`' business, not this one's.
+ */
+export function signInFailureRow(
+  target: SignInTarget,
+  headers: Headers,
+  context: FailureContext,
+): SignInAuditRow | null {
+  if (!target.orgId || !target.userId) return null;
+
+  return {
+    org_id: target.orgId,
+    actor_id: target.userId,
+    /* Null, and deliberately. actor_role on every other row is the role somebody
+       ACTED IN; nobody acted here, and looking up the target's roles would put a
+       role on a row that records a failure to authenticate as them. */
+    actor_role: null,
+    action: SIGN_IN_FAILED_ACTION,
+    entity_type: SIGN_IN_FAILED_ENTITY,
+    entity_id: null,
+    metadata: {
+      attempts_remaining: context.attemptsRemaining,
+      locked: context.locked,
+    },
+    ip_address: clientAddress(headers),
+  };
+}
+
+/**
+ * Write it, and never let failing to write it change the sign-in result.
+ *
+ * VOLUME IS BOUNDED BY THE LOCKOUT, which is why this writes on every failed
+ * attempt rather than only on streak boundaries. Restricting to accounts that
+ * exist caps the surface to real addresses, and five failures locks the account
+ * for thirty minutes and upward — so the rate limiter this row is about is also
+ * the thing that limits the rows.
+ */
+export async function recordSignInFailure(
+  db: AuditWriter,
+  target: SignInTarget,
+  headers: Headers,
+  context: FailureContext,
+): Promise<void> {
+  const row = signInFailureRow(target, headers, context);
+  if (!row) return;
+
+  try {
+    const result = await db.from('audit_log').insert(row);
+    const error = result && typeof result === 'object' && 'error' in result ? result.error : null;
+    if (error) throw error;
+  } catch (err) {
+    console.error('failed-sign-in audit write failed, sign-in result unaffected', err);
+  }
 }

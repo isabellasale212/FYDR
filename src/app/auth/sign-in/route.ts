@@ -32,15 +32,23 @@ import { createAdminClient } from '@/lib/supabase/admin';
  *  That "fail open" promise used to stop at the RPC calls -- createAdminClient() itself
  *  throws synchronously (the supabase-js client constructor, not a caught RPC error) if
  *  SUPABASE_SERVICE_ROLE_KEY is missing from the environment, and an uncaught throw at the
- *  top of this function skipped signInWithPassword entirely: a real production outage,
- *  caught live when SUPABASE_SERVICE_ROLE_KEY turned out to have never been set in
- *  Vercel's production env at all (`vercel env ls` lists only the two NEXT_PUBLIC_* keys).
- *  admin is now optional and every admin.* call below is guarded -- missing or broken
- *  admin access degrades this route to exactly what LoginForm.tsx called directly before
- *  this file existed: a plain signInWithPassword with no rate-limit bookkeeping, not a
- *  500. Getting SUPABASE_SERVICE_ROLE_KEY added in Vercel restores real rate limiting
- *  (and, separately, is also required for settings/users/create/route.ts's admin
- *  invite flow, which shares this same client and was silently broken the same way).
+ *  top of this function skipped signInWithPassword entirely. That was a real production
+ *  outage once: the key had never been set in Vercel's production env at all, so this
+ *  route degraded silently and settings/users/create/route.ts's admin invite flow, which
+ *  shares the same client, was broken the same way.
+ *
+ *  RESOLVED. `vercel env ls production` on 2026-09-07 lists SUPABASE_SERVICE_ROLE_KEY as
+ *  a Production secret, added around 2026-09-02, and the rate limiter is genuinely
+ *  running: login_attempt_gate and login_attempt_record_result both exist on production
+ *  and login_attempts holds live rows. If that table ever looks suspiciously empty, read
+ *  record_result before concluding anything -- it DELETES the row on success, because it
+ *  tracks a failure streak, so a near-empty table means sign-ins are succeeding.
+ *
+ *  The guard below stays regardless, and is not dead weight now the key is present: admin
+ *  is optional and every admin.* call is guarded, so missing or broken admin access
+ *  degrades this route to exactly what LoginForm.tsx called directly before this file
+ *  existed -- a plain signInWithPassword with no rate-limit bookkeeping, not a 500. The
+ *  key can go missing again; the behaviour when it does should not be a surprise.
  *
  *  Does not touch MFA/OTP. A locked-out check happens before signInWithPassword and a
  *  success/failure record happens after it resolves; whatever a post-password OTP

@@ -15,17 +15,20 @@ import {
 } from '@/lib/queries/schedule';
 import { anchorMdOffsetsToWeek, decimalHourInTz, zonedTimeToUtcIso } from '@/lib/format';
 import {
+  FIXTURE_NOMINAL_MINS,
   PXH,
   clockLabel,
   computeHourRange,
   detectClashes,
+  fixtureTop,
+  fixturesToDraw,
   placeBlocks,
   computeBlockDisplay,
 } from '@/lib/scheduleGeometry';
 import { TimeGrid, type DayColumn, type RenderedBlock } from './TimeGrid';
 import { SelectedSessionPanel, type PanelSession } from './SelectedSessionPanel';
 import { WeekStatsPanel } from './WeekStatsPanel';
-import { toBaseSession, type BaseSession, type DraftSession, type EditOverlay, type GroupOption, type TemplateOption } from './types';
+import { toBaseSession, type BaseSession, type DraftSession, type EditOverlay, type GridFixture, type GroupOption, type TemplateOption } from './types';
 
 type EffectiveSession = BaseSession & { edited: boolean; isNew: boolean };
 
@@ -56,6 +59,10 @@ type Props = {
   saveTemplateHref: string;
   typical: NormalWeek;
   nowDecimalHourToday: number | null; // real "now", only meaningful when today is in `days`
+  /** This week's fixtures, already in the org's timezone as `dow` + decimal
+   *  `start`. A fixture is not a session and is never edited here — see
+   *  scheduleGeometry's fixtures section. */
+  fixtures: readonly GridFixture[];
 };
 
 function clamp(n: number, min: number, max: number): number {
@@ -83,6 +90,7 @@ export function ScheduleWorkspace({
   userId,
   timezone,
   weekStart,
+  fixtures,
   days,
   today,
   weekRangeLabel,
@@ -182,6 +190,9 @@ export function ScheduleWorkspace({
       groupNames: d.groupIds.map((id) => groupNameById.get(id) ?? 'Unnamed group'),
       athleteIds: [...new Set(d.groupIds.flatMap((gid) => groupMembership[gid] ?? []))],
       status: 'planned',
+      // A draft is never a match a fixture already knows about: the draft
+      // wizard creates sessions, and a fixture is created on its own screen.
+      fixtureId: null,
       // A staged draft has no row in the database yet — createSession (not
       // updateSession) is what publishes it, which takes no optimistic-lock
       // token at all, so this value is never read. Present only to satisfy
@@ -199,6 +210,20 @@ export function ScheduleWorkspace({
 
   const effectiveById = useMemo(() => new Map(effective.map((s) => [s.id, s])), [effective]);
 
+  /* Fixtures the grid has to draw itself: the ones no 'match' session already
+     represents. See fixturesToDraw for why the session wins when both exist. */
+  const drawnFixtures = useMemo(() => fixturesToDraw(fixtures, effective), [fixtures, effective]);
+  const fixtureDays = useMemo(() => new Set(drawnFixtures.map((f) => f.dow)), [drawnFixtures]);
+
+  /* A day is matchday if a fixture falls on it, OR if a session says so. It
+     used to be sessions only, which is why .sg-day-head[data-match] — styled in
+     base.css since the grid was built — had never once fired: creating a
+     fixture writes no session, so nothing ever set it. Both halves are kept
+     because a linked match session is a real matchday too, and after
+     fixturesToDraw suppresses its fixture it would be the only evidence left. */
+  const isMatchDay = (date: string, daySessions: readonly EffectiveSession[]): boolean =>
+    fixtureDays.has(date) || daySessions.some((s) => s.type === 'match');
+
   // ---- per-day geometry (§5) ----
   // MD labels re-anchored to this week's OWN matchday: a stored md_offset
   // counts toward whichever fixture the session was created against, which
@@ -211,7 +236,7 @@ export function ScheduleWorkspace({
       const daySessions = effective.filter((s) => s.dow === date);
       return {
         date,
-        isMatch: daySessions.some((s) => s.type === 'match'),
+        isMatch: isMatchDay(date, daySessions),
         storedMdOffset: daySessions.find((s) => s.mdOffset !== null)?.mdOffset ?? null,
       };
     }),
@@ -221,7 +246,15 @@ export function ScheduleWorkspace({
   // own sessions (see computeHourRange's own header for why), not a fixed
   // 08:00–18:00 constant. One shared range for the whole week, since all
   // seven day columns share one time axis.
-  const { h0, h1 } = computeHourRange(effective.map((s) => ({ start: s.start, mins: s.mins })));
+  /* Fixtures join the range on the same terms as sessions, carrying
+     FIXTURE_NOMINAL_MINS instead of their real zero duration. Without this a
+     20:30 kick-off draws its 42px block past the bottom of a grid that ends at
+     21:00 — and widening the range here rather than special-casing the clip
+     keeps one rule: a 20:30 SESSION of the same length already does this. */
+  const { h0, h1 } = computeHourRange([
+    ...effective.map((s) => ({ start: s.start, mins: s.mins })),
+    ...drawnFixtures.map((f) => ({ start: f.start, mins: FIXTURE_NOMINAL_MINS })),
+  ]);
   const gridHeightPx = (h1 - h0) * PXH;
 
   const dayColumns: DayColumn[] = [];
@@ -276,8 +309,17 @@ export function ScheduleWorkspace({
       domLabel: domFmt(timezone).format(dateObj),
       isToday: date === today,
       isPast: date < today,
-      isMatch: daySessions.some((s) => s.type === 'match'),
+      isMatch: isMatchDay(date, daySessions),
       mdOffset: daySessions.length > 0 ? (anchoredMd.get(date) ?? null) : null,
+      fixtures: drawnFixtures
+        .filter((f) => f.dow === date)
+        .map((f) => ({
+          id: f.id,
+          top: fixtureTop(f.start, h0),
+          timeText: clockLabel(f.start),
+          homeAway: f.homeAway,
+          opponent: f.opponent,
+        })),
       contactMins,
       blocks,
     });

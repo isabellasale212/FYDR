@@ -10,7 +10,7 @@ import {
 import { fetchTemplates } from '@/lib/queries/weekTemplates';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { addDays, decimalHourInTz, todayIso } from '@/lib/format';
+import { addDays, dateInTz, decimalHourInTz, todayIso } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 import { SESSION_EDIT, hasAnyRole } from '@/lib/access';
 
@@ -106,6 +106,22 @@ export default async function SchedulePage({ searchParams }: { searchParams: Sea
             return `MD ${weekdayLongFmt(timezone).format(kickoff).toUpperCase()} ${rangeFmt(timezone).format(kickoff)} · ${f.home_away === 'away' ? 'AT' : 'V'} ${f.opponent.toUpperCase()}`;
           })
           .join(' · ');
+  /* The same fixtures again, resolved into the grid's coordinates. Done here,
+     beside the eyebrow that formats the same rows, so both readings of
+     kickoff_at happen in one place and in the org's timezone: dateInTz for the
+     day column, decimalHourInTz for the height. A grid that did this itself
+     would be a second chance to get the timezone wrong differently. */
+  const gridFixtures = weekFixtures.map((f) => {
+    const kickoff = new Date(f.kickoff_at);
+    return {
+      id: f.id,
+      dow: dateInTz(kickoff, timezone),
+      start: decimalHourInTz(kickoff, timezone),
+      opponent: f.opponent,
+      homeAway: f.home_away,
+    };
+  });
+
   const eyebrow = [
     `WEEK OF ${weekdayLongFmt(timezone).format(new Date(`${weekStart}T12:00:00Z`)).toUpperCase()} ${dayMonthFmt(timezone).format(
       new Date(`${weekStart}T12:00:00Z`),
@@ -123,6 +139,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Sea
   return (
     <>
       <ScheduleWorkspace
+        fixtures={gridFixtures}
         orgId={orgId}
         userId={claims.userId}
         canEdit={canEdit}

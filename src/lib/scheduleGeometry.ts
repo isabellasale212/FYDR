@@ -286,3 +286,76 @@ export function detectClashes<T extends GeometryInput>(placed: readonly Placed<T
   });
   return { pairLabels, clashedIds };
 }
+
+/* ---------------------------------------------------------------------------
+   Fixtures.
+
+   A fixture is not a session and the difference is the whole problem. It has a
+   kick-off and no duration, so it cannot use blockHeight(), whose entire job is
+   to turn minutes into pixels. Height comes from a constant instead, and the
+   block declares that in its own drawing: a solid top edge exactly on the
+   kick-off, a dashed bottom edge where a session would have a solid one.
+
+   Two other treatments were mocked into the real grid and rejected before this
+   one was written. A thin marker line at the kick-off is what the geometry
+   wants, and it is unusable: it is the now-line, which is also a red rule with
+   a red dot at the left edge, and the grid's own legend ends "red line is now".
+   An all-day band at the top of the column never collides with anything and
+   never places the match in time either, which is the one thing the eyebrow
+   above the grid already fails to do.
+   --------------------------------------------------------------------------- */
+
+/** A fixture block's height in px. Fixed, because there is no duration to
+ *  scale — every fixture block in the grid is the same size whatever the
+ *  match is. Two lines of content: the time-and-venue line, and the opponent. */
+export const FIXTURE_BLOCK_H = 42;
+
+/** FIXTURE_BLOCK_H expressed as minutes on this grid's scale.
+ *
+ *  computeHourRange reserves vertical room from `start` and `mins`, and a
+ *  fixture's real `mins` is zero — so passing the truth would let a 20:30
+ *  kick-off draw 42px past the bottom of a grid that ends at 21:00. Passing
+ *  this instead reserves exactly the room the block occupies, and does it
+ *  through the existing rule rather than a special case: a 20:30 SESSION of
+ *  the same length already pushes the range out the same way.
+ *
+ *  CEIL, not round. Rounding gave 38 minutes for a 42px block, which is 41.8px
+ *  of reserved room — 0.2px short, so the last sliver of the bottom border
+ *  could fall outside the grid. Caught by the assertion that the block fits
+ *  inside the range it produced, which is the only reason to write that
+ *  assertion rather than trusting the arithmetic. */
+export const FIXTURE_NOMINAL_MINS = Math.ceil((FIXTURE_BLOCK_H / PXH) * 60);
+
+/** Where a fixture block's top edge sits, in px from the top of the grid.
+ *  The solid edge lands exactly on the kick-off; nothing about the block
+ *  extends above it, so the edge reads as the time. */
+export function fixtureTop(startDecimalHour: number, h0: number): number {
+  return (startDecimalHour - h0) * PXH;
+}
+
+/** Which fixtures still need a block of their own.
+ *
+ *  A match can be represented twice in this schema: as a row in `fixtures`,
+ *  and as a session of type 'match' carrying that fixture's id. Both already
+ *  exist in real data — the seeded 'Fixture' sessions are type 'match' — and
+ *  drawing both would put the same match on the grid twice, in the same red,
+ *  an hour apart if the times disagree.
+ *
+ *  The session wins when there is one, because it is the richer object: it has
+ *  a duration, participants, and an RPE expectation, and it already renders
+ *  through the normal block path. This only fills the gap where no session
+ *  represents the fixture.
+ *
+ *  Deliberately keyed on fixtureId and NOT on "a match session that day", which
+ *  would be a guess: two fixtures on one day is rare but legal (a double-header,
+ *  an age-grade game before the firsts), and a day-level rule would silently
+ *  hide the second one. */
+export function fixturesToDraw<F extends { id: string }>(
+  fixtures: readonly F[],
+  sessions: readonly { type: string; fixtureId: string | null }[],
+): F[] {
+  const representedBySession = new Set(
+    sessions.filter((s) => s.type === 'match' && s.fixtureId !== null).map((s) => s.fixtureId),
+  );
+  return fixtures.filter((f) => !representedBySession.has(f.id));
+}

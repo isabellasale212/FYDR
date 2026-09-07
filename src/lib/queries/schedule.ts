@@ -813,7 +813,7 @@ export async function fetchNormalWeek(
   return { weeksUsed, byType, totalMins: totalMins / weeksUsed, totalCount: totalCount / weeksUsed };
 }
 
-export type WeekFixture = { opponent: string; kickoff_at: string; home_away: string };
+export type WeekFixture = { id: string; opponent: string; kickoff_at: string; home_away: string };
 
 /** Real fixtures kicking off inside one Monday-to-Sunday week, for the
  *  grid header's eyebrow line (SCHEDULE-SPEC.md §2: "MD SATURDAY 8 · V
@@ -829,7 +829,10 @@ export async function fetchWeekFixtures(
 
   const { data, error } = await db
     .from('fixtures')
-    .select('opponent, kickoff_at, home_away')
+    /* `id` is not decoration: the grid links a fixture block to
+       /schedule/fixtures/[id], and fixturesToDraw keys the no-double-draw rule
+       on it. */
+    .select('id, opponent, kickoff_at, home_away')
     .eq('org_id', orgId)
     .gte('kickoff_at', bounds.from)
     .lte('kickoff_at', bounds.to)

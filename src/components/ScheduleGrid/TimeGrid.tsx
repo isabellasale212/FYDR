@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, type ReactNode } from 'react';
 
-import { PXH, TYPE_STYLE, clockLabel, type DbSessionType } from '@/lib/scheduleGeometry';
+import Link from 'next/link';
+
+import { FIXTURE_BLOCK_H, PXH, TYPE_STYLE, clockLabel, type DbSessionType } from '@/lib/scheduleGeometry';
 import { enumLabel, mdLabel } from '@/lib/format';
 
 export type RenderedBlock = {
@@ -23,6 +25,17 @@ export type RenderedBlock = {
   tied: boolean;
 };
 
+/** A fixture as the grid draws it: a top edge and two short lines. No height —
+ *  every fixture block is FIXTURE_BLOCK_H tall, because a fixture has no
+ *  duration to scale. */
+export type FixtureBlock = {
+  id: string;
+  top: number;
+  timeText: string;
+  homeAway: string;
+  opponent: string;
+};
+
 export type DayColumn = {
   date: string;
   weekday: string;
@@ -33,6 +46,7 @@ export type DayColumn = {
   mdOffset: number | null;
   contactMins: number;
   blocks: RenderedBlock[];
+  fixtures: FixtureBlock[];
 };
 
 type Props = {
@@ -196,6 +210,32 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
             >
               {HOURS.map((h) => (
                 <div key={h} className="sg-hour-line" style={{ top: (h - h0) * PXH }} />
+              ))}
+
+              {/* FIXTURES. Drawn before the now-line and before the session
+                  blocks so neither is ever hidden behind one: a fixture is
+                  context for the day, not the thing you are working on.
+
+                  A link, not a button, and deliberately so. Every other block
+                  in this grid opens the session panel, which is session-shaped
+                  — it edits start, duration, type and participants, none of
+                  which a fixture has. So this leaves the grid entirely for the
+                  fixture's own screen rather than opening a panel that would
+                  have to disable most of itself. */}
+              {day.fixtures.map((f) => (
+                <Link
+                  key={f.id}
+                  href={`/schedule/fixtures/${f.id}`}
+                  className="sg-fixture"
+                  style={{ top: f.top, height: FIXTURE_BLOCK_H }}
+                  aria-label={`${f.homeAway === 'away' ? 'Away at' : 'Home v'} ${f.opponent}, kick-off ${f.timeText}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <span className="sg-fixture-meta num">
+                    {f.timeText} · {f.homeAway === 'away' ? 'AWAY' : 'HOME'}
+                  </span>
+                  <span className="sg-fixture-name">{f.opponent}</span>
+                </Link>
               ))}
 
               {day.isToday && nowDecimalHour !== null && nowDecimalHour >= h0 && nowDecimalHour <= h1 ? (

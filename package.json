@@ -48,6 +48,7 @@
     "check:surface-tokens": "node --experimental-strip-types scripts/derive-surface-tokens.ts --check",
     "check:env-files": "node --experimental-strip-types scripts/check-env-files.ts",
     "test:env-guard": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-env-guard.ts",
+    "test:fixture-blocks": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-fixture-blocks.ts",
     "test:back-consistency": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-back-consistency.ts",
     "test:template-list-actions": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-template-list-actions.ts",
     "test:publish-clarity": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-publish-clarity.ts",

@@ -4,6 +4,18 @@ export type { DbSessionType, NormalWeek };
 
 export type GroupOption = { id: string; name: string; group_type: string };
 
+/** One fixture, resolved into this grid's coordinates by the page: `dow` is the
+ *  ISO date of the day column and `start` is a decimal hour, both already in the
+ *  org's timezone, exactly as BaseSession carries them. The grid never sees
+ *  kickoff_at, so it cannot get the timezone wrong a second, different way. */
+export type GridFixture = {
+  id: string;
+  dow: string;
+  start: number;
+  opponent: string;
+  homeAway: string;
+};
+
 export type TemplateOption = { id: string; name: string };
 
 /** A day-column entry the client works with — `start`/`mins` are decimal
@@ -22,6 +34,10 @@ export type BaseSession = {
   groupNames: string[];
   athleteIds: string[];
   status: 'planned' | 'completed' | 'cancelled';
+  /** The fixture this session represents, when it represents one. Already on
+   *  the row and already fetched; carried through so scheduleGeometry's
+   *  fixturesToDraw can tell a match that is drawn from one that is not. */
+  fixtureId: string | null;
   /** The optimistic-lock token — this session's `updated_at` as of this
    *  page's load. Sent back on publish (schedule.ts's `updateSession`) so a
    *  concurrent edit made elsewhere since this page loaded is caught as a
@@ -89,6 +105,7 @@ export function toBaseSession(s: GridSession, timezone: string, decimalHourInTz:
     groupNames: s.groupNames,
     athleteIds: s.athleteIds,
     status: s.status,
+    fixtureId: s.fixture_id,
     updatedAt: s.updated_at,
     restrictionConflictCount: s.restrictionConflictCount,
   };

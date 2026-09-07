@@ -7678,6 +7678,59 @@ button.dash-stat {
 .sg-block[data-past='true'] {
   opacity: 0.7;
 }
+
+/* A FIXTURE, which is not a session and must not look like one.
+ *
+ * The grid's vertical axis is duration, and a fixture has none — only a
+ * kick-off. So the height is fixed (FIXTURE_BLOCK_H, set inline from
+ * scheduleGeometry so the number lives in one place) and the block says what it
+ * does and does not know: a 3px SOLID top edge sitting exactly on the kick-off,
+ * and a DASHED bottom edge where a session's is solid. Read together they mean
+ * "starts here, no end time recorded".
+ *
+ * Left edge is deliberately NOT the 3px tone bar .sg-block carries. That bar is
+ * the type stripe every session block wears, and reusing it here would make a
+ * fixture read as one more session in red rather than a different kind of thing.
+ *
+ * The red is --bad, the same value TYPE_STYLE gives session_type 'match' and
+ * the same one the legend's Fixture swatch has been advertising since the grid
+ * was built for a category that was never drawn. */
+.sg-fixture {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  box-sizing: border-box;
+  display: block;
+  padding: 3px 8px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  background: rgb(var(--bad-rgb) / 0.1);
+  border: 1px solid rgb(var(--bad-rgb) / 0.32);
+  border-top: 3px solid var(--bad);
+  border-bottom: 1px dashed rgb(var(--bad-rgb) / 0.45);
+  border-radius: 0 0 8px 8px;
+  transition: background var(--t-state);
+}
+.sg-fixture:hover {
+  background: rgb(var(--bad-rgb) / 0.16);
+}
+.sg-fixture-meta {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--bad-pill-text);
+  white-space: nowrap;
+}
+.sg-fixture-name {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .sg-block-row {
   display: flex;
   align-items: center;

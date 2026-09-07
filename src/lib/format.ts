@@ -463,3 +463,24 @@ export function ageFrom(dob: string | null | undefined, timeZone: string = DATE_
   if (m < 0 || (m === 0 && today[2] < born[2])) age -= 1;
   return age;
 }
+
+/** The weekday a fixture is played on, in the organisation's timezone.
+ *
+ *  Exists because the dashboard used to write "SATURDAY" as a literal, in both
+ *  branches of its own conditional: a club with no fixture was told its
+ *  matchday was Saturday, and a club WITH one was told the same thing whatever
+ *  day the match was on — Ashcombe's Tuesday fixture read "MD SATURDAY".
+ *
+ *  Returns null rather than a default for a missing or unparseable kickoff, so
+ *  a caller has to decide what to show when there is no fixture instead of
+ *  being handed a day that does not exist.
+ *
+ *  The zone is applied, not assumed: every timestamp in this product is stored
+ *  UTC and displayed in the org's zone, and a 23:30 UTC Tuesday kick-off is
+ *  already Wednesday in Auckland. */
+export function matchdayWeekday(kickoffAt: string | null | undefined, timeZone: string): string | null {
+  if (!kickoffAt) return null;
+  const instant = new Date(kickoffAt);
+  if (Number.isNaN(instant.getTime())) return null;
+  return new Intl.DateTimeFormat('en-GB', { weekday: 'long', timeZone }).format(instant);
+}

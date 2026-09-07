@@ -7,7 +7,7 @@ import { PrintButton } from '@/components/PrintButton/PrintButton';
 import { fetchEffectiveToday, fetchHeadlineStats, fetchOutstandingTracks, fetchSaturdayReadiness, fetchTimeline, fetchWeekStrip, type ReadinessRowKey, type SessionPip } from '@/lib/queries/dashboard';
 import { fetchGroups } from '@/lib/queries/groups';
 import { mondayOf } from '@/lib/queries/schedule';
-import { addDays, formatDate, formatLongDate, todayIso } from '@/lib/format';
+import { addDays, formatDate, formatLongDate, matchdayWeekday, todayIso } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
@@ -233,12 +233,21 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       ? `complete${timeline.length > 0 ? ` · ${timeline.length} session${timeline.length === 1 ? '' : 's'}` : ''}`
       : `${timeline.length} session${timeline.length === 1 ? '' : 's'} planned`;
 
+  /* The day the next fixture is actually on. Both the eyebrow and the
+     readiness card used to say "Saturday" as a literal — in the eyebrow's case
+     in BOTH branches, so a Tuesday fixture read "MD SATURDAY" and a club with
+     no fixture read it too. */
+  const matchday = matchdayWeekday(readiness.kickoffAt, timezone);
+
   return (
     <>
       <div className="topbar">
         <div className="page-head">
           <p className="eyebrow">
-            WEEK OF {formatLongDate(weekStart, timezone).toUpperCase()} · {readiness.opponent ? `MD SATURDAY · V ${readiness.opponent.toUpperCase()}` : 'MD SATURDAY'} ·{' '}
+            WEEK OF {formatLongDate(weekStart, timezone).toUpperCase()}
+            {matchday
+              ? ` · MD ${matchday.toUpperCase()}${readiness.opponent ? ` · V ${readiness.opponent.toUpperCase()}` : ''}`
+              : ''}{' · '}
             {/* The scope by name, not "1 GROUP" — audit S4 / coach finding 16. */}
             {groupScopeLabel(groups, groupIds).toUpperCase()}
           </p>
@@ -468,7 +477,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
             <div className="dash-ready-head">
               <div>
                 <h2 className="card-title" style={{ margin: 0 }}>
-                  Ready for Saturday
+                  {matchday ? `Ready for ${matchday}` : 'Squad readiness'}
                 </h2>
                 <p className="tiny" style={{ marginTop: 2 }}>
                   {readiness.opponent ? `v ${readiness.opponent} · ${readiness.homeAway ?? ''} · ${daysOutLabel(readiness.daysOut)}` : 'No fixture scheduled'}

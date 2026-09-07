@@ -4,7 +4,7 @@ import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchNextFixture, fetchWeekSessions, mondayOf, rangeBounds, type WeekSession } from './schedule';
 import { fetchAllPaged } from './paged';
 import { fetchTimetableDay } from './timetable';
-import { anchorMdOffsetsToWeek, availabilityLabel, daysBetween, dateInTz, formatTime, mdLabel, zonedTimeToUtcIso } from '../format';
+import { anchorMdOffsetsToWeek, availabilityLabel, dateInTz, daysBetween, formatTime, matchdayWeekday, mdLabel, zonedTimeToUtcIso } from '../format';
 
 /* DASHBOARD-SPEC.md, the coach's 07:00 screen. Every section here composes
  * real, already-shipped query functions (schedule, availability,
@@ -144,6 +144,13 @@ export async function fetchWeekStrip(
     }),
   );
 
+  /* The day the week is actually counting down to. The MD-1 alert below used
+     to say "Last session before Saturday" as a literal — the third place on
+     this dashboard to assume the day. anchorMdOffsetsToWeek has already worked
+     out which date carries offset 0, so the name is there to be read. */
+  const matchDate = [...anchoredMd.entries()].find(([, off]) => off === 0)?.[0] ?? null;
+  const matchdayName = matchdayWeekday(matchDate ? `${matchDate}T12:00:00Z` : null, timezone);
+
   const days: DayStripCard[] = [];
   for (let i = 0; i < 6; i++) {
     const date = addDays(weekStart, i);
@@ -160,7 +167,10 @@ export async function fetchWeekStrip(
     if (flagsToday.length > 0) {
       alert = { text: `${flagsToday.length} flag${flagsToday.length === 1 ? '' : 's'}`, sev: 'bad' };
     } else if (mdLabel(md) === 'MD-1') {
-      alert = { text: 'Last session before Saturday', sev: 'accent' };
+      /* Named when the week knows its matchday, and plainly when it does not.
+         "matchday" is not a weekday, which is the point: it is true whatever
+         day the fixture is on. */
+      alert = { text: `Last session before ${matchdayName ?? 'matchday'}`, sev: 'accent' };
     }
 
     days.push({
@@ -531,6 +541,10 @@ export type ReadinessRowKey = 'available' | 'modified' | 'unavailable' | 'flags'
 export type SaturdayReadiness = {
   opponent: string | null;
   homeAway: string | null;
+  /** The fixture's own kick-off instant. Was computed into daysOut and then
+   *  dropped, which is why the dashboard had no day to name and used a
+   *  literal. Carried through rather than re-fetched. */
+  kickoffAt: string | null;
   daysOut: number | null;
   selectable: number;
   squad: number;
@@ -657,6 +671,7 @@ export async function fetchSaturdayReadiness(
   return {
     opponent: fixture?.opponent ?? null,
     homeAway: fixture?.home_away ?? null,
+    kickoffAt: fixture?.kickoff_at ?? null,
     daysOut,
     selectable,
     squad,

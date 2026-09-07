@@ -62,6 +62,7 @@
     "test:template-list-actions": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-template-list-actions.ts",
     "test:publish-clarity": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-publish-clarity.ts",
     "test:injury-card-programme": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-injury-card-programme.ts",
+    "verify:audit-trail": "node scripts/verify-audit-trail.mjs",
     "verify:assignment-authorship": "node scripts/verify-assignment-authorship.mjs",
     "check:policy-replacements": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/check-policy-replacements.ts",
     "test:policy-guard": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-policy-replacement-guard.ts",

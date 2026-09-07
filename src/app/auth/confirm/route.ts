@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { EmailOtpType } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
+import { forwardedIdentityHeaders } from '@/lib/clientAddress';
 
 /** Where an invite link lands, build handoff step 2.
  *
@@ -46,7 +47,13 @@ export async function GET(request: Request): Promise<NextResponse> {
     return NextResponse.redirect(new URL('/login?e=invite-link', url.origin));
   }
 
-  const supabase = await createClient();
+  /* The visitor's own address and browser, for the same reason /auth/sign-in
+     forwards them: this route creates a session server-side too, so without
+     this auth.sessions records the Vercel function rather than the person.
+     This is the half that was missed first time round — every invite
+     acceptance, password reset and magic-link sign-in comes through here, and
+     an invite acceptance is the FIRST session a new club's account ever has. */
+  const supabase = await createClient(forwardedIdentityHeaders(request.headers));
   const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
 
   if (error) {

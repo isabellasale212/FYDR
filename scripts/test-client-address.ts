@@ -19,7 +19,15 @@
  * X-Forwarded-For: 203.0.113.45 recorded 203.0.113.45/32 in auth.sessions,
  * with the forwarded User-Agent alongside it.
  */
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import { clientAddress, clientUserAgent, forwardedIdentityHeaders, isIpLiteral } from '@/lib/clientAddress';
+
+const walkRoutes = (dir: string): string[] =>
+  readdirSync(dir).flatMap((e) => {
+    const p = join(dir, e);
+    return statSync(p).isDirectory() ? walkRoutes(p) : p.endsWith('route.ts') ? [p] : [];
+  });
 
 let passed = 0, failed = 0;
 function assert(cond: boolean, label: string): void {
@@ -88,6 +96,28 @@ console.log('\nthe user agent is forwarded too, because "node" was the other hal
     (clientUserAgent(h({ 'user-agent': 'x'.repeat(900) })) ?? '').length === 512,
     'capped, so a hostile 8KB header cannot be written into a session row verbatim',
   );
+}
+
+console.log('\nEVERY route that creates a session forwards them, not just the first one');
+{
+  /* Found by writing the verification script: /auth/sign-in was fixed and
+     /auth/confirm was not, so every invite acceptance, password reset and
+     magic-link sign-in still recorded the serverless function. An invite
+     acceptance is the FIRST session a new club's account ever has.
+
+     Swept rather than listed, so a third session-creating route cannot be
+     added without either forwarding or failing this. */
+  const routes = walkRoutes('src/app');
+  const sessionCreators = routes.filter((p) =>
+    /verifyOtp|signInWithPassword|exchangeCodeForSession/.test(readFileSync(p, 'utf8')),
+  );
+  assert(sessionCreators.length >= 2, `found ${sessionCreators.length} route(s) that create a session`);
+  for (const p of sessionCreators) {
+    assert(
+      /forwardedIdentityHeaders\(request\.headers\)/.test(readFileSync(p, 'utf8')),
+      `${p.replace('src/app/', '')} forwards the visitor's identity`,
+    );
+  }
 }
 
 console.log('\nthe header set handed to supabase-js');

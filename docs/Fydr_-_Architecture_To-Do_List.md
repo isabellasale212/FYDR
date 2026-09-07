@@ -39,6 +39,48 @@
 - [x] **Prevent the "invisible gate" class from recurring.** Done, deployed. Guard runs in `prebuild`, fails the actual build, not a skippable script. Found 20 candidate sites on first sweep, six were real bugs (schedule/planner detail page, settings/groups allocation link, team-allocation publish button, nutrition manual-target link, per-athlete programme split, timetable), all fixed and deployed. Zero exemptions remain as of 2026-09-06 (`test:access-gates` confirms), the last one (`nutrition/page.tsx`'s `isCoach`) was cleared during the G-41 backlog work.
 - [x] **Policy-replacement guard (2026-09-06).** Done, deployed. Scans migrations for any `drop policy` + `create policy` on the same object, fails the build unless the matching test file asserts what the previous policy used to refuse (or the migration carries a written `-- policy-widening: <role> — <reason>` marker). Standing rule going forward: any migration that replaces a policy must assert what the old one refused, not just what the new one allows, this is what would have caught 0080's near-miss on the rehab-authorship rule before it was fixed by hand. Also flagged: 154 role-gating policies exist, only 64 have every refusal asserted, 40 tables carry at least one unasserted refusal, grandfathered by the guard's baseline (prospective only, not retroactive). Highest-risk gap: `user_roles` has zero refusal assertions for any staff role, that's the table granting privilege. Worth its own pass, triaged list lives in the guard's own inventory output (`refusedByPolicy` / `refusalCoverage`).
 
+## 0e. Queued by Isabella 2026-09-07, in the order she gave
+
+Both come after the sign-in-history item in 0b, which is in progress.
+
+- [ ] **1. Launch sign-in page: new headline and a three-column feature grid.** Full spec as given:
+
+  Headline, 56px margin-top below the wordmark: **"Data, finally worth reading."** — Sora 800, 48px, line-height 1.1, letter-spacing -0.03em, max-width 11ch.
+
+  Three-column feature grid, 48px margin-top from the headline, `grid-template-columns: repeat(3, minmax(0,140px))`, 24px gap, each column top-aligned, label `white-space: nowrap`. Icons 24×24 outline, accent colour:
+
+  | # | Icon | Label (16px/700, 8px margin-top) | Caption (13.5px, `var(--muted)`, 3px margin-top) |
+  |---|---|---|---|
+  | 1 | flag, stroke 1.5 | Flags | raised when a value crosses your threshold |
+  | 2 | circle with checkmark, stroke 1.4 | Availability | who can train, and what they can't do |
+  | 3 | circle with clock hands, stroke 1.4 | This morning | entries against each athlete's baseline |
+
+  Roboto throughout except the logo/wordmark, which keeps the Sora treatment fixed in ce2e52d.
+
+  **THE RESPONSIVE ANSWER SHE ASKED FOR, AND IT INVERTS THE PREMISE.** Measured on production before proposing, not estimated. The worry was that 140×3 + gaps = 468px "won't fit smaller screens". Two things make that not the problem:
+
+  * **`.launch-claim` is `display: none` below 1080px.** This grid never renders on a phone at all. "Narrow" here means the 1080–1150px band, not 360px.
+  * **`minmax(0, 140px)` is a MAXIMUM, not a fixed width.** The tracks shrink on their own. Column widths across the range the grid actually renders in: 119.2px at 1080, 140px at 1150 (where it first reaches the full size), 178.8px at 1280, 226.7px at 1440. Nothing overflows at any of them.
+
+  Measured against that, the two things that could still break do not:
+
+  * Widest `nowrap` label is **"This morning" at 95.4px** (not "Availability", which is 79.1px). It clears the narrowest 119.2px column with 23.8px to spare.
+  * Captions never overflow; they wrap to 3 lines at 1080 and 2 at 1150+.
+
+  **So: no media query for the grid. The spec as written is already the responsive behaviour.** The only visible cost is 3-line captions in the 1080–1150 band, which is a raggedness question rather than a breakage one. **But the two are coupled** — this holds *because* the claim column is hidden below 1080px. Lowering that breakpoint to show the claim on tablets would make this grid real work, so the two must not be changed independently.
+
+  **What DOES overflow, which is the headline and not the grid.** Sora 800 at a fixed 48px with `max-width: 11ch` measures **406.1px**, against **405.5px** of content width at 1080px. It over-runs by half a pixel at exactly the width where the claim column first appears, and it is only safe from ~1082px up. The current headline avoids this deliberately: `.launch-claim-h` is `clamp(30px, 3.2vw, 44px)` and its comment says why — "44px is the scene's, at its own 1440... so it scales with the window and only reaches 44 where the scene has the room for it." A fixed 48px reverses that decision. **Needs her call:** clamp the new headline the same way (`clamp(34px, 3.5vw, 48px)`, reaching a true 48px at ~1370px up), or keep the fixed 48px and raise the claim breakpoint to 1100.
+
+  **Second thing needing her call: the headline in Sora is a second brand-face element that is not the wordmark.** The spec says Sora 800 for the headline and "Roboto throughout except the logo/wordmark" in the same breath; a headline is not a logo, so the specific instruction and the general rule disagree. ce2e52d's decision was one mark, one face — a Sora headline does not break that rule, but it does change what the brand face means on this page, from "the mark" to "the mark and the claim". Worth being deliberate rather than inferred.
+
+  Also note the grid **reorders** the existing three: the DOM today is This morning / Flags / Availability (`.launch-facts`, a `ul` with `k`/`v` spans), and the spec asks for Flags / Availability / This morning. The captions are word-for-word what is already there, so this is a re-presentation of existing true copy, not new claims — which matters, because the page's header comment records that the design's original three slots were a named club's live figures and had to be replaced.
+
+  Tests first, Run-verified, screenshot before deploying. Show her before finalising.
+
+- [ ] **2. Audit every logo and wordmark instance across the app.** "Some pages, including a forgot-password page, are showing the wrong logo." Find every place a logo or wordmark renders, list them by page/route AND by the asset or CSS class each one uses, and say which do not match the current Sora treatment (Sora 800, tracking -0.035em, per ce2e52d). Screenshot each mismatch before changing anything.
+
+  Known starting points, not the answer: `.lockup-word` (`FydrLockup`, used by `/login` and `/login/loading`), `.signin-word` (`/login/reset`, `/login/reset/confirm`, `/login/mfa`), `.brand .wm` (`Sidebar`). The forgot-password page she names is `/login/reset`, which measured correct on production today — so either the mismatch is on a different route than the one it looks like, or it is an asset (favicon, og image, email template, PWA icon) rather than a CSS-set wordmark. **Sweep by import, not by route folder** — a route-folder grep has already answered a question like this confidently and wrongly once.
+
 ## 0a. Hard gate — do this before the first real person touches the app
 - [ ] **Upgrade Supabase from Free to Pro tier before inviting the first real club, design partner, or any person whose data isn't something you typed in yourself.** Not "before full completion", before the first real account. Free tier has no automated backups and no point-in-time recovery; confirmed 2026-09-05 that Claude Code also cannot take a manual backup from its own environment (no `pg_dump`/`psql` on PATH, `supabase db dump` needs Docker, not available). As of 2026-09-05 all production accounts are synthetic test data created by you, so this is not yet urgent, it becomes urgent the moment that stops being true.
 

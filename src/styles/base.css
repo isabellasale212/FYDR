@@ -11269,12 +11269,21 @@ button.dash-stat {
    says so.
 
    TWO CANVAS COLOURS ARE NOT THE APP'S. The canvas measures --bg as #eaedf1
-   and --border as #dce1e8; this app's light theme has #e4ebf9 and
-   rgba(16,18,23,0.085), which composites to about #ebebeb on white. Those are
-   global tokens: changing them repaints all 62 screens, not these six. So this
-   block uses the app's tokens and the difference is recorded rather than
-   applied. It is a one-line change in tokens.css if the canvas is meant to
-   win.
+   and --border as #dce1e8. The app's light theme is blue: #e4ebf9 and #d4dff5
+   as of 7 Sept 2026. Those are global tokens, so changing them repaints all 62
+   screens rather than these six; this block uses the app's tokens and the
+   difference is recorded rather than applied.
+
+   This paragraph was stale for three days and is worth a warning. It described
+   the app as having #e4ebf9 and an rgba border, which stopped being true when
+   the ground moved back to #eaedf1 on 4 Sept and became true again, in half,
+   on 7 Sept. A comment that names another file's values dates the moment it is
+   written. tokens.css is the fact; this is a note about it.
+
+   The #fff active-tab fills below are canvas measurements and are LEFT AS THEY
+   ARE. Against the new --surf of #fcfdfe they are one 8-bit step lighter,
+   which is not a visible difference and not worth a second change chasing the
+   first.
    --------------------------------------------------------------------------- */
 
 .rhead {

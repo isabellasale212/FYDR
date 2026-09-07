@@ -6,23 +6,23 @@
  * right up until the app face changes, at which point the brand mark silently
  * becomes whatever the UI is wearing. It is a fixed mark, not UI text.
  *
- * THREE SURFACES RENDER THE WORDMARK AS TEXT, and they do NOT all use the
- * brand face:
+ * THREE SURFACES RENDER THE WORDMARK AS TEXT, and all three are now identical:
  *
- *   .lockup-word   sign-in splash, 386px · -0.063em · SORA
- *   .signin-word   reset / MFA,     21px · -0.03em  · SORA
- *   .brand .wm     sidebar,         50px · -0.035em · ROBOTO, deliberately
+ *   .lockup-word   sign-in splash, 386px · Sora 800 · -0.035em
+ *   .signin-word   reset / MFA,     21px · Sora 800 · -0.035em
+ *   .brand .wm     sidebar,         50px · Sora 800 · -0.035em
  *
- * The sidebar is chrome somebody reads past all day rather than a brand
- * moment, so it wears the app face. Its tracking is unchanged either way.
+ * THIS FILE ARGUED THE OPPOSITE FIRST, and the argument is worth keeping because
+ * it is the one a later tidy-up will make again. The three carried -0.063em,
+ * -0.03em and -0.035em, which is ordinary optical practice: tighter tracking at
+ * larger sizes. Unifying them means the 386px splash mark now sets looser than
+ * the design canvas draws it.
  *
- * THE TRACKING DIFFERENCES ARE DELIBERATE AND ARE NOT FLATTENED. Tighter
- * tracking at larger sizes is ordinary optical practice, and these three read
- * exactly that way: -0.063em at 386px, -0.035em at 50px, -0.03em at 21px. The
- * brief named -0.035em, which is the sidebar's — applying it to all three would
- * make the 386px lockup and the 21px sign-in word visibly wrong to fix a
- * consistency that was never a problem. Pinned here so a later "tidy-up" has to
- * argue with a test rather than a hex.
+ * The decision, on 2026-09-07, is that a wordmark is a fixed mark rather than
+ * type being set — one face, one weight, one tracking, wherever it appears —
+ * and that a mark split across two faces and three trackings is the worse
+ * outcome. So the assertions below pin SAMENESS, where they used to pin
+ * distinctness. Changing that back is a design decision, not a cleanup.
  */
 import { readFileSync } from 'node:fs';
 
@@ -40,16 +40,13 @@ const rule = (name: string): string => {
   return i === -1 ? '' : css.slice(i, css.indexOf('}', i));
 };
 
-/** The wordmarks set in the BRAND face. */
-const WORDMARKS: { sel: string; tracking: string; where: string }[] = [
-  { sel: '.signin-word', tracking: '-0.03em', where: 'the reset and MFA screens, 21px' },
-  { sel: '.lockup-word', tracking: '-0.063em', where: 'the sign-in splash, 386px' },
+/** Every surface the wordmark appears on. All three, identically. */
+const TRACKING = '-0.035em';
+const WORDMARKS: { sel: string; where: string }[] = [
+  { sel: '.brand .wm', where: 'the sidebar, 50px' },
+  { sel: '.signin-word', where: 'the reset and MFA screens, 21px' },
+  { sel: '.lockup-word', where: 'the sign-in splash, 386px' },
 ];
-
-/** The sidebar's wordmark is deliberately NOT in the brand face: it is chrome
- *  read past all day rather than a brand moment. It keeps its own -0.035em,
- *  which is this size's optical value in either face. */
-const SIDEBAR_WORDMARK = { sel: '.brand .wm', tracking: '-0.035em' };
 
 console.log('two faces are loaded, and they are named for their jobs');
 {
@@ -76,29 +73,20 @@ console.log('\nevery wordmark surface is set in the brand face');
   }
 }
 
-console.log('\neach keeps its own optical tracking');
+console.log('\nall three carry the same tracking, which is the point');
 {
-  for (const { sel, tracking, where } of WORDMARKS) {
+  for (const { sel, where } of WORDMARKS) {
     assert(
-      new RegExp(`letter-spacing: ${tracking.replace('.', '\\.')}`).test(rule(sel)),
-      `${sel} keeps ${tracking} (${where})`,
+      new RegExp(`letter-spacing: ${TRACKING.replace('.', '\\.')}`).test(rule(sel)),
+      `${sel} is ${TRACKING} (${where})`,
     );
   }
-  const values = new Set([...WORDMARKS.map((w) => w.tracking), SIDEBAR_WORDMARK.tracking]);
-  assert(
-    values.size === 3,
-    'and the three values stay distinct — flattening them to one would break two of the three sizes',
+  const values = new Set(
+    WORDMARKS.map((w) => (/letter-spacing: (-?[\d.]+em)/.exec(rule(w.sel)) ?? [])[1]),
   );
-}
-
-console.log('\nthe sidebar wordmark is the app face, on purpose');
-{
-  const r = rule(SIDEBAR_WORDMARK.sel);
-  assert(/font-family: var\(--font-sans\)/.test(r), '.brand .wm is set in --font-sans, not the brand face');
-  assert(/font-weight: 800/.test(r), 'still weight 800');
   assert(
-    new RegExp(`letter-spacing: ${SIDEBAR_WORDMARK.tracking.replace('.', '\\.')}`).test(r),
-    `and still ${SIDEBAR_WORDMARK.tracking} — the optical value for 50px, right in either face`,
+    values.size === 1 && values.has(TRACKING),
+    `one tracking across every instance (saw ${[...values].join(', ')})`,
   );
 }
 

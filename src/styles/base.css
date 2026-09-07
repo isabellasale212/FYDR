@@ -259,13 +259,11 @@ a {
   position: relative;
   width: 132px;
   padding-bottom: 12px;
-  /* THE APP FACE, not the brand face, and this one is deliberate. The other
-     two wordmarks — the sign-in splash lockup and the small mark on the reset
-     and MFA screens — are Sora; the sidebar's is Roboto, because the sidebar
-     is chrome the user reads past all day rather than a brand moment. Tracking
-     stays -0.035em: that is this size's optical value and it is right in
-     either face. */
-  font-family: var(--font-sans), system-ui, sans-serif;
+  /* The brand face. Reversed 2026-09-07 on Isabella's instruction: the sidebar
+     briefly wore the app face on the reasoning that it is chrome read past all
+     day, and the decision is that a wordmark is a wordmark wherever it appears
+     — one mark, one face, one tracking, rather than split across two. */
+  font-family: var(--font-brand), system-ui, sans-serif;
   font-size: 50px;
   font-weight: 800;
   letter-spacing: -0.035em;
@@ -2906,13 +2904,14 @@ a.hist-row:focus-visible {
   flex: none;
 }
 .signin-word {
-  /* Brand face. -0.03em rather than the sidebar's -0.035em because this is
-     21px and that is 50px: tighter tracking at larger sizes is the point, and
-     unifying them would make one of the two wrong. */
+  /* Brand face, and the SAME tracking as every other instance of the mark.
+     This carried -0.03em on the reasoning that 21px wants looser tracking than
+     50px does; the decision is that the wordmark is one fixed mark and its
+     tracking is part of it, not something re-derived per size. */
   font-family: var(--font-brand), system-ui, sans-serif;
   font-size: 21px;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
 }
 .signin-word i {
   color: var(--accent-text);
@@ -10616,12 +10615,16 @@ button.dash-stat {
   height: 343.8px;
   display: flex;
   align-items: flex-end;
-  /* Brand face. The global swap must not reach the lockup. */
+  /* Brand face, same tracking as every other instance. This carried -0.063em,
+     which is the value the design canvas drew at 386px; unified on
+     instruction, so the splash mark now sets looser than the canvas does. That
+     is the visible cost of one mark having one tracking, and it is the trade
+     that was chosen. */
   font-family: var(--font-brand), system-ui, sans-serif;
   font-weight: 800;
   font-size: 386px;
   line-height: 1;
-  letter-spacing: -0.063em;
+  letter-spacing: -0.035em;
   color: var(--lk-ink, var(--text));
   white-space: pre;
 }

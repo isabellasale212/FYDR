@@ -275,7 +275,19 @@ Both come after the sign-in-history item in 0b, which is in progress.
   rather than a pass when the window carries no session inserts to compare
   against.
 
-- [ ] **THE RESIDUE OF THE ITEM ABOVE, and the only part we can close ourselves: there is no sign-in HISTORY (raised 2026-09-07).** Needs a yes or no from Isabella, not investigation — the investigation is done.
+- [x] **BUILT 2026-09-07, Run-verified on scratch, awaiting deploy. There is no sign-in HISTORY (raised 2026-09-07).** The recommendation below was taken as written; what follows it is what building it actually found.
+
+  **Scope was four session-creating sites, not the two this item assumed.** Swept rather than listed, and the sweep is the reason: the password RESET establishes its session in the browser (PKCE, and often exchanged by the SDK's own URL detection before any of our code runs), so it reaches the app through no server route at all. That is the flow that matters most — completing a reset from a stolen mailbox is the account-takeover path — and it would have been the one left unlogged. It gets `/auth/record-sign-in`, a small route it posts to, rather than writing from the browser: the browser holds a valid session and would pass the RLS policy, but a page cannot know its own public address, so every reset would have been the single row in this table with a null IP. The fourth site, `ChangePasswordForm`'s re-authentication, is exempted in writing — it creates a session but is not a sign-in, and recording it would read back as somebody signing in twice who never left.
+
+  **The insert policy refuses what the column allows, which shaped the code.** `audit_authenticated_insert` is `org_id = auth_org_id() and actor_id = auth_user_id()`, and `org_id = NULL` is not false but NULL — so refused — even though the column is nullable and 0007's own comment says why it is. Since the caller fails open, a swallowed 42501 would look exactly like a successful write, so the row is refused in our code instead of sent and lost. No row now means no row was attempted.
+
+  **Verified end to end on scratch, not asserted.** Sign-ins through the real route recorded the forwarded visitor address (203.0.113.77) rather than the server; an athlete signed in and was recorded as role `athlete`, which is the majority case and the one the incident was about; a FAILED sign-in recorded nothing. Then the `auth.sessions` row was deleted — exactly what expiry does on its own — and **the audit row survived it intact**, with a subsequent UPDATE refused by the append-only trigger. All three rows show on the audit screen, and `session` appears in its entity-type filter without the viewer being touched.
+
+  The sweep runs in `prebuild` and was proved to have teeth: a planted session-creating route with no logging fails it, and so does a rubber-stamp exemption carrying no real reason.
+
+  **Still open, deliberately not bundled:** failed sign-ins leave nothing durable. `login_attempts` tracks a failure STREAK and deletes the row on success, so it answers "is this account being brute-forced right now", not "who tried and failed last month". Separate decision.
+
+  The original recommendation, which was followed, is kept below.
 
   **The gap, measured on production.** `auth.sessions` holds a row per LIVE session and nothing else. Over a 45-day window it took **372 inserts and 362 deletes**: roughly 97% of all sign-ins have already left no trace whatsoever, and the ten rows that survive are simply the ones not yet expired. `auth.audit_log_entries` would have been the durable record of sign-ins, sign-outs and token refreshes, and it has never received a single row on either project — that is a Supabase-side configuration question and not something this repository can fix.
 

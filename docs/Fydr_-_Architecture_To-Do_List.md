@@ -175,7 +175,28 @@ Both come after the sign-in-history item in 0b, which is in progress.
   for routes calling verifyOtp / signInWithPassword / exchangeCodeForSession
   instead of listing the ones known at the time.
 
-- [ ] **A failed sign-in records nothing in `login_attempts` on scratch (found 2026-09-07).** Noticed while smoke-testing the sign-in route for audit item 1, and confirmed NOT to be caused by that change: with the change stashed, a POST to `/auth/sign-in` with a wrong password returns 401 with the right message and leaves `login_attempts` at zero rows, exactly as it does with the change applied. So this is pre-existing.
+- [x] **DIAGNOSED AND FIXED 2026-09-07 (migration 0087), awaiting push. A failed sign-in records nothing in `login_attempts` on scratch.** The symptom was right and the cause was not where it looked.
+
+  **`service_role` could not execute the functions.** 0048 creates `login_attempt_gate` and `login_attempt_record_result`, grants the TABLE to service_role, and then revokes EXECUTE on both FUNCTIONS from public, anon and authenticated — correctly, and its own comment explains that CREATE FUNCTION grants EXECUTE to PUBLIC by default here so the revoke must be explicit. But nothing grants EXECUTE back to service_role, which held it only THROUGH the PUBLIC grant just revoked. The functions ended up executable by their owner and nobody else, including the application.
+
+  Measured on both databases, 2026-09-07:
+
+  | | `login_attempt_gate` ACL | behaviour |
+  |---|---|---|
+  | scratch | `postgres=X/postgres` | calling as service_role → **42501 permission denied**; three failed sign-ins through the real route → 0 rows |
+  | production | `postgres=X/postgres \| service_role=X/postgres` | **229 inserts over 45.5 days** against 372 sessions — working |
+
+  **So production works only because somebody granted it by hand, and no migration records it.** That is the actual defect, and it is worse than the scratch symptom: the repository is not the source of truth for a security control, so rebuilding production from these migrations — or standing up any new environment — silently ships with no rate limiting at all.
+
+  **Why it hid for months.** `/auth/sign-in` fails open on purpose: a limiter that errors is logged and the sign-in continues, because rate-limiting infrastructure breaking should degrade to "not currently rate limited" rather than "nobody can sign in". That is the right call, and it makes a limiter that has never once run indistinguishable from a healthy one with nothing to do. The only difference was a line in the function log — `login_attempt_gate unavailable, proceeding without rate limiting` — which is what finally identified it.
+
+  0087 grants EXECUTE to service_role and to nobody else; anon and authenticated stay revoked, since the gate would let a caller enumerate locked-out emails and `record_result` is the table's only writer. Applied to scratch and confirmed: the same three failed sign-ins now produce `attempt_count: 3`. It is a **no-op on production**, which already has the grant — its purpose there is to put it in the history.
+
+  `scripts/test-service-role-grants.ts` derives the rule from the code rather than a list: whatever the app calls through the admin client must carry a service_role grant in a migration. `npm run verify:login-attempts` answers "is it recording" on either database, using `n_tup_ins` — because the table deletes on success, so a row count cannot tell a healthy limiter from one that has never run.
+
+  The original entry follows.
+
+- [x] **As first written.** Noticed while smoke-testing the sign-in route for audit item 1, and confirmed NOT to be caused by that change: with the change stashed, a POST to `/auth/sign-in` with a wrong password returns 401 with the right message and leaves `login_attempts` at zero rows, exactly as it does with the change applied. So this is pre-existing.
 
   It is not the "record_result deletes on success" behaviour that makes the table look empty — that explains an empty table after SUCCESSES, and this was a failure, which is the case the streak exists to count. Both `login_attempt_gate` and `login_attempt_record_result` exist on scratch, and `SUPABASE_SERVICE_ROLE_KEY` is present in the environment the dev server loaded, so neither the missing-function nor the missing-key explanation applies.
 

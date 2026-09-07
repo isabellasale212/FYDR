@@ -1,0 +1,48 @@
+-- Let the service role execute the two functions the sign-in route calls.
+--
+-- WHAT WAS WRONG, and it was wrong on scratch while working on production,
+-- which is the part worth reading twice.
+--
+-- 0048 creates login_attempt_gate and login_attempt_record_result, grants the
+-- TABLE to service_role, and then revokes EXECUTE on both functions from
+-- public, anon and authenticated. That last revoke is deliberate and correct --
+-- its own comment explains that CREATE FUNCTION grants EXECUTE to PUBLIC by
+-- default here, so the revoke has to be explicit and by name.
+--
+-- But nothing then grants EXECUTE back to service_role, and service_role held
+-- it only THROUGH the PUBLIC grant that was just revoked. So after 0048 the
+-- functions were executable by their owner and by nobody else, including the
+-- one caller in the application.
+--
+-- WHY NOBODY NOTICED FOR MONTHS. src/app/auth/sign-in/route.ts fails open on
+-- purpose: if login_attempt_gate errors it logs and continues to a normal
+-- sign-in, because rate-limiting infrastructure breaking should degrade to "not
+-- currently rate limited" rather than "nobody can sign in". That is the right
+-- call and it means a limiter that has never once run looks, from outside,
+-- exactly like a limiter with nothing to do. The only difference is a line in
+-- the function log.
+--
+-- Measured 2026-09-07, both databases:
+--
+--   scratch      login_attempt_gate acl = postgres=X/postgres
+--                calling it as service_role -> 42501 permission denied
+--                three failed sign-ins through the real route -> 0 new rows
+--   production   login_attempt_gate acl = postgres=X/postgres | service_role=X/postgres
+--                229 inserts over 45.5 days against 372 sessions -- working
+--
+-- SO PRODUCTION WORKS BECAUSE SOMEBODY GRANTED IT BY HAND and no migration
+-- records it. That is the actual defect: the repository is not the source of
+-- truth for a security control. Rebuilding production from these migrations, or
+-- standing up any new environment, silently ships without rate limiting.
+--
+-- This migration is therefore a no-op on production (the grant is already
+-- there) and the fix on scratch and everywhere future.
+
+grant execute on function public.login_attempt_gate(citext) to service_role;
+grant execute on function public.login_attempt_record_result(citext, boolean, uuid) to service_role;
+
+-- Deliberately NOT granted to anon or authenticated. 0048 revoked those on
+-- purpose: the browser must not be able to call either one. The gate would let
+-- a caller enumerate which emails are currently locked out, and record_result
+-- is the table's only writer, so reaching it from the client would let anybody
+-- clear their own failure streak by claiming a success.

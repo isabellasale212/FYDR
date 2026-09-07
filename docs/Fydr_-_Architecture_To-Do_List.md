@@ -218,6 +218,28 @@
   rather than a pass when the window carries no session inserts to compare
   against.
 
+- [ ] **THE RESIDUE OF THE ITEM ABOVE, and the only part we can close ourselves: there is no sign-in HISTORY (raised 2026-09-07).** Needs a yes or no from Isabella, not investigation — the investigation is done.
+
+  **The gap, measured on production.** `auth.sessions` holds a row per LIVE session and nothing else. Over a 45-day window it took **372 inserts and 362 deletes**: roughly 97% of all sign-ins have already left no trace whatsoever, and the ten rows that survive are simply the ones not yet expired. `auth.audit_log_entries` would have been the durable record of sign-ins, sign-outs and token refreshes, and it has never received a single row on either project — that is a Supabase-side configuration question and not something this repository can fix.
+
+  So the question "who signed in, and when" is answerable for about a week and unanswerable before that. That is precisely what could not be answered on 2026-09-07, when a single athlete sign-in had to be reconstructed from a surviving session row and the deployed route's source.
+
+  **What is NOT the gap any more, so it does not get re-solved.** Sessions that do survive now carry the real signer's address and browser (fixed the same day). Ten tables write an attributable `audit_log` row for what somebody then DID. The hole is specifically the sign-in event itself.
+
+  **Recommendation: write our own row to `public.audit_log` on every successful sign-in.**
+
+  Not a new table. `audit_log` already records reads as well as writes — `injury_clinical.read`, `report.athlete.view`, `report.training.view` are all in there — so it is the "who did what" trail rather than a write log, and a sign-in belongs beside the actions it made possible. It is already append-only at the database (three triggers refuse UPDATE, DELETE and TRUNCATE), already sport-scientist readable, and already carries actor, role, IP and org. A second table would need all of that built again and a second place to look.
+
+  Shape: `action` = `auth.signed_in`, matching the existing dotted convention; `entity_type` = `session`; `org_id`, `actor_id` and `actor_role` from the claims the fresh session carries; `ip_address` from `lib/clientAddress.ts`, which already exists and already resolves the caller safely. Both routes that create a session need it — `/auth/sign-in` and `/auth/confirm` — and the test that sweeps for session-creating routes is already written and would catch a third.
+
+  **It must fail open.** The sign-in route already degrades to "not currently rate limited" rather than "nobody can sign in" when its rate-limit calls fail, and an audit write deserves the same treatment: a logging failure must never cost somebody their sign-in.
+
+  **Considered and rejected: a trigger on `auth.sessions`.** It would be unskippable in the way the clinical triggers are, and it is the obvious symmetry. But `auth` is Supabase's schema, not ours: a trigger there is outside the migration history they manage, and is the kind of thing that survives until it silently does not across a platform upgrade. An app-level write is self-reported in a way a trigger is not, and that is a real weakness — but at sign-in there is no honest alternative we control.
+
+  **Known limitation to accept with it:** failed sign-ins still leave nothing durable. `login_attempts` tracks a failure STREAK and `login_attempt_record_result` deletes the row on success, so it answers "is this account being brute-forced right now", not "who tried and failed last month". Worth naming as a separate decision rather than bundling — and note the open finding above that a failed sign-in currently records nothing in `login_attempts` on scratch at all.
+
+  Cost: perhaps an hour, one route change each side plus assertions. No migration.
+
   Concrete trigger for this: a programmatic sign-in as the athlete `j.barnes@ashcomberfc.example` at 10:49:51 on 2026-09-07 from 18.204.19.96 (AWS), user agent `node`, session created and never used again. Nothing in this repository accounts for it — no `vercel.json`, so no declared crons; the overnight jobs are SECURITY DEFINER Postgres functions that never authenticate; and the only script that signs in with a password targets scratch. It could not be attributed because there was no auth audit trail to attribute it with. Note that `node` sign-ins from cloud IPs are the NORM here, not the exception — of every session in production's history, exactly one came from a browser.
 
 - [ ] **D-24 resolved, 2026-09-05, real build work**: running distance and high intensity efforts added to the GPS import's accepted upload headings, twelve columns now instead of ten. Both were already rankable leaderboard measures with real data (512 of 597 rows) that could never be updated through the import screen, they'd have gone silently stale. Update the parser and the on-screen column list together.

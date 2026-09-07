@@ -63,6 +63,42 @@
 
   So the fix needs a destination that survives a successful login: its own column on something that records successes, or forwarding the real address to Supabase on the sign-in call so `auth.sessions.ip` means what it says again. The second repairs the field people already read, rather than adding a second place they have to know to look.
 
+  **BUILT 2026-09-07, awaiting deploy.** The second option, and it works: GoTrue
+  honours a forwarded address. Established before writing any of it, by creating
+  a session through supabase-js with `X-Forwarded-For: 203.0.113.45` and reading
+  `auth.sessions` back — it recorded `203.0.113.45/32`, and the forwarded
+  `User-Agent` alongside, which repairs the other half of what made that
+  investigation slow (`user_agent` reads `node` for every production login).
+  Confirmed again against `createServerClient` from `@supabase/ssr`, which is
+  the client the route actually uses, not just the plain one.
+
+  `lib/clientAddress.ts` is where the trust decision lives, and it is the whole
+  design rather than an implementation detail: a caller can send any
+  `X-Forwarded-For` it likes, so forwarding one blindly would replace a value
+  that is merely uninformative with one an attacker chooses — strictly worse, in
+  the one table anybody reads after a suspected intrusion. Platform headers
+  (`x-vercel-forwarded-for`, `x-real-ip`) are preferred because Vercel writes
+  them and a caller cannot; failing those it takes the LAST entry of
+  `x-forwarded-for`, not the first, because proxies append the peer they
+  received from so the rightmost hop is the trustworthy one; and anything that
+  does not parse as an IP literal is discarded. When nothing survives, nothing
+  is forwarded and the behaviour is exactly what it is today.
+
+  **Not yet verified end to end**, and this is the honest gap: the password
+  sign-in path could not be exercised, because doing so means handling a real
+  credential. Everything up to it is verified — the header selection by unit
+  test, and the recording by creating real sessions on scratch through the same
+  client the route builds. After deploy, one real sign-in and one look at
+  `auth.sessions.ip` closes it.
+
+- [ ] **A failed sign-in records nothing in `login_attempts` on scratch (found 2026-09-07).** Noticed while smoke-testing the sign-in route for audit item 1, and confirmed NOT to be caused by that change: with the change stashed, a POST to `/auth/sign-in` with a wrong password returns 401 with the right message and leaves `login_attempts` at zero rows, exactly as it does with the change applied. So this is pre-existing.
+
+  It is not the "record_result deletes on success" behaviour that makes the table look empty — that explains an empty table after SUCCESSES, and this was a failure, which is the case the streak exists to count. Both `login_attempt_gate` and `login_attempt_record_result` exist on scratch, and `SUPABASE_SERVICE_ROLE_KEY` is present in the environment the dev server loaded, so neither the missing-function nor the missing-key explanation applies.
+
+  Why it matters: the route is designed to fail open (rate-limiting infrastructure breaking should degrade to "not currently rate limited", not "nobody can sign in"), which is the right call and also means a silently non-recording limiter looks exactly like a working one from outside. The to-do entry above states production's `login_attempts` holds live rows, so this may be scratch-only — worth confirming on production before assuming the limiter is doing anything there either.
+
+  Not investigated further on purpose: found mid-way through audit item 1, which was being worked one at a time.
+
 - [ ] **HIGH PRIORITY. Injury creation and availability changes write nothing to `audit_log` (found 2026-09-07).** Proven on production during an incident review, not inferred: an injury and an availability row were created on production at 12:10:44 and 12:10:59 on 2026-09-07, and `audit_log` held **no user actions at all** for that day — six rows, every one an overnight job (compliance expectations 02:05, retention preview 03:15, thresholds evaluated 04:30, each twice, once per org). There was no actor, no role, no IP and no origin recorded for either write.
 
   Why it matters more than the missing rows did: those two writes could not be attributed to a client. The account was known from `reported_by`, but nothing recorded WHERE the write came from, and at that moment a dev server on localhost was pointed at production while the deployed app was also live — so the same credentials worked from two places and the log could not tell them apart. An injury is exactly the record this table exists to cover: `audit_log` already carries actor, role at time of action, entity, athlete, metadata and IP, and it is what a club would be asked for if a clinical record were ever disputed.

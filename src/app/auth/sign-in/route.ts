@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { forwardedIdentityHeaders } from '@/lib/clientAddress';
 
 /** login-security checklist item 4: /login has no rate limiting.
  *  09-security-and-compliance.md §8.1 / §9.4: exponential backoff after 5 failed
@@ -107,7 +108,15 @@ export async function POST(request: Request): Promise<NextResponse<SignInResult>
     );
   }
 
-  const supabase = await createClient();
+  /* The visitor's own address and browser, forwarded so GoTrue records THEM
+     rather than this function. Without it auth.sessions.ip is the serverless
+     instance that answered and user_agent is `node`, which is what made an
+     ordinary athlete login look like an intrusion on 2026-09-07.
+
+     clientAddress() refuses anything the caller could have chosen; when it
+     finds nothing trustworthy this is an empty object and the behaviour is
+     exactly what it is today. */
+  const supabase = await createClient(forwardedIdentityHeaders(request.headers));
   const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
   let record: { is_locked: boolean; locked_until: string; seconds_remaining: number } | undefined;

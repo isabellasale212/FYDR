@@ -54,6 +54,7 @@
     "test:fixture-blocks": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-fixture-blocks.ts",
     "create:org": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/create-org.ts",
     "test:dashboard-matchday": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-dashboard-matchday.ts",
+    "test:client-address": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-client-address.ts",
     "test:create-org": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-create-org.ts",
     "test:session-titles": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-session-titles.ts",
     "test:back-consistency": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-back-consistency.ts",

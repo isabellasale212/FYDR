@@ -75,7 +75,17 @@ def render(doc, md, base_level=0):
             i += 1
             continue
         if pending:
-            rows = [r for r in pending if not all(set(c) <= set("-: ") for c in r)]
+            # A markdown separator row is |---|---|. A row of EMPTY cells is not
+            # one, and the old test treated it as one because the empty set is a
+            # subset of everything. That silently deleted any deliberately blank
+            # table row, which is what an answer box in the athlete workbook is
+            # made of: the box rendered as a header with nowhere to write.
+            # Requiring at least one dash keeps real separators out and blank
+            # rows in.
+            def _is_separator(row):
+                return any("-" in c for c in row) and all(set(c) <= set("-: ") for c in row)
+
+            rows = [r for r in pending if not _is_separator(r)]
             if len(rows) >= 1: add_table(doc, rows)
             pending = []
         if not line.strip():

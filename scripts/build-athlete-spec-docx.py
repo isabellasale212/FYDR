@@ -42,14 +42,18 @@ TODAY = date.today().strftime("%d %B %Y")
 SCREENS_DIR = os.path.join(ROOT, "docs/athlete/screens")
 
 APPENDICES = [
-    ("Appendix A. What an athlete can see", "docs/athlete/visibility.md"),
-    ("Appendix B. Cross app flows", "docs/athlete/cross-app-flows.md"),
-    ("Appendix C. Metrics parity", "docs/metrics-parity.md"),
-    ("Appendix D. App Store readiness", "docs/athlete/app-store.md"),
-    ("Appendix E. Decisions required", "docs/athlete/decisions-required.md"),
-    ("Appendix F. Gap queue", "docs/athlete/spec-gaps.md"),
-    ("Appendix G. Build state", "docs/athlete/generated/00-build-state.md"),
-    ("Appendix H. Screen inventory", "docs/athlete/generated/01-screen-inventory.md"),
+    # The workbook comes first among the appendices on purpose: it is the part
+    # Isabella acts on, and burying it behind six reference documents would make
+    # the one actionable section the hardest to find.
+    ("Appendix A. Open questions and decisions: the workbook", "docs/athlete/open-questions.md"),
+    ("Appendix B. What an athlete can see", "docs/athlete/visibility.md"),
+    ("Appendix C. Cross app flows", "docs/athlete/cross-app-flows.md"),
+    ("Appendix D. Metrics parity", "docs/metrics-parity.md"),
+    ("Appendix E. App Store readiness", "docs/athlete/app-store.md"),
+    ("Appendix F. Decisions required", "docs/athlete/decisions-required.md"),
+    ("Appendix G. Gap queue", "docs/athlete/spec-gaps.md"),
+    ("Appendix H. Build state", "docs/athlete/generated/00-build-state.md"),
+    ("Appendix I. Screen inventory", "docs/athlete/generated/01-screen-inventory.md"),
 ]
 
 HOW_TO_READ = """
@@ -76,6 +80,12 @@ shows every metric both apps display and confirms they compute the same way.
 wording of a question changes what the answer means. All five wellness scales run
 1 to 5 with **5 as the best answer**, including soreness, where 5 means no
 soreness.
+
+**Appendix A is the part you fill in.** Every unknown and every open decision in
+this document is collected there as a numbered question, each explained in full
+and each followed by a box to write the answer in. Twenty seven of them. They are
+ordered so the ones that affect a real person come first, and seven of them can be
+answered by opening a screen on a phone and writing down what it says.
 """
 
 

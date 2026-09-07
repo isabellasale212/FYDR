@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Roboto } from 'next/font/google';
+import { Roboto, Sora } from 'next/font/google';
 import { Providers } from './providers';
 import '@/styles/tokens.css';
 import '@/styles/base.css';
@@ -34,6 +34,25 @@ const roboto = Roboto({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800'],
   variable: '--font-sans',
+  display: 'swap',
+});
+
+/* THE MARK IS NOT UI TEXT, and this is the second face for that reason alone.
+ *
+ * The wordmark used to inherit font-family from `body` like every other string
+ * in the product, which was invisible until the app face changed — swapping the
+ * UI to Roboto took the logo with it, because nothing had ever distinguished a
+ * fixed brand mark from body copy. --font-brand exists so the next global swap
+ * cannot reach it: a change to the UI face edits what --font-sans points at,
+ * and the logo is not reading that variable.
+ *
+ * 800 only. The mark is set in one weight on all three of its surfaces, and
+ * loading the rest would be shipping faces so that some future component could
+ * accidentally use the brand face for prose. */
+const sora = Sora({
+  subsets: ['latin'],
+  weight: ['800'],
+  variable: '--font-brand',
   display: 'swap',
 });
 
@@ -74,7 +93,7 @@ export default function RootLayout({
   return (
     <html
       lang="en-GB"
-      className={roboto.variable}
+      className={`${roboto.variable} ${sora.variable}`}
       // The blocking script below sets data-theme on this element before
       // hydration, deliberately outside anything React rendered server-side
       // (the server has no localStorage to read). Without this, React logs a

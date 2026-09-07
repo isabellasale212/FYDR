@@ -259,6 +259,13 @@ a {
   position: relative;
   width: 132px;
   padding-bottom: 12px;
+  /* THE APP FACE, not the brand face, and this one is deliberate. The other
+     two wordmarks — the sign-in splash lockup and the small mark on the reset
+     and MFA screens — are Sora; the sidebar's is Roboto, because the sidebar
+     is chrome the user reads past all day rather than a brand moment. Tracking
+     stays -0.035em: that is this size's optical value and it is right in
+     either face. */
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-size: 50px;
   font-weight: 800;
   letter-spacing: -0.035em;
@@ -2899,6 +2906,10 @@ a.hist-row:focus-visible {
   flex: none;
 }
 .signin-word {
+  /* Brand face. -0.03em rather than the sidebar's -0.035em because this is
+     21px and that is 50px: tighter tracking at larger sizes is the point, and
+     unifying them would make one of the two wrong. */
+  font-family: var(--font-brand), system-ui, sans-serif;
   font-size: 21px;
   font-weight: 800;
   letter-spacing: -0.03em;
@@ -10605,7 +10616,8 @@ button.dash-stat {
   height: 343.8px;
   display: flex;
   align-items: flex-end;
-  font-family: var(--font-sans), system-ui, sans-serif;
+  /* Brand face. The global swap must not reach the lockup. */
+  font-family: var(--font-brand), system-ui, sans-serif;
   font-weight: 800;
   font-size: 386px;
   line-height: 1;

@@ -47,6 +47,7 @@
     "test:fixture-visibility": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-fixture-visibility.ts",
     "check:surface-tokens": "node --experimental-strip-types scripts/derive-surface-tokens.ts --check",
     "check:control-radius": "node --experimental-strip-types scripts/check-control-radius.ts",
+    "test:brand-face": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-brand-face.ts",
     "test:control-styling": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-control-styling.ts",
     "check:env-files": "node --experimental-strip-types scripts/check-env-files.ts",
     "test:env-guard": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-env-guard.ts",

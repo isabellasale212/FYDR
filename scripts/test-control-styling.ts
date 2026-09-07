@@ -14,6 +14,10 @@
  * change had to rewrite 62 references rather than one line. It is --font-sans
  * now, so the next family swap is the layout file alone.
  *
+ * Sora later came back, scoped to the Fydr wordmark and nothing else, once it
+ * became clear the swap had taken the brand mark with it. That is
+ * test-brand-face.ts's subject; here it only has to stay OUT of the UI.
+ *
  * WHAT IS NOT ASSERTED HERE. That the app LOOKS right — that is a screenshot's
  * job, and one was taken. These are the claims a screenshot cannot make: that
  * no rule anywhere kept a pill, that the guard has teeth, and that the
@@ -165,8 +169,14 @@ console.log('\nstate changes are snappy');
 console.log('\nthe typeface is Roboto, and the variable is not named after it');
 {
   const l = read(LAYOUT);
-  assert(/import \{ Roboto \} from 'next\/font\/google'/.test(l), 'Roboto is loaded through next/font/google');
-  assert(!/\bSora\b(?![^*]*\*\/)/.test(l.replace(/\/\*[\s\S]*?\*\//g, '')), 'and Sora is gone from the code, kept only in the comment that explains the swap');
+  assert(/import \{ Roboto, Sora \}/.test(l), 'Roboto is loaded through next/font/google');
+  /* Sora is deliberately still here, and this assertion changed rather than
+     being deleted. It left the UI and stayed as the brand mark's face — see
+     test-brand-face.ts. What must remain true is that it is not the app face:
+     nothing in base.css may set the UI in Sora, and --font-sans must be the
+     Roboto declaration rather than the Sora one. */
+  const sansDecl = l.slice(Math.max(0, l.indexOf("variable: '--font-sans'") - 400), l.indexOf("variable: '--font-sans'"));
+  assert(/Roboto\(\{/.test(sansDecl), 'and --font-sans is the Roboto declaration, not the Sora one');
   for (const w of ['400', '500', '600', '700', '800']) {
     assert(new RegExp(`'${w}'`).test(l), `weight ${w} is requested`);
   }

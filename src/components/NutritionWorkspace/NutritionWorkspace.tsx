@@ -7,7 +7,6 @@ import { createClient } from '@/lib/supabase/client';
 import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import {
   DAY_TYPES,
-  mealPortionRatio,
   MACRO_TOLERANCE_PCT,
   RULE_BOUNDS,
   computeTargets,
@@ -189,20 +188,13 @@ export function NutritionWorkspace({
   }
 
   const massKg = selectedAthlete?.massKg ?? null;
-  /* The EXAMPLE MEALS still have to shrink and grow with the day type, or the
-     meal card would show a rest-day plate against a match-day target. This is a
-     display ratio derived from the numbers the nutritionist set — the day's own
-     carb value over the training day's — NOT a rate the three targets are
-     computed from. The three remain independent; this only decides how big the
-     illustrative portions are drawn. */
-  const mealCarbRatio = mealPortionRatio(carbByDay, dayType);
   const scaledMeals: ScaledMeal[] | null = useMemo(() => {
     if (massKg === null) return null;
     return [
-      ...scaleDay(massKg, mealCarbRatio),
-      ...extraMeals.map((m) => scaleMeal(m.meal, massKg, mealCarbRatio)),
+      ...scaleDay(massKg),
+      ...extraMeals.map((m) => scaleMeal(m.meal, massKg)),
     ];
-  }, [massKg, mealCarbRatio, extraMeals]);
+  }, [massKg, extraMeals]);
 
   const dayTotals = useMemo(() => {
     if (!scaledMeals) return null;

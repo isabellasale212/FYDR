@@ -1,4 +1,4 @@
-import { dominant, type Meal, type MealItem, type MealUnit } from '@/lib/nutritionMeals';
+import { type Meal, type MealItem, type MealUnit } from '@/lib/nutritionMeals';
 import { humanizeDbError } from '@/lib/writeErrors';
 import type { Db } from './groups';
 import { mustAffect } from '@/lib/write';
@@ -11,7 +11,7 @@ import { mustAffect } from '@/lib/write';
  * libraryMealToMeal below is the one place a meal_library row becomes the plain `Meal`
  * shape lib/nutritionMeals.ts's scaleMeal/scaleDay already scale — reusing those
  * functions unchanged, exactly as they already scale the fixed five reference meals, so
- * a library meal is portion-scaled by athlete mass and day-type multiplier identically. */
+ * a library meal is portion-scaled by athlete mass identically. */
 
 export type LibraryMealItemRow = {
   id: string;
@@ -76,8 +76,7 @@ export function libraryMealToMeal(m: LibraryMeal): Meal {
     unit: it.unit,
     proteinG: it.proteinG,
     carbG: it.carbG,
-    fatG: it.fatG,
-    carbDominant: dominant(it.proteinG, it.carbG, it.fatG),
+    fatG: it.fatG
   }));
   return { name: m.name, time: m.timeLabel, items };
 }

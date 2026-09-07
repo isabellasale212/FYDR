@@ -67,27 +67,6 @@ export const DAY_TYPES: { id: DayTypeId; label: string; guideline: number }[] = 
   { id: 'rest', label: 'Rest day', guideline: 3.5 },
 ];
 
-/** How big to draw the EXAMPLE MEAL portions for a day type, relative to a
- *  training day.
- *
- *  Display only. The three carbohydrate targets are independent and are never
- *  computed from this — it exists so the meal card does not show a rest-day
- *  plate against a match-day target. Derived from the nutritionist's own three
- *  numbers where they are to hand; where they are not (the athlete's own page
- *  resolves a target, not a rule) it falls back to the printed guidelines,
- *  whose ratios are the ones the old fixed multipliers produced, so that card
- *  draws exactly as it did before. */
-export function mealPortionRatio(
-  carbByDay: Record<DayTypeId, number> | null,
-  dayType: DayTypeId,
-): number {
-  const source =
-    carbByDay ??
-    (Object.fromEntries(DAY_TYPES.map((d) => [d.id, d.guideline])) as Record<DayTypeId, number>);
-  const base = source.training;
-  return base > 0 ? source[dayType] / base : 1;
-}
-
 /** Touchpoint 6: day types map onto the real md_offset column, imperfectly.
  *  Match day is real and exact — md_offset = 0 is the schema's own definition of
  *  matchday (docs/04-data-model.md, "MD is matchday itself"). Training day and Rest

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { fetchMealLibrary, libraryMealToMeal } from '@/lib/queries/mealLibrary';
 import { fetchBodyCompositionEntries } from '@/lib/queries/bodyComposition';
 import { resolveTargetForDate } from '@/lib/queries/nutritionTargets';
-import { DAY_TYPES, mealPortionRatio, type DayTypeId } from '@/lib/nutritionRules';
+import { DAY_TYPES, type DayTypeId } from '@/lib/nutritionRules';
 import { REFERENCE_MASS_KG, scaleDay, scaleMeal, type ScaledMeal } from '@/lib/nutritionMeals';
 import { todayIso } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
@@ -47,14 +47,10 @@ export default async function MealIdeasPage() {
   // training, the same default the coach workspace itself opens on.
   const dayType: DayTypeId = target?.md_specific && target.md_offset === 0 ? 'match' : 'training';
   const dayTypeInfo = DAY_TYPES.find((d) => d.id === dayType) ?? DAY_TYPES[0]!;
-  /* This page resolves a TARGET, not a rule, so it has no per-day carb numbers
-     to scale the example plates by and uses the printed guidelines. Their ratios
-     are the ones the old multipliers produced, so this card is unchanged. */
-  const portionRatio = mealPortionRatio(null, dayType);
 
   const scaledMeals: ScaledMeal[] = [
-    ...scaleDay(massKg, portionRatio),
-    ...mealLibrary.map((m) => scaleMeal(libraryMealToMeal(m), massKg, portionRatio)),
+    ...scaleDay(massKg),
+    ...mealLibrary.map((m) => scaleMeal(libraryMealToMeal(m), massKg)),
   ];
 
   return (

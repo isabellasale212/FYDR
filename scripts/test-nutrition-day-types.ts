@@ -109,5 +109,43 @@ console.log('\nthe editor changes one day and only one day');
   );
 }
 
+console.log('\nexample meals ignore day type entirely — no ratio left anywhere');
+{
+  const meals = read('src/lib/nutritionMeals.ts');
+  const mealsCode = strip(meals);
+  const athlete = strip(read('src/app/(athlete)/programme/nutrition/page.tsx'));
+  const lib2 = strip(read('src/lib/queries/mealLibrary.ts'));
+
+  assert(!/mealPortionRatio/.test(libCode), 'the portion-ratio helper is gone from nutritionRules.ts');
+  assert(!/mealPortionRatio/.test(wsCode) && !/mealPortionRatio/.test(athlete), 'and from both callers');
+
+  /* Removed from the SIGNATURES, not merely passed 1. A parameter that still
+     exists is a parameter something can start passing again. */
+  assert(
+    /export function scaleMeal\(meal: Meal, athleteMassKg: number\): ScaledMeal/.test(mealsCode),
+    'scaleMeal takes a mass and nothing else',
+  );
+  assert(
+    /export function scaleDay\(athleteMassKg: number\): ScaledMeal\[\]/.test(mealsCode),
+    'scaleDay takes a mass and nothing else',
+  );
+  assert(!/dayMultiplier/.test(mealsCode), 'no day multiplier survives in the meal scaler');
+
+  /* carbDominant existed only so carbohydrate items could be scaled by that
+     multiplier. Confirmed by search that nothing else read it before removing
+     it — it was never a database column, only computed at read time. */
+  for (const [file, code] of [['nutritionMeals.ts', mealsCode], ['mealLibrary.ts', lib2]] as const) {
+    assert(!/carbDominant/.test(code), `carbDominant is gone from ${file}`);
+    assert(!/\bdominant\(/.test(code), `and so is the helper that computed it, in ${file}`);
+  }
+
+  const fn = mealsCode.slice(mealsCode.indexOf('export function scaleMeal'));
+  const body = fn.slice(0, fn.indexOf('\n}'));
+  assert(
+    /athleteMassKg \/ REFERENCE_MASS_KG/.test(body) && !/\* scale \*/.test(body),
+    'every item scales by mass alone, one factor for the whole meal',
+  );
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

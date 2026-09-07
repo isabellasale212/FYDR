@@ -119,9 +119,13 @@ export default async function AthleteReportPickerPage({ searchParams }: { search
             aria-label="Search athletes"
             style={{ width: 260 }}
           />
-          <Link href="/reports" className="btn-ghost">
-            Back
-          </Link>
+          {/* A second control reading "Back" used to sit here, linking to
+              /reports. The layout already renders the shared history Back on
+              this route — checked in the browser, both were on screen at once,
+              button.back-btn and a.btn-ghost[href="/reports"], the same word
+              twice with two different destinations. Every other staff route has
+              exactly one Back and it is the history one, so this row loses its
+              copy rather than the app growing a second convention. */}
         </form>
       </div>
 

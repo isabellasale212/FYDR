@@ -72,7 +72,7 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
  * rather than silently diverging, per CLAUDE.md §5.
  *
  * `?week=` — THE WEEK STRIP. A week navigator, NOT a period selector, and the
- * distinction is the whole point. "How many of the last 7 days did he weigh in
+ * distinction is the whole point. "How many of the last 7 days did they weigh in
  * on" is a question about ONE week; widening it to a season would not answer it
  * more fully, it would replace it with a different question and make this a
  * different screen. So the week gets prev/next, the way /reports/squad's own

@@ -5,7 +5,7 @@
   "description": "Fydr, athlete performance management. Phase 1a thin slice: staff web and athlete mobile web.",
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run check:env-files && npm run test:env-guard && npm run check:surface-tokens && npm run check:control-radius && npm run test:access-gates && npm run check:policy-replacements && npm run test:policy-guard && npm run test:sign-in-audit && npm run test:brand-face && npm run test:launch-claim && npm run test:mark-consistency && npm run test:seed-auth && npm run test:service-role-grants && npm run test:sign-in-probes",
+    "prebuild": "npm run check:env-files && npm run test:env-guard && npm run check:surface-tokens && npm run check:control-radius && npm run test:access-gates && npm run check:policy-replacements && npm run test:policy-guard && npm run test:sign-in-audit && npm run test:brand-face && npm run test:launch-claim && npm run test:mark-consistency && npm run test:seed-auth && npm run test:service-role-grants && npm run test:sign-in-probes && npm run test:inclusive-copy",
     "build": "next build",
     "start": "next start",
     "deploy": "npx --yes vercel@59.11.0 deploy --prod",
@@ -75,7 +75,8 @@
     "test:seed-auth": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-seed-auth.ts",
     "test:service-role-grants": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-service-role-grants.ts",
     "verify:login-attempts": "node scripts/verify-login-attempts.mjs",
-    "test:sign-in-probes": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-sign-in-probes.ts"
+    "test:sign-in-probes": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-sign-in-probes.ts",
+    "test:inclusive-copy": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-inclusive-copy.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.5.1",

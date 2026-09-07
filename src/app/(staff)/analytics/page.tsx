@@ -408,7 +408,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
               : null;
             /* The wellness band is the PRIMARY athlete's own trailing ±1SD,
              * which is what the card's own subtitle promises — "each against
-             * his own baseline, never the squad average". Taken from the last
+             * their own baseline, never the squad average". Taken from the last
              * day that has one rather than averaged, so it is a real band. */
             const lastBand = [...seriesA].reverse().find((p) => p.mean !== null && p.sd !== null);
             const shaded = board.acwrBand

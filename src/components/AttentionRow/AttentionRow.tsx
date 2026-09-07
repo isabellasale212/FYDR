@@ -9,7 +9,7 @@ type Props = { row: Row; rank: number };
  * One ranked line on the attention list.
  *
  * A TABLE ROW, not a sentence. It used to read "Name position what value
- * against his own baseline, open N days." — which is fine once and unreadable
+ * against their own baseline, open N days." — which is fine once and unreadable
  * ten times: every row a different length, the numbers landing in a different
  * place on each line, and nothing to scan down. The facts are unchanged; they
  * are in columns now, so a coach can run an eye down "vs baseline" instead of

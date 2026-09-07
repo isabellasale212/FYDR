@@ -48,7 +48,7 @@ const DAY_INITIALS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
  *
  * Fill versus stroke, solid versus dashed, accent versus neutral, plus two separate
  * captions and two separate pills. Four channels, because the failure this guards
- * against — a reader taking "he's in the band" to mean the wrong one of the two — is
+ * against — a reader taking "they are in the band" to mean the wrong one of the two — is
  * silent, and one channel is one refactor from being lost.
  *
  * The target band is STAFF ONLY and NEVER RANKED (the client's own rules; migration
@@ -80,8 +80,8 @@ export function SelectedAthleteCard({
   const pillClass = state === 'above' ? 'pill-warn' : state === 'below' ? 'pill-bad' : 'pill-good';
   const pillLabel = state === 'above' ? 'Above trend' : state === 'below' ? 'Below trend' : 'In trend';
   /* The STAFF-TARGET pill, migration 0060 — a different question from the trend pill
-   * beside it, so it gets its own words. "Above trend" means he has moved away from
-   * where HE has been; "Above target" means he is outside where STAFF want him. An
+   * beside it, so it gets its own words. "Above trend" means they have moved away from
+   * where THEY have been; "Above target" means they are outside where STAFF want them. An
    * athlete can easily be one and not the other, which is exactly why both pills are
    * shown rather than one merged verdict. Null when nobody has set a range: the
    * absence of a target is not "on target". */

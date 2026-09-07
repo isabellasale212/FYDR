@@ -96,7 +96,7 @@ import type { Db } from './groups';
  *         and the dial collapses its window to ONE NUMBER, so a longer window
  *         removes it: a season-long mean readiness barely moves, washes out
  *         exactly the peaks and troughs the dial exists to surface, and sits
- *         next to ACWR where the surrounding grammar reads "how is he right
+ *         next to ACWR where the surrounding grammar reads "how are they right
  *         now". Capping the mean while letting the count follow the period
  *         keeps both halves honest instead of sacrificing one to fix the other.
  *         The card labels the two windows separately so it is visible that they
@@ -114,7 +114,7 @@ import type { Db } from './groups';
  *         `period=year` is not misled into thinking the ratio moved with it.
  *
  *  FIXED  WELLNESS_ROLLING_WINDOW (14). This is the BASELINE the wellness band
- *         is drawn against — "is this normal for him" — not the window being
+ *         is drawn against — "is this normal for them" — not the window being
  *         viewed. The mean the dial reports is what widens; the 14 days it is
  *         judged against stay 14 days, or "steady" would mean something
  *         different at every period and the two could not be compared.
@@ -711,7 +711,7 @@ export async function fetchPlayerProfile(
   };
 
   // Wellness rating: mean readiness over the last 7 days, and "is this
-  // normal for him" from the same rolling-band machinery WellnessChart and
+  // normal for them" from the same rolling-band machinery WellnessChart and
   // the old profile page both already use, so the header dial doesn't
   // invent a second opinion about what "steady" means.
   // wellnessFrom is range.from minus the 14-day lead-in, so the series runs
@@ -742,8 +742,8 @@ export async function fetchPlayerProfile(
   // last element here would report "not enough data" every single morning
   // before that day's check-in lands, even on an athlete with a long,
   // completely normal submission history — this instead asks the real
-  // question the status line is for: is his most recent real reading
-  // normal for him.
+  // question the status line is for: is their most recent real reading
+  // normal for them.
   const latestSubmitted = [...band].reverse().find((b) => b.value !== null);
 
   const wellnessRating: WellnessRatingSummary = {

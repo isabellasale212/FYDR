@@ -179,8 +179,8 @@ type WellnessTrendEntryRow = {
 };
 
 /** Each athlete's most recent readiness against their own rolling mean, per
- *  screens/analytics.md preset 2 — "the question is never what did he score, it is
- *  whether this is normal for him" (lib/stats.ts's own header, which this reuses
+ *  screens/analytics.md preset 2 — "the question is never what did they score, it is
+ *  whether this is normal for them" (lib/stats.ts's own header, which this reuses
  *  directly rather than re-deriving). z-score suppressed below 10 prior
  *  observations, the spec's own guard; the raw value still shows. */
 export async function fetchWellnessTrend(
@@ -578,7 +578,7 @@ function valueFor(metric: MetricDef, row: MetricRow): number | null {
  *
  * `athleteId` null means the whole population in scope (group filter applied);
  * a real id narrows to that one athlete, and the population series then simply
- * IS his own line — which is the point: a mean over a population of one is
+ * IS their own line — which is the point: a mean over a population of one is
  * that one, so the single-athlete and squad views share every line of maths
  * rather than being two code paths that can disagree.
  */
@@ -773,8 +773,8 @@ export async function fetchMetricSeries(
         const computed = computeAcwr(window, addDays(day, -(ACWR_ACUTE_WINDOW_DAYS - 1)));
         if (computed.acwr !== null) ratios.set(day, computed.acwr);
         // "Suppressed" on an athlete row means suppressed AS OF the last day
-        // of the visible window — the "where does he stand now" question the
-        // original preset answers, not "was he ever suppressed".
+        // of the visible window — the "where do they stand now" question the
+        // original preset answers, not "were they ever suppressed".
         if (day === range.to && computed.suppressed) suppressedNow.add(a.id);
       }
       perAthleteMetric.set(a.id, ratios);

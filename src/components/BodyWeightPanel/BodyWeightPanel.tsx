@@ -178,7 +178,7 @@ export function BodyWeightPanel({
  *      database enforces that (0060's guard trigger refuses an in-place edit),
  *      so the copy is describing what actually happens rather than promising it.
  *   3. It shows the previous ranges with who set them and when. "What were we
- *      asking of him in pre-season?" is the question the effective-dated shape
+ *      asking of them in pre-season?" is the question the effective-dated shape
  *      exists to answer, and it is answered here rather than nowhere. */
 function TargetRangeForm({
   orgId,

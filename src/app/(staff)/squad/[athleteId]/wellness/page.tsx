@@ -53,7 +53,7 @@ export const metadata = { title: 'Wellness · Fydr' };
  *   NOT SHOWN injury body area, side, status, expected return, or any injury
  *             record at all. The player profile shows those (to coach and
  *             medical alike, which is its own standing question); this page
- *             does not need them to answer "how has he been reporting", so it
+ *             does not need them to answer "how have they been reporting", so it
  *             does not carry them and does not have to gate them.
  *   NOT SHOWN soreness_areas. The column is real and the athlete's own app
  *             collects it, but nothing staff-side in this codebase has ever
@@ -93,7 +93,7 @@ export const metadata = { title: 'Wellness · Fydr' };
 const WELLNESS_PERIODS: readonly RangeKey[] = ['week', 'month', 'season', 'year', 'all'];
 
 /** The trailing baseline the readiness band is drawn against — "is this normal
- *  for him". FIXED at 14 days regardless of the selected period, matching
+ *  for them". FIXED at 14 days regardless of the selected period, matching
  *  queries/playerProfile.ts's WELLNESS_ROLLING_WINDOW exactly: the window being
  *  VIEWED widens, the window a day is JUDGED against does not, or "steady"
  *  would mean something different at every period. */
@@ -125,8 +125,8 @@ function datesIn(from: string, to: string): string[] {
 }
 
 /** An athlete's mean for one metric over the window. Null — never zero — when
- *  they submitted nothing: a zero would read as "he reported the worst possible
- *  score every day", which is the opposite of "he reported nothing". */
+ *  they submitted nothing: a zero would read as "they reported the worst possible
+ *  score every day", which is the opposite of "they reported nothing". */
 function meanOf(entries: readonly WellnessEntry[], metric: 'readiness' | (typeof SCALES)[number]['key']): number | null {
   const values = entries
     .map((e) => (metric === 'readiness' ? (e.readiness_score ?? readiness(e)) : e[metric]))
@@ -335,8 +335,8 @@ export default async function AthleteWellnessPage({
                 * not drawn describes something the reader cannot see and reads
                 * as a rendering failure. */}
               <p className="cap" style={{ marginTop: 6 }}>
-                A day with no entry is a gap, never a zero. The shaded area and dashed line are his
-                own {ROLLING_WINDOW}-day mean &plusmn; 1 SD &mdash; what is normal for him &mdash;
+                A day with no entry is a gap, never a zero. The shaded area and dashed line are their
+                own {ROLLING_WINDOW}-day mean &plusmn; 1 SD &mdash; what is normal for them &mdash;
                 drawn only where there are enough observations to have one.
               </p>
             </>
@@ -346,7 +346,7 @@ export default async function AthleteWellnessPage({
         <section className="card pp-card" aria-labelledby="w-scales-title">
           <div className="pp-card-head">
             <h2 className="card-title" id="w-scales-title" style={{ margin: 0 }}>
-              What he reported
+              What they reported
             </h2>
             <span className="num s">means over {range.label.toLowerCase()}</span>
           </div>
@@ -380,7 +380,7 @@ export default async function AthleteWellnessPage({
 
         {unit ? (
           <PositionalContext
-            title="Compared with his position"
+            title="Compared with their position"
             titleId="w-positional-title"
             scopeLine={positionalScopeLine(unit, groups, groupIds)}
             rows={bands}
@@ -388,12 +388,12 @@ export default async function AthleteWellnessPage({
         ) : (
           <section className="card pp-card" aria-labelledby="w-nopos-title">
             <h2 className="card-title" id="w-nopos-title">
-              Compared with his position
+              Compared with their position
             </h2>
             <EmptyState
               headingLevel={3}
               title="No positional unit on record"
-              body={`${athlete.first_name} is not a member of any positional group, so there is no set of players in his position to compare against. Positional groups are managed in Settings › Groups; a group with type "positional" is what this comparison reads.`}
+              body={`${athlete.first_name} is not a member of any positional group, so there is no set of players in their position to compare against. Positional groups are managed in Settings › Groups; a group with type "positional" is what this comparison reads.`}
             />
           </section>
         )}

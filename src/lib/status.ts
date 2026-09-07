@@ -45,9 +45,9 @@ export const COMPLIANCE_STATUS = {
 /** Band position against the athlete's own range, §5.2 triangles. Inside the
  *  band carries no glyph at all: the value alone is the statement. */
 export const BAND_STATUS = {
-  above: { tone: 'bad', glyph: '⚠', label: 'Above his own band' },
-  below: { tone: 'warn', glyph: '▽', label: 'Below his own band' },
-  inside: { tone: 'neutral', glyph: '', label: 'Inside his own band' },
+  above: { tone: 'bad', glyph: '⚠', label: 'Above their own band' },
+  below: { tone: 'warn', glyph: '▽', label: 'Below their own band' },
+  inside: { tone: 'neutral', glyph: '', label: 'Inside their own band' },
   unknown: { tone: 'neutral', glyph: '', label: 'Not enough history' },
 } satisfies Record<string, Status>;
 

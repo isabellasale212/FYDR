@@ -52,7 +52,7 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 /* Vs PB, direction-corrected. A sprint is faster when the number is smaller,
  * so `gap` is signed against the test's OWN direction — printing a slower time
  * as a gain is the whole reason MyTestSummary now carries higher_is_better.
- * "At PB" is a real third state, not a zero: it says the latest result IS his
+ * "At PB" is a real third state, not a zero: it says the latest result IS their
  * best, which is different from being a hair off it. */
 function vsPb(t: {
   pbValue: number | null;

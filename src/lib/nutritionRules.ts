@@ -289,9 +289,9 @@ export type MassTrendFlag = {
 
 /** THE TREND FLAG IS KEYED TO THE ATHLETE'S OWN BAND, NEVER TO THE STAFF TARGET
  *  RANGE. Migration 0060 added body_mass_target_ranges and this function was
- *  deliberately NOT switched over to it. "He has moved away from where he has been"
- *  is a fact about the athlete that this flag can assert on its own; "he is outside
- *  where staff want him" is staff already knowing, and flagging it would tell a
+ *  deliberately NOT switched over to it. "They have moved away from where they have been"
+ *  is a fact about the athlete that this flag can assert on its own; "they are outside
+ *  where staff want them" is staff already knowing, and flagging it would tell a
  *  nutritionist their own opinion back. It would also make the flag appear and vanish
  *  when somebody edited a target rather than when the athlete's mass moved. Keep this
  *  self-referential.

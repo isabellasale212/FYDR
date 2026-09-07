@@ -268,9 +268,9 @@ function RangeBar({
  * greyscale and colour-vision deficiency, plus a fourth in words: the column header
  * says "Staff target" and the caption says whether they are on it.
  *
- * The marker keeps the good/warn/bad status colouring, because "is he on target" is a
+ * The marker keeps the good/warn/bad status colouring, because "are they on target" is a
  * judgement and this is the column that makes it. RangeBar's marker is coloured by the
- * SAME palette for a DIFFERENT question ("is he away from his own trend"), which is why
+ * SAME palette for a DIFFERENT question ("are they away from their own trend"), which is why
  * both bars carry a word as well as a colour. */
 function TargetBar({ mass, range }: { mass: number; range: { low: number; high: number } }) {
   const state = massState(mass, range);

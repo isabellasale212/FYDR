@@ -3,7 +3,7 @@ import { rangeBarMark } from '@/lib/nutritionRules';
 import { POSITIONAL_MIN_N, type PositionalBand } from '@/lib/queries/positionalContext';
 
 type Props = {
-  /** Card heading, e.g. "Compared with his position". */
+  /** Card heading, e.g. "Compared with their position". */
   title: string;
   /** The id the heading carries, so the card is aria-labelledby-able. */
   titleId: string;
@@ -20,7 +20,7 @@ type Props = {
 };
 
 /* The positional comparison, rendered. Shared by the three per-athlete domain
- * pages so "compared with his position" looks and means the same thing on all
+ * pages so "compared with their position" looks and means the same thing on all
  * of them.
  *
  * IT DRAWS A BAND AND A MARKER. IT NEVER DRAWS A LIST OF PEOPLE.
@@ -39,7 +39,7 @@ type Props = {
  *
  *   the middle half  a filled, hueless wash (--track)      "where the unit is"
  *   the median       a solid neutral tick (--muted)        "the middle of it"
- *   this athlete     a filled accent dot (--accent)        "and here is him"
+ *   this athlete     a filled accent dot (--accent)        "and here is them"
  *
  * Fill/stroke, hue and shape all differ, so the athlete's own marker never
  * reads as part of the aggregate, in colour or in greyscale — and neither the

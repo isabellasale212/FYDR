@@ -137,7 +137,7 @@ function ReportRow({
               className="field"
               rows={3}
               maxLength={NOTE_MAX}
-              placeholder="e.g. Called him Wednesday. Tightness on the bike only, full ROM. Reviewing Thursday."
+              placeholder="e.g. Called them Wednesday. Tightness on the bike only, full ROM. Reviewing Thursday."
               value={note}
               onChange={(event) => setNote(event.target.value)}
               aria-describedby={`note-privacy-${report.id}`}

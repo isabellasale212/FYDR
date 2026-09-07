@@ -35,8 +35,8 @@ export const metadata = { title: 'Gym · Fydr' };
  * /programmes/[id]/athlete/[athleteId] when an active programme existed, and to
  * be visibly disabled when one did not. That was the honest answer at the time
  * — there was no per-athlete gym page to send anyone to — but it answered a
- * narrower question than the client asked: the programme view shows what he is
- * PRESCRIBED, and says nothing about what he has actually LIFTED. This page is
+ * narrower question than the client asked: the programme view shows what they are
+ * PRESCRIBED, and says nothing about what they have actually LIFTED. This page is
  * both, plus the positional comparison, and the prescription view is now one
  * link away from it rather than in its place.
  *
@@ -61,8 +61,8 @@ export const metadata = { title: 'Gym · Fydr' };
  * GROUP-ASSIGNED PROGRAMMES WERE INVISIBLE. queries/playerProfile.ts used to
  * build its programme banner from programme_assignments with
  * `.eq('athlete_id', ...)` alone, so an athlete whose gym programme was assigned
- * to Forwards rather than to him by name showed NO programme on his profile —
- * and the Gym chip was therefore rendered disabled, with a tooltip saying he had
+ * to Forwards rather than to them by name showed NO programme on their profile —
+ * and the Gym chip was therefore rendered disabled, with a tooltip saying they had
  * no active gym programme, for an athlete who had one.
  * fetchAthleteProgrammeAssignments does the union (see its own header).
  * FIXED: the profile banner now calls that same helper (commit ff98b35; see
@@ -71,7 +71,7 @@ export const metadata = { title: 'Gym · Fydr' };
  * SUSPENDED IS NOT ABSENT. CLAUDE.md §6's rehab exception suspends a gym
  * assignment rather than cancelling it (migration 0050). Filtering to active
  * would tell a coach an athlete in rehab has no gym programme at all, when the
- * true answer — "suspended, because he is on rehab" — is the one they need.
+ * true answer — "suspended, because they are on rehab" — is the one they need.
  *
  * ---------------------------------------------------------------------------
  * THE POSITIONAL COMPARISON: 'group', AND WHAT IT DELIBERATELY DOES NOT SHOW
@@ -85,8 +85,8 @@ export const metadata = { title: 'Gym · Fydr' };
  *
  *   WORKLOAD    sessions completed, mean session volume, mean session RPE —
  *               how much work, how heavy, how hard it felt.
- *   STRENGTH    the heaviest working set he logged for each lift, per lift.
- *   RELATIVE    the same set divided by his body mass, per lift.
+ *   STRENGTH    the heaviest working set they logged for each lift, per lift.
+ *   RELATIVE    the same set divided by their body mass, per lift.
  *
  * THE STRENGTH CARDS REVERSE A DECISION THIS FILE USED TO RECORD. The shipped
  * version of this page (commit 87b0587) argued in this comment that a strength
@@ -102,7 +102,7 @@ export const metadata = { title: 'Gym · Fydr' };
  * PER LIFT, NEVER "STRENGTH". A coach wants the squat, the bench and the trap
  * bar, and an aggregate across them is close to meaningless — a heavy squat and
  * a light press average to a number describing nobody. Rows are the exercises
- * HE logged in this window, so this is his page answering about his lifts, and a
+ * THEY logged in this window, so this is their page answering about their lifts, and a
  * lift too thin in the unit suppresses ITS OWN ROW rather than the panel.
  *
  * NOT A 1RM, AND NOT AN ESTIMATE OF ONE. See fetchBestSetLoadsForAthletes's
@@ -170,7 +170,7 @@ export default async function AthleteGymPage({
 
   /* The primary assignment — active first, most recent start next
    * (fetchAthleteProgrammeAssignments sorts it that way), so this is "the thing
-   * he is on now" and everything else on the card is context beneath it. It is
+   * they are on now" and everything else on the card is context beneath it. It is
    * also what the view-only link points at, which is why it is picked here once
    * rather than at each use site. */
   const primary = assignments[0] ?? null;
@@ -207,7 +207,7 @@ export default async function AthleteGymPage({
    *
    * Volume and RPE are the opposite case and are deliberately NOT seeded: an
    * athlete with no completed session has no mean session volume. Zero would
-   * assert he lifted nothing when the truth is that nothing was measured, and
+   * assert they lifted nothing when the truth is that nothing was measured, and
    * it would drag the unit's median toward the floor. Each row states its own n
    * so the difference is visible rather than implied. */
   const sessionCounts = new Map<string, number>(unit ? unit.athleteIds.map((id) => [id, 0]) : []);
@@ -247,24 +247,24 @@ export default async function AthleteGymPage({
    * ---------------------------------------------------------------------
    *
    * TWO PASSES, AND THE FIRST ONE IS WHAT KEEPS THE SECOND HONEST IN SIZE.
-   * Pass one reads only HIM, which answers "which lifts is this page even
-   * about" — the exercises he logged a working set for inside the period. Pass
+   * Pass one reads only THEM, which answers "which lifts is this page even
+   * about" — the exercises they logged a working set for inside the period. Pass
    * two reads the unit, narrowed to exactly those exercises. Without that
    * narrowing, `all` over a full positional unit pulls every set of every
    * exercise the club has ever logged (gym_set_logs is the largest athlete-data
    * table here) to answer a question about four barbell movements.
    *
-   * ROWS ARE HIS LIFTS, NOT THE UNIT'S. A squat he never performed has no
+   * ROWS ARE THEIR LIFTS, NOT THE UNIT'S. A squat they never performed has no
    * personal number to mark against the band, and a row that is all band and no
-   * marker is the unit's business rather than his. If he logged nothing loaded
+   * marker is the unit's business rather than their. If they logged nothing loaded
    * in the window there are no rows and the card says so.
    *
-   * HIS OWN VALUE COMES OUT OF THE PEER MAP, NOT OUT OF PASS ONE, even though
+   * THEIR OWN VALUE COMES OUT OF THE PEER MAP, NOT OUT OF PASS ONE, even though
    * pass one has it. That is deliberate: summarisePositional derives BOTH the
-   * marker and n from the one map it is given, so folding his value in when the
-   * group filter has excluded him would inflate n by one and drop his number
-   * into the band he is being compared against. When he is outside the filter
-   * his marker is absent and the card's intro says why — the same behaviour the
+   * marker and n from the one map it is given, so folding their value in when the
+   * group filter has excluded them would inflate n by one and drop their number
+   * into the band they are being compared against. When they are outside the filter
+   * their marker is absent and the card's intro says why — the same behaviour the
    * three workload rows above already have, for the same reason. */
   const subjectBests = unit
     ? ((await fetchBestSetLoadsForAthletes(db, orgId, [athleteId], { from: range.from, to: range.to })).get(
@@ -422,10 +422,10 @@ export default async function AthleteGymPage({
                       {enumLabel(a.programmeType)} · assigned{' '}
                       {a.via.kind === 'group'
                         ? `through the ${a.via.groupName ?? 'group'} group`
-                        : 'to him directly'}
+                        : 'to them directly'}
                       {a.goal ? ` · ${a.goal}` : ''}
                       {a.status === 'suspended'
-                        ? ' — suspended while he is on a rehab programme, not cancelled'
+                        ? ' — suspended while they are on a rehab programme, not cancelled'
                         : ''}
                     </span>
                     <span className="num pc-row-meta">
@@ -456,7 +456,7 @@ export default async function AthleteGymPage({
           {overrides.length === 0 ? (
             <p className="cap" style={{ marginTop: 8 }}>
               {primary
-                ? `No exercise is substituted, re-loaded or exempted for ${athlete.first_name} on this programme — he is doing it as written.`
+                ? `No exercise is substituted, re-loaded or exempted for ${athlete.first_name} on this programme — they are doing it as written.`
                 : 'Tailoring is per programme, and nothing is assigned.'}
             </p>
           ) : (
@@ -491,14 +491,14 @@ export default async function AthleteGymPage({
             </span>
           </div>
           <p className="pc-intro">
-            What he actually did, as he logged it. Completed sessions only &mdash; a session left in
+            What they actually did, as they logged it. Completed sessions only &mdash; a session left in
             progress is not work done and is not counted.
           </p>
           {visibleSessions.length === 0 ? (
             <EmptyState
               headingLevel={3}
               title="No completed sessions in this window"
-              body="Nothing was logged and completed between these dates. Widen the period, or check whether he is logging in the app at all."
+              body="Nothing was logged and completed between these dates. Widen the period, or check whether they are logging in the app at all."
             />
           ) : (
             visibleSessions.map((s) => (
@@ -531,7 +531,7 @@ export default async function AthleteGymPage({
 
         {unit ? (
           <PositionalContext
-            title="Workload, compared with his position"
+            title="Workload, compared with their position"
             titleId="g-positional-title"
             scopeLine={positionalScopeLine(unit, groups, groupIds)}
             rows={bands}
@@ -539,12 +539,12 @@ export default async function AthleteGymPage({
         ) : (
           <section className="card pp-card" aria-labelledby="g-nopos-title">
             <h2 className="card-title" id="g-nopos-title">
-              Compared with his position
+              Compared with their position
             </h2>
             <EmptyState
               headingLevel={3}
               title="No positional unit on record"
-              body={`${athlete.first_name} is not a member of any positional group, so there is no set of players in his position to compare against. Positional groups are managed in Settings › Groups; a group with type "positional" is what this comparison reads.`}
+              body={`${athlete.first_name} is not a member of any positional group, so there is no set of players in their position to compare against. Positional groups are managed in Settings › Groups; a group with type "positional" is what this comparison reads.`}
             />
           </section>
         )}
@@ -553,7 +553,7 @@ export default async function AthleteGymPage({
           <>
             {loadBands.length > 0 ? (
               <PositionalContext
-                title="Strength, compared with his position"
+                title="Strength, compared with their position"
                 titleId="g-strength-title"
                 scopeLine={positionalScopeLine(unit, groups, groupIds)}
                 rows={loadBands}
@@ -561,15 +561,15 @@ export default async function AthleteGymPage({
             ) : (
               <section className="card pp-card" aria-labelledby="g-nostrength-title">
                 <h2 className="card-title" id="g-nostrength-title">
-                  Strength, compared with his position
+                  Strength, compared with their position
                 </h2>
                 <EmptyState
                   headingLevel={3}
                   title="No loaded set to compare"
                   body={
                     strengthExerciseIds.length === 0
-                      ? `${athlete.first_name} logged no working set carrying a load in this window — bodyweight and warm-up sets are not a strength figure. Widen the period, or check what he is actually logging in the app.`
-                      : `He logged loaded sets, but no player in ${unit.name} is in scope after the group filter, so there is nothing to compare them against. Clear or widen the filter.`
+                      ? `${athlete.first_name} logged no working set carrying a load in this window — bodyweight and warm-up sets are not a strength figure. Widen the period, or check what they are actually logging in the app.`
+                      : `They logged loaded sets, but no player in ${unit.name} is in scope after the group filter, so there is nothing to compare them against. Clear or widen the filter.`
                   }
                 />
               </section>
@@ -577,7 +577,7 @@ export default async function AthleteGymPage({
 
             {anyMassOnFile ? (
               <PositionalContext
-                title="Relative strength, compared with his position"
+                title="Relative strength, compared with their position"
                 titleId="g-relative-title"
                 scopeLine={positionalScopeLine(unit, groups, groupIds)}
                 rows={relativeBands}
@@ -585,7 +585,7 @@ export default async function AthleteGymPage({
             ) : loadBands.length > 0 ? (
               <section className="card pp-card" aria-labelledby="g-norel-title">
                 <h2 className="card-title" id="g-norel-title">
-                  Relative strength, compared with his position
+                  Relative strength, compared with their position
                 </h2>
                 <EmptyState
                   headingLevel={3}

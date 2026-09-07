@@ -180,7 +180,15 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
 ## 0b. Urgent, found while reading the raw files (2026-09-04) — not waiting on any product decision
 
-- [ ] **THE PRODUCT CALLS EVERY ATHLETE "he" (found 2026-09-07). Fix before it is shown to a women's club — this is a real priority, not a polish item.** Rugby union's fastest-growing participation is women's and girls', `docs/07-integrations.md` names "semi-professional squad sport in the UK and Ireland" as the market, and a readiness card that says "vs **his** own 68" in front of a women's squad is the kind of thing that ends a demo in the first thirty seconds.
+- [x] **FIXED 2026-09-07, Run-verified, awaiting deploy. The product called every athlete "he".** 108 occurrences across 31 files, not the six in four that the first count found — the "his own" search had caught one phrasing out of many. The rendered set alone was 35 across 9 files: "Compared with his position" on three different profile tabs, "What he reported", "What he actually did, as he logged it", "Every plan that reaches him", "Called him Wednesday" in a triage placeholder, and the three shared band labels in `lib/status.ts` that surface wherever a body-composition status renders.
+
+  Fixed as copy, not a pronoun field, for the reasons below. `scripts/test-inclusive-copy.ts` runs in `prebuild` and covers comments as well as strings — the internal prose saying "he" about a hypothetical athlete is where the shipped copy came from, and a rule that exempts the place the habit lives is not a rule. Proved it fails by planting a regression.
+
+  **Two things the sweep needed a person for.** `TestBests.tsx` built "This season's" as `${cond ? '…: t' : 'T'}his season's`, splitting the word across a template expression so a word-boundary search read a stray "his" — fixed at source rather than exempted, which is clearer anyway. And `ProgrammeBuilder` said "It will not reach him until they sign it off", where "him" was the athlete and "they" the medic; a mechanical swap made both "they" and lost the distinction, so both are now named outright: "It will not reach the athlete until a medic signs it off."
+
+  Original entry follows.
+
+- [x] **As first written.** Rugby union's fastest-growing participation is women's and girls', `docs/07-integrations.md` names "semi-professional squad sport in the UK and Ireland" as the market, and a readiness card that says "vs **his** own 68" in front of a women's squad is the kind of thing that ends a demo in the first thirty seconds.
 
   **There is no gender or pronoun column anywhere in the schema.** Checked directly: no `gender`, no `pronouns`, nothing on `athletes`. So the copy is not defaulting from data that happens to be male — it is hardcoded, and there is currently nothing it could read instead.
 

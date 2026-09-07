@@ -1,8 +1,8 @@
 /* The small amount of arithmetic the Phase 1a slice needs.
  *
  * Everything here is per athlete, against that athlete's own history. The
- * question a coach asks is never "what did he score", it is "is this normal for
- * him", so there is no squad mean anywhere in this file.
+ * question a coach asks is never "what did they score", it is "is this normal for
+ * them", so there is no squad mean anywhere in this file.
  *
  * The specification points these calculations at mv_wellness_baselines and
  * mv_daily_athlete_summary. Those materialised views are not in

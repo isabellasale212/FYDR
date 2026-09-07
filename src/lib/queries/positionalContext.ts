@@ -5,7 +5,7 @@ import { fetchGroupAthleteIds, type Db, type Group } from './groups';
 import { fetchPositionalGroup, quartile } from './playerProfile';
 
 /* ===========================================================================
- * POSITIONAL CONTEXT — "how does this compare for someone in his position?"
+ * POSITIONAL CONTEXT — "how does this compare for someone in their position?"
  *
  * The client's own words: "there should also be a comparison to other people
  * in their position". This module is the whole of that comparison, shared by
@@ -175,7 +175,7 @@ export type PositionalUnit = {
   excludedByFilter: number;
   /** False when the group filter excludes the athlete whose page this is. The
    *  page still renders their own value — they are its subject, not part of
-   *  the aggregate — but the band is then "his unit, minus him". */
+   *  the aggregate — but the band is then "their unit, minus them". */
   subjectIncluded: boolean;
 };
 
@@ -287,7 +287,7 @@ export type PositionalBand = {
   unit: string;
   decimals: number;
   /** This athlete's own value. Rendered even when the band is suppressed —
-   *  it is his page, and his own number is not an aggregate of anybody. */
+   *  it is their page, and their own number is not an aggregate of anybody. */
   athleteValue: number | null;
   median: number | null;
   q1: number | null;

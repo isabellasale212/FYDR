@@ -73,7 +73,7 @@ export const metadata = { title: 'Nutrition · Fydr' };
  * Read against the fourth rule too ("never leaderboarded"): the positional card
  * below aggregates BODY MASS, not the target range. Nobody's target bounds are
  * pooled, medianed or compared. The target range appears exactly once, for this
- * athlete, on his own card.
+ * athlete, on their own card.
  *
  * ---------------------------------------------------------------------------
  * THE POSITIONAL COMPARISON USES POSITION_TO_UNIT, NOT THE GROUP
@@ -150,7 +150,7 @@ export default async function AthleteNutritionPage({
     /* The athlete's own weigh-ins, whole history, unwindowed — deliberately
      * the SAME function and therefore the same headline number the player
      * profile's Body weight card shows. Two screens about one athlete's mass
-     * that disagree about what he weighs is worse than either being narrow. */
+     * that disagree about what they weigh is worse than either being narrow. */
     fetchBodyCompositionEntries(db, orgId, athleteId),
     fetchTargetRangeHistory(db, orgId, athleteId),
     fetchRecentCheckins(db, athleteId, range.from, range.to),
@@ -176,7 +176,7 @@ export default async function AthleteNutritionPage({
       ? massState(latestKg, { low: liveRange.target_low_kg, high: liveRange.target_high_kg })
       : null;
 
-  /* The plan rows that actually reach this athlete: his own, his groups', and
+  /* The plan rows that actually reach this athlete: their own, their groups', and
    * the org default. Filtered here rather than in the query because fetchTargets
    * is the /nutrition workspace's squad-wide read and narrowing it there would
    * break that screen — and because the interesting thing to SHOW is that three
@@ -212,7 +212,7 @@ export default async function AthleteNutritionPage({
   /* fetchBodyCompositionForAthletes returns newest-first (its own header says
    * so and the /nutrition workspace depends on it), so the first reading with a
    * mass is the latest one INSIDE the window. That is a different figure from
-   * the headline above, and the card says which is which — the headline is his
+   * the headline above, and the card says which is which — the headline is their
    * true latest weigh-in, this is the latest one in the selected period, so the
    * comparison is like-for-like across the unit instead of pitting one
    * athlete's fresh reading against another's from last season. */
@@ -350,7 +350,7 @@ export default async function AthleteNutritionPage({
         <section className="card pp-card" aria-labelledby="n-plans-title">
           <div className="pp-card-head">
             <h2 className="card-title" id="n-plans-title" style={{ margin: 0 }}>
-              Every plan that reaches him
+              Every plan that reaches them
             </h2>
             <span className="num s">
               {applicable.length} live row{applicable.length === 1 ? '' : 's'}
@@ -358,7 +358,7 @@ export default async function AthleteNutritionPage({
           </div>
           <p className="pc-intro">
             The three scopes, in the order the resolver reads them. Seeing all three is the point &mdash;
-            it is the only way to tell whether he is on a plan written for him or on the club default.
+            it is the only way to tell whether they are on a plan written for them or on the club default.
           </p>
           {applicable.length === 0 ? (
             <EmptyState
@@ -440,7 +440,7 @@ export default async function AthleteNutritionPage({
               <p className="cap" style={{ marginTop: 6 }}>
                 Set by {liveRange.set_by_name ?? 'a member of staff'} on{' '}
                 {formatDate(liveRange.effective_from, timezone)}. Staff-only &mdash;{' '}
-                {athlete.first_name} never sees this range in his own app, and it is never ranked
+                {athlete.first_name} never sees this range in their own app, and it is never ranked
                 against anybody else&apos;s. Changed in the nutrition workspace, not here.
               </p>
             </>
@@ -466,7 +466,7 @@ export default async function AthleteNutritionPage({
             <EmptyState
               headingLevel={3}
               title="No check-ins in this window"
-              body="Nothing was answered between these dates. That is a gap in the record, not a judgement about how he ate."
+              body="Nothing was answered between these dates. That is a gap in the record, not a judgement about how they ate."
             />
           ) : (
             checkins.map((c) => (
@@ -489,7 +489,7 @@ export default async function AthleteNutritionPage({
 
         {unit ? (
           <PositionalContext
-            title="Compared with his position"
+            title="Compared with their position"
             titleId="n-positional-title"
             scopeLine={positionalScopeLine(unit, groups, groupIds)}
             rows={bands}
@@ -497,14 +497,14 @@ export default async function AthleteNutritionPage({
         ) : (
           <section className="card pp-card" aria-labelledby="n-nopos-title">
             <h2 className="card-title" id="n-nopos-title">
-              Compared with his position
+              Compared with their position
             </h2>
             <EmptyState
               headingLevel={3}
               title="No positional unit for this position"
               body={
                 athlete.position
-                  ? `"${athlete.position}" is not one of the rugby positions this app maps onto a positional unit, so it falls to "Other" — and a median across everyone whose position was not recognised is not a comparison to people in his position. Correct the position on the player profile, or use the Wellness or Gym page, which compare against the coach-defined positional group instead.`
+                  ? `"${athlete.position}" is not one of the rugby positions this app maps onto a positional unit, so it falls to "Other" — and a median across everyone whose position was not recognised is not a comparison to people in their position. Correct the position on the player profile, or use the Wellness or Gym page, which compare against the coach-defined positional group instead.`
                   : `No position is recorded for ${athlete.first_name}, so there is no unit to compare against. Position is edited on the player profile.`
               }
             />

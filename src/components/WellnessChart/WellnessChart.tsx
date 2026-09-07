@@ -77,7 +77,7 @@ const MB = 30;
  *   1. the athlete's own +/-1SD band, as an area
  *   2. the athlete's own rolling mean, as a line
  *   3. the daily value, as a dot, with a triangle where it falls outside
- *      his own band
+ *      their own band
  *
  * A day with no submission has no dot and breaks the value path. It is never
  * drawn as zero and it is never interpolated across, because a missing entry

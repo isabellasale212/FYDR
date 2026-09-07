@@ -129,7 +129,7 @@ export function DashboardFlagsPanel({ rows, openTotal, awaitingAck, bySeverity }
                   </span>
                   <span className="dash-flags-what">
                     {r.what} {r.value}
-                    {r.baseline ? ` vs his own ${r.baseline}` : ''}
+                    {r.baseline ? ` vs their own ${r.baseline}` : ''}
                   </span>
                 </span>
                 <span className="dash-flags-meta">

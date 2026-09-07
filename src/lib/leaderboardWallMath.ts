@@ -237,7 +237,7 @@ export function computeWallDerived(data: WallData): WallDerived {
 
   // Movers: mean signed real gain across every measurable board, padded with 0 for
   // boards with no real comparison, divided by the FULL measurable-board count — not
-  // just the boards where a gain exists. LEADERBOARD-SPEC.md §4: "not on his single
+  // just the boards where a gain exists. LEADERBOARD-SPEC.md §4: "not on their single
   // best result" — breadth of improvement counts, one lucky session should not win.
   const movers: WallMover[] = [];
   for (const a of athletes) {

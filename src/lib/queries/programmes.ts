@@ -1362,10 +1362,10 @@ export async function fetchAthleteProgrammeAssignments(
   /* DE-DUPLICATED BY PROGRAMME, NOT BY ASSIGNMENT ROW, and direct wins.
    *
    * The same programme can legitimately reach one athlete twice — assigned to
-   * him by name AND to a group he is in — and those are two different
+   * them by name AND to a group they are in — and those are two different
    * programme_assignments rows with two different ids. Keying the dedupe on the
    * row id would collapse nothing, and the Programme card would list "Strength
-   * Block 3" twice, once "assigned to him directly" and once "through the
+   * Block 3" twice, once "assigned to them directly" and once "through the
    * Forwards group", with the primary picked arbitrarily by the sort.
    *
    * The surviving row is chosen by an explicit precedence rather than by which
@@ -1374,7 +1374,7 @@ export async function fetchAthleteProgrammeAssignments(
    *
    *   1. ACTIVE BEFORE SUSPENDED. What is running now outranks what is paused,
    *      whichever route it arrived by. A suspended direct row shadowing an
-   *      active group row would tell a coach the athlete is off a programme he
+   *      active group row would tell a coach the athlete is off a programme they
    *      is on.
    *   2. THEN DIRECT BEFORE GROUP. Somebody naming this athlete is the more
    *      specific statement of intent, and the direct row is the one an editor

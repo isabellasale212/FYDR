@@ -31,7 +31,7 @@ type Props = {
  *
  *  2. THE GYM CHIP IS NEVER DISABLED. It used to be, when the athlete had no
  *     active programme, because there was genuinely nowhere to send them. There
- *     is now: the gym page answers "what has he lifted" and "how does that
+ *     is now: the gym page answers "what have they lifted" and "how does that
  *     compare" whether or not anything is prescribed, and says so plainly when
  *     nothing is. That also quietly fixes a real bug — the disabled state was
  *     driven by the profile's programme banner, which only ever looked at

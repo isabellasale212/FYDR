@@ -486,7 +486,7 @@ export function ProgrammeBuilder({
               {proposedInjuryId ? (
                 <p className="tiny" style={{ marginTop: 6 }}>
                   This athlete has an open injury, so this goes to the medic as a
-                  proposal. It will not reach him until they sign it off.
+                  proposal. It will not reach the athlete until a medic signs it off.
                 </p>
               ) : null}
               <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>

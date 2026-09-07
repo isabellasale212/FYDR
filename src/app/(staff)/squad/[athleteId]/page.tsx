@@ -112,8 +112,8 @@ function emDash(value: string | number | null | undefined): string {
  * against an edge whenever the athlete is outside their target, which is exactly
  * the case a coach opened this card to see, and it would make "20 kg out" and
  * "0.2 kg out" render identically. Folding the bounds into min/max costs a
- * slightly flatter line and buys a chart where the gap between where he has been
- * and where staff want him is the thing you can actually see.
+ * slightly flatter line and buys a chart where the gap between where they have been
+ * and where staff want them is the thing you can actually see.
  *
  * Returns the band as a rect in the same coordinate space rather than a path, so
  * the caller can style it as a STROKE (see the render site) instead of the fill
@@ -837,7 +837,7 @@ export default async function AthletePage({
                     {wellnessRating.meanWindowDays < wellnessRating.windowDays
                       ? ' — the count follows the period, the mean above does not'
                       : ''}
-                    {' · '}status vs his own 14-day baseline
+                    {' · '}status vs their own 14-day baseline
                   </p>
                 </div>
               </div>

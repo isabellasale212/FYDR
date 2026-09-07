@@ -58,7 +58,7 @@ const EMPTY: Scales = {
  * It never shows a network error. The entry is validated, queued locally and
  * sent; if the send fails the entry stays queued and the athlete is told it is
  * saved on this phone, which is true. Retrying is the application's problem,
- * not his.
+ * not their.
  */
 export function CheckInForm({
   orgId,

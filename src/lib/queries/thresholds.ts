@@ -164,7 +164,7 @@ export function describeThreshold(t: Pick<Threshold, 'metric' | 'comparison' | '
    * rule is an absolute cutoff whatever its baseline_type: per that SQL,
    * `above` fires on `value > p_value`, full stop. For those comparisons a
    * non-absolute baseline only (a) gates firing behind
-   * min_baseline_observations and (b) supplies the "vs his 28-day norm"
+   * min_baseline_observations and (b) supplies the "vs their 28-day norm"
    * context recorded on each flag — so the sentence now says exactly that.
    * z_score and pct_change genuinely evaluate against the baseline, and
    * keep it inside the trip clause. */

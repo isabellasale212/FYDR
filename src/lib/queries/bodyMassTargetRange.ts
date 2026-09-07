@@ -76,7 +76,7 @@ const COLUMNS =
  * differently. */
 
 /** Every range ever set for this athlete, newest first, closed ones included. This is
- *  the point of the effective-dated shape: "what were we asking of him in pre-season?"
+ *  the point of the effective-dated shape: "what were we asking of them in pre-season?"
  *  is a question a nutritionist actually asks. Retracted rows are excluded — a
  *  retraction means "this was a mistake", not "this was superseded". */
 export async function fetchTargetRangeHistory(

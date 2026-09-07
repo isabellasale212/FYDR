@@ -47,7 +47,7 @@ export type SquadRow = {
  *  BOUNDED AT BOTH ENDS, THOUGH, AND THAT IS NOT PEDANTRY. A trailing window
  *  written as `entry_date >= from` alone counts anything dated after `from`,
  *  including dates in the future — and this org's own data has wellness rows
- *  dated 2033, which made one athlete read "2 of 7" while his real last entry
+ *  dated 2033, which made one athlete read "2 of 7" while their real last entry
  *  was three weeks ago. formatDate prints no year, so "2033-07-29" rendered as
  *  "Fri 29 Jul" and looked entirely plausible. An entry dated after today has
  *  not happened yet, so it counts towards neither figure. */

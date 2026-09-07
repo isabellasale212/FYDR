@@ -119,7 +119,7 @@ export function TestBests({ bestsBySide, unit, decimalPlaces, higherIsBetter, se
                     <span
                       className="pill pill-good"
                       style={{ marginLeft: 6 }}
-                      title={`${entry.label ? `${entry.label}: t` : 'T'}his season's best beats every result from outside this season`}
+                      title={`${entry.label ? `${entry.label}: This` : 'This'} season's best beats every result from outside this season`}
                     >
                       New PB
                     </span>

@@ -19,9 +19,9 @@ const TONE_RGB = {
 } as const;
 
 
-/** What the athlete may do today, stated first, in words he can act on. He is
+/** What the athlete may do today, stated first, in words they can act on. They are
  *  told the restriction and never the diagnosis, which is the same rule that
- *  applies to his coach.
+ *  applies to their coach.
  *
  *  reasonCategory and note render here too now (ADR-008 / gameplan 2.6) —
  *  both were already fetched by fetchAthleteAvailability before this change

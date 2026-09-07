@@ -8,7 +8,7 @@ import type { GymSetLogInput } from '@/lib/validation/gym';
  * screens/wellness-entry.md, screens/training-entry.md, screens/nutrition-checkin.md and
  * screens/gym-logging.md: the entry is saved on the phone first and
  * sent when there is signal. An athlete standing in a gym with no bars must
- * never be shown a network error for something he has already done, so a
+ * never be shown a network error for something they have already done, so a
  * submission that cannot reach the server stays here and is retried on the
  * next load.
  *

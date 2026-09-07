@@ -131,7 +131,7 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   **The count itself is worth re-measuring at the start**, not taken from here: `scripts/verify-audit-trail.mjs`'s approach (`pg_stat_all_tables`, plus `pg_trigger` for coverage) is what produced these numbers.
 
-- [ ] **PRODUCTION IS IN THE WRONG REGION, or the compliance document is (found 2026-09-07). Decide this BEFORE buying Pro, because the fix is a new project.**
+- [x] **ANSWERED 2026-09-07: production is in the wrong region, and the documents were wrong about it. Diagnosis and document corrections are done; the MOVE is the item below.**
 
   **Measured.** `.env.production.explicit`'s pooler host is `aws-1-eu-west-1.pooler.supabase.com`. `eu-west-1` is **Ireland**. The server's own address is in AWS's `2a05:d018::/32` range. Scratch is in eu-west-1 too.
 
@@ -155,6 +155,19 @@ Both come after the sign-in-history item in 0b, which is in progress.
   **What a real move therefore needs, none of it started:** the new project; a decision on how accounts transfer (an `auth` migration performed by somebody who can extract it, or re-inviting all 46 accounts); `auth_hooks` recreated AND the hook re-registered in Supabase's auth settings, which is dashboard configuration rather than SQL; the `retention`, `cron`, `storage` and `vault` schemas assessed; new URL and keys into Vercel; and redirect URLs and the custom domain repointed.
 
   Also worth knowing: "our data stays in the UK" is described in that same paragraph as removing "an entire conversation with every club".
+
+- [ ] **MOVE PRODUCTION TO eu-west-2 (LONDON).** The action arising from the item above. Not urgent while every account is synthetic; **materially cheaper now than after a real club is on it**, which is the only reason it has a place this high.
+
+  **Four prerequisites, and the fourth comes before anything is touched.**
+
+  - [ ] **A Supabase management token, or the connection string for a new London project — from Isabella.** Region is fixed at project creation, so this is the first move and nothing precedes it. There is no `SUPABASE_ACCESS_TOKEN` in any env file or in the environment, and the CLI is not logged in.
+  - [ ] **A decision on the 46 existing accounts: re-invite, or a proper `auth` migration.** **Re-invite is likely cleaner while the data is synthetic** — every account is one Isabella created, the invite flow is built and tested, and it avoids moving password hashes between projects entirely. A real `auth` migration is the answer only once the accounts belong to people who would notice being asked to set a password again. Note that dumping `auth` was refused by the environment's safety classifier as credential extraction, so that path needs somebody who can perform it, not just a decision.
+  - [ ] **`auth_hooks` recreated AND the token hook re-registered in Supabase's dashboard settings.** Two separate steps and the second is not SQL. `custom_access_token_hook` puts `org_id` and `roles` into every JWT; if the function exists but is not registered as the access-token hook in the project's auth settings, `auth_org_id()` returns null and **every RLS policy in the product fails closed**. The app would come up looking healthy and show nobody any data.
+  - [ ] **`retention`, `cron`, `storage` and `vault` assessed BEFORE touching anything.** The rehearsed dump covers `public` only; production has 13 other schemas. `cron` holds the nightly jobs (compliance expectations, threshold evaluation, retention preview) — a move that leaves them behind is silent, because nothing fails, work simply stops happening overnight. `storage` holds club logos and any subject-access packs. `vault` may hold secrets the hooks depend on.
+
+  **The parts already rehearsed and measured** (`docs/runbook-backup-and-recovery.md`): the `public` dump and restore, 2.2 MB, about four minutes end to end, with the `--no-acl` and `--clean` traps documented. That runbook is the migration's middle; these four prerequisites are its beginning and its end.
+
+  **Sequencing against the Pro upgrade:** do this FIRST. Buying Pro on a project that is then abandoned wastes the purchase, and `0a` should be closed against whichever project is the permanent one.
 
 ## 0a. Hard gate — do this before the first real person touches the app
 - [ ] **Upgrade Supabase from Free to Pro tier before inviting the first real club, design partner, or any person whose data isn't something you typed in yourself.** Not "before full completion", before the first real account. Free tier has no automated backups and no point-in-time recovery; confirmed 2026-09-05 that Claude Code also cannot take a manual backup from its own environment (no `pg_dump`/`psql` on PATH, `supabase db dump` needs Docker, not available). As of 2026-09-05 all production accounts are synthetic test data created by you, so this is not yet urgent, it becomes urgent the moment that stops being true.

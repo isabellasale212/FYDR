@@ -5,7 +5,7 @@
   "description": "Fydr, athlete performance management. Phase 1a thin slice: staff web and athlete mobile web.",
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run check:env-files && npm run test:env-guard && npm run check:surface-tokens && npm run test:access-gates && npm run check:policy-replacements && npm run test:policy-guard",
+    "prebuild": "npm run check:env-files && npm run test:env-guard && npm run check:surface-tokens && npm run check:control-radius && npm run test:access-gates && npm run check:policy-replacements && npm run test:policy-guard",
     "build": "next build",
     "start": "next start",
     "deploy": "npx --yes vercel@59.11.0 deploy --prod",
@@ -46,6 +46,8 @@
     "test:weigh-in-edit": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-weigh-in-edit.ts",
     "test:fixture-visibility": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-fixture-visibility.ts",
     "check:surface-tokens": "node --experimental-strip-types scripts/derive-surface-tokens.ts --check",
+    "check:control-radius": "node --experimental-strip-types scripts/check-control-radius.ts",
+    "test:control-styling": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-control-styling.ts",
     "check:env-files": "node --experimental-strip-types scripts/check-env-files.ts",
     "test:env-guard": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-env-guard.ts",
     "test:fixture-blocks": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-fixture-blocks.ts",

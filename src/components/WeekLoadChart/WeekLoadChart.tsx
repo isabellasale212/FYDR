@@ -55,10 +55,10 @@ export function WeekLoadChart({ bars, title = 'Weekly load' }: Props) {
                 strokeDasharray={b.unscored ? '3 2' : undefined}
                 rx={3}
               />
-              <text x={cx} y={H - MB + 14} textAnchor="middle" fontFamily="var(--font-sora)" fontSize={10} fill="var(--faint)">
+              <text x={cx} y={H - MB + 14} textAnchor="middle" fontFamily="var(--font-sans)" fontSize={10} fill="var(--faint)">
                 {mdLabel(b.mdOffset) ?? 'off'}
               </text>
-              <text x={cx} y={barY - 4} textAnchor="middle" fontFamily="var(--font-sora)" fontSize={9.5} fill="var(--muted)">
+              <text x={cx} y={barY - 4} textAnchor="middle" fontFamily="var(--font-sans)" fontSize={9.5} fill="var(--muted)">
                 {b.unscored ? 'unscored' : b.total}
               </text>
             </g>

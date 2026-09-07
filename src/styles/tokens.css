@@ -132,12 +132,33 @@
      --r-band is the handoff's heat/band cell radius; its --r-ctrl (12px) is
      this file's existing --r-field and its --r-round (50%) is a literal every
      dot and dial already writes inline, so neither is restated here. */
+  /* ONE RADIUS FOR EVERYTHING YOU CAN CLICK. Buttons, chips, pills, tabs,
+     filter buttons, toggles, steppers and inputs are all 6px: crisp, not
+     pill-shaped, and set in one place rather than re-decided per component.
+
+     WHY A NEW TOKEN RATHER THAN EDITING THE OLD ONES. Before this, 47 of the
+     58 interactive rules in base.css carried a RAW radius — 20px, 12px, 14px,
+     11px, 999px, fourteen different values — and only 11 read a token at all.
+     Repointing --r-pill would have moved eleven rules and left the other
+     forty-seven pill-shaped, so the sweep had to happen either way; naming the
+     result is what stops a forty-eighth appearing. check:radius-tokens fails
+     the build if one does. */
+  --r-control: 6px;
+
   --r-band: 7px;
+  --r-stat: 16px;
+  --r-card: 18px;
+  /* UNCHANGED, and deliberately NOT aliased to --r-control. Aliasing them was
+     the first attempt and it was wrong: --r-pill is still read by
+     .gym-progress-track, .gym-progress-fill and .pp-bench-bar, which are BARS.
+     A progress fill with 6px corners inside a 6px track is not a crisper
+     control, it is a broken bar — and pointing the token at 6px changed all
+     three without anything saying so. A token keeps its meaning; controls were
+     moved to --r-control one rule at a time, and check:control-radius is what
+     stops a control drifting back. */
   --r-toggle: 9px;
   --r-field: 12px;
   --r-tab: 14px;
-  --r-stat: 16px;
-  --r-card: 18px;
   --r-pill: 20px;
   --gap-stack: 14px;
   --gap-grid: 12px;

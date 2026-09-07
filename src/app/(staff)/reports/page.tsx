@@ -191,7 +191,7 @@ export default async function ReportsPage() {
                       fontSize: 10,
                       fontWeight: 700,
                       padding: '2px 9px',
-                      borderRadius: 20,
+                      borderRadius: 'var(--r-control)',
                       background: 'rgb(var(--highlight-rgb) / 0.22)',
                       color: 'var(--highlight-pill-text)',
                     }}

@@ -1,0 +1,77 @@
+/* Nothing you can click may carry its own corner radius.
+ *
+ * WHY THIS EXISTS. Before the 6px sweep, 47 of the 58 interactive rules in
+ * base.css set a RAW border-radius — 20px, 12px, 14px, 11px, 999px, fourteen
+ * different values between them — and only 11 read a token. Every one of those
+ * was written by somebody reasonably picking a number for the component in
+ * front of them, which is exactly how it happens again. A design rule that
+ * lives in 58 places is not a rule.
+ *
+ * So: an interactive rule reads var(--r-control) or it fails the build. The
+ * value is decided once, in tokens.css, and "no pill-shaped buttons anywhere"
+ * becomes something the repo enforces rather than something a review has to
+ * catch.
+ *
+ * WHAT COUNTS AS INTERACTIVE is a selector-name heuristic, and it is
+ * deliberately generous: it over-matches rather than under-matches, because a
+ * false positive costs one token reference and a false negative costs the rule.
+ * Genuinely round things opt out by name — a switch KNOB and its TRACK are
+ * pill-shaped and circular because that is what a switch is, an avatar is a
+ * circle, a legend swatch is a 4px square — and those names are listed rather
+ * than inferred, so opting out is a visible decision in this file.
+ *
+ * Takes an optional path so its own test can run it against a planted
+ * violation rather than trusting that it would have caught one.
+ */
+import { readFileSync } from 'node:fs';
+
+const stripComments = (s: string): string => s.replace(/\/\*[\s\S]*?\*\//g, '');
+
+/** Selector families that are controls: you click, tap or type into them. */
+export const INTERACTIVE =
+  /btn|chip|pill|\btab\b|tabs|segment|toggle|\bfield\b|input|search|sg-add|filter|action|stepper|squad-|weeknav|set-row|mode-switch|lbw-segmented|rhead-btn|exlib-cat/i;
+
+/** Shapes that are round on purpose and are not buttons, chips, pills or tabs. */
+/* Round on purpose, and each name here is a decision rather than a number.
+   `track` and `knob` cover switches: .tr-heat-toggle-track is a 999px pill with
+   a 50% knob riding in it, which is what a switch IS — the spec bans pill
+   BUTTONS, and a 6px track around a round knob would just look broken. Bars
+   (.gym-progress-track, .pp-bench-bar) are the same argument. */
+export const SHAPED_ON_PURPOSE = /swatch|knob|track|avatar|bar\b|sg-fixture|sg-legend|dot\b/i;
+
+export type Violation = { selector: string; value: string };
+
+export function findViolations(css: string): Violation[] {
+  const out: Violation[] = [];
+  for (const m of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    const selector = stripComments(m[1] ?? '').replace(/\s+/g, ' ').trim();
+    if (!INTERACTIVE.test(selector) || SHAPED_ON_PURPOSE.test(selector)) continue;
+    const decl = /border-radius:\s*([^;]+);/.exec(m[2] ?? '');
+    if (!decl) continue;
+    const value = (decl[1] ?? '').trim();
+    if (value === 'var(--r-control)') continue;
+    out.push({ selector: selector.slice(0, 90), value });
+  }
+  return out;
+}
+
+const path = process.argv[2] ?? 'src/styles/base.css';
+const violations = findViolations(readFileSync(path, 'utf8'));
+
+if (violations.length > 0) {
+  console.error(`\nControl radius: ${violations.length} interactive rule(s) in ${path} set their own corner radius.\n`);
+  for (const v of violations) console.error(`  ${v.value.padEnd(18)} ${v.selector}`);
+  console.error(`
+Use var(--r-control). The value lives in tokens.css and is 6px; a raw number
+here is a second opinion about a decision that has already been taken, and it
+is how the app ended up with fourteen different radii on its buttons.
+
+If this element is genuinely round — a switch knob, a track, an avatar, a
+legend swatch — name it so, and add that name to SHAPED_ON_PURPOSE in
+scripts/check-control-radius.ts so the exemption is visible rather than
+inferred from a number.
+`);
+  process.exit(1);
+}
+
+console.log(`Control radius: every interactive rule in ${path} reads var(--r-control).`);

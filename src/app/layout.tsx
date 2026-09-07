@@ -1,24 +1,39 @@
 import type { Metadata, Viewport } from 'next';
-import { Sora } from 'next/font/google';
+import { Roboto } from 'next/font/google';
 import { Providers } from './providers';
 import '@/styles/tokens.css';
 import '@/styles/base.css';
 
-/* One family, Sora, in four faces. 06-design-system.md §2.1 paired it with DM
- * Mono for figures; that pairing is gone and Sora now sets numbers too.
+/* One family, Roboto, in five faces. 06-design-system.md §2.1 paired Sora with
+ * DM Mono for figures; both are gone and Roboto now sets everything.
  *
- * The catch, and the reason every numeric rule in base.css carries
- * `font-variant-numeric: tabular-nums` explicitly: DM Mono is monospaced, so
- * its digits were fixed-width whether or not anything asked. Sora's are
- * proportional by default — measured, "111" sets 25px narrower than "888" —
- * and only line up when tabular figures are requested. Dropping the request
- * anywhere makes that column shift as its values change.
+ * THE TABULAR-FIGURES HAZARD IS GONE, WHICH I HAD WRONG UNTIL I MEASURED IT.
+ * DM Mono was monospaced, so its digits were fixed-width whether or not
+ * anything asked; Sora's were proportional, which is why every numeric rule in
+ * base.css carries `font-variant-numeric: tabular-nums` explicitly. I assumed
+ * Roboto was proportional too and wrote that here. It is not. Measured in the
+ * browser at 20px, with Georgia as a positive control so a null result could
+ * not mean a broken probe:
  *
- * There is no Sora 500: writing font-weight 500 against Sora synthesises it. */
-const sora = Sora({
+ *   Roboto  "111" 33.73px   "888" 33.73px   delta 0
+ *   Georgia "111" 25.78px   "888" 35.77px   delta 9.99
+ *
+ * Roboto's figures are tabular by default. THE REQUESTS STAY ANYWAY. They are
+ * correct whatever the family is, they cost nothing, and they are the only
+ * thing that would stop the next swap silently reintroducing drifting columns
+ * — which is precisely the failure this comment used to be warning about.
+ *
+ * 500 IS REAL NOW. Sora had no 500 and writing font-weight: 500 against it
+ * synthesised one; Roboto ships Medium, so those weights stop being faked.
+ *
+ * The CSS variable is --font-sans, not --font-roboto. Naming a token after the
+ * family it currently holds is the same mistake as writing the hex inline: the
+ * 52 references in base.css had to be rewritten for this change only because
+ * the old name said "sora". */
+const roboto = Roboto({
   subsets: ['latin'],
-  weight: ['400', '600', '700', '800'],
-  variable: '--font-sora',
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-sans',
   display: 'swap',
 });
 
@@ -59,7 +74,7 @@ export default function RootLayout({
   return (
     <html
       lang="en-GB"
-      className={sora.variable}
+      className={roboto.variable}
       // The blocking script below sets data-theme on this element before
       // hydration, deliberately outside anything React rendered server-side
       // (the server has no localStorage to read). Without this, React logs a

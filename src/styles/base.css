@@ -44,7 +44,7 @@ body {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font-sora), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
   font-size: 15px;
   font-weight: 400;
   line-height: 1.45;
@@ -53,7 +53,7 @@ body {
 
 /* §2.1. Every number and every data label. Body prose never uses it. */
 .num {
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
   letter-spacing: -0.01em;
@@ -67,7 +67,7 @@ body {
    Measured on the gym set row before this rule: "111" 18.45px, "888" 28.22px,
    "000" 32.99px — a 14.5px swing across three digits in a column of logged
    loads. With tabular figures all three are 30.42px.
-   See docs 06-design-system: Sora has no tabular default, which is why every
+   See docs 06-design-system: neither Sora nor Roboto has a tabular default, which is why every
    figure in this product has to ask for them. */
 button.num,
 input.num,
@@ -545,7 +545,7 @@ a {
   background: var(--elev);
   color: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--r-toggle);
+  border-radius: var(--r-control);
   padding: 9px 13px;
   min-height: 44px;
   font-size: 12px;
@@ -679,17 +679,25 @@ a {
   background: var(--accent);
   color: var(--on-accent);
   border: none;
-  border-radius: var(--r-field);
+  border-radius: var(--r-control);
   padding: 13px 22px;
   min-height: 44px;
   font-size: 15px;
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  transition: transform var(--t-press);
+  /* Tracking, not the face's default. Roboto sets a touch wide at button
+     sizes; a hair negative is what makes a label read as a control rather
+     than as a word. */
+  letter-spacing: -0.01em;
+  /* Colour and border, never transform. `transform: scale(0.97)` on :active
+     was the one soft, springy gesture left in the app — it is the shape of
+     interaction this design is explicitly not: the press should be a crisp
+     change of fill at --t-press (80ms), not the button shrinking. */
+  transition: background var(--t-press), border-color var(--t-press);
 }
 .btn-primary:active {
-  transform: scale(0.97);
+  background: var(--accent-border);
 }
 .btn-primary:disabled {
   background: var(--surf2);
@@ -698,25 +706,29 @@ a {
   background: none;
   color: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--r-field);
+  border-radius: var(--r-control);
   padding: 9px 16px;
   min-height: 44px;
   font-size: 13px;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
+  letter-spacing: -0.01em;
   transition: border-color var(--t-state), color var(--t-state);
 }
 .btn-ghost:hover {
   border-color: var(--accent);
   color: var(--text);
 }
+.btn-ghost:active {
+  border-color: var(--accent-border);
+}
 
 .field {
   width: 100%;
   background: var(--field);
   border: 1px solid var(--border-strong);
-  border-radius: var(--r-field);
+  border-radius: var(--r-control);
   padding: var(--pad-field);
   min-height: 44px;
   color: var(--text);
@@ -746,7 +758,7 @@ a {
   font-weight: 600;
   padding: 8px 14px;
   min-height: 44px;
-  border-radius: var(--r-pill);
+  border-radius: var(--r-control);
   border: 1px solid var(--border);
   color: var(--muted);
   background: transparent;
@@ -796,7 +808,7 @@ a {
   font-size: 12px;
   font-weight: 600;
   padding: 8px 14px;
-  border-radius: var(--r-pill);
+  border-radius: var(--r-control);
   border: 1px solid var(--accent);
   color: var(--on-accent);
   background: var(--accent);
@@ -811,7 +823,7 @@ a {
   font-size: 11px;
   font-weight: 700;
   padding: 3px 10px 3px 8px;
-  border-radius: var(--r-pill);
+  border-radius: var(--r-control);
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -2476,7 +2488,7 @@ a.hist-row:focus-visible {
 .step .btnc {
   width: 44px;
   height: 44px;
-  border-radius: 14px;
+  border-radius: var(--r-control);
   border: 1px solid var(--border);
   background: var(--surf);
   color: var(--accent-text);
@@ -2513,7 +2525,7 @@ a.hist-row:focus-visible {
   font-size: 11px;
   font-weight: 600;
   padding: 4px 11px;
-  border-radius: var(--r-pill);
+  border-radius: var(--r-control);
   background: var(--surf);
   border: 1px solid var(--border);
   color: var(--muted);
@@ -2628,7 +2640,7 @@ a.hist-row:focus-visible {
   font-weight: 600;
   padding: 6px 13px;
   min-height: 32px;
-  border-radius: var(--r-pill);
+  border-radius: var(--r-control);
   border: 1px solid var(--accent);
   color: var(--accent-text);
   background: none;
@@ -2716,7 +2728,7 @@ a.hist-row:focus-visible {
 }
 .subm .btn-primary {
   padding: 17px 20px;
-  border-radius: 16px;
+  border-radius: var(--r-control);
   font-size: 16px;
   font-weight: 700;
 }
@@ -3165,7 +3177,7 @@ a.hist-row:focus-visible {
 .gym-stepper button {
   width: 44px;
   height: 44px;
-  border-radius: 14px;
+  border-radius: var(--r-control);
   border: 1px solid var(--border);
   background: transparent;
   color: var(--text);
@@ -3492,7 +3504,7 @@ img.av {
   background: none;
   color: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--r-pill);
+  border-radius: var(--r-control);
   padding: 7px 16px;
   font-size: 12.5px;
   font-weight: 600;
@@ -3871,7 +3883,7 @@ img.av {
   color: var(--faint);
 }
 .pp-ack-btn {
-  border-radius: var(--r-field);
+  border-radius: var(--r-control);
   padding: 6px 13px;
   font-size: 12.5px;
   font-weight: 700;
@@ -4141,7 +4153,7 @@ img.av {
   height: 22px;
   padding: 0;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--r-control);
   background: none;
   color: var(--muted);
   font-size: 9px;
@@ -4290,7 +4302,7 @@ img.av {
   border-top: none;
 }
 .set-row-btn {
-  border-radius: 12px;
+  border-radius: var(--r-control);
   padding: 9px 16px;
   font-size: 12.5px;
   font-weight: 700;
@@ -4433,7 +4445,7 @@ img.av {
 .tr-mode-switch {
   display: inline-flex;
   background: var(--hair);
-  border-radius: 20px;
+  border-radius: var(--r-control);
   padding: 4px;
   gap: 2px;
 }
@@ -4441,7 +4453,7 @@ img.av {
   padding: 7px 18px;
   font-size: 12.5px;
   font-weight: 700;
-  border-radius: 20px;
+  border-radius: var(--r-control);
   text-decoration: none;
   color: var(--muted);
 }
@@ -4454,7 +4466,7 @@ img.av {
   align-items: baseline;
   gap: 6px;
   padding: 8px 16px;
-  border-radius: 20px;
+  border-radius: var(--r-control);
   border: 1px solid var(--border);
   background: var(--surf);
   color: var(--text);
@@ -4468,7 +4480,7 @@ img.av {
   border-color: rgb(var(--accent-rgb) / 0.55);
 }
 .tr-session-chip .suffix {
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 11px;
   opacity: 0.65;
@@ -4494,7 +4506,7 @@ img.av {
   color: var(--faint);
 }
 .tr-fact-value {
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 15px;
   font-weight: 500;
@@ -4537,7 +4549,7 @@ img.av {
 }
 /* 18px. At 23 a three-digit value ("105%") ran into the ring it sits inside. */
 .tr-dial-value {
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 18px;
   font-weight: 500;
@@ -4559,7 +4571,7 @@ img.av {
 }
 .tr-scope-chip {
   padding: 7px 16px;
-  border-radius: 20px;
+  border-radius: var(--r-control);
   font-size: 12.5px;
   font-weight: 600;
   border: 1px solid var(--border);
@@ -4621,7 +4633,7 @@ img.av {
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-end;
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 10.5px;
   color: var(--faint);
@@ -5111,7 +5123,7 @@ button.dash-stat {
   min-width: 2px;
 }
 .dash-stat-value {
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-size: 34px;
   font-weight: 500;
   line-height: 1.15;
@@ -5329,7 +5341,7 @@ button.dash-stat {
   overflow: hidden;
 }
 .dash-week-md {
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 11.5px;
   font-weight: 600;
@@ -5350,7 +5362,7 @@ button.dash-stat {
   padding-top: 18px;
 }
 .dash-timeline-clock {
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 15px;
   font-weight: 500;
@@ -5397,7 +5409,7 @@ button.dash-stat {
   margin-top: 2px;
 }
 .dash-session-count {
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 17px;
   font-weight: 500;
@@ -5451,7 +5463,7 @@ button.dash-stat {
   color: var(--muted);
 }
 .dash-affected-value {
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 12.5px;
 }
@@ -5579,7 +5591,7 @@ button.dash-stat {
 .dash-squad-bar {
   display: flex;
   height: 12px;
-  border-radius: 20px;
+  border-radius: var(--r-control);
   overflow: hidden;
   margin-top: 14px;
 }
@@ -5638,7 +5650,7 @@ button.dash-stat {
  * src/lib/nutritionRules.ts, src/lib/nutritionWorkspace.ts and
  * src/app/(staff)/nutrition/page.tsx's own header comments) — this block is pixel
  * values only, no data decisions. `.nutr-mono` is a thin alias of the existing
- * `.num` (Sora with tabular numerals) rather than a rename across every component,
+ * `.num` (the app face with tabular numerals) rather than a rename across every component,
  * so nutrition-specific markup reads clearly as "this screen's own class" at a
  * glance without duplicating the font stack. Pills, chips, cards, buttons and fields
  * are the same house classes as everywhere else in this app (`.pill`, `.card`,
@@ -5649,7 +5661,7 @@ button.dash-stat {
  */
 
 .nutr-mono {
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
 }
@@ -5739,7 +5751,7 @@ button.dash-stat {
   font-weight: 600;
 }
 .nutr-daytype-carb {
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 11.5px;
   color: var(--muted);
@@ -5747,7 +5759,7 @@ button.dash-stat {
 .nutr-new-plan-btn {
   width: 100%;
   margin-top: 10px;
-  border-radius: 12px;
+  border-radius: var(--r-control);
   padding: 11px 18px;
   font-size: 13px;
   min-height: 0;
@@ -5796,7 +5808,7 @@ button.dash-stat {
   font-weight: 600;
 }
 .nutr-chase-value {
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 12px;
   flex-shrink: 0;
@@ -5867,7 +5879,7 @@ button.dash-stat {
 .nutr-stepper-btn {
   width: 32px;
   height: 32px;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   border: 1px solid var(--border);
   background: var(--surf);
   color: var(--text);
@@ -5888,7 +5900,7 @@ button.dash-stat {
   text-align: center;
 }
 .nutr-rule-value span {
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 20px;
   font-weight: 500;
@@ -5902,7 +5914,7 @@ button.dash-stat {
   margin-top: 2px;
 }
 .nutr-rule-footnote {
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 10.5px;
   color: var(--muted);
@@ -5924,7 +5936,7 @@ button.dash-stat {
   margin: 0;
 }
 .nutr-read-mean {
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 22px;
   font-weight: 500;
@@ -5960,7 +5972,7 @@ button.dash-stat {
   font-weight: 600;
 }
 .nutr-totals-delta {
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 12px;
   color: var(--muted);
@@ -5991,7 +6003,7 @@ button.dash-stat {
   background: var(--border-strong);
 }
 .nutr-totals-detail {
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 10.5px;
   color: var(--faint);
@@ -6024,7 +6036,7 @@ button.dash-stat {
   font-weight: 700;
 }
 .nutr-meal-time {
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 11px;
   color: var(--muted);
@@ -6044,7 +6056,7 @@ button.dash-stat {
   white-space: nowrap;
 }
 .nutr-meal-item-qty {
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 11.5px;
   color: var(--muted);
@@ -6059,7 +6071,7 @@ button.dash-stat {
   background: rgb(var(--ink-rgb) / 0.02);
 }
 .nutr-meal-macro-value {
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 11.5px;
   font-weight: 500;
@@ -6072,7 +6084,7 @@ button.dash-stat {
   margin-top: 1px;
 }
 .nutr-meal-caption {
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 11.5px;
   color: var(--faint);
@@ -6109,7 +6121,7 @@ button.dash-stat {
   color: var(--accent-text);
 }
 .nutr-group-meta {
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 11px;
   color: var(--faint);
@@ -6218,7 +6230,7 @@ button.dash-stat {
   color: var(--faint);
 }
 .nutr-table-caption {
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 11.5px;
   color: var(--faint);
@@ -6293,7 +6305,7 @@ button.dash-stat {
   gap: 8px;
 }
 .nutr-mass-value {
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 30px;
   font-weight: 500;
@@ -6317,7 +6329,7 @@ button.dash-stat {
 .nutr-sparkline-axis {
   display: flex;
   justify-content: space-between;
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 10.5px;
   color: var(--faint);
@@ -6362,13 +6374,13 @@ button.dash-stat {
   border-color: rgb(var(--good-rgb) / 0.5);
 }
 .nutr-logging-initial {
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 9.5px;
   color: var(--faint);
 }
 .nutr-logging-caption {
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 11px;
   color: var(--faint);
@@ -6396,7 +6408,7 @@ button.dash-stat {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 11px;
   font-weight: 700;
@@ -6552,7 +6564,7 @@ button.dash-stat {
   margin: 0;
 }
 .lbw-movers-caption {
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 11.5px;
   color: var(--muted);
@@ -6610,7 +6622,7 @@ button.dash-stat {
   margin-top: 14px;
 }
 .lbw-mover-delta-value {
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 26px;
   font-weight: 500;
@@ -6622,7 +6634,7 @@ button.dash-stat {
   color: var(--muted);
 }
 .lbw-mover-range {
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 12.5px;
   margin-top: 6px;
@@ -6636,7 +6648,7 @@ button.dash-stat {
   height: 42px;
 }
 .lbw-mover-foot {
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 10.5px;
   color: var(--faint);
@@ -6669,7 +6681,7 @@ button.dash-stat {
 .lbw-segmented {
   display: inline-flex;
   background: var(--hair);
-  border-radius: 20px;
+  border-radius: var(--r-control);
   padding: 4px;
   gap: 4px;
 }
@@ -6678,7 +6690,7 @@ button.dash-stat {
   font-size: 12.5px;
   font-weight: 700;
   padding: 7px 16px;
-  border-radius: 20px;
+  border-radius: var(--r-control);
   border: none;
   background: transparent;
   color: var(--muted);
@@ -6698,7 +6710,7 @@ button.dash-stat {
 }
 
 .lbw-chip-count {
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 11px;
   opacity: 0.65;
@@ -6762,7 +6774,7 @@ button.dash-stat {
   color: var(--faint);
 }
 .lbw-wall-head-sub {
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 10px;
   color: var(--faint);
@@ -6787,7 +6799,7 @@ button.dash-stat {
   background: var(--surf);
 }
 .lbw-group-cell {
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 10.5px;
   color: var(--faint);
@@ -6829,7 +6841,7 @@ button.dash-stat {
   font-weight: 700;
 }
 .lbw-age {
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 10.5px;
   color: var(--faint);
@@ -6846,19 +6858,19 @@ button.dash-stat {
   font-variant-numeric: tabular-nums;
 }
 .lbw-value-marker {
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 10px;
   font-weight: 500;
 }
 .lbw-value {
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 13px;
 }
 
 .lbw-wall-caption {
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 11.5px;
   color: var(--muted);
@@ -6953,7 +6965,7 @@ button.dash-stat {
   padding: 9px 0;
   border-top: 1px solid var(--hair);
   align-items: center;
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
 }
 .lbw-sel-table .r {
@@ -6963,7 +6975,7 @@ button.dash-stat {
   text-align: right;
 }
 .lbw-sel-test {
-  font-family: var(--font-sora), sans-serif;
+  font-family: var(--font-sans), sans-serif;
   font-size: 12.5px;
   font-weight: 600;
   margin: 0;
@@ -6980,7 +6992,7 @@ button.dash-stat {
   color: var(--faint);
 }
 .lbw-sel-foot {
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 11px;
 }
@@ -7113,13 +7125,13 @@ button.dash-stat {
 .sg-segmented {
   display: inline-flex;
   background: rgb(var(--ink-rgb) / 0.05);
-  border-radius: 20px;
+  border-radius: var(--r-control);
   padding: 4px;
   gap: 4px;
 }
 .sg-segment {
   padding: 7px 16px;
-  border-radius: 20px;
+  border-radius: var(--r-control);
   font-size: 12.5px;
   font-weight: 700;
   font-family: inherit;
@@ -7143,7 +7155,7 @@ button.dash-stat {
 .sg-weeknav-btn {
   width: 32px;
   height: 32px;
-  border-radius: 11px;
+  border-radius: var(--r-control);
   border: 1px solid var(--border);
   background: var(--surf);
   color: var(--muted);
@@ -7206,7 +7218,7 @@ button.dash-stat {
   background: var(--accent);
   color: var(--on-accent);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--r-control);
   padding: 10px 20px;
   font-size: 13px;
   font-weight: 700;
@@ -7224,7 +7236,7 @@ button.dash-stat {
 .sg-btn-discard {
   background: none;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--r-control);
   padding: 9px 16px;
   font-size: 12.5px;
   font-weight: 600;
@@ -7250,7 +7262,7 @@ button.dash-stat {
   background: var(--accent);
   color: var(--on-accent);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--r-control);
   padding: 10px 18px;
   font-size: 13px;
   font-weight: 700;
@@ -7831,7 +7843,7 @@ button.dash-stat {
   margin-left: auto;
   font-size: 11px;
   color: var(--faint);
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
 }
 
@@ -7911,7 +7923,7 @@ button.dash-stat {
 .sg-stepper-btn {
   width: 38px;
   height: 40px;
-  border-radius: 11px;
+  border-radius: var(--r-control);
   border: 1px solid var(--border);
   background: var(--surf);
   color: var(--accent-text);
@@ -7932,7 +7944,7 @@ button.dash-stat {
 }
 .sg-stepper-value {
   height: 40px;
-  border-radius: 11px;
+  border-radius: var(--r-control);
   background: var(--field);
   display: flex;
   align-items: center;
@@ -7948,7 +7960,7 @@ button.dash-stat {
 .sg-field-ro {
   margin-top: 6px;
   height: 40px;
-  border-radius: 11px;
+  border-radius: var(--r-control);
   background: var(--field);
   display: flex;
   align-items: center;
@@ -7966,7 +7978,7 @@ button.dash-stat {
   background: none;
   border: 1px solid rgb(var(--bad-rgb) / 0.4);
   color: var(--bad-pill-text);
-  border-radius: 12px;
+  border-radius: var(--r-control);
   padding: 9px 16px;
   font-size: 12.5px;
   font-weight: 600;
@@ -8009,7 +8021,7 @@ button.dash-stat {
 .sg-preview-foot {
   font-size: 11px;
   color: var(--faint);
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   margin-top: 10px;
 }
@@ -8127,7 +8139,7 @@ button.dash-stat {
   font-size: 10.5px;
   color: var(--faint);
   margin-top: 4px;
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
 }
 
@@ -8188,7 +8200,7 @@ button.dash-stat {
   background: none;
   border: none;
   padding: 0;
-  border-radius: var(--r-field);
+  border-radius: var(--r-control);
   color: var(--faint);
   cursor: pointer;
   transition: color var(--t-state);
@@ -8250,7 +8262,7 @@ button.dash-stat {
  * next to their name rather than only the plan card's illustrative 100 kg example. */
 .nutr-selected-energy {
   margin-top: 3px;
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 11px;
   color: var(--muted);
@@ -8302,7 +8314,7 @@ button.dash-stat {
   display: flex;
   justify-content: space-between;
   margin-top: 6px;
-  font-family: var(--font-sora);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 10.5px;
   color: var(--faint);
@@ -8459,7 +8471,7 @@ button.dash-stat {
   position: absolute;
   top: 3px;
   height: 8px;
-  border-radius: var(--r-pill);
+  border-radius: var(--r-control);
   background: rgb(var(--ink-rgb) / 0.1);
 }
 .pc-median {
@@ -8736,7 +8748,7 @@ button.dash-stat {
 }
 .rep-source {
   padding: 4px 10px;
-  border-radius: var(--r-pill);
+  border-radius: var(--r-control);
   font-size: 11.5px;
   font-weight: 700;
   background: var(--rep-pill, rgb(var(--ink-rgb) / 0.06));
@@ -8986,7 +8998,7 @@ button.dash-stat {
 .tr-heat-toggle:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
-  border-radius: 6px;
+  border-radius: var(--r-control);
 }
 
 /* Back, top-left of the content area on every screen that is a step inside a
@@ -8998,7 +9010,7 @@ button.dash-stat {
   gap: 6px;
   margin-bottom: 12px;
   padding: 6px 12px 6px 8px;
-  border-radius: 999px;
+  border-radius: var(--r-control);
   border: 1px solid var(--border);
   background: var(--surf);
   color: var(--muted);
@@ -10196,7 +10208,7 @@ button.dash-stat {
  * the element's own box. So the distance from a card's border to its first
  * text and to its most deeply nested text is the same 16px.
  *
- * TABULAR FIGURES. Sora's digits are proportional (see app/layout.tsx), so
+ * TABULAR FIGURES. The app face's digits are proportional (see app/layout.tsx), so
  * .exlib-num asks for tabular figures explicitly on every count on this
  * screen: the header sub-line, the picker's count, the per-category counts,
  * and the "n of m shown." footer. The picker's count is additionally a
@@ -10247,7 +10259,7 @@ button.dash-stat {
   padding: 10px 14px;
   padding-inline-start: 36px;
   border: 1px solid var(--border-strong);
-  border-radius: var(--r-pill);
+  border-radius: var(--r-control);
   background: var(--field);
   color: var(--text);
   font-family: inherit;
@@ -10283,7 +10295,7 @@ button.dash-stat {
   min-height: 44px;
   padding: 0 16px;
   border: 1px solid var(--border-strong);
-  border-radius: var(--r-pill);
+  border-radius: var(--r-control);
   background: var(--surf);
   transition: border-color var(--t-state);
 }
@@ -10337,7 +10349,7 @@ button.dash-stat {
   color: var(--muted);
 }
 
-/* Sora's figures are proportional by default. Anything countable on this
+/* The app face's figures are proportional by default. Anything countable on this
    screen asks for tabular figures so it lines up with itself as it changes. */
 .exlib-num {
   font-variant-numeric: tabular-nums;
@@ -10426,7 +10438,7 @@ button.dash-stat {
   max-width: 100%;
   padding: 3px 10px;
   border: 1px solid var(--border);
-  border-radius: var(--r-pill);
+  border-radius: var(--r-control);
   background: var(--surf2);
   color: var(--text);
   font-size: 11px;
@@ -10593,7 +10605,7 @@ button.dash-stat {
   height: 343.8px;
   display: flex;
   align-items: flex-end;
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-weight: 800;
   font-size: 386px;
   line-height: 1;
@@ -10860,7 +10872,7 @@ button.dash-stat {
 
 /* --- The sign-in block itself, per the scene ---------------------------- */
 .launch-title {
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-weight: 800;
   font-size: 28px;
   letter-spacing: -0.03em;
@@ -10924,7 +10936,7 @@ button.dash-stat {
 /* §7.2's field geometry, which the launch scene reuses: 48px tall, radius 14. */
 .launch .signin-fields .field {
   height: 48px;
-  border-radius: 14px;
+  border-radius: var(--r-control);
 }
 .launch .signin-submit {
   width: 100%;
@@ -10980,7 +10992,7 @@ button.dash-stat {
   }
   .launch-claim-h {
     margin: 0;
-    font-family: var(--font-sora), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
     font-weight: 800;
     /* 44px is the scene's, at its own 1440. It is a sixth of a 464px column at
        1024, so it scales with the window and only reaches 44 where the scene
@@ -11374,7 +11386,7 @@ main:has(.rhead) > .back-btn {
   margin-top: 14px;
   margin-bottom: 0;
   padding: 8px 15px 8px 12px;
-  border-radius: 20px;
+  border-radius: var(--r-control);
   font-size: 14px;
 }
 main:has(.rhead) > .back-btn > :first-child {
@@ -11389,7 +11401,7 @@ main:has(.rhead) > .back-btn > :first-child {
   margin-top: 20px;
 }
 .rhead-chip {
-  border-radius: 20px;
+  border-radius: var(--r-control);
   padding: 11px 20px;
   background: var(--surf);
   border: 1px solid var(--border);
@@ -11434,7 +11446,7 @@ main:has(.rhead) > .back-btn > :first-child {
 }
 .rhead-btn,
 .rhead-btn-primary {
-  border-radius: 14px;
+  border-radius: var(--r-control);
   font-family: inherit;
   text-decoration: none;
   cursor: pointer;
@@ -11481,7 +11493,7 @@ main:has(.rhead) > .back-btn > :first-child {
   display: inline-flex;
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: var(--r-control);
   padding: 3px;
 }
 /* The active tab carries NO background of its own: the canvas paints both the
@@ -11492,7 +11504,7 @@ main:has(.rhead) > .back-btn > :first-child {
 .rhead-tab {
   border: none;
   background: transparent;
-  border-radius: 20px;
+  border-radius: var(--r-control);
   padding: 9px 18px;
   font-family: inherit;
   font-weight: 700;
@@ -11513,7 +11525,7 @@ main:has(.rhead) > .back-btn > :first-child {
 .rhead-tabrow .tr-mode-switch {
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: var(--r-control);
   padding: 3px;
   gap: 0;
 }
@@ -11521,7 +11533,7 @@ main:has(.rhead) > .back-btn > :first-child {
   padding: 9px 18px;
   font-size: 14.5px;
   font-weight: 700;
-  border-radius: 20px;
+  border-radius: var(--r-control);
   color: var(--muted);
 }
 .rhead-tabrow .tr-mode-switch a[aria-current='true'] {
@@ -11590,7 +11602,7 @@ main:has(.rhead) > .back-btn > :first-child {
   display: inline-flex;
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: var(--r-control);
   padding: 3px;
 }
 .rhead-tabrow .sg-viewtab {
@@ -11611,7 +11623,7 @@ main:has(.rhead) > .back-btn > :first-child {
 .rhead-period .sg-weeknav {
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--r-control);
   padding: 4px 6px;
 }
 

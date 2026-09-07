@@ -97,7 +97,7 @@ export function TrainingScatter({ points, selectedAthleteId, lens, hrefFor }: Pr
                 transform: 'translate(6px, 6px)',
                 background: 'var(--surf)',
                 padding: '1px 6px',
-                borderRadius: 20,
+                borderRadius: 'var(--r-control)',
                 border: '1px solid var(--border)',
               }}
             >

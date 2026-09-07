@@ -95,13 +95,13 @@ export function TestTrendChart({ rows, timezone, unit, decimalPlaces, higherIsBe
         {yTicks.map((t) => (
           <g key={t}>
             <line x1={ML} y1={y(t)} x2={W - MR} y2={y(t)} stroke="var(--border)" strokeWidth={1} />
-            <text x={ML - 8} y={y(t) + 3} textAnchor="end" fontFamily="var(--font-sora)" fontSize={9.5} fill="var(--faint)">
+            <text x={ML - 8} y={y(t) + 3} textAnchor="end" fontFamily="var(--font-sans)" fontSize={9.5} fill="var(--faint)">
               {t.toFixed(decimalPlaces)}
             </text>
           </g>
         ))}
         {dateTicks.map((d) => (
-          <text key={d} x={x(d)} y={H - MB + 16} textAnchor="middle" fontFamily="var(--font-sora)" fontSize={9.5} fill="var(--faint)">
+          <text key={d} x={x(d)} y={H - MB + 16} textAnchor="middle" fontFamily="var(--font-sans)" fontSize={9.5} fill="var(--faint)">
             {formatDate(d, timezone)}
           </text>
         ))}

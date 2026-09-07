@@ -153,6 +153,7 @@ export function ScheduleWorkspace({
           : s.athleteIds;
         return {
           ...s,
+          dow: e.dow ?? s.dow,
           start: e.start ?? s.start,
           mins: e.mins ?? s.mins,
           title: e.title ?? s.title,
@@ -550,7 +551,10 @@ export function ScheduleWorkspace({
       if (!patch || Object.keys(patch).length === 0) continue;
       const b = baseById.get(id);
       if (!b) continue;
-      const startsAt = zonedTimeToUtcIso(b.dow, clockLabel(patch.start ?? b.start), timezone);
+      /* From the PATCHED day, not the snapshot's: moving a session to another
+         day is a starts_at change like moving its time, and reading b.dow here
+         would publish the new time onto the old date. */
+      const startsAt = zonedTimeToUtcIso(patch.dow ?? b.dow, clockLabel(patch.start ?? b.start), timezone);
       const res = await updateSession(client, orgId, id, {
         title: patch.title ?? b.title,
         sessionType: patch.type ?? b.type,

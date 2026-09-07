@@ -187,7 +187,7 @@ export function SelectedSessionPanel({
           />
   );
 
-  const dayField = isDraft ? (
+  const dayField = (isDraft || unlocked) ? (
     <div style={{ marginTop: 0, marginBottom: 14 }}>
       <span className="label">Day</span>
       <div className="chiprow" style={{ marginTop: 6 }}>

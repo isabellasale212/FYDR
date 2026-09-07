@@ -45,7 +45,7 @@ console.log('the overlay can carry all six fields');
   /* The type is multi-line now, so take the whole block, not up to the first
      semicolon — which after the rewrite is just `start?: number;`. */
   const line = decl.slice(0, decl.indexOf('};') + 2);
-  for (const f of ['start', 'mins', 'groupIds', 'title', 'type', 'location']) {
+  for (const f of ['start', 'mins', 'groupIds', 'title', 'type', 'location', 'dow']) {
     assert(line.includes(f), `EditOverlay carries ${f}`);
   }
 }
@@ -85,6 +85,25 @@ console.log('\npublish sends the edit rather than the page-load snapshot');
   assert(/expectedUpdatedAt: b\.updatedAt/.test(body), 'the optimistic lock is still sent');
 }
 
+console.log('\nmoving a session to another day');
+{
+  const eff = wsCode.slice(wsCode.indexOf('const effective:'), wsCode.indexOf('const drafts:'));
+  assert(/dow: e\.dow \?\? s\.dow/.test(eff), 'effective applies a patched day, so the block moves column before publish');
+
+  const pub = wsCode.slice(wsCode.indexOf('for (const [id, patch] of Object.entries(edits))'));
+  const body = pub.slice(0, pub.indexOf('\n    }'));
+  assert(
+    /zonedTimeToUtcIso\(\s*patch\.dow \?\? b\.dow/.test(body),
+    'and publish builds starts_at from the patched day — a day move IS a starts_at change',
+  );
+  /* md_offset is deliberately NOT recomputed. The schema's own comment says it
+     is stored rather than derived so a postponed fixture cannot retroactively
+     rewrite what MD-n a session was planned under. The grid already labels by
+     the DAY's anchored offset (anchoredMd), so a moved session displays
+     correctly without touching the stored value. */
+  assert(/mdOffset: b\.mdOffset/.test(body), 'while the stored md_offset is left alone');
+}
+
 console.log('\nthe fields unlock behind an explicit Edit');
 assert(/const \[unlocked, setUnlocked\]/.test(pCode), 'the panel tracks whether the viewer asked to edit');
 assert(/setUnlocked\(false\)/.test(pCode), 'and relocks when the selection moves, so it cannot leak between sessions');
@@ -93,15 +112,20 @@ assert(/setUnlocked\(false\)/.test(pCode), 'and relocks when the selection moves
     ['name', 'isDraft || unlocked'],
     ['location', 'isDraft || unlocked'],
     ['type', 'isDraft || unlocked'],
+    ['day', 'isDraft || unlocked'],
   ] as const) {
     assert(pCode.includes(marker), `the ${field} field opens for a draft OR an unlocked session`);
   }
   assert(
-    [...pCode.matchAll(/isDraft \|\| unlocked/g)].length >= 3,
-    'all three of them, not one',
+    [...pCode.matchAll(/isDraft \|\| unlocked/g)].length >= 4,
+    'all four of them, not one',
   );
 }
 assert(/onUnlock/.test(pCode), 'an Edit control is offered');
+assert(
+  /const dayField = \(isDraft \|\| unlocked\)/.test(pCode),
+  'the day picker is one of the fields it opens',
+);
 assert(
   /!isDraft && mode === 'edit' && !unlocked/.test(pCode),
   'only for a saved session, in edit mode, that is not already unlocked',

@@ -53,6 +53,14 @@ export type EditOverlay = {
   title?: string;
   type?: DbSessionType;
   location?: string | null;
+  /* The day the session sits on, as an ISO date. Moving a session across days
+     IS a starts_at change, so publish has to rebuild the timestamp from this
+     rather than from the snapshot's day — see handlePublish. md_offset is
+     deliberately not touched by a move; the schema stores it rather than
+     deriving it precisely so a postponed fixture cannot retroactively rewrite
+     which MD-n a session was planned under, and the grid labels by the day's
+     anchored offset anyway. */
+  dow?: string;
 };
 
 export type DraftSession = {

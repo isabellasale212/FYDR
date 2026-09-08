@@ -202,7 +202,7 @@ export async function recordAttendance(
      audit_log.actor_role, which is app_role and already held all five -- it was
      just guaranteeing that any new role got mislabelled as one of the two. Use
      actingRole() to derive it rather than a ternary. */
-  actorRole: AppRole,
+  actorRole: AppRole | null,
   input: {
     sessionId: string;
     athleteId: string;

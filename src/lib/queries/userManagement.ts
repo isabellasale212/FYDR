@@ -137,7 +137,7 @@ async function recordUserAudit(
   db: Db,
   orgId: string,
   actorId: string,
-  actorRole: AppRole,
+  actorRole: AppRole | null,
   action: string,
   targetUserId: string,
   metadata: Json,
@@ -163,7 +163,7 @@ export async function setUserRoles(
   db: Db,
   orgId: string,
   actorId: string,
-  actorRole: AppRole,
+  actorRole: AppRole | null,
   targetUserId: string,
   nextRoles: readonly AppRole[],
 ): Promise<{ error: string | null; primaryOk: boolean }> {
@@ -221,7 +221,7 @@ export async function setUserStatus(
   db: Db,
   orgId: string,
   actorId: string,
-  actorRole: AppRole,
+  actorRole: AppRole | null,
   targetUserId: string,
   status: Extract<UserStatus, 'active' | 'deactivated'>,
 ): Promise<{ error: string | null; primaryOk: boolean }> {
@@ -237,7 +237,7 @@ export async function setUserStatus(
   return { error: null, primaryOk: true };
 }
 
-export async function linkAthleteToUser(db: Db, orgId: string, actorId: string, actorRole: AppRole, userId: string, athleteId: string): Promise<{ error: string | null; primaryOk: boolean }> {
+export async function linkAthleteToUser(db: Db, orgId: string, actorId: string, actorRole: AppRole | null, userId: string, athleteId: string): Promise<{ error: string | null; primaryOk: boolean }> {
   /* G-36. Zero rows here has TWO meanings and the filter is why: .is(user_id,
      null) matches only an unlinked athlete, so nothing changing means either the
      record was already linked to somebody, or the policy refused. Reporting

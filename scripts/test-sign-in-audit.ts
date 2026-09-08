@@ -74,14 +74,26 @@ console.log('\nthe role recorded is the role the audit precedence names');
   const dual = signInAuditRow(claims({ roles: ['coach', 'medic'] }), h({}), 'password');
   assert(dual?.actor_role === 'medic', 'medic outranks coach, matching AUDIT_PRECEDENCE and the trigger');
 
-  /* THE MAJORITY CASE, and the one the incident was about. actingRole()'s own
-     comment says the athlete fallback "can only be an athlete, and an athlete
-     cannot reach any caller of this" — which this file makes false, because
-     athletes sign in and this is now a caller. The fallback is load-bearing
-     here rather than defensive. */
+  /* THE MAJORITY CASE, and it CHANGED on 2026-09-08. actingRole() used to fall
+     back to 'athlete' when none of the five staff roles matched, and this file
+     used to assert that. It was wrong in a way only visible once the trigger
+     started writing rows for the same people: SQL's audit_acting_role() walks
+     the same five roles and returns NULL, so one athlete opting themselves out
+     of a leaderboard was recorded with a null role by the trigger and as
+     'athlete' by the application. Two answers to "what role were they acting
+     in", in the one table whose job is being true.
+
+     Null is the right answer of the two. actor_role means WHICH STAFF ROLE
+     somebody acted in; an athlete holds none, and writing 'athlete' there
+     claims a staff role in the column that exists to name one. The row is not
+     weakened by it — actor_id still says exactly who signed in. */
   const athlete = signInAuditRow(claims({ roles: ['athlete'], athleteId: 'a1' }), h({}), 'password');
-  assert(athlete?.actor_role === 'athlete', 'an athlete signing in is recorded as an athlete, not dropped');
-  assert(athlete !== null, 'and produces a row at all — most sign-ins are athletes');
+  assert(athlete?.actor_role === null, 'an athlete signing in is recorded with a NULL role, matching the trigger');
+  assert(athlete !== null, 'and produces a row at all — most sign-ins are athletes, and actor_id still names them');
+  assert(
+    signInAuditRow(claims({ roles: ['athlete', 'medic'] }), h({}), 'password')?.actor_role === 'medic',
+    'and somebody who is both still records the staff role, so the change drops the fallback and nothing else',
+  );
 }
 
 console.log('\nthe address is the visitor, resolved the way every other caller resolves it');
@@ -131,12 +143,126 @@ console.log('\nTHE REFUSAL: a row the policy would reject is never sent');
     signInAuditRow(claims({ roles: [] }), h({}), 'password') !== null,
     'but no ROLES is still a row: the policy does not read actor_role, and a sign-in with no role is exactly what somebody would want to see',
   );
+  assert(
+    signInAuditRow(claims({ roles: [] }), h({}), 'password')?.actor_role === null,
+    'and its role is null rather than invented, which is now the same answer an athlete gets',
+  );
+}
+
+console.log('\nthe sign-in also stamps last_seen_at, and never at the sign-in\'s expense');
+{
+  /* WHY IT LIVES HERE. users.last_seen_at was read by three components and
+     written by nothing, in src/ or in any migration, so every account read
+     "Never signed in" — including staff who had signed in that morning. Every
+     sign-in flow already passes through recordSignIn: /auth/sign-in for a
+     password, /auth/confirm for an invite or magic link, and
+     /auth/record-sign-in for the PKCE reset that establishes its session in the
+     browser. One place, all three. */
+  type Call = { table: string; op: string; payload: unknown; eq?: [string, unknown] };
+  const spy = () => {
+    const calls: Call[] = [];
+    const db = {
+      from: (table: string) => ({
+        insert: async (payload: unknown) => { calls.push({ table, op: 'insert', payload }); return {}; },
+        update: (payload: unknown) => ({
+          eq: async (col: string, val: unknown) => {
+            calls.push({ table, op: 'update', payload, eq: [col, val] });
+            return {};
+          },
+        }),
+      }),
+    };
+    return { db, calls };
+  };
+
+  {
+    const { db, calls } = spy();
+    await recordSignIn(db as never, claims(), h({}), 'password');
+    const seen = calls.find((c) => c.table === 'users');
+    assert(seen !== undefined, 'a sign-in updates the users row');
+    assert(seen?.op === 'update', 'as an update, not an insert');
+    const payload = (seen?.payload ?? null) as { last_seen_at?: unknown } | null;
+    assert(
+      payload !== null
+        && Object.keys(payload).length === 1
+        && typeof payload.last_seen_at === 'string',
+      'setting last_seen_at and nothing else — a sign-in is not permission to rewrite an account',
+    );
+    assert(
+      seen?.eq?.[0] === 'id' && seen?.eq?.[1] === claims().userId,
+      'keyed to the signer, which is also the only row users_self_update lets them touch',
+    );
+    assert(
+      calls.some((c) => c.table === 'audit_log' && c.op === 'insert'),
+      'and the audit row is still written',
+    );
+  }
+
+  /* THE TWO WRITES ARE INDEPENDENT, and that is the point of testing them
+     separately rather than trusting one try block. They fail for different
+     reasons — the audit insert is refused without an org, the last_seen update
+     is not — so one failing must not take the other with it. */
+  {
+    const calls: string[] = [];
+    const db = {
+      from: (table: string) => ({
+        insert: async () => { calls.push(`insert:${table}`); throw new Error('audit down'); },
+        update: () => ({ eq: async () => { calls.push(`update:${table}`); return {}; } }),
+      }),
+    };
+    let threw = false;
+    try { await recordSignIn(db as never, claims(), h({}), 'password'); } catch { threw = true; }
+    assert(!threw, 'an audit insert that throws is still caught');
+    assert(calls.includes('update:users'), 'and last_seen_at is written anyway — the two do not share a fate');
+  }
+
+  {
+    const calls: string[] = [];
+    const db = {
+      from: (table: string) => ({
+        insert: async () => { calls.push(`insert:${table}`); return {}; },
+        update: () => ({ eq: async () => { calls.push(`update:${table}`); throw new Error('users down'); } }),
+      }),
+    };
+    let threw = false;
+    try { await recordSignIn(db as never, claims(), h({}), 'password'); } catch { threw = true; }
+    assert(!threw, 'a last_seen write that throws is caught too — a stamp must never cost somebody their sign-in');
+    assert(calls.includes('insert:audit_log'), 'and the audit row is still written');
+  }
+
+  /* THE ORG-LESS CASE. signInAuditRow refuses a row with no org because the RLS
+     policy would, and recordSignIn returns early on that. last_seen_at has no
+     such constraint — users_self_update pins id = auth_user_id() and nothing
+     about the org — so the early return must not swallow it. Somebody whose
+     claims are missing an org has still signed in. */
+  {
+    const { db, calls } = spy();
+    await recordSignIn(db as never, claims({ orgId: null }), h({}), 'password');
+    assert(
+      calls.some((c) => c.table === 'users' && c.op === 'update'),
+      'no org means no audit row, and last_seen_at is stamped regardless',
+    );
+    assert(
+      !calls.some((c) => c.table === 'audit_log'),
+      'and the doomed audit insert is still not attempted',
+    );
+  }
+
+  {
+    const { db, calls } = spy();
+    await recordSignIn(db as never, claims({ userId: '' }), h({}), 'password');
+    assert(calls.length === 0, 'but with no actor at all there is nobody to stamp, and nothing is written');
+  }
 }
 
 console.log('\nfailing to log must never cost somebody their sign-in');
 {
-  const rejects = { from: () => ({ insert: async () => { throw new Error('PostgREST unreachable'); } }) };
-  const errors = { from: () => ({ insert: async () => ({ error: { message: 'new row violates row-level security policy' } }) }) };
+  /* Both stubs carry a no-op `update` as well as the `insert` under test. A
+     client has both, and without it recordSignIn's last_seen_at stamp fails
+     against every stub here and prints a real-looking error beside assertions
+     that are passing — noise that trains a reader to skim the output. */
+  const rejects = { from: () => ({ update: () => ({ eq: async () => ({ error: null }) }), insert: async () => { throw new Error('PostgREST unreachable'); } }) };
+  const errors = { from: () => ({ update: () => ({ eq: async () => ({ error: null }) }), insert: async () => ({ error: { message: 'new row violates row-level security policy' } }) }) };
 
   let threw = false;
   try { await recordSignIn(rejects as never, claims(), h({}), 'password'); } catch { threw = true; }
@@ -150,12 +276,24 @@ console.log('\nfailing to log must never cost somebody their sign-in');
      for a function that never inserts anything at all, which is the failure
      this project has shipped three times. */
   let sent: unknown = null;
-  let table: string | null = null;
+  /* Every table touched, in order, rather than only the last one. recordSignIn
+     now writes twice — users first, then audit_log — and a single `table`
+     variable would report 'audit_log' whether or not the stamp had happened,
+     which is the shape of assertion this comment is about. */
+  let insertedInto: string | null = null;
+  const touched: string[] = [];
   const working = {
-    from: (t: string) => { table = t; return { insert: async (row: unknown) => { sent = row; return { error: null }; } }; },
+    from: (t: string) => {
+      touched.push(t);
+      return {
+        update: () => ({ eq: async () => ({ error: null }) }),
+        insert: async (row: unknown) => { insertedInto = t; sent = row; return { error: null }; },
+      };
+    },
   };
   await recordSignIn(working as never, claims(), h({ 'x-real-ip': '9.9.9.9' }), 'password');
-  assert(table === 'audit_log', 'and the working case really does write, to audit_log');
+  assert(insertedInto === 'audit_log', 'and the working case really does write, to audit_log');
+  assert(touched.join(',') === 'users,audit_log', 'touching users first and audit_log second, and nothing else');
   assert((sent as { action: string })?.action === 'auth.signed_in', 'the row it sends is the row above');
 
   // The refusal must not reach the database either.
@@ -241,7 +379,7 @@ console.log('\n   ...and only for an account that actually exists');
 
 console.log('\n   ...and failing to record it never costs anything either');
 {
-  const rejects = { from: () => ({ insert: async () => { throw new Error('down'); } }) };
+  const rejects = { from: () => ({ update: () => ({ eq: async () => ({ error: null }) }), insert: async () => { throw new Error('down'); } }) };
   let threw = false;
   try {
     await recordSignInFailure(rejects as never, { orgId: 'o', userId: 'u' }, h({}), { attemptsRemaining: 4, locked: false });
@@ -250,7 +388,7 @@ console.log('\n   ...and failing to record it never costs anything either');
 
   // Positive control, for the same reason as the success path's.
   let sent: unknown = null;
-  const working = { from: () => ({ insert: async (r: unknown) => { sent = r; return { error: null }; } }) };
+  const working = { from: () => ({ update: () => ({ eq: async () => ({ error: null }) }), insert: async (r: unknown) => { sent = r; return { error: null }; } }) };
   await recordSignInFailure(working as never, { orgId: 'o', userId: 'u' }, h({}), { attemptsRemaining: 0, locked: true });
   assert((sent as { action: string })?.action === 'auth.sign_in_failed', 'and the working case really does write');
 

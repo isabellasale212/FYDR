@@ -431,10 +431,25 @@ const AUDIT_PRECEDENCE = [
 
 /** The role to record for an action, given every role the actor holds.
  *
- *  Falls back to whatever they do hold if none of the five matches, which can
- *  only be an athlete, and an athlete cannot reach any caller of this. The
- *  fallback exists so the audit write cannot throw: losing the row would be
- *  worse than recording an odd one. */
-export function actingRole(roles: readonly AppRole[]): AppRole {
-  return AUDIT_PRECEDENCE.find((r) => roles.includes(r)) ?? roles[0] ?? 'athlete';
+ *  NULL WHEN NONE OF THE FIVE MATCHES, which is a change made on 2026-09-08 and
+ *  worth the paragraph. This used to fall back to `roles[0] ?? 'athlete'`, and
+ *  its comment justified that with "an athlete cannot reach any caller of this".
+ *  That stopped being true when sign-ins started being audited: athletes sign
+ *  in, and most sign-ins are theirs. It was then wrong in a way only visible
+ *  once the trigger began writing rows for the same people — SQL's
+ *  `audit_acting_role()` walks the same five roles and returns NULL, so one
+ *  athlete opting themselves out of a leaderboard was recorded with a null role
+ *  by the trigger and as 'athlete' by the application. Two answers to "what role
+ *  were they acting in", in the table whose whole job is being true.
+ *
+ *  Null is the right one. `actor_role` means WHICH STAFF ROLE somebody acted in;
+ *  an athlete holds none, and writing 'athlete' claims a staff role in the
+ *  column that exists to name one. Nothing is lost: `actor_id` still says
+ *  exactly who acted, and `audit_log.actor_role` has always been nullable.
+ *
+ *  The old fallback's stated purpose — "so the audit write cannot throw" — is
+ *  preserved. Returning null cannot throw either, and no caller may treat a null
+ *  as a reason to skip the row. */
+export function actingRole(roles: readonly AppRole[]): AppRole | null {
+  return AUDIT_PRECEDENCE.find((r) => roles.includes(r)) ?? null;
 }

@@ -22,7 +22,7 @@ type Props = {
    *  this card and became wrong the moment the page opened to all staff: a
    *  sport scientist would have been recorded as a coach. audit_log.actor_role
    *  is app_role and already holds all five. */
-  actorRole: AppRole;
+  actorRole: AppRole | null;
   /** May this viewer RECORD attendance, as opposed to read it. Decided
    *  2026-09-06: the page is open to every staff role because /schedule already
    *  shows them the same sessions, but recording is SESSION_EDIT — the sport

@@ -110,6 +110,24 @@ console.log('the two role orderings are the same ordering');
     'and the TypeScript agrees at runtime, not just in its source',
   );
   assert(actingRole(['strength_conditioning', 'coach']) === 'coach', 'coach outranks strength_conditioning, which the pgTAP file asserts through user_dual');
+
+  /* THE CASE THE TWO IMPLEMENTATIONS USED TO DISAGREE ABOUT, fixed 2026-09-08.
+     SQL's audit_acting_role() walks the five staff roles and returns NULL when
+     none matches. TypeScript's actingRole() used to fall back to `roles[0] ??
+     'athlete'`, so the same athlete opting themselves out of a leaderboard was
+     recorded with a null role by the trigger (pinned by test 450) and as
+     'athlete' by the application. actor_role names WHICH STAFF ROLE somebody
+     acted in; an athlete holds none. */
+  assert(actingRole(['athlete']) === null, 'an athlete acts in no staff role, so the TypeScript returns null');
+  assert(actingRole([]) === null, 'and so does no role at all, rather than inventing one');
+  assert(
+    /returns null when none matches|return null;/i.test(sql) || /coalesce\([^)]*\)\s*;/.test(sql),
+    'and the SQL says the same, which is what 450 asserts against real rows',
+  );
+  assert(
+    actingRole(['athlete', 'nutritionist']) === 'nutritionist',
+    'somebody who is both still records the staff role — the fallback went, the precedence did not',
+  );
 }
 
 console.log('\nthe trigger is attached to every audited table, for all three operations');

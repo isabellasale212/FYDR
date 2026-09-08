@@ -21,7 +21,7 @@ export async function sendInviteEmail(
   db: Db,
   orgId: string,
   actorId: string,
-  actorRole: AppRole,
+  actorRole: AppRole | null,
   targetUserId: string,
   recipientEmail: string,
   data: InviteEmailData,

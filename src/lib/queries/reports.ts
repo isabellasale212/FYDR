@@ -676,7 +676,13 @@ export async function recordReportView(
   db: Db,
   orgId: string,
   userId: string,
-  actorRole: AppRole,
+  /* Nullable since 2026-09-08, matching both audit_log.actor_role and
+     actingRole()'s own return type. An athlete acts in no staff role, so the
+     column takes a null rather than the invented 'athlete' the TypeScript used
+     to supply — see lib/access.ts. Every caller here is a staff route and will
+     pass a real role; the type says null because the column allows it and
+     because narrowing it again is how the two implementations drifted apart. */
+  actorRole: AppRole | null,
   reportType: string,
   metadata: Json,
   action: 'view' | 'export' = 'view',

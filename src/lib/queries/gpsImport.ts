@@ -522,7 +522,7 @@ export async function recordImportExport(
   db: Db,
   orgId: string,
   userId: string,
-  actorRole: AppRole,
+  actorRole: AppRole | null,
   batchId: string,
   rowCount: number,
 ): Promise<void> {

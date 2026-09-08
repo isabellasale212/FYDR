@@ -75,6 +75,25 @@ type AuditWriter = {
   from: (table: string) => { insert: (row: SignInAuditRow) => PromiseLike<{ error: unknown } | void> };
 };
 
+/** Deliberately one field, and typed rather than `Record<string, unknown>`, so
+ *  that "a sign-in stamps last_seen_at" cannot quietly become "a sign-in writes
+ *  to the users table". */
+export type LastSeenPatch = { last_seen_at: string };
+
+/** The same client, described for the other half of the write.
+ *
+ *  WHY IT IS A SEPARATE TYPE RATHER THAN TWO METHODS ON AuditWriter. Adding
+ *  `update` alongside `insert` and checking the combined shape against the real
+ *  PostgREST builder pushes tsc past its instantiation depth limit — /auth/
+ *  confirm, and only that one of the three callers, fails with TS2589 while the
+ *  code is correct. Split in two, each side is the same check that already
+ *  compiled, and the cast at the single call site below carries the reason. */
+type LastSeenWriter = {
+  from: (table: string) => {
+    update: (patch: LastSeenPatch) => { eq: (column: string, value: string) => PromiseLike<{ error: unknown } | void> };
+  };
+};
+
 /**
  * The row, or null if it is one the database would refuse.
  *
@@ -105,11 +124,11 @@ export function signInAuditRow(
   return {
     org_id: claims.orgId,
     actor_id: claims.userId,
-    /* actingRole falls back to 'athlete' when none of the five staff roles
-       matches. Its own comment says that case "can only be an athlete, and an
-       athlete cannot reach any caller of this" — true until this file, since
-       athletes sign in and most sign-ins are theirs. The fallback is
-       load-bearing here, not defensive. */
+    /* NULL for an athlete, and that is deliberate as of 2026-09-08. actingRole
+       used to fall back to 'athlete'; SQL's audit_acting_role() has always
+       returned null for the same person, so the two disagreed about every
+       athlete-written row. actor_role names WHICH STAFF ROLE somebody acted in
+       and an athlete holds none. actor_id still says who signed in. */
     actor_role: actingRole(claims.roles),
     action: SIGN_IN_ACTION,
     entity_type: SIGN_IN_ENTITY,
@@ -138,6 +157,27 @@ export async function recordSignIn(
   method: SignInMethod,
   sessionId: string | null = null,
 ): Promise<void> {
+  /* THE STAMP GOES FIRST, AND IT IS NOT INSIDE THE AUDIT ROW'S GUARD. Until
+     2026-09-08 `users.last_seen_at` was read by three components and written by
+     nothing at all — no route, no query, no migration — so every account read
+     "Never signed in", including staff who had signed in that morning.
+
+     It is stamped here rather than in each route because all three sign-in
+     flows already pass through this function: /auth/sign-in for a password,
+     /auth/confirm for an invite or magic link, and /auth/record-sign-in for the
+     PKCE reset whose session is established in the browser.
+
+     Above the audit guard, because the two writes fail for different reasons.
+     The audit row is refused without an org, since audit_log's insert policy is
+     `org_id = auth_org_id() and actor_id = auth_user_id()` and a null org never
+     satisfies it. `users_self_update` pins only `id = auth_user_id()` and says
+     nothing about the org, so an org-less session can still stamp itself — and
+     somebody whose claims are missing an org has still signed in. */
+  /* One client, two structural descriptions of it — see LastSeenWriter for why
+     they are not one type. The cast asserts nothing the real client does not
+     do; every caller passes a request-scoped Supabase client that has both. */
+  await stampLastSeen(db as unknown as LastSeenWriter, claims.userId);
+
   const row = signInAuditRow(claims, headers, method, sessionId);
   if (!row) {
     console.error('sign-in audit skipped: no org or actor in the fresh session claims', {
@@ -154,6 +194,40 @@ export async function recordSignIn(
     if (error) throw error;
   } catch (err) {
     console.error('sign-in audit write failed, sign-in itself unaffected', err);
+  }
+}
+
+/**
+ * Record that this account was seen, and never let failing to do so cost
+ * somebody their sign-in.
+ *
+ * WHY THIS WRITES NO AUDIT ROW OF ITS OWN, and why that is enforced in SQL
+ * rather than here. `users` has been audited by trigger since 0091, so without
+ * intervention every sign-in would write a `users.update` row saying
+ * last_seen_at moved, immediately beside the `auth.signed_in` row above, which
+ * says the same thing and carries the address, the method and the session as
+ * well. Migration 0092 adds `last_seen_at` to the columns audit_row_change()
+ * already excludes from an update's changed list — the same treatment
+ * `updated_at` has always had, for the same reason: written by machinery, never
+ * by a person choosing to change it. Test 480 asserts both halves, including
+ * that a write moving status AND last_seen_at still records the status.
+ *
+ * Fails open, exactly as the audit write and the rate limiter do. A missing
+ * "last seen" is a cosmetic loss on one settings screen; a sign-in that 500s
+ * because a stamp failed is an outage.
+ */
+export async function stampLastSeen(db: LastSeenWriter, userId: string | null | undefined): Promise<void> {
+  if (!userId) return;
+
+  try {
+    const result = await db
+      .from('users')
+      .update({ last_seen_at: new Date().toISOString() })
+      .eq('id', userId);
+    const error = result && typeof result === 'object' && 'error' in result ? result.error : null;
+    if (error) throw error;
+  } catch (err) {
+    console.error('last_seen_at stamp failed, sign-in itself unaffected', err);
   }
 }
 

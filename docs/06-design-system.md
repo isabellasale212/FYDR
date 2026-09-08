@@ -269,12 +269,33 @@ toggle, not the page's theme switch. Build to the table.
 **Source.** Layout drives spacing with `gap`, not margins. There is no numeric spacing scale
 and none should be invented.
 
-| Use | Value |
-|---|---|
-| Stack gap | 14px |
-| Card padding | 16px |
-| Field padding | 12px vertical, 14px horizontal |
-| Two-column and tile grid gap | 12px |
+| Use | Value | Token |
+|---|---|---|
+| Stack gap | 14px | `--gap-stack` |
+| **Athlete body gap** | **28px** | `--gap-body` |
+| Card padding | 16px | `--pad-card` |
+| Field padding | 12px vertical, 14px horizontal | |
+| Two-column and tile grid gap | 12px | `--gap-grid` |
+
+**The athlete body gap is the one documented exception to this table, and §2.7's
+own rule ("if a gap is not 12 or 14 ... it needs a comment") is what obliges this
+paragraph.** `.phone-body` — the athlete shell, and only that — spaces its body
+blocks 28px apart, on every one of the eleven athlete screens including Today.
+
+Settled 2026-09-08, after both alternatives were tried on a real phone. It ran at
+14px for one revision and read too tight; before that it had been rendering 18,
+26, 28, 32 and 40.5px on different screens, because the shell's flex gap and a
+per-block `margin-top` were both contributing and flex children do not collapse
+margins. 28px is what most screens had been showing by accident, so it is also
+what was signed off on 4 September — the change is that it now comes from one
+place. Today briefly kept a 16px override selected off its week card; that is
+deleted, and 28px is the only gap in the athlete app.
+
+**It is deliberately NOT `--gap-stack`.** That token is read by `.stack` on 21
+staff screens and by `.profile-grid`; the athlete shell needed its own value, not
+a shared one moved. `check:athlete-spacing` fails the build if a block adds its
+own margin on top of the gap, or if the shell stops sourcing it from
+`--gap-body`.
 
 The source page's own `.card` uses 18px padding while the documented recipe in the same page
 says 16px. **16px is canonical**, because that is what the copy block hands to an implementer.

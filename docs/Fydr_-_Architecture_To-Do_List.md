@@ -785,7 +785,9 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   **TODAY'S OVERRIDE IS DELETED TOO. One rhythm, 28px, everywhere.** For one revision Today rendered 16px against everything else's 28px, which read as nearly half and was a wider inconsistency than the 16-against-14 it replaced. `.phone-body:has(> .wk-card) { gap: 16px }` is gone on Isabella's instruction. **28px is now the only distinct gap anywhere in the athlete app** — measured across all eleven routes, every gap on every screen.
 
-  **THE SPEC SENTENCE THIS ALL IMPLEMENTED IS STALE IN BOTH HALVES.** It read "16px between body cards on Today, 14px everywhere else". The body is 28px and Today is no longer special. Neither figure survives, and no markdown screen spec states it — the claim lives in the docx §4 that `base.css` was citing, so **that document needs the correction, not a code change.** Recorded here rather than left for someone to hit.
+  **THE "SPEC §4" base.css CITED DOES NOT EXIST, and this entry said otherwise for one revision.** It claimed the sentence "16px between body cards on Today, 14px everywhere else" lived in the athlete spec docx and that the document needed correcting. It does not: searching the whole repository, that sentence appears only in `base.css`'s own comment and in this entry quoting it. No athlete screen spec, no `06-design-system.md`, nothing in `docs/source`. The athlete spec has no spacing section at all, so there was nothing in it to fix — a location asserted without checking, which is the failure this file keeps recording.
+
+  **The rhythm is documented properly now** in `06-design-system.md` §2.7, with the value in `--gap-body`.
 
   **The 14px attempt is kept below**, because everything it records about HOW the spacing was wrong still applies and the four traps it names are still traps.
 

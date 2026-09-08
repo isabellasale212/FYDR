@@ -48,10 +48,10 @@ and is told what they may and may not do. The banner is careful work: it checks
    treatment plan, withholding only `clinical_notes`. None of it reaches them.
 
 **Why it still matters.** On scratch today, Adam Selby is `modified` with a head
-injury at `return_to_play`, and his restrictions field reads "return to play
-protocol, stage 3 of 6; no contact; no collision drills". He is told the
-restrictions. He is not told that he is on a graduated concussion protocol, which
-stage of six the club thinks he is at, or when they expect him back — and the
+injury at `return_to_play`, with a restrictions field reading "return to play
+protocol, stage 3 of 6; no contact; no collision drills". That athlete is told the
+restrictions. They are not told they are on a graduated concussion protocol, which
+stage of six the club thinks they are at, or when they are expected back — and the
 first two are only legible because somebody typed them into a free-text field
 that happens to be displayed.
 
@@ -66,8 +66,8 @@ column short of being selected.
 first.** Two decisions are already made and are binding on it:
 
 1. **The clinical split. Diagnosis and mechanism may show. Imaging and the
-   detailed treatment plan are HELD BACK.** In her words, that is "a bigger step
-   than the existing DB permission implies" and she wants to look at it properly
+   detailed treatment plan are HELD BACK.** In their words, that is "a bigger step
+   than the existing DB permission implies" and they want to look at it properly
    before it is on a player's phone. Note what this means: the database is MORE
    permissive than the product. `injury_clinical_athlete_view` already exposes
    `severity`, `tissue_type`, `imaging`, `referral` and `treatment_plan` to the
@@ -76,7 +76,7 @@ first.** Two decisions are already made and are binding on it:
    NOT selected, not merely that the two chosen ones appear.
 2. **The age gate is built in from the start, not deferred.** Using
    `athlete_is_minor()`, which already fails safe: a null date of birth counts as
-   a minor. One minor on the roster today, zero with an open injury, and her
+   a minor. One minor on the roster today, zero with an open injury, and their
    reasoning is that this is exactly the moment to get it right, before it is a
    live problem. Whether a minor sees a reduced version or none of it is still
    open; the gate itself is not.

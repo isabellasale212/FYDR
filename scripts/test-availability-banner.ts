@@ -182,9 +182,23 @@ console.log('\nno clinical detail, which is Tier 2 and a separate decision');
   for (const field of ['diagnosis', 'mechanism', 'severity', 'imaging', 'referral', 'treatment_plan', 'clinical_notes']) {
     assert(!bannerCode.includes(field), `the banner never renders ${field}`);
   }
+  /* Today DOES now reach clinical data, through the temporary diagnosis
+     preview — so the old form of this assertion ("Today does not read the
+     clinical view") would pass on a technicality, because the view's name lives
+     in lib/diagnosisPreview rather than in the page. A test that passes because
+     a string moved file is not a test. What still holds, and is what matters,
+     is that the only route from this page to a clinical field runs through the
+     gate. test-diagnosis-preview asserts the gate's four locks; this asserts
+     there is no second route around it. */
   assert(
     !today.includes('injury_clinical_athlete_view'),
-    'and Today does not read the clinical view',
+    'Today never names the clinical view itself',
+  );
+  const clinicalCalls = [...today.matchAll(/fetchDiagnosisPreview\(/g)].length;
+  assert(clinicalCalls <= 1, `at most one clinical read on this page (saw ${clinicalCalls})`);
+  assert(
+    clinicalCalls === 0 || /diagnosisPreviewEnabled\(\)[\s\S]{0,200}fetchDiagnosisPreview\(/.test(today),
+    'and it is reached only through the gate, which is asked first',
   );
 }
 

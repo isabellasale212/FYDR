@@ -41,7 +41,15 @@ export async function sendInviteEmail(
       provider: provider.name,
       delivered: result.delivered,
       error: result.error,
-      note: result.delivered ? null : 'No email provider configured (RESEND_API_KEY/EMAIL_FROM_ADDRESS) — the temporary password was shown on screen instead.',
+      /* The note used to be hardcoded to the no-provider explanation for every
+         undelivered row. Once the send guard landed that became a lie: with a
+         provider configured and a reserved address, the provider is fine and the
+         ADDRESS is the problem. An audit row that misattributes a cause is worse
+         than one that says nothing, so the real error wins when there is one. */
+      note: result.delivered
+        ? null
+        : (result.error
+            ?? 'No email provider configured (RESEND_API_KEY/EMAIL_FROM_ADDRESS) — the temporary password was shown on screen instead.'),
     },
   });
 

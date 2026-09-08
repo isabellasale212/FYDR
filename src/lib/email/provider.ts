@@ -60,10 +60,18 @@ class LoggedProvider implements EmailProvider {
 
 class ResendProvider implements EmailProvider {
   readonly name = 'resend';
-  constructor(
-    private readonly apiKey: string,
-    private readonly fromAddress: string,
-  ) {}
+  /* Plain fields rather than constructor parameter properties: the repository's
+     test runner is `node --experimental-strip-types`, which cannot parse them
+     ("TypeScript parameter property is not supported in strip-only mode"), so
+     the shorthand made this module unimportable from a test. Same fields, same
+     privacy, one runner. */
+  private readonly apiKey: string;
+  private readonly fromAddress: string;
+
+  constructor(apiKey: string, fromAddress: string) {
+    this.apiKey = apiKey;
+    this.fromAddress = fromAddress;
+  }
 
   async send(message: EmailMessage): Promise<EmailSendResult> {
     try {
@@ -92,6 +100,95 @@ class ResendProvider implements EmailProvider {
   }
 }
 
+
+/* ---------------------------------------------------------------------------
+ * Addresses that cannot receive mail, and must therefore never be attempted.
+ *
+ * WHY THIS IS HERE AND NOT IN A CALLER. Production carries 46 seed accounts on
+ * ashcomberfc.example and marlowvale.example. `.example` is reserved by RFC 2606
+ * and never resolves, so a send to one is a guaranteed hard bounce — and hard
+ * bounces are what costs a sending domain its reputation before it has any
+ * history to protect. Nothing in this app enumerates users to mail them, so the
+ * realistic path is a person typing a seeded address into the add-a-user form or
+ * the password-reset form. One of those goes through this file.
+ *
+ * RENAMING THE ROWS WAS CONSIDERED AND REJECTED, 2026-09-08, and the reasoning
+ * belongs here because it is why this guard exists at all: every placeholder TLD
+ * is equally non-resolving, so `.invalid` bounces exactly as `.example` does, and
+ * `public.users.email` is NOT NULL with a unique index so the rows cannot be
+ * blanked either. The only fix that reduces bounces is not attempting the send.
+ *
+ * RESERVED BY SPECIFICATION, not by guesswork. RFC 2606 reserves the `.test`,
+ * `.example`, `.invalid` and `.localhost` TLDs and the example.com/net/org
+ * second-level names; RFC 6762 takes `.local` for mDNS; `.internal` is reserved
+ * for private use. None can accept public mail.
+ *
+ * MATCHED ON LABEL BOUNDARIES, which is the part that is easy to get wrong. A
+ * bare `endsWith('.example')` also matches nothing harmful, but an unanchored
+ * `includes('example.com')` matches `notexample.com`, and `endsWith('.test')`
+ * would be fine while `includes('.test')` catches `testing.co.uk`. Getting this
+ * wrong in the permissive direction bounces; getting it wrong in the strict
+ * direction silently never emails a real club, which looks like success. Both
+ * directions are tested.
+ * ------------------------------------------------------------------------- */
+
+const RESERVED_TLDS = ['test', 'example', 'invalid', 'localhost', 'local', 'internal'] as const;
+const RESERVED_DOMAINS = ['example.com', 'example.net', 'example.org'] as const;
+
+/** Why this address cannot be sent to, or null when it can. */
+export function unsendableReason(address: string): string | null {
+  const trimmed = (address ?? '').trim().toLowerCase();
+  if (trimmed === '') return 'No address was given.';
+
+  const parts = trimmed.split('@');
+  if (parts.length !== 2) return `"${address}" is not a single email address.`;
+  const [local, domain] = parts as [string, string];
+  if (local === '' || domain === '') return `"${address}" is not a complete email address.`;
+
+  const labels = domain.split('.');
+  const tld = labels[labels.length - 1] ?? '';
+  if (RESERVED_TLDS.includes(tld as (typeof RESERVED_TLDS)[number])) {
+    return `${domain} uses the reserved .${tld} suffix, which cannot receive mail. Sending would hard-bounce.`;
+  }
+  if (RESERVED_DOMAINS.includes(domain as (typeof RESERVED_DOMAINS)[number])) {
+    return `${domain} is reserved for documentation and cannot receive mail. Sending would hard-bounce.`;
+  }
+  return null;
+}
+
+/**
+ * Any provider, with the unsendable check in front of it.
+ *
+ * A WRAPPER RATHER THAN A CHECK INSIDE ResendProvider, deliberately. The next
+ * provider added to this file would not inherit a check written inside the
+ * current one, and the whole value of this guard is that it cannot be bypassed
+ * by accident. getEmailProvider() returns one of these whatever it picked.
+ *
+ * It reports the wrapped provider's own `name`, so audit rows keep saying
+ * 'resend' or 'logged' rather than 'guarded' — the row records what would have
+ * done the sending, which is what somebody reading it back needs.
+ */
+export class GuardedProvider implements EmailProvider {
+  private readonly inner: EmailProvider;
+
+  constructor(inner: EmailProvider) {
+    this.inner = inner;
+  }
+
+  get name(): string {
+    return this.inner.name;
+  }
+
+  async send(message: EmailMessage): Promise<EmailSendResult> {
+    const reason = unsendableReason(message.to);
+    if (reason !== null) {
+      // No request is made at all. A refused send cannot bounce.
+      return { delivered: false, error: reason };
+    }
+    return this.inner.send(message);
+  }
+}
+
 /** The one place this decision gets made: a real provider only if a real
  *  key is actually present. Every caller in this codebase goes through
  *  this function rather than constructing a provider itself, so there is
@@ -101,7 +198,7 @@ export function getEmailProvider(): EmailProvider {
   const apiKey = process.env.RESEND_API_KEY;
   const fromAddress = process.env.EMAIL_FROM_ADDRESS;
   if (apiKey && fromAddress) {
-    return new ResendProvider(apiKey, fromAddress);
+    return new GuardedProvider(new ResendProvider(apiKey, fromAddress));
   }
-  return new LoggedProvider();
+  return new GuardedProvider(new LoggedProvider());
 }

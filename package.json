@@ -5,7 +5,7 @@
   "description": "Fydr, athlete performance management. Phase 1a thin slice: staff web and athlete mobile web.",
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run check:env-files && npm run test:env-guard && npm run check:surface-tokens && npm run check:control-radius && npm run check:athlete-spacing && npm run test:access-gates && npm run check:policy-replacements && npm run test:policy-guard && npm run test:default-privileges && npm run test:sign-in-audit && npm run test:brand-face && npm run test:launch-claim && npm run test:mark-consistency && npm run test:seed-auth && npm run test:service-role-grants && npm run test:sign-in-probes && npm run test:inclusive-copy && npm run test:availability-banner && npm run test:injury-clinical && npm run test:athlete-board-tier-gate && npm run test:email-send-guard && npm run test:wellness-sheet && npm run test:today-redesign && npm run test:me-redesign && npm run test:my-data-redesign && npm run test:gym-logger-redesign && npm run test:athlete-token-audit",
+    "prebuild": "npm run check:env-files && npm run test:env-guard && npm run check:surface-tokens && npm run check:control-radius && npm run check:athlete-spacing && npm run check:font-scaling && npm run test:access-gates && npm run check:policy-replacements && npm run test:policy-guard && npm run test:default-privileges && npm run test:sign-in-audit && npm run test:brand-face && npm run test:launch-claim && npm run test:mark-consistency && npm run test:seed-auth && npm run test:service-role-grants && npm run test:sign-in-probes && npm run test:inclusive-copy && npm run test:availability-banner && npm run test:injury-clinical && npm run test:athlete-board-tier-gate && npm run test:email-send-guard && npm run test:wellness-sheet && npm run test:today-redesign && npm run test:me-redesign && npm run test:my-data-redesign && npm run test:gym-logger-redesign && npm run test:athlete-token-audit",
     "build": "next build",
     "start": "next start",
     "deploy": "npx --yes vercel@59.11.0 deploy --prod",
@@ -56,6 +56,7 @@
     "test:weigh-in-edit": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-weigh-in-edit.ts",
     "test:fixture-visibility": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-fixture-visibility.ts",
     "check:surface-tokens": "node --experimental-strip-types scripts/derive-surface-tokens.ts --check",
+    "check:font-scaling": "node --experimental-strip-types scripts/check-font-scaling.ts",
     "check:athlete-spacing": "node --experimental-strip-types scripts/check-athlete-spacing.ts",
     "check:control-radius": "node --experimental-strip-types scripts/check-control-radius.ts",
     "test:brand-face": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-brand-face.ts",

@@ -79,7 +79,14 @@ console.log('the headline says what was asked for, in the face that was asked fo
   assert(h !== '', '.launch-claim-h exists');
   assert(/font-family: var\(--font-brand\)/.test(h), 'set in Sora, the brand face');
   assert(/font-weight: 800/.test(h), 'weight 800');
-  assert(/font-size: 48px/.test(h), 'a true 48px, not a clamp that never reaches it');
+  /* 3rem, not 48px, since the 2026-09-08 rem conversion — and the assertion's
+     intent is untouched. What it was written to reject is a FLUID size that
+     never reaches 48 (a clamp whose upper bound the viewport never hits). 3rem
+     computes to exactly 48px at the default root, so the headline is still a
+     true 48px; it now also follows a reader who has raised their text size,
+     which a fixed px never did. `max-width` is in `ch`, which scales with the
+     font, so the overflow relationship this file measured holds at any root. */
+  assert(/font-size: 3rem/.test(h), 'a true 48px (3rem), not a clamp that never reaches it');
   assert(/line-height: 1\.1\b/.test(h), 'line-height 1.1');
   assert(/letter-spacing: -0\.03em/.test(h), 'tracking -0.03em');
   assert(
@@ -136,10 +143,10 @@ console.log('\nlabels and captions are set as specified, and in the app face');
 {
   const label = rule('.launch-features .k');
   const cap = rule('.launch-features .v');
-  assert(/font-size: 16px/.test(label) && /font-weight: 700/.test(label), 'label 16px / 700');
+  assert(/font-size: 1rem/.test(label) && /font-weight: 700/.test(label), 'label 16px (1rem) / 700');
   assert(/white-space: nowrap/.test(label), 'label nowrap — it fits: 95.4px widest against a 119.2px narrowest column');
   assert(/margin-top: 8px/.test(label), 'label 8px below its icon');
-  assert(/font-size: 13\.5px/.test(cap), 'caption 13.5px');
+  assert(/font-size: 0\.84375rem/.test(cap), 'caption 13.5px (0.84375rem)');
   assert(/color: var\(--muted\)/.test(cap), 'caption in --muted');
   assert(/margin-top: 3px/.test(cap), 'caption 3px below its label');
 

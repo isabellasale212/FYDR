@@ -23,19 +23,25 @@
 
 ## 0d. Not yet decided — needs your call before Claude Code can build either
 - [x] **Nutrition day-type editing (Journey 4 finding, decided 2026-09-06).** Replace the rate+multiplier model with three fully independent numbers per day type, training/match/rest, no shared rate, no auto-scaling. Changing one day type must not affect the others. A suggested/guideline value shown next to each field as a non-enforced reference is welcome, but not required. This removes the original auto-scaling design intent on purpose, confirmed, not inferred.
-- [ ] **Food library on the athlete app. CORRECTED 2026-09-08 — both halves of the original premise were wrong, and the browse-only half is already shipped.** Restated below; the original text is kept at the foot of this entry because it was acted on for two days.
+- [x] **CLOSED by Isabella, 8 September 2026: browse-only is the product. Food library on the athlete app.** No meal logging, now or as a planned feature. What is already shipped is the whole of it, so there is nothing to build and nothing left to decide.
+
+  **What this closes, stated so it is not reopened by accident.** An athlete browses the club's meal library, portion-scaled to their own body mass, and cannot log, submit or record anything from it. That is the finished product, not a first phase. `CLAUDE.md` rule 8 stands unchanged: no daily nutrition entry, no per-meal macros, no nutrition compliance domain, with the weekly one-tap check-in as the single exception.
+
+  **If it is ever reopened**, it is not a screen. It needs rule 8 changed deliberately, a table to hold an intake record — none exists, and `nutrition_entries` is dormant by rule — plus that table's RLS, its retention treatment, and a place in the subject-access pack. Anybody proposing "just add a log button" should be shown this paragraph.
+
+  **Also corrected on the way to closing it**, because the entry had been acted on for two days against a false premise: there was never an access question (the athlete app is the web route group in this repository, not a separate native iOS/Swift codebase), and browse-only was never undecided — it was already live.
 
   **There is no access question.** The athlete app is the web route group at `src/app/(athlete)/` in this repository — one codebase, one deployment, one Supabase project, shared with the staff app. There is no separate native iOS/Swift codebase and there never has been, verified 2026-09-08: no Xcode project, no `.swift` file, no React Native, Expo, Capacitor or Cordova manifest anywhere on the machine. See the corrected Decisions Log entry at the top of this document.
 
   **And browse-only is not undecided. It is built, live, and pinned.** `src/app/(athlete)/programme/nutrition/page.tsx` already reads `fetchMealLibrary(db, orgId)` and renders every meal — the five fixed reference meals plus whatever the club's coach has authored — portion-scaled to that athlete's own last recorded body mass through the same `scaleMeal`/`scaleDay` maths the coach's `/nutrition` workspace uses, so a recipe cannot read differently on the two screens. Its own header states the constraint: *"Read-only, CLAUDE.md rule 8: no logging, no per-meal macro entry, no submit action anywhere on this screen."* The screen closes with "Reference only — nothing here is logged or tracked."
 
-  **So the actual open question is the one thing the original entry listed as an alternative:** should an athlete be able to **log** a meal from the library against an intake record, going beyond browsing?
+  **The question that was briefly open** — whether an athlete should be able to **log** a meal from the library against an intake record — **is answered: no.**
 
   **It is a product decision against a standing rule, not a screen.** CLAUDE.md rule 8 says athletes do not log nutrition daily — *"no daily nutrition entry, no per-meal macros, and no nutrition compliance domain"* — with exactly one exception, the weekly one-tap check-in. Meal logging is the thing that rule exists to refuse. Answering "yes" means changing the rule deliberately, not working around it.
 
   **And it is a data-model question before it is a UI one.** There is nowhere to put a logged meal. The nutrition tables are `meal_library`, `meal_library_items`, `nutrition_rules`, `nutrition_targets` and `nutrition_checkins` — a library, its items, the rules, the computed targets, and the weekly check-in. The only nutrition write an athlete has is one row a week in `nutrition_checkins`. An intake table does not exist, `nutrition_entries` is dormant by rule, and per-meal logging would need a new table, its RLS, its retention treatment and a place in the subject-access pack.
 
-  **What would settle it:** either "no, browse-only is the product, close this" — which costs nothing and matches what is already shipped — or "yes, and here is why rule 8 should change", at which point it is a schema change and a compliance review rather than a screen.
+  **Answered by Isabella, 8 September 2026: "No, browse-only is the product, close it."**
 
   <details><summary>The original entry, as written 2026-09-06 and acted on until 2026-09-08</summary>
 

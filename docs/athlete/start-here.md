@@ -30,9 +30,20 @@ document as live work, and anyone reading an older copy will find them:
 
 ## What is settled, and what is not
 
-**Appendix A has no open questions left.** All thirty are answered or decided.
-Nine were closed on 8 September against the live repository: Q-08 through Q-14
-(the exact on-screen wording), Q-20, and the leaderboard half of Q-29.
+**Appendix A has no open questions left.** All thirty carry a settled answer,
+checked one by one rather than sampled. Nine were closed on 8 September against
+the live repository — Q-08 through Q-14, Q-20 and the leaderboard half of Q-29 —
+and the other twenty-one were decided during the review.
+
+**One thing the archive still holds that this document does not.** For
+twenty-four of the thirty, the answer here is the archive's text verbatim,
+including the recommendation that preceded each decision. For six — Q-02, Q-20,
+Q-24, Q-28, Q-29 and Q-30 — the answer here was rewritten rather than copied,
+so it states what was settled without the earlier stages: the draft
+recommendation, and in Q-24's case a decision that was reversed and then
+restored the same day. Nothing settled is missing. If you need to know how one
+of those six was arrived at rather than what was decided, the archive is where
+that lives.
 
 **Five of those nine came back as real problems rather than clean answers.** Each
 is written up in its own Appendix A entry:

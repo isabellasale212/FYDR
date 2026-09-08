@@ -42,11 +42,11 @@ answered; they are recorded in `decisions-required.md` rather than repeated here
 
 **What would settle it.** Say which of these you want, and on which screen: availability status only; status plus restrictions; the full clinical detail the database already allows; or none of it, with a reason to record. If you want it, Today and My data are the two candidates.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**Decided during the 8 September 2026 review.** Ported from `archive/2026-09-08-athlete-spec-review-record.docx`, which holds the same text as tracked changes with the order it was reached.
+
+**Claude's recommendation, pending your confirmation:**** status plus restrictions on Today, as a card that only appears when relevant, since that is where a player would otherwise hear it from a person instead. Keep the full clinical detail (diagnosis, mechanism, imaging, referral, treatment plan) on My data rather than Today, one tap further away, so Today stays a quick daily screen and My data stays the place you go to look closely. The database already allows all of it; this only decides what a screen shows and where. 
+
+**Confirmed by Isabella, 8 September 2026.
 
 ---
 
@@ -76,11 +76,11 @@ answered; they are recorded in `decisions-required.md` rather than repeated here
 
 **What would settle it.** Choose: hide it until ingestion exists; keep it and label it plainly as not yet active; or leave it as is. Leaving it as is is the current behaviour and the one that misleads.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**Decided during the 8 September 2026 review.** Ported from `archive/2026-09-08-athlete-spec-review-record.docx`, which holds the same text as tracked changes with the order it was reached.
+
+**Claude's recommendation, pending your confirmation:**** hide it until ingestion exists. There is no native app to read HealthKit from at all today, so the toggle cannot mislead an athlete more cheaply than by removing it. Bring it back the day a native build actually reads something. 
+
+**Confirmed by Isabella, 8 September 2026, no preference, going with the recommendation.
 
 ---
 
@@ -94,11 +94,11 @@ answered; they are recorded in `decisions-required.md` rather than repeated here
 
 **What would settle it.** Choose: rename the tab to cover both, for example Programme; move nutrition guidance under Me; add a fifth tab; or leave it and rely on the link from Today.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**Decided during the 8 September 2026 review.** Ported from `archive/2026-09-08-athlete-spec-review-record.docx`, which holds the same text as tracked changes with the order it was reached.
+
+**Claude's recommendation, pending your confirmation:**** rename the tab from Gym to Programme. It already contains both the gym programme and the nutrition guidance link, so the name should describe what is actually behind it rather than the larger of the two things. 
+
+**Confirmed by Isabella, 8 September 2026. Tab renamed Gym to Programme.
 
 ---
 
@@ -112,11 +112,11 @@ answered; they are recorded in `decisions-required.md` rather than repeated here
 
 **What would settle it.** Confirm whether the current state is the intended end state, or whether an athlete should be able to submit a correction for staff approval. Note that the club asked for the current restriction, so changing it is a conversation with them.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**Decided during the 8 September 2026 review.** Ported from `archive/2026-09-08-athlete-spec-review-record.docx`, which holds the same text as tracked changes with the order it was reached.
+
+**Claude's recommendation, pending your confirmation:**** leave it as built. The club asked for this restriction, it matches CLAUDE.md rule 6, and immutable entries with a staff-only revision path are the correct shape for data that feeds trend analysis. Revisit only if a specific club asks to change it, and treat that as a conversation with them, not a specification change made alone. 
+
+**Confirmed by Isabella, 8 September 2026.
 
 ---
 
@@ -130,11 +130,11 @@ answered; they are recorded in `decisions-required.md` rather than repeated here
 
 **What would settle it.** Choose: add the nine prefixes; leave it; or replace the prefix list with the route group so a new athlete screen is covered without anyone remembering. The third does not decay and is the largest change.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**Decided during the 8 September 2026 review.** Ported from `archive/2026-09-08-athlete-spec-review-record.docx`, which holds the same text as tracked changes with the order it was reached.
+
+**Claude's recommendation, pending your confirmation:**** replace the prefix list with the route group, as the document itself steers toward. It is the only option that stays correct automatically the next time an athlete screen is added, rather than depending on somebody remembering to update a list. 
+
+**Confirmed by Isabella, 8 September 2026.
 
 ---
 
@@ -148,11 +148,11 @@ answered; they are recorded in `decisions-required.md` rather than repeated here
 
 **What would settle it.** Confirm the four are intended, or say which others should be queued. Report a problem is the one I would add.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**Decided during the 8 September 2026 review.** Ported from `archive/2026-09-08-athlete-spec-review-record.docx`, which holds the same text as tracked changes with the order it was reached.
+
+**Claude's recommendation, pending your confirmation:**** add Report a problem as a fifth queued domain. It is the one form an athlete is most likely to submit with no signal, pitch side, which is exactly the situation the outbox exists for. 
+
+**Confirmed by Isabella, 8 September 2026. Report a problem added as a fifth queued outbox domain.
 
 ---
 
@@ -369,11 +369,11 @@ The three inputs carry autoComplete="current-password", “new-password” and �
 
 **What would settle it.** Say whether these were ever built, or whether the compliance document is describing an intention. If it is an intention, the document should say so.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**Decided during the 8 September 2026 review.** Ported from `archive/2026-09-08-athlete-spec-review-record.docx`, which holds the same text as tracked changes with the order it was reached.
+
+Answered within this document already, Claude, 8 September 2026: they were never built. DECISION 12 and Gap G-A5 both confirm the catalogue holds only athlete.flag.shared, athlete.compliance.weekly and athlete.leaderboard.weekly, and neither wellness.nudge nor rpe.nudge exists anywhere in src/. The compliance document is describing an intention that was never implemented. Recommend the compliance document say so explicitly, or the two nudges get built, rather than leaving a careful policy protecting nothing. 
+
+**Decided by Isabella, 8 September 2026:** build them. athlete.wellness.nudge and athlete.rpe.nudge get added to the notification catalogue and actually sent, as push, per the limits already specified in docs/09-security-and-compliance.md:507: one per entry, one per day, three per rolling week, stopping after three consecutive missed days, no guilt or streak language, tighter limits for under 18s. This is what moved Q-30's push decision up; see there for the sequencing change.
 
 ---
 
@@ -387,11 +387,11 @@ The three inputs carry autoComplete="current-password", “new-password” and �
 
 **What would settle it.** Describe what should happen: does the login still work, what do they see, and can they still export their own history.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**Decided during the 8 September 2026 review.** Ported from `archive/2026-09-08-athlete-spec-review-record.docx`, which holds the same text as tracked changes with the order it was reached.
+
+**Claude's recommendation, pending your confirmation:**** the login is disabled at the point left_at is set, rather than staying live indefinitely. Before that point, while still marked as leaving, the athlete keeps access to export their own history through the existing /me/export route, so nobody loses their own record on the way out. This needs a real decision from you, since it also has a legal answer: check it against the retention table in docs/09-security-and-compliance.md section 5 before treating it as settled. 
+
+**Confirmed by Isabella, 8 September 2026:** login disabled at left_at, export access kept until then.
 
 ---
 
@@ -405,11 +405,11 @@ The three inputs carry autoComplete="current-password", “new-password” and �
 
 **What would settle it.** Describe the intended behaviour: a read only period, an export window, a deletion timetable, or something else.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**Decided during the 8 September 2026 review.** Ported from `archive/2026-09-08-athlete-spec-review-record.docx`, which holds the same text as tracked changes with the order it was reached.
+
+**Claude's recommendation, pending your confirmation:**** a defined read only period after a club stops paying, for example 60 to 90 days, during which the club can export everything and settle up, followed by archival rather than deletion given the article 17(3) retention duties already documented for injury records. This is a commercial and legal decision as much as a product one; treat it as part of the Data Processing Agreement work already on your list, not a standalone specification question. 
+
+**Confirmed by Isabella, 8 September 2026:** 60 to 90 days read only with export access, then archive. Final wording still needs to be checked against the Data Processing Agreement once drafted.
 
 ---
 
@@ -423,11 +423,11 @@ The three inputs carry autoComplete="current-password", “new-password” and �
 
 **What would settle it.** Say what an athlete should be told, and when, after they report a problem.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**Decided during the 8 September 2026 review.** Ported from `archive/2026-09-08-athlete-spec-review-record.docx`, which holds the same text as tracked changes with the order it was reached.
+
+**Claude's recommendation, pending your confirmation:**** once push notifications actually exist (see Q-30), tell them their report was seen, not what was decided about it, the moment a medic acknowledges it. Until push exists this cannot be built at all, so the honest interim answer is that nothing tells them, and that gap should be stated rather than left silent. 
+
+**Confirmed by Isabella, 8 September 2026. Since push infrastructure has since moved up to now rather than later (see Q-15 and Q-30), this notification can be built alongside the wellness and RPE nudges rather than waiting on a separate future push effort.
 
 ---
 
@@ -441,11 +441,11 @@ The three inputs carry autoComplete="current-password", “new-password” and �
 
 **What would settle it.** Say whether retraction should exist and, if so, for how long and what the medic sees.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**Decided during the 8 September 2026 review.** Ported from `archive/2026-09-08-athlete-spec-review-record.docx`, which holds the same text as tracked changes with the order it was reached.
+
+**Claude's recommendation, pending your confirmation:**** allow retraction within a short window, for example one hour, before it is likely to have been triaged. After that window, or once a medic has opened it, it should stand, with the medic seeing that it was later marked resolved by the athlete rather than seeing it vanish from the queue. 
+
+**Confirmed by Isabella, 8 September 2026:** one hour window.
 
 ---
 
@@ -485,11 +485,11 @@ One transitive path was checked rather than assumed: the athlete page imports DA
 
 **What would settle it.** Say whether the athlete should be told, and in what words.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**Decided during the 8 September 2026 review.** Ported from `archive/2026-09-08-athlete-spec-review-record.docx`, which holds the same text as tracked changes with the order it was reached.
+
+**Claude's recommendation, pending your confirmation:**** yes, tell them, using the same wording the staff surface already carries, adapted to speak to the athlete directly, for example "You are not in a group yet, so there is nothing to compare you against. Ask your coach to add you to one." Reuse the staff copy's reasoning rather than writing a new explanation from nothing. 
+
+**Confirmed by Isabella, 8 September 2026.
 
 ---
 
@@ -503,11 +503,11 @@ One transitive path was checked rather than assumed: the athlete page imports DA
 
 **What would settle it.** Confirm whether athletes are ever required, or ever permitted, to enrol a second factor.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**Decided during the 8 September 2026 review.** Ported from `archive/2026-09-08-athlete-spec-review-record.docx`, which holds the same text as tracked changes with the order it was reached.
+
+**Claude's recommendation, pending your confirmation:**** no, not required. The club policy that requires it for coach, medical and admin accounts exists because those roles can write and change clinical and administrative data; an athlete account cannot. The added friction is not worth it for the risk it would reduce. Leave /login/mfa reachable only because it is shared infrastructure with staff, not because an athlete is expected to use it. 
+
+**Confirmed by Isabella, 8 September 2026.
 
 ---
 
@@ -521,11 +521,11 @@ One transitive path was checked rather than assumed: the athlete page imports DA
 
 **What would settle it.** Say what the recovery route should be for a player with no usable email. A staff initiated re-invite is the obvious candidate and it is not documented as one.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**Decided during the 8 September 2026 review.** Ported from `archive/2026-09-08-athlete-spec-review-record.docx`, which holds the same text as tracked changes with the order it was reached.
+
+**Claude's recommendation, pending your confirmation:**** a staff initiated re-invite, reusing the same invite link mechanism already built for onboarding, rather than a new recovery path. This matters far less once Q-30's email provider decision is settled, since most of this problem is currently caused by no email being delivered at all, to anyone, not specifically to academy players. 
+
+**Confirmed by Isabella, 8 September 2026.
 
 ---
 
@@ -561,11 +561,9 @@ These cannot be answered by reading the code.
 
 **What would settle it.** Confirm that nothing collects diagnostics today, or name what does.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**Decided during the 8 September 2026 review.** Ported from `archive/2026-09-08-athlete-spec-review-record.docx`, which holds the same text as tracked changes with the order it was reached.
+
+Answered within this document already, Claude, 8 September 2026: nothing collects diagnostics today. Section 2 of Appendix E states plainly that no crash reporter was found, and Stage A0 section 7 confirms no App Store artefacts of any kind exist. The Sentry mention in the compliance document is a named possible future sub-processor, not something wired in. Answer Diagnostics as No on the privacy label until Sentry, or anything like it, is actually added, at which point this answer and that label both need revisiting together.
 
 ---
 
@@ -579,11 +577,9 @@ These cannot be answered by reading the code.
 
 **What would settle it.** Say where the privacy policy lives and where it should be linked from. Me is the obvious place.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**Decided during the 8 September 2026 review.** Ported from `archive/2026-09-08-athlete-spec-review-record.docx`, which holds the same text as tracked changes with the order it was reached.
+
+Partly answerable from outside this document, Claude, 8 September 2026: no privacy policy exists yet. In an earlier conversation you and I established that drafting the privacy policy is blocked on deciding whether Fydr or the club is the data controller, and that decision was still open there. So the honest state is not just "not linked", it is "not written", and the missing link on this screen is a symptom rather than the actual gap. Answering "where it should be linked from": Me is right, next to Export my data. Answering "where it lives": nowhere yet, and cannot be finalised until the controller question is settled.
 
 ---
 
@@ -597,11 +593,11 @@ These cannot be answered by reading the code.
 
 **What would settle it.** Say what you want to commit to: a minimum browser set, and whether a screen reader pass is in scope before a real club uses it. I can run the audit once you say what the target is.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**Decided during the 8 September 2026 review.** Ported from `archive/2026-09-08-athlete-spec-review-record.docx`, which holds the same text as tracked changes with the order it was reached.
+
+**Claude's recommendation, pending your confirmation:**** commit to the last two versions of Safari and Chrome on mobile, since that is realistically what a squad's phones run, and commit to correct semantic HTML and ARIA labelling on the five wellness scales and the readiness chart specifically, since Q-27's own reasoning is right that those two are both the core of the app and the hardest for a screen reader user. Do not commit to a full audit before a first real club, given everything else already gating that launch. Revisit the full audit once there is a real club and real usage to test against, and flag this as a real, not cosmetic, gap given the Children's Code exposure named above.
+
+**Decided by Isabella, 8 September 2026:**** drop it entirely. Section 11 is removed from every screen specification in this document. Claude raised the point that this covers more than eyesight, including colour blindness, temporary conditions like glare or a cracked screen, and reading differences unrelated to vision, before this was decided. Isabella held the decision. No further accessibility work is committed to in this specification.
 
 ---
 

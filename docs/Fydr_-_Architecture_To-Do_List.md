@@ -800,7 +800,28 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   **SCOPE.** 17 inline `marginTop` declarations across the athlete pages, plus `.me-stats` in CSS. Two arrived with the 2026-09-08 redesign — `.md-seg-track { margin-top: 4px }` and the `md-more` footer card's `marginTop: 14` — and the rest predate it. Athlete rules currently run 156 raw spacing values against 11 token reads.
 
-  **WHY IT DRIFTED INVISIBLY.** There is no spacing guard. `check:control-radius` fails the build on a raw radius anywhere near a control; nothing checks that a direct child of `.phone-body` adds no margin of its own. A guard for this is the same shape as that one and is the part worth building whichever way the decision goes, because it is what stops the next block re-introducing it.
+  **WHY IT DRIFTED INVISIBLY — now closed.** There was no spacing guard.
+  `check:control-radius` fails the build on a raw radius anywhere near a
+  control; nothing checked that a direct child of `.phone-body` adds no margin
+  of its own. **`check:athlete-spacing` now does, and is in `prebuild`.**
+
+  It deliberately does NOT enforce a number, because that is the open decision
+  below. It pins the SET of 25 offenders, so the problem cannot grow while the
+  decision is pending, and fails in BOTH directions: a new offender is a
+  regression, and a removed one means the fix landed and the baseline is stale.
+  Verified against three planted failures — a new margin on Programme (the clean
+  screen), a pinned offender removed, and `.phone-body` losing its gap — each
+  exiting non-zero.
+
+  Identifying a direct child of `.phone-body` from source needed a small parser
+  (`scripts/lib/phone-body-children.mjs`), and it was **validated against the
+  live DOM rather than trusted**: it reproduces the measured children of Me and
+  My data exactly. That comparison caught two bugs in it — taking the file's
+  first `return (` instead of the default export's, which reported My data as a
+  single `<p className="cap">`, and treating `<WellnessTab/>` as the child
+  rather than resolving it to the `<div className="stack">` that actually
+  carries the margin. Four of the 25 are only visible because of that second
+  fix.
 
   **THE DECISION, WHICH IS NOT CLAUDE'S TO MAKE**, because the code cannot say which side is wrong:
 

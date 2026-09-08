@@ -229,9 +229,21 @@ export default async function SettingsPage() {
                *
                *  The tier gate stays, because the tier is genuinely the club's:
                *  what the plan buys is whether athletes are offered it at all. */}
+              {/* THIS SENTENCE WENT FALSE ON 2026-09-08 and is corrected here in
+               *  the same commit that made it false. It read "Each athlete turns
+               *  this on in their own Me tab" — true until Q-03 was implemented,
+               *  which removed the Apple Health card from the athlete Me screen
+               *  (src/app/(athlete)/me/page.tsx). There is now no control
+               *  anywhere that turns Apple Health on, so a coach following that
+               *  instruction would send an athlete to look for something that is
+               *  not there.
+               *
+               *  Copy only. The row, its tier gate and its layout are unchanged,
+               *  and it still reports no per-athlete state — see the note above
+               *  for why it never could. */}
               {onPremium ? (
                 <span className="tiny" style={{ color: 'var(--faint)', textAlign: 'right', maxWidth: 260 }}>
-                  Each athlete turns this on in their own Me tab
+                  Not connectable yet &mdash; needs the Fydr phone app
                 </span>
               ) : (
                 <span

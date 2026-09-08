@@ -37,13 +37,20 @@ const stripComments = (s: string): string => s.replace(/\/\*[\s\S]*?\*\//g, '');
  *  guess — .skip-link, .week-nav and its links, .tr-board-row-link, and two
  *  <select> rules.
  *
+ *  TWO MORE WERE MISSING and the Me redesign is what found them: `.sign-out`
+ *  (a raw 16px) and `.theme-seg`/`.theme-seg-btn` are controls whose class
+ *  names contain none of the words below, so the guard had never looked at
+ *  them. They are in the net now. Both are then exempt by name for the pill —
+ *  which is the point: an exemption you can see beats a rule that never
+ *  reached the rule in the first place.
+ *
  *  So this is a net, not a proof. It cannot know that an element carrying
  *  .signin-submit also carries .btn-primary, because that fact lives in JSX
  *  rather than in CSS. When adding a control whose class name says nothing
  *  about being one, add the word here — and test-control-styling.ts pins the
  *  overrides already found, so they cannot quietly come back. */
 export const INTERACTIVE =
-  /btn|chip|pill|\btab\b|tabs|segment|toggle|\bfield\b|input|search|select|signin|submit|launch|skip-link|week-nav|row-link|sg-add|filter|action|stepper|squad-|weeknav|set-row|mode-switch|lbw-segmented|rhead-btn|exlib-cat/i;
+  /btn|chip|pill|\btab\b|tabs|segment|toggle|\bfield\b|input|search|select|signin|submit|launch|skip-link|week-nav|row-link|sg-add|filter|action|stepper|squad-|weeknav|set-row|mode-switch|lbw-segmented|rhead-btn|exlib-cat|sign-out|theme-seg/i;
 
 /** Shapes that are round on purpose and are not buttons, chips, pills or tabs. */
 /* Round on purpose, and each name here is a decision rather than a number.
@@ -76,7 +83,10 @@ export const SHAPED_ON_PURPOSE = /swatch|knob|track|avatar|bar\b|mark\b|sg-fixtu
  *  until the first pill control lands — the wellness sheet needed none, and Today
  *  needs none either. */
 export const ATHLETE_PILL_EXEMPT: readonly string[] = [
-  // e.g. 'md-seg' — My data's segmented Wellness/Gym/Tests track (screens 03-08)
+  'sign-out',      // Me, screens 11-12 — the full-width Sign out button
+  'theme-seg',     // Me, screens 11-12 — the Light/Dark track...
+  'theme-seg-btn', // ...and the segment riding inside it
+  // next: 'md-seg' — My data's segmented Wellness/Gym/Tests track (screens 03-08)
 ];
 
 export type Violation = { selector: string; value: string };
@@ -90,6 +100,14 @@ export function findViolations(css: string): Violation[] {
     if (!decl) continue;
     const value = (decl[1] ?? '').trim();
     if (value === 'var(--r-control)') continue;
+    /* A NAMED EXEMPTION BUYS ONE VALUE, NOT A FREE HAND. Being on the list
+       means "this athlete control is drawn as a pill", so it may read
+       --r-full and nothing else — a raw 999px, or a 16px somebody liked,
+       still fails. Otherwise the list would quietly become the escape hatch
+       from the rule rather than a short, checkable set of exceptions to it. */
+    if (ATHLETE_PILL_EXEMPT.some((name) => selector.includes(name))) {
+      if (value === 'var(--r-full)') continue;
+    }
     out.push({ selector: selector.slice(0, 90), value });
   }
   return out;
@@ -110,6 +128,11 @@ If this element is genuinely round — a switch knob, a track, an avatar, a
 legend swatch — name it so, and add that name to SHAPED_ON_PURPOSE in
 scripts/check-control-radius.ts so the exemption is visible rather than
 inferred from a number.
+
+If this is an athlete control the redesign reference draws as a full pill, add
+its name to ATHLETE_PILL_EXEMPT in the same file and set var(--r-full). That
+list is short on purpose: it is the set of controls where the two apps diverge,
+and a long one means the rule has been abandoned rather than excepted.
 `);
   process.exit(1);
 }

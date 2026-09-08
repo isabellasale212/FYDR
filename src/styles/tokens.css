@@ -160,6 +160,16 @@
   --r-field: 12px;
   --r-tab: 14px;
   --r-pill: 20px;
+  /* THE ATHLETE REDESIGN'S PILL, and a third distinct meaning of "round" —
+     which is exactly why it gets its own name rather than joining one of the
+     two above. --r-pill is 20px and belongs to BARS (see the note above it);
+     --r-round is the handoff's 50%, a circle, which every dot and dial writes
+     inline. This is neither: fully-rounded ENDS on a control whose height
+     decides the radius. Only the athlete controls named in
+     ATHLETE_PILL_EXEMPT (scripts/check-control-radius.ts) may read it, and
+     that guard fails the build if any other interactive rule does — so "no
+     pill-shaped buttons anywhere" still holds everywhere it is not listed. */
+  --r-full: 999px;
   --gap-stack: 14px;
   --gap-grid: 12px;
   --pad-card: 16px;

@@ -148,7 +148,7 @@ club held data the club may have a lawful basis to keep
 the account cannot mean deleting the injury record. **What the athlete is told
 about that distinction is the actual design work.**
 
-### DECISION 4. HealthKit is a consent record with nothing behind it. MEDIUM.
+### DECISION 4. HealthKit is a consent record with nothing behind it. RESOLVED AND BUILT, 8 September 2026.
 
 `athlete_consents.purpose = 'healthkit_sync'` is written by
 `src/components/HealthkitConsentToggle/HealthkitConsentToggle.tsx` and read on
@@ -162,7 +162,29 @@ So an athlete can turn on a permission for a feature that does not exist, and
 **Options.** (a) Hide the toggle until ingestion exists. (b) Keep it and label it
 plainly as not yet active. (c) Keep it as is.
 
-**(c) is the current behaviour and it is the one that misleads.**
+**(c) was the current behaviour and it was the one that misleads.**
+
+**RESOLVED 8 September 2026: option (a).** Confirmed by Isabella via Q-03 in
+`open-questions.md` — hide it until ingestion exists. **Built the same day**: the
+Apple Health card is gone from `src/app/(athlete)/me/page.tsx`, along with the
+`fetchHealthkitConsent` read, so nothing on the athlete surface asks for the
+permission any more.
+
+Three things deliberately NOT done, so the day ingestion arrives nobody has to
+guess what was torn out:
+
+- **The consent rows are untouched.** `athlete_consents.purpose =
+  'healthkit_sync'` still holds whatever athletes granted before today, and
+  `lib/queries/healthkit.ts` and `HealthkitConsentToggle` are still in the tree,
+  now unreferenced. Hiding the toggle is not withdrawing a consent on somebody's
+  behalf.
+- **The redesign reference's replacement row was not built.** Screens 11-12 draw
+  an "Apple Health / sleep and resting heart rate / Not connected" row — that is
+  option (b), not the (a) that was confirmed, so it is not on the screen.
+- **The staff Settings row stays**, tier gate included: what the plan buys is
+  whether athletes would be offered it at all. Its copy was corrected in the same
+  commit, because it used to tell coaches that athletes turn this on in their Me
+  tab and that is no longer true anywhere.
 
 ### DECISION 5. The specification's own premise is wrong, and Stage A0 settled it. Recorded here so it is not lost.
 

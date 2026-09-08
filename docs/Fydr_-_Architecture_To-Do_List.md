@@ -2,7 +2,7 @@
 
 ## Decisions Log
 - **Staff platform**: web app, not native, for now. Cheaper and faster to build, works on whatever device club staff already have. Revisit only if a real pilot club says the web app fails for pitch-side, live, poor-signal use.
-- **Athlete platform**: native mobile app (iOS first). Daily habitual use, offline GPS/wellness sync, and push notifications need a real installed app.
+- **Athlete platform**: native mobile app (iOS first). Daily habitual use, offline GPS/wellness sync, and push notifications need a real installed app. **STALE AS A DESCRIPTION OF WHAT EXISTS, re-verified 2026-09-08.** No native app exists anywhere reachable from this machine: no Xcode project, no `.swift` file, no React Native, Expo, Capacitor or Cordova manifest in the home directory. The athlete app that is built and deployed is the `src/app/(athlete)/` route group in this same Next.js repo — one codebase, one deployment, one Supabase project, shared with staff. This line still stands as an intention; it is not a statement about the current build. `docs/generated/Fydr-Athlete-App-Specification.docx` documents the app that exists.
 - **Backend reality check (2026-09-04)**: this is not a from-scratch build. A real Supabase-backed app already exists — 58 tables, 62 migrations from Aug 6 to Sep 2, real RLS policies, two clubs' data. Verification of Claude Code's claims about it is in progress after it fabricated one finding (falsely claimed no ERD existed) and self-corrected under pressure.
 - **Role model, confirmed by memory (2026-09-04)**: no separate admin role. Admin duties sit with the sports scientist role instead. Five staff roles: sport scientist (with admin permissions), medic, S&C, nutritionist, coach. Athlete is a separate account type, not a staff role.
 - **Injury visibility, confirmed (2026-09-04)**: coach, sport scientist, and S&C see general injury info only, body area, current status, restrictions, expected return. Diagnosis, mechanism, severity, imaging, referral, and treatment notes stay medic-only. This resolves the "what does limited mean" question the spec left open, and applies to every screen showing injury data, including the dedicated Injuries screens not yet reviewed.
@@ -117,7 +117,19 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   Known starting points, not the answer: `.lockup-word` (`FydrLockup`, used by `/login` and `/login/loading`), `.signin-word` (`/login/reset`, `/login/reset/confirm`, `/login/mfa`), `.brand .wm` (`Sidebar`). The forgot-password page she names is `/login/reset`, which measured correct on production today — so either the mismatch is on a different route than the one it looks like, or it is an asset (favicon, og image, email template, PWA icon) rather than a CSS-set wordmark. **Sweep by import, not by route folder** — a route-folder grep has already answered a question like this confidently and wrongly once.
 
-- [ ] **QUEUED 2026-09-07: widen the audit triggers to the rest of the sweep, in small batches.** 0085 and 0086 covered ten tables. Measured on production today: **49 unaudited, not ~40**, of 59 public tables.
+- [ ] **IN PROGRESS 2026-09-08: widen the audit triggers to the rest of the sweep, in small batches.** 0085 and 0086 covered ten tables. Measured on production: **49 unaudited, not ~40**, of 59 public tables.
+
+  **Batch three, `0088_audit_widen_config.sql` — five tables, applied to scratch, verified, NOT pushed.** `thresholds`, `leaderboards`, `leaderboard_opt_outs`, `week_templates`, `fixtures`. Test `450`, 13 assertions, a real write per table through RLS, red before the migration and green after. The case that earned `leaderboard_opt_outs` its place in this batch rather than a later one: its self-insert policy lets an **athlete** write their own row, and every audited row until then had been written by staff. `audit_acting_role()` walks the five staff roles and returns NULL when none matches, so an athlete's opt-out is recorded with a real actor and a null role. That is correct and 450 pins it, so nobody later "fixes" the null to `'athlete'`.
+
+  **Batch four, `0089_audit_widen_authoring.sql` — six tables, applied to scratch, verified, NOT pushed.** The programme authoring chain whole: `exercises`, `programmes`, `programme_blocks`, `programme_sessions`, `programme_exercises`, `exercise_overrides`. Test `460`, 16 assertions. Taken whole rather than split because a half-audited chain reads worse than an unaudited one — somebody who can see a block added but not the session inside it rewritten draws a confident wrong conclusion from a record that looks complete. Volume checked, not assumed: live counts are 5 / 7 / 6 / 15 / 15 / 2, and every write in `src/lib/queries/programmes.ts` is a single-row insert, so one audit row is one thing a person did.
+
+  **The one shape that was not like the others, and the reason shapes get checked.** `exercises.org_id` **is nullable**; every other table in the chain requires an org. The trigger copies the row's `org_id` straight through, and `audit_log`'s select policy is `org_id = auth_org_id()`, which no null satisfies. **A global exercise therefore produces an audit row that is written and then readable by nobody.** 460 asserts it in both directions — invisible through RLS, present underneath it — so it is a recorded limitation rather than a later mystery. There are no global exercises in the data today and the insert policy requires `org_id = auth_org_id()`, so only a service role can create one. **This is the same shape as the org-less failed sign-in row already on this list and it wants the same answer: a platform-level read path.** See `/platform/sign-in-probes`.
+
+  **Also proven in batch four:** every staff-written audit row in the suite until now came from a sport scientist, because that is the only role permitted to read `audit_log` and so the role every test drove as. A function returning `'sport_scientist'` unconditionally would have passed 430, 440 and 450 alike. 460 writes the authoring chain as the S&C and asserts the recorded role follows the person.
+
+  **State: 21 of 59 tables audited.** 0088 and 0089 are on scratch only. To deploy both: `npm run db:push`.
+
+  **Remaining, and the decision they need.** The high-volume tables are now guarded rather than merely noted — `scripts/test-default-privileges.ts`'s sibling `scripts/test-audit-triggers.ts` fails the build if `session_participants`, `session_attendance` or `group_memberships` acquire a trigger, because a row per athlete per session is a decision somebody has to take, not a sweep. `group_memberships` alone took 17,692 inserts over the statistics window against 47 live rows.
 
   Isabella's terms: check each table's actual shape before assuming the pattern fits, no more than a handful per batch given two shape surprises last round (`athletes` has no `athlete_id` because the row IS the athlete; `user_roles` has none and correctly so), tests first, Run-verified with a REAL write per table, report back after each batch rather than at the end, tell her before deploying.
 
@@ -170,6 +182,33 @@ Both come after the sign-in-history item in 0b, which is in progress.
   **Sequencing against the Pro upgrade:** do this FIRST. Buying Pro on a project that is then abandoned wastes the purchase, and `0a` should be closed against whichever project is the permanent one.
 
 ## 0a. Hard gate — do this before the first real person touches the app
+- [ ] **QUEUED 2026-09-08, awaiting deploy: four tables carry database grants their own migrations say they do not have. Migration `0090` is written, applied to scratch and verified; it has NOT been pushed.** Found by running the full pgTAP suite for the first time — two files were red and had been red for some time.
+
+  **What is wrong**, measured on scratch, which is a restore of production:
+
+  | Table | Holds | Its migration intended |
+  |---|---|---|
+  | `injury_timeline_event` (0080) | **anon** and `authenticated`: all seven privileges | `authenticated`: select, insert. anon: nothing |
+  | `login_attempts` (0048) | `authenticated`: all seven | `authenticated`: select |
+  | `sar_requests` (0032) | `authenticated`: all seven | `authenticated`: select, insert, update |
+  | `sar_clinical_reviews` (0032) | `authenticated`: all seven | `authenticated`: select, insert |
+
+  All seven means select, insert, update, delete, **truncate**, references, trigger.
+
+  **How bad it is, precisely.** RLS is enabled on all four, no policy on any of them names `anon`, and none has a DELETE policy at all — so a delete reaches no row and returns zero rows affected rather than a refusal. **No data is exposed and nothing can be destroyed through the API today.** What is missing is the grant layer that is meant to sit underneath RLS as the second line. TRUNCATE is the one privilege here not subject to RLS, but no PostgREST verb issues one, so it is a latent grant rather than a live hole — and it is the privilege that made a scratch database unrebuildable once already. The three tables involved are the subject access request records and the sign-in security log: the records whose entire purpose is to still be readable after something has gone wrong.
+
+  **Why it happened, and why it happened twice.** Supabase provisions the project with default privileges granting `anon`, `authenticated` and `service_role` everything on any table created afterwards in `public`. Postgres GRANT is additive, not a reset, so a narrow `grant select, insert to authenticated` lands on top of the wide default instead of replacing it — the revoke has to come first. `0013_close_default_privilege_gaps.sql` closed exactly this for the 29 tables that existed then, and its own header says it was found only by running the tests against a real hosted project for the first time. Since then 0032 and 0048 revoked `from public, anon` and stopped, leaving `authenticated` untouched — which is verbatim the mistake 0013's header describes. 0080 wrote no revoke at all.
+
+  **Why nobody saw it.** The assertions that catch it are `010_rls_coverage_test.sql` ("anon holds no privilege on any table in public") and two in `400_injury_timeline_test.sql`. Both live in pgTAP, and pgTAP could not be run on this machine until `psql` was installed (2026-09-07). The guards that run on every build had no equivalent check. **That gap is now closed**: `scripts/test-default-privileges.ts` is in `prebuild`, reads the migration set rather than the database, checks BOTH roles separately, and its central case is that it would have caught 0080.
+
+  **To deploy** (queued, not run):
+
+  ```
+  npm run db:push
+  ```
+
+  Then re-run `010`, `400` and `scripts/test-default-privileges.ts`.
+
 - [ ] **Upgrade Supabase from Free to Pro tier before inviting the first real club, design partner, or any person whose data isn't something you typed in yourself.** Not "before full completion", before the first real account. Free tier has no automated backups and no point-in-time recovery; confirmed 2026-09-05 that Claude Code also cannot take a manual backup from its own environment (no `pg_dump`/`psql` on PATH, `supabase db dump` needs Docker, not available). As of 2026-09-05 all production accounts are synthetic test data created by you, so this is not yet urgent, it becomes urgent the moment that stops being true.
 
 ## 0. Verification — do this before trusting any further Claude Code output on this repo

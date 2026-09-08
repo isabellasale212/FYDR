@@ -26,10 +26,17 @@ const read = (p: string): string => readFileSync(p, 'utf8');
 const MIGRATION = 'supabase/migrations/0085_audit_clinical_writes.sql';
 const WIDEN = 'supabase/migrations/0086_audit_widen.sql';
 const CONFIG = 'supabase/migrations/0088_audit_widen_config.sql';
+const AUTHORING = 'supabase/migrations/0089_audit_widen_authoring.sql';
 const ACCESS = 'src/lib/access.ts';
 const sql = read(MIGRATION);
 const widen = read(WIDEN);
 const config = read(CONFIG);
+const authoring = read(AUTHORING);
+
+/** Every migration that attaches a trigger. Concatenated, not listed by hand at
+    each call site, so adding batch five means editing one line rather than four. */
+const ALL = [sql, widen, config, authoring];
+const allSql = ALL.join('\n');
 
 /** Every table the trigger is attached to, across both migrations. */
 const AUDITED = [
@@ -43,7 +50,28 @@ const AUDITED = [
      handles. */
   ['thresholds', CONFIG], ['leaderboards', CONFIG], ['leaderboard_opt_outs', CONFIG],
   ['week_templates', CONFIG], ['fixtures', CONFIG],
-] as const;
+  /* Batch four, 0089: the programme authoring chain, taken whole. A half audited
+     chain reads worse than an unaudited one — somebody seeing that a block was
+     added but not that the session inside it was rewritten draws a confident
+     wrong conclusion from a record that looks complete. */
+  ['exercises', AUTHORING], ['programmes', AUTHORING], ['programme_blocks', AUTHORING],
+  ['programme_sessions', AUTHORING], ['programme_exercises', AUTHORING],
+  ['exercise_overrides', AUTHORING],
+  /* Typed as plain strings rather than left as a literal union. The two guards
+     below ask whether a name is ABSENT from this list, and against a literal
+     union tsc calls that comparison unintentional and refuses to compile — it is
+     right that the check cannot fail today, and wrong about why that matters.
+     The check exists for the edit that adds the name. */
+] as ReadonlyArray<readonly [string, string]>;
+
+/** Deliberately NOT audited, pending a decision, and this list is a guard rather
+    than a note: each writes a row per athlete per session or per membership
+    change, so a row-per-row audit is a volume question somebody has to answer
+    before a later batch sweeps them up mechanically. `group_memberships` alone
+    took 17,692 inserts over the statistics window against 47 live rows. */
+const DEFERRED_ON_VOLUME: readonly string[] = [
+  'session_participants', 'session_attendance', 'group_memberships',
+];
 
 console.log('the two role orderings are the same ordering');
 {
@@ -73,12 +101,12 @@ console.log('\nthe trigger is attached to every audited table, for all three ope
     const m = new RegExp(`create trigger ${t}_audit\\s+after insert or update or delete on public\\.${t}`).exec(body);
     assert(m !== null, `${t} has an after-insert/update/delete trigger`);
   }
-  const perRow = [sql, widen, config]
+  const perRow = ALL
     .map((f) => (f.match(/for each row execute function public\.audit_row_change\(\)/g) ?? []).length)
     .reduce((a, b) => a + b, 0);
   assert(perRow === AUDITED.length, `all ${AUDITED.length} run per row (saw ${perRow}) — a multi-row update must not collapse into one entry`);
   assert(
-    !/before insert or update/i.test(sql + widen + config),
+    !/before insert or update/i.test(allSql),
     'and they are AFTER, so a write refused by RLS or a constraint never leaves a row claiming it happened',
   );
 }
@@ -88,14 +116,45 @@ console.log('\naudit_log is never audited by itself');
   /* It is in the unaudited list and must stay there: a trigger on audit_log
      would audit its own writes. Obvious once said, and exactly the kind of thing
      a mechanical sweep of "every remaining table" would pick up. */
-  const all = sql + widen + config;
   assert(
-    !/create trigger audit_log_audit|on public\.audit_log\s+for each row/i.test(all),
+    !/create trigger audit_log_audit|on public\.audit_log\s+for each row/i.test(allSql),
     'no trigger attaches audit_row_change to audit_log',
   );
   assert(
     !AUDITED.some(([t]) => t === 'audit_log'),
     'and it is not in the audited list',
+  );
+}
+
+console.log('\nthe high-volume tables stay out until somebody decides');
+{
+  for (const t of DEFERRED_ON_VOLUME) {
+    assert(
+      !new RegExp(`create trigger ${t}_audit`).test(allSql),
+      `${t} has no audit trigger — a row per athlete per session is a decision, not a sweep`,
+    );
+    assert(
+      !AUDITED.some(([a]) => a === t),
+      `and ${t} is not in the audited list either`,
+    );
+  }
+}
+
+console.log('\nthe one shape in batch four that is not like the others');
+{
+  /* exercises.org_id is nullable and every other table in the chain requires an
+     org. A global exercise therefore produces an audit row with a null org_id,
+     and audit_log's select policy is org_id = auth_org_id(), which no null
+     satisfies: written, and readable by nobody. Test 460 pins the behaviour in
+     both directions; this pins the fact that the migration SAYS SO, because the
+     next person to widen a batch needs to know the check is worth making. */
+  assert(
+    /exercises\.org_id`? IS NULLABLE/.test(authoring),
+    '0089 records that exercises.org_id is nullable',
+  );
+  assert(
+    /auth_org_id\(\)`?, which no null satisfies/.test(authoring),
+    'and spells out the consequence: the audit row has no org-scoped reader',
   );
 }
 

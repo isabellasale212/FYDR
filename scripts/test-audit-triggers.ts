@@ -25,9 +25,11 @@ const read = (p: string): string => readFileSync(p, 'utf8');
 
 const MIGRATION = 'supabase/migrations/0085_audit_clinical_writes.sql';
 const WIDEN = 'supabase/migrations/0086_audit_widen.sql';
+const CONFIG = 'supabase/migrations/0088_audit_widen_config.sql';
 const ACCESS = 'src/lib/access.ts';
 const sql = read(MIGRATION);
 const widen = read(WIDEN);
+const config = read(CONFIG);
 
 /** Every table the trigger is attached to, across both migrations. */
 const AUDITED = [
@@ -35,6 +37,12 @@ const AUDITED = [
   ['athletes', WIDEN], ['athlete_consents', WIDEN], ['body_composition', WIDEN],
   ['test_results', WIDEN], ['programme_assignments', WIDEN], ['team_allocations', WIDEN],
   ['user_roles', WIDEN],
+  /* Batch three, 0088: configuration and authoring. No shape change was needed
+     and that was checked rather than assumed — all five carry id and org_id, and
+     leaderboard_opt_outs carries athlete_id, which the generic function already
+     handles. */
+  ['thresholds', CONFIG], ['leaderboards', CONFIG], ['leaderboard_opt_outs', CONFIG],
+  ['week_templates', CONFIG], ['fixtures', CONFIG],
 ] as const;
 
 console.log('the two role orderings are the same ordering');
@@ -65,12 +73,29 @@ console.log('\nthe trigger is attached to every audited table, for all three ope
     const m = new RegExp(`create trigger ${t}_audit\\s+after insert or update or delete on public\\.${t}`).exec(body);
     assert(m !== null, `${t} has an after-insert/update/delete trigger`);
   }
-  const perRow = (sql.match(/for each row execute function public\.audit_row_change\(\)/g) ?? []).length
-    + (widen.match(/for each row execute function public\.audit_row_change\(\)/g) ?? []).length;
+  const perRow = [sql, widen, config]
+    .map((f) => (f.match(/for each row execute function public\.audit_row_change\(\)/g) ?? []).length)
+    .reduce((a, b) => a + b, 0);
   assert(perRow === AUDITED.length, `all ${AUDITED.length} run per row (saw ${perRow}) — a multi-row update must not collapse into one entry`);
   assert(
-    !/before insert or update/i.test(sql + widen),
+    !/before insert or update/i.test(sql + widen + config),
     'and they are AFTER, so a write refused by RLS or a constraint never leaves a row claiming it happened',
+  );
+}
+
+console.log('\naudit_log is never audited by itself');
+{
+  /* It is in the unaudited list and must stay there: a trigger on audit_log
+     would audit its own writes. Obvious once said, and exactly the kind of thing
+     a mechanical sweep of "every remaining table" would pick up. */
+  const all = sql + widen + config;
+  assert(
+    !/create trigger audit_log_audit|on public\.audit_log\s+for each row/i.test(all),
+    'no trigger attaches audit_row_change to audit_log',
+  );
+  assert(
+    !AUDITED.some(([t]) => t === 'audit_log'),
+    'and it is not in the audited list',
   );
 }
 

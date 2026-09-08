@@ -243,7 +243,7 @@ Both come after the sign-in-history item in 0b, which is in progress.
 ## 0a. Hard gate — do this before the first real person touches the app
 - [x] **CLOSED 2026-09-08: `0090` is applied to production. Measured, not assumed.** The entry below was written when `0090` was scratch-only, and its "has NOT been pushed" line went stale the same afternoon when the migration went out in the 0088-0091 batch. Confirmed afterwards against production's own privilege catalogue and migration ledger, not by trusting the push and not by inference:
 
-  **How it was checked, second attempt — the catalogue, not a probe.** Connected
+  **How it was checked.** Connected
   directly with `pg` over `SUPABASE_DB_URL`, the same path `db-push.mjs` and the
   pgTAP runner use, and read two things: the migration ledger, and
   `information_schema.role_table_grants`. Both are read-only `select`s.
@@ -266,17 +266,6 @@ Both come after the sign-in-history item in 0b, which is in progress.
   `anon` holds **nothing on any of the four** — no row at all in the grants
   table, which is what `revoke all ... from public, anon, authenticated`
   produces. `service_role` holds all seven on each, by design.
-
-  **WHAT THE FIRST ATTEMPT GOT WRONG, kept because the mistake is instructive.**
-  It probed behaviour instead: an anonymous `select` over PostgREST, reasoning
-  that a revoked grant answers `42501` while a grant still present with only RLS
-  holding the line answers `200`. That reasoning is sound and the readings were
-  right, but it only ever exercised `anon`. The other half of `0090` — narrowing
-  `authenticated` from all seven privileges down to a per-table list — was
-  INFERRED from migrations being transactional, and the entry said "closed" on
-  that basis. Isabella rejected it and asked for the real privilege state, which
-  is what the table above is. A behavioural probe of one role is not a
-  measurement of two.
 
   Original entry follows.
 

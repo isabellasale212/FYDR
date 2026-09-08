@@ -56,6 +56,11 @@ console.log('\nthree removals');
   assert(!/AvatarUploadForm/.test(page), 'the photo and avatar-colour picker is gone');
   assert(!/AthleteProfileEditForm/.test(page), 'the profile edit form is gone');
   assert(!/health-title/.test(page), 'the Apple Health marketing card is gone');
+  assert(!/me-footer/.test(page), 'the version footer is gone');
+  /* AND ITS CSS WITH IT. The gym logger shipped three rules styling nothing
+     because its test only checked the markup; a class being unreferenced in a
+     component says nothing about whether its rule is still in the bundle. */
+  assert(!/\.me-footer\s*\{/.test(css), 'and its rule is gone from the stylesheet too');
   assert(!/fetchHealthkitConsent/.test(page), 'and its query is not left running');
 }
 

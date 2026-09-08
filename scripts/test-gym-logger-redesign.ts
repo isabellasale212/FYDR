@@ -74,6 +74,15 @@ console.log('\nthe header loses its utility line');
   /* Dropping the clock must drop what fed it, or the component keeps a
      setInterval running once a second to update nothing. */
   assert(!/setInterval/.test(src), 'and the once-a-second timer that fed it is gone with it');
+  /* THE CSS HAS TO GO TOO, and this assertion exists because it did not.
+     The first pass removed the markup, this file asserted the markup was gone,
+     it passed — and .gym-head-row, .gym-close and .gym-clock shipped to
+     production as three rules styling nothing, found by grepping the deployed
+     stylesheet rather than by any test here. Asserting a class is unused in the
+     component says nothing about whether its rule is still in the bundle. */
+  for (const dead of ['.gym-head-row', '.gym-close', '.gym-clock']) {
+    assert(!new RegExp(`\\${dead}\\s*\\{`).test(css), `${dead} is gone from the stylesheet, not just the markup`);
+  }
   assert(/gym-head-eyebrow/.test(src) && /gym-head-title/.test(src),
     'leaving one eyebrow line and the title');
 }

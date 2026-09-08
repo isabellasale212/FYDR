@@ -3109,20 +3109,10 @@ a.hist-row:focus-visible {
   padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 12px;
   border-bottom: 1px solid var(--hair);
 }
-/* Close and the clock only — a utility line above the title, not a bar the
-   title has to share. 23g gives the session's name the full width. */
-.gym-head-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-.gym-close {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--accent-text);
-  text-decoration: none;
-}
+/* .gym-head-row and .gym-close stood here, styling a Close/clock utility line
+   the 2026-09-08 reference removes (screens 09/10). Dead the moment the markup
+   went; removed in the follow-up that noticed them still in the shipped
+   stylesheet. */
 /* The session's name at display size, left, per 23g. It WRAPS rather than
    ellipsing: the old centred rule truncated, and "Lower body A (rehab
    variation)" cut to "Lower body A (rehab…" is a different session. */
@@ -3145,10 +3135,6 @@ a.hist-row:focus-visible {
   font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
-}
-.gym-clock {
-  font-size: 13px;
-  text-align: end;
 }
 .gym-progress-track {
   height: 6px;
@@ -3533,12 +3519,9 @@ img.av {
 .me-row.bad .k {
   color: var(--bad-text);
 }
-.me-footer {
-  font-size: 12.5px;
-  color: var(--muted);
-  margin-top: 14px;
-  padding: 0 4px;
-}
+/* .me-footer, the "Fydr v1.0" version line, stood here. Removed from Me by the
+   2026-09-08 reference (screens 11/12); its rule went in the follow-up that
+   swept the stylesheet for orphans left by that pass. */
 
 /* ---------- toast, §13 ---------- */
 .toast {

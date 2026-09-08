@@ -86,13 +86,8 @@ read and changed. `scripts/test-injury-clinical.ts` therefore asserts the five
 columns NOT selected — asserting the two shown fields appear would pass just as
 well if all seven were fetched.
 
-**One thing to carry forward about `mechanism`.** It is free text with no length
-limit and no format. Today's eight entries are short and factual, but Selby's —
-"Head to hip contact making a tackle, no loss of consciousness" — carries a
-clinical assessment finding rather than a description of the event. Eight tidy
-entries are not a guarantee about the ninth, and no code can make them one. If
-mechanism ever needs constraining, that is a data-entry question for the medical
-form, not a display one.
+**`mechanism` has no format constraint and its athlete-safety rests on data-entry
+discipline rather than on anything in the code. See G-A13 below.**
 
 **The age gate is in the database, and it had to be.** Migration `0093` adds the
 predicate to the view. It does NOT call `athlete_is_minor()`, which was the first
@@ -219,6 +214,53 @@ question is whether it is the intended end state.**
 Password reset is PKCE and only works in the browser that asked. With no email
 provider configured, the link is not delivered at all. **UNVERIFIED what an
 academy player with no email does.**
+
+---
+
+### G-A13. `mechanism` is athlete-visible and unconstrained. MEDIUM, and it is a process gap before it is a code one.
+
+**What changed.** As of 2026-09-08 `injury_clinical.mechanism` renders on the
+athlete's own Today screen, for any athlete 18 or over, alongside the diagnosis.
+Before that date it was medical-only in practice, because no code read it.
+
+**What constrains it: nothing.**
+
+| | |
+|---|---|
+| Column type | `text`, nullable — **no length limit** |
+| Check constraints mentioning it | **none** |
+| Application validation | **none.** `InjuryMedicalForm.tsx:202` is a bare `<input>`; the only processing is `.trim() \|\| null` at line 76 |
+| Guidance shown to the medic entering it | **none.** The label reads "Mechanism" and nothing else |
+
+**Why that matters now.** The intended content is a factual description of how
+the injury happened, and today's entries are exactly that — 38 characters on
+average, 61 at the longest, in the shape of "Inversion in a ruck" or "Gradual
+onset, overload".
+
+**But one of the eight already is not.** Adam Selby's reads *"Head to hip contact
+making a tackle, no loss of consciousness"*. The clause after the comma is a
+clinical assessment finding, not a description of an event — and it is now on
+that player's phone. It happens to be reassuring. The next one might not be.
+
+**A free-text field with no limit, no format and no guidance, rendered to the
+person it is about, is safe only for as long as everyone entering it remembers
+that it is.** That is a real property of the system as built, and it is worth
+stating plainly rather than trusting.
+
+**Two possible answers, and they are not exclusive:**
+
+1. **Tell the medical staff** — the immediate one, and Isabella's to do. It is on
+   the architecture to-do list. Nothing in this repository can substitute for it.
+2. **Make it a code guarantee later**, if that turns out to be wanted. The
+   options, roughly in increasing cost: helper text under the field naming who
+   sees it; a length cap; splitting the column into a structured mechanism (an
+   enum of contact / non-contact / overuse / gradual onset) plus a free-text note
+   that stays medical-only. **The last is the only one that is an actual
+   guarantee**; the first two only make the discipline easier to keep.
+
+**Not urgent, and deliberately not built.** The right order is to tell people
+first and see whether discipline holds, because a constraint designed before
+anybody has misused the field will constrain the wrong thing.
 
 ---
 

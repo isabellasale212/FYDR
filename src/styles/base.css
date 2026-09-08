@@ -4355,7 +4355,7 @@ img.av {
    * second elevation level the handoff's §8 "one shadow for the entire theme,
    * there is no elevation scale" rules out. The knob sits on a solid --accent
    * track when on, so --on-accent is the token for its face. */
-  background: var(--on-accent);
+  background: var(--knob-fill);
   box-shadow: var(--shadow);
   transition: transform 0.15s;
 }

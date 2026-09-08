@@ -20,7 +20,19 @@
    --highlight is decorative and never encodes status, §4.2 change 3.
    --------------------------------------------------------------------------- */
 :root {
-  --accent: #1f6fea;
+  /* REPOINTED 2026-09-08 to the analytics chart spec's blue, on Isabella's
+     "everything should match" — the spec names #5b9bf0 and the choice was
+     between two palettes or one. It is a softer blue than the #1f6fea it
+     replaces, and softer costs contrast: see --on-accent below, which had to
+     stop being white. MEASURED, both directions:
+       white   on #1f6fea = 4.65:1 (passed AA)
+       white   on #5b9bf0 = 2.84:1 (fails AA, and fails the 3:1 large floor)
+       #0b1f38 on #5b9bf0 = 5.83:1 (what --on-accent is now)
+     As a chart mark on the light ground it also drops 4.56:1 -> 2.79:1, which
+     is below the 3:1 graphic-object floor. Recorded rather than hidden: bars
+     here carry axis labels and a legend, so the mark is not the only channel,
+     but a future single-channel use of the accent on light needs to know. */
+  --accent: #5b9bf0;
   /* Spec §2: the accent's border, the same value in both themes. */
   --accent-border: #3c85f7;
   --accent2: #33b6ff;
@@ -30,7 +42,13 @@
      handoff settles it for the whole product, so the override blocks that used
      to sit below the dark theme are gone — one value, one place. Dark already
      read as cyan through those blocks; it now does so everywhere. */
-  --good: #4fd6ff;
+  /* Repointed with --accent to the chart spec's cyan. Nothing in the product
+     puts text on a solid --good fill (the one such rule, .cmpl-fill, is a bar),
+     so this is a straight swap. It slightly IMPROVES the light ground:
+     1.66:1 -> 1.93:1 as a mark on --elev. Still well under 3:1, as the old
+     value was — that is pre-existing and is why the cyan never carries meaning
+     on its own. */
+  --good: #5bc7de;
   --warn: #f6ab2f;
   --bad: #f15a4a;
   --highlight: #f5c518;
@@ -42,10 +60,38 @@
      colour per session type, gold genuinely means "this is a gym session").
      Reusing --highlight itself for that would quietly undo the fix; a
      same-value, differently-named token keeps both true at once. */
-  --gym: #f5c518;
-  /* Text on a solid --accent fill. 4.66:1 in both themes, so it is single valued
-     like the fill it sits on. Derived, §14 has no entry for it. */
-  --on-accent: #ffffff;
+  /* Repointed with the other two. Same situation as --good: the only solid
+     --gym fill is the gym progress bar, which carries no text, and the light
+     ground improves 1.60:1 -> 1.93:1. --gym-tint / --gym-on-tint are unchanged;
+     they are hand-picked literals measured against the tint, not derived from
+     this hue. */
+  --gym: #ebae4c;
+  /* Text on a solid --accent fill, and it is no longer white.
+   *
+   *  IT HAD TO CHANGE. This was #ffffff at 4.66:1 on the old #1f6fea; on the
+   *  new, softer #5b9bf0 white measures 2.84:1, which fails AA for normal text
+   *  and fails even the 3:1 large-text floor. #0b1f38 measures 5.83:1 there.
+   *
+   *  WHAT THAT LOOKS LIKE, so nobody thinks it is a bug: every solid accent
+   *  control in BOTH apps — .btn-primary, the active segment of the theme and
+   *  My data tracks, selected chips, the today pill on the week strip — now
+   *  carries dark navy text on a pale blue fill instead of white on a strong
+   *  blue. That is the visible cost of one palette rather than two.
+   *
+   *  IT ALSO FIXES A PRE-EXISTING FAILURE. .dash-clean-check puts this token on
+   *  --accent2 (#33b6ff), where white measured 2.26:1 and has been failing all
+   *  along; #0b1f38 measures 7.32:1 there.
+   *
+   *  Single-valued, like the fill it sits on. Derived, §14 has no entry for it. */
+  --on-accent: #0b1f38;
+
+  /* THE WHITE THAT --on-accent USED TO PROVIDE BY ACCIDENT. .plan-switch-knob
+     is a knob riding on an accent track: it read --on-accent as a FILL, not as
+     ink, so it was white only because text on the accent happened to be. With
+     --on-accent now dark that knob would have turned navy, which is not a
+     contrast fix, it is a broken switch. Its own token, so the two jobs cannot
+     be confused again. */
+  --knob-fill: #ffffff;
   --avatar-bg: #1a2340;
   --avatar-text: #6f9bff;
   /* ATHLETE-APP-SPEC.md §13's toast: a fixed near-black chip in both
@@ -71,13 +117,13 @@
      to this line — every visible tint anywhere in this app was riding on
      a plain solid colour or a token used without the slash, never on this
      triplet-plus-alpha pattern actually working. */
-  --accent-rgb: 31 111 234;
+  --accent-rgb: 91 155 240;
   --accent2-rgb: 51 182 255;
-  --good-rgb: 79 214 255;
+  --good-rgb: 91 199 222;
   --warn-rgb: 246 171 47;
   --bad-rgb: 241 90 74;
   --highlight-rgb: 245 197 24;
-  --gym-rgb: 245 197 24;
+  --gym-rgb: 235 174 76;
   /* SCHEDULE-SPEC.md §5 and §10: the "meeting" session type's tone is a bare
      neutral-ink alpha (rgba(16,18,23,0.3)), matching no existing named
      token. 16/18/23 is not new to this file — it is already the literal

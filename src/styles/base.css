@@ -146,13 +146,28 @@ a {
   animation: ring-in 0.9s cubic-bezier(0.22, 0.8, 0.36, 1);
 }
 
+/* REDUCED MOTION: NARROWED 2026-09-08 (audit item 5).
+   
+   This used to set `transition-duration: 0.001ms !important` on everything,
+   which killed the app's press and hover feedback along with the movement. A
+   reduced-motion user got LESS feedback than a default user — the opposite of
+   the intent, and on touch it left the 80ms fill change (the only affordance a
+   finger gets) instant in both directions.
+   
+   Reduced motion means no VESTIBULAR motion, not no feedback. So animations
+   still stop dead, and transitions are restricted to the properties that do
+   not move anything: fills, ink, borders and opacity. Anything that translates,
+   scales, rotates or resizes is dropped by omission rather than by duration —
+   `transition-property` simply no longer lists it. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
+    /* Colour and opacity survive; transform, width, height, inset do not. */
+    transition-property: background, background-color, border-color, color, fill,
+      stroke, opacity, box-shadow, outline-color !important;
   }
 }
 
@@ -1542,8 +1557,17 @@ img.av {
      real device is env(safe-area-inset-bottom) — ADDED to a base, never
      substituted for it, so a browser with no inset still gets real padding. */
   padding: 9px 6px calc(10px + env(safe-area-inset-bottom, 0px));
-  backdrop-filter: blur(var(--blur));
-  -webkit-backdrop-filter: blur(var(--blur));
+  /* NO backdrop-filter, removed 2026-09-08 (audit item 3). It carried
+     `blur(var(--blur))` over a 94%-opaque fill while sitting `position: static`
+     in normal flow — so nothing ever passed behind it and the blur had nothing
+     to sample. A translucent-chrome effect that cannot be seen, costing a
+     compositor layer on every athlete screen.
+     
+     THE FIX IS THE REMOVAL, NOT A FLOATING BAR. Making it `fixed` so content
+     scrolls under would be the other way to make the blur real, and it is a
+     design change the reference does not draw: screens 01-12 all show a solid
+     bar with a top border, in flow. `.sg-filterbar` keeps its blur, because
+     that one IS `position: sticky` and content genuinely moves beneath it. */
 }
 .athlete-tab {
   display: flex;
@@ -11929,4 +11953,132 @@ main:has(.rhead) > .back-btn > :first-child {
 }
 .pp-past-injuries > summary::after {
   color: var(--accent-text);
+}
+
+
+/* ============================================================================
+   PRESS STATES — audit item 1, 2026-09-08
+   ============================================================================
+
+   WHY THIS EXISTS. Nineteen interactive families had a `:hover` treatment and
+   no `:active` one. On a pointer that is invisible: hover covers it. On TOUCH
+   there is no hover at all, so those controls gave an athlete no feedback
+   whatsoever between finger-down and the page changing — which is the "feels
+   dead" failure the Apple fluid-interface guidance puts first, and the one
+   thing on that rubric this design had no argument against.
+
+   IT FOLLOWS THE HOUSE IDIOM, NOT THE RUBRIC'S. base.css:737 already rejected
+   `transform: scale(0.97)` on press, in terms: "the press should be a crisp
+   change of fill at --t-press, not the button shrinking." So every rule below
+   is a fill, matching `.btn-primary:active`. No transforms, no springs, no
+   overshoot.
+
+   EACH ONE EXTENDS ITS OWN HOVER rather than inventing a value: a control whose
+   hover only moves border or ink gains a fill on press; a control whose hover
+   already fills gets a deeper one. That way press always reads as "more than
+   hover" on a pointer, and as the only state on touch.
+
+   COLLECTED RATHER THAN SCATTERED, against this file's usual habit of keeping
+   state rules beside their base rule. Seventeen separate insertions could not
+   be reviewed as one decision, and consistency across them IS the decision.
+   Being last in the file also means each beats its own `:hover` when both
+   apply on a desktop press. */
+
+/* Hover moves ink only -> press adds a fill. */
+.theme-seg-btn:active:not([data-active]) { background: var(--surf); }
+.md-seg:active:not([aria-selected='true']) { background: var(--surf); }
+.pw-toggle:active { color: var(--accent-text); }
+
+/* Hover moves border and ink -> press adds a fill.
+
+   BOTH DISABLED FORMS ARE EXCLUDED on `.squad-chip` and `.btn-ghost-pill`.
+   Their own hover-reset rules key off `[aria-disabled='true']` as well as
+   `:disabled`, so the press rules match that. No markup sets `aria-disabled`
+   on either today — the guard is for the state this stylesheet already
+   anticipates, not one currently in use, and it costs nothing to be right
+   before it happens. */
+.squad-chip:not(:disabled):not([aria-disabled='true']):active { background: var(--surf2); }
+.gym-set-key:not(:disabled):active { background: var(--surf2); }
+.gym-stepper button:not(:disabled):active { background: var(--surf2); }
+.nutr-stepper-btn:not(:disabled):active { background: var(--surf2); }
+.btn-ghost-pill:not(:disabled):not([aria-disabled='true']):active { background: var(--surf2); }
+.sg-weeknav-btn:not(:disabled):active { background: var(--surf2); }
+.back-btn:active { background: var(--surf2); }
+.reorder-btn:not(:disabled):active { background: var(--surf-sunken); }
+
+/* Hover already fills -> press deepens it. */
+a.hist-row:active { background: var(--surf-sunken); }
+.todo:active { background: var(--surf-sunken); }
+.tr-board-row-link:active { background: rgb(var(--accent-rgb) / 0.12); }
+.sign-out:active { background: rgb(var(--bad-rgb) / 0.22); }
+
+/* Destructive: a bad-tinted fill, so the press reads as the same warning the
+   border and ink already carry. */
+.sg-btn-discard:not(:disabled):active { background: rgb(var(--bad-rgb) / 0.1); }
+
+/* NOT GIVEN A PRESS STATE, deliberately: `.rsel-wrap select`. `:active` on a
+   native <select> fires inconsistently across browsers and the control's own
+   open-state chrome is the platform's to draw. Its hover border stays. */
+
+
+/* ============================================================================
+   prefers-reduced-transparency AND prefers-contrast — audit item 4, 2026-09-08
+   ============================================================================
+
+   Two of the three accessibility signals the Apple guidance names were absent;
+   only prefers-reduced-motion was handled. Both are small here BECAUSE this app
+   leans on translucency in exactly one place, which is the point: the surface
+   area is small, so the support is cheap and there is no excuse for its
+   absence. */
+
+/* One translucent surface remains in the product — the staff filter bar, which
+   is `position: sticky` with content moving beneath it. Make it solid and drop
+   the blur: the effect exists to keep the bar legible over moving content, and
+   an opaque bar achieves the same end without the transparency. */
+@media (prefers-reduced-transparency: reduce) {
+  .sg-filterbar {
+    background: var(--bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  /* Tinted fills that read as translucent overlays go solid too, so nothing
+     depends on seeing through it. */
+  .sign-out,
+  .tr-board-row-link:hover,
+  .tr-board-row-link:active {
+    background: var(--surf2);
+  }
+}
+
+/* Near-solid grounds and a defined border on anything whose separation from the
+   page currently relies on a tint rather than an edge. The app's own contrast
+   ladder already governs INK; this is about the shapes holding it. */
+@media (prefers-contrast: more) {
+  .card,
+  .avail-banner,
+  .md-seg-track,
+  .theme-seg,
+  .athlete-tabbar,
+  .sg-filterbar {
+    border: 1px solid var(--text);
+  }
+  .sg-filterbar {
+    background: var(--bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  /* A selected segment must not depend on fill alone to read as selected. */
+  .md-seg[aria-selected='true'],
+  .theme-seg-btn[data-active] {
+    outline: 2px solid var(--text);
+    outline-offset: -2px;
+  }
+  /* Muted ink is the first thing to fail at high contrast; promote it. */
+  .cap,
+  .tiny,
+  .sub,
+  .me-stat-sub,
+  .hist-date {
+    color: var(--text);
+  }
 }

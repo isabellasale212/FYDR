@@ -1,4 +1,4 @@
-/* The athlete's own diagnosis, in its own block under the availability banner.
+/* The athlete's own diagnosis and mechanism, in one block under the banner.
  *
  * WHY IT IS NOT A LINE INSIDE AvailabilityBanner. The banner is asserted
  * clinical-free — test-availability-banner checks it never mentions diagnosis,
@@ -14,22 +14,27 @@
  * record before confirming the scope. What is gone is the Preview pill and the
  * local-only caveat; the position and the single line of text are unchanged.
  *
- * ONE FIELD. Mechanism is pending a separate look at the real text, so this
- * component has no prop for it. Adding one is the change that should be
- * reviewed, rather than a conditional inside a component that already accepts it.
+ * TWO FIELDS, EACH CONFIRMED SEPARATELY, and each guarded separately here. A
+ * record can carry a mechanism with no diagnosis or the reverse, and Viliami
+ * Tameifuna has an open injury with no clinical row at all — so "both present"
+ * is not the only real state and a single guard around the pair would hide a
+ * field that exists. Severity, tissue type, imaging, referral and treatment plan
+ * have no props: adding one is the change that should be reviewed, rather than a
+ * conditional inside a component that already accepts it.
  */
 
 type Props = {
-  /** Null when there is no diagnosis, no injury, or the reader is under 18 —
-   *  which are indistinguishable to this component, and should be: it renders
-   *  nothing in every one of those cases rather than explaining which applies.
-   *  An athlete told "this is withheld from you" learns the thing being
+  /** Both null when there is no clinical record, no injury, or the reader is
+   *  under 18 — which are indistinguishable to this component, and should be: it
+   *  renders nothing in every one of those cases rather than explaining which
+   *  applies. An athlete told "this is withheld from you" learns the thing being
    *  withheld exists, which for a minor is the disclosure the gate prevents. */
   diagnosis: string | null;
+  mechanism: string | null;
 };
 
-export function InjuryDiagnosis({ diagnosis }: Props) {
-  if (!diagnosis) return null;
+export function InjuryClinical({ diagnosis, mechanism }: Props) {
+  if (!diagnosis && !mechanism) return null;
 
   /* Existing classes only, and the same ones the preview carried, because the
      design is frozen and this arrangement is the one that was approved on
@@ -39,9 +44,19 @@ export function InjuryDiagnosis({ diagnosis }: Props) {
   return (
     <div className="banner" role="note">
       <div style={{ flex: 1, minWidth: 0 }}>
-        <span className="label">Diagnosis</span>
-        <div className="nm">{diagnosis}</div>
-        <div className="sub" style={{ marginTop: 4 }}>
+        {diagnosis ? (
+          <>
+            <span className="label">Diagnosis</span>
+            <div className="nm">{diagnosis}</div>
+          </>
+        ) : null}
+        {mechanism ? (
+          <div style={{ marginTop: diagnosis ? 10 : 0 }}>
+            <span className="label">How it happened</span>
+            <div className="nm">{mechanism}</div>
+          </div>
+        ) : null}
+        <div className="sub" style={{ marginTop: 6 }}>
           Recorded by your medical staff. Speak to them about anything here.
         </div>
       </div>

@@ -1,4 +1,4 @@
-/* Tier 2: the athlete's own diagnosis on their own screen.
+/* Tier 2: the athlete's own diagnosis and mechanism on their own screen.
  *
  * THE RISK IS ONE-DIRECTIONAL AND IT IS DISCLOSURE. Two things have to hold, and
  * this file asserts the first while supabase/tests/490 asserts the second:
@@ -13,13 +13,24 @@
  * card, test-injury-card.ts and supabase/tests/390.
  *
  * WHAT IS ASSERTED IS ABSENCE, and that is the whole design of this file.
- * injury_clinical_athlete_view exposes seven fields. Isabella's decision of
- * 2026-09-08, taken after looking at diagnosis-only on a real record: the screen
- * shows the diagnosis. Imaging and the detailed treatment plan are held back;
- * MECHANISM IS PENDING a look at the real text and is not a no. So the database
- * is deliberately more permissive than the product, and a test asserting that
- * `diagnosis` is fetched would pass just as well if all seven were. The six that
- * are not fetched are named one by one below.
+ * injury_clinical_athlete_view exposes seven fields. Two are shown. Isabella
+ * confirmed diagnosis on 2026-09-08 after looking at it on a real record, then
+ * mechanism the same way, after reading every mechanism on file rather than one
+ * sample — they are short factual phrases, under ten words, describing how the
+ * injury happened.
+ *
+ * FIVE ARE STILL HELD BACK: severity, tissue_type, imaging, referral and
+ * treatment_plan. So the database remains deliberately more permissive than the
+ * product, and a test asserting that `diagnosis` and `mechanism` are fetched
+ * would pass just as well if all seven were. The five that are not fetched are
+ * named one by one below, which is the assertion that actually holds the line.
+ *
+ * ONE THING WORTH REMEMBERING ABOUT MECHANISM. It is free text with no length
+ * limit and no format, and Selby's — "Head to hip contact making a tackle, no
+ * loss of consciousness" — carries a clinical assessment finding rather than a
+ * description of the event. Eight tidy entries today are not a guarantee about
+ * the ninth. Nothing here can enforce that; it is written down so the next
+ * person to widen this knows what kind of field they are widening.
  */
 import { readFileSync } from 'node:fs';
 
@@ -31,17 +42,22 @@ function assert(cond: boolean, label: string): void {
 const strip = (src: string): string =>
   src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\{\/\*[\s\S]*?\*\/\}/g, '').replace(/\/\/.*$/gm, '');
 
-const query = strip(readFileSync('src/lib/queries/injuryDiagnosis.ts', 'utf8'));
-const view = strip(readFileSync('src/components/InjuryDiagnosis/InjuryDiagnosis.tsx', 'utf8'));
+const query = strip(readFileSync('src/lib/queries/athleteInjuryClinical.ts', 'utf8'));
+const view = strip(readFileSync('src/components/InjuryClinical/InjuryClinical.tsx', 'utf8'));
 const today = strip(readFileSync('src/app/(athlete)/today/page.tsx', 'utf8'));
 const banner = strip(readFileSync('src/components/AvailabilityBanner/AvailabilityBanner.tsx', 'utf8'));
 
-const HELD_BACK = ['mechanism', 'severity', 'tissue_type', 'imaging', 'referral', 'treatment_plan'];
+const SHOWN = ['diagnosis', 'mechanism'];
+const HELD_BACK = ['severity', 'tissue_type', 'imaging', 'referral', 'treatment_plan'];
 
-console.log('the query asks for one column, and the six held back are named');
+console.log('the query asks for two columns, and the five held back are named');
 {
   const select = /\.select\(\s*'([^']*)'\s*\)/.exec(query)?.[1] ?? '';
-  assert(select === 'diagnosis', `the select list is exactly "diagnosis" (saw "${select}")`);
+  const columns = select.split(',').map((c) => c.trim()).filter(Boolean).sort();
+  assert(
+    columns.join(',') === SHOWN.slice().sort().join(','),
+    `the select list is exactly diagnosis and mechanism (saw "${select}")`,
+  );
   for (const field of HELD_BACK) {
     assert(!select.includes(field), `${field} is not fetched`);
   }
@@ -54,13 +70,22 @@ console.log('the query asks for one column, and the six held back are named');
 
 console.log('\nand the component cannot render what it was never given');
 {
-  assert(/diagnosis/.test(view), 'the component renders the diagnosis');
+  for (const field of SHOWN) {
+    assert(view.includes(field), `the component renders the ${field}`);
+  }
   for (const field of [...HELD_BACK, 'clinical_notes']) {
     assert(!view.includes(field), `it has no prop and no branch for ${field}`);
   }
   assert(
-    /if \(!diagnosis\) return null/.test(view),
-    'and renders nothing at all when there is none — no empty label, no "withheld" line',
+    /if \(!diagnosis && !mechanism\) return null/.test(view),
+    'and renders nothing at all when it has neither — no empty label, no "withheld" line',
+  );
+  /* Tameifuna has an open hamstring injury and no injury_clinical row at all, so
+     both fields are null for a real athlete today. And a row can carry one
+     without the other, so each is guarded on its own rather than on the pair. */
+  assert(
+    /diagnosis \?[\s\S]{0,400}mechanism \?/.test(view) || /\{diagnosis &&[\s\S]{0,400}\{mechanism &&/.test(view),
+    'each field is guarded separately, because a record can carry one and not the other',
   );
 }
 
@@ -88,6 +113,10 @@ console.log('\nthe age gate is the database\'s job, and the app does not duplica
     query.includes('0093') || query.includes('view'),
     'the query records where the gate actually lives',
   );
+  assert(
+    !query.includes('mechanism') || query.includes('.select('),
+    'mechanism arrives through the same gated view as diagnosis, not by another route',
+  );
 }
 
 console.log('\nthe availability banner is still clinical-free');
@@ -95,7 +124,7 @@ console.log('\nthe availability banner is still clinical-free');
   /* Kept, not spent. Availability is a squad fact a coach also sees; a diagnosis
      is a clinical one only this athlete and medical see. Two disclosure rules on
      one screen is exactly when to keep them in two components. */
-  for (const field of ['diagnosis', ...HELD_BACK, 'clinical_notes']) {
+  for (const field of [...SHOWN, ...HELD_BACK, 'clinical_notes']) {
     assert(!banner.includes(field), `AvailabilityBanner still never mentions ${field}`);
   }
 }
@@ -120,10 +149,10 @@ console.log('\nthe temporary preview is gone, not merely disabled');
 
 console.log('\nthe page wires it once, from the injury availability resolved');
 {
-  const calls = [...today.matchAll(/fetchAthleteDiagnosis\(/g)].length;
+  const calls = [...today.matchAll(/fetchAthleteInjuryClinical\(/g)].length;
   assert(calls === 1, `exactly one clinical read on this page (saw ${calls})`);
   assert(
-    /fetchAthleteDiagnosis\(db, availability\.injury\?\.id\)/.test(today),
+    /fetchAthleteInjuryClinical\(db, availability\.injury\?\.id\)/.test(today),
     'keyed to the injury the availability row names, not to any injury on file',
   );
 }

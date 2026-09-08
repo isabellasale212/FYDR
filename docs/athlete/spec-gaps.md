@@ -66,12 +66,13 @@ one column short of being selected.
 diagnosis-only on a real record through a temporary local-only preview, which has
 since been deleted.
 
-**THE CONFIRMED SCOPE IS ONE FIELD.**
+**THE CONFIRMED SCOPE IS TWO FIELDS OF SEVEN**, each confirmed separately after
+looking at the real text on a real record.
 
 | Field | On the athlete's screen | Why |
 |---|---|---|
 | `diagnosis` | **Yes** | Confirmed 2026-09-08 after review on screen |
-| `mechanism` | **No — PENDING REVIEW** | **Not a no.** Isabella wants to see the actual mechanism text on screen before deciding, the same way diagnosis was decided. Selby's reads "Head to hip contact making a tackle, no loss of consciousness" |
+| `mechanism` | **Yes** | Confirmed 2026-09-08, after reading every mechanism on file rather than one sample. They are short factual phrases under ten words — "Inversion in a ruck", "Gradual onset, overload" |
 | `imaging` | No | Held back, a bigger step than the DB permission implies |
 | `treatment_plan` | No | Held back, same reason |
 | `severity`, `tissue_type`, `referral` | No | Not requested, not shown |
@@ -79,11 +80,19 @@ since been deleted.
 
 **The database stays more permissive than the screen, deliberately.**
 `injury_clinical_athlete_view` still exposes all seven fields to an adult
-athlete; `fetchAthleteDiagnosis` selects one. That gap is the design, not an
+athlete; `fetchAthleteInjuryClinical` selects two. That gap is the design, not an
 oversight: the restraint lives in one select list where the next decision can be
-read and changed. `scripts/test-injury-diagnosis.ts` therefore asserts the six
-columns NOT selected — asserting `diagnosis` appears would pass just as well if
-all seven were fetched.
+read and changed. `scripts/test-injury-clinical.ts` therefore asserts the five
+columns NOT selected — asserting the two shown fields appear would pass just as
+well if all seven were fetched.
+
+**One thing to carry forward about `mechanism`.** It is free text with no length
+limit and no format. Today's eight entries are short and factual, but Selby's —
+"Head to hip contact making a tackle, no loss of consciousness" — carries a
+clinical assessment finding rather than a description of the event. Eight tidy
+entries are not a guarantee about the ninth, and no code can make them one. If
+mechanism ever needs constraining, that is a data-entry question for the medical
+form, not a display one.
 
 **The age gate is in the database, and it had to be.** Migration `0093` adds the
 predicate to the view. It does NOT call `athlete_is_minor()`, which was the first

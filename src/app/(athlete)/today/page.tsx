@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import { AvailabilityBanner } from '@/components/AvailabilityBanner/AvailabilityBanner';
-import { InjuryDiagnosis } from '@/components/InjuryDiagnosis/InjuryDiagnosis';
+import { InjuryClinical } from '@/components/InjuryClinical/InjuryClinical';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { OutboxFlusher } from '@/components/OutboxFlusher/OutboxFlusher';
 import { Toast } from '@/components/Toast/Toast';
 import { fetchAthleteAvailability } from '@/lib/queries/availability';
-import { fetchAthleteDiagnosis } from '@/lib/queries/injuryDiagnosis';
+import { fetchAthleteInjuryClinical } from '@/lib/queries/athleteInjuryClinical';
 import { fetchMyOutstanding } from '@/lib/queries/compliance';
 import {
   fetchAthleteDaySessions,
@@ -123,7 +123,7 @@ export default async function TodayPage({
      injury id that availability resolves. Skipped entirely when there is no
      linked injury, which is the common case — and when there is one, the view
      returns nothing for an athlete under 18 (0093). */
-  const diagnosis = await fetchAthleteDiagnosis(db, availability.injury?.id);
+  const injuryClinical = await fetchAthleteInjuryClinical(db, availability.injury?.id);
 
   const todoItems = [
     ...outstanding.map((item) => ({
@@ -331,9 +331,14 @@ export default async function TodayPage({
         timezone={timezone}
       />
 
-      {/* Renders nothing when there is no diagnosis, no injury, or the reader
-          is a minor — the view (0093) draws that last line, not this page. */}
-      <InjuryDiagnosis diagnosis={diagnosis} />
+      {/* Renders nothing when there is no clinical record, no injury, or the
+          reader is a minor — the view (0093) draws that last line, not this
+          page. Each field is guarded inside the component, because a record can
+          carry one and not the other. */}
+      <InjuryClinical
+        diagnosis={injuryClinical.diagnosis}
+        mechanism={injuryClinical.mechanism}
+      />
 
       {myAllocation ? (
         <p className="banner" role="status">

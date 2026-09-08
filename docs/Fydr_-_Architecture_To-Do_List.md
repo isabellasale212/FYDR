@@ -50,7 +50,7 @@
 
   **Carry this along when push is built, agreed 2026-09-08:** add `comment on table public.push_tokens` recording that the seeded rows are an assumption rather than observed devices. Isabella asked for it batched into the next migration that touches the table rather than given one of its own, so it is not queued as work in its own right. The exact statement is written out ready to paste at the top of the `push_tokens` block in `supabase/seed.sql`.
 
-  **Not blocked on:** the email half of Q-30. Isabella is obtaining the Resend key directly; `lib/email/provider.ts` is written and needs only `RESEND_API_KEY` and `EMAIL_FROM_ADDRESS` in the Vercel environment, no code.
+  **Not blocked on:** the email half of Q-30, which is now DONE — see below.
 - [ ] **NOT CODE, and it is yours: tell the medical staff that `mechanism` is now athlete-visible.** Added 2026-09-08, the same day the field started rendering on the athlete's own Today screen for anyone 18 or over.
 
   **The message, in substance:** the Mechanism field on the injury form is now read by the player it is about. It should carry a factual description of how the injury happened — "Inversion in a ruck", "Direct contact, fell onto point of shoulder in tackle" — and not clinical interpretation. Anything that is an assessment finding, an opinion, or a note to another clinician belongs in **Clinical notes**, which stays medical-only and is not a column of the athlete's view at all.
@@ -253,6 +253,25 @@ Both come after the sign-in-history item in 0b, which is in progress.
 - [x] Confirm `coachkitstudio <isale4567@gmail.com>` is your own account/session — confirmed. Deployment history under your personal Vercel account (`isabellasale212@gmail.com`, confirmed as your own email) shows the same identity across the last 20 production deploys, all `READY`, most recent from today. Two independent systems agreeing, plus your own confirmation.
 
 ## 0b. Urgent, found while reading the raw files (2026-09-04) — not waiting on any product decision
+- [x] **DONE 2026-09-08: email sends for real, both flows, confirmed in a real inbox.** This closes the email half of Q-30 and the front-page Step 1 item that read "write the correct rows but send nothing".
+
+  **Two flows, two systems, and they were never the same one** — the front-page instruction to "wire it into the existing password reset and invite link flows" was half wrong:
+
+  | Flow | Sends via | Configured in |
+  |---|---|---|
+  | Invite (Settings → add a user) | `getEmailProvider()` → Resend REST API | `RESEND_API_KEY` + `EMAIL_FROM_ADDRESS` in **Vercel**, Production only |
+  | Password reset | `supabase.auth.resetPasswordForEmail()` → Supabase's own mailer | Custom SMTP in the **Supabase** dashboard |
+  | Bulk invite | nothing — returns a link for staff to copy | n/a |
+
+  Isabella configured both herself; no code change was needed for either. Both confirmed landing in a real inbox on 2026-09-08.
+
+  **The invite path, verified from the audit trail rather than assumed:** `invite.email_sent`, `provider: resend` (not the `logged` no-op), `delivered: true`, no error, actor `j.pemberton@ashcomberfc.example` as sport_scientist, target a real address, 15:59 BST. The code only reports `delivered: true` on a genuine 2xx from Resend. The test account was deleted afterwards and production is back to 46 users / 46 auth users; the audit row survives it, because `audit_log` carries three triggers refusing UPDATE, DELETE and TRUNCATE.
+
+  **`EMAIL_FROM_ADDRESS` is `onboarding@resend.dev`, which is a constraint not a choice.** Until a domain is verified in Resend, that is the only permitted sender and it can only send to the Resend signup address. **So invites cannot yet reach a real player.** Verifying `fydr.app` in Resend — a few DNS records — is what makes invites usable, and it wants doing before a pilot club rather than after.
+
+  **The bounce protection that went in alongside it:** `GuardedProvider` in `lib/email/provider.ts` refuses any send to a non-routable domain without making the request. All 46 production seed accounts are on `.example`, so every one of them is refused and **nothing on production can produce a hard bounce**. Renaming those rows was considered and rejected — every placeholder TLD is equally non-resolving, `public.users.email` is NOT NULL with a unique index, and all 46 match `auth.users` so a rename would have changed the sign-in address for every test account. Full reasoning is in the module header and `scripts/test-email-send-guard.ts`.
+
+
 - [x] **CLOSED 2026-09-08 by migration 0094, awaiting deploy. The GPS tier gate is now inside `compute_leaderboard`.** Test `500` proves it with the key and the source deliberately disagreed, so a prefix check cannot satisfy it; `290` gained a §7 asserting the gate so opening the tier in its own setup cannot hide the gate's removal. The four page-level checks stay, as Isabella instructed — a function returning no rows cannot tell an athlete why. One consequence: the athlete detail page had to split its board/membership guard, because a gated board now returns no ranking rows and the combined guard would have answered "not available" and made the plan message dead code. Original entry follows.
 
   <details><summary>As filed</summary>

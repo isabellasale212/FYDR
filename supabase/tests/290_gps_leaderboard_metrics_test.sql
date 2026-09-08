@@ -122,6 +122,17 @@ begin
   -- total / mean / latest / record_count assertions are computed from, and the later
   -- row (d1) carries the larger value in every column so 'best' and 'latest' agree on
   -- which row wins for a1 while still being distinguishable from 'total' and 'mean'.
+  /* THE ORG IS PUT ON PREMIUM, added 2026-09-08 with migration 0094.
+     0094 moved the GPS tier gate inside compute_leaderboard: a club on any tier
+     but 'performance' now ranks nobody on a GPS board. The fixture org defaults
+     to 'core', so before this line every assertion in §2 and §3 below returned
+     NULL and 21 of this file's 35 assertions failed.
+     That is 0094 working, not 0094 breaking this file. What this file tests is
+     the metric DISPATCHER and 0016's population gates, and it needs the tier gate
+     open to reach either. §7 at the foot asserts the gate itself, so opening it
+     here cannot hide its removal. */
+  update public.organisations set tier = 'performance' where id = tests.uid('orga', 'org');
+
   insert into gps_records (org_id, athlete_id, record_date,
                            total_distance_m, running_distance_m, high_speed_distance_m,
                            sprint_distance_m, high_intensity_efforts, max_speed_ms,
@@ -442,6 +453,37 @@ select cmp_ok(
   '>', 0::bigint,
   'a sport scientist reads the named GPS ranking in full: staff, so the own-row '
   'gate never applies to them');
+
+-- ===========================================================================
+-- §7. The tier gate, added with migration 0094.
+--
+-- Setup above puts this org on 'performance' so §2 and §3 can reach the metric
+-- dispatcher at all. That makes this file a place where the gate could be
+-- silently removed and nothing would notice, so it is asserted here directly:
+-- the same board, the same rows, the same caller, tier as the only variable.
+-- ===========================================================================
+select tests.set_jwt(tests.uid('orga', 'user_coach'));
+
+select isnt(
+  (select count(*)::int from compute_leaderboard(tests.uid('orga', 'lb_total_distance_total'))),
+  0,
+  'the GPS board ranks somebody while this org is on Premium, which is what §2 and §3 rely on'
+);
+
+do $$
+begin
+  reset role;
+  perform tests.clear_jwt();
+  update public.organisations set tier = 'core' where id = tests.uid('orga', 'org');
+end $$;
+set local role authenticated;
+select tests.set_jwt(tests.uid('orga', 'user_coach'));
+
+select is(
+  (select count(*)::int from compute_leaderboard(tests.uid('orga', 'lb_total_distance_total'))),
+  0,
+  'and ranks nobody the moment the same club drops to Basic: 0094 is doing this, not the data'
+);
 
 select * from finish();
 rollback;

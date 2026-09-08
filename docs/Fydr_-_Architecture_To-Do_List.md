@@ -253,7 +253,11 @@ Both come after the sign-in-history item in 0b, which is in progress.
 - [x] Confirm `coachkitstudio <isale4567@gmail.com>` is your own account/session — confirmed. Deployment history under your personal Vercel account (`isabellasale212@gmail.com`, confirmed as your own email) shows the same identity across the last 20 production deploys, all `READY`, most recent from today. Two independent systems agreeing, plus your own confirmation.
 
 ## 0b. Urgent, found while reading the raw files (2026-09-04) — not waiting on any product decision
-- [ ] **FILED 2026-09-08: the GPS tier gate is page-level only. `compute_leaderboard` has no tier check of its own, and that is the same class of problem as the audit-trail and default-privilege work — a rule that looks enforced and is not.** Isabella asked for this to be filed at the same seriousness as the other invisible-gate items, and it belongs with them for the same reason: nothing fails, nothing logs, and the code reads as if the rule holds.
+- [x] **CLOSED 2026-09-08 by migration 0094, awaiting deploy. The GPS tier gate is now inside `compute_leaderboard`.** Test `500` proves it with the key and the source deliberately disagreed, so a prefix check cannot satisfy it; `290` gained a §7 asserting the gate so opening the tier in its own setup cannot hide the gate's removal. The four page-level checks stay, as Isabella instructed — a function returning no rows cannot tell an athlete why. One consequence: the athlete detail page had to split its board/membership guard, because a gated board now returns no ranking rows and the combined guard would have answered "not available" and made the plan message dead code. Original entry follows.
+
+  <details><summary>As filed</summary>
+
+  **FILED 2026-09-08: the GPS tier gate is page-level only. `compute_leaderboard` has no tier check of its own, and that is the same class of problem as the audit-trail and default-privilege work — a rule that looks enforced and is not.** Isabella asked for this to be filed at the same seriousness as the other invisible-gate items, and it belongs with them for the same reason: nothing fails, nothing logs, and the code reads as if the rule holds.
 
   **What is closed.** Q-29's leak is fixed at the surface. Both athlete board screens now call `gpsMetricBlocked()` (`src/lib/tier.ts`) — the list filters a gated board out, the detail page returns a plan notice — and the two staff leaderboard surfaces already did the equivalent. Deployed 2026-09-08, commit `77cdf20`.
 
@@ -266,6 +270,10 @@ Both come after the sign-in-history item in 0b, which is in progress.
   **The fix.** Add the tier to `compute_leaderboard`: refuse, or return no rows, when `md.source_table = 'gps_records'` (or the key is `gps.%`) and the board's org is not on `performance`. Prefer the `source_table` test over the key prefix — it is what makes a metric a GPS metric, and it will still be right if a tenth GPS metric is added under a different key. Then the four page-level checks become defence in depth rather than the only defence, and the pgTAP suite can assert it the way 490 asserts the age gate.
 
   **Do not delete the page-level checks when this lands.** They give the athlete a readable plan message instead of an empty board, which a function-level refusal cannot do.
+
+  </details>
+
+  **Still open after 0094, and named in its header:** the metric dispatcher inside the function still selects its GPS branch on `metric_key like 'gps.%'`, so a tenth GPS metric under a different naming convention would be *gated* correctly by 0094 but would not *rank* at all. And the four page-level checks still use the key prefix, because `fetchMetricCatalogue` does not send `source_table` to the client — so such a metric would get the generic "not available" rather than the plan message. Strictly safe, mildly less readable, and the fix if it ever matters is one column added to `METRIC_COLUMNS`.
 
 
 - [x] **FIXED AND DEPLOYED 2026-09-08: `users.last_seen_at` was read by three components and written by nothing, so every account showed "Never signed in".** Wired into `recordSignIn()`, which all three sign-in flows already pass through — `/auth/sign-in` (password), `/auth/confirm` (invite and magic link) and `/auth/record-sign-in` (the PKCE reset, whose session is established in the browser). Stamped above the audit row's guard, deliberately: the audit insert is refused without an org because its policy is `org_id = auth_org_id() and actor_id = auth_user_id()`, while `users_self_update` pins only `id = auth_user_id()` — and somebody whose claims are missing an org has still signed in. Fails open, like the audit write and the rate limiter.

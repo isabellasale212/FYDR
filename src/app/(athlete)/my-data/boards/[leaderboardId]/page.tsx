@@ -33,7 +33,14 @@ export default async function MyBoardDetailPage({
   ]);
 
   const own = ranking.find((r) => r.athlete_id === athleteId);
-  if (!board || board.visibility !== 'published' || !own) {
+
+  /* SPLIT FROM THE !own CHECK BY 0094, and the order matters now. Once the tier
+     gate moved inside compute_leaderboard, a gated GPS board returns NO ranking
+     rows at all — so `own` is undefined for every athlete, and a single combined
+     guard would answer "this leaderboard is not available" and never reach the
+     plan message below. The board's existence is settled here; whether the
+     athlete is on it is settled after the plan is. */
+  if (!board || board.visibility !== 'published') {
     return (
       <>
         <div className="sheet-head">
@@ -67,7 +74,12 @@ export default async function MyBoardDetailPage({
 
      Worded as the plan, not as a fault. The board is real and the club owns it;
      it is the metric that stopped being included. Same stance as the staff
-     PlanGate, in the athlete shell's own markup rather than the staff one's. */
+     PlanGate, in the athlete shell's own markup rather than the staff one's.
+
+     KEPT AFTER 0094 moved the rule into compute_leaderboard, on purpose. The
+     function now refuses the ranking outright, which closes the direct-call
+     bypass this check never could — but a function that returns no rows cannot
+     tell anybody why. This is the only layer that can, so it stays. */
   if (gpsMetricBlocked(board.metric_key, tier)) {
     return (
       <>
@@ -84,6 +96,31 @@ export default async function MyBoardDetailPage({
             This board ranks GPS data, which is part of the Premium plan. It is still here
             and nothing has been deleted &mdash; it is not shown while your club is on Basic.
           </p>
+          <p>
+            <Link href="/my-data/boards">Back to leaderboards</Link>
+          </p>
+        </div>
+      </>
+    );
+  }
+
+  /* AFTER the plan gate, deliberately. An athlete who is simply not on a board
+     they could otherwise see should read "not available" rather than anything
+     about their club's plan — but a board their club cannot show at all is the
+     plan's business, and saying so is the whole point of keeping a page-level
+     check once 0094 made the function refuse silently. */
+  if (!own) {
+    return (
+      <>
+        <div className="sheet-head">
+          <Link href="/my-data/boards" className="sheet-x" aria-label="Back to leaderboards">
+            <span aria-hidden="true">←</span>
+          </Link>
+          <h1 className="t">Leaderboard</h1>
+          <span style={{ width: 44 }} />
+        </div>
+        <div className="empty">
+          <h2>This leaderboard is not available</h2>
           <p>
             <Link href="/my-data/boards">Back to leaderboards</Link>
           </p>

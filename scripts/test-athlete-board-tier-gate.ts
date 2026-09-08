@@ -116,6 +116,20 @@ console.log('\nthe detail screen refuses before it renders anything of the board
     /return \(/.test(detail.slice(gate, gate + 400)),
     'and returns early rather than falling through to the board',
   );
+
+  /* THE ORDER, WHICH 0094 MADE LOAD-BEARING. Once the tier gate moved inside
+     compute_leaderboard, a gated GPS board returns no ranking rows at all — so
+     `own` is undefined for everybody, and if the !own check ran first it would
+     answer "this leaderboard is not available" and the plan message would be
+     dead code. Board existence, then plan, then membership. */
+  const boardCheck = detail.search(/if \(!board \|\| board\.visibility/);
+  const ownCheck = detail.search(/if \(!own\)/);
+  assert(boardCheck !== -1 && ownCheck !== -1, 'the board and membership checks are separate');
+  assert(boardCheck < gate, 'the board-exists check comes first');
+  assert(
+    gate < ownCheck,
+    'the plan gate comes BEFORE the membership check, or 0094 makes the plan message unreachable',
+  );
 }
 
 console.log('\nnothing about the staff gate regressed');

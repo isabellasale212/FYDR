@@ -9,12 +9,23 @@ import { z } from 'zod';
 
 const scale = z.number().int().min(1).max(5);
 
+/* ORDER IS DISPLAY ORDER, AND IT IS SHARED. Reordered 2026-09-08 to match the
+   redesign reference: Sleep quality, Soreness, Fatigue, Mood, Stress.
+   Previously sleep_quality, fatigue, soreness, stress, mood.
+
+   EntryCorrectionPanel — the coach's correction form — maps this same constant,
+   so its order moved with it. Deliberate rather than collateral: a coach
+   correcting an entry should see the fields in the order the player answered
+   them, and a second list for the athlete sheet is how the two would drift
+   apart. Nothing else depends on the order — the unanswered count filters
+   rather than indexes, and the database has a column per scale rather than an
+   array — and no test pinned it before test-wellness-sheet-redesign. */
 export const WELLNESS_SCALES = [
   'sleep_quality',
-  'fatigue',
   'soreness',
-  'stress',
+  'fatigue',
   'mood',
+  'stress',
 ] as const;
 
 export type WellnessScale = (typeof WELLNESS_SCALES)[number];

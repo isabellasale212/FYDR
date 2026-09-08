@@ -39,7 +39,6 @@ type Props = {
   athleteId: string;
   userId: string;
   entryDate: string;
-  lastNightSleepHours: number | null;
 };
 
 type Scales = Record<WellnessScale, number | null>;
@@ -65,7 +64,6 @@ export function CheckInForm({
   athleteId,
   userId,
   entryDate,
-  lastNightSleepHours,
 }: Props) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -194,12 +192,6 @@ export function CheckInForm({
             +
           </button>
         </div>
-
-        {lastNightSleepHours !== null ? (
-          <span className="sleep-ref">
-            Last night&rsquo;s entry: <span className="num">{lastNightSleepHours}</span>
-          </span>
-        ) : null}
       </div>
 
       {WELLNESS_SCALES.map((scale) => (

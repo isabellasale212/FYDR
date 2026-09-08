@@ -43,6 +43,20 @@ type Props = {
    *  three staff pages that use this chart render it far wider and keep the
    *  full axis. */
   compact?: boolean;
+  /** Fill the space beneath the value line, per the 2026-09-08 athlete
+   *  reference (screens 03/04, "a filled-area sparkline (was a bare line)").
+   *
+   *  OPT-IN, because three staff screens draw this same chart and none of them
+   *  asked for it. It is drawn per SEGMENT, so a day the athlete did not submit
+   *  leaves a gap in the fill exactly as it leaves a gap in the line — an area
+   *  closed across a missing day would fill in a reading nobody gave, which is
+   *  the same invention the segmented line exists to avoid, only harder to see.
+   *
+   *  It does NOT replace the +/-1SD band. The changelog says the card "was a
+   *  bare line", which is what it looks like on sparse data — `banded` needs
+   *  enough history to compute a rolling band and draws nothing without it. The
+   *  band is MET-006 and still the point of the card; this fill sits under it. */
+  area?: boolean;
   /** Draw the daily value as a BAR per day instead of a joined line.
    *
    *  The staff athlete report reads one athlete's readiness day by day, and a
@@ -93,6 +107,7 @@ export function WellnessChart({
   decimals = 0,
   flags = [],
   compact = false,
+  area = false,
   bars = false,
 }: Props) {
   // Bars need room per day; the compact box has none. Compact wins.
@@ -183,6 +198,20 @@ export function WellnessChart({
   });
   if (current.length > 1) valueSegments.push(current.join(' '));
 
+  /* The same segments, closed down to the baseline. Built from valueSegments so
+     the two can never disagree about where the line goes: each is the segment's
+     own path, then down to the floor, back along it, and closed. */
+  const areaSegments = area
+    ? valueSegments.map((seg) => {
+        const pts = [...seg.matchAll(/[ML] ([\d.-]+) ([\d.-]+)/g)];
+        const firstPt = pts[0];
+        const lastPt = pts[pts.length - 1];
+        if (!firstPt || !lastPt) return '';
+        const floor = y(clamp(min)).toFixed(1);
+        return `${seg} L ${lastPt[1]} ${floor} L ${firstPt[1]} ${floor} Z`;
+      }).filter(Boolean)
+    : [];
+
   // "Where am I now" is the question an athlete opens this chart to answer,
   // so the latest real reading gets a ring and its number, and nothing else
   // competes with it.
@@ -256,6 +285,14 @@ export function WellnessChart({
             strokeLinejoin="round"
           />
         ) : null}
+
+        {/* The fill, beneath the line and beneath the band's own tint, so three
+            translucent layers never stack into a fourth colour nobody chose.
+            0.10 against the band's 0.14: the band is the reference the card is
+            for, and a fill that reads louder than it would inverse the two. */}
+        {(asBars ? [] : areaSegments).map((d) => (
+          <path key={`a${d.slice(0, 24)}`} d={d} fill="rgb(var(--accent-rgb) / 0.10)" stroke="none" />
+        ))}
 
         {/* The athlete's own readings, now the most prominent line. Bars mode
             draws them as columns below instead. */}

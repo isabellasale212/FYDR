@@ -1605,6 +1605,26 @@ img.av {
 /* Spec §7.3's footer row: flex: none, border-top hairline, and a 13.5/600
    accent link. The size and weight live on the link rather than the row, so a
    footer carrying a caption instead of a link keeps caption type. */
+/* The reference's "See all 14 days →" row, on all three tabs. Full-bleed to
+   the card's own inset like every other row in a `.card flush`, and 44px tall
+   so it is a real tap target rather than a line of text that happens to be a
+   link. */
+.hist-more {
+  margin: 0;
+  padding: 12px var(--pad-card-x);
+  font-size: 14px;
+  font-weight: 600;
+}
+.hist-more a {
+  color: var(--accent-text);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+}
+.hist-more a:hover {
+  text-decoration: underline;
+}
 .hist-foot {
   flex: none;
   padding: 14px var(--pad-card-x, 18px);
@@ -1669,7 +1689,14 @@ img.av {
 .rd-meta {
   text-align: right;
   min-width: 0;
-  flex: none;
+  /* 0 1 auto, not `none`, and not the `flex: 1` the spec's note rules out.
+     MEASURED: "▲ 1.4 cm ahead of your recorded PB" on a 390px screen pushed
+     22.5px past the card's right edge and was clipped mid-word — `flex: none`
+     means the column cannot shrink, so a long standing line has nowhere to go.
+     Allowing it to SHRINK lets the phrase wrap; it still takes no spare space,
+     so the spec's actual objection ("a spacer starves the caption and orphans
+     its last word") is untouched. */
+  flex: 0 1 auto;
   margin-left: auto;
 }
 /* Spec §7.3: 14/700 over a 12.5px muted line. */
@@ -1678,14 +1705,19 @@ img.av {
   font-size: 14px;
   font-weight: 700;
 }
-/* 23e draws "▲ 6 on last week" in the accent, not in green, and the arrow is
-   left to carry the direction — which it does for a reader who cannot separate
-   two hues anyway. Green/red on a wellness delta overstates it: readiness
-   moving a few points between weeks is what readiness does, and a red number
-   for an ordinary dip reads as an alarm nobody raised. Down and 'off' share
-   the amber for the same reason — see below. */
+/* REVERSED BY THE 2026-09-08 REFERENCE, which draws "▲ 6 on last week" in
+   green (screens 03/04) where 23e drew it in the accent. The old reasoning is
+   kept because it is still half right and still governs the OTHER direction:
+   green/red on a wellness delta overstates it, readiness moving a few points
+   between weeks is what readiness does, and a red number for an ordinary dip
+   reads as an alarm nobody raised.
+
+   So only the UP direction moves. Down and 'off' keep the amber below rather
+   than becoming red — an athlete a little off last week is not in a warning
+   state, and the reference draws that half amber too. The arrow still carries
+   the direction for a reader who cannot separate two hues. */
 .rd-delta[data-dir='up'] {
-  color: var(--accent-text);
+  color: var(--good-text);
 }
 /* Being 0.10 s off a personal best is the ordinary state of every athlete on
    every day that is not their best day, and --bad-text is a red reserved for a
@@ -1970,35 +2002,29 @@ a.hist-row:focus-visible {
    two rows. Scrolls horizontally because this build has six segments and the
    design's three would not hold them — the alternative was deleting the only
    route to three of them. */
-.seg-track {
+.md-seg-track {
   display: flex;
-  gap: 2px;
-  /* Spec §7.3: shell padding 4px, radius 16. */
+  gap: 4px;
+  /* The changelog's own numbers: a --surf2 band with 4px of padding. It was a
+     16px-radius track with 2px gaps that scrolled horizontally, because the old
+     reference drew three segments and this build had six. Three now, so nothing
+     scrolls and the track can be the pill the reference draws. */
   padding: 4px;
   margin-top: 4px;
-  border-radius: 16px;
+  border-radius: var(--r-full);
   background: var(--surf2);
-  overflow-x: auto;
-  /* No visible scrollbar over a 44px-tall control; the partial segment at the
-     edge is what says there is more. */
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
 }
-.seg-track::-webkit-scrollbar {
-  display: none;
-}
-.seg {
-  /* Spec §7.3: items are 14/600 muted, radius 12, 11px of vertical padding.
-     `flex: 1` is the spec's and assumes three segments; this track carries six
-     and scrolls, so items keep their own width — sharing 390px six ways gives
-     60px each and "Leaderboards" does not fit. min-height honours §8's 44px
-     floor, which 11px around a 14px line comes 4px short of on its own. */
-  flex: 0 0 auto;
+.md-seg {
+  /* flex: 1, which the six-segment track could not use — sharing 390px six ways
+     gave 60px each and "Leaderboards" did not fit. Three equal segments is what
+     the reference draws and what the width now allows. */
+  flex: 1 1 0;
   min-height: 44px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 11px 14px;
-  border-radius: 12px;
+  border-radius: var(--r-full);
   font-size: 14px;
   font-weight: 600;
   color: var(--muted);
@@ -2006,20 +2032,20 @@ a.hist-row:focus-visible {
   white-space: nowrap;
   transition: background var(--t-state), color var(--t-state);
 }
-.seg:hover {
+.md-seg:hover {
   color: var(--text);
 }
-/* Spec §7.3: the active chip is card-coloured, takes the product shadow, and
-   its ink is the ACCENT — not --text. */
-.seg[aria-selected='true'] {
-  background: var(--surf);
-  color: var(--accent-pill-text);
+/* A SOLID ACCENT-FILLED PILL, not the card-coloured chip with a shadow that
+   23e drew. --on-accent rather than --accent-pill-text: the ink now sits on the
+   accent itself, not on a tint of it. */
+.md-seg[aria-selected='true'] {
+  background: var(--accent);
+  color: var(--on-accent);
   font-weight: 700;
-  box-shadow: var(--shadow-card, 0 1px 2px rgb(16 18 23 / 0.08));
 }
-.seg:focus-visible {
+.md-seg:focus-visible {
   outline: 2px solid var(--focus);
-  outline-offset: -2px;
+  outline-offset: 1px;
 }
 
 /* The week card holds the strip and, when there is one, the fixture it is

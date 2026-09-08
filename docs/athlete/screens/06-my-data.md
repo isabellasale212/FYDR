@@ -2,8 +2,11 @@
 
 ## 1. Where it sits
 
-Tab 2 of 4. Route `/my-data`. File `src/app/(athlete)/my-data/page.tsx`,
-**1,726 lines, the largest screen in either app.**
+Tab 2 of 4. Route `/my-data`. File `src/app/(athlete)/my-data/page.tsx`, still
+the largest screen in either app.
+
+**Redrawn 8 September 2026** from the redesign reference (screens 03-08). §13
+records what changed and the three destinations that had to be kept reachable.
 
 ## 2. Who reaches it and when
 
@@ -11,15 +14,31 @@ Every athlete, any time. Base package.
 
 ## 3. What you see
 
-**Five domains as regions of one page, not five screens**: wellness, gym,
-testing, training and nutrition (`my-data/page.tsx:351`). Each is a segment on
-the same page, reached by an anchor.
+A page title, a **three-segment pill track — Wellness, Gym, Tests** — and that
+tab's content. Below it a footer card of three rows reaching the destinations the
+track no longer carries.
 
-The wellness region is a readiness line with a 14 day rolling mean and a plus or
-minus 1 SD band drawn around it.
+**TABS AND SEGMENTS ARE DIFFERENT LISTS.** Five `?tab=` routes still exist and
+still render (`wellness`, `training`, `nutrition`, `testing`, `gym`); the bar
+draws three of them. `SEGMENTS` is what the bar draws, `TABS` is the route
+vocabulary, and `SEGMENT_DOMAINS` is derived from `SEGMENTS` so flag routing
+cannot drift from the bar.
 
-**Two domains have no segment: `gps` and `compliance`** (`my-data/page.tsx:452`).
-A flag in either of those domains has nowhere to land on this screen.
+Each tab is a headline card over a list card, and every list shows a preview —
+four readiness days, three of everything else — under a **"See all N ->"** link
+that expands it in place via `?all=1`. There is no all-days, all-sessions or
+all-tests page; the link is that route, not a new one.
+
+The wellness region is a readiness line with a 14 day rolling mean, a plus or
+minus 1 SD band, and (new) a filled area beneath the line, drawn per segment so a
+missing day leaves a gap in the fill exactly as it leaves one in the line.
+
+**`gps` and `compliance` flags still have no segment, and `training` and
+`nutrition` join them.** All four fall through to the "Also noted for you" notice
+above the tab content, which is shown whichever tab is open — so dropping two
+tabs from the bar did not hide any flag. This was the failure mode worth
+checking: leave a domain in `SEGMENT_DOMAINS` whose tab is no longer in the bar
+and its flags are delivered to a tab nobody can open.
 
 ## 4. What the athlete enters here
 
@@ -51,9 +70,12 @@ there is also no GPS for an athlete on any package.
 
 | Element | Where | What happens | Takes you to | Writes | Confirm | Hidden when |
 |---|---|---|---|---|---|---|
-| A domain anchor | Top | Scrolls to that region | stays | nothing | no | never |
+| A segment | Top | Switches tab | `/my-data?tab=` | nothing | no | never |
+| See all N | List footer | Expands the list in place | `/my-data?tab=…&all=1` | nothing | no | the list is already whole |
+| Sessions and RPE | Footer card | The training tab | `/my-data?tab=training` | nothing | no | never |
+| Weekly check-ins | Footer card | The nutrition tab | `/my-data?tab=nutrition` | nothing | no | never |
+| Leaderboards | Footer card | The board list | `/my-data/boards` | nothing | no | never |
 | A logged gym session | Gym region | Opens the session | `/my-data/gym/[id]` | nothing | no | none logged |
-| Boards link | Wellness or footer | Opens the board list | `/my-data/boards` | nothing | no | on no boards |
 | A past day | Wellness region | Opens that day's entry, read only | `/check-in?date=...` | nothing | no | no entry |
 
 ## 7. Offline and sync
@@ -74,6 +96,15 @@ None.
 
 ## 10. States
 
+**The period control is gone**, and with it every state only it could produce:
+the coerced-period messages, the resolved date-range caption, and the `all`-window
+anchor query. Windows are fixed constants now — `WELLNESS_WINDOW_DAYS` (14),
+`OTHER_WINDOW_DAYS` (28), and Testing all-time as before. **This was the only
+period control on the athlete surface**, so an athlete can no longer ask any
+screen for a season or a year. Recorded here rather than left as a surprise: this
+file and `docs/screens/my-data.md` both still specify a selector, and the screen
+no longer has one.
+
 Loading, empty (a new athlete with no history), error, offline, no group
 membership. **UNVERIFIED: whether an athlete in no positional group is told why
 their comparisons are empty.** The staff surface says so explicitly; the athlete
@@ -87,5 +118,49 @@ primary actions sit low.
 
 ## 12. Open issues
 
-- `gps` and `compliance` flags have no segment to land on.
+- `gps`, `compliance`, `training` and `nutrition` flags have no segment to land
+  on and surface in the orphan notice instead.
 - **UNVERIFIED:** empty-comparison copy. DECISION 13.
+- **The specification and the screen now disagree about the period control**
+  (§10). One of them should move; that is a decision, not a bug.
+
+## 13. What the 8 September redesign changed
+
+**The tab bar, six segments to three**, drawn as a segmented pill track — a
+`--surf2` band with 4px of padding and the live segment as a solid accent-filled
+pill. It previously scrolled horizontally, because the old reference drew three
+segments and this build had six.
+
+**THREE DESTINATIONS LEFT THE BAR AND WOULD HAVE LEFT THE APP.** The changelog
+says Training, Nutrition and Leaderboards are "dropped from the tab bar (data
+still exists in the app, just not surfaced as separate tabs here)". That sentence
+was not true as drawn:
+
+| Dropped | What was only there | If nothing replaced it |
+|---|---|---|
+| Leaderboards | The **only** route in to `/my-data/boards` from anywhere in the athlete app. `LeaveLeaderboardButton`'s `router.push` is a redirect after leaving a board, not a way to reach one. | Both board routes orphaned, including the GPS tier gate added the same day. |
+| Nutrition | The only reader of weekly check-in history in the athlete app. `NutritionCheckinForm` also redirects to `?tab=nutrition` after a successful answer. | An athlete answers the weekly check-in and lands on a tab that no longer exists, and can never see a past answer. |
+| Training | The only screen showing session and RPE history, now that Today's session list has gone in the same redesign. | No session history anywhere. |
+
+So both dropped tabs stay live as routes, and a footer card (`md-more`) reaches
+all three. **That card is the one thing on this screen the reference does not
+draw.** Deleting it takes the three destinations with it.
+
+**The period control removed** (§10).
+
+**Other changes**: the readiness card's "▲ 6 on last week" moves from the accent
+to `--good-text` — the reference draws it green, and `--good` is the product's
+cyan-not-green positive colour, settled product-wide in `tokens.css`, so the
+token was used rather than a new hex introduced; the mean line drops its trailing
+date; the coverage caption under the chart is trimmed to the one sentence that is
+not period residue ("Days you missed are left blank, never counted as zero" is
+MET-001's defining property, not decoration); the gym list's caption reads
+"tonnage from logged sets"; and `.rd-meta` may now shrink so a long standing line
+wraps instead of being clipped — measured at 22.5px past the card edge on
+"▲ 1.4 cm ahead of your recorded PB" at 390px.
+
+**Shape.** `.md-seg` / `.md-seg-track` are the third and fourth entries in
+`ATHLETE_PILL_EXEMPT`. Renamed from `.seg` / `.seg-track` because that list is
+matched by substring and a bare `seg` would also have exempted `.lbw-segmented`,
+`.sg-segment` and `.dash-stat-bar-seg` — two of them staff controls that must
+stay at 6px.

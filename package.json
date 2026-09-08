@@ -5,7 +5,7 @@
   "description": "Fydr, athlete performance management. Phase 1a thin slice: staff web and athlete mobile web.",
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run check:env-files && npm run test:env-guard && npm run check:surface-tokens && npm run check:control-radius && npm run test:access-gates && npm run check:policy-replacements && npm run test:policy-guard && npm run test:default-privileges && npm run test:sign-in-audit && npm run test:brand-face && npm run test:launch-claim && npm run test:mark-consistency && npm run test:seed-auth && npm run test:service-role-grants && npm run test:sign-in-probes && npm run test:inclusive-copy && npm run test:availability-banner && npm run test:injury-clinical && npm run test:athlete-board-tier-gate && npm run test:email-send-guard && npm run test:wellness-sheet && npm run test:today-redesign && npm run test:me-redesign",
+    "prebuild": "npm run check:env-files && npm run test:env-guard && npm run check:surface-tokens && npm run check:control-radius && npm run test:access-gates && npm run check:policy-replacements && npm run test:policy-guard && npm run test:default-privileges && npm run test:sign-in-audit && npm run test:brand-face && npm run test:launch-claim && npm run test:mark-consistency && npm run test:seed-auth && npm run test:service-role-grants && npm run test:sign-in-probes && npm run test:inclusive-copy && npm run test:availability-banner && npm run test:injury-clinical && npm run test:athlete-board-tier-gate && npm run test:email-send-guard && npm run test:wellness-sheet && npm run test:today-redesign && npm run test:me-redesign && npm run test:my-data-redesign",
     "build": "next build",
     "start": "next start",
     "deploy": "npx --yes vercel@59.11.0 deploy --prod",
@@ -33,6 +33,7 @@
     "test:write-coverage": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-write-coverage.ts",
     "test:link-athlete": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-link-athlete.ts",
     "test:add-athlete-outcomes": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-add-athlete-outcomes.ts",
+    "test:my-data-redesign": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-my-data-redesign.ts",
     "test:me-redesign": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-me-redesign.ts",
     "test:today-redesign": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-today-redesign.ts",
     "test:wellness-sheet": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-wellness-sheet-redesign.ts",

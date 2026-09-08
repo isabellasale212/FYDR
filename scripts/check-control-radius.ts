@@ -50,7 +50,7 @@ const stripComments = (s: string): string => s.replace(/\/\*[\s\S]*?\*\//g, '');
  *  about being one, add the word here — and test-control-styling.ts pins the
  *  overrides already found, so they cannot quietly come back. */
 export const INTERACTIVE =
-  /btn|chip|pill|\btab\b|tabs|segment|toggle|\bfield\b|input|search|select|signin|submit|launch|skip-link|week-nav|row-link|sg-add|filter|action|stepper|squad-|weeknav|set-row|mode-switch|lbw-segmented|rhead-btn|exlib-cat|sign-out|theme-seg/i;
+  /btn|chip|pill|\btab\b|tabs|segment|toggle|\bfield\b|input|search|select|signin|submit|launch|skip-link|week-nav|row-link|sg-add|filter|action|stepper|squad-|weeknav|set-row|mode-switch|lbw-segmented|rhead-btn|exlib-cat|sign-out|theme-seg|md-seg/i;
 
 /** Shapes that are round on purpose and are not buttons, chips, pills or tabs. */
 /* Round on purpose, and each name here is a decision rather than a number.
@@ -86,7 +86,13 @@ export const ATHLETE_PILL_EXEMPT: readonly string[] = [
   'sign-out',      // Me, screens 11-12 — the full-width Sign out button
   'theme-seg',     // Me, screens 11-12 — the Light/Dark track...
   'theme-seg-btn', // ...and the segment riding inside it
-  // next: 'md-seg' — My data's segmented Wellness/Gym/Tests track (screens 03-08)
+  /* My data's Wellness/Gym/Tests track and its segments (screens 03-08).
+     NAMED md-seg RATHER THAN seg, and the rename was the point: this list is
+     matched by substring, so a bare `seg` would also have exempted .theme-seg
+     (fine), .lbw-segmented, .sg-segment and .dash-stat-bar-seg (not fine —
+     two of those are staff controls that must stay at 6px). `md-seg` matches
+     .md-seg and .md-seg-track and nothing else in the stylesheet. */
+  'md-seg',
 ];
 
 export type Violation = { selector: string; value: string };

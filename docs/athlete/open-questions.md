@@ -60,11 +60,9 @@ answered; they are recorded in `decisions-required.md` rather than repeated here
 
 **What would settle it.** Confirm the specification should require it. Then decide the sentence: what an athlete is told about the records that survive. That sentence is the actual work and it is yours, not mine.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**Decided by Isabella, 8 September 2026: no.** Players cannot delete their own account, and cannot create one either: accounts are staff-created via invite, which the specification already documents. A player can change their own password and use the email-linked reset flow, and nothing else affecting the account itself. Erasure stays an audited staff process only, which already satisfies the UK GDPR article 17 right to erasure without needing a self-service button.
+
+**Correction, 8 September 2026: the Apple risk is dormant, not active.** An earlier version of this answer accepted an App Store rejection risk on guideline 5.1.1(v), because native iOS had been committed to. That commitment was reversed the same day — see Q-24 — so no app is being submitted and there is no active rejection risk. The reasoning stays on record for whenever native work actually starts, since the same conflict will exist then.
 
 ---
 
@@ -179,11 +177,23 @@ out in markup and were not found.
 
 **What would settle it.** Open `/rpe/<any session>` on a phone and write down the question and both end labels exactly as they appear, including capitalisation.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**ANSWERED by Claude Code, 8 September 2026** against the live repository. The recommendation that preceded it, and Isabella's decision where there was one, are in `archive/2026-09-08-athlete-spec-review-record.docx`.
+
+Answered by Claude Code, 8 September 2026, from src/app/(athlete)/rpe/[sessionId]/page.tsx, src/components/RpeForm/RpeForm.tsx, src/components/CR10List/CR10List.tsx and src/lib/validation/training.ts.
+
+There is no separate question sentence. The screen title IS the question: “How hard was it?” — an <h1> at page.tsx:43, and the same string in the page <title>.
+
+Instruction under it, RpeForm.tsx:133: “Rate the whole session, not the hardest bit.”
+
+Accessible name for the scale, CR10List.tsx:25, class visually-hidden so it reaches screen readers only: “Session rating, 1 to 10”.
+
+END LABELS. Not literal JSX — they are values in the CR10_ANCHORS constant in src/lib/validation/training.ts, rendered by CR10List.tsx:41. Resolved: 1 = “Very easy”, 10 = “Maximal”.
+
+The full anchor set, since only some steps carry one: 1 “Very easy”, 2 “Easy”, 3 “Moderate”, 4 none, 5 “Somewhat hard”, 6 none, 7 “Hard”, 8 “Very hard”, 9 “Extremely hard”, 10 “Maximal”. Steps 4 and 6 render a middle dot instead, marked aria-hidden.
+
+Also on the screen, since the specification asks for exact wording an athlete reads: the duration question “How long were you training?” (RpeForm.tsx:140), the unit “MINUTES”, the helper “Scheduled for {n} min” or, with no scheduled length, “No scheduled length. Set how long you trained.”, and the optional note label “Add a note”.
+
+Note the scale ordering carries a written caution in the source: training.ts records that the anchor wording “wants a sports science review before this ships past a thin slice” (O-410). That review has not happened and is not tracked anywhere in this workbook.
 
 ---
 
@@ -197,11 +207,19 @@ out in markup and were not found.
 
 **What would settle it.** Open `/nutrition-check-in` and write down the question and all three answer labels exactly.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**ANSWERED by Claude Code, 8 September 2026** against the live repository. The recommendation that preceded it, and Isabella's decision where there was one, are in `archive/2026-09-08-athlete-spec-review-record.docx`.
+
+Answered by Claude Code, 8 September 2026, from src/app/(athlete)/nutrition-check-in/page.tsx, src/components/NutritionCheckinForm/NutritionCheckinForm.tsx and src/lib/validation/nutrition.ts.
+
+Screen title, page.tsx:49: “Weekly check-in”.
+
+The question, NutritionCheckinForm.tsx:144: “Did you hit your protein target most days this week?”
+
+THE THREE ANSWERS. Not literal JSX — they are the label values of the ANSWERS constant at NutritionCheckinForm.tsx:13-17, mapped to buttons at line 148. Resolved, in the order they appear: “Yes”, “Roughly”, “No”. The stored values are yes / roughly / no, matching z.enum in validation/nutrition.ts.
+
+Optional note label: “Add a note”, capped at 280 characters.
+
+ONE INCONSISTENCY WORTH RECORDING. The to-do item that links here from Today reads “Did you hit your protein target most days?” — without “this week” (today/page.tsx). The question on the screen itself has it. Same question, two wordings, and the shorter one is the one an athlete reads first. Not a defect, but if the wording is being fixed anywhere it should be fixed in both.
 
 ---
 
@@ -215,11 +233,19 @@ out in markup and were not found.
 
 **What would settle it.** Open `/check-in` and say whether there is a text box, and if so what it is labelled and what the placeholder says.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**ANSWERED by Claude Code, 8 September 2026** against the live repository. The recommendation that preceded it, and Isabella's decision where there was one, are in `archive/2026-09-08-athlete-spec-review-record.docx`.
+
+Answered by Claude Code, 8 September 2026, from src/components/CheckInForm/CheckInForm.tsx and src/lib/validation/wellness.ts.
+
+YES. The screen renders it. CheckInForm.tsx:254-262, a <textarea> inside a <label class="ci-comment">.
+
+Label: “Comment or injury issue (optional)”
+
+Placeholder: “Anything you want your coach or medical staff to know.”
+
+CORRECTION TO THIS WORKBOOK'S PREMISE. The question says the field is “capped at 1,000 characters”. That is the DATABASE cap and it is real — wellness_entries carries CHECK ((comment IS NULL) OR (char_length(comment) <= 1000)). But the application caps it at 500, in two independent places: z.string().trim().max(500) in validation/wellness.ts:34, and maxLength={500} on the textarea itself. So the effective limit an athlete meets is 500, not 1,000, and the screen specification's “up to 1,000 characters” row (docs/athlete/screens/02-morning-check-in.md:42) overstates it by double.
+
+The same 500-against-1000 gap exists on the session rating note: training_entries has the identical 1,000 CHECK, and validation/training.ts caps at 500. Both are documented as 1,000 in this workbook. Neither is a data-loss risk — the tighter limit is the one enforced first — but the number in the specification is not the number an athlete meets.
 
 ---
 
@@ -233,11 +259,19 @@ out in markup and were not found.
 
 **What would settle it.** Sign in as a minor account, or read the branch in the file, and write down what the under 18 state says.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**ANSWERED by Claude Code, 8 September 2026** against the live repository. The recommendation that preceded it, and Isabella's decision where there was one, are in `archive/2026-09-08-athlete-spec-review-record.docx`.
+
+Answered by Claude Code, 8 September 2026, from src/app/(athlete)/me/leaderboards/page.tsx and src/components/LeaderboardConsentToggle/LeaderboardConsentToggle.tsx.
+
+The under-18 branch is chosen by isMinor at page.tsx:23, computed as age === null || age < 18 — an unknown date of birth counts as a minor, matching athlete_is_minor() in the database.
+
+Card heading, page.tsx:38: “Being named on a leaderboard”.
+
+Body, page.tsx:42, quoted as rendered (the source writes ’ and — as HTML entities): “Because you’re under 18, you are never named on a leaderboard unless you choose to be — that choice is yours alone, and nobody at your club can turn it on for you. Turning it off again is just as easy, any time.”
+
+THE NOT-YET-OPTED-IN CONTROL, which is the state the question asks about. LeaderboardConsentToggle.tsx:47, a button with aria-pressed=false: “Off — tap to appear on leaderboards”. Once opted in it reads “On — tap to turn off”, and while the write is in flight “Working…”.
+
+For contrast, the 18-and-over branch shows the same heading with different body text: “You appear on any leaderboard your club publishes and includes you in, unless you leave it. Leave one from the board itself, or leave every board at once below.” So the minor sees opt-in language and the adult sees opt-out language, which is the intended split.
 
 ---
 
@@ -251,11 +285,21 @@ out in markup and were not found.
 
 **What would settle it.** Open `/report-problem` and write down every label, the placeholder, and what an empty submission does.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**ANSWERED by Claude Code, 8 September 2026** against the live repository. The recommendation that preceded it, and Isabella's decision where there was one, are in `archive/2026-09-08-athlete-spec-review-record.docx`.
+
+Answered by Claude Code, 8 September 2026, from src/app/(athlete)/report-problem/page.tsx, src/components/ProblemReportForm/ProblemReportForm.tsx and src/lib/validation/problemReport.ts.
+
+Screen title: “Report a problem”. Standing notice above the form: “Goes to your club’s medical staff. Not a substitute for emergency care — if this is urgent, contact emergency services or your GP.”
+
+Category label, ProblemReportForm.tsx:69: “What kind of thing is this? (optional)”
+
+Category chips. Not literal JSX — label values of the CATEGORIES constant at ProblemReportForm.tsx:10-14. Resolved: “Injury or pain”, “Wellbeing”, “Something else”. Tapping a selected chip clears it; no category is a real answer, not defaulted to other.
+
+Free text label, line 84: “What’s going on?”  Placeholder, line 94: “Tell us what you're noticing and when it started.”  A live counter under it reads “{n}/1000”.
+
+INVALID OR EMPTY SUBMISSION. Empty cannot be submitted at all: the button carries disabled={mutation.isPending || body.trim().length === 0}, so it is inert until something is typed. If a submission still fails the schema, onSubmit shows the first Zod message inline in a <p class="form-error" role="alert">. The messages are: for an empty body, “Tell us what’s going on.”; for over-length, “Keep it under 1,000 characters — medical will follow up.”; and a fallback if neither matched, “Something on this didn’t check out. Try again.” Nothing is submitted and nothing is lost from the box.
+
+ONE INCONSISTENCY WORTH RECORDING. The third category is labelled “Something else” when entering a report, but the list of already-submitted reports on the same screen renders it from PROBLEM_REPORT_CATEGORY_LABEL (src/lib/queries/problemReports.ts:23), where the same value is labelled “Other”. An athlete files a report under “Something else” and then sees it listed as “Other”. Two labels, one value, one screen.
 
 ---
 
@@ -269,11 +313,19 @@ out in markup and were not found.
 
 **What would settle it.** Open a gym session and write down the field labels and what an invalid entry does.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**ANSWERED by Claude Code, 8 September 2026** against the live repository. The recommendation that preceded it, and Isabella's decision where there was one, are in `archive/2026-09-08-athlete-spec-review-record.docx`.
+
+Answered by Claude Code, 8 September 2026, from src/app/(athlete)/gym/[sessionId]/page.tsx, src/components/GymSessionLogger/GymSessionLogger.tsx and src/lib/validation/gym.ts.
+
+THE QUESTION'S PREMISE NEEDS CORRECTING FIRST. In the normal logging flow there are no weight and reps fields at all. The screen shows one tappable key per set (GymSessionLogger.tsx:452), and a tap logs the PRESCRIBED reps and the resolved weight rather than asking the athlete to type what they did. The component's own header gives the reason: the prescription is right on the overwhelming majority of sets, and the athlete is standing under a bar with cold hands.
+
+So the only wording in the primary path is the keys' accessible names, both built from template literals. Unlogged: “Log set {n} of {total}, {exercise name}”. Logged: “Set {n} logged, {reps} reps at {load} kg. Correct it.” — with “no” substituted for a null reps value and “no load” for a null load.
+
+THE LABELS THE QUESTION ASKS FOR EXIST ONLY IN THE CORRECTION PANEL, which opens when an already-logged key is tapped. Heading: “Correcting set {n}”. Field labels, GymSessionLogger.tsx:507 and 525: “Reps” and “Load (kg)”. Not “Weight”.
+
+Also present, at the end of the session: “Session RPE (optional)”, a number input bounded 1 to 10.
+
+INVALID INPUT. Both inputs are type="number" (reps inputMode numeric, load inputMode decimal with step 0.5), so the keypad itself refuses most bad input. Beyond that, every write is built through buildSetInput, which safeParses against GymSetLogInput and returns null on failure rather than sending anything. The visible result on the primary path is one inline message: “Something on this set did not check out. Try again.” The schema bounds are reps_completed 0–100 and load_kg 0–500, both nullable, so a blank field is a legitimate value and not an error.
 
 ---
 
@@ -287,11 +339,19 @@ out in markup and were not found.
 
 **What would settle it.** Read them off the screen.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**ANSWERED by Claude Code, 8 September 2026** against the live repository. The recommendation that preceded it, and Isabella's decision where there was one, are in `archive/2026-09-08-athlete-spec-review-record.docx`.
+
+Answered by Claude Code, 8 September 2026, from src/app/(athlete)/me/page.tsx (which renders <ChangePasswordForm /> at line 175) and src/components/ChangePasswordForm/ChangePasswordForm.tsx.
+
+Labels, in order: “Current password”, “New password”, “Confirm new password”.
+
+Helper under the new password field: “At least 12 characters.” Built from the MIN_LENGTH constant (ChangePasswordForm.tsx:11), not a literal; resolved value 12, which is what docs/09-security-and-compliance.md §8 specifies.
+
+MINIMUM-LENGTH MESSAGE, shown inline in a <p class="form-error" role="alert">: “Use at least 12 characters.” Also from MIN_LENGTH, so the two numbers cannot drift apart.
+
+The other two messages on the same form, since they are the rest of what an athlete can hit: “Choose a different password.” when the new password equals the current one, and “The new password and its confirmation do not match.”
+
+The three inputs carry autoComplete="current-password", “new-password” and “new-password”, so a password manager fills and offers to save correctly. No placeholder text on any of them.
 
 ---
 
@@ -399,11 +459,19 @@ out in markup and were not found.
 
 **What would settle it.** Open `/programme/nutrition` and say whether a target RANGE is visible, as opposed to the daily targets.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**ANSWERED by Claude Code, 8 September 2026** against the live repository. The recommendation that preceded it, and Isabella's decision where there was one, are in `archive/2026-09-08-athlete-spec-review-record.docx`.
+
+Answered by Claude Code, 8 September 2026, from src/app/(athlete)/programme/nutrition/page.tsx and a whole-repository search for the range table.
+
+NO LEAK. MET-036's rule holds. The screen does not render the body mass target range anywhere.
+
+What it does render, page.tsx:66-79, is the athlete's own last recorded weight, used to scale portion sizes: “Portions below are scaled to your last recorded weight, {n} kg, on a {day type}.” And when there is no weigh-in on file: “We don’t have a recent weigh-in on file for you, so portions are shown at a standard reference weight ({REFERENCE_MASS_KG} kg) until your club’s staff log one.” REFERENCE_MASS_KG is a constant, resolved value 110. Both lines close with “Reference only — nothing here is logged or tracked.”
+
+That is the athlete's own weight, which they entered themselves at the morning check-in, and a fixed constant. Neither is the staff-authored target range.
+
+HOW THIS WAS ESTABLISHED, since a negative needs its method stated. The range lives in body_mass_target_ranges (migration 0060), read only through src/lib/queries/bodyMassTargetRange.ts. Every importer of that module is a staff surface: (staff)/nutrition, (staff)/squad/[athleteId], (staff)/squad/[athleteId]/nutrition, BodyWeightPanel, nutritionWorkspace and playerProfile. No route under src/app/(athlete) references the table or the module, directly or by import.
+
+One transitive path was checked rather than assumed: the athlete page imports DAY_TYPES from src/lib/nutritionRules.ts, and that file does appear in a text search for the table name. It mentions bodyMassTargetRange only in a comment (line 149) and does not import it, and DAY_TYPES is a plain constant array of three day types. So there is no route from this screen to the range.
 
 ---
 
@@ -477,11 +545,9 @@ These cannot be answered by reading the code.
 
 **What would settle it.** Write the three sentences, or say that HealthKit is out of scope and the toggle should be removed. Q-03 is the related decision.
 
-| Your answer |
-|---|
-|   |
-|   |
-|   |
+**Decided by Isabella, 8 September 2026: out of scope**, consistent with DECISION 5 and Q-03. There is no native app to hold these strings, and the Apple Health toggle should be hidden until ingestion exists, so nothing needs writing today. The three drafts stay in Appendix E as a starting point for whenever a native build and real HealthKit ingestion are both actually underway.
+
+**This answer was reversed and then restored on 8 September 2026**, and the round trip is worth recording rather than tidying away. It was briefly moved back **in** scope on the strength of a commitment to build native iOS starting immediately; Isabella corrected that the same day — the commitment was a misunderstanding — and her original answer stands. **The three strings in Appendix E are Claude's guesses and remain unwritten.** Nobody should treat a plausible draft as final copy.
 
 ---
 
@@ -539,3 +605,97 @@ These cannot be answered by reading the code.
 
 ---
 
+# Part 5. Added during the 8 September review
+
+Three questions were raised while reviewing this workbook rather than while
+writing it, so they have no equivalent in the earlier drafts. Q-28 and Q-30 were
+decided by Isabella the same day; Q-29's leaderboard half was answered against
+the repository.
+
+### Q-28. Should the athlete specification keep a Package column at all? DECISION, added 8 September 2026
+
+**The question.** No athlete screen or region is Premium gated: every one of the
+eighteen is Base. Should the specification drop the Package column entirely, or
+keep it with every row marked Base so the column exists the day a gate is added?
+
+**Why it matters.** The staff specification carries a Package column on every
+screen. If this document drops it, the two no longer look like one family, and
+whoever adds the first Premium athlete feature has to remember to add a column
+rather than a row.
+
+**Decided by Isabella, 8 September 2026: keep the column.** Every athlete screen
+is Base until a Premium athlete feature exists. It costs nothing to keep and
+something to re-add.
+
+### Q-29. Is any athlete number GPS derived, and what does a Basic club's athlete see? Added 8 September 2026
+
+**The question.** GPS is explicitly a Premium upsell (`docs/12-product-tiers.md`
+§2: "The client put it behind Premium explicitly"). A club paying for Premium GPS
+analysis has a reason to complain if a Basic club's athletes see the same
+numbers.
+
+**The My data half was settled during the review:** no figure on My data is
+GPS-derived on any tier today.
+
+**The leaderboard half needed the repository**, and is answered below.
+
+LEADERBOARD HALF answered by Claude Code, 8 September 2026, from metric_definitions on the live database, src/lib/queries/leaderboards.ts, both (athlete)/my-data/boards screens and the three (staff)/leaderboards surfaces. The My data half was already settled in this document and is not re-opened here.
+
+1. CAN A GPS BOARD EXIST? YES. Nine metrics in metric_definitions are sourced from gps_records and every one is leaderboard_eligible = true, with min_population 3 and no ineligible_reason: gps.total_distance_m, gps.running_distance_m, gps.high_speed_distance_m, gps.sprint_distance_m, gps.high_intensity_efforts, gps.max_speed_ms, gps.player_load, gps.accelerations, gps.decelerations. By comparison the four wellness metrics are all leaderboard_eligible = false with a written reason. So a sport scientist can configure a board around distance covered.
+
+2. IS IT TIER GATED? ON THE STAFF SIDE YES, ON THE ATHLETE SIDE NO. This is the finding.
+
+The staff side gates twice. (staff)/leaderboards/new filters every gps.* metric out of the catalogue for a Basic club, marking it ineligible with the reason “GPS metrics are part of the Premium plan. Your club is on Basic, so GPS data cannot be ranked yet — the same reason the training report and GPS import are unavailable. Everything else on this list still can be.” And (staff)/leaderboards/[leaderboardId] refuses to display an existing GPS board on a Basic club, returning a PlanGate reading “This board ranks a GPS metric, and GPS is part of the Premium plan. The board and its results are still here — they are not shown while the club is on Basic.” Its comment names the exact scenario it defends: a board “created while the club was Premium, or inserted directly”.
+
+The athlete side has no such check. Neither (athlete)/my-data/boards/page.tsx nor (athlete)/my-data/boards/[leaderboardId]/page.tsx imports isPremium, references tier, or tests metric_key for a gps. prefix. src/lib/queries/leaderboards.ts contains no tier logic either. The value is available and simply not consulted: requireAthlete() already selects organisations.tier (src/lib/session.ts:257), and (athlete)/me/page.tsx uses it to print the plan name.
+
+SO A BASIC CLUB'S ATHLETES WOULD SEE A GPS BOARD WITH NO GATE, in precisely the two situations the staff view already defends against — a club that created the board while Premium and then downgraded, or a direct PostgREST insert. leaderboards/new's own header concedes the second is possible: “a direct PostgREST insert could still create a GPS board on a Basic org”, and says closing it properly needs the tier inside compute_leaderboard.
+
+LATENT, NOT LIVE. Checked against production on 8 September 2026: two organisations, Marlow Vale RUFC on core (Basic) and Ashcombe Rugby Club on performance (Premium); one leaderboard in total, “Total session load”, a training metric, owned by the Premium club. Zero GPS boards exist on a Basic org, so no athlete is seeing this today. It becomes live the first time a Premium club with a GPS board downgrades.
+
+RECOMMENDATION, for Isabella. Mirror the staff gate on the two athlete board screens, which is a small change and makes the behaviour symmetrical. Then consider the deeper fix the staff code already names — the tier inside compute_leaderboard — so the rule holds for any caller rather than per screen. Neither is urgent while no such board exists, but the first one costs little and removes the downgrade trap.
+
+**Closed 8 September 2026.** Isabella greenlit the page-level fix, which shipped
+as commit `77cdf20`, and the function-level fix followed as migration `0094`,
+which moved the tier check inside `compute_leaderboard` so a direct call cannot
+bypass it. Both are deployed.
+
+### Q-30. When does push and email delivery actually get built? DECISION, added 8 September 2026
+
+**The question.** Nothing in this codebase sent a push notification or an email.
+No Expo push credentials, no email provider account. Every "an invite was sent"
+and every password reset wrote the correct rows and delivered nothing.
+
+**Decided by Isabella, 8 September 2026: split it in two.**
+
+**Email first, and it is done.** Both flows now send and both were confirmed
+landing in a real inbox on 8 September. They are two different systems, which the
+original framing of this question missed: invites go through
+`getEmailProvider()` to the Resend API, configured with `RESEND_API_KEY` and
+`EMAIL_FROM_ADDRESS` in Vercel; password resets go through
+`supabase.auth.resetPasswordForEmail()` and Supabase's own mailer, configured as
+custom SMTP in the Supabase dashboard. Bulk invite sends nothing by design and
+returns a link for staff to copy.
+
+**One constraint that is easy to mistake for done:** until a domain is verified
+in Resend, `EMAIL_FROM_ADDRESS` can only be `onboarding@resend.dev`, which sends
+only to the Resend signup address. Invites cannot reach a real player until
+`fydr.app` is verified.
+
+**Push is ON HOLD, by Isabella's decision of 8 September 2026**, and not for lack
+of a decision to build it — the wellness and RPE nudges are confirmed. It is held
+because nobody knows how many athletes it could reach. iOS Safari delivers Web
+Push only to a site added to the Home Screen, there is no `beforeinstallprompt`
+on Safari so the install cannot be triggered in code, and the reach without that
+flow is zero rather than low. The device split is unknown and cannot be estimated
+from this build: `push_tokens` holds 43 rows all saying `platform=ios`, but no
+code has ever written that table — they encode the abandoned Expo plan. Revisit
+in early October 2026, once `audit_log.metadata->>'user_agent'` has a few weeks
+of real sign-ins.
+
+**And the mechanism named in the original decision is wrong now.** "Expo
+credentials" presupposed the native app, which was reversed the same day. For a
+responsive web app the equivalent is Web Push: a service worker plus a VAPID key
+pair, with subscriptions stored where `push_tokens` already is. None of it
+exists — no service worker, no registration code, no `web-push` dependency. The
+manifest is the one part already correct.

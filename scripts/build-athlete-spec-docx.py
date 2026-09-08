@@ -114,6 +114,13 @@ def main():
         p.add_run(line)
     doc.add_page_break()
 
+    # The state-of-the-document page, ported out of the reviewed Word file on
+    # 8 September 2026 so it lives in markdown like everything else. It comes
+    # first because it is what tells a reader which parts of the rest are live.
+    render(doc, open(os.path.join(ROOT, "docs/athlete/start-here.md"),
+                     encoding="utf-8").read(), base_level=1)
+    doc.add_page_break()
+
     doc.add_heading("How to read this document", level=1)
     render(doc, HOW_TO_READ, base_level=1)
     doc.add_page_break()

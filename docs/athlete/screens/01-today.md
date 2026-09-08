@@ -13,13 +13,49 @@ who is not also an athlete is redirected to `/dashboard`.
 
 ## 3. What you see
 
-Top to bottom on a phone:
+Top to bottom on a phone, in the order the page actually renders them
+(`today/page.tsx`, corrected 8 September 2026 — the previous version of this
+list omitted items 4 and 5 entirely and had the fixture below the to-do list
+rather than above it):
 
 1. **Who you are and what day it is**, with the matchday label for the week
    (`mdLabel`, `mdExplainer`).
-2. **What you owe today**, as a to-do list. This is the screen's real job.
-3. **What is on today**, the sessions from the schedule.
-4. **What the club is working towards**, the next fixture (`fetchNextFixture`).
+2. **The week strip**, seven days coloured by session type.
+3. **What the club is working towards**, the next fixture (`fetchNextFixture`).
+4. **Whether you are available, and what you may do today**
+   (`AvailabilityBanner`). Always present, on every load, whatever the status.
+5. **Your own diagnosis, if there is one** (`InjuryClinical`). Often absent.
+6. **What you owe today**, as a to-do list. This is the screen's real job.
+7. **What is on today**, the sessions from the schedule.
+8. **Something not right?**, the link to report a problem.
+
+**The availability banner, item 4, in detail**, because it is the part of this
+screen an athlete reads first when something is wrong:
+
+- A ring in the status colour, and the status word alone — **Available**,
+  **Modified** or **Unavailable**.
+- Then what they may do. `Available` reads "Everything is on." and nothing
+  further. Otherwise the restrictions, joined with a middle dot; or the reason
+  category if there are no restrictions; or "No restriction recorded."
+- Then the staff note, if one was written.
+- Then **the injury line**: body area with the side folded in, the recovery
+  stage, and the expected return date — "Right shoulder · Rehab · Expected
+  return Tue 15 Sept". See §5 for when each part appears.
+- Then "Everything else is on. Speak to medical staff."
+
+Everything from the note downwards appears **only when the status is not
+`available`**. A cleared athlete sees the status word and "Everything is on."
+and nothing else, so a stale note or a healed injury cannot contradict it.
+
+**The diagnosis block, item 5**, is a separate component and deliberately not
+part of the banner: availability is a squad fact a coach also sees, a diagnosis
+is clinical and only this athlete and the medical staff see it. It shows
+`Diagnosis` and `How it happened`, each only if recorded, closing with
+"Recorded by your medical staff. Speak to them about anything here." It renders
+nothing at all — no heading, no placeholder — when there is no clinical record,
+no linked injury, or the athlete is under 18, and it never explains which of
+those applies. Saying "this is withheld from you" would tell a minor that the
+withheld thing exists, which is what the age gate in migration 0093 prevents.
 
 **Above the fold: the to-do list.** Everything else can be scrolled to.
 
@@ -34,8 +70,38 @@ destination (`today/page.tsx:123`) and the entry happens on the screen it opens.
 |---|---|---|---|---|
 | MET-014 | The MD label, for example MD-2 | How many days until the next match | The week | No fixture, no label |
 | MET-024 | Session times and durations | What is scheduled today | Today | "Nothing scheduled" |
+| None | The status word: Available / Modified / Unavailable | `availability.status`, the row currently in force | Now | No row at all reads as Available |
+| None | The restrictions, joined with a middle dot | `availability.restrictions` | Now | Falls back to the reason category, then "No restriction recorded." |
+| None | Body area and side, e.g. "Right shoulder" | `injuries.body_area` and `.side`, via `bodyAreaPhrase` | Now | Line absent when the availability row names no injury |
+| None | The recovery stage: Open / Rehab / Return to play | `injuries.status` | Now | Line absent, as above |
+| None | "Expected return Tue 15 Sept" | `injuries.expected_return` | Now | **Absent when the date has passed**, as well as when there is none |
+| None | Diagnosis | `injury_clinical_athlete_view.diagnosis` | Now | Block absent |
+| None | How it happened | `injury_clinical_athlete_view.mechanism` | Now | Block absent |
 
 Formulas live in `docs/metrics.md`.
+
+**Why nine of these say "None" in the Metric ID column**, added 8 September
+2026: they are not registry metrics and have no MET IDs. The registry covers
+quantities that both apps compute and compare — MET-013 is the closest, and it
+is the STAFF squad availability split, a count across a roster, not an
+athlete's own status. Nothing here is computed: each value is a column read
+straight out and rendered. Inventing IDs for them would put nine entries in a
+parity registry with nothing on the other side to be in parity with.
+
+**Two behaviours in that table are easy to misread as bugs**, so they are
+stated here rather than left to be rediscovered:
+
+- **A past expected-return date is suppressed on this screen, deliberately**
+  (`upcomingDate`, `src/lib/format.ts`). On 8 September 2026 all six open
+  injuries carried a date between 9 and 31 days in the past — seeded relative
+  to `current_date` a month earlier — so no athlete saw a return date at all.
+  That was the data ageing, not this screen misbehaving; both databases were
+  corrected the same day. A date a month gone is not information, and on a
+  concussion it reads as pressure to be back already.
+- **The staff injury card shows the same date unconditionally**, past or not
+  (`InjuryCard.tsx`), and that asymmetry is the point: the club needs to see
+  that its own record is stale, because they are the only ones who can fix it.
+  The person who stops being told is the one who cannot act on it.
 
 ## 6. Every thing you can act on
 
@@ -97,6 +163,15 @@ than drop it.
 ## 12. Open issues
 
 - **UNVERIFIED:** notification copy and timing. DECISION 12.
-- **UNVERIFIED:** whether Today tells an athlete they are unavailable. DECISION 8.
+- **RESOLVED 8 September 2026:** whether Today tells an athlete they are
+  unavailable. DECISION 8. **It always has** — `AvailabilityBanner` has rendered
+  on every load of this screen since before this specification was written, with
+  the status word, the restrictions and the staff note. The earlier UNVERIFIED
+  mark, and a report that stated the athlete "finds out they cannot train from a
+  person", both came from grepping the route folder for a table name; the query
+  lives in `src/lib/queries/availability.ts` and the screen reaches it by import.
+  Tier 1, the same day, added the injury, the recovery stage and the expected
+  return date on top; Tier 2 added the diagnosis and mechanism behind an age
+  gate. Documented in §3 and §5 above.
 - Deep links to Today survive sign out; eight other athlete screens do not.
   DECISION 1.

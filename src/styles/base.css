@@ -2013,16 +2013,29 @@ a.hist-row:focus-visible {
 
 /* The week card holds the strip and, when there is one, the fixture it is
    counting towards — one card, a hairline between them, per 23a. */
+/* PLAIN, not tinted, since the 2026-09-08 redesign. It used to carry
+   --wash-accent on the argument that it is the card the athlete reads first and
+   was sitting as one more grey panel. The reference reverses that: screenshots
+   01 and 02 draw it on the ordinary card surface, and with the Modified row now
+   the only tinted thing on the screen, the tint was competing with the one
+   element that should stand out. No background override at all, so it inherits
+   .card and cannot drift from the rest. */
 .wk-card {
   padding: 0;
   overflow: hidden;
-  /* Tinted, not white. It is the card the athlete reads first and it sat as
-     one more grey panel among the rest. */
-  background: var(--wash-accent);
 }
+/* One full-width row: name and date left, room for a chevron right when there
+   is somewhere for it to go. Was a stacked block with the eyebrow above. */
 .wk-towards {
   padding: 12px var(--pad-card) 14px;
   border-top: 1px solid var(--hair);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.wk-towards > div {
+  flex: 1;
+  min-width: 0;
 }
 .wk-towards-name {
   margin: 3px 0 0;

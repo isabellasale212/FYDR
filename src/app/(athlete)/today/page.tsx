@@ -1,14 +1,10 @@
 import Link from 'next/link';
 import { AvailabilityBanner } from '@/components/AvailabilityBanner/AvailabilityBanner';
-import { InjuryClinical } from '@/components/InjuryClinical/InjuryClinical';
-import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { OutboxFlusher } from '@/components/OutboxFlusher/OutboxFlusher';
 import { Toast } from '@/components/Toast/Toast';
 import { fetchAthleteAvailability } from '@/lib/queries/availability';
-import { fetchAthleteInjuryClinical } from '@/lib/queries/athleteInjuryClinical';
 import { fetchMyOutstanding } from '@/lib/queries/compliance';
 import {
-  fetchAthleteDaySessions,
   fetchAthleteWeekSessionTypes,
   fetchNextFixture,
   fetchWeekMdLabels,
@@ -17,7 +13,6 @@ import {
 import { fetchCheckinForWeek } from '@/lib/queries/nutrition';
 import { fetchMyAllocation } from '@/lib/queries/teamAllocation';
 import {
-  BLANK,
   addDays,
   enumLabel,
   formatDate,
@@ -65,10 +60,20 @@ function toastMessageFor(
 }
 
 /**
- * The compliance surface, ATHLETE-APP-SPEC.md §5. Six blocks in the spec's
- * own order: week strip, availability, to do, today's sessions, "something
- * not right", plus the done state that replaces to-do once nothing is
- * outstanding. "Fuelling today" — a card this page carried before this
+ * The compliance surface, ATHLETE-APP-SPEC.md §5, as redrawn on 2026-09-08.
+ * Four blocks now, in the reference's order: week strip with the fixture row
+ * beneath it, the availability row, the to-do list, and the done state that
+ * replaces the to-do list once nothing is outstanding.
+ *
+ * TWO BLOCKS WERE REMOVED and neither was an oversight. Today's session list
+ * went because the reference makes the to-do list this page's only actionable
+ * list — what is on today is the schedule's job, not this screen's. The
+ * "Something not right?" row went with it; the report-a-problem route still
+ * exists at /report-problem and problem_reports is unchanged, but nothing on
+ * Today links to it any more. That is worth knowing rather than assuming: it
+ * was the only in-app entry point, so an athlete now needs the URL or a link
+ * from somewhere yet to be built. Raised with Isabella on 2026-09-08 and
+ * confirmed. "Fuelling today" — a card this page carried before this
  * pass — moved to Programme, which now has the spec's own dedicated
  * nutrition-targets card (§11); showing standing targets in both places
  * was two homes for one real number.
@@ -93,7 +98,6 @@ export default async function TodayPage({
   const [
     availability,
     outstanding,
-    sessions,
     nutritionCheckin,
     myAllocation,
     weekMd,
@@ -103,7 +107,6 @@ export default async function TodayPage({
   ] = await Promise.all([
       fetchAthleteAvailability(db, orgId, athleteId),
       fetchMyOutstanding(db, athleteId, today),
-      fetchAthleteDaySessions(db, orgId, athleteId, today, timezone),
       fetchCheckinForWeek(db, athleteId, nutritionWeekStart),
       fetchMyAllocation(db, athleteId, weekStart),
       fetchWeekMdLabels(db, orgId, weekStart, timezone),
@@ -119,11 +122,6 @@ export default async function TodayPage({
       fetchNextFixture(db, orgId, new Date().toISOString()),
     ]);
 
-  /* Sequential rather than joined to the Promise.all above, because it needs the
-     injury id that availability resolves. Skipped entirely when there is no
-     linked injury, which is the common case — and when there is one, the view
-     returns nothing for an athlete under 18 (0093). */
-  const injuryClinical = await fetchAthleteInjuryClinical(db, availability.injury?.id);
 
   const todoItems = [
     ...outstanding.map((item) => ({
@@ -164,11 +162,10 @@ export default async function TodayPage({
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
-  // Every session in `sessions` falls on `today` (fetchAthleteDaySessions is
-  // bounded to that one calendar day), so the same anchored value the week
-  // strip below already uses for `today` applies uniformly to every pill in
-  // the day's session list — this replaces each session's raw, unanchored
-  // md_offset, which could disagree with the week strip on this very page.
+  /* Anchored to the week strip's own value rather than read per session. The
+     day's session list this used to feed is gone with the 2026-09-08 redesign,
+     but the header eyebrow below still needs today's MD offset and still needs
+     it to agree with the strip. */
   const todayMdOffset = weekMd.get(today) ?? null;
   /* Shown in the header eyebrow. Null when the club has no fixture bounding
      this week, in which case the eyebrow is just the date — an MD offset with
@@ -304,15 +301,21 @@ export default async function TodayPage({
             noise on the screen an athlete opens every morning. */}
         {nextFixture ? (
           <div className="wk-towards">
-            <p className="eyebrow">Working towards</p>
-            <p className="wk-towards-name">
-              v {nextFixture.opponent} · {enumLabel(nextFixture.home_away)}
-            </p>
-            <p className="wk-towards-when num">
-              {formatDate(nextFixture.kickoff_at.slice(0, 10), timezone)} · kick-off{' '}
-              {formatTime(nextFixture.kickoff_at, timezone)}
-              {nextFixture.venue ? ` · ${nextFixture.venue}` : ''}
-            </p>
+            <div>
+              <p className="eyebrow">Working towards</p>
+              <p className="wk-towards-name">
+                v {nextFixture.opponent} · {enumLabel(nextFixture.home_away)}
+              </p>
+              <p className="wk-towards-when num">
+                {formatDate(nextFixture.kickoff_at.slice(0, 10), timezone)} · kick-off{' '}
+                {formatTime(nextFixture.kickoff_at, timezone)}
+                {nextFixture.venue ? ` · ${nextFixture.venue}` : ''}
+              </p>
+            </div>
+            {/* NO CHEVRON, though the reference draws one. There is no athlete
+                fixture screen for it to open, and a chevron with no destination
+                is a control that lies about being one. The row is laid out with
+                room for it, so adding one is a line when the screen exists. */}
           </div>
         ) : null}
       </div>
@@ -321,7 +324,6 @@ export default async function TodayPage({
         status={availability.current?.status ?? null}
         restrictions={availability.current?.restrictions ?? []}
         reasonCategory={availability.current?.reason_category ?? null}
-        note={availability.current?.note ?? null}
         /* Already fetched above and, until 2026-09-08, thrown away on every
            load. fetchAthleteAvailability only resolves this when the
            availability row actually names the injury, so an athlete who is out
@@ -331,14 +333,6 @@ export default async function TodayPage({
         timezone={timezone}
       />
 
-      {/* Renders nothing when there is no clinical record, no injury, or the
-          reader is a minor — the view (0093) draws that last line, not this
-          page. Each field is guarded inside the component, because a record can
-          carry one and not the other. */}
-      <InjuryClinical
-        diagnosis={injuryClinical.diagnosis}
-        mechanism={injuryClinical.mechanism}
-      />
 
       {myAllocation ? (
         <p className="banner" role="status">
@@ -408,69 +402,7 @@ export default async function TodayPage({
         </div>
       )}
 
-      <section aria-labelledby="today-title">
-        <h2 className="sect" id="today-title">
-          Today
-        </h2>
-        {sessions.length === 0 ? (
-          <EmptyState
-            headingLevel={3}
-            title="Nothing scheduled"
-            body="You are not named in a session today. Rest or check with your coach."
-          />
-        ) : (
-          <div className="card flush">
-            {sessions.map((session, index) => {
-              const md = mdLabel(todayMdOffset);
-              const cancelled = session.status === 'cancelled';
-              return (
-                <div key={session.id}>
-                  {index > 0 ? <div className="hair" /> : null}
-                  <div className="sess" style={{ opacity: cancelled ? 0.55 : 1 }}>
-                    <span className="tm num">{formatTime(session.starts_at, timezone)}</span>
-                    <div>
-                      <div className="ti">
-                        <span style={{ textDecoration: cancelled ? 'line-through' : 'none' }}>
-                          {session.title}
-                        </span>
-                        <span className="pill pill-neutral">{enumLabel(session.session_type)}</span>
-                        {/* screens/schedule.md's realtime broadcast on
-                         * cancellation is not built here — see
-                         * lib/queries/schedule.ts's header comment. An
-                         * athlete only learns of a cancellation by opening
-                         * this screen, not the moment it happens, which is
-                         * a real, documented gap for the case the spec
-                         * calls out as the one to get right. */}
-                        {cancelled ? <span className="pill pill-bad">Cancelled</span> : null}
-                      </div>
-                      <div className="lo">
-                        {session.location ?? 'Location not set'} ·{' '}
-                        <span className="num">{session.duration_min ?? BLANK}</span> min
-                      </div>
-                    </div>
-                    {md ? (
-                      <span className="pill pill-neutral num" title={mdExplainer(todayMdOffset) ?? undefined}>
-                        {md}
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
 
-      {/* "Something not right?" — §5's always-available report route, now
-       * wired to the real thing: migration 0040's problem_reports table,
-       * 03-flows.md §6 ("Athlete reports a problem from Today tab ->
-       * notification to Medical"). */}
-      <Link href="/report-problem" className="report-card">
-        <span className="k">Something not right?</span>
-        <span className="chev" aria-hidden="true">
-          ›
-        </span>
-      </Link>
     </>
   );
 }

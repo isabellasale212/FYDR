@@ -56,6 +56,29 @@ export const INTERACTIVE =
    told so, which is the trade this heuristic is supposed to make. */
 export const SHAPED_ON_PURPOSE = /swatch|knob|track|avatar|bar\b|mark\b|sg-fixture|sg-legend|dot\b/i;
 
+/* THE ATHLETE REDESIGN'S PILLS, approved by Isabella on 2026-09-08 as named
+   exemptions rather than by changing the rule.
+ *
+ *  The rule above — "no pill-shaped buttons anywhere", every control at
+ *  --r-control 6px — still holds for the staff app and for every athlete control
+ *  not listed here. The redesign reference draws a handful of athlete controls as
+ *  full pills, and the choice was between exempting those by name or repointing a
+ *  token that would have moved ~58 interactive rules across both apps. Named
+ *  exemptions keep the blast radius to the controls actually redrawn, and keep
+ *  each one visible in this file rather than implied by a token.
+ *
+ *  THE CONSEQUENCE, so nobody discovers it later: the two apps now diverge. A
+ *  segmented control on a staff screen is 6px and its athlete equivalent is a
+ *  pill. That is intended, not drift.
+ *
+ *  ADD A NAME HERE ONLY WHEN THE REFERENCE ACTUALLY DRAWS A PILL, with the screen
+ *  it belongs to, so a later reader can check it against the screenshots. Empty
+ *  until the first pill control lands — the wellness sheet needed none, and Today
+ *  needs none either. */
+export const ATHLETE_PILL_EXEMPT: readonly string[] = [
+  // e.g. 'md-seg' — My data's segmented Wellness/Gym/Tests track (screens 03-08)
+];
+
 export type Violation = { selector: string; value: string };
 
 export function findViolations(css: string): Violation[] {

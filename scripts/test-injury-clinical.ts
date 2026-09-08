@@ -147,14 +147,32 @@ console.log('\nthe temporary preview is gone, not merely disabled');
   );
 }
 
-console.log('\nthe page wires it once, from the injury availability resolved');
+console.log('\nnot wired to Today any more, and deliberately kept rather than deleted');
 {
-  const calls = [...today.matchAll(/fetchAthleteInjuryClinical\(/g)].length;
-  assert(calls === 1, `exactly one clinical read on this page (saw ${calls})`);
-  assert(
-    /fetchAthleteInjuryClinical\(db, availability\.injury\?\.id\)/.test(today),
-    'keyed to the injury the availability row names, not to any injury on file',
-  );
+  /* THE REDESIGN REMOVED THE DIAGNOSIS BLOCK FROM TODAY, 2026-09-08, confirmed
+     by Isabella. So this component and its query now have no caller, and the
+     consequence is worth stating plainly rather than leaving to be noticed:
+     AN ATHLETE CANNOT SEE THEIR OWN DIAGNOSIS ANYWHERE IN THE APP. Tier 2
+     shipped this morning and is now built and unreachable.
+
+     They are kept, not deleted, because nothing about them is wrong. The view,
+     its age gate (migration 0093) and its one-column query are all deployed and
+     correct, and the redesign's own note says clinical detail belongs on an
+     injury screen that does not exist yet — the chevron the reference draws on
+     the Modified row is pointing at it. Deleting this would mean rebuilding the
+     careful half later: the source_table-style restraint in the select list, the
+     minor gate, and the render-nothing-and-explain-nothing rule.
+
+     So: assert they still exist, assert Today no longer calls them, and assert
+     the restraint is intact so it cannot rot while it sits unused. */
+  assert(/export async function fetchAthleteInjuryClinical/.test(query),
+    'the query still exists, ready for the injury screen');
+  assert(/export function InjuryClinical/.test(view),
+    'and so does the component');
+  assert(!/fetchAthleteInjuryClinical/.test(today),
+    'but Today no longer calls it');
+  assert(!/InjuryClinical/.test(today),
+    'and no longer renders it');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

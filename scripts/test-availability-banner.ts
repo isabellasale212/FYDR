@@ -93,33 +93,24 @@ console.log('\nan AVAILABLE athlete is told about no injury at all');
   );
 }
 
-console.log('\nnor anything else left over from when they were not available');
+console.log('\nthe staff note is gone entirely, which supersedes its visibility guard');
 {
-  /* THE NOTE HAS THE SAME PROBLEM reason_category already had, and the banner
-     already guards that one. A note is written against the availability row it
-     belongs to, and an athlete who is cleared gets a NEW row — but nothing
-     forces whoever writes it to clear the text, and on scratch one of the 34
-     available rows reads "Live-verification: flu, off this week." A player who
-     is training fully should not read that directly under "Everything is on.",
-     and three more available rows carry a leftover reason_category, which is
-     the same shape and is why the existing guard exists.
+  /* SUPERSEDED, 2026-09-08, and recorded rather than deleted so the sequence
+     stays legible. Earlier the same day this block asserted that the note
+     rendered ONLY when the status was not 'available' — a real fix, because one
+     of the thirty-four available rows on file read "Live-verification: flu, off
+     this week." and would have sat under "Everything is on."
 
-     Measured as READS, for the reason given above: the prop name appears in the
-     type and the destructure long before any guard, and neither renders. */
-  const guard = bannerCode.indexOf("status === 'available'");
-  /* `{note}` — the render itself. An earlier pattern here also matched `note?`
-     in the Props type, which is an optional-property marker and not a read, so
-     it reported a use before the guard that does not exist. Declarations are
-     not uses; this is the same distinction as the injury reads above. */
-  const noteReads = [...bannerCode.matchAll(/\{note\}/g)].map((m) => m.index ?? -1);
-  assert(noteReads.length > 0, 'the note is still rendered for somebody');
+     The redesign then removed the note from this row altogether. The guard is
+     not weakened; the element it guarded no longer exists, which satisfies the
+     original concern absolutely rather than conditionally. If a note is ever
+     restored here, restore the guard with it — that is what these assertions
+     are for now. */
+  assert(!/\{note\}/.test(bannerCode), 'the note is not rendered at all');
+  assert(!/note\?:\s*string/.test(bannerCode), 'and the prop is gone, not merely unused');
   assert(
-    noteReads.every((at) => at > guard),
-    'but never before the available check',
-  );
-  assert(
-    /status !== 'available'[\s\S]{0,400}\{note\b|note\s*&&[\s\S]{0,80}status !== 'available'|status !== 'available' && note/.test(bannerCode),
-    'and only inside the not-available branch, the same guard reason_category already has',
+    !/Live-verification|flu, off this week/.test(bannerCode),
+    'and nothing hardcodes the row that motivated the original guard',
   );
 }
 

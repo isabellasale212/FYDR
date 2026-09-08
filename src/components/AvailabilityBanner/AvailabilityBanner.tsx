@@ -8,7 +8,6 @@ type Props = {
   status: AvailabilityStatus | null;
   restrictions: readonly string[];
   reasonCategory?: AvailabilityReason | null;
-  note?: string | null;
   /** The injury this availability row is linked to, or null. Null is the common
    *  case and not an error: an athlete can be unavailable for illness, exams,
    *  personal leave or a representative call-up, and fetchAthleteAvailability
@@ -58,7 +57,6 @@ export function AvailabilityBanner({
   status,
   restrictions,
   reasonCategory,
-  note,
   injury = null,
   timezone,
 }: Props) {
@@ -101,7 +99,6 @@ export function AvailabilityBanner({
 
             Staff surfaces are unaffected: this is the athlete's banner, and a
             coach reading the same row still sees whatever is stored. */}
-        {status !== 'available' && note ? <div className="s">{note}</div> : null}
 
         {/* THE INJURY, and only when they are not fully available.
             Availability and injury are separate records: somebody can be
@@ -134,15 +131,17 @@ export function AvailabilityBanner({
         ) : null}
 
         {status !== 'available' ? (
-          /* Seventeen words became eight. The design's line here is "Speak to
-             medical staff." — and medical IS the right authority, since
-             availability is medically determined (CLAUDE.md rule 3), so
-             naming the coach as an alternative was pointing at someone who
-             cannot change it.
-             "Everything else is on" is kept against the design: it is four
-             words, and without them a list of three restrictions invites the
-             reader to assume there is a fourth they have not been told. */
-          <div className="s">Everything else is on. Speak to medical staff.</div>
+          /* "Speak to medical staff." alone since the 2026-09-08 redesign.
+             Medical is the right authority — availability is medically
+             determined, CLAUDE.md rule 3 — so naming the coach was always
+             pointing at someone who cannot change it.
+             "Everything else is on" used to open this line, kept against the
+             earlier design on the argument that a list of three restrictions
+             otherwise invites the reader to assume a fourth they were not told.
+             The reference drops it and Isabella confirmed. The argument was not
+             wrong; it lost to a calmer row, and it is written down here so
+             anybody restoring the words knows what they are restoring. */
+          <div className="s">Speak to medical staff.</div>
         ) : null}
       </div>
     </div>

@@ -18,7 +18,12 @@
 --
 -- WHY IT CALLS athlete_age_years AND NOT athlete_is_minor, which is the same
 -- rule and was the obvious first choice. `athlete_is_minor()` is SECURITY
--- DEFINER with EXECUTE granted to `postgres` and `service_role` only. A view's
+-- DEFINER with EXECUTE granted to `postgres` and `service_role` only --
+-- established by 0036_athlete_is_minor_revoke_explicit_grants.sql, which
+-- revokes it from `anon, authenticated`. NAMED HERE ON PURPOSE: 0010 grants
+-- EXECUTE to `authenticated` and 0035 only revokes it from `public`, so anyone
+-- who stops reading at 0035 concludes this paragraph is wrong. It is 0036 that
+-- makes it true. A view's
 -- owner rights cover access to the TABLES it reads; EXECUTE on a function it
 -- calls is still checked against the CALLER. So an owner-rights view calling
 -- athlete_is_minor fails for `authenticated` exactly as application code would
@@ -47,13 +52,20 @@
 -- present", are live options and either would replace this predicate rather than
 -- work around it. 490 is where such a change announces itself.
 --
--- NOT NARROWED IN ANY OTHER WAY, deliberately. The view still exposes mechanism,
--- severity, tissue_type, imaging, referral and treatment_plan to an adult
--- athlete, because that permission was decided separately and is not being
--- revisited here. The PRODUCT shows only the diagnosis: Tier 2's query selects
--- one column, and the restraint lives there, in front of a database that remains
--- more permissive than the screen. That gap is intentional and is written down
--- in docs/athlete/spec-gaps.md so it is not mistaken for an oversight.
+-- NOT NARROWED IN ANY OTHER WAY, deliberately. The view still exposes severity,
+-- tissue_type, imaging, referral and treatment_plan to an adult athlete,
+-- because that permission was decided separately and is not being revisited
+-- here. The PRODUCT shows TWO of those columns: fetchAthleteInjuryClinical
+-- selects `diagnosis, mechanism`, and the restraint lives there, in front of a
+-- database that remains more permissive than the screen. That gap is
+-- intentional and is written down in docs/athlete/spec-gaps.md so it is not
+-- mistaken for an oversight.
+--
+-- CORRECTED 2026-09-08: this paragraph said "shows only the diagnosis" and
+-- "selects one column", which was true when it was written that morning and
+-- stopped being true the same afternoon, when Isabella asked for mechanism as
+-- well. Mechanism is athlete-visible now, which is also why it has moved out of
+-- the exposed-but-hidden list above.
 
 create or replace view public.injury_clinical_athlete_view as
   select ic.injury_id,

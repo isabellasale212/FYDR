@@ -775,6 +775,41 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   **The fix:** roll over to `h:mm:ss` past an hour. Worth deciding at the same time whether an hours-long open session should show a duration at all, or should say something about the session being left open — a gym session is 45 to 90 minutes by design, and three hours means something went wrong rather than that the athlete trained for three hours.
 
+## 0h. Vertical rhythm on the athlete app, filed 2026-09-08 — measured, needs a decision before any fix
+
+- [ ] **Eight of the ten athlete screens do not render the spacing the stylesheet says they should, and the gaps range from 14px to 40.5px where 14px is intended.** Measured on production in a real athlete session, not read off the CSS.
+
+  **THE CAUSE IS ONE LINE OF LAYOUT.** `.phone-body` is `display: flex; flex-direction: column; gap: var(--gap-stack)`, so the shell already supplies the space between body blocks. Flex children do not collapse margins, so any block that ALSO sets `margin-top` adds to the gap: `gap 14 + mTop 14 = 28`. Where the preceding block carries a `margin-bottom` as well, that adds too.
+
+  | Screen | rendered gaps | intended | |
+  |---|---|---|---|
+  | Today | 16, 16, 16, 16, 16 | 16 | correct |
+  | Programme | 14, 14, 14 | 14 | correct |
+  | Me | 28, 28, 28 | 14 | 2x |
+  | My data | 18, 26, 28, 28 | 14 | mixed |
+  | Me -> Notifications | 18, 28 | 14 | mixed |
+  | Me -> Leaderboards | 26, 28, 28, 24 | 14 | mixed |
+  | My data -> Boards | 26.5, 40.5, 24 | 14 | up to 2.9x |
+  | Programme -> Nutrition | 25, 14, 40.5, 36, 28 | 14 | worst spread |
+  | Report a problem | 26, 34 | 14 | mixed |
+  | Nutrition check-in | 26 | 14 | 1.9x |
+
+  Today and Programme are clean for the same reason: no child sets a margin. Today's 16px is deliberate and documented — `.phone-body:has(> .wk-card)`, selected off the week card because Today is the only screen that has one.
+
+  **NUMBERS THAT DO NOT ADD UP, said so rather than smoothed over.** The 40.5px and 36px readings exceed `gap + margin-top`. The probe only read the FOLLOWING child's margin-top, so those two are under-explained by the table: the remainder is a `margin-bottom` on the preceding block. Anyone fixing this should measure both sides, not just the one the table shows.
+
+  **SCOPE.** 17 inline `marginTop` declarations across the athlete pages, plus `.me-stats` in CSS. Two arrived with the 2026-09-08 redesign — `.md-seg-track { margin-top: 4px }` and the `md-more` footer card's `marginTop: 14` — and the rest predate it. Athlete rules currently run 156 raw spacing values against 11 token reads.
+
+  **WHY IT DRIFTED INVISIBLY.** There is no spacing guard. `check:control-radius` fails the build on a raw radius anywhere near a control; nothing checks that a direct child of `.phone-body` adds no margin of its own. A guard for this is the same shape as that one and is the part worth building whichever way the decision goes, because it is what stops the next block re-introducing it.
+
+  **THE DECISION, WHICH IS NOT CLAUDE'S TO MAKE**, because the code cannot say which side is wrong:
+
+  **(a) The comment is right and the screens drifted.** `base.css` quotes "Spec §4: 16px between body cards on Today, 14px everywhere else", and eight screens do not do that. The fix is mechanical — remove margins from direct children of `.phone-body` and let the gap do the work — but it visibly tightens eight screens against a design that was signed off.
+
+  **(b) The screens are right and the comment is stale.** The athlete app was signed off on 4 September AS IT RENDERS, at 28px. If what shipped is what was approved, then `--gap-stack` and that comment are the things to correct, not the layout.
+
+  **Do not fix this by adding a second margin anywhere.** Whichever way it goes, the space between two body blocks should come from ONE place. That is the property the guard should assert.
+
 ## 1. Data & Schema — confirmed already built by reading the raw files directly
 - [x] Multi-tenancy: `org_id` on 56 of 58 tables, RLS enabled with a policy on all 58
 - [x] Role-based access: `app_role` enum, medical data split across `injuries` (coach-visible) and `injury_clinical` (medical-only by policy)

@@ -39,6 +39,9 @@ export async function sendInviteEmail(
     entity_id: targetUserId,
     metadata: {
       provider: provider.name,
+      /* Config, not content: the club's own outbound address. Null when nothing
+         was attempted, so the row never implies a send that did not happen. */
+      from: result.from ?? null,
       delivered: result.delivered,
       error: result.error,
       /* The note used to be hardcoded to the no-provider explanation for every

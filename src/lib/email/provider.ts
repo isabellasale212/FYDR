@@ -36,6 +36,17 @@ export type EmailMessage = {
 export type EmailSendResult = {
   delivered: boolean; // true only when a real provider genuinely accepted the send
   error: string | null;
+  /** The address the message was actually sent AS, when a real provider
+   *  attempted it. Undefined when nothing was attempted — the logging default,
+   *  or a send the guard refused — because reporting a sender for a message that
+   *  was never sent would be worse than reporting none.
+   *
+   *  Recorded because it could not otherwise be checked: the from-address lives
+   *  in a Vercel Secret, so it is unreadable from the environment, and the
+   *  invite audit row used to carry no trace of it. "Which address did that go
+   *  out as" is a question somebody asks after a deliverability problem, which
+   *  is exactly when the setting has already changed. */
+  from?: string;
 };
 
 export interface EmailProvider {
@@ -91,11 +102,23 @@ class ResendProvider implements EmailProvider {
       });
       if (!res.ok) {
         const body = await res.text().catch(() => '');
-        return { delivered: false, error: `Resend returned ${res.status}: ${body.slice(0, 300)}` };
+        /* The sender is reported on the FAILURE path too, and that is the more
+           useful of the two: Resend's commonest rejection is an unverified from
+           address, and the row is far easier to read when it says what was
+           attempted rather than only that something was refused. */
+        return {
+          delivered: false,
+          error: `Resend returned ${res.status}: ${body.slice(0, 300)}`,
+          from: this.fromAddress,
+        };
       }
-      return { delivered: true, error: null };
+      return { delivered: true, error: null, from: this.fromAddress };
     } catch (err) {
-      return { delivered: false, error: err instanceof Error ? err.message : 'Unknown error contacting Resend.' };
+      return {
+        delivered: false,
+        error: err instanceof Error ? err.message : 'Unknown error contacting Resend.',
+        from: this.fromAddress,
+      };
     }
   }
 }

@@ -158,5 +158,43 @@ console.log('\nthe audit note no longer claims the wrong reason');
   );
 }
 
+console.log('\nthe sender address is recorded, so the audit trail can answer "who was this from"');
+{
+  /* WHY THIS WAS ADDED, 2026-09-08. Isabella asked to confirm from the audit
+     trail that a send now came from noreply@fydr.app rather than
+     onboarding@resend.dev. It could not be answered: the row recorded provider,
+     delivered, error and a note, and nothing about the sender. The from-address
+     is configuration held in a Vercel Secret, so it cannot be read from the
+     environment either, and an unverifiable setting is one nobody can audit
+     after the fact. It is now on the result and on the row.
+
+     Config, not content — this is the club's own outbound address, not personal
+     data, so it does not touch the disclosure rules the trigger metadata
+     allowlist enforces. */
+  const provider = strip(readFileSync('src/lib/email/provider.ts', 'utf8'));
+  const send = strip(readFileSync('src/lib/email/send.ts', 'utf8'));
+
+  assert(/from\??:\s*string/.test(provider), 'EmailSendResult carries the sender address');
+  assert(
+    (provider.match(/from: this\.fromAddress/g) ?? []).length >= 2,
+    'and ResendProvider reports it on BOTH the success and the failure path — a rejected send is exactly when you need to know what it was sent as',
+  );
+  assert(/from: result\.from/.test(send), 'and sendInviteEmail records it on the audit row');
+
+  /* The guard must pass a real result through untouched, and must not invent a
+     sender for a send it refused to make. */
+  const sentFrom: string[] = [];
+  const inner = {
+    name: 'spy',
+    async send(m: { to: string }) { sentFrom.push(m.to); return { delivered: true, error: null, from: 'noreply@fydr.app' }; },
+  };
+  const guarded = new GuardedProvider(inner);
+  const ok = await guarded.send({ to: 'isabellasale212@gmail.com', subject: 's', text: 't', html: '<p>t</p>' });
+  assert(ok.from === 'noreply@fydr.app', 'the wrapper passes the sender straight through');
+
+  const blocked = await guarded.send({ to: 'x@ashcomberfc.example', subject: 's', text: 't', html: '<p>t</p>' });
+  assert(blocked.from === undefined, 'and reports no sender for a send it never made, rather than a misleading one');
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);

@@ -32,6 +32,16 @@ type Props = {
   /** x-axis labels, evenly spaced. Fewer than the data points on purpose. */
   xLabels: readonly string[];
   height?: number;
+  /** The rgb triple the bars and the shaded band tint from, as a var()
+   *  reference — e.g. 'var(--chart-load-rgb)'.
+   *
+   *  IT USED TO BE --accent-rgb, HARDCODED. That was invisible while every
+   *  board's line was also the accent, and became wrong the moment the four
+   *  boards took the chart spec's own colours: Training load drew product-blue
+   *  bars behind a chart-blue trend line, and Wellness drew a blue ±1SD band
+   *  behind a cyan line. Defaults to the accent so nothing that does not pass
+   *  it changes. */
+  tintRgb?: string;
 };
 
 const W = 560;
@@ -62,6 +72,7 @@ export function ComparisonChart({
   max,
   ticks,
   shaded,
+  tintRgb = 'var(--accent-rgb)',
   thresholds,
   decimals = 0,
   xLabels,
@@ -119,7 +130,7 @@ export function ComparisonChart({
           y={y(Math.min(max, shaded.to))}
           width={innerW}
           height={Math.max(0, y(Math.max(min, shaded.from)) - y(Math.min(max, shaded.to)))}
-          fill="rgb(var(--accent-rgb) / 0.10)"
+          fill={`rgb(${tintRgb} / 0.10)`}
         />
       ) : null}
 
@@ -146,7 +157,7 @@ export function ComparisonChart({
             width={bw * 0.64}
             height={Math.max(0, h)}
             rx={3}
-            fill={b.tone === 'bad' ? 'rgb(var(--bad-rgb) / 0.45)' : 'rgb(var(--accent-rgb) / 0.22)'}
+            fill={b.tone === 'bad' ? 'rgb(var(--bad-rgb) / 0.45)' : `rgb(${tintRgb} / 0.22)`}
           >
             {/* Each bar names its own week and total on hover, so the card can
                 carry the fact without a caption line restating it for every

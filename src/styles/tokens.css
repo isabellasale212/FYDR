@@ -20,19 +20,7 @@
    --highlight is decorative and never encodes status, §4.2 change 3.
    --------------------------------------------------------------------------- */
 :root {
-  /* REPOINTED 2026-09-08 to the analytics chart spec's blue, on Isabella's
-     "everything should match" — the spec names #5b9bf0 and the choice was
-     between two palettes or one. It is a softer blue than the #1f6fea it
-     replaces, and softer costs contrast: see --on-accent below, which had to
-     stop being white. MEASURED, both directions:
-       white   on #1f6fea = 4.65:1 (passed AA)
-       white   on #5b9bf0 = 2.84:1 (fails AA, and fails the 3:1 large floor)
-       #0b1f38 on #5b9bf0 = 5.83:1 (what --on-accent is now)
-     As a chart mark on the light ground it also drops 4.56:1 -> 2.79:1, which
-     is below the 3:1 graphic-object floor. Recorded rather than hidden: bars
-     here carry axis labels and a legend, so the mark is not the only channel,
-     but a future single-channel use of the accent on light needs to know. */
-  --accent: #5b9bf0;
+  --accent: #1f6fea;
   /* Spec §2: the accent's border, the same value in both themes. */
   --accent-border: #3c85f7;
   --accent2: #33b6ff;
@@ -42,13 +30,7 @@
      handoff settles it for the whole product, so the override blocks that used
      to sit below the dark theme are gone — one value, one place. Dark already
      read as cyan through those blocks; it now does so everywhere. */
-  /* Repointed with --accent to the chart spec's cyan. Nothing in the product
-     puts text on a solid --good fill (the one such rule, .cmpl-fill, is a bar),
-     so this is a straight swap. It slightly IMPROVES the light ground:
-     1.66:1 -> 1.93:1 as a mark on --elev. Still well under 3:1, as the old
-     value was — that is pre-existing and is why the cyan never carries meaning
-     on its own. */
-  --good: #5bc7de;
+  --good: #4fd6ff;
   --warn: #f6ab2f;
   --bad: #f15a4a;
   --highlight: #f5c518;
@@ -60,37 +42,24 @@
      colour per session type, gold genuinely means "this is a gym session").
      Reusing --highlight itself for that would quietly undo the fix; a
      same-value, differently-named token keeps both true at once. */
-  /* Repointed with the other two. Same situation as --good: the only solid
-     --gym fill is the gym progress bar, which carries no text, and the light
-     ground improves 1.60:1 -> 1.93:1. --gym-tint / --gym-on-tint are unchanged;
-     they are hand-picked literals measured against the tint, not derived from
-     this hue. */
-  --gym: #ebae4c;
-  /* Text on a solid --accent fill, and it is no longer white.
-   *
-   *  IT HAD TO CHANGE. This was #ffffff at 4.66:1 on the old #1f6fea; on the
-   *  new, softer #5b9bf0 white measures 2.84:1, which fails AA for normal text
-   *  and fails even the 3:1 large-text floor. #0b1f38 measures 5.83:1 there.
-   *
-   *  WHAT THAT LOOKS LIKE, so nobody thinks it is a bug: every solid accent
-   *  control in BOTH apps — .btn-primary, the active segment of the theme and
-   *  My data tracks, selected chips, the today pill on the week strip — now
-   *  carries dark navy text on a pale blue fill instead of white on a strong
-   *  blue. That is the visible cost of one palette rather than two.
-   *
-   *  IT ALSO FIXES A PRE-EXISTING FAILURE. .dash-clean-check puts this token on
-   *  --accent2 (#33b6ff), where white measured 2.26:1 and has been failing all
-   *  along; #0b1f38 measures 7.32:1 there.
-   *
-   *  Single-valued, like the fill it sits on. Derived, §14 has no entry for it. */
-  --on-accent: #0b1f38;
+  --gym: #f5c518;
+  /* Text on a solid --accent fill. 4.66:1 in both themes, so it is single valued
+     like the fill it sits on. Derived, §14 has no entry for it.
+     
+     IT WENT DARK FOR ONE COMMIT AND CAME BACK. 0f4b574 repointed --accent to
+     the analytics spec's softer #5b9bf0, where white measures 2.84:1 and fails
+     AA, so this had to become a dark navy — which repainted every primary
+     button in both apps as a side effect of matching four chart colours.
+     Isabella's call, and the right one: the chart hues moved to their own
+     tokens (see --chart-load below) and --accent went back to a blue dark
+     enough to carry white. */
+  --on-accent: #ffffff;
 
-  /* THE WHITE THAT --on-accent USED TO PROVIDE BY ACCIDENT. .plan-switch-knob
-     is a knob riding on an accent track: it read --on-accent as a FILL, not as
-     ink, so it was white only because text on the accent happened to be. With
-     --on-accent now dark that knob would have turned navy, which is not a
-     contrast fix, it is a broken switch. Its own token, so the two jobs cannot
-     be confused again. */
+  /* KEPT FROM THAT REVERSED COMMIT, because the problem it solves is real
+     whatever --accent is. .plan-switch-knob read --on-accent as a FILL rather
+     than as ink, so the knob was white only because text on the accent
+     happened to be — one token doing two unrelated jobs. Now the knob says
+     what it means. Nothing changes visually today. */
   --knob-fill: #ffffff;
   --avatar-bg: #1a2340;
   --avatar-text: #6f9bff;
@@ -117,13 +86,13 @@
      to this line — every visible tint anywhere in this app was riding on
      a plain solid colour or a token used without the slash, never on this
      triplet-plus-alpha pattern actually working. */
-  --accent-rgb: 91 155 240;
+  --accent-rgb: 31 111 234;
   --accent2-rgb: 51 182 255;
-  --good-rgb: 91 199 222;
+  --good-rgb: 79 214 255;
   --warn-rgb: 246 171 47;
   --bad-rgb: 241 90 74;
   --highlight-rgb: 245 197 24;
-  --gym-rgb: 235 174 76;
+  --gym-rgb: 245 197 24;
   /* SCHEDULE-SPEC.md §5 and §10: the "meeting" session type's tone is a bare
      neutral-ink alpha (rgba(16,18,23,0.3)), matching no existing named
      token. 16/18/23 is not new to this file — it is already the literal
@@ -190,6 +159,42 @@
      result is what stops a forty-eighth appearing. check:radius-tokens fails
      the build if one does. */
   --r-control: 6px;
+
+  /* THE ANALYTICS CHART PALETTE, and the reason it is its own family.
+   *
+   *  These are the four hexes the chart spec names. They were briefly applied
+   *  by repointing --accent, --good and --gym themselves (0f4b574), which
+   *  matched the spec everywhere — and repainted every primary button, active
+   *  tab and selected chip in both apps, because --accent's softer blue could
+   *  no longer carry white text. Isabella's decision: the charts get the
+   *  spec's colours, the product keeps its own.
+   *
+   *  ONLY CHART MARKS MAY READ THESE. They are tuned for a bar or a line on a
+   *  card, not for a fill with text on it — white on --chart-load measures
+   *  2.84:1, which is why putting one behind a label is the mistake this split
+   *  exists to prevent. A control reads --accent; a chart mark reads these.
+   *
+   *  MEASURED as marks against --elev, both themes, light first:
+   *    --chart-load      2.79:1 / 5.24:1
+   *    --chart-wellness  1.93:1 / 7.56:1
+   *    --chart-gym       1.93:1 / 7.58:1
+   *  All three are under the 3:1 graphic-object floor on the light ground, as
+   *  the cyan and the gold they replace already were (1.66 and 1.60). The
+   *  analytics boards carry axis ticks, a legend and a value label, so the
+   *  mark is never the only channel — but a single-channel use needs to know. */
+  --chart-load: #5b9bf0;
+  --chart-wellness: #5bc7de;
+  --chart-gym: #ebae4c;
+  /* The same three as rgb triples, because the bars and the shaded band are
+     drawn at 22% and 10% and this file's convention is `rgb(var(--x-rgb) / a)`
+     rather than color-mix. Declared beside the hexes so the pair cannot drift:
+     a board's bars, its band and its line all tint from one colour now, where
+     the bars and band used to come from --accent-rgb regardless of the
+     board — which is why Training load's bars were product blue behind a
+     chart-blue trend line. */
+  --chart-load-rgb: 91 155 240;
+  --chart-wellness-rgb: 91 199 222;
+  --chart-gym-rgb: 235 174 76;
 
   --r-band: 7px;
   --r-stat: 16px;

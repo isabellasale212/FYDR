@@ -57,6 +57,9 @@ type Board = {
   title: string;
   days: number;
   colour: string;
+  /** The rgb triple its bars and band tint from. Declared beside `colour` so a
+   *  board cannot end up with a line in one hue and bars in another. */
+  tintRgb: string;
   /** Weekly bars for athlete A behind the lines. The two rate/ratio boards do
    *  not get them — a bar chart of a ratio invites reading area as meaning. */
   bars: boolean;
@@ -80,7 +83,11 @@ const BOARDS: Board[] = [
     gpsMetric: true,
     title: 'Training load',
     days: 84,
-    colour: 'var(--accent)',
+    /* THE CHART PALETTE, not the product accent. See --chart-load in
+       tokens.css: these four hexes are the chart spec's, and they live in their
+       own token family precisely so matching them cannot repaint a button. */
+    colour: 'var(--chart-load)',
+    tintRgb: 'var(--chart-load-rgb)',
     bars: true,
     trend: true,
   },
@@ -89,7 +96,8 @@ const BOARDS: Board[] = [
     metric: 'readiness',
     title: 'Wellness',
     days: 28,
-    colour: 'var(--good)',
+    colour: 'var(--chart-wellness)',
+    tintRgb: 'var(--chart-wellness-rgb)',
     bars: false,
   },
   {
@@ -97,7 +105,8 @@ const BOARDS: Board[] = [
     metric: 'gym_volume',
     title: 'Gym volume',
     days: 56,
-    colour: 'var(--domain-gym)',
+    colour: 'var(--chart-gym)',
+    tintRgb: 'var(--chart-gym-rgb)',
     bars: true,
     trend: true,
   },
@@ -108,7 +117,10 @@ const BOARDS: Board[] = [
        where 128px has to hold it. */
     title: 'Acute:chronic ratio',
     days: 84,
-    colour: 'var(--accent)',
+    /* The same blue as Training load, per the spec: the ACWR band is drawn in
+       it and the two boards are read together. */
+    colour: 'var(--chart-load)',
+    tintRgb: 'var(--chart-load-rgb)',
     bars: false,
     acwrBand: true,
   },
@@ -457,6 +469,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
                   max={scale.max}
                   ticks={scale.ticks}
                   shaded={shaded}
+                  tintRgb={board.tintRgb}
                   thresholds={board.acwrBand ? [ACWR_BAND_LOW, ACWR_BAND_HIGH] : undefined}
                   decimals={metric.decimals}
                   xLabels={xLabelsFor(seriesA)}

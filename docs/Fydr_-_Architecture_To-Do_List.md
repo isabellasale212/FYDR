@@ -722,6 +722,26 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   **Not proposed here:** changing the seed. Relative dates are the right authoring choice — a seed with fixed dates would be stale the day after it was written rather than a month later. The fix, if this ever becomes annoying, is a re-anchoring script rather than a different seed.
 
+## 0g. Cosmetic, filed 2026-09-08 from the athlete restoration screenshot pass — Isabella confirmed neither blocks the deploy
+
+- [ ] **The readiness area fill turns a two-day run of data into a solid sliver.** `WellnessChart`'s `area` prop was added on 2026-09-08 for the redesign reference ("a filled-area sparkline (was a bare line)"). It builds one closed path per value SEGMENT, which is right — a day the athlete did not submit leaves a gap in the fill exactly as it leaves one in the line, and closing the area across a gap would invent a reading. The problem is only at small segment sizes.
+
+  **How it showed up.** James Barnes's My data on scratch: 9 of 28 days submitted, in two clusters. The SVG holds two area paths — one 76 units wide over nine points, one **13 units wide over two points** — and the second reads on screen as a detached blob sitting to the right of the plot, which looks like a rendering artefact. It is not: it is the data. Verified by reading the path geometry rather than by eye, because the eye said "bug".
+
+  **Why the reference never showed it.** Screens 03/04 draw twelve contiguous days out of fourteen, so every segment there is long enough for the fill to read as an area.
+
+  **The fix, if wanted:** skip the fill for segments below about three points and let them stay a bare line. The line is already drawn for every segment, so this is a filter on `areaSegments`, not new drawing code. One condition, one place.
+
+  **Not proposed:** closing the area across gaps. That would flatter an athlete's consistency and is the exact invention the segmented path exists to prevent.
+
+- [ ] **The gym session clock's `mm:ss` format has unbounded minutes, so a long session reads "177:19".** `elapsed()` in `GymSessionLogger` does `Math.floor(total / 60)` for the minutes field with no hours rollover. At 2h57m it prints 177 minutes, which is not a duration a reader can parse.
+
+  **Pre-existing, and restored verbatim.** The clock was removed by the 2026-09-08 redesign and put back the same day when Isabella asked that no features be lost; the format came back exactly as it was, so this is not a regression. It is more visible now: the clock used to sit on its own small utility line and now sits on the progress row beside the set count.
+
+  **How it showed up, including whose fault the data was.** The 177-minute session was opened by Claude, not by an athlete — `startOrGetSessionLog` creates a log the moment the page loads, and the page was loaded during the token audit three hours earlier. **The scratch row was left in place rather than tidied**, per the standing preference for fixing the app over repairing data. An athlete can reach the same state by forgetting to finish a session, which is why the format is still worth fixing.
+
+  **The fix:** roll over to `h:mm:ss` past an hour. Worth deciding at the same time whether an hours-long open session should show a duration at all, or should say something about the session being left open — a gym session is 45 to 90 minutes by design, and three hours means something went wrong rather than that the athlete trained for three hours.
+
 ## 1. Data & Schema — confirmed already built by reading the raw files directly
 - [x] Multi-tenancy: `org_id` on 56 of 58 tables, RLS enabled with a policy on all 58
 - [x] Role-based access: `app_role` enum, medical data split across `injuries` (coach-visible) and `injury_clinical` (medical-only by policy)

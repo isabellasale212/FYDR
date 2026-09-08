@@ -106,6 +106,9 @@ than drop it.
 - **NOT BUILT:** rest timer, previous performance comparison, elapsed-session
   clock (removed 8 September, §13).
 - **UNVERIFIED:** the exact field labels and what happens on invalid input.
+- **The elapsed clock's `mm:ss` has unbounded minutes**, so a session left open
+  for three hours reads "177:19". Pre-existing and restored verbatim; filed as
+  0g in the architecture to-do list.
 - **The exercise card's rows do not share one inset.** Measured at 375px:
   `.gym-ex-head` pads 14px horizontally so the exercise name sits 15px from the
   card's left edge, while `.gym-set-keys` and `.gym-weight` pad 0 and sit at 1px.

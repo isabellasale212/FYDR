@@ -121,6 +121,9 @@ primary actions sit low.
 - `gps`, `compliance`, `training` and `nutrition` flags have no segment to land
   on and surface in the orphan notice instead.
 - **UNVERIFIED:** empty-comparison copy. DECISION 13.
+- **The readiness area fill reads as an artefact on short data runs** — a two-point
+  segment becomes a detached sliver. Cosmetic, filed as 0g in the architecture
+  to-do list; the geometry is correct and the gaps are real.
 - **The specification and the screen now disagree about the period control**
   (§10). One of them should move; that is a decision, not a bug.
 

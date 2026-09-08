@@ -222,6 +222,16 @@
      pill-shaped buttons anywhere" still holds everywhere it is not listed. */
   --r-full: 999px;
   --gap-stack: 14px;
+  /* THE ATHLETE SHELL'S OWN BLOCK RHYTHM, and the reason it is not --gap-stack.
+     Isabella tried 14px on a phone on 2026-09-08 and it read too tight, so the
+     athlete body sits at 28px. --gap-stack could not simply be changed: it is
+     read by .stack, which 21 staff screens use, and by .profile-grid.
+     
+     28px is also what eight athlete screens rendered by ACCIDENT before that
+     day, from a doubled margin (see 0h) — so this is the same spacing she had
+     already signed off, now coming from one place instead of a flex gap plus a
+     per-block margin that produced 18, 26, 28, 32 and 40.5px across the app. */
+  --gap-body: 28px;
   --gap-grid: 12px;
   --pad-card: 16px;
   --pad-field: 12px 14px;

@@ -9,7 +9,8 @@
  * clean -- because they are the only two screens where no child sets a margin.
  * Filed as 0h in the architecture to-do list.
  *
- * WHAT IT DOES NOT DO: enforce a NUMBER. Whether 14px or 28px is correct is an
+ * THE VALUE LIVES IN --gap-body (28px since 2026-09-08). WHAT THIS DOES NOT DO:
+ * enforce a NUMBER. Whether 14px or 28px is correct is an
  * open decision (0h states both readings), and a guard that picked a side would
  * be pre-empting it. This pins the SET of offenders instead, so the problem
  * cannot grow while the decision is pending, and so the fix -- whenever it
@@ -91,7 +92,7 @@ found.sort();
 /* The premise. If the shell stops supplying the gap, everything above is moot
    and the guard should say so rather than keep passing. */
 const shell = /\.phone-body\s*\{([^}]*)\}/.exec(css)?.[1] ?? '';
-const shellOk = /gap:\s*var\(--gap-stack\)/.test(shell) && /display:\s*flex/.test(shell);
+const shellOk = /gap:\s*var\(--gap-body\)/.test(shell) && /display:\s*flex/.test(shell);
 /* THE RESET IS LOAD-BEARING NOW. It is what keeps a CSS-class margin on a
    phone-body child harmless — including .nutr-meal-grid's, the one entry left
    in the baseline. Without it that class silently re-breaks the athlete screen
@@ -110,7 +111,7 @@ const removed = base.filter((b) => !found.includes(b));
 
 if (!shellOk) {
   console.error('\n.phone-body no longer supplies the gap this guard is about.');
-  console.error('Its rule must keep `display: flex` and `gap: var(--gap-stack)`, or 0h needs rewriting.\n');
+  console.error('Its rule must keep `display: flex` and `gap: var(--gap-body)`, or 0h needs rewriting.\n');
   process.exit(1);
 }
 if (!resetOk) {

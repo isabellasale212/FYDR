@@ -777,7 +777,19 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
 ## 0h. Vertical rhythm on the athlete app, filed 2026-09-08 — measured, needs a decision before any fix
 
-- [x] **FIXED 2026-09-08. Isabella chose 14px. Every athlete screen now measures 14px between body blocks, and 16px on Today.** Verified by measuring all thirteen routes after the change, not by reading the diff:
+- [x] **SETTLED 2026-09-08 at 28px, after 14px was tried on a phone and read too tight.** The athlete body sits at `--gap-body: 28px`; Today stays at 16px. Measured on all eleven routes after the change.
+
+  **28px IS WHAT EIGHT SCREENS ALREADY RENDERED BY ACCIDENT**, from a flex gap plus a per-block margin. So the visual outcome is what was signed off on 4 September — the difference is that it now comes from ONE place instead of producing 18, 26, 28, 32 and 40.5px across the app depending on which block happened to carry which margin. The reversal was a value change, not an undo: none of the removed margins came back.
+
+  **Its own token, not `--gap-stack`.** That token is read by `.stack`, which 21 staff screens use, and by `.profile-grid`; moving it to 28px would have re-spaced the staff app. `--gap-body` is the athlete shell's alone.
+
+  **TODAY IS NOW THE ODD ONE OUT, deliberately, and worth a second look.** It renders 16px against everything else's 28px — nearly half. That was also true before (16 against 26-28), and Today is the screen that was reviewed most at that value, which is why it was left alone. But 16-versus-28 is a bigger inconsistency than 16-versus-14 was, and if the app should have one rhythm then Today's `:has(> .wk-card)` override is the thing to delete rather than anything else.
+
+  **The 14px attempt is kept below**, because everything it records about HOW the spacing was wrong still applies and the four traps it names are still traps.
+
+  <details><summary>The 14px attempt, and the four things it got wrong before it worked</summary>
+
+  **FIXED 2026-09-08. Isabella chose 14px. Every athlete screen now measures 14px between body blocks, and 16px on Today.** Verified by measuring all thirteen routes after the change, not by reading the diff:
 
   `today [16,16,16,16,16] · my-data [14,14,14,14] · me [14,14,14] · me/notifications [14,14] · me/leaderboards [14,14,14,14] · my-data/boards [14,14,14] · programme [14,14,14] · programme/nutrition [14,14,14,14,14] · check-in [14] · nutrition-check-in [14] · report-problem [14,14]`
 
@@ -791,6 +803,8 @@ Both come after the sign-in-history item in 0b, which is in progress.
   4. **The parser stopped at wrapper components.** `boards/page.tsx` wraps its body in `<LeaderboardVisibilityGate>`, which renders `{children}`, so a nested `stack` was a phone-body child at runtime. Capitalised tags are transparent to the parser now, which over-approximates on purpose.
 
   **And the guard failed the build on its own stale expectation** once the rule changed from `margin-block` to the longhands. That is the behaviour working: it is how the mismatch was noticed.
+
+  </details>
 
   Original entry follows.
 

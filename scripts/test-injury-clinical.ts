@@ -169,10 +169,16 @@ console.log('\nnot wired to Today any more, and deliberately kept rather than de
     'the query still exists, ready for the injury screen');
   assert(/export function InjuryClinical/.test(view),
     'and so does the component');
-  assert(!/fetchAthleteInjuryClinical/.test(today),
-    'but Today no longer calls it');
-  assert(!/InjuryClinical/.test(today),
-    'and no longer renders it');
+  /* AND TODAY REACHES BOTH AGAIN, 8 September 2026. For one afternoon these
+     two assertions pinned the opposite: the redesign had removed the only route
+     to a feature that was scoped, built, age-gated by migration 0093 and
+     confirmed live on production for a real athlete, leaving query, component
+     and database view all alive and unreachable. Asserted on the CALL and the
+     ELEMENT, never the import — an import reaches nothing. */
+  assert(/fetchAthleteInjuryClinical\(/.test(today),
+    'and Today calls it');
+  assert(/<InjuryClinical/.test(today),
+    'and renders it');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

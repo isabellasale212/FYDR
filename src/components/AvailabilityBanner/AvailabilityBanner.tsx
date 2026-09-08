@@ -17,6 +17,15 @@ type Props = {
    *  discarded, so an athlete was told they were restricted and never told which
    *  injury, what stage of recovery, or when they were expected back. */
   injury?: OpenInjury | null;
+  /** What medical staff wrote on this availability row.
+   *
+   *  RESTORED 8 September 2026, having been removed earlier the same day by the
+   *  redesign — the reference's Modified row carries a restriction line, one
+   *  instruction and a chevron, and no third line for this. Removing the prop
+   *  took away the only place an athlete reads what staff actually said about
+   *  their own availability, so it is back. Only shown when the athlete is not
+   *  available: a note attached to "available" has nothing to qualify. */
+  note?: string | null;
   timezone: string;
 };
 
@@ -57,6 +66,7 @@ export function AvailabilityBanner({
   status,
   restrictions,
   reasonCategory,
+  note,
   injury = null,
   timezone,
 }: Props) {
@@ -143,6 +153,9 @@ export function AvailabilityBanner({
              anybody restoring the words knows what they are restoring. */
           <div className="s">Speak to medical staff.</div>
         ) : null}
+        {/* Below the instruction, not instead of it: the instruction is the
+            same on every restricted day and the note is what changes. */}
+        {status !== 'available' && note ? <div className="s">{note}</div> : null}
       </div>
     </div>
   );

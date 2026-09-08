@@ -73,7 +73,14 @@ console.log('\nthe header loses its utility line');
   assert(!/gym-clock/.test(src), 'no running clock');
   /* Dropping the clock must drop what fed it, or the component keeps a
      setInterval running once a second to update nothing. */
-  assert(!/setInterval/.test(src), 'and the once-a-second timer that fed it is gone with it');
+  /* THE CLOCK IS BACK, on the progress row rather than on a utility line of
+     its own — so the reference's simplified header survives and the fact does
+     too. The eyebrow's "55 MIN" is what the session is MEANT to take; an
+     athlete forty minutes in cannot get that from the plan. */
+  assert(/setInterval/.test(src), 'the elapsed clock ticks again');
+  assert(/elapsed\(startedAt, now\)/.test(src), 'and is rendered from the session start');
+  assert(!/gym-head-row|gym-close/.test(src),
+    'without bringing back the Close/timer line the reference removed');
   /* THE CSS HAS TO GO TOO, and this assertion exists because it did not.
      The first pass removed the markup, this file asserted the markup was gone,
      it passed — and .gym-head-row, .gym-close and .gym-clock shipped to

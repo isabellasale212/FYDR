@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { AthleteProfileEditForm } from '@/components/AthleteProfileEditForm/AthleteProfileEditForm';
+import { AvatarUploadForm } from '@/components/AvatarUploadForm/AvatarUploadForm';
 import { ChangePasswordForm } from '@/components/ChangePasswordForm/ChangePasswordForm';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchAthlete } from '@/lib/queries/squad';
@@ -65,7 +67,15 @@ export default async function MePage() {
   const [athlete, userRow, notificationPrefs, optOuts, leaderboardConsent, recentWellness] =
     await Promise.all([
       fetchAthlete(db, orgId, athleteId),
-      db.from('users').select('avatar_url, avatar_colour').eq('id', claims.userId).maybeSingle(),
+      /* full_name is read but never shown: updateMyContactDetails writes
+         full_name and phone together in one users row, so the profile form
+         resends the athlete's own legal name unchanged rather than risk
+         blanking it. See that component's own header. */
+      db
+        .from('users')
+        .select('full_name, phone, avatar_url, avatar_colour')
+        .eq('id', claims.userId)
+        .maybeSingle(),
       fetchMyNotificationPreferences(db, claims.userId),
       fetchMyOptOuts(db, orgId, athleteId),
       fetchLeaderboardConsent(db, athleteId),
@@ -196,6 +206,43 @@ export default async function MePage() {
       </div>
 
       <div className="stack" style={{ marginTop: 14 }}>
+        {/* RESTORED 8 September 2026, after the redesign removed it and Isabella
+         *  asked for it back the same day. The reference (screens 11/12) draws
+         *  no profile form, and removing it took away the only place in the app
+         *  an athlete can edit their own phone number — a real loss rather than
+         *  a tidy-up, which is why it is back above the password form where the
+         *  two account forms sat together before.
+         *
+         *  ONE FIELD, and worth stating so nobody restores more than was asked
+         *  for: this form owns the phone number alone. Preferred name came out
+         *  of it earlier and by a separate decision — the club asked for it, and
+         *  staff own that field now — so bringing this form back does not bring
+         *  athlete-editable preferred names back with it. Legal name, date of
+         *  birth, position and squad number were never in scope here either.
+         *
+         *  The avatar and colour picker is still NOT restored: Isabella named
+         *  the profile form, and the reference draws neither. One import if that
+         *  changes too. */}
+        {/* RESTORED 8 September 2026 with the profile form. The reference draws
+         *  neither, and removing this took away the only way an athlete sets
+         *  their own photo or avatar colour — a real write path (users.avatar_url
+         *  and avatar_colour, backed by the Storage bucket migration 0030 added),
+         *  not a decoration. The header above still shows an uploaded photo; this
+         *  is what puts one there. */}
+        <AvatarUploadForm
+          orgId={orgId}
+          userId={claims.userId}
+          fullName={userRow.data?.full_name ?? `${firstName} ${lastName}`}
+          initialAvatarUrl={userRow.data?.avatar_url ?? null}
+          initialAvatarColour={userRow.data?.avatar_colour ?? null}
+        />
+
+        <AthleteProfileEditForm
+          userId={claims.userId}
+          fullName={userRow.data?.full_name ?? `${firstName} ${lastName}`}
+          initialPhone={userRow.data?.phone ?? ''}
+        />
+
         <ChangePasswordForm />
 
         <div className="card flush me-set">

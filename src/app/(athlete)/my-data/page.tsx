@@ -2,10 +2,11 @@ import { Fragment } from 'react';
 import type React from 'react';
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
+import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { WellnessChart, type FlagMarker } from '@/components/WellnessChart/WellnessChart';
 import { FlagNotice } from '@/components/FlagNotice/FlagNotice';
 import { fetchWellnessByAthlete, wellnessSeries } from '@/lib/queries/wellness';
-import { fetchAthleteRecentSessions } from '@/lib/queries/schedule';
+import { fetchAthleteRecentSessions, fetchCurrentSeason } from '@/lib/queries/schedule';
 import { fetchRecentCheckins } from '@/lib/queries/nutrition';
 import {
   fetchHistory,
@@ -32,7 +33,14 @@ import {
   formatTime,
   todayIso,
 } from '@/lib/format';
-import { type ResolvedRange } from '@/lib/period';
+import {
+  PERIOD_PARAM,
+  clampPeriod,
+  resolveRange,
+  type RangeKey,
+  type ResolvedRange,
+} from '@/lib/period';
+import { resolvePeriod } from '@/lib/period.server';
 import { bandPosition } from '@/lib/stats';
 import { requireAthlete } from '@/lib/session';
 
@@ -53,24 +61,12 @@ const NO_VALUE = '\u2014';
  *  the readiness view now that the period control has gone. */
 const ROLLING_DAYS = 14;
 
-/** THE PERIOD CONTROL IS GONE, so the windows it used to resolve are fixed here.
- *
- *  The reference removes the dropdown and the date-range caption above the tab
- *  content, and each card states its own span on its face instead: the
- *  readiness history reads "n = 12 of 14 days" and "See all 14 days", and the
- *  gym headline has always said "last 4 weeks" on itself.
- *
- *  WHAT THIS COSTS, recorded because it is the largest behavioural change in
- *  the redesign: this was the only period control on the athlete surface, and
- *  an athlete can no longer ask this screen for a season or a year. The Testing
- *  tab was already all-time and is unaffected. */
-const WELLNESS_WINDOW_DAYS = ROLLING_DAYS;
-
-/** The span for every tab that is neither the 14-day readiness view nor
- *  all-time Testing — gym, and the two off-bar tabs. Four calendar weeks, the
- *  same span the gym headline card has always drawn its bars over, so the two
- *  halves of the Gym tab can no longer disagree about what "recent" means. */
-const OTHER_WINDOW_DAYS = 28;
+/* WELLNESS_WINDOW_DAYS and OTHER_WINDOW_DAYS stood here for one afternoon.
+   The redesign removed the period control and fixed the windows at 14 and 28
+   days; the control is back (see PERIOD_ALLOWED below) and the windows are
+   resolved again, so the two constants went. Kept as a note because the
+   reference genuinely draws no dropdown: if it is ever removed a second time,
+   14 for readiness and 28 for the rest is what the cards' own captions imply. */
 
 /** How many rows each list shows before "See all". The reference draws four
  *  readiness days and three of everything else. */
@@ -94,15 +90,66 @@ const LIST_PREVIEW_ROWS = 3;
  *  counting out of 8, not out of the window it named). */
 const LIST_LIMIT = 60;
 
-/* PERIOD_ALLOWED, PERIOD_REASONS and SCREEN_DEFAULT_RANGE stood here and went
-   with the control (see WELLNESS_WINDOW_DAYS). Their reasoning is worth keeping
-   findable rather than only in git: `day` was excluded because the readiness
-   chart is a line plus a 14-day rolling mean and a ±1SD band computed from the
-   points inside the window, so a one-day window is one point and no band, and
-   the one question the tab exists to answer ("is today normal for me") becomes
-   unanswerable. The default was 28 days because docs/screens/my-data.md says 28
-   in five separate places and the 42 that shipped was undocumented. Both facts
-   still matter the day a period control comes back. */
+/** The five periods this screen's data can honestly express.
+ *
+ *  `day` is excluded, and it is the DISABLED-with-a-reason kind of exclusion,
+ *  not the absent kind (lib/period.ts's header draws that distinction; the
+ *  absent kind is `season` on a club with no season row, which PeriodSelector
+ *  handles itself). The readiness chart is a line plus a 14-day rolling mean
+ *  and ±1SD band — `wellnessSeries(entries, dates, 'readiness', ROLLING_DAYS)`
+ *  — and `rollingBand` computes that band from the points inside the window,
+ *  with no runway fetched outside it. A one-day window is therefore one point
+ *  and no band at all: the chart renders, and the single sentence the tab
+ *  exists to say ("is today normal for you") becomes unanswerable.
+ *
+ *  ONE HOLE, STATED RATHER THAN PATCHED: `season` can reach the same one-point
+ *  shape without going through `day`. resolveRange collapses a season whose
+ *  starts_on is in the FUTURE down to `today` (a club can legitimately have a
+ *  current season starting next month — see that function's own comment on why
+ *  it collapses rather than inverting the window), so "This season" during
+ *  pre-season is a single day. That is left alone on purpose: unlike `day` it is
+ *  a true statement about the club's calendar rather than a period that cannot
+ *  mean anything, and the window line beneath the control says "1 day", so the
+ *  athlete is told what they are looking at rather than shown a band that was
+ *  drawn from one observation. */
+const PERIOD_ALLOWED: readonly RangeKey[] = ['week', 'month', 'season', 'year', 'all'];
+
+/** Appended to the disabled option's own label by PeriodSelector, so the option
+ *  reads "Today — one day cannot show your usual range". Written for the
+ *  athlete, not for the codebase: this is the only period control on the
+ *  athlete side and "a metric with a trailing aggregate" is not their
+ *  vocabulary. */
+const PERIOD_REASONS: Partial<Record<RangeKey, string>> = {
+  day: 'one day cannot show your usual range',
+};
+
+/** WHAT AN ATHLETE SEES WHEN THEY HAVE NOT CHOSEN A PERIOD.
+ *
+ *  This replaces a hardcoded 42-day window, and 28 is NARROWER than 42, so the
+ *  choice is stated rather than made quietly.
+ *
+ *  42 was never specified anywhere. It was a constant in this file with no
+ *  reference behind it, and docs/screens/my-data.md says 28 in five separate
+ *  places — the wireframe is captioned "Wellness segment, 28-day period", the
+ *  entry-point table says "First ever open lands on Wellness, last 28 days",
+ *  edge case 1 works through "the 28-day view" and its "7 of 28 days" coverage
+ *  line, the accessibility table spells the control's spoken label as "Last 28
+ *  days, 9 July to 5 August", and the performance budget sizes the query as "a
+ *  single athlete over 28 days". CLAUDE.md §5, "when the spec and the code
+ *  disagree, the spec wins": 42 is the undocumented deviation here, not 28.
+ *
+ *  28 is also ACWR_CHRONIC_WINDOW_DAYS (lib/period.ts reads `month` straight
+ *  off it), so the default window and the chronic-load window this club's
+ *  staff screens use are the same number rather than two nearby ones.
+ *
+ *  The 14 days are not lost, and that is the part that makes this defensible
+ *  rather than a silent narrowing: the window is now stated on screen with its
+ *  real dates, every wider option is one click away, and the choice sticks
+ *  (period.server.ts's cookie) so an athlete who wants a season picks it once.
+ *  The alternative — keeping 42 as an unlabelled default — cannot be expressed:
+ *  42 is not a RangeKey, and a PeriodSelector whose `value` matches no option
+ *  silently displays a different option than the one that rendered. */
+const SCREEN_DEFAULT_RANGE: RangeKey = 'month';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -141,12 +188,102 @@ function dateRange(from: string, days: number): string[] {
   return Array.from({ length: days }, (_, i) => addDays(from, i));
 }
 
-/* fetchMyEarliestRecord stood here. It resolved the anchor for the `all`
-   window — four .limit(1) reads, run only when an athlete actually asked for
-   all time — and went with the period control that could ask. The Testing tab
-   is still all-time and does not need it: it reads every result it is given
-   rather than a window. */
+/** The earliest date this athlete has anything on record, across the four
+ *  domains the period control governs, for the `all` window.
+ *
+ *  Athlete-scoped on purpose rather than reusing analytics.ts's
+ *  `fetchEarliestEntryDate`, which filters on `org_id` and is only
+ *  athlete-scoped by RLS accident on this surface — a query whose correctness
+ *  depends on a policy the file does not mention is a query waiting to be
+ *  copied somewhere the policy does not apply.
+ *
+ *  ONE date across all four domains, not one per domain, because one control
+ *  drives all five tabs: resolving `all` per-tab would mean "All on record"
+ *  covered a different span depending on which chip was open, and the footer
+ *  under the chart would contradict the footer under the table. The min is the
+ *  honest joint answer — it is the first day this athlete has ANY record.
+ *
+ *  Four `.limit(1)` reads on indexed columns, and only when the athlete has
+ *  actually asked for `all`. Null (a brand-new athlete with nothing logged)
+ *  degrades to resolveRange's 730-day floor, which is what that function
+ *  already does with a missing anchor. */
+async function fetchMyEarliestRecord(
+  db: Awaited<ReturnType<typeof requireAthlete>>['db'],
+  athleteId: string,
+): Promise<string | null> {
+  /* Four branches rather than one parameterised helper, for the reason
+   * analytics.ts's fetchEarliestEntryDate already states about the same shape:
+   * "a dynamic table name loses supabase-js's row typing entirely, and two
+   * four-line branches are cheaper than an `any`." Same trade here, twice over,
+   * and nutrition's column is `week_start` rather than `entry_date` anyway. */
+  const [wellness, training, gym, nutrition] = await Promise.all([
+    db
+      .from('wellness_entries_current')
+      .select('entry_date')
+      .eq('athlete_id', athleteId)
+      .not('entry_date', 'is', null)
+      .order('entry_date', { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+    db
+      .from('training_entries_current')
+      .select('entry_date')
+      .eq('athlete_id', athleteId)
+      .not('entry_date', 'is', null)
+      .order('entry_date', { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+    db
+      .from('gym_session_logs_current')
+      .select('entry_date')
+      .eq('athlete_id', athleteId)
+      .not('entry_date', 'is', null)
+      .order('entry_date', { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+    db
+      .from('nutrition_checkins_current')
+      .select('week_start')
+      .eq('athlete_id', athleteId)
+      .not('week_start', 'is', null)
+      .order('week_start', { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
+  for (const res of [wellness, training, gym, nutrition]) {
+    if (res.error) throw new Error(res.error.message);
+  }
+
+  const dates = [
+    wellness.data?.entry_date ?? null,
+    training.data?.entry_date ?? null,
+    gym.data?.entry_date ?? null,
+    nutrition.data?.week_start ?? null,
+  ].filter((d): d is string => d !== null);
+
+  if (dates.length === 0) return null;
+  return dates.reduce((a, b) => (a < b ? a : b));
+}
+
+
+/** The window, spelled out, under the control. my-data.md region C: "The
+ *  resolved range is mandatory: 'Last 28 days' alone does not tell the athlete
+ *  whether today is included." */
+function WindowLine({ range, timezone }: { range: ResolvedRange; timezone: string }) {
+  return (
+    <p className="cap" style={{ margin: '6px 0 0' }}>
+      {formatDate(range.from, timezone)} &ndash; {formatDate(range.to, timezone)} &middot;{' '}
+      <span className="num">{range.days}</span> day{range.days === 1 ? '' : 's'}
+      {range.clipped ? (
+        <>
+          {' '}
+          &middot; showing the last 2 years, which is as far back as this goes
+        </>
+      ) : null}
+    </p>
+  );
+}
 
 /**
  * The athlete's own history. screens/my-data.md scopes five segments (
@@ -202,19 +339,29 @@ export default async function MyDataPage({
      does not exist. Expanding in place is that link, built. */
   const showAll = params.all === '1';
 
-  /* TWO FIXED WINDOWS, replacing the period control. Constructed rather than
-     resolved: `resolveRange` maps a RangeKey, and neither 14 days nor "the
-     span the gym bars already cover" is one. `clipped` is false because
-     nothing here can exceed MAX_WINDOW_DAYS. */
-  const windowDays = tab === 'wellness' ? WELLNESS_WINDOW_DAYS : OTHER_WINDOW_DAYS;
-  const range: ResolvedRange = {
-    key: 'month',
-    label: `Last ${windowDays} days`,
-    from: addDays(today, -(windowDays - 1)),
-    to: today,
-    days: windowDays,
-    clipped: false,
-  };
+  /* PERIOD RESOLUTION, in the order lib/period.ts's contract requires.
+   *
+   * `resolvePeriod` reads `?period=` first and falls back to the sticky
+   * `fydr-period` cookie only when the URL says NOTHING — so a period chosen on
+   * another screen carries over, and a bookmarked or hand-cleared `?period=`
+   * beats it. This screen has no legacy period vocabulary of its own (it never
+   * had a `?days=` or `?range=`), so `approximated`/`legacyDays` cannot be set
+   * by any link that exists and nothing renders them.
+   *
+   * `clampPeriod` then coerces server-side, which the control alone cannot do:
+   * `?period=day` typed by hand, or `?period=season` at a club with no season
+   * row, must not reach a query. Both coerce to this screen's default and the
+   * page says which happened rather than quietly rendering something else. */
+  const requested = await resolvePeriod(params);
+  const season = await fetchCurrentSeason(db, orgId);
+  const { key: periodKey, coercedFrom } = clampPeriod(requested.key, {
+    allowed: PERIOD_ALLOWED,
+    seasonAvailable: season !== null,
+    fallback: SCREEN_DEFAULT_RANGE,
+  });
+
+  const earliest = periodKey === 'all' ? await fetchMyEarliestRecord(db, athleteId) : null;
+  const range = resolveRange(periodKey, today, season?.starts_on ?? null, earliest);
   const from = range.from;
   const dates = dateRange(range.from, range.days);
 
@@ -259,11 +406,12 @@ export default async function MyDataPage({
   const SEGMENT_DOMAINS = new Set(SEGMENTS as readonly string[]);
   const orphanFlags = visibleFlags.filter((f) => !SEGMENT_DOMAINS.has(f.domain));
 
-  /* Bare again. These used to carry `?period=` so that choosing a season and
-     then tapping Gym did not silently put the athlete back on 28 days; with no
-     period to carry, the parameter would be decoration. `?all=` is deliberately
-     NOT carried either — expanding one list should not expand the next tab's. */
-  const tabHref = (next: Tab) => `/my-data?tab=${next}`;
+  /* CARRYING THE PERIOD AGAIN. The chips must, or choosing "This season" and
+     then tapping Gym silently puts the athlete back on 28 days — the bug this
+     href was built to fix the first time. The resolved key, not the requested
+     one, so a coerced URL does not survive a tab change. `?all=` is still not
+     carried: expanding one list should not expand the next tab's. */
+  const tabHref = (next: Tab) => `/my-data?tab=${next}&${PERIOD_PARAM}=${periodKey}`;
 
   return (
     <>
@@ -305,10 +453,45 @@ export default async function MyDataPage({
         ))}
       </div>
 
-      {/* THE PERIOD CONTROL STOOD HERE and the reference removes it, along with
-          the date-range caption under it and the two "we coerced your period"
-          messages that only a period control can produce. Each card states its
-          own span on its face now — see WELLNESS_WINDOW_DAYS. */}
+      {/* THE CONTROL, and the one tab it does not govern.
+       *
+       * On Testing the selector is ABSENT rather than rendered-and-inert. This
+       * is not the "disabled with the reason, not hidden" rule being broken:
+       * that rule is about OPTIONS inside a control that still governs the
+       * screen (which is why `day` is disabled above rather than removed). A
+       * control every one of whose options would be a lie is a different thing
+       * — it would visibly do nothing on that tab — so the row keeps its shape
+       * and states the fact instead. Switching tabs preserves the period, so
+       * nothing is lost by its absence here. */}
+      <div style={{ marginTop: 12 }}>
+        {tab === 'testing' ? (
+          <p className="tiny" style={{ color: 'var(--muted)', margin: 0 }}>
+            Period: all time
+          </p>
+        ) : (
+          <>
+            <PeriodSelector
+              value={periodKey}
+              allowed={PERIOD_ALLOWED}
+              reasons={PERIOD_REASONS}
+              season={season ? { name: season.name } : null}
+              ariaLabel="Period shown"
+            />
+            <WindowLine range={range} timezone={timezone} />
+            {coercedFrom === 'day' ? (
+              <p className="cap" style={{ margin: '4px 0 0' }}>
+                A single day was asked for. Your usual range needs {ROLLING_DAYS} days to draw, so
+                this is showing {range.label.toLowerCase()} instead.
+              </p>
+            ) : coercedFrom === 'season' ? (
+              <p className="cap" style={{ margin: '4px 0 0' }}>
+                Your club hasn&rsquo;t set a current season up, so this is showing{' '}
+                {range.label.toLowerCase()} instead.
+              </p>
+            ) : null}
+          </>
+        )}
+      </div>
 
       {/* gps and compliance domain flags have no matching segment (see the comment on
        * orphanFlags above) — shown here, above the tab content, so they stay visible no
@@ -327,6 +510,7 @@ export default async function MyDataPage({
           range={range}
           timezone={timezone}
           flags={flagsByDomain.get('wellness') ?? []}
+          periodKey={periodKey}
           showAll={showAll}
         />
       ) : tab === 'training' ? (
@@ -357,6 +541,7 @@ export default async function MyDataPage({
           athleteId={athleteId}
           flags={flagsByDomain.get('testing') ?? []}
           timezone={timezone}
+          periodKey={periodKey}
           showAll={showAll}
         />
       ) : (
@@ -368,6 +553,7 @@ export default async function MyDataPage({
           range={range}
           timezone={timezone}
           flags={flagsByDomain.get('gym') ?? []}
+          periodKey={periodKey}
           showAll={showAll}
         />
       )}
@@ -460,11 +646,17 @@ function ListCapNote({ shown, more, noun }: { shown: number; more: boolean; noun
  *  IS the older behaviour of this screen; getting back is the tab itself. */
 function SeeAllLink({
   tab,
+  periodKey,
   shown,
   total,
   noun,
 }: {
   tab: Tab;
+  /* CARRIED, for the same reason the tab chips carry it: without it, expanding
+     a list silently re-resolves the period from the sticky cookie, so an
+     athlete on "This season" who taps "See all" lands back on 28 days and the
+     list they asked to see in full is a different list. */
+  periodKey: RangeKey;
   shown: number;
   total: number;
   noun: string;
@@ -472,7 +664,7 @@ function SeeAllLink({
   if (total <= shown) return null;
   return (
     <p className="hist-more">
-      <Link href={`/my-data?tab=${tab}&all=1`}>
+      <Link href={`/my-data?tab=${tab}&${PERIOD_PARAM}=${periodKey}&all=1`}>
         See all {total} {noun} &rarr;
       </Link>
     </p>
@@ -490,6 +682,7 @@ async function WellnessTab({
   timezone,
   flags,
   showAll,
+  periodKey,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
   orgId: string;
@@ -501,6 +694,7 @@ async function WellnessTab({
   timezone: string;
   flags: VisibleFlag[];
   showAll: boolean;
+  periodKey: RangeKey;
 }) {
   /* NOT PAGED, and provably so rather than by assumption:
    * `wellness_entries_one_live_per_day` (migration 0004) means
@@ -760,6 +954,7 @@ async function WellnessTab({
         })}
         <SeeAllLink
           tab="wellness"
+          periodKey={periodKey}
           shown={shownDates.length}
           total={tableDates.length}
           noun="days"
@@ -1279,6 +1474,7 @@ async function TestingTab({
   flags,
   timezone,
   showAll,
+  periodKey,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
   orgId: string;
@@ -1286,6 +1482,7 @@ async function TestingTab({
   flags: VisibleFlag[];
   timezone: string;
   showAll: boolean;
+  periodKey: RangeKey;
 }) {
   const summary = await fetchMyTestSummary(db, athleteId);
   /* Three rows, per the reference, unless ?all=1. The list is all-time and
@@ -1450,7 +1647,7 @@ async function TestingTab({
               there is no all-tests page to open; the list shows three now, and
               the link expands it here rather than opening a page that still
               does not exist. */}
-          <SeeAllLink tab="testing" shown={shownTests.length} total={summary.length} noun="tests" />
+          <SeeAllLink tab="testing" periodKey={periodKey} shown={shownTests.length} total={summary.length} noun="tests" />
         </div>
       </section>
     </div>
@@ -1493,6 +1690,7 @@ async function GymTab({
   timezone,
   flags,
   showAll,
+  periodKey,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
   athleteId: string;
@@ -1502,6 +1700,7 @@ async function GymTab({
   timezone: string;
   flags: VisibleFlag[];
   showAll: boolean;
+  periodKey: RangeKey;
 }) {
   const weekStarts = Array.from({ length: GYM_HEADLINE_WEEKS }, (_, i) =>
     addDays(mondayOf(today), -7 * (GYM_HEADLINE_WEEKS - 1 - i)),
@@ -1714,6 +1913,7 @@ async function GymTab({
           </p>
           <SeeAllLink
             tab="gym"
+            periodKey={periodKey}
             shown={shownSessions.length}
             total={sessions.length}
             noun="sessions"

@@ -1,10 +1,14 @@
 import Link from 'next/link';
 import { AvailabilityBanner } from '@/components/AvailabilityBanner/AvailabilityBanner';
+import { EmptyState } from '@/components/EmptyState/EmptyState';
+import { InjuryClinical } from '@/components/InjuryClinical/InjuryClinical';
 import { OutboxFlusher } from '@/components/OutboxFlusher/OutboxFlusher';
 import { Toast } from '@/components/Toast/Toast';
 import { fetchAthleteAvailability } from '@/lib/queries/availability';
+import { fetchAthleteInjuryClinical } from '@/lib/queries/athleteInjuryClinical';
 import { fetchMyOutstanding } from '@/lib/queries/compliance';
 import {
+  fetchAthleteDaySessions,
   fetchAthleteWeekSessionTypes,
   fetchNextFixture,
   fetchWeekMdLabels,
@@ -14,6 +18,7 @@ import { fetchCheckinForWeek } from '@/lib/queries/nutrition';
 import { fetchMyAllocation } from '@/lib/queries/teamAllocation';
 import {
   addDays,
+  BLANK,
   enumLabel,
   formatDate,
   formatTime,
@@ -104,6 +109,7 @@ export default async function TodayPage({
     userRow,
     weekSessionTypes,
     nextFixture,
+    sessions,
   ] = await Promise.all([
       fetchAthleteAvailability(db, orgId, athleteId),
       fetchMyOutstanding(db, athleteId, today),
@@ -120,7 +126,14 @@ export default async function TodayPage({
          Monday: on a Sunday the fixture that bounded this week has been and
          gone, and "working towards" a match already played is nonsense. */
       fetchNextFixture(db, orgId, new Date().toISOString()),
+      fetchAthleteDaySessions(db, orgId, athleteId, today, timezone),
     ]);
+
+  /* Sequential rather than joined to the Promise.all above, because it needs
+     the injury id that availability resolves. Skipped entirely when there is no
+     linked injury, which is the common case — and when there is one, the view
+     returns nothing for an athlete under 18 (migration 0093). */
+  const injuryClinical = await fetchAthleteInjuryClinical(db, availability.injury?.id);
 
 
   const todoItems = [
@@ -330,7 +343,27 @@ export default async function TodayPage({
            for a non-injury reason with an unrelated injury on file gets null
            rather than the wrong injury attached to the wrong absence. */
         injury={availability.injury}
+        /* RESTORED 8 September 2026. The redesign dropped this prop because the
+           reference's Modified row has no third line; dropping it took away the
+           only place an athlete reads what medical staff actually wrote about
+           their own availability, which is a worse outcome than a taller card. */
+        note={availability.current?.note ?? null}
         timezone={timezone}
+      />
+
+      {/* RESTORED with the note above, and this is the one that mattered most.
+          Diagnosis and mechanism were scoped, built, age-gated (migration 0093),
+          confirmed on production for a real athlete, and then the Today redesign
+          removed their ONLY route — leaving the component, the query and the
+          view all live and unreachable.
+
+          Renders nothing when there is no clinical record, no injury, or the
+          reader is a minor: the view draws that last line, not this page. Each
+          field is guarded inside the component, because a record can carry one
+          and not the other. */}
+      <InjuryClinical
+        diagnosis={injuryClinical.diagnosis}
+        mechanism={injuryClinical.mechanism}
       />
 
 
@@ -402,6 +435,69 @@ export default async function TodayPage({
         </div>
       )}
 
+      {/* RESTORED 8 September 2026. The redesign removed this because the
+          reference does not draw it and "the to-do list is the page's only
+          actionable list now" — but the to-do list holds what an athlete owes
+          the club, not what the club has asked of them today. Without this
+          section an athlete had no way to see when or where they were training,
+          on any screen: My data's training tab is history, and Programme is the
+          gym plan, not the day.
+
+          Kept BELOW the to-do list rather than restored to the spec's original
+          position between availability and to-do, so the redesign's intent —
+          outstanding work first — survives having the day's schedule back. */}
+      <section aria-labelledby="today-title">
+        <h2 className="sect" id="today-title">
+          Today
+        </h2>
+        {sessions.length === 0 ? (
+          <EmptyState
+            headingLevel={3}
+            title="Nothing scheduled"
+            body="You are not named in a session today. Rest or check with your coach."
+          />
+        ) : (
+          <div className="card flush">
+            {sessions.map((session, index) => {
+              const md = mdLabel(todayMdOffset);
+              const cancelled = session.status === 'cancelled';
+              return (
+                <div key={session.id}>
+                  {index > 0 ? <div className="hair" /> : null}
+                  <div className="sess" style={{ opacity: cancelled ? 0.55 : 1 }}>
+                    <span className="tm num">{formatTime(session.starts_at, timezone)}</span>
+                    <div>
+                      <div className="ti">
+                        <span style={{ textDecoration: cancelled ? 'line-through' : 'none' }}>
+                          {session.title}
+                        </span>
+                        <span className="pill pill-neutral">{enumLabel(session.session_type)}</span>
+                        {/* screens/schedule.md's realtime broadcast on
+                         * cancellation is not built here — see
+                         * lib/queries/schedule.ts's header comment. An
+                         * athlete only learns of a cancellation by opening
+                         * this screen, not the moment it happens, which is
+                         * a real, documented gap for the case the spec
+                         * calls out as the one to get right. */}
+                        {cancelled ? <span className="pill pill-bad">Cancelled</span> : null}
+                      </div>
+                      <div className="lo">
+                        {session.location ?? 'Location not set'} ·{' '}
+                        <span className="num">{session.duration_min ?? BLANK}</span> min
+                      </div>
+                    </div>
+                    {md ? (
+                      <span className="pill pill-neutral num" title={mdExplainer(todayMdOffset) ?? undefined}>
+                        {md}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
 
     </>
   );

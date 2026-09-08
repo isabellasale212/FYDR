@@ -93,21 +93,27 @@ console.log('\nan AVAILABLE athlete is told about no injury at all');
   );
 }
 
-console.log('\nthe staff note is gone entirely, which supersedes its visibility guard');
+console.log('\nthe staff note is back, and so is the guard that made it safe');
 {
-  /* SUPERSEDED, 2026-09-08, and recorded rather than deleted so the sequence
-     stays legible. Earlier the same day this block asserted that the note
-     rendered ONLY when the status was not 'available' — a real fix, because one
-     of the thirty-four available rows on file read "Live-verification: flu, off
-     this week." and would have sat under "Everything is on."
+  /* THREE STATES IN ONE DAY, all recorded, because the middle one is the
+     dangerous one to forget. First the note rendered unconditionally. Then this
+     block asserted it rendered ONLY when the status was not 'available' — a
+     real fix, because one of the thirty-four available rows on file reads
+     "Live-verification: flu, off this week." and would otherwise have sat under
+     "Everything is on." Then the redesign removed the note entirely, which
+     satisfied the concern absolutely rather than conditionally, and this block
+     said so and warned: "If a note is ever restored here, restore the guard
+     with it."
 
-     The redesign then removed the note from this row altogether. The guard is
-     not weakened; the element it guarded no longer exists, which satisfies the
-     original concern absolutely rather than conditionally. If a note is ever
-     restored here, restore the guard with it — that is what these assertions
-     are for now. */
-  assert(!/\{note\}/.test(bannerCode), 'the note is not rendered at all');
-  assert(!/note\?:\s*string/.test(bannerCode), 'and the prop is gone, not merely unused');
+     The note is restored, so the guard is restored with it — exactly as that
+     warning asked. Removing an element is not a way to keep a guard; it only
+     postpones needing one. */
+  assert(/\{note\}/.test(bannerCode), 'the note is rendered again');
+  assert(/note\?:\s*string/.test(bannerCode), 'and the prop is declared');
+  assert(
+    /status !== 'available' && note/.test(bannerCode),
+    'and ONLY when the athlete is not available — the flu-note-under-"everything is on" case',
+  );
   assert(
     !/Live-verification|flu, off this week/.test(bannerCode),
     'and nothing hardcodes the row that motivated the original guard',

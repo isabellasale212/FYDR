@@ -100,18 +100,34 @@ console.log('\nflags from the two dropped tabs fall through to "Also noted for y
   assert(/orphanFlags/.test(page), 'and the orphan notice still renders');
 }
 
-console.log('\nthe period control is gone, and the windows it drove are now fixed and stated');
+console.log('\nthe period control is BACK — it was the only one on the athlete surface');
 {
-  assert(!/PeriodSelector/.test(page), 'no period dropdown');
-  assert(!/WindowLine/.test(page), 'no date-range caption');
-  assert(!/resolvePeriod|clampPeriod|PERIOD_ALLOWED|PERIOD_REASONS/.test(page),
-    'and none of its plumbing is left resolving something nothing renders');
-  assert(/WELLNESS_WINDOW_DAYS/.test(page), 'wellness has a named fixed window');
-  assert(/OTHER_WINDOW_DAYS/.test(page), 'and so do the tabs that are not all-time');
-  /* The old note told the athlete to "narrow the period" to see a list in
-     full. With no control to narrow, that sentence sends them looking for a
-     dropdown that is not there. */
-  assert(!/narrow the period/.test(page), 'and no copy still tells them to narrow a period');
+  /* REVERSED, 8 September 2026. The reference draws no dropdown and no
+     date-range caption, and for one afternoon this screen had neither: windows
+     fixed at 14 and 28 days. That removed a real feature — an athlete could no
+     longer ask any screen in the app for a season or a year — so it is back.
+     Asserted on the ELEMENT, not the import. */
+  assert(/<PeriodSelector/.test(page), 'the period dropdown renders');
+  assert(/<WindowLine/.test(page), 'and the resolved date range beneath it');
+  for (const sym of ['resolvePeriod', 'clampPeriod', 'PERIOD_ALLOWED', 'PERIOD_REASONS']) {
+    assert(new RegExp(sym).test(page), `${sym} is wired again`);
+  }
+  /* THE COERCION MESSAGES MATTER as much as the control. `?period=day` typed by
+     hand, or `?period=season` at a club with no season row, must coerce
+     server-side and SAY so — a screen that silently renders a different window
+     than the one asked for is the bug clampPeriod exists to prevent. */
+  assert(/coercedFrom/.test(page), 'and a coerced period still tells the athlete what happened');
+  /* WHAT MUST NOT COME BACK. The two fixed-window constants would now be a
+     second, contradictory source for the same span. */
+  assert(!/WELLNESS_WINDOW_DAYS|OTHER_WINDOW_DAYS/.test(page),
+    'and the fixed-window constants are gone, so nothing states the span twice');
+  /* EVERY LINK OFF THIS SCREEN CARRIES THE PERIOD, or choosing "This season"
+     and tapping a tab silently returns the athlete to 28 days. The See all
+     links are new since the last time this bug was fixed, so they need it too. */
+  assert(/tab=\$\{next\}&\$\{PERIOD_PARAM\}=\$\{periodKey\}/.test(page),
+    'the tab chips carry it');
+  assert(/tab=\$\{tab\}&\$\{PERIOD_PARAM\}=\$\{periodKey\}&all=1/.test(page),
+    'and so do the See all links');
 }
 
 console.log('\nthe "See all" pattern: truncated by default, and every link goes somewhere real');

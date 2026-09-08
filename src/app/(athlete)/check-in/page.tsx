@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { CheckInForm } from '@/components/CheckInForm/CheckInForm';
-import { fetchWellnessDay } from '@/lib/queries/wellness';
-import { formatDate, todayIso } from '@/lib/format';
+import { fetchWellnessByAthlete, fetchWellnessDay } from '@/lib/queries/wellness';
+import { addDays, formatDate, todayIso } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
 
 export const metadata = { title: 'Morning check-in · Fydr' };
@@ -30,12 +30,21 @@ export default async function CheckInPage({
   const requestedDate = typeof params.date === 'string' ? params.date : today;
   const entryDate = requestedDate > today ? today : requestedDate;
 
-  /* One query, not two. The seven-day window that used to sit beside this
-     existed solely to find the previous night's sleep hours for the reference
-     chip beside the stepper; the 2026-09-08 redesign removes that chip, so the
-     query went with it rather than being left to fetch a week of entries
-     nothing reads. */
-  const existing = await fetchWellnessDay(db, athleteId, entryDate);
+  /* TWO QUERIES AGAIN. The seven-day window exists to find the previous
+     night's sleep hours for the reference beside the stepper. The redesign
+     removed that reference and this query with it; both are back, because
+     "7.0" with nothing to compare it to gives an athlete no way to notice they
+     have typed last night's number into tonight's field. */
+  const [existing, recent] = await Promise.all([
+    fetchWellnessDay(db, athleteId, entryDate),
+    fetchWellnessByAthlete(db, athleteId, {
+      from: addDays(entryDate, -7),
+      to: addDays(entryDate, -1),
+    }),
+  ]);
+
+  const lastSleep =
+    [...recent].reverse().find((e) => e.sleep_hours !== null)?.sleep_hours ?? null;
 
   const backHref = entryDate === today ? '/today' : '/my-data?tab=wellness';
 
@@ -110,6 +119,7 @@ export default async function CheckInPage({
           athleteId={athleteId}
           userId={claims.userId}
           entryDate={today}
+          lastNightSleepHours={lastSleep}
         />
       ) : (
         <div className="card">

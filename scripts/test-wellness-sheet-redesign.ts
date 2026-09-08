@@ -96,8 +96,8 @@ console.log('\nthe sleep row is a plain row, not a boxed panel');
 console.log('\nthe "last night" reference chip is gone, and gone from its caller too');
 {
   assert(!/sleep-ref/.test(form), 'CheckInForm no longer renders the chip');
-  assert(!/lastNightSleepHours/.test(form), 'and no longer takes the prop');
-  assert(!/lastNightSleepHours/.test(page), 'and the page no longer passes it');
+  assert(/lastNightSleepHours/.test(form), 'and takes the prop again');
+  assert(/lastNightSleepHours/.test(page), 'and the page passes it again');
   assert(!/\.sleep-ref\s*\{/.test(css), 'and the CSS rule is removed rather than orphaned');
 }
 

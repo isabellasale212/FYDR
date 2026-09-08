@@ -69,13 +69,17 @@ console.log('\nthe Modified row is compact: dot, status, one restriction line, o
     !/Everything else is on\./.test(banner),
     'and no longer opens with "Everything else is on." — the reference drops it',
   );
-  assert(!/\{note\}/.test(banner), 'the staff note is no longer rendered');
-  /* AND THE PROP IS GONE, not merely unrendered. The first version of this
-     assertion was `!/note\?:/ || !/\{note\}/`, which short-circuits on the
-     second clause and passed while the prop was still declared — tsc caught the
-     dead prop that this test did not. Two separate checks, both required. */
-  assert(!/note\?:\s*string/.test(banner), 'the prop is removed from the component');
-  assert(!/note=\{/.test(page), 'and the page no longer passes it');
+  /* THE NOTE IS BACK, 8 September 2026. These three assertions pinned its
+     removal for one afternoon; Isabella's instruction was that no features
+     should have been lost, and the staff note was one — it is the only place an
+     athlete reads what medical staff actually wrote about their own
+     availability, and the reference's calmer Modified row is not worth that.
+     Still three separate checks, for the reason the old comment gave: an
+     earlier version short-circuited and passed while the prop was declared but
+     unrendered, so rendering, declaration and hand-off are checked apart. */
+  assert(/\{note\}/.test(banner), 'the staff note is rendered again');
+  assert(/note\?:\s*string/.test(banner), 'the prop is declared');
+  assert(/note=\{/.test(page), 'and Today passes it');
 }
 
 console.log('\nTIER 1 SURVIVES, which the reference argues against');
@@ -90,11 +94,25 @@ console.log('\nTIER 1 SURVIVES, which the reference argues against');
     'and every read of it still sits behind the available check');
 }
 
-console.log('\nthe clinical block, the session list and the report row are gone from Today');
+console.log('\nthe clinical block and the session list are BACK; only the report row stayed out');
 {
-  assert(!/InjuryClinical/.test(page), 'no diagnosis block');
-  assert(!/fetchAthleteInjuryClinical/.test(page), 'and its query is not left running');
-  assert(!/today-title/.test(page), 'no "Today" session list');
+  /* THE CLINICAL BLOCK was the worst of the redesign's losses. Diagnosis and
+     mechanism were scoped, built, age-gated by migration 0093, and confirmed
+     live on production for a real athlete — and then this screen's redesign
+     removed their only route, leaving component, query and database view all
+     alive and unreachable. Asserted on the RENDER and the CALL, not the import,
+     because an import satisfies neither. */
+  assert(/<InjuryClinical/.test(page), 'the diagnosis and mechanism block renders again');
+  assert(/fetchAthleteInjuryClinical\(/.test(page), 'and its query is called, not merely imported');
+  /* THE SESSION LIST. The redesign's argument was that "the to-do list is the
+     page's only actionable list now" — but the to-do list holds what an athlete
+     owes the club, not what the club has asked of them today, and without this
+     section there was no screen in the app showing when or where they train. */
+  assert(/today-title/.test(page), 'and the day\'s session list is back');
+  assert(/fetchAthleteDaySessions\(/.test(page), 'with the query that feeds it');
+  /* The report-problem row is the one removal that stands, and it is not a lost
+     feature: /report-problem is reachable from Me's settings card. */
+  assert(!/report-problem/.test(page), 'the report row stays out, its route reachable from Me');
   assert(!/report-card/.test(page), 'no "Something not right?" row');
   assert(!/report-problem/.test(page), 'and no link to it from this screen');
 }

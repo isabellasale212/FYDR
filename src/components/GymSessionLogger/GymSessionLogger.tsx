@@ -16,12 +16,28 @@ import { GymSetLogInput } from '@/lib/validation/gym';
 import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { formatDate } from '@/lib/format';
 
+function elapsed(startedAt: string | null, now: number): string {
+  if (!startedAt) return '00:00';
+  const ms = Math.max(0, now - new Date(startedAt).getTime());
+  const total = Math.floor(ms / 1000);
+  const mm = String(Math.floor(total / 60)).padStart(2, '0');
+  const ss = String(total % 60).padStart(2, '0');
+  return `${mm}:${ss}`;
+}
+
 type Props = {
   orgId: string;
   gymSessionLogId: string;
   sessionName: string;
   /** Programme, block, week and day — the design's eyebrow above the name. */
   sessionMeta: string | null;
+  /** When the session log was opened.
+   *
+   *  RESTORED 8 September 2026. The redesign dropped the elapsed clock with the
+   *  Close link, on the argument that the eyebrow's planned duration covers it.
+   *  It does not: "55 MIN" is what the session is meant to take, and an athlete
+   *  forty minutes into it has no way to know that from the plan. */
+  startedAt: string | null;
   totalSets: number;
   timezone: string;
   exercises: readonly ResolvedExercise[];
@@ -82,6 +98,7 @@ export function GymSessionLogger({
   gymSessionLogId,
   sessionName,
   sessionMeta,
+  startedAt,
   totalSets,
   timezone,
   exercises,
@@ -131,6 +148,7 @@ export function GymSessionLogger({
   }, [drafts, draftKey]);
   const [sessionRpe, setSessionRpe] = useState('');
   const [showAllExercises, setShowAllExercises] = useState(false);
+  const [now, setNow] = useState<number | null>(null);
   /* screens/gym-logging.md: "Tap a completed set row: re-opens it as active for
    * correction." correcting holds the LoggedSet.id currently open for correction, in
    * place, mid-session or on the completed review — this build has no ConfirmSheet, so
@@ -143,7 +161,14 @@ export function GymSessionLogger({
   const [weights, setWeights] = useState<Record<string, number>>({});
   const [correctionDrafts, setCorrectionDrafts] = useState<Record<string, { reps: string; load: string }>>({});
 
-  /* The clock's once-a-second useEffect stood here and went with the clock. */
+    /* Ticks only while the session is open and only when there is a start to
+     count from, so a completed session does not keep a timer alive. */
+  useEffect(() => {
+    if (alreadyComplete || !startedAt) return;
+    setNow(Date.now());
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [alreadyComplete, startedAt]);
 
   const setsByExercise = useMemo(() => {
     const map = new Map<string, LoggedSet[]>();
@@ -373,6 +398,13 @@ export function GymSessionLogger({
           </div>
           <span className="prog num">
             {doneCount} of {totalSets} sets
+            {/* On the progress row, not on a utility line of its own: the clock
+                is back without the Close/timer bar the reference removed. */}
+            {!alreadyComplete && startedAt ? (
+              <>
+                {' '}&middot; {now !== null ? elapsed(startedAt, now) : '·'}
+              </>
+            ) : null}
           </span>
         </div>
       </div>

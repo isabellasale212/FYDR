@@ -53,8 +53,23 @@ console.log('what the reference keeps, and already existed');
 
 console.log('\nthree removals');
 {
-  assert(!/AvatarUploadForm/.test(page), 'the photo and avatar-colour picker is gone');
-  assert(!/AthleteProfileEditForm/.test(page), 'the profile edit form is gone');
+  /* RESTORED with the profile form, 8 September 2026: a real write path
+     (users.avatar_url and avatar_colour, on the Storage bucket migration 0030
+     added), not a decoration. The header shows an uploaded photo; this is the
+     only thing in the app that puts one there. */
+  assert(/<AvatarUploadForm/.test(page), 'the photo and avatar-colour picker is KEPT');
+  /* NOT a removal any more. The redesign took this form out; Isabella asked
+     for it back the same day, because removing it left an athlete no way to
+     edit their own phone number anywhere in the app. Asserted as PRESENT, with
+     the reason, so the next person reading the reference does not "finish the
+     job" by deleting it again.
+
+     The AvatarUploadForm assertion above stays a removal: she named the profile
+     form specifically, and the reference draws neither. */
+  assert(/AthleteProfileEditForm/.test(page),
+    'the profile edit form is KEPT — it is the only route to an athlete editing their own phone');
+  assert(/initialPhone=/.test(page) && /full_name/.test(page),
+    'and it is passed the phone plus the legal name it resends unchanged, so full_name cannot be blanked');
   assert(!/health-title/.test(page), 'the Apple Health marketing card is gone');
   assert(!/me-footer/.test(page), 'the version footer is gone');
   /* AND ITS CSS WITH IT. The gym logger shipped three rules styling nothing

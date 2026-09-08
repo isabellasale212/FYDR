@@ -39,6 +39,16 @@ type Props = {
   athleteId: string;
   userId: string;
   entryDate: string;
+  /** Last night's submitted sleep hours, or null.
+   *
+   *  RESTORED 8 September 2026. The redesign removed this reference because the
+   *  reference screenshots show a plain sleep row with no chip beside it. What
+   *  it removed was the only thing on the sheet that let an athlete notice they
+   *  were about to submit last night's number again — the stepper opens on a
+   *  default, and "7.0" reads identically whether it is tonight's answer or
+   *  yesterday's. Shown as plain text on the row now rather than the boxed chip
+   *  the redesign deleted, so the calmer row survives having the fact back. */
+  lastNightSleepHours: number | null;
 };
 
 type Scales = Record<WellnessScale, number | null>;
@@ -64,6 +74,7 @@ export function CheckInForm({
   athleteId,
   userId,
   entryDate,
+  lastNightSleepHours,
 }: Props) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -160,7 +171,16 @@ export function CheckInForm({
           <span className="k" id="sleep-hours-label">
             Sleep
           </span>
-          <span className="h">hours last night</span>
+          {/* Plain text on the head row, not the boxed .sleep-ref chip the
+              redesign deleted: the fact is back, the box is not. */}
+          <span className="h">
+            hours last night
+            {lastNightSleepHours !== null ? (
+              <>
+                {' '}&middot; last night you put <span className="num">{lastNightSleepHours}</span>
+              </>
+            ) : null}
+          </span>
         </div>
 
         <div className="step">

@@ -9,6 +9,7 @@ import {
 } from '@/lib/queries/leaderboards';
 import { formatNumber } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
+import { gpsMetricBlocked } from '@/lib/tier';
 
 export const metadata = { title: 'Leaderboards · Fydr' };
 
@@ -20,11 +21,20 @@ export const metadata = { title: 'Leaderboards · Fydr' };
  *  fetchMyBoards; there is no partial or greyed row for one. Route per
  *  20-route-map.md line 74. */
 export default async function MyBoardsPage() {
-  const { db, orgId, athleteId } = await requireAthlete();
+  const { db, orgId, athleteId, tier } = await requireAthlete();
   const [mine, catalogue] = await Promise.all([
     fetchMyBoards(db, orgId, athleteId),
     fetchMetricCatalogue(db),
   ]);
+  /* THE PLAN GATE, Q-29. FILTERED rather than gated, unlike the detail screen
+     and unlike the staff page. This list is "boards I am on", and a board the
+     athlete is not on never appears here at all — no greyed row, no placeholder,
+     per fetchMyBoards' own reasoning. A gated board should behave the same way.
+     A whole-page PlanGate would also hide every non-GPS board, and those are on
+     every plan; the staff create page filters its catalogue for the same reason
+     rather than refusing the whole screen. */
+  const boards = mine.filter(({ board }) => !gpsMetricBlocked(board.metric_key, tier));
+
   const labelByKey = new Map(catalogue.map((m) => [m.key, m]));
 
   return (
@@ -36,14 +46,14 @@ export default async function MyBoardsPage() {
       <LeaderboardVisibilityGate>
         <p className="tiny">Opted in · leave any board from Me.</p>
 
-        {mine.length === 0 ? (
+        {boards.length === 0 ? (
           <EmptyState
             title="No leaderboards yet"
             body="Boards your club publishes and includes you on appear here."
           />
         ) : (
           <div className="stack" style={{ marginTop: 14 }}>
-            {mine.map(({ board, own }) => {
+            {boards.map(({ board, own }) => {
               const metric = labelByKey.get(board.metric_key);
               return (
                 <Link key={board.id} href={`/my-data/boards/${board.id}`} className="card">

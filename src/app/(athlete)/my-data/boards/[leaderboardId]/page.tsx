@@ -9,6 +9,7 @@ import {
 } from '@/lib/queries/leaderboards';
 import { formatNumber } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
+import { gpsMetricBlocked } from '@/lib/tier';
 
 export const metadata = { title: 'Board · Fydr' };
 
@@ -23,7 +24,7 @@ export default async function MyBoardDetailPage({
   params: Promise<{ leaderboardId: string }>;
 }) {
   const { leaderboardId } = await params;
-  const { db, orgId, athleteId, claims } = await requireAthlete();
+  const { db, orgId, athleteId, claims, tier } = await requireAthlete();
 
   const [board, ranking, catalogue] = await Promise.all([
     fetchBoard(db, orgId, leaderboardId),
@@ -44,6 +45,45 @@ export default async function MyBoardDetailPage({
         </div>
         <div className="empty">
           <h2>This leaderboard is not available</h2>
+          <p>
+            <Link href="/my-data/boards">Back to leaderboards</Link>
+          </p>
+        </div>
+      </>
+    );
+  }
+
+  /* THE PLAN GATE, Q-29. A GPS board on a Basic club is not shown, and this is
+     the athlete half of a rule the staff detail page has always had — its own
+     comment names the two cases: a board "created while the club was Premium,
+     or inserted directly". Until 8 September 2026 the athlete screens had no
+     such check, so those were exactly the cases where a Basic club's players
+     kept seeing a Premium metric.
+
+     AFTER the board/visibility/own check above, not before it, and deliberately:
+     an athlete who is not on this board should read "not available" rather than
+     a message about their club's plan, which would tell them a board exists that
+     they were never on. The plan is only their business once the board is.
+
+     Worded as the plan, not as a fault. The board is real and the club owns it;
+     it is the metric that stopped being included. Same stance as the staff
+     PlanGate, in the athlete shell's own markup rather than the staff one's. */
+  if (gpsMetricBlocked(board.metric_key, tier)) {
+    return (
+      <>
+        <div className="sheet-head">
+          <Link href="/my-data/boards" className="sheet-x" aria-label="Back to leaderboards">
+            <span aria-hidden="true">←</span>
+          </Link>
+          <h1 className="t">Leaderboard</h1>
+          <span style={{ width: 44 }} />
+        </div>
+        <div className="empty">
+          <h2>Not on your club&rsquo;s plan</h2>
+          <p>
+            This board ranks GPS data, which is part of the Premium plan. It is still here
+            and nothing has been deleted &mdash; it is not shown while your club is on Basic.
+          </p>
           <p>
             <Link href="/my-data/boards">Back to leaderboards</Link>
           </p>

@@ -241,7 +241,24 @@ Both come after the sign-in-history item in 0b, which is in progress.
   **Sequencing against the Pro upgrade:** do this FIRST. Buying Pro on a project that is then abandoned wastes the purchase, and `0a` should be closed against whichever project is the permanent one.
 
 ## 0a. Hard gate — do this before the first real person touches the app
-- [ ] **QUEUED 2026-09-08, awaiting deploy: four tables carry database grants their own migrations say they do not have. Migration `0090` is written, applied to scratch and verified; it has NOT been pushed.** Found by running the full pgTAP suite for the first time — two files were red and had been red for some time.
+- [x] **CLOSED 2026-09-08: `0090` is applied to production. Measured, not assumed.** The entry below was written when `0090` was scratch-only, and its "has NOT been pushed" line went stale the same afternoon when the migration went out in the 0088-0091 batch. Confirmed afterwards by behaviour rather than by trusting the push:
+
+  **How it was checked.** PostgREST does not expose `information_schema`, and this repo's own `test-default-privileges` reads the migration FILES, so neither could answer whether the live database had changed. What distinguishes the two states is the response to an anonymous `select`: a revoked grant answers `42501 permission denied for table`, whereas a grant that is still present with only RLS holding the line answers `200` with an empty array. Scratch — where `0090` is applied and verified — was used as the positive control, so a "revoked" reading had something known-good to match.
+
+  | Table | scratch (control) | production |
+  |---|---|---|
+  | `injury_timeline_event` | 401 / 42501 | 401 / 42501 |
+  | `login_attempts` | 401 / 42501 | 401 / 42501 |
+  | `sar_requests` | 401 / 42501 | 401 / 42501 |
+  | `sar_clinical_reviews` | 401 / 42501 | 401 / 42501 |
+
+  **One half measured, one half inferred, stated so nobody reads more into this than it proves.** The test exercises the `anon` revoke on all four tables. It does not separately measure the other half of `0090`, which narrows `authenticated` from all seven privileges to select and insert — that would need a real user token. It is inferred from the migration being a single transactional unit: if the anon revoke is live, the same migration's grant narrowing is live too. Worth a direct check the next time a user token is to hand.
+
+  Original entry follows.
+
+  <details><summary>As filed</summary>
+
+  **QUEUED 2026-09-08, awaiting deploy: four tables carry database grants their own migrations say they do not have. Migration `0090` is written, applied to scratch and verified; it has NOT been pushed.** Found by running the full pgTAP suite for the first time — two files were red and had been red for some time.
 
   **What is wrong**, measured on scratch, which is a restore of production:
 
@@ -267,6 +284,9 @@ Both come after the sign-in-history item in 0b, which is in progress.
   ```
 
   Then re-run `010`, `400` and `scripts/test-default-privileges.ts`.
+
+
+  </details>
 
 - [ ] **Upgrade Supabase from Free to Pro tier before inviting the first real club, design partner, or any person whose data isn't something you typed in yourself.** Not "before full completion", before the first real account. Free tier has no automated backups and no point-in-time recovery; confirmed 2026-09-05 that Claude Code also cannot take a manual backup from its own environment (no `pg_dump`/`psql` on PATH, `supabase db dump` needs Docker, not available). As of 2026-09-05 all production accounts are synthetic test data created by you, so this is not yet urgent, it becomes urgent the moment that stops being true.
 

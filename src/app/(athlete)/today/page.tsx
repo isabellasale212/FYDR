@@ -1,13 +1,11 @@
 import Link from 'next/link';
 import { AvailabilityBanner } from '@/components/AvailabilityBanner/AvailabilityBanner';
-/* TEMPORARY, with the component it renders. Both go when the Tier 2 decision is
-   made. See src/lib/diagnosisPreview.ts for the four locks on it. */
-import { DiagnosisPreview } from '@/components/DiagnosisPreview/DiagnosisPreview';
+import { InjuryDiagnosis } from '@/components/InjuryDiagnosis/InjuryDiagnosis';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { OutboxFlusher } from '@/components/OutboxFlusher/OutboxFlusher';
 import { Toast } from '@/components/Toast/Toast';
 import { fetchAthleteAvailability } from '@/lib/queries/availability';
-import { diagnosisPreviewEnabled, fetchDiagnosisPreview } from '@/lib/diagnosisPreview';
+import { fetchAthleteDiagnosis } from '@/lib/queries/injuryDiagnosis';
 import { fetchMyOutstanding } from '@/lib/queries/compliance';
 import {
   fetchAthleteDaySessions,
@@ -121,13 +119,11 @@ export default async function TodayPage({
       fetchNextFixture(db, orgId, new Date().toISOString()),
     ]);
 
-  /* TEMPORARY, and sequential on purpose rather than joining the Promise.all
-     above: it needs the injury id that availability resolves, and the gate is
-     asked FIRST so that in every environment but this one it costs a boolean
-     and no round trip. Delete with the component. */
-  const diagnosisPreview = diagnosisPreviewEnabled()
-    ? await fetchDiagnosisPreview(db, availability.injury?.id)
-    : null;
+  /* Sequential rather than joined to the Promise.all above, because it needs the
+     injury id that availability resolves. Skipped entirely when there is no
+     linked injury, which is the common case — and when there is one, the view
+     returns nothing for an athlete under 18 (0093). */
+  const diagnosis = await fetchAthleteDiagnosis(db, availability.injury?.id);
 
   const todoItems = [
     ...outstanding.map((item) => ({
@@ -335,12 +331,9 @@ export default async function TodayPage({
         timezone={timezone}
       />
 
-      {/* TEMPORARY. Off in every deployed environment and off locally until
-          FYDR_PREVIEW_DIAGNOSIS=1 is set against scratch — the gate is asked
-          before the database is, so a closed gate costs one boolean and no
-          query. Delete this block, the component and lib/diagnosisPreview when
-          the Tier 2 decision is made. */}
-      <DiagnosisPreview diagnosis={diagnosisPreview} />
+      {/* Renders nothing when there is no diagnosis, no injury, or the reader
+          is a minor — the view (0093) draws that last line, not this page. */}
+      <InjuryDiagnosis diagnosis={diagnosis} />
 
       {myAllocation ? (
         <p className="banner" role="status">

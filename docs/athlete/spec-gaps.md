@@ -55,31 +55,69 @@ stage of six the club thinks they are at, or when they are expected back — and
 first two are only legible because somebody typed them into a free-text field
 that happens to be displayed.
 
-### Tier 1 and Tier 2: what was decided, 2026-09-08
+### Tier 1 and Tier 2: what was decided and built, 2026-09-08
 
-**Tier 1 is built.** The banner now carries the injury, its recovery stage and an
-expected return date. No new screen, no new query, no migration: the injury was
-already being fetched on every Today load and discarded, and `status` was one
-column short of being selected.
+**Tier 1 is built and deployed.** The availability banner carries the injury, its
+recovery stage and an expected return date. No new screen and no migration: the
+injury was already fetched on every Today load and discarded, and `status` was
+one column short of being selected.
 
-**Tier 2 is not started, and waits on Isabella seeing diagnosis-only on screen
-first.** Two decisions are already made and are binding on it:
+**Tier 2 is built, diagnosis only.** Confirmed by Isabella after looking at
+diagnosis-only on a real record through a temporary local-only preview, which has
+since been deleted.
 
-1. **The clinical split. Diagnosis and mechanism may show. Imaging and the
-   detailed treatment plan are HELD BACK.** In their words, that is "a bigger step
-   than the existing DB permission implies" and they want to look at it properly
-   before it is on a player's phone. Note what this means: the database is MORE
-   permissive than the product. `injury_clinical_athlete_view` already exposes
-   `severity`, `tissue_type`, `imaging`, `referral` and `treatment_plan` to the
-   athlete, and Tier 2 must select only `diagnosis` and `mechanism` from it. The
-   restraint lives in the query, so the test for it has to assert the columns
-   NOT selected, not merely that the two chosen ones appear.
-2. **The age gate is built in from the start, not deferred.** Using
-   `athlete_is_minor()`, which already fails safe: a null date of birth counts as
-   a minor. One minor on the roster today, zero with an open injury, and their
-   reasoning is that this is exactly the moment to get it right, before it is a
-   live problem. Whether a minor sees a reduced version or none of it is still
-   open; the gate itself is not.
+**THE CONFIRMED SCOPE IS ONE FIELD.**
+
+| Field | On the athlete's screen | Why |
+|---|---|---|
+| `diagnosis` | **Yes** | Confirmed 2026-09-08 after review on screen |
+| `mechanism` | **No — PENDING REVIEW** | **Not a no.** Isabella wants to see the actual mechanism text on screen before deciding, the same way diagnosis was decided. Selby's reads "Head to hip contact making a tackle, no loss of consciousness" |
+| `imaging` | No | Held back, a bigger step than the DB permission implies |
+| `treatment_plan` | No | Held back, same reason |
+| `severity`, `tissue_type`, `referral` | No | Not requested, not shown |
+| `clinical_notes` | No | Not a column of the view at all |
+
+**The database stays more permissive than the screen, deliberately.**
+`injury_clinical_athlete_view` still exposes all seven fields to an adult
+athlete; `fetchAthleteDiagnosis` selects one. That gap is the design, not an
+oversight: the restraint lives in one select list where the next decision can be
+read and changed. `scripts/test-injury-diagnosis.ts` therefore asserts the six
+columns NOT selected — asserting `diagnosis` appears would pass just as well if
+all seven were fetched.
+
+**The age gate is in the database, and it had to be.** Migration `0093` adds the
+predicate to the view. It does NOT call `athlete_is_minor()`, which was the first
+attempt: that function is SECURITY DEFINER with EXECUTE granted to `postgres` and
+`service_role` only, and a view's owner rights cover the TABLES it reads while
+EXECUTE on a function it calls is still checked against the caller — so an
+owner-rights view calling it fails for `authenticated` exactly as application
+code would. The view expands the same rule from `athlete_age_years`, which is not
+definer and which `athlete_age_view` already uses to expose `is_minor` to
+athletes. Test `490` pins the two to each other at the boundary, one day short of
+eighteen, because the threshold now appears in three places.
+
+**Two things found while building the gate, both worth knowing:**
+
+1. **A linked athlete cannot have a null date of birth.** The check constraint
+   `athletes_dob_required_when_linked` refuses it, and the view only returns rows
+   where `user_id is not null`. The "fails safe on unknown age" case is therefore
+   unreachable for this view's whole population. The view still carries its own
+   `is not null` test, so relaxing the constraint would not open the gate, and
+   490 asserts both facts rather than asserting behaviour for a row that cannot
+   exist.
+2. **The gate covers clinical detail only.** A minor still sees the availability
+   banner and the injury line — body area, recovery stage, expected return —
+   because those come from `injuries`, which is the general tier a coach also
+   reads. Verified on screen: a sixteen-year-old Selby sees "Head · Return to
+   play" and no diagnosis. That split is deliberate, and it is the right one:
+   withholding the general tier would leave a minor unable to learn they are
+   injured at all.
+
+**Still open, and not blocking:** what a minor sees INSTEAD of the diagnosis.
+Nothing is the safe default and is what is built. The component renders no
+"withheld" message on purpose — an athlete told something is being withheld
+learns the withheld thing exists, which for a minor is the disclosure the gate
+prevents.
 
 ### G-A2. Return-to-play progression is invisible. MEDIUM.
 

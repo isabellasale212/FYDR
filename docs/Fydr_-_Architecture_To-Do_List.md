@@ -687,6 +687,17 @@ Both come after the sign-in-history item in 0b, which is in progress.
 - [ ] **Retention run isn't resumable or transactional (D-43), confirmed and decided open, 2026-09-05.** Categories are processed in sequence and the run stops on the first error, leaving earlier categories deleted and later ones untouched, permanently, with no record of exactly where it stopped. Decided not to fix this now, tracked here instead: either make the run resumable, or make it transactional so a mid-run failure rolls back rather than leaving a half-completed deletion. Relevant to the GDPR erasure work already on this list. This sits on the data retention screen, the only screen in the app that permanently deletes athlete data, which as of 2026-09-05 also requires a typed confirmation (the club name) rather than a button click before it runs.
 - [ ] Decide retention period for athlete data after they leave a club — open question in the data model doc, same question as the compliance item below.
 
+## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
+- [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.
+
+  **How it showed up.** All six open injuries carried an `expected_return` between 9 and 31 days in the past, because they were authored as `current_date + 5` (`seed.sql:603`) and seeded on 2026-08-06, 33 days before anybody looked. The athlete-facing return date is suppressed when it is in the past — deliberately, see `upcomingDate` in `src/lib/format.ts` — so the effect was that **no athlete saw a return date at all**, on either database. Corrected on both on 2026-09-08 by re-anchoring each date to a realistic window for its own diagnosis.
+
+  **It will happen again**, on scratch and on production alike, because nothing re-anchors the dates as time passes. Anything authored relative to `current_date` drifts: injury onsets and returns, availability windows, fixture kickoffs, session dates.
+
+  **What to actually do:** re-check the seeded dates before any demo, and before trusting a long-running scratch session for anything date-sensitive. The quick check is `select count(*) from injuries where status <> 'closed' and deleted_at is null and expected_return < current_date` — non-zero means the data has aged. Production is the one that matters if a club is ever shown around it, since all 46 accounts there are synthetic and the same drift applies.
+
+  **Not proposed here:** changing the seed. Relative dates are the right authoring choice — a seed with fixed dates would be stale the day after it was written rather than a month later. The fix, if this ever becomes annoying, is a re-anchoring script rather than a different seed.
+
 ## 1. Data & Schema — confirmed already built by reading the raw files directly
 - [x] Multi-tenancy: `org_id` on 56 of 58 tables, RLS enabled with a policy on all 58
 - [x] Role-based access: `app_role` enum, medical data split across `injuries` (coach-visible) and `injury_clinical` (medical-only by policy)

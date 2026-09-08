@@ -1,13 +1,24 @@
 import type { CSSProperties } from 'react';
 import type { AvailabilityReason, AvailabilityStatus } from '@/lib/types/database';
+import type { OpenInjury } from '@/lib/queries/availability';
 import { availabilityStatus } from '@/lib/status';
-import { enumLabel } from '@/lib/format';
+import { bodyAreaPhrase, enumLabel, formatDate, todayIso, upcomingDate } from '@/lib/format';
 
 type Props = {
   status: AvailabilityStatus | null;
   restrictions: readonly string[];
   reasonCategory?: AvailabilityReason | null;
   note?: string | null;
+  /** The injury this availability row is linked to, or null. Null is the common
+   *  case and not an error: an athlete can be unavailable for illness, exams,
+   *  personal leave or a representative call-up, and fetchAthleteAvailability
+   *  deliberately returns null rather than guessing at an unrelated open injury.
+   *
+   *  Added 2026-09-08. It was already being fetched on every Today load and
+   *  discarded, so an athlete was told they were restricted and never told which
+   *  injury, what stage of recovery, or when they were expected back. */
+  injury?: OpenInjury | null;
+  timezone: string;
 };
 
 const TONE_RGB = {
@@ -43,7 +54,14 @@ const TONE_RGB = {
  *  reason_category value in the database, forever — this check order is what
  *  makes that harmless: no matter what is stored, a status of 'available'
  *  always reads as "Everything is on." here, never a stale reason. */
-export function AvailabilityBanner({ status, restrictions, reasonCategory, note }: Props) {
+export function AvailabilityBanner({
+  status,
+  restrictions,
+  reasonCategory,
+  note,
+  injury = null,
+  timezone,
+}: Props) {
   const state = availabilityStatus(status);
 
   return (
@@ -72,6 +90,37 @@ export function AvailabilityBanner({ status, restrictions, reasonCategory, note 
                 : 'No restriction recorded.'}
         </div>
         {note ? <div className="s">{note}</div> : null}
+
+        {/* THE INJURY, and only when they are not fully available.
+            Availability and injury are separate records: somebody can be
+            training fully with an injury still open on file, and telling a
+            cleared player about it here would read as a restriction they do not
+            have. So this sits under the same guard as the line below it, which
+            is the guard the whole banner has always respected.
+
+            Three facts, in the order an athlete asks for them: what it is, how
+            far along they are, when they are expected back. The stage goes
+            through enumLabel because "return_to_play" is an enum and a player is
+            not required to read one. Expected return is guarded separately —
+            most open injuries have none, and an unguarded date renders the
+            string "Invalid Date" on a player's phone.
+
+            NO CLINICAL DETAIL. body_area, side and status come from `injuries`,
+            which this athlete may read in full. Diagnosis and mechanism live
+            behind injury_clinical_athlete_view, are a separate decision, and are
+            deliberately not here. */}
+        {status !== 'available' && injury ? (
+          <div className="s">
+            {bodyAreaPhrase(injury)} · {enumLabel(injury.status)}
+            {/* Only while it is still ahead. See upcomingDate: every open
+                injury on file carries a date already gone, and "Expected return
+                Sun 9 Aug" on the 8th of September is not information. */}
+            {upcomingDate(injury.expected_return, todayIso(timezone))
+              ? ` · Expected return ${formatDate(injury.expected_return, timezone)}`
+              : ''}
+          </div>
+        ) : null}
+
         {status !== 'available' ? (
           /* Seventeen words became eight. The design's line here is "Speak to
              medical staff." — and medical IS the right authority, since

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { AthleteInjuryRow, InjuryClinical } from '@/lib/queries/injuries';
 import type { InjuryProgrammeStatus } from '@/lib/queries/injuryTimeline';
-import { enumLabel, formatDate } from '@/lib/format';
+import { bodyAreaPhrase, enumLabel, formatDate } from '@/lib/format';
 
 /** The injury card on the player profile. One card, role-driven content.
  *
@@ -50,15 +50,6 @@ const STATUS_TONE: Record<string, string> = {
   return_to_play: 'pill-warn',
   closed: 'pill-neutral',
 };
-
-/** "Left hamstring" — the side folded into the area rather than shown as its own
- *  field, which is how a physio says it out loud. */
-function bodyAreaPhrase(injury: AthleteInjuryRow): string {
-  const area = enumLabel(injury.body_area);
-  if (!injury.side) return area;
-  const side = enumLabel(injury.side);
-  return `${side} ${area.toLowerCase()}`;
-}
 
 /* Grey label above a bold dark value, per the reference card. `.label` is the
    muted 12.5px the design system already uses for exactly this, and `.nm` the

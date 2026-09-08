@@ -8,30 +8,86 @@ issues rank above cosmetic ones.
 
 ## Band 1: an athlete is told nothing about their own body
 
-### G-A1. A player who is made unavailable is not told by the app. HIGH.
+### G-A1. An athlete is told they are unavailable, and almost nothing about why. MEDIUM, not HIGH.
 
-**Required.** An athlete can see their own availability, restrictions and return
-to play stage.
+**CORRECTED 2026-09-08. The original entry here said "no screen uses it" and that
+an athlete "finds out they cannot train from a person". That was wrong**, and
+wrong by the exact method this project has a standing rule against: it was
+established by grepping `src/app/(athlete)/` for `from('injuries')` and
+`from('availability')`. The queries live in `src/lib/queries/availability.ts`,
+outside that folder, and the screen reaches them through an import. Follow the
+import, not the folder.
 
-**Exists.** The permission exists and **no screen uses it**. `injuries_self_select`
-and `availability_self_select` both allow it
-(`supabase/migrations/0012_rls_policies.sql:656`, `:725`), and
-`injury_clinical_athlete_view` even gives them their own diagnosis, mechanism,
-severity, imaging, referral and treatment plan.
+**What is actually built.** `src/app/(athlete)/today/page.tsx:312` renders
+`AvailabilityBanner` on every load of the landing screen. It shows the status
+word (Available / Modified / Unavailable) with a coloured ring, the restrictions
+list, the reason category when there are no restrictions, the free-text note, and
+"Everything else is on. Speak to medical staff."
 
-**Files.** All fifteen pages under `src/app/(athlete)/`. None reads any of it.
+So an athlete who is made unavailable **is** told, on the first screen they see,
+and is told what they may and may not do. The banner is careful work: it checks
+`status === 'available'` before reading anything else, precisely so a stale
+`reason_category` on a coach-authored row can never surface as a false reason.
 
-**Why it is first.** A player finds out they cannot train from a person, or by
-noticing they have vanished from the leaderboards. The database was built to tell
-them and nothing asks it. **This is the single largest gap in the athlete app**,
-and it is a screen, not a permission.
+**What is genuinely missing**, which is a narrower and different gap:
 
-### G-A2. Return to play progression is invisible to the athlete. HIGH.
+1. **The injury itself is fetched on every Today load and then discarded.**
+   `fetchAthleteAvailability` returns `{ current, injury }`
+   (`availability.ts:183`); `today/page.tsx` destructures only `current`. The
+   discarded object already holds `body_area`, `side`, `onset_date` and
+   `expected_return`. **The athlete is not told which injury, or when they are
+   expected back**, and the data to tell them is already in memory on the server.
+2. **The recovery stage is not even fetched.** `fetchOpenInjuries`
+   (`availability.ts:83`) selects six columns and `status` is not among them, so
+   `open` / `rehab` / `return_to_play` never leaves the database. This is the
+   whole of G-A2.
+3. **`injury_clinical_athlete_view` has never been read by any code.** Zero
+   references in `src/` outside the generated types and two comments. The club
+   has already decided, in a definer-rights view, that an athlete may see their
+   own diagnosis, mechanism, severity, tissue type, imaging, referral and
+   treatment plan, withholding only `clinical_notes`. None of it reaches them.
 
-Same cause as G-A1, listed separately because it is the flow a rehabbing player
-cares about most and it has no screen at all.
+**Why it still matters.** On scratch today, Adam Selby is `modified` with a head
+injury at `return_to_play`, and his restrictions field reads "return to play
+protocol, stage 3 of 6; no contact; no collision drills". He is told the
+restrictions. He is not told that he is on a graduated concussion protocol, which
+stage of six the club thinks he is at, or when they expect him back — and the
+first two are only legible because somebody typed them into a free-text field
+that happens to be displayed.
 
----
+### Tier 1 and Tier 2: what was decided, 2026-09-08
+
+**Tier 1 is built.** The banner now carries the injury, its recovery stage and an
+expected return date. No new screen, no new query, no migration: the injury was
+already being fetched on every Today load and discarded, and `status` was one
+column short of being selected.
+
+**Tier 2 is not started, and waits on Isabella seeing diagnosis-only on screen
+first.** Two decisions are already made and are binding on it:
+
+1. **The clinical split. Diagnosis and mechanism may show. Imaging and the
+   detailed treatment plan are HELD BACK.** In her words, that is "a bigger step
+   than the existing DB permission implies" and she wants to look at it properly
+   before it is on a player's phone. Note what this means: the database is MORE
+   permissive than the product. `injury_clinical_athlete_view` already exposes
+   `severity`, `tissue_type`, `imaging`, `referral` and `treatment_plan` to the
+   athlete, and Tier 2 must select only `diagnosis` and `mechanism` from it. The
+   restraint lives in the query, so the test for it has to assert the columns
+   NOT selected, not merely that the two chosen ones appear.
+2. **The age gate is built in from the start, not deferred.** Using
+   `athlete_is_minor()`, which already fails safe: a null date of birth counts as
+   a minor. One minor on the roster today, zero with an open injury, and her
+   reasoning is that this is exactly the moment to get it right, before it is a
+   live problem. Whether a minor sees a reduced version or none of it is still
+   open; the gate itself is not.
+
+### G-A2. Return-to-play progression is invisible. MEDIUM.
+
+Not a separate screen problem. `injuries.status` carries `open`, `rehab` and
+`return_to_play` and is not selected by the athlete's query. Structured stage
+data (`stage 3 of 6`) does not exist as a column anywhere — where it exists at
+all it is free text inside `availability.restrictions`. Surfacing the status is
+small; surfacing a real protocol stage is a data-model question, not a screen.
 
 ## Band 2: obligations that are specified and not met
 

@@ -3,6 +3,7 @@ import type {
   AvailabilityStatus,
   BodyArea,
   BodySide,
+  InjuryStatus,
 } from '@/lib/types/database';
 import { fetchGroupAthleteIds, type Db } from './groups';
 
@@ -30,6 +31,10 @@ export type OpenInjury = {
   side: BodySide | null;
   onset_date: string;
   expected_return: string | null;
+  /** The recovery stage: open, rehab, return_to_play. Never 'closed' — the query
+   *  filters those out, but the enum is not narrowed here because the column is
+   *  the column and a narrower type would be a claim the database does not make. */
+  status: InjuryStatus;
 };
 
 export type NotFullyAvailableRow = {
@@ -80,7 +85,11 @@ export async function fetchOpenInjuries(
 ): Promise<OpenInjury[]> {
   let q = db
     .from('injuries')
-    .select('id, athlete_id, body_area, side, onset_date, expected_return')
+    /* `status` added 2026-09-08 for the athlete's availability banner: it is the
+       injury's recovery stage (open / rehab / return_to_play) and without it the
+       athlete is told they are restricted but never how far along they are. The
+       staff surfaces already had it from their own query. */
+    .select('id, athlete_id, body_area, side, onset_date, expected_return, status')
     .eq('org_id', orgId)
     .neq('status', 'closed')
     .is('deleted_at', null);

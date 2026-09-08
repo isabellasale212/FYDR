@@ -119,6 +119,32 @@ export function formatPercent(
 }
 
 /** Today in the organisation's timezone, as an ISO date. Never the server's. */
+/** A date worth showing only while it is still ahead, or null once it is gone.
+ *
+ *  WHY THIS EXISTS. Every one of the six open injuries carrying an
+ *  `expected_return` was found, on 2026-09-08, to hold a date between 9 and 31
+ *  days in the past. Rendering it raw told an athlete with a head injury
+ *  "Expected return Sun 9 Aug" a month after the fact — which is not
+ *  information. It is either a club that has not updated the record or an app
+ *  that looks broken, and on a concussion it reads as pressure to be back
+ *  already.
+ *
+ *  So the athlete's banner drops a past date and degrades to the injury and its
+ *  stage, exactly what it would have shown had the date never been fetched. The
+ *  STAFF injury card still renders it unconditionally, deliberately: the club
+ *  needs to see that its own record is stale, and they are the only ones who can
+ *  fix it. The person who stops being told is the one who cannot act on it.
+ *
+ *  Compared as ISO strings, which is correct for `YYYY-MM-DD` and avoids
+ *  building two Date objects in different timezones to ask one question. */
+export function upcomingDate(
+  iso: string | null | undefined,
+  today: string = todayIso(),
+): string | null {
+  if (!iso) return null;
+  return iso >= today ? iso : null;
+}
+
 export function todayIso(timeZone: string = DATE_TZ): string {
   return dateInTz(new Date(), timeZone);
 }
@@ -384,6 +410,22 @@ const ENUM_LABELS: Record<string, string> = {
 };
 
 /** Enum values are rendered from a fixed label set, never as free text. */
+/** "Left hamstring" — the side folded into the area rather than shown as its own
+ *  field, which is how a physio says it out loud.
+ *
+ *  SHARED, AND THAT IS THE POINT. It began as a private function inside
+ *  InjuryCard, the staff surface. The athlete's availability banner needs the
+ *  same phrase, and two spellings of "Left hamstring" is the softest kind of
+ *  parity break — no number is wrong, and an athlete asking their coach about a
+ *  phrase that is not the one on the coach's screen is exactly the confusion
+ *  docs/metrics-parity.md exists to prevent. Structurally typed so both the
+ *  staff row and the athlete's leaner one satisfy it. */
+export function bodyAreaPhrase(injury: { body_area: string; side: string | null | undefined }): string {
+  const area = enumLabel(injury.body_area);
+  if (!injury.side) return area;
+  return `${enumLabel(injury.side)} ${area.toLowerCase()}`;
+}
+
 export function enumLabel(value: string | null | undefined): string {
   if (!value) return BLANK;
   const mapped = ENUM_LABELS[value];

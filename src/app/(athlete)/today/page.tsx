@@ -314,6 +314,13 @@ export default async function TodayPage({
         restrictions={availability.current?.restrictions ?? []}
         reasonCategory={availability.current?.reason_category ?? null}
         note={availability.current?.note ?? null}
+        /* Already fetched above and, until 2026-09-08, thrown away on every
+           load. fetchAthleteAvailability only resolves this when the
+           availability row actually names the injury, so an athlete who is out
+           for a non-injury reason with an unrelated injury on file gets null
+           rather than the wrong injury attached to the wrong absence. */
+        injury={availability.injury}
+        timezone={timezone}
       />
 
       {myAllocation ? (

@@ -23,7 +23,25 @@
 
 ## 0d. Not yet decided — needs your call before Claude Code can build either
 - [x] **Nutrition day-type editing (Journey 4 finding, decided 2026-09-06).** Replace the rate+multiplier model with three fully independent numbers per day type, training/match/rest, no shared rate, no auto-scaling. Changing one day type must not affect the others. A suggested/guideline value shown next to each field as a non-enforced reference is welcome, but not required. This removes the original auto-scaling design intent on purpose, confirmed, not inferred.
-- [ ] **Food library on the athlete app (2026-09-06).** Athlete-facing app is a separate codebase (native iOS/Swift), unconfirmed whether reachable from the same Claude Code session as the staff web app, check access first. Also undecided: browse-only (see foods and macros, no interaction), or log a meal by picking from the library (tracked against intake), or something else. Needs both the access question and the interaction-scope question answered before this is buildable.
+- [ ] **Food library on the athlete app. CORRECTED 2026-09-08 — both halves of the original premise were wrong, and the browse-only half is already shipped.** Restated below; the original text is kept at the foot of this entry because it was acted on for two days.
+
+  **There is no access question.** The athlete app is the web route group at `src/app/(athlete)/` in this repository — one codebase, one deployment, one Supabase project, shared with the staff app. There is no separate native iOS/Swift codebase and there never has been, verified 2026-09-08: no Xcode project, no `.swift` file, no React Native, Expo, Capacitor or Cordova manifest anywhere on the machine. See the corrected Decisions Log entry at the top of this document.
+
+  **And browse-only is not undecided. It is built, live, and pinned.** `src/app/(athlete)/programme/nutrition/page.tsx` already reads `fetchMealLibrary(db, orgId)` and renders every meal — the five fixed reference meals plus whatever the club's coach has authored — portion-scaled to that athlete's own last recorded body mass through the same `scaleMeal`/`scaleDay` maths the coach's `/nutrition` workspace uses, so a recipe cannot read differently on the two screens. Its own header states the constraint: *"Read-only, CLAUDE.md rule 8: no logging, no per-meal macro entry, no submit action anywhere on this screen."* The screen closes with "Reference only — nothing here is logged or tracked."
+
+  **So the actual open question is the one thing the original entry listed as an alternative:** should an athlete be able to **log** a meal from the library against an intake record, going beyond browsing?
+
+  **It is a product decision against a standing rule, not a screen.** CLAUDE.md rule 8 says athletes do not log nutrition daily — *"no daily nutrition entry, no per-meal macros, and no nutrition compliance domain"* — with exactly one exception, the weekly one-tap check-in. Meal logging is the thing that rule exists to refuse. Answering "yes" means changing the rule deliberately, not working around it.
+
+  **And it is a data-model question before it is a UI one.** There is nowhere to put a logged meal. The nutrition tables are `meal_library`, `meal_library_items`, `nutrition_rules`, `nutrition_targets` and `nutrition_checkins` — a library, its items, the rules, the computed targets, and the weekly check-in. The only nutrition write an athlete has is one row a week in `nutrition_checkins`. An intake table does not exist, `nutrition_entries` is dormant by rule, and per-meal logging would need a new table, its RLS, its retention treatment and a place in the subject-access pack.
+
+  **What would settle it:** either "no, browse-only is the product, close this" — which costs nothing and matches what is already shipped — or "yes, and here is why rule 8 should change", at which point it is a schema change and a compliance review rather than a screen.
+
+  <details><summary>The original entry, as written 2026-09-06 and acted on until 2026-09-08</summary>
+
+  Food library on the athlete app (2026-09-06). Athlete-facing app is a separate codebase (native iOS/Swift), unconfirmed whether reachable from the same Claude Code session as the staff web app, check access first. Also undecided: browse-only (see foods and macros, no interaction), or log a meal by picking from the library (tracked against intake), or something else. Needs both the access question and the interaction-scope question answered before this is buildable.
+
+  </details>
 - [ ] **Should creating a fixture also create a linked `match` session? (2026-09-07).** A match is representable two ways in this schema and today they are unconnected. `fixtures` holds the opponent, kick-off, venue and competition. `sessions` has a `match` type with its own red treatment, an "RPE after full time" expectation in the EXPECTS map, participants, a duration, and a `fixture_id` column pointing back at the fixture. **Nothing writes `fixture_id`.** All four seeded `match` sessions on scratch carry `fixture_id: null`, so the two representations coexist and neither knows about the other.
 
   What that means in practice right now: a fixture is staff-calendar information. It draws on the schedule grid (2026-09-07), tints the matchday header, anchors the MD spine, and appears on every athlete's Today screen as the "Working towards" line — which is club-wide and names nobody. **It has no participants, generates no RPE, and counts zero contact minutes.** A club creating a fixture has not told anybody to turn up to anything.
@@ -721,7 +739,7 @@ Both come after the sign-in-history item in 0b, which is in progress.
 - [ ] Once verification is done, have Claude Code produce one consolidated, cited "verified state" doc rather than relying on scattered prose docs
 
 ## 3. Apps
-- [x] Platform decision: web app for staff, native (Swift/SwiftUI, iOS first) for athletes
+- [x] Platform decision: web app for staff, native (Swift/SwiftUI, iOS first) for athletes — **SUPERSEDED, see the corrected Decisions Log entry at the top of this document. No native athlete app was ever built, and on 2026-09-08 Isabella confirmed the responsive web app is what continues to be built. This line records the decision as it was taken on 2026-09-04, not the platform as it stands.**
 - [ ] Confirm what's actually been built matches this decision
 - [ ] **This is no longer just an option to evaluate, it's a requirement.** The 2026-09-04 decision that schedule edits must be saved locally and synced on reconnect needs a service worker and real local storage (IndexedDB, not just a form staying open in a tab) to work at all. A plain web app doesn't have this by default. Decide whether that's built as a full PWA, or the specific offline-storage pieces only, without the rest of the PWA shell.
 

@@ -241,7 +241,7 @@ Both come after the sign-in-history item in 0b, which is in progress.
   **Sequencing against the Pro upgrade:** do this FIRST. Buying Pro on a project that is then abandoned wastes the purchase, and `0a` should be closed against whichever project is the permanent one.
 
 ## 0a. Hard gate — do this before the first real person touches the app
-- [x] **CLOSED 2026-09-08: `0090` is applied to production. Measured, not assumed.** The entry below was written when `0090` was scratch-only, and its "has NOT been pushed" line went stale the same afternoon when the migration went out in the 0088-0091 batch. Confirmed afterwards by behaviour rather than by trusting the push:
+- [x] **CLOSED 2026-09-08: `0090` is applied to production. Measured, not assumed.** The entry below was written when `0090` was scratch-only, and its "has NOT been pushed" line went stale the same afternoon when the migration went out in the 0088-0091 batch. Confirmed afterwards against production's own privilege catalogue and migration ledger, not by trusting the push and not by inference:
 
   **How it was checked, second attempt — the catalogue, not a probe.** Connected
   directly with `pg` over `SUPABASE_DB_URL`, the same path `db-push.mjs` and the

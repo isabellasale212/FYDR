@@ -177,7 +177,7 @@ export default async function MePage() {
         </div>
       </div>
 
-      <div className="card" style={{ marginTop: 14 }}>
+      <div className="card">
         <p className="eyebrow" style={{ marginBottom: 8 }}>
           Theme
         </p>
@@ -205,7 +205,7 @@ export default async function MePage() {
         </div>
       </div>
 
-      <div className="stack" style={{ marginTop: 14 }}>
+      <div className="stack">
         {/* RESTORED 8 September 2026, after the redesign removed it and Isabella
          *  asked for it back the same day. The reference (screens 11/12) draws
          *  no profile form, and removing it took away the only place in the app

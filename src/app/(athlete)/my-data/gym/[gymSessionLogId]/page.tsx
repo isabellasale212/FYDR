@@ -37,7 +37,7 @@ export default async function GymSessionHistoryPage({
       </p>
       {session.comment ? <p className="cap">{session.comment}</p> : null}
 
-      <div className="stack" style={{ marginTop: 14 }}>
+      <div className="stack">
         <section className="card flush">
           <h2 className="card-title" style={{ padding: '16px 16px 0' }}>
             Sets
@@ -48,7 +48,7 @@ export default async function GymSessionHistoryPage({
         </section>
       </div>
 
-      <p className="tiny" style={{ marginTop: 14 }}>
+      <p className="tiny">
         <Link href="/my-data?tab=gym">Back to gym history</Link>
       </p>
     </>

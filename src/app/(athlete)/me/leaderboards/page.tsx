@@ -63,7 +63,7 @@ export default async function MyLeaderboardsSettingsPage() {
        *  `check (allow_opt_out)` on GDPR Article 7(3) grounds, and for an
        *  adult the opt-out is their only exit (the consent toggle above
        *  renders for minors only). */}
-      <section className="card" style={{ marginTop: 14 }} aria-labelledby="hide-title">
+      <section className="card" aria-labelledby="hide-title">
         <h2 className="card-title" id="hide-title">
           Seeing leaderboards
         </h2>
@@ -74,7 +74,7 @@ export default async function MyLeaderboardsSettingsPage() {
         <HideLeaderboardsToggle />
       </section>
 
-      <section className="card" style={{ marginTop: 14 }} aria-labelledby="global-title">
+      <section className="card" aria-labelledby="global-title">
         <h2 className="card-title" id="global-title">
           Every leaderboard at once
         </h2>

@@ -777,7 +777,26 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
 ## 0h. Vertical rhythm on the athlete app, filed 2026-09-08 — measured, needs a decision before any fix
 
-- [ ] **Eight of the ten athlete screens do not render the spacing the stylesheet says they should, and the gaps range from 14px to 40.5px where 14px is intended.** Measured on production in a real athlete session, not read off the CSS.
+- [x] **FIXED 2026-09-08. Isabella chose 14px. Every athlete screen now measures 14px between body blocks, and 16px on Today.** Verified by measuring all thirteen routes after the change, not by reading the diff:
+
+  `today [16,16,16,16,16] · my-data [14,14,14,14] · me [14,14,14] · me/notifications [14,14] · me/leaderboards [14,14,14,14] · my-data/boards [14,14,14] · programme [14,14,14] · programme/nutrition [14,14,14,14,14] · check-in [14] · nutrition-check-in [14] · report-problem [14,14]`
+
+  **What did it.** One rule states the invariant — `.phone-body.phone-body > * { margin-top: 0; margin-bottom: 0 }` — and 18 inline vertical margins were removed from the pages, because an inline style beats any rule. Three now-dead declarations were deleted outright: `.me-stats`, `.md-seg-track` and `.sheet-head`. `.nutr-meal-grid` keeps its 18px because `NutritionWorkspace` needs it on a staff screen; the reset neutralises it on the athlete side, and `check:athlete-spacing` pins that one entry so removing the reset shows up.
+
+  **FOUR THINGS THE FIRST ATTEMPT GOT WRONG, all caught by measuring the rendered page rather than trusting the change.** Recorded because each is a trap the next person will meet:
+
+  1. **`margin-block: 0` did not beat `margin-top: 18px`.** Logical and physical properties are different declarations resolving to the same side, so specificity does not cleanly arbitrate. The reset uses physical longhands now.
+  2. **`.phone-body > *` is the same specificity as `.nutr-meal-grid`**, so source order decided and the class — defined further down the file — won. The class is doubled to make it (0,2,0). Do not "tidy" it back.
+  3. **The parser missed the inline `margin` shorthand.** `me/notifications` had `style={{ margin: '4px 0 14px' }}` on a phone-body child, rendering 18px and 28px gaps while the guard called the screen clean.
+  4. **The parser stopped at wrapper components.** `boards/page.tsx` wraps its body in `<LeaderboardVisibilityGate>`, which renders `{children}`, so a nested `stack` was a phone-body child at runtime. Capitalised tags are transparent to the parser now, which over-approximates on purpose.
+
+  **And the guard failed the build on its own stale expectation** once the rule changed from `margin-block` to the longhands. That is the behaviour working: it is how the mismatch was noticed.
+
+  Original entry follows.
+
+  <details><summary>As filed</summary>
+
+  **Eight of the ten athlete screens do not render the spacing the stylesheet says they should, and the gaps range from 14px to 40.5px where 14px is intended.** Measured on production in a real athlete session, not read off the CSS.
 
   **THE CAUSE IS ONE LINE OF LAYOUT.** `.phone-body` is `display: flex; flex-direction: column; gap: var(--gap-stack)`, so the shell already supplies the space between body blocks. Flex children do not collapse margins, so any block that ALSO sets `margin-top` adds to the gap: `gap 14 + mTop 14 = 28`. Where the preceding block carries a `margin-bottom` as well, that adds too.
 
@@ -830,6 +849,9 @@ Both come after the sign-in-history item in 0b, which is in progress.
   **(b) The screens are right and the comment is stale.** The athlete app was signed off on 4 September AS IT RENDERS, at 28px. If what shipped is what was approved, then `--gap-stack` and that comment are the things to correct, not the layout.
 
   **Do not fix this by adding a second margin anywhere.** Whichever way it goes, the space between two body blocks should come from ONE place. That is the property the guard should assert.
+
+
+  </details>
 
 ## 1. Data & Schema — confirmed already built by reading the raw files directly
 - [x] Multi-tenancy: `org_id` on 56 of 58 tables, RLS enabled with a policy on all 58

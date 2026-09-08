@@ -45,7 +45,7 @@ export function topLevelChildren(src) {
   let m;
   while ((m = re.exec(body))) {
     const [, closing, tag, attrs, selfClose] = m;
-    if (closing) { tagDepth--; continue; }
+    if (closing) { if (!/^[A-Z]/.test(tag)) tagDepth--; continue; }
     if (tagDepth === 0) {
       /* A CAPITALISED TAG DEFINED IN THIS FILE is not itself the phone-body
          child — its own root element is. My data renders <WellnessTab/> at
@@ -65,7 +65,19 @@ export function topLevelChildren(src) {
       }
       out.push({ tag, attrs });
     }
-    if (!selfClose) tagDepth++;
+    /* A CAPITALISED WRAPPER IS TRANSPARENT. Components that render {children}
+       pass them straight through, so those children become phone-body children
+       at runtime even though they are nested in the source. boards/page.tsx
+       wraps its whole body in <LeaderboardVisibilityGate>, and the
+       <div className="stack" style={{ marginTop: 14 }}> inside it rendered an
+       18px/28px gap while this parser reported the screen clean.
+       
+       This OVER-approximates: a component that wraps its children in its own
+       card would have them flagged wrongly. That is the safer direction for a
+       guard and the same trade check-control-radius makes with INTERACTIVE --
+       a false positive costs one baseline line, a false negative costs the
+       rule. */
+    if (!selfClose && !/^[A-Z]/.test(tag)) tagDepth++;
   }
   return out;
 }
@@ -77,6 +89,20 @@ export const cls = (a) => (a.match(/className="([^"]*)"/) || a.match(/className=
 export const inlineMargin = (a) => {
   const m = a.match(/style=\{\{([^}]*)\}\}/);
   if (!m) return null;
-  const v = m[1].match(/(marginTop|marginBottom)\s*:\s*([\d.]+|'[^']*')/);
-  return v ? `${v[1]}: ${v[2]}` : null;
+  const body = m[1];
+  const v = body.match(/(marginTop|marginBottom)\s*:\s*([\d.]+|'[^']*')/);
+  if (v) return `${v[1]}: ${v[2]}`;
+  /* THE SHORTHAND COUNTS TOO, and missing it cost a real finding:
+     me/notifications has <p className="tiny" style={{ margin: '4px 0 14px' }}>
+     as a phone-body child, which rendered 18px and 28px gaps while this guard
+     reported the screen clean. A shorthand with a non-zero first or third value
+     sets a vertical margin exactly as the longhand does. */
+  const sh = body.match(/(?:^|,)\s*margin\s*:\s*('[^']*'|"[^"]*"|[\d.]+)/);
+  if (!sh) return null;
+  const raw = sh[1].replace(/['"]/g, '').trim();
+  const parts = raw.split(/\s+/);
+  const top = parts[0] ?? '0';
+  const bottom = parts.length >= 3 ? parts[2] : top;
+  const nz = (x) => x && !/^0(px|rem|em|%)?$/.test(x);
+  return (nz(top) || nz(bottom)) ? `margin: ${raw}` : null;
 };

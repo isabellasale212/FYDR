@@ -80,7 +80,7 @@ export default async function MealIdeasPage() {
       </p>
 
       {mealLibrary.length === 0 ? (
-        <p className="tiny" style={{ marginBottom: 4 }}>
+        <p className="tiny">
           Your club hasn&rsquo;t added its own recipes to the library yet — these are the
           standard starting meal ideas everyone begins with.
         </p>
@@ -92,7 +92,7 @@ export default async function MealIdeasPage() {
         ))}
       </div>
 
-      <p className="tiny" style={{ marginTop: 14 }}>
+      <p className="tiny">
         Supplement use is your own decision and, in a tested sport, your own anti-doping
         responsibility. This is guidance, not a clinical or dietetic prescription.
       </p>

@@ -1405,6 +1405,45 @@ body:has(.phone) {
   --pad-card-x: 18px;
   --pad-card-y: 16px;
 }
+
+/* THE SHELL OWNS THE SPACE BETWEEN ITS CHILDREN, and this is the one line that
+   says so. Decided by Isabella 2026-09-08: 14px everywhere, 16px on Today.
+   
+   .phone-body is a flex column with a gap. Flex children do not collapse
+   margins, so a child that also set its own margin-top ADDED to that gap and
+   the block rendered ~28px from its neighbour instead of 14. Eight of the ten
+   athlete screens were doing it, measured between 18px and 40.5px. See 0h.
+   
+   WHY A RULE RATHER THAN 25 EDITS. Four of the offenders were CSS classes, and
+   one of them -- .nutr-meal-grid -- is also used inside NutritionWorkspace on a
+   STAFF screen, where its 18px margin is wanted. Stripping the class would have
+   changed that screen. Scoping the reset to `.phone-body > *` fixes the athlete
+   shell and leaves every other use of those classes alone.
+   
+   `margin-block`, not `margin`: horizontal margins on a child are none of this
+   rule's business (.done-check centres itself with `margin: 0 auto`).
+   
+   INLINE STYLES BEAT THIS, which is why the pages were edited too --
+   check:athlete-spacing is what stops one coming back. */
+/* THE CLASS IS REPEATED ON PURPOSE — do not "tidy" it to one.
+   `.phone-body > *` is a single class (0,1,0), exactly the same specificity as
+   `.nutr-meal-grid`, so at equal weight SOURCE ORDER decides — and that class
+   is defined further down the file, so it won and /programme/nutrition still
+   rendered a 32px gap (14 + 18) after the first attempt. Caught by measuring
+   the rendered page, not by reading the CSS.
+   Repeating the class makes this (0,2,0), which beats any single-class
+   declaration wherever it sits in the file.
+
+   PHYSICAL LONGHANDS, NOT `margin-block`. The first version used
+   `margin-block: 0` and .nutr-meal-grid's `margin-top: 18px` still won:
+   logical and physical properties are DIFFERENT declarations that resolve to
+   the same side, so specificity does not cleanly arbitrate between them.
+   Overriding in the same form as the thing being overridden removes the
+   question. Caught by measuring, again. */
+.phone-body.phone-body > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
 .phone-body .card {
   padding: var(--pad-card-y) var(--pad-card-x);
 }
@@ -1927,11 +1966,16 @@ a.hist-row:focus-visible {
 /* Me's two summary cards, Fydr Athlete App.dc.html 23i. Side by side and
    equal width, above the settings list. */
 /* Spec §7.5: two tiles, gap 11, padding 15px 16px, figure 26/800/−0.03em. */
+/* THE margin-top HERE WAS DEAD and is gone (0h, 2026-09-08). This is a
+   phone-body child, so `.phone-body > * { margin-block: 0 }` neutralised it and
+   the shell's gap is the only source of the space above this grid. Two more
+   went the same way: .md-seg-track's 4px and .sheet-head's 12px.
+   .nutr-meal-grid's 18px STAYS -- it is also used inside NutritionWorkspace on
+   a staff screen, where it is not a phone-body child and the margin is real. */
 .me-stats {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 11px;
-  margin-top: 14px;
 }
 .me-stat {
   padding: 15px 16px;
@@ -2010,7 +2054,6 @@ a.hist-row:focus-visible {
      reference drew three segments and this build had six. Three now, so nothing
      scrolls and the track can be the pill the reference draws. */
   padding: 4px;
-  margin-top: 4px;
   border-radius: var(--r-full);
   background: var(--surf2);
 }
@@ -2477,7 +2520,6 @@ a.hist-row:focus-visible {
 .sheet-head {
   padding: calc(14px + env(safe-area-inset-top, 0px)) 0 12px;
   border-bottom: 1px solid var(--hair);
-  margin-bottom: 12px;
 }
 .sheet-head-row {
   display: flex;

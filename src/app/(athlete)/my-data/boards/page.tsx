@@ -52,7 +52,7 @@ export default async function MyBoardsPage() {
             body="Boards your club publishes and includes you on appear here."
           />
         ) : (
-          <div className="stack" style={{ marginTop: 14 }}>
+          <div className="stack">
             {boards.map(({ board, own }) => {
               const metric = labelByKey.get(board.metric_key);
               return (

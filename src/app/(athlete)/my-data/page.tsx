@@ -463,7 +463,7 @@ export default async function MyDataPage({
        * — it would visibly do nothing on that tab — so the row keeps its shape
        * and states the fact instead. Switching tabs preserves the period, so
        * nothing is lost by its absence here. */}
-      <div style={{ marginTop: 12 }}>
+      <div>
         {tab === 'testing' ? (
           <p className="tiny" style={{ color: 'var(--muted)', margin: 0 }}>
             Period: all time
@@ -580,7 +580,7 @@ export default async function MyDataPage({
        *  on Me, so it reads as a way out rather than a fourth tab. Delete the
        *  card and the three destinations go with it — that is the decision, not
        *  a side effect. */}
-      <div className="card flush md-more" style={{ marginTop: 14 }}>
+      <div className="card flush md-more">
         <Link href="/my-data?tab=training" className="me-row">
           <span className="k">
             Sessions and RPE
@@ -784,7 +784,7 @@ async function WellnessTab({
   });
 
   return (
-    <div className="stack" style={{ marginTop: 14 }}>
+    <div className="stack">
       <section className="card" aria-labelledby="wellness-title">
         {/* Fydr Athlete App.dc.html 23e leads with the VALUE, not with an
             explanation of it: the score, how it moved, and the mean it moved
@@ -1034,7 +1034,7 @@ async function TrainingTab({
   );
 
   return (
-    <div className="stack" style={{ marginTop: 14 }}>
+    <div className="stack">
       <section className="card" aria-labelledby="training-title">
         <h2 className="card-title" id="training-title">
           Sessions
@@ -1186,7 +1186,7 @@ async function NutritionTab({
   const shown = checkins.slice(0, LIST_LIMIT);
 
   return (
-    <div className="stack" style={{ marginTop: 14 }}>
+    <div className="stack">
       <section className="card" aria-labelledby="nutrition-title">
         <h2 className="card-title" id="nutrition-title">
           Weekly check-in
@@ -1515,7 +1515,7 @@ async function TestingTab({
       : '';
 
   return (
-    <div className="stack" style={{ marginTop: 14 }}>
+    <div className="stack">
       {featured ? (
         <section className="card" aria-labelledby="test-headline">
           <h2 className="eyebrow" id="test-headline">
@@ -1751,7 +1751,7 @@ async function GymTab({
   const peak = Math.max(1, ...weeks.map((w) => w.count));
 
   return (
-    <div className="stack" style={{ marginTop: 14 }}>
+    <div className="stack">
       <section className="card" aria-labelledby="gym-headline">
         <h2 className="eyebrow" id="gym-headline">
           Sessions

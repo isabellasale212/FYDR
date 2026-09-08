@@ -60,7 +60,7 @@ export default async function ReportProblemPage({
 
       <ProblemReportForm orgId={orgId} athleteId={athleteId} userId={claims.userId} />
 
-      <section aria-labelledby="my-reports-title" style={{ marginTop: 20 }}>
+      <section aria-labelledby="my-reports-title">
         <h2 className="sect" id="my-reports-title">
           Your reports
         </h2>

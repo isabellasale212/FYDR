@@ -32,7 +32,7 @@ export default async function AthleteNotificationsPage() {
       <div className="hd">
         <h1 className="d">Notifications</h1>
       </div>
-      <p className="tiny" style={{ margin: '4px 0 14px' }}>
+      <p className="tiny">
         <Link href="/me">← Me</Link>
       </p>
 

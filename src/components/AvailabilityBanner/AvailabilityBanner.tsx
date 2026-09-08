@@ -89,7 +89,19 @@ export function AvailabilityBanner({
                 ? enumLabel(reasonCategory)
                 : 'No restriction recorded.'}
         </div>
-        {note ? <div className="s">{note}</div> : null}
+        {/* Only when they are not fully available, which is the guard
+            reason_category above already has and for the same reason. A note
+            belongs to the availability row it was written on, and clearing an
+            athlete creates a new row — but nothing forces whoever writes it to
+            clear the text, and one of the thirty-four available rows on file
+            reads "Live-verification: flu, off this week." Under "Everything is
+            on." that is not a note, it is a contradiction, and the player has
+            no way to tell which half is current. Three more available rows
+            carry a leftover reason_category, which is the same shape.
+
+            Staff surfaces are unaffected: this is the athlete's banner, and a
+            coach reading the same row still sees whatever is stored. */}
+        {status !== 'available' && note ? <div className="s">{note}</div> : null}
 
         {/* THE INJURY, and only when they are not fully available.
             Availability and injury are separate records: somebody can be

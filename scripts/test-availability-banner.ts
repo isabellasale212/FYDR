@@ -93,6 +93,36 @@ console.log('\nan AVAILABLE athlete is told about no injury at all');
   );
 }
 
+console.log('\nnor anything else left over from when they were not available');
+{
+  /* THE NOTE HAS THE SAME PROBLEM reason_category already had, and the banner
+     already guards that one. A note is written against the availability row it
+     belongs to, and an athlete who is cleared gets a NEW row — but nothing
+     forces whoever writes it to clear the text, and on scratch one of the 34
+     available rows reads "Live-verification: flu, off this week." A player who
+     is training fully should not read that directly under "Everything is on.",
+     and three more available rows carry a leftover reason_category, which is
+     the same shape and is why the existing guard exists.
+
+     Measured as READS, for the reason given above: the prop name appears in the
+     type and the destructure long before any guard, and neither renders. */
+  const guard = bannerCode.indexOf("status === 'available'");
+  /* `{note}` — the render itself. An earlier pattern here also matched `note?`
+     in the Props type, which is an optional-property marker and not a read, so
+     it reported a use before the guard that does not exist. Declarations are
+     not uses; this is the same distinction as the injury reads above. */
+  const noteReads = [...bannerCode.matchAll(/\{note\}/g)].map((m) => m.index ?? -1);
+  assert(noteReads.length > 0, 'the note is still rendered for somebody');
+  assert(
+    noteReads.every((at) => at > guard),
+    'but never before the available check',
+  );
+  assert(
+    /status !== 'available'[\s\S]{0,400}\{note\b|note\s*&&[\s\S]{0,80}status !== 'available'|status !== 'available' && note/.test(bannerCode),
+    'and only inside the not-available branch, the same guard reason_category already has',
+  );
+}
+
 console.log('\nbut an unavailable one is told which injury, what stage, and when they are back');
 {
   assert(/bodyAreaPhrase\(/.test(bannerCode), 'the body area is rendered');

@@ -127,7 +127,15 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   **Also proven in batch four:** every staff-written audit row in the suite until now came from a sport scientist, because that is the only role permitted to read `audit_log` and so the role every test drove as. A function returning `'sport_scientist'` unconditionally would have passed 430, 440 and 450 alike. 460 writes the authoring chain as the S&C and asserts the recorded role follows the person.
 
-  **State: 21 of 59 tables audited.** 0088 and 0089 are on scratch only. To deploy both: `npm run db:push`.
+  **Batch five, `0091_audit_widen_records_of_record.sql` — five tables, applied to scratch, verified, NOT pushed.** The records you reach for after something has already gone wrong: `sar_requests`, `sar_clinical_reviews`, `injury_timeline_event`, `rehab_assignments`, `users`. Test `470`, 15 assertions. Three of the five are tables whose grants `0090` has just corrected, which is not a coincidence — they kept turning up as the ones nobody had looked at.
+
+  What this batch proved that the earlier ones could not: `audit_row_change()` carries a special case written for 0085, resolving an athlete through `public.injuries` when a row has an `injury_id` but no `athlete_id`. It had exactly one user — `injury_clinical` — for six migrations. `injury_timeline_event` and `sar_clinical_reviews` are its second and third, and 470 asserts both, because a path with one user has only ever been proven for one shape.
+
+  Also found, and asserted rather than filtered away: **granting somebody a role writes an audit row against their user account**, not only against `user_roles`, because it bumps `users.claims_version`. That is right — a role grant changes what an account can do — and 470 pins it so a later reader does not treat the second row as a duplicate.
+
+  **State: 26 of 59 tables audited.** 0088, 0089 and 0091 are on scratch only. To deploy all three: `npm run db:push`.
+
+  **Two tables are now excluded for SHAPE rather than volume, and the guard knows the difference.** `organisations` has no `org_id` column at all — it IS the org — and `metric_definitions` has neither `id` nor `org_id`. The generic function would write rows with a null `org_id` that `audit_log`'s own select policy can never return. Auditing `organisations` needs the same special case `athletes` has, where the row's own id becomes the org: a function change, its own migration, its own test.
 
   **Remaining, and the decision they need.** The high-volume tables are now guarded rather than merely noted — `scripts/test-default-privileges.ts`'s sibling `scripts/test-audit-triggers.ts` fails the build if `session_participants`, `session_attendance` or `group_memberships` acquire a trigger, because a row per athlete per session is a decision somebody has to take, not a sweep. `group_memberships` alone took 17,692 inserts over the statistics window against 47 live rows.
 
@@ -218,6 +226,7 @@ Both come after the sign-in-history item in 0b, which is in progress.
 - [x] Confirm `coachkitstudio <isale4567@gmail.com>` is your own account/session — confirmed. Deployment history under your personal Vercel account (`isabellasale212@gmail.com`, confirmed as your own email) shows the same identity across the last 20 production deploys, all `READY`, most recent from today. Two independent systems agreeing, plus your own confirmation.
 
 ## 0b. Urgent, found while reading the raw files (2026-09-04) — not waiting on any product decision
+- [ ] **FOUND 2026-09-08: `users.last_seen_at` is read by three components and written by nothing, so every account shows "Never signed in".** `UserDetailPanel` renders `Last seen …` or the literal string `Never signed in` from it, `UserManagementPanel` renders `· last seen …`, and `userManagement.ts` selects it. Nothing in `src/` and no migration ever writes the column. So the user-management screen tells a sport scientist that every member of staff has never signed in, including ones who signed in that morning. Found while checking whether `users` was low-volume enough to audit — it is, precisely because this column is dead. Not fixed here: writing it is a decision about where (an auth hook, the sign-in route, or a periodic update) and each has a different cost. The sign-in route is the obvious home given `recordSignIn()` already runs there.
 
 - [x] **FIXED 2026-09-07, Run-verified, awaiting deploy. The product called every athlete "he".** 108 occurrences across 31 files, not the six in four that the first count found — the "his own" search had caught one phrasing out of many. The rendered set alone was 35 across 9 files: "Compared with his position" on three different profile tabs, "What he reported", "What he actually did, as he logged it", "Every plan that reaches him", "Called him Wednesday" in a triage placeholder, and the three shared band labels in `lib/status.ts` that surface wherever a body-composition status renders.
 

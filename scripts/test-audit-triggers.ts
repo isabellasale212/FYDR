@@ -27,15 +27,17 @@ const MIGRATION = 'supabase/migrations/0085_audit_clinical_writes.sql';
 const WIDEN = 'supabase/migrations/0086_audit_widen.sql';
 const CONFIG = 'supabase/migrations/0088_audit_widen_config.sql';
 const AUTHORING = 'supabase/migrations/0089_audit_widen_authoring.sql';
+const RECORDS = 'supabase/migrations/0091_audit_widen_records_of_record.sql';
 const ACCESS = 'src/lib/access.ts';
 const sql = read(MIGRATION);
 const widen = read(WIDEN);
 const config = read(CONFIG);
 const authoring = read(AUTHORING);
+const records = read(RECORDS);
 
 /** Every migration that attaches a trigger. Concatenated, not listed by hand at
     each call site, so adding batch five means editing one line rather than four. */
-const ALL = [sql, widen, config, authoring];
+const ALL = [sql, widen, config, authoring, records];
 const allSql = ALL.join('\n');
 
 /** Every table the trigger is attached to, across both migrations. */
@@ -57,6 +59,12 @@ const AUDITED = [
   ['exercises', AUTHORING], ['programmes', AUTHORING], ['programme_blocks', AUTHORING],
   ['programme_sessions', AUTHORING], ['programme_exercises', AUTHORING],
   ['exercise_overrides', AUTHORING],
+  /* Batch five, 0091: the records somebody asks for during a dispute, a data
+     request or an investigation. Three of the five are tables whose grants 0090
+     corrected, which is not a coincidence — they kept turning up as the ones
+     nobody had looked at. */
+  ['sar_requests', RECORDS], ['sar_clinical_reviews', RECORDS],
+  ['injury_timeline_event', RECORDS], ['rehab_assignments', RECORDS], ['users', RECORDS],
   /* Typed as plain strings rather than left as a literal union. The two guards
      below ask whether a name is ABSENT from this list, and against a literal
      union tsc calls that comparison unintentional and refuses to compile — it is
@@ -72,6 +80,16 @@ const AUDITED = [
 const DEFERRED_ON_VOLUME: readonly string[] = [
   'session_participants', 'session_attendance', 'group_memberships',
 ];
+
+/** Excluded for SHAPE rather than volume, which is a different argument and so a
+    different list. `organisations` has no org_id column at all — it IS the org —
+    and `metric_definitions` has neither an id nor an org_id. The generic
+    function would write rows with a null org_id, and audit_log's select policy
+    is `org_id = auth_org_id()`, which no null satisfies: recorded, and readable
+    by nobody. Auditing organisations needs the special case `athletes` already
+    has, where the row's own id becomes the org. That is a function change, and
+    it belongs in its own migration with its own test. */
+const DEFERRED_ON_SHAPE: readonly string[] = ['organisations', 'metric_definitions'];
 
 console.log('the two role orderings are the same ordering');
 {
@@ -138,6 +156,21 @@ console.log('\nthe high-volume tables stay out until somebody decides');
       `and ${t} is not in the audited list either`,
     );
   }
+}
+
+console.log('\nthe org-less tables stay out until the function can carry them');
+{
+  for (const t of DEFERRED_ON_SHAPE) {
+    assert(
+      !new RegExp(`create trigger ${t}_audit`).test(allSql),
+      `${t} has no audit trigger — with no org_id the row would be readable by nobody`,
+    );
+    assert(!AUDITED.some(([a]) => a === t), `and ${t} is not in the audited list either`);
+  }
+  assert(
+    /ORGANISATIONS IS DELIBERATELY NOT HERE/.test(records),
+    'and 0091 says so in writing, with the reason',
+  );
 }
 
 console.log('\nthe one shape in batch four that is not like the others');

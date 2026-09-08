@@ -1092,6 +1092,36 @@ insert into notification_preferences (org_id, user_id, notification_id, push_ena
 select u.org_id, u.id, 'athlete.wellness.prompt', true
 from users u where u.org_id = 'b0000000-0000-4000-8000-000000000001';
 
+-- ===========================================================================
+-- THESE 43 push_tokens ROWS ARE AN ASSUMPTION, NOT OBSERVED DEVICES.
+-- Read this before using them for anything, added 2026-09-08.
+--
+-- Every row below says platform = 'ios' and carries an 'ExponentPushToken[...]'
+-- value. Both were written when the React Native / Expo shell in
+-- docs/04-architecture.md §4 was still the plan. That shell was never built,
+-- the native iOS commitment made on 8 September 2026 was reversed the same day,
+-- and NO APPLICATION CODE HAS EVER WRITTEN THIS TABLE — the only reader in src/
+-- is the subject-access pack assembler, which exports whatever is here.
+--
+-- So the platform split in this table is not evidence of what athletes carry.
+-- It is what somebody expected them to carry, encoded as data, and it will
+-- read exactly like telemetry to anybody who queries it without reading this.
+-- It nearly did: the question "what share of athletes would receive a web push
+-- without an install prompt" was asked on 8 September 2026 and these rows were
+-- the only thing in the system that looked like an answer.
+--
+-- WHERE THE REAL ANSWER WILL COME FROM. src/lib/signInAudit.ts began recording
+-- the browser user agent on every sign-in on 8 September 2026, into
+-- audit_log.metadata->>'user_agent'. Query that once it has a few weeks of real
+-- sign-ins. On the day this comment was written production held exactly one such
+-- row, so anyone reaching for a device split before roughly October 2026 will
+-- still be guessing.
+--
+-- The rows stay because the SAR pack and the RLS tests need something in the
+-- table. If push is ever built for real it is Web Push, not Expo, and these
+-- token values will be wrong in shape as well as in platform.
+-- ===========================================================================
+
 insert into push_tokens (org_id, user_id, token, platform, shell)
 select u.org_id, u.id, 'ExponentPushToken[marlow-' || u.id::text || ']', 'ios', 'athlete'
 from users u where u.org_id = 'b0000000-0000-4000-8000-000000000001';

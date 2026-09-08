@@ -396,8 +396,9 @@ export default async function TodayPage({
                     {item.domain === 'wellness' ? 'WEL' : item.domain === 'training_rpe' ? 'RPE' : 'NUT'}
                   </span>
                   <span style={{ minWidth: 0 }}>
-                    {/* Spec §7.1: row name 17/700. */}
-                    <span style={{ fontSize: 17, fontWeight: 700, letterSpacing: '-0.01em' }}>
+                    {/* Spec §7.1: row name 17/700 — 1.0625rem IS that 17px at the
+                        default root, in rem so it follows the text setting. */}
+                    <span style={{ fontSize: '1.0625rem', fontWeight: 700, letterSpacing: '-0.01em' }}>
                       {item.name}
                     </span>
                     <span className="tiny" style={{ display: 'block', marginTop: 2 }}>

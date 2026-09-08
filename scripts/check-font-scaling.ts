@@ -16,6 +16,27 @@
  *   that grows with someone's reading preference is a broken logo, not an
  *   accessible one.
  *
+ * IT ALSO GUARDS THE STYLE ATTRIBUTE, and that half was missing on the night
+ * the sweep shipped. This script read base.css and nothing else, so it passed
+ * green while 132 inline `fontSize` values in TSX stayed px — React renders
+ * `fontSize: 17` as `font-size: 17px`, which is exactly the declaration the
+ * sweep existed to remove. Two of them were on athlete screens: the name of
+ * every to-do row on Today, and the body of a submitted problem report.
+ *
+ * SCOPED TO THE ATHLETE ROUTES, deliberately, and the boundary is the honest
+ * one rather than the flattering one. The staff app holds ~130 more (48 in
+ * settings/page.tsx alone); widening this today would fail the build on work
+ * nobody has scheduled. Two components the athlete DOES reach sit outside the
+ * scan and are named here rather than left to be discovered:
+ *
+ *   FlagNotice.tsx      a 10.5px domain pill. Real text, genuinely unfixed —
+ *                       it renders on the flags surface, not on Today, so it
+ *                       was outside what was asked for.
+ *   AvatarUploadForm    20px initials centred in a hard 64x64 circle, and the
+ *                       element is aria-hidden. A monogram, not text: growing
+ *                       the glyph without growing the circle clips it. Same
+ *                       argument as .lockup-word above.
+ *
  * IT ALSO GUARDS THE CONTAINERS. Scaling type inside a fixed-height box clips
  * it, so eleven text-bearing controls moved from `height` to `min-height`. That
  * half is what makes the conversion safe, and it is easy to undo by accident —
@@ -23,7 +44,7 @@
  * for. Verified at 16, 20, 24 and 32px roots with no clipping and no horizontal
  * overflow, using a detector proven against a forced clip first.
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 
 let failed = 0;
 const css = readFileSync('src/styles/base.css', 'utf8');
@@ -100,7 +121,39 @@ the eleven that needed it.
 `);
 }
 
+/* THE STYLE ATTRIBUTE, athlete routes. `fontSize: 17` and `fontSize: '17px'`
+   both render as px and both ignore the user's text setting; only a rem string
+   follows it. */
+const athleteFiles = readdirSync('src/app/(athlete)', { recursive: true, encoding: 'utf8' })
+  .filter((f) => f.endsWith('.tsx'))
+  .map((f) => `src/app/(athlete)/${f}`);
+
+const inline: { file: string; line: number; value: string }[] = [];
+for (const file of athleteFiles) {
+  /* Comments are blanked, not deleted: removing them shifts every line after
+     the first comment and the reported line number stops matching the file. */
+  const src = readFileSync(file, 'utf8').replace(
+    /\{\/\*[\s\S]*?\*\/\}|\/\*[\s\S]*?\*\//g,
+    (c) => c.replace(/[^\n]/g, ' '),
+  );
+  for (const m of src.matchAll(/fontSize:\s*(?:'([\d.]+)px'|"([\d.]+)px"|([\d.]+))\b/g)) {
+    inline.push({ file, line: src.slice(0, m.index).split('\n').length, value: (m[1] ?? m[2] ?? m[3]) + 'px' });
+  }
+}
+
+if (inline.length) {
+  failed = 1;
+  console.error(`\nFont scaling: ${inline.length} inline font-size(s) on athlete routes use px.\n`);
+  for (const i of inline) console.error(`  ${i.file}:${i.line}  fontSize: ${i.value}`);
+  console.error(`
+React writes \`fontSize: 17\` into the style attribute as \`font-size: 17px\`, so
+it ignores the user's text-size setting exactly as a px rule in base.css does.
+Use a rem string — \`fontSize: '1.0625rem'\` — which computes to the same 17px at
+the default root, so nothing moves for a default user.
+`);
+}
+
 if (!failed) {
-  console.log(`Font scaling: ${pxSizes.length - offenders.length} allowed px font-size, ${CONTROLS.length} text controls free to grow, print block in pt (${(printBlock.match(/font-size:/g) ?? []).length} sizes).`);
+  console.log(`Font scaling: ${pxSizes.length - offenders.length} allowed px font-size, ${CONTROLS.length} text controls free to grow, ${athleteFiles.length} athlete route files free of inline px, print block in pt (${(printBlock.match(/font-size:/g) ?? []).length} sizes).`);
 }
 process.exit(failed);

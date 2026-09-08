@@ -85,7 +85,7 @@ export default async function ReportProblemPage({
                       {formatDateTime(r.created_at, timezone)}
                       {r.category ? ` · ${PROBLEM_REPORT_CATEGORY_LABEL[r.category] ?? r.category}` : ''}
                     </div>
-                    <div style={{ fontSize: 14 }}>{r.body}</div>
+                    <div style={{ fontSize: '0.875rem' }}>{r.body}</div>
                   </div>
                   <span className={`pill ${STATUS_PILL[r.status] ?? 'pill-neutral'}`}>
                     {STATUS_LABEL[r.status] ?? r.status}

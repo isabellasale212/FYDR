@@ -3,7 +3,11 @@
 ## 1. Where it sits
 
 Reached from a to-do item on Today, and from the Gym tab. Route
-`/gym/[sessionId]`. File `src/app/(athlete)/gym/[sessionId]/page.tsx`, 86 lines.
+`/gym/[sessionId]`. File `src/app/(athlete)/gym/[sessionId]/page.tsx`.
+
+**Redrawn 8 September 2026** from the redesign reference (screens 09/10). §13
+records what changed — less than the changelog suggests, because most of the
+amber it describes as new was already built.
 
 ## 2. Who reaches it and when
 
@@ -11,8 +15,13 @@ An athlete with a gym session assigned to them.
 
 ## 3. What you see
 
-The session's exercises, **already adjusted for this athlete**, and a way to log
-each set.
+One eyebrow line ("PRE-SEASON STRENGTH · ACCUMULATION · WEEK 1 · DAY 1"), the
+session name, and a gold progress bar with its set count. Then the exercise you
+are on and the one after it, a **"2 more · Split squat, Nordic curl"** disclosure
+row folding the rest, the optional session RPE field, and the finish button.
+
+The session's exercises are **already adjusted for this athlete**, and each
+carries a way to log every set.
 
 **The prescription is personal, not the group's** (migration 0043).
 `fetchSessionExercises` is called with the athlete's id, so:
@@ -45,10 +54,12 @@ level.
 |---|---|---|---|---|---|---|
 | Log a set | Per exercise | Records weight and reps | stays | a `gym_set_logs` row | UNVERIFIED | the exercise is exempt for this athlete |
 | Start session | On open | `startOrGetSessionLog` creates or resumes the session log | stays | a `gym_session_logs` row | no | never |
+| N more · … | After the last shown exercise | Expands the rest of the session | stays | nothing | no | nothing is folded |
+| Finish session / Finish early · N of M | End of the list | `completeMutation` closes the session log | stays | `gym_session_logs` | no | the session is already complete |
 
-**Two things are deliberately absent**, and the file says so: **no rest timer**
-and **no comparison with previous performance**. Both need history queries a
-fuller pass would add.
+**Three things are deliberately absent.** **No rest timer** and **no comparison
+with previous performance**, both needing history queries a fuller pass would
+add — and, since 8 September, **no elapsed-session clock** (§13).
 
 ## 7. Offline and sync
 
@@ -92,5 +103,53 @@ than drop it.
 
 ## 12. Open issues
 
-- **NOT BUILT:** rest timer, previous performance comparison.
+- **NOT BUILT:** rest timer, previous performance comparison, elapsed-session
+  clock (removed 8 September, §13).
 - **UNVERIFIED:** the exact field labels and what happens on invalid input.
+- **The exercise card's rows do not share one inset.** Measured at 375px:
+  `.gym-ex-head` pads 14px horizontally so the exercise name sits 15px from the
+  card's left edge, while `.gym-set-keys` and `.gym-weight` pad 0 and sit at 1px.
+  The reference draws them aligned. **Pre-existing and untouched** — it predates
+  this redesign and the changelog does not raise it, so per CLAUDE.md §0 it is
+  reported rather than quietly corrected. A one-line fix whenever it is wanted.
+
+## 13. What the 8 September redesign changed
+
+**MOST OF THE AMBER THE CHANGELOG CALLS NEW WAS ALREADY BUILT**, which is worth
+recording so it is not "rebuilt" a second time. Already on screen before this
+pass, and now pinned by `scripts/test-gym-logger-redesign.ts` as regression
+guards: the progress fill in `--gym` rather than the accent every other bar in
+the product uses; completed set keys drawn as a checkmark in a gym-tinted box
+with `--gym-on-tint` ink (the gold itself reads about 1.9:1 on its own tint);
+the live exercise card's gym-tinted head; the part-done `pill-warn` badge; and
+the weight row relabelling itself to **"Your weight"** with an amber
+"recommended 142 kg" sub-line the moment an athlete moves off the prescription.
+
+**Three things actually changed:**
+
+**1. The header lost its Close/timer line.** This file's own code comment
+defended it until today — "leaving a session and knowing how long you have been
+in it are both real, and a picture cannot show that they are missing". Half of
+that survives. Close was redundant: the athlete tab bar renders on this route
+and **measured visible at 375×812** (top 735 of an 812px viewport), so there was
+always a way out one row below it. The running clock is a real loss, recorded as
+one; the eyebrow's planned duration is the session's shape, not elapsed time in
+it. The once-a-second `setInterval` that drove it went with it.
+
+**2. Exercises past the next one fold into one disclosure row.** The rule is not
+"unstarted exercises collapse" — the reference shows an unstarted Romanian
+deadlift in full — it is the exercise you are **on** and the one you are going
+**to**, then everything after folded. It is a disclosure, not a truncation: one
+tap shows the whole session, because an athlete asking how heavy the last lift
+will be is asking a fair question. Once nothing is left to log the list opens
+fully, since at that point it is a record of the work rather than a queue.
+
+**3. The floating finish bar went — but not the finish button.** The changelog
+removes the bar entirely. That bar held the **only** call to `completeMutation`
+on the screen: delete it as drawn and an athlete can start a session and never
+finish one, every session they open stays open for ever, and `alreadyComplete`
+never becomes true for any of them. So the bar stops being sticky and the same
+button renders inline at the end of the list, where someone who has just
+finished their last set arrives anyway. "Finish early · N of M" keeps its
+wording; finishing early is a real thing athletes do and naming it plainly is
+what stops it reading as an error.

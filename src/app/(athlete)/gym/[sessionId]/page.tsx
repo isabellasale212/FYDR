@@ -43,7 +43,7 @@ export default async function GymSessionPage({
   const mine = myProgramme.find((r) => r.session_id === sessionId) ?? null;
   if (exercises.length === 0) notFound();
 
-  const { id: gymSessionLogId, status, startedAt, error } = await startOrGetSessionLog(
+  const { id: gymSessionLogId, status, error } = await startOrGetSessionLog(
     db,
     orgId,
     athleteId,
@@ -76,7 +76,6 @@ export default async function GymSessionPage({
           .filter(Boolean)
           .join(' · ') || null
       }
-      startedAt={startedAt}
       totalSets={totalSets}
       exercises={exercises}
       loggedSets={loggedSets}

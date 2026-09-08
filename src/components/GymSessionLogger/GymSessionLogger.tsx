@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
@@ -23,7 +22,6 @@ type Props = {
   sessionName: string;
   /** Programme, block, week and day — the design's eyebrow above the name. */
   sessionMeta: string | null;
-  startedAt: string | null;
   totalSets: number;
   timezone: string;
   exercises: readonly ResolvedExercise[];
@@ -66,14 +64,6 @@ function schemeLabel(ex: ResolvedExercise): string {
   return `${ex.sets} × ${reps}`;
 }
 
-function elapsed(startedAt: string | null, now: number): string {
-  if (!startedAt) return '00:00';
-  const ms = Math.max(0, now - new Date(startedAt).getTime());
-  const totalMin = Math.floor(ms / 60_000);
-  const h = Math.floor(totalMin / 60);
-  const m = totalMin % 60;
-  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:00` : `${String(m).padStart(2, '0')}:${String(Math.floor((ms % 60_000) / 1000)).padStart(2, '0')}`;
-}
 
 /**
  * Full screen, not a sheet — ATHLETE-APP-SPEC.md §9 is explicit this is a
@@ -92,7 +82,6 @@ export function GymSessionLogger({
   gymSessionLogId,
   sessionName,
   sessionMeta,
-  startedAt,
   totalSets,
   timezone,
   exercises,
@@ -141,7 +130,7 @@ export function GymSessionLogger({
     }
   }, [drafts, draftKey]);
   const [sessionRpe, setSessionRpe] = useState('');
-  const [now, setNow] = useState<number | null>(null);
+  const [showAllExercises, setShowAllExercises] = useState(false);
   /* screens/gym-logging.md: "Tap a completed set row: re-opens it as active for
    * correction." correcting holds the LoggedSet.id currently open for correction, in
    * place, mid-session or on the completed review — this build has no ConfirmSheet, so
@@ -154,12 +143,7 @@ export function GymSessionLogger({
   const [weights, setWeights] = useState<Record<string, number>>({});
   const [correctionDrafts, setCorrectionDrafts] = useState<Record<string, { reps: string; load: string }>>({});
 
-  useEffect(() => {
-    if (alreadyComplete || !startedAt) return;
-    setNow(Date.now());
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, [alreadyComplete, startedAt]);
+  /* The clock's once-a-second useEffect stood here and went with the clock. */
 
   const setsByExercise = useMemo(() => {
     const map = new Map<string, LoggedSet[]>();
@@ -184,6 +168,26 @@ export function GymSessionLogger({
   const activeExerciseId =
     exercises.find((ex) => (setsByExercise.get(ex.programme_exercise_id) ?? []).length < ex.sets)
       ?.programme_exercise_id ?? null;
+
+  /* WHAT THE REFERENCE SHOWS AND WHAT IT COLLAPSES (screens 09/10).
+   *
+   * The drawing shows Back squat mid-set, Romanian deadlift whole and unstarted
+   * below it, and "1 more · Nordic curl" as a single row after that — so the
+   * rule is not "unstarted exercises collapse", which would have hidden the
+   * Romanian deadlift too. It is the exercise you are ON and the one you are
+   * going TO, then everything after that folded away.
+   *
+   * A whole-session view is still one tap away, which is why this is a
+   * disclosure rather than a truncation: an athlete checking what is left in
+   * the session, or how heavy the last lift will be, is asking a fair question
+   * and the old screen answered it by scrolling. */
+  const activeIndex = exercises.findIndex((ex) => ex.programme_exercise_id === activeExerciseId);
+  /* -1 (nothing left to log) shows everything: at the end of a session the
+     list is a record of what was done, and folding most of it away turns the
+     one screen that reviews the work into a summary of two exercises. */
+  const visibleCount = activeIndex < 0 ? exercises.length : Math.min(exercises.length, activeIndex + 2);
+  const shownExercises = showAllExercises ? exercises : exercises.slice(0, visibleCount);
+  const hiddenExercises = exercises.slice(shownExercises.length);
 
   /* Bounded (ten seconds) and has a real onError — before this, a thrown network failure
    * showed nothing at all and a hung request pinned the tick button disabled forever
@@ -343,24 +347,24 @@ export function GymSessionLogger({
         flexDirection: 'column',
       }}
     >
-      {/* Fydr Athlete App.dc.html 23g: the eyebrow and the session's name run
-          left, at size, and the count sits beside the bar it belongs to
-          rather than under the title. The centred title this replaces put
-          "Lower A" between a Close link and a running clock, which read as a
-          modal's chrome — three competing things on one line, none of them
-          the thing the screen is for.
-
-          Close and the clock stay, on a utility line of their own. Neither is
-          in the design because the design is a still; leaving a session and
-          knowing how long you have been in it are both real, and a picture
-          cannot show that they are missing. */}
+      {/* ONE EYEBROW AND THE TITLE, per screens 09/10.
+       *
+       * THE CLOSE/TIMER LINE ABOVE THIS IS GONE, and it was defended in this
+       * file until today: "leaving a session and knowing how long you have been
+       * in it are both real, and a picture cannot show that they are missing."
+       * Half of that still holds and half of it does not.
+       *
+       * Close was redundant, and the new screenshots are what show it — the
+       * athlete tab bar is rendered on this route (src/app/(athlete)/layout.tsx
+       * mounts it under every athlete page, and 09/10 draw it with Gym lit), so
+       * there has always been a way out one row below the one Close occupied.
+       *
+       * The running clock is a real loss and is recorded as one. What replaces
+       * it is the eyebrow's own planned duration ("55 MIN"), which is the
+       * session's shape rather than the athlete's elapsed time in it. The
+       * once-a-second setInterval that drove it went with it rather than being
+       * left to re-render a component nothing displays. */}
       <div className="gym-head">
-        <div className="gym-head-row">
-          <Link href="/programme" className="gym-close" aria-label="Close">
-            Close
-          </Link>
-          <span className="gym-clock num">{now !== null ? elapsed(startedAt, now) : '·'}</span>
-        </div>
         {sessionMeta ? <div className="gym-head-eyebrow">{sessionMeta}</div> : null}
         <h1 className="gym-head-title">{sessionName}</h1>
         <div className="gym-progress">
@@ -381,7 +385,7 @@ export function GymSessionLogger({
             </p>
           ) : null}
 
-          {exercises.map((ex) => {
+          {shownExercises.map((ex) => {
             const done = setsByExercise.get(ex.programme_exercise_id) ?? [];
             const isActive = ex.programme_exercise_id === activeExerciseId;
             /* The prescription IS the prefill now, read at the moment a set
@@ -628,6 +632,23 @@ export function GymSessionLogger({
             );
           })}
 
+          {hiddenExercises.length > 0 ? (
+            <button
+              type="button"
+              className="gym-more"
+              onClick={() => setShowAllExercises(true)}
+              aria-expanded={false}
+            >
+              <span>
+                <span className="num">{hiddenExercises.length}</span> more &middot;{' '}
+                {hiddenExercises.map((ex) => ex.exercise_name).join(', ')}
+              </span>
+              <span className="chev" aria-hidden="true">
+                &rsaquo;
+              </span>
+            </button>
+          ) : null}
+
           {!alreadyComplete ? (
             <div className="card" style={{ marginTop: 4 }}>
               <label>
@@ -646,27 +667,43 @@ export function GymSessionLogger({
           ) : (
             <p className="cap">This session is done.</p>
           )}
+
+          {/* THE FINISH CONTROL, NO LONGER FLOATING — which is what the
+              changelog objects to, and as far as this goes.
+
+              It could not simply be deleted. This button holds the ONLY call to
+              completeMutation on the screen; without it an athlete can start a
+              session and never finish one, every session they open stays open
+              for ever, and `alreadyComplete` never becomes true for any of
+              them. The reference is a still of a session in progress and cannot
+              show that, in the same way it could not show a missing Close link.
+              So the sticky bar goes and the same button is rendered here, at the
+              end of the list, where a person who has finished their last set
+              arrives anyway.
+
+              "Finish early" keeps its wording when sets are outstanding. It is a
+              real thing athletes do and naming it plainly is what stops it
+              reading as an error. */}
+          {!alreadyComplete ? (
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                style={{ width: '100%', marginTop: 14 }}
+                disabled={completeMutation.isPending}
+                onClick={() => completeMutation.mutate()}
+              >
+                {doneCount >= totalSets
+                  ? 'Finish session'
+                  : `Finish early · ${doneCount} of ${totalSets}`}
+              </button>
+              <p className="tiny" style={{ textAlign: 'center', marginTop: 8 }}>
+                Sets save as you log them.
+              </p>
+            </>
+          ) : null}
         </div>
       </div>
-
-      {!alreadyComplete ? (
-        <div className="gym-footer">
-          <button
-            type="button"
-            className="btn-primary"
-            style={{ width: '100%' }}
-            disabled={completeMutation.isPending}
-            onClick={() => completeMutation.mutate()}
-          >
-            {doneCount >= totalSets
-              ? 'Finish session'
-              : `Finish early · ${doneCount} of ${totalSets}`}
-          </button>
-          <p className="tiny" style={{ textAlign: 'center', marginTop: 8 }}>
-            Sets save as you log them.
-          </p>
-        </div>
-      ) : null}
     </div>
   );
 }

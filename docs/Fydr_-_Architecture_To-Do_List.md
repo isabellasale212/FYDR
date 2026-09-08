@@ -243,16 +243,40 @@ Both come after the sign-in-history item in 0b, which is in progress.
 ## 0a. Hard gate — do this before the first real person touches the app
 - [x] **CLOSED 2026-09-08: `0090` is applied to production. Measured, not assumed.** The entry below was written when `0090` was scratch-only, and its "has NOT been pushed" line went stale the same afternoon when the migration went out in the 0088-0091 batch. Confirmed afterwards by behaviour rather than by trusting the push:
 
-  **How it was checked.** PostgREST does not expose `information_schema`, and this repo's own `test-default-privileges` reads the migration FILES, so neither could answer whether the live database had changed. What distinguishes the two states is the response to an anonymous `select`: a revoked grant answers `42501 permission denied for table`, whereas a grant that is still present with only RLS holding the line answers `200` with an empty array. Scratch — where `0090` is applied and verified — was used as the positive control, so a "revoked" reading had something known-good to match.
+  **How it was checked, second attempt — the catalogue, not a probe.** Connected
+  directly with `pg` over `SUPABASE_DB_URL`, the same path `db-push.mjs` and the
+  pgTAP runner use, and read two things: the migration ledger, and
+  `information_schema.role_table_grants`. Both are read-only `select`s.
 
-  | Table | scratch (control) | production |
+  **The ledger settles it on its own.** `supabase_migrations.schema_migrations`
+  holds `0080`-`0094` with no gaps, `0090` among them.
+
+  **And the privileges match `0090`'s own grant statements, table by table** —
+  four DIFFERENT privilege sets across four tables, which is the per-table
+  narrowing this migration specifies and is not something a blanket default
+  produces:
+
+  | Table | `0090` grants `authenticated` | production holds |
   |---|---|---|
-  | `injury_timeline_event` | 401 / 42501 | 401 / 42501 |
-  | `login_attempts` | 401 / 42501 | 401 / 42501 |
-  | `sar_requests` | 401 / 42501 | 401 / 42501 |
-  | `sar_clinical_reviews` | 401 / 42501 | 401 / 42501 |
+  | `injury_timeline_event` | select, insert | `INSERT,SELECT` |
+  | `login_attempts` | select | `SELECT` |
+  | `sar_requests` | select, insert, update | `INSERT,SELECT,UPDATE` |
+  | `sar_clinical_reviews` | select, insert | `INSERT,SELECT` |
 
-  **One half measured, one half inferred, stated so nobody reads more into this than it proves.** The test exercises the `anon` revoke on all four tables. It does not separately measure the other half of `0090`, which narrows `authenticated` from all seven privileges to select and insert — that would need a real user token. It is inferred from the migration being a single transactional unit: if the anon revoke is live, the same migration's grant narrowing is live too. Worth a direct check the next time a user token is to hand.
+  `anon` holds **nothing on any of the four** — no row at all in the grants
+  table, which is what `revoke all ... from public, anon, authenticated`
+  produces. `service_role` holds all seven on each, by design.
+
+  **WHAT THE FIRST ATTEMPT GOT WRONG, kept because the mistake is instructive.**
+  It probed behaviour instead: an anonymous `select` over PostgREST, reasoning
+  that a revoked grant answers `42501` while a grant still present with only RLS
+  holding the line answers `200`. That reasoning is sound and the readings were
+  right, but it only ever exercised `anon`. The other half of `0090` — narrowing
+  `authenticated` from all seven privileges down to a per-table list — was
+  INFERRED from migrations being transactional, and the entry said "closed" on
+  that basis. Isabella rejected it and asked for the real privilege state, which
+  is what the table above is. A behavioural probe of one role is not a
+  measurement of two.
 
   Original entry follows.
 

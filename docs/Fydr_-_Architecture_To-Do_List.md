@@ -48,6 +48,8 @@
 
   **What to do instead of guessing:** `src/lib/signInAudit.ts` is now recording the browser on every sign-in into `audit_log.metadata->>'user_agent'`. Read it in early October 2026 and the device split answers itself, for free. Then decide whether push goes ahead as scoped or gets rethought around the install flow being the feature rather than a caveat.
 
+  **Carry this along when push is built, agreed 2026-09-08:** add `comment on table public.push_tokens` recording that the seeded rows are an assumption rather than observed devices. Isabella asked for it batched into the next migration that touches the table rather than given one of its own, so it is not queued as work in its own right. The exact statement is written out ready to paste at the top of the `push_tokens` block in `supabase/seed.sql`.
+
   **Not blocked on:** the email half of Q-30. Isabella is obtaining the Resend key directly; `lib/email/provider.ts` is written and needs only `RESEND_API_KEY` and `EMAIL_FROM_ADDRESS` in the Vercel environment, no code.
 - [ ] **NOT CODE, and it is yours: tell the medical staff that `mechanism` is now athlete-visible.** Added 2026-09-08, the same day the field started rendering on the athlete's own Today screen for anyone 18 or over.
 

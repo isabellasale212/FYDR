@@ -1120,6 +1120,19 @@ from users u where u.org_id = 'b0000000-0000-4000-8000-000000000001';
 -- The rows stay because the SAR pack and the RLS tests need something in the
 -- table. If push is ever built for real it is Web Push, not Expo, and these
 -- token values will be wrong in shape as well as in platform.
+--
+-- PENDING, agreed with Isabella 2026-09-08: this warning also belongs on the
+-- table itself, so it reaches somebody querying the schema rather than only
+-- somebody opening this file — which is the more likely way the rows get
+-- mistaken for telemetry. Deliberately NOT given a migration of its own; batch
+-- it into the next migration that touches push_tokens, which in practice means
+-- whenever push is actually built. Ready to paste:
+--
+--   comment on table public.push_tokens is
+--     'Seeded rows are an assumption, not observed devices: all 43 say '
+--     'platform=ios with Expo-shaped tokens, from the React Native shell that '
+--     'was never built, and no application code writes this table. For a real '
+--     'device split read audit_log.metadata->>''user_agent''. See supabase/seed.sql.';
 -- ===========================================================================
 
 insert into push_tokens (org_id, user_id, token, platform, shell)

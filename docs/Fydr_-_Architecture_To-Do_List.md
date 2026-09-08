@@ -783,7 +783,9 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   **Its own token, not `--gap-stack`.** That token is read by `.stack`, which 21 staff screens use, and by `.profile-grid`; moving it to 28px would have re-spaced the staff app. `--gap-body` is the athlete shell's alone.
 
-  **TODAY IS NOW THE ODD ONE OUT, deliberately, and worth a second look.** It renders 16px against everything else's 28px — nearly half. That was also true before (16 against 26-28), and Today is the screen that was reviewed most at that value, which is why it was left alone. But 16-versus-28 is a bigger inconsistency than 16-versus-14 was, and if the app should have one rhythm then Today's `:has(> .wk-card)` override is the thing to delete rather than anything else.
+  **TODAY'S OVERRIDE IS DELETED TOO. One rhythm, 28px, everywhere.** For one revision Today rendered 16px against everything else's 28px, which read as nearly half and was a wider inconsistency than the 16-against-14 it replaced. `.phone-body:has(> .wk-card) { gap: 16px }` is gone on Isabella's instruction. **28px is now the only distinct gap anywhere in the athlete app** — measured across all eleven routes, every gap on every screen.
+
+  **THE SPEC SENTENCE THIS ALL IMPLEMENTED IS STALE IN BOTH HALVES.** It read "16px between body cards on Today, 14px everywhere else". The body is 28px and Today is no longer special. Neither figure survives, and no markdown screen spec states it — the claim lives in the docx §4 that `base.css` was citing, so **that document needs the correction, not a code change.** Recorded here rather than left for someone to hit.
 
   **The 14px attempt is kept below**, because everything it records about HOW the spacing was wrong still applies and the four traps it names are still traps.
 

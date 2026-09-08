@@ -1387,20 +1387,18 @@ body:has(.phone) {
    spec gives athlete cards an 18px horizontal inset and a vertical one that
    varies by card type (14/16/17), which a single square token cannot express.
    Staff screens keep the global 16px. */
-/* Today's own gap. Selected off the week card rather than a screen flag — Today
-   is the only screen that has one, and a class on the layout would have to be
-   threaded through a page that renders a fragment.
+/* TODAY'S 16px OVERRIDE STOOD HERE AND IS GONE, 2026-09-08.
+   `.phone-body:has(> .wk-card) { gap: 16px }`, selected off the week card
+   because Today was the only screen with one.
 
-   THE SPEC SAYS "16px between body cards on Today, 14px everywhere else" and
-   the second half of that is now out of date: the body is 28px
-   (--gap-body), chosen on a phone on 2026-09-08 after 14px read too tight.
-   Today stays at 16 because it is the screen that was reviewed most at that
-   value and it was never part of the doubling. That does leave Today tighter
-   than every other screen, which is a real inconsistency and a deliberate one
-   — see 0h. */
-.phone-body:has(> .wk-card) {
-  gap: 16px;
-}
+   Deleted on Isabella's instruction: one rhythm, 28px, everywhere. It was the
+   last place two athlete screens disagreed — 16 against 28 read as nearly half,
+   a wider inconsistency than the 16-against-14 it replaced.
+
+   THE SPEC SENTENCE THIS IMPLEMENTED IS NOW STALE IN BOTH HALVES. It read
+   "16px between body cards on Today, 14px everywhere else"; the body is
+   --gap-body (28px) and Today is no longer special. Recorded in 0h so the
+   specification and the screen are not left quietly disagreeing. */
 .phone-body {
   flex: 1;
   min-height: 0;

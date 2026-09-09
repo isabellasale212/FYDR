@@ -1227,7 +1227,7 @@ table.tbl.lb-table td.r {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--gap-grid);
 }
-@media (max-width: 1080px) {
+@media (max-width: 1079px) {
   .grid2,
   .grid3 {
     grid-template-columns: minmax(0, 1fr);
@@ -1309,7 +1309,7 @@ table.tbl.lb-table td.r {
   gap: var(--gap-stack);
   align-items: start;
 }
-@media (max-width: 1080px) {
+@media (max-width: 1079px) {
   .profile-grid {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -4961,7 +4961,7 @@ img.av {
   justify-content: space-between;
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 999px) {
   .tr-overview {
     grid-template-columns: 1fr !important;
   }
@@ -7170,7 +7170,7 @@ button.dash-stat {
   align-items: start;
   margin-top: var(--sp-14);
 }
-@media (max-width: 1000px) {
+@media (max-width: 999px) {
   .lbw-lower-grid {
     grid-template-columns: 1fr;
   }
@@ -7873,7 +7873,7 @@ button.dash-stat {
 /* On a phone the grid is too narrow for anything anchored to a column, so the
    card becomes a sheet at the bottom of the viewport. Same component, same
    fields — only the placement changes. */
-@media (max-width: 760px) {
+@media (max-width: 767px) {
   .sg-draft-pop,
   .sg-day-col:nth-last-child(-n + 2) .sg-draft-pop {
     position: fixed;
@@ -9865,7 +9865,7 @@ button.dash-stat {
   align-items: baseline;
   padding: var(--sp-10) var(--sp-4);
 }
-@media (max-width: 1000px) {
+@media (max-width: 999px) {
   .ath-tests-head,
   .ath-test-row {
     grid-template-columns: minmax(0, 1.2fr) 64px 92px 64px 92px 100px;
@@ -10291,7 +10291,7 @@ button.dash-stat {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--sp-12);
 }
-@media (max-width: 1000px) {
+@media (max-width: 999px) {
   .sw-kpis {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

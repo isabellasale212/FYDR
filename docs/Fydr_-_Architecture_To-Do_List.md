@@ -1152,6 +1152,32 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
 - [ ] **Found in passing, not fixed:** five inline `marginTop: 14` declarations on `.card` in `reports/training/page.tsx` (lines 445, 454, 467, 691, 776) have **never had any effect** — `base.css:9228` sets `.tr-lower-main > .card { margin-top: 0 !important }`, and an important author rule beats an inline style. They computed 0 before the migration and compute 0 after. Harmless, but misleading to read: the next person to want that margin will fight the `!important` instead of deleting the dead line.
 
+## 0l. Responsive boundaries — 2026-09-09, and the audit was wrong about what was wrong
+
+- [x] **DONE. Two real defects fixed, one near-duplicate merged, and a guard added — but NOT a scale, because breakpoints are not that kind of value.**
+
+  **WHY THERE IS NO `--bp-*` TOKEN FAMILY.** CSS custom properties do not work in media queries. `@media (max-width: var(--bp-md))` is invalid and silently matches nothing, so unlike the type scale and the spacing ramp a breakpoint cannot be centralised in `tokens.css` at all. A guard is not the second-best mechanism here; it is the only one.
+
+  **THE AUDIT CALLED THIS SPRAWL AND IT IS NOT.** The finding said "13 distinct breakpoints… the exact shape of the problem `--r-control` already solved", where 14 radii were one decision made fourteen times. Reading what they DO says otherwise:
+
+  | boundary | what collapses there |
+  |---|---|
+  | `max-width: 1200` | `.dash-body` — the dashboard timeline/rail split |
+  | `max-width: 1150` | `.nutr-layout` — the nutrition workspace rail moves below |
+  | `max-width: 1100` | `.pp-grid` — the athlete profile two-column grid |
+
+  Three different grids running out of room at three different widths, because a nutrition rail and a 12-column dashboard genuinely stop fitting at different sizes. **Snapping those onto a shared scale would have broken three layouts to satisfy a tidiness impulse.** So the guard enforces that each boundary is a *named decision*, not that they share a ramp.
+
+  **THE TWO REAL DEFECTS, which the audit missed entirely.** `1000` and `1080` were each used as **both** a `max-width` and a `min-width`. `max-width: 1000px` and `min-width: 1000px` both match at exactly 1000px, so at that one width two mutually-exclusive layouts both applied and source order decided which won. The file's own correct convention is elsewhere in the same stylesheet — `max-width: 1023` pairs with `min-width: 1024`, `max-width: 767` with `min-width: 768`; max is always N-1. Fixed by moving the max side: `1000 → 999` (4 occurrences) and `1080 → 1079` (2).
+
+  **One near-duplicate merged:** `max-width: 760` sat 7px from `max-width: 767`, the same "below the phone tier" intent written twice — the schedule draft popover became a bottom sheet in a 7px band before the tier it belongs to. Now 767.
+
+  **Verified on the seam**, which is the only place this kind of fix can be checked: at **1079** only the max side matches and the launch claim column is hidden (`checkVisibility` false); at **1080** only the min side matches and it is visible; `bothApply` is false at both. Same for `max 999 / min 1000`. Exactly one layout at every width across every declared seam, and no horizontal overflow at any of them.
+
+  **`scripts/check-breakpoints.ts`** (in `prebuild`, 76 suites) holds all 15 boundary/direction pairs with the surface each serves and what changes there, and fails on: an undeclared boundary, a width used in both directions, two boundaries within 8px of each other, and a declared boundary nobody uses — that last one so the list stays a description rather than a wish. All proven against planted violations.
+
+- [ ] **Noted, not acted on:** the spec's `webBreakpoints` (`06-design-system.md` §10.2) names `sm 640, md 768, lg 1024, xl 1280, xxl 1600`. Only **768** and **1024** are used as named tiers; `1280` and `1600` are unused entirely, and the per-surface collapse points (900, 1100, 1150, 1200) sit between the spec's tiers rather than on them. That is either the spec describing an intent the build never adopted, or the build having outgrown it — worth one decision either way, and not one to take inside a guard.
+
 ## 1. Data & Schema — confirmed already built by reading the raw files directly
 
 - [x] Multi-tenancy: `org_id` on 56 of 58 tables, RLS enabled with a policy on all 58

@@ -906,15 +906,28 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
 - [ ] **The password minimum needs confirming from the dashboard, because it is no longer observable from outside.** Isabella reports it changed in the same pass that closed the gate, but with sign-up shut, `/auth/v1/signup` returns `signup_disabled` before it ever evaluates a password, so the anonymous probe above can no longer read it back. Confirm the field value at **Authentication → Sign In / Providers → Password settings**, and if it reads 12, `ChangePasswordForm.tsx`'s `MIN_LENGTH = 12` finally has the server-side backstop its comment already claims.
 
-- [ ] **Three more `config.toml` Auth claims are unverified, for exactly the same reason.** `/auth/v1/settings` reports none of them, so the file is the only source and the file has now been shown to be wrong once. Isabella is checking these in the dashboard; record the answers here when they land.
+- [x] **MEASURED 2026-09-09: two of the remaining four `config.toml` Auth claims are in force, two are not.** Read from the hosted dashboard, and the access-token figure measured independently from a live production JWT (`exp - iat` on Kate Doyle's session) rather than only read off a page.
 
-  | `config.toml` claims | Where to check | Measurable from outside? |
+  | `config.toml` says | Production actually | |
   |---|---|---|
-  | `jwt_expiry = 1800` | Authentication → Sessions → "Access token (JWT) expiry" | **Yes** — any real access token's `exp − iat` *is* the setting |
-  | `enable_refresh_token_rotation = true`, `refresh_token_reuse_interval = 10` | Authentication → Sessions | **Yes** — use one refresh token twice more than 10s apart; rotation on ⇒ second use fails `invalid_grant` |
-  | `inactivity_timeout = "72h"` | Authentication → Sessions → "Inactivity timeout" | **No** — would need a 3-day wait. Note session time-boxing and inactivity timeout are paid-plan features, so on Free this is certainly not in force; ties directly to the Free→Pro decision |
+  | `jwt_expiry = 1800` | **3600** — dashboard field *and* `exp - iat` on a live token | ✗ |
+  | `enable_refresh_token_rotation = true` | **On** — "Detect and revoke potentially compromised refresh tokens" | ✓ |
+  | `refresh_token_reuse_interval = 10` | **10 seconds** | ✓ |
+  | `inactivity_timeout = "72h"` | **0 — never.** Time-box also `never`; the whole User Sessions section is Pro-gated ("Configuring user sessions is only available on the Pro Plan and above") | ✗ |
 
-  `enable_anonymous_sign_ins = false` is the one already confirmed good — `/auth/v1/settings` reports `anonymous_users: false`.
+- [ ] **THE ACCESS-TOKEN WINDOW IS DOUBLE WHAT THE ARCHITECTURE SPECIFIES, AND THE CONTROL MEANT TO COMPENSATE DOES NOT EXIST.** This is the substantive finding from that table; the rest is bookkeeping.
+
+  `docs/05-architecture.md:456` states the intended figure as a row in its own table: **"Access token TTL | 30 minutes | Worst-case window of stale authority"**. `supabase/config.toml:52` repeats it and adds *"Do not raise it without reading that section."* Production runs **3600 seconds**. Nobody raised it — 3600 is Supabase's default and its own recommendation, so the 1800 was simply never applied, the same way the sign-up gate never was.
+
+  **Three things compound, and each was checked rather than assumed:**
+
+  1. **Roles live in the JWT.** `auth_hooks.custom_access_token_hook` (`0010`) stamps `org_id`, `roles`, `athlete_id` and `cv` into the token, and `src/lib/supabase/claims.ts` reads them straight back out. Every RLS policy keys off those claims. So a token minted before a role change carries the old authority for its whole life.
+  2. **`claims_version` is stamped but never checked.** The hook writes `cv`, and `src/lib/queries/userManagement.ts:40` notes that `users.claims_version` bumps on every `user_roles` change — but **nothing in `src/` compares it at request time**. The mechanism for detecting a stale token exists on the issuing side and has no reader.
+  3. **The compensating control named in the repo is absent.** `supabase/config.toml:78` says *"Role removal forces sign out through the admin-set-role Edge Function."* There is **no `supabase/functions` directory in this repo at all**, and no `signOut`/revoke call anywhere in the role-management path (`userManagement.ts`, `UserDetailPanel.tsx`).
+
+  **Consequence, stated plainly.** Revoke a coach's role — or deactivate an account, since `users.status` is read by the same hook at the same moment — and they keep working authority, in the app and in the database, for **up to 60 minutes**, with nothing able to cut it short. The documented worst case is 30 minutes and the named mitigation does not exist. This is not a breach and nothing is currently leaking; it is a containment window that is twice as wide as the architecture claims, on the one action a club takes when it needs access to stop.
+
+  **Three ways to close it, cheapest first — a decision, not a mechanical fix:** set the dashboard field to 1800 and match the doc (one toggle, halves the window, changes nothing else); read `cv` against `users.claims_version` in `requireStaff`/`requireAthlete` and force a re-auth on mismatch (real work, but reduces the window to the next request); or build the Edge Function `config.toml` already advertises. Whichever is chosen, `docs/05-architecture.md:456` and `config.toml:52` should end up agreeing with production instead of describing it.
 
 - [x] **CLOSED 2026-09-09: the schedule Publish button could be left permanently dead. `handlePublish` had no `try/finally`.** This is (b) of the three-part schedule diagnosis; (a) and (c) below are untouched.
 

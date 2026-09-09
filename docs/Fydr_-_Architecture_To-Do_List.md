@@ -813,22 +813,44 @@ claims, and I checked the first and asserted the second.
       rewritten: none of its corrections changed a free-text field, so the
       privacy rule was never exercised.
 
-### The one thing `0099` deliberately did not do — **your call**
+### The one thing `0099` deliberately did not do — **decided 2026-09-09, closed by `0100`**
 
-`entry_revision.created` records a changed comment as
-`{"comment": {"from": "...", "to": "..."}}`, **both texts in full**. That is an
-athlete writing about their own body, in a table `sport_scientist` can read.
-`0096` took the opposite decision for gym comments (presence and length, never
-the text) and `0099` follows `0096` for everything it adds — so after this
-migration a *corrected* wellness comment is readable in `audit_log` and a
-*deleted* one is not.
+`entry_revision.created` recorded a changed comment as
+`{"comment": {"from": "…", "to": "…"}}`, **both texts in full**, since `0058` —
+an athlete describing their own body, in a table `sport_scientist` can read.
+`0096` took the opposite decision for gym comments and `0099` followed it, which
+left the schema saying two different things about the same kind of field: a
+*corrected* comment was readable and a *deleted* one was not.
 
-- [ ] **Decide whether `entry_revision.created` should stop carrying comment
-      text.** Narrowing it removes evidence that exists today and changes an
-      audit contract that has shipped since `0058`, which is why it was raised
-      rather than done as a side effect of closing a delete gap. Zero such rows
-      exist on scratch today (no corrections in the seed data), so the question
-      is about what happens on the next real one, not about rewriting history.
+- [x] **`0100` narrows it to length only**, matching `0096`/`0099`:
+      `{"comment": {"from_length": 45, "to_length": 12}}`. The field is still
+      **named**, so a reader knows the text was rewritten and by whom; it is
+      **measured**, so they know how much changed; it is never quoted.
+- [x] **Which field is free text is read from `0099`'s `athlete_entry_fields()`**
+      rather than hard-coded, so the correction path and the delete path cannot
+      drift apart, and a future free-text column is added in one place.
+- [x] **Both bodies were generated from `pg_get_functiondef()` and edited
+      programmatically** — the method `0075` used, and for its reason. The diff
+      against the live definitions is **exactly two removed lines per function**,
+      verified before applying. `560` then spends as many assertions on what must
+      *not* have moved (staff-only, no athlete branch, linear chain, tenancy,
+      overflow branch) as on the change itself, because the narrowing is the easy
+      half and a regenerated hundred-line `SECURITY DEFINER` body is where a
+      silent bug would live.
+- [x] **Nothing to redact.** `audit_log` has no update or delete path by design
+      (`0007`), so a migration should not quietly rewrite history — measured
+      instead: **zero** `entry_revision.created` rows exist on production or
+      scratch, so no entry has ever been corrected through the panel in
+      production and `0100` is purely forward-looking.
+
+**What this costs, recorded because it is a real loss.** A coach who rewrites an
+athlete's comment now leaves no record in `audit_log` of what the athlete
+originally wrote. The revision chain still holds the superseded **row**, so the
+original text is recoverable from `wellness_entries` itself — this narrows the
+audit log, not the data. The one case it genuinely cannot answer is a correction
+followed by a delete, where `0099` keeps only the length too. That is the same
+trade `0096` made for gym, now made consistently.
+
 
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.

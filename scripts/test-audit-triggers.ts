@@ -32,6 +32,7 @@ const GYM = 'supabase/migrations/0096_audit_gym_corrections.sql';
 const GYMDEL = 'supabase/migrations/0097_audit_gym_deletes.sql';
 const NOTRUNC = 'supabase/migrations/0098_gym_logs_no_truncate.sql';
 const ENTRIES = 'supabase/migrations/0099_audit_athlete_entries.sql';
+const NARROW = 'supabase/migrations/0100_entry_revision_no_comment_text.sql';
 const ACCESS = 'src/lib/access.ts';
 const sql = read(MIGRATION);
 const widen = read(WIDEN);
@@ -48,6 +49,7 @@ const noTrunc = noTruncRaw.replace(/^--.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, 
    keyframe count. This migration's header quotes `via_cascade` and
    `ON DELETE NO ACTION` in exactly that way. */
 const entries = read(ENTRIES).replace(/^--.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, ' ');
+const narrow = read(NARROW).replace(/^--.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, ' ');
 const resetScratch = read('scripts/reset-scratch.mjs');
 /* COMMENTS OFF FOR THE CODE ASSERTIONS. 0097's header explains that
    pg_trigger_depth() was tried and measured wrong — so a scan for that name hit
@@ -62,7 +64,7 @@ const gymDel = gymDelRaw.replace(/^--.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, ' 
     the per-row count, because it attaches a different function. That is the
     point of it, and the count assertion is what proves it did not quietly widen
     the generic one. */
-const ALL = [sql, widen, config, authoring, records, gym, gymDel, noTrunc, entries];
+const ALL = [sql, widen, config, authoring, records, gym, gymDel, noTrunc, entries, narrow];
 const allSql = ALL.join('\n');
 
 /** Every table the trigger is attached to, across both migrations. */
@@ -563,9 +565,16 @@ console.log('\nthe other three immutable entries: the gaps that were actually th
   /* The divergence this migration deliberately did NOT resolve, pinned so a
      future change to it is a decision rather than a drift. */
   assert(
-    /KNOWN INCONSISTENCY, DELIBERATELY NOT RESOLVED HERE/.test(read(ENTRIES))
-      && /have shipped since 0058|has shipped since 0058|since 0058/.test(read(ENTRIES)),
-    'and the migration records that entry_revision.created still carries comment text, rather than copying or silently narrowing it',
+    /KNOWN INCONSISTENCY, DELIBERATELY NOT RESOLVED HERE/.test(read(ENTRIES)),
+    '0099 raised the entry_revision.created disclosure rather than copying or silently narrowing it',
+  );
+  /* And 0100 is where it was resolved. 0099's header is left saying "not
+     resolved here" because it was true when written and an applied migration is
+     not rewritten; this is the link that stops a future reader believing it is
+     still open. */
+  assert(
+    /entry_revision\.created stops carrying the text of a comment/.test(read(NARROW)),
+    'and 0100 resolves it — the two are linked here so 0099 does not read as still-open',
   );
 
   /* THE TWO GAPS THAT WERE REAL ON ALL THREE TABLES. */
@@ -626,6 +635,70 @@ console.log('\nthe other three immutable entries: the gaps that were actually th
   assert(
     /six BEFORE TRUNCATE guards exist in public/.test(read('supabase/tests/530_gym_truncate_guard_test.sql')),
     "530's catalogue count was raised from three to six, so a dropped guard still fails something",
+  );
+}
+
+console.log('\na corrected comment is measured, not quoted (0100)');
+{
+  /* THE DECISION 0099 DEFERRED, taken 2026-09-09. Since 0058 a wellness or
+     training correction recorded {"comment": {"from": "...", "to": "..."}} with
+     both texts in full, in a table sport_scientist can read. 0096 took the
+     opposite decision for gym comments and 0099 followed it, so the schema said
+     two different things about the same field: a CORRECTED comment was readable
+     and a DELETED one was not. */
+  for (const fn of ['revise_wellness_entry', 'revise_training_entry']) {
+    assert(
+      new RegExp(`CREATE OR REPLACE FUNCTION public\\.${fn}`).test(narrow),
+      `${fn} is redefined by 0100`,
+    );
+  }
+  assert(
+    (narrow.match(/'from_length', coalesce\(length\(v_before ->> v_key\), 0\)/g) ?? []).length === 2,
+    'both record the free-text field by length',
+  );
+  assert(
+    !/jsonb_build_object\('from', v_before -> v_key, 'to', v_after -> v_key\)\)\);\s*end if;\s*end loop/.test(narrow),
+    'and no longer reach the loop end recording that field by value',
+  );
+  /* THE HALF THAT MUST NOT HAVE MOVED. The narrowing is easy to get right; the
+     risk in 0100 is what else changed in two hundred-line SECURITY DEFINER
+     bodies nobody retyped. 560 proves the behaviour against a live database —
+     these pin the source. */
+  assert(
+    (narrow.match(/jsonb_build_object\('from', v_before -> v_key, 'to', v_after -> v_key\)\)/g) ?? []).length === 2,
+    'every OTHER field still records its value: the narrowing did not sweep up the numbers',
+  );
+  assert(
+    (narrow.match(/if not v_is_staff then/g) ?? []).length === 2,
+    "and 0075's staff-only rule survives in both",
+  );
+  assert(
+    (narrow.match(/pg_column_size\(v_changes\) > 8192/g) ?? []).length === 2,
+    'as does the overflow branch',
+  );
+  assert(
+    (narrow.match(/superseded_by is null/g) ?? []).length === 2,
+    'and the linear-chain check',
+  );
+  assert(
+    !/'coach', 'medic', 'sport_scientist', 'strength_conditioning'/.test(narrow),
+    'and no role array widened — the S&C is still not staff for these two functions',
+  );
+
+  /* Which field is free text is read from 0099's function, not hard-coded, so
+     the correction path and the delete path cannot disagree. */
+  assert(
+    (narrow.match(/public\.athlete_entry_fields\('(wellness|training)_entries'\)/g) ?? []).length === 2,
+    'the free-text field is read from athlete_entry_fields(), so 0099 and 0100 cannot drift apart',
+  );
+  assert(
+    !/v_key = 'comment'/.test(narrow),
+    "and is not hard-coded as 'comment' in either function",
+  );
+
+  assert(
+    existsSync('supabase/tests/560_entry_revision_no_comment_text_test.sql'),
+    'and 560 exists to prove it against a live database',
   );
 }
 

@@ -582,69 +582,86 @@ export function ScheduleWorkspace({
     setPublishError(null);
     const failures: string[] = [];
 
-    for (const id of Object.keys(removed)) {
-      const b = baseById.get(id);
-      if (!b) continue;
-      const res = await deleteSession(client, orgId, id);
-      if (res.error) failures.push(`${b.title}: ${res.error}`);
-      else
-        setRemoved((cur) => {
-          const next = { ...cur };
-          delete next[id];
-          return next;
+    try {
+
+      for (const id of Object.keys(removed)) {
+        const b = baseById.get(id);
+        if (!b) continue;
+        const res = await deleteSession(client, orgId, id);
+        if (res.error) failures.push(`${b.title}: ${res.error}`);
+        else
+          setRemoved((cur) => {
+            const next = { ...cur };
+            delete next[id];
+            return next;
+          });
+      }
+
+      for (const [id, patch] of Object.entries(edits)) {
+        if (!patch || Object.keys(patch).length === 0) continue;
+        const b = baseById.get(id);
+        if (!b) continue;
+        /* From the PATCHED day, not the snapshot's: moving a session to another
+           day is a starts_at change like moving its time, and reading b.dow here
+           would publish the new time onto the old date. */
+        const startsAt = zonedTimeToUtcIso(patch.dow ?? b.dow, clockLabel(patch.start ?? b.start), timezone);
+        const res = await updateSession(client, orgId, id, {
+          title: patch.title ?? b.title,
+          sessionType: patch.type ?? b.type,
+          startsAt,
+          durationMin: patch.mins ?? b.mins,
+          location: 'location' in patch ? (patch.location ?? null) : b.location,
+          mdOffset: b.mdOffset,
+          groupIds: patch.groupIds ?? b.groupIds,
+          // Optimistic lock: b.updatedAt is this session's updated_at as of
+          // this page's load. If it moved since — another tab, or a
+          // SessionEditForm edit on /schedule/[sessionId] — updateSession
+          // refuses the write and returns a clear conflict error instead of
+          // silently resending this stale snapshot's title/location/type/
+          // mdOffset over whatever changed. See that function's comment.
+          expectedUpdatedAt: b.updatedAt,
         });
-    }
+        if (res.error) failures.push(`${b.title}: ${res.error}`);
+        else
+          setEdits((cur) => {
+            const next = { ...cur };
+            delete next[id];
+            return next;
+          });
+      }
 
-    for (const [id, patch] of Object.entries(edits)) {
-      if (!patch || Object.keys(patch).length === 0) continue;
-      const b = baseById.get(id);
-      if (!b) continue;
-      /* From the PATCHED day, not the snapshot's: moving a session to another
-         day is a starts_at change like moving its time, and reading b.dow here
-         would publish the new time onto the old date. */
-      const startsAt = zonedTimeToUtcIso(patch.dow ?? b.dow, clockLabel(patch.start ?? b.start), timezone);
-      const res = await updateSession(client, orgId, id, {
-        title: patch.title ?? b.title,
-        sessionType: patch.type ?? b.type,
-        startsAt,
-        durationMin: patch.mins ?? b.mins,
-        location: 'location' in patch ? (patch.location ?? null) : b.location,
-        mdOffset: b.mdOffset,
-        groupIds: patch.groupIds ?? b.groupIds,
-        // Optimistic lock: b.updatedAt is this session's updated_at as of
-        // this page's load. If it moved since — another tab, or a
-        // SessionEditForm edit on /schedule/[sessionId] — updateSession
-        // refuses the write and returns a clear conflict error instead of
-        // silently resending this stale snapshot's title/location/type/
-        // mdOffset over whatever changed. See that function's comment.
-        expectedUpdatedAt: b.updatedAt,
-      });
-      if (res.error) failures.push(`${b.title}: ${res.error}`);
-      else
-        setEdits((cur) => {
-          const next = { ...cur };
-          delete next[id];
-          return next;
+      for (const draft of added) {
+        const res = await createSession(client, orgId, userId, {
+          title: draft.title.trim() || 'New session',
+          sessionType: draft.type,
+          startsAt: zonedTimeToUtcIso(draft.dow, clockLabel(draft.start), timezone),
+          durationMin: draft.mins,
+          location: draft.location,
+          mdOffset: draft.mdOffset,
+          groupIds: draft.groupIds,
         });
-    }
+        if (res.error) failures.push(`${draft.title || 'New session'}: ${res.error}`);
+        else setAdded((cur) => cur.filter((d) => d.id !== draft.id));
+      }
 
-    for (const draft of added) {
-      const res = await createSession(client, orgId, userId, {
-        title: draft.title.trim() || 'New session',
-        sessionType: draft.type,
-        startsAt: zonedTimeToUtcIso(draft.dow, clockLabel(draft.start), timezone),
-        durationMin: draft.mins,
-        location: draft.location,
-        mdOffset: draft.mdOffset,
-        groupIds: draft.groupIds,
-      });
-      if (res.error) failures.push(`${draft.title || 'New session'}: ${res.error}`);
-      else setAdded((cur) => cur.filter((d) => d.id !== draft.id));
+      setPublishError(failures.length > 0 ? `Not published: ${failures.join('; ')}` : null);
+    } catch (error) {
+      /* A rejection in any of the three loops above used to land here as an
+         unhandled promise rejection: no error.tsx exists in this app, and an
+         async event handler's rejection is not something an error boundary
+         catches, so the coach saw no message AND a dead button. Reuses the
+         `Not published:` wording the failure path above already owns rather
+         than inventing a second voice for the same outcome. */
+      setPublishError(`Not published: ${error instanceof Error ? error.message : 'something went wrong'}`);
+    } finally {
+      /* BOTH of these are cleanup that must run whatever happened. The reset
+         un-disables the button. The refresh matters just as much on the
+         throwing path: the loops write one session at a time, so a throw
+         halfway leaves part of the week genuinely published while the grid
+         still shows it as a pending edit. */
+      setPublishing(false);
+      router.refresh();
     }
-
-    setPublishing(false);
-    setPublishError(failures.length > 0 ? `Not published: ${failures.join('; ')}` : null);
-    router.refresh();
   }
 
   function handleDiscard() {

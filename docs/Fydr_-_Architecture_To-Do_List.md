@@ -871,6 +871,81 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   </details>
 
+## 0i. `supabase/config.toml` does not configure the hosted projects — found 2026-09-08/09, one item closed, three still unverified
+
+- [x] **CLOSED 2026-09-09: public sign-up was live on production. It is now off, and the fix took two attempts.** Read this entry for the METHOD as much as the finding, because the same method is what any of the remaining items below needs.
+
+  **What was wrong.** `supabase/config.toml` sets `enable_signup = false` twice (§`[auth]` and §`[auth.email]`), commented *"accounts are created by invite only, screens/onboarding.md"*. That file configures the **local CLI stack only**. Its own comment already says the hosted project's Auth settings are dashboard-managed and "not something this file can push on its own" — so the setting was written, believed, and never applied. Both hosted projects reported sign-up **open**:
+
+  | Project | `GET /auth/v1/settings` |
+  |---|---|
+  | `asbxorjytxsvrzefwzqp` (production) | `disable_signup: false` |
+  | `stfgzkuvczbpxyevxkak` (scratch) | `disable_signup: false` |
+
+  **Why it was reachable by anyone, not theoretically present.** `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are inlined into the client bundle by design. Fetching `fydr.app/login` and all 9 scripts it references — 857,800 bytes of JS — found both verbatim. Anyone loading the sign-in page could lift them from DevTools and POST to `/auth/v1/signup`.
+
+  **How it was probed without creating anything.** `POST /auth/v1/signup` with a **4-character** password. GoTrue validates the password before creating a user or sending mail, and 6 is the lowest value the setting accepts, so a 4-character attempt can never succeed. The response discriminates the two states cleanly: `signup_disabled` means the gate is shut; `weak_password` means the request got *past* the gate into validation. Production returned `weak_password`.
+
+  **That same response settled the password question too:** *"Password should be at least 6 characters."* So `minimum_password_length = 12` in `config.toml` was **not** in force either, and the 12-character rule in `ChangePasswordForm.tsx` and `ResetConfirmForm.tsx` was client-side only — the JS SDK or a direct API call could set six.
+
+  **A CAUTION ABOUT THE PROBE, recorded because it nearly wrote to production.** A follow-up attempt with an **8-character** password was run to "read back the real minimum". That reasoning was wrong: a password that PASSES validation reveals nothing about the minimum and proceeds to real account creation. It returned `500 "Error sending confirmation email"`. `auth.users` still held exactly 46 rows afterwards, so GoTrue rolled the row back and nothing was created — but that was GoTrue's transaction, not the probe's design. **Only ever probe this endpoint with a password below 6 characters.**
+
+  **And it exposed something worse than the original finding.** Sign-up did not merely pass the gate; it ran all the way to account creation and was stopped only by the confirmation mailer failing. The sole thing preventing strangers from holding production accounts was **a broken mailer, which is an accident rather than a control**. Configuring custom SMTP for Auth — wiring Resend in, say — would have made sign-up fully functional with no other change. The failure cause was not determined: plausibly Supabase's built-in service refusing a non-team address, plausibly a rate limit. If it is the team-address restriction, sign-up may already have succeeded for some addresses.
+
+  **Blast radius was bounded, and this was checked rather than assumed.** `custom_access_token_hook` (`0010`) finds no `public.users` row for a self-signed-up user and issues `org_id: null, roles: [], athlete_id: null`. Every RLS policy opens `org_id = auth_org_id()`, so null matches nothing anywhere. App-side, `/today` → `requireAthlete` → redirect `/dashboard` → `requireStaff` → redirect `/today`: a redirect loop showing nothing. So this was never data exposure — it was unbounded account creation, outbound mail from the club's domain to arbitrary addresses, MAU growth against the Free→Pro decision, and a posture the repo actively misdescribed.
+
+  **THE FIRST FIX DID NOT TAKE, AND LOOKED LIKE IT HAD.** After the first dashboard change both projects still read `disable_signup: false` and the minimum still measured 6 — no change on either. The toggle flipped was a per-provider setting rather than the global gate. The one that moves `disable_signup` is **Authentication → Sign In / Providers → User Signups → "Allow new users to sign up"**. Do **not** disable the Email provider to achieve it; that breaks sign-in for everyone. **The lesson is the entry: a dashboard change is not done until the endpoint says so.**
+
+  **Confirmed closed on the second attempt**, measured the same way:
+
+  | Check | Result |
+  |---|---|
+  | `POST /auth/v1/signup` (4-char password) | `422 signup_disabled` — *"Signups not allowed for this instance"* |
+  | `GET /auth/v1/settings` | `disable_signup: true` |
+  | `external.email` | still `true`, so sign-in is intact |
+
+- [ ] **The password minimum needs confirming from the dashboard, because it is no longer observable from outside.** Isabella reports it changed in the same pass that closed the gate, but with sign-up shut, `/auth/v1/signup` returns `signup_disabled` before it ever evaluates a password, so the anonymous probe above can no longer read it back. Confirm the field value at **Authentication → Sign In / Providers → Password settings**, and if it reads 12, `ChangePasswordForm.tsx`'s `MIN_LENGTH = 12` finally has the server-side backstop its comment already claims.
+
+- [ ] **Three more `config.toml` Auth claims are unverified, for exactly the same reason.** `/auth/v1/settings` reports none of them, so the file is the only source and the file has now been shown to be wrong once. Isabella is checking these in the dashboard; record the answers here when they land.
+
+  | `config.toml` claims | Where to check | Measurable from outside? |
+  |---|---|---|
+  | `jwt_expiry = 1800` | Authentication → Sessions → "Access token (JWT) expiry" | **Yes** — any real access token's `exp − iat` *is* the setting |
+  | `enable_refresh_token_rotation = true`, `refresh_token_reuse_interval = 10` | Authentication → Sessions | **Yes** — use one refresh token twice more than 10s apart; rotation on ⇒ second use fails `invalid_grant` |
+  | `inactivity_timeout = "72h"` | Authentication → Sessions → "Inactivity timeout" | **No** — would need a 3-day wait. Note session time-boxing and inactivity timeout are paid-plan features, so on Free this is certainly not in force; ties directly to the Free→Pro decision |
+
+  `enable_anonymous_sign_ins = false` is the one already confirmed good — `/auth/v1/settings` reports `anonymous_users: false`.
+
+- [x] **CLOSED 2026-09-09: the schedule Publish button could be left permanently dead. `handlePublish` had no `try/finally`.** This is (b) of the three-part schedule diagnosis; (a) and (c) below are untouched.
+
+  **The defect.** `handlePublish` set `setPublishing(true)` on entry and `setPublishing(false)` only at the end of the success path, then awaited three loops of network writes. Any rejection skipped the reset, so `publishing` stayed true and the button — `disabled={publishing}` — was dead until a page reload. Not recoverable from the UI: there is no `error.tsx` anywhere in this app, and a rejection inside an async event handler is an unhandled promise rejection rather than something an error boundary catches. The coach saw **no message and a dead button**.
+
+  **The fix, and why it is two calls and not one.** Both `setPublishing(false)` and `router.refresh()` now sit in `finally`. The refresh matters just as much on the throwing path: the loops write one session at a time, so a throw halfway leaves part of the week genuinely published while the grid still shows it as a pending edit — the coach reading state that disagrees with the database. A `catch` surfaces the failure through `setPublishError`, reusing the `Not published:` wording the existing failure path already owns rather than inventing a second voice.
+
+  **Guarded by `scripts/test-schedule-publish-reset.ts`**, wired into `prebuild`. 12 assertions, and it was written to fail first: run against `HEAD`'s pre-fix copy it reports 7 failures, against the fixed file 0. It asserts the *shape* that makes the guarantee — reset and refresh inside a `finally` whose `try` opens before the first `await` — because this repo has no React test renderer and `handlePublish` is a closure over component state that cannot be invoked without one. **It is structural, not behavioural**, and that limit is the honest one: the throwing path has not been exercised against a real staff session with a forced network failure.
+
+- [ ] **The other two thirds of the reported schedule bug are NOT fixed, and neither is a defect — both are design, and both need your call.** The report was "no Save button, an unresponsive one, no Cancel option"; only the middle one was a bug.
+
+  **(a) There is no per-session Save or Cancel, deliberately.** For an existing committed session, `.sg-panel-actions` in `SelectedSessionPanel.tsx` renders only "Remove session" and "Duplicate". The commit is the week-level "Publish to athletes" and the revert is "Discard" — **and both are hidden until `dirtyCount > 0`**. So a coach edits a field, looks for Save, and sees nothing appear. Making the week-level controls visible-but-disabled instead of absent would answer the complaint without touching the editing model.
+
+  **(b)** Fixed above.
+
+  **(c) `mode` defaults to `'read'`**, mitigated by click-to-switch at line 424, and an "Edit" `btn-ghost` in the card corner unlocks name/location/type while start/duration/groups stay live. Discoverable only if you find that button.
+
+  **Permissions are not involved:** `SESSION_EDIT = ['sport_scientist', 'coach']`, and production holds 6 coaches. **It predates the athlete redesign work** — no commit touched `src/components/ScheduleGrid/` or `src/app/(staff)/schedule/`; the last functional changes were `692944f` and `dc6d444`, and the only recent contact is CSS (press states on `.sg-weeknav-btn`/`.sg-btn-discard`, three `.sg-filterbar` media blocks, `height`→`min-height` on `.sg-stepper-btn`/`.sg-stepper-value`/`.sg-field-ro`), none of which can remove or disable a button.
+
+- [x] **CLOSED 2026-09-09: the px→rem font sweep had missed the style attribute. Two athlete instances fixed and deployed (`8ac8e02`).** `check-font-scaling.ts` read `base.css` and nothing else, so it passed green while 132 inline `fontSize` values in TSX stayed px — React writes `fontSize: 17` as `font-size: 17px`, the exact declaration the sweep existed to remove. The two on athlete screens were **the name of every to-do row on Today** (17px, whose own subtitle already scaled, so the row grew around a title that did not move) and a submitted problem report's body (14px). Measured on production signed in as an athlete: 17px and 14px at a 16px root (unchanged, so nothing moved for a default user), 25.5px and 21px at a 24px root. The guard now also scans the athlete routes and was made to fail first.
+
+- [ ] **~130 inline px font sizes remain in the staff app, plus one the athlete reaches.** `check-font-scaling.ts` is scoped to `src/app/(athlete)/**` on purpose and its header says so rather than implying the app is clean. The staff count is dominated by `settings/page.tsx` (48). `FlagNotice.tsx:40`'s 10.5px domain pill is real text and genuinely unfixed. `AvatarUploadForm.tsx:141`'s 20px initials are a monogram centred in a hard 64×64 circle and `aria-hidden` — it clips if the glyph grows, so leave it px, the same argument `.lockup-word` already makes.
+
+- [x] **Verified 2026-09-08, no action: the `0087` rate limiter still works.** End-to-end on scratch through the real functions as `service_role`, not by reading the migration: failures 1–4 counted `attempts_remaining` 4→1; failure 5 returned `{"is_locked":true,"seconds_remaining":30,"attempts_remaining":0}`; the independent `login_attempt_gate` agreed; a success reset to 5; the probe row was then removed by the function's own success path. On production, grants only, to avoid writes — `service_role` holds EXECUTE on `login_attempt_gate` and `login_attempt_record_result`, **`anon` and `authenticated` hold neither**, and the gate called as `service_role` returned a real row. Both databases hold 2 `login_attempts` rows, which is expected: it is a failure-streak table that deletes on success, so near-empty means sign-ins are succeeding. Argument order is `login_attempt_record_result(p_email, p_success, p_org_id)`.
+
+- [x] **Verified 2026-09-08/09, no action: all four role guards are enforced server-side.** `requireStaff`, `requireAthlete`, `requireInjuryAccess`, `requirePlatformStaff` all live in `src/lib/session.ts`, which carries no `'use client'`, and they fail by `redirect()` rather than returning a flag a caller could ignore. Every athlete page calls a guard directly; 13 staff pages inherit it from `(staff)/layout.tsx:13`. Verified behaviourally in both directions: an athlete session hitting all 14 staff routes was redirected to `/today` with no staff content in the response, and on production a `coach` session hitting `/today` was redirected to `/dashboard` by `requireAthlete`.
+
+- [ ] **Subheader clutter: five candidates, report-only, your call — nothing was removed.** Of 466 `.cap`/`.sub`/`.tiny`/`.lede` blocks (238 literal, 61 sitting directly under a heading, all 61 read), the copy is disciplined and **nothing in the athlete app qualified**. Strongest first: `UserManagementPanel.tsx:114` "Athlete records with no account" / *"On the squad, but nobody has invited them yet"* — the sub restates the heading; `settings/retention/page.tsx:83` "Nightly reports" / *"Runs automatically every night at 02:15 UTC…"* — a trim, the UTC time and read-only are real; `settings/page.tsx:176` "Integrations" / *"Devices and files that write into Fydr"* — defines a generic word, genuinely a taste call; `reports/testing/page.tsx:90` and `settings/notifications/page.tsx:35` are empty states where the sub is the inverse of the heading, and in the second the *heading* is the empty half.
+
+- [ ] **One copy inconsistency that is not clutter and may be a real error.** Two screens print what each claims is the same medical-visibility boundary and list different fields: `injuries/rehab-groups/page.tsx:108` says *"Availability, restrictions, body area **and phase** only — the same boundary as every other screen"*, while `injuries/team-allocation/page.tsx:123` says *"Availability, restrictions and body area only — the same boundary as every other screen"*. Both cannot be right. Check against `docs/athlete/visibility.md` rather than resolving it as a copy edit.
+
 ## 1. Data & Schema — confirmed already built by reading the raw files directly
 - [x] Multi-tenancy: `org_id` on 56 of 58 tables, RLS enabled with a policy on all 58
 - [x] Role-based access: `app_role` enum, medical data split across `injuries` (coach-visible) and `injury_clinical` (medical-only by policy)

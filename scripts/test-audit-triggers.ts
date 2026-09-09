@@ -28,16 +28,23 @@ const WIDEN = 'supabase/migrations/0086_audit_widen.sql';
 const CONFIG = 'supabase/migrations/0088_audit_widen_config.sql';
 const AUTHORING = 'supabase/migrations/0089_audit_widen_authoring.sql';
 const RECORDS = 'supabase/migrations/0091_audit_widen_records_of_record.sql';
+const GYM = 'supabase/migrations/0096_audit_gym_corrections.sql';
 const ACCESS = 'src/lib/access.ts';
 const sql = read(MIGRATION);
 const widen = read(WIDEN);
 const config = read(CONFIG);
 const authoring = read(AUTHORING);
 const records = read(RECORDS);
+const gym = read(GYM);
 
 /** Every migration that attaches a trigger. Concatenated, not listed by hand at
     each call site, so adding batch five means editing one line rather than four. */
-const ALL = [sql, widen, config, authoring, records];
+/* 0096 is in this list for the NEGATIVE sweeps below — "no trigger runs
+    audit_row_change on audit_log", "nothing is BEFORE" — and contributes zero to
+    the per-row count, because it attaches a different function. That is the
+    point of it, and the count assertion is what proves it did not quietly widen
+    the generic one. */
+const ALL = [sql, widen, config, authoring, records, gym];
 const allSql = ALL.join('\n');
 
 /** Every table the trigger is attached to, across both migrations. */
@@ -258,6 +265,94 @@ console.log('\nclinical values never reach a table the sport scientist can read'
   assert(
     !/to_jsonb\(new\)\s*\)?\s*(?:as metadata|,\s*public\.audit_client_ip)/.test(sql),
     'and never the row itself — audit_log is sport-scientist readable, medical detail is separately gated',
+  );
+}
+
+console.log('\ngym corrections are audited, and by a separate function on purpose');
+{
+  /* WHY THIS SECTION IS SEPARATE FROM EVERYTHING ABOVE. On 2026-09-09 a live set
+     on production read -3 reps and -300.00 kg of volume, and audit_log could not
+     say who wrote it: zero rows mentioning gym, ever, in a table that had
+     recorded every sign-in and every availability change in the same ten
+     minutes. 0096 closes that, and it does so WITHOUT touching
+     audit_row_change(), because a correction is a different kind of event from a
+     row changing and needs a different answer — see the assertions below, each
+     of which is a place the two functions deliberately disagree. */
+  for (const t of ['gym_set_logs', 'gym_session_logs']) {
+    assert(
+      new RegExp(`create trigger ${t}_correction_audit\\s+after insert on public\\.${t}`).test(gym),
+      `${t} has an after-insert correction trigger`,
+    );
+    assert(
+      new RegExp(`for each row when \\(new\\.revision_of is not null\\)[\\s\\S]{0,80}public\\.audit_gym_correction\\(\\)`).test(gym),
+      `and it only fires on a revision — an athlete logging five sets writes no audit rows`,
+    );
+  }
+  assert(
+    (gym.match(/after insert on public\./g) ?? []).length === 2
+      && !/after insert or update|after update|after delete/.test(gym),
+    'insert only: the supersede half of a revision is the same event, and recording it twice makes a reader count two',
+  );
+
+  assert(
+    !/create or replace function public\.audit_row_change/.test(gym),
+    "0096 does not redefine audit_row_change — 0085's field-names-never-values rule for the clinical tables is untouched",
+  );
+  assert(
+    !ALL.slice(0, -1).some((f) => /audit_gym_correction/.test(f)),
+    'and nothing before it referenced the new function, so this is additive',
+  );
+  assert(
+    /tg_table_name \|\| '\.correction'/.test(gym),
+    "the action reads <table>.correction, the same table.event shape the rest of the log uses",
+  );
+
+  /* THE DISCLOSURE RULE, INVERTED FOR THIS TABLE AND ONLY THIS TABLE. Reps and
+     load are performance numbers every audit_log reader already sees on the
+     training report, so recording them discloses nothing new — and "-3 replaced
+     8" is the entire fact somebody needs. A changed-fields list alone would have
+     left the production question exactly as unanswerable as no row at all. */
+  const valued = (/v_valued  := array\[([^\]]+)\]/.exec(gym) ?? [])[1] ?? '';
+  const setContent = (/v_content := array\['reps_completed'([^\]]+)\]/.exec(gym) ?? [])[1] ?? '';
+  assert(
+    /v_valued  := v_content;/.test(gym),
+    'every correctable field on a gym SET carries its value: they are all numbers or flags',
+  );
+  assert(
+    ['reps_completed', 'load_kg', 'rpe', 'rir', 'side', 'is_warmup']
+      .every((f) => new RegExp(`'${f}'`).test(`'reps_completed'${setContent}`)),
+    'and the set content list is exactly the six correctable columns',
+  );
+  assert(
+    /v_content := array\['session_rpe', 'comment'\]/.test(gym),
+    'a session correction watches both submitted fields, session_rpe and comment',
+  );
+  assert(
+    valued.includes("'session_rpe'") && !valued.includes("'comment'"),
+    'but only the number carries its value — a comment is an athlete writing about their own body, and audit_log is sport-scientist readable',
+  );
+
+  /* audit_row_change() returns early on a no-op UPDATE, because a write that
+     changed nothing is not an event. A revision that changed nothing IS one: a
+     row exists that did not exist before. Production holds exactly that row,
+     8 reps corrected to 8 reps, thirty-three seconds before the -3, and it is
+     the clearest single sign the panel was being exercised rather than used. */
+  assert(
+    !/if v_changed = '\{\}'::text\[\] then return/.test(gym),
+    'a revision that changes nothing is still recorded, unlike a no-op update — the two are not the same event',
+  );
+
+  assert(
+    /gym_set_logs has no athlete_id|the athlete lives on its parent/.test(gym),
+    'the migration records that gym_set_logs has no athlete_id of its own, which is the shape that fails silently',
+  );
+  assert(
+    /A DELETE\. gym_set_logs grants delete to nobody/.test(gym),
+    'and names what it still does not cover, rather than leaving it to be discovered',
+  );
+  assert(
+    !AUDITED.some(([t]) => t === 'gym_set_logs' || t === 'gym_session_logs'),
+    'neither gym table runs the generic function, so nothing above changed meaning',
   );
 }
 

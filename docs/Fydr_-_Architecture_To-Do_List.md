@@ -997,6 +997,44 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
 - [x] **CLOSED 2026-09-09, and it was a real error: the two injury boards' captions contradicted each other about the medical boundary.** Superseded by the three entries above — the field lists were each wrong in a different direction, the shared "same boundary as every other screen" clause was false in both, and both are now fixed, guarded and deployed. Kept as the record of where the thread started.
 
+## 0j. Gym corrections were not audited at all — found 2026-09-09 while trying to attribute a bad production row
+
+- [x] **BUILT 2026-09-09, applied to scratch, verified. NOT yet on production.** Migration `0096_audit_gym_corrections.sql`, `supabase/tests/510_gym_correction_audit_test.sql` (23 assertions), 16 more in `scripts/test-audit-triggers.ts`, and that suite is now in `prebuild` — it was written on 2026-09-08 and never wired in, so its assertions had never blocked a build.
+
+  **How it was found, which is the part worth keeping.** A live set on production read `reps_completed = -3` and `volume_kg = -300.00`, dragging one athlete's session total to **-108.0**. The question "who wrote that, and when" could not be answered from `audit_log`: **zero rows mentioning gym, ever**, in a table that had recorded every `auth.signed_in` and every `report.training.view` in the same ten minutes. The attribution had to be inferred from `logged_at` timestamps instead — five sets logged in sixteen seconds, then two chained revisions thirty-three seconds apart — which is reasoning, not evidence.
+
+  `gym_set_logs` is the one table in this codebase built *specifically* around keeping a revision history (`0045`, ADR-005). It was the one nobody could ask a question of.
+
+  **Why it was missed by the five widening batches.** `0085` proved the trigger pattern on three clinical tables and `0086`/`0088`/`0089`/`0091` widened it to twenty more. The gym tables are in none of them, and not by a recorded decision — they were simply never reached. The two deferral lists in `test-audit-triggers.ts` (`DEFERRED_ON_VOLUME`, `DEFERRED_ON_SHAPE`) exist so a table left out is left out *on the record*; neither gym table was in either list, so nothing said it was missing.
+
+  **What `0096` does differently from `audit_row_change()`, and why it is a separate function rather than a widening.**
+
+  | | the generic trigger (`0085`+) | `audit_gym_correction()` (`0096`) |
+  |---|---|---|
+  | fires on | insert / update / delete | insert only, `when (new.revision_of is not null)` |
+  | rows per correction | two — the supersede and the insert | one |
+  | metadata | changed field NAMES, never values | names **plus old and new values** for numbers and flags |
+  | a write that changes nothing | not recorded — a no-op update is not an event | **recorded** — a row now exists that did not before |
+
+  Recording values here does not weaken `0085`'s disclosure rule; the function is separate precisely so nothing about `injuries` or `injury_clinical` moves. Reps and load are performance numbers every `audit_log` reader already sees on the training report, so writing them discloses nothing new — and "`-3` replaced `8`" is the whole fact somebody needs. A changed-fields list saying `reps_completed` would have left the production question exactly as unanswerable as no row at all. **The one exception is `gym_session_logs.comment`**, an athlete writing in their own words about their own body: it is in the content list so a change to it is recorded, and out of the valued list so its text never reaches a sport-scientist-readable table.
+
+  **What is still not covered, named rather than left to be discovered:**
+  - **A service-role or superuser DELETE.** Neither gym table grants delete to `authenticated`, so a set can only be removed from below the app — and a superuser connection bypasses triggers as completely as it bypasses the app. `0085`'s header records that limit and it is unchanged. Auditing service-role deletes is a real question and a separate one.
+  - **An ordinary set being logged.** The `when` clause means five sets is five gym rows and no audit rows, the same volume judgement `0088` made for `session_participants`.
+  - **`actor_id` on a direct-connection write.** A repair made against the database with no JWT records a null actor. That is honest rather than convenient, and there is one such row on production already.
+
+- [ ] **OPEN, needs Isabella's decision: `0095` cannot be applied to production fully validated while the `-3` row exists, even after the live value is restored.** A validated `CHECK` reads **every** row including superseded history, so writing a further revision — the ADR-005-correct repair, which leaves the `-3` in place as history — leaves the table still failing the constraint. Measured on scratch inside a rolled-back transaction, by planting exactly that shape:
+
+  | attempt, with a `-3` row superseded by a restored `8` | result |
+  |---|---|
+  | `add constraint … check (…)` (validated) | `23514` — violated by some row |
+  | `add constraint … not valid` on both | accepted, `convalidated = false`, and a *new* negative is still refused `23514` |
+  | validated, after the debris row is removed | accepted, `convalidated = true` on both |
+
+  The `not valid` route is the one Isabella already ruled out ("I don't want an unenforced constraint and a known-bad row sitting there waiting to be forgotten"). So the choice is between removing the debris rows and narrowing the constraint to live rows only. **Recommendation: remove them.** The `-3` is not history of anything an athlete did — it was produced by exercising a form with no validation, on production by mistake — so keeping it as "the athlete's record" preserves a falsehood, not a fact; ADR-005 protects *submitted entries*, and nothing was submitted. The event itself is not lost either way: it goes to `audit_log` with old and new values, which is the trail `0096` builds.
+
+  Production's two debris rows, both from that ten-minute window: `bb6590d6` (the `-3`) and `cebfddff` (an `8 → 8` no-op revision thirty-three seconds earlier). Removing both returns the chain to `6361ecdf` alone, live at 8 reps @ 100 kg, and the session to its original **992.0**.
+
 ## 1. Data & Schema — confirmed already built by reading the raw files directly
 
 - [x] Multi-tenancy: `org_id` on 56 of 58 tables, RLS enabled with a policy on all 58

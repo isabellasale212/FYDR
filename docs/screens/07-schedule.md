@@ -45,9 +45,22 @@ differs.
 
 1. **Back**, a pill at the top left.
 2. **The group chips**, Whole squad first with a tick when active.
-3. **The read and edit switch**, on the right. The grid opens in read mode;
-   edit is entered deliberately rather than by accident, which is what keeps a
-   stray drag from moving a session.
+3. **The read and edit switch**, on the right, and only for the sport scientist
+   and the coach. **The grid opens in edit for them.** It used to open in read,
+   on the reasoning that edit should be entered deliberately rather than by
+   accident — that was the whole of the 2026-09-09 schedule report: a coach
+   landed on a rich, complete, entirely read-only panel with no Save and no
+   Cancel, and nothing on screen said which mode they were in. Nothing was
+   broken and every control worked the instant they switched, which is why it
+   read as unresponsive rather than as an error.
+
+   **Every other staff role gets no switch, and a line where it would be:**
+   *Read only. The schedule is authored by the sport scientist and the coach.*
+   They are not stuck in a mode — read-only is the whole screen for them — but
+   an unlabelled read-only screen looks like an editable one that is ignoring
+   you, which is the same confusion in a form no default can fix. The wording
+   matches the week-template detail page, the same feature area and the same
+   two roles.
 4. **The title.**
 5. **The scope subheading**, directly under the title, naming the week, the
    matchday, the fixture and the active group scope.
@@ -90,7 +103,7 @@ it.
 | Back | Top left of the header | Returns to the screen you came from | Browser history | Nothing | Any staff | None | Never |
 | Group chips | Second row of the header | Narrows the week to a group | Stays here, group in the address | Nothing. A cookie remembers the choice | Any staff | None | Never |
 | Week plan / Today tabs | Last row of the header | Switches between the week grid and the day list | `/schedule`, `/timetable` | Nothing | Any staff | None | Never |
-| Read and Edit switch | Above the grid | Changes whether blocks can be moved | Stays here | Nothing by itself | Coach and sport scientist in the target model | None | Should be hidden for view only roles. **Not built** |
+| Read and Edit switch | Above the grid | Changes whether blocks can be moved | Stays here | Nothing by itself | Coach and sport scientist | None | Hidden for every other role, which sees `Read only. The schedule is authored by the sport scientist and the coach.` in its place. Opens on **edit** for the two roles that have it |
 | Previous and next week | Above the grid | Moves a week | Stays here, week in the address | Nothing | Any staff | None | Never |
 | A session block | The grid | Opens that session | `/schedule/[sessionId]` | Nothing | Any staff | None | Never |
 | Dragging a block, in edit mode | The grid | Moves a session to a new day or time | Stays here | Updates the session's start time | Coach and sport scientist | Changes are held until applied, not written on every drag | Hidden in read mode |

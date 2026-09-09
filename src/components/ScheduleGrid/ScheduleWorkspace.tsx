@@ -752,6 +752,18 @@ export function ScheduleWorkspace({
         sub={<p className="eyebrow rhead-sub">{eyebrow}</p>}
         actions={
           <>
+            {/* READ MODE HAS TO SAY SO. The other half of the 2026-09-09
+                schedule report: a role outside SESSION_EDIT gets a rich,
+                complete, entirely read-only screen that looks like an editable
+                one ignoring them. Defaulting coaches into Edit fixed the half
+                they hit; this is the half everyone else lives in permanently.
+
+                It sits in the actions slot BECAUSE that is where the Read/Edit
+                toggle is for an editor — the place a reader's eye goes looking
+                for the control is the place that explains why there isn't one.
+                Wording and .tiny copied from the week-template detail page,
+                which is the same feature area and the same two roles, rather
+                than inventing a second voice for one sentence. */}
             {canEdit ? (
             <div className="sg-segmented" role="group" aria-label="Read or edit">
             <button type="button" className="sg-segment" aria-pressed={mode === 'read'} onClick={() => setMode('read')}>
@@ -766,7 +778,9 @@ export function ScheduleWorkspace({
             Edit
             </button>
             </div>
-            ) : null}
+            ) : (
+            <span className="tiny">Read only. The schedule is authored by the sport scientist and the coach.</span>
+            )}
           </>
         }
         tabsNode={

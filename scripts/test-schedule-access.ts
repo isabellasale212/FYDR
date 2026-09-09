@@ -119,5 +119,43 @@ console.log('\nthe fixture detail page stays READABLE, and gates only its contro
   }
 }
 
+console.log('\nand read mode says that is what it is');
+{
+  /* THE OTHER HALF OF THE 2026-09-09 SCHEDULE REPORT. Defaulting coaches into
+     Edit fixed the half they hit. A role outside SESSION_EDIT still got a rich,
+     complete, entirely read-only screen with no toggle and NO LABEL — an
+     editable-looking page that appears to be ignoring them. */
+  const LABEL = 'Read only. The schedule is authored by the sport scientist and the coach.';
+  const at = wsCode.indexOf(LABEL);
+  assert(at > -1, 'the workspace carries a read-only line');
+  assert(
+    /the sport scientist and the coach/.test(LABEL),
+    'that names who CAN edit, rather than only stating a refusal',
+  );
+
+  /* THE INVERSION IS THE BUG WORTH GUARDING, and a presence check cannot see
+     it: a label rendered unconditionally, or in the wrong branch, shows "Read
+     only" to the coach who is holding an Edit toggle. So this asserts the label
+     sits in the ELSE of the same ternary that gates the toggle — the nearest
+     canEdit before it must be followed by a `) : (` that opens before the
+     label. */
+  const before = wsCode.slice(0, at);
+  const gate = before.lastIndexOf('canEdit ?');
+  assert(gate > -1, 'and it sits after a canEdit ternary');
+  const between = before.slice(gate);
+  assert(
+    /\)\s*:\s*\(/.test(between),
+    'in that ternary’s ELSE branch, so an editor never sees it',
+  );
+  assert(
+    between.includes('sg-segmented'),
+    'and specifically the else of the branch that renders the Read/Edit toggle, so the two can never both appear',
+  );
+  assert(
+    (wsCode.match(new RegExp(LABEL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) ?? []).length === 1,
+    'exactly once — a second copy outside the gate would reach editors',
+  );
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

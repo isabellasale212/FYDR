@@ -1023,7 +1023,7 @@ Both come after the sign-in-history item in 0b, which is in progress.
   - **An ordinary set being logged.** The `when` clause means five sets is five gym rows and no audit rows, the same volume judgement `0088` made for `session_participants`.
   - **`actor_id` on a direct-connection write.** A repair made against the database with no JWT records a null actor. That is honest rather than convenient, and there is one such row on production already.
 
-- [ ] **OPEN, needs Isabella's decision: `0095` cannot be applied to production fully validated while the `-3` row exists, even after the live value is restored.** A validated `CHECK` reads **every** row including superseded history, so writing a further revision — the ADR-005-correct repair, which leaves the `-3` in place as history — leaves the table still failing the constraint. Measured on scratch inside a rolled-back transaction, by planting exactly that shape:
+- [x] **CLOSED 2026-09-09: `0095` is on production, fully validated, and the two debris rows are gone.** The finding that shaped it: **a validated `CHECK` reads every row, superseded history included**, so writing a further revision — the ADR-005-correct repair, which leaves the `-3` in place as history — would have left the table still failing the constraint. Measured on scratch inside a rolled-back transaction, by planting exactly that shape:
 
   | attempt, with a `-3` row superseded by a restored `8` | result |
   |---|---|
@@ -1031,9 +1031,26 @@ Both come after the sign-in-history item in 0b, which is in progress.
   | `add constraint … not valid` on both | accepted, `convalidated = false`, and a *new* negative is still refused `23514` |
   | validated, after the debris row is removed | accepted, `convalidated = true` on both |
 
-  The `not valid` route is the one Isabella already ruled out ("I don't want an unenforced constraint and a known-bad row sitting there waiting to be forgotten"). So the choice is between removing the debris rows and narrowing the constraint to live rows only. **Recommendation: remove them.** The `-3` is not history of anything an athlete did — it was produced by exercising a form with no validation, on production by mistake — so keeping it as "the athlete's record" preserves a falsehood, not a fact; ADR-005 protects *submitted entries*, and nothing was submitted. The event itself is not lost either way: it goes to `audit_log` with old and new values, which is the trail `0096` builds.
+  `not valid` was ruled out by Isabella directly ("I don't want an unenforced constraint and a known-bad row sitting there waiting to be forgotten"), leaving a choice between removing the debris rows and narrowing the constraint to live rows only. **Decided 2026-09-09: remove them.** The `-3` is not history of anything an athlete did — it came out of exercising a form with no validation, on production by mistake — so keeping it as "the athlete's record" preserves a falsehood, not a fact. ADR-005 protects *submitted entries*, and nothing was submitted. A constraint reading `superseded_by is not null or reps_completed >= 0` would have been a permanent schema rule bent around one night's accident.
 
-  Production's two debris rows, both from that ten-minute window: `bb6590d6` (the `-3`) and `cebfddff` (an `8 → 8` no-op revision thirty-three seconds earlier). Removing both returns the chain to `6361ecdf` alone, live at 8 reps @ 100 kg, and the session to its original **992.0**.
+  **What was removed, and what replaced it.** `bb6590d6` (the `-3`, live) and `cebfddff` (an `8 → 8` no-op revision thirty-three seconds earlier), both from that ten-minute window. Copied into `audit_log` in full **before** deletion, as two `gym_set_logs.delete` rows carrying every value of the removed row plus `operator_repair: true` and the reason — so the event moved from the training record, where it was never a fact, to the audit record, where it belongs. `actor_id` is null on both: a direct connection has no app actor, and saying so beats attributing it to somebody who clicked nothing.
+
+  **Delete order is not incidental**, and is written down because the next person doing this will hit it. `superseded_by` is deferrable and `revision_of` is not, and `gym_set_logs_one_live_per_slot` permits exactly one live row per slot — so the deletes must land *before* the original is un-superseded, or two live rows briefly share the slot and the unique index refuses. `set constraints all immediate` then forces the deferred FK to fire inside the transaction rather than at commit, where a failure would be a surprise instead of a rollback.
+
+  **Verified afterwards, against production:**
+
+  | check | result |
+  |---|---|
+  | `gym_set_logs` | 263 rows, **0** negative on `reps_completed`, `load_kg`, `rpe`, `rir` or the generated `volume_kg` |
+  | sessions with a negative total | 0 |
+  | session `f68d9bb1` | back to its original **992.0**, chain restored to `6361ecdf` alone at 8 reps @ 100 kg |
+  | both constraints | `convalidated = true` — validated, not `NOT VALID` |
+  | ledger head | `0095` |
+  | `insert … reps_completed = -3` | refused, `23514 gym_set_logs_reps_completed_non_negative` |
+  | `insert … load_kg = -1` | refused, `23514 gym_set_logs_load_kg_non_negative` |
+  | `insert … reps_completed = 0` | **accepted** — a failed attempt is still a real set, which is why the rule is `>= 0` and not `> 0` |
+
+  The refusals were exercised against the real table in rolled-back transactions. `pg_constraint` says a constraint exists; only an attempted write says it bites.
 
 ## 1. Data & Schema — confirmed already built by reading the raw files directly
 

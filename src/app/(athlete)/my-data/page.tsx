@@ -625,7 +625,7 @@ export default async function MyDataPage({
 function ListCapNote({ shown, more, noun }: { shown: number; more: boolean; noun: string }) {
   if (!more) return null;
   return (
-    <p className="cap" style={{ marginTop: 8 }}>
+    <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
       Showing the <b>{shown}</b> most recent {noun}. There are more than this window holds.
     </p>
   );
@@ -973,7 +973,7 @@ async function WellnessTab({
           * One sentence carries what the links used to promise — and the
           * "Corrected" rows above are what make the second half of it true
           * rather than a promise (ADR-005 O-32). */}
-        <p className="cap" style={{ marginTop: 8 }}>
+        <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
           Check-ins can&rsquo;t be edited once sent. If a number here is wrong,
           tell your coach &mdash; they can record a correction from your profile.
           If they do, this table says <b>Corrected</b> on that day and shows you
@@ -1247,7 +1247,7 @@ async function NutritionTab({
           * inconsistency. Recorded in adr-005-immutable-entries.md's
           * "Who may correct what" table. */}
         {checkins.length > 0 ? (
-          <p className="cap" style={{ marginTop: 8 }}>
+          <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
             This one you can still change yourself &mdash; only you know the
             answer, so no coach can correct it for you. Changing it keeps the old
             answer on record.
@@ -1444,7 +1444,7 @@ function TestSparkline({
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
-      style={{ width: '100%', height: 'auto', display: 'block', marginTop: 12 }}
+      style={{ width: '100%', height: 'auto', display: 'block', marginTop: 'var(--sp-12)' }}
       role="img"
       aria-label={label}
     >
@@ -1820,7 +1820,7 @@ async function GymTab({
           ))}
         </div>
 
-        <p className="cap" style={{ marginTop: 10 }}>
+        <p className="cap" style={{ marginTop: 'var(--sp-10)' }}>
           {/* "whatever period you pick" went with the period control. The
               sentence still earns its place: the list below this card runs over
               a different span from the bars, and saying so is the only thing

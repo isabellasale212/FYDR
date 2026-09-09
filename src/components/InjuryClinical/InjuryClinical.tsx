@@ -56,7 +56,7 @@ export function InjuryClinical({ diagnosis, mechanism }: Props) {
             <div className="nm">{mechanism}</div>
           </div>
         ) : null}
-        <div className="sub" style={{ marginTop: 6 }}>
+        <div className="sub" style={{ marginTop: 'var(--sp-6)' }}>
           Recorded by your medical staff. Speak to them about anything here.
         </div>
       </div>

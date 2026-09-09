@@ -67,7 +67,7 @@ export default async function FlagsPage({
         </div>
       </div>
 
-      <div style={{ marginBottom: 14 }}>
+      <div style={{ marginBottom: 'var(--sp-14)' }}>
         <GroupFilter groups={groups} selected={groupIds} />
       </div>
 

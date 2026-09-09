@@ -63,7 +63,7 @@ export default async function InjuryDetailPage({
       </div>
 
       <div className="card">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)', flexWrap: 'wrap' }}>
           <span className="pill pill-neutral">{enumLabel(injury.status)}</span>
           <span className="pill pill-neutral">
             {enumLabel(injury.body_area)}
@@ -75,13 +75,13 @@ export default async function InjuryDetailPage({
             </span>
           ) : null}
         </div>
-        <p style={{ marginTop: 10 }}>
+        <p style={{ marginTop: 'var(--sp-10)' }}>
           Since {formatDate(injury.onset_date, timezone)}
           {injury.expected_return ? ` · expected back ${formatDate(injury.expected_return, timezone)}` : ''}
           {injury.actual_return ? ` · returned ${formatDate(injury.actual_return, timezone)}` : ''}
         </p>
         {injury.restrictions && injury.restrictions.length > 0 ? (
-          <div className="chiprow" style={{ marginTop: 10 }}>
+          <div className="chiprow" style={{ marginTop: 'var(--sp-10)' }}>
             {injury.restrictions.map((r) => (
               <span key={r} className="chip-static">
                 {r}
@@ -93,7 +93,7 @@ export default async function InjuryDetailPage({
 
       {isMedical ? (
         <>
-          <div style={{ marginTop: 14 }}>
+          <div style={{ marginTop: 'var(--sp-14)' }}>
             <SetAvailabilityForm
               orgId={orgId}
               userId={claims.userId}
@@ -102,14 +102,14 @@ export default async function InjuryDetailPage({
             />
           </div>
 
-          <div style={{ marginTop: 14 }}>
-            <p className="sect" style={{ marginBottom: 8 }}>
+          <div style={{ marginTop: 'var(--sp-14)' }}>
+            <p className="sect" style={{ marginBottom: 'var(--sp-8)' }}>
               Edit this record
             </p>
             <InjuryMedicalForm orgId={orgId} userId={claims.userId} injury={injury} clinical={clinical} />
           </div>
 
-          <div style={{ marginTop: 14 }}>
+          <div style={{ marginTop: 'var(--sp-14)' }}>
             <InjuryTimeline
               orgId={orgId}
               userId={claims.userId}
@@ -122,7 +122,7 @@ export default async function InjuryDetailPage({
         </>
       ) : (
         <>
-          <div className="note" style={{ marginTop: 14 }}>
+          <div className="note" style={{ marginTop: 'var(--sp-14)' }}>
             <div className="note-glyph">i</div>
             <p className="note-text">
               <b>This is what coaching staff see.</b> Diagnosis, clinical notes and
@@ -137,11 +137,11 @@ export default async function InjuryDetailPage({
               they would propose a block and have nowhere to see whether it had
               been signed off. */}
           {proposals.length > 0 ? (
-            <div className="card" style={{ marginTop: 14 }}>
+            <div className="card" style={{ marginTop: 'var(--sp-14)' }}>
               <h2 className="card-title">Gym work proposed for this injury</h2>
-              <div className="stack" style={{ gap: 6, marginTop: 10 }}>
+              <div className="stack" style={{ gap: 'var(--sp-6)', marginTop: 'var(--sp-10)' }}>
                 {proposals.map((p) => (
-                  <div key={p.assignment_id} style={{ display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap' }}>
+                  <div key={p.assignment_id} style={{ display: 'flex', gap: 'var(--sp-8)', alignItems: 'baseline', flexWrap: 'wrap' }}>
                     <span className="nm">{p.programme_name}</span>
                     <span className={`pill ${p.status === 'active' ? 'pill-good' : 'pill-warn'}`}>
                       {p.status === 'active' ? 'Signed off' : 'Awaiting medical sign-off'}

@@ -138,7 +138,7 @@ export default async function RpePage({
             from your profile. If they do, My Data marks that session{' '}
             <b>Corrected</b> and shows you what you first rated it.
           </p>
-          <p className="cap" style={{ display: 'flex', gap: 14 }}>
+          <p className="cap" style={{ display: 'flex', gap: 'var(--sp-14)' }}>
             <Link href="/today">Back to today</Link>
           </p>
         </div>

@@ -120,7 +120,7 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
         placeholder="Readiness drop"
       />
 
-      <label className="label" htmlFor="th-metric" style={{ marginTop: 14 }}>
+      <label className="label" htmlFor="th-metric" style={{ marginTop: 'var(--sp-14)' }}>
         What to watch
       </label>
       <select
@@ -151,7 +151,7 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
           ))}
         </select>
 
-        <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-8)' }}>
           {comparison === 'z_score' ? (
             <select
               className="field"
@@ -183,25 +183,25 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
         {BASELINES.map((b) => (
           <label
             key={b.value}
-            style={{ display: 'block', marginTop: 8, cursor: 'pointer' }}
+            style={{ display: 'block', marginTop: 'var(--sp-8)', cursor: 'pointer' }}
           >
-            <span style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
+            <span style={{ display: 'flex', gap: 'var(--sp-8)', alignItems: 'baseline' }}>
               <input
                 type="radio"
                 name="baseline"
                 checked={baselineType === b.value}
                 onChange={() => setBaselineType(b.value)}
               />
-              <span style={{ fontSize: 13.5, fontWeight: 700 }}>{b.label}</span>
+              <span style={{ fontSize: 'var(--fs-13-5)', fontWeight: 700 }}>{b.label}</span>
             </span>
-            <span className="tiny" style={{ display: 'block', marginLeft: 24 }}>
+            <span className="tiny" style={{ display: 'block', marginLeft: 'var(--sp-24)' }}>
               {b.hint}
             </span>
           </label>
         ))}
 
         {baselineType !== 'absolute' ? (
-          <div style={{ marginTop: 10 }}>
+          <div style={{ marginTop: 'var(--sp-10)' }}>
             <label className="label" htmlFor="th-baseline-days">
               Over the last (days)
             </label>
@@ -220,7 +220,7 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
         ) : null}
       </fieldset>
 
-      <label className="label" htmlFor="th-consecutive" style={{ marginTop: 14 }}>
+      <label className="label" htmlFor="th-consecutive" style={{ marginTop: 'var(--sp-14)' }}>
         For this many days running
       </label>
       <input
@@ -237,7 +237,7 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
 
       <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
         <legend className="label">Severity</legend>
-        <div className="chiprow" style={{ marginTop: 6 }}>
+        <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
           {SEVERITIES.map((s) => (
             <button
               key={s}
@@ -254,7 +254,7 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
 
       <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
         <legend className="label">Notify</legend>
-        <div className="chiprow" style={{ marginTop: 6 }}>
+        <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
           {NOTIFY_OPTIONS.map((role) => (
             <button
               key={role}
@@ -270,12 +270,12 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
       </fieldset>
 
       {error ? (
-        <p className="form-error" role="alert" style={{ marginTop: 14 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-14)' }}>
           {error}
         </p>
       ) : null}
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-18)' }}>
         <button type="submit" className="btn-primary" disabled={mutation.isPending}>
           {mutation.isPending ? 'Creating…' : 'Create threshold'}
         </button>

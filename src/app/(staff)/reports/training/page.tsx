@@ -100,7 +100,7 @@ function DialView({ dial }: { dial: DialScore }) {
             <div className="tr-dial-of">of typical</div>
           </div>
         </Dial>
-        <div style={{ marginTop: 6, fontWeight: 700, fontSize: 12.5 }}>{dial.label}</div>
+        <div style={{ marginTop: 'var(--sp-6)', fontWeight: 700, fontSize: 'var(--fs-12-5)' }}>{dial.label}</div>
         <div className="tiny" style={{ color: 'var(--faint)', fontWeight: 700 }}>
           Not scoreable
         </div>
@@ -122,7 +122,7 @@ function DialView({ dial }: { dial: DialScore }) {
           <div className="tr-dial-of">of typical</div>
         </div>
       </Dial>
-      <div style={{ marginTop: 6, fontWeight: 700, fontSize: 12.5 }}>{dial.label}</div>
+      <div style={{ marginTop: 'var(--sp-6)', fontWeight: 700, fontSize: 'var(--fs-12-5)' }}>{dial.label}</div>
       <div className="tiny" style={{ color: TONE[tone], fontWeight: 700 }}>
         {statusLabel}
       </div>
@@ -161,7 +161,7 @@ function ComparisonTableView({ table }: { table: ComparisonTable }) {
           const content = (
             <>
               <div>
-                <div className="nm" style={{ fontSize: 13.5 }}>
+                <div className="nm" style={{ fontSize: 'var(--fs-13-5)' }}>
                   {row.label}
                 </div>
                 {row.sublabel ? <div className="tiny num" style={{ color: 'var(--faint)' }}>{row.sublabel}</div> : null}
@@ -175,7 +175,7 @@ function ComparisonTableView({ table }: { table: ComparisonTable }) {
                     {pill && cell.value !== '—' ? (
                       <span className={`pill ${pill === 'good' ? 'pill-good' : 'pill-accent'} num`}>{cell.value}</span>
                     ) : (
-                    <span className="num" style={{ fontSize: 13.5, color: tone ? TONE[tone] : undefined }}>
+                    <span className="num" style={{ fontSize: 'var(--fs-13-5)', color: tone ? TONE[tone] : undefined }}>
                       {cell.value}
                     </span>
                     )}
@@ -203,7 +203,7 @@ function ComparisonTableView({ table }: { table: ComparisonTable }) {
           );
         })}
       </div>
-      <p className="cap" style={{ marginTop: 10 }}>
+      <p className="cap" style={{ marginTop: 'var(--sp-10)' }}>
         {table.caption}
       </p>
     </div>
@@ -405,8 +405,8 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
           <>
             <div className="card tr-overview">
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em' }}>v {selected.opponent}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 'var(--fs-20)', fontWeight: 700, letterSpacing: '-0.02em' }}>v {selected.opponent}</span>
                   {selected.result ? (
                     <span className={`pill ${resultGood ? 'pill-good' : 'pill-bad'}`}>{selected.result}</span>
                   ) : null}
@@ -430,7 +430,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                   </div>
                 </div>
                 <div className="tr-read">
-                  <p className="tiny num" style={{ color: 'var(--faint)', marginTop: 6 }}>
+                  <p className="tiny num" style={{ color: 'var(--faint)', marginTop: 'var(--sp-6)' }}>
                     {overview.referenceLine}
                   </p>
                 </div>
@@ -442,38 +442,38 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
               </div>
             </div>
 
-            <div className="card" style={{ marginTop: 14 }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+            <div className="card" style={{ marginTop: 'var(--sp-14)' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--sp-10)' }}>
                 <h2 className="card-title" style={{ margin: 0 }}>
                   Halves
                 </h2>
               </div>
-              <p className="tiny" style={{ marginTop: 8 }}>Not available.</p>
+              <p className="tiny" style={{ marginTop: 'var(--sp-8)' }}>Not available.</p>
             </div>
 
-            <div className="card" style={{ marginTop: 14 }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+            <div className="card" style={{ marginTop: 'var(--sp-14)' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--sp-10)' }}>
                 <div>
                   <h2 className="card-title" style={{ margin: 0 }}>
                     Comparison
                   </h2>
                 </div>
               </div>
-              <div style={{ marginTop: 14 }}>
+              <div style={{ marginTop: 'var(--sp-14)' }}>
                 <ComparisonTableView table={comparison} />
               </div>
             </div>
 
-            <div className="card" style={{ marginTop: 14 }}>
+            <div className="card" style={{ marginTop: 'var(--sp-14)' }}>
               <h2 className="card-title">Board</h2>
               <p className="tiny num" style={{ color: 'var(--faint)' }}>
                 n = {board.rows.length} played
               </p>
-              <div className="tr-board" style={{ marginTop: 10 }}>
+              <div className="tr-board" style={{ marginTop: 'var(--sp-10)' }}>
                 <div className="tr-board-inner match">
                   <div
                     className="tr-board-row"
-                    style={{ gridTemplateColumns: 'minmax(180px, 1.4fr) 62px repeat(4, minmax(76px, 1fr))', fontWeight: 700, color: 'var(--faint)', fontSize: 11, textTransform: 'uppercase' }}
+                    style={{ gridTemplateColumns: 'minmax(180px, 1.4fr) 62px repeat(4, minmax(76px, 1fr))', fontWeight: 700, color: 'var(--faint)', fontSize: 'var(--fs-11)', textTransform: 'uppercase' }}
                   >
                     <span>Player</span>
                     <span className="r">Mins</span>
@@ -489,7 +489,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                         .filter((r) => r.group_name === unit)
                         .map((row) => (
                           <div key={row.athlete_id} className="tr-board-row" style={{ gridTemplateColumns: 'minmax(180px, 1.4fr) 62px repeat(4, minmax(76px, 1fr))' }}>
-                            <Link href={`/reports/athlete/${row.athlete_id}`} className="nm" style={{ fontSize: 13.5 }} title="Open this player's full report">
+                            <Link href={`/reports/athlete/${row.athlete_id}`} className="nm" style={{ fontSize: 'var(--fs-13-5)' }} title="Open this player's full report">
                               {row.last_name}, {row.first_name}
                             </Link>
                             <span className="r num">{row.mins ?? '—'}</span>
@@ -568,12 +568,12 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
           <h2 className="card-title" style={{ margin: 0 }}>
             Week of {formatDate(weekStart, timezone)} to {formatDate(weekEnd, timezone)}
           </h2>
-          <div style={{ marginTop: 14 }}>
+          <div style={{ marginTop: 'var(--sp-14)' }}>
             <ComparisonTableView table={weekComparison} />
           </div>
         </div>
 
-        <p className="cap" style={{ marginTop: 14 }}>
+        <p className="cap" style={{ marginTop: 'var(--sp-14)' }}>
           Export CSV and Export PDF above export the selected day&rsquo;s session board, not the week — there is no
           per-athlete week-level board to export, only this squad-mean summary.
         </p>
@@ -637,8 +637,8 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
         <>
           <div className="card tr-overview">
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em' }}>{selected.title}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 'var(--fs-20)', fontWeight: 700, letterSpacing: '-0.02em' }}>{selected.title}</span>
                 {md ? <span className="pill pill-accent">{md}</span> : null}
               </div>
               <div className="tr-facts">
@@ -667,7 +667,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                     line stays — it is the only place the values the dials are
                     scored AGAINST, and how many sessions are behind them,
                     appear at all. */}
-                <p className="tiny num" style={{ color: 'var(--faint)', marginTop: 6 }}>
+                <p className="tiny num" style={{ color: 'var(--faint)', marginTop: 'var(--sp-6)' }}>
                   {overview.referenceLine}
                 </p>
               </div>
@@ -688,16 +688,16 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
               the whole width and are not in this design at all. */}
           <div className="tr-lower">
             <div className="tr-lower-main">
-<div className="card" style={{ marginTop: 14 }}>
+<div className="card" style={{ marginTop: 'var(--sp-14)' }}>
             <h2 className="card-title">Board</h2>
             <p className="tiny num" style={{ color: 'var(--faint)' }}>
               n = {board.rows.length} athletes
             </p>
-            <div className="tr-board" style={{ marginTop: 10 }}>
+            <div className="tr-board" style={{ marginTop: 'var(--sp-10)' }}>
               <div className="tr-board-inner">
                 <div
                   className="tr-board-row"
-                  style={{ gridTemplateColumns: 'minmax(170px, 1.3fr) repeat(5, minmax(66px, 1fr))', fontWeight: 700, color: 'var(--faint)', fontSize: 11, textTransform: 'uppercase' }}
+                  style={{ gridTemplateColumns: 'minmax(170px, 1.3fr) repeat(5, minmax(66px, 1fr))', fontWeight: 700, color: 'var(--faint)', fontSize: 'var(--fs-11)', textTransform: 'uppercase' }}
                 >
                   <span>Player</span>
                   <span className="r" title={GPS_TERM_TITLE.td}>TD</span>
@@ -749,7 +749,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                           style={{ gridTemplateColumns: 'minmax(170px, 1.3fr) repeat(5, minmax(66px, 1fr))' }}
                           aria-current={row.athlete_id === selectedAthleteId}
                         >
-                          <span className="nm" style={{ fontSize: 13.5 }}>
+                          <span className="nm" style={{ fontSize: 'var(--fs-13-5)' }}>
                             {row.last_name}, {row.first_name}
                           </span>
                           <span className="r num">{row.td !== null ? Math.round(row.td).toLocaleString() : '—'}</span>
@@ -773,7 +773,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
           </div>
             </div>
             <div className="tr-lower-rail">
-              <div className="card" style={{ marginTop: 14 }}>
+              <div className="card" style={{ marginTop: 'var(--sp-14)' }}>
               {/* The design's rail card leads with the athlete, not a card title:
                     by the time you are reading this you already clicked their
                     row, so "Individual player" is a label for something you
@@ -781,7 +781,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                     draw — nobody selected yet — because without it there is no
                     keyboard route into this card. */}
                 {!athletePanel ? (
-                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--sp-10)' }}>
                     <h2 className="card-title" style={{ margin: 0 }}>
                       Individual player
                     </h2>
@@ -798,7 +798,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                 <p className="tiny">Select an athlete above, or on the scatter, to see their detail.</p>
               ) : (
                 <>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)' }}>
                     <div
                       style={{
                         width: 38,
@@ -809,14 +809,14 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                         display: 'grid',
                         placeItems: 'center',
                         fontWeight: 700,
-                        fontSize: 14,
+                        fontSize: 'var(--fs-14)',
                         flex: 'none',
                       }}
                     >
                       {athletePanel.name.split(', ').reverse().map((n) => n[0]).join('')}
                     </div>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 16 }}>{athletePanel.name}</div>
+                      <div style={{ fontWeight: 700, fontSize: 'var(--fs-16)' }}>{athletePanel.name}</div>
                       <div className="tiny" style={{ color: 'var(--faint)' }}>
                         {athletePanel.unit}
                       </div>
@@ -832,7 +832,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                     </Link>
                   </div>
 
-                  <div className="tr-selected-panel-table" style={{ marginTop: 14 }}>
+                  <div className="tr-selected-panel-table" style={{ marginTop: 'var(--sp-14)' }}>
                     <span className="tiny" style={{ fontWeight: 700 }}>
                       Metric
                     </span>
@@ -855,15 +855,15 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                     ))}
                   </div>
 
-                  <div style={{ marginTop: 14 }}>
-                    <p className="tiny" style={{ marginBottom: 6 }}>
+                  <div style={{ marginTop: 'var(--sp-14)' }}>
+                    <p className="tiny" style={{ marginBottom: 'var(--sp-6)' }}>
                       High speed running, last {athletePanel.sparkline.length} sessions
                     </p>
                     <TrainingSparkline
                       points={athletePanel.sparkline}
                       endTone={BAND_TONE[scatter.find((p) => p.athleteId === selectedAthleteId)?.band ?? 'mid']}
                     />
-                    <p className="tiny num" style={{ color: 'var(--faint)', marginTop: 4 }}>
+                    <p className="tiny num" style={{ color: 'var(--faint)', marginTop: 'var(--sp-4)' }}>
                       {athletePanel.footnote}
                     </p>
                   </div>
@@ -878,7 +878,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                    * silently landed on an unfiltered list is worse than
                    * no button; removed rather than wired to a manual-raise
                    * feature this pass has no spec authority to invent. */}
-                  <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+                  <div style={{ display: 'flex', gap: 'var(--sp-8)', marginTop: 'var(--sp-14)' }}>
                     <Link href={`/squad/${athletePanel.athleteId}`} className="btn-ghost">
                       Open profile
                     </Link>
@@ -920,18 +920,18 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
               .sort((a, b) => Math.abs((b.vs_self_hsr ?? 100) - 100) - Math.abs((a.vs_self_hsr ?? 100) - 100))
               .slice(0, 5);
             return (
-              <div className="card" style={{ marginTop: 14 }}>
+              <div className="card" style={{ marginTop: 'var(--sp-14)' }}>
                 <h2 className="card-title">Outside their normal range</h2>
-                <p className="tiny" style={{ color: 'var(--muted)', marginTop: 2 }}>
+                <p className="tiny" style={{ color: 'var(--muted)', marginTop: 'var(--sp-2)' }}>
                   High speed running against each athlete&rsquo;s own mean for this session, not the squad.
                 </p>
                 {outliers.length === 0 ? (
-                  <p className="tiny" style={{ color: 'var(--faint)', marginTop: 12 }}>
+                  <p className="tiny" style={{ color: 'var(--faint)', marginTop: 'var(--sp-12)' }}>
                     Nobody ran more than {OUT}% from their own normal today. An athlete needs at least two
                     previous sessions of this type before they have a baseline to be outside of.
                   </p>
                 ) : (
-                  <div style={{ marginTop: 8 }}>
+                  <div style={{ marginTop: 'var(--sp-8)' }}>
                     {outliers.map((r) => {
                       const pct = r.vs_self_hsr ?? 100;
                       const up = pct >= 100;
@@ -969,7 +969,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
 {/* HEAT BANDS. The board's three ramps, named. Without it the shading is
               a colour a coach has to infer a meaning for; with it the scale is
               stated once and the board's own caption can stay short. */}
-          <div className="card" style={{ marginTop: 14 }}>
+          <div className="card" style={{ marginTop: 'var(--sp-14)' }}>
             <h2 className="card-title">Heat bands</h2>
             {[
               { ramp: 'hsr', label: 'HSR', note: 'high speed running' },
@@ -995,8 +995,8 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
             </div>
           </div>
 
-<div className="card" style={{ marginTop: 14 }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+<div className="card" style={{ marginTop: 'var(--sp-14)' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--sp-10)' }}>
               <div>
                 <h2 className="card-title" style={{ margin: 0 }}>
                   Comparison
@@ -1020,13 +1020,13 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                 ))}
               </div>
             </div>
-            <div style={{ marginTop: 14 }}>
+            <div style={{ marginTop: 'var(--sp-14)' }}>
               <ComparisonTableView table={comparison} />
             </div>
           </div>
 
-          <div className="card" style={{ marginTop: 14 }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+          <div className="card" style={{ marginTop: 'var(--sp-14)' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--sp-10)' }}>
                 <h2 className="card-title" style={{ margin: 0 }}>
                   Scatter
                 </h2>
@@ -1047,7 +1047,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                   </Link>
                 </div>
               </div>
-              <div style={{ marginTop: 14 }}>
+              <div style={{ marginTop: 'var(--sp-14)' }}>
                 <TrainingScatter
                   points={scatter}
                   selectedAthleteId={selectedAthleteId}

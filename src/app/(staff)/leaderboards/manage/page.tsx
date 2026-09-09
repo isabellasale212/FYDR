@@ -62,14 +62,14 @@ export default async function ManageLeaderboardsPage() {
           </p>
           <h1>Manage leaderboards</h1>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
           <Link href="/leaderboards/new" className="btn-primary">
             + New leaderboard
           </Link>
         </div>
       </div>
 
-      <p className="cap" style={{ marginTop: -6, marginBottom: 14 }}>
+      <p className="cap" style={{ marginTop: -6, marginBottom: 'var(--sp-14)' }}>
         The published, consent-gated boards real athletes can see and leave. For
         internal-only results, go back to the <Link href="/leaderboards">testing wall</Link>.
       </p>
@@ -93,7 +93,7 @@ export default async function ManageLeaderboardsPage() {
               <Link key={board.id} href={`/leaderboards/${board.id}`} className="card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <p className="nm" style={{ marginBottom: 2 }}>
+                    <p className="nm" style={{ marginBottom: 'var(--sp-2)' }}>
                       {board.name}
                     </p>
                     <p className="tiny">

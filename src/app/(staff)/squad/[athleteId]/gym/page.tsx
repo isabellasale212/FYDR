@@ -454,7 +454,7 @@ export default async function AthleteGymPage({
             </span>
           </div>
           {overrides.length === 0 ? (
-            <p className="cap" style={{ marginTop: 8 }}>
+            <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
               {primary
                 ? `No exercise is substituted, re-loaded or exempted for ${athlete.first_name} on this programme — they are doing it as written.`
                 : 'Tailoring is per programme, and nothing is assigned.'}
@@ -520,7 +520,7 @@ export default async function AthleteGymPage({
             ))
           )}
           {truncated ? (
-            <p className="cap" style={{ marginTop: 10 }}>
+            <p className="cap" style={{ marginTop: 'var(--sp-10)' }}>
               Showing the {SESSION_ROWS} most recent of more than that in this window. The positional
               comparisons below are not capped &mdash; they read every session in the window, because a
               mean over a truncated set is a wrong number rather than a short list, and a best set found

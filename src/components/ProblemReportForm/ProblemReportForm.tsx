@@ -58,7 +58,7 @@ export function ProblemReportForm({ orgId, athleteId, userId }: Props) {
 
   return (
     <form onSubmit={onSubmit} noValidate className="card">
-      <p className="banner" role="note" style={{ marginBottom: 14 }}>
+      <p className="banner" role="note" style={{ marginBottom: 'var(--sp-14)' }}>
         <span className="g g-faint" aria-hidden="true">
           ⓘ
         </span>
@@ -74,7 +74,7 @@ export function ProblemReportForm({ orgId, athleteId, userId }: Props) {
       </p>
 
       <p className="label">What kind of thing is this? (optional)</p>
-      <div className="chiprow" style={{ marginTop: 8 }}>
+      <div className="chiprow" style={{ marginTop: 'var(--sp-8)' }}>
         {CATEGORIES.map((c) => (
           <button
             key={c.value}
@@ -88,7 +88,7 @@ export function ProblemReportForm({ orgId, athleteId, userId }: Props) {
         ))}
       </div>
 
-      <label className="label" htmlFor="report-body" style={{ marginTop: 14, display: 'block' }}>
+      <label className="label" htmlFor="report-body" style={{ marginTop: 'var(--sp-14)', display: 'block' }}>
         What&rsquo;s going on?
       </label>
       {/* NO maxLength. It truncated a longer paste silently — and undetectably,
@@ -109,20 +109,20 @@ export function ProblemReportForm({ orgId, athleteId, userId }: Props) {
       <p
         id="report-body-count"
         className="tiny"
-        style={{ marginTop: 4, color: over ? 'var(--bad-text)' : undefined }}
+        style={{ marginTop: 'var(--sp-4)', color: over ? 'var(--bad-text)' : undefined }}
       >
         <span className="num">{body.length}</span>/{BODY_MAX_CHARS}
         {over ? ` · ${body.length - BODY_MAX_CHARS} too many` : null}
       </p>
       {over ? (
-        <p className="form-error" role="alert" style={{ marginTop: 10 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-10)' }}>
           That is {body.length - BODY_MAX_CHARS} characters over. Nothing has been cut &mdash;
           trim it and it will send.
         </p>
       ) : null}
 
       {error ? (
-        <p className="form-error" role="alert" style={{ marginTop: 10 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-10)' }}>
           {error}
         </p>
       ) : null}

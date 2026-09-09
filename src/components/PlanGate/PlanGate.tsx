@@ -36,7 +36,7 @@ export function PlanGate({ featureName, body, metadata }: Props) {
         </div>
       </div>
 
-      <PlanGateCard body={body} metadata={metadata} style={{ maxWidth: 680, marginTop: 20 }} />
+      <PlanGateCard body={body} metadata={metadata} style={{ maxWidth: 680, marginTop: 'var(--sp-20)' }} />
     </>
   );
 }
@@ -68,7 +68,7 @@ export function PlanGateCard({
 }) {
   return (
     <div className="card pp-card" style={style}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)' }}>
         <div
           aria-hidden="true"
           style={{
@@ -86,15 +86,15 @@ export function PlanGateCard({
             <path d="M4.6 6V4.2a2.4 2.4 0 0 1 4.8 0V6" />
           </svg>
         </div>
-        <p style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>{heading}</p>
+        <p style={{ fontSize: 'var(--fs-15)', fontWeight: 700, margin: 0 }}>{heading}</p>
       </div>
 
-      <p style={{ fontSize: 13.5, color: 'var(--text)', margin: '14px 0 0' }}>{body}</p>
-      <p className="num" style={{ fontSize: 11.5, color: 'var(--muted)', marginTop: 12 }}>
+      <p style={{ fontSize: 'var(--fs-13-5)', color: 'var(--text)', margin: '14px 0 0' }}>{body}</p>
+      <p className="num" style={{ fontSize: 'var(--fs-11-5)', color: 'var(--muted)', marginTop: 'var(--sp-12)' }}>
         {metadata}
       </p>
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-18)' }}>
         <Link href="/settings#plan" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
           See plans
         </Link>

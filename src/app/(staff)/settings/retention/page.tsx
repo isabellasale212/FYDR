@@ -43,7 +43,7 @@ export default async function RetentionPage() {
         </div>
       </div>
 
-      <p className="import-sub" style={{ marginTop: -6, marginBottom: 14 }}>
+      <p className="import-sub" style={{ marginTop: -6, marginBottom: 'var(--sp-14)' }}>
         The schedule below is this club&apos;s default. Two categories can be actually run from here — import files
         and closed-injury clinical detail — the rest are preview only, and this page says exactly why for each one.
         A run never happens without a preview first.
@@ -87,7 +87,7 @@ export default async function RetentionPage() {
             "Nightly reports", which already says both automatic and nightly. The
             time, the read-only nature, and that it records whether or not anyone
             looks are the parts a reader cannot infer, so they stay. */}
-        <p className="import-sub" style={{ marginBottom: 10 }}>
+        <p className="import-sub" style={{ marginBottom: 'var(--sp-10)' }}>
           02:15 UTC, read-only — the same two counts the preview above shows, recorded
           whether or not anyone opens this page.
         </p>

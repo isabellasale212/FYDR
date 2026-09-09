@@ -40,7 +40,7 @@ export function UserManagementPanel({ orgId, currentUserId, currentActorRole, ti
 
   return (
     <div className="stack">
-      <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+      <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--sp-12)', flexWrap: 'wrap' }}>
         <div>
           <p className="nm">{users.length} users</p>
           <p className="tiny">
@@ -87,7 +87,7 @@ export function UserManagementPanel({ orgId, currentUserId, currentActorRole, ti
 
       <section className="card flush">
         {filtered.length === 0 ? (
-          <p className="tiny" style={{ padding: 16 }}>
+          <p className="tiny" style={{ padding: 'var(--sp-16)' }}>
             No matching user.
           </p>
         ) : (
@@ -213,19 +213,19 @@ function CreateUserForm({
       <div className="card" style={{ borderColor: 'var(--good)' }}>
         <h2 className="card-title">Account created</h2>
         {result.emailDelivered ? (
-          <p className="import-sub" style={{ marginBottom: 10 }}>
+          <p className="import-sub" style={{ marginBottom: 'var(--sp-10)' }}>
             An invite email has been sent to {fullName}. Keep the link below too, in case it doesn&apos;t arrive.
           </p>
         ) : (
-          <p className="import-sub" style={{ marginBottom: 10 }}>
+          <p className="import-sub" style={{ marginBottom: 'var(--sp-10)' }}>
             Send this link to {fullName} yourself &mdash; no email provider is configured in this environment, so no invite
             email went out. It signs them in once and lets them choose their own password.
           </p>
         )}
-        <p className="nm" style={{ fontSize: 13, padding: '10px 14px', background: 'var(--surf2)', borderRadius: 8, wordBreak: 'break-all' }}>
+        <p className="nm" style={{ fontSize: 'var(--fs-13)', padding: '10px 14px', background: 'var(--surf2)', borderRadius: 8, wordBreak: 'break-all' }}>
           {result.inviteUrl}
         </p>
-        <p className="cap" style={{ marginBottom: 12 }}>
+        <p className="cap" style={{ marginBottom: 'var(--sp-12)' }}>
           The link works once and confirms their email address at the same time. No password has been set for them, and
           nobody here can see the one they choose.
         </p>
@@ -239,13 +239,13 @@ function CreateUserForm({
   return (
     <form onSubmit={onSubmit} className="card" noValidate>
       <h2 className="card-title">Invite people</h2>
-      <p className="import-sub" style={{ marginBottom: 12 }}>
+      <p className="import-sub" style={{ marginBottom: 'var(--sp-12)' }}>
         Creates a real account and tries to send an invite email; no SMS. Without an email provider configured, you&apos;ll
         get an invite link to pass on yourself instead.
       </p>
 
       {result && !result.ok ? (
-        <div className="banner" role="alert" style={{ marginBottom: 12, borderColor: 'var(--warn)' }}>
+        <div className="banner" role="alert" style={{ marginBottom: 'var(--sp-12)', borderColor: 'var(--warn)' }}>
           <span className="g g-warn" aria-hidden="true">
             !
           </span>
@@ -280,7 +280,7 @@ function CreateUserForm({
 
       <div className="form-row">
         <span className="label">Roles</span>
-        <p className="tiny" style={{ marginBottom: 8 }}>
+        <p className="tiny" style={{ marginBottom: 'var(--sp-8)' }}>
           Roles are additive &mdash; tick everything that applies.
         </p>
         <div className="chiprow">
@@ -413,7 +413,7 @@ function UserRow({
               </button>
             ))}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-8)' }}>
             <Pill status={USER_STATUS[user.status]} />
             <button type="button" className="btn-ghost" disabled={busyStatus || isSelf} onClick={toggleStatus}>
               {busyStatus ? 'Working…' : user.status === 'deactivated' ? 'Reactivate' : 'Deactivate'}
@@ -421,7 +421,7 @@ function UserRow({
           </div>
         </div>
         {user.roles.includes('athlete') && !user.athlete_id && unlinkedAthletes.length > 0 ? (
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
+          <div style={{ display: 'flex', gap: 'var(--sp-8)', alignItems: 'center', marginTop: 'var(--sp-8)' }}>
             <span className="tiny">No linked athlete record —</span>
             <select className="field" style={{ minHeight: 32, padding: '4px 8px', width: 'auto' }} value={linkChoice} onChange={(e) => setLinkChoice(e.target.value)}>
               <option value="">Pick one to link</option>
@@ -438,7 +438,7 @@ function UserRow({
           </div>
         ) : null}
         {error ? (
-          <p className="form-error" role="alert" style={{ marginTop: 6 }}>
+          <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-6)' }}>
             {error}
           </p>
         ) : null}

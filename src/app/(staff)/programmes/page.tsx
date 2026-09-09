@@ -117,7 +117,7 @@ export default async function ProgrammesPage({
           <p className="eyebrow">Squad · {orgName}</p>
           <h1>Gym programme</h1>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
           <Link href="/programmes/exercises" className="btn-ghost">
             Exercise library
           </Link>
@@ -128,7 +128,7 @@ export default async function ProgrammesPage({
         <div className="card">
           <p className="tiny">No programmes yet.</p>
           {hasAnyRole(claims.roles, PROGRAMME_AUTHOR) ? (
-            <Link href="/programmes/new" className="btn-primary" style={{ marginTop: 12, display: 'inline-flex' }}>
+            <Link href="/programmes/new" className="btn-primary" style={{ marginTop: 'var(--sp-12)', display: 'inline-flex' }}>
               + New programme
             </Link>
           ) : null}
@@ -136,7 +136,7 @@ export default async function ProgrammesPage({
       ) : (
         <div className="prog-body">
           <div>
-            <div className="stack" style={{ gap: 8 }}>
+            <div className="stack" style={{ gap: 'var(--sp-8)' }}>
               {programmes.map((p) => (
                 <Link
                   key={p.id}
@@ -155,11 +155,11 @@ export default async function ProgrammesPage({
                       programme type with a different author and a different
                       reader (CLAUDE.md rule 3), so it gets named. */}
                   {p.programme_type === 'rehab' ? (
-                    <span className="pill pill-bad" style={{ marginLeft: 8 }}>
+                    <span className="pill pill-bad" style={{ marginLeft: 'var(--sp-8)' }}>
                       rehab
                     </span>
                   ) : null}
-                  <div className="tiny" style={{ marginTop: 3 }}>
+                  <div className="tiny" style={{ marginTop: 'var(--sp-3)' }}>
                     {assignedLine(p)}
                   </div>
                 </Link>
@@ -169,7 +169,7 @@ export default async function ProgrammesPage({
               <Link
                 href="/programmes/new"
                 className="btn-primary"
-                style={{ marginTop: 12, width: '100%', display: 'inline-flex', justifyContent: 'center' }}
+                style={{ marginTop: 'var(--sp-12)', width: '100%', display: 'inline-flex', justifyContent: 'center' }}
               >
                 + New programme
               </Link>
@@ -192,8 +192,8 @@ export default async function ProgrammesPage({
                    *  (below, when there's more than one block). */}
                   {detail.blocks.length > 0 ? ` · ${detail.blocks.length} block${detail.blocks.length === 1 ? '' : 's'}` : ''}
                 </p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                  <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-0.025em' }}>{selected.name}</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)', flexWrap: 'wrap' }}>
+                  <h2 style={{ margin: 0, fontSize: 'var(--fs-22)', fontWeight: 800, letterSpacing: '-0.025em' }}>{selected.name}</h2>
                   <span className={`pill ${selected.status === 'active' ? 'pill-good' : 'pill-neutral'}`}>
                     {enumLabel(selected.status)}
                   </span>
@@ -208,22 +208,22 @@ export default async function ProgrammesPage({
                    *  the programme builder, linked below. */}
                 </div>
                 {selected.goal ? (
-                  <p className="tiny" style={{ marginTop: 6 }}>
+                  <p className="tiny" style={{ marginTop: 'var(--sp-6)' }}>
                     {selected.goal}
                   </p>
                 ) : null}
-                <p className="tiny" style={{ marginTop: 4 }}>
+                <p className="tiny" style={{ marginTop: 'var(--sp-4)' }}>
                   <Link href={`/programmes/${selected.id}`}>
                     {canEditSelected ? 'Edit this programme →' : 'View full detail →'}
                   </Link>
                 </p>
 
                 {sessionsFlat.length === 0 ? (
-                  <p className="tiny" style={{ marginTop: 14 }}>
+                  <p className="tiny" style={{ marginTop: 'var(--sp-14)' }}>
                     No sessions built for this programme yet.
                   </p>
                 ) : (
-                  <div className="stack" style={{ marginTop: 14, gap: 12 }}>
+                  <div className="stack" style={{ marginTop: 'var(--sp-14)', gap: 'var(--sp-12)' }}>
                     {sessionsFlat.map((s) => {
                       const exercises = exercisesBySession.get(s.id) ?? [];
                       // Not the audit-B2 bug class: programme_sessions.md_offset is an
@@ -269,7 +269,7 @@ export default async function ProgrammesPage({
                                 {exercises.map((ex) => (
                                   <div key={ex.programme_exercise_id} className="prog-ex-row">
                                     <span>
-                                      <span className="nm" style={{ fontSize: 13.5 }}>
+                                      <span className="nm" style={{ fontSize: 'var(--fs-13-5)' }}>
                                         {ex.exercise_name}
                                       </span>
                                       {ex.notes ? (

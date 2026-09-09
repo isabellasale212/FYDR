@@ -111,7 +111,7 @@ export function NotificationPreferencesForm({ orgId, userId, entries, initialPre
               {index > 0 ? <div className="hair" /> : null}
               <div className="load-row" style={{ gridTemplateColumns: '1fr auto auto', padding: '12px 16px' }}>
                 <div>
-                  <p className="nm" style={{ marginBottom: 2 }}>
+                  <p className="nm" style={{ marginBottom: 'var(--sp-2)' }}>
                     {entry.label}
                   </p>
                   <p className="tiny">{entry.trigger}</p>

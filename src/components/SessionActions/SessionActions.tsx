@@ -80,11 +80,11 @@ export function SessionActions({ orgId, session, canManage }: Props) {
     <div className="card">
       <p className="label">Session actions</p>
       {actionError ? (
-        <p className="form-error" role="alert" style={{ marginTop: 6 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-6)' }}>
           {actionError}
         </p>
       ) : null}
-      <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-10)', flexWrap: 'wrap', alignItems: 'center' }}>
         <button
           type="button"
           className="btn-ghost"

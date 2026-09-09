@@ -37,7 +37,7 @@ export default async function ClinicalReviewPage({ params }: { params: Promise<{
         </div>
       </div>
 
-      <p className="import-sub" style={{ marginTop: -6, marginBottom: 14 }}>
+      <p className="import-sub" style={{ marginTop: -6, marginBottom: 'var(--sp-14)' }}>
         Every clinical record is included by default. Withholding one is the exception, requires a reason, and applies
         the Data Protection Act 2018 Schedule 3 Part 2 serious-harm test — disclosure would be likely to cause serious
         harm to this athlete or someone else&apos;s physical or mental health. The pack cannot be released until every

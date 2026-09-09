@@ -42,7 +42,7 @@ export default async function WeekTemplatesPage() {
           </p>
           <h1>Week templates</h1>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
           {canWrite ? (
             <Link href="/schedule/planner/new" className="btn-primary">
               + New template
@@ -66,20 +66,20 @@ export default async function WeekTemplatesPage() {
                contain the two controls below it, and a browser recovering from
                that reflows them somewhere the source never described. */
             <div key={t.id} className="card">
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-                <span className="nm" style={{ fontSize: 15 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--sp-10)' }}>
+                <span className="nm" style={{ fontSize: 'var(--fs-15)' }}>
                   {t.name}
                 </span>
                 <span className="num tiny" style={{ marginLeft: 'auto', color: 'var(--faint)' }}>
                   {t.applyCount > 0 ? `Used ${t.applyCount} time${t.applyCount === 1 ? '' : 's'}` : 'Never applied'}
                 </span>
               </div>
-              <div className="tiny" style={{ marginTop: 4 }}>
+              <div className="tiny" style={{ marginTop: 'var(--sp-4)' }}>
                 {t.structure.days.filter((d) => d.sessions.length > 0).length} days planned ·{' '}
                 {t.structure.days.reduce((s, d) => s + d.sessions.length, 0)} sessions · load{' '}
                 {weekTotalLoad(t.structure).toLocaleString()}
               </div>
-              <div className="chiprow" style={{ marginTop: 8 }}>
+              <div className="chiprow" style={{ marginTop: 'var(--sp-8)' }}>
                 {t.structure.days
                   .filter((d) => d.sessions.length > 0)
                   .map((d) => (
@@ -89,7 +89,7 @@ export default async function WeekTemplatesPage() {
                   ))}
               </div>
 
-              <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+              <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-12)' }}>
                 {/* Apply carries the template it sits next to. The apply screen
                     accepts ?template= and its picker filters archived ones out,
                     so offering Apply on an archived row would land somebody on a

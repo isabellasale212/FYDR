@@ -130,7 +130,7 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
 
       <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
         <legend className="label">Type</legend>
-        <div className="chiprow" style={{ marginTop: 6 }}>
+        <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
           {SESSION_TYPES.map((t) => (
             <button
               key={t}
@@ -145,7 +145,7 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
         </div>
       </fieldset>
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-14)' }}>
         <div style={{ flex: 1 }}>
           <label className="label" htmlFor="s-date">
             Date
@@ -173,7 +173,7 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-14)' }}>
         <div style={{ flex: 1 }}>
           <label className="label" htmlFor="s-duration">
             Duration (min)
@@ -205,7 +205,7 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
         </div>
       </div>
 
-      <label className="label" htmlFor="s-location" style={{ marginTop: 14 }}>
+      <label className="label" htmlFor="s-location" style={{ marginTop: 'var(--sp-14)' }}>
         Location
       </label>
       <input
@@ -218,7 +218,7 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
 
       <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
         <legend className="label">Who&rsquo;s in it</legend>
-        <div className="chiprow" style={{ marginTop: 6 }}>
+        <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
           {groups.map((g) => (
             <button
               key={g.id}
@@ -231,7 +231,7 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
             </button>
           ))}
         </div>
-        <p className="cap" style={{ marginTop: 6 }}>
+        <p className="cap" style={{ marginTop: 'var(--sp-6)' }}>
           Pick every group that should see this, for example Forwards and Backs
           together for a full-squad session. Nobody selected means nobody is
           named in it yet.
@@ -243,18 +243,18 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
           squad sees it. There isn't one — the row is the visibility. Said here,
           at the moment of committing, rather than as a toast afterwards, so it
           answers the question before it is asked. */}
-      <p className="cap" style={{ marginTop: 14 }}>
+      <p className="cap" style={{ marginTop: 'var(--sp-14)' }}>
         Athletes named in it see this in their athlete app as soon as you create
         it. There is no separate publish step.
       </p>
 
       {error ? (
-        <p className="form-error" role="alert" style={{ marginTop: 14 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-14)' }}>
           {error}
         </p>
       ) : null}
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-18)' }}>
         <button type="submit" className="btn-primary" disabled={mutation.isPending}>
           {mutation.isPending ? 'Creating…' : 'Create session'}
         </button>

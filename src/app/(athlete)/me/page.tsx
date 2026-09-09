@@ -178,7 +178,7 @@ export default async function MePage() {
       </div>
 
       <div className="card">
-        <p className="eyebrow" style={{ marginBottom: 8 }}>
+        <p className="eyebrow" style={{ marginBottom: 'var(--sp-8)' }}>
           Theme
         </p>
         <ThemeToggle />

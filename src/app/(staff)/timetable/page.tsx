@@ -82,11 +82,11 @@ export default async function TimetablePage({ searchParams }: { searchParams: Se
         </span>
       </div>
 
-      <div style={{ marginBottom: 14 }}>
+      <div style={{ marginBottom: 'var(--sp-14)' }}>
         <GroupFilter groups={groups} selected={groupIds} />
       </div>
 
-      <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+      <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--sp-14)' }}>
         <Link href={dayHref(addDays(date, -1))} className="btn-ghost" aria-label="Previous day">
           ‹ Previous
         </Link>
@@ -104,7 +104,7 @@ export default async function TimetablePage({ searchParams }: { searchParams: Se
           body="Nothing is scheduled for this date. Open the schedule to plan one."
         />
       ) : (
-        <div className="stack" style={{ gap: 12 }}>
+        <div className="stack" style={{ gap: 'var(--sp-12)' }}>
           {sessions.map((session) => {
             const startMs = Date.parse(session.starts_at);
             const endMs = startMs + (session.duration_min ?? 60) * 60_000;

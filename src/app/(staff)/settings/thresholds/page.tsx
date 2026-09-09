@@ -58,7 +58,7 @@ export default async function ThresholdsPage() {
           </p>
           <h1>Thresholds</h1>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
           <Link href="/settings/thresholds/new" className="btn-primary">
             + New threshold
           </Link>

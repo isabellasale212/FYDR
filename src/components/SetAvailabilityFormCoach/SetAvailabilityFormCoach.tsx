@@ -100,12 +100,12 @@ export function SetAvailabilityFormCoach({ orgId, userId, athleteId }: Props) {
   return (
     <div className="card">
       <p className="label">Set availability</p>
-      <p className="tiny" style={{ marginTop: 4, marginBottom: 0 }}>
+      <p className="tiny" style={{ marginTop: 'var(--sp-4)', marginBottom: 0 }}>
         For a non-injury reason only — illness, personal leave, exams, representative
         honours, or other. For an injury, use the injury record instead.
       </p>
 
-      <div className="chiprow" style={{ marginTop: 10 }}>
+      <div className="chiprow" style={{ marginTop: 'var(--sp-10)' }}>
         {STATUSES.map((s) => (
           <button
             key={s}
@@ -121,7 +121,7 @@ export function SetAvailabilityFormCoach({ orgId, userId, athleteId }: Props) {
 
       {status !== 'available' ? (
         <>
-          <label className="label" htmlFor="avail-coach-reason" style={{ marginTop: 14 }}>
+          <label className="label" htmlFor="avail-coach-reason" style={{ marginTop: 'var(--sp-14)' }}>
             Reason
           </label>
           <select
@@ -139,7 +139,7 @@ export function SetAvailabilityFormCoach({ orgId, userId, athleteId }: Props) {
         </>
       ) : null}
 
-      <label className="label" htmlFor="avail-coach-note" style={{ marginTop: 14 }}>
+      <label className="label" htmlFor="avail-coach-note" style={{ marginTop: 'var(--sp-14)' }}>
         Note (coach visible &mdash; not a clinical field)
       </label>
       <input
@@ -151,7 +151,7 @@ export function SetAvailabilityFormCoach({ orgId, userId, athleteId }: Props) {
       />
 
       {error ? (
-        <p className="form-error" role="alert" style={{ marginTop: 10 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-10)' }}>
           {error}
         </p>
       ) : null}
@@ -159,7 +159,7 @@ export function SetAvailabilityFormCoach({ orgId, userId, athleteId }: Props) {
       <button
         type="button"
         className="btn-primary"
-        style={{ marginTop: 14 }}
+        style={{ marginTop: 'var(--sp-14)' }}
         disabled={mutation.isPending}
         onClick={() => mutation.mutate()}
       >

@@ -83,14 +83,14 @@ export default async function ProgrammeBuilderPage({
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center', marginBottom: 'var(--sp-14)', flexWrap: 'wrap' }}>
         <span className="pill pill-neutral">{enumLabel(detail.programme.programme_type)}</span>
         <ProgrammeStatusControl orgId={orgId} programmeId={programmeId} status={detail.programme.status} canEdit={canEdit} />
         {detail.programme.goal ? <span className="tiny">{detail.programme.goal}</span> : null}
       </div>
 
       {!canEdit ? (
-        <div className="note" style={{ marginBottom: 14 }}>
+        <div className="note" style={{ marginBottom: 'var(--sp-14)' }}>
           <div className="note-glyph">i</div>
           <p className="note-text">
             {isMedical
@@ -100,12 +100,12 @@ export default async function ProgrammeBuilderPage({
         </div>
       ) : null}
 
-      <p className="eyebrow" style={{ marginBottom: 14 }}>
+      <p className="eyebrow" style={{ marginBottom: 'var(--sp-14)' }}>
         Squad · {orgName}
       </p>
 
       {assignedAthletes.length > 0 ? (
-        <div className="card" style={{ marginBottom: 16 }}>
+        <div className="card" style={{ marginBottom: 'var(--sp-16)' }}>
           <h2 className="card-title">View as an athlete</h2>
           
           <div className="chiprow">

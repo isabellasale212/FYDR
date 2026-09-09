@@ -48,11 +48,11 @@ export function FixtureActions({ orgId, fixture }: Props) {
     <div className="card">
       <p className="label">Fixture status</p>
       {actionError ? (
-        <p className="form-error" role="alert" style={{ marginTop: 6 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-6)' }}>
           {actionError}
         </p>
       ) : null}
-      <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-10)', flexWrap: 'wrap' }}>
         {options.map((status) => (
           <button
             key={status}

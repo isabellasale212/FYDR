@@ -30,7 +30,7 @@ export function GlobalOptOutToggle({ orgId, athleteId, userId, initialOptedOut }
   });
 
   return (
-    <div style={{ marginTop: 10 }}>
+    <div style={{ marginTop: 'var(--sp-10)' }}>
       <button
         type="button"
         className="squad-chip"
@@ -45,7 +45,7 @@ export function GlobalOptOutToggle({ orgId, athleteId, userId, initialOptedOut }
             : 'Leave every leaderboard'}
       </button>
       {error ? (
-        <p className="form-error" role="alert" style={{ marginTop: 8 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-8)' }}>
           {error}
         </p>
       ) : null}

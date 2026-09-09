@@ -64,7 +64,7 @@ export default async function ImportsPage({ searchParams }: { searchParams: Sear
 
         <section className="card" aria-labelledby="history-title">
           <div
-            style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}
+            style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 'var(--sp-10)' }}
           >
             <h2 className="card-title" id="history-title">
               {showAll ? 'All imports' : 'Recent imports'}

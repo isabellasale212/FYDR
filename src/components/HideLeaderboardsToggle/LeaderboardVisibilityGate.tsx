@@ -28,7 +28,7 @@ export function LeaderboardVisibilityGate({ children }: { children: React.ReactN
 
   return (
     <div className="card">
-      <p className="nm" style={{ marginBottom: 4 }}>
+      <p className="nm" style={{ marginBottom: 'var(--sp-4)' }}>
         Leaderboards are hidden
       </p>
       <p className="import-sub" style={{ marginBottom: 0 }}>

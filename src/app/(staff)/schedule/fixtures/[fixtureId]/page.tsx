@@ -61,14 +61,14 @@ export default async function FixtureDetailPage({
       </div>
 
       <div className="card">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)', flexWrap: 'wrap' }}>
           <span className={`pill ${STATUS_PILL[fixture.status] ?? 'pill-neutral'}`}>
             {enumLabel(fixture.status)}
           </span>
           <span className="pill pill-neutral">{enumLabel(fixture.home_away)}</span>
           <span className="pill pill-neutral">{enumLabel(fixture.importance)}</span>
         </div>
-        <p style={{ marginTop: 10 }}>
+        <p style={{ marginTop: 'var(--sp-10)' }}>
           {/* formatLongDate/formatTime both resolve the real local calendar
               date and time from the full instant via Intl + timeZone — no
               need to (and previously buggy to) pre-slice kickoff_at down to
@@ -76,12 +76,12 @@ export default async function FixtureDetailPage({
           {formatLongDate(fixture.kickoff_at, timezone)} &middot; kick off{' '}
           {formatTime(fixture.kickoff_at, timezone)}
         </p>
-        <p className="tiny" style={{ marginTop: 4 }}>
+        <p className="tiny" style={{ marginTop: 'var(--sp-4)' }}>
           {fixture.venue ?? 'Venue not set'}
           {fixture.competition ? ` · ${fixture.competition}` : ''}
         </p>
         {fixture.status === 'played' ? (
-          <p style={{ marginTop: 10 }}>
+          <p style={{ marginTop: 'var(--sp-10)' }}>
             <span className="label">Result</span>
             <br />
             {fixture.result ?? 'Not recorded yet.'}
@@ -89,12 +89,12 @@ export default async function FixtureDetailPage({
         ) : null}
       </div>
 
-      <div style={{ marginTop: 14 }}>
+      <div style={{ marginTop: 'var(--sp-14)' }}>
         {canEdit ? <FixtureActions orgId={orgId} fixture={fixture} /> : null}
       </div>
 
-      <section style={{ marginTop: 14 }} aria-labelledby="fixture-sessions">
-        <p className="sect" id="fixture-sessions" style={{ marginBottom: 8 }}>
+      <section style={{ marginTop: 'var(--sp-14)' }} aria-labelledby="fixture-sessions">
+        <p className="sect" id="fixture-sessions" style={{ marginBottom: 'var(--sp-8)' }}>
           Sessions anchored to this fixture
         </p>
         {fixture.weekSessions.length === 0 ? (
@@ -118,8 +118,8 @@ export default async function FixtureDetailPage({
         )}
       </section>
 
-      <div style={{ marginTop: 14 }}>
-        <p className="sect" style={{ marginBottom: 8 }}>
+      <div style={{ marginTop: 'var(--sp-14)' }}>
+        <p className="sect" style={{ marginBottom: 'var(--sp-8)' }}>
           Edit this fixture
         </p>
         {canEdit ? <FixtureEditForm orgId={orgId} fixture={fixture} timezone={timezone} /> : null}

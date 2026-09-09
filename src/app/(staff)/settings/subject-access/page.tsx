@@ -40,13 +40,13 @@ export default async function SubjectAccessPage({ searchParams }: { searchParams
         </div>
       </div>
 
-      <p className="import-sub" style={{ marginTop: -6, marginBottom: 14 }}>
+      <p className="import-sub" style={{ marginTop: -6, marginBottom: 'var(--sp-14)' }}>
         Article 15, UK GDPR. Each request is due within one month. An admin opens a request from an athlete&apos;s own
         profile page; medical reviews any clinical notes it contains before an admin can release it.
       </p>
 
       {error ? (
-        <p className="form-error" role="alert" style={{ marginBottom: 14 }}>
+        <p className="form-error" role="alert" style={{ marginBottom: 'var(--sp-14)' }}>
           {error}
         </p>
       ) : null}

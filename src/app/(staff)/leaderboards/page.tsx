@@ -85,7 +85,7 @@ export default async function LeaderboardWallPage({
           <p className="eyebrow">TESTING · GPS · WELLNESS · LATEST RESULT PER ATHLETE · {activeGroupLabel.toUpperCase()}</p>
           <h1>Leaderboard</h1>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
           <Link href="/leaderboards/manage" className="btn-ghost">
             Manage published boards →
           </Link>
@@ -96,7 +96,7 @@ export default async function LeaderboardWallPage({
           live control on the wall below and reads on every row; the sentence
           was an argument for a default the reader can already see and change. */}
 
-      <div style={{ marginBottom: 14 }}>
+      <div style={{ marginBottom: 'var(--sp-14)' }}>
         <GroupFilter groups={groups} selected={groupIds} />
       </div>
 

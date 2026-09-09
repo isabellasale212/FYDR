@@ -93,7 +93,7 @@ export function GroupEditForm({ orgId, groupId, initialName, initialDescription,
             maxLength={60}
           />
 
-          <label className="label" htmlFor="group-edit-description" style={{ marginTop: 14 }}>
+          <label className="label" htmlFor="group-edit-description" style={{ marginTop: 'var(--sp-14)' }}>
             Description
           </label>
           <input
@@ -107,7 +107,7 @@ export function GroupEditForm({ orgId, groupId, initialName, initialDescription,
 
           <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
             <legend className="label">Colour</legend>
-            <div className="chiprow" style={{ marginTop: 6 }}>
+            <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
               <button
                 type="button"
                 className="squad-chip"
@@ -123,7 +123,7 @@ export function GroupEditForm({ orgId, groupId, initialName, initialDescription,
                   className="squad-chip"
                   aria-pressed={colour === c.name}
                   onClick={() => setColour(c.name)}
-                  style={{ gap: 6 }}
+                  style={{ gap: 'var(--sp-6)' }}
                 >
                   <GroupSwatch colour={c.name} />
                   {c.name}
@@ -133,12 +133,12 @@ export function GroupEditForm({ orgId, groupId, initialName, initialDescription,
           </fieldset>
 
           {error ? (
-            <p className="form-error" role="alert" style={{ marginTop: 14 }}>
+            <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-14)' }}>
               {error}
             </p>
           ) : null}
 
-          <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
+          <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-18)' }}>
             <button type="submit" className="btn-primary" disabled={mutation.isPending}>
               {mutation.isPending ? 'Saving…' : 'Save changes'}
             </button>

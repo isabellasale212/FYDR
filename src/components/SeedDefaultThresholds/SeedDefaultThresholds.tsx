@@ -73,7 +73,7 @@ export function SeedDefaultThresholds({ orgId }: Props) {
         Flags are raised when a threshold is crossed. Nothing is being watched yet, so
         no flag can be raised for anyone in this squad.
       </p>
-      <p style={{ marginTop: 10 }}>
+      <p style={{ marginTop: 'var(--sp-10)' }}>
         Fydr has a starter set of five rules &mdash; readiness against each athlete&rsquo;s own
         norm, a sleep drop, sustained soreness, acute:chronic load, and wellness compliance.
         They are a starting point, not a commitment: edit, deactivate or retire any of them
@@ -84,7 +84,7 @@ export function SeedDefaultThresholds({ orgId }: Props) {
           reason is real and specific: wellness compliance counts submissions, so
           on a squad that has not started logging it reads zero and would flag
           everyone in week one. See migration 0059's correction (a). */}
-      <p className="tiny" style={{ marginTop: 8 }}>
+      <p className="tiny" style={{ marginTop: 'var(--sp-8)' }}>
         Four of them start watching straight away. Wellness compliance arrives switched
         off &mdash; it counts submissions, so it cannot tell a squad that has stopped
         logging from one that has not started. Turn it on once the squad has a couple of
@@ -92,20 +92,20 @@ export function SeedDefaultThresholds({ orgId }: Props) {
       </p>
 
       {error ? (
-        <p className="form-error" role="alert" style={{ marginTop: 10 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-10)' }}>
           {error}
         </p>
       ) : null}
 
       {nothingToDo ? (
-        <p className="tiny" style={{ marginTop: 10 }}>
+        <p className="tiny" style={{ marginTop: 'var(--sp-10)' }}>
           Nothing was added. Either someone else has just set thresholds up, or this club
           has had rules before and retired them &mdash; retired rules are never brought
           back automatically. Add one with &ldquo;New threshold&rdquo;.
         </p>
       ) : null}
 
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 14 }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-8)', justifyContent: 'center', marginTop: 'var(--sp-14)' }}>
         <button
           type="button"
           className="btn-primary"

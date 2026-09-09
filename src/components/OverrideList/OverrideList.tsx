@@ -59,7 +59,7 @@ export function OverrideList({
   }
 
   return (
-    <div className="stack" style={{ gap: 8 }}>
+    <div className="stack" style={{ gap: 'var(--sp-8)' }}>
       {error ? (
         <p className="form-error" role="alert">
           {error}
@@ -79,7 +79,7 @@ export function OverrideList({
           </div>
           {canEdit ? (
             removingId === o.id ? (
-              <span style={{ display: 'flex', gap: 6 }}>
+              <span style={{ display: 'flex', gap: 'var(--sp-6)' }}>
                 <button
                   type="button"
                   className="btn-ghost"

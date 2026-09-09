@@ -37,7 +37,7 @@ export function FlagNotice({ flags, heading, timezone }: Props) {
         {flags.map((f) => (
           <div key={f.id} className="flag-notice-item">
             <div className="flag-notice-top">
-              <span className="pill pill-neutral" style={{ fontSize: 10.5, padding: '2px 9px' }}>
+              <span className="pill pill-neutral" style={{ fontSize: 'var(--fs-10-5)', padding: '2px 9px' }}>
                 {enumLabel(f.domain)}
               </span>
               <span className="tiny num">{formatDate(f.flag_date, timezone)}</span>

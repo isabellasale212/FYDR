@@ -118,21 +118,21 @@ export default async function ProgrammeAthletePage({
         </div>
       </div>
 
-      <p className="eyebrow" style={{ marginBottom: 14 }}>
+      <p className="eyebrow" style={{ marginBottom: 'var(--sp-14)' }}>
         Squad · {orgName}
       </p>
 
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 14 }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center', marginBottom: 'var(--sp-14)' }}>
         <span className="pill pill-neutral">{enumLabel(detail.programme.programme_type)}</span>
         {!canEdit ? <span className="tiny">Read only for your role.</span> : null}
       </div>
 
-      <div className="card" style={{ marginBottom: 16 }}>
+      <div className="card" style={{ marginBottom: 'var(--sp-16)' }}>
         <h2 className="card-title">Tailoring for {athleteName}</h2>
         <OverrideList orgId={orgId} overrides={overrides} canEdit={canEdit} timezone={timezone} />
         {canEdit ? (
-          <div style={{ marginTop: 14, borderTop: '1px solid var(--border)', paddingTop: 14 }}>
-            <p className="label" style={{ marginBottom: 8 }}>
+          <div style={{ marginTop: 'var(--sp-14)', borderTop: '1px solid var(--border)', paddingTop: 'var(--sp-14)' }}>
+            <p className="label" style={{ marginBottom: 'var(--sp-8)' }}>
               Add an override
             </p>
             <OverrideForm
@@ -146,7 +146,7 @@ export default async function ProgrammeAthletePage({
         ) : null}
       </div>
 
-      <div className="stack" style={{ gap: 12 }}>
+      <div className="stack" style={{ gap: 'var(--sp-12)' }}>
         {sessionsFlat.map((s) => {
           const exercises = exercisesBySession.get(s.id) ?? [];
           // Not the audit-B2 bug class — see programmes/page.tsx's identical note:
@@ -162,12 +162,12 @@ export default async function ProgrammeAthletePage({
                 {md ? <span className="pill pill-accent">{md}</span> : null}
               </div>
               {exercises.length === 0 ? (
-                <p className="tiny" style={{ marginTop: 8 }}>
+                <p className="tiny" style={{ marginTop: 'var(--sp-8)' }}>
                   Nothing prescribed here for {athleteName} — either the session is empty, or every exercise in it is
                   exempt for them (see Tailoring above).
                 </p>
               ) : (
-                <div style={{ overflowX: 'auto', marginTop: 8 }}>
+                <div style={{ overflowX: 'auto', marginTop: 'var(--sp-8)' }}>
                   <div style={{ minWidth: 480 }}>
                     <div className="prog-ex-row prog-ex-head tiny">
                       <span>Exercise</span>
@@ -179,7 +179,7 @@ export default async function ProgrammeAthletePage({
                     {exercises.map((ex) => (
                       <div key={ex.programme_exercise_id} className="prog-ex-row">
                         <span>
-                          <span className="nm" style={{ fontSize: 13.5 }}>
+                          <span className="nm" style={{ fontSize: 'var(--fs-13-5)' }}>
                             {ex.exercise_name}
                           </span>
                           {ex.notes ? (

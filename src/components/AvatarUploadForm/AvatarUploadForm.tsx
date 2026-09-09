@@ -116,7 +116,7 @@ export function AvatarUploadForm({
   return (
     <div className="card">
       <h2 className="card-title">Photo</h2>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-16)' }}>
         {avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- a user-uploaded avatar has no build-time dimensions for next/image to optimise, and this is one small image, not a page full of them
           <img
@@ -138,7 +138,7 @@ export function AvatarUploadForm({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 20,
+              fontSize: 'var(--fs-20)',
               fontWeight: 700,
               /* --on-group: its own token because the --group-* palette
                  inverts between themes, so one ink cannot serve both. It was
@@ -164,12 +164,12 @@ export function AvatarUploadForm({
               </button>
             ) : null}
           </div>
-          <p className="tiny" style={{ marginTop: 6 }}>
+          <p className="tiny" style={{ marginTop: 'var(--sp-6)' }}>
             JPEG, PNG or WebP, up to 2MB.
           </p>
 
           {!avatarUrl ? (
-            <div style={{ marginTop: 10 }}>
+            <div style={{ marginTop: 'var(--sp-10)' }}>
               <p className="label" id="avatar-colour-label">
                 Or pick a colour for your initials
               </p>
@@ -189,7 +189,7 @@ export function AvatarUploadForm({
                     className="squad-chip"
                     aria-pressed={colour === name}
                     onClick={() => pickColour(name)}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--sp-6)' }}
                   >
                     <span
                       aria-hidden="true"
@@ -210,7 +210,7 @@ export function AvatarUploadForm({
         </div>
       </div>
       {error ? (
-        <p className="form-error" role="alert" style={{ marginTop: 10 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-10)' }}>
           {error}
         </p>
       ) : null}

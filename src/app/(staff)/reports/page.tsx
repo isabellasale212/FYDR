@@ -143,7 +143,7 @@ export default async function ReportsPage() {
       </div>
 
       {openCount === 0 ? (
-        <div className="note" style={{ marginBottom: 14, borderColor: 'var(--warn)' }}>
+        <div className="note" style={{ marginBottom: 'var(--sp-14)', borderColor: 'var(--warn)' }}>
           <div className="note-glyph">i</div>
           <p className="note-text">
             <b>No reports are open to your role.</b> Every report here reads named-athlete data. Ask the sport
@@ -154,7 +154,7 @@ export default async function ReportsPage() {
         /* Said once, above the grid, rather than repeated on each closed card:
            a nutritionist sees four of these disabled and the reason is the same
            for all four. */
-        <div className="note" style={{ marginBottom: 14 }}>
+        <div className="note" style={{ marginBottom: 'var(--sp-14)' }}>
           <div className="note-glyph">i</div>
           <p className="note-text">
             Some reports below aren&apos;t open to your role. The ones that are, are marked.
@@ -162,7 +162,7 @@ export default async function ReportsPage() {
         </div>
       ) : null}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 'var(--sp-14)' }}>
         {REPORTS.map((r) => {
           const locked = r.premiumGated && !onPremium;
           /* Gated is 0.62 opacity plus a badge, never hidden — light-theme
@@ -179,7 +179,7 @@ export default async function ReportsPage() {
               data-tone={r.tone}
               style={{ textDecoration: 'none', color: 'inherit', opacity: gatedOpacity }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)' }}>
                 <span className="rep-dot" aria-hidden="true" />
                 <p className="card-title" style={{ margin: 0 }}>
                   {r.title}
@@ -188,7 +188,7 @@ export default async function ReportsPage() {
                   <span
                     className="num"
                     style={{
-                      fontSize: 10,
+                      fontSize: 'var(--fs-10)',
                       fontWeight: 700,
                       padding: '2px 9px',
                       borderRadius: 'var(--r-control)',
@@ -200,7 +200,7 @@ export default async function ReportsPage() {
                   </span>
                 ) : null}
               </div>
-              <p className="tiny" style={{ marginTop: 6 }}>
+              <p className="tiny" style={{ marginTop: 'var(--sp-6)' }}>
                 {r.body}
               </p>
               {/* Pushed to the bottom so the six cards' footers line up even
@@ -220,7 +220,7 @@ export default async function ReportsPage() {
             <div key={r.key} className="card" style={{ opacity: 'var(--o-disabled)' }}>
               <p className="card-title">{r.title}</p>
               <p className="tiny">{r.body}</p>
-              <p className="tiny" style={{ marginTop: 8 }}>
+              <p className="tiny" style={{ marginTop: 'var(--sp-8)' }}>
                 {open ? 'Not built yet.' : 'Not open to your role.'}
               </p>
             </div>

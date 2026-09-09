@@ -201,17 +201,17 @@ export function MfaEnrollment({ timezone, roleRequiresMfa, initialFactors }: Pro
               <span className="sub">Added</span>
               <span className="sub">{formatDate(verified.created_at, timezone)}</span>
             </div>
-            <p className="cap" style={{ marginTop: 10 }}>
+            <p className="cap" style={{ marginTop: 'var(--sp-10)' }}>
               An authenticator app code is required on every sign-in. There is no recovery
               code — if you lose access to your authenticator, an admin has to remove this
               for you before you can sign in again.
             </p>
             {!confirmingRemove ? (
-              <button type="button" className="btn-ghost" style={{ marginTop: 10 }} onClick={() => setConfirmingRemove(true)}>
+              <button type="button" className="btn-ghost" style={{ marginTop: 'var(--sp-10)' }} onClick={() => setConfirmingRemove(true)}>
                 Remove two-factor authentication
               </button>
             ) : (
-              <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 'var(--sp-8)', marginTop: 'var(--sp-10)', flexWrap: 'wrap', alignItems: 'center' }}>
                 <span className="tiny" style={{ color: 'var(--bad-text)' }}>
                   Turn off two-factor authentication for your account?
                 </span>
@@ -230,11 +230,11 @@ export function MfaEnrollment({ timezone, roleRequiresMfa, initialFactors }: Pro
               <span className="sub">Status</span>
               <span className="sub">Not enrolled</span>
             </div>
-            <p className="cap" style={{ marginTop: 4 }}>
+            <p className="cap" style={{ marginTop: 'var(--sp-4)' }}>
               Add an authenticator app (Google Authenticator, 1Password, Authy or similar) as
               a second sign-in step.
             </p>
-            <button type="button" className="btn-primary" style={{ marginTop: 10 }} disabled={busy} onClick={startEnroll}>
+            <button type="button" className="btn-primary" style={{ marginTop: 'var(--sp-10)' }} disabled={busy} onClick={startEnroll}>
               {busy ? 'Starting…' : 'Set up two-factor authentication'}
             </button>
           </>
@@ -251,11 +251,11 @@ export function MfaEnrollment({ timezone, roleRequiresMfa, initialFactors }: Pro
               alt="QR code for your authenticator app"
               width={176}
               height={176}
-              style={{ display: 'block', margin: '10px 0', borderRadius: 'var(--r-field)', background: 'var(--on-accent)', padding: 8 }}
+              style={{ display: 'block', margin: '10px 0', borderRadius: 'var(--r-field)', background: 'var(--on-accent)', padding: 'var(--sp-8)' }}
             />
           ) : null}
           {secret ? (
-            <p className="tiny" style={{ marginBottom: 10 }}>
+            <p className="tiny" style={{ marginBottom: 'var(--sp-10)' }}>
               Can&apos;t scan it? Enter this key by hand:{' '}
               <span className="num" style={{ userSelect: 'all' }}>
                 {secret}
@@ -281,7 +281,7 @@ export function MfaEnrollment({ timezone, roleRequiresMfa, initialFactors }: Pro
             />
           </div>
 
-          <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+          <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-12)' }}>
             <button className="btn-primary" type="submit" disabled={busy || code.length < 6}>
               {busy ? 'Verifying…' : 'Confirm and turn on'}
             </button>

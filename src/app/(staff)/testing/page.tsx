@@ -51,7 +51,7 @@ export default async function TestingPage() {
         <Link
           href={`/schedule/${nextSession.id}`}
           className="card"
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, textDecoration: 'none', color: 'inherit' }}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--sp-14)', textDecoration: 'none', color: 'inherit' }}
         >
           <div>
             <p className="tiny" style={{ color: 'var(--muted)' }}>
@@ -68,10 +68,10 @@ export default async function TestingPage() {
         </Link>
       ) : null}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 16, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 'var(--sp-16)', alignItems: 'start' }}>
         <div className="card flush">
           {definitions.length === 0 ? (
-            <p className="tiny" style={{ padding: 16 }}>
+            <p className="tiny" style={{ padding: 'var(--sp-16)' }}>
               No tests defined yet. Add the first one.
             </p>
           ) : (
@@ -98,7 +98,7 @@ export default async function TestingPage() {
                       {' · '}
                       {d.default_attempts} attempt{d.default_attempts === 1 ? '' : 's'}, best kept
                     </div>
-                    {d.protocol ? <div className="tiny" style={{ color: 'var(--muted)', marginTop: 2 }}>{d.protocol}</div> : null}
+                    {d.protocol ? <div className="tiny" style={{ color: 'var(--muted)', marginTop: 'var(--sp-2)' }}>{d.protocol}</div> : null}
                   </div>
                   <span className="chev" aria-hidden="true">
                     ›
@@ -110,7 +110,7 @@ export default async function TestingPage() {
         </div>
         <div className="card">
           <p className="label">Add a test</p>
-          <div style={{ marginTop: 10 }}>
+          <div style={{ marginTop: 'var(--sp-10)' }}>
             <TestDefinitionForm orgId={orgId} />
           </div>
         </div>

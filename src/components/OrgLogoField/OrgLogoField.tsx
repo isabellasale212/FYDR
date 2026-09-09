@@ -74,7 +74,7 @@ export function OrgLogoField({ orgId, orgName, initialLogoUrl }: Props) {
   return (
     <div className="form-row">
       <span className="label">Logo</span>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-16)' }}>
         {logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- a club-uploaded logo has no build-time dimensions for next/image to optimise, and this is one small image, not a page full of them
           <img
@@ -96,7 +96,7 @@ export function OrgLogoField({ orgId, orgName, initialLogoUrl }: Props) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 16,
+              fontSize: 'var(--fs-16)',
               fontWeight: 700,
               color: 'var(--muted)',
             }}
@@ -117,7 +117,7 @@ export function OrgLogoField({ orgId, orgName, initialLogoUrl }: Props) {
         </div>
       </div>
       {error ? (
-        <p className="form-error" role="alert" style={{ marginTop: 8 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-8)' }}>
           {error}
         </p>
       ) : null}

@@ -124,7 +124,7 @@ export function PlayerProfileFlags({
   return (
     <section className="card pp-card pp-flags-card" aria-labelledby="pp-flags-title">
       <div className="pp-card-row">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)', flexWrap: 'wrap' }}>
           <h2 className="card-title" id="pp-flags-title">
             Flags
           </h2>
@@ -148,13 +148,13 @@ export function PlayerProfileFlags({
           fact stated about the actual reading rather than in the abstract. */}
 
       {error ? (
-        <p className="form-error" role="alert" style={{ marginTop: 10 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-10)' }}>
           {error}
         </p>
       ) : null}
 
       {visible.length === 0 ? (
-        <p className="cap" style={{ marginTop: 16 }}>
+        <p className="cap" style={{ marginTop: 'var(--sp-16)' }}>
           {acknowledged.length > 0
             ? 'Nothing awaiting acknowledgement — every open flag has been seen.'
             : 'No open flags for this athlete.'}
@@ -178,11 +178,11 @@ export function PlayerProfileFlags({
                 style={{ borderInlineStart: `3px solid ${TONE_VAR[flag.severity]}` }}
               >
                 <div className="pp-flag-top">
-                  <span className="pill pill-neutral" style={{ fontSize: 10.5, padding: '2px 9px' }}>
+                  <span className="pill pill-neutral" style={{ fontSize: 'var(--fs-10-5)', padding: '2px 9px' }}>
                     {enumLabel(flag.domain)}
                   </span>
                   {flag.escalated ? (
-                    <span className={`pill ${canAck ? 'pill-bad' : 'pill-warn'}`} style={{ fontSize: 10.5, padding: '2px 9px' }}>
+                    <span className={`pill ${canAck ? 'pill-bad' : 'pill-warn'}`} style={{ fontSize: 'var(--fs-10-5)', padding: '2px 9px' }}>
                       {canAck ? 'Escalated' : 'Was escalated'}
                     </span>
                   ) : null}
@@ -208,7 +208,7 @@ export function PlayerProfileFlags({
                   </p>
                 ))}
                 {noteDraftId === flag.id ? (
-                  <div className="flag-dismiss" style={{ marginTop: 8 }}>
+                  <div className="flag-dismiss" style={{ marginTop: 'var(--sp-8)' }}>
                     <label className="label" htmlFor={`pp-ack-note-${flag.id}`}>
                       Note on this {enumLabel(flag.domain).toLowerCase()} flag
                     </label>
@@ -240,7 +240,7 @@ export function PlayerProfileFlags({
                         with medical.
                       </p>
                     ) : null}
-                    <div className="flag-actions" style={{ marginTop: 8 }}>
+                    <div className="flag-actions" style={{ marginTop: 'var(--sp-8)' }}>
                       <button
                         type="button"
                         className="pp-ack-btn"
@@ -281,7 +281,7 @@ export function PlayerProfileFlags({
                         to be inside, which is why it vanished the moment a flag was
                         acknowledged). Acknowledged rows still show who saw it and
                         when — the note button is added beside that, not instead. */}
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: 'var(--sp-8)', alignItems: 'center' }}>
                       {!canEditFlagDomain(flag.domain) ? (
                         /* Same rule as the Flags screen, said the same way. */
                         <span className="tiny">Read-only for your role &mdash; you can act on nutrition flags.</span>
@@ -331,7 +331,7 @@ export function PlayerProfileFlags({
         <button
           type="button"
           className="btn-ghost"
-          style={{ marginTop: 16, display: 'inline-block' }}
+          style={{ marginTop: 'var(--sp-16)', display: 'inline-block' }}
           onClick={() => setShowAcked(true)}
         >
           Show acknowledged ({acknowledged.length})

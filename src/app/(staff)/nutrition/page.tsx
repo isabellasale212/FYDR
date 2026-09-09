@@ -332,7 +332,7 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
           </p>
           <h1>Nutrition</h1>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
           {canManualTarget ? (
             <Link href="/nutrition/new" className="btn-ghost" title="Set one absolute target by hand, outside the rule engine">
               Manual target
@@ -341,14 +341,14 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
         </div>
       </div>
 
-      <div style={{ marginBottom: 14 }}>
+      <div style={{ marginBottom: 'var(--sp-14)' }}>
         <GroupFilter groups={groups} selected={groupIds} />
       </div>
 
       {/* The week navigator — a different control from the one above, for a
         * different panel, deliberately. Same shape as /reports/squad's own week
         * nav so a coach meets one week-stepping idiom in this app, not two. */}
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 14 }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center', marginBottom: 'var(--sp-14)' }}>
         <Link href={weekHref(prevWeekStart)} className="btn-ghost" aria-label="Previous week">
           ‹ Previous week
         </Link>

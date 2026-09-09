@@ -196,7 +196,7 @@ export function ProgrammeBuilder({
           {block.sessions.length === 0 ? (
             <p className="tiny">No sessions yet.</p>
           ) : (
-            <div className="stack" style={{ gap: 6 }}>
+            <div className="stack" style={{ gap: 'var(--sp-6)' }}>
               {block.sessions.map((s) => (
                 <div key={s.id}>
                   <div className="load-row" style={{ gridTemplateColumns: '1fr auto' }}>
@@ -226,13 +226,13 @@ export function ProgrammeBuilder({
                     ) : null}
                   </div>
                   {addingExerciseTo === s.id ? (
-                    <div className="card" style={{ marginTop: 8, borderColor: 'var(--accent)' }}>
+                    <div className="card" style={{ marginTop: 'var(--sp-8)', borderColor: 'var(--accent)' }}>
                       {exercises.length === 0 ? (
                         <p className="tiny">
                           No exercises in the library yet. Add one on the exercise library page first.
                         </p>
                       ) : (
-                        <div className="stack" style={{ gap: 8 }}>
+                        <div className="stack" style={{ gap: 'var(--sp-8)' }}>
                           <label>
                             <span className="label">Exercise</span>
                             <select className="field" value={exerciseId} onChange={(e) => setExerciseId(e.target.value)}>
@@ -243,7 +243,7 @@ export function ProgrammeBuilder({
                               ))}
                             </select>
                           </label>
-                          <div style={{ display: 'flex', gap: 8 }}>
+                          <div style={{ display: 'flex', gap: 'var(--sp-8)' }}>
                             <label style={{ flex: 1 }}>
                               <span className="label">Sets</span>
                               <input className="field" type="number" inputMode="numeric" min="1" value={sets} onChange={(e) => setSets(e.target.value)} />
@@ -257,7 +257,7 @@ export function ProgrammeBuilder({
                               <input className="field" type="number" inputMode="numeric" min="0" value={repsMax} onChange={(e) => setRepsMax(e.target.value)} />
                             </label>
                           </div>
-                          <div style={{ display: 'flex', gap: 8 }}>
+                          <div style={{ display: 'flex', gap: 'var(--sp-8)' }}>
                             <label style={{ flex: 1 }}>
                               <span className="label">Load basis</span>
                               <select
@@ -313,7 +313,7 @@ export function ProgrammeBuilder({
                               percentage with nothing to resolve against would show every athlete “1RM not on file”.
                             </p>
                           ) : null}
-                          <div style={{ display: 'flex', gap: 10 }}>
+                          <div style={{ display: 'flex', gap: 'var(--sp-10)' }}>
                             <button
                               type="button"
                               className="btn-primary"
@@ -340,13 +340,13 @@ export function ProgrammeBuilder({
 
           {canEdit ? (
             addingSessionTo === block.id ? (
-              <div className="card" style={{ marginTop: 10, borderColor: 'var(--accent)' }}>
-                <div className="stack" style={{ gap: 8 }}>
+              <div className="card" style={{ marginTop: 'var(--sp-10)', borderColor: 'var(--accent)' }}>
+                <div className="stack" style={{ gap: 'var(--sp-8)' }}>
                   <label>
                     <span className="label">Session name</span>
                     <input className="field" value={sessionName} onChange={(e) => setSessionName(e.target.value)} placeholder="Lower A" />
                   </label>
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  <div style={{ display: 'flex', gap: 'var(--sp-8)' }}>
                     <label style={{ flex: 1 }}>
                       <span className="label">Week</span>
                       <input className="field" type="number" inputMode="numeric" min="1" value={sessionWeek} onChange={(e) => setSessionWeek(e.target.value)} />
@@ -356,7 +356,7 @@ export function ProgrammeBuilder({
                       <input className="field" type="number" inputMode="numeric" min="1" max="7" value={sessionDay} onChange={(e) => setSessionDay(e.target.value)} />
                     </label>
                   </div>
-                  <div style={{ display: 'flex', gap: 10 }}>
+                  <div style={{ display: 'flex', gap: 'var(--sp-10)' }}>
                     <button
                       type="button"
                       className="btn-primary"
@@ -375,7 +375,7 @@ export function ProgrammeBuilder({
               <button
                 type="button"
                 className="btn-ghost"
-                style={{ marginTop: 10 }}
+                style={{ marginTop: 'var(--sp-10)' }}
                 onClick={() => {
                   setAddingSessionTo(block.id);
                   setSessionName('');
@@ -391,7 +391,7 @@ export function ProgrammeBuilder({
       {canEdit ? (
         addingBlock ? (
           <div className="card" style={{ borderColor: 'var(--accent)' }}>
-            <div className="stack" style={{ gap: 8 }}>
+            <div className="stack" style={{ gap: 'var(--sp-8)' }}>
               <label>
                 <span className="label">Block name</span>
                 <input className="field" value={blockName} onChange={(e) => setBlockName(e.target.value)} placeholder="Accumulation" />
@@ -400,7 +400,7 @@ export function ProgrammeBuilder({
                 <span className="label">Duration, weeks</span>
                 <input className="field" type="number" inputMode="numeric" min="1" max="20" value={blockWeeks} onChange={(e) => setBlockWeeks(e.target.value)} />
               </label>
-              <div style={{ display: 'flex', gap: 10 }}>
+              <div style={{ display: 'flex', gap: 'var(--sp-10)' }}>
                 <button
                   type="button"
                   className="btn-primary"
@@ -439,7 +439,7 @@ export function ProgrammeBuilder({
         )}
         {canEdit ? (
           assigning ? (
-            <div style={{ marginTop: 10 }}>
+            <div style={{ marginTop: 'var(--sp-10)' }}>
               <div className="chiprow">
                 <button type="button" className="squad-chip" aria-pressed={assignScope === 'athlete'} onClick={() => setAssignScope('athlete')}>
                   One athlete
@@ -454,7 +454,7 @@ export function ProgrammeBuilder({
                   A group
                 </button>
               </div>
-              <div style={{ marginTop: 8 }}>
+              <div style={{ marginTop: 'var(--sp-8)' }}>
                 {assignScope === 'athlete' ? (
                   <select className="field" value={assignAthleteId} onChange={(e) => setAssignAthleteId(e.target.value)}>
                     {athletes.map((a) => (
@@ -474,7 +474,7 @@ export function ProgrammeBuilder({
                 )}
               </div>
               {programmeType === 'rehab' && assignScope === 'athlete' ? (
-                <p className="tiny" style={{ marginTop: 6 }}>
+                <p className="tiny" style={{ marginTop: 'var(--sp-6)' }}>
                   Assigning this rehab programme will suspend any active gym programme this
                   athlete is already on.
                 </p>
@@ -484,12 +484,12 @@ export function ProgrammeBuilder({
                   still choosing, rather than pressing Assign and finding out from
                   a changed label. */}
               {proposedInjuryId ? (
-                <p className="tiny" style={{ marginTop: 6 }}>
+                <p className="tiny" style={{ marginTop: 'var(--sp-6)' }}>
                   This athlete has an open injury, so this goes to the medic as a
                   proposal. It will not reach the athlete until a medic signs it off.
                 </p>
               ) : null}
-              <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+              <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-10)' }}>
                 <button type="button" className="btn-primary" onClick={() => assignMutation.mutate()} disabled={assignMutation.isPending}>
                   {assignMutation.isPending
                     ? proposedInjuryId
@@ -505,7 +505,7 @@ export function ProgrammeBuilder({
               </div>
             </div>
           ) : (
-            <button type="button" className="btn-ghost" style={{ marginTop: 10 }} onClick={() => setAssigning(true)}>
+            <button type="button" className="btn-ghost" style={{ marginTop: 'var(--sp-10)' }} onClick={() => setAssigning(true)}>
               + Assign
             </button>
           )

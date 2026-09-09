@@ -109,7 +109,7 @@ export default async function CheckInPage({
             correction against it from your profile. If they do, My Data marks
             that day <b>Corrected</b> and shows you what you first reported.
           </p>
-          <p className="cap" style={{ display: 'flex', gap: 14 }}>
+          <p className="cap" style={{ display: 'flex', gap: 'var(--sp-14)' }}>
             <Link href={backHref}>Back</Link>
           </p>
         </div>

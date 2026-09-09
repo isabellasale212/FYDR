@@ -60,7 +60,7 @@ export default async function TestAthleteHistoryPage({
          * report screens use: print what is on screen, or take the data
          * away as CSV or PDF. The print stylesheet in base.css hides
          * buttons and .btn-ghost links, so these do not print themselves. */}
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
           <PrintButton />
           <a href={`/testing/${testDefId}/${athleteId}/export`} className="btn-ghost">
             Export CSV
@@ -71,7 +71,7 @@ export default async function TestAthleteHistoryPage({
         </div>
       </div>
 
-      <p className="eyebrow" style={{ marginBottom: 14 }}>
+      <p className="eyebrow" style={{ marginBottom: 'var(--sp-14)' }}>
         Squad · {orgName} · {definition.name}
       </p>
 

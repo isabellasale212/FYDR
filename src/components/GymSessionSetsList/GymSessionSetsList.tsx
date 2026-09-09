@@ -90,7 +90,7 @@ export function GymSessionSetsList({ sets }: Props) {
   }
 
   return (
-    <div className="stack" style={{ gap: 10 }}>
+    <div className="stack" style={{ gap: 'var(--sp-10)' }}>
       {error ? (
         <p className="form-error" role="alert">
           {error}

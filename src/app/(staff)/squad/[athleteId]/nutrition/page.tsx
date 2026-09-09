@@ -318,7 +318,7 @@ export default async function AthleteNutritionPage({
           </div>
           {resolved ? (
             <>
-              <div className="pp-macro-tiles" style={{ marginTop: 12 }}>
+              <div className="pp-macro-tiles" style={{ marginTop: 'var(--sp-12)' }}>
                 {[
                   { label: 'kcal', value: macro(resolved.energy_kcal) },
                   { label: 'protein g', value: macro(resolved.protein_g) },
@@ -433,11 +433,11 @@ export default async function AthleteNutritionPage({
                 ) : null}
               </p>
               {liveRange.rationale ? (
-                <p className="pp-weight-note" style={{ marginTop: 2 }}>
+                <p className="pp-weight-note" style={{ marginTop: 'var(--sp-2)' }}>
                   {liveRange.rationale}
                 </p>
               ) : null}
-              <p className="cap" style={{ marginTop: 6 }}>
+              <p className="cap" style={{ marginTop: 'var(--sp-6)' }}>
                 Set by {liveRange.set_by_name ?? 'a member of staff'} on{' '}
                 {formatDate(liveRange.effective_from, timezone)}. Staff-only &mdash;{' '}
                 {athlete.first_name} never sees this range in their own app, and it is never ranked

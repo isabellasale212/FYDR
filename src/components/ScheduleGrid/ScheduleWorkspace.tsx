@@ -800,7 +800,7 @@ export function ScheduleWorkspace({
       />
 
       {canEdit ? (
-      <div className="chiprow" style={{ marginBottom: 14 }}>
+      <div className="chiprow" style={{ marginBottom: 'var(--sp-14)' }}>
           {/* Both creation routes existed and neither was linked from anywhere —
           /schedule/new could only be reached by typing it, and fixtures had
           no create route at all until now. The two sit together because they

@@ -69,7 +69,7 @@ export function TrainingScatter({ points, selectedAthleteId, lens, hrefFor }: Pr
    * the plot's own layout and colour logic are untouched. */
   return (
     <div>
-      <p className="tiny" style={{ marginBottom: 8, color: 'var(--faint)' }}>
+      <p className="tiny" style={{ marginBottom: 'var(--sp-8)', color: 'var(--faint)' }}>
         Y-axis: high speed running (HSR), metres. X-axis: total distance (TD), metres.
       </p>
       <div className="tr-scatter-grid">

@@ -1070,6 +1070,35 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   **Six stay out, each with a reason rather than by omission:** `test:tenancy` and `test:link-athlete` need a local Postgres (there is no Docker on this machine), and `verify:tier-rls`, `verify:audit-trail`, `verify:assignment-authorship` and `verify:login-attempts` read a live hosted database. The pgTAP files in `supabase/tests/` are in the same position — nothing runs them automatically, so they are only as good as the last hand-invocation of `scripts/run-single-test.mjs`.
 
+## 0k. The design system had no type scale and three spacing tokens — added 2026-09-09
+
+- [x] **BUILT AND MIGRATED. 60 new tokens, 908 inline values retired into them, zero visual change.** Found by the Impeccable audit: 361 tokens and every family bar `--r-*` was a **colour**. That is the root cause of this repo's inline-style volume, and it reframes the "~130 inline px font sizes" already filed here — 144 of 144 inline `fontSize` values were raw numbers and **not one read a token, because there was nothing to read.**
+
+  | axis | before | after |
+  |---|---|---|
+  | colour | 361 tokens, 1,496 `var()` uses | unchanged |
+  | radius | `--r-control`, guard-enforced | unchanged |
+  | **type** | **nothing** | **32 `--fs-*` steps, rem** |
+  | **space** | **3 tokens** (`--gap-*`) | **28 `--sp-*` steps, px** |
+
+  **The scale is derived, not invented.** 705 font-size and 1,706 spacing declarations were measured across `base.css` and every `.tsx` first. Spacing turned out clean — 1,521 of 1,706 already land on a 2px ramp. Type did not: of 32 distinct sizes, **eight are half-pixel steps** (10.5, 11.5, 12.5, 13.5 …) sitting 0.5px from a real step, carrying **277 declarations between them**. That is not a design decision, it is noise from a handoff measured at a different scale.
+
+  **REM for type, PX for spacing, and the split is deliberate.** Reading an `--fs-*` token converts a value to rem as a side effect, which closes the half of the 2026-09-08 font-scaling sweep that `check-font-scaling.ts` explicitly deferred ("the staff app holds ~130 more… widening this today would fail the build on work nobody has scheduled"). Spacing stayed px because rem spacing grows padding with someone's text preference — usually right, and a real behaviour change for every layout in the product. Tokenising must not smuggle that in.
+
+  **`--gap-stack`, `--gap-body`, `--gap-grid` and `--pad-card` were left alone.** They are named rhythms with arguments attached — `--gap-body`'s comment records Isabella testing 14px on a phone and rejecting it — not ramp steps. Aliasing them would throw the reasoning away.
+
+  **A near-miss worth keeping.** The migration rewrote one `<Text>` in `src/lib/pdf.tsx` to `var(--fs-9)` before the diff was read. `@react-pdf/renderer` is a pure-JS layout engine that resolves **no** CSS custom properties, so that was a broken value, not a token — it would have rendered the empty-table caption at an invalid size in every PDF export. The file is now excluded, the same class of exception as `@media print` keeping `pt`.
+
+  **How "no visual change" is proven** without rendering 81 routes: `check-scale-tokens.ts` asserts **every `--fs-N` is N/16 rem and every `--sp-N` is Npx**. If the name equals the value, a site that used to say `13` and now says `var(--fs-13)` computes to exactly what it did before. Confirmed in a real render on two staff screens: 909 inline token declarations, every one resolving to the number its name encodes.
+
+- [ ] **OPEN, Isabella's call: collapse the 16 legacy type steps.** They are tokenised so nothing is raw, and marked `collapse candidate` with their declaration counts. Collapsing them moves **277 declarations by 0.5px across 81 routes** — an aesthetic decision, and not one to take as a side effect of tokenising. Because they are tokens now, the collapse is a **16-line edit in `tokens.css`**, not a 307-site migration. Same contract for the 12 legacy spacing steps (odd values 1px off a ramp step, 184 declarations).
+
+- [ ] **OPEN: the `base.css` tranche.** The migration covered the **inline** values, which is where the audit's finding was. `base.css` still holds **574 raw font-size** and **793 raw spacing** declarations. They are less harmful — centralised behind classes rather than scattered through JSX — but they are the other half of "one source of truth", and every value they use already has a token.
+
+- [ ] **OPEN: rem spacing.** See above. Would make layout grow with the reader's text preference. A real accessibility improvement and a real behaviour change; wants its own decision and its own verification pass.
+
+- [ ] **Found in passing, not fixed:** five inline `marginTop: 14` declarations on `.card` in `reports/training/page.tsx` (lines 445, 454, 467, 691, 776) have **never had any effect** — `base.css:9228` sets `.tr-lower-main > .card { margin-top: 0 !important }`, and an important author rule beats an inline style. They computed 0 before the migration and compute 0 after. Harmless, but misleading to read: the next person to want that margin will fight the `!important` instead of deleting the dead line.
+
 ## 1. Data & Schema — confirmed already built by reading the raw files directly
 
 - [x] Multi-tenancy: `org_id` on 56 of 58 tables, RLS enabled with a policy on all 58

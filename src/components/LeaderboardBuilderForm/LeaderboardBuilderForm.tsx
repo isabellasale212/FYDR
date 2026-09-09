@@ -97,7 +97,7 @@ export function LeaderboardBuilderForm({ orgId, userId, catalogue, groups }: Pro
   return (
     <form onSubmit={onSubmit} className="card" noValidate>
       <p className="label">1. Metric</p>
-      <div className="chiprow" style={{ marginTop: 6, flexWrap: 'wrap' }}>
+      <div className="chiprow" style={{ marginTop: 'var(--sp-6)', flexWrap: 'wrap' }}>
         {eligible.map((m) => (
           <button
             key={m.key}
@@ -115,11 +115,11 @@ export function LeaderboardBuilderForm({ orgId, userId, catalogue, groups }: Pro
           the nine GPS metrics here too, disabled on plan rather than on principle — two
           genuinely different reasons, and each row states its own. The copy no longer
           claims to know which one applies. */}
-      <p className="tiny" style={{ marginTop: 8 }}>
+      <p className="tiny" style={{ marginTop: 'var(--sp-8)' }}>
         Not every metric can be ranked. Wellness and body composition never can, and some
         depend on your plan. Tap one below to see why.
       </p>
-      <div className="chiprow" style={{ marginTop: 6, flexWrap: 'wrap' }}>
+      <div className="chiprow" style={{ marginTop: 'var(--sp-6)', flexWrap: 'wrap' }}>
         {ineligible.map((m) => (
           <button
             key={m.key}
@@ -136,7 +136,7 @@ export function LeaderboardBuilderForm({ orgId, userId, catalogue, groups }: Pro
       </div>
       {ineligible.map((m) =>
         showWhyDisabled === m.key ? (
-          <div className="note" key={m.key} id={`why-${m.key}`} role="alertdialog" style={{ marginTop: 10 }}>
+          <div className="note" key={m.key} id={`why-${m.key}`} role="alertdialog" style={{ marginTop: 'var(--sp-10)' }}>
             <div className="note-glyph">!</div>
             <p className="note-text">
               <b>{m.label} cannot be ranked.</b> {m.ineligible_reason}
@@ -145,10 +145,10 @@ export function LeaderboardBuilderForm({ orgId, userId, catalogue, groups }: Pro
         ) : null,
       )}
 
-      <p className="label" style={{ marginTop: 18 }}>
+      <p className="label" style={{ marginTop: 'var(--sp-18)' }}>
         2. Aggregation
       </p>
-      <div className="chiprow" style={{ marginTop: 6 }}>
+      <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
         {(metric?.aggregations ?? []).map((a) => (
           <button
             key={a}
@@ -162,10 +162,10 @@ export function LeaderboardBuilderForm({ orgId, userId, catalogue, groups }: Pro
         ))}
       </div>
 
-      <p className="label" style={{ marginTop: 18 }}>
+      <p className="label" style={{ marginTop: 'var(--sp-18)' }}>
         3. Population
       </p>
-      <div className="chiprow" style={{ marginTop: 6 }}>
+      <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
         <button
           type="button"
           className="squad-chip"
@@ -184,7 +184,7 @@ export function LeaderboardBuilderForm({ orgId, userId, catalogue, groups }: Pro
         </button>
       </div>
       {populationType === 'group' ? (
-        <div className="chiprow" style={{ marginTop: 6 }}>
+        <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
           {groups.map((g) => (
             <button
               key={g.id}
@@ -199,10 +199,10 @@ export function LeaderboardBuilderForm({ orgId, userId, catalogue, groups }: Pro
         </div>
       ) : null}
 
-      <p className="label" style={{ marginTop: 18 }}>
+      <p className="label" style={{ marginTop: 'var(--sp-18)' }}>
         4. Window
       </p>
-      <div className="chiprow" style={{ marginTop: 6 }}>
+      <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
         {WINDOWS.map((w) => (
           <button
             key={w.value}
@@ -216,10 +216,10 @@ export function LeaderboardBuilderForm({ orgId, userId, catalogue, groups }: Pro
         ))}
       </div>
 
-      <p className="label" style={{ marginTop: 18 }}>
+      <p className="label" style={{ marginTop: 'var(--sp-18)' }}>
         5. Visibility
       </p>
-      <div className="chiprow" style={{ marginTop: 6 }}>
+      <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
         <button
           type="button"
           className="squad-chip"
@@ -238,14 +238,14 @@ export function LeaderboardBuilderForm({ orgId, userId, catalogue, groups }: Pro
         </button>
       </div>
       {visibility === 'published' ? (
-        <p className="tiny" style={{ marginTop: 6 }}>
+        <p className="tiny" style={{ marginTop: 'var(--sp-6)' }}>
           Athletes in the population will see every ranked name and value, and their own
           position. Under-18 athletes are off by default and only appear if they choose to
           be. Every athlete can leave at any time.
         </p>
       ) : null}
 
-      <label className="label" htmlFor="lb-name" style={{ marginTop: 18 }}>
+      <label className="label" htmlFor="lb-name" style={{ marginTop: 'var(--sp-18)' }}>
         6. Name
       </label>
       <input
@@ -258,12 +258,12 @@ export function LeaderboardBuilderForm({ orgId, userId, catalogue, groups }: Pro
       />
 
       {error ? (
-        <p className="form-error" role="alert" style={{ marginTop: 14 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-14)' }}>
           {error}
         </p>
       ) : null}
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-18)' }}>
         <button type="submit" className="btn-primary" disabled={mutation.isPending}>
           {mutation.isPending ? 'Saving…' : 'Save'}
         </button>

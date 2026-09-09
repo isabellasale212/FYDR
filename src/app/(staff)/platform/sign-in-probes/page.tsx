@@ -70,7 +70,7 @@ export default async function SignInProbesPage() {
         </div>
       </div>
 
-      <p className="tiny" style={{ marginBottom: 14 }}>
+      <p className="tiny" style={{ marginBottom: 'var(--sp-14)' }}>
         Sign-in attempts against email addresses that belong to no organisation on this
         installation. Attempts against real accounts are that club&rsquo;s own business and
         appear in their own audit log as <code>auth.sign_in_failed</code>.
@@ -78,7 +78,7 @@ export default async function SignInProbesPage() {
 
       {/* WHAT THIS SCREEN CANNOT TELL YOU, on the screen rather than left for
           somebody to read a short list as meaning nothing is happening. */}
-      <div className="banner" role="note" style={{ marginBottom: 18 }}>
+      <div className="banner" role="note" style={{ marginBottom: 'var(--sp-18)' }}>
         <div>
           <strong>No source address is recorded.</strong> <code>login_attempts</code> has no IP
           column, so &ldquo;one address tried across many clubs&rdquo; is answerable below and
@@ -94,10 +94,10 @@ export default async function SignInProbesPage() {
         </div>
       </div>
 
-      <p className="sect" style={{ marginBottom: 8 }}>
+      <p className="sect" style={{ marginBottom: 'var(--sp-8)' }}>
         Unrelated domains · {probeRows.length}
       </p>
-      <p className="tiny" style={{ marginBottom: 10 }}>
+      <p className="tiny" style={{ marginBottom: 'var(--sp-10)' }}>
         Domains more than two edits from any this installation serves. That is a statement about
         the domain, not an accusation — most will be equally innocent.
       </p>
@@ -110,7 +110,7 @@ export default async function SignInProbesPage() {
       <p className="sect" style={{ margin: '26px 0 8px' }}>
         Likely mistyped · {typoRows.length}
       </p>
-      <p className="tiny" style={{ marginBottom: 10 }}>
+      <p className="tiny" style={{ marginBottom: 'var(--sp-10)' }}>
         Within two edits of a real club domain, or that domain exactly with an unrecognised name.
         Almost always somebody getting their own address wrong — a support question, not a
         security one.

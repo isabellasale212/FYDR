@@ -134,7 +134,7 @@ export default async function InjuryAvailabilityReportPage({
           sub: (
             <div className="rhead-sub">
               {isMedical ? (
-              <div className="note" style={{ marginBottom: 14, borderColor: 'var(--warn)' }}>
+              <div className="note" style={{ marginBottom: 'var(--sp-14)', borderColor: 'var(--warn)' }}>
               <div className="note-glyph">i</div>
               <p className="note-text">
               <b>Medical in confidence.</b> This version includes clinical detail not shown to
@@ -143,12 +143,12 @@ export default async function InjuryAvailabilityReportPage({
               </div>
               ) : null}
 
-              <p className="eyebrow" style={{ marginBottom: 10 }}>
+              <p className="eyebrow" style={{ marginBottom: 'var(--sp-10)' }}>
               {groupScopeLabel(groups, groupIds)} · {orgName} · {period.label} · {formatDate(fromDate, timezone)} to {formatDate(today, timezone)} · {report.summary.athleteCount} athletes
               </p>
 
               {caveat ? (
-              <p className="cap" style={{ marginBottom: 12 }}>
+              <p className="cap" style={{ marginBottom: 'var(--sp-12)' }}>
               {caveat}
               </p>
               ) : null}
@@ -413,9 +413,9 @@ export default async function InjuryAvailabilityReportPage({
                     </div>
                   ))}
                   {isMedical && report.clinical && report.clinical.byBodyAreaOfNewInjuries.length > 0 ? (
-                    <div style={{ marginTop: 14 }}>
+                    <div style={{ marginTop: 'var(--sp-14)' }}>
                       <p className="label">New injuries by body area</p>
-                      <div className="chiprow" style={{ marginTop: 8 }}>
+                      <div className="chiprow" style={{ marginTop: 'var(--sp-8)' }}>
                         {report.clinical.byBodyAreaOfNewInjuries.map((cl) => (
                           <span key={cl.bodyArea} className="chip-static">
                             {enumLabel(cl.bodyArea)} · {cl.count}
@@ -450,7 +450,7 @@ export default async function InjuryAvailabilityReportPage({
                   {report.byUnit.length === 0 ? (
                     <p className="tiny" style={{ color: 'var(--muted)' }}>No days lost in this period.</p>
                   ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-8)' }}>
                       {report.byUnit.map((u) => (
                         <div key={u.unit} className="ath-loadday">
                           <span className="ath-loadday-day" style={{ width: 110 }}>{u.unit}</span>

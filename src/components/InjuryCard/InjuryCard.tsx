@@ -58,7 +58,7 @@ function ClinicalField({ label, value }: { label: string; value: string | null }
   return (
     <div>
       <span className="label">{label}</span>
-      <span className="nm" style={{ display: 'block', marginTop: 2 }}>
+      <span className="nm" style={{ display: 'block', marginTop: 'var(--sp-2)' }}>
         {value ?? '—'}
       </span>
     </div>
@@ -79,7 +79,7 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
      check cannot see. */
   return (
     <section className="card pp-card" aria-labelledby="pp-injury-title">
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 'var(--sp-10)' }}>
         <h2 className="card-title" id="pp-injury-title">
           Injury
         </h2>
@@ -104,13 +104,13 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
         </p>
       ) : (
         <>
-          <div style={{ marginTop: 8 }}>
+          <div style={{ marginTop: 'var(--sp-8)' }}>
             <span className={`pill ${STATUS_TONE[active.status] ?? 'pill-neutral'}`}>
               {enumLabel(active.status)}
             </span>
           </div>
 
-          <p className="nm" style={{ fontSize: 15, margin: '10px 0 0' }}>
+          <p className="nm" style={{ fontSize: 'var(--fs-15)', margin: '10px 0 0' }}>
             {bodyAreaPhrase(active)}
           </p>
 
@@ -129,7 +129,7 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
 
               <div
                 className="pp-clinical-grid"
-                style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, rowGap: 14 }}
+                style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--sp-14)', rowGap: 'var(--sp-14)' }}
               >
                 <ClinicalField label="Diagnosis" value={clinical.diagnosis} />
                 <ClinicalField label="Mechanism" value={clinical.mechanism} />
@@ -163,7 +163,7 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
 
               {clinical.clinical_notes ? (
                 <>
-                  <span className="nm" style={{ display: 'block', marginTop: 12 }}>
+                  <span className="nm" style={{ display: 'block', marginTop: 'var(--sp-12)' }}>
                     Notes
                   </span>
                   <p className="sub" style={{ margin: '2px 0 0' }}>
@@ -186,7 +186,7 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
               {canEditClinical && active ? (
                 <>
                   <hr className="hr" />
-                  <div style={{ marginTop: 12 }}>
+                  <div style={{ marginTop: 'var(--sp-12)' }}>
                     <span className="label">Rehab programme</span>
                     <p className="import-sub" style={{ margin: '4px 0 0' }}>
                       {programmeStatus === null || programmeStatus.kind === 'none' ? (
@@ -210,7 +210,7 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
                     <Link
                       href={`/injuries/${active.id}`}
                       className="pp-link"
-                      style={{ display: 'inline-block', marginTop: 8 }}
+                      style={{ display: 'inline-block', marginTop: 'var(--sp-8)' }}
                     >
                       Manage injury &amp; programme →
                     </Link>
@@ -222,7 +222,7 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
                 /* Collapsed by default and native rather than stateful: a medic
                    working the current injury does not need last season taking up
                    space, and <details> keeps this a server component. */
-                <details className="disclose pp-past-injuries" style={{ marginTop: 14 }}>
+                <details className="disclose pp-past-injuries" style={{ marginTop: 'var(--sp-14)' }}>
                   {/* The app's own disclosure pattern rather than a bespoke one:
                       .disclose already hides the native marker, puts a caret
                       AFTER the label and rotates it on open, which is what the
@@ -231,11 +231,11 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
                       the far edge, and the label is accent-coloured, both as in
                       the reference. */}
                   <summary>Past injuries ({past.length})</summary>
-                  <div className="pp-injury-list" style={{ marginTop: 8 }}>
+                  <div className="pp-injury-list" style={{ marginTop: 'var(--sp-8)' }}>
                     {past.map((p) => (
                       <p className="sub" key={p.id} style={{ margin: '0 0 6px' }}>
                         <span className="pill pill-neutral">Closed</span>{' '}
-                        <b className="nm" style={{ fontSize: 13 }}>
+                        <b className="nm" style={{ fontSize: 'var(--fs-13)' }}>
                           {bodyAreaPhrase(p)}
                         </b>{' '}
                         {formatDate(p.onset_date, timezone)}

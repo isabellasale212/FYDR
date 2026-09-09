@@ -64,13 +64,13 @@ export default async function GroupDetailPage({
           <p className="eyebrow">
             <Link href="/settings/groups">Groups</Link> · {enumLabel(group.group_type)}
           </p>
-          <h1 style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <h1 style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)' }}>
             <GroupSwatch colour={group.colour} size={16} />
             {group.name}
           </h1>
         </div>
         {canEditGroup ? (
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
             <GroupEditForm
               orgId={orgId}
               groupId={group.id}
@@ -144,10 +144,10 @@ export default async function GroupDetailPage({
                   {initials(member)}
                 </span>
                 <span style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700 }}>
+                  <span style={{ fontSize: 'var(--fs-14)', fontWeight: 700 }}>
                     {member.first_name} {member.last_name}
                   </span>
-                  <span className="tiny" style={{ display: 'block', marginTop: 2 }}>
+                  <span className="tiny" style={{ display: 'block', marginTop: 'var(--sp-2)' }}>
                     {formatDate(member.added_at, timezone)} to {formatDate(member.removed_at, timezone)}
                   </span>
                 </span>

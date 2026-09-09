@@ -148,7 +148,7 @@ export default async function MyBoardDetailPage({
         <span style={{ width: 44 }} />
       </div>
 
-      <p className="tiny" style={{ marginBottom: 10 }}>
+      <p className="tiny" style={{ marginBottom: 'var(--sp-10)' }}>
         {/* No selectedNames arg here either — same RLS reasoning as the boards list
             page; see fetchAthleteNames' own comment in leaderboards.ts. */}
         {populationLabel(board)} ·{' '}
@@ -249,7 +249,7 @@ export default async function MyBoardDetailPage({
         never shown here.
       </p>
 
-      <div style={{ marginTop: 14 }}>
+      <div style={{ marginTop: 'var(--sp-14)' }}>
         <LeaveLeaderboardButton
           orgId={orgId}
           athleteId={athleteId}

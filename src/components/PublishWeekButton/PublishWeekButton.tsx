@@ -48,7 +48,7 @@ export function PublishWeekButton({ orgId, userId, weekStart, draftCount, canMan
         {mutation.isPending ? 'Publishing…' : `Publish this week (${draftCount} draft${draftCount === 1 ? '' : 's'})`}
       </button>
       {error ? (
-        <p className="form-error" role="alert" style={{ marginTop: 8 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-8)' }}>
           {error}
         </p>
       ) : null}

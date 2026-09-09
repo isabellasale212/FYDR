@@ -179,7 +179,7 @@ export function PlayerProfileBio({
             <input
               id="pp-edit-position"
               className="field"
-              style={{ marginTop: 3, minHeight: 36, fontSize: 13.5 }}
+              style={{ marginTop: 'var(--sp-3)', minHeight: 36, fontSize: 'var(--fs-13-5)' }}
               value={position}
               onChange={(e) => setPosition(e.target.value)}
               placeholder="e.g. Fly-half"
@@ -193,7 +193,7 @@ export function PlayerProfileBio({
             <input
               id="pp-edit-squad-number"
               className="field"
-              style={{ marginTop: 3, minHeight: 36, fontSize: 13.5 }}
+              style={{ marginTop: 'var(--sp-3)', minHeight: 36, fontSize: 'var(--fs-13-5)' }}
               type="number"
               min={0}
               max={999}
@@ -208,7 +208,7 @@ export function PlayerProfileBio({
             <input
               id="pp-edit-height"
               className="field"
-              style={{ marginTop: 3, minHeight: 36, fontSize: 13.5 }}
+              style={{ marginTop: 'var(--sp-3)', minHeight: 36, fontSize: 'var(--fs-13-5)' }}
               type="number"
               min={0}
               step="0.1"
@@ -227,7 +227,7 @@ export function PlayerProfileBio({
             <select
               id="pp-edit-hand"
               className="field"
-              style={{ marginTop: 3, minHeight: 36, fontSize: 13.5 }}
+              style={{ marginTop: 'var(--sp-3)', minHeight: 36, fontSize: 'var(--fs-13-5)' }}
               value={dominantSide}
               onChange={(e) => setDominantSide(e.target.value as DominantSide | '')}
             >
@@ -244,7 +244,7 @@ export function PlayerProfileBio({
             <div className="v">{weightDisplay}</div>
           </div>
 
-          <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 12, marginTop: 6 }}>
+          <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 'var(--sp-12)', marginTop: 'var(--sp-6)' }}>
             {error ? (
               <p className="form-error" role="alert" style={{ margin: 0 }}>
                 {error}

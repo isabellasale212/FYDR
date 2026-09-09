@@ -97,12 +97,12 @@ export function RehabGroupBoard({ orgId, userId, groups, timezone, members, canA
           <section key={group.id} className="card" aria-labelledby={`rehab-${group.id}`}>
             <h2 className="card-title" id={`rehab-${group.id}`}>
               {group.name} <span className="tiny num">{rows.length}</span>
-              {groupPhase ? <span className="pill pill-neutral" style={{ marginLeft: 8 }}>{groupPhase}</span> : null}
+              {groupPhase ? <span className="pill pill-neutral" style={{ marginLeft: 'var(--sp-8)' }}>{groupPhase}</span> : null}
             </h2>
             {rows.length === 0 ? (
               <p className="tiny">No athletes.{canAllocate ? ' Use a chip below to add one.' : ''}</p>
             ) : (
-              <div className="stack" style={{ gap: 6 }}>
+              <div className="stack" style={{ gap: 'var(--sp-6)' }}>
                 {rows.map((m) => (
                   <MemberRow
                     key={m.athlete_id}
@@ -136,12 +136,12 @@ export function RehabGroupBoard({ orgId, userId, groups, timezone, members, canA
         {unallocated.length === 0 ? (
           <p className="tiny">Every athlete in rehabilitation is on a group.</p>
         ) : (
-          <div className="stack" style={{ gap: 10 }}>
+          <div className="stack" style={{ gap: 'var(--sp-10)' }}>
             {unallocated.map((m) => (
               <div key={m.athlete_id}>
                 <MemberSummary member={m} timezone={timezone} />
                 {canAllocate && groups.length > 0 ? (
-                  <div className="chiprow" style={{ marginTop: 6 }}>
+                  <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
                     {groups.map((group) => (
                       <button
                         key={group.id}
@@ -162,7 +162,7 @@ export function RehabGroupBoard({ orgId, userId, groups, timezone, members, canA
           </div>
         )}
         {canAllocate && groups.length === 0 ? (
-          <p className="tiny" style={{ marginTop: 8 }}>
+          <p className="tiny" style={{ marginTop: 'var(--sp-8)' }}>
             No rehab groups exist yet. Create one in Groups (group type &ldquo;rehab&rdquo;)
             before allocating.
           </p>
@@ -174,7 +174,7 @@ export function RehabGroupBoard({ orgId, userId, groups, timezone, members, canA
 
 function MemberSummary({ member, timezone }: { member: RehabMember; timezone: string }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)', flexWrap: 'wrap' }}>
       <span className="nm">
         {member.first_name} {member.last_name}
       </span>
@@ -241,7 +241,7 @@ function MemberRow({
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)', flexWrap: 'wrap' }}>
         <MemberSummary member={member} timezone={timezone} />
         <span style={{ flex: 1 }} />
         {member.phase ? (
@@ -262,12 +262,12 @@ function MemberRow({
         ) : null}
       </div>
       {mismatch ? (
-        <p className="tiny" style={{ marginTop: 2, color: 'var(--warn-text)' }}>
+        <p className="tiny" style={{ marginTop: 'var(--sp-2)', color: 'var(--warn-text)' }}>
           {member.phase}, the group is {groupPhase}.
         </p>
       ) : null}
       {editing ? (
-        <div className="card" style={{ marginTop: 8, borderColor: 'var(--accent)' }}>
+        <div className="card" style={{ marginTop: 'var(--sp-8)', borderColor: 'var(--accent)' }}>
           <input
             className="field"
             value={phaseDraft}
@@ -275,7 +275,7 @@ function MemberRow({
             placeholder="Phase 3, Return to running, etc."
             autoFocus
           />
-          <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+          <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-8)' }}>
             <button type="button" className="btn-primary" onClick={onSavePhase} disabled={savingPhase}>
               {savingPhase ? 'Saving…' : 'Save'}
             </button>

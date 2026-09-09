@@ -375,7 +375,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
         </div>
       </div>
 
-      <div className="cmp-against" style={{ marginBottom: 14 }}>
+      <div className="cmp-against" style={{ marginBottom: 'var(--sp-14)' }}>
         <span className="cmp-against-label">Compare against</span>
         <GroupFilter groups={groups} selected={groupIds} />
         <span className="cmp-against-n">
@@ -402,7 +402,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
               heading="Training load is a Premium board"
               body="Weekly GPS distance per athlete, as bars with a trend line over them. It reads from GPS records, which arrive through the Premium import. Everything else on this screen is on your plan: wellness against each athlete's own baseline, gym volume, and the acute:chronic ratio — which your plan computes from RPE and session duration."
               metadata="Premium · GPS distance · 12 weeks"
-              style={{ marginBottom: 14 }}
+              style={{ marginBottom: 'var(--sp-14)' }}
             />
           )}
           {boardData.map(({ board, metric, days, seriesA, seriesB }) => {

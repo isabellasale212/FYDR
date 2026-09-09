@@ -76,14 +76,14 @@ export function GpsImportForm() {
           onChange={(event) => setFileName(event.target.files?.[0]?.name ?? null)}
         />
         {fileName ? (
-          <p className="tiny" style={{ marginTop: 4 }}>
+          <p className="tiny" style={{ marginTop: 'var(--sp-4)' }}>
             {fileName}
           </p>
         ) : null}
       </div>
 
       {error ? (
-        <p className="banner" role="alert" style={{ marginBottom: 12 }}>
+        <p className="banner" role="alert" style={{ marginBottom: 'var(--sp-12)' }}>
           <span className="g g-bad" aria-hidden="true">
             ✕
           </span>
@@ -92,7 +92,7 @@ export function GpsImportForm() {
       ) : null}
 
       {result?.ok ? (
-        <p className="banner" role="status" style={{ marginBottom: 12 }}>
+        <p className="banner" role="status" style={{ marginBottom: 'var(--sp-12)' }}>
           <span className="g g-good" aria-hidden="true">
             ✓
           </span>
@@ -104,7 +104,7 @@ export function GpsImportForm() {
       ) : null}
 
       {result && result.rejected.length > 0 ? (
-        <div style={{ marginBottom: 12, overflowX: 'auto' }}>
+        <div style={{ marginBottom: 'var(--sp-12)', overflowX: 'auto' }}>
           <table className="tbl">
             <thead>
               <tr>

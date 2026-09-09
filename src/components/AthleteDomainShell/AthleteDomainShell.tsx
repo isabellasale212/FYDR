@@ -70,7 +70,7 @@ export function ViewOnlyNotice({
         place only.
       </p>
       {note ? (
-        <p className="cap" style={{ marginTop: 6 }}>
+        <p className="cap" style={{ marginTop: 'var(--sp-6)' }}>
           {note}
         </p>
       ) : null}

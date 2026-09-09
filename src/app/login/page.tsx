@@ -168,7 +168,7 @@ export default function LoginPage() {
       </section>
 
       <div className="launch-page">
-        <div className="launch-step" style={{ display: 'grid', gap: 8 }}>
+        <div className="launch-step" style={{ display: 'grid', gap: 'var(--sp-8)' }}>
           <p className="eyebrow launch-narrow-only">Athlete and staff</p>
           <h1 className="launch-title">Sign in</h1>
           <p className="launch-sub">

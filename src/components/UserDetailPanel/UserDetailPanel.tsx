@@ -154,7 +154,7 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezo
   return (
     <div className="stack">
       <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--sp-10)' }}>
           <div>
             <p className="nm">
               {user.email} {isSelf ? <span className="tiny">(you)</span> : null}
@@ -186,10 +186,10 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezo
                 </button>
               ))}
             </div>
-            <p className="cap" style={{ marginTop: 10 }}>
+            <p className="cap" style={{ marginTop: 'var(--sp-10)' }}>
               Roles are additive. This user has the union of every ticked role&apos;s permissions.
             </p>
-            <ul className="tiny" style={{ marginTop: 8, paddingLeft: 18 }}>
+            <ul className="tiny" style={{ marginTop: 'var(--sp-8)', paddingLeft: 'var(--sp-18)' }}>
               {user.roleGrants.map((g) => (
                 <li key={g.role}>
                   {enumLabel(g.role)} — granted {formatDate(g.granted_at, timezone)}
@@ -197,7 +197,7 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezo
                 </li>
               ))}
             </ul>
-            <p className="cap" style={{ marginTop: 8 }}>
+            <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
               Removing a role does not force a log-out on other devices — if access must end
               immediately, deactivate the account instead.
             </p>
@@ -222,7 +222,7 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezo
             <button type="button" className="btn-ghost" disabled={busyStatus || isSelf} onClick={toggleStatus}>
               {busyStatus ? 'Working…' : status === 'deactivated' ? 'Reactivate user' : 'Deactivate user'}
             </button>
-            <p className="cap" style={{ marginTop: 8 }}>
+            <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
               {status === 'deactivated' ? 'Signs them back in.' : 'Signs them out and blocks sign in. Nothing is deleted.'}
               {isSelf ? ' You cannot deactivate your own account.' : ''}
             </p>
@@ -240,7 +240,7 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezo
               <>
                 <p className="sub">Not linked.</p>
                 {roles.includes('athlete') && unlinkedAthletes.length > 0 ? (
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
+                  <div style={{ display: 'flex', gap: 'var(--sp-8)', alignItems: 'center', marginTop: 'var(--sp-8)' }}>
                     <select className="field" style={{ minHeight: 32, padding: '4px 8px', width: 'auto' }} value={linkChoice} onChange={(e) => setLinkChoice(e.target.value)}>
                       <option value="">Pick one to link</option>
                       {unlinkedAthletes.map((a) => (
@@ -281,11 +281,11 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezo
             </div>
             {mfa ? (
               !confirmingMfaRemove ? (
-                <button type="button" className="btn-ghost" style={{ marginTop: 8 }} disabled={busyMfa} onClick={() => setConfirmingMfaRemove(true)}>
+                <button type="button" className="btn-ghost" style={{ marginTop: 'var(--sp-8)' }} disabled={busyMfa} onClick={() => setConfirmingMfaRemove(true)}>
                   Remove MFA factor
                 </button>
               ) : (
-                <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: 'var(--sp-8)', marginTop: 'var(--sp-8)', flexWrap: 'wrap', alignItems: 'center' }}>
                   <span className="tiny" style={{ color: 'var(--bad-text)' }}>
                     Remove this user&apos;s MFA factor?
                   </span>
@@ -299,7 +299,7 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezo
               )
             ) : null}
             {mfa ? (
-              <p className="cap" style={{ marginTop: 8 }}>
+              <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
                 There is no recovery-code system — this is the only way back in for someone
                 who has lost their authenticator. They will need to re-enrol from Settings
                 once they can sign in again.

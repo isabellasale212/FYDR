@@ -90,12 +90,12 @@ export default async function SettingsPage() {
       <div className="set-body">
         {/* -------- §3 Plan card -------- */}
         <section className="card set-card" aria-labelledby="plan-title" id="plan">
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 16, alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 'var(--sp-16)', alignItems: 'center' }}>
             <div style={{ minWidth: 0 }}>
               <h2 className="card-title" id="plan-title" style={{ margin: 0 }}>
                 Plan
               </h2>
-              <p style={{ fontSize: 12.5, color: 'var(--muted)', margin: '2px 0 0' }}>
+              <p style={{ fontSize: 'var(--fs-12-5)', color: 'var(--muted)', margin: '2px 0 0' }}>
                 {onPremium
                   ? 'Premium · GPS, the training report, the analytics bar chart and Apple Health are on.'
                   : 'Basic · wellness, gym, nutrition, schedule, reports and exports.'}
@@ -105,7 +105,7 @@ export default async function SettingsPage() {
                   and the training report gone and reasonably report it as a
                   fault. Says what is happening and how to undo it. */}
               {previewingTier ? (
-                <p className="pill" style={{ background: 'var(--wash-warn)', color: 'var(--warn-pill-text)', marginTop: 8 }}>
+                <p className="pill" style={{ background: 'var(--wash-warn)', color: 'var(--warn-pill-text)', marginTop: 'var(--sp-8)' }}>
                   Previewing Basic · this club’s real plan is still Premium
                 </p>
               ) : null}
@@ -122,7 +122,7 @@ export default async function SettingsPage() {
 
           <div className="plan-compare">
             <div className="plan-compare-card" data-active={!onPremium}>
-              <p style={{ fontSize: 13.5, fontWeight: 700, margin: 0 }}>Basic</p>
+              <p style={{ fontSize: 'var(--fs-13-5)', fontWeight: 700, margin: 0 }}>Basic</p>
               <div className="plan-compare-list">
                 <span>Gym programme</span>
                 <span>Nutrition</span>
@@ -145,8 +145,8 @@ export default async function SettingsPage() {
               </div>
             </div>
             <div className="plan-compare-card" data-active={onPremium}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <p style={{ fontSize: 13.5, fontWeight: 700, margin: 0 }}>Premium</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-8)' }}>
+                <p style={{ fontSize: 'var(--fs-13-5)', fontWeight: 700, margin: 0 }}>Premium</p>
                 {/* The design gives this badge the WARN pill, not the highlight
                     gold the gated-row "Premium" markers use. Two different jobs:
                     those mark a row as out of reach, this labels what the
@@ -176,18 +176,18 @@ export default async function SettingsPage() {
           <h2 className="card-title" id="integrations-title" style={{ margin: 0 }}>
             Integrations
           </h2>
-          <p style={{ fontSize: 12.5, color: 'var(--muted)', margin: '2px 0 0' }}>
+          <p style={{ fontSize: 'var(--fs-12-5)', color: 'var(--muted)', margin: '2px 0 0' }}>
             Devices and files that write into Fydr.
           </p>
 
-          <div style={{ marginTop: 12 }}>
+          <div style={{ marginTop: 'var(--sp-12)' }}>
             <div className="set-row">
               <div style={{ minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                  <span style={{ fontSize: 14, fontWeight: 600 }}>Catapult Openfield</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-9)' }}>
+                  <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600 }}>Catapult Openfield</span>
                   {!onPremium ? <span className="gold-badge">Premium</span> : null}
                 </div>
-                <p style={{ fontSize: 12, color: 'var(--muted)', margin: '2px 0 0' }}>
+                <p style={{ fontSize: 'var(--fs-12)', color: 'var(--muted)', margin: '2px 0 0' }}>
                   GPS session files, CSV import
                 </p>
               </div>
@@ -204,11 +204,11 @@ export default async function SettingsPage() {
 
             <div className="set-row">
               <div style={{ minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                  <span style={{ fontSize: 14, fontWeight: 600 }}>Apple Health</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-9)' }}>
+                  <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600 }}>Apple Health</span>
                   {!onPremium ? <span className="gold-badge">Premium</span> : null}
                 </div>
-                <p style={{ fontSize: 12, color: 'var(--muted)', margin: '2px 0 0' }}>
+                <p style={{ fontSize: 'var(--fs-12)', color: 'var(--muted)', margin: '2px 0 0' }}>
                   Sleep, resting heart rate and body mass from the athlete&apos;s phone
                 </p>
               </div>
@@ -265,11 +265,11 @@ export default async function SettingsPage() {
                 the same Premium treatment as the two GPS rows beside it. */}
             <div className="set-row">
               <div style={{ minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 14, fontWeight: 600 }}>Vendor CSV import</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-8)' }}>
+                  <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600 }}>Vendor CSV import</span>
                   {!onPremium ? <span className="gold-badge">Premium</span> : null}
                 </div>
-                <p style={{ fontSize: 12, color: 'var(--muted)', margin: '2px 0 0' }}>
+                <p style={{ fontSize: 'var(--fs-12)', color: 'var(--muted)', margin: '2px 0 0' }}>
                   Catapult, STATSports and Polar GPS session files
                 </p>
               </div>
@@ -290,8 +290,8 @@ export default async function SettingsPage() {
         <section className="card set-card" style={{ padding: '6px 18px 6px' }} aria-label="More settings">
           <Link href="/settings/thresholds" className="set-list-row">
             <span>
-              <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block' }}>Thresholds</span>
-              <span style={{ fontSize: 12, color: 'var(--faint)' }}>The rules that raise a flag</span>
+              <span style={{ fontSize: 'var(--fs-14-5)', fontWeight: 600, display: 'block' }}>Thresholds</span>
+              <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>The rules that raise a flag</span>
             </span>
             {/* An amber pill, not faint text. "Fydr Settings.dc.html" gives this
                 count the warn pill (fill 0.28, text #6b4708) — which is what
@@ -299,20 +299,20 @@ export default async function SettingsPage() {
                 thresholds is a standing state a coach should be able to read
                 without hunting for it, and at --faint it read as a caption. */}
             <span className="pill pill-warn num">{activeThresholds.length} active</span>
-            <span aria-hidden="true" style={{ fontSize: 16, color: 'var(--faint)' }}>
+            <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
               ›
             </span>
           </Link>
 
           <a href="#password" className="set-list-row">
             <span>
-              <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block' }}>Password and two-factor</span>
-              <span style={{ fontSize: 12, color: 'var(--faint)' }}>Staff sign in</span>
+              <span style={{ fontSize: 'var(--fs-14-5)', fontWeight: 600, display: 'block' }}>Password and two-factor</span>
+              <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>Staff sign in</span>
             </span>
-            <span className="num" style={{ fontSize: 11.5, color: 'var(--faint)' }}>
+            <span className="num" style={{ fontSize: 'var(--fs-11-5)', color: 'var(--faint)' }}>
               {(mfaFactors.data?.totp.length ?? 0) > 0 ? 'On' : roleRequiresMfa ? 'Required' : '—'}
             </span>
-            <span aria-hidden="true" style={{ fontSize: 16, color: 'var(--faint)' }}>
+            <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
               ›
             </span>
           </a>
@@ -324,32 +324,32 @@ export default async function SettingsPage() {
           {hasAnyRole(claims.roles, REPORT_ACCESS) ? (
             <Link href="/settings/exports" className="set-list-row">
               <span>
-                <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block' }}>Exports</span>
-                <span style={{ fontSize: 12, color: 'var(--faint)' }}>Pick what, pick who, pick when, get a CSV</span>
+                <span style={{ fontSize: 'var(--fs-14-5)', fontWeight: 600, display: 'block' }}>Exports</span>
+                <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>Pick what, pick who, pick when, get a CSV</span>
               </span>
-              <span aria-hidden="true" style={{ fontSize: 16, color: 'var(--faint)' }}>
+              <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
                 ›
               </span>
             </Link>
           ) : (
             <div className="set-list-row" data-disabled="true" aria-disabled="true" title="Requires a role with athlete-level export access, see the access matrix.">
               <span>
-                <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block', color: 'var(--faint)' }}>Exports</span>
-                <span style={{ fontSize: 12, color: 'var(--faint)' }}>Coach or medical role required</span>
+                <span style={{ fontSize: 'var(--fs-14-5)', fontWeight: 600, display: 'block', color: 'var(--faint)' }}>Exports</span>
+                <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>Coach or medical role required</span>
               </span>
-              <span className="num" style={{ fontSize: 11.5, color: 'var(--faint)' }}>
+              <span className="num" style={{ fontSize: 'var(--fs-11-5)', color: 'var(--faint)' }}>
                 —
               </span>
-              <span aria-hidden="true" style={{ fontSize: 16, color: 'var(--faint)' }} />
+              <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }} />
             </div>
           )}
 
           <Link href="/settings/groups" className="set-list-row">
             <span>
-              <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block' }}>Groups</span>
-              <span style={{ fontSize: 12, color: 'var(--faint)' }}>The named subsets every filter uses</span>
+              <span style={{ fontSize: 'var(--fs-14-5)', fontWeight: 600, display: 'block' }}>Groups</span>
+              <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>The named subsets every filter uses</span>
             </span>
-            <span aria-hidden="true" style={{ fontSize: 16, color: 'var(--faint)' }}>
+            <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
               ›
             </span>
           </Link>
@@ -360,11 +360,11 @@ export default async function SettingsPage() {
           {hasAnyRole(claims.roles, GPS_IMPORT) ? (
             <Link href="/settings/imports" className="set-list-row">
               <span>
-                <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block' }}>GPS imports</span>
-                <span style={{ fontSize: 12, color: 'var(--faint)' }}>Upload a vendor CSV export</span>
+                <span style={{ fontSize: 'var(--fs-14-5)', fontWeight: 600, display: 'block' }}>GPS imports</span>
+                <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>Upload a vendor CSV export</span>
               </span>
               {!onPremium ? <span className="gold-badge">Premium</span> : null}
-              <span aria-hidden="true" style={{ fontSize: 16, color: 'var(--faint)' }}>
+              <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
                 ›
               </span>
             </Link>
@@ -372,10 +372,10 @@ export default async function SettingsPage() {
 
           <Link href="/settings/notifications" className="set-list-row">
             <span>
-              <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block' }}>Notifications</span>
-              <span style={{ fontSize: 12, color: 'var(--faint)' }}>What pushes and emails you get</span>
+              <span style={{ fontSize: 'var(--fs-14-5)', fontWeight: 600, display: 'block' }}>Notifications</span>
+              <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>What pushes and emails you get</span>
             </span>
-            <span aria-hidden="true" style={{ fontSize: 16, color: 'var(--faint)' }}>
+            <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
               ›
             </span>
           </Link>
@@ -383,10 +383,10 @@ export default async function SettingsPage() {
           {isAdmin ? (
             <Link href="/settings/users" className="set-list-row">
               <span>
-                <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block' }}>Users</span>
-                <span style={{ fontSize: 12, color: 'var(--faint)' }}>Who can sign in, and what roles they hold</span>
+                <span style={{ fontSize: 'var(--fs-14-5)', fontWeight: 600, display: 'block' }}>Users</span>
+                <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>Who can sign in, and what roles they hold</span>
               </span>
-              <span aria-hidden="true" style={{ fontSize: 16, color: 'var(--faint)' }}>
+              <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
                 ›
               </span>
             </Link>
@@ -395,10 +395,10 @@ export default async function SettingsPage() {
           {isAdmin || claims.roles.includes('medic') ? (
             <Link href="/settings/subject-access" className="set-list-row">
               <span>
-                <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block' }}>Subject access requests</span>
-                <span style={{ fontSize: 12, color: 'var(--faint)' }}>Article 15 requests and their deadline</span>
+                <span style={{ fontSize: 'var(--fs-14-5)', fontWeight: 600, display: 'block' }}>Subject access requests</span>
+                <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>Article 15 requests and their deadline</span>
               </span>
-              <span aria-hidden="true" style={{ fontSize: 16, color: 'var(--faint)' }}>
+              <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
                 ›
               </span>
             </Link>
@@ -407,10 +407,10 @@ export default async function SettingsPage() {
           {isAdmin ? (
             <Link href="/settings/retention" className="set-list-row">
               <span>
-                <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block' }}>Data retention</span>
-                <span style={{ fontSize: 12, color: 'var(--faint)' }}>The club&apos;s retention schedule</span>
+                <span style={{ fontSize: 'var(--fs-14-5)', fontWeight: 600, display: 'block' }}>Data retention</span>
+                <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>The club&apos;s retention schedule</span>
               </span>
-              <span aria-hidden="true" style={{ fontSize: 16, color: 'var(--faint)' }}>
+              <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
                 ›
               </span>
             </Link>
@@ -419,10 +419,10 @@ export default async function SettingsPage() {
           {isAdmin ? (
             <Link href="/settings/audit" className="set-list-row">
               <span>
-                <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block' }}>Audit log</span>
-                <span style={{ fontSize: 12, color: 'var(--faint)' }}>Who did what, and to what, across the club</span>
+                <span style={{ fontSize: 'var(--fs-14-5)', fontWeight: 600, display: 'block' }}>Audit log</span>
+                <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>Who did what, and to what, across the club</span>
               </span>
-              <span aria-hidden="true" style={{ fontSize: 16, color: 'var(--faint)' }}>
+              <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
                 ›
               </span>
             </Link>
@@ -430,15 +430,15 @@ export default async function SettingsPage() {
 
           <form action="/auth/sign-out" method="post" className="set-list-row" style={{ width: '100%' }}>
             <span>
-              <span style={{ fontSize: 14.5, fontWeight: 600, display: 'block', color: 'var(--bad-text)' }}>Log out</span>
-              <span style={{ fontSize: 12, color: 'var(--faint)' }}>Ends this session on this browser only</span>
+              <span style={{ fontSize: 'var(--fs-14-5)', fontWeight: 600, display: 'block', color: 'var(--bad-text)' }}>Log out</span>
+              <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>Ends this session on this browser only</span>
             </span>
             <button
               type="submit"
               style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit' }}
               aria-label="Log out"
             >
-              <span aria-hidden="true" style={{ fontSize: 16, color: 'var(--faint)' }}>
+              <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
                 ›
               </span>
             </button>

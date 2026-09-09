@@ -128,7 +128,7 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekS
   return (
     <form onSubmit={onSubmit} noValidate>
       {correction ? (
-        <div className="banner" role="status" style={{ marginBottom: 14 }}>
+        <div className="banner" role="status" style={{ marginBottom: 'var(--sp-14)' }}>
           <span className="g g-faint" aria-hidden="true">
             ⓘ
           </span>
@@ -142,11 +142,11 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekS
       <p className="eyebrow">
         Week {isoWeekInfo(weekStart).isoWeek} · {formatDate(weekStart, timezone)} to {formatDate(weekEnd, timezone)}
       </p>
-      <p className="dir" style={{ marginTop: 8 }}>
+      <p className="dir" style={{ marginTop: 'var(--sp-8)' }}>
         Did you hit your protein target most days this week?
       </p>
 
-      <div className="stack" style={{ marginTop: 14, gap: 10 }}>
+      <div className="stack" style={{ marginTop: 'var(--sp-14)', gap: 'var(--sp-10)' }}>
         {ANSWERS.map((a) => (
           <button
             key={a.value}
@@ -161,7 +161,7 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekS
       </div>
 
       {noteOpen ? (
-        <div style={{ marginTop: 14 }}>
+        <div style={{ marginTop: 'var(--sp-14)' }}>
           <label className="label" htmlFor="nutrition-note">
             Add a note
           </label>
@@ -180,7 +180,7 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekS
               to follow it. Report a problem's only remaining entrance is the row
               on Me, so it names that, and links straight there rather than
               describing where to go. Guarded by test-control-names-resolve.ts. */}
-          <p className="tiny" style={{ marginTop: 4 }}>
+          <p className="tiny" style={{ marginTop: 'var(--sp-4)' }}>
             This note is visible to coaching staff. It is not a clinical field. For a
             medical matter, use{' '}
             <Link href="/report-problem">Report a problem</Link> under Me.
@@ -190,7 +190,7 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekS
         <button
           type="button"
           className="btn-ghost"
-          style={{ marginTop: 14, width: '100%' }}
+          style={{ marginTop: 'var(--sp-14)', width: '100%' }}
           onClick={() => setNoteOpen(true)}
         >
           Add a note (optional)
@@ -198,7 +198,7 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekS
       )}
 
       {error ? (
-        <p className="form-error" role="alert" style={{ marginTop: 14 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-14)' }}>
           {error}
         </p>
       ) : null}
@@ -212,7 +212,7 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekS
         >
           {pending ? 'Saving…' : answer ? 'Done' : 'Choose an answer'}
         </button>
-        <p className="tiny" style={{ textAlign: 'center', marginTop: 8 }}>
+        <p className="tiny" style={{ textAlign: 'center', marginTop: 'var(--sp-8)' }}>
           {correction
             ? 'Corrections send straight away and need signal. If it can’t get through, you’ll see an error here and your answer stays put.'
             : 'Saved on this phone first — it sends even if your signal drops.'}

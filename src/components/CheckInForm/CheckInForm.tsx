@@ -276,7 +276,7 @@ export function CheckInForm({
       </label>
 
       {invalid ? (
-        <p className="form-error" role="alert" style={{ marginTop: 14 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-14)' }}>
           {invalid}
         </p>
       ) : null}
@@ -303,7 +303,7 @@ export function CheckInForm({
          * new revision") was true but described something the athlete could do;
          * this one tells them who does it now, so the rule is learned at the
          * moment it matters rather than discovered on a screen with no button. */}
-        <p className="tiny" style={{ textAlign: 'center', marginTop: 8 }}>
+        <p className="tiny" style={{ textAlign: 'center', marginTop: 'var(--sp-8)' }}>
           Once this is sent it can&rsquo;t be edited. If you get a number wrong,
           tell your coach &mdash; they can record a correction, and My Data will
           show you both what they changed it to and what you first reported.

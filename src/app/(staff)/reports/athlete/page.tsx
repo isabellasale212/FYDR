@@ -106,7 +106,7 @@ export default async function AthleteReportPickerPage({ searchParams }: { search
             empty `groups` as "the user just cleared it", so echoing an empty
             hidden field would silently wipe a filter that came from the
             cookie. Absent means absent, and the cookie resolves it again. */}
-        <form method="get" role="search" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <form method="get" role="search" style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
           {groupParam.map((value, i) => (
             <input key={`${value}-${i}`} type="hidden" name="groups" value={value} />
           ))}
@@ -129,7 +129,7 @@ export default async function AthleteReportPickerPage({ searchParams }: { search
         </form>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', marginBottom: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-14)', flexWrap: 'wrap', marginBottom: 'var(--sp-14)' }}>
         <GroupFilter groups={groups} selected={groupIds} />
         {/* The squad's shape at a glance, counted off the same rows the table
             renders. Each figure carries its status colour so the legend and
@@ -154,7 +154,7 @@ export default async function AthleteReportPickerPage({ searchParams }: { search
       </div>
 
       {squadWideSilence ? (
-        <div className="note" style={{ marginBottom: 14, borderColor: 'var(--warn)' }}>
+        <div className="note" style={{ marginBottom: 'var(--sp-14)', borderColor: 'var(--warn)' }}>
           <div className="note-glyph">i</div>
           <p className="note-text">
             <b>

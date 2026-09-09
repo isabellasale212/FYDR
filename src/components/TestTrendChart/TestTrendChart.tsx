@@ -81,7 +81,7 @@ export function TestTrendChart({ rows, timezone, unit, decimalPlaces, higherIsBe
 
   return (
     <div className="card">
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 'var(--sp-4)' }}>
         <p className="label">Trend</p>
         <p className="tiny" style={{ color: 'var(--muted)' }}>
           {higherIsBetter ? 'higher is better' : 'lower is better'} · best attempt per session
@@ -120,9 +120,9 @@ export function TestTrendChart({ rows, timezone, unit, decimalPlaces, higherIsBe
         })}
       </svg>
       {chartable.length > 1 ? (
-        <div style={{ display: 'flex', gap: 14, marginTop: 6 }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-14)', marginTop: 'var(--sp-6)' }}>
           {chartable.map(([side]) => (
-            <span key={side} className="tiny" style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+            <span key={side} className="tiny" style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--sp-5)' }}>
               <span style={{ width: 8, height: 8, borderRadius: 8, background: COLORS[side] ?? 'var(--accent)', display: 'inline-block' }} />
               {SIDE_LABEL[side] ?? side}
             </span>

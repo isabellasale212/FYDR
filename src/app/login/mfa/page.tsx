@@ -33,7 +33,7 @@ export default function MfaChallengePage() {
           </p>
         </div>
 
-        <Suspense fallback={<p className="tiny" style={{ marginTop: 28 }}>Loading the form.</p>}>
+        <Suspense fallback={<p className="tiny" style={{ marginTop: 'var(--sp-28)' }}>Loading the form.</p>}>
           <MfaChallengeForm />
         </Suspense>
       </div>

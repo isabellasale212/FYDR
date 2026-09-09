@@ -94,9 +94,9 @@ export function NewMealForm({ onSubmit, onCancel, isSubmitting, error }: Props) 
   }
 
   return (
-    <form onSubmit={onFormSubmit} className="card" style={{ marginTop: 10, borderColor: 'var(--accent)' }}>
-      <div className="stack" style={{ gap: 10 }}>
-        <div style={{ display: 'flex', gap: 8 }}>
+    <form onSubmit={onFormSubmit} className="card" style={{ marginTop: 'var(--sp-10)', borderColor: 'var(--accent)' }}>
+      <div className="stack" style={{ gap: 'var(--sp-10)' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-8)' }}>
           <label style={{ flex: 2 }}>
             <span className="label">Meal name</span>
             <input className="field" value={name} onChange={(e) => setName(e.target.value)} placeholder="Pre-match carb load" autoFocus />
@@ -112,9 +112,9 @@ export function NewMealForm({ onSubmit, onCancel, isSubmitting, error }: Props) 
           a 110 kg reference athlete and scale down or up automatically for whichever athlete is selected.
         </p>
 
-        <div className="stack" style={{ gap: 8 }}>
+        <div className="stack" style={{ gap: 'var(--sp-8)' }}>
           {items.map((row, i) => (
-            <div key={row.key} style={{ display: 'flex', gap: 6, alignItems: 'flex-end' }}>
+            <div key={row.key} style={{ display: 'flex', gap: 'var(--sp-6)', alignItems: 'flex-end' }}>
               <label style={{ flex: 2 }}>
                 {i === 0 ? <span className="label">Item</span> : null}
                 <input
@@ -209,7 +209,7 @@ export function NewMealForm({ onSubmit, onCancel, isSubmitting, error }: Props) 
           </p>
         ) : null}
 
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)' }}>
           <button type="submit" className="btn-primary" disabled={isSubmitting}>
             {isSubmitting ? 'Saving…' : 'Save to library'}
           </button>

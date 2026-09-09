@@ -42,7 +42,7 @@ export default async function GymSessionHistoryPage({
           <h2 className="card-title" style={{ padding: '16px 16px 0' }}>
             Sets
           </h2>
-          <div style={{ padding: 16 }}>
+          <div style={{ padding: 'var(--sp-16)' }}>
             <GymSessionSetsList sets={sets} />
           </div>
         </section>

@@ -177,7 +177,7 @@ export default async function ComplianceReportPage({
           title: 'Compliance',
           sub: (
             <div className="rhead-sub">
-              <p className="eyebrow" style={{ marginBottom: 10 }}>
+              <p className="eyebrow" style={{ marginBottom: 'var(--sp-10)' }}>
               {groupScopeLabel(groups, groupIds)} · {orgName} · {period.range.label} · {formatDate(fromDate, timezone)} to{' '}
               {formatDate(today, timezone)} · {report.athleteCount} athletes
               </p>
@@ -236,10 +236,10 @@ export default async function ComplianceReportPage({
             label: 'Summary',
             content: (
               <div className="card">
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 16 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 'var(--sp-16)' }}>
                   {report.summary.map((s) => (
                     <div key={s.domain}>
-                      <div className="num" style={{ fontSize: 24, fontWeight: 800 }}>
+                      <div className="num" style={{ fontSize: 'var(--fs-24)', fontWeight: 800 }}>
                         {s.pct === null ? '—' : `${s.pct}%`}
                       </div>
                       <div className="tiny">{enumLabel(s.domain)}</div>
@@ -255,7 +255,7 @@ export default async function ComplianceReportPage({
                     </div>
                   ))}
                 </div>
-                <p className="tiny" style={{ marginTop: 14 }}>
+                <p className="tiny" style={{ marginTop: 'var(--sp-14)' }}>
                   Waivers are excluded from both the numerator and the denominator, and reported
                   separately — the difference between &ldquo;did not submit&rdquo; and &ldquo;was
                   not asked&rdquo;.

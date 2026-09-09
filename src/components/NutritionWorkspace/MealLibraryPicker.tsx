@@ -18,7 +18,7 @@ type Props = {
  *  SelectedAthleteCard and TargetsTable already use. */
 export function MealLibraryPicker({ meals, addedIds, onAdd, onClose }: Props) {
   return (
-    <div className="card" style={{ marginTop: 10, borderColor: 'var(--accent)' }}>
+    <div className="card" style={{ marginTop: 'var(--sp-10)', borderColor: 'var(--accent)' }}>
       <div className="nutr-card-head" style={{ marginBottom: meals.length === 0 ? 0 : 10 }}>
         <div className="card-title" style={{ marginBottom: 0 }}>
           Food library
@@ -31,7 +31,7 @@ export function MealLibraryPicker({ meals, addedIds, onAdd, onClose }: Props) {
       {meals.length === 0 ? (
         <p className="tiny">No meals saved yet for this org. Use “+ Meal” to add the first one.</p>
       ) : (
-        <div className="stack" style={{ gap: 8 }}>
+        <div className="stack" style={{ gap: 'var(--sp-8)' }}>
           {meals.map((meal) => {
             const totals = meal.items.reduce(
               (acc, it) => ({
@@ -49,14 +49,14 @@ export function MealLibraryPicker({ meals, addedIds, onAdd, onClose }: Props) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  gap: 10,
+                  gap: 'var(--sp-10)',
                   padding: '8px 10px',
                   border: '1px solid var(--border)',
                   borderRadius: 'var(--r-field)',
                 }}
               >
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontWeight: 600, fontSize: 14 }}>{meal.name}</div>
+                  <div style={{ fontWeight: 600, fontSize: 'var(--fs-14)' }}>{meal.name}</div>
                   <div className="tiny nutr-mono">
                     {meal.timeLabel} · {meal.items.length} item{meal.items.length === 1 ? '' : 's'} ·{' '}
                     {Math.round(totals.proteinG)}P / {Math.round(totals.carbG)}C / {Math.round(totals.fatG)}F g at

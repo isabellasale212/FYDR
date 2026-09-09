@@ -57,10 +57,10 @@ export default async function MyBoardsPage() {
               const metric = labelByKey.get(board.metric_key);
               return (
                 <Link key={board.id} href={`/my-data/boards/${board.id}`} className="card">
-                  <p className="nm" style={{ marginBottom: 2 }}>
+                  <p className="nm" style={{ marginBottom: 'var(--sp-2)' }}>
                     {board.name}
                   </p>
-                  <p className="tiny" style={{ marginBottom: 8 }}>
+                  <p className="tiny" style={{ marginBottom: 'var(--sp-8)' }}>
                     {/* The metric leads this line now. When every published board ranked
                         session load there was nothing to tell apart, and a board's own
                         name was enough; a club running distance, sprint distance and max

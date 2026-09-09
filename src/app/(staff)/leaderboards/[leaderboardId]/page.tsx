@@ -160,7 +160,7 @@ export default async function LeaderboardDetailPage({
         {/* Top right, per the coach's own request. Plain anchors, not Link: these are
             file downloads, and a client-side navigation to a route handler would try
             to render the response as a page. */}
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
           <a href={`/leaderboards/${board.id}/export${groupQuery}`} className="btn-ghost">
             Download CSV
           </a>
@@ -175,7 +175,7 @@ export default async function LeaderboardDetailPage({
           publish controls stranded in a second block below it. */}
       <div className="card lb-meta">
         <div style={{ minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-8)', flexWrap: 'wrap' }}>
             <span className={`pill ${board.visibility === 'published' ? 'pill-good' : 'pill-neutral'}`}>
               {board.visibility === 'published' ? 'Published to athletes' : 'Draft'}
             </span>
@@ -205,7 +205,7 @@ export default async function LeaderboardDetailPage({
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', margin: '14px 0' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-14)', flexWrap: 'wrap', margin: '14px 0' }}>
         <GroupFilter groups={groups} selected={groupIds} />
         {fullRanking.length > 0 ? (
           <span className="lb-stats">
@@ -221,7 +221,7 @@ export default async function LeaderboardDetailPage({
       </div>
 
       <section aria-labelledby="ranking-title">
-        <p className="sect" id="ranking-title" style={{ marginBottom: 8 }}>
+        <p className="sect" id="ranking-title" style={{ marginBottom: 'var(--sp-8)' }}>
           Ranking
         </p>
         {fullRanking.length === 0 ? (

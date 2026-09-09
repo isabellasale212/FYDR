@@ -268,7 +268,7 @@ export default async function AthleteWellnessPage({
           {/* Availability status ONLY. Rule 3: a coach sees the status word,
             * never the diagnosis behind it, and this page carries no injury
             * record at all so there is nothing here to gate. */}
-          <p className="pp-goal-line" style={{ marginTop: 10 }}>
+          <p className="pp-goal-line" style={{ marginTop: 'var(--sp-10)' }}>
             <span className="pp-goal-label">Availability:</span>{' '}
             <Pill status={availabilityStatus(athlete.availability?.status ?? null)} />
             <span className="cap" style={{ marginInlineStart: 8 }}>
@@ -276,7 +276,7 @@ export default async function AthleteWellnessPage({
             </span>
           </p>
 
-          <div className="pp-macro-tiles" style={{ marginTop: 12 }}>
+          <div className="pp-macro-tiles" style={{ marginTop: 'var(--sp-12)' }}>
             <div className="pp-macro-tile">
               <p className="num pp-macro-value" style={{ margin: 0 }}>
                 {latestReadiness !== null ? Math.round(latestReadiness) : '—'}
@@ -321,7 +321,7 @@ export default async function AthleteWellnessPage({
             />
           ) : (
             <>
-              <div style={{ marginTop: 12 }}>
+              <div style={{ marginTop: 'var(--sp-12)' }}>
                 <WellnessChart
                   series={chartSeries}
                   timezone={timezone}
@@ -334,7 +334,7 @@ export default async function AthleteWellnessPage({
               {/* Inside the branch, not below it: a legend for a chart that was
                 * not drawn describes something the reader cannot see and reads
                 * as a rendering failure. */}
-              <p className="cap" style={{ marginTop: 6 }}>
+              <p className="cap" style={{ marginTop: 'var(--sp-6)' }}>
                 A day with no entry is a gap, never a zero. The shaded area and dashed line are their
                 own {ROLLING_WINDOW}-day mean &plusmn; 1 SD &mdash; what is normal for them &mdash;
                 drawn only where there are enough observations to have one.

@@ -78,7 +78,7 @@ export default async function NutritionCheckInPage({
             </b>
             .
           </p>
-          <p className="cap" style={{ display: 'flex', gap: 14 }}>
+          <p className="cap" style={{ display: 'flex', gap: 'var(--sp-14)' }}>
             <Link href={`/nutrition-check-in?week=${weekStart}&correct=1`}>Change this answer</Link>
             <Link href="/today">Back to today</Link>
           </p>

@@ -74,7 +74,7 @@ export default async function TeamAllocationPage({
           </p>
           <h1>Team allocation</h1>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
           {canManageWeek ? <PublishWeekButton
           canManage={hasAnyRole(claims.roles, SESSION_EDIT)} orgId={orgId} userId={claims.userId} weekStart={weekStart} draftCount={draftCount} /> : null}
         </div>
@@ -99,7 +99,7 @@ export default async function TeamAllocationPage({
       </div>
 
       {!canManageWeek ? (
-        <div className="note" style={{ marginTop: 14 }}>
+        <div className="note" style={{ marginTop: 'var(--sp-14)' }}>
           <div className="note-glyph">i</div>
           <p className="note-text">
             <b>Read only.</b> Medical sees the whole board and every availability status,
@@ -109,7 +109,7 @@ export default async function TeamAllocationPage({
         </div>
       ) : null}
 
-      <div style={{ marginTop: 14 }}>
+      <div style={{ marginTop: 'var(--sp-14)' }}>
         <TeamAllocationBoard
           orgId={orgId}
           userId={claims.userId}

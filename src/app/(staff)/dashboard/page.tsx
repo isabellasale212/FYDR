@@ -253,7 +253,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           </p>
           <h1>Dashboard</h1>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
           <PrintButton />
         </div>
       </div>
@@ -267,16 +267,16 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           className="card"
           role="status"
           style={{
-            marginBottom: 14,
+            marginBottom: 'var(--sp-14)',
             padding: '10px 16px',
             borderInlineStart: '3px solid var(--accent)',
             display: 'flex',
-            gap: 8,
+            gap: 'var(--sp-8)',
             alignItems: 'baseline',
             flexWrap: 'wrap',
           }}
         >
-          <b style={{ fontSize: 13.5 }}>Showing {formatDate(effectiveToday, timezone)} — the latest day with data.</b>
+          <b style={{ fontSize: 'var(--fs-13-5)' }}>Showing {formatDate(effectiveToday, timezone)} — the latest day with data.</b>
           <span className="tiny" style={{ color: 'var(--muted)' }}>
             Nothing has been recorded for today ({formatDate(wallClockToday, timezone)}) yet. Schedule, Flags and Reports run
             on the real date.
@@ -288,7 +288,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
        * replacement: closed by default, the toggle row is the "small
        * summaries" state, and each expanded row jumps straight to the
        * flag's real, actionable home on the athlete's own profile. */}
-      <div style={{ marginBottom: 14 }}>
+      <div style={{ marginBottom: 'var(--sp-14)' }}>
         <DashboardFlagsPanel
           rows={stats.attentionRows}
           openTotal={stats.openFlags}
@@ -392,10 +392,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         </div>
       </div>
 
-      <div className="dash-body" style={{ marginTop: 14 }}>
+      <div className="dash-body" style={{ marginTop: 'var(--sp-14)' }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 12 }}>
-            <h2 style={{ fontSize: 17, fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 'var(--sp-12)' }}>
+            <h2 style={{ fontSize: 'var(--fs-17)', fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>
               {dayTitle(selectedDay, wallClockToday)}
             </h2>
             <span className="tiny num" style={{ color: 'var(--muted)', marginLeft: 'auto' }}>
@@ -460,7 +460,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                             <span className="dash-affected-value" style={{ color: a.sev === 'bad' ? 'var(--bad-pill-text)' : 'var(--warn-pill-text)' }}>
                               {a.value}
                             </span>
-                            <span style={{ color: 'var(--faint)', fontSize: 13 }}>›</span>
+                            <span style={{ color: 'var(--faint)', fontSize: 'var(--fs-13)' }}>›</span>
                           </div>
                         ))}
                       </div>
@@ -479,14 +479,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                 <h2 className="card-title" style={{ margin: 0 }}>
                   {matchday ? `Ready for ${matchday}` : 'Squad readiness'}
                 </h2>
-                <p className="tiny" style={{ marginTop: 2 }}>
+                <p className="tiny" style={{ marginTop: 'var(--sp-2)' }}>
                   {readiness.opponent ? `v ${readiness.opponent} · ${readiness.homeAway ?? ''} · ${daysOutLabel(readiness.daysOut)}` : 'No fixture scheduled'}
                 </p>
                 {/* Squad size and the active group scope, carried over from the
                     Squad state card's subtitle. It sits better next to the ring
                     than it did under its own heading — it is the ring's
                     denominator, said in words. */}
-                <p className="tiny" style={{ marginTop: 2 }}>
+                <p className="tiny" style={{ marginTop: 'var(--sp-2)' }}>
                   {readiness.squad} athletes · {groupScopeLabel(groups, groupIds)}
                 </p>
               </div>
@@ -515,7 +515,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
               <div style={{ flex: readiness.unavailable, background: 'var(--bad)' }} />
             </div>
 
-            <div style={{ marginTop: 4 }}>
+            <div style={{ marginTop: 'var(--sp-4)' }}>
               {readiness.rows.map((r) => (
                 <Link
                   key={r.key}
@@ -526,12 +526,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                     <span className="dash-squad-dot" style={{ background: ROW_DOT[r.key] }} aria-hidden="true" />
                   ) : null}
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 600 }}>{r.label}</div>
+                    <div style={{ fontSize: 'var(--fs-13)', fontWeight: 600 }}>{r.label}</div>
                     <div className="tiny">
                       {r.detail}
                     </div>
                   </div>
-                  <span className="num" style={{ fontSize: 13, color: TONE_TEXT[r.tone === 'bad' ? 'bad' : r.tone === 'warn' ? 'warn' : ''] }}>
+                  <span className="num" style={{ fontSize: 'var(--fs-13)', color: TONE_TEXT[r.tone === 'bad' ? 'bad' : r.tone === 'warn' ? 'warn' : ''] }}>
                     {r.value}
                   </span>
                   <span>›</span>
@@ -543,17 +543,17 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
               <>
                 <hr className="hr" />
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                  <span style={{ fontSize: 12, fontWeight: 700 }}>Week load so far</span>
-                  <span className="num" style={{ fontSize: 12 }}>
+                  <span style={{ fontSize: 'var(--fs-12)', fontWeight: 700 }}>Week load so far</span>
+                  <span className="num" style={{ fontSize: 'var(--fs-12)' }}>
                     {readiness.weekLoad.pct !== null ? `${readiness.weekLoad.pct}%` : '—'}
                   </span>
                 </div>
-                <div style={{ position: 'relative', height: 8, marginTop: 6 }}>
+                <div style={{ position: 'relative', height: 8, marginTop: 'var(--sp-6)' }}>
                   <div className="dash-load-track" />
                   <div className="dash-load-fill" style={{ width: `${readiness.weekLoad.fillPct}%`, background: TONE_VAR[readiness.weekLoad.tone] ?? 'var(--accent)' }} />
                   <div className="dash-load-tick" style={{ left: `${readiness.weekLoad.tickPct}%` }} />
                 </div>
-                <p className="tiny num" style={{ marginTop: 6 }}>
+                <p className="tiny num" style={{ marginTop: 'var(--sp-6)' }}>
                   {readiness.weekLoad.foot}
                 </p>
               </>
@@ -588,15 +588,15 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                 {outstanding.map((t) => (
                   <div key={t.label}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                      <span style={{ fontSize: 12.5, fontWeight: 600 }}>{t.label}</span>
-                      <span className="num" style={{ fontSize: 12.5 }}>
+                      <span style={{ fontSize: 'var(--fs-12-5)', fontWeight: 600 }}>{t.label}</span>
+                      <span className="num" style={{ fontSize: 'var(--fs-12-5)' }}>
                         {t.valueLeft} left
                       </span>
                     </div>
                     <div className="dash-track-bar-outer">
                       <div className="dash-track-bar-fill" style={{ width: `${t.pct}%`, background: TONE_VAR[t.tone] ?? 'var(--accent)' }} />
                     </div>
-                    <p className="tiny" style={{ color: 'var(--faint)', marginTop: 4 }}>
+                    <p className="tiny" style={{ color: 'var(--faint)', marginTop: 'var(--sp-4)' }}>
                       {t.foot}
                     </p>
                   </div>

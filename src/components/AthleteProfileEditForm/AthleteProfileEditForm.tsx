@@ -58,13 +58,13 @@ export function AthleteProfileEditForm({ userId, fullName, initialPhone }: Props
   return (
     <form onSubmit={onSubmit} className="card" noValidate>
       <h2 className="card-title">Edit profile</h2>
-      <p className="import-sub" style={{ marginBottom: 12 }}>
+      <p className="import-sub" style={{ marginBottom: 'var(--sp-12)' }}>
         How the club reaches you. Your name, date of birth, position and squad number are set by staff and aren&apos;t
         editable here.
       </p>
 
       {success ? (
-        <p className="banner" role="status" style={{ marginBottom: 12 }}>
+        <p className="banner" role="status" style={{ marginBottom: 'var(--sp-12)' }}>
           <span className="g g-good" aria-hidden="true">
             ✓
           </span>

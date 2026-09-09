@@ -115,7 +115,7 @@ export function BulkInviteForm({ unlinkedAthletes }: Props) {
             style={{ fontFamily: 'var(--font-mono, monospace)' }}
           />
         </div>
-        <div className="chiprow" style={{ marginTop: 10 }}>
+        <div className="chiprow" style={{ marginTop: 'var(--sp-10)' }}>
           <label className="btn-ghost" style={{ cursor: 'pointer' }}>
             Upload a CSV instead
             <input type="file" accept=".csv,text/csv" onChange={onFileChange} style={{ display: 'none' }} />
@@ -135,7 +135,7 @@ export function BulkInviteForm({ unlinkedAthletes }: Props) {
       {preview && preview.length > 0 && !results ? (
         <div className="card">
           <h2 className="card-title">Preview — {preview.length} rows</h2>
-          <p className="import-sub" style={{ marginBottom: 10 }}>
+          <p className="import-sub" style={{ marginBottom: 'var(--sp-10)' }}>
             {preview.filter((r) => r.matchStatus === 'new').length} new athlete record
             {preview.filter((r) => r.matchStatus === 'new').length === 1 ? '' : 's'} will be created ·{' '}
             {preview.filter((r) => r.matchStatus === 'matched').length} will link to an existing record ·{' '}
@@ -183,7 +183,7 @@ export function BulkInviteForm({ unlinkedAthletes }: Props) {
               ))}
             </tbody>
           </table>
-          <button type="button" className="btn-primary" style={{ marginTop: 12 }} onClick={onSend} disabled={busy || sendableCount === 0}>
+          <button type="button" className="btn-primary" style={{ marginTop: 'var(--sp-12)' }} onClick={onSend} disabled={busy || sendableCount === 0}>
             {busy ? 'Sending…' : `Send ${sendableCount} invite${sendableCount === 1 ? '' : 's'}`}
           </button>
         </div>
@@ -194,7 +194,7 @@ export function BulkInviteForm({ unlinkedAthletes }: Props) {
           <h2 className="card-title">
             {results.filter((r) => r.ok).length} sent, {results.filter((r) => !r.ok).length} failed
           </h2>
-          <p className="import-sub" style={{ marginBottom: 10 }}>
+          <p className="import-sub" style={{ marginBottom: 'var(--sp-10)' }}>
             Each invite link is shown once, here only &mdash; copy them now. There is no invite email; send each link to
             its athlete directly. A link works once, confirms their email address, and lets them choose their own
             password, which nobody here ever sees.

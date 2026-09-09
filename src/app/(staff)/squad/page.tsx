@@ -57,7 +57,7 @@ export default async function SquadPage({
           <p className="eyebrow">{groupScopeLabel(groups, groupIds)} · {orgName}</p>
           <h1>Squad overview</h1>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
           {/* D-16, resolved by screen 63. Until now there was no way to put a
               player on the roster from anywhere in this app. Sport scientist
               only, the same set that gates Club details and Users: creating an
@@ -75,7 +75,7 @@ export default async function SquadPage({
         </div>
       </div>
 
-      <div style={{ marginBottom: 14 }}>
+      <div style={{ marginBottom: 'var(--sp-14)' }}>
         <GroupFilter groups={groups} selected={groupIds} />
       </div>
 

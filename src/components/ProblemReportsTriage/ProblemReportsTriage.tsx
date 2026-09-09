@@ -87,7 +87,7 @@ function ReportRow({
   return (
     <div className="load-row" style={{ gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'start' }}>
       <div style={{ minWidth: 0 }}>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-8)', alignItems: 'baseline', flexWrap: 'wrap' }}>
           <span className="nm">
             {report.first_name} {report.last_name}
           </span>
@@ -95,11 +95,11 @@ function ReportRow({
             {report.status === 'open' ? 'Not yet seen' : 'Acknowledged'}
           </span>
         </div>
-        <div className="tiny" style={{ marginTop: 3 }}>
+        <div className="tiny" style={{ marginTop: 'var(--sp-3)' }}>
           {formatDateTime(report.created_at, timezone)}
           {report.category ? ` · ${PROBLEM_REPORT_CATEGORY_LABEL[report.category] ?? report.category}` : ''}
         </div>
-        <p style={{ fontSize: 14, marginTop: 6 }}>{report.body}</p>
+        <p style={{ fontSize: 'var(--fs-14)', marginTop: 'var(--sp-6)' }}>{report.body}</p>
 
         {/* The triage trail, oldest first — migration 0055's problem_report_notes.
          *
@@ -142,11 +142,11 @@ function ReportRow({
               onChange={(event) => setNote(event.target.value)}
               aria-describedby={`note-privacy-${report.id}`}
             />
-            <p className="tiny" id={`note-privacy-${report.id}`} style={{ marginTop: 4 }}>
+            <p className="tiny" id={`note-privacy-${report.id}`} style={{ marginTop: 'var(--sp-4)' }}>
               Medical staff only. {report.first_name} cannot see this, and neither can coaching
               staff. Notes cannot be edited once saved — add another to correct one.
             </p>
-            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <div style={{ display: 'flex', gap: 'var(--sp-8)', marginTop: 'var(--sp-8)' }}>
               <button type="button" className="btn-primary" onClick={saveNote} disabled={pending}>
                 {noteMutation.isPending ? 'Saving…' : 'Save note'}
               </button>
@@ -167,12 +167,12 @@ function ReportRow({
         ) : null}
 
         {error ? (
-          <p className="form-error" role="alert" style={{ marginTop: 6 }}>
+          <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-6)' }}>
             {error}
           </p>
         ) : null}
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-6)' }}>
         {report.status === 'open' ? (
           <button
             type="button"

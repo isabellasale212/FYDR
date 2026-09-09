@@ -60,7 +60,7 @@ export default async function SessionDetailPage({
       </div>
 
       {cancelled ? (
-        <div className="note" style={{ marginBottom: 14 }}>
+        <div className="note" style={{ marginBottom: 'var(--sp-14)' }}>
           <div className="note-glyph">!</div>
           <p className="note-text">
             <b>This session was cancelled.</b> Attendance and any entries already
@@ -72,19 +72,19 @@ export default async function SessionDetailPage({
 
       <div className="card" style={{ opacity: cancelled ? 0.7 : 1 }}>
         <p className="label">When and where</p>
-        <p style={{ marginTop: 6 }}>
+        <p style={{ marginTop: 'var(--sp-6)' }}>
           {/* formatLongDate resolves the real local date from the full
               instant itself via Intl + timeZone — no need to pre-slice
               starts_at down to its UTC date first. */}
           {formatLongDate(session.starts_at, timezone)} &middot; {formatTime(session.starts_at, timezone)}
           {session.duration_min !== null ? ` for ${session.duration_min} min` : ''}
         </p>
-        <p className="tiny" style={{ marginTop: 4 }}>
+        <p className="tiny" style={{ marginTop: 'var(--sp-4)' }}>
           {session.location ?? 'Location not set'}
           {md ? ` · ${md}` : ''}
         </p>
         {session.groupIds.length > 0 ? (
-          <div className="chiprow" style={{ marginTop: 10 }}>
+          <div className="chiprow" style={{ marginTop: 'var(--sp-10)' }}>
             {groups
               .filter((g) => session.groupIds.includes(g.id))
               .map((g) => (
@@ -94,12 +94,12 @@ export default async function SessionDetailPage({
               ))}
           </div>
         ) : (
-          <p className="tiny" style={{ marginTop: 10 }}>
+          <p className="tiny" style={{ marginTop: 'var(--sp-10)' }}>
             No group named. This session is for the whole squad.
           </p>
         )}
         {session.fixture_id ? (
-          <p style={{ marginTop: 10 }}>
+          <p style={{ marginTop: 'var(--sp-10)' }}>
             <Link href={`/schedule/fixtures/${session.fixture_id}`}>
               View the fixture this session is anchored to →
             </Link>
@@ -107,14 +107,14 @@ export default async function SessionDetailPage({
         ) : null}
       </div>
 
-      <div style={{ marginTop: 14 }}>
+      <div style={{ marginTop: 'var(--sp-14)' }}>
         <SessionActions
           canManage={hasAnyRole(claims.roles, SESSION_EDIT)} orgId={orgId} session={session} />
       </div>
 
       {!cancelled ? (
-        <div style={{ marginTop: 14 }}>
-          <p className="sect" style={{ marginBottom: 8 }}>
+        <div style={{ marginTop: 'var(--sp-14)' }}>
+          <p className="sect" style={{ marginBottom: 'var(--sp-8)' }}>
             Edit this session
           </p>
           <SessionEditForm

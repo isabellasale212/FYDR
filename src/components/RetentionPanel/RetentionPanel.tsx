@@ -96,7 +96,7 @@ export function RetentionPanel() {
               ))}
             </tbody>
           </table>
-          <div className="chiprow" style={{ marginTop: 12 }}>
+          <div className="chiprow" style={{ marginTop: 'var(--sp-12)' }}>
             <button type="button" className="btn-ghost" onClick={onPreview} disabled={busy}>
               {busy ? 'Computing…' : 'Refresh preview'}
             </button>
@@ -104,7 +104,7 @@ export function RetentionPanel() {
               {busy ? 'Running…' : 'Run now'}
             </button>
           </div>
-          <p className="cap" style={{ marginTop: 8 }}>
+          <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
             Only the automated categories above will actually change anything. Everything else is shown for
             visibility only.
           </p>

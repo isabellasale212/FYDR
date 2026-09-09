@@ -316,7 +316,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
           rest of the app does not honour and that no other screen persists,
           which is precisely what the brief forbids. So: positions are filtered
           here, through the one filter every screen already shares. */}
-      <div style={{ marginBottom: 14 }}>
+      <div style={{ marginBottom: 'var(--sp-14)' }}>
         <GroupFilter groups={groups} selected={groupIds} />
       </div>
 
@@ -332,7 +332,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
             flexWrap: 'wrap',
             alignItems: 'center',
             gap: '10px 18px',
-            marginTop: 12,
+            marginTop: 'var(--sp-12)',
           }}
         >
           <ReportSelectNav label="Metric" paramKey="metric" value={metric.key} options={metricOptions} />
@@ -347,7 +347,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
           <ReportSelectNav label="Show as" paramKey="chart" value={chart} options={chartOptions} />
         </div>
 
-        <p className="cap" style={{ marginTop: 12 }} role="status">
+        <p className="cap" style={{ marginTop: 'var(--sp-12)' }} role="status">
           <b>{scopeLine}</b>
         </p>
 
@@ -373,7 +373,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
         ) : null}
       </section>
 
-      <section className="card" style={{ marginTop: 14 }} aria-labelledby="result-title">
+      <section className="card" style={{ marginTop: 'var(--sp-14)' }} aria-labelledby="result-title">
         <h2 className="card-title" id="result-title">
           {metric.label}
         </h2>
@@ -389,7 +389,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
             heading="Bar, by athlete is a Premium view"
             body="One bar per athlete, ranked biggest first, with the descriptive band drawn behind them — the view a coach scans to find who is at the top of a metric this week. Your plan includes everything else on this screen: every metric, the athlete and group pickers, every timeline, the trend chart, and the Table view, which lists the same per-athlete numbers this chart would rank."
             metadata="Premium · bar, by athlete · the same query, drawn as a ranking"
-            style={{ marginTop: 14, maxWidth: 680 }}
+            style={{ marginTop: 'var(--sp-14)', maxWidth: 680 }}
           />
         ) : result.athletesInScope === 0 ? (
           <p className="cap">
@@ -462,7 +462,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
 
         {chart === 'table' ? (
           <>
-            <h3 className="card-title" style={{ marginTop: 22, fontSize: 14 }}>
+            <h3 className="card-title" style={{ marginTop: 'var(--sp-22)', fontSize: 'var(--fs-14)' }}>
               Day by day
             </h3>
             <SeriesTable series={result.series} decimals={metric.decimals} unit={metric.unit} timezone={timezone} />
@@ -473,7 +473,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
             its n and window is the main way a misleading figure escapes into a
             slide deck." Nothing here is exportable yet, but the same argument
             applies to a coach reading a number off a screen in a meeting. */}
-        <p className="cap" style={{ marginTop: 14 }}>
+        <p className="cap" style={{ marginTop: 'var(--sp-14)' }}>
           {result.athletesInScope} athlete{result.athletesInScope === 1 ? '' : 's'} ·{' '}
           {range.days} day{range.days === 1 ? '' : 's'} to {formatDate(range.to, timezone)} ·{' '}
           {result.daysWithData} day{result.daysWithData === 1 ? '' : 's'} with data
@@ -566,7 +566,7 @@ function AthleteTable({
                 {formatNumber(r.latest, decimals)}
                 {r.latest !== null ? unit : ''}
                 {r.latest_date ? (
-                  <span className="cap" style={{ marginLeft: 6 }}>
+                  <span className="cap" style={{ marginLeft: 'var(--sp-6)' }}>
                     {formatDate(r.latest_date, timezone)}
                   </span>
                 ) : null}

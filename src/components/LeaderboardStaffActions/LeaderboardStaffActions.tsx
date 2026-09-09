@@ -82,11 +82,11 @@ export function LeaderboardStaffActions({ orgId, userId, boardId, visibility, is
     <div className="card">
       <p className="label">Board actions</p>
       {error ? (
-        <p className="form-error" role="alert" style={{ marginTop: 6 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-6)' }}>
           {error}
         </p>
       ) : null}
-      <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-10)', flexWrap: 'wrap' }}>
         {/* G-34: publish and delete belong to whoever may write the board. The
             medic's suppression control below is deliberately NOT gated on this:
             a medical suppression is the medic's own act and lives under a
@@ -138,7 +138,7 @@ export function LeaderboardStaffActions({ orgId, userId, boardId, visibility, is
       </div>
 
       {suppressing ? (
-        <div style={{ marginTop: 14 }}>
+        <div style={{ marginTop: 'var(--sp-14)' }}>
           <label className="label" htmlFor="suppress-athlete">
             Athlete
           </label>
@@ -155,7 +155,7 @@ export function LeaderboardStaffActions({ orgId, userId, boardId, visibility, is
               </option>
             ))}
           </select>
-          <label className="label" htmlFor="suppress-reason" style={{ marginTop: 10 }}>
+          <label className="label" htmlFor="suppress-reason" style={{ marginTop: 'var(--sp-10)' }}>
             Reason (visible to medical only)
           </label>
           <input
@@ -165,14 +165,14 @@ export function LeaderboardStaffActions({ orgId, userId, boardId, visibility, is
             onChange={(event) => setSuppressReason(event.target.value)}
             maxLength={200}
           />
-          <p className="tiny" style={{ marginTop: 6 }}>
+          <p className="tiny" style={{ marginTop: 'var(--sp-6)' }}>
             A coach never sees this reason, only that the athlete is not ranked &mdash; the
             same wording used for every other exclusion.
           </p>
           <button
             type="button"
             className="btn-primary"
-            style={{ marginTop: 10 }}
+            style={{ marginTop: 'var(--sp-10)' }}
             disabled={!suppressTarget || suppressMutation.isPending}
             onClick={() => suppressMutation.mutate()}
           >

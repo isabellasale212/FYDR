@@ -35,14 +35,14 @@ export function TestDateNav({ testDefinitionId, testDate, timezone, groupIds, da
   }
 
   return (
-    <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
+    <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-10)', flexWrap: 'wrap', marginBottom: 'var(--sp-14)' }}>
       <button type="button" className="btn-ghost" onClick={() => go(addDays(testDate, -1))}>
         ‹ Previous day
       </button>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)', flexWrap: 'wrap', justifyContent: 'center' }}>
         <span className="nm num">{formatDate(testDate, timezone)}</span>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-6)' }}>
           <span className="tiny" style={{ color: 'var(--muted)' }}>
             Jump to date
           </span>
@@ -56,7 +56,7 @@ export function TestDateNav({ testDefinitionId, testDate, timezone, groupIds, da
           />
         </label>
         {dates.length > 0 ? (
-          <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-6)' }}>
             <span className="tiny" style={{ color: 'var(--muted)' }}>
               Past sessions
             </span>

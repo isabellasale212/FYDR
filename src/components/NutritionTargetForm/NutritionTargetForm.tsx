@@ -129,7 +129,7 @@ export function NutritionTargetForm({ orgId, userId, athletes, groups, canPickAn
           </button>
         </div>
         {!canPickAnyScope ? (
-          <p className="tiny" style={{ marginTop: 6 }}>
+          <p className="tiny" style={{ marginTop: 'var(--sp-6)' }}>
             Medical sets a personal target only, for an athlete with an open injury —
             return-to-play nutrition is a medical concern, per the role rules.
           </p>
@@ -166,7 +166,7 @@ export function NutritionTargetForm({ orgId, userId, athletes, groups, canPickAn
           {selectedTrend ? (
             <p
               className={`tiny ${selectedTrend.direction === 'above' ? 'nutr-chase-warn' : 'nutr-chase-bad'}`}
-              style={{ marginTop: 6 }}
+              style={{ marginTop: 'var(--sp-6)' }}
             >
               {selectedTrend.note}
             </p>
@@ -195,13 +195,13 @@ export function NutritionTargetForm({ orgId, userId, athletes, groups, canPickAn
             </button>
           ))}
         </div>
-        <p className="tiny" style={{ marginTop: 6 }}>
+        <p className="tiny" style={{ marginTop: 'var(--sp-6)' }}>
           A specific day overrides &ldquo;any day&rdquo; for that scope. Set &ldquo;any day&rdquo;
           first as the fallback, then add day-specific rows as needed.
         </p>
       </div>
 
-      <div className="stack" style={{ gap: 10 }}>
+      <div className="stack" style={{ gap: 'var(--sp-10)' }}>
         <label>
           <span className="label">Protein (g)</span>
           <input

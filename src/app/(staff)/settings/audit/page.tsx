@@ -94,12 +94,12 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Sea
         </div>
       </div>
 
-      <p className="tiny" style={{ marginBottom: 14 }}>
+      <p className="tiny" style={{ marginBottom: 'var(--sp-14)' }}>
         Every read of a medical record, every role change, every report export — who did it, when, and to
         what. Append-only: nothing here can be edited or deleted, by any role.
       </p>
 
-      <div className="chiprow" style={{ marginBottom: 14 }}>
+      <div className="chiprow" style={{ marginBottom: 'var(--sp-14)' }}>
         <Link href={`/settings/audit${qs({ ...otherParams, type: undefined })}`} className="squad-chip" aria-pressed={!entityType}>
           All
         </Link>
@@ -121,7 +121,7 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Sea
         isAllTime={isAllTime}
       />
 
-      <p className="cap" style={{ marginTop: -6, marginBottom: 14 }}>
+      <p className="cap" style={{ marginTop: -6, marginBottom: 'var(--sp-14)' }}>
         {isAllTime ? 'Showing all time.' : from && to ? `Showing ${from} to ${to}.` : from ? `Showing from ${from}.` : to ? `Showing up to ${to}.` : 'Showing all time.'}{' '}
         The athlete filter matches a direct record (subject access, restriction overrides, availability changes,
         clinical reads) or a report that named the athlete. Some action types — role changes, retention runs,
@@ -167,7 +167,7 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Sea
             </table>
           </div>
 
-          <div className="chiprow" style={{ marginTop: 14, justifyContent: 'space-between' }}>
+          <div className="chiprow" style={{ marginTop: 'var(--sp-14)', justifyContent: 'space-between' }}>
             <p className="cap" style={{ margin: 0 }}>
               {rangeStart}–{rangeEnd} of {result.total}
             </p>

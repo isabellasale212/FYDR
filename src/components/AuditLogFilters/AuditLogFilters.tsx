@@ -71,8 +71,8 @@ export function AuditLogFilters({ actors, athletes, from, to, actorId, athleteId
   const hasAnyFilter = hasNonDateFilter || Boolean(from || to) || isAllTime;
 
   return (
-    <form onSubmit={onSubmit} className="card" style={{ marginBottom: 14 }} aria-label="Filter the audit log">
-      <div className="form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+    <form onSubmit={onSubmit} className="card" style={{ marginBottom: 'var(--sp-14)' }} aria-label="Filter the audit log">
+      <div className="form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 'var(--sp-12)' }}>
         <div>
           <label className="label" htmlFor="audit-from">
             From
@@ -113,7 +113,7 @@ export function AuditLogFilters({ actors, athletes, from, to, actorId, athleteId
         </div>
       </div>
 
-      <div className="form-row" style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+      <div className="form-row" style={{ display: 'flex', gap: 'var(--sp-12)', alignItems: 'flex-end', flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 240px' }}>
           <label className="label" htmlFor="audit-q">
             Search

@@ -115,17 +115,17 @@ export function TeamAllocationBoard({ orgId, userId, weekStart, teams, board, ca
       {pendingReasonFor ? (
         <div className="card" style={{ borderColor: 'var(--warn)' }}>
           <p className="label">This athlete is not fully available</p>
-          <p className="tiny" style={{ marginTop: 4 }}>
+          <p className="tiny" style={{ marginTop: 'var(--sp-4)' }}>
             Give a reason to allocate them anyway. This is recorded against the allocation.
           </p>
           <input
             className="field"
-            style={{ marginTop: 8 }}
+            style={{ marginTop: 'var(--sp-8)' }}
             value={reason}
             onChange={(event) => setReason(event.target.value)}
             placeholder="Cleared verbally, modified role only, etc."
           />
-          <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+          <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-10)' }}>
             <button
               type="button"
               className="btn-primary"
@@ -157,7 +157,7 @@ export function TeamAllocationBoard({ orgId, userId, weekStart, teams, board, ca
             {rows.length === 0 ? (
               <p className="tiny">No one allocated yet.</p>
             ) : (
-              <div className="stack" style={{ gap: 6 }}>
+              <div className="stack" style={{ gap: 'var(--sp-6)' }}>
                 {rows.map((a) => (
                   <div key={a.id} className="load-row" style={{ gridTemplateColumns: '1fr auto auto' }}>
                     <span style={{ minWidth: 0 }}>
@@ -196,10 +196,10 @@ export function TeamAllocationBoard({ orgId, userId, weekStart, teams, board, ca
         {board.unallocated.length === 0 ? (
           <p className="tiny">Everyone is on a team this week.</p>
         ) : (
-          <div className="stack" style={{ gap: 10 }}>
+          <div className="stack" style={{ gap: 'var(--sp-10)' }}>
             {board.unallocated.map((a) => (
               <div key={a.athlete_id}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)' }}>
                   <span className="nm" style={{ flex: 1 }}>
                     {a.first_name} {a.last_name}
                   </span>
@@ -219,7 +219,7 @@ export function TeamAllocationBoard({ orgId, userId, weekStart, teams, board, ca
                    * successful allocation, and an athlete who needs an override
                    * reason should see the prompt, not a select that looks
                    * already-set. */
-                  <div style={{ marginTop: 6 }}>
+                  <div style={{ marginTop: 'var(--sp-6)' }}>
                     <label className="visually-hidden" htmlFor={`alloc-${a.athlete_id}`}>
                       Allocate {a.first_name} {a.last_name} to a team
                     </label>

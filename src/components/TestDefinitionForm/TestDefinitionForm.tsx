@@ -87,7 +87,7 @@ export function TestDefinitionForm({ orgId }: { orgId: string }) {
           placeholder="How to run it — setup, equipment, what counts as a valid attempt. Shown to whoever logs results."
         />
       </label>
-      <div style={{ display: 'flex', gap: 8 }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-8)' }}>
         <label style={{ flex: 1 }}>
           <span className="label">Unit</span>
           <input className="field" value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="cm" />
@@ -108,7 +108,7 @@ export function TestDefinitionForm({ orgId }: { orgId: string }) {
          * 0025) always keeps exactly one is_best = true row per athlete,
          * date and side: whichever attempt is highest (or lowest, per
          * "Direction" below), never a mean of the N. */}
-        <p className="tiny" style={{ color: 'var(--muted)', marginTop: 4 }}>
+        <p className="tiny" style={{ color: 'var(--muted)', marginTop: 'var(--sp-4)' }}>
           Athletes get up to this many tries per session. The best one (per
           the direction below) is kept as that session&rsquo;s result —
           attempts are never averaged.

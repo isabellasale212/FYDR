@@ -83,7 +83,7 @@ export function TestBests({ bestsBySide, unit, decimalPlaces, higherIsBetter, se
         return (
           <div key={entry.side ?? 'none'} style={{ marginTop: index === 0 ? 10 : 18 }}>
             {entry.label ? (
-              <p className="label" style={{ marginBottom: 4 }}>
+              <p className="label" style={{ marginBottom: 'var(--sp-4)' }}>
                 {entry.label}
               </p>
             ) : null}
@@ -91,7 +91,7 @@ export function TestBests({ bestsBySide, unit, decimalPlaces, higherIsBetter, se
             <div className="grid3">
               <div>
                 <p className="tiny">Season&rsquo;s best{seasonName ? ` · ${seasonName}` : ''}</p>
-                <p className="num" style={{ fontSize: 20, fontWeight: 800 }}>
+                <p className="num" style={{ fontSize: 'var(--fs-20)', fontWeight: 800 }}>
                   {valueWithUnit(bests.seasonValue, decimalPlaces, unit)}
                 </p>
                 <p className="tiny" style={{ color: 'var(--muted)' }}>
@@ -101,7 +101,7 @@ export function TestBests({ bestsBySide, unit, decimalPlaces, higherIsBetter, se
 
               <div>
                 <p className="tiny">All-time best</p>
-                <p className="num" style={{ fontSize: 20, fontWeight: 800 }}>
+                <p className="num" style={{ fontSize: 'var(--fs-20)', fontWeight: 800 }}>
                   {valueWithUnit(bests.allTimeValue, decimalPlaces, unit)}
                 </p>
                 <p className="tiny" style={{ color: 'var(--muted)' }}>
@@ -111,14 +111,14 @@ export function TestBests({ bestsBySide, unit, decimalPlaces, higherIsBetter, se
 
               <div>
                 <p className="tiny">Season trend</p>
-                <p style={{ marginTop: 2 }}>
-                  <span className={`pill ${tone}`} style={{ fontSize: 15, fontWeight: 800 }}>
+                <p style={{ marginTop: 'var(--sp-2)' }}>
+                  <span className={`pill ${tone}`} style={{ fontSize: 'var(--fs-15)', fontWeight: 800 }}>
                     {trendText}
                   </span>
                   {isNewPb ? (
                     <span
                       className="pill pill-good"
-                      style={{ marginLeft: 6 }}
+                      style={{ marginLeft: 'var(--sp-6)' }}
                       title={`${entry.label ? `${entry.label}: This` : 'This'} season's best beats every result from outside this season`}
                     >
                       New PB

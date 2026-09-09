@@ -126,13 +126,13 @@ function ProposalRow({
       style={{ gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'start' }}
     >
       <div style={{ minWidth: 0 }}>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-8)', alignItems: 'baseline', flexWrap: 'wrap' }}>
           <span className="nm">{proposal.programme_name}</span>
           <span className={`pill ${live ? 'pill-good' : 'pill-warn'}`}>
             {live ? 'Signed off' : 'Awaiting your sign-off'}
           </span>
         </div>
-        <div className="tiny" style={{ marginTop: 3 }}>
+        <div className="tiny" style={{ marginTop: 'var(--sp-3)' }}>
           From {formatDate(proposal.starts_on, timezone)}
           {proposal.ends_on ? ` to ${formatDate(proposal.ends_on, timezone)}` : ''}
           {live ? '' : ' · not visible to the athlete yet'}
@@ -153,11 +153,11 @@ function ProposalRow({
               onChange={(event) => setReason(event.target.value)}
               aria-describedby={`reason-help-${proposal.assignment_id}`}
             />
-            <p className="tiny" id={`reason-help-${proposal.assignment_id}`} style={{ marginTop: 4 }}>
+            <p className="tiny" id={`reason-help-${proposal.assignment_id}`} style={{ marginTop: 'var(--sp-4)' }}>
               Required. This goes on the timeline as your note and the block stays as a proposal
               — nothing reaches the athlete until you sign it off.
             </p>
-            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <div style={{ display: 'flex', gap: 'var(--sp-8)', marginTop: 'var(--sp-8)' }}>
               <button type="button" className="btn-primary" onClick={submitChanges} disabled={pending}>
                 {changesMutation.isPending ? 'Saving…' : 'Send back'}
               </button>
@@ -178,14 +178,14 @@ function ProposalRow({
         ) : null}
 
         {error ? (
-          <p className="form-error" role="alert" style={{ marginTop: 6 }}>
+          <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-6)' }}>
             {error}
           </p>
         ) : null}
       </div>
 
       {live ? null : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-6)' }}>
           <button
             type="button"
             className="btn-primary"
@@ -229,14 +229,14 @@ export function InjuryTimeline({
   timezone: string;
 }) {
   return (
-    <div className="stack" style={{ gap: 14 }}>
+    <div className="stack" style={{ gap: 'var(--sp-14)' }}>
       {proposals.length > 0 ? (
         <section className="card">
           <h2 className="card-title">Gym work proposed for this injury</h2>
-          <p className="tiny" style={{ marginTop: 2 }}>
+          <p className="tiny" style={{ marginTop: 'var(--sp-2)' }}>
             The S&amp;C drafts the block; it reaches the athlete only once you sign it off.
           </p>
-          <div className="stack" style={{ gap: 6, marginTop: 10 }}>
+          <div className="stack" style={{ gap: 'var(--sp-6)', marginTop: 'var(--sp-10)' }}>
             {proposals.map((p) => (
               <ProposalRow
                 key={p.assignment_id}
@@ -253,12 +253,12 @@ export function InjuryTimeline({
 
       <section className="card">
         <h2 className="card-title">Timeline</h2>
-        <p className="tiny" style={{ marginTop: 2 }}>
+        <p className="tiny" style={{ marginTop: 'var(--sp-2)' }}>
           Medical only. Neither the athlete nor the S&amp;C can read this, and nothing on it can
           be edited or removed.
         </p>
         {events.length === 0 ? (
-          <p className="tiny" style={{ marginTop: 10 }}>
+          <p className="tiny" style={{ marginTop: 'var(--sp-10)' }}>
             Nothing recorded yet.
           </p>
         ) : (

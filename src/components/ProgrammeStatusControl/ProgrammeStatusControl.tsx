@@ -39,7 +39,7 @@ export function ProgrammeStatusControl({ orgId, programmeId, status, canEdit }: 
   });
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)', flexWrap: 'wrap' }}>
       <span className={`pill ${status === 'active' ? 'pill-good' : status === 'draft' ? 'pill-neutral' : 'pill-warn'}`}>
         {enumLabel(status)}
       </span>

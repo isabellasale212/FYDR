@@ -77,7 +77,7 @@ export function FixtureEditForm({ orgId, fixture, timezone }: Props) {
         maxLength={120}
       />
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-14)' }}>
         <div style={{ flex: 1 }}>
           <label className="label" htmlFor="f-date">
             Date
@@ -106,7 +106,7 @@ export function FixtureEditForm({ orgId, fixture, timezone }: Props) {
 
       <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
         <legend className="label">Home, away or neutral</legend>
-        <div className="chiprow" style={{ marginTop: 6 }}>
+        <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
           {HOME_AWAY.map((h) => (
             <button
               key={h}
@@ -121,7 +121,7 @@ export function FixtureEditForm({ orgId, fixture, timezone }: Props) {
         </div>
       </fieldset>
 
-      <label className="label" htmlFor="f-venue" style={{ marginTop: 14 }}>
+      <label className="label" htmlFor="f-venue" style={{ marginTop: 'var(--sp-14)' }}>
         Venue
       </label>
       <input
@@ -132,7 +132,7 @@ export function FixtureEditForm({ orgId, fixture, timezone }: Props) {
         placeholder="Memorial Ground"
       />
 
-      <label className="label" htmlFor="f-competition" style={{ marginTop: 14 }}>
+      <label className="label" htmlFor="f-competition" style={{ marginTop: 'var(--sp-14)' }}>
         Competition
       </label>
       <input
@@ -145,7 +145,7 @@ export function FixtureEditForm({ orgId, fixture, timezone }: Props) {
 
       <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
         <legend className="label">Importance</legend>
-        <div className="chiprow" style={{ marginTop: 6 }}>
+        <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
           {IMPORTANCE.map((i) => (
             <button
               key={i}
@@ -160,7 +160,7 @@ export function FixtureEditForm({ orgId, fixture, timezone }: Props) {
         </div>
       </fieldset>
 
-      <label className="label" htmlFor="f-result" style={{ marginTop: 14 }}>
+      <label className="label" htmlFor="f-result" style={{ marginTop: 'var(--sp-14)' }}>
         Result (optional)
       </label>
       <input
@@ -173,12 +173,12 @@ export function FixtureEditForm({ orgId, fixture, timezone }: Props) {
       />
 
       {error ? (
-        <p className="form-error" role="alert" style={{ marginTop: 14 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-14)' }}>
           {error}
         </p>
       ) : null}
 
-      <div style={{ marginTop: 18 }}>
+      <div style={{ marginTop: 'var(--sp-18)' }}>
         <button type="submit" className="btn-primary" disabled={mutation.isPending}>
           {mutation.isPending ? 'Saving…' : 'Save changes'}
         </button>

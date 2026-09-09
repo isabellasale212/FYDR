@@ -235,6 +235,113 @@
   --gap-grid: 12px;
   --pad-card: 16px;
   --pad-field: 12px 14px;
+
+  /* §2.7 TYPE SCALE. Sixteen steps in rem, added 2026-09-09.
+
+     WHY THERE WAS NONE. This file held 361 tokens and every family bar --r-*
+     was a colour. Type and space had nothing, so 144 inline fontSize values
+     were raw numbers and NOT ONE of them read a token — because there was
+     nothing to read. That is the root cause of the inline-style volume, not
+     carelessness, and it is why this block exists before any migration.
+
+     REM, NOT PX, and that is the accessibility half. check-font-scaling.ts
+     converted 561 base.css declarations on 2026-09-08 for exactly this reason:
+     a px font-size ignores the browser's default-text-size preference outright.
+     Its own header records that the staff app's ~130 inline px values were left
+     "on work nobody has scheduled". They are scheduled now: reading one of
+     these tokens converts a value to rem as a side effect of tokenising it.
+
+     THE STEPS ARE THE ONES THE PRODUCT ALREADY USES. Measured across base.css
+     and every .tsx: 705 declarations over 32 distinct sizes. The counts
+     below are real, so a step nobody uses is visible as a step nobody uses. */
+  --fs-9: 0.5625rem;  /* 9px · 14 declarations */
+  --fs-10: 0.625rem;  /* 10px · 12 declarations */
+  --fs-11: 0.6875rem;  /* 11px · 62 declarations */
+  --fs-12: 0.75rem;  /* 12px · 68 declarations */
+  --fs-13: 0.8125rem;  /* 13px · 71 declarations */
+  --fs-14: 0.875rem;  /* 14px · 45 declarations */
+  --fs-15: 0.9375rem;  /* 15px · 42 declarations */
+  --fs-16: 1rem;  /* 16px · 38 declarations */
+  --fs-18: 1.125rem;  /* 18px · 6 declarations */
+  --fs-20: 1.25rem;  /* 20px · 15 declarations */
+  --fs-22: 1.375rem;  /* 22px · 14 declarations */
+  --fs-24: 1.5rem;  /* 24px · 4 declarations */
+  --fs-28: 1.75rem;  /* 28px · 4 declarations */
+  --fs-32: 2rem;  /* 32px · 1 declaration */
+  --fs-38: 2.375rem;  /* 38px · 1 declaration */
+  --fs-48: 3rem;  /* 48px · 1 declaration */
+
+  /* LEGACY TYPE SIZES — tokenised so nothing is raw, NOT sanctioned for new work.
+     8 of these are half-pixel steps sitting 0.5px from a real step, which
+     is not a design decision; it is noise from a handoff measured at a
+     different scale. Collapsing them would move 277 declarations across 81
+     routes, and whether the caption layer should shift by half a pixel is
+     Isabella's call, not a side effect of tokenising. So they keep their value
+     and are named as legacy: the collapse becomes a 16-line edit here rather
+     than a 307-site migration, and check-scale-tokens.ts fails the build if a
+     NEW call site reaches for one. */
+  --fs-7-5: 0.46875rem;  /* 7.5px · 3 declarations · collapse candidate */
+  --fs-8: 0.5rem;  /* 8px · 3 declarations · collapse candidate */
+  --fs-8-5: 0.53125rem;  /* 8.5px · 2 declarations · collapse candidate */
+  --fs-9-5: 0.59375rem;  /* 9.5px · 5 declarations · collapse candidate */
+  --fs-10-5: 0.65625rem;  /* 10.5px · 47 declarations · collapse candidate */
+  --fs-11-5: 0.71875rem;  /* 11.5px · 58 declarations · collapse candidate */
+  --fs-12-5: 0.78125rem;  /* 12.5px · 92 declarations · collapse candidate */
+  --fs-13-5: 0.84375rem;  /* 13.5px · 46 declarations · collapse candidate */
+  --fs-14-5: 0.90625rem;  /* 14.5px · 24 declarations · collapse candidate */
+  --fs-17: 1.0625rem;  /* 17px · 11 declarations · collapse candidate */
+  --fs-19: 1.1875rem;  /* 19px · 3 declarations · collapse candidate */
+  --fs-26: 1.625rem;  /* 26px · 5 declarations · collapse candidate */
+  --fs-27: 1.6875rem;  /* 27px · 1 declaration · collapse candidate */
+  --fs-30: 1.875rem;  /* 30px · 4 declarations · collapse candidate */
+  --fs-34: 2.125rem;  /* 34px · 2 declarations · collapse candidate */
+  --fs-50: 3.125rem;  /* 50px · 1 declaration · collapse candidate */
+
+  /* §2.7 SPACING RAMP. 2px steps to 20, then the four larger stops in use.
+     1706 declarations over 29 distinct values were measured; 1521 of them
+     already land on this ramp, which is why it is a ramp and not a proposal.
+
+     PX, NOT REM, and unlike the type scale that is deliberate. Spacing in rem
+     grows padding with someone's text preference, which is usually right and is
+     a real behaviour change for every layout in the product. Tokenising must not
+     smuggle that in. Named as an open follow-up rather than decided here.
+
+     --gap-stack, --gap-body, --gap-grid and --pad-card stay exactly as they are.
+     They are NAMED RHYTHMS with arguments attached (see --gap-body above), not
+     ramp steps, and aliasing them to a step would throw away the reasoning. */
+  --sp-0: 0;  /* 125 declarations */
+  --sp-2: 2px;  /* 69 declarations */
+  --sp-4: 4px;  /* 78 declarations */
+  --sp-6: 6px;  /* 167 declarations */
+  --sp-8: 8px;  /* 225 declarations */
+  --sp-10: 10px;  /* 297 declarations */
+  --sp-12: 12px;  /* 144 declarations */
+  --sp-14: 14px;  /* 287 declarations */
+  --sp-16: 16px;  /* 64 declarations */
+  --sp-18: 18px;  /* 44 declarations */
+  --sp-20: 20px;  /* 12 declarations */
+  --sp-24: 24px;  /* 2 declarations */
+  --sp-28: 28px;  /* 4 declarations */
+  --sp-32: 32px;  /* 1 declaration */
+  --sp-40: 40px;  /* 1 declaration */
+  --sp-48: 48px;  /* 1 declaration */
+
+  /* LEGACY SPACING — same contract as the legacy type sizes. Odd values sitting
+     1px off a ramp step, carrying 184 declarations between them. 176px is
+     excluded entirely: it is a sidebar offset, a layout constant rather than a
+     spacing step, and it stays where it is. */
+  --sp-1: 1px;  /* 8 declarations · collapse candidate */
+  --sp-3: 3px;  /* 45 declarations · collapse candidate */
+  --sp-5: 5px;  /* 24 declarations · collapse candidate */
+  --sp-7: 7px;  /* 18 declarations · collapse candidate */
+  --sp-9: 9px;  /* 31 declarations · collapse candidate */
+  --sp-11: 11px;  /* 31 declarations · collapse candidate */
+  --sp-13: 13px;  /* 13 declarations · collapse candidate */
+  --sp-15: 15px;  /* 2 declarations · collapse candidate */
+  --sp-17: 17px;  /* 1 declarations · collapse candidate */
+  --sp-22: 22px;  /* 5 declarations · collapse candidate */
+  --sp-26: 26px;  /* 5 declarations · collapse candidate */
+  --sp-36: 36px;  /* 1 declarations · collapse candidate */
   --t-state: 0.15s ease;
   --t-press: 0.08s ease;
   /* The one entrance curve in the product. A strong ease-out: fast out of the

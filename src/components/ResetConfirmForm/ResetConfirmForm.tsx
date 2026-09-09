@@ -130,7 +130,7 @@ export function ResetConfirmForm() {
 
   if (phase === 'checking') {
     return (
-      <p className="tiny" style={{ marginTop: 28 }}>
+      <p className="tiny" style={{ marginTop: 'var(--sp-28)' }}>
         Checking your reset link.
       </p>
     );
@@ -180,7 +180,7 @@ export function ResetConfirmForm() {
             value={next}
             onChange={setNext}
           />
-          <p className="cap" style={{ marginTop: 4 }}>
+          <p className="cap" style={{ marginTop: 'var(--sp-4)' }}>
             At least {MIN_LENGTH} characters.
           </p>
         </div>

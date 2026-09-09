@@ -682,7 +682,7 @@ export function GymSessionLogger({
           ) : null}
 
           {!alreadyComplete ? (
-            <div className="card" style={{ marginTop: 4 }}>
+            <div className="card" style={{ marginTop: 'var(--sp-4)' }}>
               <label>
                 <span className="label">Session RPE (optional)</span>
                 <input
@@ -721,7 +721,7 @@ export function GymSessionLogger({
               <button
                 type="button"
                 className="btn-primary"
-                style={{ width: '100%', marginTop: 14 }}
+                style={{ width: '100%', marginTop: 'var(--sp-14)' }}
                 disabled={completeMutation.isPending}
                 onClick={() => completeMutation.mutate()}
               >
@@ -729,7 +729,7 @@ export function GymSessionLogger({
                   ? 'Finish session'
                   : `Finish early · ${doneCount} of ${totalSets}`}
               </button>
-              <p className="tiny" style={{ textAlign: 'center', marginTop: 8 }}>
+              <p className="tiny" style={{ textAlign: 'center', marginTop: 'var(--sp-8)' }}>
                 Sets save as you log them.
               </p>
             </>

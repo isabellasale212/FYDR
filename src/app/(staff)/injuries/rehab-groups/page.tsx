@@ -66,7 +66,7 @@ export default async function RehabGroupsPage({ searchParams }: { searchParams: 
       </div>
 
       {!isMedical ? (
-        <div className="note" style={{ marginTop: 10 }}>
+        <div className="note" style={{ marginTop: 'var(--sp-10)' }}>
           <div className="note-glyph">i</div>
           <p className="note-text">
             <b>Rehab groups are managed by medical staff.</b> You see who is in which
@@ -76,7 +76,7 @@ export default async function RehabGroupsPage({ searchParams }: { searchParams: 
         </div>
       ) : null}
 
-      <div style={{ marginTop: 14 }}>
+      <div style={{ marginTop: 'var(--sp-14)' }}>
         {board.members.length === 0 && rehabGroups.length === 0 ? (
           <EmptyState
             title="No rehab groups yet"

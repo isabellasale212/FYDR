@@ -63,7 +63,7 @@ export function ApplyControls({ orgId, userId, templates, selectedTemplateId, we
 
   return (
     <>
-      <div className="card" style={{ marginBottom: 14 }}>
+      <div className="card" style={{ marginBottom: 'var(--sp-14)' }}>
         <label className="tiny">
           Template
           <select
@@ -81,7 +81,7 @@ export function ApplyControls({ orgId, userId, templates, selectedTemplateId, we
         </label>
 
         {selectedTemplateId ? (
-          <div className="chiprow" style={{ marginTop: 14 }} role="radiogroup" aria-label="Apply strategy">
+          <div className="chiprow" style={{ marginTop: 'var(--sp-14)' }} role="radiogroup" aria-label="Apply strategy">
             {STRATEGIES.map((s) => (
               <Link
                 key={s.value}
@@ -98,7 +98,7 @@ export function ApplyControls({ orgId, userId, templates, selectedTemplateId, we
       </div>
 
       {selectedTemplateId && previewRows.length > 0 ? (
-        <div className="card" style={{ overflowX: 'auto', marginBottom: 14 }}>
+        <div className="card" style={{ overflowX: 'auto', marginBottom: 'var(--sp-14)' }}>
           <table className="tbl">
             <thead>
               <tr>
@@ -123,7 +123,7 @@ export function ApplyControls({ orgId, userId, templates, selectedTemplateId, we
             </tbody>
           </table>
           {planSummary ? (
-            <p className="cap" style={{ marginTop: 10 }}>
+            <p className="cap" style={{ marginTop: 'var(--sp-10)' }}>
               {planSummary.create} session{planSummary.create === 1 ? '' : 's'} will be created.{' '}
               {planSummary.softDelete} existing session{planSummary.softDelete === 1 ? '' : 's'} removed. {planSummary.keep} kept.
               {planSummary.unmapped.length > 0
@@ -138,13 +138,13 @@ export function ApplyControls({ orgId, userId, templates, selectedTemplateId, we
       {selectedTemplateId ? (
         <div className="card">
           {error ? (
-            <div className="banner" role="alert" style={{ marginBottom: 10 }}>
+            <div className="banner" role="alert" style={{ marginBottom: 'var(--sp-10)' }}>
               <span className="g g-warn" aria-hidden="true">⚠</span>
               <div>{error}</div>
             </div>
           ) : null}
           {result ? (
-            <div className="note" style={{ marginBottom: 10 }}>
+            <div className="note" style={{ marginBottom: 'var(--sp-10)' }}>
               <div className="note-glyph">✓</div>
               <p className="note-text">
                 Created {result.created} session{result.created === 1 ? '' : 's'}
@@ -158,7 +158,7 @@ export function ApplyControls({ orgId, userId, templates, selectedTemplateId, we
         </div>
       ) : null}
 
-      <p className="cap" style={{ marginTop: 14 }}>
+      <p className="cap" style={{ marginTop: 'var(--sp-14)' }}>
         Applying a template can&rsquo;t be undone, and there is no conflict check if someone
         else edits this week while you have this page open. Review the plan above before
         applying. The sessions it creates are in the athlete app straight away, for the

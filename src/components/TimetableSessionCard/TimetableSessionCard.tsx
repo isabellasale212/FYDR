@@ -153,7 +153,7 @@ export function TimetableSessionCard({ orgId, userId, actorRole, canRecord, sess
           padding: '14px 18px',
           display: 'flex',
           alignItems: 'center',
-          gap: 10,
+          gap: 'var(--sp-10)',
           flexWrap: 'wrap',
         }}
       >
@@ -183,7 +183,7 @@ export function TimetableSessionCard({ orgId, userId, actorRole, canRecord, sess
                   padding: '10px 18px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 10,
+                  gap: 'var(--sp-10)',
                   flexWrap: 'wrap',
                   borderBottom: '1px solid var(--hair)',
                 }}
@@ -246,7 +246,7 @@ export function TimetableSessionCard({ orgId, userId, actorRole, canRecord, sess
                     <div key={p.athlete_id}>
                       {index > 0 ? <div className="hair" /> : null}
                       <div style={{ padding: '10px 18px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)', flexWrap: 'wrap' }}>
                           <span className="nm">
                             {p.first_name} {p.last_name}
                           </span>
@@ -285,7 +285,7 @@ export function TimetableSessionCard({ orgId, userId, actorRole, canRecord, sess
                           </div>
                         </div>
                         {failure?.kind === 'mark' && failure.input.athleteId === p.athlete_id ? (
-                          <p className="form-error" role="alert" style={{ marginTop: 6 }}>
+                          <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-6)' }}>
                             {failure.message}{' '}
                             <button
                               type="button"
@@ -298,14 +298,14 @@ export function TimetableSessionCard({ orgId, userId, actorRole, canRecord, sess
                           </p>
                         ) : null}
                         {p.restrictions.length > 0 ? (
-                          <p className="tiny" style={{ marginTop: 4 }}>
+                          <p className="tiny" style={{ marginTop: 'var(--sp-4)' }}>
                             {p.restrictions.join(' · ')}
                           </p>
                         ) : null}
                         {p.attendance === 'modified' ? (
                           <input
                             className="field"
-                            style={{ marginTop: 6, maxWidth: 380 }}
+                            style={{ marginTop: 'var(--sp-6)', maxWidth: 380 }}
                             placeholder="Reason (required — left early, family, etc.)"
                             defaultValue={p.modified_reason ?? ''}
                             onChange={(e) => setReasonDrafts((d) => ({ ...d, [p.athlete_id]: e.target.value }))}
@@ -315,13 +315,13 @@ export function TimetableSessionCard({ orgId, userId, actorRole, canRecord, sess
                           />
                         ) : null}
                         {!p.modified_reason && p.attendance === 'modified' ? (
-                          <p className="tiny" style={{ color: 'var(--warn-text)', marginTop: 4 }}>
+                          <p className="tiny" style={{ color: 'var(--warn-text)', marginTop: 'var(--sp-4)' }}>
                             A reason is needed — unreadable a week from now without one.
                           </p>
                         ) : null}
 
                         {overrideFor === p.athlete_id ? (
-                          <div className="note" style={{ marginTop: 8, borderColor: 'var(--warn)' }}>
+                          <div className="note" style={{ marginTop: 'var(--sp-8)', borderColor: 'var(--warn)' }}>
                             <div className="note-glyph">⚠</div>
                             <div style={{ flex: 1 }}>
                               <p className="note-text">
@@ -329,12 +329,12 @@ export function TimetableSessionCard({ orgId, userId, actorRole, canRecord, sess
                               </p>
                               <input
                                 className="field"
-                                style={{ marginTop: 6 }}
+                                style={{ marginTop: 'var(--sp-6)' }}
                                 placeholder="Reason for overriding the restriction"
                                 value={overrideReason}
                                 onChange={(e) => setOverrideReason(e.target.value)}
                               />
-                              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                              <div style={{ display: 'flex', gap: 'var(--sp-8)', marginTop: 'var(--sp-8)' }}>
                                 <button
                                   type="button"
                                   className="btn-primary"

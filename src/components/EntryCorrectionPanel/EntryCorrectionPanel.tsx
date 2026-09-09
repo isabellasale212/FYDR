@@ -110,11 +110,11 @@ export function EntryCorrectionPanel({
           : `${correctedWellness + correctedTraining} of these entries carry a correction. Expand one to see what it said before.`}
       </p>
 
-      <h3 className="card-title" style={{ fontSize: 14, marginTop: 18 }}>
+      <h3 className="card-title" style={{ fontSize: 'var(--fs-14)', marginTop: 'var(--sp-18)' }}>
         Wellness check-ins
       </h3>
       {wellness.length === 0 ? (
-        <p className="cap" style={{ marginTop: 6 }}>
+        <p className="cap" style={{ marginTop: 'var(--sp-6)' }}>
           No wellness entries in the {WINDOW_LABEL}.
         </p>
       ) : (
@@ -177,11 +177,11 @@ export function EntryCorrectionPanel({
         </div>
       )}
 
-      <h3 className="card-title" style={{ fontSize: 14, marginTop: 22 }}>
+      <h3 className="card-title" style={{ fontSize: 'var(--fs-14)', marginTop: 'var(--sp-22)' }}>
         Session ratings (RPE)
       </h3>
       {training.length === 0 ? (
-        <p className="cap" style={{ marginTop: 6 }}>
+        <p className="cap" style={{ marginTop: 'var(--sp-6)' }}>
           No session ratings in the {WINDOW_LABEL}.
         </p>
       ) : (
@@ -240,7 +240,7 @@ export function EntryCorrectionPanel({
         * nutrition numbers on the same athlete have no Correct button, and the honest
         * answer is that the database has no staff write path to those two tables at all
         * (0012 §11, 0045). Saying so is better than a button that always fails. */}
-      <p className="cap" style={{ marginTop: 18 }}>
+      <p className="cap" style={{ marginTop: 'var(--sp-18)' }}>
         Gym set logs and the weekly nutrition check-in are not correctable here. Neither
         table has a staff write path, so those two stay the athlete&rsquo;s own to fix
         from their app.
@@ -582,7 +582,7 @@ function WellnessCorrectionForm({
         setError(null);
         save.mutate();
       }}
-      style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end', padding: '10px 0' }}
+      style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-12)', alignItems: 'flex-end', padding: '10px 0' }}
     >
       <p className="cap" style={{ flexBasis: '100%', margin: 0 }}>
         Correcting {formatDate(entry.entry_date, timezone)}. Change only what is wrong —
@@ -681,7 +681,7 @@ function TrainingCorrectionForm({
         setError(null);
         save.mutate();
       }}
-      style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end', padding: '10px 0' }}
+      style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-12)', alignItems: 'flex-end', padding: '10px 0' }}
     >
       <p className="cap" style={{ flexBasis: '100%', margin: 0 }}>
         Correcting the rating for {formatDate(entry.entry_date, timezone)}. Session load

@@ -52,14 +52,14 @@ const GRID = 'minmax(168px, 1.2fr) 66px 128px 104px 80px 76px 76px 70px 74px 66p
 export function TargetsTable({ unitGroups, selectedAthleteId, onSelectAthlete }: Props) {
   if (unitGroups.length === 0) {
     return (
-      <div className="card" style={{ padding: 16 }}>
+      <div className="card" style={{ padding: 'var(--sp-16)' }}>
         <p className="tiny">No athletes in the current group filter.</p>
       </div>
     );
   }
 
   return (
-    <div className="card" style={{ padding: 16, overflowX: 'auto' }}>
+    <div className="card" style={{ padding: 'var(--sp-16)', overflowX: 'auto' }}>
       {/* Widened from 940 by the new "Staff target" column's 104px plus its gap. The
         * card already scrolls horizontally, so this sets the point at which it starts
         * rather than allowing the columns to crush. */}

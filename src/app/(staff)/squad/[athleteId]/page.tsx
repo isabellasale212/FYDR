@@ -468,7 +468,7 @@ export default async function AthletePage({
             {athlete.first_name} {athlete.last_name}
           </h1>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
           <PeriodSelector
             value={period.key}
             allowed={PROFILE_PERIODS}
@@ -535,7 +535,7 @@ export default async function AthletePage({
             canEdit={canEditBio}
             backLink={
               <Link href="/squad" className="btn-ghost-pill">
-                <span aria-hidden="true" style={{ fontSize: 14, lineHeight: 1 }}>
+                <span aria-hidden="true" style={{ fontSize: 'var(--fs-14)', lineHeight: 1 }}>
                   ‹
                 </span>
                 Squad
@@ -920,7 +920,7 @@ export default async function AthletePage({
                       <span className="u"> kg</span>
                     </p>
                   ) : (
-                    <p className="cap" style={{ marginTop: 8 }}>
+                    <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
                       No weigh-in recorded.
                     </p>
                   )}
@@ -962,7 +962,7 @@ export default async function AthletePage({
                     <p className="pp-weight-note">No staff target range set.</p>
                   )}
                   {liveTargetRange?.rationale ? (
-                    <p className="pp-weight-note" style={{ marginTop: 2 }}>
+                    <p className="pp-weight-note" style={{ marginTop: 'var(--sp-2)' }}>
                       {liveTargetRange.rationale}
                     </p>
                   ) : null}
@@ -1010,7 +1010,7 @@ export default async function AthletePage({
                 * now whatever the header control says, and the line says which
                 * — with the real sample behind it, because a wide window with
                 * four weigh-ins in it is not the trend it looks like. */}
-              <p className="cap" style={{ marginTop: 6 }}>
+              <p className="cap" style={{ marginTop: 'var(--sp-6)' }}>
                 {profile.range.label.toLowerCase()} · {bodyWeight.history.length} weigh-in
                 {bodyWeight.history.length === 1 ? '' : 's'} in this window
                 {bodyWeight.history.length < 2 ? ' — not enough for a trend line' : ''}
@@ -1063,7 +1063,7 @@ export default async function AthletePage({
             <h2 className="card-title" id="sar-title">
               Subject access request
             </h2>
-            <p className="cap" style={{ marginBottom: 10 }}>
+            <p className="cap" style={{ marginBottom: 'var(--sp-10)' }}>
               Article 15, UK GDPR. Generates every row referencing {athlete.first_name} across every
               table, once medical has reviewed any clinical detail. Not part of the visual spec above —
               kept here because it is real, working compliance functionality with no other home on this

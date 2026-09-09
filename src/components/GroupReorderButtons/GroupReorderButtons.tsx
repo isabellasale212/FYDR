@@ -47,7 +47,7 @@ export function GroupReorderButtons({ orgId, groupId, groupName, canMoveUp, canM
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
       {error ? (
         <span className="form-error" role="alert">
           {error}

@@ -104,7 +104,7 @@ export function NewInjuryForm({ orgId, userId, timezone, athletes, initialAthlet
         ))}
       </select>
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-14)' }}>
         <div style={{ flex: 1 }}>
           <label className="label" htmlFor="new-inj-area">
             Body area
@@ -137,7 +137,7 @@ export function NewInjuryForm({ orgId, userId, timezone, athletes, initialAthlet
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-14)' }}>
         <div style={{ flex: 1 }}>
           <label className="label" htmlFor="new-inj-onset">
             Onset date
@@ -170,7 +170,7 @@ export function NewInjuryForm({ orgId, userId, timezone, athletes, initialAthlet
         </div>
       </div>
 
-      <label className="label" htmlFor="new-inj-expected" style={{ marginTop: 14 }}>
+      <label className="label" htmlFor="new-inj-expected" style={{ marginTop: 'var(--sp-14)' }}>
         Expected return (optional)
       </label>
       <input
@@ -182,12 +182,12 @@ export function NewInjuryForm({ orgId, userId, timezone, athletes, initialAthlet
       />
 
       {error ? (
-        <p className="form-error" role="alert" style={{ marginTop: 14 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-14)' }}>
           {error}
         </p>
       ) : null}
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-18)' }}>
         <button type="submit" className="btn-primary" disabled={mutation.isPending}>
           {mutation.isPending ? 'Saving…' : 'Create injury record'}
         </button>

@@ -333,7 +333,7 @@ export function NutritionWorkspace({
 
         <div className="card nutr-rail-card">
           <h2 className="card-title">Day type</h2>
-          <p className="tiny" style={{ marginTop: -4, marginBottom: 8 }}>
+          <p className="tiny" style={{ marginTop: -4, marginBottom: 'var(--sp-8)' }}>
             Carbohydrate is periodised. Protein and fat hold.
           </p>
           <div className="nutr-plan-list">
@@ -359,7 +359,7 @@ export function NutritionWorkspace({
             <span className="pill pill-bad">{chaseList.length} open</span>
           </div>
           {chaseList.length === 0 ? (
-            <p className="tiny" style={{ marginTop: 10 }}>
+            <p className="tiny" style={{ marginTop: 'var(--sp-10)' }}>
               Nothing needs a word right now.
             </p>
           ) : (
@@ -392,7 +392,7 @@ export function NutritionWorkspace({
                   : 'Create a plan to begin'}
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 'var(--sp-8)' }}>
               <button type="button" className="btn-ghost" disabled title="Not available yet">
                 Duplicate
               </button>
@@ -503,7 +503,7 @@ export function NutritionWorkspace({
                 <div className="nutr-plan-rules-sub">Pick an athlete below to price this day.</div>
               )}
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 'var(--sp-8)' }}>
               <button
                 type="button"
                 className="btn-ghost"
@@ -567,7 +567,7 @@ export function NutritionWorkspace({
               </div>
             </>
           ) : (
-            <p className="tiny" style={{ marginTop: 14 }}>
+            <p className="tiny" style={{ marginTop: 'var(--sp-14)' }}>
               Select an athlete with a recorded weigh-in to price a day of food for them.
             </p>
           )}

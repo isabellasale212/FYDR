@@ -97,7 +97,7 @@ export function SetAvailabilityForm({ orgId, userId, athleteId, injuryId }: Prop
   return (
     <div className="card">
       <p className="label">Set availability</p>
-      <div className="chiprow" style={{ marginTop: 8 }}>
+      <div className="chiprow" style={{ marginTop: 'var(--sp-8)' }}>
         {STATUSES.map((s) => (
           <button
             key={s}
@@ -113,10 +113,10 @@ export function SetAvailabilityForm({ orgId, userId, athleteId, injuryId }: Prop
 
       {status !== 'available' ? (
         <>
-          <p className="label" style={{ marginTop: 14 }}>
+          <p className="label" style={{ marginTop: 'var(--sp-14)' }}>
             Restrictions (coach visible)
           </p>
-          <div className="chiprow" style={{ marginTop: 6 }}>
+          <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
             {COMMON_RESTRICTIONS.map((r) => (
               <button
                 key={r}
@@ -130,7 +130,7 @@ export function SetAvailabilityForm({ orgId, userId, athleteId, injuryId }: Prop
             ))}
           </div>
 
-          <label className="label" htmlFor="avail-reason" style={{ marginTop: 14 }}>
+          <label className="label" htmlFor="avail-reason" style={{ marginTop: 'var(--sp-14)' }}>
             Reason
           </label>
           <select
@@ -148,13 +148,13 @@ export function SetAvailabilityForm({ orgId, userId, athleteId, injuryId }: Prop
         </>
       ) : null}
 
-      <label className="label" htmlFor="avail-note" style={{ marginTop: 14 }}>
+      <label className="label" htmlFor="avail-note" style={{ marginTop: 'var(--sp-14)' }}>
         Note (coach visible &mdash; not a clinical field)
       </label>
       <input id="avail-note" className="field" value={note} onChange={(event) => setNote(event.target.value)} />
 
       {error ? (
-        <p className="form-error" role="alert" style={{ marginTop: 10 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-10)' }}>
           {error}
         </p>
       ) : null}
@@ -162,7 +162,7 @@ export function SetAvailabilityForm({ orgId, userId, athleteId, injuryId }: Prop
       <button
         type="button"
         className="btn-primary"
-        style={{ marginTop: 14 }}
+        style={{ marginTop: 'var(--sp-14)' }}
         disabled={mutation.isPending}
         onClick={() => mutation.mutate()}
       >

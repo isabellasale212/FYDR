@@ -64,7 +64,7 @@ export function TestHistoryList({ orgId, testDefinitionId, athleteId, timezone, 
       {[...byDate.entries()].map(([date, dayRows]) => (
         <div key={date} className="card">
           <p className="label">{formatDate(date, timezone)}</p>
-          <div className="stack" style={{ gap: 6, marginTop: 8 }}>
+          <div className="stack" style={{ gap: 'var(--sp-6)', marginTop: 'var(--sp-8)' }}>
             {dayRows.map((r) => (
               <div key={r.id}>
                 <div className="load-row" style={{ gridTemplateColumns: '1fr auto auto' }}>
@@ -87,16 +87,16 @@ export function TestHistoryList({ orgId, testDefinitionId, athleteId, timezone, 
                 </div>
                 {r.conditions ? <p className="tiny">{r.conditions}</p> : null}
                 {markingId === r.id ? (
-                  <div className="card" style={{ marginTop: 8, borderColor: 'var(--warn)' }}>
+                  <div className="card" style={{ marginTop: 'var(--sp-8)', borderColor: 'var(--warn)' }}>
                     <p className="tiny">Why is this the best attempt, not the highest/lowest value?</p>
                     <input
                       className="field"
-                      style={{ marginTop: 6 }}
+                      style={{ marginTop: 'var(--sp-6)' }}
                       value={conditions}
                       onChange={(e) => setConditions(e.target.value)}
                       placeholder="Other attempt wind-assisted, technique fault, etc."
                     />
-                    <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+                    <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-8)' }}>
                       <button
                         type="button"
                         className="btn-primary"

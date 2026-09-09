@@ -126,7 +126,7 @@ export function DashboardHeadlineStats({
               : isAnchoredToPast
                 ? 'window closed 09:00 that day'
                 : 'window closes 09:00'}
-            <span className="dash-flags-chevron" data-open={expanded === 'wellness'} aria-hidden="true" style={{ marginLeft: 6 }}>
+            <span className="dash-flags-chevron" data-open={expanded === 'wellness'} aria-hidden="true" style={{ marginLeft: 'var(--sp-6)' }}>
               ⌄
             </span>
           </div>
@@ -162,7 +162,7 @@ export function DashboardHeadlineStats({
           </div>
           <div className="dash-stat-foot">
             injury status set by medical, other absences by coach
-            <span className="dash-flags-chevron" data-open={expanded === 'available'} aria-hidden="true" style={{ marginLeft: 6 }}>
+            <span className="dash-flags-chevron" data-open={expanded === 'available'} aria-hidden="true" style={{ marginLeft: 'var(--sp-6)' }}>
               ⌄
             </span>
           </div>
@@ -221,7 +221,7 @@ export function DashboardHeadlineStats({
       {expanded === 'wellness' ? (
         <div className="dash-stat-expand" role="region" aria-label="Athletes still to submit wellness">
           <div className="dash-stat-expand-head">
-            <span style={{ fontSize: 13, fontWeight: 700 }}>Still to submit</span>
+            <span style={{ fontSize: 'var(--fs-13)', fontWeight: 700 }}>Still to submit</span>
             <span className="tiny" style={{ color: 'var(--muted)' }}>
               {stats.wellnessSub}
             </span>
@@ -234,7 +234,7 @@ export function DashboardHeadlineStats({
             stats.wellnessMissingNames.map((name) => (
               <div key={name} className="dash-stat-expand-row">
                 <span className="dash-squad-dot" style={{ background: 'var(--warn)' }} aria-hidden="true" />
-                <span style={{ fontSize: 13.5, fontWeight: 600 }}>{name}</span>
+                <span style={{ fontSize: 'var(--fs-13-5)', fontWeight: 600 }}>{name}</span>
               </div>
             ))
           )}
@@ -247,7 +247,7 @@ export function DashboardHeadlineStats({
       {expanded === 'available' ? (
         <div className="dash-stat-expand" role="region" aria-label="Athletes not fully available">
           <div className="dash-stat-expand-head">
-            <span style={{ fontSize: 13, fontWeight: 700 }}>Not fully available</span>
+            <span style={{ fontSize: 'var(--fs-13)', fontWeight: 700 }}>Not fully available</span>
             <span className="tiny" style={{ color: 'var(--muted)' }}>
               {stats.modifiedCount} modified, {stats.unavailableCount} out of {stats.availableTotal}
             </span>
@@ -259,13 +259,13 @@ export function DashboardHeadlineStats({
               {modifiedNamed.map((name) => (
                 <div key={`mod-${name}`} className="dash-stat-expand-row">
                   <span className="dash-squad-dot" style={{ background: 'var(--warn)' }} aria-hidden="true" />
-                  <span style={{ fontSize: 13.5, fontWeight: 600 }}>{name}</span>
+                  <span style={{ fontSize: 'var(--fs-13-5)', fontWeight: 600 }}>{name}</span>
                 </div>
               ))}
               {unavailableNamed.map((name) => (
                 <div key={`out-${name}`} className="dash-stat-expand-row">
                   <span className="dash-squad-dot" style={{ background: 'var(--bad)' }} aria-hidden="true" />
-                  <span style={{ fontSize: 13.5, fontWeight: 600 }}>{name}</span>
+                  <span style={{ fontSize: 'var(--fs-13-5)', fontWeight: 600 }}>{name}</span>
                 </div>
               ))}
             </>

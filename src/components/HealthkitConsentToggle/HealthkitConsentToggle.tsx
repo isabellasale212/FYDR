@@ -35,7 +35,7 @@ export function HealthkitConsentToggle({ orgId, athleteId, initialGranted }: Pro
   });
 
   return (
-    <div style={{ marginTop: 10 }}>
+    <div style={{ marginTop: 'var(--sp-10)' }}>
       <button
         type="button"
         className="squad-chip"

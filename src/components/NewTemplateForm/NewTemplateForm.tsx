@@ -43,14 +43,14 @@ export function NewTemplateForm({ orgId, userId }: Props) {
         <input className="field" value={name} onChange={(e) => setName(e.target.value)} placeholder="Standard 1-game week" autoFocus />
       </label>
       {error ? (
-        <p className="tiny" role="alert" style={{ color: 'var(--bad-text)', marginTop: 8 }}>
+        <p className="tiny" role="alert" style={{ color: 'var(--bad-text)', marginTop: 'var(--sp-8)' }}>
           {error}
         </p>
       ) : null}
-      <button type="submit" className="btn-primary" style={{ marginTop: 14 }} disabled={mutation.isPending}>
+      <button type="submit" className="btn-primary" style={{ marginTop: 'var(--sp-14)' }} disabled={mutation.isPending}>
         {mutation.isPending ? 'Creating…' : 'Create and open the builder'}
       </button>
-      <p className="cap" style={{ marginTop: 10 }}>
+      <p className="cap" style={{ marginTop: 'var(--sp-10)' }}>
         Starts at MD-6 to MD, empty except MD-1. Add sessions, positions and required entries in
         the builder — nothing here is final.
       </p>

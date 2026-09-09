@@ -401,7 +401,7 @@ export default async function TodayPage({
                     <span style={{ fontSize: '1.0625rem', fontWeight: 700, letterSpacing: '-0.01em' }}>
                       {item.name}
                     </span>
-                    <span className="tiny" style={{ display: 'block', marginTop: 2 }}>
+                    <span className="tiny" style={{ display: 'block', marginTop: 'var(--sp-2)' }}>
                       {item.sub}
                     </span>
                   </span>

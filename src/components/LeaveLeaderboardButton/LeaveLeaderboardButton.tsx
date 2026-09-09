@@ -28,7 +28,7 @@ export function LeaveLeaderboardButton({ orgId, athleteId, userId, boardId, boar
   return (
     <div className="card">
       {error ? (
-        <p className="form-error" role="alert" style={{ marginBottom: 10 }}>
+        <p className="form-error" role="alert" style={{ marginBottom: 'var(--sp-10)' }}>
           {error}
         </p>
       ) : null}

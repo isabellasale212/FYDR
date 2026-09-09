@@ -134,7 +134,7 @@ export function ChangePasswordForm() {
           value={next}
           onChange={(event) => setNext(event.target.value)}
         />
-        <p className="cap" style={{ marginTop: 4 }}>
+        <p className="cap" style={{ marginTop: 'var(--sp-4)' }}>
           At least {MIN_LENGTH} characters.
         </p>
       </div>

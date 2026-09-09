@@ -170,7 +170,7 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                     Personal bests
                   </h2>
                   {byAthlete.rows.length === 0 ? (
-                    <p className="tiny" style={{ padding: 16 }}>
+                    <p className="tiny" style={{ padding: 'var(--sp-16)' }}>
                       {groupIds.length > 0
                         ? `No athletes in the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter to see the whole squad.`
                         : 'No athletes in this squad yet.'}
@@ -249,19 +249,19 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                       <div className="grid3">
                         <div className="card">
                           <p className="tiny">Median</p>
-                          <p className="num" style={{ fontSize: 20, fontWeight: 800 }}>
+                          <p className="num" style={{ fontSize: 'var(--fs-20)', fontWeight: 800 }}>
                             {byTest.median === null ? BLANK : formatNumber(byTest.median, byTest.definition.decimal_places)} {byTest.definition.unit}
                           </p>
                         </div>
                         <div className="card">
                           <p className="tiny">Q1</p>
-                          <p className="num" style={{ fontSize: 20, fontWeight: 800 }}>
+                          <p className="num" style={{ fontSize: 'var(--fs-20)', fontWeight: 800 }}>
                             {byTest.q1 === null ? BLANK : formatNumber(byTest.q1, byTest.definition.decimal_places)}
                           </p>
                         </div>
                         <div className="card">
                           <p className="tiny">Q3</p>
-                          <p className="num" style={{ fontSize: 20, fontWeight: 800 }}>
+                          <p className="num" style={{ fontSize: 'var(--fs-20)', fontWeight: 800 }}>
                             {byTest.q3 === null ? BLANK : formatNumber(byTest.q3, byTest.definition.decimal_places)}
                           </p>
                         </div>
@@ -280,7 +280,7 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                            * looking for a data-entry problem that isn't
                            * there. The empty state names the window and the
                            * widest one available. */
-                          <p className="tiny" style={{ padding: 16 }}>
+                          <p className="tiny" style={{ padding: 'var(--sp-16)' }}>
                             {groupIds.length > 0
                               ? `No result recorded for this test in ${period.range.label.toLowerCase()} for the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter, or widen the period to "All on record".`
                               : `No result recorded for this test in ${period.range.label.toLowerCase()} — widen the period to "All on record" to check the club's whole history.`}
@@ -309,7 +309,7 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                           Squad median over time &mdash; {period.range.label.toLowerCase()}
                         </h2>
                         {longitudinal.length === 0 ? (
-                          <p className="tiny" style={{ padding: 16 }}>
+                          <p className="tiny" style={{ padding: 'var(--sp-16)' }}>
                             No test dates in {period.range.label.toLowerCase()} — widen the period to see further back.
                           </p>
                         ) : (

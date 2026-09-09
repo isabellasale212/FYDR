@@ -316,7 +316,7 @@ export function OutboxFlusher({ orgId, athleteId, userId, timezone }: Props) {
           key={`${c.domain}-${c.id}`}
           className="banner"
           role="alert"
-          style={{ marginBottom: 12, borderColor: 'var(--warn)' }}
+          style={{ marginBottom: 'var(--sp-12)', borderColor: 'var(--warn)' }}
         >
           <span className="g g-warn" aria-hidden="true">
             !

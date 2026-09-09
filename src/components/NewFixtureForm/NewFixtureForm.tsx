@@ -100,7 +100,7 @@ export function NewFixtureForm({ orgId, userId, defaultDate, timezone }: Props) 
         placeholder="Ashfield RFC"
       />
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-14)' }}>
         <div style={{ flex: 1 }}>
           <label className="label" htmlFor="f-date">
             Date
@@ -130,7 +130,7 @@ export function NewFixtureForm({ orgId, userId, defaultDate, timezone }: Props) 
 
       <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
         <legend className="label">Home or away</legend>
-        <div className="chiprow" style={{ marginTop: 6 }}>
+        <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
           {HOME_AWAY.map((t) => (
             <button
               key={t}
@@ -145,7 +145,7 @@ export function NewFixtureForm({ orgId, userId, defaultDate, timezone }: Props) 
         </div>
       </fieldset>
 
-      <label className="label" htmlFor="f-venue" style={{ marginTop: 14 }}>
+      <label className="label" htmlFor="f-venue" style={{ marginTop: 'var(--sp-14)' }}>
         Venue
       </label>
       <input
@@ -156,7 +156,7 @@ export function NewFixtureForm({ orgId, userId, defaultDate, timezone }: Props) 
         placeholder="Ashcombe Park"
       />
 
-      <label className="label" htmlFor="f-competition" style={{ marginTop: 14 }}>
+      <label className="label" htmlFor="f-competition" style={{ marginTop: 'var(--sp-14)' }}>
         Competition
       </label>
       <input
@@ -169,7 +169,7 @@ export function NewFixtureForm({ orgId, userId, defaultDate, timezone }: Props) 
 
       <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
         <legend className="label">Importance</legend>
-        <div className="chiprow" style={{ marginTop: 6 }}>
+        <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
           {IMPORTANCE.map((t) => (
             <button
               key={t}
@@ -182,7 +182,7 @@ export function NewFixtureForm({ orgId, userId, defaultDate, timezone }: Props) 
             </button>
           ))}
         </div>
-        <p className="cap" style={{ marginTop: 6 }}>
+        <p className="cap" style={{ marginTop: 'var(--sp-6)' }}>
           Used to weight the match in load planning. Leave it on Normal unless
           this one is treated differently.
         </p>
@@ -197,7 +197,7 @@ export function NewFixtureForm({ orgId, userId, defaultDate, timezone }: Props) 
           halves have to be said: the first stops somebody assuming a further
           publish step, the second stops them assuming the squad has been told
           to turn up. */}
-      <p className="cap" style={{ marginTop: 14 }}>
+      <p className="cap" style={{ marginTop: 'var(--sp-14)' }}>
         Every athlete sees the club&rsquo;s next fixture on their Today screen as soon
         as you create it, with the opponent, kick-off and venue. There is no
         separate publish step. Nobody is named in a fixture, though — create a
@@ -205,12 +205,12 @@ export function NewFixtureForm({ orgId, userId, defaultDate, timezone }: Props) 
       </p>
 
       {error ? (
-        <p className="form-error" role="alert" style={{ marginTop: 14 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-14)' }}>
           {error}
         </p>
       ) : null}
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-18)' }}>
         <button type="submit" className="btn-primary" disabled={mutation.isPending}>
           {mutation.isPending ? 'Creating…' : 'Create fixture'}
         </button>

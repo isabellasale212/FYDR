@@ -274,13 +274,13 @@ export function FlagCard({
           {reason === 'Other' ? (
             <input
               className="field"
-              style={{ marginTop: 8 }}
+              style={{ marginTop: 'var(--sp-8)' }}
               placeholder="Say why"
               value={otherReason}
               onChange={(event) => setOtherReason(event.target.value)}
             />
           ) : null}
-          <div className="flag-actions" style={{ marginTop: 10 }}>
+          <div className="flag-actions" style={{ marginTop: 'var(--sp-10)' }}>
             <button
               type="button"
               className="btn-primary"
@@ -349,7 +349,7 @@ export function FlagCard({
               it &mdash; that belongs on the injury record, where it stays with medical.
             </p>
           ) : null}
-          <div className="flag-actions" style={{ marginTop: 10 }}>
+          <div className="flag-actions" style={{ marginTop: 'var(--sp-10)' }}>
             <button
               type="button"
               className="btn-primary"

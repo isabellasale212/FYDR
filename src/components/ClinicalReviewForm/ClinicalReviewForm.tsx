@@ -122,7 +122,7 @@ export function ClinicalReviewForm({ orgId, requestId, timezone, injuries }: Pro
               <span className="sub">{injury.treatment_plan ?? '—'}</span>
             </div>
 
-            <div className="chiprow" style={{ marginTop: 10 }} role="group" aria-label={`Decision for ${enumLabel(injury.body_area)}`}>
+            <div className="chiprow" style={{ marginTop: 'var(--sp-10)' }} role="group" aria-label={`Decision for ${enumLabel(injury.body_area)}`}>
               <button
                 type="button"
                 className="squad-chip"
@@ -142,7 +142,7 @@ export function ClinicalReviewForm({ orgId, requestId, timezone, injuries }: Pro
             </div>
 
             {draft?.decision === 'withhold' ? (
-              <div className="form-row" style={{ marginTop: 10 }}>
+              <div className="form-row" style={{ marginTop: 'var(--sp-10)' }}>
                 <label className="label" htmlFor={`reason-${injury.injury_id}`}>
                   Reason (required)
                 </label>

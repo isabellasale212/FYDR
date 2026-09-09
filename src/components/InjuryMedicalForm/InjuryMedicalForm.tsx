@@ -97,7 +97,7 @@ export function InjuryMedicalForm({ orgId, userId, injury, clinical }: Props) {
   return (
     <form onSubmit={onSubmit} className="card">
       <p className="label">The facts &mdash; coach visible</p>
-      <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-10)' }}>
         <div style={{ flex: 1 }}>
           <label className="label" htmlFor="inj-area">
             Body area
@@ -125,7 +125,7 @@ export function InjuryMedicalForm({ orgId, userId, injury, clinical }: Props) {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-14)' }}>
         <div style={{ flex: 1 }}>
           <label className="label" htmlFor="inj-status">
             Status
@@ -158,7 +158,7 @@ export function InjuryMedicalForm({ orgId, userId, injury, clinical }: Props) {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-14)' }}>
         <div style={{ flex: 1 }}>
           <label className="label" htmlFor="inj-expected">
             Expected return
@@ -191,17 +191,17 @@ export function InjuryMedicalForm({ orgId, userId, injury, clinical }: Props) {
         Clinical detail &mdash; medical only, never shown to a coach
       </p>
 
-      <label className="label" htmlFor="inj-diagnosis" style={{ marginTop: 10 }}>
+      <label className="label" htmlFor="inj-diagnosis" style={{ marginTop: 'var(--sp-10)' }}>
         Diagnosis
       </label>
       <input id="inj-diagnosis" className="field" value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} />
 
-      <label className="label" htmlFor="inj-mechanism" style={{ marginTop: 14 }}>
+      <label className="label" htmlFor="inj-mechanism" style={{ marginTop: 'var(--sp-14)' }}>
         Mechanism
       </label>
       <input id="inj-mechanism" className="field" value={mechanism} onChange={(e) => setMechanism(e.target.value)} />
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-14)' }}>
         <div style={{ flex: 1 }}>
           <label className="label" htmlFor="inj-severity">
             Severity
@@ -223,17 +223,17 @@ export function InjuryMedicalForm({ orgId, userId, injury, clinical }: Props) {
         </div>
       </div>
 
-      <label className="label" htmlFor="inj-imaging" style={{ marginTop: 14 }}>
+      <label className="label" htmlFor="inj-imaging" style={{ marginTop: 'var(--sp-14)' }}>
         Imaging
       </label>
       <input id="inj-imaging" className="field" value={imaging} onChange={(e) => setImaging(e.target.value)} />
 
-      <label className="label" htmlFor="inj-referral" style={{ marginTop: 14 }}>
+      <label className="label" htmlFor="inj-referral" style={{ marginTop: 'var(--sp-14)' }}>
         Referral
       </label>
       <input id="inj-referral" className="field" value={referral} onChange={(e) => setReferral(e.target.value)} />
 
-      <label className="label" htmlFor="inj-treatment" style={{ marginTop: 14 }}>
+      <label className="label" htmlFor="inj-treatment" style={{ marginTop: 'var(--sp-14)' }}>
         Treatment plan
       </label>
       <textarea
@@ -244,7 +244,7 @@ export function InjuryMedicalForm({ orgId, userId, injury, clinical }: Props) {
         onChange={(e) => setTreatmentPlan(e.target.value)}
       />
 
-      <label className="label" htmlFor="inj-notes" style={{ marginTop: 14 }}>
+      <label className="label" htmlFor="inj-notes" style={{ marginTop: 'var(--sp-14)' }}>
         Clinical notes
       </label>
       <textarea
@@ -254,17 +254,17 @@ export function InjuryMedicalForm({ orgId, userId, injury, clinical }: Props) {
         value={clinicalNotes}
         onChange={(e) => setClinicalNotes(e.target.value)}
       />
-      <p className="tiny" style={{ marginTop: 4 }}>
+      <p className="tiny" style={{ marginTop: 'var(--sp-4)' }}>
         The one field no athlete ever sees, through any path.
       </p>
 
       {error ? (
-        <p className="form-error" role="alert" style={{ marginTop: 14 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-14)' }}>
           {error}
         </p>
       ) : null}
 
-      <div style={{ marginTop: 18 }}>
+      <div style={{ marginTop: 'var(--sp-18)' }}>
         <button type="submit" className="btn-primary" disabled={mutation.isPending}>
           {mutation.isPending ? 'Saving…' : 'Save changes'}
         </button>

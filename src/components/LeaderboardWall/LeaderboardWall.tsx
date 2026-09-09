@@ -270,7 +270,7 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
         </div>
       </div>
 
-      <div className="lbw-controls-row" style={{ marginTop: 12 }}>
+      <div className="lbw-controls-row" style={{ marginTop: 'var(--sp-12)' }}>
         <div className="chiprow">
           {(['Speed & power', 'Endurance', 'Strength', 'GPS', 'Habits'] as const).map((f) => {
             const unavailable = familyUnavailable(f);
@@ -303,7 +303,7 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
       <div className="card lbw-wall-card">
         <div className="lbw-wall-scroll">
           <div style={{ minWidth: wallMinWidth }}>
-            <div className="lbw-wall-header" style={{ display: 'grid', gridTemplateColumns, gap: 8 }}>
+            <div className="lbw-wall-header" style={{ display: 'grid', gridTemplateColumns, gap: 'var(--sp-8)' }}>
               <div className="lbw-wall-head-name">Athlete</div>
               {familyBoards.map((b) => (
                 <div key={b.key} className="lbw-wall-head-board">
@@ -320,7 +320,7 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
 
             {groups.map((g, gi) => (
               <div key={g.label}>
-                <div className="lbw-group-row" style={{ display: 'grid', gridTemplateColumns, gap: 8 }}>
+                <div className="lbw-group-row" style={{ display: 'grid', gridTemplateColumns, gap: 'var(--sp-8)' }}>
                   <div className="lbw-group-label">{g.label}</div>
                   {familyBoards.map((b) => (
                     <div key={b.key} className="lbw-group-cell">
@@ -335,7 +335,7 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
                     <div
                       key={a.id}
                       className={`lbw-athlete-row${isSelected ? ' is-selected' : ''}`}
-                      style={{ display: 'grid', gridTemplateColumns, gap: 8 }}
+                      style={{ display: 'grid', gridTemplateColumns, gap: 'var(--sp-8)' }}
                       onClick={() => setSel(a.id)}
                       role="button"
                       tabIndex={0}

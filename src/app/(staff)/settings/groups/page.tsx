@@ -50,7 +50,7 @@ export default async function GroupsPage() {
           </p>
           <h1>Groups</h1>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
           {/* Screens 55-57: creating a group is the sport scientist's and the
               coach's. Hiding the link is the courtesy; /settings/groups/new
               turns the other three away itself, and 0078 is what actually
@@ -95,31 +95,31 @@ export default async function GroupsPage() {
         * lib/queries/teamAllocation.ts), and adding a selection-shaped group
         * type here would have quietly created the second parallel filtering
         * concept that rule exists to prevent. */}
-      <section className="card" aria-labelledby="teams-title" style={{ marginBottom: 14 }}>
+      <section className="card" aria-labelledby="teams-title" style={{ marginBottom: 'var(--sp-14)' }}>
         <h2 className="card-title" id="teams-title">
           Team selections
         </h2>
         
 
         {teams.length > 0 ? (
-          <p className="cap" style={{ marginTop: 8 }}>
+          <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
             {teams.length} team{teams.length === 1 ? '' : 's'} set up: {teams.map((t) => t.name).join(', ')}.
           </p>
         ) : (
-          <p className="cap" style={{ marginTop: 8 }}>
+          <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
             No teams are set up yet, so there is nothing to select into. Teams are standing squads
             such as 1st XV, 2nd XV or Colts.
           </p>
         )}
 
         {canAllocate ? (
-          <div style={{ marginTop: 10 }}>
+          <div style={{ marginTop: 'var(--sp-10)' }}>
             <Link href="/injuries/team-allocation" className="btn-ghost">
               Open team allocation →
             </Link>
           </div>
         ) : (
-          <p className="cap" style={{ marginTop: 10 }}>
+          <p className="cap" style={{ marginTop: 'var(--sp-10)' }}>
             Selecting teams is a coach decision, with medical able to see the board. It is not part
             of your role.
           </p>
@@ -149,7 +149,7 @@ export default async function GroupsPage() {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 8,
+                    gap: 'var(--sp-8)',
                     borderTop: '1px solid var(--hair)',
                     paddingInlineEnd: 10,
                   }}
@@ -166,11 +166,11 @@ export default async function GroupsPage() {
                   <Link href={`/settings/groups/${g.id}`} className="todo" style={{ flex: 1, minWidth: 0 }}>
                     <GroupSwatch colour={g.colour} />
                     <span style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ fontSize: 14.5, fontWeight: 700 }}>{g.name}</span>
+                      <span style={{ fontSize: 'var(--fs-14-5)', fontWeight: 700 }}>{g.name}</span>
                       {g.description ? (
                         <span
                           className="tiny"
-                          style={{ display: 'block', marginTop: 2 }}
+                          style={{ display: 'block', marginTop: 'var(--sp-2)' }}
                         >
                           {g.description}
                         </span>

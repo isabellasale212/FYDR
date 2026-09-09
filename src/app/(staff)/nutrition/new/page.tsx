@@ -100,7 +100,7 @@ export default async function NewNutritionTargetPage() {
         </div>
       </div>
 
-      <p className="eyebrow" style={{ marginBottom: 14 }}>
+      <p className="eyebrow" style={{ marginBottom: 'var(--sp-14)' }}>
         Squad · {orgName}
       </p>
 

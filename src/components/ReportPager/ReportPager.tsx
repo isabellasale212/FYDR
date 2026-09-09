@@ -49,7 +49,7 @@ export function ReportPager({ pages, right, header }: Props) {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)', marginBottom: 'var(--sp-14)' }}>
         <button
           type="button"
           className="btn-ghost"

@@ -30,7 +30,7 @@ export default async function BulkInvitePage() {
         </div>
       </div>
 
-      <p className="import-sub" style={{ marginTop: -6, marginBottom: 14 }}>
+      <p className="import-sub" style={{ marginTop: -6, marginBottom: 'var(--sp-14)' }}>
         Paste one row per athlete, or upload a CSV — email, first name, last name, squad number, date of birth. Up to
         100 at a time. A name that exactly matches an existing squad record with no account yet links to it;
         otherwise a new record is created. Date of birth is required even for a match with no date on file yet — an

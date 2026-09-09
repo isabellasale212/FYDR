@@ -96,22 +96,22 @@ export function AddAthleteForm({ takenNumbers }: Props) {
         <p className="card-title">
           {firstName} {lastName} is on your squad.
         </p>
-        <p className="tiny" style={{ marginTop: 8 }}>
+        <p className="tiny" style={{ marginTop: 'var(--sp-8)' }}>
           They have <b>no app access at this club</b>, and that is not a failure &mdash; it is what happens when an
           athlete is already on Fydr somewhere else. {squadRecordOnly} already belongs to a Fydr account, most
           likely at a previous club.
         </p>
-        <p className="tiny" style={{ marginTop: 8 }}>
+        <p className="tiny" style={{ marginTop: 'var(--sp-8)' }}>
           A Fydr account belongs to one squad record, so their old club&rsquo;s account cannot also be yours. The
           record you have just created is your club&rsquo;s own, and it starts empty: nothing from their previous
           club comes across, and nothing you record here goes back.
         </p>
-        <p className="tiny" style={{ marginTop: 8 }}>
+        <p className="tiny" style={{ marginTop: 'var(--sp-8)' }}>
           Everything staff do works already &mdash; availability, injuries, weigh-ins, attendance, testing, reports.
           The only thing missing is {firstName} signing in to submit their own wellness check-ins. If you need that,
           invite them from their profile using a <b>different email address</b>.
         </p>
-        <div className="flag-actions" style={{ marginTop: 14 }}>
+        <div className="flag-actions" style={{ marginTop: 'var(--sp-14)' }}>
           <button type="button" className="btn-primary" onClick={() => router.push(`/squad`)}>
             Back to the squad
           </button>
@@ -131,13 +131,13 @@ export function AddAthleteForm({ takenNumbers }: Props) {
             {error}
           </p>
         ) : null}
-        <p className="tiny" style={{ marginTop: 8 }}>
+        <p className="tiny" style={{ marginTop: 'var(--sp-8)' }}>
           Send them this link so they can set their own password. It works once, and it expires.
         </p>
-        <p className="tiny" style={{ wordBreak: 'break-all', marginTop: 6 }}>
+        <p className="tiny" style={{ wordBreak: 'break-all', marginTop: 'var(--sp-6)' }}>
           {invite}
         </p>
-        <div className="flag-actions" style={{ marginTop: 12 }}>
+        <div className="flag-actions" style={{ marginTop: 'var(--sp-12)' }}>
           <button type="button" className="btn-primary" onClick={() => router.push('/squad')}>
             Back to the squad
           </button>
@@ -165,7 +165,7 @@ export function AddAthleteForm({ takenNumbers }: Props) {
         onChange={(e) => setFirstName(e.target.value)}
       />
 
-      <label className="label" htmlFor="last-name" style={{ marginTop: 12 }}>
+      <label className="label" htmlFor="last-name" style={{ marginTop: 'var(--sp-12)' }}>
         Last name
       </label>
       <input
@@ -176,7 +176,7 @@ export function AddAthleteForm({ takenNumbers }: Props) {
         onChange={(e) => setLastName(e.target.value)}
       />
 
-      <label className="label" htmlFor="dob" style={{ marginTop: 12 }}>
+      <label className="label" htmlFor="dob" style={{ marginTop: 'var(--sp-12)' }}>
         Date of birth
       </label>
       <input
@@ -188,7 +188,7 @@ export function AddAthleteForm({ takenNumbers }: Props) {
         onChange={(e) => setDateOfBirth(e.target.value)}
       />
 
-      <label className="label" htmlFor="position" style={{ marginTop: 12 }}>
+      <label className="label" htmlFor="position" style={{ marginTop: 'var(--sp-12)' }}>
         Position
       </label>
       <select id="position" className="field" value={position} onChange={(e) => setPosition(e.target.value)}>
@@ -200,7 +200,7 @@ export function AddAthleteForm({ takenNumbers }: Props) {
         ))}
       </select>
 
-      <label className="label" htmlFor="squad-number" style={{ marginTop: 12 }}>
+      <label className="label" htmlFor="squad-number" style={{ marginTop: 'var(--sp-12)' }}>
         Squad number
       </label>
       <input
@@ -214,20 +214,20 @@ export function AddAthleteForm({ takenNumbers }: Props) {
         aria-describedby={clash ? 'squad-number-clash' : undefined}
       />
       {clash ? (
-        <p id="squad-number-clash" className="form-error" style={{ marginTop: 6 }}>
+        <p id="squad-number-clash" className="form-error" style={{ marginTop: 'var(--sp-6)' }}>
           {clash} already has {squadNumber}. Choose another, or free it up on their profile first.
         </p>
       ) : null}
 
-      <label className="label" htmlFor="email" style={{ marginTop: 12 }}>
+      <label className="label" htmlFor="email" style={{ marginTop: 'var(--sp-12)' }}>
         Email (optional)
       </label>
       <input id="email" className="field" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-      <p className="tiny" style={{ marginTop: 6 }}>
+      <p className="tiny" style={{ marginTop: 'var(--sp-6)' }}>
         Leave blank to add them to the roster with no app access. You can invite them later from their profile.
       </p>
 
-      <div className="flag-actions" style={{ marginTop: 16 }}>
+      <div className="flag-actions" style={{ marginTop: 'var(--sp-16)' }}>
         <button type="submit" className="btn-primary" disabled={saving || clash !== null}>
           {saving ? 'Saving…' : 'Save'}
         </button>

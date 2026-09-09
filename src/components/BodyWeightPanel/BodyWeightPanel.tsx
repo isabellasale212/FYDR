@@ -465,7 +465,7 @@ function LogForm({
           {error}
         </p>
       ) : null}
-      <button type="submit" className="btn-primary" disabled={submit.isPending} style={{ marginTop: 4 }}>
+      <button type="submit" className="btn-primary" disabled={submit.isPending} style={{ marginTop: 'var(--sp-4)' }}>
         {submit.isPending ? 'Saving…' : 'Save weigh-in'}
       </button>
     </form>

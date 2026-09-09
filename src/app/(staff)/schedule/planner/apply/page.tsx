@@ -142,7 +142,7 @@ export default async function ApplyTemplatePage({ searchParams }: { searchParams
         </div>
       </div>
 
-      <div className="card" style={{ marginBottom: 14 }}>
+      <div className="card" style={{ marginBottom: 'var(--sp-14)' }}>
         <p className="tiny">
           Anchor{' '}
           {fixtureInWeek ? (

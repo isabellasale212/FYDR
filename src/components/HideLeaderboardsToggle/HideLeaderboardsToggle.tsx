@@ -28,7 +28,7 @@ export function HideLeaderboardsToggle() {
   }
 
   return (
-    <div style={{ marginTop: 10 }}>
+    <div style={{ marginTop: 'var(--sp-10)' }}>
       <button
         type="button"
         className="squad-chip"
@@ -38,7 +38,7 @@ export function HideLeaderboardsToggle() {
       >
         {hidden ? 'Hidden — tap to show again' : 'Hide leaderboards from me'}
       </button>
-      <p className="cap" style={{ marginTop: 8 }}>
+      <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
         Applies to this device only. You stay on any board you are on, and your
         position is unchanged &mdash; you just will not see them.
       </p>

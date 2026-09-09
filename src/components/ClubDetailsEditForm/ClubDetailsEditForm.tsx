@@ -83,7 +83,7 @@ export function ClubDetailsEditForm({ orgId, initialName, initialSport, initialT
   return (
     <form onSubmit={onSubmit} className="card" noValidate>
       <h2 className="card-title">Club details</h2>
-      <p className="import-sub" style={{ marginBottom: 12 }}>
+      <p className="import-sub" style={{ marginBottom: 'var(--sp-12)' }}>
         Name, sport and timezone drive rendering on every screen in the club. Season dates and your subscription tier
         aren&apos;t editable here.
       </p>
@@ -91,7 +91,7 @@ export function ClubDetailsEditForm({ orgId, initialName, initialSport, initialT
       <OrgLogoField orgId={orgId} orgName={initialName} initialLogoUrl={initialLogoUrl} />
 
       {success ? (
-        <p className="banner" role="status" style={{ marginBottom: 12 }}>
+        <p className="banner" role="status" style={{ marginBottom: 'var(--sp-12)' }}>
           <span className="g g-good" aria-hidden="true">
             ✓
           </span>
@@ -124,7 +124,7 @@ export function ClubDetailsEditForm({ orgId, initialName, initialSport, initialT
           Timezone
         </label>
         <input id="org-timezone" className="field" type="text" value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="Europe/London" />
-        <p className="tiny" style={{ marginTop: 4 }}>
+        <p className="tiny" style={{ marginTop: 'var(--sp-4)' }}>
           An IANA timezone name.
         </p>
       </div>

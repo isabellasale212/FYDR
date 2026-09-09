@@ -170,7 +170,7 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
           ].map((k) => (
             <div key={k.label} className="card sw-kpi">
               <span className="sw-kpi-label">{k.label}</span>
-              <span style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+              <span style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--sp-8)' }}>
                 <span className="sw-kpi-value">{k.value}</span>
                 {k.trend ? (
                   <span className="sw-kpi-trend" data-tone={k.trend.tone}>
@@ -204,7 +204,7 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
             </>
           )}
           {report.tiles.openFlagCount > report.attention.length ? (
-            <p style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border)' }}>
+            <p style={{ marginTop: 'var(--sp-12)', paddingTop: 'var(--sp-10)', borderTop: '1px solid var(--border)' }}>
               <Link href={`/flags${groupIds.length > 0 ? `?groups=${groupIds.join(',')}` : ''}`} className="tiny" style={{ fontWeight: 600 }}>
                 See all {report.tiles.openFlagCount} open flags &rsaquo;
               </Link>
@@ -227,7 +227,7 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
                 days is worse than none, so those figures are WITHHELD, not
                 zero — the distinction the whole tile exists to protect. */}
             {report.tiles.acwr.suppressed > 0 ? (
-              <div className="ath-note" style={{ marginTop: 10 }}>
+              <div className="ath-note" style={{ marginTop: 'var(--sp-10)' }}>
                 <span className="ath-note-body">
                   Building baseline — {report.tiles.acwr.suppressed} athlete
                   {report.tiles.acwr.suppressed === 1 ? '' : 's'} need {acwrRequirementText()}.
@@ -238,14 +238,14 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
                 athlete suppressed the list is 29 long and none of it is
                 renderable, which was printing a column header over nothing. */}
             {report.load.filter((r) => r.acwr !== null).length === 0 ? (
-              <p className="tiny" style={{ marginTop: 10, color: 'var(--muted)' }}>
+              <p className="tiny" style={{ marginTop: 'var(--sp-10)', color: 'var(--muted)' }}>
                 {report.load.length === 0
                   ? 'No athlete in this filter.'
                   : 'No ratio computable yet.'}
               </p>
             ) : (
               <>
-                <div className="sw-load-head" style={{ marginTop: 10 }}>
+                <div className="sw-load-head" style={{ marginTop: 'var(--sp-10)' }}>
                   <span>Computable, worst first</span>
                   <span style={{ textAlign: 'right' }}>Acute</span>
                   <span style={{ textAlign: 'right' }}>Chronic</span>
@@ -265,7 +265,7 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
                       </span>
                     </Link>
                   ))}
-                <p className="cap" style={{ marginTop: 10 }}>
+                <p className="cap" style={{ marginTop: 'var(--sp-10)' }}>
                   {ACWR_BAND_TEXT} is the descriptive band used everywhere the ratio appears; the flag rule
                   itself is set on the Thresholds screen.
                 </p>
@@ -283,7 +283,7 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
               </span>
             </div>
             {report.availability.length === 0 ? (
-              <p className="tiny" style={{ marginTop: 10, color: 'var(--muted)' }}>
+              <p className="tiny" style={{ marginTop: 'var(--sp-10)', color: 'var(--muted)' }}>
                 Everyone in this filter is available.
               </p>
             ) : (
@@ -310,7 +310,7 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
                 </div>
               ))
             )}
-            <p className="cap" style={{ marginTop: 10 }}>
+            <p className="cap" style={{ marginTop: 'var(--sp-10)' }}>
               Restriction only — diagnosis and treatment notes are visible to medical staff and the athlete
               concerned.
             </p>
@@ -345,7 +345,7 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
               {/* The names sat loose under two figures with nothing saying
                   which of the two they belonged to. */}
               <p className="sw-well-eyebrow">Below their own norm</p>
-              <div className="chiprow" style={{ marginTop: 6 }}>
+              <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
                 {report.wellness.outliers.map((o) => (
                   <Link key={o.athlete_id} href={`/squad/${o.athlete_id}`} className="chip-static">
                     {o.first_name} {o.last_name}
@@ -373,7 +373,7 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
           </h2>
           <div className="grid2">
             <div>
-              <p className="tiny" style={{ marginBottom: 6 }}>
+              <p className="tiny" style={{ marginBottom: 'var(--sp-6)' }}>
                 Gym sessions by athlete
               </p>
               {report.gymByAthlete.length === 0 ? (
@@ -393,7 +393,7 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
               )}
             </div>
             <div>
-              <p className="tiny" style={{ marginBottom: 6 }}>
+              <p className="tiny" style={{ marginBottom: 'var(--sp-6)' }}>
                 Test results moved this week
               </p>
               {report.testsThisWeek.length === 0 ? (

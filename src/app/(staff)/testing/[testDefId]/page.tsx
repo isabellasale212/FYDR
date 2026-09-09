@@ -51,11 +51,11 @@ export default async function TestLogPage({
         </div>
       </div>
 
-      <p className="eyebrow" style={{ marginBottom: 10 }}>
+      <p className="eyebrow" style={{ marginBottom: 'var(--sp-10)' }}>
         {groupScopeLabel(groups, groupIds)} · {orgName}
       </p>
 
-      <div style={{ marginBottom: 14 }}>
+      <div style={{ marginBottom: 'var(--sp-14)' }}>
         <GroupFilter groups={groups} selected={groupIds} />
       </div>
 

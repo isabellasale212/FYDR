@@ -74,7 +74,7 @@ export default async function InjuriesPage({
           <p className="eyebrow">{groupScopeLabel(groups, groupIds)} · {orgName}</p>
           <h1>Injuries</h1>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
           {isMedical ? (
             <Link href="/injuries/new" className="btn-primary">
               + Injury
@@ -84,7 +84,7 @@ export default async function InjuriesPage({
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 16, marginBottom: 14 }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-16)', marginBottom: 'var(--sp-14)' }}>
         <Link href="/injuries/team-allocation" className="tiny">
           Team allocation →
         </Link>
@@ -98,7 +98,7 @@ export default async function InjuriesPage({
        * 01-roles-and-permissions.md (superseded) §1, so a coach sees no section, no
        * badge, and no count here at all — not a filtered view of one. */}
       {isMedical ? (
-        <section aria-labelledby="problem-reports-title" style={{ marginBottom: 18 }}>
+        <section aria-labelledby="problem-reports-title" style={{ marginBottom: 'var(--sp-18)' }}>
           <h2 className="sect" id="problem-reports-title">
             Problem reports
             {problemReports.length > 0 ? (
@@ -115,7 +115,7 @@ export default async function InjuriesPage({
         </section>
       ) : null}
 
-      <div style={{ marginBottom: 14 }}>
+      <div style={{ marginBottom: 'var(--sp-14)' }}>
         <GroupFilter groups={groups} selected={groupIds} />
       </div>
 

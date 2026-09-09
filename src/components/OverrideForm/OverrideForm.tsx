@@ -87,7 +87,7 @@ export function OverrideForm({ orgId, userId, athleteId, exerciseOptions, substi
   return (
     <form
       className="stack"
-      style={{ gap: 8 }}
+      style={{ gap: 'var(--sp-8)' }}
       onSubmit={(event) => {
         event.preventDefault();
         if (requiresReason && !reason.trim()) return setError('A reason is required for this override type.');
@@ -120,7 +120,7 @@ export function OverrideForm({ orgId, userId, athleteId, exerciseOptions, substi
             </option>
           ))}
         </select>
-        <p className="cap" style={{ marginTop: 4 }}>
+        <p className="cap" style={{ marginTop: 'var(--sp-4)' }}>
           {TYPE_COPY[overrideType]}
         </p>
       </label>
@@ -139,7 +139,7 @@ export function OverrideForm({ orgId, userId, athleteId, exerciseOptions, substi
       ) : null}
 
       {overrideType === 'volume' ? (
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-8)' }}>
           <label style={{ flex: 1 }}>
             <span className="label">Sets</span>
             <input className="field" type="number" inputMode="numeric" min="1" value={sets} onChange={(e) => setSets(e.target.value)} />

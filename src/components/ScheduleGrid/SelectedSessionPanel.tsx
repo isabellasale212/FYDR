@@ -183,14 +183,14 @@ export function SelectedSessionPanel({
             onChange={(e) => onNameChange(e.target.value)}
             placeholder="Session name"
             maxLength={80}
-            style={{ fontSize: 16, fontWeight: 700, padding: '8px 10px' }}
+            style={{ fontSize: 'var(--fs-16)', fontWeight: 700, padding: '8px 10px' }}
           />
   );
 
   const dayField = (isDraft || unlocked) ? (
-    <div style={{ marginTop: 0, marginBottom: 14 }}>
+    <div style={{ marginTop: 0, marginBottom: 'var(--sp-14)' }}>
       <span className="label">Day</span>
-      <div className="chiprow" style={{ marginTop: 6 }}>
+      <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
         {dayOptions.map((d) => (
           <button
             key={d.date}
@@ -245,9 +245,9 @@ export function SelectedSessionPanel({
   );
 
   const groupField = (
-  <div style={{ marginTop: 14 }}>
+  <div style={{ marginTop: 'var(--sp-14)' }}>
     <span className="label">Group</span>
-    <div className="chiprow" style={{ marginTop: 6 }}>
+    <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
       {groups.map((g) => (
         <button
           key={g.id}
@@ -260,7 +260,7 @@ export function SelectedSessionPanel({
         </button>
       ))}
     </div>
-    <p className="cap" style={{ marginTop: 6 }}>
+    <p className="cap" style={{ marginTop: 'var(--sp-6)' }}>
       {/* UX audit finding 12: this used to read "Nobody selected
           means the whole squad", which contradicts the preview
           footer below and, more importantly, contradicts what
@@ -283,7 +283,7 @@ export function SelectedSessionPanel({
       {isDraft || unlocked ? (
         <input
           className="field"
-          style={{ marginTop: 6, height: 40 }}
+          style={{ marginTop: 'var(--sp-6)', height: 40 }}
           value={session.location ?? ''}
           onChange={(e) => onLocationChange(e.target.value)}
           placeholder="Main pitch"
@@ -298,7 +298,7 @@ export function SelectedSessionPanel({
     <div className="sg-edit-field">
       <span className="label">Type</span>
       {isDraft || unlocked ? (
-        <div className="chiprow" style={{ marginTop: 6 }}>
+        <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
           {SESSION_TYPES.map((t) => (
             <button
               key={t}
@@ -461,7 +461,7 @@ export function SelectedSessionPanel({
             ) : null}
           </div>
           {step === 0 && !session.title.trim() ? (
-            <p className="sg-helper" style={{ marginTop: 6 }}>
+            <p className="sg-helper" style={{ marginTop: 'var(--sp-6)' }}>
               Give it a name to continue.
             </p>
           ) : null}

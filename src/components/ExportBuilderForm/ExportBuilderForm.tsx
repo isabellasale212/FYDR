@@ -139,7 +139,7 @@ export function ExportBuilderForm({ domains, groupIds, groupLabel, athleteCount,
         </p>
       ) : null}
       {successMsg ? (
-        <div className="banner" role="status" style={{ marginBottom: 14 }}>
+        <div className="banner" role="status" style={{ marginBottom: 'var(--sp-14)' }}>
           <span className="g g-good" aria-hidden="true">
             ✓
           </span>
@@ -148,10 +148,10 @@ export function ExportBuilderForm({ domains, groupIds, groupLabel, athleteCount,
       ) : null}
 
       <fieldset style={{ border: 'none', padding: 0, margin: '0 0 18px' }}>
-        <legend className="label" style={{ fontSize: 13, marginBottom: 8 }}>
+        <legend className="label" style={{ fontSize: 'var(--fs-13)', marginBottom: 'var(--sp-8)' }}>
           What to include
         </legend>
-        <div style={{ display: 'grid', gap: 4 }}>
+        <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
           {domains.map((d) => (
             <label
               key={d.key}
@@ -160,7 +160,7 @@ export function ExportBuilderForm({ domains, groupIds, groupLabel, athleteCount,
             >
               <input type="checkbox" checked={selected.has(d.key)} onChange={() => toggle(d.key)} />
               <span style={{ minWidth: 0 }}>
-                <span style={{ fontSize: 14, fontWeight: 600, display: 'block' }}>{d.label}</span>
+                <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600, display: 'block' }}>{d.label}</span>
                 <span className="tiny">{d.description}</span>
               </span>
             </label>
@@ -169,17 +169,17 @@ export function ExportBuilderForm({ domains, groupIds, groupLabel, athleteCount,
       </fieldset>
 
       <fieldset style={{ border: 'none', padding: 0, margin: '0 0 18px' }}>
-        <legend className="label" style={{ fontSize: 13, marginBottom: 8 }}>
+        <legend className="label" style={{ fontSize: 'var(--fs-13)', marginBottom: 'var(--sp-8)' }}>
           When
         </legend>
-        <div className="chiprow" style={{ marginBottom: 10 }}>
+        <div className="chiprow" style={{ marginBottom: 'var(--sp-10)' }}>
           {QUICK_RANGES.map((r) => (
             <button key={r.days} type="button" className="squad-chip" onClick={() => applyQuickRange(r.days)}>
               {r.label}
             </button>
           ))}
         </div>
-        <div className="form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 0 }}>
+        <div className="form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 'var(--sp-12)', marginBottom: 0 }}>
           <div>
             <label className="label" htmlFor="export-from">
               From
@@ -195,7 +195,7 @@ export function ExportBuilderForm({ domains, groupIds, groupLabel, athleteCount,
         </div>
       </fieldset>
 
-      <div className="banner" id={warningId} style={{ marginBottom: 14 }}>
+      <div className="banner" id={warningId} style={{ marginBottom: 'var(--sp-14)' }}>
         <span className="g g-warn" aria-hidden="true">
           ⚠
         </span>
@@ -208,7 +208,7 @@ export function ExportBuilderForm({ domains, groupIds, groupLabel, athleteCount,
       <button type="submit" className="btn-primary" disabled={busy} aria-describedby={warningId}>
         {busy ? 'Generating…' : 'Generate'}
       </button>
-      <p className="cap" style={{ marginTop: 10 }}>
+      <p className="cap" style={{ marginTop: 'var(--sp-10)' }}>
         CSV, one file per domain selected above. Generated immediately, not queued: nothing is
         saved on the server, and there is no export history to come back to.
       </p>

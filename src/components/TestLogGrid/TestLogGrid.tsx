@@ -155,7 +155,7 @@ export function TestLogGrid({ orgId, userId, testDefinitionId, testDate, default
           <div key={a.athlete_id}>
             {index > 0 ? <div className="hair" /> : null}
             <div style={{ padding: '10px 16px' }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--sp-8)', marginBottom: 'var(--sp-6)', flexWrap: 'wrap' }}>
                 <Link href={`/testing/${testDefinitionId}/${a.athlete_id}`} className="nm">
                   {a.first_name} {a.last_name}
                 </Link>
@@ -170,17 +170,17 @@ export function TestLogGrid({ orgId, userId, testDefinitionId, testDate, default
                   </span>
                 )}
               </div>
-              <p className="tiny" style={{ color: 'var(--muted)', marginBottom: 4 }}>
+              <p className="tiny" style={{ color: 'var(--muted)', marginBottom: 'var(--sp-4)' }}>
                 Attempts{unit ? ` (${unit})` : ''}
               </p>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 'var(--sp-6)', flexWrap: 'wrap' }}>
                 {slots.map((slot) => {
                   const key = `${a.athlete_id}:${slot.attempt}:${slot.side ?? 'b'}`;
                   const existing = a.attempts.find((x) => x.attempt_number === slot.attempt && (x.side ?? null) === slot.side);
                   const draft = drafts[key] ?? (existing ? String(existing.value) : '');
                   const cellStatus = status[key];
                   return (
-                    <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
                       <span className="tiny" style={{ textAlign: 'center' }}>
                         {slot.side ? `${slot.side.charAt(0).toUpperCase()}${slot.attempt}` : slot.attempt}
                       </span>
@@ -222,7 +222,7 @@ export function TestLogGrid({ orgId, userId, testDefinitionId, testDate, default
                         <span
                           className="tiny num"
                           role="status"
-                          style={{ textAlign: 'center', color: STATUS_GLYPH[cellStatus].color, fontSize: 9.5 }}
+                          style={{ textAlign: 'center', color: STATUS_GLYPH[cellStatus].color, fontSize: 'var(--fs-9-5)' }}
                         >
                           {STATUS_GLYPH[cellStatus].text}
                         </span>
@@ -243,14 +243,14 @@ export function TestLogGrid({ orgId, userId, testDefinitionId, testDate, default
                   * The accessible name says whose attempt it adds — the
                   * visible "+ Attempt" label repeats once per athlete and
                   * would otherwise be fifteen identically-named buttons. */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
                   <span className="tiny" aria-hidden="true" style={{ visibility: 'hidden' }}>
                     +
                   </span>
                   <button
                     type="button"
                     className="btn-ghost"
-                    style={{ padding: '6px 10px', fontSize: 12, whiteSpace: 'nowrap' }}
+                    style={{ padding: '6px 10px', fontSize: 'var(--fs-12)', whiteSpace: 'nowrap' }}
                     aria-label={`Add attempt ${nextAttemptNumber} for ${a.first_name} ${a.last_name}`}
                     onClick={() => setRequestedAttempts((r) => ({ ...r, [a.athlete_id]: nextAttemptNumber }))}
                   >

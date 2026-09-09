@@ -134,7 +134,7 @@ export function RpeForm({
 
       <CR10List value={rpe} onChange={setRpe} />
 
-      <div className="sc-h" style={{ paddingTop: 14 }}>
+      <div className="sc-h" style={{ paddingTop: 'var(--sp-14)' }}>
         <span className="sc-l" id="duration-label">
           How long were you training?
         </span>
@@ -172,14 +172,14 @@ export function RpeForm({
           +
         </button>
       </div>
-      <p className="tiny" style={{ textAlign: 'center', marginTop: 2 }}>
+      <p className="tiny" style={{ textAlign: 'center', marginTop: 'var(--sp-2)' }}>
         {scheduledDurationMin !== null
           ? `Scheduled for ${scheduledDurationMin} min`
           : 'No scheduled length. Set how long you trained.'}
       </p>
 
       {noteOpen ? (
-        <div style={{ marginTop: 14 }}>
+        <div style={{ marginTop: 'var(--sp-14)' }}>
           <label className="label" htmlFor="rpe-note">
             Add a note
           </label>
@@ -196,7 +196,7 @@ export function RpeForm({
         <button
           type="button"
           className="btn-ghost"
-          style={{ marginTop: 14, width: '100%' }}
+          style={{ marginTop: 'var(--sp-14)', width: '100%' }}
           onClick={() => setNoteOpen(true)}
         >
           Add a note
@@ -204,7 +204,7 @@ export function RpeForm({
       )}
 
       {invalid ? (
-        <p className="form-error" role="alert" style={{ marginTop: 14 }}>
+        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-14)' }}>
           {invalid}
         </p>
       ) : null}
@@ -225,7 +225,7 @@ export function RpeForm({
         </button>
         {/* Same sentence as the check-in form's, for the same reason: the rule
          * is easier to accept before submitting than to discover afterwards. */}
-        <p className="tiny" style={{ textAlign: 'center', marginTop: 8 }}>
+        <p className="tiny" style={{ textAlign: 'center', marginTop: 'var(--sp-8)' }}>
           Once this is sent it can&rsquo;t be edited. If the rating or the minutes
           are wrong, tell your coach &mdash; they can record a correction, and My
           Data will show you both what they changed it to and what you first sent.

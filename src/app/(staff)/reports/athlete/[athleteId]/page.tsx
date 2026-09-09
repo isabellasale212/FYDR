@@ -141,7 +141,7 @@ export default async function AthleteReportPage({
             {athlete.first_name} {athlete.last_name}
           </h1>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
           <a href={`/reports/athlete/${athleteId}/export?${exportQuery(period.key)}`} className="btn-ghost">
             Export CSV
           </a>
@@ -191,7 +191,7 @@ export default async function AthleteReportPage({
             headline figure the design's identity row had no home for. */}
         <span style={{ marginLeft: 'auto', textAlign: 'right' }}>
           <span className="ath-stat-label">Compliance</span>
-          <span className="ath-stat-value" style={{ fontSize: 20 }}>
+          <span className="ath-stat-value" style={{ fontSize: 'var(--fs-20)' }}>
             {compliancePct === null ? BLANK : `${compliancePct}%`}
           </span>
           <span className="tiny" style={{ display: 'block', color: 'var(--faint)' }}>
@@ -200,14 +200,14 @@ export default async function AthleteReportPage({
         </span>
       </div>
 
-      <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 'var(--sp-16)', alignItems: 'center', marginBottom: 'var(--sp-14)', flexWrap: 'wrap' }}>
         <span className="eyebrow">
           {period.label} · {formatDate(report.from, timezone)} to {formatDate(report.to, timezone)}
         </span>
       </div>
 
       {caveat ? (
-        <p className="cap" style={{ marginBottom: 12 }}>
+        <p className="cap" style={{ marginBottom: 'var(--sp-12)' }}>
           {caveat}
         </p>
       ) : null}
@@ -236,7 +236,7 @@ export default async function AthleteReportPage({
               <div className="stack">
                 <div className="ath-summary-grid">
                   <section className="card" aria-labelledby="sum-wellness">
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--sp-12)' }}>
                       <h2 className="ath-card-title" id="sum-wellness">
                         Wellness
                       </h2>
@@ -274,7 +274,7 @@ export default async function AthleteReportPage({
                           title={`Readiness for ${athlete.first_name} ${athlete.last_name}`}
                           timezone={timezone}
                         />
-                        <p className="tiny" style={{ color: 'var(--muted)', marginTop: 10 }}>
+                        <p className="tiny" style={{ color: 'var(--muted)', marginTop: 'var(--sp-10)' }}>
                           {wellnessSubmitted} of {report.wellness.length} days submitted
                         </p>
                       </>
@@ -282,7 +282,7 @@ export default async function AthleteReportPage({
                   </section>
 
                   <section className="card" aria-labelledby="sum-load">
-                    <h2 className="ath-card-title" id="sum-load" style={{ marginBottom: 12 }}>
+                    <h2 className="ath-card-title" id="sum-load" style={{ marginBottom: 'var(--sp-12)' }}>
                       Load
                     </h2>
                     {/* THE THREE TILES DO NOT MOVE WITH THE PERIOD CONTROL —
@@ -311,7 +311,7 @@ export default async function AthleteReportPage({
                         </div>
                       ))}
                     </div>
-                    <div className="ath-stats" style={{ marginTop: 12 }}>
+                    <div className="ath-stats" style={{ marginTop: 'var(--sp-12)' }}>
                       <div>
                         <div className="ath-stat-label">GPS sessions</div>
                         <div className="ath-stat-value">{report.load.gps.sessionsWithData}</div>
@@ -329,8 +329,8 @@ export default async function AthleteReportPage({
                         </div>
                       </div>
                     </div>
-                    <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--hair)' }}>
-                      <p style={{ fontSize: 12.5, fontWeight: 700, margin: '0 0 8px' }}>
+                    <div style={{ marginTop: 'var(--sp-12)', paddingTop: 'var(--sp-10)', borderTop: '1px solid var(--hair)' }}>
+                      <p style={{ fontSize: 'var(--fs-12-5)', fontWeight: 700, margin: '0 0 8px' }}>
                         Session load by day
                         {loadDaysWithValue.length > 0 ? (
                           <span className="tiny" style={{ fontWeight: 400, color: 'var(--faint)' }}>
@@ -365,7 +365,7 @@ export default async function AthleteReportPage({
                 </div>
 
                 <section className="card cmpl-table" aria-labelledby="sum-gym">
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--sp-14)', flexWrap: 'wrap' }}>
                     <h2 className="ath-card-title" id="sum-gym">
                       Gym and testing
                     </h2>
@@ -399,7 +399,7 @@ export default async function AthleteReportPage({
                         return (
                           <div key={t.test_definition_id} className="ath-test-row" data-heavy={delta?.heavy ?? false}>
                             <span>
-                              <span style={{ fontSize: 13.5, fontWeight: 600 }}>{t.name}</span>{' '}
+                              <span style={{ fontSize: 'var(--fs-13-5)', fontWeight: 600 }}>{t.name}</span>{' '}
                               <span className="tiny" style={{ color: 'var(--faint)' }}>
                                 ({t.unit})
                               </span>
@@ -486,19 +486,19 @@ export default async function AthleteReportPage({
                 <div className="grid3">
                   <div className="card">
                     <p className="tiny">Acute · trailing 7 days</p>
-                    <p className="num" style={{ fontSize: 22, fontWeight: 800 }}>
+                    <p className="num" style={{ fontSize: 'var(--fs-22)', fontWeight: 800 }}>
                       {report.load.acute === null ? '—' : formatNumber(report.load.acute, 0)}
                     </p>
                   </div>
                   <div className="card">
                     <p className="tiny">Chronic · trailing 28 days, weekly</p>
-                    <p className="num" style={{ fontSize: 22, fontWeight: 800 }}>
+                    <p className="num" style={{ fontSize: 'var(--fs-22)', fontWeight: 800 }}>
                       {report.load.chronic === null ? '—' : formatNumber(report.load.chronic, 0)}
                     </p>
                   </div>
                   <div className="card">
                     <p className="tiny">ACWR · trailing 7:28</p>
-                    <p className="num" style={{ fontSize: 22, fontWeight: 800 }}>
+                    <p className="num" style={{ fontSize: 'var(--fs-22)', fontWeight: 800 }}>
                       {report.load.acwr === null ? '—' : formatNumber(report.load.acwr, 2)}
                     </p>
                   </div>
@@ -544,7 +544,7 @@ export default async function AthleteReportPage({
                     Session load by day
                   </h2>
                   {loadDaysWithValue.length === 0 ? (
-                    <p className="tiny" style={{ padding: 16 }}>
+                    <p className="tiny" style={{ padding: 'var(--sp-16)' }}>
                       No session load recorded in this period.
                     </p>
                   ) : (
@@ -569,19 +569,19 @@ export default async function AthleteReportPage({
                 <div className="grid3">
                   <div className="card">
                     <p className="tiny">Gym sessions logged</p>
-                    <p className="num" style={{ fontSize: 22, fontWeight: 800 }}>
+                    <p className="num" style={{ fontSize: 'var(--fs-22)', fontWeight: 800 }}>
                       {report.gymAndTesting.sessionsLogged}
                     </p>
                   </div>
                   <div className="card">
                     <p className="tiny">Completed</p>
-                    <p className="num" style={{ fontSize: 22, fontWeight: 800 }}>
+                    <p className="num" style={{ fontSize: 'var(--fs-22)', fontWeight: 800 }}>
                       {report.gymAndTesting.sessionsCompleted}
                     </p>
                   </div>
                   <div className="card">
                     <p className="tiny">Programme{currentProgrammes.length === 1 ? '' : 's'}</p>
-                    <p style={{ fontSize: 15, fontWeight: 700 }}>
+                    <p style={{ fontSize: 'var(--fs-15)', fontWeight: 700 }}>
                       {currentProgrammes.length === 0 ? BLANK : currentProgrammes.map((p) => `${p.name} (${enumLabel(p.type)})`).join(', ')}
                     </p>
                   </div>
@@ -592,7 +592,7 @@ export default async function AthleteReportPage({
                     Testing
                   </h2>
                   {report.gymAndTesting.tests.length === 0 ? (
-                    <p className="tiny" style={{ padding: 16 }}>
+                    <p className="tiny" style={{ padding: 'var(--sp-16)' }}>
                       No test result recorded for this athlete.
                     </p>
                   ) : (

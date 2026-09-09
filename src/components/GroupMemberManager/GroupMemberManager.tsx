@@ -139,10 +139,10 @@ export function GroupMemberManager({
                 {initials(member)}
               </span>
               <span style={{ minWidth: 0 }}>
-                <span style={{ fontSize: 14, fontWeight: 700 }}>
+                <span style={{ fontSize: 'var(--fs-14)', fontWeight: 700 }}>
                   {member.first_name} {member.last_name}
                 </span>
-                <span className="tiny" style={{ display: 'block', marginTop: 2 }}>
+                <span className="tiny" style={{ display: 'block', marginTop: 'var(--sp-2)' }}>
                   {member.position ?? 'Position not set'} · since{' '}
                   {formatDate(member.added_at, timezone)}
                 </span>
@@ -174,7 +174,7 @@ export function GroupMemberManager({
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
-          <div style={{ maxHeight: 280, overflowY: 'auto', marginTop: 10 }}>
+          <div style={{ maxHeight: 280, overflowY: 'auto', marginTop: 'var(--sp-10)' }}>
             {filtered.length === 0 ? (
               <p className="cap">No matching athletes, or everyone is already a member.</p>
             ) : (
@@ -190,10 +190,10 @@ export function GroupMemberManager({
                     onChange={() => toggle(c.id)}
                   />
                   <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ fontSize: 14, fontWeight: 700 }}>
+                    <span style={{ fontSize: 'var(--fs-14)', fontWeight: 700 }}>
                       {c.first_name} {c.last_name}
                     </span>
-                    <span className="tiny" style={{ display: 'block', marginTop: 2 }}>
+                    <span className="tiny" style={{ display: 'block', marginTop: 'var(--sp-2)' }}>
                       {c.position ?? 'Position not set'}
                     </span>
                   </span>
@@ -201,7 +201,7 @@ export function GroupMemberManager({
               ))
             )}
           </div>
-          <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+          <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-14)' }}>
             <button
               type="button"
               className="btn-primary"

@@ -162,7 +162,7 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
           </p>
           <input
             className="field"
-            style={{ fontSize: 22, fontWeight: 700, border: 'none', padding: '4px 0', background: 'none' }}
+            style={{ fontSize: 'var(--fs-22)', fontWeight: 700, border: 'none', padding: '4px 0', background: 'none' }}
             value={name}
             onChange={(e) => {
               setName(e.target.value);
@@ -171,7 +171,7 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
             aria-label="Template name"
           />
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-8)', alignItems: 'center' }}>
           {/* G-34: duplicate, archive/restore and save all write week_templates,
               which 0070 leaves with the coach and the sport scientist. The rest
               of the builder still renders, because §3.1 gives every staff role a
@@ -199,19 +199,19 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
       </div>
 
       {error ? (
-        <div className="banner" role="alert" style={{ marginBottom: 14 }}>
+        <div className="banner" role="alert" style={{ marginBottom: 'var(--sp-14)' }}>
           <span className="g g-warn" aria-hidden="true">⚠</span>
           <div>{error}</div>
         </div>
       ) : null}
 
-      <div className="card" style={{ marginBottom: 14 }}>
-        <div style={{ display: 'flex', gap: 14, alignItems: 'baseline', flexWrap: 'wrap' }}>
+      <div className="card" style={{ marginBottom: 'var(--sp-14)' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-14)', alignItems: 'baseline', flexWrap: 'wrap' }}>
           <label className="tiny">
             Covers from
             <select
               className="field"
-              style={{ width: 90, marginLeft: 6, display: 'inline-block' }}
+              style={{ width: 90, marginLeft: 'var(--sp-6)', display: 'inline-block' }}
               value={structure.covers.from}
               onChange={(e) => {
                 setStructure((s) => ({ ...s, covers: { ...s.covers, from: Number(e.target.value) } }));
@@ -229,7 +229,7 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
             to
             <select
               className="field"
-              style={{ width: 90, marginLeft: 6, display: 'inline-block' }}
+              style={{ width: 90, marginLeft: 'var(--sp-6)', display: 'inline-block' }}
               value={structure.covers.to}
               onChange={(e) => {
                 setStructure((s) => ({ ...s, covers: { ...s.covers, to: Number(e.target.value) } }));
@@ -250,10 +250,10 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
             this week look like", and two very different weeks with the same
             load drew the same bars. Preview only — every edit, including
             removing a session, is in the day cards below. */}
-        <div style={{ marginTop: 14 }}>
+        <div style={{ marginTop: 'var(--sp-14)' }}>
           <WeekTemplatePreview days={positions} />
         </div>
-        <p className="cap" style={{ marginTop: 6 }}>
+        <p className="cap" style={{ marginTop: 'var(--sp-6)' }}>
           {positions.filter((p) => p.sessions.length > 0).length} of {positions.length} days planned
         </p>
       </div>
@@ -261,8 +261,8 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
       <div className="stack">
         {positions.map((day) => (
           <div key={day.mdOffset} className="card">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontWeight: 700, fontSize: 14 }}>{mdLabel(day.mdOffset)}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)' }}>
+              <span style={{ fontWeight: 700, fontSize: 'var(--fs-14)' }}>{mdLabel(day.mdOffset)}</span>
               {day.sessions.length === 0 ? <span className="tiny" style={{ color: 'var(--faint)' }}>Off. Nothing scheduled.</span> : null}
               <button type="button" className="btn-ghost" style={{ marginLeft: 'auto', minHeight: 32, padding: '5px 12px' }} onClick={() => setEditingPosition(day.mdOffset)}>
                 + session
@@ -270,7 +270,7 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
             </div>
 
             {day.sessions.length > 0 ? (
-              <div className="stack" style={{ gap: 8, marginTop: 10 }}>
+              <div className="stack" style={{ gap: 'var(--sp-8)', marginTop: 'var(--sp-10)' }}>
                 {day.sessions.map((s, i) => (
                   <div key={s.key} className="load-row" style={{ gridTemplateColumns: '1fr auto auto auto', alignItems: 'center' }}>
                     <div>
@@ -303,8 +303,8 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
             ) : null}
 
             {editingPosition === day.mdOffset ? (
-              <div className="card" style={{ marginTop: 10, background: 'var(--field)', boxShadow: 'none' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 }}>
+              <div className="card" style={{ marginTop: 'var(--sp-10)', background: 'var(--field)', boxShadow: 'none' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 'var(--sp-10)' }}>
                   <label className="tiny">
                     Type
                     <select className="field" value={draft.type} onChange={(e) => setDraft((d) => ({ ...d, type: e.target.value as TemplateSession['type'] }))}>
@@ -355,7 +355,7 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
                     <input className="field" value={draft.location ?? ''} onChange={(e) => setDraft((d) => ({ ...d, location: e.target.value || null }))} />
                   </label>
                 </div>
-                <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                <div style={{ display: 'flex', gap: 'var(--sp-8)', marginTop: 'var(--sp-10)' }}>
                   <button type="button" className="btn-primary" onClick={() => addSession(day.mdOffset)}>
                     Add
                   </button>
@@ -373,9 +373,9 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
               </div>
             ) : null}
 
-            <div className="chiprow" style={{ marginTop: 10 }}>
+            <div className="chiprow" style={{ marginTop: 'var(--sp-10)' }}>
               {(['wellness', 'rpe', 'nutrition'] as const).map((k) => (
-                <label key={k} className="tiny" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <label key={k} className="tiny" style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-5)' }}>
                   <input type="checkbox" checked={day.requires[k]} onChange={() => toggleRequires(day.mdOffset, k)} />
                   {k === 'rpe' ? 'RPE' : k[0]!.toUpperCase() + k.slice(1)}
                 </label>

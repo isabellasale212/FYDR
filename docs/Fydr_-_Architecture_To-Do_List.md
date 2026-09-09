@@ -1259,6 +1259,28 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
 - [ ] **Not done, and deliberately not:** no icon library was introduced and no glyph was converted to SVG. The SVG set is coherent at 1.5px, the glyphs are decoration beside text, and swapping 45 marks for drawn icons would be a large rewrite for no measurable gain. If a future design pass wants a drawn icon set, that is a design decision with a brief, not a tidy-up.
 
+## 0o. Every failed mutation was silent — found and fixed 2026-09-09
+
+- [x] **FIXED, and it was never the fixture form.** Reported since 4 September as the New fixture form "bouncing to `/login`", the symptom was actually app-wide: **any** failing mutation left the submit button on a disabled "Creating…" indefinitely, with no message and nothing written. Three earlier attempts diagnosed it in three different layers and all three were wrong.
+
+  **THE CAUSE, one line in `@tanstack/query-core`'s `retryer.js`:**
+
+  ```js
+  const canContinue = () => focusManager.isFocused()
+    && (config.networkMode === "always" || onlineManager.isOnline())
+    && config.canRun();
+  ```
+
+  A mutation that fails and intends to **retry** calls that first and **pauses** when it is false. `focusManager.isFocused()` is ANDed in **regardless of `networkMode`**, so a failed write pauses whenever the document is not focused — and `onError` never runs. `providers.tsx` had `mutations: { retry: 2 }`, so every failed write had to survive two retry waits.
+
+  **Who it hit:** anyone who submits and then looks at something else — another tab, another app, their phone. Not just automation.
+
+  **The fix:** `mutations: { retry: 0, networkMode: 'always' }`. No retry, no pause. Zero is independently right: these are creates with no idempotency key, so a silent retry of `createFixture`'s POST risks a duplicate fixture — a duplicate is worse than an error message, and a person pressing the button again is a better retry than a hidden one.
+
+  **Verified on an UNFOCUSED tab**, the exact condition that caused it: error rendered in **2s**, `role="alert"`, button back to "Create fixture", `isPaused: false`. Happy path re-verified end to end — fixture + linked match session + 2 participant rows created, then deleted. Guarded by `scripts/test-mutation-retry.ts` (79 suites).
+
+  **What made it hard, because the method is the transferable part.** React Query's own state was the answer and nobody had read it: exposing the mutation object showed `isPaused: true` with the correct sentence sitting unused in `failureReason`. The three earlier attempts all instrumented the promise chain, which was working perfectly the whole time — `getUser()` settles in 6ms, `assertLiveSession` throws correctly, `withWriteTimeout` rejects correctly. And the **control experiment** is what broke it open: making the INSERT fail while leaving auth intact reproduced it identically, which killed "it's a session bug" in one measurement.
+
 ## 1. Data & Schema — confirmed already built by reading the raw files directly
 
 - [x] Multi-tenancy: `org_id` on 56 of 58 tables, RLS enabled with a policy on all 58

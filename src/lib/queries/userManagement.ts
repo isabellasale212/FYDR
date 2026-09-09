@@ -19,14 +19,26 @@ import { mustAffect } from '@/lib/write';
  * implementation of it.
  *
  * What's cut, and it's real:
- *   - Invite email and SMS. Account creation makes a genuine auth.users
- *     row with a real temporary password, shown once to the admin to share
- *     directly — there is no email service or SMS provider anywhere in
- *     this project to send either automatically. Same category of gap as
- *     scheduled report delivery and push/email notifications. Resend
- *     invite and invite revocation are the same gap wearing a different
- *     name — there is no invite to resend or revoke, only a password
- *     already handed over once.
+ *   - SMS, entirely. There is no SMS provider anywhere in this project,
+ *     the same category of gap as scheduled report delivery and push
+ *     notifications.
+ *
+ *     EMAIL IS NO LONGER IN THAT LIST, and this block asserted three things
+ *     that have since stopped being true. Account creation no longer hands
+ *     over a "real temporary password shown once to the admin" — it returns a
+ *     single-use invite link, and the response carries no password at all
+ *     (see settings/users/create/route.ts's CreateUserResult). There IS an
+ *     email service: RESEND_API_KEY is set in Vercel production and a real
+ *     invite has gone through it, audit_log carrying provider: resend and
+ *     delivered: true. And there is therefore something to resend or revoke,
+ *     which this block said there was not.
+ *
+ *     What IS still true is narrower and more specific: EMAIL_FROM_ADDRESS is
+ *     onboarding@resend.dev, which until a domain is verified in Resend can
+ *     only deliver to the Resend signup address — so an invite can reach a
+ *     genuine 2xx and still not reach a real player. Local and preview have
+ *     no key and take the logged no-op. Resend-invite and revoke UI remain
+ *     unbuilt, which is a missing feature now rather than a missing provider.
  *   - The Declined/invited-lifecycle states the spec's onboarding-consent
  *     flow would drive — that flow doesn't exist in this build, so every
  *     account created here starts life 'active', not 'invited'.

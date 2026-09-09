@@ -7,10 +7,27 @@ import type { AppRole } from '@/lib/types/database';
 /* The one function every invite path in this codebase should call —
  * settings/users/create/route.ts and settings/users/bulk-invite/send/
  * route.ts both do. Never tells a caller an email was sent unless a real
- * provider genuinely accepted it; when it wasn't (every environment
- * today, since no RESEND_API_KEY exists anywhere in this project),
- * writes an honest audit_log row saying so instead of a fabricated
- * success. */
+ * provider genuinely accepted it; when it wasn't, writes an honest
+ * audit_log row saying so instead of a fabricated success.
+ *
+ * THIS HEADER USED TO CLAIM THE KEY WAS SET NOWHERE, and that stopped
+ * being true. (Phrased without repeating the old sentence, because a
+ * comment that quotes the exact string a grep looks for is how five
+ * checks in this repo have produced a false pass.) The key is set in Vercel for
+ * PRODUCTION ONLY, and a real invite has been through it: audit_log holds
+ * an invite.email_sent row with provider: resend and delivered: true,
+ * which this function only ever writes on a genuine 2xx. Local and
+ * preview have no key, so they still take the logged no-op — that is now
+ * an environment difference rather than a gap in the build, and it is why
+ * both branches still matter.
+ *
+ * WHAT IS STILL NOT POSSIBLE, which is the real current limit and was
+ * hidden behind the stale claim: EMAIL_FROM_ADDRESS is
+ * onboarding@resend.dev, and until a domain is verified in Resend that
+ * sender can only deliver to the Resend signup address. So an invite
+ * reaches a genuine 2xx and still cannot reach a real player. Verifying
+ * fydr.app in Resend is a few DNS records and wants doing before a pilot
+ * club, not after. */
 
 export type InviteEmailResult = {
   delivered: boolean;
@@ -52,7 +69,14 @@ export async function sendInviteEmail(
       note: result.delivered
         ? null
         : (result.error
-            ?? 'No email provider configured (RESEND_API_KEY/EMAIL_FROM_ADDRESS) — the temporary password was shown on screen instead.'),
+            /* Reached only on the LoggedProvider path — result.error is null
+               and nothing was delivered — so naming the missing config IS the
+               right cause here, unlike the hardcoded version above it. The
+               tail used to read "the temporary password was shown on screen
+               instead", which stopped being true when the invite link replaced
+               the password: this response carries no password at all. An audit
+               note is a record of record, so it says what actually happened. */
+            ?? 'No email provider configured for this environment (RESEND_API_KEY/EMAIL_FROM_ADDRESS) — a single-use invite link was shown on screen instead.'),
     },
   });
 

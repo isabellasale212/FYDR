@@ -58,8 +58,12 @@ class LoggedProvider implements EmailProvider {
   readonly name = 'logged';
 
   async send(message: EmailMessage): Promise<EmailSendResult> {
-    // No real provider configured — this is not a failure, it's this
-    // build's honest, permanent default until RESEND_API_KEY exists.
+    // No real provider configured for THIS environment — not a failure,
+    // and no longer a permanent default: RESEND_API_KEY is set in Vercel
+    // for production, so this class is the local and preview path. It was
+    // described as permanent when no environment had a key, which is the
+    // kind of claim that ages into a lie the moment somebody configures
+    // one.
     // The caller (lib/email/send.ts) is what actually writes the
     // audit_log row, since it has the org/actor context this class
     // deliberately doesn't — a provider only knows how to send a

@@ -19,8 +19,11 @@ export type CreateUserResult = {
   userId: string | null;
   /** The single-use link the new person follows to set their own password.
    *  Replaces the temporary password this response used to carry. Returned
-   *  because no email provider exists yet, so without it the account would be
-   *  unreachable; see lib/invite.ts for why a link is not the same thing. */
+   *  ALWAYS, and no longer because there is no provider — there is one, in
+   *  Vercel production. It is returned because a 2xx from Resend still does not
+   *  mean a player received anything while EMAIL_FROM_ADDRESS is
+   *  onboarding@resend.dev, and because local and preview have no key at all.
+   *  See lib/invite.ts for why a link is not the same thing as a password. */
   inviteUrl: string | null;
   emailDelivered: boolean;
 };
@@ -34,13 +37,19 @@ export type CreateUserResult = {
  *  two-layer pattern (session check, then a role check this file owns)
  *  every other role-gated route in this build already uses.
  *
- *  Genuinely attempts an invite email now — see lib/email/provider.ts —
- *  but no SMS, and the email itself is almost always a real, honest no-op
- *  rather than a real send: no email provider account exists anywhere in
- *  this project, the same gap lib/queries/userManagement.ts's header has
- *  always named. What's different is the code path is real and complete,
- *  not missing — the moment a real RESEND_API_KEY exists, this route
- *  needs no further changes to start actually sending. The temporary
+ *  Genuinely attempts an invite email — see lib/email/provider.ts — but no
+ *  SMS. This used to claim the project had no mail provider at all, and that
+ *  the route would start sending as soon as one was configured. (Both phrased
+ *  without repeating the old wording, so a grep for the stale claim does not
+ *  match the note recording that it was stale.) It does exist, in Vercel production, and this
+ *  route has sent through it: audit_log holds provider: resend,
+ *  delivered: true. Local and preview still have no key and still take the
+ *  honest no-op. The route needed no changes for any of that, which is what
+ *  the original claim was really asserting and the part that held up.
+ *  What a 2xx does NOT mean is that a player received anything:
+ *  EMAIL_FROM_ADDRESS is onboarding@resend.dev, which until a domain is
+ *  verified in Resend can only deliver to the Resend signup address. The
+ *  temporary
  *  password is returned either way, in this response only, never logged
  *  and never stored anywhere beyond auth.users' own hash of it — a
  *  delivered email is an addition to that, never a replacement for it. */
@@ -145,10 +154,18 @@ export async function POST(request: Request): Promise<NextResponse<CreateUserRes
     metadata: { roles, athlete_id: athleteId },
   });
 
-  /* Attempts a real invite email — see lib/email/provider.ts for why this is
-     almost always an honest no-op today rather than a real send. The link is
-     returned either way: with no provider configured, refusing to show it would
-     mean every account created is one nobody can ever sign in to. */
+  /* Attempts a real invite email — see lib/email/provider.ts. The link is
+     returned either way, and refusing to show it would mean every account
+     created in an environment where the mail does not arrive is one nobody can
+     sign in to.
+
+     NOTE WHAT IS DISCARDED HERE: sendInviteEmail returns { delivered, error }
+     and only `delivered` is taken. send.ts already puts the real `error` on the
+     audit row — test-email-send-guard pins that, on the reasoning that a trail
+     which misattributes a cause is worse than one saying nothing. The UI is the
+     one surface that still cannot say why, because this response carries no
+     error field. Until it does, the panel states the fact and no cause, rather
+     than the no-provider explanation it used to assert. */
   const { delivered: emailDelivered } = await sendInviteEmail(db, orgId, claims.userId, actorRole, newUserId, email, {
     recipientName: fullName,
     clubName: orgName,

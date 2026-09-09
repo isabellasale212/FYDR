@@ -196,5 +196,62 @@ console.log('\nthe sender address is recorded, so the audit trail can answer "wh
   assert(blocked.from === undefined, 'and reports no sender for a send it never made, rather than a misleading one');
 }
 
+
+console.log('\nnothing claims a password this response does not carry, and the UI names no cause');
+{
+  /* BOTH OF THESE WERE FOUND WHILE CORRECTING STALE COMMENTS, and both are
+     facts rather than prose, which is why they are guarded and the comments are
+     not. This repo has already ruled on the second one for audit_log — "an
+     audit row that misattributes a cause is worse than one that says nothing" —
+     and the UI was the surface it had never been applied to. */
+  const sendSrc = readFileSync('src/lib/email/send.ts', 'utf8');
+  const route = readFileSync('src/app/(staff)/settings/users/create/route.ts', 'utf8');
+  const panel = readFileSync('src/components/UserManagementPanel/UserManagementPanel.tsx', 'utf8');
+
+  /* The invite link replaced the temporary password and CreateUserResult
+     carries no password field at all, so an audit note promising one was
+     describing a version of this route that no longer exists. audit_log has no
+     update path, so a wrong note is permanent. */
+  /* COMMENTS STRIPPED, AND A WINDOWED MATCH ABANDONED. The first version of
+     this assertion bounded the search to 700 characters after `note:` and
+     looked for "password" inside it. The explanatory comment written directly
+     above the fallback string pushed the closing paren past that window, so the
+     regex matched nothing and `!test('')` was trivially true — it passed
+     against a planted restoration of the exact string it exists to forbid.
+     Asserting on the STRING LITERALS of the comment-free source has no window
+     to overflow, which is the property that was missing. */
+  const sendCode = strip(sendSrc);
+  assert(
+    !/'[^']*temporary password[^']*'/i.test(sendCode),
+    'no string literal in send.ts promises a temporary password — the invite link replaced it and this response carries none',
+  );
+  assert(
+    /'[^']*invite link was shown on screen[^']*'/.test(sendCode),
+    'and the undelivered note says what is actually shown instead',
+  );
+  assert(
+    !/tempPassword|temporaryPassword/.test(route) && !/password:/.test(route),
+    'and the create response genuinely carries no password, which is what makes that true',
+  );
+
+  /* The panel used to explain an undelivered invite as "no email provider is
+     configured in this environment". On production one IS configured and the
+     real cause is the reserved onboarding@resend.dev sender, so the panel was
+     sending an admin after the wrong problem. The response has no error field
+     to carry the real reason, so it states the fact and stops. */
+  assert(
+    !/no email provider is configured/.test(panel),
+    'the panel no longer blames a missing provider for an undelivered invite',
+  );
+  assert(
+    !/Without an email provider configured/.test(panel),
+    'nor promises the link only appears when one is missing',
+  );
+  assert(
+    /no invite email went out/.test(panel),
+    'it states the fact instead, which is what the audit-note rule already settled for the other surface',
+  );
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);

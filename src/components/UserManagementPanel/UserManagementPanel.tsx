@@ -218,8 +218,8 @@ function CreateUserForm({
           </p>
         ) : (
           <p className="import-sub" style={{ marginBottom: 'var(--sp-10)' }}>
-            Send this link to {fullName} yourself &mdash; no email provider is configured in this environment, so no invite
-            email went out. It signs them in once and lets them choose their own password.
+            Send this link to {fullName} yourself &mdash; no invite email went out. It signs them in once and lets
+            them choose their own password.
           </p>
         )}
         <p className="nm" style={{ fontSize: 'var(--fs-13)', padding: '10px 14px', background: 'var(--surf2)', borderRadius: 8, wordBreak: 'break-all' }}>
@@ -240,8 +240,8 @@ function CreateUserForm({
     <form onSubmit={onSubmit} className="card" noValidate>
       <h2 className="card-title">Invite people</h2>
       <p className="import-sub" style={{ marginBottom: 'var(--sp-12)' }}>
-        Creates a real account and tries to send an invite email; no SMS. Without an email provider configured, you&apos;ll
-        get an invite link to pass on yourself instead.
+        Creates a real account and tries to send an invite email; no SMS. If it can&apos;t be sent, you&apos;ll get an
+        invite link to pass on yourself instead.
       </p>
 
       {result && !result.ok ? (

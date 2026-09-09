@@ -26,11 +26,17 @@ import type { SupabaseClient } from '@supabase/supabase-js';
  *  THE LINK IS NOT A PASSWORD, and the difference is why returning it is not a
  *  reintroduction of the thing being removed. It expires, it works once, it
  *  proves possession of the inbox, and it sets nothing by itself. It is
- *  returned to the administrator because this project has no email provider
- *  (lib/email/provider.ts, and RESEND_API_KEY exists in no environment), so
- *  without it every account created today would be unreachable. When a provider
- *  exists the email carries the same link and the on-screen copy becomes a
- *  fallback rather than the only route.
+ *  returned to the administrator because the email cannot yet be relied on to
+ *  arrive. That reason has changed since this was written and the conclusion has
+ *  not: RESEND_API_KEY now exists in Vercel production and a real invite has
+ *  gone through it (audit_log, provider: resend, delivered: true). But
+ *  EMAIL_FROM_ADDRESS is onboarding@resend.dev, which until a domain is verified
+ *  in Resend can only deliver to the Resend signup address — so a 2xx does not
+ *  mean a player received anything, and local and preview have no key at all.
+ *  Returning the link is therefore still what stops an account created today
+ *  being unreachable. Once fydr.app is verified in Resend, the email carries the
+ *  same link and the on-screen copy becomes a fallback rather than the only
+ *  route.
  *
  *  ORDERING. The auth user is created first here, and the caller writes its own
  *  users row afterwards using the id this returns. That is the reverse of what

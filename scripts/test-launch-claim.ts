@@ -157,9 +157,17 @@ console.log('\nlabels and captions are set as specified, and in the app face');
   assert(/font-size: var\(--fs-16\)/.test(label) && /font-weight: 700/.test(label), 'label 16px / 700');
   assert(/white-space: nowrap/.test(label), 'label nowrap — it fits: 95.4px widest against a 119.2px narrowest column');
   assert(/margin-top: var\(--sp-8\)/.test(label), 'label 8px below its icon');
-  assert(/font-size: 0\.84375rem/.test(cap), 'caption 13.5px (0.84375rem)');
+  /* THE HANDOFF SAID 13.5px AND 3px, and the scale now says 13 and 4. This is
+     the one place the 2026-09-09 collapse diverges from a designer-specified
+     figure rather than from a value somebody typed, so it is called out here
+     instead of absorbed. 13.5 is exactly the half-pixel the collapse exists to
+     remove — measured from a design file at a different scale, not chosen — and
+     the caption gap moved 3px -> 4px because the ramp has no odd steps.
+     Recorded in 0k; revert both to var(--fs-13-5)/3px only by reinstating those
+     steps, which check-scale-tokens.ts now refuses. */
+  assert(/font-size: var\(--fs-13\)/.test(cap), 'caption 13px — the handoff said 13.5, the scale says 13');
   assert(/color: var\(--muted\)/.test(cap), 'caption in --muted');
-  assert(/margin-top: 3px/.test(cap), 'caption 3px below its label');
+  assert(/margin-top: var\(--sp-4\)/.test(cap), 'caption 4px below its label — the handoff said 3, the ramp has no odd steps');
 
   const gridRules = [rule('.launch-features'), label, cap, rule('.launch-features li')].join('');
   assert(

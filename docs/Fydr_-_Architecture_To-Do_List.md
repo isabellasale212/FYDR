@@ -1123,7 +1123,30 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   One cosmetic thing checked and cleared while there: "Not connectable yet — needs the Fydr phone app" orphans "app" onto its own line. Its inline style is `color:var(--faint);text-align:right;max-width:260px` with **no font size at all** — the 12.5px comes from a `base.css` class, so the collapse never touched it. Pre-existing, and one of the 277 raw half-steps still waiting on that tranche.
 
-- [ ] **OPEN: the `base.css` tranche.** The migration covered the **inline** values, which is where the audit's finding was. `base.css` still holds **574 raw font-size** and **793 raw spacing** declarations. They are less harmful — centralised behind classes rather than scattered through JSX — but they are the other half of "one source of truth", and every value they use already has a token.
+- [x] **DONE 2026-09-09: the `base.css` tranche, in two passes.** `base.css` now holds **zero** raw font-size and **zero** raw spacing values outside five named constants. The estimate in this entry was wrong in both directions and the real figures are below.
+
+  | | pass A — tokenised, no movement | pass B — snapped, moved |
+  |---|---|---|
+  | font-size | 309 | **252** |
+  | spacing | 1,055 | **186** |
+
+  **The estimate said 793 spacing declarations; the real figure was 1,237 values.** The audit had counted single-value rules only — `padding: 12px 14px` is two steps, not one, and there are 236 such multi-value declarations. Conversely font-size came in at 561, not 574.
+
+  **Split into two commits deliberately.** Pass A could not move a pixel (every value replaced already sat exactly on a step, and the name-equals-value invariant proves it). Pass B moved 438 values and is reviewable and revertable alone. Mixing them would have made neither checkable.
+
+  **Five values stay raw, as decisions rather than misses:**
+  - `176px` — the launch splash offset, documented at `base.css:11039`
+  - `56px` / `64px` — `.main`'s bottom breathing space at the tablet and desktop tiers
+  - `1px` × 9 — optical nudges and hairlines (`gap: 1px` builds a divider, `margin-top: 1px` corrects a baseline). A hairline is not a spacing step; doubling them to 2px would visibly thicken dividers.
+  - `font-size: 386px` on `.lockup-word` — the wordmark, which `check-font-scaling.ts` has always exempted
+
+  **THERE IS NO `--sp-0` ANY MORE.** Tokenising zero broke `check-athlete-spacing.ts`, which reads `margin-top: 0` as source **text** — `var(--sp-0)` computes the same but does not read the same. The right fix was not the guard: the inline migration had already skipped zeros because zero has no step and `margin: 0` is idiomatic, and that rule simply was not carried over here. 250 reverted, the token deleted, and `check-scale-tokens.ts` asserts it stays deleted.
+
+  **Three guards pinned literal text and had to move with the migration**, which is those baselines working rather than failing. `check-athlete-spacing.ts` pinned `.nutr-meal-grid margin-top: 18px`, now `var(--sp-18)` — same value, different text, so it reported one offender as both new and gone. `test-launch-claim.ts` asserted `font-size: 3rem`, `gap: 24px` and three more as literals; rewritten to assert the step rather than loosened to accept either form, since a regex matching both would let a raw value back in beside the token.
+
+- [ ] **ONE SPEC DIVERGENCE, worth Isabella's eye.** The snap moved two values the launch handoff states literally: `.launch-features .v` was **13.5px → 13px** and its top margin **3px → 4px**. Everything else the snap touched was a value somebody typed; these two came from "Fydr Staff Launch.dc.html". 13.5 is exactly the half-pixel the collapse exists to remove — measured from a design file at a different scale rather than chosen — and the 3px gap moved because the ramp has no odd steps. Recorded in `test-launch-claim.ts` at the assertion itself. Reinstating either means reinstating a half-step or an odd step, which `check-scale-tokens.ts` now refuses.
+
+- [ ] **Found while verifying, pre-existing:** `<button>` and `<input>` elements with no author font-size render at Chromium's UA default of **13.3333px** — outside the scale entirely. Seen on `/settings` (`.plan-switch` and two inputs). Separately, `.eyebrow`, `.tiny` and `.banner` take their vertical margins from the UA's `p { margin-block: 1em }` rather than from authored spacing, so their rhythm tracks their font size. Neither is from the migration; both are places the design system does not currently reach.
 
 - [ ] **OPEN: rem spacing.** See above. Would make layout grow with the reader's text preference. A real accessibility improvement and a real behaviour change; wants its own decision and its own verification pass.
 

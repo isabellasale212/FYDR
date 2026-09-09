@@ -34,10 +34,12 @@ week** button naming that count.
 **DECIDED by Isabella, 2026-09-09: this screen shows the same limited injury view
 as every other coach-facing screen — body area and side, restrictions, and
 expected return, alongside availability. Never a diagnosis, never clinical notes.
-NOT BUILT.**
+BUILT, and live on production since `5b1268c`.**
 
-**What it does today:** availability and nothing else.
-`src/lib/queries/teamAllocation.ts` fetches no other injury field.
+**What it shows:** availability, body area and side, restrictions, and expected
+return. Verified on production as a coach — both the allocated rows (6 of 28 in the
+seeded week carry an injury line, uninjured players show name and status only) and
+the unallocated list.
 
 **Why the decision went this way.** Team allocation was the *only* coach-facing
 screen showing availability alone — the dashboard availability card, the injuries
@@ -60,13 +62,19 @@ coach or medical role read every column of `injuries` for their org. Clinical
 detail is gated because it lives in `injury_clinical`, not because this screen is
 special.
 
-**To build it:** `teamAllocation.ts` joins the same non-clinical `injuries` fields
-`fetchOpenInjuries` already returns (never `injury_clinical`), `TeamAllocationBoard`
-renders them in the `AvailabilityList` two-then-overflow shape, and the on-screen
-caption changes from "Availability only" to name them.
-`scripts/test-injury-boundary-captions.ts` currently asserts this screen shows none
-of these fields — that assertion is the tripwire and must be inverted in the same
-change, which is what forces caption, board and query to move together.
+**How it is built.** `teamAllocation.ts` takes the same non-clinical `injuries`
+fields `fetchOpenInjuries` already supplies to the dashboard, the injuries list and
+the rehab board — never `injury_clinical`, which that file still has no path to.
+Both row shapes get them through one `injuryView()` helper, so the allocated and
+unallocated lists cannot drift apart. `TeamAllocationBoard` renders one shared
+`<InjuryLine>` in the `AvailabilityList` two-then-overflow shape, and nothing at all
+for a fully available athlete, so the board does not grow a blank line per row.
+
+`scripts/test-injury-boundary-captions.ts` is the tripwire and now asserts the
+opposite of what it did before this change: query, board and caption must all carry
+these fields, so removing any one of the three fails. It also asserts BOTH row
+shapes render the line — an earlier version passed when one call site was deleted,
+because it only proved the component existed.
 
 ## 5. Every number on this page
 

@@ -113,11 +113,25 @@ export default async function RehabGroupsPage({ searchParams }: { searchParams: 
           this board EDITS phase), which 28-rehab-groups.md sanctions as "the
           limited injury view". team-allocation returns availability alone. Both
           field lists were fine; the "same as every other screen" clause was the
-          falsehood, in both. */}
+          falsehood, in both.
+
+          THEN THE BOARD ITSELF DISAGREED WITH THIS CAPTION TOO. The first
+          correction kept "restrictions", because rehabGroups.ts returns them —
+          but RehabGroupBoard never renders them (0 references to
+          member.restrictions), while it does render `side` and `expected_return`,
+          which the caption did not mention. Fetched is not shown. This now names
+          what the row actually draws, and the guard checks the caption against
+          the BOARD as well as the query for exactly this reason.
+
+          A SPEC GAP SITS BEHIND IT, filed rather than papered over:
+          28-rehab-groups.md says the coach sees "body area, restrictions and
+          expected return". Restrictions are fetched and not drawn, so either the
+          row should render them or the spec should stop promising them. That is a
+          display decision, not a caption fix. */}
       <p className="cap">
-        Availability, restrictions, body area and phase &mdash; the limited injury view a
-        shared rehab phase cannot be managed without. No diagnosis, no clinical notes,
-        not even for medical, on this screen.
+        Availability, body area and side, expected return, and rehab phase &mdash; the
+        limited injury view a shared phase cannot be managed without. No diagnosis, no
+        clinical notes, not even for medical, on this screen.
       </p>
     </>
   );

@@ -74,20 +74,51 @@ const exposes = (src: string, field: string): boolean =>
    so split at the denial and test the two halves for what each is claiming. */
 const showsClause = (cap: string): string => cap.split(/\bNo\b/)[0] ?? cap;
 
-for (const f of ['restrictions', 'body_area', 'phase']) {
-  assert(exposes(rehabQ, f), `rehabGroups.ts exposes ${f}, so the caption may name it`);
-}
-const rehabShows = showsClause(rehabCap);
-assert(/restrictions/i.test(rehabShows) && /body area/i.test(rehabShows) && /phase/i.test(rehabShows)
-  && /availability/i.test(rehabShows),
-  'and the rehab-groups caption says it shows all three plus availability');
+/* ---- and against the BOARD, which is what a coach actually reads ----
+   The query is the wrong sole authority: rehabGroups.ts returns `restrictions`
+   and RehabGroupBoard never draws them, so a caption checked only against the
+   query passed while promising a field nobody sees. FETCHED IS NOT SHOWN. Both
+   sides are asserted now: a field may be named only if the board renders it, and
+   a field the board renders must not be omitted. */
+const board = (file: string): string => blank(readFileSync(file, 'utf8'));
+const rehabBoard = board('src/components/RehabGroupBoard/RehabGroupBoard.tsx');
+const teamBoard = board('src/components/TeamAllocationBoard/TeamAllocationBoard.tsx');
+const renders = (src: string, field: string): boolean =>
+  new RegExp(`\\b(?:member|m|a)\\.${field}\\b`).test(src);
 
-for (const f of ['restrictions', 'body_area', 'phase']) {
-  assert(!exposes(teamQ, f), `teamAllocation.ts does NOT expose ${f}`);
+/** Field name in code -> how the caption says it in prose. */
+const FIELDS: readonly [string, RegExp][] = [
+  ['restrictions', /restriction/i],
+  ['body_area', /body area/i],
+  ['side', /\bside\b/i],
+  ['expected_return', /expected return/i],
+  ['phase', /phase/i],
+];
+
+const rehabShows = showsClause(rehabCap);
+for (const [field, prose] of FIELDS) {
+  const drawn = renders(rehabBoard, field);
+  const named = prose.test(rehabShows);
+  assert(drawn === named,
+    `rehab-groups: ${field} is ${drawn ? 'rendered' : 'not rendered'} by the board and ${named ? 'named' : 'not named'} in the caption`);
 }
+assert(/availability/i.test(rehabShows), 'and the rehab-groups caption says availability, which it shows');
+
+/* THE KNOWN GAP, asserted so it stays visible instead of being quietly dropped
+   when the query assertions moved to the board. rehabGroups.ts fetches
+   `restrictions` and the board never draws them, while
+   docs/screens/28-rehab-groups.md says the coach sees them. Filed as a display
+   decision. If someone renders them, THIS fails — which is the point: the
+   caption and the spec both need updating in the same change. */
+assert(exposes(rehabQ, 'restrictions') && !renders(rehabBoard, 'restrictions'),
+  'known gap holds: rehabGroups.ts fetches restrictions, the board does not draw them (28-rehab-groups.md says it should — filed)');
+
 const teamShows = showsClause(teamCap);
-assert(!/restrictions/i.test(teamShows) && !/body area/i.test(teamShows) && !/phase/i.test(teamShows),
-  'so the team-allocation caption does not claim to show any of them');
+for (const [field, prose] of FIELDS) {
+  assert(!exposes(teamQ, field), `teamAllocation.ts does not expose ${field}`);
+  assert(!renders(teamBoard, field), `TeamAllocationBoard does not render ${field}`);
+  assert(!prose.test(teamShows), `and the team-allocation caption does not claim ${field}`);
+}
 assert(/availability/i.test(teamShows), 'and does say availability, which is what it shows');
 
 console.log(`\n${passed} passed, ${failed} failed`);

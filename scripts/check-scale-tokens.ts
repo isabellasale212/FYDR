@@ -133,8 +133,10 @@ console.log('\nthe names are the values, which is what makes the migration prova
   assert(bad.length === 0, bad.length === 0
     ? 'every --fs-N is N/16 rem and every --sp-N is Npx, so a migrated call site computes to exactly what it did before'
     : bad.join(' · '));
-  /* --sp-0 is the one that cannot follow the rule: 0 needs no unit. */
-  assert(/--sp-0: 0;/.test(tokensCss), 'and --sp-0 is unitless zero, the one step with no unit to carry');
+  /* There is deliberately no --sp-0. Zero has no step, `margin: 0` is idiomatic,
+     and tokenising it broke check-athlete-spacing.ts, which reads the zero as
+     source text. Asserted so nobody adds it back as a tidiness. */
+  assert(!/--sp-0\s*:/.test(tokensCss), 'and there is no --sp-0: zero has no step, and check-athlete-spacing.ts reads `margin-top: 0` as text');
 }
 
 console.log('\nthe scale is whole pixels, and spacing is even');

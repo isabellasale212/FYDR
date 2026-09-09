@@ -45,7 +45,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 400;
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
@@ -107,7 +107,7 @@ a {
   z-index: 100;
   background: var(--surf);
   color: var(--text);
-  padding: 10px 16px;
+  padding: var(--sp-10) var(--sp-16);
   border-radius: var(--r-control);
   border: 1px solid var(--border);
 }
@@ -254,7 +254,7 @@ a {
 .sidebar {
   background: var(--surf);
   border-right: 1px solid var(--border);
-  padding: 26px 0 20px;
+  padding: 26px 0 var(--sp-20);
   position: sticky;
   top: 0;
   height: 100vh;
@@ -264,7 +264,7 @@ a {
 }
 @media (min-width: 768px) and (max-width: 1023px) {
   .sidebar {
-    padding: 20px 0;
+    padding: var(--sp-20) 0;
   }
 }
 @media (max-width: 767px) {
@@ -280,12 +280,12 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px 24px;
+  padding: 0 var(--sp-24) var(--sp-24);
 }
 .brand .wm {
   position: relative;
   width: 132px;
-  padding-bottom: 12px;
+  padding-bottom: var(--sp-12);
   /* The brand face. Reversed 2026-09-07 on Isabella's instruction: the sidebar
      briefly wore the app face on the reasoning that it is chrome read past all
      day, and the decision is that a wordmark is a wordmark wherever it appears
@@ -362,7 +362,7 @@ a {
 @media (min-width: 768px) and (max-width: 1023px) {
   .brand {
     justify-content: center;
-    padding: 0 0 20px;
+    padding: 0 0 var(--sp-20);
   }
   .wm-full {
     position: absolute;
@@ -413,14 +413,14 @@ a {
 .nav {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--sp-4);
 }
 .nav-item {
   display: flex;
   align-items: center;
   gap: 11px;
-  padding: 9px 24px 9px 21px;
-  font-size: 0.875rem;
+  padding: 9px var(--sp-24) 9px 21px;
+  font-size: var(--fs-14);
   font-weight: 600;
   color: var(--muted);
   cursor: pointer;
@@ -463,7 +463,7 @@ a {
 @media (min-width: 768px) and (max-width: 1023px) {
   .nav-item {
     justify-content: center;
-    padding: 10px 6px;
+    padding: var(--sp-10) var(--sp-6);
     gap: 0;
   }
   /* Same clip-based visually-hidden technique as .visually-hidden
@@ -486,19 +486,19 @@ a {
 }
 .nav-foot {
   margin-top: auto;
-  padding: 16px 24px 0;
+  padding: var(--sp-16) var(--sp-24) 0;
   border-top: 1px solid var(--border);
 }
 .nav-who {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   line-height: 1.45;
   color: var(--faint);
 }
 .nav-who b {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 700;
   color: var(--text);
 }
@@ -506,10 +506,10 @@ a {
   display: flex;
   align-items: center;
   gap: 9px;
-  margin-top: 14px;
+  margin-top: var(--sp-14);
   padding: 0;
   font-family: inherit;
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 600;
   color: var(--muted);
   background: none;
@@ -533,7 +533,7 @@ a {
 .nav-copyright {
   font-size: 0.65625rem;
   color: var(--faint);
-  padding: 8px 11px 0;
+  padding: var(--sp-8) 11px 0;
   margin: 0;
 }
 @media (min-width: 768px) and (max-width: 1023px) {
@@ -557,15 +557,15 @@ a {
 @media (max-width: 767px) {
   .main {
     --main-pad: 16px;
-    padding: 18px var(--main-pad) 48px;
+    padding: var(--sp-18) var(--main-pad) var(--sp-48);
   }
 }
 
 .topbar {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 18px;
+  gap: var(--sp-16);
+  margin-bottom: var(--sp-18);
   /* WRAPS, because it did not and the heading paid for it. .page-head is
      flex:1 with min-width:0, while the controls block beside it keeps
      min-width:auto and so refuses to shrink below its content. On a page with
@@ -586,17 +586,17 @@ a {
   min-width: 260px;
 }
 .eyebrow {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
   font-weight: 600;
 }
 .page-head h1 {
-  font-size: 1.375rem;
+  font-size: var(--fs-22);
   font-weight: 800;
   letter-spacing: -0.02em;
-  margin: 6px 0 0;
+  margin: var(--sp-6) 0 0;
 }
 @media (min-width: 1000px) {
   .page-head h1 {
@@ -611,7 +611,7 @@ a {
   border-radius: var(--r-control);
   padding: 9px 13px;
   min-height: 44px;
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
@@ -638,7 +638,7 @@ a {
 .theme-seg {
   display: inline-flex;
   align-items: stretch;
-  gap: 2px;
+  gap: var(--sp-2);
   padding: 3px;
   border-radius: var(--r-full);
   background: var(--surf2);
@@ -650,7 +650,7 @@ a {
   background: none;
   border-radius: var(--r-full);
   font-family: inherit;
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   font-weight: 700;
   color: var(--muted);
   padding: 0 15px;
@@ -693,14 +693,14 @@ a {
   box-shadow: var(--shadow);
 }
 .card-title {
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 700;
-  margin: 0 0 6px;
+  margin: 0 0 var(--sp-6);
 }
 .import-sub {
   font-size: 0.78125rem;
   color: var(--muted);
-  margin: 0 0 14px;
+  margin: 0 0 var(--sp-14);
 }
 /* Caption prose is MUTED, not faint — §3 sizes it at 12.5px and calls the role
    "Caption". §2's faint is the ink for day letters, chevrons, a rest-day MD
@@ -715,13 +715,13 @@ a {
   font-size: 0.78125rem;
   color: var(--muted);
   line-height: 1.5;
-  margin: 10px 0 0;
+  margin: var(--sp-10) 0 0;
 }
 .cap b {
   color: var(--text);
 }
 .sub {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   color: var(--muted);
 }
 .tiny {
@@ -739,7 +739,7 @@ a {
   height: 1px;
   background: var(--hair);
   border: 0;
-  margin: 12px 0;
+  margin: var(--sp-12) 0;
 }
 .hair {
   height: 1px;
@@ -753,7 +753,7 @@ a {
   border-radius: var(--r-control);
   padding: 13px 22px;
   min-height: 44px;
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
@@ -778,9 +778,9 @@ a {
   color: var(--muted);
   border: 1px solid var(--border);
   border-radius: var(--r-control);
-  padding: 9px 16px;
+  padding: 9px var(--sp-16);
   min-height: 44px;
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
@@ -803,7 +803,7 @@ a {
   padding: var(--pad-field);
   min-height: 44px;
   color: var(--text);
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-family: inherit;
   transition: border-color var(--t-state);
 }
@@ -815,19 +815,19 @@ a {
   font-size: 0.78125rem;
   font-weight: 600;
   color: var(--muted);
-  margin: 0 0 6px;
+  margin: 0 0 var(--sp-6);
 }
 
 .chiprow {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--sp-8);
   align-items: center;
 }
 .squad-chip {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   font-weight: 600;
-  padding: 8px 14px;
+  padding: var(--sp-8) var(--sp-14);
   min-height: 44px;
   border-radius: var(--r-control);
   border: 1px solid var(--border);
@@ -876,9 +876,9 @@ a {
  * No pointer cursor, no hover state: aria-pressed only belongs on an
  * interactive control, and this is not one. */
 .chip-static {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   font-weight: 600;
-  padding: 8px 14px;
+  padding: var(--sp-8) var(--sp-14);
   border-radius: var(--r-control);
   border: 1px solid var(--accent);
   color: var(--on-accent);
@@ -891,9 +891,9 @@ a {
    Fill is identity. The 2px edge reinforces. The label and the glyph carry the
    status, and neither is optional. */
 .pill {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 700;
-  padding: 3px 10px 3px 8px;
+  padding: 3px var(--sp-10) 3px var(--sp-8);
   border-radius: var(--r-control);
   display: inline-flex;
   align-items: center;
@@ -949,7 +949,7 @@ a {
   border-inline-start: 2px solid var(--border-strong);
 }
 .pill .glyph {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   line-height: 1;
 }
 
@@ -957,7 +957,7 @@ a {
 .avail {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 2px;
+  gap: var(--sp-2);
   background: var(--border);
   border: 1px solid var(--border);
   border-radius: var(--r-tab);
@@ -970,7 +970,7 @@ a {
 }
 .avail > div {
   background: var(--surf);
-  padding: 12px 14px;
+  padding: var(--sp-12) var(--sp-14);
 }
 .avail .v {
   font-size: 1.625rem;
@@ -979,18 +979,18 @@ a {
   line-height: 1;
 }
 .avail .k {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
   font-weight: 600;
-  margin-top: 6px;
+  margin-top: var(--sp-6);
   display: flex;
   align-items: center;
   gap: 5px;
 }
 .avail .g {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
 }
 .g-good {
   color: var(--good-text);
@@ -1008,10 +1008,10 @@ a {
 .arow {
   display: grid;
   grid-template-columns: 132px 190px minmax(0, 1fr) 186px;
-  gap: 10px;
-  padding: 9px 4px;
+  gap: var(--sp-10);
+  padding: 9px var(--sp-4);
   border-top: 1px solid var(--hair);
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   align-items: baseline;
 }
 .arow:first-of-type {
@@ -1042,15 +1042,15 @@ a {
 .attn-head {
   display: grid;
   grid-template-columns: 26px minmax(110px, 1fr) minmax(0, 1.8fr) 84px 140px;
-  gap: 10px;
-  padding: 11px 4px;
+  gap: var(--sp-10);
+  padding: 11px var(--sp-4);
   border-top: 1px solid var(--hair);
   align-items: center;
 }
 .attn-head {
   border-top: none;
-  padding-bottom: 6px;
-  font-size: 0.6875rem;
+  padding-bottom: var(--sp-6);
+  font-size: var(--fs-11);
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1061,7 +1061,7 @@ a {
   text-align: right;
 }
 .attn .rank {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   font-weight: 700;
   color: var(--faint);
   text-align: right;
@@ -1083,9 +1083,9 @@ a {
 .attn-vs {
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: var(--sp-6);
   flex-wrap: wrap;
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   min-width: 0;
 }
 .attn-what {
@@ -1104,17 +1104,17 @@ a {
 .attn-sev {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-6);
 }
 
 /* ---------- dense rows and tables ---------- */
 .load-row {
   display: grid;
-  gap: 8px;
+  gap: var(--sp-8);
   border-top: 1px solid var(--hair);
-  padding: 9px 4px;
+  padding: 9px var(--sp-4);
   align-items: center;
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
 }
 
 /* Inside a flush card there is no card padding to sit inside, so the row has
@@ -1138,7 +1138,7 @@ a {
 table.tbl {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
 }
 table.tbl th {
   font-size: 0.65625rem;
@@ -1147,11 +1147,11 @@ table.tbl th {
   color: var(--faint);
   font-weight: 700;
   text-align: left;
-  padding: 0 8px 9px;
+  padding: 0 var(--sp-8) 9px;
   white-space: nowrap;
 }
 table.tbl td {
-  padding: 7px 8px;
+  padding: 7px var(--sp-8);
   border-top: 1px solid var(--hair);
   vertical-align: middle;
 }
@@ -1167,7 +1167,7 @@ table.tbl tbody tr:hover {
  * table that looks less like a spreadsheet. Scoped to .lb-table rather than
  * changing table.tbl, which every report and settings screen also uses. */
 table.tbl.lb-table th {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--muted);
   letter-spacing: 0.06em;
   padding-bottom: 11px;
@@ -1178,11 +1178,11 @@ table.tbl.lb-table td {
   padding-bottom: 11px;
 }
 table.tbl.lb-table .nm {
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   font-weight: 600;
 }
 table.tbl.lb-table td.r {
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -1207,7 +1207,7 @@ table.tbl.lb-table td.r {
 .kv {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--sp-10);
   font-size: 0.78125rem;
   padding: 7px 0;
   border-top: 1px solid var(--hair);
@@ -1247,7 +1247,7 @@ table.tbl.lb-table td.r {
   font-size: 0.78125rem;
 }
 .banner .g {
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   line-height: 1.2;
   flex: none;
 }
@@ -1256,13 +1256,13 @@ table.tbl.lb-table td.r {
   border: 1px dashed var(--border-strong);
   border-radius: var(--r-card);
   background: var(--surf2);
-  padding: 22px 18px;
+  padding: 22px var(--sp-18);
   text-align: center;
 }
 .empty h2 {
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 700;
-  margin: 0 0 6px;
+  margin: 0 0 var(--sp-6);
 }
 .empty p {
   font-size: 0.78125rem;
@@ -1277,25 +1277,25 @@ table.tbl.lb-table td.r {
   background: var(--surf);
   border: 1px solid var(--border);
   border-radius: var(--r-card);
-  padding: 13px 16px;
+  padding: 13px var(--sp-16);
   box-shadow: var(--shadow);
-  margin-bottom: 14px;
+  margin-bottom: var(--sp-14);
 }
 .pbar .l1 {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--sp-12);
   flex-wrap: wrap;
 }
 .pbar .nmx {
-  font-size: 1.25rem;
+  font-size: var(--fs-20);
   font-weight: 800;
   letter-spacing: -0.02em;
   text-transform: uppercase;
 }
 .pbar .l2 {
   display: flex;
-  gap: 10px;
+  gap: var(--sp-10);
   flex-wrap: wrap;
   font-size: 0.78125rem;
   color: var(--muted);
@@ -1332,17 +1332,17 @@ table.tbl.lb-table td.r {
 }
 .legend {
   display: flex;
-  gap: 16px;
+  gap: var(--sp-16);
   flex-wrap: wrap;
   font-size: 0.71875rem;
   color: var(--muted);
-  margin: 2px 0 8px;
+  margin: var(--sp-2) 0 var(--sp-8);
   align-items: center;
 }
 .legend span {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-6);
 }
 .legend i {
   width: 14px;
@@ -1415,7 +1415,7 @@ body:has(.phone) {
    varies by card type (14/16/17), which a single square token cannot express.
    Staff screens keep the global 16px. */
 /* TODAY'S 16px OVERRIDE STOOD HERE AND IS GONE, 2026-09-08.
-   `.phone-body:has(> .wk-card) { gap: 16px }`, selected off the week card
+   `.phone-body:has(> .wk-card) { gap: var(--sp-16)}`, selected off the week card
    because Today was the only screen with one.
 
    Deleted on Isabella's instruction: one rhythm, 28px, everywhere. It was the
@@ -1435,7 +1435,7 @@ body:has(.phone) {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 0 22px 8px;
+  padding: 0 22px var(--sp-8);
   display: flex;
   flex-direction: column;
   gap: var(--gap-body);
@@ -1489,14 +1489,14 @@ body:has(.phone) {
    off .rd-head rather than a class: the hero card IS the card with a headline
    row in it, on all three tabs. */
 .phone-body .card:has(> .rd-head) {
-  padding-bottom: 14px;
+  padding-bottom: var(--sp-14);
 }
 /* Spec §3: 0.14em on the uppercase eyebrow, and a card title at 16/800. */
 .phone-body .eyebrow {
   letter-spacing: 0.14em;
 }
 .phone-body .card-title {
-  font-size: 1rem;
+  font-size: var(--fs-16);
   font-weight: 800;
   letter-spacing: -0.02em;
 }
@@ -1510,7 +1510,7 @@ body:has(.phone) {
      the notch, which on a real device is env(safe-area-inset-top) — added to
      a base, never substituted, so a browser reporting no inset still clears
      its own chrome. */
-  gap: 12px;
+  gap: var(--sp-12);
   padding: calc(22px + env(safe-area-inset-top, 0px)) 0 14px;
   min-height: 44px;
 }
@@ -1524,7 +1524,7 @@ body:has(.phone) {
   border-radius: 50%;
   background: var(--accent);
   color: var(--on-accent);
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 700;
   letter-spacing: 0.02em;
   display: flex;
@@ -1543,7 +1543,7 @@ img.av {
 }
 /* Spec §3: screen title 24/800/−0.03em. */
 .hd .d {
-  font-size: 1.5rem;
+  font-size: var(--fs-24);
   font-weight: 800;
   letter-spacing: -0.03em;
   flex: 1;
@@ -1588,7 +1588,7 @@ img.av {
   justify-content: center;
   /* Spec §6: gap 5, padding 6px 0, label 11.5/600 — 700 only when active. */
   gap: 5px;
-  padding: 6px 0;
+  padding: var(--sp-6) 0;
   font-size: 0.71875rem;
   font-weight: 600;
   color: var(--tab-inactive);
@@ -1620,7 +1620,7 @@ img.av {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--sp-12);
   /* Spec §7.1: 17/800. */
   font-size: 1.0625rem;
   font-weight: 800;
@@ -1637,8 +1637,8 @@ img.av {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  padding: 14px var(--pad-card-x, 18px) 10px;
+  gap: var(--sp-12);
+  padding: var(--sp-14) var(--pad-card-x, 18px) var(--sp-10);
 }
 .hist-n {
   font-size: 0.78125rem;
@@ -1653,9 +1653,9 @@ img.av {
 .hist-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--hist-val-w, auto);
-  gap: 12px;
+  gap: var(--sp-12);
   align-items: center;
-  padding: 12px var(--pad-card-x, 18px);
+  padding: var(--sp-12) var(--pad-card-x, 18px);
 }
 /* §7.3 says "12px/600 faint date". Muted instead, and this is the one place
    this app departs from a §2 literal on purpose.
@@ -1669,12 +1669,12 @@ img.av {
    for it there, and "not submitted" sits next to it saying the same thing. */
 .hist-date {
   margin: 0;
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   font-weight: 600;
   color: var(--muted);
 }
 .hist-detail {
-  margin: 2px 0 0;
+  margin: var(--sp-2) 0 0;
   font-size: 0.84375rem;
   color: var(--text);
 }
@@ -1696,8 +1696,8 @@ img.av {
    link. */
 .hist-more {
   margin: 0;
-  padding: 12px var(--pad-card-x);
-  font-size: 0.875rem;
+  padding: var(--sp-12) var(--pad-card-x);
+  font-size: var(--fs-14);
   font-weight: 600;
 }
 .hist-more a {
@@ -1712,7 +1712,7 @@ img.av {
 }
 .hist-foot {
   flex: none;
-  padding: 14px var(--pad-card-x, 18px);
+  padding: var(--sp-14) var(--pad-card-x, 18px);
   border-top: 1px solid var(--hair);
 }
 .hist-foot > :first-child {
@@ -1737,7 +1737,7 @@ img.av {
   font-weight: 500;
 }
 .hist-corrected {
-  padding: 0 var(--pad-card-x, 18px) 12px;
+  padding: 0 var(--pad-card-x, 18px) var(--sp-12);
   background: var(--surf2);
 }
 
@@ -1749,8 +1749,8 @@ img.av {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 14px;
-  margin: 2px 0 10px;
+  gap: var(--sp-14);
+  margin: var(--sp-2) 0 var(--sp-10);
 }
 /* Spec §3: hero figure 38/800/−0.04em, line-height 1.
    nowrap is kept from the measured fix that put it here: "41.5 cm" broke after
@@ -1758,7 +1758,7 @@ img.av {
    84px. */
 .rd-value {
   margin: 0;
-  font-size: 2.375rem;
+  font-size: var(--fs-38);
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.04em;
@@ -1787,7 +1787,7 @@ img.av {
 /* Spec §7.3: 14/700 over a 12.5px muted line. */
 .rd-delta {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   font-weight: 700;
 }
 /* REVERSED BY THE 2026-09-08 REFERENCE, which draws "▲ 6 on last week" in
@@ -1823,7 +1823,7 @@ img.av {
    Sized and weighted down so the value reads first and the unit qualifies it. */
 /* Spec §3: hero unit suffix 18/600. */
 .rd-unit {
-  font-size: 1.125rem;
+  font-size: var(--fs-18);
   font-weight: 600;
   letter-spacing: 0;
   margin-inline-start: 1px;
@@ -1838,14 +1838,14 @@ img.av {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: minmax(0, 1fr);
-  gap: 10px;
-  margin: 14px 0 0;
+  gap: var(--sp-10);
+  margin: var(--sp-14) 0 0;
 }
 /* Spec §7.3: a 52px bar row, 6px gap, then the label row. */
 .gb-col {
   display: grid;
   grid-template-rows: 52px auto;
-  gap: 6px;
+  gap: var(--sp-6);
   min-width: 0;
 }
 .gb-track {
@@ -1894,8 +1894,8 @@ img.av {
    wellness list. */
 /* Spec §3, "list row name": 14.5–16px / 600 — not the 700 a card title takes. */
 .hist-name {
-  margin: 0 0 2px;
-  font-size: 0.9375rem;
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-15);
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--text);
@@ -1908,8 +1908,8 @@ img.av {
    words say the direction ("off PB", "new PB") as well as the colour — the
    same reason .rd-delta keeps its arrow. */
 .hist-delta {
-  margin: 2px 0 0;
-  font-size: 0.75rem;
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-12);
   font-weight: 600;
   white-space: nowrap;
   color: var(--warn-text);
@@ -1931,7 +1931,7 @@ img.av {
   display: grid;
   grid-template-columns: auto auto;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-10);
 }
 .hist-chev {
   font-size: 1.0625rem;
@@ -1954,14 +1954,14 @@ a.hist-row:focus-visible {
    and states the orientation, because "better is up" is an editorial choice
    the chart cannot state by itself when the test is one where lower wins. */
 .spark-cap {
-  margin: 10px 0 0;
+  margin: var(--sp-10) 0 0;
   font-size: 0.78125rem;
   color: var(--muted);
   line-height: 1.45;
 }
 
 .todo-left {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 700;
   letter-spacing: 0;
   text-transform: none;
@@ -2024,17 +2024,17 @@ a.hist-row:focus-visible {
   gap: 11px;
 }
 .me-stat {
-  padding: 15px 16px;
+  padding: 15px var(--sp-16);
 }
 .me-stat-value {
-  margin: 4px 0 0;
+  margin: var(--sp-4) 0 0;
   font-size: 1.625rem;
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.1;
 }
 .me-stat-sub {
-  margin: 2px 0 0;
+  margin: var(--sp-2) 0 0;
   font-size: 0.78125rem;
   color: var(--muted);
 }
@@ -2051,8 +2051,8 @@ a.hist-row:focus-visible {
 .sign-out {
   display: block;
   width: 100%;
-  margin-top: 14px;
-  padding: 16px 20px;
+  margin-top: var(--sp-14);
+  padding: var(--sp-16) var(--sp-20);
   /* Was a raw 16px, and the guard had never seen it — `sign-out` matched none
      of INTERACTIVE's words. Now in the net, and exempt by name for the pill
      the reference draws. */
@@ -2061,7 +2061,7 @@ a.hist-row:focus-visible {
   border: 1px solid rgb(var(--bad-rgb) / 0.5);
   color: var(--bad-on-tint);
   font-family: inherit;
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 700;
   cursor: pointer;
   transition: background var(--t-state), border-color var(--t-state);
@@ -2082,9 +2082,9 @@ a.hist-row:focus-visible {
   font-weight: 700;
 }
 .me-hd .sub {
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   color: var(--muted);
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 
 /* My data's segment picker, Fydr Athlete App.dc.html 23e: one grey track with
@@ -2094,12 +2094,12 @@ a.hist-row:focus-visible {
    route to three of them. */
 .md-seg-track {
   display: flex;
-  gap: 4px;
+  gap: var(--sp-4);
   /* The changelog's own numbers: a --surf2 band with 4px of padding. It was a
      16px-radius track with 2px gaps that scrolled horizontally, because the old
      reference drew three segments and this build had six. Three now, so nothing
      scrolls and the track can be the pill the reference draws. */
-  padding: 4px;
+  padding: var(--sp-4);
   border-radius: var(--r-full);
   background: var(--surf2);
 }
@@ -2112,9 +2112,9 @@ a.hist-row:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 11px 14px;
+  padding: 11px var(--sp-14);
   border-radius: var(--r-full);
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   font-weight: 600;
   color: var(--muted);
   text-decoration: none;
@@ -2153,11 +2153,11 @@ a.hist-row:focus-visible {
 /* One full-width row: name and date left, room for a chevron right when there
    is somewhere for it to go. Was a stacked block with the eyebrow above. */
 .wk-towards {
-  padding: 12px var(--pad-card) 14px;
+  padding: var(--sp-12) var(--pad-card) var(--sp-14);
   border-top: 1px solid var(--hair);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--sp-12);
 }
 .wk-towards > div {
   flex: 1;
@@ -2165,17 +2165,17 @@ a.hist-row:focus-visible {
 }
 .wk-towards-name {
   margin: 3px 0 0;
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 700;
 }
 .wk-towards-when {
-  margin: 2px 0 0;
+  margin: var(--sp-2) 0 0;
   font-size: 0.78125rem;
   color: var(--muted);
 }
 /* Spec §7.1: card padding 14px 14px 12px, a 7-column grid at gap 3. */
 .wk-strip {
-  padding: 14px 14px 12px;
+  padding: var(--sp-14) var(--sp-14) var(--sp-12);
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 3px;
@@ -2193,7 +2193,7 @@ a.hist-row:focus-visible {
   flex-direction: column;
   align-items: center;
   gap: 5px;
-  padding: 6px 0;
+  padding: var(--sp-6) 0;
   border: 1px solid transparent;
   border-radius: 12px;
 }
@@ -2219,7 +2219,7 @@ a.hist-row:focus-visible {
    than rounded up: clearing it needs either a darker grey than the design
    system carries or a lighter tint than the design asks for. */
 .wk-day .wi {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 600;
   color: var(--muted);
 }
@@ -2230,7 +2230,7 @@ a.hist-row:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   font-weight: 600;
   border: 1px solid transparent;
   color: var(--text);
@@ -2286,13 +2286,13 @@ a.hist-row:focus-visible {
      §8's raised floor for these specific tiles — this row is the one an
      athlete taps first thing in a car park. */
   grid-template-columns: 46px minmax(0, 1fr) auto 14px;
-  gap: 14px;
+  gap: var(--sp-14);
   align-items: center;
   /* .card.flush drops the card's own padding so a row's hover and its dividers
      can reach the edge — which makes the horizontal inset this row's job. It
      has to be the same token, or text inside a flush card sits closer to the
      border than text in every other card. It was 14px against 16. */
-  padding: 18px 16px;
+  padding: var(--sp-18) var(--sp-16);
   min-height: 46px;
   width: 100%;
   background: none;
@@ -2346,30 +2346,30 @@ a.hist-row:focus-visible {
   background: none;
   border: none;
   color: var(--faint);
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 700;
-  padding: 3px 2px;
+  padding: 3px var(--sp-2);
 }
 .chev {
   color: var(--faint);
-  font-size: 1rem;
+  font-size: var(--fs-16);
   line-height: 1;
   flex: none;
 }
 .sess {
   display: grid;
   grid-template-columns: 54px minmax(0, 1fr) auto;
-  gap: 12px;
-  padding: 14px;
+  gap: var(--sp-12);
+  padding: var(--sp-14);
   align-items: start;
   min-height: 44px;
 }
 .sess .tm {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   padding-top: 1px;
 }
 .sess .ti {
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -2382,7 +2382,7 @@ a.hist-row:focus-visible {
   margin-top: 3px;
 }
 .sess .state {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   font-weight: 600;
 }
 
@@ -2404,27 +2404,27 @@ a.hist-row:focus-visible {
 .done-title {
   font-size: 1.0625rem;
   font-weight: 700;
-  margin: 12px 0 0;
+  margin: var(--sp-12) 0 0;
 }
 .done-sub {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   color: var(--muted);
-  margin: 6px 0 0;
+  margin: var(--sp-6) 0 0;
 }
 .next-up {
-  padding: 14px;
+  padding: var(--sp-14);
 }
 .next-up .eyebrow {
-  margin-bottom: 4px;
+  margin-bottom: var(--sp-4);
 }
 .next-up .when {
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   font-weight: 600;
 }
 .next-up .what {
   font-size: 0.78125rem;
   color: var(--muted);
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 
 /* -------- availability card, §5 --------
@@ -2451,9 +2451,9 @@ a.hist-row:focus-visible {
 /* Spec §7.1: padding 16px 18px, gap 14. */
 .avail-banner {
   border-radius: var(--r-card);
-  padding: 16px 18px;
+  padding: var(--sp-16) var(--sp-18);
   display: flex;
-  gap: 14px;
+  gap: var(--sp-14);
   align-items: flex-start;
   /* Mixed INTO the card surface, not laid over whatever is behind it. A 12%
      amber wash reads amber on a neutral page and cancels to grey on the
@@ -2465,7 +2465,7 @@ a.hist-row:focus-visible {
   border: 1px solid rgb(var(--state-rgb) / 0.4);
 }
 .avail-banner .g {
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   line-height: 1.3;
   flex: none;
 }
@@ -2476,11 +2476,11 @@ a.hist-row:focus-visible {
   letter-spacing: -0.01em;
 }
 .avail-banner .v {
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   margin-top: 3px;
 }
 .avail-banner .s {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   color: var(--muted);
   margin-top: 5px;
 }
@@ -2490,7 +2490,7 @@ a.hist-row:focus-visible {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 12px;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-8);
   padding: var(--pad-card);
   width: 100%;
   background: var(--surf);
@@ -2503,11 +2503,11 @@ a.hist-row:focus-visible {
   cursor: pointer;
 }
 .report-card .k {
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   font-weight: 600;
 }
 .sect {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 700;
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -2515,7 +2515,7 @@ a.hist-row:focus-visible {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin: 0 0 8px;
+  margin: 0 0 var(--sp-8);
 }
 .card.flush {
   padding: 0;
@@ -2571,10 +2571,10 @@ a.hist-row:focus-visible {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--sp-12);
 }
 .sheet-head .t {
-  font-size: 1.375rem;
+  font-size: var(--fs-22);
   font-weight: 800;
   letter-spacing: -0.03em;
   margin: 0;
@@ -2606,8 +2606,8 @@ a.hist-row:focus-visible {
   font-size: 0.78125rem;
   color: var(--muted);
   text-align: center;
-  padding: 0 0 12px;
-  margin: 0 0 14px;
+  padding: 0 0 var(--sp-12);
+  margin: 0 0 var(--sp-14);
   border-bottom: 1px solid var(--hair);
 }
 .dir b {
@@ -2627,7 +2627,7 @@ a.hist-row:focus-visible {
 .sleep-panel {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--sp-12);
 }
 .sleep-panel .sp-head {
   flex: 1;
@@ -2636,13 +2636,13 @@ a.hist-row:focus-visible {
 }
 .sleep-panel .sp-head .k {
   display: block;
-  font-size: 1rem;
+  font-size: var(--fs-16);
   font-weight: 700;
 }
 .sleep-panel .sp-head .h {
   display: block;
-  margin-top: 2px;
-  font-size: 0.8125rem;
+  margin-top: var(--sp-2);
+  font-size: var(--fs-13);
   color: var(--muted);
 }
 .sleep-panel .step {
@@ -2656,8 +2656,8 @@ a.hist-row:focus-visible {
   grid-template-columns: 44px 58px 44px;
   justify-content: end;
   align-items: center;
-  gap: 8px;
-  margin-top: 10px;
+  gap: var(--sp-8);
+  margin-top: var(--sp-10);
 }
 /* 44, not 46, and it matters: the grid above allots 44px tracks, so a 46px
    button overflowed its own column by a pixel each side. Radius 14 per §7.2. */
@@ -2668,7 +2668,7 @@ a.hist-row:focus-visible {
   border: 1px solid var(--border);
   background: var(--surf);
   color: var(--accent-text);
-  font-size: 1.25rem;
+  font-size: var(--fs-20);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2685,14 +2685,14 @@ a.hist-row:focus-visible {
   line-height: 1.1;
 }
 .step .val .v {
-  font-size: 1.5rem;
+  font-size: var(--fs-24);
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 .step .val .u {
   font-size: 0.71875rem;
   color: var(--faint);
-  margin-top: 4px;
+  margin-top: var(--sp-4);
 }
 
 /* -------- the five scales, §6 -------- */
@@ -2700,8 +2700,8 @@ a.hist-row:focus-visible {
    above it and 7px between its own parts. The rule is what separates five
    questions that otherwise run together as one wall of numbers. */
 .sc {
-  margin-top: 12px;
-  padding-top: 12px;
+  margin-top: var(--sp-12);
+  padding-top: var(--sp-12);
   border: none;
   border-top: 1px solid var(--hair);
   min-inline-size: 0;
@@ -2710,13 +2710,13 @@ a.hist-row:focus-visible {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--sp-8);
   padding: 0;
   width: 100%;
 }
 /* Spec §7.2: question name 16/700, state 13.5/600. */
 .sc-l {
-  font-size: 1rem;
+  font-size: var(--fs-16);
   font-weight: 700;
 }
 .sc-v {
@@ -2738,7 +2738,7 @@ a.hist-row:focus-visible {
 .dots {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
+  gap: var(--sp-8);
   margin-top: 7px;
 }
 .dots .opt {
@@ -2774,7 +2774,7 @@ a.hist-row:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: var(--fs-16);
   font-weight: 700;
   pointer-events: none;
   transition: background var(--t-state), border-color var(--t-state), color var(--t-state);
@@ -2794,15 +2794,15 @@ a.hist-row:focus-visible {
 .sc-a {
   display: flex;
   justify-content: space-between;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--faint);
-  margin-top: 4px;
+  margin-top: var(--sp-4);
 }
 .sc-where {
-  margin-top: 10px;
-  font-size: 0.75rem;
+  margin-top: var(--sp-10);
+  font-size: var(--fs-12);
   font-weight: 600;
-  padding: 6px 13px;
+  padding: var(--sp-6) 13px;
   min-height: 32px;
   border-radius: var(--r-control);
   border: 1px solid var(--accent);
@@ -2823,11 +2823,11 @@ a.hist-row:focus-visible {
  * this is a real field, not an invented one. */
 .disclose {
   border-bottom: 1px solid var(--hair);
-  padding-bottom: 12px;
-  margin-top: 18px;
+  padding-bottom: var(--sp-12);
+  margin-top: var(--sp-18);
 }
 .disclose summary {
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   font-weight: 600;
   color: var(--muted);
   cursor: pointer;
@@ -2843,7 +2843,7 @@ a.hist-row:focus-visible {
 .disclose summary::after {
   content: '⌄';
   color: var(--faint);
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   transition: transform var(--t-state);
 }
 .disclose[open] summary::after {
@@ -2852,8 +2852,8 @@ a.hist-row:focus-visible {
 .disclose-body {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding-top: 4px;
+  gap: var(--sp-12);
+  padding-top: var(--sp-4);
 }
 
 /* Expandable per-player rows on the injury & availability report's Current
@@ -2871,7 +2871,7 @@ a.hist-row:focus-visible {
 }
 .avail-row-caret {
   color: var(--faint);
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   transition: transform var(--t-state);
 }
 .avail-row[open] .avail-row-caret {
@@ -2884,16 +2884,16 @@ a.hist-row:focus-visible {
    it never silently does nothing. */
 .subm {
   padding: 14px 0 calc(8px + env(safe-area-inset-bottom, 0px));
-  margin-top: 14px;
+  margin-top: var(--sp-14);
   border-top: 1px solid var(--hair);
   position: sticky;
   bottom: 0;
   background: var(--surf);
 }
 .subm .btn-primary {
-  padding: 17px 20px;
+  padding: 17px var(--sp-20);
   border-radius: var(--r-control);
-  font-size: 1rem;
+  font-size: var(--fs-16);
   font-weight: 700;
 }
 .subm .btn-primary:disabled {
@@ -2918,8 +2918,8 @@ a.hist-row:focus-visible {
 .cr10 {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-  margin: 10px 0 0;
+  gap: var(--sp-8);
+  margin: var(--sp-10) 0 0;
   border: none;
   padding: 0;
 }
@@ -2929,7 +2929,7 @@ a.hist-row:focus-visible {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: var(--sp-2);
   height: 58px;
   border-radius: var(--r-stat);
   border: 1px solid var(--border);
@@ -2982,17 +2982,17 @@ a.hist-row:focus-visible {
 .flag-card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--sp-8);
 }
 .flag-head {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-8);
   flex-wrap: wrap;
 }
 .flag-who {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
 }
 .flag-line {
   margin: 0;
@@ -3009,13 +3009,13 @@ a.hist-row:focus-visible {
 }
 .flag-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--sp-8);
   align-items: center;
-  margin-top: 4px;
+  margin-top: var(--sp-4);
 }
 .flag-dismiss {
-  margin-top: 4px;
-  padding-top: 10px;
+  margin-top: var(--sp-4);
+  padding-top: var(--sp-10);
   border-top: 1px solid var(--hair);
 }
 
@@ -3088,10 +3088,10 @@ a.hist-row:focus-visible {
   }
 }
 .signin-head {
-  margin-top: 40px;
+  margin-top: var(--sp-40);
 }
 .signin-eyebrow {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -3103,18 +3103,18 @@ a.hist-row:focus-visible {
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.1;
-  margin: 8px 0 0;
+  margin: var(--sp-8) 0 0;
 }
 .signin-sub {
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   color: var(--muted);
-  margin: 10px 0 0;
+  margin: var(--sp-10) 0 0;
 }
 .signin-fields {
-  margin-top: 28px;
+  margin-top: var(--sp-28);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--sp-14);
 }
 .signin-form {
   display: flex;
@@ -3134,20 +3134,20 @@ a.hist-row:focus-visible {
   font-size: 0.71875rem;
   color: var(--faint);
   text-align: center;
-  margin: 14px 0 0;
+  margin: var(--sp-14) 0 0;
 }
 .form-row {
-  margin-bottom: 14px;
+  margin-bottom: var(--sp-14);
 }
 .form-error {
   border-radius: var(--r-field);
   background: rgb(var(--bad-rgb) / var(--pill-fill-alpha-bad));
   color: var(--bad-pill-text);
   border-inline-start: 2px solid rgb(var(--bad-rgb));
-  padding: 10px 12px;
+  padding: var(--sp-10) var(--sp-12);
   font-size: 0.78125rem;
   font-weight: 600;
-  margin-bottom: 14px;
+  margin-bottom: var(--sp-14);
 }
 
 /* ---------- nutrition check-in, §8 ----------
@@ -3168,12 +3168,12 @@ a.hist-row:focus-visible {
   justify-content: center;
   min-height: 64px;
   width: 100%;
-  padding: 14px;
+  padding: var(--sp-14);
   border: 1px solid var(--border);
   border-radius: var(--r-stat);
   background: var(--surf);
   color: var(--text);
-  font-size: 1rem;
+  font-size: var(--fs-16);
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
@@ -3205,7 +3205,7 @@ a.hist-row:focus-visible {
    ellipsing: the old centred rule truncated, and "Lower body A (rehab
    variation)" cut to "Lower body A (rehab…" is a different session. */
 .gym-head-title {
-  margin: 4px 0 0;
+  margin: var(--sp-4) 0 0;
   font-size: 1.625rem;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -3216,11 +3216,11 @@ a.hist-row:focus-visible {
 .gym-progress {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 12px;
+  gap: var(--sp-12);
+  margin-top: var(--sp-12);
 }
 .gym-progress .prog {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -3237,7 +3237,7 @@ a.hist-row:focus-visible {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 2px;
+  margin-bottom: var(--sp-2);
 }
 .gym-progress-fill {
   height: 100%;
@@ -3249,20 +3249,20 @@ a.hist-row:focus-visible {
   transition: width var(--t-state);
 }
 .gym-body {
-  padding-top: 14px;
+  padding-top: var(--sp-14);
 }
 .gym-ex-card {
   border: 1px solid var(--border);
   border-radius: var(--r-card);
   overflow: hidden;
-  margin-bottom: 14px;
+  margin-bottom: var(--sp-14);
 }
 /* SPEC §7.4, the set keys. One box a set, flex: 1, 42px tall, radius 12 —
    logged takes the gold fill, border and a tick; pending shows its index on
    the card border. */
 .gym-set-keys {
   display: flex;
-  gap: 8px;
+  gap: var(--sp-8);
 }
 .gym-set-key {
   flex: 1;
@@ -3273,7 +3273,7 @@ a.hist-row:focus-visible {
   background: transparent;
   color: var(--muted);
   font-family: inherit;
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
@@ -3307,8 +3307,8 @@ a.hist-row:focus-visible {
 .gym-weight {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding-top: 10px;
+  gap: var(--sp-12);
+  padding-top: var(--sp-10);
   border-top: 1px solid var(--hair);
 }
 .gym-weight-label {
@@ -3316,14 +3316,14 @@ a.hist-row:focus-visible {
   min-width: 0;
 }
 .gym-weight-label .k {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
 }
 .gym-weight-label .n {
-  margin-top: 2px;
+  margin-top: var(--sp-2);
   font-size: 0.78125rem;
   color: var(--muted);
 }
@@ -3337,7 +3337,7 @@ a.hist-row:focus-visible {
 .gym-stepper {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-8);
   flex: none;
 }
 .gym-stepper button {
@@ -3348,7 +3348,7 @@ a.hist-row:focus-visible {
   background: transparent;
   color: var(--text);
   font-family: inherit;
-  font-size: 1.25rem;
+  font-size: var(--fs-20);
   line-height: 1;
   cursor: pointer;
   transition: border-color var(--t-state), background var(--t-state);
@@ -3363,13 +3363,13 @@ a.hist-row:focus-visible {
 .gym-stepper .v {
   width: 62px;
   text-align: center;
-  font-size: 1.125rem;
+  font-size: var(--fs-18);
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 .gym-stepper .v small {
   display: block;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 600;
   color: var(--muted);
   letter-spacing: 0;
@@ -3377,26 +3377,26 @@ a.hist-row:focus-visible {
 
 /* The inline correction. Not in 23g — see the note at its call site. */
 .gym-correct {
-  margin-top: 10px;
-  padding: 12px;
+  margin-top: var(--sp-10);
+  padding: var(--sp-12);
   border-radius: 14px;
   background: var(--surf2);
   border: 1px solid var(--border);
 }
 .gym-correct-k {
-  margin: 0 0 8px;
-  font-size: 0.8125rem;
+  margin: 0 0 var(--sp-8);
+  font-size: var(--fs-13);
   font-weight: 700;
 }
 .gym-correct-fields {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: var(--sp-10);
 }
 .gym-correct-actions {
   display: flex;
-  gap: 8px;
-  margin-top: 10px;
+  gap: var(--sp-8);
+  margin-top: var(--sp-10);
 }
 .gym-correct-actions .btn-primary,
 .gym-correct-actions .btn-ghost {
@@ -3419,11 +3419,11 @@ a.hist-row:focus-visible {
 .gym-ex-head {
   background: var(--surf2);
   border-bottom: 1px solid var(--hair);
-  padding: 12px 14px;
+  padding: var(--sp-12) var(--sp-14);
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--sp-10);
 }
 /* Name on its own line, prescription under it — 23g. Side by side, the
    prescription was a nowrap string competing with the name for one row:
@@ -3431,18 +3431,18 @@ a.hist-row:focus-visible {
    winning. */
 .gym-ex-head .nm {
   display: block;
-  font-size: 1rem;
+  font-size: var(--fs-16);
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 .gym-ex-head .scheme {
   display: block;
   margin-top: 3px;
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   color: var(--muted);
 }
 .gym-ex-adjust {
-  padding: 8px 14px 0;
+  padding: var(--sp-8) var(--sp-14) 0;
   font-size: 0.71875rem;
   font-weight: 600;
   color: var(--accent-text);
@@ -3450,13 +3450,13 @@ a.hist-row:focus-visible {
 .gym-set-row {
   display: grid;
   grid-template-columns: 30px minmax(0, 1fr) minmax(0, 1fr) 30px;
-  gap: 10px;
+  gap: var(--sp-10);
   align-items: center;
-  padding: 13px 14px;
+  padding: 13px var(--sp-14);
   border-top: 1px solid var(--hair);
 }
 .gym-set-row .n {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   color: var(--faint);
 }
 .gym-set-row[data-done='true'] {
@@ -3473,11 +3473,11 @@ a.hist-row:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--sp-10);
   width: 100%;
   min-height: 44px;
-  margin-top: 4px;
-  padding: 14px 16px;
+  margin-top: var(--sp-4);
+  padding: var(--sp-14) var(--sp-16);
   border: 1px solid var(--border);
   border-radius: var(--r-control);
   background: var(--surf);
@@ -3506,19 +3506,19 @@ a.hist-row:focus-visible {
   font-size: 1.1875rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  margin: 4px 0 0;
+  margin: var(--sp-4) 0 0;
 }
 .target-bar + .target-bar {
-  margin-top: 12px;
+  margin-top: var(--sp-12);
 }
 .target-bar .th {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--sp-8);
 }
 .target-bar .th .k {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 600;
 }
 .target-bar .th .v {
@@ -3539,7 +3539,7 @@ a.hist-row:focus-visible {
   border-radius: 50%;
   background: var(--avatar-bg);
   color: var(--avatar-text);
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -3560,7 +3560,7 @@ img.av {
 .me-profile .sub {
   font-size: 0.78125rem;
   color: var(--muted);
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 /* These rows live in a `.card flush`, so the CARD pads nothing — its hair
    dividers have to reach the edge — and the row owns the inset. It was
@@ -3569,7 +3569,7 @@ img.av {
 .me-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto 12px;
-  gap: 8px;
+  gap: var(--sp-8);
   align-items: center;
   padding: var(--pad-card);
   text-decoration: none;
@@ -3585,7 +3585,7 @@ img.av {
    and its first cell simply holds one line instead of two. */
 .me-row .s {
   display: block;
-  margin-top: 2px;
+  margin-top: var(--sp-2);
   font-size: 0.78125rem;
   font-weight: 400;
   color: var(--muted);
@@ -3596,7 +3596,7 @@ img.av {
    carries the meaning; everywhere else it is the setting itself and takes
    readable ink. */
 .me-row .v {
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   font-weight: 600;
   color: var(--accent-text);
 }
@@ -3623,13 +3623,13 @@ img.av {
   padding: 13px 15px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 10px;
+  gap: var(--sp-10);
   align-items: center;
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.25);
   z-index: 20;
 }
 .toast .msg {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 600;
 }
 .toast .dismiss {
@@ -3640,7 +3640,7 @@ img.av {
   border: none;
   cursor: pointer;
   font-family: inherit;
-  padding: 6px;
+  padding: var(--sp-6);
   margin: -6px;
 }
 
@@ -3674,7 +3674,7 @@ img.av {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--sp-14);
 }
 
 .pp-card {
@@ -3685,7 +3685,7 @@ img.av {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-10);
 }
 .pp-card-row .card-title {
   margin: 0;
@@ -3711,14 +3711,14 @@ img.av {
   color: var(--muted);
   border: 1px solid var(--border);
   border-radius: var(--r-control);
-  padding: 7px 16px;
+  padding: 7px var(--sp-16);
   font-size: 0.78125rem;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-8);
   white-space: nowrap;
   transition: border-color var(--t-state), color var(--t-state), background var(--t-state);
 }
@@ -3747,28 +3747,28 @@ img.av {
   background: var(--wash-accent-soft);
   border: 1px solid rgb(var(--accent-rgb) / 0.3);
   border-radius: var(--r-card);
-  padding: 14px 20px;
+  padding: var(--sp-14) var(--sp-20);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
-  gap: 18px;
+  gap: var(--sp-18);
   align-items: center;
 }
 .pp-banner-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--sp-12);
   flex-wrap: wrap;
   min-width: 0;
 }
 .pp-banner-eyebrow {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--accent-text);
 }
 .pp-banner-title {
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 700;
 }
 @media (max-width: 700px) {
@@ -3799,7 +3799,7 @@ img.av {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
+  gap: var(--sp-16);
 }
 .pp-header-top > .pp-name-block {
   flex: 1 1 220px;
@@ -3811,7 +3811,7 @@ img.av {
   border-radius: 50%;
   background: var(--accent);
   color: var(--on-accent);
-  font-size: 1.125rem;
+  font-size: var(--fs-18);
   font-weight: 700;
   display: grid;
   place-items: center;
@@ -3820,12 +3820,12 @@ img.av {
 .pp-name-block {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--sp-12);
   flex-wrap: wrap;
   min-width: 0;
 }
 .pp-name {
-  font-size: 1.25rem;
+  font-size: var(--fs-20);
   font-weight: 700;
   letter-spacing: -0.02em;
 }
@@ -3845,28 +3845,28 @@ img.av {
   flex: none;
 }
 .pp-wellness-mini .v {
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   color: var(--faint);
   line-height: 1;
 }
 .pp-wellness-mini .l {
-  font-size: 0.5625rem;
+  font-size: var(--fs-9);
   color: var(--faint);
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 
 .pp-detail-row {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 18px;
-  padding-top: 16px;
+  gap: var(--sp-14);
+  margin-top: var(--sp-18);
+  padding-top: var(--sp-16);
   border-top: 1px solid var(--hair);
 }
 @media (max-width: 900px) {
   .pp-detail-row {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    row-gap: 16px;
+    row-gap: var(--sp-16);
   }
 }
 @media (max-width: 560px) {
@@ -3879,7 +3879,7 @@ img.av {
   color: var(--faint);
 }
 .pp-detail-cell .v {
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 700;
   margin-top: 3px;
 }
@@ -3888,7 +3888,7 @@ img.av {
 .pp-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 14px;
+  gap: var(--sp-14);
   align-items: start;
 }
 @media (max-width: 1100px) {
@@ -3899,7 +3899,7 @@ img.av {
 .pp-grid-col {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--sp-14);
   min-width: 0;
 }
 
@@ -3907,7 +3907,7 @@ img.av {
 .pp-card-head {
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  gap: var(--sp-10);
 }
 .pp-card-head .s {
   font-size: 0.78125rem;
@@ -3916,17 +3916,17 @@ img.av {
 .pp-athleticism-row {
   display: grid;
   grid-template-columns: 88px minmax(0, 1fr);
-  gap: 18px;
+  gap: var(--sp-18);
   align-items: center;
-  margin-top: 14px;
+  margin-top: var(--sp-14);
 }
 .pp-dial-value {
-  font-size: 1.375rem;
+  font-size: var(--fs-22);
   font-weight: 500;
   line-height: 1;
 }
 .pp-dial-unit {
-  font-size: 0.5625rem;
+  font-size: var(--fs-9);
   color: var(--faint);
   margin-top: 3px;
 }
@@ -3935,18 +3935,18 @@ img.av {
   font-weight: 700;
 }
 .pp-athleticism-desc {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   color: var(--muted);
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 
 .pp-bench-head {
-  margin-top: 20px;
-  padding-top: 16px;
+  margin-top: var(--sp-20);
+  padding-top: var(--sp-16);
   border-top: 1px solid var(--border);
 }
 .pp-bench-head .t {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 700;
 }
 .pp-bench-head .s {
@@ -3969,7 +3969,7 @@ img.av {
  * which shades in one place only. */
 .pp-bench-row {
   border-top: 1px solid var(--hair);
-  padding: 14px 0 12px;
+  padding: var(--sp-14) 0 var(--sp-12);
 }
 .pp-bench-row[data-band] {
   margin-inline: -20px;
@@ -3991,20 +3991,20 @@ img.av {
 .pp-bench-suppressed {
   font-size: 0.71875rem;
   color: var(--faint);
-  margin: 10px 0 0;
+  margin: var(--sp-10) 0 0;
 }
 .pp-bench-top {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
-  gap: 10px;
+  gap: var(--sp-10);
 }
 .pp-bench-name {
   font-size: 0.90625rem;
   font-weight: 700;
 }
 .pp-bench-value {
-  font-size: 1rem;
+  font-size: var(--fs-16);
   font-weight: 500;
 }
 .pp-bench-bar {
@@ -4012,7 +4012,7 @@ img.av {
   border-radius: var(--r-pill);
   background: var(--track);
   overflow: hidden;
-  margin-top: 8px;
+  margin-top: var(--sp-8);
 }
 .pp-bench-fill {
   height: 100%;
@@ -4020,11 +4020,11 @@ img.av {
 .pp-bench-bottom {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 10px;
-  margin-top: 6px;
+  gap: var(--sp-10);
+  margin-top: var(--sp-6);
 }
 .pp-bench-band {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   font-weight: 700;
 }
 .pp-bench-meta {
@@ -4045,8 +4045,8 @@ img.av {
 .pp-flags-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-top: 16px;
+  gap: var(--sp-16);
+  margin-top: var(--sp-16);
 }
 .pp-flag-item {
   padding-inline-start: 14px;
@@ -4057,11 +4057,11 @@ img.av {
 .pp-flag-top {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-8);
   flex-wrap: wrap;
 }
 .pp-flag-value {
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   font-weight: 500;
 }
 .pp-flag-threshold {
@@ -4069,20 +4069,20 @@ img.av {
   color: var(--faint);
 }
 .pp-flag-rule {
-  font-size: 0.875rem;
-  margin-top: 6px;
+  font-size: var(--fs-14);
+  margin-top: var(--sp-6);
 }
 .pp-flag-evidence {
   font-size: 0.71875rem;
   color: var(--faint);
-  margin-top: 4px;
+  margin-top: var(--sp-4);
 }
 .pp-flag-bottom {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
-  margin-top: 8px;
+  gap: var(--sp-10);
+  margin-top: var(--sp-8);
 }
 .pp-flag-raised {
   font-size: 0.71875rem;
@@ -4090,7 +4090,7 @@ img.av {
 }
 .pp-ack-btn {
   border-radius: var(--r-control);
-  padding: 6px 13px;
+  padding: var(--sp-6) 13px;
   font-size: 0.78125rem;
   font-weight: 700;
   font-family: inherit;
@@ -4111,7 +4111,7 @@ img.av {
 .pp-dials {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 18px;
+  gap: var(--sp-18);
 }
 .pp-dial-col {
   display: flex;
@@ -4123,7 +4123,7 @@ img.av {
   align-self: flex-start;
 }
 .pp-dial-title {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 700;
 }
 .pp-dial-window {
@@ -4131,25 +4131,25 @@ img.av {
   color: var(--faint);
 }
 .pp-dial-status {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   font-weight: 700;
-  margin-top: 10px;
+  margin-top: var(--sp-10);
 }
 .pp-dial-meta {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--faint);
   margin-top: 3px;
 }
 .pp-big-dial {
-  margin-top: 12px;
+  margin-top: var(--sp-12);
 }
 .pp-big-dial-value {
-  font-size: 1.5rem;
+  font-size: var(--fs-24);
   font-weight: 500;
   line-height: 1;
 }
 .pp-big-dial-unit {
-  font-size: 0.625rem;
+  font-size: var(--fs-10);
   color: var(--faint);
   margin-top: 3px;
 }
@@ -4157,7 +4157,7 @@ img.av {
 /* -------- §10 Goals -------- */
 .pp-goal-line {
   font-size: 0.84375rem;
-  margin-top: 12px;
+  margin-top: var(--sp-12);
 }
 .pp-goal-label {
   font-weight: 700;
@@ -4168,15 +4168,15 @@ img.av {
 .pp-goal-note {
   font-size: 0.78125rem;
   color: var(--faint);
-  margin-top: 6px;
+  margin-top: var(--sp-6);
 }
 
 /* -------- §10 Nutrition plan -------- */
 .pp-macro-tiles {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 14px;
+  gap: var(--sp-12);
+  margin-top: var(--sp-14);
 }
 @media (max-width: 700px) {
   .pp-macro-tiles {
@@ -4186,38 +4186,38 @@ img.av {
 .pp-macro-tile {
   background: var(--surf2);
   border-radius: var(--r-tab);
-  padding: 14px 10px;
+  padding: var(--sp-14) var(--sp-10);
   text-align: center;
 }
 .pp-macro-value {
-  font-size: 1.375rem;
+  font-size: var(--fs-22);
   font-weight: 500;
 }
 .pp-macro-label {
   font-size: 0.71875rem;
   color: var(--muted);
-  margin-top: 4px;
+  margin-top: var(--sp-4);
 }
 
 /* -------- §10 Body weight -------- */
 .pp-injuries-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 14px;
+  gap: var(--sp-14);
   align-items: start;
 }
 .pp-injury-list {
-  margin-top: 12px;
+  margin-top: var(--sp-12);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--sp-8);
 }
 
 .pp-weight-top {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
-  gap: 14px;
+  gap: var(--sp-14);
 }
 .pp-weight-value {
   font-size: 2.125rem;
@@ -4225,7 +4225,7 @@ img.av {
   letter-spacing: -0.02em;
 }
 .pp-weight-value .u {
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   color: var(--muted);
   font-weight: 400;
   letter-spacing: normal;
@@ -4233,27 +4233,27 @@ img.av {
 .pp-weight-note {
   font-size: 0.78125rem;
   color: var(--faint);
-  margin-top: 4px;
+  margin-top: var(--sp-4);
 }
 .pp-weight-right {
   text-align: right;
 }
 .pp-weight-trend {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   color: var(--faint);
-  margin-top: 8px;
+  margin-top: var(--sp-8);
 }
 .pp-sparkline {
   display: block;
   width: 100%;
   height: 84px;
-  margin-top: 12px;
+  margin-top: var(--sp-12);
 }
 .pp-weight-actions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 14px;
+  gap: var(--sp-10);
+  margin-top: var(--sp-14);
 }
 .pp-weight-actions .btn-ghost {
   padding: 11px;
@@ -4272,32 +4272,32 @@ img.av {
  * rather than in a modal, consistent with this app's existing forms (see
  * FlagCard's own inline dismiss-reason panel for the same pattern). */
 .pp-weight-form {
-  margin-top: 14px;
-  padding-top: 14px;
+  margin-top: var(--sp-14);
+  padding-top: var(--sp-14);
   border-top: 1px solid var(--hair);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--sp-10);
 }
 .pp-weight-form-row .field {
-  margin-top: 4px;
+  margin-top: var(--sp-4);
 }
 .pp-weight-edit-list {
-  margin-top: 14px;
-  padding-top: 14px;
+  margin-top: var(--sp-14);
+  padding-top: var(--sp-14);
   border-top: 1px solid var(--hair);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--sp-8);
 }
 .pp-weight-edit-row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
-  gap: 8px;
+  gap: var(--sp-8);
   align-items: center;
 }
 .pp-weight-edit-row .field {
-  padding: 8px 10px;
+  padding: var(--sp-8) var(--sp-10);
   min-height: 0;
   font-size: 0.78125rem;
 }
@@ -4321,7 +4321,7 @@ img.av {
   width: 16px;
   height: 0;
   vertical-align: middle;
-  margin-right: 4px;
+  margin-right: var(--sp-4);
   border-top: 1.5px dashed var(--muted);
 }
 /* The form says out loud that the athlete never sees this. Deliberately not a
@@ -4329,23 +4329,23 @@ img.av {
  * kind of note the person is writing. */
 .pp-target-private {
   margin: 0;
-  padding: 8px 10px;
+  padding: var(--sp-8) var(--sp-10);
   border: 1px solid var(--hair);
   border-radius: 6px;
   background: var(--surf2);
   color: var(--muted);
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   line-height: 1.45;
 }
 .pp-target-actions {
   display: flex;
-  gap: 10px;
+  gap: var(--sp-10);
   align-items: center;
-  margin-top: 4px;
+  margin-top: var(--sp-4);
 }
 .pp-target-history {
-  margin-top: 6px;
-  padding-top: 10px;
+  margin-top: var(--sp-6);
+  padding-top: var(--sp-10);
   border-top: 1px solid var(--hair);
   display: flex;
   flex-direction: column;
@@ -4362,7 +4362,7 @@ img.av {
   border-radius: var(--r-control);
   background: none;
   color: var(--muted);
-  font-size: 0.5625rem;
+  font-size: var(--fs-9);
   line-height: 1;
   cursor: pointer;
   display: flex;
@@ -4385,8 +4385,8 @@ img.av {
   max-width: 780px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin-top: 20px;
+  gap: var(--sp-14);
+  margin-top: var(--sp-20);
 }
 .set-card {
   padding: var(--pad-card);
@@ -4398,7 +4398,7 @@ img.av {
 .plan-switch {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--sp-12);
 }
 .plan-switch-label {
   font-size: 0.78125rem;
@@ -4460,8 +4460,8 @@ img.av {
 .plan-compare {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 14px;
-  margin-top: 18px;
+  gap: var(--sp-14);
+  margin-top: var(--sp-18);
 }
 @media (max-width: 900px) {
   .plan-compare {
@@ -4481,14 +4481,14 @@ img.av {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  margin-top: 10px;
+  margin-top: var(--sp-10);
   font-size: 0.78125rem;
   color: var(--text);
 }
 .gold-badge {
-  font-size: 0.625rem;
+  font-size: var(--fs-10);
   font-weight: 700;
-  padding: 2px 9px;
+  padding: var(--sp-2) 9px;
   border-radius: 20px;
   background: rgb(var(--highlight-rgb) / 0.22);
   /* Same mispaired token as .pill-gold above, same fix — see its comment. */
@@ -4499,7 +4499,7 @@ img.av {
 .set-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 14px;
+  gap: var(--sp-14);
   align-items: center;
   padding: 13px 0;
   border-top: 1px solid var(--hair);
@@ -4509,7 +4509,7 @@ img.av {
 }
 .set-row-btn {
   border-radius: var(--r-control);
-  padding: 9px 16px;
+  padding: 9px var(--sp-16);
   font-size: 0.78125rem;
   font-weight: 700;
   font-family: inherit;
@@ -4538,7 +4538,7 @@ img.av {
 @media (max-width: 700px) {
   .set-row {
     grid-template-columns: 1fr;
-    row-gap: 10px;
+    row-gap: var(--sp-10);
   }
   .set-row-btn {
     justify-self: start;
@@ -4548,7 +4548,7 @@ img.av {
 .set-list-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto 12px;
-  gap: 12px;
+  gap: var(--sp-12);
   align-items: center;
   padding: 15px 0;
   border-top: 1px solid var(--hair);
@@ -4579,7 +4579,7 @@ img.av {
 .prog-body {
   display: grid;
   grid-template-columns: 300px minmax(0, 1fr);
-  gap: 14px;
+  gap: var(--sp-14);
   align-items: start;
 }
 .prog-detail {
@@ -4589,7 +4589,7 @@ img.av {
   display: block;
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 11px 12px;
+  padding: 11px var(--sp-12);
   text-decoration: none;
   color: inherit;
   transition: border-color var(--t-state), background var(--t-state);
@@ -4609,18 +4609,18 @@ img.av {
 }
 .prog-day-head {
   background: var(--surf2);
-  padding: 9px 12px;
+  padding: 9px var(--sp-12);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-8);
 }
 /* The design's own column widths. The old set was tight enough that "Bodyweight"
    and a three-digit load sat almost against the next column. */
 .prog-ex-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 80px 80px 120px 110px;
-  gap: 8px;
-  padding: 12px 16px;
+  gap: var(--sp-8);
+  padding: var(--sp-12) var(--sp-16);
   border-top: 1px solid var(--hair);
   align-items: center;
 }
@@ -4652,11 +4652,11 @@ img.av {
   display: inline-flex;
   background: var(--hair);
   border-radius: var(--r-control);
-  padding: 4px;
-  gap: 2px;
+  padding: var(--sp-4);
+  gap: var(--sp-2);
 }
 .tr-mode-switch a {
-  padding: 7px 18px;
+  padding: 7px var(--sp-18);
   font-size: 0.78125rem;
   font-weight: 700;
   border-radius: var(--r-control);
@@ -4670,13 +4670,13 @@ img.av {
 .tr-session-chip {
   display: inline-flex;
   align-items: baseline;
-  gap: 6px;
-  padding: 8px 16px;
+  gap: var(--sp-6);
+  padding: var(--sp-8) var(--sp-16);
   border-radius: var(--r-control);
   border: 1px solid var(--border);
   background: var(--surf);
   color: var(--text);
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 600;
   text-decoration: none;
 }
@@ -4688,14 +4688,14 @@ img.av {
 .tr-session-chip .suffix {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   opacity: 0.65;
 }
 
 .tr-overview {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 28px;
+  gap: var(--sp-28);
   align-items: center;
   padding: var(--pad-card);
 }
@@ -4703,7 +4703,7 @@ img.av {
   display: flex;
   flex-wrap: wrap;
   gap: 22px;
-  margin-top: 12px;
+  margin-top: var(--sp-12);
 }
 .tr-fact-label {
   font-size: 0.65625rem;
@@ -4714,13 +4714,13 @@ img.av {
 .tr-fact-value {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 500;
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 .tr-read {
-  margin-top: 16px;
-  padding-top: 14px;
+  margin-top: var(--sp-16);
+  padding-top: var(--sp-14);
   border-top: 1px solid var(--hair);
 }
 /* The date navigator's own row. The session chips that shared it are gone —
@@ -4733,9 +4733,9 @@ img.av {
 .tr-jumprow {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--sp-14);
   flex-wrap: wrap;
-  margin-bottom: 16px;
+  margin-bottom: var(--sp-16);
 }
 .tr-jumprow > .rsel {
   margin-inline-start: auto;
@@ -4749,7 +4749,7 @@ img.av {
 .tr-dials {
   display: grid;
   grid-template-columns: repeat(3, 104px);
-  gap: 18px;
+  gap: var(--sp-18);
   padding-left: 26px;
   border-left: 1px solid var(--hair);
 }
@@ -4757,26 +4757,26 @@ img.av {
 .tr-dial-value {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
-  font-size: 1.125rem;
+  font-size: var(--fs-18);
   font-weight: 500;
 }
 .tr-dial-pct {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   color: var(--muted);
 }
 .tr-dial-of {
-  font-size: 0.5625rem;
+  font-size: var(--fs-9);
   color: var(--faint);
   margin-top: 1px;
 }
 
 .tr-scope-chips {
   display: flex;
-  gap: 8px;
+  gap: var(--sp-8);
   flex-wrap: wrap;
 }
 .tr-scope-chip {
-  padding: 7px 16px;
+  padding: 7px var(--sp-16);
   border-radius: var(--r-control);
   font-size: 0.78125rem;
   font-weight: 600;
@@ -4794,14 +4794,14 @@ img.av {
 .tr-table {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--sp-10);
   min-width: 720px;
 }
 .tr-table-row {
   display: grid;
-  gap: 10px;
+  gap: var(--sp-10);
   align-items: center;
-  padding: 11px 6px;
+  padding: 11px var(--sp-6);
   border-top: 1px solid var(--hair);
   border-radius: 8px;
   text-decoration: none;
@@ -4820,7 +4820,7 @@ img.av {
   height: 4px;
   border-radius: 20px;
   background: var(--track);
-  margin-top: 4px;
+  margin-top: var(--sp-4);
   overflow: hidden;
 }
 .tr-bar-fill {
@@ -4831,7 +4831,7 @@ img.av {
 .tr-scatter-grid {
   display: grid;
   grid-template-columns: 46px minmax(0, 1fr);
-  gap: 10px;
+  gap: var(--sp-10);
 }
 .tr-scatter-yaxis {
   height: 320px;
@@ -4878,7 +4878,7 @@ img.av {
 }
 .tr-scatter-label {
   position: absolute;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 700;
   pointer-events: none;
   white-space: nowrap;
@@ -4886,12 +4886,12 @@ img.av {
 }
 .tr-scatter-legend {
   display: flex;
-  gap: 14px;
+  gap: var(--sp-14);
   flex-wrap: wrap;
-  margin-top: 12px;
-  padding-top: 10px;
+  margin-top: var(--sp-12);
+  padding-top: var(--sp-10);
   border-top: 1px solid var(--hair);
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
 }
 .tr-scatter-legend-dot {
   display: inline-block;
@@ -4905,7 +4905,7 @@ img.av {
 .tr-selected-panel-table {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 72px 66px 66px;
-  gap: 6px;
+  gap: var(--sp-6);
   font-size: 0.78125rem;
 }
 .tr-sparkline-wrap svg {
@@ -4928,8 +4928,8 @@ img.av {
 }
 .tr-board-row {
   display: grid;
-  gap: 6px;
-  padding: 8px 6px;
+  gap: var(--sp-6);
+  padding: var(--sp-8) var(--sp-6);
   border-radius: 8px;
   align-items: center;
 }
@@ -4947,12 +4947,12 @@ img.av {
   font-weight: 700;
 }
 .tr-board-unit-header {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--accent-text);
-  padding: 10px 6px 4px;
+  padding: var(--sp-10) var(--sp-6) var(--sp-4);
   display: flex;
   justify-content: space-between;
 }
@@ -4965,7 +4965,7 @@ img.av {
     border-left: none;
     padding-left: 0;
     border-top: 1px solid var(--hair);
-    padding-top: 16px;
+    padding-top: var(--sp-16);
   }
 }
 
@@ -5006,13 +5006,13 @@ img.av {
   background: var(--surf);
   box-shadow: 0 1px 3px rgb(16 18 23 / 0.08);
   overflow: hidden;
-  margin-bottom: 14px;
+  margin-bottom: var(--sp-14);
 }
 .dash-flags-panel[data-empty='true'] {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
+  gap: var(--sp-10);
+  padding: var(--sp-12) var(--sp-16);
   border-color: var(--border);
   color: var(--muted);
 }
@@ -5023,9 +5023,9 @@ img.av {
 .dash-flags-head {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--sp-14);
   width: 100%;
-  padding: 18px 20px;
+  padding: var(--sp-18) var(--sp-20);
   background: none;
   border: 0;
   text-align: left;
@@ -5064,11 +5064,11 @@ img.av {
 .dash-flags-headline {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--sp-8);
 }
 .dash-flags-pills {
   display: flex;
-  gap: 8px;
+  gap: var(--sp-8);
   margin-top: 5px;
 }
 /* Pushed right by the text block's own growth rather than a margin on itself,
@@ -5076,12 +5076,12 @@ img.av {
 .dash-flags-head-scope {
   margin-left: auto;
   flex: none;
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   color: var(--faint);
   white-space: nowrap;
 }
 .dash-flags-head-chevron {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   line-height: 1;
   color: var(--faint);
   transform: rotate(0deg);
@@ -5097,25 +5097,25 @@ img.av {
   color: var(--bad-text);
 }
 .dash-flags-count {
-  font-size: 1.25rem;
+  font-size: var(--fs-20);
   font-weight: 800;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
 .dash-flags-word {
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 700;
 }
 /* Third line of the header block now, not a right-aligned scrap: it is the
    sentence that says how much of the count nobody has looked at. */
 .dash-flags-head-meta {
-  margin-top: 6px;
-  font-size: 0.8125rem;
+  margin-top: var(--sp-6);
+  font-size: var(--fs-13);
   color: var(--faint);
   font-variant-numeric: tabular-nums;
 }
 .dash-flags-summary {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
 }
 .dash-flags-list {
   display: flex;
@@ -5142,10 +5142,10 @@ img.av {
    miscount. */
 .dash-flags-row {
   display: flex;
-  gap: 14px;
+  gap: var(--sp-14);
   align-items: flex-start;
   width: 100%;
-  padding: 16px 20px 16px 17px;
+  padding: var(--sp-16) var(--sp-20) var(--sp-16) 17px;
   border: none;
   background: none;
   font-family: inherit;
@@ -5168,17 +5168,17 @@ img.av {
 .dash-flags-nameline {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--sp-8);
   min-width: 0;
 }
 .dash-flags-name {
-  font-size: 1rem;
+  font-size: var(--fs-16);
   font-weight: 800;
   letter-spacing: -0.01em;
   white-space: nowrap;
 }
 .dash-flags-position {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   color: var(--faint);
   white-space: nowrap;
 }
@@ -5186,8 +5186,8 @@ img.av {
    it in a 1fr track between the name and the pill and truncated the evidence
    — the one part of the row that says WHY the flag fired. */
 .dash-flags-what {
-  margin-top: 4px;
-  font-size: 0.875rem;
+  margin-top: var(--sp-4);
+  font-size: var(--fs-14);
   line-height: 1.45;
   color: var(--muted);
   min-width: 0;
@@ -5197,7 +5197,7 @@ img.av {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 6px;
+  gap: var(--sp-6);
   flex: none;
 }
 .dash-flags-duration {
@@ -5211,7 +5211,7 @@ img.av {
    the second line rather than at the row. */
 .dash-flags-chevron {
   flex: none;
-  font-size: 1rem;
+  font-size: var(--fs-16);
   line-height: 1.4;
   color: var(--faint);
   transition: transform var(--t-state);
@@ -5222,15 +5222,15 @@ img.av {
 /* Indented to the dot, so the evidence reads as belonging to the row above
    rather than as a new list. */
 .dash-flags-detail {
-  padding: 0 18px 14px 40px;
+  padding: 0 var(--sp-18) var(--sp-14) var(--sp-40);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--sp-2);
 }
 .dash-flags-evidence {
   display: grid;
   grid-template-columns: 128px minmax(0, 1fr) auto;
-  gap: 14px;
+  gap: var(--sp-14);
   align-items: baseline;
   padding: 9px 0;
   border-top: 1px solid var(--hair);
@@ -5238,16 +5238,16 @@ img.av {
 @media (max-width: 900px) {
   .dash-flags-evidence {
     grid-template-columns: 100px minmax(0, 1fr) auto;
-    gap: 10px;
+    gap: var(--sp-10);
   }
 }
 .dash-flags-rule {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   font-weight: 600;
   color: var(--muted);
 }
 .dash-flags-eviline {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   line-height: 1.5;
   color: var(--accent-pill-text);
   font-variant-numeric: tabular-nums;
@@ -5257,11 +5257,11 @@ img.av {
   align-items: center;
   gap: 9px;
   flex-wrap: wrap;
-  padding-top: 10px;
+  padding-top: var(--sp-10);
 }
 .dash-flags-all {
   display: block;
-  padding: 12px 18px;
+  padding: var(--sp-12) var(--sp-18);
   font-size: 0.78125rem;
   font-weight: 600;
   color: var(--accent-pill-text);
@@ -5274,7 +5274,7 @@ img.av {
 .dash-body {
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-  gap: 14px;
+  gap: var(--sp-14);
   align-items: start;
 }
 /* The same divided-strip shape as .cmpl-stats, and now built the same way:
@@ -5313,7 +5313,7 @@ button.dash-stat {
   width: 100%;
 }
 .dash-stat-label {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -5372,7 +5372,7 @@ button.dash-stat {
    a dense table, and "Fydr Leaderboard.dc.html" sets them at 28px/700. Scoped
    rather than changed globally — the two strips share markup, not a size. */
 .lbw-stats-card .dash-stat-value {
-  font-size: 1.75rem;
+  font-size: var(--fs-28);
   font-weight: 700;
 }
 /* The mini bars. 4px is deliberate: enough to read a proportion at a glance,
@@ -5383,14 +5383,14 @@ button.dash-stat {
   display: flex;
   gap: 3px;
   height: 4px;
-  margin-top: 8px;
+  margin-top: var(--sp-8);
 }
 .dash-stat-bar-track {
   height: 4px;
   border-radius: 2px;
   background: var(--track);
   overflow: hidden;
-  margin-top: 8px;
+  margin-top: var(--sp-8);
 }
 .dash-stat-bar-fill {
   height: 100%;
@@ -5410,16 +5410,16 @@ button.dash-stat {
   font-variant-numeric: tabular-nums;
 }
 .dash-stat-value .unit {
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   color: var(--muted);
 }
 .dash-stat-sub {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   color: var(--muted);
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 .dash-stat-foot {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--faint);
   margin-top: 5px;
 }
@@ -5436,29 +5436,29 @@ button.dash-stat {
   border: 1px solid var(--border);
   border-radius: var(--r-card);
   box-shadow: var(--shadow);
-  margin: 10px 0 14px;
+  margin: var(--sp-10) 0 var(--sp-14);
   overflow: hidden;
 }
 .dash-stat-expand-head {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 10px;
-  padding: 12px 18px;
+  gap: var(--sp-10);
+  padding: var(--sp-12) var(--sp-18);
   border-bottom: 1px solid var(--hair);
 }
 .dash-stat-expand-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 18px;
+  gap: var(--sp-10);
+  padding: var(--sp-10) var(--sp-18);
   border-top: 1px solid var(--hair);
 }
 .dash-stat-expand-row:first-child {
   border-top: none;
 }
 .dash-stat-expand-empty {
-  padding: 14px 18px;
+  padding: var(--sp-14) var(--sp-18);
   color: var(--muted);
 }
 
@@ -5475,7 +5475,7 @@ button.dash-stat {
    titles cannot survive a narrow viewport without truncating the titles,
    which is the one thing that would make it worse than the list. */
 .dash-week {
-  margin-top: 14px;
+  margin-top: var(--sp-14);
   background: var(--surf);
   border: 1px solid var(--border);
   border-radius: var(--r-card);
@@ -5485,30 +5485,30 @@ button.dash-stat {
 .dash-week-head {
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  gap: var(--sp-10);
   flex-wrap: wrap;
-  padding: 14px 18px;
+  padding: var(--sp-14) var(--sp-18);
 }
 .dash-week-head-title {
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 700;
 }
 .dash-week-head-meta {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   color: var(--muted);
   flex: 1;
   min-width: 0;
 }
 .dash-week-legend {
   display: flex;
-  gap: 12px;
+  gap: var(--sp-12);
   flex-wrap: wrap;
 }
 .dash-week-legend-item {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--muted);
 }
 .dash-week-grid {
@@ -5517,7 +5517,7 @@ button.dash-stat {
   border-top: 1px solid var(--hair);
 }
 .dash-week-col {
-  padding: 12px 14px 14px;
+  padding: var(--sp-12) var(--sp-14) var(--sp-14);
   border-left: 1px solid var(--hair);
   min-width: 0;
   text-decoration: none;
@@ -5544,20 +5544,20 @@ button.dash-stat {
 .dash-week-col-head {
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: var(--sp-6);
   margin-bottom: 9px;
 }
 .dash-week-col-day {
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   font-weight: 700;
   white-space: nowrap;
 }
 .dash-week-col-md {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--muted);
 }
 .dash-week-col-dur {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--faint);
   margin-left: auto;
   white-space: nowrap;
@@ -5565,14 +5565,14 @@ button.dash-stat {
 .dash-week-col-acts {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--sp-6);
 }
 .dash-week-act {
   display: grid;
   grid-template-columns: 6px minmax(0, 1fr);
-  gap: 8px;
+  gap: var(--sp-8);
   align-items: baseline;
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 600;
   line-height: 1.35;
 }
@@ -5589,9 +5589,9 @@ button.dash-stat {
 .dash-week-col-flag {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 8px;
-  font-size: 0.75rem;
+  gap: var(--sp-6);
+  margin-top: var(--sp-8);
+  font-size: var(--fs-12);
   font-weight: 600;
   color: var(--bad-text);
 }
@@ -5611,7 +5611,7 @@ button.dash-stat {
 .dash-week-list {
   display: flex;
   flex-direction: column;
-  margin-top: 14px;
+  margin-top: var(--sp-14);
   background: var(--surf);
   border: 1px solid var(--border);
   border-radius: var(--r-card);
@@ -5628,21 +5628,21 @@ button.dash-stat {
 .dash-timeline {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--sp-12);
 }
 .dash-timeline-entry {
   display: grid;
   grid-template-columns: 70px minmax(0, 1fr);
-  gap: 14px;
+  gap: var(--sp-14);
 }
 .dash-timeline-time {
   text-align: right;
-  padding-top: 18px;
+  padding-top: var(--sp-18);
 }
 .dash-timeline-clock {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 500;
 }
 .dash-timeline-clock[data-past='true'] {
@@ -5651,7 +5651,7 @@ button.dash-stat {
 .dash-timeline-rel {
   font-size: 0.65625rem;
   color: var(--faint);
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 .dash-session-card {
   border-left: 3px solid var(--accent);
@@ -5674,17 +5674,17 @@ button.dash-stat {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto 12px;
   align-items: start;
-  gap: 8px;
+  gap: var(--sp-8);
 }
 .dash-session-name {
-  font-size: 1rem;
+  font-size: var(--fs-16);
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 .dash-session-meta {
   font-size: 0.78125rem;
   color: var(--muted);
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 .dash-session-count {
   font-family: var(--font-sans);
@@ -5700,22 +5700,22 @@ button.dash-stat {
   margin-top: 1px;
 }
 .dash-session-chevron {
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   color: var(--faint);
-  padding-top: 2px;
+  padding-top: var(--sp-2);
 }
 .dash-affected {
-  margin-top: 14px;
-  padding-top: 12px;
+  margin-top: var(--sp-14);
+  padding-top: var(--sp-12);
   border-top: 1px solid var(--hair);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--sp-10);
 }
 .dash-affected-row {
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr) auto 10px;
-  gap: 10px;
+  gap: var(--sp-10);
   align-items: center;
   text-decoration: none;
   color: inherit;
@@ -5748,9 +5748,9 @@ button.dash-stat {
 .dash-clean {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 14px;
-  padding-top: 12px;
+  gap: var(--sp-10);
+  margin-top: var(--sp-14);
+  padding-top: var(--sp-12);
   border-top: 1px solid var(--hair);
 }
 .dash-clean-check {
@@ -5761,7 +5761,7 @@ button.dash-stat {
   color: var(--on-accent);
   display: grid;
   place-items: center;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   flex: none;
 }
 
@@ -5792,15 +5792,15 @@ button.dash-stat {
   line-height: 1;
 }
 .dash-ready-dial .v {
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 700;
   color: var(--accent-text);
 }
 /* Small caps by CSS, not by shouting in the markup — the word is "Named" in
    the DOM, which is what a screen reader should say. */
 .dash-ready-dial .k {
-  margin-top: 2px;
-  font-size: 0.5625rem;
+  margin-top: var(--sp-2);
+  font-size: var(--fs-9);
   font-weight: 600;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -5811,12 +5811,12 @@ button.dash-stat {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
-  gap: 10px;
+  gap: var(--sp-10);
 }
 .dash-ready-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto 10px;
-  gap: 8px;
+  gap: var(--sp-8);
   align-items: baseline;
   padding: 11px 0;
   border-top: 1px solid var(--hair);
@@ -5835,7 +5835,7 @@ button.dash-stat {
    baseline, so this variant centres on the first line's box instead. */
 .dash-ready-row-dot {
   grid-template-columns: 10px minmax(0, 1fr) auto 10px;
-  gap: 10px;
+  gap: var(--sp-10);
   align-items: start;
 }
 .dash-ready-row-dot > .dash-squad-dot {
@@ -5871,12 +5871,12 @@ button.dash-stat {
   height: 12px;
   border-radius: var(--r-control);
   overflow: hidden;
-  margin-top: 14px;
+  margin-top: var(--sp-14);
 }
 .dash-squad-row {
   display: grid;
   grid-template-columns: 10px minmax(0, 1fr) auto;
-  gap: 10px;
+  gap: var(--sp-10);
   align-items: center;
 }
 .dash-squad-dot {
@@ -5886,7 +5886,7 @@ button.dash-stat {
 }
 
 .dash-untied-row {
-  padding: 12px 0;
+  padding: var(--sp-12) 0;
   border-top: 1px solid var(--hair);
   cursor: pointer;
 }
@@ -5897,15 +5897,15 @@ button.dash-stat {
 .dash-track {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 14px;
+  gap: var(--sp-12);
+  margin-top: var(--sp-14);
 }
 .dash-track-bar-outer {
   position: relative;
   height: 6px;
   border-radius: 20px;
   background: var(--track);
-  margin-top: 6px;
+  margin-top: var(--sp-6);
 }
 .dash-track-bar-fill {
   position: absolute;
@@ -5945,24 +5945,24 @@ button.dash-stat {
 }
 
 .nutr-intro {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   color: var(--muted);
   max-width: 68ch;
-  margin: 6px 0 0;
+  margin: var(--sp-6) 0 0;
 }
 
 /* ---------- Layout skeleton, §2 ---------- */
 .nutr-layout {
   display: grid;
   grid-template-columns: 268px minmax(0, 1fr);
-  gap: 14px;
+  gap: var(--sp-14);
   align-items: start;
 }
 .nutr-rail,
 .nutr-main {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--sp-14);
   min-width: 0;
 }
 
@@ -5987,13 +5987,13 @@ button.dash-stat {
 .nutr-plan-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--sp-6);
 }
 .nutr-plan-item,
 .nutr-daytype-item {
   display: grid;
   border-radius: 14px;
-  padding: 11px 12px;
+  padding: 11px var(--sp-12);
   border: 1px solid var(--border);
   background: transparent;
   text-align: left;
@@ -6006,8 +6006,8 @@ button.dash-stat {
 .nutr-daytype-item {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: var(--sp-10);
+  padding: var(--sp-10) var(--sp-12);
   border-radius: 12px;
 }
 .nutr-plan-item.is-selected,
@@ -6022,10 +6022,10 @@ button.dash-stat {
 .nutr-plan-sub {
   font-size: 0.71875rem;
   color: var(--muted);
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 .nutr-daytype-name {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 600;
 }
 .nutr-daytype-carb {
@@ -6036,20 +6036,20 @@ button.dash-stat {
 }
 .nutr-new-plan-btn {
   width: 100%;
-  margin-top: 10px;
+  margin-top: var(--sp-10);
   border-radius: var(--r-control);
-  padding: 11px 18px;
-  font-size: 0.8125rem;
+  padding: 11px var(--sp-18);
+  font-size: var(--fs-13);
   min-height: 0;
 }
 .nutr-new-plan-form {
   display: flex;
-  gap: 8px;
-  margin-top: 8px;
+  gap: var(--sp-8);
+  margin-top: var(--sp-8);
 }
 .nutr-new-plan-form select {
   min-height: 0;
-  padding: 8px 10px;
+  padding: var(--sp-8) var(--sp-10);
 }
 
 .nutr-needs-word {
@@ -6079,16 +6079,16 @@ button.dash-stat {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--sp-8);
 }
 .nutr-chase-name {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 600;
 }
 .nutr-chase-value {
   font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   flex-shrink: 0;
 }
 .nutr-chase-bad {
@@ -6098,9 +6098,9 @@ button.dash-stat {
   color: var(--warn-text);
 }
 .nutr-chase-reason {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--faint);
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 
 /* ---------- Plan rules card, §4 ---------- */
@@ -6112,23 +6112,23 @@ button.dash-stat {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: flex-start;
-  gap: 12px;
+  gap: var(--sp-12);
 }
 .nutr-plan-rules-title {
-  font-size: 1rem;
+  font-size: var(--fs-16);
   font-weight: 700;
 }
 .nutr-plan-rules-sub {
   font-size: 0.78125rem;
   color: var(--muted);
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 
 .nutr-rule-tiles {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 16px;
+  gap: var(--sp-12);
+  margin-top: var(--sp-16);
 }
 @media (max-width: 900px) {
   .nutr-rule-tiles {
@@ -6139,7 +6139,7 @@ button.dash-stat {
   background: var(--surf2);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 14px;
+  padding: var(--sp-14);
 }
 .nutr-rule-label {
   font-size: 0.65625rem;
@@ -6151,8 +6151,8 @@ button.dash-stat {
   display: grid;
   grid-template-columns: 32px minmax(0, 1fr) 32px;
   align-items: center;
-  gap: 6px;
-  margin-top: 8px;
+  gap: var(--sp-6);
+  margin-top: var(--sp-8);
 }
 .nutr-stepper-btn {
   width: 32px;
@@ -6161,7 +6161,7 @@ button.dash-stat {
   border: 1px solid var(--border);
   background: var(--surf);
   color: var(--text);
-  font-size: 1rem;
+  font-size: var(--fs-16);
   line-height: 1;
   cursor: pointer;
   transition: border-color var(--t-state), color var(--t-state);
@@ -6180,43 +6180,43 @@ button.dash-stat {
 .nutr-rule-value span {
   font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
-  font-size: 1.25rem;
+  font-size: var(--fs-20);
   font-weight: 500;
 }
 /* --muted, not --faint. These two sit on the rule panel's own tint, and
    --faint is derived for a plain surface: measured 4.07:1 there in dark.
    One step up the hierarchy, still subordinate to body text, 5.89:1. */
 .nutr-rule-unit {
-  font-size: 0.625rem;
+  font-size: var(--fs-10);
   color: var(--muted);
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 .nutr-rule-footnote {
   font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 0.65625rem;
   color: var(--muted);
-  margin-top: 8px;
+  margin-top: var(--sp-8);
 }
 
 .nutr-read-line {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 16px;
-  margin-top: 16px;
-  padding-top: 14px;
+  gap: var(--sp-16);
+  margin-top: var(--sp-16);
+  padding-top: var(--sp-14);
   border-top: 1px solid var(--hair);
 }
 .nutr-read-text {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   color: var(--text);
   margin: 0;
 }
 .nutr-read-mean {
   font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
-  font-size: 1.375rem;
+  font-size: var(--fs-22);
   font-weight: 500;
   text-align: right;
 }
@@ -6224,15 +6224,15 @@ button.dash-stat {
   font-size: 0.65625rem;
   color: var(--faint);
   text-align: right;
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 
 /* ---------- The day, as food, §5 ---------- */
 .nutr-totals-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 16px;
+  gap: var(--sp-12);
+  margin-top: var(--sp-16);
 }
 @media (max-width: 700px) {
   .nutr-totals-grid {
@@ -6243,7 +6243,7 @@ button.dash-stat {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--sp-8);
 }
 .nutr-totals-label {
   font-size: 0.71875rem;
@@ -6252,7 +6252,7 @@ button.dash-stat {
 .nutr-totals-delta {
   font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   color: var(--muted);
 }
 .nutr-totals-delta.is-off {
@@ -6263,7 +6263,7 @@ button.dash-stat {
   height: 8px;
   border-radius: 4px;
   background: var(--track);
-  margin-top: 6px;
+  margin-top: var(--sp-6);
 }
 .nutr-totals-fill {
   height: 100%;
@@ -6285,14 +6285,14 @@ button.dash-stat {
   font-variant-numeric: tabular-nums;
   font-size: 0.65625rem;
   color: var(--faint);
-  margin-top: 6px;
+  margin-top: var(--sp-6);
 }
 
 .nutr-meal-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
-  gap: 12px;
-  margin-top: 18px;
+  gap: var(--sp-12);
+  margin-top: var(--sp-18);
 }
 .nutr-meal-card {
   border-radius: 14px;
@@ -6304,31 +6304,31 @@ button.dash-stat {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-8);
   background: var(--surf2);
   border-bottom: 1px solid var(--hair);
   padding: 11px 13px;
 }
 .nutr-meal-name {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 700;
 }
 .nutr-meal-time {
   font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--muted);
 }
 .nutr-meal-item {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
-  padding: 8px 13px;
+  gap: var(--sp-8);
+  padding: var(--sp-8) 13px;
   border-top: 1px solid var(--hair);
 }
 .nutr-meal-item-name {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -6355,7 +6355,7 @@ button.dash-stat {
   font-weight: 500;
 }
 .nutr-meal-macro-label {
-  font-size: 0.5625rem;
+  font-size: var(--fs-9);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--faint);
@@ -6366,16 +6366,16 @@ button.dash-stat {
   font-variant-numeric: tabular-nums;
   font-size: 0.71875rem;
   color: var(--faint);
-  margin: 14px 0 0;
-  padding-top: 12px;
+  margin: var(--sp-14) 0 0;
+  padding-top: var(--sp-12);
   border-top: 1px solid var(--hair);
 }
 
 /* ---------- Targets and body mass, §6 ---------- */
 .nutr-table-head {
   display: grid;
-  gap: 8px;
-  padding: 0 6px 10px;
+  gap: var(--sp-8);
+  padding: 0 var(--sp-6) var(--sp-10);
   font-size: 0.65625rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -6389,10 +6389,10 @@ button.dash-stat {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding: 12px 6px 6px;
+  padding: var(--sp-12) var(--sp-6) var(--sp-6);
 }
 .nutr-group-name {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -6401,15 +6401,15 @@ button.dash-stat {
 .nutr-group-meta {
   font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--faint);
 }
 .nutr-athlete-row {
   display: grid;
   width: 100%;
-  gap: 8px;
+  gap: var(--sp-8);
   align-items: center;
-  padding: 8px 6px;
+  padding: var(--sp-8) var(--sp-6);
   border-radius: 8px;
   border: none;
   cursor: pointer;
@@ -6422,12 +6422,12 @@ button.dash-stat {
   font-size: 0.84375rem;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-6);
   min-width: 0;
 }
 .nutr-set-pill {
-  font-size: 0.5625rem;
-  padding: 1px 7px 1px 6px;
+  font-size: var(--fs-9);
+  padding: 1px 7px 1px var(--sp-6);
   line-height: 1.5;
 }
 .nutr-range-track {
@@ -6481,8 +6481,8 @@ button.dash-stat {
 .nutr-legend-item {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-right: 18px;
+  gap: var(--sp-6);
+  margin-right: var(--sp-18);
 }
 .nutr-legend-band {
   display: inline-block;
@@ -6499,12 +6499,12 @@ button.dash-stat {
   border-radius: 3px;
 }
 .nutr-range-caption {
-  font-size: 0.625rem;
+  font-size: var(--fs-10);
   color: var(--faint);
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 .nutr-range-empty {
-  font-size: 0.625rem;
+  font-size: var(--fs-10);
   color: var(--faint);
 }
 .nutr-table-caption {
@@ -6512,8 +6512,8 @@ button.dash-stat {
   font-variant-numeric: tabular-nums;
   font-size: 0.71875rem;
   color: var(--faint);
-  margin: 14px 0 0;
-  padding-top: 12px;
+  margin: var(--sp-14) 0 0;
+  padding-top: var(--sp-12);
   border-top: 1px solid var(--hair);
 }
 
@@ -6531,8 +6531,8 @@ button.dash-stat {
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: var(--sp-12);
+  margin-bottom: var(--sp-16);
 }
 .nutr-selected-avatar {
   width: 40px;
@@ -6543,20 +6543,20 @@ button.dash-stat {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   font-weight: 700;
 }
 .nutr-selected-name {
-  font-size: 1rem;
+  font-size: var(--fs-16);
   font-weight: 700;
 }
 .nutr-selected-sub {
   font-size: 0.71875rem;
   color: var(--faint);
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 .nutr-profile-link {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   color: var(--muted);
   text-decoration: none;
   white-space: nowrap;
@@ -6568,7 +6568,7 @@ button.dash-stat {
 .nutr-selected-body {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: 20px;
+  gap: var(--sp-20);
   align-items: start;
 }
 @media (max-width: 900px) {
@@ -6580,7 +6580,7 @@ button.dash-stat {
 .nutr-mass-baseline {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--sp-8);
 }
 .nutr-mass-value {
   font-family: var(--font-sans), system-ui, sans-serif;
@@ -6590,18 +6590,18 @@ button.dash-stat {
   letter-spacing: -0.02em;
 }
 .nutr-mass-unit {
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   color: var(--muted);
 }
 .nutr-mass-detail {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   color: var(--faint);
-  margin-top: 4px;
+  margin-top: var(--sp-4);
 }
 .nutr-sparkline {
   width: 100%;
   height: 62px;
-  margin-top: 10px;
+  margin-top: var(--sp-10);
   display: block;
 }
 .nutr-sparkline-axis {
@@ -6611,7 +6611,7 @@ button.dash-stat {
   font-variant-numeric: tabular-nums;
   font-size: 0.65625rem;
   color: var(--faint);
-  margin-top: 4px;
+  margin-top: var(--sp-4);
 }
 /* Only rendered when the chart actually carries BOTH bands. A legend for one band is
  * noise; a legend for two, where one is "where they have been" and the other is
@@ -6619,26 +6619,26 @@ button.dash-stat {
 .nutr-sparkline-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 0;
+  gap: var(--sp-4) 0;
   font-size: 0.65625rem;
   color: var(--faint);
-  margin-top: 6px;
+  margin-top: var(--sp-6);
 }
 .nutr-sparkline-empty {
-  padding: 20px 0;
+  padding: var(--sp-20) 0;
   color: var(--faint);
 }
 
 .nutr-logging-strip {
   display: flex;
-  gap: 6px;
-  margin-top: 16px;
+  gap: var(--sp-6);
+  margin-top: var(--sp-16);
 }
 .nutr-logging-cell {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--sp-4);
 }
 .nutr-logging-swatch {
   width: 20px;
@@ -6660,23 +6660,23 @@ button.dash-stat {
 .nutr-logging-caption {
   font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--faint);
-  margin-top: 8px;
+  margin-top: var(--sp-8);
 }
 
 .nutr-checkin-title {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   font-weight: 700;
 }
 .nutr-checkin-footnote {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--faint);
-  margin: 4px 0 12px;
+  margin: var(--sp-4) 0 var(--sp-12);
 }
 .nutr-checkin-strip {
   display: flex;
-  gap: 6px;
+  gap: var(--sp-6);
   flex-wrap: wrap;
 }
 .nutr-checkin-cell {
@@ -6688,7 +6688,7 @@ button.dash-stat {
   justify-content: center;
   font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 700;
   border: 1px solid transparent;
 }
@@ -6708,12 +6708,12 @@ button.dash-stat {
   border-color: rgb(var(--bad-rgb) / 0.4);
 }
 .nutr-override-note {
-  margin-top: 14px;
-  padding: 10px 12px;
+  margin-top: var(--sp-14);
+  padding: var(--sp-10) var(--sp-12);
   background: rgb(var(--accent-rgb) / 0.08);
   border: 1px solid rgb(var(--accent-rgb) / 0.25);
   border-radius: 10px;
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   color: var(--accent-text);
 }
 
@@ -6832,8 +6832,8 @@ button.dash-stat {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 10px;
-  margin: 26px 2px 12px;
+  gap: var(--sp-10);
+  margin: 26px var(--sp-2) var(--sp-12);
 }
 .lbw-movers-title {
   font-size: 1.0625rem;
@@ -6851,7 +6851,7 @@ button.dash-stat {
 .lbw-movers-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  gap: var(--sp-14);
 }
 @media (max-width: 1150px) {
   .lbw-movers-grid {
@@ -6877,11 +6877,11 @@ button.dash-stat {
 .lbw-mover-head {
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr) auto;
-  gap: 12px;
+  gap: var(--sp-12);
   align-items: center;
 }
 .lbw-mover-name {
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 700;
   margin: 0;
   overflow: hidden;
@@ -6896,8 +6896,8 @@ button.dash-stat {
 .lbw-mover-delta {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  margin-top: 14px;
+  gap: var(--sp-8);
+  margin-top: var(--sp-14);
 }
 .lbw-mover-delta-value {
   font-family: var(--font-sans);
@@ -6915,10 +6915,10 @@ button.dash-stat {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 0.78125rem;
-  margin-top: 6px;
+  margin-top: var(--sp-6);
 }
 .lbw-mover-spark {
-  margin-top: 12px;
+  margin-top: var(--sp-12);
 }
 .lbw-mover-spark svg {
   display: block;
@@ -6930,7 +6930,7 @@ button.dash-stat {
   font-variant-numeric: tabular-nums;
   font-size: 0.65625rem;
   color: var(--faint);
-  margin: 10px 0 0;
+  margin: var(--sp-10) 0 0;
 }
 
 .pill-gold {
@@ -6951,7 +6951,7 @@ button.dash-stat {
 .lbw-controls-row {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--sp-14);
   flex-wrap: wrap;
   margin-top: 26px;
 }
@@ -6960,14 +6960,14 @@ button.dash-stat {
   display: inline-flex;
   background: var(--hair);
   border-radius: var(--r-control);
-  padding: 4px;
-  gap: 4px;
+  padding: var(--sp-4);
+  gap: var(--sp-4);
 }
 .lbw-segmented button {
   font-family: inherit;
   font-size: 0.78125rem;
   font-weight: 700;
-  padding: 7px 16px;
+  padding: 7px var(--sp-16);
   border-radius: var(--r-control);
   border: none;
   background: transparent;
@@ -6983,14 +6983,14 @@ button.dash-stat {
 .lbw-ranked-in {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-10);
   flex-wrap: wrap;
 }
 
 .lbw-chip-count {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   opacity: 0.65;
 }
 .lbw-chip-disabled {
@@ -7002,7 +7002,7 @@ button.dash-stat {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 14px;
+  gap: var(--sp-14);
   margin-left: auto;
   font-size: 0.71875rem;
   color: var(--muted);
@@ -7010,7 +7010,7 @@ button.dash-stat {
 .lbw-legend-item {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-6);
 }
 .lbw-swatch {
   display: inline-block;
@@ -7022,17 +7022,17 @@ button.dash-stat {
 /* ---------- The wall ---------- */
 
 .lbw-wall-card {
-  margin-top: 14px;
+  margin-top: var(--sp-14);
 }
 .lbw-wall-scroll {
   overflow-x: auto;
 }
 
 .lbw-wall-header {
-  padding: 0 6px 10px;
+  padding: 0 var(--sp-6) var(--sp-10);
 }
 .lbw-wall-head-name {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -7045,7 +7045,7 @@ button.dash-stat {
 }
 .lbw-wall-head-board {
   text-align: right;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -7054,20 +7054,20 @@ button.dash-stat {
 .lbw-wall-head-sub {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
-  font-size: 0.625rem;
+  font-size: var(--fs-10);
   color: var(--faint);
   text-transform: none;
   letter-spacing: normal;
-  margin-top: 2px;
+  margin-top: var(--sp-2);
   font-weight: 400;
 }
 
 .lbw-group-row {
-  padding: 13px 6px 7px;
+  padding: 13px var(--sp-6) 7px;
   border-top: 1px solid var(--hair);
 }
 .lbw-group-label {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -7085,7 +7085,7 @@ button.dash-stat {
 }
 
 .lbw-athlete-row {
-  padding: 7px 6px;
+  padding: 7px var(--sp-6);
   border-radius: 8px;
   cursor: pointer;
   transition: background var(--t-state);
@@ -7103,7 +7103,7 @@ button.dash-stat {
   background: var(--surf);
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--sp-8);
   min-width: 0;
 }
 .lbw-athlete-row.is-selected .lbw-name-cell {
@@ -7131,20 +7131,20 @@ button.dash-stat {
   justify-content: flex-end;
   align-items: center;
   gap: 7px;
-  padding: 6px 8px;
+  padding: var(--sp-6) var(--sp-8);
   border-radius: 7px;
   font-variant-numeric: tabular-nums;
 }
 .lbw-value-marker {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
-  font-size: 0.625rem;
+  font-size: var(--fs-10);
   font-weight: 500;
 }
 .lbw-value {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
 }
 
 .lbw-wall-caption {
@@ -7152,8 +7152,8 @@ button.dash-stat {
   font-variant-numeric: tabular-nums;
   font-size: 0.71875rem;
   color: var(--muted);
-  margin: 14px 0 0;
-  padding-top: 10px;
+  margin: var(--sp-14) 0 0;
+  padding-top: var(--sp-10);
   border-top: 1px solid var(--border);
 }
 
@@ -7162,9 +7162,9 @@ button.dash-stat {
 .lbw-lower-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-  gap: 14px;
+  gap: var(--sp-14);
   align-items: start;
-  margin-top: 14px;
+  margin-top: var(--sp-14);
 }
 @media (max-width: 1000px) {
   .lbw-lower-grid {
@@ -7181,7 +7181,7 @@ button.dash-stat {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   font-weight: 700;
   flex: none;
 }
@@ -7189,18 +7189,18 @@ button.dash-stat {
 .lbw-sel-head {
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr) auto;
-  gap: 12px;
+  gap: var(--sp-12);
   align-items: center;
 }
 .lbw-sel-name {
-  font-size: 1rem;
+  font-size: var(--fs-16);
   font-weight: 700;
   margin: 0;
 }
 .lbw-sel-meta {
   font-size: 0.71875rem;
   color: var(--faint);
-  margin: 2px 0 0;
+  margin: var(--sp-2) 0 0;
 }
 .lbw-profile-link {
   font-size: 0.78125rem;
@@ -7209,7 +7209,7 @@ button.dash-stat {
 }
 
 .lbw-sel-table {
-  margin-top: 4px;
+  margin-top: var(--sp-4);
 }
 .lbw-sel-thead {
   display: grid;
@@ -7218,15 +7218,15 @@ button.dash-stat {
      this row cannot know. It keeps 76px as a floor so short values still line
      up, and grows for long ones; the name column absorbs the difference. */
   grid-template-columns: minmax(0, 1fr) minmax(76px, max-content) 74px 82px;
-  gap: 8px;
+  gap: var(--sp-8);
   /* The header sits on its own tinted ground rather than floating over the
      first row — four labels above four columns of small numbers needed a band
      to read as a header at all. */
-  padding: 10px 12px;
-  margin: 12px -12px 0;
+  padding: var(--sp-10) var(--sp-12);
+  margin: var(--sp-12) -12px 0;
   background: var(--surf2);
   border-radius: 10px;
-  font-size: 0.625rem;
+  font-size: var(--fs-10);
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -7239,7 +7239,7 @@ button.dash-stat {
      pinning it at 76px, which fits "1.7s" and clips "5.55AU/min" — how wide a
      value needs to be depends on the board's unit, which the row cannot know. */
   grid-template-columns: minmax(0, 1fr) minmax(76px, max-content) 74px 82px;
-  gap: 8px;
+  gap: var(--sp-8);
   padding: 9px 0;
   border-top: 1px solid var(--hair);
   align-items: center;
@@ -7264,7 +7264,7 @@ button.dash-stat {
   margin: 1px 0 0;
 }
 .lbw-sel-result {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
 }
 .lbw-sel-squad {
   color: var(--faint);
@@ -7272,30 +7272,30 @@ button.dash-stat {
 .lbw-sel-foot {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
 }
 
 .lbw-leaders-title {
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 700;
   margin: 0;
 }
 .lbw-leaders-sub {
   font-size: 0.78125rem;
   color: var(--muted);
-  margin: 4px 0 0;
+  margin: var(--sp-4) 0 0;
 }
 .lbw-leaders-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(184px, 1fr));
-  gap: 10px;
-  margin-top: 14px;
+  gap: var(--sp-10);
+  margin-top: var(--sp-14);
 }
 .lbw-leader-tile {
   background: var(--surf2);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 12px;
+  padding: var(--sp-12);
 }
 .lbw-leader-board {
   font-size: 0.65625rem;
@@ -7303,17 +7303,17 @@ button.dash-stat {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--faint);
-  margin: 0 0 8px;
+  margin: 0 0 var(--sp-8);
 }
 .lbw-leader-row {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--sp-8);
   margin-top: 5px;
 }
 .lbw-leader-unit {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--faint);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -7377,9 +7377,9 @@ button.dash-stat {
 .sg-header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 20px;
+  gap: var(--sp-20);
   align-items: end;
-  margin-bottom: 14px;
+  margin-bottom: var(--sp-14);
 }
 @media (max-width: 900px) {
   .sg-header {
@@ -7390,12 +7390,12 @@ button.dash-stat {
   font-size: 1.875rem;
   font-weight: 800;
   letter-spacing: -0.03em;
-  margin: 6px 0 0;
+  margin: var(--sp-6) 0 0;
 }
 .sg-header-right {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--sp-14);
   flex-wrap: wrap;
 }
 
@@ -7404,11 +7404,11 @@ button.dash-stat {
   display: inline-flex;
   background: rgb(var(--ink-rgb) / 0.05);
   border-radius: var(--r-control);
-  padding: 4px;
-  gap: 4px;
+  padding: var(--sp-4);
+  gap: var(--sp-4);
 }
 .sg-segment {
-  padding: 7px 16px;
+  padding: 7px var(--sp-16);
   border-radius: var(--r-control);
   font-size: 0.78125rem;
   font-weight: 700;
@@ -7428,7 +7428,7 @@ button.dash-stat {
 .sg-weeknav {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-8);
 }
 .sg-weeknav-btn {
   width: 32px;
@@ -7449,7 +7449,7 @@ button.dash-stat {
   color: var(--text);
 }
 .sg-weeknav-range {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
 }
 
 /* -------- §3 Publish banner -------- */
@@ -7457,7 +7457,7 @@ button.dash-stat {
   padding: var(--pad-card);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 14px;
+  gap: var(--sp-14);
   align-items: center;
   /* Status as a border accent rather than a leading dot column. The dot cost
      24px before the first word, so this card's text sat 40px from its border
@@ -7474,14 +7474,14 @@ button.dash-stat {
   font-weight: 700;
 }
 .sg-banner-sub {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   color: var(--muted);
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 .sg-banner-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-8);
 }
 .sg-btn-published {
   background: none;
@@ -7497,8 +7497,8 @@ button.dash-stat {
   color: var(--on-accent);
   border: none;
   border-radius: var(--r-control);
-  padding: 10px 20px;
-  font-size: 0.8125rem;
+  padding: var(--sp-10) var(--sp-20);
+  font-size: var(--fs-13);
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
@@ -7515,7 +7515,7 @@ button.dash-stat {
   background: none;
   border: 1px solid var(--border);
   border-radius: var(--r-control);
-  padding: 9px 16px;
+  padding: 9px var(--sp-16);
   font-size: 0.78125rem;
   font-weight: 600;
   font-family: inherit;
@@ -7530,19 +7530,19 @@ button.dash-stat {
 
 /* -------- §4 Edit toolbar -------- */
 .sg-toolbar {
-  padding: 14px 18px;
+  padding: var(--sp-14) var(--sp-18);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: var(--sp-12);
 }
 .sg-btn-add {
   background: var(--accent);
   color: var(--on-accent);
   border: none;
   border-radius: var(--r-control);
-  padding: 10px 18px;
-  font-size: 0.8125rem;
+  padding: var(--sp-10) var(--sp-18);
+  font-size: var(--fs-13);
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
@@ -7554,7 +7554,7 @@ button.dash-stat {
   flex: none;
 }
 .sg-toolbar-label {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -7578,12 +7578,12 @@ button.dash-stat {
   background: rgb(var(--warn-rgb) / 0.1);
   border: 1px solid rgb(var(--warn-rgb) / 0.45);
   border-radius: 14px;
-  padding: 12px 16px;
+  padding: var(--sp-12) var(--sp-16);
   display: grid;
   grid-template-columns: 8px minmax(0, 1fr) auto;
-  gap: 10px;
+  gap: var(--sp-10);
   align-items: baseline;
-  margin-top: 14px;
+  margin-top: var(--sp-14);
 }
 .sg-clash-dot {
   width: 8px;
@@ -7593,15 +7593,15 @@ button.dash-stat {
   align-self: center;
 }
 .sg-clash-count {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 700;
 }
 .sg-clash-list {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   color: var(--muted);
 }
 .sg-clash-link {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 600;
   color: var(--accent-text);
   white-space: nowrap;
@@ -7616,7 +7616,7 @@ button.dash-stat {
 .sg-grid-card {
   padding: var(--pad-card);
   overflow-x: auto;
-  margin-top: 14px;
+  margin-top: var(--sp-14);
 }
 /* UX audit finding 2: this used to force `.sg-grid-inner` to a flat
    1440px, which is wider than the whole content column at both 1280px and
@@ -7645,16 +7645,7 @@ button.dash-stat {
   grid-template-columns: 62px repeat(7, minmax(76px, 1fr));
   border-bottom: 1px solid var(--hair);
 }
-/* No top padding: .sg-grid-card already provides --pad-card above this row,
-   and adding 12 on top of it put the first weekday 28px from the card's
-   border while the rest of the page sat at 16.
-   The BOTTOM is the token too, so the header text is framed evenly — 16 above
-   from the card, 16 below to the rule. It was 10, which read top-heavy once
-   the top stopped being 28. The sides stay at 12: those are column rhythm
-   against the neighbouring day's divider, not a distance to the card's edge,
-   which is what the 16 rule is about. */
-.sg-day-head {
-  padding: 0 12px var(--pad-card);
+/* No top padding: .sg-grid-card already provides --pad-card above this row, and adding 12 on top of it put the first weekday var(--sp-28) from the card's border while the rest of the page sat at 16. The BOTTOM is the token too, so the header text is framed evenly — 16 above from the card, 16 below to the rule. It was 10, which read top-heavy once the top stopped being 28. The sides stay at 12: those are column rhythm against the neighbouring day's divider, not a distance to the card's edge, which is what the 16 rule is about. */ .sg-day-head { padding: 0 var(--sp-12) var(--pad-card);
   border-left: 1px solid var(--hair);
   cursor: pointer;
   border: none;
@@ -7679,15 +7670,15 @@ button.dash-stat {
   color: var(--accent-text);
 }
 .sg-day-head-date {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--faint);
-  margin-left: 6px;
+  margin-left: var(--sp-6);
 }
 .sg-day-head-row2 {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 .sg-day-head-md {
   font-size: 0.71875rem;
@@ -7749,7 +7740,7 @@ button.dash-stat {
 
 .wtp-grid {
   display: grid;
-  gap: 0 6px;
+  gap: 0 var(--sp-6);
   min-width: 420px;
   /* The last hour label is centred on the grid's bottom edge, so half of it
      sits outside without this. */
@@ -7777,7 +7768,7 @@ button.dash-stat {
   position: absolute;
   right: 2px;
   transform: translateY(-50%);
-  font-size: 0.5625rem;
+  font-size: var(--fs-9);
   color: var(--faint);
 }
 
@@ -7799,7 +7790,7 @@ button.dash-stat {
   left: 2px;
   right: 2px;
   border-radius: 4px;
-  padding: 2px 4px;
+  padding: var(--sp-2) var(--sp-4);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -7824,7 +7815,7 @@ button.dash-stat {
 }
 
 .sg-wiz-step {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--muted);
@@ -7835,7 +7826,7 @@ button.dash-stat {
   gap: 5px;
   /* Space above as well as below: sitting flush under the header's date line
      it read as an underline of that text rather than as progress. */
-  margin: 12px 0 14px;
+  margin: var(--sp-12) 0 var(--sp-14);
 }
 
 .sg-wiz-pip {
@@ -7943,7 +7934,7 @@ button.dash-stat {
 .sg-block {
   position: absolute;
   border-radius: 10px;
-  padding: 7px 10px;
+  padding: 7px var(--sp-10);
   background: var(--surf);
   border: 1px solid var(--bc, var(--border));
   border-left: 3px solid var(--tone, var(--accent));
@@ -7991,7 +7982,7 @@ button.dash-stat {
   right: 4px;
   box-sizing: border-box;
   display: block;
-  padding: 3px 8px;
+  padding: 3px var(--sp-8);
   overflow: hidden;
   text-decoration: none;
   color: inherit;
@@ -8014,7 +8005,7 @@ button.dash-stat {
 }
 .sg-fixture-name {
   display: block;
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   font-weight: 700;
   color: var(--text);
   white-space: nowrap;
@@ -8026,17 +8017,17 @@ button.dash-stat {
   align-items: center;
   flex-wrap: nowrap;
   height: 14px;
-  gap: 6px;
+  gap: var(--sp-6);
 }
 .sg-block-time {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--time, var(--muted));
   white-space: nowrap;
   flex: none;
 }
 .sg-block-badge {
   margin-left: auto;
-  font-size: 0.5625rem;
+  font-size: var(--fs-9);
   font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -8055,7 +8046,7 @@ button.dash-stat {
   flex: none;
 }
 .sg-block-name {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 700;
   line-height: 1.25;
   overflow: hidden;
@@ -8080,15 +8071,15 @@ button.dash-stat {
 .sg-block-group {
   font-size: 0.71875rem;
   color: var(--muted);
-  margin-top: 2px;
+  margin-top: var(--sp-2);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .sg-block-time-below {
-  font-size: 0.625rem;
+  font-size: var(--fs-10);
   color: var(--muted);
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 
 /* -------- §5 legend + caption -------- */
@@ -8096,15 +8087,15 @@ button.dash-stat {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
-  padding-top: 14px;
-  margin-top: 14px;
+  gap: var(--sp-16);
+  padding-top: var(--sp-14);
+  margin-top: var(--sp-14);
   border-top: 1px solid var(--hair);
 }
 .sg-legend-item {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-6);
   font-size: 0.71875rem;
   color: var(--muted);
 }
@@ -8119,7 +8110,7 @@ button.dash-stat {
 }
 .sg-caption {
   margin-left: auto;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--faint);
   font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
@@ -8129,8 +8120,8 @@ button.dash-stat {
 .sg-panels {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-  gap: 14px;
-  margin-top: 14px;
+  gap: var(--sp-14);
+  margin-top: var(--sp-14);
   align-items: start;
 }
 @media (max-width: 1150px) {
@@ -8144,11 +8135,11 @@ button.dash-stat {
 .sg-panel-head {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
+  gap: var(--sp-12);
   align-items: start;
 }
 .sg-panel-name {
-  font-size: 1rem;
+  font-size: var(--fs-16);
   font-weight: 700;
 }
 .sg-panel-meta {
@@ -8159,13 +8150,13 @@ button.dash-stat {
 .sg-panel-facts {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 16px;
+  gap: var(--sp-14);
+  margin-top: var(--sp-16);
 }
 @media (max-width: 560px) {
   .sg-panel-facts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    row-gap: 14px;
+    row-gap: var(--sp-14);
   }
 }
 .sg-fact-label {
@@ -8175,16 +8166,16 @@ button.dash-stat {
   color: var(--faint);
 }
 .sg-fact-value {
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 500;
-  margin-top: 4px;
+  margin-top: var(--sp-4);
 }
 
 /* -------- §6 edit form -------- */
 .sg-edit-row {
   display: flex;
-  gap: 14px;
-  margin-top: 16px;
+  gap: var(--sp-14);
+  margin-top: var(--sp-16);
   flex-wrap: wrap;
 }
 .sg-edit-field {
@@ -8194,9 +8185,9 @@ button.dash-stat {
 .sg-stepper {
   display: grid;
   grid-template-columns: 38px minmax(0, 1fr) 38px;
-  gap: 6px;
+  gap: var(--sp-6);
   align-items: center;
-  margin-top: 6px;
+  margin-top: var(--sp-6);
 }
 .sg-stepper-btn {
   width: 38px;
@@ -8205,7 +8196,7 @@ button.dash-stat {
   border: 1px solid var(--border);
   background: var(--surf);
   color: var(--accent-text);
-  font-size: 1rem;
+  font-size: var(--fs-16);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -8227,37 +8218,37 @@ button.dash-stat {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   font-weight: 600;
 }
 .sg-helper {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--faint);
   margin-top: 5px;
 }
 .sg-field-ro {
-  margin-top: 6px;
+  margin-top: var(--sp-6);
   min-height: 40px;
   border-radius: var(--r-control);
   background: var(--field);
   display: flex;
   align-items: center;
-  padding: 0 12px;
-  font-size: 0.8125rem;
+  padding: 0 var(--sp-12);
+  font-size: var(--fs-13);
   color: var(--muted);
 }
 .sg-panel-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 18px;
+  gap: var(--sp-10);
+  margin-top: var(--sp-18);
 }
 .sg-btn-remove {
   background: none;
   border: 1px solid rgb(var(--bad-rgb) / 0.4);
   color: var(--bad-pill-text);
   border-radius: var(--r-control);
-  padding: 9px 16px;
+  padding: 9px var(--sp-16);
   font-size: 0.78125rem;
   font-weight: 600;
   font-family: inherit;
@@ -8267,14 +8258,14 @@ button.dash-stat {
 /* -------- §6 athlete-app preview -------- */
 .sg-preview {
   border-top: 1px solid var(--hair);
-  margin-top: 18px;
-  padding-top: 16px;
+  margin-top: var(--sp-18);
+  padding-top: var(--sp-16);
 }
 .sg-preview-head {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: var(--sp-10);
+  margin-bottom: var(--sp-10);
 }
 .sg-preview-head .sub {
   font-size: 0.78125rem;
@@ -8287,7 +8278,7 @@ button.dash-stat {
   overflow: hidden;
 }
 .sg-preview-expects {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   font-weight: 600;
   /* Spec's literal warn-as-text value (§1: "Warn as text is #b07d0a, never
      #f6ab2f") is this file's existing --warn-text derivation, not a new
@@ -8297,25 +8288,25 @@ button.dash-stat {
   margin-top: 3px;
 }
 .sg-preview-foot {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--faint);
   font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
-  margin-top: 10px;
+  margin-top: var(--sp-10);
 }
 
 /* -------- §7 normal week comparison -------- */
 .sg-cmp-sub {
   font-size: 0.78125rem;
   color: var(--muted);
-  margin-top: 4px;
+  margin-top: var(--sp-4);
   line-height: 1.5;
 }
 .sg-cmp-head {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 74px 74px 62px;
-  gap: 8px;
-  margin-top: 16px;
+  gap: var(--sp-8);
+  margin-top: var(--sp-16);
   font-size: 0.65625rem;
   font-weight: 600;
   letter-spacing: 0.1em;
@@ -8329,15 +8320,15 @@ button.dash-stat {
 .sg-cmp-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 74px 74px 62px;
-  gap: 8px;
-  padding: 10px 2px;
+  gap: var(--sp-8);
+  padding: var(--sp-10) var(--sp-2);
   border-top: 1px solid var(--hair);
   align-items: center;
 }
 .sg-cmp-type {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-8);
   font-size: 0.78125rem;
   font-weight: 600;
   min-width: 0;
@@ -8367,9 +8358,9 @@ button.dash-stat {
 .sg-cmp-total {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 74px 74px 62px;
-  gap: 8px;
-  padding: 12px 2px;
-  margin-top: 4px;
+  gap: var(--sp-8);
+  padding: var(--sp-12) var(--sp-2);
+  margin-top: var(--sp-4);
   border-top: 1px solid var(--border);
   font-weight: 700;
   font-size: 0.78125rem;
@@ -8378,7 +8369,7 @@ button.dash-stat {
 .sg-cmp-read {
   font-size: 0.78125rem;
   color: var(--text);
-  margin-top: 12px;
+  margin-top: var(--sp-12);
   line-height: 1.5;
 }
 
@@ -8387,13 +8378,13 @@ button.dash-stat {
   display: flex;
   flex-direction: column;
   gap: 11px;
-  margin-top: 14px;
+  margin-top: var(--sp-14);
 }
 .sg-group-row-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--sp-8);
 }
 .sg-group-name {
   font-size: 0.78125rem;
@@ -8407,7 +8398,7 @@ button.dash-stat {
   border-radius: 20px;
   background: var(--track);
   overflow: hidden;
-  margin-top: 6px;
+  margin-top: var(--sp-6);
 }
 .sg-group-fill {
   height: 100%;
@@ -8416,7 +8407,7 @@ button.dash-stat {
 .sg-group-foot {
   font-size: 0.65625rem;
   color: var(--faint);
-  margin-top: 4px;
+  margin-top: var(--sp-4);
   font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
 }
@@ -8490,13 +8481,13 @@ button.dash-stat {
   color: var(--muted);
 }
 .signin-forgot {
-  margin: 14px 0 0;
+  margin: var(--sp-14) 0 0;
   text-align: center;
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 600;
 }
 .signin-return {
-  margin: 14px 0 0;
+  margin: var(--sp-14) 0 0;
   text-align: center;
   font-size: 0.78125rem;
   font-weight: 600;
@@ -8512,10 +8503,10 @@ button.dash-stat {
   color: var(--text);
 }
 .reset-actions {
-  margin-top: 20px;
+  margin-top: var(--sp-20);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--sp-10);
 }
 .reset-actions .btn-primary {
   display: block;
@@ -8530,8 +8521,8 @@ button.dash-stat {
 /* Finding 41: a small, honest sign-off disclaimer on both places a target gets
  * written — the rule-engine Assign flow and the manual target form. */
 .nutr-disclaimer {
-  margin: 10px 0 0;
-  font-size: 0.6875rem;
+  margin: var(--sp-10) 0 0;
+  font-size: var(--fs-11);
   line-height: 1.5;
   color: var(--faint);
 }
@@ -8542,20 +8533,20 @@ button.dash-stat {
   margin-top: 3px;
   font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--muted);
 }
 
 /* Finding 43: an explicit banner naming which macros broke the day's own ±5% rule,
  * instead of relying on a small colour change across up to four thin bars. */
 .nutr-totals-warning {
-  margin: 12px 0 0;
-  padding: 10px 12px;
+  margin: var(--sp-12) 0 0;
+  padding: var(--sp-10) var(--sp-12);
   border-radius: var(--r-field);
   background: rgb(var(--warn-rgb) / 0.14);
   border-inline-start: 2px solid rgb(var(--warn-rgb));
   color: var(--warn-text);
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   line-height: 1.5;
 }
 
@@ -8578,7 +8569,7 @@ button.dash-stat {
   position: absolute;
   top: -3px;
   right: -3px;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   line-height: 1;
   font-weight: 700;
   color: var(--warn-text);
@@ -8591,7 +8582,7 @@ button.dash-stat {
 .tr-scatter-xaxis {
   display: flex;
   justify-content: space-between;
-  margin-top: 6px;
+  margin-top: var(--sp-6);
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: 0.65625rem;
@@ -8605,10 +8596,10 @@ button.dash-stat {
  * the one already used for the wellness chart's own flag markers (WellnessChart.tsx),
  * never --warn/--bad, so this never reads as an alert. */
 .flag-notice {
-  margin-top: 14px;
+  margin-top: var(--sp-14);
 }
 .flag-notice-heading {
-  margin: 0 0 8px;
+  margin: 0 0 var(--sp-8);
   font-size: 0.78125rem;
   font-weight: 600;
   color: var(--muted);
@@ -8616,10 +8607,10 @@ button.dash-stat {
 .flag-notice-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--sp-10);
 }
 .flag-notice-item {
-  padding: 10px 12px;
+  padding: var(--sp-10) var(--sp-12);
   border-radius: var(--r-field);
   background: rgb(var(--accent2-rgb) / 0.08);
   border-inline-start: 2px solid rgb(var(--accent2-rgb) / 0.6);
@@ -8628,16 +8619,16 @@ button.dash-stat {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--sp-8);
 }
 .flag-notice-line {
-  margin: 6px 0 0;
-  font-size: 0.8125rem;
+  margin: var(--sp-6) 0 0;
+  font-size: var(--fs-13);
   line-height: 1.5;
 }
 .flag-notice-note {
-  margin: 6px 0 0;
-  font-size: 0.8125rem;
+  margin: var(--sp-6) 0 0;
+  font-size: var(--fs-13);
   line-height: 1.5;
   font-style: italic;
   color: var(--muted);
@@ -8652,8 +8643,8 @@ button.dash-stat {
   color: var(--muted);
 }
 .flag-notice-attribution {
-  margin: 6px 0 0;
-  font-size: 0.6875rem;
+  margin: var(--sp-6) 0 0;
+  font-size: var(--fs-11);
 }
 
 /* Medical's triage notes on a problem report (ProblemReportsTriage, migration
@@ -8664,11 +8655,11 @@ button.dash-stat {
    card. */
 .report-notes {
   list-style: none;
-  margin: 8px 0 0;
+  margin: var(--sp-8) 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--sp-8);
 }
 .report-note {
   padding-inline-start: 10px;
@@ -8676,18 +8667,18 @@ button.dash-stat {
 }
 .report-note-body {
   margin: 0;
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   line-height: 1.5;
   color: var(--muted);
   white-space: pre-wrap;
 }
 .report-note-attribution {
   margin: 3px 0 0;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--faint);
 }
 .report-note-form {
-  margin-top: 10px;
+  margin-top: var(--sp-10);
 }
 
 /* -------- Positional context (per-athlete Nutrition / Wellness / Gym) --------
@@ -8705,26 +8696,26 @@ button.dash-stat {
  * directional judgement about this athlete; .pc-band is a spread, with no
  * direction in it at all. */
 .pc-intro {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   color: var(--muted);
-  margin: 8px 0 4px;
+  margin: var(--sp-8) 0 var(--sp-4);
 }
 .pc-row {
   border-top: 1px solid var(--hair);
-  padding: 14px 0 12px;
+  padding: var(--sp-14) 0 var(--sp-12);
 }
 .pc-row-top {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
-  gap: 10px;
+  gap: var(--sp-10);
 }
 .pc-row-name {
   font-size: 0.90625rem;
   font-weight: 700;
 }
 .pc-row-value {
-  font-size: 1rem;
+  font-size: var(--fs-16);
   font-weight: 500;
 }
 .pc-track {
@@ -8778,11 +8769,11 @@ button.dash-stat {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
-  gap: 10px;
-  margin-top: 8px;
+  gap: var(--sp-10);
+  margin-top: var(--sp-8);
 }
 .pc-row-band {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   color: var(--muted);
 }
 .pc-row-meta {
@@ -8807,18 +8798,18 @@ button.dash-stat {
 .cmp-card-head {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 10px;
+  gap: var(--sp-12);
+  margin-bottom: var(--sp-10);
 }
 .cmp-card-title {
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 700;
   margin: 0;
 }
 .cmp-card-sub {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   color: var(--muted);
-  margin: 2px 0 0;
+  margin: var(--sp-2) 0 0;
   max-width: 44ch;
 }
 /* Two selects now, not two static chips — they wrap onto their own line on a
@@ -8827,7 +8818,7 @@ button.dash-stat {
 .cmp-card-controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 10px;
+  gap: var(--sp-8) var(--sp-10);
   margin-left: auto;
   align-items: center;
 }
@@ -8837,23 +8828,23 @@ button.dash-stat {
   display: block;
 }
 .cmp-chart-axis {
-  font-size: 0.5625rem;
+  font-size: var(--fs-9);
   fill: var(--faint);
   font-variant-numeric: tabular-nums;
 }
 .cmp-legend {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--sp-14);
   flex-wrap: wrap;
-  margin-top: 8px;
+  margin-top: var(--sp-8);
   font-size: 0.71875rem;
   color: var(--muted);
 }
 .cmp-legend-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-6);
 }
 .cmp-legend-key {
   width: 16px;
@@ -8870,14 +8861,14 @@ button.dash-stat {
 .cmp-athletes {
   display: flex;
   align-items: flex-end;
-  gap: 10px;
+  gap: var(--sp-10);
   flex-wrap: wrap;
 }
 .cmp-picker {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
+  gap: var(--sp-10);
+  padding: 9px var(--sp-12);
   border: 1px solid var(--border);
   border-radius: var(--r-field);
   background: var(--surf);
@@ -8898,15 +8889,15 @@ button.dash-stat {
 .cmp-against {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--sp-14);
   flex-wrap: wrap;
-  padding: 10px 14px;
+  padding: var(--sp-10) var(--sp-14);
   border: 1px solid var(--border);
   border-radius: var(--r-field);
   background: var(--surf);
 }
 .cmp-against-label {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -9022,10 +9013,10 @@ button.dash-stat {
   /* Auto top margin, so every card's footer sits on the same line however many
      lines its blurb took. */
   margin-top: auto;
-  padding-top: 4px;
+  padding-top: var(--sp-4);
 }
 .rep-source {
-  padding: 4px 10px;
+  padding: var(--sp-4) var(--sp-10);
   border-radius: var(--r-control);
   font-size: 0.71875rem;
   font-weight: 700;
@@ -9080,7 +9071,7 @@ button.dash-stat {
 /* "Outside their normal range" — the Training report's exceptions panel. */
 .tr-outlier {
   border-top: 1px solid var(--hair);
-  padding: 12px 0 2px;
+  padding: var(--sp-12) 0 var(--sp-2);
 }
 .tr-outlier:first-child {
   border-top: none;
@@ -9088,16 +9079,16 @@ button.dash-stat {
 .tr-outlier-head {
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  gap: var(--sp-10);
 }
 .tr-outlier-name {
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   font-weight: 600;
   flex: 1;
   min-width: 0;
 }
 .tr-outlier-delta {
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   flex: none;
@@ -9154,7 +9145,7 @@ button.dash-stat {
 }
 .tr-unit-mean {
   margin-left: auto;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 400;
   color: var(--faint);
   font-variant-numeric: tabular-nums;
@@ -9162,13 +9153,13 @@ button.dash-stat {
 .tr-legend-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(140px, 240px);
-  gap: 14px;
+  gap: var(--sp-14);
   align-items: center;
   padding: 9px 0;
   border-top: 1px solid var(--hair);
 }
 .tr-legend-row:first-of-type {
-  margin-top: 8px;
+  margin-top: var(--sp-8);
 }
 .tr-legend-label {
   font-size: 0.78125rem;
@@ -9176,7 +9167,7 @@ button.dash-stat {
 }
 .tr-legend-ramp {
   display: flex;
-  gap: 4px;
+  gap: var(--sp-4);
 }
 .tr-legend-step {
   flex: 1;
@@ -9187,7 +9178,7 @@ button.dash-stat {
   display: flex;
   justify-content: space-between;
   margin-top: 7px;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--faint);
 }
 
@@ -9212,7 +9203,7 @@ button.dash-stat {
   grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
   gap: var(--gap-grid);
   align-items: start;
-  margin-top: 14px;
+  margin-top: var(--sp-14);
 }
 .tr-lower-main,
 .tr-lower-rail {
@@ -9238,10 +9229,10 @@ button.dash-stat {
 .tr-heat-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-8);
   text-decoration: none;
   color: var(--muted);
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 600;
 }
 .tr-heat-toggle[aria-checked='true'] {
@@ -9285,15 +9276,15 @@ button.dash-stat {
 .back-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 12px;
-  padding: 6px 12px 6px 8px;
+  gap: var(--sp-6);
+  margin-bottom: var(--sp-12);
+  padding: var(--sp-6) var(--sp-12) var(--sp-6) var(--sp-8);
   border-radius: var(--r-control);
   border: 1px solid var(--border);
   background: var(--surf);
   color: var(--muted);
   font-family: inherit;
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 600;
   cursor: pointer;
   transition: color var(--t-state), border-color var(--t-state);
@@ -9322,7 +9313,7 @@ button.dash-stat {
 }
 /* The athlete shell is a phone column with its own inset. */
 .phone-body .back-btn {
-  margin-bottom: 10px;
+  margin-bottom: var(--sp-10);
 }
 
 /* ---------------------------------------------------------------------------
@@ -9337,7 +9328,7 @@ button.dash-stat {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   overflow: hidden;
   padding: 0;
-  margin-bottom: 14px;
+  margin-bottom: var(--sp-14);
 }
 @media (max-width: 900px) {
   .cmpl-stats {
@@ -9354,7 +9345,7 @@ button.dash-stat {
   border-right: 1px solid var(--hair);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--sp-4);
   min-width: 0;
 }
 .cmpl-stat:last-child {
@@ -9384,17 +9375,17 @@ button.dash-stat {
   color: var(--bad-pill-text);
 }
 .cmpl-stat-value {
-  font-size: 1.75rem;
+  font-size: var(--fs-28);
   font-weight: 700;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
 }
 .cmpl-stat-value small {
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 700;
   color: var(--muted);
-  margin-left: 2px;
+  margin-left: var(--sp-2);
 }
 /* --muted, not --faint. These sub-labels sit inside the stat cells, and the
    ones on a toned cell (.cmpl-stat[data-tone='bad'] carries a wash) put
@@ -9411,20 +9402,20 @@ button.dash-stat {
 .cmpl-head,
 .cmpl-row {
   display: grid;
-  gap: 12px;
+  gap: var(--sp-12);
   align-items: center;
   /* Vertical only. The 4px of horizontal padding this used to carry stacked on
      top of the card's own inset and put every row's text 24px from the border
      while the card's other children sat at 16 — the card owns the distance to
      the edge, a row owns only the rhythm between rows. */
-  padding: 8px 0;
+  padding: var(--sp-8) 0;
 }
 .cmpl-head {
   /* No horizontal padding, for the reason the block above gives — and because
      a header inset 4px from its own rows puts every column label up to 4px off
      the column it names. Measured on By day: labels at 285/589.4/996.2 against
      cells at 281/587.6/997.3. */
-  padding: 0 0 10px;
+  padding: 0 0 var(--sp-10);
   font-size: 0.65625rem;
   font-weight: 500;
   letter-spacing: 0.11em;
@@ -9440,8 +9431,8 @@ button.dash-stat {
 .cmpl-band {
   display: flex;
   align-items: baseline;
-  gap: 10px;
-  padding: 12px 4px 6px;
+  gap: var(--sp-10);
+  padding: var(--sp-12) var(--sp-4) var(--sp-6);
   border-top: 1px solid var(--hair);
 }
 .cmpl-band-name {
@@ -9469,7 +9460,7 @@ button.dash-stat {
 }
 .cmpl-num {
   text-align: right;
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-variant-numeric: tabular-nums;
 }
 .cmpl-num[data-quiet='true'] {
@@ -9559,11 +9550,11 @@ button.dash-stat {
 .cmpl-tone[data-tone='none'] { color: var(--faint); }
 
 .cmpl-foot {
-  padding: 11px 4px 13px;
+  padding: 11px var(--sp-4) 13px;
   border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--sp-16);
   flex-wrap: wrap;
 }
 .cmpl-foot-note {
@@ -9575,13 +9566,13 @@ button.dash-stat {
   display: flex;
   align-items: center;
   gap: 13px;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--muted);
 }
 .cmpl-legend span {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-6);
 }
 .cmpl-swatch {
   width: 14px;
@@ -9601,19 +9592,19 @@ button.dash-stat {
 .inj-row {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) 110px minmax(0, 1.6fr) 150px 20px;
-  gap: 14px;
+  gap: var(--sp-14);
   align-items: baseline;
-  padding: 10px 4px;
+  padding: var(--sp-10) var(--sp-4);
 }
 @media (max-width: 1100px) {
   .inj-head,
   .inj-row {
     grid-template-columns: minmax(0, 1.2fr) 96px minmax(0, 1.6fr) 130px 20px;
-    gap: 10px;
+    gap: var(--sp-10);
   }
 }
 .inj-head {
-  padding: 0 4px 10px;
+  padding: 0 var(--sp-4) var(--sp-10);
   font-size: 0.65625rem;
   font-weight: 500;
   letter-spacing: 0.11em;
@@ -9648,8 +9639,8 @@ button.dash-stat {
 .inj-group {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 4px 6px;
+  gap: var(--sp-10);
+  padding: var(--sp-12) var(--sp-4) var(--sp-6);
   border-top: 1px solid var(--hair);
 }
 .inj-dot {
@@ -9685,7 +9676,7 @@ button.dash-stat {
   color: var(--faint);
 }
 .inj-site {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
 }
 .inj-can {
   font-size: 0.78125rem;
@@ -9694,7 +9685,7 @@ button.dash-stat {
   text-wrap: pretty;
 }
 .inj-back {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-variant-numeric: tabular-nums;
 }
 /* The flag under a return date. Never decorative: it says the date on file is
@@ -9702,7 +9693,7 @@ button.dash-stat {
 .inj-flag {
   display: block;
   margin-top: 3px;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 700;
 }
 .inj-flag[data-tone='warn'] { color: var(--warn-pill-text); }
@@ -9710,10 +9701,10 @@ button.dash-stat {
 .inj-chev {
   text-align: right;
   color: var(--faint);
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
 }
 .inj-foot {
-  padding: 11px 4px 13px;
+  padding: 11px var(--sp-4) 13px;
   border-top: 1px solid var(--border);
   font-size: 0.71875rem;
   line-height: 1.5;
@@ -9727,7 +9718,7 @@ button.dash-stat {
 .ath-id {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: var(--sp-18);
   flex-wrap: wrap;
   margin-bottom: 13px;
 }
@@ -9739,14 +9730,14 @@ button.dash-stat {
   color: var(--accent-pill-text);
   display: grid;
   place-items: center;
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   font-weight: 700;
   flex: none;
 }
 .ath-id-main {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--sp-2);
   min-width: 0;
 }
 .ath-id-line {
@@ -9756,7 +9747,7 @@ button.dash-stat {
   flex-wrap: wrap;
 }
 .ath-position {
-  font-size: 1.125rem;
+  font-size: var(--fs-18);
   font-weight: 800;
   letter-spacing: -0.02em;
 }
@@ -9777,14 +9768,14 @@ button.dash-stat {
   }
 }
 .ath-card-title {
-  font-size: 1rem;
+  font-size: var(--fs-16);
   font-weight: 800;
   letter-spacing: -0.02em;
   margin: 0;
 }
 .ath-latest {
   margin-left: auto;
-  font-size: 1.375rem;
+  font-size: var(--fs-22);
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--accent-pill-text);
@@ -9796,26 +9787,26 @@ button.dash-stat {
 .ath-load-tiles {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: var(--sp-10);
 }
 .ath-tile {
   border-radius: 12px;
   border: 1px solid var(--border);
-  padding: 11px 12px;
+  padding: 11px var(--sp-12);
   display: flex;
   flex-direction: column;
   gap: 3px;
 }
 .ath-tile-label,
 .ath-stat-label {
-  font-size: 0.625rem;
+  font-size: var(--fs-10);
   font-weight: 500;
   letter-spacing: 0.11em;
   text-transform: uppercase;
   color: var(--faint);
 }
 .ath-tile-value {
-  font-size: 1.375rem;
+  font-size: var(--fs-22);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -9828,15 +9819,15 @@ button.dash-stat {
 }
 .ath-stats {
   display: flex;
-  gap: 20px;
+  gap: var(--sp-20);
   flex-wrap: wrap;
-  padding-top: 10px;
+  padding-top: var(--sp-10);
   border-top: 1px solid var(--hair);
 }
 .ath-stat-value {
   font-size: 1.0625rem;
   font-weight: 700;
-  margin-top: 2px;
+  margin-top: var(--sp-2);
   font-variant-numeric: tabular-nums;
 }
 .ath-loadday {
@@ -9854,7 +9845,7 @@ button.dash-stat {
 .ath-loadday-val {
   width: 42px;
   text-align: right;
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   flex: none;
@@ -9863,19 +9854,19 @@ button.dash-stat {
 .ath-test-row {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) 78px 108px 78px 108px 118px;
-  gap: 12px;
+  gap: var(--sp-12);
   align-items: baseline;
-  padding: 9px 4px;
+  padding: 9px var(--sp-4);
 }
 @media (max-width: 1000px) {
   .ath-tests-head,
   .ath-test-row {
     grid-template-columns: minmax(0, 1.2fr) 64px 92px 64px 92px 100px;
-    gap: 8px;
+    gap: var(--sp-8);
   }
 }
 .ath-tests-head {
-  padding: 12px 4px 8px;
+  padding: var(--sp-12) var(--sp-4) var(--sp-8);
   border-bottom: 1px solid var(--border);
   font-size: 0.65625rem;
   font-weight: 500;
@@ -9894,12 +9885,12 @@ button.dash-stat {
 }
 .ath-test-num {
   text-align: right;
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-variant-numeric: tabular-nums;
 }
 .ath-test-date {
   text-align: right;
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
@@ -9925,7 +9916,7 @@ button.dash-stat {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  margin-bottom: 12px;
+  margin-bottom: var(--sp-12);
 }
 .ath-note-title {
   font-size: 0.78125rem;
@@ -9944,7 +9935,7 @@ button.dash-stat {
 .ath-loaddays {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--sp-6);
   max-height: 232px;
   overflow-y: auto;
 }
@@ -9961,19 +9952,19 @@ button.dash-stat {
 .lb-row {
   display: grid;
   grid-template-columns: 42px minmax(0, 1.1fr) 132px minmax(0, 1.5fr) 108px 96px;
-  gap: 14px;
+  gap: var(--sp-14);
   align-items: center;
-  padding: 9px 4px;
+  padding: 9px var(--sp-4);
 }
 @media (max-width: 1100px) {
   .lb-head,
   .lb-row {
     grid-template-columns: 34px minmax(0, 1.1fr) 96px minmax(0, 1.3fr) 88px 78px;
-    gap: 10px;
+    gap: var(--sp-10);
   }
 }
 .lb-head {
-  padding: 0 4px 10px;
+  padding: 0 var(--sp-4) var(--sp-10);
   font-size: 0.65625rem;
   font-weight: 500;
   letter-spacing: 0.11em;
@@ -9997,7 +9988,7 @@ button.dash-stat {
   background: rgb(var(--accent-rgb) / 0.08);
 }
 .lb-rank {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-variant-numeric: tabular-nums;
   color: var(--faint);
 }
@@ -10054,7 +10045,7 @@ button.dash-stat {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: var(--sp-18);
   font-size: 0.71875rem;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
@@ -10067,14 +10058,14 @@ button.dash-stat {
 .lb-meta {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: var(--sp-18);
   flex-wrap: wrap;
 }
 .lb-meta-actions {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-10);
   flex: none;
 }
 
@@ -10122,19 +10113,19 @@ button.dash-stat {
 .pick-row {
   display: grid;
   grid-template-columns: 36px minmax(0, 1.55fr) 124px 118px 122px 164px 16px;
-  gap: 14px;
+  gap: var(--sp-14);
   align-items: center;
-  padding: 9px 4px;
+  padding: 9px var(--sp-4);
 }
 @media (max-width: 1200px) {
   .pick-head,
   .pick-row {
     grid-template-columns: 30px minmax(0, 1.4fr) 100px 104px 96px 138px 14px;
-    gap: 10px;
+    gap: var(--sp-10);
   }
 }
 .pick-head {
-  padding: 0 4px 10px;
+  padding: 0 var(--sp-4) var(--sp-10);
   font-size: 0.65625rem;
   font-weight: 500;
   letter-spacing: 0.11em;
@@ -10191,7 +10182,7 @@ button.dash-stat {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  gap: var(--sp-8);
 }
 .pick-wellness-track {
   width: 46px;
@@ -10234,17 +10225,17 @@ button.dash-stat {
 }
 .pick-chev {
   text-align: right;
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   color: var(--faint);
 }
 .pick-group {
   display: flex;
   align-items: center;
   gap: 11px;
-  padding: 12px 4px 7px;
+  padding: var(--sp-12) var(--sp-4) 7px;
 }
 .pick-group-name {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -10256,7 +10247,7 @@ button.dash-stat {
   background: var(--border);
 }
 .pick-group-count {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   color: var(--faint);
   font-variant-numeric: tabular-nums;
 }
@@ -10264,7 +10255,7 @@ button.dash-stat {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--sp-14);
   font-size: 0.71875rem;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
@@ -10273,7 +10264,7 @@ button.dash-stat {
 .pick-legend span {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-6);
 }
 .pick-legend i {
   width: 7px;
@@ -10291,7 +10282,7 @@ button.dash-stat {
 .sw-kpis {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: var(--sp-12);
 }
 @media (max-width: 1000px) {
   .sw-kpis {
@@ -10322,7 +10313,7 @@ button.dash-stat {
    flags rising is bad, compliance rising is good, and the arrow alone cannot
    say which — so the tone carries the judgement and the arrow the direction. */
 .sw-kpi-trend {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -10338,7 +10329,7 @@ button.dash-stat {
 .sw-body {
   display: grid;
   grid-template-columns: minmax(0, 1.32fr) minmax(0, 1fr);
-  gap: 12px;
+  gap: var(--sp-12);
   align-items: start;
 }
 @media (max-width: 1100px) {
@@ -10349,13 +10340,13 @@ button.dash-stat {
 .sw-side {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--sp-12);
   min-width: 0;
 }
 .sw-card-head {
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  gap: var(--sp-10);
   flex-wrap: wrap;
 }
 .sw-card-meta {
@@ -10368,23 +10359,23 @@ button.dash-stat {
 .sw-load-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 62px 62px 66px;
-  gap: 10px;
+  gap: var(--sp-10);
   align-items: baseline;
-  padding: 6px 0;
+  padding: var(--sp-6) 0;
 }
 .sw-load-head {
-  font-size: 0.625rem;
+  font-size: var(--fs-10);
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--faint);
-  padding-bottom: 2px;
+  padding-bottom: var(--sp-2);
 }
 .sw-load-row {
   border-top: 1px solid var(--hair);
 }
 .sw-load-name {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -10410,11 +10401,11 @@ button.dash-stat {
   display: flex;
   align-items: center;
   gap: 11px;
-  padding: 8px 0;
+  padding: var(--sp-8) 0;
   border-top: 1px solid var(--hair);
 }
 .sw-avail-name {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -10431,7 +10422,7 @@ button.dash-stat {
 .week-nav {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--sp-4);
   padding: 5px;
   border-radius: var(--r-control);
   border: 1px solid var(--border);
@@ -10440,9 +10431,9 @@ button.dash-stat {
 }
 .week-nav a,
 .week-nav span {
-  padding: 5px 10px;
+  padding: 5px var(--sp-10);
   border-radius: var(--r-control);
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   color: var(--muted);
   text-decoration: none;
 }
@@ -10451,9 +10442,9 @@ button.dash-stat {
   background: var(--surf2);
 }
 .week-nav b {
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   font-weight: 700;
-  padding: 0 4px;
+  padding: 0 var(--sp-4);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
@@ -10500,18 +10491,18 @@ button.dash-stat {
    narrow one. The Back button is not here: (staff)/layout.tsx renders the one
    shared .back-btn above every staff screen. */
 .exlib-topbar {
-  margin-bottom: 16px;
+  margin-bottom: var(--sp-16);
 }
 .exlib-sub {
-  margin: 6px 0 0;
-  font-size: 0.8125rem;
+  margin: var(--sp-6) 0 0;
+  font-size: var(--fs-13);
   line-height: 1.5;
   color: var(--muted);
 }
 .exlib-tools {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-8);
   min-width: 0;
 }
 .exlib-search {
@@ -10534,14 +10525,14 @@ button.dash-stat {
   width: 100%;
   min-width: 0;
   min-height: 44px;
-  padding: 10px 14px;
+  padding: var(--sp-10) var(--sp-14);
   padding-inline-start: 36px;
   border: 1px solid var(--border-strong);
   border-radius: var(--r-control);
   background: var(--field);
   color: var(--text);
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   transition: border-color var(--t-state);
 }
 .exlib-search-input::placeholder {
@@ -10556,8 +10547,8 @@ button.dash-stat {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px 16px;
-  margin-bottom: 16px;
+  gap: var(--sp-8) var(--sp-16);
+  margin-bottom: var(--sp-16);
 }
 /* The drawn control. A real <select> is laid transparently over it (below) so
    the label, the count and the chevron can sit where the design puts them —
@@ -10567,11 +10558,11 @@ button.dash-stat {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-10);
   width: 360px;
   max-width: 100%;
   min-height: 44px;
-  padding: 0 16px;
+  padding: 0 var(--sp-16);
   border: 1px solid var(--border-strong);
   border-radius: var(--r-control);
   background: var(--surf);
@@ -10603,7 +10594,7 @@ button.dash-stat {
   color: var(--muted);
 }
 .exlib-cat-chev {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   line-height: 1;
   color: var(--faint);
 }
@@ -10612,7 +10603,7 @@ button.dash-stat {
   inset: 0;
   width: 100%;
   height: 100%;
-  padding: 0 16px;
+  padding: 0 var(--sp-16);
   border: 0;
   opacity: 0;
   cursor: pointer;
@@ -10639,7 +10630,7 @@ button.dash-stat {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 288px;
   align-items: stretch;
-  gap: 16px;
+  gap: var(--sp-16);
 }
 /* The 288px column is a fixed measure, so below roughly a tablet it stops
    being a column and stacks — otherwise the grid is wider than the viewport
@@ -10665,11 +10656,11 @@ button.dash-stat {
   display: grid;
   grid-template-columns: var(--exlib-cols);
   align-items: center;
-  gap: 12px;
+  gap: var(--sp-12);
   min-width: 0;
 }
 .exlib-head {
-  padding-bottom: 10px;
+  padding-bottom: var(--sp-10);
   border-bottom: 1px solid var(--hair);
 }
 .exlib-col {
@@ -10697,7 +10688,7 @@ button.dash-stat {
   min-width: 0;
 }
 .exlib-row-name {
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 600;
   line-height: 1.35;
   color: var(--text);
@@ -10714,12 +10705,12 @@ button.dash-stat {
 .exlib-pill {
   justify-self: start;
   max-width: 100%;
-  padding: 3px 10px;
+  padding: 3px var(--sp-10);
   border: 1px solid var(--border);
   border-radius: var(--r-control);
   background: var(--surf2);
   color: var(--text);
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 700;
   line-height: 1.6;
   white-space: nowrap;
@@ -10730,13 +10721,13 @@ button.dash-stat {
    audit finding 33 — so the row is not a link and this is aria-hidden. */
 .exlib-chev {
   justify-self: end;
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   line-height: 1;
   color: var(--faint);
 }
 .exlib-empty {
   margin: 0;
-  padding: 16px 0;
+  padding: var(--sp-16) 0;
   font-size: 0.78125rem;
   color: var(--faint);
 }
@@ -10748,7 +10739,7 @@ button.dash-stat {
   margin: auto 0 0;
   padding-top: 11px;
   border-top: 1px solid var(--hair);
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   color: var(--faint);
 }
 
@@ -10757,18 +10748,18 @@ button.dash-stat {
 .exlib-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--sp-12);
   min-width: 0;
 }
 .exlib-form-title {
   margin: 0;
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   font-weight: 700;
   color: var(--text);
 }
 .exlib-form-help {
   margin: 0;
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   line-height: 1.5;
   color: var(--muted);
 }
@@ -10781,21 +10772,21 @@ button.dash-stat {
 .exlib-fields {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--sp-12);
 }
 .exlib-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--sp-6);
   min-width: 0;
 }
 .exlib-flabel {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   font-weight: 600;
   color: var(--muted);
 }
 .exlib-fopt {
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 400;
   color: var(--faint);
 }
@@ -10804,14 +10795,14 @@ button.dash-stat {
    which would set it four words to the line. */
 .exlib-fhint {
   margin: 0;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   line-height: 1.4;
   color: var(--faint);
 }
 .exlib-2up {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 10px;
+  gap: var(--sp-10);
   align-items: start;
 }
 .exlib-textarea {
@@ -10829,13 +10820,13 @@ button.dash-stat {
   margin: auto 0 0;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding-top: 4px;
+  gap: var(--sp-8);
+  padding-top: var(--sp-4);
 }
 .exlib-submit {
   flex: 1 1 auto;
-  padding: 13px 18px;
-  font-size: 0.875rem;
+  padding: 13px var(--sp-18);
+  font-size: var(--fs-14);
 }
 .exlib-cancel {
   flex: 0 0 auto;
@@ -11043,9 +11034,9 @@ button.dash-stat {
 .launch-page {
   position: relative;
   z-index: 1;
-  padding: 176px 28px 40px;
+  padding: 176px var(--sp-28) var(--sp-40);
   display: grid;
-  gap: 18px;
+  gap: var(--sp-18);
 }
 
 /* Splash -> handoff. The lockup's splash placement is (50, 305) at scale 0.30
@@ -11163,7 +11154,7 @@ button.dash-stat {
 .launch-title {
   font-family: var(--font-sans), system-ui, sans-serif;
   font-weight: 800;
-  font-size: 1.75rem;
+  font-size: var(--fs-28);
   letter-spacing: -0.03em;
   color: var(--text);
   margin: 0;
@@ -11297,7 +11288,7 @@ button.dash-stat {
     margin: 0;
     font-family: var(--font-brand), system-ui, sans-serif;
     font-weight: 800;
-    font-size: 3rem;
+    font-size: var(--fs-48);
     line-height: 1.1;
     letter-spacing: -0.03em;
     color: var(--text);
@@ -11312,7 +11303,7 @@ button.dash-stat {
   }
   .launch-claim-sub {
     /* Sits below the features now rather than above them. */
-    margin: 32px 0 0;
+    margin: var(--sp-32) 0 0;
     font-size: 0.90625rem;
     line-height: 1.55;
     color: var(--muted);
@@ -11348,12 +11339,12 @@ button.dash-stat {
   .launch-features {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 140px));
-    gap: 24px;
+    gap: var(--sp-24);
     align-items: start;
     list-style: none;
     /* Specified as a margin-top from the headline, so it is written as one. */
     margin: 0;
-    margin-top: 48px;
+    margin-top: var(--sp-48);
     padding: 0;
   }
   .launch-features li {
@@ -11366,8 +11357,8 @@ button.dash-stat {
   }
   .launch-features .k {
     display: block;
-    margin-top: 8px;
-    font-size: 1rem;
+    margin-top: var(--sp-8);
+    font-size: var(--fs-16);
     font-weight: 700;
     white-space: nowrap;
     color: var(--text);
@@ -11402,7 +11393,7 @@ button.dash-stat {
     border-left: 1px solid var(--border);
     padding: 0 64px;
     align-content: center;
-    gap: 20px;
+    gap: var(--sp-20);
   }
   .launch-title {
     font-size: 1.625rem;
@@ -11437,26 +11428,26 @@ button.dash-stat {
 .sw-well-figs {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-  margin-bottom: 16px;
+  gap: var(--sp-18);
+  margin-bottom: var(--sp-16);
 }
 .sw-well-num {
   margin: 0;
-  font-size: 1.75rem;
+  font-size: var(--fs-28);
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.05;
 }
 .sw-well-lab {
   margin: 3px 0 0;
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   color: var(--muted);
 }
 /* The chips' own heading. An eyebrow rather than a caption, so it reads as a
    label ON the group below it instead of a third figure caption. */
 .sw-well-eyebrow {
   margin: 0;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -11467,8 +11458,8 @@ button.dash-stat {
   font-weight: 700;
 }
 .sw-well-flagged {
-  margin-bottom: 16px;
-  padding-top: 12px;
+  margin-bottom: var(--sp-16);
+  padding-top: var(--sp-12);
   border-top: 1px solid var(--hair);
 }
 /* Room to breathe, and each domain named. It was a three-column grid tight
@@ -11476,8 +11467,8 @@ button.dash-stat {
 .sw-well-comp {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px 32px;
-  padding-top: 12px;
+  gap: var(--sp-12) var(--sp-32);
+  padding-top: var(--sp-12);
   border-top: 1px solid var(--hair);
 }
 
@@ -11491,7 +11482,7 @@ button.dash-stat {
 .rsel {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-6);
 }
 .rsel-label {
   font-size: 0.71875rem;
@@ -11555,7 +11546,7 @@ button.dash-stat {
 .rsel[data-stacked='true'] {
   flex-direction: column;
   align-items: stretch;
-  gap: 4px;
+  gap: var(--sp-4);
   width: 128px;
   flex: none;
 }
@@ -11570,7 +11561,7 @@ button.dash-stat {
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 16px 16px 12px;
+  padding: var(--sp-16) var(--sp-16) var(--sp-12);
 }
 .tst-pb-dot {
   width: 8px;
@@ -11589,13 +11580,13 @@ button.dash-stat {
   display: grid;
   grid-template-columns: 46px minmax(0, 1fr) auto 104px;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-10);
 }
 .tst-rank-row > span:last-child {
   text-align: end;
 }
 .tst-rank-row {
-  padding: 9px 16px;
+  padding: 9px var(--sp-16);
 }
 /* The pill sizes itself to one or two digits, so it is set to the width of the
    widest rank the column can hold rather than shrinking on rank 9 and jumping
@@ -11603,12 +11594,12 @@ button.dash-stat {
 /* A quiet ordinal, not a pill. It is the row's index, and a tint on every one
    of nineteen rows ranks nothing. */
 .tst-rank-n {
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   color: var(--faint);
 }
 .tst-manage {
   display: inline-block;
-  margin-bottom: 12px;
+  margin-bottom: var(--sp-12);
   font-size: 0.84375rem;
   font-weight: 600;
   color: var(--accent-text);
@@ -11637,14 +11628,14 @@ button.dash-stat {
   /* The card is padding:0 so the strip can run edge to edge; the label puts
      its own inset back. */
   margin: 0;
-  padding: 14px var(--pad-card) 0;
+  padding: var(--sp-14) var(--pad-card) 0;
 }
 
 /* The wellness sheet's comment field. Its own block above the submit button
    rather than a row inside the disclosure. */
 .ci-comment {
   display: block;
-  margin-top: 16px;
+  margin-top: var(--sp-16);
 }
 
 /* The two create links in the schedule's tab row. Chips like their siblings,
@@ -11693,7 +11684,7 @@ button.dash-stat {
      row rather than a line of text, which wants slightly more air beneath it.
      Set here rather than on each screen's first block, so all six are equal by
      construction rather than by six numbers agreeing. */
-  margin-bottom: 20px;
+  margin-bottom: var(--sp-20);
 
   /* No padding of its own. The canvas measures 30px from the container edge;
      `main` already provides 28px, and adding 30 on top indented the header
@@ -11713,41 +11704,41 @@ button.dash-stat {
    restyling it globally would change 56 other pages that were not part of
    this work. */
 main:has(.rhead) > .back-btn {
-  gap: 8px;
+  gap: var(--sp-8);
   /* 26px comes from `main`; 14 more makes the canvas's 40px above Back. The
      20px below it is the canvas's own gap down to the group chips, produced
      once here rather than again on the chips. */
-  margin-top: 14px;
+  margin-top: var(--sp-14);
   margin-bottom: 0;
-  padding: 8px 15px 8px 12px;
+  padding: var(--sp-8) 15px var(--sp-8) var(--sp-12);
   border-radius: var(--r-control);
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
 }
 main:has(.rhead) > .back-btn > :first-child {
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
 }
 
 /* 2. Group chips ---------------------------------------------------------- */
 .rhead-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 20px;
+  gap: var(--sp-8);
+  margin-top: var(--sp-20);
 }
 .rhead-chip {
   border-radius: var(--r-control);
-  padding: 11px 20px;
+  padding: 11px var(--sp-20);
   background: var(--surf);
   border: 1px solid var(--border);
   color: var(--muted);
   font-family: inherit;
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   letter-spacing: 0;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-6);
 }
 .rhead-chip[aria-pressed='true'] {
   background: var(--accent);
@@ -11759,13 +11750,13 @@ main:has(.rhead) > .back-btn > :first-child {
 .rhead-eyerow {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--sp-16);
   flex-wrap: wrap;
-  margin-top: 16px;
+  margin-top: var(--sp-16);
 }
 .rhead-eyebrow {
   font-weight: 700;
-  font-size: 0.75rem;
+  font-size: var(--fs-12);
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--faint);
@@ -11775,7 +11766,7 @@ main:has(.rhead) > .back-btn > :first-child {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--sp-14);
   flex-wrap: wrap;
 }
 .rhead-btn,
@@ -11793,13 +11784,13 @@ main:has(.rhead) > .back-btn > :first-child {
   border: 1px solid var(--accent);
   padding: 13px 22px;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: var(--fs-16);
   color: #fff;
 }
 .rhead-btn {
   background: var(--surf);
   border: 1px solid var(--border);
-  padding: 13px 20px;
+  padding: 13px var(--sp-20);
   font-weight: 600;
   font-size: 0.90625rem;
   color: var(--muted);
@@ -11807,9 +11798,9 @@ main:has(.rhead) > .back-btn > :first-child {
 
 /* 4. Title ---------------------------------------------------------------- */
 .rhead-title {
-  margin: 10px 0 0;
+  margin: var(--sp-10) 0 0;
   font-weight: 800;
-  font-size: 2rem;
+  font-size: var(--fs-32);
   letter-spacing: -0.03em;
   color: var(--text);
   line-height: 1.15;
@@ -11819,9 +11810,9 @@ main:has(.rhead) > .back-btn > :first-child {
 .rhead-tabrow {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--sp-16);
   flex-wrap: wrap;
-  margin-top: 16px;
+  margin-top: var(--sp-16);
 }
 .rhead-tabs {
   display: inline-flex;
@@ -11839,7 +11830,7 @@ main:has(.rhead) > .back-btn > :first-child {
   border: none;
   background: transparent;
   border-radius: var(--r-control);
-  padding: 9px 18px;
+  padding: 9px var(--sp-18);
   font-family: inherit;
   font-weight: 700;
   font-size: 0.90625rem;
@@ -11864,7 +11855,7 @@ main:has(.rhead) > .back-btn > :first-child {
   gap: 0;
 }
 .rhead-tabrow .tr-mode-switch a {
-  padding: 9px 18px;
+  padding: 9px var(--sp-18);
   font-size: 0.90625rem;
   font-weight: 700;
   border-radius: var(--r-control);
@@ -11885,11 +11876,11 @@ main:has(.rhead) > .back-btn > :first-child {
    than rebuilt: one control, styled twice, would be two controls to keep in
    step. Scoped to .rhead so every other screen's period keeps its own size. */
 .rhead .rsel {
-  gap: 12px;
+  gap: var(--sp-12);
 }
 .rhead .rsel-label {
   font-weight: 400;
-  font-size: 0.8125rem;
+  font-size: var(--fs-13);
   color: var(--muted);
   letter-spacing: 0;
   text-transform: none;
@@ -11900,18 +11891,18 @@ main:has(.rhead) > .back-btn > :first-child {
   background: var(--surf);
   border: 1px solid var(--border);
   border-radius: var(--r-control);
-  padding: 11px 40px 11px 16px;
+  padding: 11px var(--sp-40) 11px var(--sp-16);
   min-width: 220px;
   font-family: inherit;
   font-weight: 600;
-  font-size: 0.9375rem;
+  font-size: var(--fs-15);
   color: var(--text);
   cursor: pointer;
 }
 .rhead .rsel-chev {
   right: 14px;
   color: var(--faint);
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
 }
 
 /* The scope line, DIRECTLY UNDER THE TITLE. 6px rather than the row rhythm
@@ -11920,13 +11911,13 @@ main:has(.rhead) > .back-btn > :first-child {
    window, which only means anything once you have read what the report is.
    The tab row keeps its own 16px below. */
 .rhead-sub {
-  margin: 6px 0 0;
+  margin: var(--sp-6) 0 0;
 }
 .rhead-sub > :first-child {
   margin-top: 0;
 }
 .rhead-sub > * + * {
-  margin-top: 6px;
+  margin-top: var(--sp-6);
 }
 
 /* Week plan / Today on the schedule. Two routes rather than two views of one,
@@ -11940,7 +11931,7 @@ main:has(.rhead) > .back-btn > :first-child {
   padding: 3px;
 }
 .rhead-tabrow .sg-viewtab {
-  padding: 9px 18px;
+  padding: 9px var(--sp-18);
   border-radius: 20px;
   font-weight: 700;
   font-size: 0.90625rem;
@@ -11958,7 +11949,7 @@ main:has(.rhead) > .back-btn > :first-child {
   background: var(--surf);
   border: 1px solid var(--border);
   border-radius: var(--r-control);
-  padding: 4px 6px;
+  padding: var(--sp-4) var(--sp-6);
 }
 
 /* Injury card, "Past injuries (N)". Reuses .disclose for the caret-after-label
@@ -11967,7 +11958,7 @@ main:has(.rhead) > .back-btn > :first-child {
    the label reads as a link. Scoped so no other .disclose changes. */
 .pp-past-injuries > summary {
   justify-content: flex-start;
-  gap: 6px;
+  gap: var(--sp-6);
   min-height: 0;
   color: var(--accent-text);
 }

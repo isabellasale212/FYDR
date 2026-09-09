@@ -43,11 +43,19 @@ import { topLevelChildren, cls, inlineMargin } from './lib/phone-body-children.m
  * athlete screen the reset neutralises it. It is pinned so that removing the
  * reset rule, or moving that class, shows up here. */
 const BASELINE: readonly string[] = [
-  /* .nutr-meal-grid's margin-top: 18px is DECLARED but neutralised on the
-   * athlete screen by the reset rule, and is real inside NutritionWorkspace on
-   * a staff screen where the class is not a phone-body child. Pinned so that
-   * removing the reset, or moving that class, shows up here. */
-  '/programme/nutrition/page.tsx <div> .nutr-meal-grid margin-top: 18px',
+  /* .nutr-meal-grid's top margin is DECLARED but neutralised on the athlete
+   * screen by the reset rule, and is real inside NutritionWorkspace on a staff
+   * screen where the class is not a phone-body child. Pinned so that removing
+   * the reset, or moving that class, shows up here.
+   *
+   * IT READS var(--sp-18) SINCE 2026-09-09, not 18px, and this line moving is
+   * what the baseline is for. base.css was migrated onto the spacing ramp that
+   * day; the VALUE is identical (--sp-18 is 18px, asserted by
+   * check-scale-tokens.ts) but the text is not, so this guard reported the same
+   * offender as both new and gone. That is the baseline working — it pins the
+   * declaration as written, and a rewrite of how it is written has to be
+   * acknowledged here rather than absorbed. */
+  '/programme/nutrition/page.tsx <div> .nutr-meal-grid margin-top: var(--sp-18)',
 ];
 
 /* COMMENTS STRIPPED BEFORE ANYTHING IS MATCHED. Found the hard way: the note

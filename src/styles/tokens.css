@@ -297,6 +297,11 @@
      already a step above. */
 
   /* §2.7 SPACING RAMP. 2px steps to 20, then the four larger stops in use.
+     THERE IS NO --sp-0. Zero has no step on any scale, `margin: 0` is idiomatic
+     CSS everywhere, and tokenising it broke check-athlete-spacing.ts — that
+     guard reads `margin-top: 0` as source text, and `var(--sp-0)` computes the
+     same but does not read the same. The inline migration had already skipped
+     zeros for the first reason; this is that rule applied consistently.
      1706 declarations over 29 distinct values were measured; 1521 of them
      already land on this ramp, which is why it is a ramp and not a proposal.
 
@@ -308,7 +313,6 @@
      --gap-stack, --gap-body, --gap-grid and --pad-card stay exactly as they are.
      They are NAMED RHYTHMS with arguments attached (see --gap-body above), not
      ramp steps, and aliasing them to a step would throw away the reasoning. */
-  --sp-0: 0;  /* 125 declarations */
   --sp-2: 2px;  /* 69 declarations */
   --sp-4: 4px;  /* 78 declarations */
   --sp-6: 6px;  /* 167 declarations */

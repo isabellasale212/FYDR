@@ -30,6 +30,17 @@
  */
 import { readFileSync } from 'node:fs';
 
+/* THESE FIVE READ TOKENS SINCE 2026-09-09, not literals. base.css was migrated
+ * onto the type scale and spacing ramp that day, so `font-size: 3rem` is now
+ * `font-size: var(--fs-48)` and `gap: 24px` is `gap: var(--sp-24)`. The
+ * assertions were rewritten rather than loosened to accept either form: a
+ * regex matching both would let a raw value creep back in beside the token.
+ *
+ * The guarantee is not weaker for going through a token. check-scale-tokens.ts
+ * asserts every --fs-N is N/16 rem and every --sp-N is Npx, so "reads the 48px
+ * step" plus "the 48px step is 48px" is the same claim as "is 48px" — enforced
+ * in one place now instead of restated at every call site. */
+
 let passed = 0, failed = 0;
 function assert(cond: boolean, label: string): void {
   if (cond) { passed += 1; console.log(`  ok   - ${label}`); }
@@ -86,7 +97,7 @@ console.log('the headline says what was asked for, in the face that was asked fo
      true 48px; it now also follows a reader who has raised their text size,
      which a fixed px never did. `max-width` is in `ch`, which scales with the
      font, so the overflow relationship this file measured holds at any root. */
-  assert(/font-size: 3rem/.test(h), 'a true 48px (3rem), not a clamp that never reaches it');
+  assert(/font-size: var\(--fs-48\)/.test(h), 'a true 48px, not a clamp that never reaches it');
   assert(/line-height: 1\.1\b/.test(h), 'line-height 1.1');
   assert(/letter-spacing: -0\.03em/.test(h), 'tracking -0.03em');
   assert(
@@ -112,7 +123,7 @@ console.log('\nthree features, in the order given');
   const grid = rule('.launch-features');
   assert(grid !== '', '.launch-features exists');
   assert(/grid-template-columns: repeat\(3, minmax\(0, ?140px\)\)/.test(grid), 'repeat(3, minmax(0,140px)) exactly as specified');
-  assert(/gap: 24px/.test(grid), '24px gap');
+  assert(/gap: var\(--sp-24\)/.test(grid), '24px gap');
   assert(/align-items: (start|flex-start)/.test(grid), 'columns top-aligned');
 
   const positions = FEATURES.map((f) => flat.indexOf(f.label));
@@ -143,9 +154,9 @@ console.log('\nlabels and captions are set as specified, and in the app face');
 {
   const label = rule('.launch-features .k');
   const cap = rule('.launch-features .v');
-  assert(/font-size: 1rem/.test(label) && /font-weight: 700/.test(label), 'label 16px (1rem) / 700');
+  assert(/font-size: var\(--fs-16\)/.test(label) && /font-weight: 700/.test(label), 'label 16px / 700');
   assert(/white-space: nowrap/.test(label), 'label nowrap — it fits: 95.4px widest against a 119.2px narrowest column');
-  assert(/margin-top: 8px/.test(label), 'label 8px below its icon');
+  assert(/margin-top: var\(--sp-8\)/.test(label), 'label 8px below its icon');
   assert(/font-size: 0\.84375rem/.test(cap), 'caption 13.5px (0.84375rem)');
   assert(/color: var\(--muted\)/.test(cap), 'caption in --muted');
   assert(/margin-top: 3px/.test(cap), 'caption 3px below its label');
@@ -178,7 +189,7 @@ console.log('\nthe two gaps that were specified in pixels');
   assert(/--claim-lead: 56px/.test(claim) || /padding: 234px/.test(claim),
     'the headline sits 56px below the wordmark, which the lockup\'s 178px bottom edge makes 234px of padding');
   const grid = rule('.launch-features');
-  assert(/margin-top: 48px/.test(grid), 'the grid sits 48px below the headline');
+  assert(/margin-top: var\(--sp-48\)/.test(grid), 'the grid sits 48px below the headline');
   assert(
     !/^\s*gap: 22px/m.test(claim),
     'and the old 22px flow gap is gone, or it would add itself to both of those',

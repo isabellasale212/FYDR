@@ -157,16 +157,65 @@ console.log('\na single session can be cancelled without discarding the week');
     'and drops an added draft by id, since a draft has no committed row to revert to',
   );
 
-  /* NO UNREACHABLE BRANCH. The first version also cleared removed[id], which no
-     button can reach: handleRemove sets sel to null and `effective` filters
-     removed sessions out, so a removed session cannot be selected and the panel
-     that would host its Cancel never renders. Confirmed live — the panel read
-     "Select a session on the grid" and offered no buttons while the banner
-     still counted the removal. Dead code that reads as protection is worse than
-     none, which this file has learned before. */
+  /* THIS ASSERTION WAS THE OPPOSITE, AND THE INVERSION IS THE HISTORY. When
+     handleRemove nulled the selection, a removed session could never be
+     selected and the panel that would host its undo never rendered, so a
+     revert branch for removed[id] was dead code — deleted, and this file
+     asserted its absence. Keeping the selection is what made it live. The
+     assertion is inverted rather than dropped, because the property that
+     matters is not "absent" or "present" but "reachable": if handleRemove ever
+     goes back to clearing sel, the branch is dead again and the pair below
+     fails together. */
+  const restore = bodyOf('handleRestoreSession');
   assert(
-    !/removed\[id\]/.test(revert) && !/removed\[id\]/.test(dirty),
-    'and neither touches removed[id] — that branch was unreachable, so it is gone rather than kept "just in case"',
+    /setRemoved\(\(cur\) => \{[\s\S]{0,140}delete next\[id\]/.test(restore) && /removed\[id\]/.test(dirty),
+    'handleRestoreSession un-removes this id and isSessionDirty counts a removal — it is a pending change like any other, with its own undo',
+  );
+
+  /* THE BUG THIS PAIR EXISTS FOR, which testing found and reasoning had not.
+     Restore was first pointed at handleRevertSession, which also clears the
+     edits overlay — so a coach who moved a session to 10:30, removed it, then
+     restored it got it back at its PUBLISHED 10:00 with the banner reading "up
+     to date". Silent loss of work, in the one area of this app built to prevent
+     exactly that. Measured: 10:30 -> remove -> restore -> 10:00.
+     The two paths are disjoint — Cancel is unreachable while a session is
+     pending removal and Restore is unreachable while it is not — so each must
+     touch exactly one collection, and these assert that separation from both
+     sides. */
+  assert(
+    !/setEdits/.test(restore),
+    'and Restore does NOT touch the edits overlay: restoring a removed session must not discard a pending edit to it',
+  );
+  assert(
+    !/setRemoved/.test(revert),
+    'while Cancel changes does not touch `removed`, which it could never reach anyway',
+  );
+  assert(
+    /onClick=\{onRestore\}[\s\S]{0,90}Restore session/.test(panel),
+    'and the Restore button is wired to onRestore, not to onRevert — the whole bug was one prop',
+  );
+  const remove = bodyOf('handleRemove');
+  assert(
+    /\/\* SELECTION DELIBERATELY KEPT|SELECTION DELIBERATELY KEPT/.test(raw)
+      && !/setRemoved\(\(cur\) => \(\{ \.\.\.cur, \[sel\]: true \}\)\);\s*setSel\(null\)/.test(remove),
+    'and handleRemove keeps the selection after a removal, which is what makes that branch reachable at all',
+  );
+  assert(
+    /if \(sel\.startsWith\('new-'\)\)[\s\S]{0,220}setSel\(null\);\s*return;/.test(remove),
+    'while a staged draft still clears it, because removing a draft destroys it and leaves nothing to select',
+  );
+  assert(
+    /pendingRemovalSession/.test(raw) && !/removed\[s\.id\]\s*\?/.test(raw),
+    'the pending removal is read from `base`, not put back into `effective`',
+  );
+  /* WHY THAT LAST ONE MATTERS MORE THAN IT LOOKS. Five things read `effective`:
+     MD-offset anchoring, the hour range, clash placement, fixture drawing and
+     WeekStatsPanel — contact minutes, the typical-week comparison, per-group
+     totals. A pending removal inside that list would inflate every one of them
+     unless excluded in all five places. */
+  assert(
+    /\.filter\(\(s\) => !removed\[s\.id\]\)/.test(raw),
+    'and `effective` still filters removals out, so no computed number counts a session on its way out',
   );
 
   /* THE DECISION: no per-session Save. The commit is week-level, because one

@@ -344,6 +344,17 @@ export function ScheduleWorkspace({
 
   // ---- selection ----
   const selectedEffective = sel && sel !== '__new' ? (effectiveById.get(sel) ?? null) : null;
+  /* A REMOVED SESSION IS STILL REACHABLE, and deliberately NOT through
+     `effective`. Removals are filtered out of that list, and five things read
+     it: MD-offset anchoring, the hour range, clash placement, fixture drawing
+     and WeekStatsPanel — contact minutes, the typical-week comparison and the
+     per-group totals. Putting a pending removal back into `effective` would
+     mean excluding it correctly in every one of those, which is five chances to
+     ship a quietly inflated number in the one part of this app whose whole
+     value is that its numbers can be trusted. So the removal stays out of every
+     computation and the panel reads it from `base` instead. */
+  const pendingRemovalSession =
+    sel && sel !== '__new' && removed[sel] ? (baseById.get(sel) ?? null) : null;
   const panelSession: PanelSession | null =
     sel === '__new' && newDraft
       ? {
@@ -377,7 +388,21 @@ export function ScheduleWorkspace({
             // workspace never fetches. Correct again the moment this
             // session is published and the page refetches.
           }
-        : null;
+        : pendingRemovalSession
+          ? {
+              ...pendingRemovalSession,
+              /* The overlay is applied even though the session is on its way
+                 out: restoring it must bring back what the coach had, not the
+                 published original, or Restore would silently discard a
+                 separate edit they never asked to lose. */
+              ...(edits[pendingRemovalSession.id] ?? {}),
+              groupNames: (edits[pendingRemovalSession.id]?.groupIds ?? pendingRemovalSession.groupIds).map(
+                (id) => groupNameById.get(id) ?? 'Unnamed group',
+              ),
+              mdOffset: anchoredMd.get(pendingRemovalSession.dow) ?? pendingRemovalSession.mdOffset,
+              isPast: pendingRemovalSession.dow < today,
+            }
+          : null;
 
   function selectSession(id: string) {
     setNewDraft(null);
@@ -551,11 +576,18 @@ export function ScheduleWorkspace({
   function handleRemove() {
     if (!sel) return;
     if (sel.startsWith('new-')) {
+      /* A staged draft has no published row behind it, so removing it destroys
+         it outright and there is nothing left to select. */
       setAdded((cur) => cur.filter((d) => d.id !== sel));
-    } else {
-      setRemoved((cur) => ({ ...cur, [sel]: true }));
+      setSel(null);
+      return;
     }
-    setSel(null);
+    setRemoved((cur) => ({ ...cur, [sel]: true }));
+    /* SELECTION DELIBERATELY KEPT. This used to null it, which is what made a
+       removal the one pending change with no undo short of discarding the whole
+       week: the block leaves the grid, so it could never be selected again, and
+       the panel that would host its Restore never rendered. Keeping it selected
+       costs nothing and is the whole mechanism. */
   }
 
   function handleDuplicate() {
@@ -692,27 +724,37 @@ export function ScheduleWorkspace({
      every added draft, every removal — so a coach who nudged one session by
      fifteen minutes had no way back that did not also throw away the other four
      changes they had made. That gap is what this closes. */
-  /* EDITS AND ADDED DRAFTS ONLY, AND A REMOVAL DELIBERATELY NOT — which was
-     found by testing rather than reasoned out. The first version of this also
-     cleared `removed[id]`, and that branch is UNREACHABLE: handleRemove sets
-     sel to null and `effective` filters removed sessions out of the grid, so a
-     removed session cannot be selected and the panel that would host its Cancel
-     does not render. Verified live: after removing a session the panel reads
-     "Select a session on the grid" and offers no buttons at all, while the
-     banner still counts the removal. A revert branch no button can reach is the
-     kind of dead code that reads as protection, so it is gone rather than kept
-     "just in case".
-     Undoing a removal therefore stays week-level Discard, which is exactly what
-     the removal confirmation already promises in its own words: "You can undo
-     with Discard, until you publish." That leaves a real asymmetry — undoing one
-     removal still costs every other pending edit — and closing it needs a
-     visible removed-state on the grid, which is a design change and not this
-     one. Recorded in the to-do list rather than smuggled in here. */
+  /* ALL THREE SHAPES OF PENDING CHANGE count as dirty: an overlay on a
+     published session, a staged draft, and a removal. A session can be in two
+     at once — edited and then removed — which is exactly why the undo for each
+     is separate below. */
   function isSessionDirty(id: string): boolean {
     return (
+      Boolean(removed[id]) ||
       added.some((d) => d.id === id) ||
       Boolean(edits[id] && Object.keys(edits[id]).length > 0)
     );
+  }
+
+  /* TWO HANDLERS, NOT ONE, AND A TEST IS WHY. The first version pointed
+     "Restore session" at handleRevertSession, which clears the edits overlay
+     as well — so a coach who moved a session to 10:30, removed it, then
+     restored it got the session back at its PUBLISHED 10:00 with the banner
+     reading "up to date". The edit was destroyed silently, which is the one
+     outcome this whole area exists to prevent, and the comment on
+     panelSession had already promised it would not happen. Measured live:
+     10:30 → remove → restore → 10:00.
+     The two paths are disjoint, which is what makes the split clean rather than
+     defensive: "Cancel changes" is unreachable while a session is pending
+     removal (the panel returns early), and "Restore session" is unreachable
+     while it is not. So each touches exactly one collection. */
+  function handleRestoreSession(id: string) {
+    setRemoved((cur) => {
+      if (!cur[id]) return cur;
+      const next = { ...cur };
+      delete next[id];
+      return next;
+    });
   }
 
   function handleRevertSession(id: string) {
@@ -790,6 +832,8 @@ export function ScheduleWorkspace({
     onDuplicate={handleDuplicate}
     isDirty={panelSession ? isSessionDirty(panelSession.id) : false}
     onRevert={() => { if (panelSession) handleRevertSession(panelSession.id); }}
+    pendingRemoval={Boolean(pendingRemovalSession)}
+    onRestore={() => { if (panelSession) handleRestoreSession(panelSession.id); }}
     />
   );
 

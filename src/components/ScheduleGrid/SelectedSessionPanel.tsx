@@ -90,6 +90,12 @@ type Props = {
      undo for one session. */
   isDirty: boolean;
   onRevert: () => void;
+  /* This session is removed on screen but still published — the removal has
+     not reached athletes yet. */
+  pendingRemoval: boolean;
+  /* Un-removes the session and touches nothing else — deliberately NOT
+     onRevert, which also clears the edits overlay. */
+  onRestore: () => void;
 };
 
 /** SCHEDULE-SPEC.md §6, "Selected session panel". Read mode shows four
@@ -124,6 +130,8 @@ export function SelectedSessionPanel({
   onDuplicate,
   isDirty,
   onRevert,
+  pendingRemoval,
+  onRestore,
 }: Props) {
   const [confirmingRemove, setConfirmingRemove] = useState(false);
 
@@ -164,6 +172,45 @@ export function SelectedSessionPanel({
         <p className="cap" style={{ margin: 0 }}>
           Select a session on the grid to see it here{mode === 'edit' ? ', or click a day header to plan a new one.' : '.'}
         </p>
+      </div>
+    );
+  }
+
+  /* A REMOVED SESSION IS NOT AN EDITABLE ONE, so it gets its own compact
+     branch rather than the form with a Restore button bolted on. Steppers and
+     group chips on something that is on its way out invite edits that Publish
+     will throw away.
+
+     THE SENTENCE IS THE POINT, more than the button. A coach who removes a
+     session and sees it vanish reasonably assumes it is gone — from the app and
+     from the squad's phones. It is not: nothing has been written, and every
+     athlete still sees the session until Publish runs. That was true before
+     this panel existed and nothing said it. */
+  if (pendingRemoval) {
+    return (
+      <div className="card sg-panel-card">
+        <h3 className="sg-panel-title">{session.title}</h3>
+        <p className="sub">
+          {/* Same shape and the same two formatters the panel's own header
+              uses below, so a removed session reads identically to a live one
+              — it is the same session, and only its fate differs. */}
+          {new Intl.DateTimeFormat('en-GB', { weekday: 'long', timeZone: timezone }).format(
+            new Date(`${session.dow}T12:00:00Z`),
+          )}{' '}
+          {domFmt(timezone).format(new Date(`${session.dow}T12:00:00Z`))} · {clockLabel(session.start)} –{' '}
+          {clockLabel(session.start + session.mins / 60)}
+          {session.location ? ` · ${session.location}` : ''}
+        </p>
+        <p className="tiny" style={{ marginTop: 'var(--sp-10)' }}>
+          Removed on your screen. Athletes still see this session until you publish.
+        </p>
+        {mode === 'edit' ? (
+          <div className="sg-panel-actions">
+            <button type="button" className="btn-ghost" onClick={onRestore}>
+              Restore session
+            </button>
+          </div>
+        ) : null}
       </div>
     );
   }

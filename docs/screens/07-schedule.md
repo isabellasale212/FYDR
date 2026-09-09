@@ -112,6 +112,7 @@ it.
 | + Fixture | Header chip row | Opens the new fixture screen | `/schedule/fixtures/new` | Nothing | Coach and sport scientist | None | Hidden for every other role (`canEdit`) |
 | Apply template | Edit-mode toolbar | Puts a saved week shape onto this week | `/schedule/planner/apply` | Creates the sessions in the template | Coach and sport scientist | Yes, on the apply screen | Hidden for every other role (`canEdit`), and in read mode |
 | Cancel changes | Selected session panel | Drops the unpublished changes on **this session only**, leaving every other pending change alone | Stays here | Nothing — it clears a local overlay | Coach and sport scientist | None. It reverts to the published state, which is itself the undo | Shown only when this session has a pending change AND is an existing published session. Not shown on a staged draft, where "Remove session" is the same act and already has a confirmation |
+| Restore session | Selected session panel, when this session is removed but not yet published | Un-removes it, keeping any pending edit to it | Stays here | Nothing — it clears a local removal | Coach and sport scientist | None | Shown only while the session is pending removal, and only in edit mode. Reachable while it is selected; clicking to another session leaves `Discard` as the only undo |
 
 **There is no per-session Save, deliberately.** An edit is held the moment a
 stepper moves; the commit is the week-level **Publish to athletes**, because one
@@ -122,12 +123,30 @@ athletes, at the top of this page, puts it on their phones."* — because that
 control is genuinely far away: measured on 2026-09-09 with the panel at y=700,
 the banner sat at y=-1782.
 
-**Undoing a removal is still week-level.** `Cancel changes` covers edits and
-staged drafts. A removed session cannot be selected — it leaves the grid and the
-panel clears — so its only undo is `Discard`, which the removal confirmation
-already says. That means undoing one removal still costs every other pending
-change; closing that needs a visible removed-state on the grid, which is a
-design change and is not built.
+**A removal has its own undo too.** Removing a session no longer clears the
+selection, so the panel stays on it and shows a compact removed state: the
+session's name and time, the line *"Removed on your screen. Athletes still see
+this session until you publish."*, and **Restore session**. The sentence matters
+more than the button — a coach who sees the block vanish reasonably assumes it
+is gone from the squad's phones, and it is not: nothing is written until Publish.
+
+The removed session is **not** drawn on the grid, and that is deliberate rather
+than unfinished. Five things read the effective session list — MD-offset
+anchoring, the hour range, clash placement, fixture drawing, and the week stats
+panel's contact minutes, typical-week comparison and per-group totals. A session
+on its way out must count toward none of them, so it stays filtered out of that
+list entirely and the panel reads it from the published rows instead.
+
+**The consequence, stated because it is a real limit:** the undo lives on the
+selection, so it is there immediately after the removal. Click to another
+session and the removed one can no longer be reached, and its only undo is
+week-level `Discard` again. Closing that needs the removed session drawn on the
+grid as a ghost that takes no part in placement or any total — a design change,
+and not built.
+
+**Restoring keeps a pending edit.** A session edited and then removed comes back
+with the edit intact, not at its published time: `Restore session` un-removes and
+touches nothing else.
 
 ---
 

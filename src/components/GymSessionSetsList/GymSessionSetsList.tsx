@@ -41,6 +41,38 @@ export function GymSessionSetsList({ sets }: Props) {
     onError: (err) => setError(toUserMessage(err, 'athlete')),
   });
 
+  /** Why a correction cannot be sent, or null if it can.
+   *
+   *  A BLANK FIELD IS THE SUBTLE ONE. Migration 0045's revise_gym_set_log reads
+   *  the payload with `coalesce((p_payload ->> 'reps')::int, v_original.reps)`,
+   *  so null means "keep the original" — the RPC succeeds, changes nothing, and
+   *  the panel closed on success. The athlete was told their correction landed
+   *  when it had not. Blanks are refused here rather than silently ignored, and
+   *  the message says what a blank actually does.
+   *
+   *  A NEGATIVE IS THE DANGEROUS ONE. gym_set_logs has no check constraint on
+   *  reps_completed or load_kg, and volume_kg is generated from their product —
+   *  so a stray minus sign would have written negative tonnage into a stored
+   *  aggregate. This is the only guard on that path. */
+  function validateCorrection(reps: string, load: string, original: GymSessionSetDetail): string | null {
+    if (reps.trim() === '') {
+      return 'Enter the number of reps. A blank field leaves the set unchanged.';
+    }
+    const r = Number(reps);
+    if (!Number.isInteger(r) || r < 0) {
+      return 'Reps has to be a whole number, 0 or more.';
+    }
+    if (load.trim() === '' && original.load_kg !== null) {
+      return 'Enter the load, or cancel. A blank field leaves the set unchanged.';
+    }
+    if (load.trim() !== '') {
+      const l = Number(load);
+      if (!Number.isFinite(l) || l < 0) return 'Load has to be 0 kg or more.';
+      if (l > 9999.99) return 'That load is higher than this app records. Check the number.';
+    }
+    return null;
+  }
+
   function openCorrection(s: GymSessionSetDetail) {
     setError(null);
     setDrafts((d) => ({
@@ -99,6 +131,8 @@ export function GymSessionSetsList({ sets }: Props) {
                         <input
                           className="field"
                           type="number"
+                          min="0"
+                          step="1"
                           inputMode="numeric"
                           aria-label={`Set ${s.set_number} corrected reps`}
                           value={draft.reps}
@@ -112,6 +146,7 @@ export function GymSessionSetsList({ sets }: Props) {
                         <input
                           className="field"
                           type="number"
+                          min="0"
                           step="0.5"
                           inputMode="decimal"
                           aria-label={`Set ${s.set_number} corrected load in kg`}
@@ -128,7 +163,15 @@ export function GymSessionSetsList({ sets }: Props) {
                           className="btn-ghost"
                           disabled={correctionMutation.isPending}
                           onClick={() =>
-                            correctionMutation.mutate({ id: s.id, reps: draft.reps, load: draft.load })
+                            {
+                              const problem = validateCorrection(draft.reps, draft.load, s);
+                              if (problem) {
+                                setError(problem);
+                                return;
+                              }
+                              setError(null);
+                              correctionMutation.mutate({ id: s.id, reps: draft.reps, load: draft.load });
+                            }
                           }
                           style={{ marginInlineEnd: 6 }}
                         >
@@ -138,7 +181,14 @@ export function GymSessionSetsList({ sets }: Props) {
                           type="button"
                           className="btn-ghost"
                           disabled={correctionMutation.isPending}
-                          onClick={() => setCorrecting(null)}
+                          /* Clears the error too. Cancel used to leave a
+                             validation message on screen with no panel under it
+                             — an error about a form the athlete had just closed,
+                             which is its own small piece of nonsense. */
+                          onClick={() => {
+                            setError(null);
+                            setCorrecting(null);
+                          }}
                         >
                           Cancel
                         </button>

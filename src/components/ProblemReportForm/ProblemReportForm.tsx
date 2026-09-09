@@ -22,10 +22,17 @@ type Props = { orgId: string; athleteId: string; userId: string };
  *  same reason that form gives for its own three answers: a category isn't
  *  a graded outcome, so nothing here should look like the "right" one to
  *  tap. */
+/** problem_reports' own check constraint: `char_length(body) <= 1000`.
+ *
+ *  Named here so the form and the database cannot drift, and so the number is
+ *  not a bare literal in a maxLength that quietly ate the difference. */
+const BODY_MAX_CHARS = 1000;
+
 export function ProblemReportForm({ orgId, athleteId, userId }: Props) {
   const router = useRouter();
   const [category, setCategory] = useState<ProblemReportInputType['category']>(null);
   const [body, setBody] = useState('');
+  const over = body.length > BODY_MAX_CHARS;
   const [error, setError] = useState<string | null>(null);
 
   const mutation = useMutation({
@@ -84,18 +91,35 @@ export function ProblemReportForm({ orgId, athleteId, userId }: Props) {
       <label className="label" htmlFor="report-body" style={{ marginTop: 14, display: 'block' }}>
         What&rsquo;s going on?
       </label>
+      {/* NO maxLength. It truncated a longer paste silently — and undetectably,
+          because onChange only ever sees the value the browser already cut down,
+          so the form could not even have warned. The 1000 is a real constraint
+          (problem_reports checks char_length(body) <= 1000), so the fix is not to
+          raise it: it is to keep every character the athlete wrote on screen,
+          refuse to send while it is too long, and say by how much. */}
       <textarea
         id="report-body"
         className="field"
         rows={5}
-        maxLength={1000}
         value={body}
         onChange={(event) => setBody(event.target.value)}
         placeholder="Tell us what you're noticing and when it started."
+        aria-describedby="report-body-count"
       />
-      <p className="tiny" style={{ marginTop: 4 }}>
-        <span className="num">{body.length}</span>/1000
+      <p
+        id="report-body-count"
+        className="tiny"
+        style={{ marginTop: 4, color: over ? 'var(--bad-text)' : undefined }}
+      >
+        <span className="num">{body.length}</span>/{BODY_MAX_CHARS}
+        {over ? ` · ${body.length - BODY_MAX_CHARS} too many` : null}
       </p>
+      {over ? (
+        <p className="form-error" role="alert" style={{ marginTop: 10 }}>
+          That is {body.length - BODY_MAX_CHARS} characters over. Nothing has been cut &mdash;
+          trim it and it will send.
+        </p>
+      ) : null}
 
       {error ? (
         <p className="form-error" role="alert" style={{ marginTop: 10 }}>
@@ -107,7 +131,7 @@ export function ProblemReportForm({ orgId, athleteId, userId }: Props) {
         <button
           className="btn-primary"
           type="submit"
-          disabled={mutation.isPending || body.trim().length === 0}
+          disabled={mutation.isPending || body.trim().length === 0 || body.length > BODY_MAX_CHARS}
           style={{ width: '100%', minHeight: 56 }}
         >
           {mutation.isPending ? 'Sending…' : 'Send to staff'}

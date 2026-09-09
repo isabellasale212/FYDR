@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
@@ -171,9 +173,17 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekS
             value={note}
             onChange={(event) => setNote(event.target.value)}
           />
+          {/* THIS POINTED AT A CONTROL THAT NO LONGER EXISTS. It sent an athlete
+              with a medical concern to "Something not right?" on Today — a row
+              the athlete redesign removed, and whose absence test-today-redesign.ts
+              now asserts. So the sentence failed exactly the athlete most likely
+              to follow it. Report a problem's only remaining entrance is the row
+              on Me, so it names that, and links straight there rather than
+              describing where to go. Guarded by test-control-names-resolve.ts. */}
           <p className="tiny" style={{ marginTop: 4 }}>
-            This note is visible to coaching staff. It is not a clinical field &mdash;
-            for a medical matter, use &ldquo;Something not right?&rdquo; on Today instead.
+            This note is visible to coaching staff. It is not a clinical field. For a
+            medical matter, use{' '}
+            <Link href="/report-problem">Report a problem</Link> under Me.
           </p>
         </div>
       ) : (

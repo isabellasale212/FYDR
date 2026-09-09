@@ -5,7 +5,7 @@
   "description": "Fydr, athlete performance management. Phase 1a thin slice: staff web and athlete mobile web.",
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run check:env-files && npm run test:env-guard && npm run check:surface-tokens && npm run check:control-radius && npm run check:athlete-spacing && npm run check:font-scaling && npm run test:access-gates && npm run check:policy-replacements && npm run test:policy-guard && npm run test:default-privileges && npm run test:sign-in-audit && npm run test:brand-face && npm run test:launch-claim && npm run test:mark-consistency && npm run test:seed-auth && npm run test:service-role-grants && npm run test:sign-in-probes && npm run test:inclusive-copy && npm run test:availability-banner && npm run test:injury-clinical && npm run test:athlete-board-tier-gate && npm run test:email-send-guard && npm run test:wellness-sheet && npm run test:today-redesign && npm run test:me-redesign && npm run test:my-data-redesign && npm run test:gym-logger-redesign && npm run test:athlete-token-audit && npm run test:schedule-publish-reset && npm run test:dial-ring-in && npm run test:claims-version-gate && npm run test:injury-boundary-captions && npm run test:fixture-match-session",
+    "prebuild": "npm run check:env-files && npm run test:env-guard && npm run check:surface-tokens && npm run check:control-radius && npm run check:athlete-spacing && npm run check:font-scaling && npm run test:access-gates && npm run check:policy-replacements && npm run test:policy-guard && npm run test:default-privileges && npm run test:sign-in-audit && npm run test:brand-face && npm run test:launch-claim && npm run test:mark-consistency && npm run test:seed-auth && npm run test:service-role-grants && npm run test:sign-in-probes && npm run test:inclusive-copy && npm run test:availability-banner && npm run test:injury-clinical && npm run test:athlete-board-tier-gate && npm run test:email-send-guard && npm run test:wellness-sheet && npm run test:today-redesign && npm run test:me-redesign && npm run test:my-data-redesign && npm run test:gym-logger-redesign && npm run test:athlete-token-audit && npm run test:schedule-publish-reset && npm run test:dial-ring-in && npm run test:claims-version-gate && npm run test:injury-boundary-captions && npm run test:fixture-match-session && npm run test:control-names-resolve && npm run test:athlete-input-no-silent-failure",
     "build": "next build",
     "start": "next start",
     "deploy": "npx --yes vercel@59.11.0 deploy --prod",
@@ -94,7 +94,9 @@
     "test:dial-ring-in": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-dial-ring-in.ts",
     "test:claims-version-gate": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-claims-version-gate.ts",
     "test:injury-boundary-captions": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-injury-boundary-captions.ts",
-    "test:fixture-match-session": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-fixture-match-session.ts"
+    "test:fixture-match-session": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-fixture-match-session.ts",
+    "test:control-names-resolve": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-control-names-resolve.ts",
+    "test:athlete-input-no-silent-failure": "node --experimental-strip-types --import ./scripts/lib/register-ts-aliases.mjs scripts/test-athlete-input-no-silent-failure.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.5.1",

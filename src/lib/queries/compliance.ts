@@ -136,7 +136,12 @@ export async function fetchMyOutstanding(
         out.push({
           domain: 'training_rpe',
           session_id: row.session_id,
-          label: 'How hard was it',
+          /* The question mark matters: the screen this opens is titled
+             "How hard was it?" in its h1 AND its metadata title, so a to-do row
+             saying "How hard was it" named a screen that does not exist under
+             that name. Caught by test-control-names-resolve.ts. The screen's
+             wording is canonical — it is the question being asked. */
+          label: 'How hard was it?',
           href: `/rpe/${row.session_id}`,
         });
       }

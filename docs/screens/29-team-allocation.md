@@ -31,6 +31,22 @@ allocated to each, each carrying their availability so an unavailable player
 cannot be picked by accident. A count of unpublished drafts, and a **Publish this
 week** button naming that count.
 
+**The injury boundary on this screen is availability, and nothing else.** No body
+area, no restrictions, no rehab phase, no diagnosis, no clinical notes — not even
+for medical. `src/lib/queries/teamAllocation.ts` fetches none of them, and its own
+header states the rule: *"medical's own read access here is availability only."*
+Picking a team needs to know who cannot be selected, not why.
+
+**Stated here because its absence is how the on-screen caption drifted.** This
+section listed no field boundary at all, and the page's caption had come to claim
+"Availability, restrictions and body area only — the same boundary as every other
+screen". Two of those three were never on the screen, and the sameness claim was
+false as well: the rehab-groups board (28) legitimately shows four fields, because
+a shared rehab phase cannot be managed without them. **The boundary is per screen,
+not one line repeated.** Corrected 2026-09-09 and pinned by
+`scripts/test-injury-boundary-captions.ts`, which asserts each caption against
+what its own query actually returns.
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means | Time window | When missing |

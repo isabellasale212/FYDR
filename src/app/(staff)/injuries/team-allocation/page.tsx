@@ -120,10 +120,18 @@ export default async function TeamAllocationPage({
         />
       </div>
 
+      {/* THIS CAPTION CLAIMED TWO FIELDS THE SCREEN NEVER SHOWS. It read
+          "Availability, restrictions and body area only", and teamAllocation.ts
+          fetches none of the latter two — its own header says "medical's own read
+          access here is availability only", and 29-team-allocation.md sanctions no
+          field list at all. Nothing leaked, because the data was never fetched;
+          the caption simply told a coach that restrictions and body area were on
+          this board. A caption about the medical boundary is the one piece of text
+          on the screen that has to be exactly true. */}
       <p className="cap">
-        Availability, restrictions and body area only &mdash; the same boundary as every
-        other screen. No diagnosis, no clinical notes, not even for medical, on this
-        screen.
+        Availability only &mdash; picking a team needs to know who cannot be selected, not
+        why. No body area, no restrictions, no diagnosis, no clinical notes, not even for
+        medical, on this screen.
       </p>
     </>
   );

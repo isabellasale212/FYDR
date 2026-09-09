@@ -105,10 +105,19 @@ export default async function RehabGroupsPage({ searchParams }: { searchParams: 
         ) : null}
       </div>
 
+      {/* THE BOUNDARY IS NOT THE SAME ON EVERY SCREEN, and this caption used to
+          say it was. It sat next to team-allocation's, which claimed the same
+          sameness while listing different fields — so one of them had to be
+          wrong. Checked against the queries rather than the prose: rehabGroups.ts
+          really does return availability, restrictions, body_area and phase (and
+          this board EDITS phase), which 28-rehab-groups.md sanctions as "the
+          limited injury view". team-allocation returns availability alone. Both
+          field lists were fine; the "same as every other screen" clause was the
+          falsehood, in both. */}
       <p className="cap">
-        Availability, restrictions, body area and phase only &mdash; the same boundary as
-        every other screen. No diagnosis, no clinical notes, not even for medical, on
-        this screen.
+        Availability, restrictions, body area and phase &mdash; the limited injury view a
+        shared rehab phase cannot be managed without. No diagnosis, no clinical notes,
+        not even for medical, on this screen.
       </p>
     </>
   );

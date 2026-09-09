@@ -190,7 +190,22 @@ assert(
   'linked to the proposal it is about',
 );
 {
-  const fn = queriesCode.slice(queriesCode.indexOf('export async function requestProposalChanges'));
+  /* BOUNDED AT THE NEXT EXPORT, and it was not before. The slice ran to the END
+     OF THE FILE, so this assertion covered every function declared after
+     requestProposalChanges as well as the one it names. It went red the moment
+     fetchInjuryProgrammeStatus was added below it — that function reads
+     programme_assignments, correctly and by design — and it stayed red unnoticed
+     because this suite is not in prebuild. The code under test never changed.
+
+     A body-slice with no end is the same defect twice in one night; if a third
+     one turns up, this wants to be a shared helper rather than a third fix. */
+  const start = queriesCode.indexOf('export async function requestProposalChanges');
+  const next = queriesCode.indexOf('\nexport ', start + 1);
+  const fn = queriesCode.slice(start, next === -1 ? undefined : next);
+  assert(
+    start !== -1 && fn.length > 0,
+    'requestProposalChanges is found, so the assertion below is measuring something',
+  );
   assert(
     !fn.includes("from('programme_assignments')"),
     'and does not touch the assignment — it stays proposed so the S&C edits the same draft',

@@ -55,8 +55,8 @@ select is(
     join pg_namespace n on n.oid = c.relnamespace
    where n.nspname = 'public' and not t.tgisinternal
      and (t.tgtype & 32) <> 0 and (t.tgtype & 2) <> 0),
-  3,
-  'three BEFORE TRUNCATE guards exist in public: audit_log, gym_set_logs, gym_session_logs'
+  6,
+  'six BEFORE TRUNCATE guards exist in public: audit_log, the two gym logs, and the three entry tables (0099)'
 );
 
 select * from finish();

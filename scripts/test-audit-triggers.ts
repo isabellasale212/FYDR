@@ -13,7 +13,7 @@
  * doing the same thing would be a medic when the trigger logged it and a coach
  * when a route did, in the one table whose job is being true.
  */
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { actingRole } from '@/lib/access';
 
 let passed = 0, failed = 0;
@@ -31,6 +31,7 @@ const RECORDS = 'supabase/migrations/0091_audit_widen_records_of_record.sql';
 const GYM = 'supabase/migrations/0096_audit_gym_corrections.sql';
 const GYMDEL = 'supabase/migrations/0097_audit_gym_deletes.sql';
 const NOTRUNC = 'supabase/migrations/0098_gym_logs_no_truncate.sql';
+const ENTRIES = 'supabase/migrations/0099_audit_athlete_entries.sql';
 const ACCESS = 'src/lib/access.ts';
 const sql = read(MIGRATION);
 const widen = read(WIDEN);
@@ -41,6 +42,12 @@ const gym = read(GYM);
 const gymDelRaw = read(GYMDEL);
 const noTruncRaw = read(NOTRUNC);
 const noTrunc = noTruncRaw.replace(/^--.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, ' ');
+/* Comments stripped before ANY match, five times over now: a prose comment
+   quoting the very thing an assertion greps for has produced a false pass in
+   check-contrast, check-scale-tokens, this file, test-mutation-retry and a
+   keyframe count. This migration's header quotes `via_cascade` and
+   `ON DELETE NO ACTION` in exactly that way. */
+const entries = read(ENTRIES).replace(/^--.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, ' ');
 const resetScratch = read('scripts/reset-scratch.mjs');
 /* COMMENTS OFF FOR THE CODE ASSERTIONS. 0097's header explains that
    pg_trigger_depth() was tried and measured wrong — so a scan for that name hit
@@ -55,7 +62,7 @@ const gymDel = gymDelRaw.replace(/^--.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, ' 
     the per-row count, because it attaches a different function. That is the
     point of it, and the count assertion is what proves it did not quietly widen
     the generic one. */
-const ALL = [sql, widen, config, authoring, records, gym, gymDel, noTrunc];
+const ALL = [sql, widen, config, authoring, records, gym, gymDel, noTrunc, entries];
 const allSql = ALL.join('\n');
 
 /** Every table the trigger is attached to, across both migrations. */
@@ -487,6 +494,138 @@ console.log('\nand a truncate cannot walk past the delete audit');
   assert(
     /no BEFORE TRUNCATE guards found at all/.test(resetScratch),
     'and stops if the derived list is empty, rather than truncating with nothing to restore',
+  );
+}
+
+console.log('\nthe other three immutable entries: the gaps that were actually there (0099)');
+{
+  /* WHAT THE FIRST VERSION OF 0099 GOT WRONG, asserted here so it cannot come
+     back. pg_trigger shows no audit triggers on wellness_entries,
+     training_entries or nutrition_checkins, and I read that as "corrections are
+     not audited". They are — not by a trigger: revise_wellness_entry and
+     revise_training_entry have written `entry_revision.created` in-transaction
+     since 0058. Only revise_nutrition_checkin never got the call. The first
+     0099 added correction triggers to all three and would have written TWO
+     audit rows for every wellness and training correction. */
+  const THREE = ['wellness_entries', 'training_entries', 'nutrition_checkins'];
+
+  assert(
+    !/create trigger \w+_correction_audit/.test(entries)
+      && !/audit_entry_correction\(\)\s*;?\s*$/m.test(entries.replace(/drop function[^;]+;/g, '')),
+    'no correction TRIGGER on any of the three: corrections already go through the revise_* RPCs',
+  );
+  for (const t of THREE) {
+    assert(
+      new RegExp(`drop trigger if exists ${t}_correction_audit on public\\.${t}`).test(entries),
+      `and the one the first version created on ${t} is dropped explicitly, so a database that ran it converges`,
+    );
+  }
+  assert(
+    /drop function if exists public\.audit_entry_correction\(\)/.test(entries),
+    'along with the function behind them, rather than left defined and unreferenced',
+  );
+
+  /* THE GAP THAT WAS REAL ON THE CORRECTION SIDE, and only on one table. */
+  assert(
+    /create or replace function public\.revise_nutrition_checkin/.test(entries),
+    'revise_nutrition_checkin is redefined — it is the one revise_* that never wrote an audit event',
+  );
+  assert(
+    /'entry_revision\.created'/.test(entries) && /'domain',\s+'nutrition'/.test(entries),
+    "and it writes the SAME event under the same domain key, not a second vocabulary for one table",
+  );
+  assert(
+    /'nutrition_checkin'/.test(entries),
+    'with its own entity_type, so the three domains stay distinguishable in one query',
+  );
+  /* The permission rule must survive being copied forward. A redefinition that
+     silently widened who may revise a check-in would be a far worse bug than the
+     missing audit row it exists to add. */
+  assert(
+    /if v_original\.athlete_id is distinct from v_athlete then\s*raise exception 'not_permitted'/.test(entries),
+    'and the athlete-only rule is carried forward unchanged — no staff write path appears',
+  );
+  assert(
+    /superseded_by is null/.test(entries) && /deleted_at is null/.test(entries),
+    'as are the linear-chain and soft-delete guards on the row it revises',
+  );
+
+  /* THE PRIVACY RULE 0096 SET, applied to the field this migration adds. */
+  assert(
+    /'from_length'/.test(entries) && /'to_length'/.test(entries)
+      && !/'from', to_jsonb\(v_original\) -> 'note'/.test(entries),
+    'a rewritten note is recorded by length, never by text — audit_log is sport_scientist-readable',
+  );
+  assert(
+    /'answer', jsonb_build_object\('from'/.test(entries),
+    'while the answer carries its value: three fixed words, not free text',
+  );
+  /* The divergence this migration deliberately did NOT resolve, pinned so a
+     future change to it is a decision rather than a drift. */
+  assert(
+    /KNOWN INCONSISTENCY, DELIBERATELY NOT RESOLVED HERE/.test(read(ENTRIES))
+      && /have shipped since 0058|has shipped since 0058|since 0058/.test(read(ENTRIES)),
+    'and the migration records that entry_revision.created still carries comment text, rather than copying or silently narrowing it',
+  );
+
+  /* THE TWO GAPS THAT WERE REAL ON ALL THREE TABLES. */
+  for (const t of THREE) {
+    assert(
+      new RegExp(`create trigger ${t}_delete_audit\\s+after delete on public\\.${t}`).test(entries),
+      `${t} has an after-delete trigger — nothing recorded a delete on it before`,
+    );
+    assert(
+      new RegExp(`create trigger ${t}_no_truncate\\s+before truncate on public\\.${t}`).test(entries),
+      `and ${t} refuses a truncate`,
+    );
+  }
+  assert(
+    (entries.match(/for each row execute function public\.audit_entry_delete\(\)/g) ?? []).length === 3,
+    'all three delete audits run per row',
+  );
+  assert(
+    (entries.match(/for each statement execute function public\.athlete_entry_no_truncate\(\)/g) ?? []).length === 3,
+    'and all three truncate guards are STATEMENT-level, which is what a truncate would otherwise walk past',
+  );
+  assert(
+    /errcode = 'insufficient_privilege'/.test(entries),
+    'refusing with insufficient_privilege, so it reads as a refusal rather than a bug',
+  );
+
+  /* NO via_cascade HERE, and that is measured rather than omitted. Every FK into
+     all three is ON DELETE NO ACTION — including training_entries -> sessions,
+     where deleting a session holding entries is REFUSED rather than cascading.
+     gym needed the flag only because gym_set_logs.gym_session_log_id cascades. */
+  assert(
+    !/via_cascade/.test(entries),
+    'no via_cascade flag, because no cascade reaches these three',
+  );
+  assert(
+    /v_free \|\| '_present'/.test(entries) && /v_free \|\| '_length'/.test(entries),
+    'a delete records that free text existed and how much was lost, never the text',
+  );
+  assert(
+    /'soreness_areas'/.test(entries),
+    'soreness_areas IS recorded: body area is already staff-visible by decision, unlike diagnosis',
+  );
+  assert(
+    !/create or replace function public\.audit_row_change/.test(entries)
+      && !/create or replace function public\.audit_gym_/.test(entries),
+    '0099 redefines neither audit_row_change nor the gym functions — every rule they carry is untouched',
+  );
+  assert(
+    !THREE.some((t) => AUDITED.some(([a]) => a === t)),
+    'and none of the three runs the generic function, so nothing above changed meaning',
+  );
+
+  /* The pgTAP suites exist AND are named here, because a test file that exists
+     is not a test that runs. */
+  for (const f of ['supabase/tests/540_entry_audit_test.sql', 'supabase/tests/550_entry_truncate_guard_test.sql']) {
+    assert(existsSync(f), `${f} exists`);
+  }
+  assert(
+    /six BEFORE TRUNCATE guards exist in public/.test(read('supabase/tests/530_gym_truncate_guard_test.sql')),
+    "530's catalogue count was raised from three to six, so a dropped guard still fails something",
   );
 }
 

@@ -758,6 +758,78 @@ Both come after the sign-in-history item in 0b, which is in progress.
 - [ ] **Retention run isn't resumable or transactional (D-43), confirmed and decided open, 2026-09-05.** Categories are processed in sequence and the run stops on the first error, leaving earlier categories deleted and later ones untouched, permanently, with no record of exactly where it stopped. Decided not to fix this now, tracked here instead: either make the run resumable, or make it transactional so a mid-run failure rolls back rather than leaving a half-completed deletion. Relevant to the GDPR erasure work already on this list. This sits on the data retention screen, the only screen in the app that permanently deletes athlete data, which as of 2026-09-05 also requires a typed confirmation (the club name) rather than a button click before it runs.
 - [ ] Decide retention period for athlete data after they leave a club — open question in the data model doc, same question as the compliance item below.
 
+
+## 0q. The other three immutable entries — 2026-09-09, and the first version of the fix was wrong
+
+§0p left the question of whether the gym argument extends to `wellness_entries`,
+`training_entries` and `nutrition_checkins`. It does, but not in the shape I
+first measured it.
+
+**What I got wrong, and what caught it.** `pg_trigger` shows no audit triggers of
+any kind on the three tables. I read that as "corrections are not audited" and
+wrote trigger-based correction auditing for all three. Corrections *are*
+audited — not by a trigger: `revise_wellness_entry` and `revise_training_entry`
+have written an `entry_revision.created` event in-transaction since `0058`. The
+first `0099` would have written **two** audit rows for every wellness and
+training correction. None of the 38 assertions I had written noticed; what
+noticed was a subquery returning two rows where the test expected one. The
+lesson is the specific one: *no triggers* and *not audited* are different
+claims, and I checked the first and asserted the second.
+
+**The measured state, which is what `0099` was rebuilt against:**
+
+| table | correction | delete | truncate |
+|---|---|---|---|
+| `wellness_entries` | `entry_revision.created` since `0058` | nothing | nothing |
+| `training_entries` | `entry_revision.created` since `0058` | nothing | nothing |
+| `nutrition_checkins` | **nothing** | nothing | nothing |
+
+- [x] **`revise_nutrition_checkin` never wrote an audit event.** It was written
+      alongside the other two and simply never got the call, so a check-in could
+      be changed from "no" to "yes" with nothing recorded but the revision chain,
+      which says a correction happened and not what it changed. `0099` gives it
+      the *same* `entry_revision.created` event under the same `domain` key
+      rather than a new trigger and a new action name — one correction should be
+      one row under one name whichever entry it was.
+- [x] **Nothing recorded a delete on any of the three.** `authenticated` holds
+      `INSERT, SELECT`; `service_role` holds `DELETE` and `TRUNCATE`. So these
+      rows could only be removed from below the app, and that left no trace —
+      the same shape as the 2026-09-07 incident and the two rows removed from
+      production by hand on 2026-09-09. Now an `AFTER DELETE FOR EACH ROW`
+      trigger per table, recording what was destroyed.
+- [x] **And nothing refused a truncate.** Three `BEFORE TRUNCATE` statement-level
+      guards, the `0098` shape. `530`'s catalogue count went from three to six,
+      so a dropped guard still fails something.
+- [x] **No `via_cascade` flag here, unlike gym.** Every FK into all three is
+      `ON DELETE NO ACTION`, checked in `pg_constraint` — including
+      `training_entries -> sessions`, where deleting a session that holds entries
+      is *refused* rather than cascading. A flag that is always false invites a
+      reader to trust a distinction the data cannot make.
+- [x] **Proved by planting, not by passing.** Three bugs planted against the live
+      scratch function: the note carrying its text (caught by 4 assertions), a
+      duplicate correction row (caught by 1 — the exact bug I had shipped), and a
+      dropped truncate guard (caught by `530` and `550`). An earlier version of
+      the suite passed 38/38 against the first plant, which is why it was
+      rewritten: none of its corrections changed a free-text field, so the
+      privacy rule was never exercised.
+
+### The one thing `0099` deliberately did not do — **your call**
+
+`entry_revision.created` records a changed comment as
+`{"comment": {"from": "...", "to": "..."}}`, **both texts in full**. That is an
+athlete writing about their own body, in a table `sport_scientist` can read.
+`0096` took the opposite decision for gym comments (presence and length, never
+the text) and `0099` follows `0096` for everything it adds — so after this
+migration a *corrected* wellness comment is readable in `audit_log` and a
+*deleted* one is not.
+
+- [ ] **Decide whether `entry_revision.created` should stop carrying comment
+      text.** Narrowing it removes evidence that exists today and changes an
+      audit contract that has shipped since `0058`, which is why it was raised
+      rather than done as a side effect of closing a delete gap. Zero such rows
+      exist on scratch today (no corrections in the seed data), so the question
+      is about what happens on the next real one, not about rewriting history.
+
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.
 
@@ -1314,7 +1386,7 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   **A superuser connection still bypasses triggers entirely.** `0085` records that limit; it is unchanged and unchangeable from here.
 
-- [ ] **Deliberately not widened, and it is the same shape of question:** `wellness_entries`, `training_entries` and `nutrition_checkins` are also ADR-005 immutable entries, and none of them refuses a truncate. Whether the argument that justified it for the gym logs extends to them wants the same explicit decision rather than a mechanical sweep — which is what `0097` said about deletes, and it was right.
+- [ ] **Deliberately not widened, and it is the same shape of question:** `wellness_entries`, `training_entries` and `nutrition_checkins` are also ADR-005 immutable entries, and none of them refuses a truncate. Whether the argument that justified it for the gym logs extends to them wants the same explicit decision rather than a mechanical sweep — which is what `0097` said about deletes, and it was right. **Closed 2026-09-09 by `0099` — see §0q, and the measurement there corrected the premise of this line.**
 
 ## 1. Data & Schema — confirmed already built by reading the raw files directly
 

@@ -199,8 +199,8 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
       </div>
 
       {error ? (
-        <div className="banner" style={{ marginBottom: 14 }}>
-          <span className="g g-warn">⚠</span>
+        <div className="banner" role="alert" style={{ marginBottom: 14 }}>
+          <span className="g g-warn" aria-hidden="true">⚠</span>
           <div>{error}</div>
         </div>
       ) : null}

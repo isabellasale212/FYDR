@@ -35,9 +35,36 @@ export const metadata = { title: 'Sign in · Fydr' };
  *  secondary action, and the club name and athlete count are not knowable
  *  before anyone has authenticated.
  */
+/** Plays the launch sequence once per browser session, not on every visit.
+ *
+ *  WHY IT IS A SCRIPT AND NOT STATE. The attribute has to be right at FIRST
+ *  PAINT — an effect running after hydration would either flash the animation
+ *  on a repeat visit or flash the finished form on a first one. layout.tsx
+ *  already solves the identical problem for the theme with a synchronous inline
+ *  script, and this is the same technique with a smaller blast radius: it walks
+ *  up from its own <script> tag, so it touches this page's shell and nothing
+ *  else.
+ *
+ *  THE DEFAULT IS "NO ANIMATION", WHICH IS THE POINT. The attribute is absent in
+ *  the markup and added only on a first visit, so every failure mode — script
+ *  blocked, JS off, sessionStorage throwing in a privacy mode — lands on a form
+ *  that is simply visible. Before this, the markup hard-coded data-animate and
+ *  failed the other way: the sequence ran on every visit, and for its first 2.4
+ *  seconds the form was invisible while still being focusable and announced.
+ *
+ *  sessionStorage rather than localStorage, deliberately: once per session is
+ *  the brand moment. Once ever would make it a thing most people never see. */
+const LAUNCH_ONCE_SCRIPT = `(function(){try{var s=document.currentScript;var m=s&&s.parentElement;if(!m)return;if(sessionStorage.getItem('fydr-launch-seen'))return;sessionStorage.setItem('fydr-launch-seen','1');m.setAttribute('data-animate','');}catch(e){}})();`;
+
 export default function LoginPage() {
   return (
-    <main className="launch" data-animate="" id="main">
+    <main className="launch" id="main" suppressHydrationWarning>
+      {/* Runs during parse, before this element paints, and sets data-animate
+          only on a first visit. Has to be a plain inline script for that; there
+          is no JSX way to run before paint. suppressHydrationWarning above
+          because the server cannot know what sessionStorage holds — the same
+          note layout.tsx carries for the theme attribute. */}
+      <script dangerouslySetInnerHTML={{ __html: LAUNCH_ONCE_SCRIPT }} />
       <div className="launch-ground" aria-hidden="true" />
 
       <div className="launch-lockup">

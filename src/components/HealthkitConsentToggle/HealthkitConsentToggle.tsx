@@ -46,7 +46,7 @@ export function HealthkitConsentToggle({ orgId, athleteId, initialGranted }: Pro
         {initialGranted ? 'Allowed' : 'Allow Apple Health'}
       </button>
       {error ? (
-        <p className="tiny" style={{ color: 'var(--bad-text)', margin: '8px 0 0' }}>
+        <p className="tiny" role="alert" style={{ color: 'var(--bad-text)', margin: '8px 0 0' }}>
           {error}
         </p>
       ) : null}

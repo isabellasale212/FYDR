@@ -43,7 +43,7 @@ export function NewTemplateForm({ orgId, userId }: Props) {
         <input className="field" value={name} onChange={(e) => setName(e.target.value)} placeholder="Standard 1-game week" autoFocus />
       </label>
       {error ? (
-        <p className="tiny" style={{ color: 'var(--bad-text)', marginTop: 8 }}>
+        <p className="tiny" role="alert" style={{ color: 'var(--bad-text)', marginTop: 8 }}>
           {error}
         </p>
       ) : null}

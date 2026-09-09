@@ -331,8 +331,20 @@
   --gym-on-tint: #6b4708;
   --elev: #fcfdfe;
   --text: #13161c;
-  --muted: #5b636e;
-  /* AA-CORRECTED, and it forced --muted to move with it.
+  --muted: #484e57;
+  /* AA-CORRECTED 2026-09-09, and it forced --muted to move with it.
+
+     THIS BLOCK DESCRIBED THE CORRECTION FOR WEEKS BEFORE THE VALUES CARRIED
+     IT. --faint stayed at #929aa5 and --muted at #5b636e, so the scale it
+     claims below was a description of work that had not landed. §3.7 further
+     down said the opposite in the same file ("remains failing -- 2.38:1 ...
+     Still open"), and @media print already carried BOTH corrected values under
+     a comment reading "Print takes the same corrected light scale" -- pointing
+     at a screen scale that did not exist. The values below are that print
+     pair, moved to the screen where they were derived for. Measured after:
+     4.57 / 7.01 / 15.14 on --bg, a 1.53:1 step, which is what this block
+     predicted. scripts/check-contrast.ts now measures it on every build, so a
+     comment can never again outlive the value it describes.
      #929aa5 measured 2.84:1 on --surf and 2.38:1 on --bg, against the 4.5:1
      that applies to the 11px captions, denominators, field labels and em-dash
      empty markers this token is for. It failed under the August handoff, it
@@ -347,7 +359,7 @@
      between faint and muted. That is narrower than the old 2.14:1, and the
      narrowing is unavoidable rather than chosen: the old spacing was bought by
      putting the lightest level below AA. */
-  --faint: #929aa5;
+  --faint: #626a76;
   /* SOLID, not an ink alpha, 4 Sept 2026 — CHANGELOG-headers-spec.md measures
      #dce1e8 and the client asked the tokens to match. It is the one token in
      this group that no longer adapts to what is behind it: the old
@@ -404,11 +416,15 @@
        --warn-text         #925900              4.81 on bg   (already deviated)
        --bad-text          #8a2418              7.48 on bg   unchanged
 
-     --faint #929aa5 remains the handoff's value and remains failing — 2.38:1
-     on this ground, against 4.5:1 for the captions and field labels it is
-     for. Left as specified because no nearby value fixes it: reaching AA
-     means a visibly darker caption layer product-wide, which is a design
-     decision. The lift did not address it either. Still open. */
+     --faint is CLOSED as of 2026-09-09, and this paragraph is what kept it
+     open: it said "remains the handoff's value and remains failing — 2.38:1
+     ... Left as specified because no nearby value fixes it ... Still open",
+     while the block above --faint said the correction had already been made
+     and @media print had been carrying the corrected pair all along. Two
+     paragraphs in one file, disagreeing about the same token, and the value
+     following the pessimistic one. The darker caption layer was indeed a
+     design decision, and Isabella took it. #626a76 / #484e57, 4.57 and 7.01
+     on this ground. */
   --accent-text: #0064dc;
   --accent2-text: #006eb0;
   --good-text: #0d5f75;

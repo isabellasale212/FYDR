@@ -138,8 +138,8 @@ export function ApplyControls({ orgId, userId, templates, selectedTemplateId, we
       {selectedTemplateId ? (
         <div className="card">
           {error ? (
-            <div className="banner" style={{ marginBottom: 10 }}>
-              <span className="g g-warn">⚠</span>
+            <div className="banner" role="alert" style={{ marginBottom: 10 }}>
+              <span className="g g-warn" aria-hidden="true">⚠</span>
               <div>{error}</div>
             </div>
           ) : null}

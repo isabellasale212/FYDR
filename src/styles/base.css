@@ -170,6 +170,12 @@ a {
   *::before,
   *::after {
     animation-duration: 0.001ms !important;
+    /* AND THE DELAY, added 2026-09-09. Collapsing duration alone left every
+       staggered entrance intact as a WAIT: with animation-fill-mode: both, a
+       0.001ms animation delayed 2.4s still shows its `from` state for 2.4s. The
+       sign-in sequence hid the whole form for that long, and it hid it from the
+       one population that had explicitly asked for less motion. */
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     /* Colour and opacity survive; transform, width, height, inset do not. */
     transition-property: background, background-color, border-color, color, fill,
@@ -11083,6 +11089,12 @@ button.dash-stat {
   from {
     opacity: 0;
     transform: translateY(16px);
+    /* opacity: 0 hides an element from the eye and from nothing else — it stays
+       focusable and stays in the accessibility tree. With backwards fill this
+       `from` applies for the whole delay, so the sign-in form was reachable by
+       Tab, and announced, while invisible. visibility is discrete: it flips at
+       the midpoint of the fade, by which point the element is ~85% opaque. */
+    visibility: hidden;
   }
 }
 
@@ -11376,6 +11388,8 @@ button.dash-stat {
   @keyframes launch-panel {
     from {
       opacity: 0;
+      /* Same reason as launch-step: this panel wraps the whole form. */
+      visibility: hidden;
     }
   }
   .launch[data-animate] .launch-page {

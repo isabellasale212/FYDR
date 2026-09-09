@@ -175,5 +175,82 @@ console.log('\nthe scale is whole pixels, and spacing is even');
   assert(true, `${used.size} of ${names.length} steps are read from a style object; ${unusedInline.length} are used only by base.css or not yet`);
 }
 
+console.log('\nbase.css holds no raw font size or spacing either');
+{
+  /* THIS SECTION EXISTS BECAUSE ITS ABSENCE HID SIX MISSES, and the way they
+     hid is the part worth keeping. The base.css migration used a regex whose
+     value group was `[^;}]+`, run over the RAW file. A comment reading
+     "margin-top: auto, which pushed the button to the bottom of a card" matched
+     it, and the greedy group ran through the prose until it reached the next
+     real `;` — which was `.signin-submit { margin-top: 18px }`. The declaration
+     was swallowed by a sentence about a different declaration.
+
+     Then the verification used the SAME regex and agreed with itself. Only a
+     separately-written check against the minified shipped CSS — where comments
+     do not exist — disagreed. Three parses were corrupted by comment prose in
+     one day (this, the contrast guard's "@media print", and a launch keyframe
+     count); comments come off FIRST here, before anything is matched.
+
+     The property list is also complete, which the migration's was not: it had
+     no logical properties, so `padding-inline-start: 14px` was invisible to it. */
+  const rawCss = readFileSync('src/styles/base.css', 'utf8');
+  const css = rawCss.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '));
+
+  /* @media print is brace-matched, not "everything after the marker" — that
+     mistake would skip 44% of this file. */
+  const pi = css.indexOf('@media print');
+  let end = pi, depth = 0;
+  for (let i = css.indexOf('{', pi); i < css.length && pi > -1; i++) {
+    if (css[i] === '{') depth += 1;
+    else if (css[i] === '}') { depth -= 1; if (depth === 0) { end = i + 1; break; } }
+  }
+  const inPrint = (i: number): boolean => pi > -1 && i >= pi && i < end;
+
+  /* Values that are sized to a THING rather than to the ramp, each with the
+     thing it is sized to. Adding one is a decision and needs the reason. */
+  const CONSTANTS = new Map<number, string>([
+    [1, 'hairlines and optical nudges — `gap: 1px` builds a divider'],
+    [36, "clears .exlib-search-input's absolutely-positioned search icon"],
+    [52, 'clears .pw-toggle inside the password field'],
+    [56, ".main's bottom breathing space, tablet tier"],
+    [64, ".main's bottom breathing space at desktop, and the launch panel inset"],
+    [176, 'the launch splash offset, documented at its own rule'],
+    [386, '.lockup-word — the wordmark, exempt in check-font-scaling.ts too'],
+  ]);
+
+  const rawFs: string[] = [];
+  for (const m of css.matchAll(/font-size:\s*([0-9.]+)(rem|px)/g)) {
+    if (inPrint(m.index ?? 0)) continue;
+    const px = m[2] === 'rem' ? Math.round(parseFloat(m[1]!) * 1600) / 100 : parseFloat(m[1]!);
+    if (CONSTANTS.has(px)) continue;
+    rawFs.push(`line ${css.slice(0, m.index).split('\n').length}: ${m[0]}`);
+  }
+  assert(rawFs.length === 0, rawFs.length === 0
+    ? 'every font size in base.css reads a scale step'
+    : `${rawFs.length} raw: ${rawFs.slice(0, 4).join(' · ')}`);
+
+  const SPACING = /(?:^|[\s;{])(?:gap|row-gap|column-gap|(?:margin|padding)(?:-top|-bottom|-left|-right|-inline|-block|-inline-start|-inline-end|-block-start|-block-end)?):\s*([^;}]+)([;}])/g;
+  const rawSp: string[] = [];
+  for (const m of css.matchAll(SPACING)) {
+    if (inPrint(m.index ?? 0)) continue;
+    if (/calc\(|%|auto|em\b/.test(m[1]!)) continue;
+    for (const part of m[1]!.trim().split(/\s+/)) {
+      const n = /^([0-9.]+)px$/.exec(part);
+      if (!n) continue;
+      const v = Number(n[1]);
+      if (v === 0 || CONSTANTS.has(v)) continue;
+      rawSp.push(`line ${css.slice(0, m.index).split('\n').length}: ${part}`);
+    }
+  }
+  assert(rawSp.length === 0, rawSp.length === 0
+    ? 'and every spacing value does too, logical properties included'
+    : `${rawSp.length} raw: ${rawSp.slice(0, 5).join(' · ')}`);
+
+  assert(
+    (css.match(/var\(--fs-/g) ?? []).length > 500 && (css.match(/var\(--sp-/g) ?? []).length > 900,
+    `base.css reads ${(css.match(/var\(--fs-/g) ?? []).length} type and ${(css.match(/var\(--sp-/g) ?? []).length} spacing tokens`,
+  );
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

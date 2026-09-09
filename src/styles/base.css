@@ -3127,7 +3127,7 @@ a.hist-row:focus-visible {
    the screen — this layout is in normal flow, so auto resolved to zero and the
    button sat flush against the fields above it. */
 .signin-submit {
-  margin-top: 18px;
+  margin-top: var(--sp-18);
   width: 100%;
 }
 .signin-privacy {
@@ -3972,8 +3972,12 @@ img.av {
   padding: var(--sp-14) 0 var(--sp-12);
 }
 .pp-bench-row[data-band] {
-  margin-inline: -20px;
-  padding-inline: 20px;
+  /* A bleed pair: the negative margin and the positive padding MUST stay
+     equal or the band stops reaching the card edge. calc() on the negative
+     half keeps them locked to one step — tokenising only the padding would
+     let a later change to --sp-20 desync them silently. */
+  margin-inline: calc(-1 * var(--sp-20));
+  padding-inline: var(--sp-20);
   border-radius: var(--r-band);
 }
 .pp-bench-row[data-band='1'] {
@@ -4049,7 +4053,7 @@ img.av {
   margin-top: var(--sp-16);
 }
 .pp-flag-item {
-  padding-inline-start: 14px;
+  padding-inline-start: var(--sp-14);
 }
 .pp-flag-item.ack {
   opacity: 0.5;
@@ -8456,6 +8460,9 @@ button.dash-stat {
   position: relative;
 }
 .pw-wrap .field {
+  /* Clears .pw-toggle, so it is sized to that button rather than to the
+     spacing ramp — a snap to 48 would let the value run under the toggle.
+     Layout constant, same argument as 56/64/176. */
   padding-inline-end: 52px;
 }
 .pw-toggle {
@@ -8662,7 +8669,7 @@ button.dash-stat {
   gap: var(--sp-8);
 }
 .report-note {
-  padding-inline-start: 10px;
+  padding-inline-start: var(--sp-10);
   border-inline-start: 2px solid var(--border);
 }
 .report-note-body {
@@ -10526,6 +10533,8 @@ button.dash-stat {
   min-width: 0;
   min-height: 44px;
   padding: var(--sp-10) var(--sp-14);
+  /* Clears the absolutely-positioned search icon; sized to the icon, not to
+     the ramp. A snap to 32 would overlap it. Layout constant. */
   padding-inline-start: 36px;
   border: 1px solid var(--border-strong);
   border-radius: var(--r-control);

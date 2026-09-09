@@ -606,7 +606,7 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  transition: border-color var(--t-state), color var(--t-state);
+  transition: background var(--t-press), border-color var(--t-state), color var(--t-state);
 }
 /* Handoff §9's hover, exactly: border to --border-hover, text to --text.
  * Ghost controls brighten only — they never darken, lift, or scale. */
@@ -664,7 +664,7 @@ a {
   color: var(--text);
 }
 .toggle:active {
-  transform: scale(0.97);
+  background: var(--surf2);
 }
 
 /* ---------- primitives ---------- */
@@ -2662,11 +2662,11 @@ a.hist-row:focus-visible {
   justify-content: center;
   cursor: pointer;
   font-family: inherit;
-  transition: transform var(--t-press);
+  transition: background var(--t-press);
   flex: none;
 }
-.step .btnc:active {
-  transform: scale(0.97);
+.step .btnc:not(:disabled):active {
+  background: var(--surf2);
 }
 .step .val {
   text-align: center;
@@ -7490,10 +7490,10 @@ button.dash-stat {
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  transition: transform var(--t-press);
+  transition: background var(--t-press);
 }
-.sg-btn-publish:active {
-  transform: scale(0.97);
+.sg-btn-publish:not(:disabled):active {
+  background: var(--accent-border);
 }
 .sg-btn-publish:disabled {
   background: rgb(var(--accent-rgb) / 0.35);
@@ -8199,10 +8199,10 @@ button.dash-stat {
   justify-content: center;
   cursor: pointer;
   font-family: inherit;
-  transition: transform var(--t-press);
+  transition: background var(--t-press);
 }
-.sg-stepper-btn:active {
-  transform: scale(0.94);
+.sg-stepper-btn:not(:disabled):active {
+  background: var(--surf2);
 }
 .sg-stepper-btn:disabled {
   color: var(--faint);

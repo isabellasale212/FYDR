@@ -225,6 +225,30 @@ export function ScheduleWorkspace({
   /* Fixtures the grid has to draw itself: the ones no 'match' session already
      represents. See fixturesToDraw for why the session wins when both exist. */
   const drawnFixtures = useMemo(() => fixturesToDraw(fixtures, effective), [fixtures, effective]);
+
+  /* REMOVED SESSIONS, KEPT OUT OF `effective` ON PURPOSE. Every pending change
+     is visible on the grid — an edit carries a badge, a staged draft is a new
+     block — except a removal, which vanished entirely. That made a removal the
+     one change a coach could not see, and (until the panel kept its selection)
+     could not undo without discarding the week.
+     Drawn as a separate list rather than by putting the removal back into
+     `effective`, because five things read that list: MD-offset anchoring, the
+     hour range, clash placement, fixture drawing and WeekStatsPanel's contact
+     minutes, typical-week comparison and per-group totals. A session on its way
+     out must count toward none of them.
+     The overlay is applied for DISPLAY, so a session edited and then removed
+     ghosts at the time the coach last set, not at its published time — the same
+     rule the panel follows, and for the same reason. */
+  const ghostSessions = useMemo(
+    () =>
+      base
+        .filter((s) => removed[s.id])
+        .map((s) => {
+          const e = edits[s.id];
+          return e ? { ...s, dow: e.dow ?? s.dow, start: e.start ?? s.start, mins: e.mins ?? s.mins } : s;
+        }),
+    [base, removed, edits],
+  );
   const fixtureDays = useMemo(() => new Set(drawnFixtures.map((f) => f.dow)), [drawnFixtures]);
 
   /* A day is matchday if a fixture falls on it, OR if a session says so. It
@@ -263,8 +287,17 @@ export function ScheduleWorkspace({
      20:30 kick-off draws its 42px block past the bottom of a grid that ends at
      21:00 — and widening the range here rather than special-casing the clip
      keeps one rule: a 20:30 SESSION of the same length already does this. */
+  /* GHOSTS COUNT TOWARD THE GRID'S EXTENT AND NOTHING ELSE. This is the one
+     place a pending removal is allowed to influence anything, and it is
+     presentational: without it, removing the latest session of the week shrinks
+     h1, the grid gets shorter, and the ghost is drawn below its own floor.
+     Including it also stops the whole grid jumping height on a removal, which
+     is worse than the removal being visible. It reaches no total: contact
+     minutes, the typical-week comparison, clash detection and MD anchoring all
+     read `effective`, which still filters removals out. */
   const { h0, h1 } = computeHourRange([
     ...effective.map((s) => ({ start: s.start, mins: s.mins })),
+    ...ghostSessions.map((s) => ({ start: s.start, mins: s.mins })),
     ...drawnFixtures.map((f) => ({ start: f.start, mins: FIXTURE_NOMINAL_MINS })),
   ]);
   const gridHeightPx = (h1 - h0) * PXH;
@@ -312,6 +345,41 @@ export function ScheduleWorkspace({
       };
     });
 
+    /* Placed among THEMSELVES, never alongside the real blocks: running the two
+       through one placeBlocks call would restagger live sessions around a
+       session that is leaving, which is a visible change to a signed-off grid
+       for no gain. Two removals at the same hour still stagger relative to each
+       other, so neither hides the other. */
+    const dayGhosts = ghostSessions.filter((g) => g.dow === date);
+    const ghostPlaced = placeBlocks(
+      dayGhosts.map((g) => ({ id: g.id, start: g.start, mins: g.mins, name: g.title, athleteIds: g.athleteIds })),
+    );
+    const ghosts: RenderedBlock[] = ghostPlaced.map((p) => {
+      const g = dayGhosts.find((x) => x.id === p.x.id)!;
+      const display = computeBlockDisplay(p, ghostPlaced, false);
+      return {
+        id: g.id,
+        title: g.title,
+        type: g.type,
+        groupNames: g.groupNames,
+        top: (p.x.start - h0) * PXH,
+        height: display.h,
+        left: display.left,
+        width: display.width,
+        /* Under every real block. A real one starts at 2 (computeBlockDisplay),
+           so 1 puts the ghost behind anything now occupying its slot — the
+           reading a coach needs is "something was here", not a ghost covering
+           the session that replaced it. */
+        zIndex: 1,
+        showTime: display.showTime,
+        timeText: display.timeText,
+        showBadge: false,
+        clashed: false,
+        stagger: display.stagger,
+        tied: display.tied,
+      };
+    });
+
     const contactMins = daySessions.filter((s) => s.athleteIds.length > 0).reduce((sum, s) => sum + s.mins, 0);
     const dateObj = new Date(`${date}T12:00:00Z`);
 
@@ -339,6 +407,7 @@ export function ScheduleWorkspace({
       })),
       contactMins,
       blocks,
+      ghosts,
     });
   }
 

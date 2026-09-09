@@ -112,7 +112,8 @@ it.
 | + Fixture | Header chip row | Opens the new fixture screen | `/schedule/fixtures/new` | Nothing | Coach and sport scientist | None | Hidden for every other role (`canEdit`) |
 | Apply template | Edit-mode toolbar | Puts a saved week shape onto this week | `/schedule/planner/apply` | Creates the sessions in the template | Coach and sport scientist | Yes, on the apply screen | Hidden for every other role (`canEdit`), and in read mode |
 | Cancel changes | Selected session panel | Drops the unpublished changes on **this session only**, leaving every other pending change alone | Stays here | Nothing — it clears a local overlay | Coach and sport scientist | None. It reverts to the published state, which is itself the undo | Shown only when this session has a pending change AND is an existing published session. Not shown on a staged draft, where "Remove session" is the same act and already has a confirmation |
-| Restore session | Selected session panel, when this session is removed but not yet published | Un-removes it, keeping any pending edit to it | Stays here | Nothing — it clears a local removal | Coach and sport scientist | None | Shown only while the session is pending removal, and only in edit mode. Reachable while it is selected; clicking to another session leaves `Discard` as the only undo |
+| Restore session | Selected session panel, when this session is removed but not yet published | Un-removes it, keeping any pending edit to it | Stays here | Nothing — it clears a local removal | Coach and sport scientist | None | Shown only while the session is pending removal, and only in edit mode |
+| A ghost block | The grid, where the removed session was | Re-selects it, so Restore is reachable at any time | Stays here | Nothing | Any staff who can see the grid | None | Only while a removal is pending publish |
 
 **There is no per-session Save, deliberately.** An edit is held the moment a
 stepper moves; the commit is the week-level **Publish to athletes**, because one
@@ -130,19 +131,29 @@ this session until you publish."*, and **Restore session**. The sentence matters
 more than the button — a coach who sees the block vanish reasonably assumes it
 is gone from the squad's phones, and it is not: nothing is written until Publish.
 
-The removed session is **not** drawn on the grid, and that is deliberate rather
-than unfinished. Five things read the effective session list — MD-offset
-anchoring, the hour range, clash placement, fixture drawing, and the week stats
-panel's contact minutes, typical-week comparison and per-group totals. A session
-on its way out must count toward none of them, so it stays filtered out of that
-list entirely and the panel reads it from the published rows instead.
+**The removed session is drawn on the grid as a ghost**, so it stays reachable
+after the coach has clicked elsewhere. Same two rows as a live block — time then
+name — with no fill, the name struck through, and at 0.65 opacity. It sits below
+every live block, so it never covers the session that replaced it, and clicking
+it re-selects it and offers Restore.
 
-**The consequence, stated because it is a real limit:** the undo lives on the
-selection, so it is there immediately after the removal. Click to another
-session and the removed one can no longer be reached, and its only undo is
-week-level `Discard` again. Closing that needs the removed session drawn on the
-grid as a ghost that takes no part in placement or any total — a design change,
-and not built.
+**It counts toward nothing.** Five things read the effective session list —
+MD-offset anchoring, the hour range, clash placement, fixture drawing, and the
+week stats panel's contact minutes, typical-week comparison and per-group
+totals. A session on its way out must reach none of them, so it stays filtered
+out of that list entirely and is drawn from a separate one. Removing a 45-minute
+session takes the week from 445 contact minutes to 400 and its day from 45m to
+0m, which is correct.
+
+The single exception is the grid's own **extent**, and it is presentational:
+without it, removing the latest session of the week shrinks the range and the
+ghost is drawn below its own floor — and the whole grid changes height on a
+removal, which is worse than the removal being visible.
+
+**Ghosts are placed among themselves**, never through the same pass as the live
+blocks: one placement call over both would restagger live sessions around a
+session that is leaving. Two removals at the same hour still stagger relative to
+each other, so neither hides the other.
 
 **Restoring keeps a pending edit.** A session edited and then removed comes back
 with the edit intact, not at its published time: `Restore session` un-removes and

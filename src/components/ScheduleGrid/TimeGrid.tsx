@@ -46,6 +46,9 @@ export type DayColumn = {
   mdOffset: number | null;
   contactMins: number;
   blocks: RenderedBlock[];
+  /* Sessions removed on screen but still published. Same shape as a block
+     because they are the same session — only their fate differs. */
+  ghosts: RenderedBlock[];
   fixtures: FixtureBlock[];
 };
 
@@ -260,6 +263,47 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
                   {overlay.node}
                 </div>
               ) : null}
+
+              {/* GHOSTS FIRST, so a real block paints over one rather than
+                  under it, and so the tab order reaches the live sessions
+                  before the leaving ones. */}
+              {day.ghosts.map((g) => (
+                <button
+                  key={`ghost-${g.id}`}
+                  type="button"
+                  className="sg-block"
+                  data-removed="true"
+                  data-selected={selectedId === g.id}
+                  data-stagger={g.stagger}
+                  aria-label={`${g.title}, ${enumLabel(g.type)}, ${g.timeText}, removed — still published until you publish the week`}
+                  style={
+                    {
+                      top: g.top,
+                      height: g.height,
+                      left: `calc(${g.left}% + 4px)`,
+                      width: `calc(${g.width}% - 8px)`,
+                      zIndex: g.zIndex,
+                      '--tone': TYPE_STYLE[g.type].tone,
+                      '--bc': TYPE_STYLE[g.type].bc,
+                      '--time': TYPE_STYLE[g.type].text,
+                    } as React.CSSProperties
+                  }
+                  onClick={() => onSelect(g.id)}
+                >
+                  {/* Time then name, the same two rows a real block shows,
+                      because a ghost has to be identifiable — "something was
+                      here" is not much use without saying what and when. The
+                      first version rendered the name alone and left timeText
+                      computed and unused, which is a field that reads as
+                      meaningful and is not. Group names are dropped: they are
+                      the one part a coach cannot act on for a session that is
+                      leaving. */}
+                  <div className="sg-block-row">
+                    <span className="sg-block-time num">{g.timeText}</span>
+                  </div>
+                  <div className="sg-block-name">{g.title}</div>
+                </button>
+              ))}
 
               {day.blocks.map((b) => {
                 const style = TYPE_STYLE[b.type];

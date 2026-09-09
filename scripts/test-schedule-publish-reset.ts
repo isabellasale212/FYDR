@@ -246,5 +246,110 @@ console.log('\na single session can be cancelled without discarding the week');
   );
 }
 
+
+console.log('\na removed session is drawn as a ghost, and counts toward nothing');
+{
+  /* THE LIMIT THIS CLOSED. The undo used to live only on the selection, so it
+     was reachable immediately after a removal and gone the moment the coach
+     clicked another session. Verified live before and after: clicking away then
+     clicking the ghost re-selects it and offers Restore. */
+  const grid = readFileSync('src/components/ScheduleGrid/TimeGrid.tsx', 'utf8');
+  const css = readFileSync('src/styles/base.css', 'utf8');
+
+  assert(/const ghostSessions = useMemo/.test(raw), 'the workspace builds a ghostSessions list');
+  assert(
+    /base\s*\n?\s*\.filter\(\(s\) => removed\[s\.id\]\)/.test(raw),
+    'from `base` filtered by `removed` — the published rows, not the effective ones',
+  );
+
+  /* THE INVARIANT THE WHOLE DESIGN RESTS ON. Five things read `effective`:
+     MD-offset anchoring, the hour range, clash placement, fixture drawing and
+     WeekStatsPanel's contact minutes, typical-week comparison and per-group
+     totals. Measured live: removing a 45-minute session took the week from 445
+     contact minutes to 400 and Friday from 45m to 0m, which is correct — a
+     session on its way out counts toward nothing. */
+  assert(
+    /\.filter\(\(s\) => !removed\[s\.id\]\)/.test(raw),
+    '`effective` still filters removals out, so no total counts a ghost',
+  );
+  assert(
+    !/ghostSessions/.test(raw.slice(raw.indexOf('const effective'), raw.indexOf('const effectiveById'))),
+    'and the effective list itself never mentions ghostSessions',
+  );
+
+  /* THE ONE EXCEPTION, deliberate and presentational: without it, removing the
+     latest session of the week shrinks h1 and the ghost is drawn below its own
+     floor — and the whole grid changes height on a removal. Measured live: grid
+     height was identical before and after (1166.63px). */
+  const hourRange = raw.slice(raw.indexOf('const { h0, h1 } = computeHourRange'), raw.indexOf('const gridHeightPx'));
+  assert(
+    /ghostSessions\.map/.test(hourRange),
+    'ghosts DO count toward the grid extent, which is the only thing they influence',
+  );
+
+  /* PLACED AMONG THEMSELVES. One placeBlocks call over both lists would
+     restagger live sessions around a session that is leaving — a visible change
+     to a signed-off grid for no gain. */
+  assert(
+    /const ghostPlaced = placeBlocks\(/.test(raw),
+    'ghosts go through their own placeBlocks call',
+  );
+  assert(
+    /computeBlockDisplay\(p, ghostPlaced, false\)/.test(raw),
+    'and their own display pass, so a ghost is the height its real block was',
+  );
+  assert(
+    /zIndex: 1,/.test(raw),
+    'at zIndex 1 — under every real block, which start at 2, so a ghost never covers the session that replaced it',
+  );
+
+  assert(
+    /day\.ghosts\.map/.test(grid) && grid.indexOf('day.ghosts.map') < grid.indexOf('day.blocks.map'),
+    'TimeGrid renders ghosts BEFORE real blocks, so a real one paints over a ghost and the tab order reaches live sessions first',
+  );
+  assert(
+    /removed — still published until you publish the week/.test(grid),
+    'and a ghost says in its accessible name that the session is still published',
+  );
+  /* NO DEAD FIELDS. The ghost object carries timeText because
+     computeBlockDisplay produces it, and the first version rendered the name
+     alone — leaving a computed field that reads as meaningful and is not, which
+     is the shape of dead code this session has been caught by more than once. */
+  const ghostJsx = grid.slice(grid.indexOf('day.ghosts.map'), grid.indexOf('day.blocks.map'));
+  assert(
+    /\{g\.timeText\}/.test(ghostJsx) && /\{g\.title\}/.test(ghostJsx),
+    'and renders both the time and the name it computes — a ghost has to be identifiable, and no computed field is left unused',
+  );
+
+  /* CONTRAST IS MEASURED, because check-contrast.ts compares token pairs and
+     cannot see an opacity. With no fill the label composites straight onto --bg:
+     0.45 reads 3.07:1 in light, below the 4.5 floor for normal text; 0.60 is
+     still short at 4.46; 0.65 gives 5.23 light and 5.86 dark. */
+  /* SCOPED TO THE RULE, and it had to be. The first version grepped the whole
+     stylesheet for "opacity: 0.65", which appears THREE times in base.css — so
+     it passed against a planted 0.45 on the ghost by matching an unrelated
+     rule. A stylesheet-wide grep for a common declaration is not an assertion
+     about the thing you meant. */
+  const ghostRule = (/\.sg-block\[data-removed='true'\] \{([^}]*)\}/.exec(css) ?? [])[1] ?? '';
+  const ghostName = (/\.sg-block\[data-removed='true'\] \.sg-block-name \{([^}]*)\}/.exec(css) ?? [])[1] ?? '';
+  assert(ghostRule.length > 0, "the ghost has its own rule in base.css");
+  assert(
+    /opacity:\s*0\.65;/.test(ghostRule),
+    'sitting at the measured 0.65 opacity, not a guessed one',
+  );
+  assert(
+    /background:\s*transparent;/.test(ghostRule),
+    'with no fill, which is what makes the page ground read through it',
+  );
+  assert(
+    /text-decoration:\s*line-through/.test(ghostName),
+    'and its name struck through — the one idiom on this grid that means "going" rather than "quiet"',
+  );
+  assert(
+    /0\.45 \(the first value tried\) it reads 3\.07:1/.test(css),
+    'with the failing values recorded, so a future tweak has to meet the measurement rather than re-derive it',
+  );
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);

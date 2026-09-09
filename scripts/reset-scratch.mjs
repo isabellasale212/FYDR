@@ -69,7 +69,36 @@ const PRESERVE = ['metric_definitions'];
  * Approved explicitly on 2026-09-06 after the permission classifier blocked it,
  * which was the right call: disabling an audit-log protection is not something
  * to do on an agent's own judgement. */
-const AUDIT_TRUNCATE_TRIGGER = 'audit_log_no_truncate';
+/* DERIVED, NOT NAMED, since 2026-09-09. This was `audit_log_no_truncate`, one
+ * hard-coded name, and 0098 made it three: gym_set_logs and gym_session_logs got
+ * their own BEFORE TRUNCATE guards, for the reason 0097 spells out — it audits
+ * every row deleted from those tables, and a truncate fires no row triggers, so
+ * 263 rows could leave with no record they existed.
+ *
+ * Reading the list off pg_trigger rather than restating it means the FOURTH such
+ * guard is lifted and restored without anybody remembering to edit this file.
+ * A hard-coded list that falls out of date here fails in the worst direction:
+ * the reset dies half-way through a truncate, or worse, a guard is left
+ * disabled.
+ *
+ * Everything the original note said still applies to each one, and is why this
+ * is acceptable at all: this is a scratch database whose contents are entirely
+ * synthetic, the lift is named triggers rather than the tables' protection as a
+ * whole, and every one is restored in a finally block and then VERIFIED. On
+ * production this script refuses long before it reaches here.
+ *
+ * Extending the lift to the gym guards was approved by Isabella on 2026-09-09,
+ * for the same reason the original needed approving: turning off a protection
+ * that production has is not a call to make on an agent's own judgement. */
+const truncateGuardsQuery = `
+  select c.relname as table_name, t.tgname as trigger_name
+    from pg_trigger t
+    join pg_class c on c.oid = t.tgrelid
+    join pg_namespace n on n.oid = c.relnamespace
+   where n.nspname = 'public' and not t.tgisinternal
+     and (t.tgtype & 32) <> 0            -- TRIGGER_TYPE_TRUNCATE
+     and (t.tgtype & 2) <> 0             -- TRIGGER_TYPE_BEFORE
+   order by c.relname, t.tgname`;
 
 const confirmed = process.argv.includes('--confirm');
 
@@ -122,30 +151,49 @@ if (!confirmed) {
 const before = await c.query(`select count(*)::int n from auth.users`);
 const { rows: [auditBefore] } = await c.query(`select count(*)::int n from audit_log`);
 console.log(`clearing ${toClear.length} tables, ${before.rows[0].n} auth users, ${auditBefore.n} audit rows...`);
-console.log(`  lifting ${AUDIT_TRUNCATE_TRIGGER} for the truncate, restored and verified below`);
+const { rows: guards } = await c.query(truncateGuardsQuery);
+if (guards.length === 0) {
+  console.error('\nSTOP: no BEFORE TRUNCATE guards found at all. Either the query is wrong or');
+  console.error('every protection has been dropped — both want looking at before a reset.');
+  await c.end();
+  process.exit(1);
+}
+console.log(`  lifting ${guards.length} truncate guard(s) — ${guards.map((g) => g.trigger_name).join(', ')}`);
+console.log(`  each is restored in a finally block and verified below`);
 
 try {
-  await c.query(`alter table public.audit_log disable trigger ${AUDIT_TRUNCATE_TRIGGER}`);
+  for (const g of guards) {
+    await c.query(`alter table public.${g.table_name} disable trigger ${g.trigger_name}`);
+  }
   await c.query('begin');
   await c.query(`truncate table ${toClear.map((t) => `public.${t}`).join(', ')} restart identity cascade`);
   await c.query(`delete from auth.users`);
   await c.query('commit');
 } finally {
-  await c.query(`alter table public.audit_log enable trigger ${AUDIT_TRUNCATE_TRIGGER}`);
+  for (const g of guards) {
+    await c.query(`alter table public.${g.table_name} enable trigger ${g.trigger_name}`);
+  }
 }
 
 /* Verified, not assumed. tgenabled 'O' is origin-enabled, the normal state; 'D'
    would mean the guard is still off, which is the one outcome worse than this
    script failing outright. */
-const { rows: [tg] } = await c.query(
-  `select t.tgenabled from pg_trigger t join pg_class c on c.oid = t.tgrelid
-    where c.relname = 'audit_log' and t.tgname = $1`, [AUDIT_TRUNCATE_TRIGGER]);
-if (tg?.tgenabled !== 'O') {
-  console.error(`\nSTOP: ${AUDIT_TRUNCATE_TRIGGER} is '${tg?.tgenabled}', not 'O'. The audit log is still truncatable.`);
+const { rows: restored } = await c.query(`
+  select c.relname as table_name, t.tgname as trigger_name, t.tgenabled
+    from pg_trigger t join pg_class c on c.oid = t.tgrelid
+   where t.tgname = any($1)`, [guards.map((g) => g.trigger_name)]);
+const stillOff = restored.filter((r) => r.tgenabled !== 'O');
+if (stillOff.length > 0 || restored.length !== guards.length) {
+  console.error(`\nSTOP: ${stillOff.length} of ${guards.length} truncate guard(s) are not enabled.`);
+  for (const r of stillOff) console.error(`  ${r.table_name}.${r.trigger_name} is '${r.tgenabled}', not 'O'`);
+  if (restored.length !== guards.length) {
+    console.error(`  and only ${restored.length} of ${guards.length} were found at all`);
+  }
+  console.error('  A table that should refuse a truncate currently accepts one.');
   await c.end();
   process.exit(1);
 }
-console.log(`  ${AUDIT_TRUNCATE_TRIGGER} restored and verified enabled`);
+console.log(`  all ${guards.length} truncate guard(s) restored and verified enabled`);
 
 console.log('re-running supabase/seed.sql...');
 await c.query(readFileSync('supabase/seed.sql', 'utf8'));

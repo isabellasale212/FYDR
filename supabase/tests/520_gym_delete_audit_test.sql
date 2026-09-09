@@ -197,5 +197,24 @@ select is(
   'no delete row carries a metadata key outside the two this migration defines'
 );
 
+-- ------------------------------- 4. the truncate guard is the right SHAPE
+/* The refusal itself is proved in 530, which must run before any DML: a
+   transaction that has already deleted rows has PENDING TRIGGER EVENTS, and
+   TRUNCATE then fails with 55006 before reaching the guard at all — the same
+   error a deferred FK produced during the -3 repair. What CAN be checked here is
+   the shape, and the shape is the whole point: only a BEFORE, statement-level
+   trigger stops a truncate. A later edit making it FOR EACH ROW would leave a
+   trigger that a truncate walks straight past. */
+select is(
+  (select count(*)::int from pg_trigger t join pg_class c on c.oid = t.tgrelid
+    where c.relname in ('gym_set_logs','gym_session_logs')
+      and not t.tgisinternal
+      and (t.tgtype & 32) <> 0        -- fires on TRUNCATE
+      and (t.tgtype & 2) <> 0         -- BEFORE
+      and (t.tgtype & 1) = 0),        -- statement-level, not FOR EACH ROW
+  2,
+  'both truncate guards are BEFORE and statement-level, the only shape that stops a truncate'
+);
+
 select * from finish();
 rollback;

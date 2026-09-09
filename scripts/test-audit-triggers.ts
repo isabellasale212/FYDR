@@ -30,6 +30,7 @@ const AUTHORING = 'supabase/migrations/0089_audit_widen_authoring.sql';
 const RECORDS = 'supabase/migrations/0091_audit_widen_records_of_record.sql';
 const GYM = 'supabase/migrations/0096_audit_gym_corrections.sql';
 const GYMDEL = 'supabase/migrations/0097_audit_gym_deletes.sql';
+const NOTRUNC = 'supabase/migrations/0098_gym_logs_no_truncate.sql';
 const ACCESS = 'src/lib/access.ts';
 const sql = read(MIGRATION);
 const widen = read(WIDEN);
@@ -38,6 +39,9 @@ const authoring = read(AUTHORING);
 const records = read(RECORDS);
 const gym = read(GYM);
 const gymDelRaw = read(GYMDEL);
+const noTruncRaw = read(NOTRUNC);
+const noTrunc = noTruncRaw.replace(/^--.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, ' ');
+const resetScratch = read('scripts/reset-scratch.mjs');
 /* COMMENTS OFF FOR THE CODE ASSERTIONS. 0097's header explains that
    pg_trigger_depth() was tried and measured wrong — so a scan for that name hit
    the sentence saying it was rejected and failed against correct code. Prose is
@@ -51,7 +55,7 @@ const gymDel = gymDelRaw.replace(/^--.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, ' 
     the per-row count, because it attaches a different function. That is the
     point of it, and the count assertion is what proves it did not quietly widen
     the generic one. */
-const ALL = [sql, widen, config, authoring, records, gym, gymDel];
+const ALL = [sql, widen, config, authoring, records, gym, gymDel, noTrunc];
 const allSql = ALL.join('\n');
 
 /** Every table the trigger is attached to, across both migrations. */
@@ -420,6 +424,69 @@ console.log('\ngym deletes are audited too, and a cascade says so');
   assert(
     /none of them generalise/.test(gymDelRaw),
     'and why blocking it is a decision rather than a side effect: reset-scratch.mjs would need to lift two more guards',
+  );
+}
+
+console.log('\nand a truncate cannot walk past the delete audit');
+{
+  /* 0097 records every row deleted from the gym logs. A TRUNCATE fires no row
+     triggers, so without 0098 it would empty both tables past all of it — and
+     service_role holds TRUNCATE on each. 0007 already took this decision for
+     audit_log: refuse it, do not try to audit it. */
+  for (const t of ['gym_set_logs', 'gym_session_logs']) {
+    assert(
+      new RegExp(`create trigger ${t}_no_truncate\\s+before truncate on public\\.${t}`).test(noTrunc),
+      `${t} refuses TRUNCATE`,
+    );
+  }
+  assert(
+    (noTrunc.match(/for each statement execute function public\.gym_log_no_truncate\(\)/g) ?? []).length === 2,
+    'both are STATEMENT-level — a FOR EACH ROW trigger is exactly what a truncate walks past',
+  );
+  assert(
+    /errcode = 'insufficient_privilege'/.test(noTrunc),
+    "and raise with insufficient_privilege, so it reads as a refusal rather than a bug",
+  );
+
+  /* THE COUPLING THIS PINS, which is the reason the guard exists rather than a
+     comment. reset-scratch.mjs truncates every public table in one statement
+     and must lift these to do it. It used to name ONE trigger; a hard-coded
+     list that falls out of date fails in the worst direction — the reset dies
+     mid-truncate, or a guard is left disabled. It now reads the list from
+     pg_trigger, so a fourth guard needs no edit there. */
+  assert(
+    !/const AUDIT_TRUNCATE_TRIGGER/.test(resetScratch),
+    'reset-scratch.mjs no longer hard-codes a single guard name',
+  );
+  assert(
+    /tgtype & 32/.test(resetScratch) && /tgtype & 2/.test(resetScratch),
+    'it derives every BEFORE TRUNCATE guard from pg_trigger instead',
+  );
+  assert(
+    /disable trigger \$\{g\.trigger_name\}/.test(resetScratch)
+      && /enable trigger \$\{g\.trigger_name\}/.test(resetScratch),
+    'lifts and restores each one by name',
+  );
+  /* ASSERT THE LOGIC, NOT THE VARIABLE NAME. A first version checked only that
+     `stillOff` and process.exit(1) appeared, and passed against a planted
+     `const stillOff = []` — a verification that can never fail, which is worse
+     than none because it reads as protection. The condition below is the part
+     that does the verifying. */
+  assert(
+    /tgenabled !== 'O'/.test(resetScratch),
+    "it verifies restoration by comparing tgenabled to 'O', origin-enabled",
+  );
+  assert(
+    /restored\.length !== guards\.length/.test(resetScratch),
+    'and that every guard it lifted was found again, not just the ones that came back',
+  );
+  assert(
+    /stillOff\.length > 0[\s\S]{0,700}process\.exit\(1\)/.test(resetScratch),
+    'and exits non-zero while any guard is still disabled',
+  );
+  assert(
+    /no BEFORE TRUNCATE guards found at all/.test(resetScratch),
+    'and stops if the derived list is empty, rather than truncating with nothing to restore',
   );
 }
 

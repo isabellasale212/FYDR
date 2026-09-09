@@ -1302,7 +1302,19 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   **`via_cascade` is taken from the parent already being gone, not from `pg_trigger_depth()`.** Depth was tried first and **measured wrong** against a real cascade on scratch — it reads `1` for cascaded children, so every child looked like a direct delete. Parent-existence is also the honest test rather than a proxy. Its cost is asserted, not hidden: a cascaded child carries a **null athlete**, because the row naming them went first; it carries the parent's id instead, so a reader lands on the parent's own delete row, which does name the athlete.
 
-- [ ] **OPEN, and it is Isabella's decision rather than mine: TRUNCATE still bypasses all of this.** `service_role` holds it and a truncate fires no row triggers. `audit_log` itself is protected by a statement-level `before truncate` guard (`0007`) and the same guard would work here — but `scripts/reset-scratch.mjs` truncates every public table in one statement and already has to **lift** `audit_log`'s guard to do it. That script's own header says the three reasons the lift is acceptable *"none of them generalise"*, and that it was approved explicitly because *"disabling an audit-log protection is not something to do on an agent's own judgement"*. Adding two more guards for it to disable is therefore a decision, not a side effect. A superuser connection also bypasses triggers entirely — `0085` records that limit and it is unchangeable from here.
+- [x] **CLOSED 2026-09-09, approved by Isabella: TRUNCATE is now refused, and `reset-scratch.mjs` was taught to lift the new guards.** Migration `0098_gym_logs_no_truncate.sql` plus `supabase/tests/530_gym_truncate_guard_test.sql`.
+
+  **Refusal, not auditing** — the same decision `0007` took for `audit_log` itself: *"Truncate would empty the evidence in one statement and leave no trace."* A statement-level `BEFORE TRUNCATE` trigger holds against `service_role`, which holds the grant, in a way no revoke would.
+
+  **The shape is the whole point and is asserted both ways.** Only a `BEFORE`, **statement-level** trigger stops a truncate; a `FOR EACH ROW` one is exactly what a truncate walks past. Pinned in `520` (catalogue read) and proven by planting the `for each row` variant.
+
+  **`reset-scratch.mjs` now derives its lift list from `pg_trigger` rather than naming one trigger.** It hard-coded `audit_log_no_truncate`; `0098` made it three. A stale hard-coded list fails in the worst direction — the reset dies mid-truncate, or a guard is left disabled — so the fourth guard added later needs no edit there. It lifts each by name, restores in a `finally`, and **verifies every one is back at `tgenabled = 'O'`**, refusing to exit successfully otherwise. It also stops outright if the derived list is empty, rather than truncating with nothing to restore.
+
+  **Verified on scratch without wiping it**, all in rolled-back transactions: the derived query found exactly the three guards; `truncate gym_set_logs` was refused with **`42501 truncate is not permitted on gym_set_logs`**; with the guards lifted the truncate was **accepted** (so the reset can still do its job, 257 → 0 rows inside the transaction); after rollback all three read `tgenabled = 'O'` and all 257 rows were intact.
+
+  **A superuser connection still bypasses triggers entirely.** `0085` records that limit; it is unchanged and unchangeable from here.
+
+- [ ] **Deliberately not widened, and it is the same shape of question:** `wellness_entries`, `training_entries` and `nutrition_checkins` are also ADR-005 immutable entries, and none of them refuses a truncate. Whether the argument that justified it for the gym logs extends to them wants the same explicit decision rather than a mechanical sweep — which is what `0097` said about deletes, and it was right.
 
 ## 1. Data & Schema — confirmed already built by reading the raw files directly
 

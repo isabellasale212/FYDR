@@ -17,7 +17,38 @@ export type FydrClaims = {
   orgId: string | null;
   athleteId: string | null;
   roles: readonly AppRole[];
+  /** `users.claims_version` as it stood when this token was minted, from the
+   *  hook's `cv` claim. Compared against the live column on every guarded
+   *  request so a revoked role stops working on the next one — see
+   *  `claimsStale` below and `base()` in lib/session.ts. Null only if the token
+   *  carries no `cv` at all, which `claimsStale` treats as stale. */
+  claimsVersion: number | null;
 };
+
+/** Is this token's authority out of date?
+ *
+ *  THE COALESCE IS THE WHOLE POINT. `custom_access_token_hook` (0010) writes
+ *  `coalesce(v_cv, 1)`, so a NULL `claims_version` in the database arrives in
+ *  the token as 1. Comparing the raw column against the token would mark every
+ *  user with a NULL version stale forever — a permanent sign-out loop for
+ *  exactly the accounts nobody has ever touched. This applies the same coalesce
+ *  on the way back, so the two sides can agree.
+ *
+ *  MISSING `cv` FAILS CLOSED. A signed token that reached a guard has org_id
+ *  set, which means the hook ran, and the hook always stamps `cv` (confirmed on
+ *  a live production token: a number). So a null here is unreachable rather than
+ *  merely unlikely, and closing costs nothing.
+ *
+ *  A TOKEN AHEAD OF THE DATABASE IS ALSO STALE, not just one behind. That is a
+ *  restore or a rollback, where the safe reading of "these disagree" is the same
+ *  as for a revocation: stop trusting the token. */
+export function claimsStale(
+  tokenClaimsVersion: number | null,
+  dbClaimsVersion: number | null,
+): boolean {
+  if (tokenClaimsVersion === null) return true;
+  return tokenClaimsVersion !== (dbClaimsVersion ?? 1);
+}
 
 /** The allow-list a JWT's roles are filtered through. It must hold every value
  *  in the app_role enum, because anything missing is silently DROPPED from the
@@ -80,6 +111,12 @@ function asRoles(value: unknown): AppRole[] {
  * that call has succeeded, and only for the custom claims the hook adds, which
  * the user endpoint does not return.
  */
+/** Numbers only, and only real ones: the hook writes `cv` as an integer, so a
+ *  string or a NaN is a token that did not come from it. */
+function asNumber(v: unknown): number | null {
+  return typeof v === 'number' && Number.isFinite(v) ? v : null;
+}
+
 export async function getClaims(
   supabase: SupabaseClient<Database>,
 ): Promise<FydrClaims | null> {
@@ -105,6 +142,7 @@ export async function getClaims(
     orgId: asString(fromToken.org_id) ?? asString(fromUser.org_id),
     athleteId: asString(fromToken.athlete_id) ?? asString(fromUser.athlete_id),
     roles,
+    claimsVersion: asNumber(fromToken.cv) ?? asNumber(fromUser.cv),
   };
 }
 
@@ -139,6 +177,7 @@ export function claimsFromSession(session: Session | null | undefined): FydrClai
     orgId: asString(fromToken.org_id) ?? asString(fromUser.org_id),
     athleteId: asString(fromToken.athlete_id) ?? asString(fromUser.athlete_id),
     roles: asRoles(fromToken.roles ?? fromUser.roles),
+    claimsVersion: asNumber(fromToken.cv) ?? asNumber(fromUser.cv),
   };
 }
 

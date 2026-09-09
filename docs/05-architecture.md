@@ -448,16 +448,55 @@ language sql stable as $$ select public.auth_roles() && p $$;
 ### Claim staleness, and how it is handled
 
 A JWT is a snapshot. If an admin revokes a coach role, that user keeps coach access until
-their token expires. This is the standard cost of claim-based authorisation and it must be
+something notices. This is the standard cost of claim-based authorisation and it must be
 handled explicitly rather than hoped away.
 
-| Control | Setting | Effect |
-|---|---|---|
-| Access token TTL | 30 minutes | Worst-case window of stale authority |
-| `users.claims_version` | integer, bumped by trigger on `user_roles` change | Detectable staleness |
-| Forced refresh | Realtime broadcast on `user:{user_id}` topic when `claims_version` bumps; client calls `supabase.auth.refreshSession()` | Typical propagation under 5 seconds when online |
-| Hard revocation | `admin-set-role` Edge Function calls the Auth admin API to sign the user out of all sessions when a role is **removed** or the user is suspended | Immediate, at the cost of forcing a re-login |
-| Server-side backstop | `claims_version` in the JWT compared against `users.claims_version` inside `auth_has_any_role` for destructive operations only | Prevents a stale token performing a role change or an export |
+**THIS SECTION DESCRIBED FIVE CONTROLS AND ONLY TWO OF THEM EXISTED.** Corrected
+2026-09-09 after the gap was measured rather than read. What follows is what the code
+actually does; what was removed is listed underneath, because a design doc that describes
+unbuilt machinery is worse than one that admits a gap — the whole point of this section is
+that staleness must be "handled explicitly rather than hoped away", and for three of these
+rows it was hoped away while the table said otherwise.
+
+| Control | Setting | Effect | Real? |
+|---|---|---|---|
+| Access token TTL | 1800 seconds | Upper bound on stale authority if nothing else catches it | **Yes**, but not from this repo — it is a hosted Auth setting. `supabase/config.toml` cannot push it, and on 2026-09-09 production was found running **3600**, twice this figure, because the 1800 here was never applied. Set to 1800 the same day. Verify it against `/auth/v1/settings` or a live token's `exp - iat`, never against the config file |
+| `users.claims_version` | `int not null default 1`, bumped by the `user_roles_bump_claims_version` trigger on every `user_roles` insert, update or delete | Makes staleness *detectable* | **Yes** — but from 0010 until 2026-09-09 it was written into every token and **read by nothing**, so it detected nothing |
+| Request-time comparison | `base()` in `src/lib/session.ts` reads `users.claims_version` for the session's own user and compares it with the token's `cv` via `claimsStale`. A mismatch redirects to `/auth/stale-claims`, which re-verifies and signs the session out | **Revocation bites on the next request.** This is the hard revocation | **Yes**, since 2026-09-09. Every guard funnels through `base()`: `requireStaff` and `requireAthlete` call it directly; `requireInjuryAccess`, `requirePlatformStaff` and `requireReportAccess` are built on `requireStaff`. Costs one indexed primary-key read per guarded request |
+
+**Verified end to end, not just reviewed.** With a coach signed in and viewing `/schedule`,
+their `coach` role was deleted directly in the database. The trigger bumped
+`claims_version` 2 → 3, stranding their token at `cv: 2`. The next request — same session,
+no re-login — landed on `/login?e=stale-claims` with every `sb-` auth cookie removed, and
+`/dashboard` and `/today` then fell through to the ordinary unauthenticated redirect. The
+same session had rendered staff content minutes earlier with the check already live, so a
+current session is not disturbed.
+
+**BOTH DIRECTIONS SIGN OUT, AND THAT IS A COST.** The comparison is on the version integer,
+not on the role set, so *granting* a role also invalidates the token and forces a re-login.
+That is deliberate for now — it is the simple, safe reading of "these disagree" — but it
+means giving somebody an extra role interrupts them. Making addition silent would mean
+comparing role sets rather than versions, and reading the live roles on every guarded
+request rather than one integer. Not built; decide if the interruption proves annoying.
+
+**Removed from this table on 2026-09-09, because none of it exists in this repo:**
+
+- *"Forced refresh — Realtime broadcast on `user:{user_id}` topic when `claims_version`
+  bumps; client calls `supabase.auth.refreshSession()`. Typical propagation under 5
+  seconds when online."* There is no Realtime subscription anywhere in `src/`. The only
+  mentions of realtime in the codebase are comments recording its absence.
+- *"Hard revocation — `admin-set-role` Edge Function calls the Auth admin API to sign the
+  user out of all sessions."* There is no `supabase/functions` directory in this repo and
+  no `signOut` in the role-management path. `supabase/config.toml` advertised this too and
+  no longer does.
+- *"Server-side backstop — `claims_version` in the JWT compared against
+  `users.claims_version` inside `auth_has_any_role` for destructive operations only."*
+  `auth_has_any_role` is `select public.auth_roles() && p;` — it compares roles and nothing
+  else, and never referenced `claims_version`.
+
+If any of the three is wanted, build it and add the row back. The request-time comparison
+above makes the Edge Function largely redundant; the Realtime broadcast would only turn
+"next request" into "within seconds", which matters for a long-lived open tab.
 
 **Role removal forces sign-out. Role addition does not.** Adding a role with a stale token
 means the user briefly lacks an ability, which is an annoyance. Keeping a removed role means

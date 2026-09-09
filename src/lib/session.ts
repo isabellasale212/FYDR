@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { TIER_PREVIEW_COOKIE, effectiveTier, isPreviewingTier } from '@/lib/tierPreview';
-import { getClaims, isAthlete, isStaff, type FydrClaims } from '@/lib/supabase/claims';
+import { getClaims, isAthlete, isStaff, type FydrClaims, claimsStale } from '@/lib/supabase/claims';
 import { isPlatformStaff } from '@/lib/platformStaff';
 import { INJURY_ACCESS, REPORT_ACCESS, REPORT_VISIBILITY, SETTINGS_ADMIN, CLINICAL_ONLY, hasAnyRole } from '@/lib/access';
 import type { ReportKey } from '@/lib/access';
@@ -63,23 +63,47 @@ async function base() {
   const claims = await getClaims(supabase);
   if (!claims) redirect('/login');
   if (!claims.orgId) redirect('/login?e=no-roles');
-  return { supabase, claims, orgId: claims.orgId };
+
+  /* THE REVOCATION CHECK. Roles live in the JWT — the hook stamps them, RLS
+     reads them — so a token minted before a role change carried the old
+     authority until it expired. On production that is 3600 seconds, where
+     docs/05-architecture.md gives 30 minutes as the worst case, and the Edge
+     Function config.toml used to advertise for this never existed. `cv` was
+     being written into every token and read by nothing.
+     One indexed primary-key read, here rather than in each guard, because every
+     guard funnels through this function: requireStaff and requireAthlete call it
+     directly, and requireInjuryAccess / requirePlatformStaff / requireReportAccess
+     are built on requireStaff. It costs one sequential round trip per guarded
+     request, which is the price of the window closing on the next request
+     instead of within the hour.
+     A MISSING ROW IS STALE, not absent-therefore-fine: a user deleted or hidden
+     by RLS mid-session must stop, and this is the one place that can tell. */
+  const { data: live } = await supabase
+    .from('users')
+    .select('claims_version, full_name')
+    .eq('id', claims.userId)
+    .maybeSingle();
+  if (!live || claimsStale(claims.claimsVersion, live.claims_version)) {
+    redirect('/auth/stale-claims');
+  }
+
+  return { supabase, claims, orgId: claims.orgId, fullName: live.full_name ?? '' };
 }
 
 /** Server-side gate for the staff shell. The middleware has already turned an
  *  athlete away; this is the second lock, and RLS is the third. */
 export async function requireStaff(): Promise<StaffContext> {
-  const { supabase, claims, orgId } = await base();
+  const { supabase, claims, orgId, fullName } = await base();
   if (!isStaff(claims)) redirect('/today');
 
-  const [org, user] = await Promise.all([
-    supabase
-      .from('organisations')
-      .select('name, timezone, tier')
-      .eq('id', orgId)
-      .maybeSingle(),
-    supabase.from('users').select('full_name').eq('id', claims.userId).maybeSingle(),
-  ]);
+  /* base() already read this user's row for the revocation check, and took
+     full_name in the same statement — so the extra round trip that check costs
+     is offset here rather than added on top of a second users query. */
+  const org = await supabase
+    .from('organisations')
+    .select('name, timezone, tier')
+    .eq('id', orgId)
+    .maybeSingle();
 
   /* The preview is a FYDR-STAFF affordance, checked here rather than only in
    * the UI that offers it: the cookie is browser-written, so anyone who set it
@@ -101,7 +125,7 @@ export async function requireStaff(): Promise<StaffContext> {
     orgId,
     orgName: org.data?.name ?? 'Your club',
     timezone: org.data?.timezone ?? 'Europe/London',
-    fullName: user.data?.full_name ?? '',
+    fullName,
     tier: effectiveTier(realTier, previewCookie),
     realTier,
     previewingTier: isPreviewingTier(realTier, previewCookie),

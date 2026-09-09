@@ -37,6 +37,7 @@ function assert(cond: boolean, label: string): void {
 const h = (init: Record<string, string>): Headers => new Headers(init);
 
 const claims = (over: Partial<FydrClaims> = {}): FydrClaims => ({
+  claimsVersion: 1,
   userId: '11111111-1111-4111-8111-111111111111',
   email: 'r.callaghan@example.test',
   orgId: '22222222-2222-4222-8222-222222222222',

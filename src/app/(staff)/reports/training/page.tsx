@@ -801,8 +801,14 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                   <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)' }}>
                     <div
                       style={{
-                        width: 38,
-                        height: 38,
+                        /* rem, not px, and the font size is why. The initials
+                           inside read var(--fs-14), so at a raised default text
+                           size they grow and this box must grow with them or
+                           clip — the risk 0i named for the avatar monogram.
+                           2.375rem is 38px at a 16px root, so nothing moves at
+                           default settings. */
+                        width: '2.375rem',
+                        height: '2.375rem',
                         borderRadius: 12,
                         background: 'var(--avatar-bg)',
                         color: 'var(--avatar-text)',

@@ -48,7 +48,19 @@
   Food library on the athlete app (2026-09-06). Athlete-facing app is a separate codebase (native iOS/Swift), unconfirmed whether reachable from the same Claude Code session as the staff web app, check access first. Also undecided: browse-only (see foods and macros, no interaction), or log a meal by picking from the library (tracked against intake), or something else. Needs both the access question and the interaction-scope question answered before this is buildable.
 
   </details>
-- [ ] **Should creating a fixture also create a linked `match` session? (2026-09-07).** A match is representable two ways in this schema and today they are unconnected. `fixtures` holds the opponent, kick-off, venue and competition. `sessions` has a `match` type with its own red treatment, an "RPE after full time" expectation in the EXPECTS map, participants, a duration, and a `fixture_id` column pointing back at the fixture. **Nothing writes `fixture_id`.** All four seeded `match` sessions on scratch carry `fixture_id: null`, so the two representations coexist and neither knows about the other.
+- [x] **DECIDED AND BUILT 2026-09-09. Yes — a fixture now creates its linked `match` session.** The reasoning below is kept because it is what the decision was taken against; only the status has changed.
+
+  **What was built.** `createMatchSessionForFixture` (`lib/queries/schedule.ts`), called from `createFixture`: a `match` session on the fixture's date at its kick-off, `title: "v {opponent}"`, `mdOffset: 0`, `location` from the venue, `MATCH_DURATION_MIN = 80`, and `fixture_id` pointing back. **Participants default to the Forwards and Backs positional group rows**, Isabella's choice — so a match now names a squad, carries a duration, and the RPE expectation the `match` type already declared starts meaning something.
+
+  **The fixture is never rolled back if the session write fails.** `createFixture` returns `{ id, error: sessionError }`, so a half-failure leaves a real fixture and reports the session problem, rather than losing what the coach typed.
+
+  **The backfill question, answered:** scratch's one `match` session with `fixture_id: null` was **left exactly as it is** — Isabella's call, *"real history not litter"*. `fixturesToDraw` already suppresses a fixture's own grid block only when a `match` session carries its `fixture_id`, so an unlinked session and an unlinked fixture coexist without drawing the same match twice; verified on the grid and on the athlete Today screen's "Working towards" line, and Isabella confirmed a real matchday does not read as redundant.
+
+  Guarded by `scripts/test-fixture-match-session.ts` (22 assertions, in `prebuild`).
+
+  <details><summary>The original open question, kept for the record</summary>
+
+  **Should creating a fixture also create a linked `match` session? (2026-09-07).** A match is representable two ways in this schema and today they are unconnected. `fixtures` holds the opponent, kick-off, venue and competition. `sessions` has a `match` type with its own red treatment, an "RPE after full time" expectation in the EXPECTS map, participants, a duration, and a `fixture_id` column pointing back at the fixture. **Nothing writes `fixture_id`.** All four seeded `match` sessions on scratch carry `fixture_id: null`, so the two representations coexist and neither knows about the other.
 
   What that means in practice right now: a fixture is staff-calendar information. It draws on the schedule grid (2026-09-07), tints the matchday header, anchors the MD spine, and appears on every athlete's Today screen as the "Working towards" line — which is club-wide and names nobody. **It has no participants, generates no RPE, and counts zero contact minutes.** A club creating a fixture has not told anybody to turn up to anything.
 
@@ -57,6 +69,8 @@
   Two things already anticipate the answer, so neither is blocking: `sessions.fixture_id` exists and is indexed by the schema, and `fixturesToDraw` (scheduleGeometry.ts) already suppresses a fixture's own grid block the moment a `match` session claims it — added when fixture blocks were built, precisely so both representations could coexist without drawing the same match twice.
 
   **The backfill question rides along with it.** If fixtures start creating sessions, the four existing `match` sessions with `fixture_id: null` are either orphans to leave alone, rows to link to a matching fixture by date, or seed data to delete. Whichever, it needs deciding at the same time — a half-linked schema is worse than either end state, because `fixturesToDraw` would then hide some fixtures and not others with nothing on screen explaining the difference.
+
+  </details>
 
 
 - [x] **Flags and player-profile field-level rules (2026-09-06).** Done, deployed (migration 0075), Run-verified across four roles. S&C raises flags but cannot edit wellness entries or RPE scores. Nutritionist edits only nutrition-domain flags, read-only on all others, and can only edit bodyweight and nutrition plan on the player profile.
@@ -959,7 +973,13 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
 - [x] **CLOSED 2026-09-09: the px→rem font sweep had missed the style attribute. Two athlete instances fixed and deployed (`8ac8e02`).** `check-font-scaling.ts` read `base.css` and nothing else, so it passed green while 132 inline `fontSize` values in TSX stayed px — React writes `fontSize: 17` as `font-size: 17px`, the exact declaration the sweep existed to remove. The two on athlete screens were **the name of every to-do row on Today** (17px, whose own subtitle already scaled, so the row grew around a title that did not move) and a submitted problem report's body (14px). Measured on production signed in as an athlete: 17px and 14px at a 16px root (unchanged, so nothing moved for a default user), 25.5px and 21px at a 24px root. The guard now also scans the athlete routes and was made to fail first.
 
-- [ ] **~130 inline px font sizes remain in the staff app, plus one the athlete reaches.** `check-font-scaling.ts` is scoped to `src/app/(athlete)/**` on purpose and its header says so rather than implying the app is clean. The staff count is dominated by `settings/page.tsx` (48). `FlagNotice.tsx:40`'s 10.5px domain pill is real text and genuinely unfixed. `AvatarUploadForm.tsx:141`'s 20px initials are a monogram centred in a hard 64×64 circle and `aria-hidden` — it clips if the glyph grows, so leave it px, the same argument `.lockup-word` already makes.
+- [x] **CLOSED 2026-09-09: there are ZERO raw inline font sizes left, in either app.** All 131 were migrated into the `--fs-*` scale, which converts them to rem as a side effect — closing the half of the 2026-09-08 font-scaling sweep that `check-font-scaling.ts` had deliberately deferred as "work nobody has scheduled". `scripts/check-scale-tokens.ts` walks all of `src`, so the staff app is covered now, not just `src/app/(athlete)/**`.
+
+  Both named exceptions are resolved rather than left: `FlagNotice.tsx:40`'s 10.5px pill is now `var(--fs-11)` (the collapse rounded it up 0.5px, which is slightly better for a real-text pill that was under the accessible floor).
+
+  **`AvatarUploadForm.tsx`'s monogram deserves its own note, because this entry warned about it and the migration walked straight into the warning.** It said to leave the 20px in px "because it clips if the glyph grows" inside a hard 64×64 circle. The sweep tokenised it anyway — identical at a 16px root, clipping at a larger one, which is invisible at default settings and only reaches the readers the rem conversion was FOR. A sweep found two more of the same shape: a 38px avatar tile in the training report and a 48px org-logo square.
+
+  Fixed better than the original compromise: **the boxes now scale too** (`4rem` / `2.375rem` / `3rem`, identical at a 16px root), so type and box grow together and the ratio holds at any text size. Measured on the real render at a 24px root — the circle went 64→96px, the type 20→30px, and the initials still fit. `check-scale-tokens.ts` now fails the build on any style object that mixes a `--fs-*` token with a hard px width or height.
 
 - [x] **Verified 2026-09-08, no action: the `0087` rate limiter still works.** End-to-end on scratch through the real functions as `service_role`, not by reading the migration: failures 1–4 counted `attempts_remaining` 4→1; failure 5 returned `{"is_locked":true,"seconds_remaining":30,"attempts_remaining":0}`; the independent `login_attempt_gate` agreed; a success reset to 5; the probe row was then removed by the function's own success path. On production, grants only, to avoid writes — `service_role` holds EXECUTE on `login_attempt_gate` and `login_attempt_record_result`, **`anon` and `authenticated` hold neither**, and the gate called as `service_role` returned a real row. Both databases hold 2 `login_attempts` rows, which is expected: it is a failure-streak table that deletes on success, so near-empty means sign-ins are succeeding. Argument order is `login_attempt_record_result(p_email, p_success, p_org_id)`.
 
@@ -1257,7 +1277,8 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
 ## 2. Backend & Infrastructure
 - [x] Backend already built on Supabase
-- [ ] No GitHub remote currently configured — deploys go straight from CLI. Decide if that's an acceptable risk or worth fixing.
+- [x] **CLOSED 2026-09-09: there is a GitHub remote and it holds the full history.** `origin` is `https://github.com/isabellasale212/FYDR.git`, **541 commits**, and `athlete-spec-builder` is the default branch. Verified rather than trusted: a fresh `--depth 1` clone into a temp directory checked out `athlete-spec-builder` at the right commit with 856 files and tonight's migrations present, and `git ls-remote --symref origin HEAD` reads the default from the server. Deploys still go from the CLI — Vercel deploys the WORKING TREE, not a git ref — so the remote is a backup, not a pipeline.
+  **One thing is still unbacked:** `stash@{0}` from 14 August (*"temp: revert bug fixes for before/after live verification"*, from a worktree agent). A stash is not pushed by `git push`. Recover it or drop it deliberately.
 - [ ] Confirm which Supabase tier is live (Free has no automated backups — needs Pro before real club data is at risk)
 - [ ] Confirm offline sync strategy for GPS/wellness data on poor signal — status in the existing build unknown, needs checking
 - [ ] Once verification is done, have Claude Code produce one consolidated, cited "verified state" doc rather than relying on scattered prose docs

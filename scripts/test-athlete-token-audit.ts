@@ -85,8 +85,18 @@ console.log('\n1. no raw radius in an inline style');
         /* The enclosing style object, read outwards from the match. */
         const start = src.lastIndexOf('{', m.index ?? 0);
         const obj = src.slice(Math.max(0, start - 60), (m.index ?? 0) + 220);
-        const w = /width:\s*([\d.]+)/.exec(obj)?.[1];
-        const h = /height:\s*([\d.]+)/.exec(obj)?.[1];
+        /* UNIT-AWARE SINCE 2026-09-09, and it had to be. This read bare
+           numbers only, so when AvatarUploadForm's circle moved from
+           `width: 64` to `width: '4rem'` — a square either way — the regex
+           stopped matching and a real circle was reported as a raw radius.
+           The premise is "equal width and height is a circle", and that holds
+           in any unit. Comparing the captured strings also keeps the check
+           honest about MIXED units: `width: 64` with `height: '4rem'` is not a
+           square you can reason about, and is exactly the mismatch that made
+           the monogram clip at a raised text size. */
+        const dim = (prop: string): string | undefined =>
+          new RegExp(`${prop}:\\s*'?([\\d.]+(?:rem|px|em)?)'?`).exec(obj)?.[1];
+        const w = dim('width'), h = dim('height');
         if (w !== undefined && h !== undefined && w === h) continue;
       }
       offenders.push(`${f}:${line}  borderRadius: ${value}`);

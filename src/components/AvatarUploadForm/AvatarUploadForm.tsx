@@ -124,14 +124,23 @@ export function AvatarUploadForm({
             alt=""
             width={64}
             height={64}
-            style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border)' }}
+            /* Matches the monogram's 4rem: the avatar must not change size
+               depending on whether a photo exists. The width/height ATTRIBUTES
+               stay 64 — they are the intrinsic size hint that avoids layout
+               shift, not the rendered box. */
+            style={{ width: '4rem', height: '4rem', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border)' }}
           />
         ) : (
           <div
             aria-hidden="true"
             style={{
-              width: 64,
-              height: 64,
+              /* 4rem is 64px at a 16px root. 0i argued this monogram should
+                 stay px BECAUSE it clips if the glyph grows inside a hard box —
+                 the better answer is to let the box grow too, so the ratio holds
+                 at any text size and the initials still respect the reader's
+                 preference. */
+              width: '4rem',
+              height: '4rem',
               borderRadius: '50%',
               background: colour ? `var(--group-${colour.toLowerCase()})` : 'var(--surf2)',
               border: '1px solid var(--border)',

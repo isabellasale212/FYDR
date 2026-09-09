@@ -82,14 +82,17 @@ export function OrgLogoField({ orgId, orgName, initialLogoUrl }: Props) {
             alt=""
             width={48}
             height={48}
-            style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'contain', border: '1px solid var(--border)', background: 'var(--surf2)' }}
+            /* 3rem to match the initials box beside it. */
+            style={{ width: '3rem', height: '3rem', borderRadius: 8, objectFit: 'contain', border: '1px solid var(--border)', background: 'var(--surf2)' }}
           />
         ) : (
           <div
             aria-hidden="true"
             style={{
-              width: 48,
-              height: 48,
+              /* 3rem is 48px at a 16px root; see AvatarUploadForm for the
+                 argument. Its initials read var(--fs-16). */
+              width: '3rem',
+              height: '3rem',
               borderRadius: 8,
               background: 'var(--surf2)',
               border: '1px solid var(--border)',

@@ -252,5 +252,36 @@ console.log('\nbase.css holds no raw font size or spacing either');
   );
 }
 
+console.log('\nno rem type sits inside a hard px box');
+{
+  /* THE REGRESSION THIS EXISTS FOR, introduced by the migration it guards. 0i
+     had already argued that AvatarUploadForm's monogram should stay in px
+     "because it clips if the glyph grows" inside a hard 64x64 circle. The
+     inline sweep converted it to var(--fs-20) anyway, which renders identically
+     at a 16px root and clips at a larger one — the exact failure the note
+     predicted, invisible at default settings and only visible to somebody who
+     had raised their text size, which is the population the rem conversion was
+     FOR.
+     
+     Two more had the same shape: a 38px avatar tile in the training report and
+     a 48px org-logo square. All three are now rem boxes, so type and box grow
+     together and the ratio holds at any text size. */
+  const offenders: string[] = [];
+  for (const file of files) {
+    if (NO_TOKENS.test(file)) continue;
+    const src = readFileSync(file, 'utf8');
+    for (const [a, b] of styleSpans(src)) {
+      const seg = src.slice(a, b);
+      if (!/fontSize: *'var\(--fs-/.test(seg)) continue;
+      const box = /\b(width|height|maxWidth|maxHeight): *([0-9]+)\b/.exec(seg);
+      if (!box) continue;
+      offenders.push(`${file.replace('src/', '')}:${src.slice(0, a).split('\n').length} ${box[1]}: ${box[2]}`);
+    }
+  }
+  assert(offenders.length === 0, offenders.length === 0
+    ? 'every style object with a type token sizes its box in rem too, so raising the default text size cannot clip it'
+    : offenders.join(' · '));
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

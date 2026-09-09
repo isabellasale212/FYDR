@@ -113,7 +113,18 @@ export function ScheduleWorkspace({
   const router = useRouter();
   const client = useMemo(() => createClient(), []);
 
-  const [mode, setMode] = useState<'read' | 'edit'>('read');
+  /* EDIT IS THE ENTRY POINT FOR ANYONE WHO CAN EDIT, decided by Isabella
+     2026-09-09 after the schedule bug report. Defaulting to 'read' was the
+     whole of that report: a coach landed on a rich, complete, entirely
+     read-only panel with no Save and no Cancel, because the mode they were in
+     never announced itself and the Read/Edit toggle sits in the page header,
+     far from the panel they were looking at. Nothing was broken — every
+     control worked the moment you switched — which is why it read as
+     unresponsive rather than as an error.
+     Roles outside SESSION_EDIT stay in 'read' and have no toggle (see the
+     canEdit guard on the segmented control below), which is correct: for them
+     read-only is the whole screen, not a mode they are stuck in. */
+  const [mode, setMode] = useState<'read' | 'edit'>(canEdit ? 'edit' : 'read');
   const [sel, setSel] = useState<string | null>(null);
   const [newDraft, setNewDraft] = useState<DraftSession | null>(null);
   const [edits, setEdits] = useState<Record<string, EditOverlay>>({});

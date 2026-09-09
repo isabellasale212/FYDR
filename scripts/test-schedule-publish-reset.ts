@@ -100,6 +100,18 @@ if (catIdx >= 0 && finIdx > catIdx) {
   assert(/setPublishError\(/.test(catBlock), 'the catch surfaces the failure through setPublishError');
 }
 
+/* THE MODE DEFAULT, from the same bug report. A coach who can edit must not
+   land in the read-only view: that, not the publish reset above, is what made
+   the screen read as broken. Roles without SESSION_EDIT must still default to
+   read, so this asserts the value is DERIVED from canEdit rather than pinned
+   to either literal. */
+const modeInit = /useState<'read' \| 'edit'>\(([^)]*)\)/.exec(src)?.[1]?.trim();
+assert(modeInit !== undefined, 'the mode state is still initialised in this file');
+assert(modeInit !== "'read'", 'mode does not default to read for everyone (the reported bug)');
+assert(/canEdit/.test(modeInit ?? ''), `mode default is derived from canEdit (saw: ${modeInit})`);
+assert(/'edit'/.test(modeInit ?? '') && /'read'/.test(modeInit ?? ''),
+  'and it still resolves to read for roles that cannot edit');
+
 /* The button is still the thing this protects. */
 assert(/className="sg-btn-publish"[\s\S]{0,200}?disabled=\{publishing\}/.test(src)
     || /disabled=\{publishing\}[\s\S]{0,200}?className="sg-btn-publish"/.test(src),

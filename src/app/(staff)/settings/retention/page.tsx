@@ -83,9 +83,13 @@ export default async function RetentionPage() {
         <h2 className="card-title" id="nightly-title">
           Nightly reports
         </h2>
+        {/* "Runs automatically every night at" removed 2026-09-09: the heading is
+            "Nightly reports", which already says both automatic and nightly. The
+            time, the read-only nature, and that it records whether or not anyone
+            looks are the parts a reader cannot infer, so they stay. */}
         <p className="import-sub" style={{ marginBottom: 10 }}>
-          Runs automatically every night at 02:15 UTC, read-only — the same two counts the preview above shows,
-          recorded whether or not anyone opens this page.
+          02:15 UTC, read-only — the same two counts the preview above shows, recorded
+          whether or not anyone opens this page.
         </p>
         {nightlyReports.length === 0 ? (
           <p className="cap">No nightly report has run yet. The next one runs at 02:15 UTC.</p>

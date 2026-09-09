@@ -111,12 +111,15 @@ export function UserManagementPanel({ orgId, currentUserId, currentActorRole, ti
 
       {unlinked.length > 0 ? (
         <section className="card flush">
-          <h2 className="card-title" style={{ padding: '16px 16px 0' }}>
+          {/* NO SUBTEXT. It read "On the squad, but nobody has invited them yet",
+              which is the heading again: "nobody has invited them yet" IS "no
+              account", and "on the squad" is what this whole panel is. Cut by
+              Isabella 2026-09-09 from the subheader audit. The 8px bottom padding
+              moved onto the heading — the paragraph was carrying it, so deleting
+              it outright would have butted the list against the title. */}
+          <h2 className="card-title" style={{ padding: '16px 16px 8px' }}>
             Athlete records with no account
           </h2>
-          <p className="tiny" style={{ padding: '0 16px 8px' }}>
-            On the squad, but nobody has invited them yet.
-          </p>
           {unlinked.map((a, index) => (
             <div key={a.id}>
               {index > 0 ? <div className="hair" /> : null}

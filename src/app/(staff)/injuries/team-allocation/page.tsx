@@ -117,21 +117,25 @@ export default async function TeamAllocationPage({
           teams={teams}
           board={filteredBoard}
           canAllocate={hasAnyRole(claims.roles, SESSION_EDIT)}
+          timezone={timezone}
         />
       </div>
 
-      {/* THIS CAPTION CLAIMED TWO FIELDS THE SCREEN NEVER SHOWS. It read
-          "Availability, restrictions and body area only", and teamAllocation.ts
-          fetches none of the latter two — its own header says "medical's own read
-          access here is availability only", and 29-team-allocation.md sanctions no
-          field list at all. Nothing leaked, because the data was never fetched;
-          the caption simply told a coach that restrictions and body area were on
-          this board. A caption about the medical boundary is the one piece of text
-          on the screen that has to be exactly true. */}
+      {/* THIS CAPTION HAS NOW BEEN WRONG IN BOTH DIRECTIONS, which is why the guard
+          checks it against the query AND the board rather than against a remembered
+          sentence.
+          First it read "Availability, restrictions and body area only — the same
+          boundary as every other screen", while the screen showed neither of the
+          latter two: it named fields that were never fetched. Nothing leaked, but it
+          told a coach they were looking at something they were not.
+          Then it read "Availability only", which was true of the code — and made this
+          the ONLY coach-facing screen without the limited injury view. Isabella decided
+          on 2026-09-09 to show the same four fields as the other five screens
+          (29-team-allocation.md), so the caption names them. */}
       <p className="cap">
-        Availability only &mdash; picking a team needs to know who cannot be selected, not
-        why. No body area, no restrictions, no diagnosis, no clinical notes, not even for
-        medical, on this screen.
+        Availability, body area and side, restrictions, and expected return &mdash; the
+        same limited injury view every other screen shows a coach. No diagnosis, no
+        clinical notes, not even for medical, on this screen.
       </p>
     </>
   );

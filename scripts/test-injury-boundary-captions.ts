@@ -83,8 +83,12 @@ const showsClause = (cap: string): string => cap.split(/\bNo\b/)[0] ?? cap;
 const board = (file: string): string => blank(readFileSync(file, 'utf8'));
 const rehabBoard = board('src/components/RehabGroupBoard/RehabGroupBoard.tsx');
 const teamBoard = board('src/components/TeamAllocationBoard/TeamAllocationBoard.tsx');
+/* `row` is in the alternation because TeamAllocationBoard renders these through a
+   shared <InjuryLine row={a} /> component, so the field access reads `row.body_area`
+   rather than `a.body_area`. Missing that read as "the board does not render it",
+   which is the wrong-instrument mistake this file has already made twice. */
 const renders = (src: string, field: string): boolean =>
-  new RegExp(`\\b(?:member|m|a)\\.${field}\\b`).test(src);
+  new RegExp(`\\b(?:member|row|m|a)\\.${field}\\b`).test(src);
 
 /** Field name in code -> how the caption says it in prose. */
 const FIELDS: readonly [string, RegExp][] = [
@@ -114,13 +118,43 @@ assert(/availability/i.test(rehabShows), 'and the rehab-groups caption says avai
 assert(exposes(rehabQ, 'restrictions') && renders(rehabBoard, 'restrictions'),
   'rehab-groups fetches restrictions AND the board draws them (28-rehab-groups.md always promised this)');
 
+/* TEAM ALLOCATION NOW SHOWS THE SAME FOUR FIELDS, decided 2026-09-09. This block
+   asserted the exact opposite until then — that the query exposed none of them,
+   the board rendered none, and the caption claimed none — because that was the
+   state and it was pinned so the caption could not drift from it again. The
+   decision inverted it, and inverting it is what forces query, board and caption
+   to move in one change: leave any one of the three behind and this fails.
+   `phase` stays out. It is the rehab board's own instrument, not part of the
+   limited injury view, and no other screen shows it. */
 const teamShows = showsClause(teamCap);
-for (const [field, prose] of FIELDS) {
-  assert(!exposes(teamQ, field), `teamAllocation.ts does not expose ${field}`);
-  assert(!renders(teamBoard, field), `TeamAllocationBoard does not render ${field}`);
-  assert(!prose.test(teamShows), `and the team-allocation caption does not claim ${field}`);
+const TEAM_FIELDS = FIELDS.filter(([f]) => f !== 'phase');
+
+for (const [field, prose] of TEAM_FIELDS) {
+  assert(exposes(teamQ, field), `teamAllocation.ts exposes ${field}`);
+  assert(renders(teamBoard, field), `TeamAllocationBoard renders ${field}`);
+  assert(prose.test(teamShows), `and the team-allocation caption names ${field}`);
 }
-assert(/availability/i.test(teamShows), 'and does say availability, which is what it shows');
+assert(!exposes(teamQ, 'phase') && !renders(teamBoard, 'phase') && !/phase/i.test(teamShows),
+  'phase stays out of team allocation — it is the rehab board\'s instrument, not the shared injury view');
+assert(/availability/i.test(teamShows), 'and the caption still says availability');
+
+/* BOTH ROW SHAPES, not just the component. Deleting <InjuryLine> from the
+   unallocated row did NOT fail this file until this assertion existed: the
+   `renders()` check finds `row.body_area` inside the InjuryLine definition, which
+   survives when a call site is removed. So it proved the component existed, not
+   that the board used it — the same "does it pin the board too" gap that caught
+   the query-only version. The board has two row shapes, allocated and
+   unallocated, and a coach reads both. A third shape appearing should fail this
+   and be looked at. */
+const injuryLineUses = (teamBoard.match(/<InjuryLine\b/g) ?? []).length;
+assert(injuryLineUses === 2,
+  `both team-allocation row shapes render the injury line (saw ${injuryLineUses} of 2)`);
+
+/* The clinical boundary is the one thing neither decision touched. */
+for (const [name, src] of [['teamAllocation.ts', teamQ], ['rehabGroups.ts', rehabQ]] as const) {
+  assert(!/injury_clinical/.test(src.replace(/injury_clinical is not|not.*injury_clinical/g, '')),
+    `${name} still never selects from injury_clinical`);
+}
 
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);

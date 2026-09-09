@@ -1,6 +1,6 @@
-import type { AvailabilityStatus } from '@/lib/types/database';
+import type { AvailabilityStatus, BodyArea, BodySide } from '@/lib/types/database';
 import { humanizeDbError } from '@/lib/writeErrors';
-import { fetchCurrentAvailability } from './availability';
+import { fetchCurrentAvailability, fetchOpenInjuries } from './availability';
 import { fetchCurrentSeasonId } from './schedule';
 import type { Db } from './groups';
 
@@ -53,17 +53,54 @@ export type AllocationRow = {
   status: 'draft' | 'published' | 'withdrawn';
   availability_at_allocation: AvailabilityStatus | null;
   override_reason: string | null;
+  /** Current availability, not the snapshot above: the snapshot records what was
+   *  true when the pick was made, this is what is true now. */
+  availability: AvailabilityStatus | null;
+  /* THE LIMITED INJURY VIEW, decided 2026-09-09 (29-team-allocation.md).
+     Same four non-clinical fields every other coach-facing screen shows, from the
+     same sources: restrictions ride on the availability record, body area / side /
+     expected return come from `injuries` via fetchOpenInjuries. injury_clinical is
+     still never selected from, joined to, or reachable from this file. */
+  restrictions: string[];
+  body_area: BodyArea | null;
+  side: BodySide | null;
+  expected_return: string | null;
 };
 
 export type WeekBoard = {
   allocations: AllocationRow[];
-  unallocated: { athlete_id: string; first_name: string; last_name: string; availability: AvailabilityStatus | null }[];
+  unallocated: {
+    athlete_id: string;
+    first_name: string;
+    last_name: string;
+    availability: AvailabilityStatus | null;
+  /* THE LIMITED INJURY VIEW, decided 2026-09-09 (29-team-allocation.md).
+     Same four non-clinical fields every other coach-facing screen shows, from the
+     same sources: restrictions ride on the availability record, body area / side /
+     expected return come from `injuries` via fetchOpenInjuries. injury_clinical is
+     still never selected from, joined to, or reachable from this file. */
+  restrictions: string[];
+  body_area: BodyArea | null;
+  side: BodySide | null;
+  expected_return: string | null;
+  }[];
 };
 
-/** Everything for one week: who is on which team, and who is on none. Availability
- *  only, per the clinical boundary this screen holds without exception — no join,
- *  no select, no path to injury_clinical from this function or any other in this
- *  file. */
+/** Everything for one week: who is on which team, and who is on none, each with
+ *  the limited injury view.
+ *
+ *  THIS USED TO SAY "availability only", and that was the whole of the boundary
+ *  this screen held — which made it the ONLY coach-facing screen not showing body
+ *  area, restrictions and expected return, while its own on-screen caption claimed
+ *  it showed two of them. Isabella decided on 2026-09-09 to match the other five
+ *  (29-team-allocation.md), because picking a side needs "modified · shoulder · no
+ *  contact" rather than a bare "modified".
+ *
+ *  THE CLINICAL BOUNDARY IS UNCHANGED AND STILL ABSOLUTE: no join, no select, no
+ *  path to injury_clinical from this function or any other in this file. Body area
+ *  and side come from `injuries`, the non-clinical record, exactly as
+ *  fetchOpenInjuries already supplies the dashboard, the injuries list and the
+ *  rehab board. */
 export async function fetchWeekBoard(db: Db, orgId: string, weekStart: string): Promise<WeekBoard> {
   const [athletesRes, allocRes] = await Promise.all([
     db
@@ -86,8 +123,31 @@ export async function fetchWeekBoard(db: Db, orgId: string, weekStart: string): 
 
   const allocatedIds = new Set((allocRes.data ?? []).map((a) => a.athlete_id));
   const athleteIds = (athletesRes.data ?? []).map((a) => a.id);
-  const availability = await fetchCurrentAvailability(db, orgId, athleteIds);
-  const availByAthlete = new Map(availability.map((a) => [a.athlete_id, a.status]));
+  const [availability, injuries] = await Promise.all([
+    fetchCurrentAvailability(db, orgId, athleteIds),
+    fetchOpenInjuries(db, orgId, athleteIds),
+  ]);
+  const availByAthlete = new Map(availability.map((a) => [a.athlete_id, a]));
+  const injuryByAthlete = new Map<string, (typeof injuries)[number]>();
+  for (const inj of injuries) {
+    /* Same documented best-effort pick as the rehab board: an athlete can carry
+       more than one open injury, each row shows one line, and fetchOpenInjuries
+       has no reliable order — so the last seen wins. Not a claim about which
+       injury is the relevant one. */
+    injuryByAthlete.set(inj.athlete_id, inj);
+  }
+  /** The four fields, resolved once for either row shape. */
+  const injuryView = (athleteId: string) => {
+    const current = availByAthlete.get(athleteId);
+    const injury = injuryByAthlete.get(athleteId);
+    return {
+      availability: current?.status ?? null,
+      restrictions: current?.restrictions ?? [],
+      body_area: injury?.body_area ?? null,
+      side: injury?.side ?? null,
+      expected_return: injury?.expected_return ?? null,
+    };
+  };
 
   const allocations: AllocationRow[] = (allocRes.data ?? []).map((a) => ({
     id: a.id,
@@ -98,6 +158,7 @@ export async function fetchWeekBoard(db: Db, orgId: string, weekStart: string): 
     status: a.status,
     availability_at_allocation: a.availability_at_allocation,
     override_reason: a.override_reason,
+    ...injuryView(a.athlete_id),
   }));
 
   const unallocated = (athletesRes.data ?? [])
@@ -106,7 +167,7 @@ export async function fetchWeekBoard(db: Db, orgId: string, weekStart: string): 
       athlete_id: a.id,
       first_name: a.first_name,
       last_name: a.last_name,
-      availability: availByAthlete.get(a.id) ?? null,
+      ...injuryView(a.id),
     }));
 
   return { allocations, unallocated };

@@ -192,7 +192,7 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
                 checked={baselineType === b.value}
                 onChange={() => setBaselineType(b.value)}
               />
-              <span style={{ fontSize: 'var(--fs-13-5)', fontWeight: 700 }}>{b.label}</span>
+              <span style={{ fontSize: 'var(--fs-13)', fontWeight: 700 }}>{b.label}</span>
             </span>
             <span className="tiny" style={{ display: 'block', marginLeft: 'var(--sp-24)' }}>
               {b.hint}

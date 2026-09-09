@@ -234,7 +234,7 @@ export function DashboardHeadlineStats({
             stats.wellnessMissingNames.map((name) => (
               <div key={name} className="dash-stat-expand-row">
                 <span className="dash-squad-dot" style={{ background: 'var(--warn)' }} aria-hidden="true" />
-                <span style={{ fontSize: 'var(--fs-13-5)', fontWeight: 600 }}>{name}</span>
+                <span style={{ fontSize: 'var(--fs-13)', fontWeight: 600 }}>{name}</span>
               </div>
             ))
           )}
@@ -259,13 +259,13 @@ export function DashboardHeadlineStats({
               {modifiedNamed.map((name) => (
                 <div key={`mod-${name}`} className="dash-stat-expand-row">
                   <span className="dash-squad-dot" style={{ background: 'var(--warn)' }} aria-hidden="true" />
-                  <span style={{ fontSize: 'var(--fs-13-5)', fontWeight: 600 }}>{name}</span>
+                  <span style={{ fontSize: 'var(--fs-13)', fontWeight: 600 }}>{name}</span>
                 </div>
               ))}
               {unavailableNamed.map((name) => (
                 <div key={`out-${name}`} className="dash-stat-expand-row">
                   <span className="dash-squad-dot" style={{ background: 'var(--bad)' }} aria-hidden="true" />
-                  <span style={{ fontSize: 'var(--fs-13-5)', fontWeight: 600 }}>{name}</span>
+                  <span style={{ fontSize: 'var(--fs-13)', fontWeight: 600 }}>{name}</span>
                 </div>
               ))}
             </>

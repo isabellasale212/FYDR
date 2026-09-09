@@ -179,7 +179,7 @@ export default async function ProgrammeAthletePage({
                     {exercises.map((ex) => (
                       <div key={ex.programme_exercise_id} className="prog-ex-row">
                         <span>
-                          <span className="nm" style={{ fontSize: 'var(--fs-13-5)' }}>
+                          <span className="nm" style={{ fontSize: 'var(--fs-13)' }}>
                             {ex.exercise_name}
                           </span>
                           {ex.notes ? (

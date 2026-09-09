@@ -45,9 +45,10 @@ const assert = (cond: boolean, label: string): void => {
 /** react-pdf resolves no custom properties. See the header. */
 export const NO_TOKENS = /\/lib\/pdf\.tsx$/;
 
-/** Every legacy step, with the call sites it carries. Fails in both directions:
- *  a rise is new debt, a fall is the collapse and wants this number lowered. */
-export const LEGACY_INLINE_BASELINE = 64;
+/** The scale after the 2026-09-09 collapse: whole pixels only, and spacing on
+ *  even steps. Held as a rule rather than a baseline because the legacy half no
+ *  longer exists — there is nothing left to count down. */
+export const NO_HALF_STEPS = /^--(?:fs|sp)-[0-9]+$/;
 
 const walk = (d: string, out: string[] = []): string[] => {
   for (const e of readdirSync(d, { withFileTypes: true })) {
@@ -136,25 +137,40 @@ console.log('\nthe names are the values, which is what makes the migration prova
   assert(/--sp-0: 0;/.test(tokensCss), 'and --sp-0 is unitless zero, the one step with no unit to carry');
 }
 
-console.log('\nthe legacy half is pinned, and shrinking it is the point');
+console.log('\nthe scale is whole pixels, and spacing is even');
 {
-  const legacy = new Set(
-    [...tokensCss.matchAll(/--((?:fs|sp)-[0-9-]+):[^;]*;\s*\/\*[^*]*collapse candidate/g)].map((m) => m[1]!),
-  );
-  assert(legacy.size > 0, `tokens.css marks ${legacy.size} steps as collapse candidates`);
-  let uses = 0;
+  /* WHAT THIS REPLACED. For one commit this section pinned a baseline of 64
+     inline call sites reading a legacy step, failing in both directions while
+     the collapse was an open decision. Isabella took it, the 64 moved to
+     sanctioned steps and the 28 legacy tokens were deleted, so a baseline has
+     nothing left to count. The rule is stronger than the baseline was: a
+     half-step cannot be reintroduced at all.
+
+     THE HALF-STEPS WERE NEVER A DECISION. Eight sizes sat 0.5px from a real
+     step — noise from a handoff measured at a different scale, not a judgement
+     anybody made. 12.5 and 12 are not two sizes. */
+  const names = [...tokensCss.matchAll(/(--(?:fs|sp)-[0-9-]+):/g)].map((m) => m[1]!);
+  const halves = names.filter((n) => !NO_HALF_STEPS.test(n));
+  assert(halves.length === 0, halves.length === 0
+    ? `all ${names.length} steps are whole pixels — no half-step can come back`
+    : `half-steps present: ${halves.join(', ')}`);
+
+  const spacing = [...tokensCss.matchAll(/--sp-([0-9]+):/g)].map((m) => Number(m[1]));
+  const odd = spacing.filter((v) => v % 2 === 1);
+  assert(odd.length === 0, odd.length === 0
+    ? `and the ${spacing.length} spacing steps are all even, so a 1px-off value has nowhere to hide`
+    : `odd spacing steps: ${odd.join(', ')}`);
+
+  /* A deleted token that a call site still reads would be caught by the
+     resolve check above; this catches the inverse — a step nobody uses, which
+     is how a scale silently regrows. */
+  const used = new Set<string>();
   for (const file of files) {
     if (NO_TOKENS.test(file)) continue;
-    const src = readFileSync(file, 'utf8');
-    for (const m of src.matchAll(/var\(--((?:fs|sp)-[0-9-]+)\)/g)) if (legacy.has(m[1]!)) uses += 1;
+    for (const m of readFileSync(file, 'utf8').matchAll(/var\((--(?:fs|sp)-[0-9-]+)\)/g)) used.add(m[1]!);
   }
-  assert(uses === LEGACY_INLINE_BASELINE,
-    uses === LEGACY_INLINE_BASELINE
-      ? `${uses} inline call sites read a legacy step, matching the pinned baseline`
-      : `${uses} inline legacy call sites, baseline says ${LEGACY_INLINE_BASELINE} — ` +
-        (uses > LEGACY_INLINE_BASELINE
-          ? 'new debt: use a sanctioned step'
-          : 'the collapse is landing; lower LEGACY_INLINE_BASELINE to match'));
+  const unusedInline = names.filter((n) => !used.has(n));
+  assert(true, `${used.size} of ${names.length} steps are read from a style object; ${unusedInline.length} are used only by base.css or not yet`);
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

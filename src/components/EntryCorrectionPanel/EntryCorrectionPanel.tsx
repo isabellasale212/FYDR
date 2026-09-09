@@ -177,7 +177,7 @@ export function EntryCorrectionPanel({
         </div>
       )}
 
-      <h3 className="card-title" style={{ fontSize: 'var(--fs-14)', marginTop: 'var(--sp-22)' }}>
+      <h3 className="card-title" style={{ fontSize: 'var(--fs-14)', marginTop: 'var(--sp-20)' }}>
         Session ratings (RPE)
       </h3>
       {training.length === 0 ? (

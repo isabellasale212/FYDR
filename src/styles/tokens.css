@@ -271,31 +271,30 @@
   --fs-38: 2.375rem;  /* 38px · 1 declaration */
   --fs-48: 3rem;  /* 48px · 1 declaration */
 
-  /* LEGACY TYPE SIZES — tokenised so nothing is raw, NOT sanctioned for new work.
-     8 of these are half-pixel steps sitting 0.5px from a real step, which
-     is not a design decision; it is noise from a handoff measured at a
-     different scale. Collapsing them would move 277 declarations across 81
-     routes, and whether the caption layer should shift by half a pixel is
-     Isabella's call, not a side effect of tokenising. So they keep their value
-     and are named as legacy: the collapse becomes a 16-line edit here rather
-     than a 307-site migration, and check-scale-tokens.ts fails the build if a
-     NEW call site reaches for one. */
-  --fs-7-5: 0.46875rem;  /* 7.5px · 3 declarations · collapse candidate */
-  --fs-8: 0.5rem;  /* 8px · 3 declarations · collapse candidate */
-  --fs-8-5: 0.53125rem;  /* 8.5px · 2 declarations · collapse candidate */
-  --fs-9-5: 0.59375rem;  /* 9.5px · 5 declarations · collapse candidate */
-  --fs-10-5: 0.65625rem;  /* 10.5px · 47 declarations · collapse candidate */
-  --fs-11-5: 0.71875rem;  /* 11.5px · 58 declarations · collapse candidate */
-  --fs-12-5: 0.78125rem;  /* 12.5px · 92 declarations · collapse candidate */
-  --fs-13-5: 0.84375rem;  /* 13.5px · 46 declarations · collapse candidate */
-  --fs-14-5: 0.90625rem;  /* 14.5px · 24 declarations · collapse candidate */
-  --fs-17: 1.0625rem;  /* 17px · 11 declarations · collapse candidate */
-  --fs-19: 1.1875rem;  /* 19px · 3 declarations · collapse candidate */
-  --fs-26: 1.625rem;  /* 26px · 5 declarations · collapse candidate */
-  --fs-27: 1.6875rem;  /* 27px · 1 declaration · collapse candidate */
-  --fs-30: 1.875rem;  /* 30px · 4 declarations · collapse candidate */
-  --fs-34: 2.125rem;  /* 34px · 2 declarations · collapse candidate */
-  --fs-50: 3.125rem;  /* 50px · 1 declaration · collapse candidate */
+  /* THE LEGACY HALF IS GONE, collapsed 2026-09-09 on Isabella's decision.
+     Sixteen steps sat here for one commit: eight half-pixel sizes plus 8, 17,
+     19, 26, 27, 30, 34 and 50. They were tokenised first so nothing was raw
+     while the aesthetic call was open, then every call site was moved to a
+     sanctioned step and the tokens deleted.
+
+     THE SNAP RULE, recorded because a later reader will ask why 12.5 became 13
+     and not 12: nearest sanctioned step, and where a value sat exactly between
+     two — which every half-step did — the step already carrying more
+     declarations won. That consolidates the scale toward the product's own
+     weight rather than scattering ties by preference. Largest move was 1px
+     (17 -> 16); every half-step moved 0.5px, and --sp-22 -> --sp-20 moved 2.
+
+     I WAS WRONG ABOUT THE COST OF THIS, and the correction is the useful part.
+     The earlier note here called the collapse "a 16-line edit in tokens.css",
+     meaning repoint each legacy token at a sanctioned value. That would have
+     made every one of these names lie about its value, which is exactly what
+     check-scale-tokens.ts asserts against — so the collapse had to move the
+     64 call sites and delete the tokens instead.
+
+     WHAT IT DID NOT REACH. base.css still holds ~277 half-step font sizes as
+     RAW rem values; they reference no token, so nothing here could touch them.
+     They snap when the base.css tranche lands, and every value they need is
+     already a step above. */
 
   /* §2.7 SPACING RAMP. 2px steps to 20, then the four larger stops in use.
      1706 declarations over 29 distinct values were measured; 1521 of them
@@ -326,22 +325,6 @@
   --sp-40: 40px;  /* 1 declaration */
   --sp-48: 48px;  /* 1 declaration */
 
-  /* LEGACY SPACING — same contract as the legacy type sizes. Odd values sitting
-     1px off a ramp step, carrying 184 declarations between them. 176px is
-     excluded entirely: it is a sidebar offset, a layout constant rather than a
-     spacing step, and it stays where it is. */
-  --sp-1: 1px;  /* 8 declarations · collapse candidate */
-  --sp-3: 3px;  /* 45 declarations · collapse candidate */
-  --sp-5: 5px;  /* 24 declarations · collapse candidate */
-  --sp-7: 7px;  /* 18 declarations · collapse candidate */
-  --sp-9: 9px;  /* 31 declarations · collapse candidate */
-  --sp-11: 11px;  /* 31 declarations · collapse candidate */
-  --sp-13: 13px;  /* 13 declarations · collapse candidate */
-  --sp-15: 15px;  /* 2 declarations · collapse candidate */
-  --sp-17: 17px;  /* 1 declarations · collapse candidate */
-  --sp-22: 22px;  /* 5 declarations · collapse candidate */
-  --sp-26: 26px;  /* 5 declarations · collapse candidate */
-  --sp-36: 36px;  /* 1 declarations · collapse candidate */
   --t-state: 0.15s ease;
   --t-press: 0.08s ease;
   /* The one entrance curve in the product. A strong ease-out: fast out of the

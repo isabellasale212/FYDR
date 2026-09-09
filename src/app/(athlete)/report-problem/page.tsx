@@ -81,7 +81,7 @@ export default async function ReportProblemPage({
                     13 — that is this list's own row rhythm. */
                 style={{ gridTemplateColumns: 'minmax(0, 1fr) auto', padding: '13px var(--pad-card)' }}>
                   <div style={{ minWidth: 0 }}>
-                    <div className="tiny" style={{ marginBottom: 'var(--sp-3)' }}>
+                    <div className="tiny" style={{ marginBottom: 'var(--sp-4)' }}>
                       {formatDateTime(r.created_at, timezone)}
                       {r.category ? ` · ${PROBLEM_REPORT_CATEGORY_LABEL[r.category] ?? r.category}` : ''}
                     </div>

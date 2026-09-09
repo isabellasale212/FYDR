@@ -222,7 +222,7 @@ export function TestLogGrid({ orgId, userId, testDefinitionId, testDate, default
                         <span
                           className="tiny num"
                           role="status"
-                          style={{ textAlign: 'center', color: STATUS_GLYPH[cellStatus].color, fontSize: 'var(--fs-9-5)' }}
+                          style={{ textAlign: 'center', color: STATUS_GLYPH[cellStatus].color, fontSize: 'var(--fs-9)' }}
                         >
                           {STATUS_GLYPH[cellStatus].text}
                         </span>

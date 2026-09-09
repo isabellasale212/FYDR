@@ -462,7 +462,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
 
         {chart === 'table' ? (
           <>
-            <h3 className="card-title" style={{ marginTop: 'var(--sp-22)', fontSize: 'var(--fs-14)' }}>
+            <h3 className="card-title" style={{ marginTop: 'var(--sp-20)', fontSize: 'var(--fs-14)' }}>
               Day by day
             </h3>
             <SeriesTable series={result.series} decimals={metric.decimals} unit={metric.unit} timezone={timezone} />

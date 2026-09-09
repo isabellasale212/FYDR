@@ -132,7 +132,7 @@ function ProposalRow({
             {live ? 'Signed off' : 'Awaiting your sign-off'}
           </span>
         </div>
-        <div className="tiny" style={{ marginTop: 'var(--sp-3)' }}>
+        <div className="tiny" style={{ marginTop: 'var(--sp-4)' }}>
           From {formatDate(proposal.starts_on, timezone)}
           {proposal.ends_on ? ` to ${formatDate(proposal.ends_on, timezone)}` : ''}
           {live ? '' : ' · not visible to the athlete yet'}

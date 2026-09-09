@@ -95,7 +95,7 @@ function ReportRow({
             {report.status === 'open' ? 'Not yet seen' : 'Acknowledged'}
           </span>
         </div>
-        <div className="tiny" style={{ marginTop: 'var(--sp-3)' }}>
+        <div className="tiny" style={{ marginTop: 'var(--sp-4)' }}>
           {formatDateTime(report.created_at, timezone)}
           {report.category ? ` · ${PROBLEM_REPORT_CATEGORY_LABEL[report.category] ?? report.category}` : ''}
         </div>

@@ -330,7 +330,7 @@ export default async function AthleteReportPage({
                       </div>
                     </div>
                     <div style={{ marginTop: 'var(--sp-12)', paddingTop: 'var(--sp-10)', borderTop: '1px solid var(--hair)' }}>
-                      <p style={{ fontSize: 'var(--fs-12-5)', fontWeight: 700, margin: '0 0 8px' }}>
+                      <p style={{ fontSize: 'var(--fs-13)', fontWeight: 700, margin: '0 0 8px' }}>
                         Session load by day
                         {loadDaysWithValue.length > 0 ? (
                           <span className="tiny" style={{ fontWeight: 400, color: 'var(--faint)' }}>
@@ -399,7 +399,7 @@ export default async function AthleteReportPage({
                         return (
                           <div key={t.test_definition_id} className="ath-test-row" data-heavy={delta?.heavy ?? false}>
                             <span>
-                              <span style={{ fontSize: 'var(--fs-13-5)', fontWeight: 600 }}>{t.name}</span>{' '}
+                              <span style={{ fontSize: 'var(--fs-13)', fontWeight: 600 }}>{t.name}</span>{' '}
                               <span className="tiny" style={{ color: 'var(--faint)' }}>
                                 ({t.unit})
                               </span>

@@ -276,7 +276,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
             flexWrap: 'wrap',
           }}
         >
-          <b style={{ fontSize: 'var(--fs-13-5)' }}>Showing {formatDate(effectiveToday, timezone)} — the latest day with data.</b>
+          <b style={{ fontSize: 'var(--fs-13)' }}>Showing {formatDate(effectiveToday, timezone)} — the latest day with data.</b>
           <span className="tiny" style={{ color: 'var(--muted)' }}>
             Nothing has been recorded for today ({formatDate(wallClockToday, timezone)}) yet. Schedule, Flags and Reports run
             on the real date.
@@ -395,7 +395,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       <div className="dash-body" style={{ marginTop: 'var(--sp-14)' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 'var(--sp-12)' }}>
-            <h2 style={{ fontSize: 'var(--fs-17)', fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>
+            <h2 style={{ fontSize: 'var(--fs-16)', fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>
               {dayTitle(selectedDay, wallClockToday)}
             </h2>
             <span className="tiny num" style={{ color: 'var(--muted)', marginLeft: 'auto' }}>
@@ -588,8 +588,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                 {outstanding.map((t) => (
                   <div key={t.label}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                      <span style={{ fontSize: 'var(--fs-12-5)', fontWeight: 600 }}>{t.label}</span>
-                      <span className="num" style={{ fontSize: 'var(--fs-12-5)' }}>
+                      <span style={{ fontSize: 'var(--fs-13)', fontWeight: 600 }}>{t.label}</span>
+                      <span className="num" style={{ fontSize: 'var(--fs-13)' }}>
                         {t.valueLeft} left
                       </span>
                     </div>

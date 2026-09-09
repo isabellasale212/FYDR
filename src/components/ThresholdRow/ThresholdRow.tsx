@@ -68,7 +68,7 @@ export function ThresholdRow({ threshold, orgId, sentence, canManage }: Props) {
       </span>
       <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-8)', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 'var(--fs-14-5)', fontWeight: 700 }}>{threshold.name}</span>
+          <span style={{ fontSize: 'var(--fs-14)', fontWeight: 700 }}>{threshold.name}</span>
           <Pill status={SEVERITY_STATUS[threshold.severity as 'low' | 'medium' | 'high']} />
           {!threshold.is_active ? <span className="tiny">Inactive</span> : null}
         </span>
@@ -76,10 +76,10 @@ export function ThresholdRow({ threshold, orgId, sentence, canManage }: Props) {
          *  renders it as 62px) squeezed this whole sentence into a
          *  one-word-per-line column. Wraps naturally within the row's own
          *  flex:1 width instead, same as the "Notifies ..." line below it. */}
-        <span className="tiny" style={{ display: 'block', marginTop: 'var(--sp-3)', whiteSpace: 'normal' }}>
+        <span className="tiny" style={{ display: 'block', marginTop: 'var(--sp-4)', whiteSpace: 'normal' }}>
           {sentence}
         </span>
-        <span className="tiny" style={{ display: 'block', marginTop: 'var(--sp-3)' }}>
+        <span className="tiny" style={{ display: 'block', marginTop: 'var(--sp-4)' }}>
           Notifies {threshold.notify_roles.map(enumLabel).join(', ')}
         </span>
 

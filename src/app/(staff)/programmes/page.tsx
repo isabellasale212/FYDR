@@ -159,7 +159,7 @@ export default async function ProgrammesPage({
                       rehab
                     </span>
                   ) : null}
-                  <div className="tiny" style={{ marginTop: 'var(--sp-3)' }}>
+                  <div className="tiny" style={{ marginTop: 'var(--sp-4)' }}>
                     {assignedLine(p)}
                   </div>
                 </Link>
@@ -269,7 +269,7 @@ export default async function ProgrammesPage({
                                 {exercises.map((ex) => (
                                   <div key={ex.programme_exercise_id} className="prog-ex-row">
                                     <span>
-                                      <span className="nm" style={{ fontSize: 'var(--fs-13-5)' }}>
+                                      <span className="nm" style={{ fontSize: 'var(--fs-13)' }}>
                                         {ex.exercise_name}
                                       </span>
                                       {ex.notes ? (

@@ -100,7 +100,7 @@ function DialView({ dial }: { dial: DialScore }) {
             <div className="tr-dial-of">of typical</div>
           </div>
         </Dial>
-        <div style={{ marginTop: 'var(--sp-6)', fontWeight: 700, fontSize: 'var(--fs-12-5)' }}>{dial.label}</div>
+        <div style={{ marginTop: 'var(--sp-6)', fontWeight: 700, fontSize: 'var(--fs-13)' }}>{dial.label}</div>
         <div className="tiny" style={{ color: 'var(--faint)', fontWeight: 700 }}>
           Not scoreable
         </div>
@@ -122,7 +122,7 @@ function DialView({ dial }: { dial: DialScore }) {
           <div className="tr-dial-of">of typical</div>
         </div>
       </Dial>
-      <div style={{ marginTop: 'var(--sp-6)', fontWeight: 700, fontSize: 'var(--fs-12-5)' }}>{dial.label}</div>
+      <div style={{ marginTop: 'var(--sp-6)', fontWeight: 700, fontSize: 'var(--fs-13)' }}>{dial.label}</div>
       <div className="tiny" style={{ color: TONE[tone], fontWeight: 700 }}>
         {statusLabel}
       </div>
@@ -161,7 +161,7 @@ function ComparisonTableView({ table }: { table: ComparisonTable }) {
           const content = (
             <>
               <div>
-                <div className="nm" style={{ fontSize: 'var(--fs-13-5)' }}>
+                <div className="nm" style={{ fontSize: 'var(--fs-13)' }}>
                   {row.label}
                 </div>
                 {row.sublabel ? <div className="tiny num" style={{ color: 'var(--faint)' }}>{row.sublabel}</div> : null}
@@ -175,7 +175,7 @@ function ComparisonTableView({ table }: { table: ComparisonTable }) {
                     {pill && cell.value !== '—' ? (
                       <span className={`pill ${pill === 'good' ? 'pill-good' : 'pill-accent'} num`}>{cell.value}</span>
                     ) : (
-                    <span className="num" style={{ fontSize: 'var(--fs-13-5)', color: tone ? TONE[tone] : undefined }}>
+                    <span className="num" style={{ fontSize: 'var(--fs-13)', color: tone ? TONE[tone] : undefined }}>
                       {cell.value}
                     </span>
                     )}
@@ -489,7 +489,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                         .filter((r) => r.group_name === unit)
                         .map((row) => (
                           <div key={row.athlete_id} className="tr-board-row" style={{ gridTemplateColumns: 'minmax(180px, 1.4fr) 62px repeat(4, minmax(76px, 1fr))' }}>
-                            <Link href={`/reports/athlete/${row.athlete_id}`} className="nm" style={{ fontSize: 'var(--fs-13-5)' }} title="Open this player's full report">
+                            <Link href={`/reports/athlete/${row.athlete_id}`} className="nm" style={{ fontSize: 'var(--fs-13)' }} title="Open this player's full report">
                               {row.last_name}, {row.first_name}
                             </Link>
                             <span className="r num">{row.mins ?? '—'}</span>
@@ -749,7 +749,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                           style={{ gridTemplateColumns: 'minmax(170px, 1.3fr) repeat(5, minmax(66px, 1fr))' }}
                           aria-current={row.athlete_id === selectedAthleteId}
                         >
-                          <span className="nm" style={{ fontSize: 'var(--fs-13-5)' }}>
+                          <span className="nm" style={{ fontSize: 'var(--fs-13)' }}>
                             {row.last_name}, {row.first_name}
                           </span>
                           <span className="r num">{row.td !== null ? Math.round(row.td).toLocaleString() : '—'}</span>

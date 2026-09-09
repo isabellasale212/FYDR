@@ -178,11 +178,11 @@ export function PlayerProfileFlags({
                 style={{ borderInlineStart: `3px solid ${TONE_VAR[flag.severity]}` }}
               >
                 <div className="pp-flag-top">
-                  <span className="pill pill-neutral" style={{ fontSize: 'var(--fs-10-5)', padding: '2px 9px' }}>
+                  <span className="pill pill-neutral" style={{ fontSize: 'var(--fs-11)', padding: '2px 9px' }}>
                     {enumLabel(flag.domain)}
                   </span>
                   {flag.escalated ? (
-                    <span className={`pill ${canAck ? 'pill-bad' : 'pill-warn'}`} style={{ fontSize: 'var(--fs-10-5)', padding: '2px 9px' }}>
+                    <span className={`pill ${canAck ? 'pill-bad' : 'pill-warn'}`} style={{ fontSize: 'var(--fs-11)', padding: '2px 9px' }}>
                       {canAck ? 'Escalated' : 'Was escalated'}
                     </span>
                   ) : null}

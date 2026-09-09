@@ -1091,7 +1091,37 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   **How "no visual change" is proven** without rendering 81 routes: `check-scale-tokens.ts` asserts **every `--fs-N` is N/16 rem and every `--sp-N` is Npx**. If the name equals the value, a site that used to say `13` and now says `var(--fs-13)` computes to exactly what it did before. Confirmed in a real render on two staff screens: 909 inline token declarations, every one resolving to the number its name encodes.
 
-- [ ] **OPEN, Isabella's call: collapse the 16 legacy type steps.** They are tokenised so nothing is raw, and marked `collapse candidate` with their declaration counts. Collapsing them moves **277 declarations by 0.5px across 81 routes** — an aesthetic decision, and not one to take as a side effect of tokenising. Because they are tokens now, the collapse is a **16-line edit in `tokens.css`**, not a 307-site migration. Same contract for the 12 legacy spacing steps (odd values 1px off a ramp step, 184 declarations).
+- [x] **DONE 2026-09-09, Isabella's decision: the legacy steps are collapsed and deleted.** The scale is now **16 type steps** (9–48px, whole pixels) and **16 spacing steps** (0–48px, all even). Zero half-steps exist and `check-scale-tokens.ts` fails the build if one is reintroduced, or if an odd spacing step appears.
+
+  **The snap rule**, recorded so a later reader does not have to guess why 12.5 became 13: nearest sanctioned step, and where a value sat exactly between two — which every half-step did — the step already carrying more declarations won. That consolidates toward the product's own weight rather than scattering ties by preference.
+
+  | from | to | refs | why |
+  |---|---|---|---|
+  | `--fs-13-5` | `--fs-13` | 19 | 13(71) vs 14(45) |
+  | `--fs-14-5` | `--fs-14` | 14 | 14(45) vs 15(42) |
+  | `--fs-12-5` | `--fs-13` | 7 | 12(68) vs 13(71) |
+  | `--fs-11-5` | `--fs-12` | 3 | 11(62) vs 12(68) |
+  | `--fs-10-5` | `--fs-11` | 3 | 10(12) vs 11(62) |
+  | `--fs-9-5` | `--fs-9` | 1 | equidistant → the denser step |
+  | `--fs-17` | `--fs-16` | 1 | 16(38) vs 18(6), both 1px away |
+  | `--sp-3` | `--sp-4` | 10 | 2(69) vs 4(78) |
+  | `--sp-5` | `--sp-6` | 2 | 4(78) vs 6(167) |
+  | `--sp-9` | `--sp-10` | 2 | 8(225) vs 10(297) |
+  | `--sp-22` | `--sp-20` | 2 | 20(12) vs 24(2), both 2px away |
+
+  **I WAS WRONG ABOUT THE COST, twice, and both corrections matter.**
+
+  First, this entry previously called the collapse "a 16-line edit in `tokens.css`" — meaning repoint each legacy token at a sanctioned value. That would have made all sixteen names lie about their values, which is exactly what `check-scale-tokens.ts` asserts against. The collapse had to move the call sites and delete the tokens.
+
+  Second, the 277-declaration figure quoted here as the cost of collapsing **was never reachable from this change**. Those half-step font sizes live in `base.css` as RAW rem values referencing no token, so nothing in the token layer could touch them. The collapse moved **64 call sites**: 48 type by 0.5px and 16 spacing by 1–2px.
+
+  **Verified rather than assumed.** Zero clipped text nodes and zero horizontal overflow on `/reports/training` and `/dashboard`, and every token declaration still resolving to the value its name encodes. One flagged "clipped" node was `.wm-mono`, which is `position: absolute; width: 1px; overflow: hidden` — the visually-hidden wordmark fallback, intentional and untouched.
+
+  **`settings/page.tsx` verified separately**, because it carries the largest share of the collapse — **16 of the 64** references (12 × `--fs-14-5` → `--fs-14`, 2 × `--fs-13-5` → `--fs-13`, 2 × `--sp-9` → `--sp-10`) — and is `SETTINGS_ADMIN`, sport-scientist only. Isabella signed in as Jane Pemberton on 2026-09-09; measured on the real render: **zero mismatches, zero clipped text nodes, no horizontal overflow**, and the steps in use on the page are `fs-12/13/14/16/20` and `sp-4/6/8/10/12/16` — **no half-step and no odd step appears anywhere**, which is the collapse visible in the output rather than in the diff.
+
+  (The count was first written here as 20, from counting diff LINES rather than references. Two lines carried two tokens each.)
+
+  One cosmetic thing checked and cleared while there: "Not connectable yet — needs the Fydr phone app" orphans "app" onto its own line. Its inline style is `color:var(--faint);text-align:right;max-width:260px` with **no font size at all** — the 12.5px comes from a `base.css` class, so the collapse never touched it. Pre-existing, and one of the 277 raw half-steps still waiting on that tranche.
 
 - [ ] **OPEN: the `base.css` tranche.** The migration covered the **inline** values, which is where the audit's finding was. `base.css` still holds **574 raw font-size** and **793 raw spacing** declarations. They are less harmful — centralised behind classes rather than scattered through JSX — but they are the other half of "one source of truth", and every value they use already has a token.
 

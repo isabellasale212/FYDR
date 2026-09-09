@@ -375,7 +375,7 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
 
             <div className="chiprow" style={{ marginTop: 'var(--sp-10)' }}>
               {(['wellness', 'rpe', 'nutrition'] as const).map((k) => (
-                <label key={k} className="tiny" style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-5)' }}>
+                <label key={k} className="tiny" style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-6)' }}>
                   <input type="checkbox" checked={day.requires[k]} onChange={() => toggleRequires(day.mdOffset, k)} />
                   {k === 'rpe' ? 'RPE' : k[0]!.toUpperCase() + k.slice(1)}
                 </label>

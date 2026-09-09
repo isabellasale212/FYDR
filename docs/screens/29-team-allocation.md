@@ -31,21 +31,29 @@ allocated to each, each carrying their availability so an unavailable player
 cannot be picked by accident. A count of unpublished drafts, and a **Publish this
 week** button naming that count.
 
-**The injury boundary on this screen is availability, and nothing else.** No body
-area, no restrictions, no rehab phase, no diagnosis, no clinical notes — not even
-for medical. `src/lib/queries/teamAllocation.ts` fetches none of them, and its own
-header states the rule: *"medical's own read access here is availability only."*
-Picking a team needs to know who cannot be selected, not why.
+**CURRENT BEHAVIOUR, NOT A RULE — DO NOT CITE THIS AS A BOUNDARY.** As of
+2026-09-09 this screen shows availability and no other injury field: no body
+area, no restrictions, no side, no expected return, no rehab phase.
+`src/lib/queries/teamAllocation.ts` fetches none of them and its header says
+"medical's own read access here is availability only".
 
-**Stated here because its absence is how the on-screen caption drifted.** This
-section listed no field boundary at all, and the page's caption had come to claim
-"Availability, restrictions and body area only — the same boundary as every other
-screen". Two of those three were never on the screen, and the sameness claim was
-false as well: the rehab-groups board (28) legitimately shows four fields, because
-a shared rehab phase cannot be managed without them. **The boundary is per screen,
-not one line repeated.** Corrected 2026-09-09 and pinned by
-`scripts/test-injury-boundary-captions.ts`, which asserts each caption against
-what its own query actually returns.
+**That is a description of one file, not a decision anybody has taken**, and it
+is recorded here only because this section previously stated no field boundary at
+all — which is how the on-screen caption came to claim "Availability, restrictions
+and body area only — the same boundary as every other screen" when two of those
+three were never on the screen. Nothing independent requires availability-only:
+`docs/access-matrix.md` line 94 gives this screen role-level view/edit codes and no
+field boundary, §4.4 covers who *decides* selection rather than what is visible,
+and at the database level `injuries_staff_select`
+(`supabase/migrations/0012_rls_policies.sql:651`) lets any coach or medical role
+read every column of `injuries` for their org. Clinical detail is gated because it
+lives in `injury_clinical`, not because this screen is special.
+
+**The open question, for Isabella:** should this screen stay availability-only, or
+show the same limited injury view every other coach-facing screen shows — body
+area, restrictions, expected return? It is currently the only one that does not.
+Until that is answered, this paragraph describes what the code does and must not
+be quoted as the rule. Tracked in `Fydr_-_Architecture_To-Do_List.md` §0i.
 
 ## 5. Every number on this page
 

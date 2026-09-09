@@ -27,8 +27,28 @@ groups rather than as a list of individuals.
 ## 4. What you see
 
 A header with the group filter, then a board of rehab groups, each holding the
-athletes assigned to it, in the limited injury view: body area, restrictions and
-expected return, never a diagnosis.
+athletes assigned to it, in the limited injury view: body area **and side**,
+restrictions, and expected return, never a diagnosis. Plus each athlete's rehab
+phase, which is what this board exists to manage.
+
+**DECIDED by Isabella, 2026-09-09: restrictions are rendered on the member row.**
+Not a new requirement — this section has always said so — but for the whole life
+of the board they were fetched and dropped. `git log -S "restrictions"` on
+`src/components/RehabGroupBoard/RehabGroupBoard.tsx` returns **no commits at
+all**: the word had never appeared in that file, so nothing ever removed it and
+nobody ever decided to leave it off. `rehabGroups.ts` has returned
+`restrictions: string[]` since the baseline import and its header states the
+intent in terms — *"Coach sees body area and restrictions on this board"*. The
+row now draws them in the same shape `AvailabilityList` uses for this field: the
+first two labels joined by `·`, then `+N` for the remainder, so a long list
+becomes a count rather than a wrap. Shown alongside body area rather than instead
+of it, because this row is a wrapping flex row and has width that list's fixed
+column does not.
+
+**`side` is documented here for the first time.** The row has always rendered it
+next to body area and no spec mentioned it. It is part of the same non-clinical
+`injuries` record and is the difference between a left and a right hamstring, so
+it stays.
 
 ## 5. Every number on this page
 

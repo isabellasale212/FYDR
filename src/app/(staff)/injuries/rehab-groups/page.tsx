@@ -123,15 +123,16 @@ export default async function RehabGroupsPage({ searchParams }: { searchParams: 
           what the row actually draws, and the guard checks the caption against
           the BOARD as well as the query for exactly this reason.
 
-          A SPEC GAP SITS BEHIND IT, filed rather than papered over:
-          28-rehab-groups.md says the coach sees "body area, restrictions and
-          expected return". Restrictions are fetched and not drawn, so either the
-          row should render them or the spec should stop promising them. That is a
-          display decision, not a caption fix. */}
+          THE GAP BEHIND IT IS NOW CLOSED. 28-rehab-groups.md always said the
+          coach sees "body area, restrictions and expected return", and the row
+          never drew restrictions — `git log -S "restrictions"` on the board
+          returns no commits, so nothing ever decided to leave them off. Isabella
+          decided on 2026-09-09 to render them, and the row now does, so this
+          caption names them again. */}
       <p className="cap">
-        Availability, body area and side, expected return, and rehab phase &mdash; the
-        limited injury view a shared phase cannot be managed without. No diagnosis, no
-        clinical notes, not even for medical, on this screen.
+        Availability, body area and side, restrictions, expected return, and rehab phase
+        &mdash; the limited injury view a shared phase cannot be managed without. No
+        diagnosis, no clinical notes, not even for medical, on this screen.
       </p>
     </>
   );

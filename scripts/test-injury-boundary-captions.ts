@@ -104,14 +104,15 @@ for (const [field, prose] of FIELDS) {
 }
 assert(/availability/i.test(rehabShows), 'and the rehab-groups caption says availability, which it shows');
 
-/* THE KNOWN GAP, asserted so it stays visible instead of being quietly dropped
-   when the query assertions moved to the board. rehabGroups.ts fetches
-   `restrictions` and the board never draws them, while
-   docs/screens/28-rehab-groups.md says the coach sees them. Filed as a display
-   decision. If someone renders them, THIS fails — which is the point: the
-   caption and the spec both need updating in the same change. */
-assert(exposes(rehabQ, 'restrictions') && !renders(rehabBoard, 'restrictions'),
-  'known gap holds: rehabGroups.ts fetches restrictions, the board does not draw them (28-rehab-groups.md says it should — filed)');
+/* THE GAP IS CLOSED, and this assertion is the record of it. It used to say the
+   opposite — that rehabGroups.ts fetched `restrictions` while the board never
+   drew them — because that WAS the state, and it was pinned so it could not be
+   forgotten. Isabella decided on 2026-09-09 to render them, so the assertion
+   flips: fetched AND drawn. The caption side is already covered by the FIELDS
+   loop above; this covers the query-to-board leg, which is where the promise
+   was being dropped. */
+assert(exposes(rehabQ, 'restrictions') && renders(rehabBoard, 'restrictions'),
+  'rehab-groups fetches restrictions AND the board draws them (28-rehab-groups.md always promised this)');
 
 const teamShows = showsClause(teamCap);
 for (const [field, prose] of FIELDS) {

@@ -31,29 +31,42 @@ allocated to each, each carrying their availability so an unavailable player
 cannot be picked by accident. A count of unpublished drafts, and a **Publish this
 week** button naming that count.
 
-**CURRENT BEHAVIOUR, NOT A RULE — DO NOT CITE THIS AS A BOUNDARY.** As of
-2026-09-09 this screen shows availability and no other injury field: no body
-area, no restrictions, no side, no expected return, no rehab phase.
-`src/lib/queries/teamAllocation.ts` fetches none of them and its header says
-"medical's own read access here is availability only".
+**DECIDED by Isabella, 2026-09-09: this screen shows the same limited injury view
+as every other coach-facing screen — body area and side, restrictions, and
+expected return, alongside availability. Never a diagnosis, never clinical notes.
+NOT BUILT.**
 
-**That is a description of one file, not a decision anybody has taken**, and it
-is recorded here only because this section previously stated no field boundary at
-all — which is how the on-screen caption came to claim "Availability, restrictions
-and body area only — the same boundary as every other screen" when two of those
-three were never on the screen. Nothing independent requires availability-only:
-`docs/access-matrix.md` line 94 gives this screen role-level view/edit codes and no
-field boundary, §4.4 covers who *decides* selection rather than what is visible,
-and at the database level `injuries_staff_select`
-(`supabase/migrations/0012_rls_policies.sql:651`) lets any coach or medical role
-read every column of `injuries` for their org. Clinical detail is gated because it
-lives in `injury_clinical`, not because this screen is special.
+**What it does today:** availability and nothing else.
+`src/lib/queries/teamAllocation.ts` fetches no other injury field.
 
-**The open question, for Isabella:** should this screen stay availability-only, or
-show the same limited injury view every other coach-facing screen shows — body
-area, restrictions, expected return? It is currently the only one that does not.
-Until that is answered, this paragraph describes what the code does and must not
-be quoted as the rule. Tracked in `Fydr_-_Architecture_To-Do_List.md` §0i.
+**Why the decision went this way.** Team allocation was the *only* coach-facing
+screen showing availability alone — the dashboard availability card, the injuries
+list, the squad weekly report, the timetable and the rehab groups board all show a
+coach body area, restrictions and expected return. A coach was therefore learning
+that the boundary is one thing everywhere and another here. And the field is
+load-bearing for the decision this screen exists for: picking a side needs
+"modified · shoulder · no contact", not a bare "modified", because the restriction
+is what settles whether an available-but-limited player can fill a specific role.
+The argument against was minimising medical-adjacent disclosure by default, which
+is real but was already conceded on five other screens showing the same fields to
+the same roles.
+
+**Nothing independent ever required availability-only**, which is why this was a
+decision to take rather than a rule to look up: `docs/access-matrix.md` line 94
+gives this screen role-level view/edit codes and no field boundary, §4.4 covers who
+*decides* selection rather than what is visible, and at the database level
+`injuries_staff_select` (`supabase/migrations/0012_rls_policies.sql:651`) lets any
+coach or medical role read every column of `injuries` for their org. Clinical
+detail is gated because it lives in `injury_clinical`, not because this screen is
+special.
+
+**To build it:** `teamAllocation.ts` joins the same non-clinical `injuries` fields
+`fetchOpenInjuries` already returns (never `injury_clinical`), `TeamAllocationBoard`
+renders them in the `AvailabilityList` two-then-overflow shape, and the on-screen
+caption changes from "Availability only" to name them.
+`scripts/test-injury-boundary-captions.ts` currently asserts this screen shows none
+of these fields — that assertion is the tripwire and must be inverted in the same
+change, which is what forces caption, board and query to move together.
 
 ## 5. Every number on this page
 

@@ -187,6 +187,22 @@ function MemberSummary({ member, timezone }: { member: RehabMember; timezone: st
           {member.side ? ` · ${enumLabel(member.side)}` : ''}
         </span>
       ) : null}
+      {/* RESTRICTIONS, added 2026-09-09. rehabGroups.ts has fetched them since the
+          baseline import and 28-rehab-groups.md has always promised them to a
+          coach — the row simply never drew them, and `git log -S "restrictions"`
+          on this file returns no commits at all, so the omission was never a
+          decision anybody took. Same two-then-overflow shape as
+          AvailabilityList.tsx, which is the established pattern for this field:
+          two labels read at a glance, and a count rather than a wrapped list for
+          the rest. Shown ALONGSIDE body area here, not instead of it as that
+          list does — this row is a wrapping flex row rather than a fixed grid
+          column, so it has the width the list does not. */}
+      {member.restrictions.length > 0 ? (
+        <span className="tiny">
+          {member.restrictions.slice(0, 2).map(enumLabel).join(' · ')}
+          {member.restrictions.length > 2 ? ` +${member.restrictions.length - 2}` : ''}
+        </span>
+      ) : null}
       {member.expected_return ? <span className="tiny">Back {formatDate(member.expected_return, timezone)}</span> : null}
     </div>
   );

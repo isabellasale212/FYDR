@@ -1052,6 +1052,24 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   The refusals were exercised against the real table in rolled-back transactions. `pg_constraint` says a constraint exists; only an attempted write says it bites.
 
+- [x] **CLOSED 2026-09-09, and it was much bigger than the one file: 41 of 77 guard-shaped npm scripts were not in `prebuild`.** Found by generalising the `test:audit-triggers` miss above rather than treating it as a one-off. `prebuild` is the ONLY enforcement in this repo — no CI, no git hook, no aggregate runner — so a suite outside it is documentation of an intention. And the failure hides better than a missing test does: a gap is something a reader notices, an unwired suite reads as a covered case.
+
+  **What the sweep found**, running the 36 that need no database:
+
+  | | |
+  |---|---|
+  | green, and doing nothing | **34** |
+  | needing a local Postgres that does not exist on this machine | 1 (`test:link-athlete`) |
+  | **genuinely red, and had been for some time** | 1 (`test:injury-timeline`) |
+
+  The red one was a false failure of a class already hit twice tonight: it sliced `requestProposalChanges`' body from its declaration to the **end of the file**, so "does not touch the assignment" was also asserting against every function declared below it. It went red the moment `fetchInjuryProgrammeStatus` was added underneath — that one reads `programme_assignments` correctly and by design — and stayed red because nothing ran the suite. The code under test never changed. Fixed by bounding the slice at the next top-level export, and proved still to fail against a violation planted inside the real function. **If a third unbounded body-slice turns up, it wants to be a shared helper rather than a third fix.**
+
+  **All 34 are now wired, in five tranches by area**, each verified green as a group before the next went in: schedule and fixtures (15), access/roles/tiers (8), entry and write paths (7), injury cards (2), copy and styling (2). `prebuild` went from **37 to 71 suites** and from **8s to 14s** — the build-time objection turned out not to survive measurement, at roughly 0.2s per suite.
+
+  One of the last two is worth naming on its own: `test:control-styling` pins exactly the CSS overrides that `check-control-radius` documents itself as unable to see — its header says the selector heuristic cannot know that a `.signin-submit` element also carries `.btn-primary`, because that fact lives in JSX, and production is what caught it the first time. So the guard covering the wired guard's blind spot was itself unwired.
+
+  **Six stay out, each with a reason rather than by omission:** `test:tenancy` and `test:link-athlete` need a local Postgres (there is no Docker on this machine), and `verify:tier-rls`, `verify:audit-trail`, `verify:assignment-authorship` and `verify:login-attempts` read a live hosted database. The pgTAP files in `supabase/tests/` are in the same position — nothing runs them automatically, so they are only as good as the last hand-invocation of `scripts/run-single-test.mjs`.
+
 ## 1. Data & Schema — confirmed already built by reading the raw files directly
 
 - [x] Multi-tenancy: `org_id` on 56 of 58 tables, RLS enabled with a policy on all 58

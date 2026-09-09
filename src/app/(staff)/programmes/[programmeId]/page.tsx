@@ -91,7 +91,7 @@ export default async function ProgrammeBuilderPage({
 
       {!canEdit ? (
         <div className="note" style={{ marginBottom: 'var(--sp-14)' }}>
-          <div className="note-glyph">i</div>
+          <div className="note-glyph" aria-hidden="true">i</div>
           <p className="note-text">
             {isMedical
               ? 'Read only. This is a gym programme, coach-owned — medical reads it for context but cannot edit a coach-owned gym programme.'

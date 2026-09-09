@@ -135,7 +135,7 @@ export default async function InjuryAvailabilityReportPage({
             <div className="rhead-sub">
               {isMedical ? (
               <div className="note" style={{ marginBottom: 'var(--sp-14)', borderColor: 'var(--warn)' }}>
-              <div className="note-glyph">i</div>
+              <div className="note-glyph" aria-hidden="true">i</div>
               <p className="note-text">
               <b>Medical in confidence.</b> This version includes clinical detail not shown to
               coaching staff.

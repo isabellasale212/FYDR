@@ -211,7 +211,7 @@ export function TimetableSessionCard({ orgId, userId, actorRole, canRecord, sess
 
               {conflictCount > 0 ? (
                 <div className="note" style={{ margin: '10px 18px', borderColor: 'var(--warn)' }}>
-                  <div className="note-glyph">⚠</div>
+                  <div className="note-glyph" aria-hidden="true">⚠</div>
                   <p className="note-text">
                     {conflictCount} athlete{conflictCount === 1 ? '' : 's'} have restrictions this session may conflict with —
                     marked below.
@@ -265,7 +265,12 @@ export function TimetableSessionCard({ orgId, userId, actorRole, canRecord, sess
                             {p.availability_status === 'unknown' ? 'No record' : enumLabel(p.availability_status)}
                           </span>
                           {p.conflicts.length > 0 ? (
-                            <span className="pill pill-warn">⚠ {p.conflicts.join(', ')}</span>
+                            <span className="pill pill-warn">
+                              {/* Only the mark is hidden: the conflict list beside it
+                                  is the content, and aria-hidden on the span would take
+                                  that with it. */}
+                              <span aria-hidden="true">⚠</span> {p.conflicts.join(', ')}
+                            </span>
                           ) : null}
                           <div className="chiprow" style={{ marginLeft: 'auto' }} role="group" aria-label={`Attendance for ${p.first_name} ${p.last_name}`}>
                             {!canRecord ? (
@@ -322,7 +327,7 @@ export function TimetableSessionCard({ orgId, userId, actorRole, canRecord, sess
 
                         {overrideFor === p.athlete_id ? (
                           <div className="note" style={{ marginTop: 'var(--sp-8)', borderColor: 'var(--warn)' }}>
-                            <div className="note-glyph">⚠</div>
+                            <div className="note-glyph" aria-hidden="true">⚠</div>
                             <div style={{ flex: 1 }}>
                               <p className="note-text">
                                 Marking full despite {p.conflicts.join(', ')}. This is logged, not blocked — say why.

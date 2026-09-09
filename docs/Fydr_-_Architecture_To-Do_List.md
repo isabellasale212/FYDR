@@ -1212,6 +1212,33 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
 - [ ] **Open, and it is a product decision rather than an a11y one:** those 50 forms do no client-side validation at all. That is defensible — the server is the authority and its messages are good — but it means an athlete on a phone fills a form, submits, waits for a round trip, and only then learns a required field was blank. Worth deciding per form whether the round trip is acceptable, not worth fixing wholesale.
 
+## 0n. Icons — 2026-09-09. "Two icon systems" did not survive measurement; three real defects did
+
+- [x] **DONE. The audit's framing was wrong twice over, and the corrections are the useful part.**
+
+  **CLAIM 1: "18 distinct stroke widths."** Measured as raw `strokeWidth` across **four different viewBoxes** (14, 16, 20, 24), which is meaningless — 1.4 in a 24-unit box rendered at 24px and 1.5 in a 14-unit box rendered at 14px are the *same 1.5px line*. In apparent pixels the set is **1.4 / 1.5 / 1.59 / 1.82 / 2.4**, with five of ten at exactly 1.5 and two more within 0.1px of it.
+
+  My own second attempt was also wrong: I measured stroke as a % of the viewBox, which ignores rendered size and produced a spurious "5.83%–12%, a 2× spread".
+
+  The two apparent outliers are both deliberate and both already documented in the code:
+
+  | | |
+  |---|---|
+  | Today, 2.4px | a checkmark inside a completion badge, already `aria-hidden` — not an interface icon |
+  | Sidebar, 1.82px | its one *stroked* glyph in an otherwise **filled** set. `Sidebar.tsx:39`: *"the design's are filled, which is what gives the rail its weight at 17px. The sign-out arrow stays a stroke because the design draws that one as a stroke too."* |
+
+  **CLAIM 2: "66 glyphs standing in for an icon system."** 37 of 45 already carried `aria-hidden` — they are decorative marks beside real text, which is not what the craft-floor ban is about. The `✓` on a selected squad chip is a good example of correct existing work: `aria-hidden` on the mark, `aria-pressed` on the button. Verified in a real DOM — raw text `"✓ Whole squad"`, accessible name **`"Whole squad"`**.
+
+  **THE THREE THAT WERE REAL**, each invisible on screen and audible to a screen reader:
+
+  1. **`NewMealForm`'s remove button announced as "times".** It had `title="Remove item"` and a bare `×`. Accessible-name computation puts **content above title**, so the tooltip was never its name. Now `aria-label="Remove item"` with the mark hidden.
+  2. **`.sheet-x` drew two different characters** — `✕` in eight athlete sheets, `×` in the staff schedule panel. One affordance, two glyphs. Standardised on `✕` (U+2715); `×` (U+00D7) is a multiplication sign this product uses for real in "3 × 10" and "1.42×".
+  3. **14 mark elements were announced as characters.** Eight of them were the letter **`i`** — an info glyph read aloud as "letter i" before every note. My character-based scan found only 6 of the 14 for exactly that reason, which is why the guard also has a **class-based** rule: a class named for being a glyph is decorative whatever it holds, and `i`/`!` cannot go in a character set without flagging every sentence in the app.
+
+  **`scripts/test-glyph-icons.ts`** (in `prebuild`, 78 suites) enforces three rules — a control is never named by a typed character, a decorative mark is always hidden, and one class draws one glyph — all proven against plants.
+
+- [ ] **Not done, and deliberately not:** no icon library was introduced and no glyph was converted to SVG. The SVG set is coherent at 1.5px, the glyphs are decoration beside text, and swapping 45 marks for drawn icons would be a large rewrite for no measurable gain. If a future design pass wants a drawn icon set, that is a design decision with a brief, not a tidy-up.
+
 ## 1. Data & Schema — confirmed already built by reading the raw files directly
 
 - [x] Multi-tenancy: `org_id` on 56 of 58 tables, RLS enabled with a policy on all 58

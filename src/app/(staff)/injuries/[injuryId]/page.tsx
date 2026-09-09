@@ -123,7 +123,7 @@ export default async function InjuryDetailPage({
       ) : (
         <>
           <div className="note" style={{ marginTop: 'var(--sp-14)' }}>
-            <div className="note-glyph">i</div>
+            <div className="note-glyph" aria-hidden="true">i</div>
             <p className="note-text">
               <b>This is what coaching staff see.</b> Diagnosis, clinical notes and
               treatment plan are medical only and are not shown here, by design &mdash;

@@ -137,7 +137,7 @@ export function LeaderboardBuilderForm({ orgId, userId, catalogue, groups }: Pro
       {ineligible.map((m) =>
         showWhyDisabled === m.key ? (
           <div className="note" key={m.key} id={`why-${m.key}`} role="alertdialog" style={{ marginTop: 'var(--sp-10)' }}>
-            <div className="note-glyph">!</div>
+            <div className="note-glyph" aria-hidden="true">!</div>
             <p className="note-text">
               <b>{m.label} cannot be ranked.</b> {m.ineligible_reason}
             </p>

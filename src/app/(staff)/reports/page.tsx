@@ -144,7 +144,7 @@ export default async function ReportsPage() {
 
       {openCount === 0 ? (
         <div className="note" style={{ marginBottom: 'var(--sp-14)', borderColor: 'var(--warn)' }}>
-          <div className="note-glyph">i</div>
+          <div className="note-glyph" aria-hidden="true">i</div>
           <p className="note-text">
             <b>No reports are open to your role.</b> Every report here reads named-athlete data. Ask the sport
             scientist if you need one of them.
@@ -155,7 +155,7 @@ export default async function ReportsPage() {
            a nutritionist sees four of these disabled and the reason is the same
            for all four. */
         <div className="note" style={{ marginBottom: 'var(--sp-14)' }}>
-          <div className="note-glyph">i</div>
+          <div className="note-glyph" aria-hidden="true">i</div>
           <p className="note-text">
             Some reports below aren&apos;t open to your role. The ones that are, are marked.
           </p>

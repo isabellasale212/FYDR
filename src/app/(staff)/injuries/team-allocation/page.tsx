@@ -100,7 +100,7 @@ export default async function TeamAllocationPage({
 
       {!canManageWeek ? (
         <div className="note" style={{ marginTop: 'var(--sp-14)' }}>
-          <div className="note-glyph">i</div>
+          <div className="note-glyph" aria-hidden="true">i</div>
           <p className="note-text">
             <b>Read only.</b> Medical sees the whole board and every availability status,
             and can change an athlete&rsquo;s availability from their own record, but

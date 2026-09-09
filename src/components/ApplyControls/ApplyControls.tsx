@@ -145,7 +145,7 @@ export function ApplyControls({ orgId, userId, templates, selectedTemplateId, we
           ) : null}
           {result ? (
             <div className="note" style={{ marginBottom: 'var(--sp-10)' }}>
-              <div className="note-glyph">✓</div>
+              <div className="note-glyph" aria-hidden="true">✓</div>
               <p className="note-text">
                 Created {result.created} session{result.created === 1 ? '' : 's'}
                 {result.softDeleted > 0 ? `, removed ${result.softDeleted}` : ''}. <Link href="/schedule">Open the Schedule →</Link>

@@ -61,7 +61,7 @@ export default async function SessionDetailPage({
 
       {cancelled ? (
         <div className="note" style={{ marginBottom: 'var(--sp-14)' }}>
-          <div className="note-glyph">!</div>
+          <div className="note-glyph" aria-hidden="true">!</div>
           <p className="note-text">
             <b>This session was cancelled.</b> Attendance and any entries already
             submitted are kept, not erased. Reinstate it below to bring it back

@@ -67,7 +67,7 @@ export default async function RehabGroupsPage({ searchParams }: { searchParams: 
 
       {!isMedical ? (
         <div className="note" style={{ marginTop: 'var(--sp-10)' }}>
-          <div className="note-glyph">i</div>
+          <div className="note-glyph" aria-hidden="true">i</div>
           <p className="note-text">
             <b>Rehab groups are managed by medical staff.</b> You see who is in which
             group and their phase, the same as their availability card, but allocating

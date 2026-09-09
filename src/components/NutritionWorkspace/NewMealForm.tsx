@@ -191,10 +191,14 @@ export function NewMealForm({ onSubmit, onCancel, isSubmitting, error }: Props) 
                 className="btn-ghost"
                 onClick={() => removeItem(row.key)}
                 disabled={items.length <= 1}
+                /* aria-label, not just title. Accessible-name computation puts
+                   CONTENT above title, so a bare × announced this control as
+                   "times, button" — the tooltip was never its name. */
+                aria-label="Remove item"
                 title="Remove item"
                 style={{ minHeight: 44 }}
               >
-                ×
+                <span aria-hidden="true">×</span>
               </button>
             </div>
           ))}

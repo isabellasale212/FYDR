@@ -155,7 +155,7 @@ export default async function AthleteReportPickerPage({ searchParams }: { search
 
       {squadWideSilence ? (
         <div className="note" style={{ marginBottom: 'var(--sp-14)', borderColor: 'var(--warn)' }}>
-          <div className="note-glyph">i</div>
+          <div className="note-glyph" aria-hidden="true">i</div>
           <p className="note-text">
             <b>
               No morning entries from anyone in this scope in the last {WELLNESS_WINDOW_DAYS} days.

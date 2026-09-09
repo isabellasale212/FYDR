@@ -442,7 +442,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
 
                     {entry.affected.length === 0 ? (
                       <div className="dash-clean">
-                        <span className="dash-clean-check">✓</span>
+                        <span className="dash-clean-check" aria-hidden="true">✓</span>
                         <span className="tiny" style={{ color: 'var(--muted)' }}>
                           {entry.past ? 'Nothing was raised against this session.' : 'Nobody flagged and nothing outstanding for this one.'}
                         </span>

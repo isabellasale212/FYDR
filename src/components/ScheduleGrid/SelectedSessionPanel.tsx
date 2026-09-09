@@ -345,7 +345,10 @@ export function SelectedSessionPanel({
              that" should be in the corner where people already look for it,
              on every step. Discards the draft, same as Cancel and Escape. */
           <button type="button" className="sheet-x" onClick={onCancelDraft} aria-label="Discard this session">
-            ×
+            {/* ✕ (U+2715), not × (U+00D7). The same class draws ✕ in all eight
+                athlete sheets, and × is a multiplication sign this product uses
+                for real in "3 × 10" and "1.42×". One affordance, one character. */}
+            <span aria-hidden="true">✕</span>
           </button>
         ) : !isDraft && mode === 'edit' && !unlocked ? (
           /* Name, location and type are read-only until asked for. They are what
@@ -371,7 +374,7 @@ export function SelectedSessionPanel({
 
       {session.restrictionConflictCount > 0 ? (
         <div className="note" style={{ margin: '0 0 14px', borderColor: 'var(--warn)' }}>
-          <div className="note-glyph">⚠</div>
+          <div className="note-glyph" aria-hidden="true">⚠</div>
           <p className="note-text">
             {session.restrictionConflictCount} athlete{session.restrictionConflictCount === 1 ? ' has' : 's have'} a
             restriction this session may conflict with. See Timetable for who.

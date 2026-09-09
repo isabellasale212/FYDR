@@ -142,8 +142,14 @@ a {
     stroke-dashoffset: 251;
   }
 }
-.dial-arc {
-  animation: ring-in 0.9s cubic-bezier(0.22, 0.8, 0.36, 1);
+/* GATED TO THE FIRST VISIT, and 280ms not 900ms. Ungated, this replayed on
+   every mount: three dials on the player profile, four on the training report,
+   redrawn each time a coach opened a profile. 900ms was also three times the
+   ceiling this app allows any UI animation. Dial.tsx decides who gets the
+   attribute — once per screen, per session — so the entrance still earns its
+   place on first sight without taxing the fortieth visit. */
+.dial-arc[data-animate] {
+  animation: ring-in 0.28s var(--ease-out);
 }
 
 /* REDUCED MOTION: NARROWED 2026-09-08 (audit item 5).

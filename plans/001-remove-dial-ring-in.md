@@ -1,12 +1,21 @@
 # 001 — Stop the profile dials redrawing on every page load
 
-- **Status**: TODO
+- **Status**: DONE — 2026-09-09, but via the ALTERNATIVE target, not deletion. Isabella chose to keep the entrance, gated and shortened. See the note at the end.
 - **Commit**: fea25a6
 - **Severity**: HIGH
 - **Category**: Purpose & frequency / Easing & duration
 - **Estimated scope**: 1 file, ~8 lines removed
 
-## DECISION REQUIRED BEFORE EXECUTING
+## DECISION TAKEN 2026-09-09: keep it, gate it, shorten it
+
+**Isabella chose the alternative at the bottom of this plan, not the deletion
+this plan's Target describes.** The Target and Steps below are therefore
+HISTORICAL — they were not executed. What shipped: `.dial-arc[data-animate]`
+with `animation: ring-in 0.28s var(--ease-out)`, a new `--ease-out` token, and a
+pathname-keyed gate in `Dial.tsx` so each screen animates once per session.
+Guarded by `scripts/test-dial-ring-in.ts`. Do not execute the steps below.
+
+## (superseded) Decision required before executing
 
 This removes a visible animation, and `CLAUDE.md` §0 freezes the design: *"Do not
 change visual design, layout, spacing, colour, typography or component structure

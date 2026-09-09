@@ -1,3 +1,8 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
+
 /* PLAYER-PROFILE-SPEC.md §5: the shared dial geometry used by every arc
  * dial on the player profile (Athleticism, ACWR, Wellness rating). One
  * component, not three copies of the same SVG, so the geometry can only
@@ -34,6 +39,30 @@
  * line. Every existing caller is unaffected: scaleMax=100 makes
  * pct/scaleMax identical to the original pct/100. */
 
+/* ONCE PER SCREEN, PER SESSION — the ring-in gate, added 2026-09-09.
+ *
+ * This rule used to be ungated: `.dial-arc { animation: ring-in 0.9s }` fired on
+ * every mount, and this component renders three times on the player profile and
+ * four on the training report. A coach working through a squad watched every ring
+ * redraw on every visit. Isabella's decision was to keep the entrance and gate
+ * it, not to delete it.
+ *
+ * KEYED BY PATHNAME, not by dial. "Once per screen" is the useful unit: arriving
+ * at the training report should animate even if a profile already has, because it
+ * is a different screen being seen for the first time. A module-scope Set is the
+ * whole mechanism — it lives as long as the JS context, so client-side navigation
+ * back to a profile finds the path already marked and stays still, while a hard
+ * reload legitimately starts over.
+ *
+ * THE MARK IS WRITTEN IN AN EFFECT, AND THAT IS THE LOAD-BEARING DETAIL. Effects
+ * run after the whole commit, so all the dials on a screen read the same
+ * pre-visit value and animate together. Writing it during render instead — in the
+ * useState initialiser, which is the obvious place — makes the first dial mark the
+ * path and the remaining two or three read it as already played: one ring draws,
+ * the others sit still, which reads as a rendering fault rather than a decision.
+ * scripts/test-dial-ring-in.ts asserts the mark is NOT in the initialiser for
+ * exactly that reason.
+ */
 type Props = {
   size: number;
   pct: number | null;
@@ -45,7 +74,19 @@ type Props = {
 
 const CIRCUMFERENCE = 251;
 
+/** Screens whose dials have already drawn themselves in this JS session. */
+const played = new Set<string>();
+
 export function Dial({ size, pct, tone, children, scaleMax = 100, tick }: Props) {
+  const pathname = usePathname();
+  /* Read once, on this instance's first render, and never recomputed: the value
+     has to survive the re-render the effect below causes, or every dial would
+     re-evaluate to false and lose its animation mid-draw. */
+  const [animate] = useState(() => pct !== null && !played.has(pathname));
+  useEffect(() => {
+    played.add(pathname);
+  }, [pathname]);
+
   const clamped = pct === null ? null : Math.min(Math.max(pct / scaleMax, 0), 1);
   const offset = clamped === null ? CIRCUMFERENCE : Math.round(CIRCUMFERENCE * (1 - clamped));
   const tickOffset = tick !== undefined ? -Math.round(CIRCUMFERENCE * (tick / scaleMax)) : null;
@@ -71,6 +112,7 @@ export function Dial({ size, pct, tone, children, scaleMax = 100, tick }: Props)
             strokeLinecap="round"
             strokeDasharray={CIRCUMFERENCE}
             className="dial-arc"
+            data-animate={animate ? '' : undefined}
             style={{ strokeDashoffset: offset }}
           />
         ) : null}

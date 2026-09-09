@@ -237,6 +237,12 @@
   --pad-field: 12px 14px;
   --t-state: 0.15s ease;
   --t-press: 0.08s ease;
+  /* The one entrance curve in the product. A strong ease-out: fast out of the
+     gate, settling at the end, so the moment the eye is on is the moment that
+     moves. Added 2026-09-09 with the dial ring-in, which was the last motion
+     in the app carrying a hand-typed curve of its own. Sits here rather than in
+     a theme block because a curve is not a colour and does not flip. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 
   /* Handoff §9 and §10. State opacities and the one blur radius the theme
      permits (the sticky group-filter bar and the athlete tab bar, nowhere

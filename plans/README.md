@@ -9,7 +9,7 @@ contain them. Nothing in `src/` was modified to produce them.
 
 | # | Title | Severity | Category | Status |
 |---|---|---|---|---|
-| [001](001-remove-dial-ring-in.md) | Stop the profile dials redrawing on every page load | HIGH | Purpose & frequency / duration | TODO — **needs design sign-off** |
+| [001](001-remove-dial-ring-in.md) | Stop the profile dials redrawing on every page load | HIGH | Purpose & frequency / duration | **DONE** — via the alternative: gated + 280ms, not deleted |
 | [002](002-press-states-fill-not-transform.md) | Make the last four press states a fill, not a shrink | MEDIUM | Cohesion & tokens | **DONE** — reviewed, PASS with two flags |
 
 ## Recommended order
@@ -104,3 +104,57 @@ with the exact intended declarations, across 1701 selectors **no** `:active` rul
 still carries a transform, and `.sg-stepper-btn` computes
 `transition-property: background` / `transition-duration: 0.08s`. The plan's
 touch-device feel check therefore remains outstanding and is a human step.
+
+
+## Verdict on 001 (executed 2026-09-09, via the alternative target)
+
+Isabella declined the deletion and chose the gated variant: keep the entrance,
+fire it once per screen per session, cut 900ms to 280ms, and put the curve in a
+token instead of hand-typing a fifth one.
+
+**What shipped.** `--ease-out: cubic-bezier(0.23, 1, 0.32, 1)` in
+`src/styles/tokens.css` — the playbook's strong ease-out, copied not
+approximated, and the first easing token this repo has. `base.css` now has
+`.dial-arc[data-animate] { animation: ring-in 0.28s var(--ease-out); }` with no
+ungated rule left. `Dial.tsx` became a client component holding a module-scope
+`Set<string>` of pathnames already played.
+
+**The load-bearing detail.** The played-mark is written in a `useEffect`, never
+during render. Effects run after the whole commit, so every dial on a screen
+reads the same pre-visit value and they animate together. Written during render —
+in the `useState` initialiser, which is the obvious place — the first dial marks
+the path and the rest read it as already played: one ring draws, the others sit
+still. That failure is invisible with a single dial, so the guard asserts the
+mark is absent from the initialiser.
+
+**Verified on the running app, signed in as a coach, in two JS contexts with a
+stamped marker proving each navigation was client-side rather than a reload:**
+
+| Case | Arcs | Animating |
+| --- | --- | --- |
+| Player profile, first visit | 2 | **2** — `ring-in`, `0.28s`, `cubic-bezier(0.23, 1, 0.32, 1)` |
+| Same profile, second visit, same session | 2 | **0** — `animation-name: none` |
+| Profile first visit *after* the training report had played | 2 | **2** — per-screen, not global |
+| A different athlete's profile, first visit | 2 | **2** |
+| Training report, first visit | 3 | **3** |
+| Training report, revisited client-side in the same session | 3 | **0** |
+
+Both dials animating together on a first visit is the observation that proves the
+effect-vs-render detail; a single animating ring would have meant the render-time
+bug.
+
+**Two things worth knowing.** The player profile mounts three `<Dial>`s but only
+**two** render an arc — the third has `pct === null` and draws the track only,
+which is the existing em-dash rule (`Dial.tsx`'s own header: "a missing value is
+an em dash, never a zero"). Nothing is broken there. And a hard reload
+legitimately resets the gate, because the `Set` lives in the JS context; if the
+requirement ever becomes "once per browser session across reloads", that is
+`sessionStorage` and a different change.
+
+Reduced motion is unaffected: the global block at `src/styles/base.css:162` still
+sets `animation-duration: 0.001ms !important`, so the entrance is neutralised
+there as it was before.
+
+`prebuild` exits 0 with 23 suites green, including the new
+`test:dial-ring-in` (16 assertions, written to fail first: 13 of 16 failed
+against the pre-change code).

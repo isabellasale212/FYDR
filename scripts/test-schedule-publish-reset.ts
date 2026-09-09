@@ -44,7 +44,7 @@ const src = raw
 
 /** The body of handlePublish, brace-matched rather than guessed at by regex. */
 function bodyOf(name: string): string {
-  const i = src.search(new RegExp(`async function ${name}\\s*\\(`));
+  const i = src.search(new RegExp(`(?:async )?function ${name}\\s*\\(`));
   if (i < 0) return '';
   const open = src.indexOf('{', i);
   let d = 0, j = open;
@@ -116,6 +116,86 @@ assert(/'edit'/.test(modeInit ?? '') && /'read'/.test(modeInit ?? ''),
 assert(/className="sg-btn-publish"[\s\S]{0,200}?disabled=\{publishing\}/.test(src)
     || /disabled=\{publishing\}[\s\S]{0,200}?className="sg-btn-publish"/.test(src),
   'the Publish button is still disabled by `publishing`, which is what made this fatal');
+
+
+console.log('\na single session can be cancelled without discarding the week');
+{
+  /* WHAT WAS ACTUALLY WRONG, measured live as a coach rather than read off the
+     note that tracked it. The note said a coach edits a field, looks for Save,
+     and sees nothing appear. Both halves were wrong: a clean week already
+     renders a disabled "Published" in the banner slot, and one stepper nudge
+     DOES surface Discard and "Publish to athletes", enabled. What is wrong is
+     WHERE — with the panel at y=700 the banner sat at y=-1782, so the commit
+     controls appeared ~2,500px above the thing being edited, off screen.
+
+     And Discard was never an undo for one session: it clears every overlay,
+     every added draft and every removal in the week, so a coach who nudged one
+     session by fifteen minutes could not get it back without throwing away the
+     other four changes they had made. */
+  const panel = readFileSync('src/components/ScheduleGrid/SelectedSessionPanel.tsx', 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' '))
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, (c) => c.replace(/[^\n]/g, ' '))
+    .replace(/\/\/.*$/gm, (c) => c.replace(/[^\n]/g, ' '));
+
+  const revert = bodyOf('handleRevertSession');
+  const dirty = bodyOf('isSessionDirty');
+  assert(revert.length > 0, 'the workspace has a handleRevertSession');
+  assert(dirty.length > 0, 'and an isSessionDirty');
+
+  /* IT MUST NOT BE DISCARD WEARING A DIFFERENT LABEL. This is the whole
+     distinction: a revert touches one key, Discard resets the collections. */
+  assert(
+    !/setEdits\(\{\}\)/.test(revert) && !/setRemoved\(\{\}\)/.test(revert) && !/setAdded\(\[\]\)/.test(revert),
+    'and it resets no collection wholesale — that is Discard, not a per-session undo',
+  );
+  assert(
+    /delete next\[id\]/.test(revert),
+    'it deletes this id from the edits overlay',
+  );
+  assert(
+    /setAdded\(\(cur\) => cur\.filter\(\(d\) => d\.id !== id\)\)/.test(revert),
+    'and drops an added draft by id, since a draft has no committed row to revert to',
+  );
+
+  /* NO UNREACHABLE BRANCH. The first version also cleared removed[id], which no
+     button can reach: handleRemove sets sel to null and `effective` filters
+     removed sessions out, so a removed session cannot be selected and the panel
+     that would host its Cancel never renders. Confirmed live — the panel read
+     "Select a session on the grid" and offered no buttons while the banner
+     still counted the removal. Dead code that reads as protection is worse than
+     none, which this file has learned before. */
+  assert(
+    !/removed\[id\]/.test(revert) && !/removed\[id\]/.test(dirty),
+    'and neither touches removed[id] — that branch was unreachable, so it is gone rather than kept "just in case"',
+  );
+
+  /* THE DECISION: no per-session Save. The commit is week-level, because one
+     session published out of a week puts a half-updated schedule on athletes'
+     phones and breaks the banner's own promise. */
+  assert(
+    !/>\s*Save(\s+session)?\s*</.test(panel),
+    'the panel offers no per-session Save — the commit stays week-level on purpose',
+  );
+  assert(
+    /Publish to athletes, at the top of this page/.test(panel),
+    'it names where the commit is instead, because that control is off screen',
+  );
+
+  /* AND CANCEL IS NOT OFFERED WHERE IT WOULD DUPLICATE REMOVE. Found by
+     testing: on a staged draft the draft IS the change, so cancelling and
+     removing are the same act — the panel briefly offered two buttons doing
+     exactly that, with different confirmations. */
+  assert(
+    /isDirty && !isDraft \?/.test(panel),
+    'Cancel changes renders only for a committed session carrying an overlay, not for a staged draft where Remove already owns it',
+  );
+  const lineAt = panel.indexOf('Publish to athletes, at the top of this page');
+  const gateBefore = panel.slice(Math.max(0, lineAt - 400), lineAt);
+  assert(
+    /isDirty \?/.test(gateBefore) && !/isDirty && !isDraft \?/.test(gateBefore),
+    'while the commit line shows for ANY pending change, draft included — a staged draft is genuinely held and unpublished',
+  );
+}
 
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);

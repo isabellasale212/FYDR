@@ -675,6 +675,62 @@ export function ScheduleWorkspace({
     }
   }
 
+  /* PER-SESSION REVERT, and the measurement that decided its shape. The
+     schedule report's third complaint was "no Cancel option", and the note that
+     tracked it said a coach edits a field and sees nothing appear. Measured live
+     as a coach on 2026-09-09, that was wrong twice: a clean week already shows a
+     disabled "Published" in the banner slot, and one stepper nudge DOES surface
+     Discard and "Publish to athletes", enabled.
+
+     What is actually wrong is WHERE. With the panel at y=700 the banner sat at
+     y=-1782 — the commit controls appeared roughly 2,500px above the thing being
+     edited, off screen. So the answer is not to un-hide a week-level control
+     that was never hidden; it is to put the per-session undo in the panel, where
+     the edit happens.
+
+     And Discard is not that undo: it clears the WHOLE week — every overlay,
+     every added draft, every removal — so a coach who nudged one session by
+     fifteen minutes had no way back that did not also throw away the other four
+     changes they had made. That gap is what this closes. */
+  /* EDITS AND ADDED DRAFTS ONLY, AND A REMOVAL DELIBERATELY NOT — which was
+     found by testing rather than reasoned out. The first version of this also
+     cleared `removed[id]`, and that branch is UNREACHABLE: handleRemove sets
+     sel to null and `effective` filters removed sessions out of the grid, so a
+     removed session cannot be selected and the panel that would host its Cancel
+     does not render. Verified live: after removing a session the panel reads
+     "Select a session on the grid" and offers no buttons at all, while the
+     banner still counts the removal. A revert branch no button can reach is the
+     kind of dead code that reads as protection, so it is gone rather than kept
+     "just in case".
+     Undoing a removal therefore stays week-level Discard, which is exactly what
+     the removal confirmation already promises in its own words: "You can undo
+     with Discard, until you publish." That leaves a real asymmetry — undoing one
+     removal still costs every other pending edit — and closing it needs a
+     visible removed-state on the grid, which is a design change and not this
+     one. Recorded in the to-do list rather than smuggled in here. */
+  function isSessionDirty(id: string): boolean {
+    return (
+      added.some((d) => d.id === id) ||
+      Boolean(edits[id] && Object.keys(edits[id]).length > 0)
+    );
+  }
+
+  function handleRevertSession(id: string) {
+    setEdits((cur) => {
+      if (!cur[id]) return cur;
+      const next = { ...cur };
+      delete next[id];
+      return next;
+    });
+    /* An added draft has no committed row to revert TO, so reverting it means
+       dropping it — and then nothing is selected, because the thing that was
+       selected no longer exists. */
+    if (added.some((d) => d.id === id)) {
+      setAdded((cur) => cur.filter((d) => d.id !== id));
+      setSel(null);
+    }
+  }
+
   function handleDiscard() {
     setEdits({});
     setAdded([]);
@@ -732,6 +788,8 @@ export function ScheduleWorkspace({
     onCancelDraft={handleCancelDraft}
     onRemove={handleRemove}
     onDuplicate={handleDuplicate}
+    isDirty={panelSession ? isSessionDirty(panelSession.id) : false}
+    onRevert={() => { if (panelSession) handleRevertSession(panelSession.id); }}
     />
   );
 

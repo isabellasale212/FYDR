@@ -108,9 +108,26 @@ it.
 | A session block | The grid | Opens that session | `/schedule/[sessionId]` | Nothing | Any staff | None | Never |
 | Dragging a block, in edit mode | The grid | Moves a session to a new day or time | Stays here | Updates the session's start time | Coach and sport scientist | Changes are held until applied, not written on every drag | Hidden in read mode |
 | Add to Day | Edit mode | Places a drafted session on a day | Stays here | Creates a session | Coach and sport scientist | The draft must be completed first | Hidden in read mode |
-| + Session | Toolbar | Opens the new session screen | `/schedule/new` | Nothing | Coach and sport scientist | None | Should be hidden for view only roles. **Not built** |
-| + Fixture | Toolbar | Opens the new fixture screen | `/schedule/fixtures/new` | Nothing | Coach and sport scientist | None | As above |
-| Apply template | Toolbar | Puts a saved week shape onto this week | `/schedule/planner/apply` | Creates the sessions in the template | Coach and sport scientist | Yes, on the apply screen | As above |
+| + Session | Two of them: the header chip row, and the edit-mode toolbar | The header chip opens the full new-session screen; the toolbar button starts a draft in the grid itself | `/schedule/new` from the chip; stays here from the toolbar | Nothing until the draft is added to a day | Coach and sport scientist | None | Both hidden for every other role (`canEdit`). The toolbar one is additionally hidden in read mode |
+| + Fixture | Header chip row | Opens the new fixture screen | `/schedule/fixtures/new` | Nothing | Coach and sport scientist | None | Hidden for every other role (`canEdit`) |
+| Apply template | Edit-mode toolbar | Puts a saved week shape onto this week | `/schedule/planner/apply` | Creates the sessions in the template | Coach and sport scientist | Yes, on the apply screen | Hidden for every other role (`canEdit`), and in read mode |
+| Cancel changes | Selected session panel | Drops the unpublished changes on **this session only**, leaving every other pending change alone | Stays here | Nothing — it clears a local overlay | Coach and sport scientist | None. It reverts to the published state, which is itself the undo | Shown only when this session has a pending change AND is an existing published session. Not shown on a staged draft, where "Remove session" is the same act and already has a confirmation |
+
+**There is no per-session Save, deliberately.** An edit is held the moment a
+stepper moves; the commit is the week-level **Publish to athletes**, because one
+session published out of a week would put a half-updated schedule on athletes'
+phones and break the banner's own promise that nothing changes until you publish.
+The panel says where the commit is instead — *"Held on your screen. Publish to
+athletes, at the top of this page, puts it on their phones."* — because that
+control is genuinely far away: measured on 2026-09-09 with the panel at y=700,
+the banner sat at y=-1782.
+
+**Undoing a removal is still week-level.** `Cancel changes` covers edits and
+staged drafts. A removed session cannot be selected — it leaves the grid and the
+panel clears — so its only undo is `Discard`, which the removal confirmation
+already says. That means undoing one removal still costs every other pending
+change; closing that needs a visible removed-state on the grid, which is a
+design change and is not built.
 
 ---
 

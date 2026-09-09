@@ -85,6 +85,11 @@ type Props = {
   onCancelDraft: () => void;
   onRemove: () => void;
   onDuplicate: () => void;
+  /* Whether THIS session carries unpublished changes, and how to drop just
+     them. Week-level Discard clears every change in the week, which is not an
+     undo for one session. */
+  isDirty: boolean;
+  onRevert: () => void;
 };
 
 /** SCHEDULE-SPEC.md §6, "Selected session panel". Read mode shows four
@@ -117,6 +122,8 @@ export function SelectedSessionPanel({
   onCancelDraft,
   onRemove,
   onDuplicate,
+  isDirty,
+  onRevert,
 }: Props) {
   const [confirmingRemove, setConfirmingRemove] = useState(false);
 
@@ -517,6 +524,28 @@ export function SelectedSessionPanel({
                     database, so the "past session" server rule that blocks
                     deleting a committed session never applies to it — only
                     a real, already-published session needs that guard. */}
+                {/* CANCEL, WHERE THE EDIT HAPPENED. Only when this session
+                    actually has something to cancel — a Cancel that is always
+                    present but usually does nothing is the same problem as a
+                    Save that writes nothing. Ghost rather than a destructive
+                    class: it drops unpublished changes on one session, which is
+                    a smaller act than "Remove session" beside it and much
+                    smaller than week-level Discard.
+
+                    NOT ON A STAGED DRAFT, found by testing it: a draft IS the
+                    change, so cancelling it and removing it are the same act,
+                    and the panel offered two buttons that did exactly the same
+                    thing with different confirmations. "Remove session" already
+                    owns that, with a confirmation this would have bypassed. So
+                    the button is for a committed session carrying an overlay,
+                    which is the case that had no undo short of discarding the
+                    whole week. The commit line below still shows for a draft,
+                    because a staged draft genuinely is held and unpublished. */}
+                {isDirty && !isDraft ? (
+                  <button type="button" className="btn-ghost" onClick={onRevert}>
+                    Cancel changes
+                  </button>
+                ) : null}
                 {isDraft || !session.isPast ? (
                   <button type="button" className="sg-btn-remove" onClick={() => setConfirmingRemove(true)}>
                     Remove session
@@ -528,6 +557,20 @@ export function SelectedSessionPanel({
               </>
             )}
           </div>
+          {/* NAMES THE COMMIT, because the control that performs it is not on
+              screen. Measured: with this panel at y=700 the banner holding
+              "Publish to athletes" sat at y=-1782. Without this line a coach
+              sees the time change in the panel and has nothing telling them
+              whether it was captured or how it reaches anybody. Deliberately
+              NOT a second Publish button here: the commit is week-level on
+              purpose — one session published out of a week would put a
+              half-updated schedule on athletes' phones and break the banner's
+              own promise. */}
+          {isDirty ? (
+            <p className="tiny" style={{ margin: 'var(--sp-8) 0 0' }}>
+              Held on your screen. Publish to athletes, at the top of this page, puts it on their phones.
+            </p>
+          ) : null}
         </>
       )}
 

@@ -1178,6 +1178,40 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
 - [ ] **Noted, not acted on:** the spec's `webBreakpoints` (`06-design-system.md` §10.2) names `sm 640, md 768, lg 1024, xl 1280, xxl 1600`. Only **768** and **1024** are used as named tiers; `1280` and `1600` are unused entirely, and the per-surface collapse points (900, 1100, 1150, 1200) sit between the spec's tiers rather than on them. That is either the spec describing an intent the build never adopted, or the build having outgrown it — worth one decision either way, and not one to take inside a guard.
 
+## 0m. `aria-invalid` — 2026-09-09, and the audit overstated it by a factor of ten
+
+- [x] **DONE, but not as the audit framed it.** The finding said "233 form controls, 322 `setError` call sites, **0** `aria-invalid`", implying 233 controls needed the attribute. Reading the code says otherwise.
+
+  Of **54** components that hold a control and its own error state, **50 produce only submission errors** — `json.error`, a rejected mutation, a dropped connection. This app validates very little in the browser: it submits and reports what the server said.
+
+  **`aria-invalid` means the value is wrong.** On a network failure the value is usually fine, so setting it there would be a lie told to precisely the users who cannot see the form to check. Those 50 were already correct: `role="alert"` is the right mechanism for a form-level failure, and all 54 carry it (four of them only since this morning — see the P1 fixes).
+
+  **So the real work was three forms**, the ones whose validation genuinely names a field:
+
+  | form | what it now attributes |
+  |---|---|
+  | `ProblemReportForm` | body over 1000 chars → the textarea, bound to `over` so it clears itself when the text fits |
+  | `GymSessionSetsList` | `validateCorrection` returns `{ field, message }` instead of a bare string — reps vs load |
+  | `ChangePasswordForm` | length and reuse → the new password; mismatch → the confirmation; wrong current password → that field; the two request failures carry `field: null` |
+
+  **The `{ field, message }` change is the substance.** Both validators previously returned a string, which reads fine on screen and tells a screen reader nothing: "Reps has to be a whole number" was announced once while both inputs still looked equally valid to assistive tech. Naming the field is what lets the wrong input carry the attribute.
+
+  **Verified on the real render** (as Jane Pemberton, `/settings`), driving each branch and watching the marker move:
+
+  | branch | field marked | message |
+  |---|---|---|
+  | too short | `new-password` | "Use at least 12 characters." |
+  | reuse of current | `new-password` | "Choose a different password." |
+  | mismatch | **`confirm-password`** | "The new password and its confirmation do not match." |
+
+  Exactly one field marked each time, `aria-describedby` resolving to the real error node, and nothing marked before the first submit. Every branch returned before the network call, so nothing was submitted.
+
+  **`scripts/test-field-errors.ts`** (in `prebuild`, 77 suites) pins the three forms by name and enforces the two things that make the attribute worth anything: `aria-invalid` must be **bound to state**, never a bare `true` (a permanently-invalid field is noise a screen reader repeats on every visit), and it must come **with** an `aria-describedby` whose id actually renders. That last one is the quietest failure in this whole area — nothing errors, the browser silently drops the association, and the field announces "invalid" with no reason. All four rules proven against plants.
+
+  It also pins the other half: all 54 components must keep announcing. A component that loses `role="alert"` is the exact defect four of them had this morning.
+
+- [ ] **Open, and it is a product decision rather than an a11y one:** those 50 forms do no client-side validation at all. That is defensible — the server is the authority and its messages are good — but it means an athlete on a phone fills a form, submits, waits for a round trip, and only then learns a required field was blank. Worth deciding per form whether the round trip is acceptable, not worth fixing wholesale.
+
 ## 1. Data & Schema — confirmed already built by reading the raw files directly
 
 - [x] Multi-tenancy: `org_id` on 56 of 58 tables, RLS enabled with a policy on all 58

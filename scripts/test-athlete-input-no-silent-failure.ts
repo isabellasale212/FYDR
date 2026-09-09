@@ -70,8 +70,15 @@ assert(/unchanged/i.test(gym),
 /* Cancel must not leave a validation message behind. Found by cancelling out of
    a rejected correction and seeing the error still on screen with no panel under
    it — an error about a form that is no longer open. */
-const cancelHandler = /onClick=\{\(\) => \{\s*setError\(null\);\s*setCorrecting\(null\);/.test(gym);
-assert(cancelHandler, 'Cancel clears the error as well as closing the panel');
+/* IT MUST CLEAR THE FIELD MARKER TOO, added 2026-09-09. validateCorrection now
+   returns which field it rejected so that input can carry aria-invalid, which
+   means Cancel has a second thing to undo: without it, a cancelled panel leaves
+   an input marked invalid to a screen reader with no message and no panel to
+   explain it — the same defect this assertion was written for, one layer down
+   and invisible on screen. */
+const cancelHandler =
+  /onClick=\{\(\) => \{\s*setError\(null\);\s*setInvalidField\(null\);\s*setCorrecting\(null\);/.test(gym);
+assert(cancelHandler, 'Cancel clears the error, the invalid-field marker, and the panel');
 
 /* ---------- 2. report a problem ---------- */
 const rep = blank(readFileSync('src/components/ProblemReportForm/ProblemReportForm.tsx', 'utf8'));

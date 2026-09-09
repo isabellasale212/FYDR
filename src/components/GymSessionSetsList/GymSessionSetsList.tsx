@@ -16,11 +16,19 @@ type Props = {
  *  with an inline "Correct" affordance per row, same revise_gym_set_log path
  *  GymSessionLogger's own completed-row correction uses, no rest timer or previous-
  *  performance context (this is a read of history, not mid-workout). */
+/* One panel is open at a time, so one id is enough and it can be a constant
+   rather than derived from the set. */
+const CORRECTION_ERROR_ID = 'gym-correction-error';
+
 export function GymSessionSetsList({ sets }: Props) {
   const router = useRouter();
   const [correcting, setCorrecting] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<string, { reps: string; load: string }>>({});
   const [error, setError] = useState<string | null>(null);
+  /* Separate from `error` on purpose: a failed mutation sets a message with no
+     field to blame, and marking an input invalid for a network error would be
+     a lie told to the people who cannot check it. */
+  const [invalidField, setInvalidField] = useState<'reps' | 'load' | null>(null);
 
   const correctionMutation = useMutation({
     mutationFn: async (input: { id: string; reps: string; load: string }) => {
@@ -54,27 +62,40 @@ export function GymSessionSetsList({ sets }: Props) {
    *  reps_completed or load_kg, and volume_kg is generated from their product —
    *  so a stray minus sign would have written negative tonnage into a stored
    *  aggregate. This is the only guard on that path. */
-  function validateCorrection(reps: string, load: string, original: GymSessionSetDetail): string | null {
+  /* RETURNS THE FIELD, not just the message. It used to return a bare string,
+     which read fine on screen and told a screen reader nothing: the message
+     said "Reps has to be a whole number" while both inputs looked equally
+     valid to assistive tech. The field name is what lets the wrong input carry
+     aria-invalid, so the person who cannot see the red text still knows which
+     box to go back to. */
+  function validateCorrection(
+    reps: string,
+    load: string,
+    original: GymSessionSetDetail,
+  ): { field: 'reps' | 'load'; message: string } | null {
     if (reps.trim() === '') {
-      return 'Enter the number of reps. A blank field leaves the set unchanged.';
+      return { field: 'reps', message: 'Enter the number of reps. A blank field leaves the set unchanged.' };
     }
     const r = Number(reps);
     if (!Number.isInteger(r) || r < 0) {
-      return 'Reps has to be a whole number, 0 or more.';
+      return { field: 'reps', message: 'Reps has to be a whole number, 0 or more.' };
     }
     if (load.trim() === '' && original.load_kg !== null) {
-      return 'Enter the load, or cancel. A blank field leaves the set unchanged.';
+      return { field: 'load', message: 'Enter the load, or cancel. A blank field leaves the set unchanged.' };
     }
     if (load.trim() !== '') {
       const l = Number(load);
-      if (!Number.isFinite(l) || l < 0) return 'Load has to be 0 kg or more.';
-      if (l > 9999.99) return 'That load is higher than this app records. Check the number.';
+      if (!Number.isFinite(l) || l < 0) return { field: 'load', message: 'Load has to be 0 kg or more.' };
+      if (l > 9999.99) {
+        return { field: 'load', message: 'That load is higher than this app records. Check the number.' };
+      }
     }
     return null;
   }
 
   function openCorrection(s: GymSessionSetDetail) {
     setError(null);
+    setInvalidField(null);
     setDrafts((d) => ({
       ...d,
       [s.id]: {
@@ -92,7 +113,7 @@ export function GymSessionSetsList({ sets }: Props) {
   return (
     <div className="stack" style={{ gap: 'var(--sp-10)' }}>
       {error ? (
-        <p className="form-error" role="alert">
+        <p className="form-error" role="alert" id={CORRECTION_ERROR_ID}>
           {error}
         </p>
       ) : null}
@@ -135,6 +156,8 @@ export function GymSessionSetsList({ sets }: Props) {
                           step="1"
                           inputMode="numeric"
                           aria-label={`Set ${s.set_number} corrected reps`}
+                          aria-invalid={invalidField === 'reps' || undefined}
+                          aria-describedby={invalidField === 'reps' ? CORRECTION_ERROR_ID : undefined}
                           value={draft.reps}
                           onChange={(e) =>
                             setDrafts((d) => ({ ...d, [s.id]: { ...draft, reps: e.target.value } }))
@@ -150,6 +173,8 @@ export function GymSessionSetsList({ sets }: Props) {
                           step="0.5"
                           inputMode="decimal"
                           aria-label={`Set ${s.set_number} corrected load in kg`}
+                          aria-invalid={invalidField === 'load' || undefined}
+                          aria-describedby={invalidField === 'load' ? CORRECTION_ERROR_ID : undefined}
                           value={draft.load}
                           onChange={(e) =>
                             setDrafts((d) => ({ ...d, [s.id]: { ...draft, load: e.target.value } }))
@@ -166,10 +191,12 @@ export function GymSessionSetsList({ sets }: Props) {
                             {
                               const problem = validateCorrection(draft.reps, draft.load, s);
                               if (problem) {
-                                setError(problem);
+                                setError(problem.message);
+                                setInvalidField(problem.field);
                                 return;
                               }
                               setError(null);
+                              setInvalidField(null);
                               correctionMutation.mutate({ id: s.id, reps: draft.reps, load: draft.load });
                             }
                           }
@@ -187,6 +214,7 @@ export function GymSessionSetsList({ sets }: Props) {
                              which is its own small piece of nonsense. */
                           onClick={() => {
                             setError(null);
+                            setInvalidField(null);
                             setCorrecting(null);
                           }}
                         >

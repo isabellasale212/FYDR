@@ -23,11 +23,23 @@ const MIN_LENGTH = 12;
  * Supabase's default session behaviour, but not verified here, so not
  * claimed), no recent security activity list.
  */
+type PasswordField = 'current' | 'next' | 'confirm';
+
+const PASSWORD_ERROR_ID = 'change-password-error';
+
 export function ChangePasswordForm() {
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  /* THE FIELD TRAVELS WITH THE MESSAGE. This was a bare string, which reads
+     fine and tells a screen reader nothing: "The new password and its
+     confirmation do not match" was announced once, and all three password
+     boxes still looked equally valid to assistive tech. Naming the field is
+     what lets the wrong one carry aria-invalid, so somebody who cannot see the
+     red text knows which box to return to. `field: null` is the honest value
+     for the two failures that belong to the request rather than to a value —
+     marking an input invalid because the network died would be a lie. */
+  const [error, setError] = useState<{ field: PasswordField | null; message: string } | null>(null);
   const [success, setSuccess] = useState(false);
   const [busy, setBusy] = useState(false);
 
@@ -37,15 +49,15 @@ export function ChangePasswordForm() {
     setSuccess(false);
 
     if (next.length < MIN_LENGTH) {
-      setError(`Use at least ${MIN_LENGTH} characters.`);
+      setError({ field: 'next', message: `Use at least ${MIN_LENGTH} characters.` });
       return;
     }
     if (next === current) {
-      setError('Choose a different password.');
+      setError({ field: 'next', message: 'Choose a different password.' });
       return;
     }
     if (next !== confirm) {
-      setError('The new password and its confirmation do not match.');
+      setError({ field: 'confirm', message: 'The new password and its confirmation do not match.' });
       return;
     }
 
@@ -57,7 +69,7 @@ export function ChangePasswordForm() {
     } = await supabase.auth.getUser();
 
     if (!user?.email) {
-      setError('Could not confirm your account. Sign in again and retry.');
+      setError({ field: null, message: 'Could not confirm your account. Sign in again and retry.' });
       setBusy(false);
       return;
     }
@@ -75,7 +87,7 @@ export function ChangePasswordForm() {
     });
 
     if (reauthError) {
-      setError('That is not your current password.');
+      setError({ field: 'current', message: 'That is not your current password.' });
       setBusy(false);
       return;
     }
@@ -85,7 +97,7 @@ export function ChangePasswordForm() {
     setBusy(false);
 
     if (updateError) {
-      setError('Could not change your password. Try again.');
+      setError({ field: null, message: 'Could not change your password. Try again.' });
       return;
     }
 
@@ -115,6 +127,8 @@ export function ChangePasswordForm() {
         <input
           id="current-password"
           className="field"
+          aria-invalid={error?.field === 'current' || undefined}
+          aria-describedby={error?.field === 'current' ? PASSWORD_ERROR_ID : undefined}
           type="password"
           autoComplete="current-password"
           value={current}
@@ -129,6 +143,8 @@ export function ChangePasswordForm() {
         <input
           id="new-password"
           className="field"
+          aria-invalid={error?.field === 'next' || undefined}
+          aria-describedby={error?.field === 'next' ? PASSWORD_ERROR_ID : undefined}
           type="password"
           autoComplete="new-password"
           value={next}
@@ -146,6 +162,8 @@ export function ChangePasswordForm() {
         <input
           id="confirm-password"
           className="field"
+          aria-invalid={error?.field === 'confirm' || undefined}
+          aria-describedby={error?.field === 'confirm' ? PASSWORD_ERROR_ID : undefined}
           type="password"
           autoComplete="new-password"
           value={confirm}
@@ -154,8 +172,8 @@ export function ChangePasswordForm() {
       </div>
 
       {error ? (
-        <p className="form-error" role="alert">
-          {error}
+        <p className="form-error" role="alert" id={PASSWORD_ERROR_ID}>
+          {error.message}
         </p>
       ) : null}
 

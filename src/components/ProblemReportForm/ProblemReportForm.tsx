@@ -99,6 +99,10 @@ export function ProblemReportForm({ orgId, athleteId, userId }: Props) {
           refuse to send while it is too long, and say by how much. */}
       <textarea
         id="report-body"
+        /* The counter it already points at is the reason: over the limit it
+           reads "N/1000 · X too many". aria-invalid is bound to `over`, so it
+           clears itself the moment the text fits. */
+        aria-invalid={over || undefined}
         className="field"
         rows={5}
         value={body}

@@ -951,7 +951,26 @@ export async function createFixture(
 
   if (error || !data)
     return { id: null, error: error ? humanizeDbError(error.message, 'staff') : 'Could not create the fixture.' };
-  return { id: data.id, error: null };
+
+  /* THE LINKED MATCH SESSION. Decided by Isabella 2026-09-09: a fixture without
+     one is a match the schedule has no real object for — no participants, no
+     duration, no RPE expectation — and it left `fixturesToDraw`'s suppression
+     firing only when a coach had built the session separately by hand.
+
+     THE FIXTURE IS NOT ROLLED BACK IF THIS FAILS. These are two writes with no
+     transaction across them, and the fixture is what the coach asked for; losing
+     it to a failed second write would be worse than the inconsistency. So the id
+     is returned either way and the session error is surfaced with it — the one
+     thing not to do here is swallow sessionError and report success, which would
+     make a fixture with no session look exactly like a fixture with one. */
+  const { error: sessionError } = await createMatchSessionForFixture(db, orgId, userId, {
+    id: data.id,
+    opponent: input.opponent,
+    kickoffAt: input.kickoffAt,
+    venue: input.venue,
+  });
+
+  return { id: data.id, error: sessionError };
 }
 
 export type NewSessionInput = {
@@ -962,6 +981,11 @@ export type NewSessionInput = {
   location: string | null;
   mdOffset: number | null;
   groupIds: string[];
+  /** The fixture this session represents, for a 'match'. `fixturesToDraw` keys
+   *  its no-double-draw rule on exactly this: a fixture whose id appears here
+   *  stops drawing a block of its own, because the session is the richer object.
+   *  Null for every other session type. */
+  fixtureId?: string | null;
 };
 
 export async function createSession(
@@ -985,6 +1009,7 @@ export async function createSession(
       duration_min: input.durationMin,
       location: input.location,
       md_offset: input.mdOffset,
+      fixture_id: input.fixtureId ?? null,
       created_by: userId,
     })
     .select('id')
@@ -1005,6 +1030,74 @@ export async function createSession(
   }
 
   return { error: null };
+}
+
+/** Every match session is 80 minutes.
+ *
+ *  Not a guess: all seven match sessions on scratch are 80, which is a rugby
+ *  match. A coach who needs 100 for extra time edits it afterwards like any
+ *  other session field. */
+export const MATCH_DURATION_MIN = 80;
+
+/** Build the match session that represents a fixture.
+ *
+ *  ONE HELPER, TWO CALLERS: createFixture below, and the backfill that linked the
+ *  fixtures predating this behaviour. Written as a single function precisely so
+ *  the backfilled rows and the newly-created ones cannot differ — a backfill that
+ *  hand-rolls its own insert is how two conventions start.
+ *
+ *  PARTICIPANTS ARE THE POSITIONAL GROUPS, resolved by group_type rather than by
+ *  the names a club happens to use. Measured on scratch before this was chosen:
+ *  every one of Ashcombe's 29 active athletes holds an open membership in
+ *  Forwards or Backs, so the positional groups ARE the full squad there. Group
+ *  rows rather than one row per athlete, because group membership stays live as
+ *  the squad changes where 29 frozen athlete rows go stale the moment somebody
+ *  joins.
+ *
+ *  A CLUB WHOSE POSITIONAL GROUPS DO NOT COVER EVERYONE gets a session missing
+ *  those athletes. That is the known edge of this choice, and it is the same
+ *  edge any default has: coaches trim and extend participants after the fact,
+ *  which is how every other session on the grid works. If it ever bites, the fix
+ *  is a real "whole squad" group rather than inferring one here.
+ *
+ *  NO PARTICIPANTS AT ALL IS NOT SILENTLY ACCEPTED. A session with none is
+ *  staff-only — no athlete sees it in their app — so an org with no positional
+ *  groups gets an error saying so rather than a match nobody is in. */
+export async function createMatchSessionForFixture(
+  db: Db,
+  orgId: string,
+  userId: string,
+  fixture: { id: string; opponent: string; kickoffAt: string; venue: string | null },
+): Promise<{ error: string | null }> {
+  const { data: groups, error: groupsError } = await db
+    .from('groups')
+    .select('id')
+    .eq('org_id', orgId)
+    .eq('group_type', 'positional');
+
+  if (groupsError) return { error: humanizeDbError(groupsError.message, 'staff') };
+  const groupIds = (groups ?? []).map((g) => g.id);
+  if (groupIds.length === 0) {
+    return {
+      error:
+        'The fixture was created, but its match session could not be: this club has no positional groups, so there is nobody to put in it. Add Forwards and Backs in Groups, then add the session by hand.',
+    };
+  }
+
+  return createSession(db, orgId, userId, {
+    title: `v ${fixture.opponent.trim()}`,
+    sessionType: 'match',
+    startsAt: fixture.kickoffAt,
+    durationMin: MATCH_DURATION_MIN,
+    location: fixture.venue,
+    /* Matchday is the day the countdown points at, so the match itself is MD.
+       The three genuine match sessions on scratch all use 0; the older seeded
+       rows carry -28/-21/-14/-7, which is a synthetic countdown rather than a
+       convention to copy. */
+    mdOffset: 0,
+    groupIds,
+    fixtureId: fixture.id,
+  });
 }
 
 /* ---------------------------------------------------------------------------

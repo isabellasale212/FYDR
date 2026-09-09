@@ -1281,6 +1281,29 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   **What made it hard, because the method is the transferable part.** React Query's own state was the answer and nobody had read it: exposing the mutation object showed `isPaused: true` with the correct sentence sitting unused in `failureReason`. The three earlier attempts all instrumented the promise chain, which was working perfectly the whole time — `getUser()` settles in 6ms, `assertLiveSession` throws correctly, `withWriteTimeout` rejects correctly. And the **control experiment** is what broke it open: making the INSERT fail while leaving auth intact reproduced it identically, which killed "it's a session bug" in one measurement.
 
+## 0p. Gym deletes are audited — 2026-09-09, closing the gap `0096` named
+
+- [x] **BUILT, applied to scratch, verified. NOT yet on production.** Migration `0097_audit_gym_deletes.sql`, `supabase/tests/520_gym_delete_audit_test.sql` (21 assertions), 10 more in `scripts/test-audit-triggers.ts`.
+
+  `0096` audited gym **corrections** and said in its own header that a DELETE was *"a real question and a separate one"*. Measured on both databases rather than read off the migrations:
+
+  | role | `gym_set_logs` / `gym_session_logs` |
+  |---|---|
+  | `authenticated` | `INSERT, SELECT` — **no delete path at all** |
+  | `service_role` | `DELETE, TRUNCATE, …` — **and nothing recorded either** |
+
+  So a set log could only be removed from below the app, and that left no trace — the same shape as the 2026-09-07 incident `0085`'s header records, and the same shape as the two rows removed from production by hand during the `-3` repair. Those two were audited only because the repair wrote the rows itself, as `gym_set_logs.delete` — the action name this trigger now produces, so the log reads as one thing.
+
+  **Why a row per delete is affordable:** `0021` states the design — *"No delete policy anywhere in this migration. `gym_session_logs` has an abandoned status for 'this did not happen after all' rather than a delete."* Nothing in `src/` deletes from either table. Every row this trigger writes is somebody working below the app, which is exactly the event worth keeping.
+
+  **The values are kept, and for a delete that is the point.** A correction leaves the old value reachable through the revision chain; a delete destroys it. Reps, loads and volumes are already visible to every `audit_log` reader on the training report.
+
+  **One exception, carried over from `0096`:** `gym_session_logs.comment` is an athlete writing about their own body. The row records `comment_present` and `comment_length`, never the text — so a deleted comment is **not** recoverable from the audit log. That is the trade, stated rather than discovered.
+
+  **`via_cascade` is taken from the parent already being gone, not from `pg_trigger_depth()`.** Depth was tried first and **measured wrong** against a real cascade on scratch — it reads `1` for cascaded children, so every child looked like a direct delete. Parent-existence is also the honest test rather than a proxy. Its cost is asserted, not hidden: a cascaded child carries a **null athlete**, because the row naming them went first; it carries the parent's id instead, so a reader lands on the parent's own delete row, which does name the athlete.
+
+- [ ] **OPEN, and it is Isabella's decision rather than mine: TRUNCATE still bypasses all of this.** `service_role` holds it and a truncate fires no row triggers. `audit_log` itself is protected by a statement-level `before truncate` guard (`0007`) and the same guard would work here — but `scripts/reset-scratch.mjs` truncates every public table in one statement and already has to **lift** `audit_log`'s guard to do it. That script's own header says the three reasons the lift is acceptable *"none of them generalise"*, and that it was approved explicitly because *"disabling an audit-log protection is not something to do on an agent's own judgement"*. Adding two more guards for it to disable is therefore a decision, not a side effect. A superuser connection also bypasses triggers entirely — `0085` records that limit and it is unchangeable from here.
+
 ## 1. Data & Schema — confirmed already built by reading the raw files directly
 
 - [x] Multi-tenancy: `org_id` on 56 of 58 tables, RLS enabled with a policy on all 58

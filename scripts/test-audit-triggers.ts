@@ -29,6 +29,7 @@ const CONFIG = 'supabase/migrations/0088_audit_widen_config.sql';
 const AUTHORING = 'supabase/migrations/0089_audit_widen_authoring.sql';
 const RECORDS = 'supabase/migrations/0091_audit_widen_records_of_record.sql';
 const GYM = 'supabase/migrations/0096_audit_gym_corrections.sql';
+const GYMDEL = 'supabase/migrations/0097_audit_gym_deletes.sql';
 const ACCESS = 'src/lib/access.ts';
 const sql = read(MIGRATION);
 const widen = read(WIDEN);
@@ -36,6 +37,12 @@ const config = read(CONFIG);
 const authoring = read(AUTHORING);
 const records = read(RECORDS);
 const gym = read(GYM);
+const gymDelRaw = read(GYMDEL);
+/* COMMENTS OFF FOR THE CODE ASSERTIONS. 0097's header explains that
+   pg_trigger_depth() was tried and measured wrong — so a scan for that name hit
+   the sentence saying it was rejected and failed against correct code. Prose is
+   asserted against gymDelRaw, code against gymDel. */
+const gymDel = gymDelRaw.replace(/^--.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, ' ');
 
 /** Every migration that attaches a trigger. Concatenated, not listed by hand at
     each call site, so adding batch five means editing one line rather than four. */
@@ -44,7 +51,7 @@ const gym = read(GYM);
     the per-row count, because it attaches a different function. That is the
     point of it, and the count assertion is what proves it did not quietly widen
     the generic one. */
-const ALL = [sql, widen, config, authoring, records, gym];
+const ALL = [sql, widen, config, authoring, records, gym, gymDel];
 const allSql = ALL.join('\n');
 
 /** Every table the trigger is attached to, across both migrations. */
@@ -299,7 +306,7 @@ console.log('\ngym corrections are audited, and by a separate function on purpos
     "0096 does not redefine audit_row_change — 0085's field-names-never-values rule for the clinical tables is untouched",
   );
   assert(
-    !ALL.slice(0, -1).some((f) => /audit_gym_correction/.test(f)),
+    ![sql, widen, config, authoring, records].some((f) => /audit_gym_correction/.test(f)),
     'and nothing before it referenced the new function, so this is additive',
   );
   assert(
@@ -353,6 +360,66 @@ console.log('\ngym corrections are audited, and by a separate function on purpos
   assert(
     !AUDITED.some(([t]) => t === 'gym_set_logs' || t === 'gym_session_logs'),
     'neither gym table runs the generic function, so nothing above changed meaning',
+  );
+}
+
+console.log('\ngym deletes are audited too, and a cascade says so');
+{
+  /* 0096 named this and left it: "A DELETE ... Auditing service-role deletes is
+     a real question and a separate one." 0097 is that question. Measured on both
+     databases first: authenticated holds INSERT and SELECT only, service_role
+     holds DELETE and TRUNCATE, and nothing recorded either — so a set log could
+     only be removed from below the app, and that left no trace. The same shape
+     as the 2026-09-07 incident 0085's header records. */
+  for (const t of ['gym_set_logs', 'gym_session_logs']) {
+    assert(
+      new RegExp(`create trigger ${t}_delete_audit\\s+after delete on public\\.${t}`).test(gymDel),
+      `${t} has an after-delete trigger`,
+    );
+  }
+  assert(
+    (gymDel.match(/for each row execute function public\.audit_gym_delete\(\)/g) ?? []).length === 2,
+    'both run per row, so a cascade of twenty sets is twenty records rather than one',
+  );
+  assert(
+    /tg_table_name \|\| '\.delete'/.test(gymDel),
+    "the action reads <table>.delete — the same name the -3 repair wrote by hand, so the log reads as one thing",
+  );
+
+  /* THE SIGNAL, and the reason it is not the obvious one. pg_trigger_depth() was
+     tried first and measured WRONG against a real cascade on scratch: it reads 1
+     for the cascaded children, so every child looked like a direct delete. */
+  assert(
+    !/pg_trigger_depth/.test(gymDel),
+    'via_cascade is NOT taken from pg_trigger_depth(), which measured 1 for a real cascade',
+  );
+  assert(
+    /v_parent_found/.test(gymDel) && /v_cascade := not coalesce\(v_parent_found/.test(gymDel),
+    'it is taken from the parent already being gone, which is what "came through the cascade" means',
+  );
+  assert(
+    /the athlete\s*(?:--)?\s*cannot be resolved from the child/.test(gymDelRaw),
+    'and the migration records the cost: a cascaded child carries no athlete, because the row naming them went first',
+  );
+
+  /* The one value not kept, carried over from 0096's rule. */
+  assert(
+    /'comment_present'/.test(gymDel) && /'comment_length'/.test(gymDel),
+    'a deleted session comment is recorded as present and measured, never quoted',
+  );
+  assert(
+    !/'comment',\s*v_old ->> 'comment'/.test(gymDel),
+    "and its text never reaches metadata — audit_log is sport-scientist readable",
+  );
+
+  /* Named rather than left to be discovered. */
+  assert(
+    /TRUNCATE\. service_role holds it/.test(gymDelRaw),
+    '0097 says plainly that TRUNCATE still bypasses all of this',
+  );
+  assert(
+    /none of them generalise/.test(gymDelRaw),
+    'and why blocking it is a decision rather than a side effect: reset-scratch.mjs would need to lift two more guards',
   );
 }
 

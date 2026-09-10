@@ -870,9 +870,11 @@ trade `0096` made for gym, now made consistently.
 
   **Guard it.** No test asserts the row's title. One that renders two RPE expectations for one athlete on one day and asserts the two rows differ would have caught this, and would stop the query and the page drifting apart again.
 
-## 0s. The athlete write forms' sticky submit footer does not stick — found 2026-09-10
+## 0s. The athlete write forms' submit button sits below the fold — found 2026-09-10, half closed the same day
 
-- [ ] **`.subm` is authored `position: sticky; bottom: 0` and is inert on all four athlete write forms.** The primary action on every athlete write screen sits at its static position, below the fold, on a phone. Found during the ATH-ADULT-03 persona review; full measurements in `docs/walkthrough-reviews/ath-adult-03-review.md`.
+**The inert sticky is removed (2026-09-10).** `position: sticky; bottom: 0` never worked at any viewport, and deleting it was proved a byte-identical no-op on all four forms. Confirmed as the right direction rather than repairing the shell: `.athlete-tabbar` is deliberately static in flow per the recorded 2026-09-08 decision, so document-scroll is the intended model. **The athlete-facing problem below is NOT fixed by that** and remains open.
+
+- [x] ~~**`.subm` is authored `position: sticky; bottom: 0` and is inert on all four athlete write forms.**~~ Removed. The primary action on every athlete write screen sits at its static position, below the fold, on a phone. Found during the ATH-ADULT-03 persona review; full measurements in `docs/walkthrough-reviews/ath-adult-03-review.md`.
 
   **The three rules, and why they cancel out.**
 
@@ -892,11 +894,17 @@ trade `0096` made for gym, now made consistently.
 
   **Blast radius: four forms, not one screen.** `CheckInForm`, `RpeForm`, `NutritionCheckinForm` and `ProblemReportForm` all render `.subm`. Every athlete write flow is affected.
 
-  **The fix is one property, on a rule every athlete screen renders inside.** `.phone` needs `height: 100dvh` (or `max-height: 100dvh`) so the body pane is bounded and scrolls internally, at which point the existing sticky works as written and needs no change. **Not done here**, deliberately: this alters scrolling behaviour on every athlete screen simultaneously and is outside the scoped walkthrough-review freeze exception, which covers only the flow under active review. It needs a decision and a full render pass across the athlete app, not a drive-by edit during a design review.
+  **The question the sticky's removal settled, and the one it did not.** Constraining the shell (`.phone` → `height: 100dvh`) would have made the sticky work, and was rejected: the tab bar is deliberately `position: static` in flow — its own comment records the 2026-09-08 decision that a floating bar "is a design change the reference does not draw: screens 01-12 all show a solid bar with a top border, in flow". Document-scroll is the model. So the sticky went, not the shell.
 
-  **Check before fixing, because the shell may be document-scroll on purpose.** The tab bar is `position: static` and sits at the page bottom (measured at 1079 on `/today`, below the 812 fold), which is consistent with a deliberate document-scroll model rather than an app shell. If document-scroll is the intent, the correct fix is the opposite one — drop the sticky from `.subm` and design the footer for a page that scrolls — rather than constraining the shell. Either way the current state is wrong: one rule assumes an app shell the other two do not provide.
+  **What is still open, and it is the part an athlete feels.**
 
-  **Guard it.** No test asserts that a sticky element sticks. A render test that scrolls `/check-in` and asserts the submit button stays within the viewport would have caught this and would catch it again if the shell's height rules change.
+- [ ] **The submit button on `/check-in` sits at 1030px absolute on an 812px viewport — 229px below the fold, 414px on a 375×667 handset.** The five wellness scales end at 801px, clearing the 812 fold by **11px**, so the screen looks like the whole task fits when the control that completes it is off-screen. Answering all five enables the button and changes its label and **scrolls nothing** — the athlete's view is identical before and after the form becomes valid.
+
+  **The outstanding-count is off-screen AND unreadable.** "Submit entry · {N} to go" is the flow's only aggregate progress signal. `:disabled` and `[disabled]` both match the button so the dimming compounds, giving a measured **1.24:1** contrast (fill `rgb(221,230,250)`, glyph `rgb(253,254,255)`) against **4.67:1** enabled. Not strictly a WCAG 1.4.3 failure — inactive controls are exempt — but the exemption assumes disabled means nothing here needs reading, and here it is the only thing that says how far there is to go.
+
+  **This is a design question, not a bug fix**, and it is in the ATH-ADULT-03 brief for Claude Design. Any proposal touching `.subm` or `--o-disabled` collides with the other three athlete write forms and must be flagged first.
+
+  **Guard it.** No test asserts the primary action is reachable. A render test that loads `/check-in` at 375×812 and asserts the submit button is within the viewport — or that some completion signal is — would catch both this and any future regression in the shell's height rules.
 
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.

@@ -328,6 +328,7 @@ const chrome = spawn(CHROME, [
 process.on('exit', () => { try { chrome.kill(); } catch {} });
 
 const report = [];
+const reportPath = join(OUT_ROOT, SECTION, '_report.json');
 try {
   let list = null;
   for (let i = 0; i < 40 && !list; i++) {
@@ -372,6 +373,26 @@ try {
   const who = await evalIn(`(document.body.innerText.match(/^[A-Z][a-z]+ [A-Z][a-z]+$/m) || [])[0] || null`);
   console.log(`  Signed in${who ? ` as ${who}` : ''}. Capturing ${todo.length} flow(s).\n`);
 
+  /* WRITTEN AFTER EVERY FLOW, at the same cadence as the PDFs themselves.
+     PDFs were written inside this loop while the report was written once at the
+     end, so any run that did not reach the end — a timeout, a Ctrl-C, a hang
+     waiting for a sign-in — lost every record from that run while its PDFs
+     survived. That is how 34 PDFs came to have 7 records, and it is a DIFFERENT
+     fault from the --only overwrite fixed earlier: fixing that one did not touch
+     this one. Rebuilding the index from PDF page trees afterwards recovers the
+     counts but not the failure reasons, so the record has to survive the run
+     rather than be reconstructed after it. */
+  const persist = () => {
+    let merged = [];
+    try { merged = JSON.parse(readFileSync(reportPath, 'utf8')); } catch { merged = []; }
+    for (const row of report) {
+      const i = merged.findIndex((m) => m.id === row.id);
+      if (i >= 0) merged[i] = row; else merged.push(row);
+    }
+    merged.sort((a, b) => a.id.localeCompare(b.id));
+    writeFileSync(reportPath, JSON.stringify(merged, null, 2));
+  };
+
   for (const flow of todo) {
     const frames = [];
     let failed = null;
@@ -405,25 +426,29 @@ try {
       console.log(`  keep  ${flow.id}  ${flow.name}  — kept the earlier ${prev}-step capture; this run got ${captured}`);
       report.push({ id: flow.id, name: flow.name, steps: frames.length, captured: prev,
                     issue: `this run captured only ${captured}; the earlier, better PDF was kept` });
+      persist();
       continue;
     }
     await buildPdf({ ...flow, account: who }, frames, out);
     report.push({ id: flow.id, name: flow.name, steps: frames.length,
                   captured: frames.filter((f) => !f.missing).length, issue: failed });
+    persist();   // survives a kill from here on
     console.log(`  ${failed ? 'PART' : ' ok '}  ${flow.id}  ${flow.name}${failed ? `  — ${failed}` : ''}`);
   }
 } finally {
-  /* MERGE, never replace. A --only run rewrote this file with just the flows it
-     re-ran, so a batch of 38 became a report of 2 and the record of everything
-     else was lost. The PDFs survived; the account of them did not. */
-  const reportPath = join(OUT_ROOT, SECTION, '_report.json');
-  let merged = [];
-  try { merged = JSON.parse(readFileSync(reportPath, 'utf8')); } catch { merged = []; }
-  for (const row of report) {
-    const i = merged.findIndex((m) => m.id === row.id);
-    if (i >= 0) merged[i] = row; else merged.push(row);
-  }
-  writeFileSync(reportPath, JSON.stringify(merged, null, 2));
+  /* A final flush only. Each flow already persisted itself above; this catches a
+     failure before the first flow completed. Merging, never replacing, because a
+     --only run must not erase the flows it did not re-run. */
+  try {
+    let merged = [];
+    try { merged = JSON.parse(readFileSync(reportPath, 'utf8')); } catch { merged = []; }
+    for (const row of report) {
+      const i = merged.findIndex((m) => m.id === row.id);
+      if (i >= 0) merged[i] = row; else merged.push(row);
+    }
+    merged.sort((a, b) => a.id.localeCompare(b.id));
+    writeFileSync(reportPath, JSON.stringify(merged, null, 2));
+  } catch {}
   try { chrome.kill(); } catch {}
   console.log(`\n  PDFs: ${join(OUT_ROOT, SECTION)}\n`);
   process.exit(0);

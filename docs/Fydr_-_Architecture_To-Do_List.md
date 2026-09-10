@@ -852,6 +852,24 @@ followed by a delete, where `0099` keeps only the length too. That is the same
 trade `0096` made for gym, now made consistently.
 
 
+## 0r. Every session an athlete has to rate is labelled identically — found 2026-09-10
+
+- [ ] **`compliance.ts:144` hard-codes the RPE to-do row's title, so two sessions in one day are indistinguishable on Today.** The row reads **"How hard was it?"** for every session. The `session_id` is on the row and its name is never looked up.
+
+  **This is not the documented behaviour, and the code says so itself.** `src/app/(athlete)/today/page.tsx` carries a comment on the very line that builds the title:
+
+  > *The SESSION's name is the title for an RPE task — "Team run", not "Training" — per Fydr Athlete App.dc.html 23a. It was in the subtitle, which made every training row read identically until you got to the second line.*
+
+  The comment names the exact failure it claims to have fixed, and the failure is still there: `name: item.domain === 'wellness' ? 'Wellness' : (item.label || 'Training')` takes `item.label`, and `lib/queries/compliance.ts:144` sets that label to the constant `'How hard was it?'`. The fallback to `'Training'` is unreachable for the same reason. The page-level fix landed; the query it depends on was never changed to carry the name.
+
+  **What an athlete sees.** Two sessions on one day — a gym slot and a team run, say — produce two rows reading "How hard was it?", stacked, with identical "20 seconds" subtitles and identical RPE glyphs. Nothing on Today distinguishes them. The athlete can only tell them apart by opening one, and if they rate the wrong one it is **immutable**: `training_entries` is ADR-005, so only staff can correct it via `revise_training_entry`, and that requires `ENTRY_CORRECTION` (sport scientist, coach, medic).
+
+  **Measured on the running app**, 2026-09-10, signed in as a real athlete with three outstanding items: the row's rendered text is "How hard was it?", not a session name.
+
+  **The fix is in the query, not the page.** `buildOutstanding` already joins `sessions` for `session_id`; the title needs the session's own name carried through to `label`, with `'Training'` kept as the genuine fallback for an unnamed session. The page needs no change — it is already asking for the right thing.
+
+  **Guard it.** No test asserts the row's title. One that renders two RPE expectations for one athlete on one day and asserts the two rows differ would have caught this, and would stop the query and the page drifting apart again.
+
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.
 

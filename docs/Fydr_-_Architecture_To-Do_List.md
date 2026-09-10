@@ -952,6 +952,30 @@ trade `0096` made for gym, now made consistently.
 
   **Not a rendering bug** — the radio `value` and the displayed numeral match exactly at every step (checked all ten), so nothing is stored under the wrong number. It is a comment that will mislead the next person who reads it while deciding whether the scale is right, which is the same failure mode as §0r's `today/page.tsx` comment.
 
+## 0u. Four athlete-app defects found in the ATH-ADULT-07 to -10 review pass — 2026-09-10
+
+**Real defects, same priority as §0r, §0s and §0t.** All three measured on the running app.
+
+- [ ] **The gym prescription line substitutes an error sentence into the load slot, producing "3 × 8 @ No 1RM test linked to this exercise yet."** Measured on `/gym/b4373061-…` (Conor Moroney, "Lower A", Romanian deadlift): a single `<span class="scheme num">` contains that entire string — it is one element, not two run together by `innerText`.
+
+  The template is evidently `{sets} × {reps} @ {load}`, and when no 1RM is linked the `{load}` slot receives the explanatory sentence meant for the weight row instead of a value. The same sentence renders correctly a few lines below, under the "NO LOAD SET" label, where it reads properly.
+
+  **What an athlete sees** is a prescription that parses as an instruction until the "@", then becomes an apology. The fix is to omit the "@ {load}" clause entirely when there is no load, since the reason is already stated in the weight row.
+
+- [ ] **Gym set buttons are 42px tall, below the app's own 44px floor.** Measured: every "Log set {n} of {total}, {exercise}" button is **105.7 × 42**. Consistent across both rendered exercises.
+
+  This is the control an athlete taps most often in the app — twelve times in a single "Lower A" session — and it is the one that misses the floor, while the wellness scales (55.3 × 44) and CR-10 grid (60.6 × 58) clear it. `ScaleInput`'s own comment calls 44 "§8's floor". Two pixels, but on the highest-frequency target and with cold or chalked hands.
+
+- [ ] **The weekly nutrition question says "this week" about a week that has already ended.** The screen deliberately and correctly asks about `lastCompletedWeek` — the week line says so, e.g. "WEEK 36 · MON 31 AUG TO SUN 6 SEPT" — but the question underneath reads **"Did you hit your protein target most days this week?"**
+
+  Measured 2026-09-10, four days after that week ended. In the correction flow (`?week=…&correct=1`) it is worse: the same "this week" was rendered over "WEEK 33 · MON 10 AUG TO SUN 16 AUG", a month earlier. The `ⓘ` correction banner has the same problem — "Correcting your answer for this week."
+
+  **This is the copy half of the finding already recorded about this screen opening on a past week.** The week line does the right thing and the question contradicts it, which is the worst of both: an athlete who reads the question and not the small uppercase line above it answers about the wrong week. "that week" or "in the week above" costs nothing.
+
+- [ ] **The three nutrition answers are ungrouped toggle buttons, not a radio group.** Measured: `<button aria-pressed="false">` × 3, with `closest('fieldset,[role=radiogroup],[role=group]')` returning nothing. The wellness scales and the CR-10 list both use real radios inside a `<fieldset>` with a `<legend>`.
+
+  Three mutually exclusive answers presented as three independent toggles are not announced as a set, carry no group name, and give no "1 of 3" position. The question itself is a plain paragraph, not tied to them by `aria-labelledby` or a legend. Lower severity than §0t's empty names — each button does at least announce its own word — but it is the third labelling approach for the same kind of control in one app.
+
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.
 

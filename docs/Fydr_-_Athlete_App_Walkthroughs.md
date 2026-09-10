@@ -361,8 +361,18 @@ of this screen dated a week behind is correct, not stale.
 **Steps.**
 
 1. Press one of three answer chips: "Yes", "Roughly", "No".
-   - Also visible: heading "Weekly check-in"; the sheet dismiss "✕"; an "Add a
-     note (optional)" button; the submit button; a "Report a problem" link.
+   - The three answers are `<button aria-pressed>` toggles, **not** radio
+     inputs, and they are **not inside a fieldset or any grouping element** —
+     unlike the wellness and RPE scales. Each is full-width, 335 × 64.
+   - Also visible: heading "Weekly check-in"; the week line
+     "WEEK {n} · MON {date} TO SUN {date}" (11px, uppercased in CSS); the
+     question "Did you hit your protein target most days this week?"; the sheet
+     dismiss "✕"; an "Add a note (optional)" button; the submit button; the
+     line "Saved on this phone first — it sends even if your signal drops.";
+     and the four tab-bar links.
+   - **There is no "Report a problem" link on this screen.** An earlier version
+     of this document listed one; measured 2026-09-10, the string does not
+     appear in the document at all.
 2. Optionally press "Add a note (optional)", revealing a textarea
    (`id="nutrition-note"`, label "Add a note").
 3. Press the submit button.
@@ -420,8 +430,17 @@ length before and after.
 
 **Steps.**
 
-1. The screen shows heading "{sessionName}", a progress line "{done} of {total}
-   sets", and one card per exercise.
+1. The screen shows heading "{sessionName}", a progress line
+   "{done} of {total} sets · {mm:ss}" — it carries a **running clock** as well
+   as the count — and a card per exercise.
+   - **Not every exercise is shown.** Only the first two render; the rest sit
+     behind a disclosure button reading "{n} more · {names}" (measured:
+     "2 more · Split squat, Nordic curl" on a four-exercise session).
+   - Also present, and not previously listed: a "Session RPE (optional)"
+     section, and the line "Sets save as you log them."
+   - **Opening this screen writes a row.** `startOrGetSessionLog` creates the
+     session log on load, before anything is logged — which is why the clock
+     reads a live time the moment the page appears. See §0g.
    - Per exercise, visible at all times: a per-set button for every prescribed
      set; a weight row; and, when the athlete's weight differs from the
      prescription, both numbers — theirs labelled "Your weight", the coach's
@@ -434,6 +453,8 @@ length before and after.
      four-tab bar.
 2. Press the next set's button to log it.
    - Accessible name when unlogged: "Log set {n} of {total}, {exercise}".
+     Verified. The buttons measure **105.7 × 42px** — below the app's own 44px
+     floor.
    - Accessible name once logged: "Set {n} logged, {reps} reps at {load} kg.
      Correct it." — `aria-pressed` becomes true.
 3. Repeat for each set and each exercise.

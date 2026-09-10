@@ -908,6 +908,8 @@ trade `0096` made for gym, now made consistently.
 
 ## 0t. Two of the ten RPE ratings cannot be announced, and the note button destroys focus — found 2026-09-10
 
+**Real accessibility defects, same priority as §0r and §0s** — not documentation, not cosmetic. Both are reproducible on the running app and both were read from the live accessibility tree rather than inferred from the markup. A screen-reader user cannot complete this flow correctly today.
+
 - [ ] **`CR10List` gives ratings 4 and 6 an empty accessible name, and strips the number from the other eight.** Read from the real accessibility tree (`Accessibility.getFullAXTree` over CDP), not inferred from the markup:
 
   | Radio | Accessible name |
@@ -920,7 +922,19 @@ trade `0096` made for gym, now made consistently.
 
   **Why.** Every child of the `<label class="cr10-row">` is hidden: the numeral is `<span className="cr10-n num" aria-hidden="true">`, the tick is `aria-hidden`, and for the two unanchored steps the anchor itself renders `<span aria-hidden="true">·</span>`. With all children hidden the label contributes no text, so the radio has no name at all. For the eight anchored steps the name is the word alone — **never the number** — so a screen-reader user cannot map what they hear onto the 1-10 scale their coach actually talks in.
 
-  **The fix already exists in this codebase.** `ScaleInput` solves exactly this problem on the wellness scales: it aria-hides the numeral and adds `<label className="visually-hidden">{step}, {copy.words[step - 1]}</label>`, so each option announces "3, All right". `CR10List` needs the same, with a word for 4 and 6 — the anchors are deliberately `null` in `CR10_ANCHORS` for the visual design, which is fine, but the accessible name cannot be null too.
+  **REUSE `ScaleInput`'S SOLUTION RATHER THAN INVENTING ONE.** This problem is already solved in this codebase, on the wellness scales: `ScaleInput` aria-hides its numeral and adds `<label htmlFor={`${name}-${step}`} className="visually-hidden">{step}, {copy.words[step - 1]}</label>`, so each option announces "3, All right". That is the pattern to copy, and no bespoke approach should be designed for CR-10.
+
+  **But copy the technique, not the element, because the two label the input differently** — and getting this wrong produces invalid HTML rather than a fix. `ScaleInput` uses an **explicit** label: `<input id>` with a sibling `<label htmlFor>`. `CR10List` uses an **implicit** one: `<label className="cr10-row">` *wraps* the input, with no id at all. Dropping `ScaleInput`'s `<label>` into `CR10List` would nest a label inside a label, which is invalid and does not reliably name anything.
+
+  **So the concrete change is one span**, inside the wrapping label that already exists, giving it the text content it currently lacks:
+
+  ```jsx
+  <span className="visually-hidden">{step}, {anchor ?? <the word for an unanchored step>}</span>
+  ```
+
+  **The one real decision is what 4 and 6 should say.** Their anchors are deliberately `null` in `CR10_ANCHORS` and that is right for the drawing — the CR-10 scale genuinely has unanchored steps. The accessible name still cannot be empty. The floor is the bare number ("4"); better is something that places it, e.g. "4, between moderate and somewhat hard". Worth deciding once rather than per-component, because the same question will arrive with any other partially-anchored scale.
+
+  **A shared component is NOT proposed.** The two render genuinely different things — five inline dots versus a 5×2 grid, one with a word at every step and one with gaps — and merging them to share four lines of labelling would cost more than it saves.
 
   **`ENTRY_CORRECTION` makes this expensive to get wrong.** `training_entries` is ADR-005 immutable, so a screen-reader user who picks the wrong rating because two options are silent needs staff to correct it.
 

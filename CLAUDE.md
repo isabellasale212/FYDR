@@ -24,6 +24,34 @@ What is still in scope without asking: behaviour, correctness, data integrity,
 permissions, performance, and anything in `docs/spec-gaps.md`. If a correctness
 fix genuinely requires a visual change, say what it is and why before making it.
 
+### 0.01 Scoped exception — the walkthrough review (granted 2026-09-10)
+
+Isabella has authorised design changes **inside a flow currently under active
+review**, and nowhere else. The freeze above stays in force for the rest of the
+app; this narrows it, it does not lift it.
+
+**What "actively reviewing" means.** A flow being discussed in the current
+conversation. It does **not** mean any flow that appears in
+`docs/Fydr_-_Staff_App_Walkthroughs.md` or its athlete twin — those cover every
+flow in both apps, so reading the exception that way would reopen the whole
+design, which is the opposite of what was granted. Having captured a flow is not
+the same as actively reviewing it.
+
+**Permitted without asking, inside that scope:** changes composed from the
+existing system — the tokens in `src/styles/tokens.css`, the radius scale, the
+spacing scale, the type scale, and the two motion timings. Rearranging,
+retokenising, restating copy, changing which existing token a rule uses.
+
+**Requires flagging and confirmation before building:** anything that needs a
+pattern the system does not already have. Specifically a new colour, a new
+easing curve, or a new component shape — and by the same logic a new radius, a
+new spacing step, a new type size, or a new motion duration. If the change
+cannot be expressed in tokens that already exist, stop and ask.
+
+**Still out of scope entirely:** any screen, component or token not part of the
+flow under discussion. Noticing something wrong elsewhere is still "say so and
+leave it alone".
+
 ---
 
 ## 0.05 The three canonical reference documents

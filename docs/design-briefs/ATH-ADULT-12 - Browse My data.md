@@ -78,6 +78,13 @@ The full palette — 171 tokens with exact light and dark values — is
 
 1. **The segment control lists three of five destinations.** RPE and nutrition
    history have no segment and are reached from cards on the Wellness tab.
-2. **The default 28-day period can render a populated account empty**, with copy
-   that reads as *never* rather than *not lately*. Consider distinguishing "no
-   data in this window" from "no data at all" — the app knows which it is.
+2. **Design for the athlete returning from a long absence.** Someone back from
+   injury, an off-season or a loan spell opens My data, and the 28-day default
+   shows "Nothing logged yet" over a real history sitting just outside it. The
+   app knows the difference between *no data in this window* and *no data at
+   all*; the screen currently says the same thing for both.
+
+   **Scoping note:** this was surfaced by a review account whose sessions are
+   dated August because seed dates drift as a database ages (**§0f**), not by a
+   product fault — a weekly-training athlete would not hit it. Do not design for
+   the seed; design for the returning athlete, who hits it for real.

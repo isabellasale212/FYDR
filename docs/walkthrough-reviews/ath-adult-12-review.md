@@ -43,9 +43,17 @@ Nutrition tab **"Nothing answered yet"** — while at "This season" the Gym tab
 shows two sessions. His complete sessions are 11 and 13 August; the review ran
 on 10 September, so they sit just outside a 28-day window.
 
-The empty state is honest — the data genuinely is not in range — but "Nothing
-logged yet" reads as *you have never done this*, not *not in the last 28 days*.
-An athlete who trained a month ago is told they have no history.
+**The trigger here is seed drift, not a product fault.** Conor's sessions are
+dated August because `seed.sql` authors dates as offsets from `current_date` and
+the data has aged — §0f, which exists precisely so this does not resurface as a
+surprise. A real athlete training weekly would never see this.
+
+**What survives the seed explanation is a real question**: the empty state is
+honest — the data genuinely is not in range — but "Nothing logged yet" reads as
+*you have never done this*, not *not in the last 28 days*. That matters for the
+athlete the default cannot serve: **one returning from a long absence** — injury,
+off-season, a loan spell — for whom the 28-day window is empty and the history
+they want to see is real and just outside it.
 
 **This also corrects the capture report**, which recorded the default as
 "Today". It is "Last 28 days"; the effect is similar but the boundary is not,
@@ -105,8 +113,10 @@ precisely the case that produces it.
 
 1. **Three segments, five destinations** — RPE and nutrition history have no
    segment and are reached from cards on another tab.
-2. **The default 28-day period can render a populated account empty**, with
-   copy ("Nothing logged yet") that reads as *never*, not *not lately*.
+2. **The athlete returning from a long absence** sees "Nothing logged yet" — copy
+   that reads as *never* rather than *not lately* — because their history sits
+   outside the 28-day default. (This surfaced via seed drift, §0f; the design
+   question is the returning athlete, not the default.)
 3. **No "Correct" link exists on My data** — the ATH-ADULT-08 entry point was
    documentation, not behaviour.
 4. Right and worth keeping: the "Today — one day cannot show your usual range"

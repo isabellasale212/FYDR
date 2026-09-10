@@ -952,7 +952,7 @@ trade `0096` made for gym, now made consistently.
 
   **Not a rendering bug** — the radio `value` and the displayed numeral match exactly at every step (checked all ten), so nothing is stored under the wrong number. It is a comment that will mislead the next person who reads it while deciding whether the scale is right, which is the same failure mode as §0r's `today/page.tsx` comment.
 
-## 0u. Six athlete-app defects found in the ATH-ADULT-07 to -10 review pass — 2026-09-10
+## 0u. Seven athlete-app defects found in the ATH-ADULT-07 to -10 review pass — 2026-09-10
 
 **Real defects, same priority as §0r, §0s and §0t.** All three measured on the running app.
 
@@ -970,7 +970,13 @@ trade `0096` made for gym, now made consistently.
 
   Measured 2026-09-10, four days after that week ended. In the correction flow (`?week=…&correct=1`) it is worse: the same "this week" was rendered over "WEEK 33 · MON 10 AUG TO SUN 16 AUG", a month earlier. The `ⓘ` correction banner has the same problem — "Correcting your answer for this week."
 
-  **This is the copy half of the finding already recorded about this screen opening on a past week.** The week line does the right thing and the question contradicts it, which is the worst of both: an athlete who reads the question and not the small uppercase line above it answers about the wrong week. "that week" or "in the week above" costs nothing.
+  **This is the copy half of the finding already recorded about this screen opening on a past week.** The week line does the right thing and the question contradicts it, which is the worst of both: an athlete who reads the question and not the small uppercase line above it answers about the wrong week.
+
+  **DECIDED 2026-09-10 (Isabella): fix the copy, keep the default.** The past-week default is correct and deliberate — you cannot answer "did you hit your protein target most days" about a week still running, and a bug report against it was already raised and withdrawn after reading the code (see `CAPTURE-REPORT.md`). Nothing about week selection changes.
+
+  **The rule: name the dates in the question itself.** "Did you hit your protein target most days **last week (24 to 30 Aug)**?" — the same treatment for the `ⓘ` correction banner, which currently reads "Correcting your answer for this week." The dates are already computed for the week line, so this is a formatting change at the point of use, not new logic. It must read correctly in the correction flow too, where the week can be months old and "last week" alone would be wrong — there the date range carries the meaning.
+
+  **Built with ATH-ADULT-07's implementation**, not before it.
 
 - [ ] **The three nutrition answers are ungrouped toggle buttons, not a radio group.** Measured: `<button aria-pressed="false">` × 3, with `closest('fieldset,[role=radiogroup],[role=group]')` returning nothing. The wellness scales and the CR-10 list both use real radios inside a `<fieldset>` with a `<legend>`.
 
@@ -992,6 +998,22 @@ trade `0096` made for gym, now made consistently.
   So a staff member reading either report sees an athlete credited with a session they opened and abandoned — or, as happened here, one that a review opened. **This review inflated Conor Moroney's `sessionsLogged` by 1 in both reports** before any set was logged.
 
   **Reported, not fixed**, per instruction. Worth deciding deliberately: "logged" may be intended to mean "started", in which case the pairing with `completed` is the design and only the label is unclear. If it is meant to mean "did some work", both counts need the status filter.
+
+
+- [ ] **"Sessions logged" counts a gym session that has no sets in it. DECIDED 2026-09-10 (Isabella): a session counts as logged only once it has at least one set.**
+
+  Two staff-facing counts include session logs created by `startOrGetSessionLog` on page load, before any set exists:
+
+  - **`athleteReport.ts:352`** — `sessionsLogged: gymRows.length`
+  - **`squadWeeklyReport.ts:158`** — `cur.logged += 1`, unconditional
+
+  Compliance is already correct: `reports.ts:252`, `exportBuilder.ts:131` and `programmes.ts:1148` all filter `status = 'complete'`.
+
+  **The rule to implement:** a session is "logged" when it has one or more live sets — not when its row exists, and not only when it is complete. `completed` keeps its existing `status = 'complete'` meaning, so the two counts stay distinct and "logged" becomes a real superset of "completed" rather than a count of page visits.
+
+  **Do NOT change page-load creation.** `startOrGetSessionLog` keeps writing the row on load (§0g); the fix is in what the reports count, not in when the row appears. Live sets means `superseded_by is null`, so a session whose only set was corrected still counts once, via its current revision.
+
+  **Guard it.** A test that opens a session log with zero sets and asserts it is absent from both counts, plus one with a single set asserting it appears in `logged` and not in `completed`.
 
 
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise

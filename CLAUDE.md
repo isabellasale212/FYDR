@@ -52,6 +52,45 @@ cannot be expressed in tokens that already exist, stop and ask.
 flow under discussion. Noticing something wrong elsewhere is still "say so and
 leave it alone".
 
+### 0.02 How walkthrough design work is done (set 2026-09-10)
+
+**Proposals may arrive in batches; implementation is strictly serial.** Reviewing
+and planning several flows at once is fine. Building them is not.
+
+For each flow, in order, with no overlap:
+
+1. Confirm the working tree is clean and the branch is right.
+2. Implement **only that flow's** changes.
+3. Run the full suite and verify against a real render — the standard in
+   [[fydr-verification-standard]], not a source read.
+4. Commit.
+5. Confirm the tree is clean **again** before touching the next flow.
+
+**Never begin a second flow while the first is mid-change**, however small the
+edit looks. When several flows' edits arrive together, work them in the order
+given and say when each is done. Never batch them silently.
+
+**Collision flagging, and the sharpening it needs.** The rule as stated is to
+flag when two queued flows would touch the same shared file. Measured
+2026-09-10: `base.css` is **12,131 lines carrying 1,605 top-level class rules**,
+and every component class the walkthroughs press lives in it — `.btn-primary`,
+`.btn-ghost`, `.card`, `.field`, `.squad-chip`, `.pill`, `.sg-block`,
+`.sg-segment`. So *almost any two design flows share that file*, and flagging on
+the file would fire on nearly every pair until the flag meant nothing.
+
+So flag on the **same rule or the same class**, not the same file:
+
+- Two flows editing `.btn-primary` — **flag**, they collide.
+- Two flows editing `.sg-block` and `.md-seg` — no flag, both in `base.css`,
+  no shared line.
+- Two flows changing the **same token** in `tokens.css` — **flag**; a token is
+  global, so the second flow's verification is invalidated by the first.
+- Two flows changing **different** tokens — no flag.
+
+When flagging, say which order to build in and why. The order that holds: the
+flow whose change is **narrower** goes first, so the wider one is verified
+against the settled state rather than the other way round.
+
 ---
 
 ## 0.05 The three canonical reference documents

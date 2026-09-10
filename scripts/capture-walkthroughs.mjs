@@ -31,7 +31,7 @@
  */
 import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
-import { homedir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 const argv = process.argv.slice(2);
@@ -297,7 +297,10 @@ async function buildPdf(flow, frames, outPath) {
   </section>
   ${pages}`;
 
-  const tmp = join(OUT_ROOT, '_index.html');
+  /* Written to the OS temp dir, not into the output folder. It is a scratch
+     file the PDF is printed from, and leaving it beside the deliverables meant
+     it had to be gitignored separately. */
+  const tmp = join(tmpdir(), `fydr-walkthrough-${flow.id}.html`);
   writeFileSync(tmp, html);
   await send('Page.navigate', { url: `file://${tmp}` }, S);
   await onEvent('Page.loadEventFired', 60000).catch(() => {});

@@ -952,7 +952,7 @@ trade `0096` made for gym, now made consistently.
 
   **Not a rendering bug** — the radio `value` and the displayed numeral match exactly at every step (checked all ten), so nothing is stored under the wrong number. It is a comment that will mislead the next person who reads it while deciding whether the scale is right, which is the same failure mode as §0r's `today/page.tsx` comment.
 
-## 0u. Four athlete-app defects found in the ATH-ADULT-07 to -10 review pass — 2026-09-10
+## 0u. Six athlete-app defects found in the ATH-ADULT-07 to -10 review pass — 2026-09-10
 
 **Real defects, same priority as §0r, §0s and §0t.** All three measured on the running app.
 
@@ -975,6 +975,24 @@ trade `0096` made for gym, now made consistently.
 - [ ] **The three nutrition answers are ungrouped toggle buttons, not a radio group.** Measured: `<button aria-pressed="false">` × 3, with `closest('fieldset,[role=radiogroup],[role=group]')` returning nothing. The wellness scales and the CR-10 list both use real radios inside a `<fieldset>` with a `<legend>`.
 
   Three mutually exclusive answers presented as three independent toggles are not announced as a set, carry no group name, and give no "1 of 3" position. The question itself is a plain paragraph, not tied to them by `aria-labelledby` or a legend. Lower severity than §0t's empty names — each button does at least announce its own word — but it is the third labelling approach for the same kind of control in one app.
+
+- [ ] **A failed gym set log queues correctly but is only retried from `/today`, so the session count stays wrong for the rest of the workout.** Measured 2026-09-10 with the network forced offline: the set does not show as done, the count does not advance, and the athlete sees "Couldn't save — check your signal and try again. Your answer is still here." The entry queues in `fydr-outbox-gym-set`.
+
+  **Reconnecting did not flush it, and neither did reloading `/gym/{id}`** — verified, the entry survived both. Visiting `/today` flushed it and the set was written. Nothing is lost, so this is not a data-loss defect; it is a correctness-of-display one, and the walkthrough previously documented the opposite ("the set still shows as done"), now corrected.
+
+  **Why it matters more than a stale count.** The finish button reads "Finish early · {done} of {total}", and that count is the *only* warning an athlete gets that they are stopping short (ATH-ADULT-10 has no confirmation step). An athlete who logged sets on bad signal is told they have done fewer than they have, by the one control whose label is the whole warning.
+
+  **The fix is where the retry runs**, not the queueing, which works. `/gym/{id}` should drain the same outbox `/today` does.
+
+- [ ] **Gym session logs created by merely opening the screen are counted as "sessions logged" in two staff-facing reports.** `startOrGetSessionLog` writes a row on page load, before a single set exists (§0g). Compliance is safe — `reports.ts:252` filters `.eq('status','complete')`, as do `exportBuilder.ts:131` and `programmes.ts:1148`. Two places do not:
+
+  - **`athleteReport.ts:352`** — `sessionsLogged: gymRows.length`, every row regardless of status, alongside `sessionsCompleted` which does filter.
+  - **`squadWeeklyReport.ts:158`** — `cur.logged += 1` unconditionally, with `completed` gated separately.
+
+  So a staff member reading either report sees an athlete credited with a session they opened and abandoned — or, as happened here, one that a review opened. **This review inflated Conor Moroney's `sessionsLogged` by 1 in both reports** before any set was logged.
+
+  **Reported, not fixed**, per instruction. Worth deciding deliberately: "logged" may be intended to mean "started", in which case the pairing with `completed` is the design and only the label is unclear. If it is meant to mean "did some work", both counts need the status filter.
+
 
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.

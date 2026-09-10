@@ -467,7 +467,15 @@ length before and after.
   nothing" and it is deliberate.
 - IF a set is already logged THEN pressing it opens the inline correction
   (ATH-ADULT-11) rather than re-logging it.
-- IF a log fails THEN it queues in the outbox and the set still shows as done.
+- IF a log fails THEN it queues in the outbox (`fydr-outbox-gym-set`) but **the
+  set does NOT show as done**. Measured offline 2026-09-10: the set stays
+  unlogged, the count does not advance, and an error appears — "Couldn't save —
+  check your signal and try again. Your answer is still here."
+  - **The queued set is not lost, but it is not retried here either.** Coming
+    back online did not flush it, and neither did reloading `/gym/{id}`.
+    Visiting `/today` flushed it, and the set then appeared. So the count stays
+    wrong for the rest of the session unless the athlete leaves for Today —
+    which includes the finish button's own "{done} of {total}".
 
 **End state.** Stays on `/gym/{sessionId}`. The exercise header count moves from
 "—" (nothing logged) through "{n} of {total}" to complete.

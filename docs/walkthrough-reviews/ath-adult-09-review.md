@@ -131,15 +131,38 @@ documented "button does nothing" case, and the screen never says why.
 
 ---
 
-## What this review did not verify, and why
+## The four open items, now closed — one set logged on SCRATCH
 
-- **The logged-state accessible name** ("Set {n} logged, {reps} reps at {load} kg.
-  Correct it.") and `aria-pressed="true"` — needs a real write.
-- **The "Your weight" / "Recommended" dual display** — needs a weight change.
-- **"Bodyweight"** — not present on this session; only "NO LOAD SET" was.
-- **Outbox behaviour on a failed log** — needs a write and a forced failure.
+Authorised and performed 2026-09-10 on scratch (`stfgzkuvczbpxyevxkak`, confirmed
+from `.env.local` before writing). Conor Moroney, "Lower A", set 1 of Back squat.
 
-All four need a set logged on a real session. Ready to do on your word.
+| Item | Result |
+|---|---|
+| Logged-state accessible name | **Verbatim as documented** — `aria-label="Set 1 logged, 8 reps at 100 kg. Correct it."`, `aria-pressed="true"`, button text "✓" |
+| Sequential gating after a log | **Confirmed** — set 2 became enabled, set 3 stayed `disabled` |
+| "Your weight" / "Recommended" | **Confirmed** — pressing "+" moved 100 → 102.5 and the label changed from "RECOMMENDED" to "YOUR WEIGHT" with "recommended 100 kg" beneath |
+| "Bodyweight" | **Confirmed** — it is on Nordic curl, one of the two exercises hidden behind the "2 more" disclosure, which is why the first pass saw only "NO LOAD SET" |
+
+**Outbox on failure — the documented behaviour is wrong.** With the network
+forced offline via CDP and set 2 pressed:
+
+- The set **did not** show as done. The count stayed "1 of 12 sets" and the
+  button still read "Log set 2 of 3, Back squat".
+- An error appeared: **"Couldn't save — check your signal and try again. Your
+  answer is still here."**
+- It **did** queue — `fydr-outbox-gym-set`, 1 entry.
+- **Restoring the network did not flush it. Reloading `/gym/{id}` did not flush
+  it either** — the entry survived both, still 1.
+- **Visiting `/today` flushed it**, and the set was then written: the gym screen
+  came back reading "2 of 12 sets".
+
+So nothing is lost, but the retry lives on a screen the athlete has no reason to
+open mid-workout. Until they do, the session count is wrong — **including the
+finish button's own "{done} of {total}"**, which is the one number ATH-ADULT-10
+relies on to warn them they are stopping early. Filed as **§0u**.
+
+**State left on scratch:** two logged sets on Conor's "Lower A" and a working
+weight of 102.5 kg. Left in place per "work on the app, not the data".
 
 ---
 

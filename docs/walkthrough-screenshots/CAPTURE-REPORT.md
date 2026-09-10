@@ -40,10 +40,13 @@ Listed rather than left as gaps.
 
 ## Things the capture found that the documents did not say
 
-1. **`/my-data` gym history is empty at the default period.** The period control
-   defaults to "Today", and gym sessions older than that simply do not appear —
-   the list is genuinely empty rather than broken. The flow's entry point now
-   records that the period must be widened.
+1. **`/my-data` gym history is empty at the default period.** The list is
+   genuinely empty rather than broken, and the period must be widened to see
+   older sessions. **The stated cause was wrong** (corrected 2026-09-10): the
+   control defaults to **"Last 28 days"**, not "Today" — measured, the `<select>`
+   value is `month`. The effect is the same but the boundary is different, and a
+   28-day window is exactly the kind that hides a session logged 29 days ago
+   while looking like a full history.
 2. **`/nutrition-check-in` always targets the PREVIOUS completed week.** This was
    first reported as a bug and withdrawn after reading the code: you cannot
    answer "did you hit your protein target most days" about a week still

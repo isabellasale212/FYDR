@@ -1016,6 +1016,29 @@ trade `0096` made for gym, now made consistently.
   **Guard it.** A test that opens a session log with zero sets and asserts it is absent from both counts, plus one with a single set asserting it appears in `logged` and not in `completed`.
 
 
+## 0v. The gym correction panel promises something My data does not do — 2026-09-10
+
+**Real defect, same priority as §0r to §0u.** Verified end to end on scratch by performing a real correction.
+
+- [ ] **Correcting a gym set tells the athlete "My data marks the day corrected and shows what you first reported." My data does neither.**
+
+  The inline panel in the live logger carries the line *"The original is kept. My data marks the day corrected and shows what you first reported."* Two of those three promises are kept; the third is not, and it is the one the athlete is being reassured about.
+
+  **What was verified, by correcting a real set** (Conor Moroney, session `2b4c7071…` of Thu 13 Aug, Bench press set 1, reps 4 → 5, on scratch):
+
+  | Promise | Kept? |
+  |---|---|
+  | "The original is kept" | **Yes** — `gym_set_logs` holds the original at reps 4 with `superseded_by` set, and a live revision at reps 5 with `revision_of` set |
+  | An audit row records it | **Yes** — `gym_set_logs.correction` with `old: {reps_completed: 4}`, `new: {reps_completed: 5}`, `changed: ["reps_completed"]` |
+  | "My data marks the day corrected" | **No** — no "Corrected" marker anywhere: not on `/my-data?tab=gym` at any period, not on `/my-data/gym/{id}` |
+  | "…and shows what you first reported" | **No** — the set row shows only the new value, 5. The original 4 appears nowhere in the UI |
+
+  **Why this is worse than a missing feature.** The panel's whole purpose is to answer the fear that asking for a correction looks like hiding something — the same instinct behind the wellness and nutrition correction copy, both of which say the original stays visible. For wellness the walkthrough documents a real "What you reported:" row. For gym sets that row does not exist, so the app makes a specific, checkable promise and does not keep it. An athlete who corrects a set and then looks for the original finds no trace of it.
+
+  **Two ways to close it, and they are not equivalent.** Either surface the superseded value in My data — the data is there and correct, so this is a display change — or change the panel's copy to promise only what happens. The first is what the wellness flow does and is the better match for the rest of the app; the second is a one-line fix that makes the app honest without making it more useful. **This needs a decision, not a default.**
+
+  **Note for whoever implements it:** gym corrections write `gym_set_logs.correction`, not `entry_revision.created` like wellness, nutrition and training. Anything that surfaces "what you first reported" generically across domains has to read both action names, and the gym metadata carries the actual old and new numbers, which is safe here because they are measurements rather than free text (contrast migration `0100`).
+
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.
 

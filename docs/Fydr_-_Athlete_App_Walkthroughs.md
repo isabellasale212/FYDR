@@ -399,8 +399,11 @@ of this screen dated a week behind is correct, not stale.
 **Entry point.** Two places, both real:
 - `/nutrition-check-in` when the week already has an answer — the screen shows
   "Change this answer".
-- `/my-data` on the nutrition summary — a "Correct" link per week, going to
-  `/nutrition-check-in?week={week_start}`.
+- ~~`/my-data` on the nutrition summary — a "Correct" link per week~~ —
+  **not found.** Measured 2026-09-10 across `?tab=wellness`, `?tab=gym`,
+  `?tab=nutrition` and `?tab=testing`: no "Correct" link exists on any My data
+  tab. The only route into the correction flow is the "Change this answer" link
+  on `/nutrition-check-in` itself.
 
 **Steps.**
 
@@ -558,9 +561,19 @@ My data marks that day corrected and shows what was first reported.
    - Segment links, all three always visible: "Wellness", "Gym", "Tests".
      (Route keys are `wellness`, `gym`, `testing` — the **label** is "Tests" but
      the URL says `testing`.)
-   - Also visible: a period selector; a "Readiness" chart; "History";
-     "Sessions"; "Weekly check-in" with a "Correct" link per week; "Your tests";
-     and a flag notice when one exists.
+   - **Three segments, five destinations.** The segment control offers only
+     Wellness / Gym / Tests, but `?tab=training` and `?tab=nutrition` are real
+     views reached from cards further down the Wellness tab: "Sessions and RPE —
+     what you trained and how hard it felt ›" and "Weekly check-ins — your
+     nutrition answers, week by week ›". Neither has a segment.
+   - Also visible **on the Wellness tab**: the period selector (a `<select>`
+     defaulting to **"Last 28 days"**, with Today / Last 7 days / Last 28 days /
+     This season / Last 365 days / All on record); a "Readiness" chart;
+     "History"; a "See all {N} days →" link; and a flag notice when one exists.
+   - **"Your tests" is on `?tab=testing`; the weekly check-ins are on
+     `?tab=nutrition`.** An earlier version of this document listed all of them
+     as visible on one screen, and listed a "Correct" link per week here —
+     measured 2026-09-10, there is no "Correct" link on any My data tab.
 2. Press a segment to switch tab; press "See all {N} {noun} →" to expand a list.
 
 **Branches.**
@@ -583,8 +596,14 @@ My data marks that day corrected and shows what was first reported.
 **Steps.**
 
 1. The screen shows the session date as its heading and a "Sets" section.
-   - Visible: "Back to gym history" (→ `/my-data?tab=gym`), and a "Correct"
-     button per set row.
+   - Visible: a "Back" button (the shared `BackButton`), a "Back to gym
+     history" link (→ `/my-data?tab=gym`) — **two separate back affordances** —
+     and a "Correct" button per set row.
+   - **A COMPLETE session still offers "Correct" on every set.** Measured on a
+     session with `status = 'complete'`: six set rows, six "Correct" buttons.
+     `revise_gym_set_log` has no session-status guard, unlike
+     `revise_gym_session_log` directly beneath it, which is explicitly "a
+     COMPLETE session only". This is what makes the no-reopen decision workable.
 
 **End state.** Stays on `/my-data/gym/{id}`.
 

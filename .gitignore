@@ -34,3 +34,6 @@ Fydr-pages-*.pdf
 # the images themselves are not, because git keeps every version and a
 # re-capture would double the weight permanently.
 docs/walkthrough-screenshots/*/
+
+# macOS folder metadata — committed by accident 2026-09-10 with docs/designs/
+.DS_Store

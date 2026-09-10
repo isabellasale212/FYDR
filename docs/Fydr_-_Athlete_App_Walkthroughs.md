@@ -183,7 +183,7 @@ columns, so repeated failures are rate-limited rather than merely logged.
 | Domain | Glyph | Row name | Subtitle | Goes to |
 |---|---|---|---|---|
 | Wellness | "WEL" | "Wellness" | "45 seconds" | `/check-in` |
-| Session rating | "RPE" | the **session's own name** (e.g. "Team run"); "Training" if unnamed | "20 seconds" | `/rpe/{sessionId}` |
+| Session rating | "RPE" | **"How hard was it?"** — a fixed string, the same for every session | "20 seconds" | `/rpe/{sessionId}` |
 | Nutrition | "NUT" | "Weekly check-in" | "Did you hit your protein target most days? · about 10 seconds" | `/nutrition-check-in` |
 
 **Branches.**
@@ -202,6 +202,17 @@ columns, so repeated failures are rate-limited rather than merely logged.
 deliberately **absent** from the subtitle: `compliance_expectations` holds no
 such times, so it was left out rather than invented. A screenshot showing a
 timing clause is not this build.
+
+**Corrected 2026-09-10.** This table previously said an RPE row shows the
+session's own name — repeating a comment in `today/page.tsx` that says exactly
+that. It is not true: `lib/queries/compliance.ts:144` sets
+`label: 'How hard was it?'` as a fixed string and never looks the session name
+up, although it carries the `session_id`. **Two sessions to rate produce two
+identical rows.** Found by measuring the rendered screen rather than reading the
+source comment.
+
+**Also incomplete above:** a cancelled session renders at 55% opacity *and* with
+its name struck through. The strike-through was omitted.
 
 ---
 

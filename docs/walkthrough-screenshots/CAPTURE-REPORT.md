@@ -75,11 +75,15 @@ render `/injuries` at ~815 characters, the medic at ~1,778.
 ## Limits of this report
 
 - **The per-section `_report.json` for `athlete-adult` and
-  `staff-sport-scientist` is incomplete.** A `--only` re-run originally
-  *overwrote* that file rather than merging, so a 38-flow record briefly became a
-  2-flow one. The PDFs survived; the account of them did not. The behaviour is
-  fixed, but those two files were already truncated. **The PDF count is the
-  reliable figure for those folders, not their JSON.**
+  `staff-sport-scientist` was badly incomplete, and has been repaired.** A
+  `--only` re-run originally *overwrote* that file rather than merging. Measured
+  when the ATH-ADULT-02 brief was built: **27 of 34** athlete-adult records and
+  **36 of 38** sport-scientist records were missing — far worse than the
+  "incomplete" this section first claimed. The PDFs survived throughout.
+  Every lost record was rebuilt from the PDFs' own page trees (each file opens
+  with a cover page, so pages − 1 is the step count) and is marked
+  `recordRebuilt`. Both sections now reconcile: 34 records/122 images and 38
+  records/123 images.
 - **Six harness faults were found and fixed during the run**, each by the app
   disagreeing with an assertion: navigate-only steps reporting success whatever
   was on screen; clicking server-rendered elements before React had hydrated

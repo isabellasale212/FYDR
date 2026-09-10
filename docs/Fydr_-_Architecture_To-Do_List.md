@@ -870,6 +870,34 @@ trade `0096` made for gym, now made consistently.
 
   **Guard it.** No test asserts the row's title. One that renders two RPE expectations for one athlete on one day and asserts the two rows differ would have caught this, and would stop the query and the page drifting apart again.
 
+## 0s. The athlete write forms' sticky submit footer does not stick — found 2026-09-10
+
+- [ ] **`.subm` is authored `position: sticky; bottom: 0` and is inert on all four athlete write forms.** The primary action on every athlete write screen sits at its static position, below the fold, on a phone. Found during the ATH-ADULT-03 persona review; full measurements in `docs/walkthrough-reviews/ath-adult-03-review.md`.
+
+  **The three rules, and why they cancel out.**
+
+  ```
+  .subm        { position: sticky; bottom: 0; }        /* base.css — intent: pin */
+  .phone-body  { flex: 1; min-height: 0; overflow-y: auto; }
+  .phone       { min-height: 100dvh; }                 /* ← min-height, not height */
+  ```
+
+  `min-height` lets `.phone` grow to its content, so `.phone-body`'s `flex: 1; min-height: 0` is never bounded by the viewport and its `overflow-y: auto` pane never scrolls — measured on `/check-in` and `/today`, `scrollHeight === clientHeight` on both. The **document** scrolls instead. `position: sticky` resolves against the nearest scroll container, which is `.phone-body`; a scroll container that never scrolls gives a sticky child nothing to stick to.
+
+  **Proved by scrolling it, not by reading the CSS.** On `/check-in` at 375×812, `.subm`'s top in the viewport at document scroll 0 / 200 / 460 was **1015 / 815 / 555** — moving 1:1 with the page. A working `bottom: 0` sticky would have pinned at top ≤ 642 and stopped moving. It is an ordinary static block.
+
+  **What an athlete sees.** On `/check-in` the submit button's absolute top is **1030px** on an **812px** viewport — 229px below the fold, needing 269px of scroll to come fully into view. On a 375×667 handset it needs **414px**. The five wellness scales end at 801px, clearing the 812 fold by **11px**, so the screen looks like the whole task fits when the control that completes it is off-screen entirely.
+
+  **It also hides the only progress indicator in the flow.** The "N to go" counter lives in the button's own label and is the flow's sole aggregate completion signal. Answering all five scales enables the button, changes its label to "Submit entry", and scrolls nothing — measured. The athlete's view is identical before and after the form becomes valid.
+
+  **Blast radius: four forms, not one screen.** `CheckInForm`, `RpeForm`, `NutritionCheckinForm` and `ProblemReportForm` all render `.subm`. Every athlete write flow is affected.
+
+  **The fix is one property, on a rule every athlete screen renders inside.** `.phone` needs `height: 100dvh` (or `max-height: 100dvh`) so the body pane is bounded and scrolls internally, at which point the existing sticky works as written and needs no change. **Not done here**, deliberately: this alters scrolling behaviour on every athlete screen simultaneously and is outside the scoped walkthrough-review freeze exception, which covers only the flow under active review. It needs a decision and a full render pass across the athlete app, not a drive-by edit during a design review.
+
+  **Check before fixing, because the shell may be document-scroll on purpose.** The tab bar is `position: static` and sits at the page bottom (measured at 1079 on `/today`, below the 812 fold), which is consistent with a deliberate document-scroll model rather than an app shell. If document-scroll is the intent, the correct fix is the opposite one — drop the sticky from `.subm` and design the footer for a page that scrolls — rather than constraining the shell. Either way the current state is wrong: one rule assumes an app shell the other two do not provide.
+
+  **Guard it.** No test asserts that a sticky element sticks. A render test that scrolls `/check-in` and asserts the submit button stays within the viewport would have caught this and would catch it again if the shell's height rules change.
+
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.
 

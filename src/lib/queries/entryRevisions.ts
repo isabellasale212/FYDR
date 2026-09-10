@@ -345,3 +345,78 @@ export async function recordRevisionChainView(
     /* Deliberately silent — see the comment above. */
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * Gym sets — the third domain to need a chain, added 2026-09-10 for §0v.
+ *
+ * WHY IT IS HERE AND NOT IN programmes.ts. Same reason the file header gives for
+ * serving both the coach and the athlete from one read: a chain walk is easy to get
+ * subtly wrong, and two of them in two files is two places for the same bug. `chainsOf`
+ * below is already generic over anything with `id` / `revision_of` / `superseded_by`,
+ * which `gym_set_logs` has.
+ *
+ * SCOPED BY SESSION, NOT BY DATE RANGE, unlike its two neighbours. A gym correction is
+ * per SET, and the screen that shows it (`/my-data/gym/{id}`) already knows exactly one
+ * session log. Fetching a date window would pull every set of every session in it to
+ * render one.
+ *
+ * NO attachAuthors, DELIBERATELY, and this is the one real divergence from the wellness
+ * and RPE pattern. Those tables carry `created_by`, and their panels fall back to
+ * "Corrected by a member of staff" because ENTRY_CORRECTION makes that true by
+ * construction — an athlete cannot revise their own wellness entry. `gym_set_logs` has
+ * no `created_by` column at all, and more importantly ATH-ADULT-11 is an ATHLETE flow:
+ * the common corrector of a gym set is the athlete themselves. Borrowing the wellness
+ * fallback would print a false statement about who changed the number, so this read
+ * returns the chain and no author, and the UI says what it knows.
+ *
+ * THE ATHLETE CAN READ THEIR OWN SUPERSEDED SETS. Verified before building rather than
+ * assumed: `gym_set_logs_self_select` (migration 0021) is org + a participant check on
+ * the parent session log, with NO `superseded_by` predicate — the same shape the file
+ * header describes for wellness and training.
+ * ------------------------------------------------------------------------- */
+
+const GYM_SET_COLUMNS =
+  'id, gym_session_log_id, programme_exercise_id, exercise_id, set_number, reps_completed, load_kg, rpe, rir, side, is_warmup, logged_at, revision_of, superseded_by';
+
+export type GymSetRevisionRow = {
+  id: string;
+  gym_session_log_id: string;
+  programme_exercise_id: string | null;
+  exercise_id: string | null;
+  set_number: number;
+  reps_completed: number | null;
+  load_kg: number | null;
+  rpe: number | null;
+  rir: number | null;
+  side: string | null;
+  is_warmup: boolean | null;
+  logged_at: string | null;
+  revision_of: string | null;
+  superseded_by: string | null;
+};
+
+/** Every set of one gym session log, each with the revisions it replaced.
+ *
+ *  Returns one entry per LIVE set; a set that was never corrected has an empty
+ *  `priorRevisions`, exactly as wellness and RPE do, so the caller's test is
+ *  `priorRevisions.length > 0` or `current.revision_of !== null` — the latter being the
+ *  marker even when the original falls outside what was fetched. Here nothing falls
+ *  outside, because the scope is the whole session. */
+export async function fetchGymSetRevisionChains(
+  db: Db,
+  orgId: string,
+  gymSessionLogId: string,
+): Promise<WithRevisions<GymSetRevisionRow>[]> {
+  const data = await fetchAllPaged<unknown>((pageFrom, pageTo) =>
+    db
+      .from('gym_set_logs')
+      .select(GYM_SET_COLUMNS)
+      .eq('org_id', orgId)
+      .eq('gym_session_log_id', gymSessionLogId)
+      .order('set_number', { ascending: true })
+      .order('id')
+      .range(pageFrom, pageTo),
+  );
+
+  return chainsOf(data as GymSetRevisionRow[]);
+}

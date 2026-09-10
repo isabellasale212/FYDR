@@ -289,5 +289,9 @@ the flow has no confirm step to slow down a daily task.
 | **"A sentence above the button states the entry cannot be edited"** | **Wrong twice.** It is **40 words in three sentences**, and it is **below** the button (note y1089, button y1030). |
 | **Step 1's "also visible at this step" list** | **Incomplete.** Omits the `<details>` disclosure "Add heart rate or weight" and the two fields inside it ("Resting heart rate (bpm)", "Body mass (kg)"), the visible label "Comment or injury issue (optional)", the sleep readout "7.0 hours", and the per-scale readouts ("not answered" / "{N} of 5"). The document's own standard is every interactive element visible at each step. |
 
-The two document errors are **left uncorrected in the walkthrough `.md`**,
-recorded here for review rather than silently fixed.
+Both document errors were **corrected in the walkthrough `.md` on 2026-09-10**,
+after review — they are facts about the screen, not judgement calls. Step 1's
+visible-element list now names the disclosure, its two fields, the comment
+field's visible label, the stepper readout and the per-scale readouts; the
+note is now described as three sentences below the button. Steps renumbered
+to 5.

@@ -76,8 +76,9 @@ medic) — an athlete cannot revise their own wellness entry.
 
 ## ATH-ADULT-04 — Wellness entry: already submitted today
 
-**Two claims in the above are wrong** and are corrected in §6. They are left
-verbatim here so the document and the brief can be compared.
+**Two claims in the above were wrong**, are described in §6.4, and have since
+been corrected in the walkthrough document. The text above is the
+pre-correction version, kept verbatim so the two can be compared.
 
 ---
 
@@ -238,7 +239,7 @@ the flow's **only** statement of how many answers remain.
 - **Good and worth keeping:** real 44px targets, the doubly-stated polarity
   rule, the pre-filled sleep default, and no confirm step.
 
-### 6.4 Two document errors, uncorrected
+### 6.4 Two document errors, now corrected
 
 The walkthrough text in §2 says a **sentence above the button** states the entry
 cannot be edited. It is **40 words in three sentences**, and it is **below** the
@@ -246,8 +247,8 @@ button. Step 1's "also visible" list also omits the `<details>` disclosure
 "Add heart rate or weight" and its two fields, the visible label "Comment or
 injury issue (optional)", the "7.0 hours" readout, and the per-scale readouts.
 
-Left uncorrected in the walkthrough `.md` pending review, per the standing
-instruction not to pre-solve findings.
+**Both corrected in the walkthrough `.md` on 2026-09-10.** The §2 text above is
+the pre-correction version, kept verbatim so the two can be compared.
 
 ---
 

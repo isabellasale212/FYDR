@@ -224,15 +224,23 @@ its name struck through. The strike-through was omitted.
 
 1. Optionally adjust sleep hours with "−" (`aria-label="Half an hour less
    sleep"`) or "+" (`aria-label="Half an hour more sleep"`). Range 0–14, half-hour steps.
+   - The stepper shows its current value between the two buttons, "7.0" with
+     the unit "hours" beside it; it is pre-filled at 7.0 and already valid.
    - Also visible at this step: five 1–5 scale inputs, in this order —
      **sleep quality, soreness, fatigue, mood, stress** — each a radio group
-     whose options are labelled "{step}, {word}"; a free-text box with
-     placeholder "Anything you want your coach or medical staff to know."; the
-     submit button; and the sheet's dismiss control.
+     whose options are labelled "{step}, {word}", each carrying a live readout
+     that reads "not answered" (amber) until answered and "{N} of 5" after;
+     a collapsed disclosure "Add heart rate or weight" (a `<details>`/`<summary>`)
+     containing two number fields, "Resting heart rate (bpm)" and
+     "Body mass (kg)"; a free-text box labelled "Comment or injury issue
+     (optional)" with placeholder "Anything you want your coach or medical
+     staff to know."; the submit button; and the sheet's dismiss control "✕"
+     (an `<a href="/today">`, `aria-label="Close the check-in"`).
 2. Choose a value on each of the five scales.
    - Same controls visible.
-3. Optionally type in the free-text box.
-4. Press the submit button.
+3. Optionally expand "Add heart rate or weight" and enter either value.
+4. Optionally type in the free-text box "Comment or injury issue (optional)".
+5. Press the submit button.
 
 **Submit button states.**
 
@@ -255,9 +263,12 @@ its name struck through. The strike-through was omitted.
 **End state.** Redirect to `/today?submitted=1`, which renders a toast with a
 "Dismiss" button.
 
-**Note.** A sentence above the button states the entry cannot be edited once
-sent. Corrections are staff-only (`ENTRY_CORRECTION` = sport scientist, coach,
-medic) — an athlete cannot revise their own wellness entry.
+**Note.** A paragraph of three sentences (40 words) states that the entry
+cannot be edited once sent, names telling the coach as the recourse, and
+promises My Data will show both the corrected value and what was first
+reported. It sits **below** the submit button, not above it. Corrections are
+staff-only (`ENTRY_CORRECTION` = sport scientist, coach, medic) — an athlete
+cannot revise their own wellness entry.
 
 ---
 

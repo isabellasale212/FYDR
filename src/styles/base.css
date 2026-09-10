@@ -2886,9 +2886,40 @@ a.hist-row:focus-visible {
   padding: 14px 0 calc(8px + env(safe-area-inset-bottom, 0px));
   margin-top: var(--sp-14);
   border-top: 1px solid var(--hair);
-  position: sticky;
-  bottom: 0;
   background: var(--surf);
+  /* NO `position: sticky; bottom: 0`, removed 2026-09-10. It was here and it
+     never once worked, on any screen, at any viewport.
+
+     WHY IT COULD NOT WORK. Sticky resolves against the nearest scroll
+     container, which is `.phone-body` (`overflow-y: auto`). That pane can
+     never overflow: `.phone` is `min-height: 100dvh`, so when the content is
+     taller than the viewport the shell GROWS to fit it and the pane gets its
+     full content height, and when the content is shorter the pane flex-grows
+     into the leftover space. Either way `scrollHeight === clientHeight` —
+     measured at 500, 667, 812, 1000 and 1400px tall, all five identical. The
+     document scrolls instead. A sticky child of a container that never
+     scrolls has nothing to stick to.
+
+     MEASURED, not reasoned: on /check-in this element's viewport top read
+     1015 / 815 / 555 at document scroll 0 / 200 / 460 — moving 1:1 with the
+     page. A working `bottom: 0` would have pinned it at <= 642 and held.
+
+     THE REMOVAL IS A NO-OP AND THAT IS THE POINT. Full-page screenshots with
+     and without the two properties are byte-identical (diff bbox None, max
+     channel difference 0), so nothing anyone has ever seen changes. This
+     deletes a rule that lies about the layout, not a behaviour.
+
+     DOCUMENT-SCROLL IS THE INTENDED MODEL, not a shortcoming to fix by
+     constraining the shell. `.athlete-tabbar` is deliberately `position:
+     static` in normal flow — see its own comment above, where making it
+     `fixed` was considered and rejected on 2026-09-08 because screens 01-12
+     of the reference all draw a solid bar in flow. This rule was the one
+     place assuming an app shell the reference does not draw.
+
+     WHAT THIS DOES NOT FIX: the submit button still sits below the fold on a
+     phone (1030px absolute on an 812px viewport). That is real and it is a
+     DESIGN question, tracked in §0s of the architecture to-do list and in the
+     ATH-ADULT-03 brief. Do not read this deletion as having addressed it. */
 }
 .subm .btn-primary {
   padding: var(--sp-16) var(--sp-20);

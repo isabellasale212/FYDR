@@ -70,8 +70,9 @@ For each flow, in order, with no overlap:
 edit looks. When several flows' edits arrive together, work them in the order
 given and say when each is done. Never batch them silently.
 
-**Collision flagging, and the sharpening it needs.** The rule as stated is to
-flag when two queued flows would touch the same shared file. Measured
+**Collision flagging — approved form, 2026-09-10.** The rule was first stated as
+"flag when two queued flows touch the same shared file"; Isabella approved
+narrowing it after the measurement below. Measured
 2026-09-10: `base.css` is **12,131 lines carrying 1,605 top-level class rules**,
 and every component class the walkthroughs press lives in it — `.btn-primary`,
 `.btn-ghost`, `.card`, `.field`, `.squad-chip`, `.pill`, `.sg-block`,

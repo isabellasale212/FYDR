@@ -318,6 +318,15 @@ athlete.
 **Entry point.** The "Weekly check-in" to-do row on `/today`. Direct URL
 `/nutrition-check-in`.
 
+**IT IS ALWAYS THE PREVIOUS WEEK, never the one in progress**, and the screen
+says which: "WEEK {n} · MON {date} TO SUN {date}". The page resolves
+`lastCompletedWeek` — the ISO week just ended — because "did you hit your
+protein target most days?" cannot be answered about a week still running. A
+`?week=` in the address is clamped so a future week cannot be reached even by
+hand. Recorded because it surprised the person writing this document, who read
+"Weekly check-in" on today's to-do list and expected today's week: a screenshot
+of this screen dated a week behind is correct, not stale.
+
 **Steps.**
 
 1. Press one of three answer chips: "Yes", "Roughly", "No".

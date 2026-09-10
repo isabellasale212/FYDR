@@ -795,22 +795,53 @@ role-gated sidebar row.**
 
 **Entry point.** No sidebar row. Reached from the athlete profile, from
 `/reports/injuries`, and by URL.
-**Gate:** `INJURY_ACCESS` for the board (sport scientist, coach, medic, S&C);
-`CLINICAL_ONLY` for detail.
 
-| Route | Gate |
-|---|---|
-| `/injuries` | `CLINICAL_ONLY` |
-| `/injuries/{injuryId}` | `CLINICAL_ONLY`, refuses otherwise |
-| `/injuries/new` | — |
-| `/injuries/rehab-groups` | `CLINICAL_ONLY`, `REHAB_ALLOCATION` |
-| `/injuries/team-allocation` | `SESSION_EDIT` |
+**CORRECTED 2026-09-10, and the correction matters.** An earlier version of this
+section said `/injuries` was `CLINICAL_ONLY` and that the sport scientist could
+not open it. That was wrong, and so was the same claim in the coach and S&C
+sections. **Every `/injuries/*` route is gated by `requireInjuryAccess()` →
+`INJURY_ACCESS`.**
 
-**Branch worth naming.** `/injuries` and `/injuries/{id}` are **`CLINICAL_ONLY`**
-— the sport scientist cannot open them. `/injuries/team-allocation` is
-`SESSION_EDIT`, so the coach can allocate rehab teams while being unable to read
-the injuries behind them. The team-allocation screen says so on itself: "**Read
-only.** Medical sees the whole board and every availability status…"
+| Route | Gate | Who |
+|---|---|---|
+| `/injuries` | `requireInjuryAccess` | sport scientist, coach, medic, S&C |
+| `/injuries/{injuryId}` | `requireInjuryAccess` | same |
+| `/injuries/new` | `requireInjuryAccess` | same |
+| `/injuries/rehab-groups` | `requireInjuryAccess` | same |
+| `/injuries/team-allocation` | `requireInjuryAccess` | same |
+
+**Only the nutritionist is shut out**, and a role without it is redirected to
+`/?e=no-injury-access`.
+
+**What IS `CLINICAL_ONLY` is the content, not the door.** `/injuries` computes
+`isMedical` from `CLINICAL_ONLY` and decides what renders from it. **Observed
+side by side on 2026-09-10**, rather than inferred:
+
+| | Coach | Medic |
+|---|---|---|
+| The injury list | body area, side, since-date, expected return, availability status ("Modified", "Unavailable") | the same |
+| "+ Injury" | **absent** | **present** |
+| "PROBLEM REPORTS" section | **absent** | **present** — athletes' own words and the medic's clinical notes |
+| Rendered page length | ~815 characters | ~1,778 characters |
+
+So the difference is **structural, not a hidden column**: the medic gets a whole
+section the coach does not, plus the ability to create an injury. A screenshot
+showing "PROBLEM REPORTS" or "+ Injury" is a medic's; one showing only the
+injury list is not.
+
+An earlier draft of this table guessed "clinical columns". That was wrong in
+detail — worth recording, because the guess sounded right and only looking
+settled it. The team-allocation screen states the asymmetry
+itself: "**Read only.** Medical sees the whole board and every availability
+status…"
+
+**How the error happened, recorded because the method produced it twice.** The
+gate map was built by grepping each page for `hasAnyRole(claims.roles, X)`. On
+`/injuries` that matched line 46 — the `isMedical` computation — rather than the
+`requireInjuryAccess()` call that actually guards the route. The same mistake
+put `CLINICAL_ONLY` on `/reports/injuries` in the first draft. Reading the
+`require*` helper is the reliable method; the in-page `hasAnyRole` calls decide
+what renders, not who gets in.
 
 ---
 
@@ -951,19 +982,21 @@ enforced in the database, not the page.
 `NUTRITION_EDIT`. "Food library" is present; "New plan", "Create" and "Assign"
 are absent.
 
-### STAFF-COACH-28 — Injuries: allocation without the board
+### STAFF-COACH-28 — Injuries: the board opens, the diagnosis does not
 
-The coach holds `SESSION_EDIT`, so `/injuries/team-allocation` opens. `/injuries`
-and `/injuries/{id}` do **not** — they are `CLINICAL_ONLY`. The allocation screen
-states the asymmetry on itself.
+**Corrected 2026-09-10.** This said `/injuries` and `/injuries/{id}` were closed
+to a coach. They are not: `INJURY_ACCESS` includes the coach, so the board,
+the detail pages, rehab groups and team allocation all open. What a coach does
+not get is the **clinical content** inside them — diagnosis and mechanism are
+withheld by `CLINICAL_ONLY`, the same way they are on the athlete profile.
 
 ## Cannot reach at all
 
 - `/analytics`, `/analytics/build` — `ANALYTICS`.
-- `/injuries`, `/injuries/{injuryId}`, `/reports/injuries` — `CLINICAL_ONLY`.
 - `/settings/audit`, `/settings/retention`, `/settings/users*`,
   `/settings/subject-access`, `/squad/new`, `/squad` administration —
-  `SETTINGS_ADMIN`.
+  `SETTINGS_ADMIN`. **`/injuries` and `/reports/injuries` are NOT on this list:
+  both open for a coach, with clinical content withheld.**
 - `/settings/imports` — `GPS_IMPORT`.
 - `/programmes` authoring — `PROGRAMME_EDIT` / `PROGRAMME_AUTHOR` /
   `REHAB_PROGRAMME`. The coach can view a programme; the detail link reads "View
@@ -1000,13 +1033,25 @@ only staff role that reads them — the sport scientist does not.
 
 ### STAFF-MEDIC-19 — The injuries report
 
-`/reports/injuries` is `CLINICAL_ONLY`: **the medic is the only role that can
-open it.**
+**Corrected 2026-09-10.** This said `/reports/injuries` was `CLINICAL_ONLY` and
+that the medic was the only role able to open it. Wrong on both counts:
+`REPORT_VISIBILITY.injuries` admits **all five roles**. What the medic uniquely
+gets is the **clinical content**, decided inside the page by `isMedical`. So a
+coach and a medic open the same report and see different things.
 
 ### STAFF-MEDIC-28 — The injury board
 
-`/injuries` and `/injuries/{injuryId}` are `CLINICAL_ONLY`. `/injuries/rehab-groups`
-additionally accepts `REHAB_ALLOCATION`.
+**Corrected 2026-09-10.** This said `/injuries` and `/injuries/{injuryId}` were
+`CLINICAL_ONLY`. Every `/injuries/*` route is gated by `requireInjuryAccess()`
+→ `INJURY_ACCESS`, which admits the sport scientist, coach, medic and S&C; only
+the nutritionist is shut out. `/injuries/rehab-groups` additionally reads
+`REHAB_ALLOCATION` for what it offers.
+
+**What the medic actually gets that the others do not**, observed side by side
+rather than inferred: a **"PROBLEM REPORTS"** section carrying athletes' own
+words and the medic's notes, and a **"+ Injury"** control. Measured page
+lengths: coach and S&C ~815 characters, medic ~1,778. See STAFF-SS-28 for the
+full table.
 
 ### STAFF-MEDIC-24 — Rehab programmes
 
@@ -1024,9 +1069,10 @@ reviews; the sport scientist administers. **Neither can complete the flow alone.
 
 - `/analytics` — `ANALYTICS`.
 - `/schedule` **editing**, `/schedule/new`, `/schedule/fixtures/*`,
-  `/schedule/planner/*`, `/timetable`, `/injuries/team-allocation` —
-  `SESSION_EDIT`. G-33 took scheduling off this role; RLS enforces it, and the
-  schedule screen renders the read-only line.
+  `/schedule/planner/*`, `/timetable` — `SESSION_EDIT`. G-33 took scheduling off
+  this role; RLS enforces it, and the schedule screen renders the read-only line.
+  **`/injuries/team-allocation` is NOT on this list** — corrected 2026-09-10: it
+  is `requireInjuryAccess`, which the medic holds, not `SESSION_EDIT`.
 - `/settings/groups`, `/settings/thresholds` — `GROUP_EDIT` / `THRESHOLD_EDIT`.
 - `/settings/audit`, `/settings/retention`, `/settings/users*`, `/squad/new` —
   `SETTINGS_ADMIN`.
@@ -1076,8 +1122,9 @@ and mechanism are withheld.
 ## Cannot reach at all
 
 - `/analytics` — `ANALYTICS`.
-- `/injuries`, `/injuries/{injuryId}`, `/reports/injuries` — `CLINICAL_ONLY`.
-- All scheduling — `SESSION_EDIT`.
+- All scheduling — `SESSION_EDIT`. **`/injuries` and `/reports/injuries` are NOT
+  closed to S&C: `INJURY_ACCESS` includes this role, with clinical content
+  withheld.**
 - `/settings/groups`, `/settings/thresholds`, `/settings/audit`,
   `/settings/retention`, `/settings/users*`, `/settings/imports`, `/squad/new`.
 - Nutrition authoring and the meal library.

@@ -1,0 +1,2435 @@
+[
+  {
+    "section": "athlete-adult",
+    "id": "ATH-ADULT-13",
+    "name": "Open one gym session from history",
+    "entry": "/my-data?tab=gym \u2192 a session row. The period control must be wide enough to include the session: at \"Today\" the list is empty.",
+    "steps": [
+      {
+        "goto": "/my-data?tab=gym&period=all",
+        "expect": [
+          "My data"
+        ],
+        "settle": 2500,
+        "caption": "Entry point \u2014 the Gym segment of My data, period set to \"All on record\""
+      },
+      {
+        "click": "a[href^='/my-data/gym/']",
+        "expectAfter": [
+          "Sets"
+        ],
+        "settle": 2500,
+        "caption": "Step 1 \u2014 pressed a session row; heading is the date, with a \"Sets\" section and \"Back to gym history\""
+      }
+    ]
+  },
+  {
+    "section": "athlete-adult",
+    "id": "ATH-ADULT-11",
+    "name": "Correct a logged gym set",
+    "entry": "/my-data?tab=gym \u2192 a session row. The period control must be wide enough to include the session: at \"Today\" the list is empty.",
+    "steps": [
+      {
+        "goto": "/my-data?tab=gym&period=all",
+        "expect": [
+          "My data"
+        ],
+        "settle": 2500,
+        "caption": "Entry point \u2014 Gym history"
+      },
+      {
+        "click": "a[href^='/my-data/gym/']",
+        "expectAfter": [
+          "Sets"
+        ],
+        "settle": 2500,
+        "caption": "Opened one session"
+      },
+      {
+        "captureBefore": true,
+        "press": "Correct",
+        "expectAfter": [
+          "Save"
+        ],
+        "settle": 1500,
+        "caption": "Step 1 \u2014 pressed \"Correct\" on a set row; the inline reps and load fields open with \"Save\" and \"Cancel\""
+      }
+    ]
+  },
+  {
+    "section": "athlete-adult",
+    "id": "ATH-ADULT-15",
+    "name": "Open one leaderboard",
+    "entry": "A board row on /my-data/boards.",
+    "steps": [
+      {
+        "goto": "/my-data/boards",
+        "expect": [
+          "Leaderboards"
+        ],
+        "settle": 2500,
+        "caption": "Entry point \u2014 the boards this athlete appears on"
+      },
+      {
+        "click": "a[href^='/my-data/boards/']",
+        "expectAfter": [
+          "Leave this leaderboard",
+          "not available",
+          "Not on your club"
+        ],
+        "settle": 2500,
+        "caption": "Step 1 \u2014 opened a board; \"Leave this leaderboard\", \"\u2190\" and \"Back to leaderboards\" are present"
+      }
+    ]
+  },
+  {
+    "section": "athlete-adult",
+    "id": "ATH-ADULT-16",
+    "name": "Leave one leaderboard",
+    "entry": "\"Leave this leaderboard\" on /my-data/boards/{id}.",
+    "steps": [
+      {
+        "goto": "/my-data/boards",
+        "expect": [
+          "Leaderboards"
+        ],
+        "settle": 2500,
+        "caption": "Entry point \u2014 the boards list"
+      },
+      {
+        "click": "a[href^='/my-data/boards/']",
+        "expectAfter": [
+          "Leave this leaderboard"
+        ],
+        "settle": 2500,
+        "caption": "Opened a board"
+      },
+      {
+        "captureBefore": true,
+        "press": "Leave this leaderboard",
+        "expectAfter": [
+          "Leaderboard"
+        ],
+        "settle": 3500,
+        "caption": "Step 1 \u2014 pressed \"Leave this leaderboard\" (label becomes \"Leaving\u2026\" in flight). There is no confirmation step"
+      }
+    ]
+  },
+  {
+    "section": "athlete-adult",
+    "id": "ATH-ADULT-26",
+    "name": "Export my data",
+    "entry": "Me \u2192 \"Export my data CSV \u203a\".",
+    "steps": [
+      {
+        "goto": "/me",
+        "expect": [
+          "Export my data"
+        ],
+        "settle": 2500,
+        "caption": "Step 1 \u2014 the \"Export my data CSV \u203a\" row on Me. A plain link to /me/export, not a client navigation; pressing it downloads a CSV rather than changing the screen"
+      }
+    ]
+  },
+  {
+    "section": "athlete-adult",
+    "id": "ATH-ADULT-31",
+    "name": "Sign out",
+    "entry": "Me \u2192 \"Sign out\", at the foot of the screen.",
+    "steps": [
+      {
+        "goto": "/me",
+        "expect": [
+          "Sign out"
+        ],
+        "settle": 2500,
+        "caption": "Step 1 \u2014 the \"Sign out\" button at the foot of Me"
+      },
+      {
+        "captureBefore": true,
+        "press": "Sign out",
+        "expectAfter": [
+          "Sign in",
+          "@input[type=password]"
+        ],
+        "settle": 4000,
+        "caption": "Step 1 \u2014 pressed \"Sign out\". No confirmation step; the session is cleared and the sign-in page returns"
+      }
+    ]
+  },
+  {
+    "section": "athlete-minor",
+    "id": "ATH-MINOR-14",
+    "name": "See the leaderboards I am on",
+    "entry": "Me \u2192 the \"Leaderboard\" row. Its subtitle differs by age and is the earliest on-screen tell.",
+    "steps": [
+      {
+        "goto": "/me",
+        "expect": [
+          "Leaderboard"
+        ],
+        "settle": 2500,
+        "caption": "Entry point \u2014 the \"Leaderboard\" row on Me. For a minor its subtitle reads \"you choose to appear\"; for an adult, \"you appear unless you leave\""
+      },
+      {
+        "goto": "/me/leaderboards",
+        "expect": [
+          "Being named on a leaderboard"
+        ],
+        "settle": 2500,
+        "caption": "Step 2 \u2014 the first card, headed \"Being named on a leaderboard\". Same heading as an adult sees; the difference is that a minor's card carries a toggle"
+      }
+    ]
+  },
+  {
+    "section": "athlete-minor",
+    "id": "ATH-MINOR-14a",
+    "name": "Opt in to being named on a leaderboard",
+    "entry": "The toggle inside the \"Being named on a leaderboard\" card. This flow does not exist for adults.",
+    "steps": [
+      {
+        "goto": "/me/leaderboards",
+        "expect": [
+          "never named on a leaderboard unless"
+        ],
+        "settle": 2500,
+        "caption": "Step 1 \u2014 the minor-only consent copy: \"Because you're under 18, you are never named on a leaderboard unless you choose to be\""
+      },
+      {
+        "captureBefore": true,
+        "press": "Off \u2014 tap to appear on leaderboards",
+        "expectAfter": [
+          "On \u2014 tap to turn off"
+        ],
+        "settle": 3500,
+        "caption": "Step 1 \u2014 pressed \"Off \u2014 tap to appear on leaderboards\"; it becomes \"On \u2014 tap to turn off\". No staff role can set this"
+      },
+      {
+        "press": "On \u2014 tap to turn off",
+        "expectAfter": [
+          "Off \u2014 tap to appear on leaderboards"
+        ],
+        "settle": 3500,
+        "caption": "Reversed \u2014 pressed \"On \u2014 tap to turn off\", restoring the default off state"
+      }
+    ]
+  },
+  {
+    "section": "athlete-minor",
+    "id": "ATH-MINOR-19",
+    "name": "Change notification preferences",
+    "entry": "Me \u2192 the \"Notifications\" row. Three rows render locked for a minor.",
+    "steps": [
+      {
+        "goto": "/me/notifications",
+        "expect": [
+          "Notifications"
+        ],
+        "settle": 2500,
+        "caption": "Step 1 \u2014 heading \"Notifications\", \"Pause everything\", then one row per type"
+      },
+      {
+        "goto": "/me/notifications",
+        "expect": [
+          "Off for under-18 accounts"
+        ],
+        "settle": 2500,
+        "caption": "Step 2 \u2014 the locked rows carry \"Off for under-18 accounts \u2014 the club can't turn this on for you.\" on \"A flag was shared with you\", \"Weekly personal summary\" and \"Weekly leaderboard\""
+      }
+    ]
+  },
+  {
+    "section": "athlete-minor",
+    "id": "ATH-MINOR-34",
+    "name": "Read my availability and its clinical detail",
+    "entry": "/today, above the to-do list.",
+    "steps": [
+      {
+        "goto": "/today",
+        "expect": [
+          "Today"
+        ],
+        "settle": 2500,
+        "caption": "Step 1 \u2014 the availability banner. For a minor, diagnosis and mechanism NEVER render beneath it: the view withholds them (migration 0093), and the component draws nothing rather than a placeholder"
+      }
+    ]
+  },
+  {
+    "section": "athlete-minor",
+    "id": "ATH-MINOR-02",
+    "name": "Land on Today and read what is outstanding",
+    "entry": "Automatic after sign-in; the \"Today\" tab.",
+    "steps": [
+      {
+        "goto": "/today",
+        "expect": [
+          "To do",
+          "You\u2019re up to date"
+        ],
+        "settle": 2500,
+        "caption": "Step 1 \u2014 greeting, availability, \"To do\" with its \"{N} left\" count, then \"Today\""
+      }
+    ]
+  },
+  {
+    "section": "athlete-minor",
+    "id": "ATH-MINOR-12",
+    "name": "Browse My data",
+    "entry": "The \"My data\" tab.",
+    "steps": [
+      {
+        "goto": "/my-data",
+        "expect": [
+          "My data"
+        ],
+        "settle": 2500,
+        "caption": "Step 1 \u2014 heading \"My data\", opening on the Wellness segment"
+      },
+      {
+        "press": "Gym",
+        "expectAfter": [
+          "My data"
+        ],
+        "settle": 1800,
+        "caption": "Step 2 \u2014 pressed the \"Gym\" segment"
+      }
+    ]
+  },
+  {
+    "section": "athlete-minor",
+    "id": "ATH-MINOR-13",
+    "name": "Open one gym session from history",
+    "entry": "/my-data?tab=gym \u2192 a session row.",
+    "steps": [
+      {
+        "goto": "/my-data?tab=gym&period=all",
+        "expect": [
+          "My data"
+        ],
+        "settle": 2500,
+        "caption": "Entry point \u2014 Gym history with the period set wide enough to include the session"
+      },
+      {
+        "click": "a[href^='/my-data/gym/']",
+        "expectAfter": [
+          "Sets"
+        ],
+        "settle": 2500,
+        "caption": "Step 1 \u2014 pressed a session row; heading is the date, with \"Sets\" and \"Back to gym history\""
+      }
+    ]
+  },
+  {
+    "section": "athlete-minor",
+    "id": "ATH-MINOR-11",
+    "name": "Correct a logged gym set",
+    "entry": "\"Correct\" on a set row.",
+    "steps": [
+      {
+        "goto": "/my-data?tab=gym&period=all",
+        "expect": [
+          "My data"
+        ],
+        "settle": 2500,
+        "caption": "Entry point \u2014 Gym history"
+      },
+      {
+        "click": "a[href^='/my-data/gym/']",
+        "expectAfter": [
+          "Sets"
+        ],
+        "settle": 2500,
+        "caption": "Opened one session"
+      },
+      {
+        "captureBefore": true,
+        "press": "Correct",
+        "expectAfter": [
+          "Save"
+        ],
+        "settle": 1500,
+        "caption": "Step 1 \u2014 pressed \"Correct\"; the inline reps and load fields open"
+      }
+    ]
+  },
+  {
+    "section": "athlete-minor",
+    "id": "ATH-MINOR-22",
+    "name": "Add, replace or remove my photo",
+    "entry": "Me \u2192 the \"Photo\" card.",
+    "steps": [
+      {
+        "goto": "/me",
+        "expect": [
+          "Photo"
+        ],
+        "settle": 2500,
+        "caption": "Step 1 \u2014 the \"Photo\" card and the colour picker below it"
+      }
+    ]
+  },
+  {
+    "section": "athlete-minor",
+    "id": "ATH-MINOR-28",
+    "name": "View my gym programme",
+    "entry": "The \"Gym\" tab.",
+    "steps": [
+      {
+        "goto": "/programme",
+        "expect": [
+          "My programme"
+        ],
+        "settle": 2500,
+        "caption": "Step 1 \u2014 heading \"My programme\", \"Sessions\", \"Nutrition targets\", \"Meal ideas \u203a\""
+      }
+    ]
+  },
+  {
+    "section": "athlete-minor",
+    "id": "ATH-MINOR-27",
+    "name": "Report a problem to staff",
+    "entry": "Me \u2192 \"Report a problem \u203a\".",
+    "steps": [
+      {
+        "goto": "/report-problem",
+        "expect": [
+          "Report a problem"
+        ],
+        "settle": 2500,
+        "caption": "Step 1 \u2014 the three category chips and \"Your reports\""
+      }
+    ]
+  },
+  {
+    "section": "athlete-minor",
+    "id": "ATH-MINOR-03w",
+    "name": "Submit the morning wellness entry",
+    "entry": "The \"Wellness\" to-do row on /today.",
+    "steps": [
+      {
+        "goto": "/check-in",
+        "expect": [
+          "Submit entry"
+        ],
+        "settle": 2500,
+        "caption": "Step 1 \u2014 the sheet before any answer; submit reads \"Submit entry \u00b7 5 to go\" and is disabled"
+      },
+      {
+        "press": "Half an hour more sleep",
+        "caption": "Step 1 \u2014 pressed \"+\" (aria-label \"Half an hour more sleep\")"
+      },
+      {
+        "clickAll": "input[type=radio][value='3']",
+        "settle": 1200,
+        "caption": "Step 2 \u2014 answered all five scales"
+      },
+      {
+        "fill": {
+          "textarea": "Captured for the walkthrough reference document."
+        },
+        "caption": "Step 3 \u2014 typed into the free-text box"
+      },
+      {
+        "captureBefore": true,
+        "press": "Submit entry",
+        "expectAfter": [
+          "Today",
+          "You\u2019re up to date",
+          "To do"
+        ],
+        "settle": 4000,
+        "caption": "Step 4 \u2014 pressed \"Submit entry\"; redirects to /today?submitted=1"
+      }
+    ]
+  },
+  {
+    "section": "athlete-minor",
+    "id": "ATH-MINOR-31",
+    "name": "Sign out",
+    "entry": "Me \u2192 \"Sign out\", at the foot of the screen.",
+    "steps": [
+      {
+        "goto": "/me",
+        "expect": [
+          "Sign out"
+        ],
+        "settle": 2500,
+        "caption": "Step 1 \u2014 the \"Sign out\" button at the foot of Me"
+      },
+      {
+        "captureBefore": true,
+        "press": "Sign out",
+        "expectAfter": [
+          "Sign in",
+          "@input[type=password]"
+        ],
+        "settle": 4000,
+        "caption": "Step 1 \u2014 pressed \"Sign out\". No confirmation; the session is cleared"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-01",
+    "name": "Read the dashboard",
+    "entry": "Sign-in lands here. \"Dashboard\" in the sidebar.",
+    "steps": [
+      {
+        "goto": "/dashboard",
+        "expect": [
+          "Dashboard"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 heading \"Dashboard\", the day heading, readiness, \"Outstanding entries\" and flags"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-02",
+    "name": "Browse the squad and filter by group",
+    "entry": "\"Squad overview\" in the sidebar \u2192 /squad.",
+    "steps": [
+      {
+        "goto": "/squad",
+        "expect": [
+          "Squad overview"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 heading \"Squad overview\" with its count line, \"Add athlete\", \"Manage groups\", and the group chips beginning \"Whole squad\""
+      },
+      {
+        "click": ".squad-chip:nth-of-type(2)",
+        "expectAfter": [
+          "Clear filter"
+        ],
+        "settle": 2500,
+        "caption": "Step 2 \u2014 pressed a group chip; the count line changes to \"in the selected groups\" and \"Clear filter\" appears"
+      },
+      {
+        "press": "Clear filter",
+        "expectAfter": [
+          "in the squad"
+        ],
+        "settle": 2500,
+        "caption": "Step 2 \u2014 pressed \"Clear filter\"; the filter is dropped and the count returns to \"in the squad\""
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-05",
+    "name": "Open an athlete's profile",
+    "entry": "An athlete name on /squad; \"View player profile\" on the dashboard.",
+    "steps": [
+      {
+        "goto": "/squad",
+        "expect": [
+          "Squad overview"
+        ],
+        "settle": 2800,
+        "caption": "Entry point \u2014 the squad list"
+      },
+      {
+        "click": "a[href^='/squad/']",
+        "expectAfter": [
+          "@.card"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 opened a profile; bio, availability, injuries, wellness, gym, nutrition and weigh-in panels"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-07",
+    "name": "Read the week's schedule",
+    "entry": "\"Schedule\" in the sidebar \u2192 /schedule.",
+    "steps": [
+      {
+        "goto": "/schedule",
+        "expect": [
+          "Schedule"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the schedule in Edit mode: the \"Read\"/\"Edit\" segmented control, week nav, the chip row and the banner"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-12",
+    "name": "Use the edit-mode toolbar",
+    "entry": "/schedule in Edit mode only.",
+    "steps": [
+      {
+        "goto": "/schedule",
+        "expect": [
+          "Schedule"
+        ],
+        "settle": 2800,
+        "caption": "Entry point \u2014 the schedule"
+      },
+      {
+        "press": "Edit",
+        "expectAfter": [
+          "@.sg-toolbar"
+        ],
+        "settle": 2500,
+        "caption": "Step 1 \u2014 the edit-mode toolbar (.sg-toolbar): \"+ Session\", a divider, the template chips and \"Save this week as a template\". It renders only in Edit mode and only with SESSION_EDIT"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-15",
+    "name": "Manage week templates",
+    "entry": "\"Week templates\" in the schedule chip row \u2192 /schedule/planner.",
+    "steps": [
+      {
+        "goto": "/schedule/planner",
+        "expect": [
+          "template",
+          "Week"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 saved templates, each with \"Apply\" and \"Edit\", plus \"+ New template\""
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-16",
+    "name": "Open the squad report and export it",
+    "entry": "\"Reports\" in the sidebar \u2192 /reports.",
+    "steps": [
+      {
+        "goto": "/reports",
+        "expect": [
+          "Reports"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 \"Needing attention\", \"Load\", \"Availability\", \"Wellness\", \"Gym and testing\", with \"Export CSV\" and \"Export PDF\""
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-17",
+    "name": "Athlete report",
+    "entry": "Route /reports/athlete. Gated by REPORT_VISIBILITY.",
+    "steps": [
+      {
+        "goto": "/reports/athlete",
+        "expect": [
+          "Athlete",
+          "Reports"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 Athlete report at /reports/athlete, with its period control, group filter and CSV/PDF export links"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-18",
+    "name": "Compliance report",
+    "entry": "Route /reports/compliance. Gated by REPORT_VISIBILITY.",
+    "steps": [
+      {
+        "goto": "/reports/compliance",
+        "expect": [
+          "Compliance"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 Compliance report at /reports/compliance, with its period control, group filter and CSV/PDF export links"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-20",
+    "name": "Squad report",
+    "entry": "Route /reports/squad. Gated by REPORT_VISIBILITY.",
+    "steps": [
+      {
+        "goto": "/reports/squad",
+        "expect": [
+          "Squad"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 Squad report at /reports/squad, with its period control, group filter and CSV/PDF export links"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-21",
+    "name": "Testing report",
+    "entry": "Route /reports/testing. Gated by REPORT_VISIBILITY.",
+    "steps": [
+      {
+        "goto": "/reports/testing",
+        "expect": [
+          "Testing",
+          "Tests"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 Testing report at /reports/testing, with its period control, group filter and CSV/PDF export links"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-22",
+    "name": "Training report",
+    "entry": "Route /reports/training. Gated by REPORT_VISIBILITY.",
+    "steps": [
+      {
+        "goto": "/reports/training",
+        "expect": [
+          "Training"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 Training report at /reports/training, with its period control, group filter and CSV/PDF export links"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-19",
+    "name": "Injuries report",
+    "entry": "/reports/injuries \u2014 admits all five roles; content differs by CLINICAL_ONLY.",
+    "steps": [
+      {
+        "goto": "/reports/injuries",
+        "expect": [
+          "Injur"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the injuries report as a NON-medic: the sport scientist does not hold CLINICAL_ONLY, so the clinical columns are withheld"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-23",
+    "name": "Build a nutrition plan and assign it",
+    "entry": "\"Nutrition\" in the sidebar \u2192 /nutrition.",
+    "steps": [
+      {
+        "goto": "/nutrition",
+        "expect": [
+          "Nutrition"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 week nav, group filter, \"Manual target\" and \"New plan\""
+      },
+      {
+        "captureBefore": true,
+        "press": "New plan",
+        "expectAfter": [
+          "Create"
+        ],
+        "settle": 2000,
+        "caption": "Step 2 \u2014 pressed \"New plan\"; the create panel toggles open with \"Create\""
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-24",
+    "name": "Author a gym programme",
+    "entry": "\"Gym programme\" in the sidebar \u2192 /programmes.",
+    "steps": [
+      {
+        "goto": "/programmes",
+        "expect": [
+          "Gym programme"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the programme list with \"+ New programme\" and \"Exercise library\"; the detail link reads \"Edit this programme \u2192\" when the role may edit it"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-25",
+    "name": "Explore the leaderboard wall",
+    "entry": "\"Leaderboard\" in the sidebar \u2192 /leaderboards.",
+    "steps": [
+      {
+        "goto": "/leaderboards",
+        "expect": [
+          "Leaderboard"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the wall with the lens selector, scope chips, family chips carrying counts, and \"Manage published boards \u2192\""
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-26",
+    "name": "Publish and manage leaderboards",
+    "entry": "\"Manage published boards \u2192\" \u2192 /leaderboards/manage.",
+    "steps": [
+      {
+        "goto": "/leaderboards/manage",
+        "expect": [
+          "board",
+          "Leaderboard"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the published boards, manageable because the sport scientist holds LEADERBOARD_EDIT"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-27",
+    "name": "Analytics",
+    "entry": "\"Analytics\" in the sidebar \u2014 the only role-gated row.",
+    "steps": [
+      {
+        "goto": "/analytics",
+        "expect": [
+          "Analytics"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 /analytics, reachable only with ANALYTICS: the sport scientist alone"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-28",
+    "name": "Injuries: what the sport scientist cannot open",
+    "entry": "No sidebar row; reached from the profile and reports.",
+    "steps": [
+      {
+        "goto": "/injuries",
+        "expect": [
+          "Dashboard",
+          "Injur",
+          "not"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 /injuries is CLINICAL_ONLY. The sport scientist holds almost everything else and still cannot open it; this captures what they get instead"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-29",
+    "name": "Settings hub",
+    "entry": "\"Settings\" in the sidebar \u2192 /settings.",
+    "steps": [
+      {
+        "goto": "/settings",
+        "expect": [
+          "Settings"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 \"Plan\", \"Integrations\", \"Profile\", \"Photo\", \"Password and sign-in\", \"Club details\""
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-30a",
+    "name": "Audit log",
+    "entry": "Route /settings/audit.",
+    "steps": [
+      {
+        "goto": "/settings/audit",
+        "expect": [
+          "Settings",
+          "Audit"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 Audit log at /settings/audit"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-30b",
+    "name": "Exports",
+    "entry": "Route /settings/exports.",
+    "steps": [
+      {
+        "goto": "/settings/exports",
+        "expect": [
+          "Settings",
+          "Exports"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 Exports at /settings/exports"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-30c",
+    "name": "Groups",
+    "entry": "Route /settings/groups.",
+    "steps": [
+      {
+        "goto": "/settings/groups",
+        "expect": [
+          "Settings",
+          "Groups"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 Groups at /settings/groups"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-30d",
+    "name": "Imports (GPS)",
+    "entry": "Route /settings/imports.",
+    "steps": [
+      {
+        "goto": "/settings/imports",
+        "expect": [
+          "Settings",
+          "Imports"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 Imports (GPS) at /settings/imports"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-30e",
+    "name": "Notifications",
+    "entry": "Route /settings/notifications.",
+    "steps": [
+      {
+        "goto": "/settings/notifications",
+        "expect": [
+          "Settings",
+          "Notifications"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 Notifications at /settings/notifications"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-30f",
+    "name": "Retention",
+    "entry": "Route /settings/retention.",
+    "steps": [
+      {
+        "goto": "/settings/retention",
+        "expect": [
+          "Settings",
+          "Retention"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 Retention at /settings/retention"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-30g",
+    "name": "Subject access",
+    "entry": "Route /settings/subject-access.",
+    "steps": [
+      {
+        "goto": "/settings/subject-access",
+        "expect": [
+          "Settings",
+          "Subject"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 Subject access at /settings/subject-access"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-30h",
+    "name": "Thresholds",
+    "entry": "Route /settings/thresholds.",
+    "steps": [
+      {
+        "goto": "/settings/thresholds",
+        "expect": [
+          "Settings",
+          "Thresholds"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 Thresholds at /settings/thresholds"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-30i",
+    "name": "Users",
+    "entry": "Route /settings/users.",
+    "steps": [
+      {
+        "goto": "/settings/users",
+        "expect": [
+          "Settings",
+          "Users"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 Users at /settings/users"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-31",
+    "name": "Filter the audit log",
+    "entry": "/settings/audit.",
+    "steps": [
+      {
+        "goto": "/settings/audit",
+        "expect": [
+          "Audit",
+          "audit"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 type chips, quick ranges and pagination"
+      },
+      {
+        "captureBefore": true,
+        "press": "Apply filters",
+        "expectAfter": [
+          "Audit",
+          "audit"
+        ],
+        "settle": 2500,
+        "caption": "Step 2 \u2014 pressed \"Apply filters\""
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-09",
+    "name": "Create a fixture",
+    "entry": "\"+ Fixture\" in the schedule header chip row \u2192 /schedule/fixtures/new.",
+    "steps": [
+      {
+        "goto": "/schedule/fixtures/new",
+        "expect": [
+          "@#f-opponent"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the fixture form: \"Opponent\", \"Date\", \"Kick-off\", \"Home or away\", \"Venue\", \"Competition\", \"Importance\""
+      },
+      {
+        "fill": {
+          "#f-opponent": "Walkthrough RFC",
+          "#f-date": "2026-10-01",
+          "#f-time": "14:00",
+          "#f-venue": "Reference Park"
+        },
+        "caption": "Steps 1\u20134 \u2014 filled \"Opponent\", \"Date\", \"Kick-off\" and \"Venue\""
+      },
+      {
+        "press": "Away",
+        "caption": "Step 3 \u2014 pressed \"Away\" in the \"Home or away\" chip row"
+      },
+      {
+        "captureBefore": true,
+        "press": "Create fixture",
+        "expectAfter": [
+          "Schedule"
+        ],
+        "settle": 4000,
+        "caption": "Step 6 \u2014 pressed \"Create fixture\" (label becomes \"Creating\u2026\" in flight); redirects to /schedule?date=\u2026"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-09e",
+    "name": "Create a fixture: refused with no opponent",
+    "entry": "The same form, submitted empty.",
+    "steps": [
+      {
+        "goto": "/schedule/fixtures/new",
+        "expect": [
+          "@#f-opponent"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the empty fixture form"
+      },
+      {
+        "captureBefore": true,
+        "press": "Create fixture",
+        "expectAfter": [
+          "Name the opponent"
+        ],
+        "settle": 2500,
+        "caption": "Pressed \"Create fixture\" with no opponent: refused with \"Name the opponent.\", and focus moves to the field at fault"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-08",
+    "name": "Create a session",
+    "entry": "\"+ Session\" in the header chip row \u2192 /schedule/new.",
+    "steps": [
+      {
+        "goto": "/schedule/new",
+        "expect": [
+          "@#s-title"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the session form: \"Name\", \"Date\", \"Time\", \"Duration (min)\", \"MD offset (optional)\", \"Location\""
+      },
+      {
+        "fill": {
+          "#s-title": "Walkthrough session",
+          "#s-date": "2026-10-01",
+          "#s-time": "10:00",
+          "#s-duration": "60",
+          "#s-location": "Reference pitch"
+        },
+        "caption": "Steps 1 \u2014 filled every field"
+      },
+      {
+        "captureBefore": true,
+        "press": "Create session",
+        "expectAfter": [
+          "Schedule"
+        ],
+        "settle": 4000,
+        "caption": "Step 4 \u2014 pressed \"Create session\" (label becomes \"Creating\u2026\" in flight)"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-10",
+    "name": "Edit a session in the grid",
+    "entry": "/schedule in Edit mode \u2192 click a session block.",
+    "steps": [
+      {
+        "goto": "/schedule",
+        "expect": [
+          "Schedule"
+        ],
+        "settle": 2800,
+        "caption": "Entry point \u2014 the schedule grid in Edit mode"
+      },
+      {
+        "click": ".sg-block",
+        "expectAfter": [
+          "Duplicate"
+        ],
+        "settle": 2000,
+        "caption": "Step 1 \u2014 clicked a session block; the panel opens with its facts and the athlete preview"
+      },
+      {
+        "captureBefore": true,
+        "press": "Later",
+        "expectAfter": [
+          "Cancel changes"
+        ],
+        "settle": 2500,
+        "caption": "Step 2 \u2014 pressed \"Later\"; the session becomes a pending change and \"Cancel changes\" appears with the held-locally line"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-11",
+    "name": "Remove a session, and restore it",
+    "entry": "\"Remove session\" in the selected-session panel. Offered only for a session that is not already past, or for an unpublished draft.",
+    "steps": [
+      {
+        "goto": "/schedule",
+        "expect": [
+          "Schedule"
+        ],
+        "settle": 2800,
+        "caption": "Entry point \u2014 the schedule grid in Edit mode"
+      },
+      {
+        "press": "Captain's run",
+        "expectAfter": [
+          "Remove session"
+        ],
+        "settle": 2500,
+        "caption": "Selected \"Captain's run\" on Friday \u2014 deliberately a FUTURE session. \"Remove session\" is withheld for a session already in the past, and a fixture is not a session at all, so neither offers it"
+      },
+      {
+        "captureBefore": true,
+        "press": "Remove session",
+        "expectAfter": [
+          "Yes, remove"
+        ],
+        "settle": 1800,
+        "caption": "Step 1\u20132 \u2014 pressed \"Remove session\"; the confirmation appears: \"Remove this session? You can undo with Discard, until you publish.\" with \"Yes, remove\" and \"Never mind\""
+      },
+      {
+        "press": "Yes, remove",
+        "expectAfter": [
+          "Restore session"
+        ],
+        "settle": 2800,
+        "caption": "Step 3\u20134 \u2014 pressed \"Yes, remove\"; the block becomes a struck-through ghost and the panel offers \"Restore session\""
+      },
+      {
+        "press": "Restore session",
+        "expectAfter": [
+          "Duplicate"
+        ],
+        "settle": 2800,
+        "caption": "Step 5 \u2014 pressed \"Restore session\"; the block returns, keeping any pending edit to it"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-13",
+    "name": "Publish the week to athletes",
+    "entry": "The status banner at the top of /schedule.",
+    "steps": [
+      {
+        "goto": "/schedule",
+        "expect": [
+          "Schedule"
+        ],
+        "settle": 2800,
+        "caption": "Entry point \u2014 the banner"
+      },
+      {
+        "click": ".sg-block",
+        "expectAfter": [
+          "Duplicate"
+        ],
+        "settle": 2000,
+        "caption": "Selected a session"
+      },
+      {
+        "press": "Later",
+        "expectAfter": [
+          "Publish to athletes"
+        ],
+        "settle": 2500,
+        "caption": "Made a pending change; the banner changes to \"{N} change/changes not yet in the athlete app\" with \"Discard\" and \"Publish to athletes\""
+      },
+      {
+        "captureBefore": true,
+        "press": "Publish to athletes",
+        "expectAfter": [
+          "The athlete app is up to date"
+        ],
+        "settle": 6000,
+        "caption": "Step 1 \u2014 pressed \"Publish to athletes\" (label \"Publishing\u2026\" in flight); the banner returns to \"The athlete app is up to date\""
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-14",
+    "name": "Discard every pending change",
+    "entry": "\"Discard\" in the banner, present only when something is pending.",
+    "steps": [
+      {
+        "goto": "/schedule",
+        "expect": [
+          "Schedule"
+        ],
+        "settle": 2800,
+        "caption": "Entry point \u2014 the schedule"
+      },
+      {
+        "click": ".sg-block",
+        "expectAfter": [
+          "Duplicate"
+        ],
+        "settle": 2000,
+        "caption": "Selected a session"
+      },
+      {
+        "press": "Later",
+        "expectAfter": [
+          "Discard"
+        ],
+        "settle": 2500,
+        "caption": "Made a pending change so \"Discard\" renders"
+      },
+      {
+        "captureBefore": true,
+        "press": "Discard",
+        "expectAfter": [
+          "Yes, discard"
+        ],
+        "settle": 1800,
+        "caption": "Step 2 \u2014 pressed \"Discard\"; the confirmation appears: \"Discard {N} change/changes? This can't be undone.\" with \"Yes, discard\" and \"Never mind\""
+      },
+      {
+        "press": "Yes, discard",
+        "expectAfter": [
+          "The athlete app is up to date"
+        ],
+        "settle": 3500,
+        "caption": "Step 3 \u2014 pressed \"Yes, discard\"; the week returns to its published state"
+      }
+    ]
+  },
+  {
+    "section": "staff-sport-scientist",
+    "id": "STAFF-SS-03",
+    "name": "Add an athlete",
+    "entry": "\"Add athlete\" on /squad. SETTINGS_ADMIN only. The end state depends on the email field: with none, it navigates to the new profile; with one, it shows an invite link or the already-has-an-account explanation.",
+    "steps": [
+      {
+        "goto": "/squad/new",
+        "expect": [
+          "Add athlete"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the form: \"First name\", \"Last name\", \"Date of birth\", \"Position\", \"Squad number\", \"Email (optional)\""
+      },
+      {
+        "fill": {
+          "#first-name": "Walkthrough",
+          "#last-name": "Reference",
+          "#dob": "2001-03-14",
+          "#squad-number": "77"
+        },
+        "caption": "Step 1 \u2014 filled the fields"
+      },
+      {
+        "captureBefore": true,
+        "press": "Save",
+        "expectAfter": [
+          "@.card"
+        ],
+        "settle": 4500,
+        "caption": "Step 2 \u2014 pressed \"Save\" (label becomes \"Saving\u2026\" in flight). With no email supplied the handler falls through to router.push(\"/squad/{athleteId}\") and lands on the new athlete's profile. \"Back to the squad\" is NOT this branch: it belongs to the existing-account and invite outcomes"
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-05a",
+    "name": "Athlete profile: no clinical detail",
+    "entry": "An athlete name on /squad. Identical to the sport scientist's view except for what is withheld.",
+    "steps": [
+      {
+        "goto": "/squad",
+        "expect": [
+          "Squad overview"
+        ],
+        "settle": 2800,
+        "caption": "Entry point \u2014 the squad list"
+      },
+      {
+        "click": "a[href^='/squad/']",
+        "expectAfter": [
+          "@.card"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the profile as a COACH. Availability, restrictions and expected return are shown; diagnosis and mechanism are not, and no control offers them. The injury card simply stops after expected return, because a disabled row would imply a diagnosis exists and that this person might unlock it"
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-23",
+    "name": "Nutrition: meal library only",
+    "entry": "\"Nutrition\" in the sidebar \u2192 /nutrition.",
+    "steps": [
+      {
+        "goto": "/nutrition",
+        "expect": [
+          "Nutrition"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 a coach holds MEAL_LIBRARY_EDIT but NOT NUTRITION_EDIT, so \"Food library\" is present while \"New plan\", \"Create\" and \"Assign\" are absent"
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-28",
+    "name": "Injuries: allocation without the board",
+    "entry": "/injuries/team-allocation, reachable with SESSION_EDIT.",
+    "steps": [
+      {
+        "goto": "/injuries/team-allocation",
+        "expect": [
+          "Read only",
+          "allocation",
+          "Team"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the coach can allocate rehab teams (SESSION_EDIT) while being unable to read the injuries behind them. The screen states the asymmetry itself: \"Read only. Medical sees the whole board\u2026\""
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-28r",
+    "name": "Injuries board: opens, without the clinical columns",
+    "entry": "/injuries \u2014 gated by INJURY_ACCESS, which includes the coach.",
+    "steps": [
+      {
+        "goto": "/injuries",
+        "expect": [
+          "Dashboard",
+          "Injur",
+          "not"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 /injuries as a COACH. Corrected: this board is NOT medic-only. INJURY_ACCESS admits the coach, so it opens; what is withheld is the clinical content inside it (CLINICAL_ONLY), the same as on the athlete profile"
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-27r",
+    "name": "Analytics: refused",
+    "entry": "/analytics \u2014 ANALYTICS is the sport scientist alone.",
+    "steps": [
+      {
+        "goto": "/analytics",
+        "expect": [
+          "Dashboard",
+          "Analytics",
+          "not"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the only role-gated sidebar row. A coach never sees the row, and typing the URL does not help"
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-30i-r",
+    "name": "Users settings: refused",
+    "entry": "/settings/users \u2014 SETTINGS_ADMIN.",
+    "steps": [
+      {
+        "goto": "/settings/users",
+        "expect": [
+          "Settings",
+          "not",
+          "Dashboard"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 user administration is the sport scientist alone; this is what a coach gets"
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-01",
+    "name": "Read the dashboard",
+    "entry": "\"Dashboard\" in the sidebar.",
+    "steps": [
+      {
+        "goto": "/dashboard",
+        "expect": [
+          "Dashboard"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the dashboard as a coach; the sidebar carries eight rows, Analytics absent"
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-02",
+    "name": "Browse the squad and filter by group",
+    "entry": "\"Squad overview\" in the sidebar.",
+    "steps": [
+      {
+        "goto": "/squad",
+        "expect": [
+          "Squad overview"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 heading, count line, \"Add athlete\", \"Manage groups\" and the group chips"
+      },
+      {
+        "click": ".squad-chip:nth-of-type(2)",
+        "expectAfter": [
+          "Clear filter"
+        ],
+        "settle": 2500,
+        "caption": "Step 2 \u2014 pressed a group chip; \"Clear filter\" appears"
+      },
+      {
+        "press": "Clear filter",
+        "expectAfter": [
+          "in the squad"
+        ],
+        "settle": 2500,
+        "caption": "Step 2 \u2014 pressed \"Clear filter\""
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-07",
+    "name": "Read the week's schedule",
+    "entry": "\"Schedule\" in the sidebar.",
+    "steps": [
+      {
+        "goto": "/schedule",
+        "expect": [
+          "Schedule"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the schedule in Edit mode, with the \"Read\"/\"Edit\" control: a coach holds SESSION_EDIT"
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-12",
+    "name": "Use the edit-mode toolbar",
+    "entry": "/schedule in Edit mode.",
+    "steps": [
+      {
+        "goto": "/schedule",
+        "expect": [
+          "Schedule"
+        ],
+        "settle": 2800,
+        "caption": "Entry point \u2014 the schedule"
+      },
+      {
+        "press": "Edit",
+        "expectAfter": [
+          "@.sg-toolbar"
+        ],
+        "settle": 2500,
+        "caption": "Step 1 \u2014 the edit-mode toolbar: \"+ Session\", the template chips and \"Save this week as a template\""
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-09",
+    "name": "Create a fixture",
+    "entry": "\"+ Fixture\" in the schedule header chip row.",
+    "steps": [
+      {
+        "goto": "/schedule/fixtures/new",
+        "expect": [
+          "@#f-opponent"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the fixture form"
+      },
+      {
+        "fill": {
+          "#f-opponent": "Coach Walkthrough RFC",
+          "#f-date": "2026-10-04",
+          "#f-time": "15:00",
+          "#f-venue": "Reference Park"
+        },
+        "caption": "Steps 1\u20134 \u2014 filled \"Opponent\", \"Date\", \"Kick-off\" and \"Venue\""
+      },
+      {
+        "press": "Home",
+        "caption": "Step 3 \u2014 pressed \"Home\" in the \"Home or away\" chip row"
+      },
+      {
+        "captureBefore": true,
+        "press": "Create fixture",
+        "expectAfter": [
+          "Schedule"
+        ],
+        "settle": 4000,
+        "caption": "Step 6 \u2014 pressed \"Create fixture\" (label \"Creating\u2026\" in flight)"
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-10",
+    "name": "Edit a session in the grid",
+    "entry": "/schedule in Edit mode \u2192 click a session block.",
+    "steps": [
+      {
+        "goto": "/schedule",
+        "expect": [
+          "Schedule"
+        ],
+        "settle": 2800,
+        "caption": "Entry point \u2014 the grid"
+      },
+      {
+        "press": "Captain's run",
+        "expectAfter": [
+          "Duplicate"
+        ],
+        "settle": 2500,
+        "caption": "Step 1 \u2014 selected a future session; the panel opens"
+      },
+      {
+        "captureBefore": true,
+        "press": "Later",
+        "expectAfter": [
+          "Cancel changes"
+        ],
+        "settle": 2500,
+        "caption": "Step 2 \u2014 pressed \"Later\"; a pending change appears with \"Cancel changes\" and the held-locally line"
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-14",
+    "name": "Discard every pending change",
+    "entry": "\"Discard\" in the banner.",
+    "steps": [
+      {
+        "goto": "/schedule",
+        "expect": [
+          "Schedule"
+        ],
+        "settle": 2800,
+        "caption": "Entry point"
+      },
+      {
+        "press": "Captain's run",
+        "expectAfter": [
+          "Duplicate"
+        ],
+        "settle": 2500,
+        "caption": "Selected a session"
+      },
+      {
+        "press": "Later",
+        "expectAfter": [
+          "Discard"
+        ],
+        "settle": 2500,
+        "caption": "Made a pending change so \"Discard\" renders"
+      },
+      {
+        "captureBefore": true,
+        "press": "Discard",
+        "expectAfter": [
+          "Yes, discard"
+        ],
+        "settle": 1800,
+        "caption": "Step 2 \u2014 pressed \"Discard\"; the confirmation appears"
+      },
+      {
+        "press": "Yes, discard",
+        "expectAfter": [
+          "The athlete app is up to date"
+        ],
+        "settle": 3500,
+        "caption": "Step 3 \u2014 pressed \"Yes, discard\"; the week returns to its published state"
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-15",
+    "name": "Manage week templates",
+    "entry": "\"Week templates\" in the chip row.",
+    "steps": [
+      {
+        "goto": "/schedule/planner",
+        "expect": [
+          "template",
+          "Week"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 templates with \"Apply\" and \"Edit\", plus \"+ New template\""
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-16",
+    "name": "Open the squad report and export it",
+    "entry": "\"Reports\" in the sidebar.",
+    "steps": [
+      {
+        "goto": "/reports",
+        "expect": [
+          "Reports"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the report with its sections and the CSV/PDF export links"
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-18",
+    "name": "Compliance report",
+    "entry": "Route /reports/compliance.",
+    "steps": [
+      {
+        "goto": "/reports/compliance",
+        "expect": [
+          "Compliance"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 Compliance report as a coach."
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-19",
+    "name": "Injuries report",
+    "entry": "Route /reports/injuries.",
+    "steps": [
+      {
+        "goto": "/reports/injuries",
+        "expect": [
+          "Injur"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 Injuries report as a coach. Admits all five roles, but the clinical columns are withheld without CLINICAL_ONLY"
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-22",
+    "name": "Training report",
+    "entry": "Route /reports/training.",
+    "steps": [
+      {
+        "goto": "/reports/training",
+        "expect": [
+          "Training"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 Training report as a coach."
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-25",
+    "name": "Explore the leaderboard wall",
+    "entry": "\"Leaderboard\" in the sidebar.",
+    "steps": [
+      {
+        "goto": "/leaderboards",
+        "expect": [
+          "Leaderboard"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the wall; a coach holds LEADERBOARD_EDIT so publishing controls are present"
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-29",
+    "name": "Settings hub",
+    "entry": "\"Settings\" in the sidebar.",
+    "steps": [
+      {
+        "goto": "/settings",
+        "expect": [
+          "Settings"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 a coach reaches their own profile, photo and password; the administrative sections are absent"
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-30c",
+    "name": "Groups",
+    "entry": "/settings/groups \u2014 GROUP_EDIT.",
+    "steps": [
+      {
+        "goto": "/settings/groups",
+        "expect": [
+          "Group",
+          "group"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 groups, editable: a coach holds GROUP_EDIT"
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-30h",
+    "name": "Thresholds",
+    "entry": "/settings/thresholds \u2014 THRESHOLD_EDIT.",
+    "steps": [
+      {
+        "goto": "/settings/thresholds",
+        "expect": [
+          "Threshold",
+          "threshold"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 thresholds, editable: a coach holds THRESHOLD_EDIT"
+      }
+    ]
+  },
+  {
+    "section": "staff-coach",
+    "id": "STAFF-COACH-35",
+    "name": "Take a register on the timetable",
+    "entry": "The \"Today\" view tab on /schedule \u2192 /timetable.",
+    "steps": [
+      {
+        "goto": "/timetable",
+        "expect": [
+          "Timetable"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the register: attendance segments per athlete, \"Mark all present\" per session, week nav and the group filter"
+      }
+    ]
+  },
+  {
+    "section": "staff-medic",
+    "id": "STAFF-MEDIC-05",
+    "name": "Athlete profile: the only role that sees clinical detail",
+    "entry": "An athlete name on /squad.",
+    "steps": [
+      {
+        "goto": "/squad",
+        "expect": [
+          "Squad overview"
+        ],
+        "settle": 2800,
+        "caption": "Entry point \u2014 the squad list"
+      },
+      {
+        "click": "a[href^='/squad/']",
+        "expectAfter": [
+          "@.card"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the profile as a MEDIC. Compare directly with STAFF-COACH-05a: the same screen, plus diagnosis and mechanism. The medic is the only staff role that reads them \u2014 the sport scientist does not"
+      }
+    ]
+  },
+  {
+    "section": "staff-medic",
+    "id": "STAFF-MEDIC-28",
+    "name": "The injury board, with its clinical columns",
+    "entry": "/injuries \u2014 INJURY_ACCESS admits four roles.",
+    "steps": [
+      {
+        "goto": "/injuries",
+        "expect": [
+          "Injur"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 /injuries as a MEDIC. The door is INJURY_ACCESS, which the coach also holds; what differs is the content, decided by isMedical from CLINICAL_ONLY. Compare with STAFF-COACH-28r, the same board without it"
+      }
+    ]
+  },
+  {
+    "section": "staff-medic",
+    "id": "STAFF-MEDIC-19",
+    "name": "The injuries report, with its clinical columns",
+    "entry": "/reports/injuries.",
+    "steps": [
+      {
+        "goto": "/reports/injuries",
+        "expect": [
+          "Injur"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the injuries report as a MEDIC. Admits all five roles; isMedical decides the clinical columns. Compare with STAFF-COACH-19, the same report without them"
+      }
+    ]
+  },
+  {
+    "section": "staff-medic",
+    "id": "STAFF-MEDIC-05c",
+    "name": "Open or add clinical detail on an injury",
+    "entry": "The \"Injury\" card \u2192 /injuries/{injuryId}.",
+    "steps": [
+      {
+        "goto": "/injuries",
+        "expect": [
+          "Injur"
+        ],
+        "settle": 2800,
+        "caption": "Entry point \u2014 the injury board"
+      },
+      {
+        "click": "a[href^='/injuries/']",
+        "expectAfter": [
+          "@#inj-diagnosis",
+          "@form",
+          "Save changes"
+        ],
+        "settle": 2800,
+        "caption": "Step 1\u20132 \u2014 the medical form: area, side, status, occurred, expected and actual return, and the two fields no other role reaches \u2014 \"diagnosis\" (#inj-diagnosis) and \"mechanism\" (#inj-mechanism) \u2014 plus severity, tissue, imaging and referral"
+      }
+    ]
+  },
+  {
+    "section": "staff-medic",
+    "id": "STAFF-MEDIC-30g",
+    "name": "Review a subject-access request",
+    "entry": "/settings/subject-access \u2014 SETTINGS_ADMIN or CLINICAL_ONLY.",
+    "steps": [
+      {
+        "goto": "/settings/subject-access",
+        "expect": [
+          "access",
+          "Subject",
+          "request"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the medic reviews a subject-access request; the sport scientist administers it. Neither role can complete the flow alone"
+      }
+    ]
+  },
+  {
+    "section": "staff-medic",
+    "id": "STAFF-MEDIC-07r",
+    "name": "Schedule: read-only for a medic",
+    "entry": "/schedule \u2014 SESSION_EDIT excludes the medic (G-33).",
+    "steps": [
+      {
+        "goto": "/schedule",
+        "expect": [
+          "Schedule"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 no \"Read\"/\"Edit\" control at all; in its place, \"Read only. The schedule is authored by the sport scientist and the coach.\" Every write control is absent from the DOM, not merely hidden"
+      }
+    ]
+  },
+  {
+    "section": "staff-medic",
+    "id": "STAFF-MEDIC-27r",
+    "name": "Analytics: refused",
+    "entry": "/analytics \u2014 ANALYTICS is the sport scientist alone.",
+    "steps": [
+      {
+        "goto": "/analytics",
+        "expect": [
+          "Dashboard",
+          "Analytics",
+          "not"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 redirected to /dashboard?e=no-analytics"
+      }
+    ]
+  },
+  {
+    "section": "staff-medic",
+    "id": "STAFF-MEDIC-01",
+    "name": "Read the dashboard",
+    "entry": "\"Dashboard\" in the sidebar.",
+    "steps": [
+      {
+        "goto": "/dashboard",
+        "expect": [
+          "Dashboard"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the dashboard as a medic; eight sidebar rows, Analytics absent"
+      }
+    ]
+  },
+  {
+    "section": "staff-medic",
+    "id": "STAFF-MEDIC-02",
+    "name": "Browse the squad",
+    "entry": "\"Squad overview\" in the sidebar.",
+    "steps": [
+      {
+        "goto": "/squad",
+        "expect": [
+          "Squad overview"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the squad list with the group chips"
+      }
+    ]
+  },
+  {
+    "section": "staff-medic",
+    "id": "STAFF-MEDIC-16",
+    "name": "Reports",
+    "entry": "\"Reports\" in the sidebar.",
+    "steps": [
+      {
+        "goto": "/reports",
+        "expect": [
+          "Reports"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the report; the medic holds REPORT_ACCESS"
+      }
+    ]
+  },
+  {
+    "section": "staff-medic",
+    "id": "STAFF-MEDIC-25",
+    "name": "Explore the leaderboard wall",
+    "entry": "\"Leaderboard\" in the sidebar.",
+    "steps": [
+      {
+        "goto": "/leaderboards",
+        "expect": [
+          "Leaderboard"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 readable by all staff; the medic does NOT hold LEADERBOARD_EDIT, so publishing controls are absent"
+      }
+    ]
+  },
+  {
+    "section": "staff-medic",
+    "id": "STAFF-MEDIC-24",
+    "name": "Programmes: rehab yes, standard gym read-only",
+    "entry": "\"Gym programme\" in the sidebar.",
+    "steps": [
+      {
+        "goto": "/programmes",
+        "expect": [
+          "Gym programme"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the medic holds REHAB_PROGRAMME and PROGRAMME_AUTHOR but not PROGRAMME_EDIT, so the detail link's label is the tell: \"Edit this programme \u2192\" where they may edit, \"View full detail \u2192\" where they may not"
+      }
+    ]
+  },
+  {
+    "section": "staff-medic",
+    "id": "STAFF-MEDIC-29",
+    "name": "Settings hub",
+    "entry": "\"Settings\" in the sidebar.",
+    "steps": [
+      {
+        "goto": "/settings",
+        "expect": [
+          "Settings"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 own profile, photo and password; administrative sections absent"
+      }
+    ]
+  },
+  {
+    "section": "staff-medic",
+    "id": "STAFF-MEDIC-30c-r",
+    "name": "Groups: refused",
+    "entry": "/settings/groups \u2014 GROUP_EDIT excludes the medic.",
+    "steps": [
+      {
+        "goto": "/settings/groups",
+        "expect": [
+          "Settings",
+          "Group",
+          "not",
+          "Dashboard"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 what a medic gets instead of group editing"
+      }
+    ]
+  },
+  {
+    "section": "staff-sc",
+    "id": "STAFF-SC-24",
+    "name": "Author a gym programme",
+    "entry": "\"Gym programme\" in the sidebar \u2192 /programmes.",
+    "steps": [
+      {
+        "goto": "/programmes",
+        "expect": [
+          "Gym programme"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 S&C holds PROGRAMME_EDIT, so the detail link reads \"Edit this programme \u2192\" for a standard gym programme. A rehab programme is decided by REHAB_PROGRAMME instead, which S&C does NOT hold"
+      }
+    ]
+  },
+  {
+    "section": "staff-sc",
+    "id": "STAFF-SC-24a",
+    "name": "Propose an injury programme",
+    "entry": "/programmes/{programmeId} \u2014 INJURY_PROGRAMME_PROPOSER.",
+    "steps": [
+      {
+        "goto": "/programmes",
+        "expect": [
+          "Gym programme"
+        ],
+        "settle": 2800,
+        "caption": "Entry point \u2014 the programme list"
+      },
+      {
+        "click": "a[href^='/programmes/']",
+        "expectAfter": [
+          "@.card"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 programme detail as S&C. INJURY_PROGRAMME_PROPOSER belongs to this role ALONE \u2014 not the sport scientist, not the medic. It is the one power the superset role does not hold"
+      }
+    ]
+  },
+  {
+    "section": "staff-sc",
+    "id": "STAFF-SC-05",
+    "name": "Athlete profile: gym and weigh-ins, no bio or availability edit",
+    "entry": "An athlete name on /squad.",
+    "steps": [
+      {
+        "goto": "/squad",
+        "expect": [
+          "Squad overview"
+        ],
+        "settle": 2800,
+        "caption": "Entry point \u2014 the squad list"
+      },
+      {
+        "click": "a[href^='/squad/']",
+        "expectAfter": [
+          "@.card"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the profile as S&C: the gym panel (ATHLETE_GYM) and weigh-ins (WEIGH_IN_EDIT) are actionable, but bio, availability and entry corrections are all read-only, and clinical detail is withheld"
+      }
+    ]
+  },
+  {
+    "section": "staff-sc",
+    "id": "STAFF-SC-28",
+    "name": "The injury board, without clinical content",
+    "entry": "/injuries \u2014 INJURY_ACCESS includes S&C.",
+    "steps": [
+      {
+        "goto": "/injuries",
+        "expect": [
+          "Injur"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 corrected: S&C DOES reach this board. Compare with STAFF-MEDIC-28: no \"+ Injury\" and no \"PROBLEM REPORTS\" section"
+      }
+    ]
+  },
+  {
+    "section": "staff-sc",
+    "id": "STAFF-SC-07r",
+    "name": "Schedule: read-only",
+    "entry": "/schedule \u2014 SESSION_EDIT excludes S&C.",
+    "steps": [
+      {
+        "goto": "/schedule",
+        "expect": [
+          "Schedule"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 no \"Read\"/\"Edit\" control; in its place \"Read only. The schedule is authored by the sport scientist and the coach.\""
+      }
+    ]
+  },
+  {
+    "section": "staff-sc",
+    "id": "STAFF-SC-27r",
+    "name": "Analytics: refused",
+    "entry": "/analytics \u2014 sport scientist alone.",
+    "steps": [
+      {
+        "goto": "/analytics",
+        "expect": [
+          "Dashboard",
+          "Analytics",
+          "not"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 redirected to /dashboard?e=no-analytics"
+      }
+    ]
+  },
+  {
+    "section": "staff-sc",
+    "id": "STAFF-SC-23r",
+    "name": "Nutrition: no authoring and no meal library",
+    "entry": "/nutrition \u2014 S&C holds neither NUTRITION_EDIT nor MEAL_LIBRARY_EDIT.",
+    "steps": [
+      {
+        "goto": "/nutrition",
+        "expect": [
+          "Nutrition"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 compare with STAFF-COACH-23, which has \"Food library\": S&C holds neither permission, so neither the library nor plan authoring is offered"
+      }
+    ]
+  },
+  {
+    "section": "staff-sc",
+    "id": "STAFF-SC-01",
+    "name": "Read the dashboard",
+    "entry": "\"Dashboard\" in the sidebar.",
+    "steps": [
+      {
+        "goto": "/dashboard",
+        "expect": [
+          "Dashboard"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the dashboard as S&C; eight sidebar rows, Analytics absent"
+      }
+    ]
+  },
+  {
+    "section": "staff-sc",
+    "id": "STAFF-SC-25",
+    "name": "Explore the leaderboard wall",
+    "entry": "\"Leaderboard\" in the sidebar.",
+    "steps": [
+      {
+        "goto": "/leaderboards",
+        "expect": [
+          "Leaderboard"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 S&C holds LEADERBOARD_EDIT, so publishing controls are present"
+      }
+    ]
+  },
+  {
+    "section": "staff-sc",
+    "id": "STAFF-SC-16",
+    "name": "Reports",
+    "entry": "\"Reports\" in the sidebar.",
+    "steps": [
+      {
+        "goto": "/reports",
+        "expect": [
+          "Reports"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 S&C holds REPORT_ACCESS"
+      }
+    ]
+  },
+  {
+    "section": "staff-sc",
+    "id": "STAFF-SC-29",
+    "name": "Settings hub",
+    "entry": "\"Settings\" in the sidebar.",
+    "steps": [
+      {
+        "goto": "/settings",
+        "expect": [
+          "Settings"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 own profile, photo and password; administrative sections absent"
+      }
+    ]
+  },
+  {
+    "section": "staff-nutritionist",
+    "id": "STAFF-NUT-23",
+    "name": "Build a nutrition plan and assign it",
+    "entry": "\"Nutrition\" in the sidebar \u2192 /nutrition.",
+    "steps": [
+      {
+        "goto": "/nutrition",
+        "expect": [
+          "Nutrition"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the one area this role authors. It holds NUTRITION_EDIT and MEAL_LIBRARY_EDIT, so \"New plan\", \"Manual target\" and \"Food library\" are all present \u2014 compare STAFF-COACH-23 (library only) and STAFF-SC-23r (neither)"
+      },
+      {
+        "captureBefore": true,
+        "press": "New plan",
+        "expectAfter": [
+          "Create"
+        ],
+        "settle": 2200,
+        "caption": "Step 2 \u2014 pressed \"New plan\"; the create panel opens with \"Create\""
+      }
+    ]
+  },
+  {
+    "section": "staff-nutritionist",
+    "id": "STAFF-NUT-28r",
+    "name": "Injuries: the only role shut out",
+    "entry": "/injuries \u2014 INJURY_ACCESS excludes the nutritionist alone.",
+    "steps": [
+      {
+        "goto": "/injuries",
+        "expect": [
+          "Dashboard",
+          "Injur",
+          "not",
+          "Today"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 every other staff role reaches this board. The nutritionist is the ONLY one excluded, and is redirected to /?e=no-injury-access"
+      }
+    ]
+  },
+  {
+    "section": "staff-nutritionist",
+    "id": "STAFF-NUT-16r",
+    "name": "Reports: four of six redirect",
+    "entry": "/reports \u2014 REPORT_ACCESS excludes this role.",
+    "steps": [
+      {
+        "goto": "/reports",
+        "expect": [
+          "Reports",
+          "Settings",
+          "report"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the \"Reports\" sidebar row renders for this role, but four of the six reports need REPORT_ACCESS and redirect to /settings?e=no-report-access. Compliance and injuries do open"
+      }
+    ]
+  },
+  {
+    "section": "staff-nutritionist",
+    "id": "STAFF-NUT-18",
+    "name": "Compliance report: this one does open",
+    "entry": "/reports/compliance \u2014 visible to all five roles.",
+    "steps": [
+      {
+        "goto": "/reports/compliance",
+        "expect": [
+          "Compliance",
+          "Settings"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 one of the two reports REPORT_VISIBILITY opens to every role, including this one"
+      }
+    ]
+  },
+  {
+    "section": "staff-nutritionist",
+    "id": "STAFF-NUT-20r",
+    "name": "Squad report: refused",
+    "entry": "/reports/squad \u2014 REPORT_ACCESS.",
+    "steps": [
+      {
+        "goto": "/reports/squad",
+        "expect": [
+          "Settings",
+          "Squad",
+          "report"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 squad weekly is closed to the nutritionist DELIBERATELY. docs/access-matrix.md \u00a73.5 says otherwise and access.ts records that the matrix is wrong: the decision was taken the other way twice, most recently 2026-09-06"
+      }
+    ]
+  },
+  {
+    "section": "staff-nutritionist",
+    "id": "STAFF-NUT-07r",
+    "name": "Schedule: read-only",
+    "entry": "/schedule \u2014 SESSION_EDIT excludes this role.",
+    "steps": [
+      {
+        "goto": "/schedule",
+        "expect": [
+          "Schedule"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 no \"Read\"/\"Edit\" control; in its place \"Read only. The schedule is authored by the sport scientist and the coach.\""
+      }
+    ]
+  },
+  {
+    "section": "staff-nutritionist",
+    "id": "STAFF-NUT-27r",
+    "name": "Analytics: refused",
+    "entry": "/analytics \u2014 sport scientist alone.",
+    "steps": [
+      {
+        "goto": "/analytics",
+        "expect": [
+          "Dashboard",
+          "Analytics",
+          "not"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 redirected to /dashboard?e=no-analytics"
+      }
+    ]
+  },
+  {
+    "section": "staff-nutritionist",
+    "id": "STAFF-NUT-01",
+    "name": "Read the dashboard",
+    "entry": "\"Dashboard\" in the sidebar.",
+    "steps": [
+      {
+        "goto": "/dashboard",
+        "expect": [
+          "Dashboard"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the dashboard as a nutritionist. The sidebar carries the same eight rows every non-analytics role sees: this role can navigate to almost everything and act on almost none of it"
+      }
+    ]
+  },
+  {
+    "section": "staff-nutritionist",
+    "id": "STAFF-NUT-05",
+    "name": "Athlete profile: weigh-ins only",
+    "entry": "An athlete name on /squad.",
+    "steps": [
+      {
+        "goto": "/squad",
+        "expect": [
+          "Squad overview"
+        ],
+        "settle": 2800,
+        "caption": "Entry point \u2014 the squad list"
+      },
+      {
+        "click": "a[href^='/squad/']",
+        "expectAfter": [
+          "@.card"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 the profile as a nutritionist: a weigh-in can be recorded (WEIGH_IN_EDIT), and nothing else is actionable. No bio edit, no availability, no entry correction, no injury access \u2014 and NO gym panel, the only role ATHLETE_GYM excludes"
+      }
+    ]
+  },
+  {
+    "section": "staff-nutritionist",
+    "id": "STAFF-NUT-29",
+    "name": "Settings hub",
+    "entry": "\"Settings\" in the sidebar.",
+    "steps": [
+      {
+        "goto": "/settings",
+        "expect": [
+          "Settings"
+        ],
+        "settle": 2800,
+        "caption": "Step 1 \u2014 own profile, photo and password; every administrative section absent"
+      }
+    ]
+  }
+]

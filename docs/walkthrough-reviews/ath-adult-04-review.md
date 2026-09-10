@@ -61,12 +61,27 @@ The target is **28.6 × 19.5px**. The ✕ in the same view is a correct 44 × 44
 So the screen has one properly-sized control and one under-sized one, and the
 under-sized one is the only thing inside the card.
 
-**Blast radius is small and worth stating**, because it decides whether this is
-a local fix or a shared one: only three files put a link inside a `.cap` —
-`check-in/page.tsx` (both branches), `rpe/[sessionId]/page.tsx`, and
-`leaderboards/manage/page.tsx`. A `.cap a` rule would touch all three. Under the
-serial rule that is a same-class collision and must be flagged before either
-this flow or ATH-ADULT-05 (RPE) is built.
+**Blast radius, corrected after checking the rendered flows rather than the
+files.** Three files put a link inside a `.cap` — `check-in/page.tsx` (both
+branches), `rpe/[sessionId]/page.tsx` and `leaderboards/manage/page.tsx` — so a
+`.cap a` rule would touch all three. **But the collision with ATH-ADULT-05 that
+this review first flagged does not exist:** the RPE *rating form* has no `.cap`
+link at all (measured, `capLinks: []`), and the RPE `.cap` link lives in that
+page's **already-rated** branch, which is a different and currently
+**undocumented** flow. The original flag came from grepping files instead of
+rendering flows — the same error class as the `/injuries` gate.
+
+**Fixed 2026-09-10, narrowly.** The two "Back" links in `check-in/page.tsx` now
+carry `className="linklike"` — the existing inline-link affordance that
+`base.css` itself describes as "sized to sit inside a `.cap` caption line", and
+which is already used on `<Link>` in `flags/page.tsx` and
+`reports/compliance/page.tsx`. No new pattern, no shared `.cap a` rule, one file,
+one flow. Measured after: `rgb(0,100,220)` / 600 / underlined, **5.35:1** on the
+card surface, against unchanged prose at `rgb(72,78,87)` / 400 / none.
+
+**Still open:** the target is **28.9 × 19.5px** against the app's own 44px floor.
+Sizing it changes layout, so it is left to the design proposal rather than
+decided here.
 
 **Mitigating, and it matters:** the ✕ at 44 × 44 goes to exactly the same place
 as "Back", and the tab bar is present and correctly sized. Nobody is trapped.
@@ -159,11 +174,12 @@ has landed — and that is a different question from whether the entry exists.
 
 ## Summary for design
 
-1. **"Back" has no affordance at all** — identical colour, size, weight and
-   decoration to the prose beside it, at a 28.6 × 19.5px target against the
-   44px floor. Root cause is that `.cap` has no link rule and the global `a`
-   reset removes colour and underline. Three files affected; same-class
-   collision with ATH-ADULT-05.
+1. **"Back" had no affordance at all** — identical colour, size, weight and
+   decoration to the prose beside it. **Fixed 2026-09-10** with the existing
+   `.linklike` pattern, scoped to this flow's file only. **The target is still
+   28.9 × 19.5px against the 44px floor** — that part is a design decision,
+   because sizing it changes layout. The ATH-ADULT-05 collision this review
+   first claimed does not exist: the RPE rating form has no `.cap` link.
 2. **The form's subhead renders on a screen with no form.** "45 seconds · 5 is
    always the best you can feel" is unconditional and belongs to the task this
    screen exists to say you have already done.

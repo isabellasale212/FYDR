@@ -109,8 +109,30 @@ export default async function CheckInPage({
             correction against it from your profile. If they do, My Data marks
             that day <b>Corrected</b> and shows you what you first reported.
           </p>
+          {/* .linklike, not a bare Link. Measured 2026-09-10: without it this
+              anchor rendered rgb(72,78,87) / 13px / 400 / no underline —
+              IDENTICAL on every axis to the paragraph above it, because the
+              global reset is `a { color: inherit; text-decoration: none }`,
+              `.cap` supplies the muted caption colour, and no `.cap a` rule
+              exists to give it an appearance back. The card's only action was
+              indistinguishable from a sentence.
+
+              THE EXISTING PATTERN, NOT A NEW ONE: .linklike is described in
+              base.css as an inline link affordance "sized to sit inside a .cap
+              caption line", and is already used on <Link> in flags/page.tsx and
+              reports/compliance/page.tsx. --accent-text is 5.45:1 on --surf.
+
+              SCOPED HERE RATHER THAN AS A `.cap a` RULE, deliberately. That
+              rule would also restyle rpe/[sessionId]'s already-rated card and
+              leaderboards/manage's inline "testing wall" link — a different
+              flow and a different kind of link (inline in prose, which has
+              context a standalone action word does not). Narrower first.
+
+              WHAT THIS DOES NOT FIX: the target is 28.6 x 19.5px against the
+              app's own 44px floor. Sizing it changes layout, so it is left to
+              the ATH-ADULT-04 design proposal rather than decided here. */}
           <p className="cap" style={{ display: 'flex', gap: 'var(--sp-14)' }}>
-            <Link href={backHref}>Back</Link>
+            <Link href={backHref} className="linklike">Back</Link>
           </p>
         </div>
       ) : entryDate === today ? (
@@ -129,7 +151,7 @@ export default async function CheckInPage({
             past day can&rsquo;t be filled in after the fact.
           </p>
           <p className="cap">
-            <Link href={backHref}>Back</Link>
+            <Link href={backHref} className="linklike">Back</Link>
           </p>
         </div>
       )}

@@ -123,10 +123,13 @@ appearance of its own.
 3. **`backHref` must stay branch-aware.** Returning a past-day viewer to Today
    would strand them away from My Data, where they came from.
 4. **The 44px floor applies to "Back".** It is currently 28.6 × 19.5.
-5. **`.cap` is shared.** A `.cap a` rule touches `check-in/page.tsx` (both
-   branches), `rpe/[sessionId]/page.tsx` and `leaderboards/manage/page.tsx`.
-   Under the serial rule this is a **same-class collision with ATH-ADULT-05
-   (RPE)** and must be flagged before either flow is built.
+5. **`.cap` is shared, but this flow no longer needs it touched.** The
+   affordance defect is **fixed** (2026-09-10) by putting the existing
+   `.linklike` class on this file's two "Back" links — not by adding a `.cap a`
+   rule, which would also restyle `rpe/[sessionId]`'s already-rated card and
+   `leaderboards/manage`'s inline prose link. **The ATH-ADULT-05 collision this
+   brief first claimed does not exist**: the RPE rating form has no `.cap` link
+   (measured). Any proposal that still wants a shared `.cap a` rule must flag it.
 6. **The tab bar stays in flow.** `position: static`, per the recorded
    2026-09-08 decision — screens 01-12 of the reference draw a solid bar in
    flow, and document-scroll is the shell's model.
@@ -137,7 +140,7 @@ appearance of its own.
 
 Full review: **`docs/walkthrough-reviews/ath-adult-04-review.md`**.
 
-### 6.1 "Back" has no affordance at all
+### 6.1 "Back" had no affordance at all — fixed narrowly, sizing still open
 
 Measured computed styles, link versus the paragraph beside it:
 
@@ -152,8 +155,16 @@ strips colour and underline; `.cap` supplies the muted caption colour; no
 from a sentence.
 
 The ✕ in the same view is a correct **44 × 44** and goes to the same place, and
-the tab bar is present, so nobody is stranded — but the screen's own stated way
-out is the one that does not look like one.
+the tab bar is present, so nobody was stranded — but the screen's own stated way
+out was the one that did not look like one.
+
+**Fixed 2026-09-10, narrowly**: both "Back" links in `check-in/page.tsx` now use
+the existing `.linklike` affordance. Measured after — `rgb(0,100,220)` / 600 /
+underlined, **5.35:1** on `--surf`, prose unchanged. No new pattern, no shared
+rule, one file.
+
+**Still for design: the target is 28.9 × 19.5px** against the app's own 44px
+floor. Sizing it changes layout, so it was not decided here.
 
 ### 6.2 The form's subhead renders on a screen with no form
 
@@ -193,8 +204,9 @@ Recorded for review rather than silently fixed, per the standing instruction.
 
 ## 7. What a proposal should address
 
-1. **Make "Back" read as a control** — affordance and a 44px target — while
-   respecting that `.cap` is shared with two other screens (§5.5).
+1. **Give "Back" a 44px target.** Its affordance is already fixed (§6.1); the
+   size is not, because changing it changes layout. `.cap` is shared with two
+   other screens, so a shared rule must be flagged (§5.5).
 2. **Stop the form's subhead appearing where there is no form**, or give this
    screen its own.
 3. **Give the timestamp the weight of an answer**, since it is what the athlete

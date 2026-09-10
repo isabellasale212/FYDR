@@ -353,7 +353,10 @@ try {
      anyone had typed anything — it announced "Signed in" while the first flow
      screenshotted the sign-in page. Require positive evidence instead: a real
      app path AND no sign-in form on screen. */
-  let signedIn = false;
+  /* ATH-ADULT-01 is the sign-in screen itself: there is no session to wait for,
+     and waiting would deadlock on the very page being captured. */
+  let signedIn = argv.includes('--signed-out');
+  if (signedIn) console.log('  --signed-out: capturing the public sign-in screen, no session expected.\n');
   for (let i = 0; i < 600 && !signedIn; i++) {
     signedIn = await evalIn(`(function(){
       const p = location.pathname;

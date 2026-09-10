@@ -35,6 +35,7 @@ Listed rather than left as gaps.
 | `ATH-ADULT-09`, `ATH-ADULT-10` Gym logging | Neither athlete had an assigned programme, so there was no session to log. |
 | `ATH-ADULT-13`, `ATH-ADULT-11` Gym history | Captured for the minor (`ATH-MINOR-13`, `ATH-MINOR-11`) but not the adult: the session ended before the retry. The cause of the original failure is recorded below and is app behaviour worth knowing. |
 | `ATH-ADULT-03w` Submit wellness | 5 of 6 steps. The opening pre-answer frame was lost to a sign-in detection bug; the write itself succeeded. One-shot per athlete per day, so it could not be re-taken. |
+| `ATH-ADULT-01` Sign in | **Was missing from this table as well as from the capture** — an unrecorded gap rather than a declared one, found on 2026-09-10 when the flow was needed. Now captured, 5 of 5 steps, including the refusal branch. |
 | `STAFF-SS-33` Print | Opens the operating system's print dialog, which is not part of the page and cannot be screenshotted by any in-page capture. |
 
 ## Things the capture found that the documents did not say

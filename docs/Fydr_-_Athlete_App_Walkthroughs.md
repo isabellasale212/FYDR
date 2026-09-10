@@ -144,9 +144,18 @@ to `/login?next=<path>` and returns there afterwards.
 
 **End state.** Redirect to `/today`.
 
-**Unverified.** The exact inline error wording on a failed sign-in was not read
-during this pass — the sign-in form's failure copy should be confirmed before a
-screenshot is matched to it.
+**The refusal copy, resolved 2026-09-10** by submitting deliberately invalid
+details against scratch and reading `LoginForm.tsx`. Two messages exist and they
+are different cases:
+
+| Message | When |
+|---|---|
+| "That email and password do not match an account." | Wrong email or wrong password. Deliberately does not say which. |
+| "That account holds no role in any club. Ask your club administrator to grant one." | The credentials are right but the account holds no role — the branch this document describes as "sign-in succeeds but no athlete surface is reachable". |
+
+The failed attempt is recorded: a `login_attempts` row appears for that email
+with `attempt_count` incremented, carrying `lock_count` and `locked_until`
+columns, so repeated failures are rate-limited rather than merely logged.
 
 ---
 

@@ -20,10 +20,11 @@ export type CreateUserResult = {
   /** The single-use link the new person follows to set their own password.
    *  Replaces the temporary password this response used to carry. Returned
    *  ALWAYS, and no longer because there is no provider — there is one, in
-   *  Vercel production. It is returned because a 2xx from Resend still does not
-   *  mean a player received anything while EMAIL_FROM_ADDRESS is
-   *  onboarding@resend.dev, and because local and preview have no key at all.
-   *  See lib/invite.ts for why a link is not the same thing as a password. */
+   *  Vercel production, on a domain verified in Resend since 2026-09-09. It is
+   *  returned because delivery still is not guaranteed everywhere: local and
+   *  preview hold no key, and a recipient on a reserved domain is refused before
+   *  any request is made. See lib/invite.ts for why a link is not the same thing
+   *  as a password. */
   inviteUrl: string | null;
   emailDelivered: boolean;
 };
@@ -46,10 +47,10 @@ export type CreateUserResult = {
  *  delivered: true. Local and preview still have no key and still take the
  *  honest no-op. The route needed no changes for any of that, which is what
  *  the original claim was really asserting and the part that held up.
- *  What a 2xx does NOT mean is that a player received anything:
- *  EMAIL_FROM_ADDRESS is onboarding@resend.dev, which until a domain is
- *  verified in Resend can only deliver to the Resend signup address. The
- *  temporary
+ *  What a 2xx does NOT mean is that every recipient can receive it:
+ *  GuardedProvider refuses reserved domains outright, and how far a real
+ *  send reaches depends on EMAIL_FROM_ADDRESS, which lives in Vercel and is
+ *  deliberately not named here. The temporary
  *  password is returned either way, in this response only, never logged
  *  and never stored anywhere beyond auth.users' own hash of it — a
  *  delivered email is an addition to that, never a replacement for it. */

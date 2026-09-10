@@ -33,12 +33,14 @@ import { mustAffect } from '@/lib/write';
  *     delivered: true. And there is therefore something to resend or revoke,
  *     which this block said there was not.
  *
- *     What IS still true is narrower and more specific: EMAIL_FROM_ADDRESS is
- *     onboarding@resend.dev, which until a domain is verified in Resend can
- *     only deliver to the Resend signup address — so an invite can reach a
- *     genuine 2xx and still not reach a real player. Local and preview have
- *     no key and take the logged no-op. Resend-invite and revoke UI remain
- *     unbuilt, which is a missing feature now rather than a missing provider.
+ *     What IS still true is narrower: local and preview hold no key and take
+ *     the logged no-op, and GuardedProvider refuses recipients on reserved
+ *     domains before any request is made — which is all 46 seed accounts, since
+ *     they use .example addresses. How far a real send reaches depends on
+ *     EMAIL_FROM_ADDRESS, which lives in Vercel and is deliberately not named
+ *     here: fydr.app has been verified in Resend since 2026-09-09, so an address
+ *     on it can reach a real inbox. Resend-invite and revoke UI remain unbuilt,
+ *     which is a missing feature now rather than a missing provider.
  *   - The Declined/invited-lifecycle states the spec's onboarding-consent
  *     flow would drive — that flow doesn't exist in this build, so every
  *     account created here starts life 'active', not 'invited'.

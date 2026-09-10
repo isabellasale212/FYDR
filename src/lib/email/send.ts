@@ -21,13 +21,22 @@ import type { AppRole } from '@/lib/types/database';
  * an environment difference rather than a gap in the build, and it is why
  * both branches still matter.
  *
- * WHAT IS STILL NOT POSSIBLE, which is the real current limit and was
- * hidden behind the stale claim: EMAIL_FROM_ADDRESS is
- * onboarding@resend.dev, and until a domain is verified in Resend that
- * sender can only deliver to the Resend signup address. So an invite
- * reaches a genuine 2xx and still cannot reach a real player. Verifying
- * fydr.app in Resend is a few DNS records and wants doing before a pilot
- * club, not after. */
+ * WHAT DECIDES HOW FAR AN INVITE ACTUALLY REACHES is EMAIL_FROM_ADDRESS,
+ * and this header deliberately does NOT say what it holds. It named a
+ * literal value once and that value changed, which is how the claim above
+ * it went stale in the first place; the value lives in Vercel and Vercel
+ * is where to read it. The rule is what matters: Resend will only send as
+ * an address on a domain verified in Resend, and its own
+ * onboarding@resend.dev sandbox sender can reach nobody but the Resend
+ * signup address. fydr.app was verified on 2026-09-09, so an address on
+ * it can reach a real player; a sandbox sender still cannot, whatever the
+ * key says.
+ *
+ * SEPARATE AND OFTEN CONFUSED WITH IT: GuardedProvider refuses RECIPIENTS
+ * on reserved domains (.example, .test, example.com) before any request is
+ * made. All 46 seed accounts use .example addresses, so they are
+ * unsendable regardless of the sender, and a real test invite has to go to
+ * a real inbox. That is a recipient rule, not a sender one. */
 
 export type InviteEmailResult = {
   delivered: boolean;

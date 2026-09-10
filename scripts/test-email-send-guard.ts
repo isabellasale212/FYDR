@@ -253,5 +253,42 @@ console.log('\nnothing claims a password this response does not carry, and the U
   );
 }
 
+
+console.log('\nno comment pins a value that lives in Vercel');
+{
+  /* WHY THIS EXISTS. Four comments claimed RESEND_API_KEY existed nowhere, long
+     after it existed in Vercel production. Correcting them, I wrote five more
+     that pinned EMAIL_FROM_ADDRESS to onboarding@resend.dev — and that value is
+     configuration, changed in a dashboard, with nothing in this repo to make a
+     comment follow it. It would have gone stale the same way and for the same
+     reason. Stating the RULE is durable; stating the VALUE is a claim about
+     someone else's dashboard.
+     Deliberately narrow: it forbids asserting what our sender IS, not mentioning
+     Resend's sandbox address as the general fact it is. */
+  const files = [
+    'src/lib/email/send.ts',
+    'src/lib/email/provider.ts',
+    'src/lib/invite.ts',
+    'src/lib/queries/userManagement.ts',
+    'src/app/(staff)/settings/users/create/route.ts',
+    'src/components/UserManagementPanel/UserManagementPanel.tsx',
+  ];
+  for (const f of files) {
+    const text = readFileSync(f, 'utf8');
+    assert(
+      !/EMAIL_FROM_ADDRESS is\s+\S*@\S+/.test(text),
+      `${f.split('/').pop()} does not assert what EMAIL_FROM_ADDRESS holds — that value lives in Vercel`,
+    );
+  }
+  /* And the recipient rule stays distinct from the sender one, because they were
+     repeatedly conflated: every seed account is unsendable for a reason that has
+     nothing to do with who the mail is from. */
+  assert(
+    /RESERVED_TLDS|reserved domain/i.test(readFileSync('src/lib/email/send.ts', 'utf8'))
+      || /reserved domain/i.test(readFileSync('src/lib/invite.ts', 'utf8')),
+    'and the reserved-recipient rule is named where the sender is discussed, since the two were repeatedly confused',
+  );
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);

@@ -29,14 +29,14 @@ import type { SupabaseClient } from '@supabase/supabase-js';
  *  returned to the administrator because the email cannot yet be relied on to
  *  arrive. That reason has changed since this was written and the conclusion has
  *  not: RESEND_API_KEY now exists in Vercel production and a real invite has
- *  gone through it (audit_log, provider: resend, delivered: true). But
- *  EMAIL_FROM_ADDRESS is onboarding@resend.dev, which until a domain is verified
- *  in Resend can only deliver to the Resend signup address — so a 2xx does not
- *  mean a player received anything, and local and preview have no key at all.
- *  Returning the link is therefore still what stops an account created today
- *  being unreachable. Once fydr.app is verified in Resend, the email carries the
- *  same link and the on-screen copy becomes a fallback rather than the only
- *  route.
+ *  gone through it (audit_log, provider: resend, delivered: true), and fydr.app
+ *  was verified in Resend on 2026-09-09. The link is still returned because
+ *  delivery is not guaranteed in every environment — local and preview hold no
+ *  key at all and take the logged no-op — and because a recipient on a reserved
+ *  domain is refused before any request is made, which covers all 46 seed
+ *  accounts. Whether a given deployment can reach a real inbox depends on
+ *  EMAIL_FROM_ADDRESS, which lives in Vercel and is not named here: pinning that
+ *  value in a comment is exactly how the claim above it went stale.
  *
  *  ORDERING. The auth user is created first here, and the caller writes its own
  *  users row afterwards using the id this returns. That is the reverse of what

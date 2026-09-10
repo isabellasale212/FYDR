@@ -906,6 +906,38 @@ trade `0096` made for gym, now made consistently.
 
   **Guard it.** No test asserts the primary action is reachable. A render test that loads `/check-in` at 375×812 and asserts the submit button is within the viewport — or that some completion signal is — would catch both this and any future regression in the shell's height rules.
 
+## 0t. Two of the ten RPE ratings cannot be announced, and the note button destroys focus — found 2026-09-10
+
+- [ ] **`CR10List` gives ratings 4 and 6 an empty accessible name, and strips the number from the other eight.** Read from the real accessibility tree (`Accessibility.getFullAXTree` over CDP), not inferred from the markup:
+
+  | Radio | Accessible name |
+  |---|---|
+  | 1, 2, 3 | "Very easy", "Easy", "Moderate" |
+  | **4** | **(empty)** |
+  | 5 | "Somewhat hard" |
+  | **6** | **(empty)** |
+  | 7, 8, 9, 10 | "Hard", "Very hard", "Extremely hard", "Maximal" |
+
+  **Why.** Every child of the `<label class="cr10-row">` is hidden: the numeral is `<span className="cr10-n num" aria-hidden="true">`, the tick is `aria-hidden`, and for the two unanchored steps the anchor itself renders `<span aria-hidden="true">·</span>`. With all children hidden the label contributes no text, so the radio has no name at all. For the eight anchored steps the name is the word alone — **never the number** — so a screen-reader user cannot map what they hear onto the 1-10 scale their coach actually talks in.
+
+  **The fix already exists in this codebase.** `ScaleInput` solves exactly this problem on the wellness scales: it aria-hides the numeral and adds `<label className="visually-hidden">{step}, {copy.words[step - 1]}</label>`, so each option announces "3, All right". `CR10List` needs the same, with a word for 4 and 6 — the anchors are deliberately `null` in `CR10_ANCHORS` for the visual design, which is fine, but the accessible name cannot be null too.
+
+  **`ENTRY_CORRECTION` makes this expensive to get wrong.** `training_entries` is ADR-005 immutable, so a screen-reader user who picks the wrong rating because two options are silent needs staff to correct it.
+
+  **Guard it.** `test:a11y-floor` runs in prebuild and passed throughout — nothing asserts that every radio in the app has a non-empty accessible name. A test that walks the AX tree for `role: radio` with `name === ''` would have caught this and would catch the next one.
+
+- [ ] **Pressing "Add a note" on the RPE screen throws keyboard focus to `<body>`.** Measured twice, with focus explicitly placed on the button first: `activeElement` is the button, the click swaps the button out for the textarea, and `activeElement` becomes `BODY`.
+
+  A keyboard or screen-reader user who activates the control loses their place in the form entirely and has to tab back from the top of the document. The textarea they asked for is never focused.
+
+  **It is also not announced as a disclosure.** The button carries neither `aria-expanded` nor `aria-controls`, so nothing tells assistive tech that a control revealed new content. The check-in screen does the equivalent correctly with a native `<details>`/`<summary>`, which gets all of this for free.
+
+  **The fix** is to move focus to `#rpe-note` when it appears (and either add the ARIA or switch to `<details>`, matching check-in). The textarea already has a real `<label for="rpe-note">Add a note</label>`, so only focus management and the disclosure semantics are missing.
+
+- [ ] **`base.css:2948` states the CR-10 anchor positions wrongly.** The comment reads "4=Somewhat hard/5=Hard/7=Very hard rather than the pre-spec placement". The single source of truth is `CR10_ANCHORS` in `src/lib/validation/training.ts`, and the rendered screen agrees with it: **5**=Somewhat hard, **7**=Hard, **8**=Very hard. Each anchor named in the comment is one step below where it actually sits.
+
+  **Not a rendering bug** — the radio `value` and the displayed numeral match exactly at every step (checked all ten), so nothing is stored under the wrong number. It is a comment that will mislead the next person who reads it while deciding whether the scale is right, which is the same failure mode as §0r's `today/page.tsx` comment.
+
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.
 

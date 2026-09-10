@@ -92,6 +92,27 @@ When flagging, say which order to build in and why. The order that holds: the
 flow whose change is **narrower** goes first, so the wider one is verified
 against the settled state rather than the other way round.
 
+**The persona review comes BEFORE the brief goes out, always.** Set 2026-09-10
+after a brief was sent without one. For each flow, before it reaches design:
+
+1. Adopt the persona under real conditions — the athlete tired after training on
+   a phone, the coach between sessions — not a reviewer at a desk.
+2. Answer the standing five: tap/decision count and any redundancy; copy that
+   does not match how that person thinks; where a mistake is most likely and
+   whether it can be undone; anything they must read that the screen could infer;
+   and any moment where it is unclear whether something worked.
+3. Save to `docs/walkthrough-reviews/<flow-id>-review.md`.
+4. **Fold the findings into that flow's brief** — one package, one source. The
+   review is not a separate document design has to be told to go and read.
+
+**Review the running screen, not the walkthrough document.** The first review
+disproved two things the brief asserted, both of which had been taken from the
+document rather than the component: that a lockout and a mistype look the same
+(they do not — the lock has its own message, a live countdown and a disabled
+button), and that the persona does this daily (they do not — the session
+persists, so sign-in is occasional and usually met at a bad moment). A review
+written from the document would have repeated both.
+
 ---
 
 ## 0.05 The three canonical reference documents

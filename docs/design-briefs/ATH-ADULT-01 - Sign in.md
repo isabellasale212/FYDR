@@ -124,10 +124,13 @@ change can be expressed in tokens that already exist.
 2. **A second, different refusal exists**: "That account holds no role in any
    club. Ask your club administrator to grant one." A person meeting it has
    valid credentials and no way forward inside the app.
-3. **Failures are rate-limited, not just logged.** `login_attempts` carries
-   `attempt_count`, `lock_count` and `locked_until`. The screen currently gives
-   no indication that a lockout is approaching or has happened — a person who
-   has been locked out sees the same message as someone who mistyped once.
+3. **Lockout is handled, and an earlier version of this brief said otherwise.**
+   It claimed a lockout and a mistype produce the same message. Reading
+   `LoginForm.tsx` disproved it: a lock shows "Too many attempts. Try again in
+   {countdown}" as a `role="alert"`, and the button becomes **"Locked ·
+   {countdown}"** and is disabled, both re-rendering every second. **What is
+   genuinely missing is the approach** — no "2 attempts left" before the lock
+   lands.
 4. **The page carries a synchronous inline script** that gates a one-time launch
    animation on `sessionStorage`. It runs before first paint and defaults to *no*
    animation, so any proposal that changes the opening moment interacts with it.
@@ -136,8 +139,32 @@ change can be expressed in tokens that already exist.
 
 ---
 
-## 6. Not available
+## 6. Persona review
 
-**There is no persona review for this flow.** `docs/walkthrough-reviews/` does
-not exist — no directory, no findings, for this or any flow. If a persona pass
-was expected to inform this brief, it has not been run.
+Run 2026-09-10 against the running screen at 375×812, signed out. Full text:
+**`docs/walkthrough-reviews/ath-adult-01-review.md`**.
+
+**It corrected the brief's own premise.** The persona was framed as "an athlete
+who does this daily". They do not: `/login` with a live session lands straight on
+`/today`, so the session persists and sign-in is **occasional, and almost always
+met at a bad moment** — a new handset, a forgotten password, a lockout. The daily
+screen is ATH-ADULT-03, not this one. Design for *recovery under mild stress*,
+not for repetition.
+
+| # | Finding | Weight |
+|---|---|---|
+| 1 | "Your morning entry takes 45 seconds" answers a **first-run** question, on a screen mostly met by returning people, and is the most prominent line after the heading | **Highest** |
+| 2 | **No warning as lockout approaches** — no "2 attempts left". The lock itself is handled well | **High** |
+| 3 | "Forgot your password?" is a **15px** tap target where the fields are 48px — on the recovery path, on a phone | **High** |
+| 4 | Pending label reads **"Signing in"** with no ellipsis, breaking the product's own "Saving…" / "Creating…" convention | Medium |
+| 5 | The email is **never remembered** between sign-ins | Medium |
+| 6 | "ATHLETE AND STAFF" is systems vocabulary | Low |
+
+**Protect in any redesign:** correct autocomplete (`username` /
+`current-password`) so password managers work — the single biggest thing this
+screen already does for a tired person; the labelled password reveal; the whole
+screen in one viewport with no scroll; 48px fields; the deliberate refusal to
+name which field was wrong; and the lockout countdown.
+
+**The best line on the screen** is "Use the email address your club invited you
+on." It answers the exact question a returning person has. It should survive.

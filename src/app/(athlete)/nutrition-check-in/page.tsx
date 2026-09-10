@@ -79,8 +79,33 @@ export default async function NutritionCheckInPage({
             .
           </p>
           <p className="cap" style={{ display: 'flex', gap: 'var(--sp-14)' }}>
-            <Link href={`/nutrition-check-in?week=${weekStart}&correct=1`}>Change this answer</Link>
-            <Link href="/today">Back to today</Link>
+            {/* .linklike on both, 2026-09-10, for the reason set out on the
+                check-in page's matching card: without it a <Link> inside a
+                .cap renders rgb(72,78,87) / 13px / 400 / no underline, which
+                is IDENTICAL to the caption prose around it — the global reset
+                is `a { color: inherit; text-decoration: none }` and no
+                `.cap a` rule exists. Measured here before the change, both
+                links.
+
+                IT MATTERS MORE HERE THAN THERE. On check-in the undecorated
+                link was "Back", duplicating a 44px ✕ that did the same job.
+                "Change this answer" is the ONLY route into the correction
+                flow (ATH-ADULT-08) and it looked like a sentence.
+
+                Scoped to this file rather than a shared `.cap a` rule, so it
+                does not restyle rpe/[sessionId]'s already-rated card or
+                leaderboards/manage's inline prose link. Target size is still
+                19.5px against the 44px floor — left to the design proposal,
+                because changing it changes layout. */}
+            <Link
+              href={`/nutrition-check-in?week=${weekStart}&correct=1`}
+              className="linklike"
+            >
+              Change this answer
+            </Link>
+            <Link href="/today" className="linklike">
+              Back to today
+            </Link>
           </p>
         </div>
       ) : (

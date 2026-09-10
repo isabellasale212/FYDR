@@ -1039,6 +1039,20 @@ trade `0096` made for gym, now made consistently.
 
   **Note for whoever implements it:** gym corrections write `gym_set_logs.correction`, not `entry_revision.created` like wellness, nutrition and training. Anything that surfaces "what you first reported" generically across domains has to read both action names, and the gym metadata carries the actual old and new numbers, which is safe here because they are measurements rather than free text (contrast migration `0100`).
 
+## 0w. Three navigation controls in the athlete app are under the 44px floor — 2026-09-10
+
+**Real defects, same priority as §0r to §0v.** All measured on the running app. Grouped because they are one rule broken in three places, and because the same fix decision covers all of them.
+
+- [ ] **The shared `BackButton` renders 29px tall.** Measured on `/my-data/gym/{id}`, `/my-data/boards/{id}` and `/me/leaderboards` — every athlete screen that uses it. `.back-btn` sets `padding: var(--sp-6) var(--sp-12) var(--sp-6) var(--sp-8)` around a 13px/600 label, which lands at 29, not 44.
+
+  It is a **navigation** control rather than a primary action, which is the usual argument for letting it be small — but the app's own 44px floor is stated without that exception (`ScaleInput`'s comment calls 44 "§8's floor"), and this is the control an athlete reaches for one-handed on the way out of a screen.
+
+- [ ] **The "Show them again" link in the hidden-leaderboards gate is 34px.** It is the *only* control on that screen — the gate replaces all content — so an athlete who hid leaderboards and wants them back has one 34px target and nothing else.
+
+- [ ] **The "Back" and "Back to gym history" pair on `/my-data/gym/{id}` are both under the floor** and adjacent (§0v's flow, ATH-ADULT-13): a 29px button and a 19.5px text link, doing nearly the same job, neither at 44.
+
+  **The decision this needs** is whether the 44px floor applies to navigation as well as to actions. If it does, `.back-btn` is one rule change affecting every athlete screen — a shared-class change, so it must be flagged and confirmed before it is built, not folded into a flow. If it does not, the floor should say so, because three separate reviews have now flagged it as a violation.
+
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.
 

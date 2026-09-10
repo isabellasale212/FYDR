@@ -578,8 +578,10 @@ My data marks that day corrected and shows what was first reported.
 
 **Branches.**
 
-- IF the athlete has hidden leaderboards (ATH-ADULT-18) THEN the leaderboard
-  area is replaced by a gate offering "Show them again".
+- ~~IF the athlete has hidden leaderboards THEN the leaderboard area is replaced
+  by a gate~~ — **not on this screen.** `/my-data` carries a "Leaderboards" *link*,
+  not a gated content area, and the link is not hidden when leaderboards are.
+  Measured 2026-09-10 with hiding on. The gate is on `/my-data/boards` only.
 - IF a period has no data THEN an empty state renders in place of the chart.
 - IF an entry was corrected THEN the row shows "What you reported:"; if the
   original falls outside the visible window it reads instead "What you first
@@ -636,7 +638,13 @@ My data marks that day corrected and shows what was first reported.
 **Steps.**
 
 1. The board renders with heading "{board.name}".
-   - Visible: "←" dismiss, "Back to leaderboards", and "Leave this leaderboard".
+   - Visible: a "←" dismiss link (→ `/my-data/boards`), a separate **"Back"**
+     button (the shared `BackButton`, **29px tall**), the subtitle
+     "Whole squad · all time", a ranking table with a `visually-hidden` caption
+     and columns POS / ATHLETE / {metric}, the athlete's own row marked, and
+     **"Leave this leaderboard"** (44px).
+   - **There is no "Back to leaderboards" control.** An earlier version of this
+     document listed one; measured 2026-09-10, the string does not appear.
 
 **Branches, each a distinct screen with its own heading:**
 
@@ -705,8 +713,19 @@ GDPR Article 7(3) grounds.
 - This changes **what the athlete sees, not whether they are on a board** — the
   card says so explicitly. Distinct from ATH-ADULT-16 and -17.
 
-**End state.** Leaderboard surfaces across the app render a gate instead of
-content, offering "Show them again".
+**End state.** `/my-data/boards` renders a gate instead of content — "Leaderboards
+are hidden · You turned these off on this device. You are still on any board your
+club includes you on. **Show them again.**" (a link to `/me/leaderboards`, 34px).
+
+**It is ONE surface, not "across the app".** `LeaderboardVisibilityGate` is used
+in exactly one file, `my-data/boards/page.tsx`. Measured with hiding on: `/my-data`
+still shows its "Leaderboards" link, ungated, and renders no gate of its own.
+
+**The preference is stored in `localStorage` under `fydr-hide-leaderboards`, so it
+is genuinely per-device** — the card's own copy says so ("Applies to this device
+only"), and it means the same athlete signing in on another device sees
+leaderboards again. Nothing is written to the database, and nothing about board
+membership changes.
 
 ---
 

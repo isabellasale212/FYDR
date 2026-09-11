@@ -123,9 +123,20 @@ to `/login?next=<path>` and returns there afterwards.
 
 1. Type into "Email".
    - Also visible: "Password" field, "Sign in" button, "Forgot your password?"
-     link. Above them: the wordmark and the eyebrow "ATHLETE AND STAFF", the
-     heading "Sign in", and "Use the email address your club invited you on.
-     Your morning entry takes 45 seconds."
+     link (a 44px target since `9db60c5`). Above them: the animated wordmark,
+     the eyebrow **"For athletes and club staff"** (`--faint`), the heading
+     "Sign in", and the one-sentence sub **"Use the email address your club
+     invited you on."** — the second sentence, "Your morning entry takes 45
+     seconds.", was removed on 2026-09-11 with the ATH-ADULT-01 build (review
+     finding F1: the session persists, so sign-in is not a daily task and the
+     promise was made on the wrong screen). Phone layout only; the desktop frame
+     is unchanged pending the launch-column decision.
+   - Pending label reads "Signing in…" (with the ellipsis). Fields carry
+     `enterkeyhint` next / go.
+   - **At one attempt remaining**, the banner switches to a warn tone
+     (`data-tone="warn"`) reading **"That did not match. One attempt left
+     before a short wait."** — shown at exactly one remaining, never earlier
+     (C1, `1a363f3` + `cfb22a2`).
    - Below: "Your wellness answers are visible to your club's staff. Injury
      detail is medical only."
 2. Type into "Password".

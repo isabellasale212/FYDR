@@ -1,0 +1,115 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2869
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\froman\fcharset0 Times-Bold;\f1\froman\fcharset0 Times-Roman;\f2\fmodern\fcharset0 Courier;
+}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{decimal\}}{\leveltext\leveltemplateid1\'01\'00;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listname ;}\listid1}
+{\list\listtemplateid2\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{decimal\}}{\leveltext\leveltemplateid101\'01\'00;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listname ;}\listid2}
+{\list\listtemplateid3\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat0\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid201\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid3}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}{\listoverride\listid3\listoverridecount0\ls3}}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b\fs24 \cf0 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 ATH-ADULT-04, 06, 08: build the after-submit states from the final Claude Design board.
+\f1\b0 \
+The approved design is "ATH-ADULT-04-06-08 \'b7 FINAL" (8 artboards) in 
+\f2\fs26 docs/designs/ath-adult-04-06-08-final/
+\f1\fs24 , with its notes as markdown. It extends ATH-ADULT-03 \'b7 FINAL and supersedes any other design for these flows. Use the notes for exact tokens. This prompt sets the behaviour. Where they conflict, ask me.\
+
+\f0\b Prerequisite:
+\f1\b0  ATH-ADULT-03 (the entry-form sheet) must be built first. These states live inside that sheet. If it isn't built, stop and tell me.\
+
+\f0\b Step 1. Report before building.
+\f1\b0  Answer each from the code:\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls1\ilvl0
+\f0\b \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	1	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Exit destinations:
+\f1\b0  confirm 
+\f2\fs26 backHref
+\f1\fs24  resolves per branch (Today for today's entry, My data for a past day). What happens with no referrer? The fallback should be Today.\
+\ls1\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	2	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Revision status:
+\f1\b0  can the nutrition entry card read whether an entry has already been corrected, before offering "Correct this answer"? If not, what's needed so a spent correction shows as a state, not an 
+\f2\fs26 entry_not_revisable
+\f1\fs24  error on save?\
+\ls1\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	3	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Corrected-by attribution:
+\f1\b0  is the name of the staff member who corrected an entry available to the athlete under RLS? If not, show "Corrected on \{date\}" only. Don't expose a name the athlete can't already see.\
+\ls1\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	4	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 RPE already rated:
+\f1\b0  this branch exists in 
+\f2\fs26 rpe/[sessionId]/page.tsx
+\f1\fs24  but isn't documented. Confirm what it shows now.\
+\ls1\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	5	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Nutrition questions:
+\f1\b0  the check-in has two questions. Confirm the live build matches, and tell me if it doesn't.\uc0\u8232 Wait for my reply before Step 2.\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b \cf0 Step 2. Build all eight states as drawn:
+\f1\b0 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls2\ilvl0\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	1	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Wellness already submitted, today.\
+\ls2\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	2	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Wellness already submitted, past day, corrected by staff.\
+\ls2\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	3	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 RPE already rated.\
+\ls2\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	4	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Session not found.\
+\ls2\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	5	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Nutrition answered, correction available.\
+\ls2\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	6	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Nutrition correction in progress.\
+\ls2\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	7	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Nutrition correction saved.\
+\ls2\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	8	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Nutrition already corrected once.\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b \cf0 Rules:
+\f1\b0 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls3\ilvl0\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 The form's subhead ("45 seconds \'b7 5 is always the best you can feel") appears only on the form, never after submit. After submit, the subhead names the thing: session day, time and place for RPE, real week dates for nutrition.\
+\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 "Already submitted" or "Already rated" is the heading. The time sent sits under it at 
+\f2\fs26 --t-num-lead
+\f1\fs24  in 
+\f2\fs26 --text
+\f1\fs24 .\
+\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 One emphasised after-submit card per screen.\
+\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Every exit is a full-width kit Button, at least 44px, in the sheet footer. No text links on these screens. The label names the destination ("Back to Today", "Back to My data").\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls3\ilvl0
+\f0\b \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Session not found stays deliberately vague.
+\f1\b0  Keep the copy exactly: "It may have been cancelled or is not one of yours. Nothing is lost, there is nothing to rate." Keep the HTTP 200. Never reveal which case applies. Title the sheet "Rate a session".\
+\ls3\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Nutrition:
+\f1\b0  "Back to Today" is primary, "Correct this answer" is secondary. The caption "You can correct this once after you submit." sits above both. The banner uses real dates, not "this week". The action is "Save correction". The previous answer stays tagged "Your answer" after a new one is picked. Keep the revision sentence exactly.\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls3\ilvl0\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 If the correction has been used, show the spent state before the athlete can start. No error on save.\
+\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Wellness and RPE show no correction control. The recourse is the coach.\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b \cf0 Also fix:
+\f1\b0  the check-in and RPE close buttons use the specific 
+\f2\fs26 aria-label
+\f1\fs24  ("Close the check-in", "Close the session rating"), not bare "Close".\
+
+\f0\b Verify:
+\f1\b0  screenshots of all eight states on the real build at 375\'d7812. Show both exit destinations (from Today and from My data). Show the spent correction state reached without a failed save.\
+Commit one step at a time.\
+}

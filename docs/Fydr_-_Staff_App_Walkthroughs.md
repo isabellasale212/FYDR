@@ -801,10 +801,54 @@ to the nutritionist, and that **the matrix is wrong** — the decision was taken
 twice, most recently 2026-09-06, and both times went the other way. Do not widen
 `squad` to match the document. This walkthrough follows the code.
 
-**Flagged.** The per-report control inventories were not individually extracted
-in this pass. The table above is derived from the route and endpoint files and
-is complete as a *list*; the step-level detail inside each report needs its own
-pass before a screenshot is matched to a specific control.
+**Per-report inventories, extracted 2026-09-11 as a sport scientist at 1280
+and 375** (the pass the note above asked for). Every report also has a
+**`/pdf` endpoint** (`pdf/route.tsx`, serving `application/pdf` as an
+attachment) alongside its `/export` CSV; the table above listed only the CSV.
+**All eighteen handlers — six pages, six CSV, six PDF — were checked in source
+and each calls `requireReport('{key}')`.** The gate claim holds.
+
+**A pattern shared by five of the six, worth naming once:** the period control
+is a `<select>` whose options *explain themselves* — e.g. "Today — readiness is
+read against a 14-day band, and one day is one point", "Last 7 days — one week
+is too short to read injury burden", "Today — testing is episodic — one day is
+one session, which the test page already shows". The label tells the reader
+why the narrow choice is rarely the right one, inside the control.
+
+- **STAFF-SS-17, Athlete report.** `/reports/athlete` is a **"Pick an athlete"**
+  roster (heading "Pick an athlete", "Squad roster, choose one for their
+  report", "n = 30 athletes", the group chips, a numbered list) — not the
+  report. `/reports/athlete/{id}` is: the athlete's name as `h1`, an identity
+  line ("Flanker · 23 · 2nd XV · squad no. 21 · Forwards"), a compliance
+  figure, then sections **Wellness, Load, Gym and testing, Open flags**; the
+  period select; "Previous page" / "Next page"; "Export CSV" →
+  `/reports/athlete/{id}/export?period=season`, "Export PDF" → `…/pdf?…`. No
+  group chips (single athlete). 1,523px desktop, 3,100 phone.
+- **STAFF-SS-18, Compliance.** `h1` "Compliance"; a scope line "Whole squad ·
+  Ashcombe Rugby Club · This season · Wed 1 Jul to Fri 11 Sept · 30 athletes";
+  the period select ("Today — a single day is 'did they submit today', which
+  the dashboard answers"); group chips; exports carrying `period` and `to`.
+  **Fits one desktop screen** (800px); 1,498 phone. See §0ad for the cutoff
+  question this report carries.
+- **STAFF-SS-19, Injuries.** `h1` "Injury & availability"; the same scope line
+  shape; period select ("Last 7 days — one week is too short to read injury
+  burden"); group chips; four athlete links; exports carrying `period`. **No
+  "Diagnosis" or "Mechanism" for the sport scientist** — measured absent; the
+  clinical columns are the medic's. 1,370 desktop, 3,267 phone.
+- **STAFF-SS-20, Squad.** This is `/reports/squad` — see STAFF-SS-16, which
+  covers it. Listed here only for the gate table.
+- **STAFF-SS-21, Testing.** `h1` "Testing report"; group chips; **"+ Log a
+  result"** (a write entry point, unlisted before); "Print"; exports carrying
+  `period` **and `test={id}`** — the report is per test definition; period
+  select ("Today — testing is episodic…"); section "Personal bests" with one
+  table of 30 rows and 30 athlete links. 1,631 desktop, 2,797 phone.
+- **STAFF-SS-22, Training.** `h1` "Training report"; a **mode toggle "Training"
+  / "Match day"**; a session `<select>` ("Fri 14 Aug · Captain's run", …) and
+  an athlete `<select>` ("Whole squad (none selected)", then names); group
+  chips; sections **Board, Individual player, Outside their normal range, Heat
+  bands, Comparison, Scatter**; exports carrying `mode=training`. No plan gate
+  rendered for this account. **The heaviest report at phone width: 4,711px.**
+  2,532 desktop.
 
 ---
 

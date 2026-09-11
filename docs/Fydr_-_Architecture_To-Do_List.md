@@ -1093,11 +1093,19 @@ trade `0096` made for gym, now made consistently.
 
   **It also sets `email_enabled: true` on types that have no email channel.** Harmless today, since delivery is not live, but it means the stored preference no longer describes the catalogue.
 
-  **The fix needs one of two designs, and it is a decision.** Either (a) `muteAll` records the pre-mute state — a per-user snapshot, or a `muted_at` on each row alongside the previous values — and `unmuteAll` restores it; or (b) the un-mute restores catalogue *defaults* rather than all-on, which is at least honest to the four default-off types but still discards the athlete's own choices. (a) is what the label promises. Whichever is chosen, the label must match it.
+  **DECIDED 2026-09-11 (Isabella): un-mute must restore each type to its state before muting, not force all on.** Filed as build work with that rule.
+
+  **The rule, precisely.** `muteAll` records, per type, what `push_enabled` / `email_enabled` were immediately before it set them false. `unmuteAll` writes those recorded values back — not `true`, not the catalogue default. A type the athlete had off before muting is off after un-muting. A type that was on comes back on. The three `minorFloorOff` types are unaffected either way, because they are never in the mute set.
+
+  **Where the pre-mute state lives is the builder's call**, with two constraints: it must survive a sign-out and a different device (so not `localStorage`), and it must not be lost if the athlete toggles a single chip while muted — a chip changed during mute is the athlete's newer intent and wins over the snapshot for that one type. The simplest shape that satisfies both is a nullable `pre_mute_push` / `pre_mute_email` pair on each `notification_preferences` row, set by `muteAll`, read and cleared by `unmuteAll`, and cleared by any single-chip write.
+
+  **Also fix in passing:** `unmuteAll` sets `email_enabled: true` on types with no email channel. Restoring the recorded value fixes this by construction, since the recorded value for a push-only type has no email to restore.
+
+  **The label stays "Turn notifications back on"** — with this rule it is finally true.
 
   **The minor case makes this worse, not better.** ATH-ADULT-20 already special-cases the three `minorFloorOff` types out of the un-mute set so they are not turned on — which shows the all-on behaviour was noticed and patched for one audience rather than fixed.
 
-  **Guard it.** A test that sets one type off, mutes, un-mutes, and asserts that type is still off.
+  **Guard it.** Three cases: set one type off, mute, un-mute, assert it is still off; set one type on, mute, un-mute, assert it is on; and mute, turn one chip on by hand, un-mute, assert that chip is still on (the athlete's newer intent wins).
 
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.

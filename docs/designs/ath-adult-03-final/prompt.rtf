@@ -1,0 +1,128 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2869
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\froman\fcharset0 Times-Bold;\f1\froman\fcharset0 Times-Roman;\f2\fmodern\fcharset0 Courier;
+}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{decimal\}}{\leveltext\leveltemplateid1\'01\'00;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listname ;}\listid1}
+{\list\listtemplateid2\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid101\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid2}
+{\list\listtemplateid3\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid201\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid3}
+{\list\listtemplateid4\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid301\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid4}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}{\listoverride\listid3\listoverridecount0\ls3}{\listoverride\listid4\listoverridecount0\ls4}}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b\fs24 \cf0 \expnd0\expndtw0\kerning0
+ATH-ADULT-03: build the athlete entry-form pattern from the final Claude Design board.
+\f1\b0 \
+The approved design is "ATH-ADULT-03 \'b7 FINAL" (22 artboards) in 
+\f2\fs26 docs/designs/ath-adult-03-final/
+\f1\fs24 , with its notes as text. It supersedes every other ATH-ADULT-03, RPE, nutrition or heart rate / weight design. Use the notes for exact tokens. This prompt sets the behaviour. Where they conflict, ask me.\
+
+\f0\b Prerequisite:
+\f1\b0  the new design system and kit components must already be in code. If they aren't, stop and tell me.\
+
+\f0\b Step 1. Report before building.
+\f1\b0  Answer each one from the code:\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls1\ilvl0\cf0 \kerning1\expnd0\expndtw0 {\listtext	1	}\expnd0\expndtw0\kerning0
+Can an RPE task appear before its session's end time? (
+\f2\fs26 compliance.ts
+\f1\fs24 )\
+\ls1\ilvl0\kerning1\expnd0\expndtw0 {\listtext	2	}\expnd0\expndtw0\kerning0
+Does 
+\f2\fs26 --on-accent
+\f1\fs24  exist? If not, add it (
+\f2\fs26 #ffffff
+\f1\fs24 ) and replace every hardcoded white on accent, including inside the kit Button.\
+\ls1\ilvl0\kerning1\expnd0\expndtw0 {\listtext	3	}\expnd0\expndtw0\kerning0
+What change does ScaleSelector need for the gap, numerals and radio-group behaviour, so wellness, nutrition and RPE share one component?\
+\ls1\ilvl0\kerning1\expnd0\expndtw0 {\listtext	4	}\expnd0\expndtw0\kerning0
+Does the kit Button pass through 
+\f2\fs26 aria-*
+\f1\fs24  props? If not, add it.\
+\ls1\ilvl0\kerning1\expnd0\expndtw0 {\listtext	5	}\expnd0\expndtw0\kerning0
+Is there a standalone heart rate / weight form or route in the app? It's being removed. List what depends on it.\uc0\u8232 Wait for my reply before Step 2.\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b \cf0 Step 2. Shell and sheet.
+\f1\b0 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls2\ilvl0\cf0 \kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+The athlete app uses normal page scroll. Remove 
+\f2\fs26 .phone-body
+\f1\fs24  as the scroll container (\'a70s).\
+\ls2\ilvl0\kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+Entry forms open as a full-height bottom sheet from their Today row, with a drag handle and a sliver of Today visible above.\
+\ls2\ilvl0\kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+The sheet owns its scroll area. The footer is its last flex child, not a sticky bar. Add the bottom safe-area inset.\
+\ls2\ilvl0\kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+Lock Today's scroll while the sheet is open. Test on iPhone Safari.\
+\ls2\ilvl0\kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+Drag down closes. If any answer is given, show "Discard your answers?" with "Keep going" (default) and "Discard".\
+\ls2\ilvl0\kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+After each answer: pause 
+\f2\fs26 --delay-advance
+\f1\fs24  (250ms), then scroll the next unanswered question into view over 
+\f2\fs26 --dur-move
+\f1\fs24  (300ms, 
+\f2\fs26 --ease-ring
+\f1\fs24 ). Never auto-submit. Answers can be changed by scrolling back.\
+\ls2\ilvl0\kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+Sheet opening: 
+\f2\fs26 --dur-move
+\f1\fs24 . Closing: 
+\f2\fs26 --dur
+\f1\fs24 . Reduced motion: no animation, jump.\
+\ls2\ilvl0\kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+Add the new tokens 
+\f2\fs26 --dur-move
+\f1\fs24  and 
+\f2\fs26 --delay-advance
+\f1\fs24  to the design system.\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b \cf0 Step 3. Wellness (all 9 frames).
+\f1\b0 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls3\ilvl0\cf0 \kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+Six questions: Sleep hours plus five scales. Sleep hours starts empty ("\'96"). The first tap on + or \uc0\u8722  starts at 7.0. The footer reads "0 of 6 answered \'b7 6 to go".\
+\ls3\ilvl0\kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+Both ends of every scale labelled in words. 5 is always best. No per-scale "X of 5" value. Unanswered shows "Not answered" in 
+\f2\fs26 --muted
+\f1\fs24 .\
+\ls3\ilvl0\kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+Footer: count at full 
+\f2\fs26 --text
+\f1\fs24  contrast in every state, never opacity-dimmed. "You can't change this after you submit." above the button, plus the "Why can't I edit it?" link.\
+\ls3\ilvl0\kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+"Add heart rate or weight" disclosure: optional fields, numeric keypad, ranges as helper text ("Usually 30 to 120 bpm", "Usually 35 to 180 kg"). Out of range shows the inline field error and blocks Submit. Keep the ranges in one config.\
+\ls3\ilvl0\kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+States: submitting, offline queued ("Saved on this phone \'b7 sends when you have signal", button becomes Done), submit failed ("That did not send. Your answers are still here.", button becomes Try again). Nothing is saved until Submit.\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b \cf0 Step 4. RPE and nutrition, same pattern.
+\f1\b0 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls4\ilvl0\cf0 \kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+RPE: title "Rate \{session name\}", subtitle "\{Today HH:MM / Yesterday / Day HH:MM\} \'b7 \{place\}". 1 to 10 scale in two rows of five, 44px targets.\
+\ls4\ilvl0\kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+Nutrition: protein question first as full-width option rows, then the fuelling scale\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls4\ilvl0\cf0 \kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Nutrition footer: don't use "You can't change this after you submit." Use the copy from the ATH-ADULT-3b board. Until that board is final, flag the nutrition footer as blocked.\outl0\strokewidth0 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls4\ilvl0\cf0 \kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+Same footer, sheet, offline and failure behaviour as wellness.\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b \cf0 Step 5. Remove the standalone heart rate / weight form
+\f1\b0  and its Today row, after I've confirmed your Step 1 answer.\
+
+\f0\b Keep:
+\f1\b0  question wording from the live build, exactly. 44px targets, 8px gaps. Autocomplete and accessibility labels.\
+
+\f0\b Verify:
+\f1\b0  screenshots of every frame on the board, on the real build, at 375\'d7812 and 375\'d7667. Footer contrast in every state. Proof the sheet's footer stays in view while its content scrolls. A screen recording of the sheet: open, answer two, auto-advance, drag down, discard dialog. Test on an iPhone.\
+Commit one step at a time.\
+}

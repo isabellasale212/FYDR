@@ -35,3 +35,8 @@ Fydr-pages-*.pdf
 # re-capture would double the weight permanently.
 docs/walkthrough-screenshots/*/
 
+
+# Claude Design handoff zips over the 5 MB tracking threshold (rule set 2026-09-11).
+# ** rather than *: a bare docs/designs/*.zip matches only that directory, not its subfolders.
+# The two zips already tracked under 01-final and 02-final (3.4 MB each) stay tracked.
+docs/designs/**/*.zip

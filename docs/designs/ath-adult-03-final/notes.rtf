@@ -1,0 +1,242 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2869
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 Georgia-Bold;\f1\fnil\fcharset0 Georgia;\f2\fnil\fcharset0 Monaco;
+\f3\fnil\fcharset0 .SFNS-Regular_wdth_opsz110000_GRAD_wght1F40000;\f4\fnil\fcharset0 HelveticaNeue;}
+{\colortbl;\red255\green255\blue255;\red13\green11\blue9;\red249\green248\blue242;\red13\green11\blue9;
+\red236\green234\blue224;\red13\green11\blue9;\red246\green245\blue240;}
+{\*\expandedcolortbl;;\cssrgb\c5882\c4706\c3137\c92157;\cssrgb\c98039\c97647\c96078;\cssrgb\c5882\c4706\c3137\c80000;
+\cssrgb\c94118\c93333\c90196;\cssrgb\c5882\c4706\c3137\c60000;\cssrgb\c97255\c96863\c95294;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat0\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid1}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\sa160\partightenfactor0
+
+\f0\b\fs32 \cf2 \cb3 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 What changed, and on which token\cb1 \
+\pard\pardeftab720\sa195\partightenfactor0
+
+\fs26 \cf2 \cb3 \strokec2 Pattern
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 The footer is pinned to the viewport, on a normally scrolling page
+\f1\b0 \cf4 \cb3 \strokec4 \'a0Scroll model as decided: the document scrolls, there is no fixed app frame and no internal scroll pane, so the footer is position sticky with bottom 0 against the document \'97 the one context where it resolves. It carries the top hairline, the safe-area inset beneath it, and appears in all nineteen frames including the two 667 ones. The primary action is never below the fold at either height.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 footer --surf, 1px --border top, --shadow, padding 14px 16px + env(safe-area-inset-bottom) drawn at 20px
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 Pattern
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 The count is its own line and legible in every state
+\f1\b0 \cf4 \cb3 \strokec4 \'a0The outstanding count used to live inside the one element the design had dimmed twice, at 1.24:1. It is now a footer line at full-strength --text, and nothing in the footer is opacity-dimmed, so it measures the same whether the action is live or blocked. Every form states its count in the same place, in the same style.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 count --t-body-sm / --w-bold / --text on --surf = 17.9:1 \'b7 no --o-disabled anywhere in the footer
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 Pattern
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 Becoming submittable changes the footer, not just the button
+\f1\b0 \cf4 \cb3 \strokec4 \'a0On the last answer the count becomes a good-tone chip and the blocked control becomes the accent primary Button with its halo. Both changes happen inside the always-visible footer, so the transition is something the athlete sees rather than something they scroll to discover.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 complete chip --pill-good fill + --text label = 14.2:1 \'b7 Button variant primary + --ring-action
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 Pattern
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 The blocked action is not dimmed and not tappable
+\f1\b0 \cf4 \cb3 \strokec4 \'a0While the form is incomplete the control carries aria-disabled and reads at full-strength accent ink on the accent tint \'97 the same treatment as Locked on ATH-ADULT-01. It is deliberately not the kit disabled prop or --o-disabled: that is what produced the unreadable count, and the system's own rule forbids thinning text with opacity.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 blocked --pill-accent fill + 1px --accent + --accent label at 6.88:1, aria-disabled \'b7 avoids --o-disabled 0.45
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 Pattern
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 The irreversibility line sits above the button it warns about
+\f1\b0 \cf4 \cb3 \strokec4 \'a0Forty words in three sentences below the control became one line above it: "You can't change this after you submit." The recourse moves behind "Why can't I edit it?" in the same footer row, so it is reachable before the tap without standing between the athlete and it. No confirm step was added.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 line --t-caption / --muted \'b7 link --t-body-xs / --w-semi / --accent, underline offset 2px
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 Pattern
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 Both ends of every scale are labelled, with their numeral
+\f1\b0 \cf4 \cb3 \strokec4 \'a0Each anchor names its number as well as its word \'97 "1 \'b7 Very sore", "5 \'b7 No soreness" \'97 so direction is legible without holding the global rule in mind. Wellness keeps "5 is always the best you can feel" in the subhead, so polarity is stated twice.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 anchor chips --t-eyebrow / --w-semi / --muted on --surf, 1px --border, --r, padding 4px 9px
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 Pattern
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 Targets are 44px with 8px gaps, and the numeral stays visible
+\f1\b0 \cf4 \cb3 \strokec4 \'a0Five per row in a grid, chosen option raised on the accent with the selection ring, the rest recessed. The numeral is rendered rather than carried only by an aria-label, because an athlete checks what they picked by looking.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 height 44px, grid gap 8px, --r \'b7 chosen --accent + #ffffff + --ring-select + --shadow-knob \'b7 unanswered --surf2 + inset shadow
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 Pattern
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 Field errors are one reusable pattern, for every form in the app
+\f1\b0 \cf4 \cb3 \strokec4 \'a0A field in error takes a --bad border and a soft bad ring, its card border turns --bad so the error is findable while scrolling, and the message sits under the input as a tinted glyph plus text in --on-bad, the bad family's own darkened foreground, at 8.95:1 on white. Both the glyph and the text follow the system rule that a semantic colour is never used as text: the fill is --pill-bad and the ink on it is --on-bad. The message says what to do before what is wrong ("Check this. Body mass is usually between 35 and 180 kg.") and names the real range rather than "invalid". The footer count states the blockage in the same readable style, so the reason and the blocked action never disagree. This is the intended treatment for athlete and staff forms alike.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 field 1px --bad + 0 0 0 3px rgba(var(--bad-rgb), 0.18) \'b7 card border --bad \'b7 message --t-body-xs / --w-semi / --on-bad = 8.95:1 \'b7 glyph --pill-bad fill + --on-bad ink at --r-round
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 Pattern
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 Offline and failure read the same way everywhere
+\f1\b0 \cf4 \cb3 \strokec4 \'a0Queued says "Saved on this phone \'b7 sends when you have signal" and the action becomes Done; failure says "That did not send. Your answers are still here." and the action becomes Try again. Both are the kit Banner in good and bad tones, and neither clears the form, because nothing is written until Submit.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 Banner tone good / bad \'b7 --r-round dot \'b7 message --text \'b7 Button variant primary
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 Pattern
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 Entry forms open as a bottom sheet over Today
+\f1\b0 \cf4 \cb3 \strokec4 \'a0Tapping a to-do row slides the form up to full height, leaving a 76px sliver of Today above it \'97 56px at 667 \'97 so the form reads as a layer over the list rather than a new destination, and the athlete can see what they came from. The sheet takes the system's own sheet radius, which exists for exactly this and is the only place a non-uniform radius is allowed. Drag down closes it, and the handle is the affordance that says so.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 sheet --surf + --r-sheet 8px 8px 0 0 + 1px --border top + --shadow \'b7 scrim --scrim \'b7 handle 36 \'d7 4px --line-strong at --r-round \'b7 sliver 76px at 812, 56px at 667 \'b7 opens over --dur-move 300ms on --ease-ring, closes over --dur 0.15s
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 Pattern
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 The sheet is its own scroll area and owns its footer
+\f1\b0 \cf4 \cb3 \strokec4 \'a0This replaces the document-scroll model for the four entry forms: the page behind does not move, the sheet scrolls internally, and the footer is the sheet's last flex child rather than a viewport-sticky bar. The .phone shell fix is still required \'97 the shell must stop scrolling for the sheet to sit over a static Today \'97 but the footer no longer depends on a sticky resolving, which removes the fragile half of that dependency.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 sheet flex column \'b7 scroll area flex 1 1 auto \'b7 footer flex 0 0 auto, --surf, 1px --border top, padding 14px 16px + 20px inset
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 Pattern
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 Discarding is confirmed only when there is something to lose
+\f1\b0 \cf4 \cb3 \strokec4 \'a0Drag-down closes immediately on an untouched form. Once any answer exists it raises "Discard your answers?" with Keep going as the primary and Discard in the bad tone, and the body names what is at stake \'97 "Closing now loses the two answers you have given" \'97 because nothing is saved until Submit. Keep going is the primary action, so the safe choice is the one under the thumb.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 dialog --surf card + --shadow over --scrim \'b7 Keep going Button variant primary \'b7 Discard --pill-bad fill + 1px --bad + --on-bad at 8.95:1, never --bad as text
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 Pattern
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 Answering advances; it never submits
+\f1\b0 \cf4 \cb3 \strokec4 \'a0After a scale is answered the selection holds for --delay-advance so the athlete sees what they picked, then the next unanswered question scrolls into place over --dur-move. Auto-submit is never triggered \'97 the footer action stays the only way to commit \'97 and scrolling back up to change an answer is always available, which is why the advance is a scroll rather than a step that closes the previous question.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 approved: --delay-advance 250ms, --dur-move 300ms on --ease-ring \'b7 reduced motion jumps with no animation, per the system's existing prefers-reduced-motion stop
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 Pattern
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 Two new motion tokens, and the close reuses an existing one
+\f1\b0 \cf4 \cb3 \strokec4 \'a0The set gains --dur-move 300ms on --ease-ring, carrying both the sheet opening and the advance scroll \'97 one duration for deliberate movement of a surface or the viewport, distinct from --dur, which stays the state-change timing for hover, colour and border. --delay-advance 250ms is a pause, not an animation, and is named separately so it can be tuned without touching any duration. Closing the sheet deliberately runs on the existing --dur 0.15s: dismissal should feel immediate where arrival should feel placed, so the asymmetry is the point and needs no third value.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 new: --dur-move 300ms, --delay-advance 250ms \'b7 reused: --ease-ring cubic-bezier(0.22, 0.8, 0.36, 1) for both \'b7 close on --dur 0.15s, no new token
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 Form-specific
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 Wellness: one "of 5" on screen, and nothing amber about an unanswered scale
+\f1\b0 \cf4 \cb3 \strokec4 \'a0The per-scale "4 of 5" readout is gone \'97 the raised button already states the value, so the label was a second copy of it competing with the footer count. An unanswered scale reads "Not answered" in neutral --muted: five amber flags on an untouched form treated a normal starting state as a fault. The footer count is now the only "of 5" anywhere on the screen.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 unanswered --t-body-xs / --w-semi / --muted, was --on-warn-strong \'b7 answered readout removed entirely
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 Form-specific
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 Wellness: the disclosure has a designed open state
+\f1\b0 \cf4 \cb3 \strokec4 \'a0Missing from the walkthrough entirely. Open, it holds resting heart rate and body mass with the focused field carrying the action ring and a numeric keypad up. That frame is 375 \'d7 667 scrolled to the disclosure, so the whole open block sits in the 268px band above the footer. On a 667 phone with the keypad up that band holds both fields and the help line and nothing else, which is the argument for it staying collapsed by default.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 fields --field on --surf, 1px --line-strong, --r, min-height 44px \'b7 focus 1px --accent + --ring-action
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 Form-specific
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 RPE: the session is identified the way Today identifies it
+\f1\b0 \cf4 \cb3 \strokec4 \'a0The subhead carries the same day, time and place as the Today row that sent the athlete here \'97 "Today 11:30 \'b7 Pitch", or "Yesterday \'b7 Pitch" for one carried over \'97 set in tabular figures. An athlete who trained twice needs to know which session they are rating before they touch a number, and repeating the Today wording is what makes the two screens agree.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 subhead --font-num / --t-body-sm / --w-semi / --muted with tabular-nums \'b7 middot separators per the content rules
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 Form-specific
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 RPE: ten points, two rows, still 44px
+\f1\b0 \cf4 \cb3 \strokec4 \'a0The 1\'9610 session-load scale stays as in the live build \'97 a different instrument from the five-point wellness scales, and collapsing it would change the data. Ten targets plus nine gaps need 512px against the 311px a 375px phone leaves inside a card, so it wraps to two rows of five. Equal row widths and ascending numerals keep it reading as one run.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 5-column grid wrapping to two rows, 5 \'d7 44 + 4 \'d7 8 = 252px inside 311px
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 Form-specific
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 Nutrition leads with the protein question
+\f1\b0 \cf4 \cb3 \strokec4 \'a0Order comes from the data, not the template: each form declares one ordered list of blocks, so a choice question can lead. The protein question is the one that identifies this form on the Today row, so it has to be read first. Three word-answers stack as 44px rows in the same visual language.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 rows min-height 44px, gap 8px, --r \'b7 unchosen --surf2 + 1px --border + --text \'b7 chosen --accent + #ffffff + --ring-select
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 Form-specific
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 Heart rate and weight live only inside wellness \'97 the standalone form is removed
+\f1\b0 \cf4 \cb3 \strokec4 \'a0They were in two places: a disclosure inside wellness and a form of their own. Keeping both meant two routes to the same two numbers, and the standalone version was the weaker one \'97 it had no required field, so its footer had to read "Enter one to submit", a count that states a requirement the form does not really have, and it asked for a second visit at the same moment the athlete is already in the app doing the morning entry. Both numbers are taken at the morning weigh-in, which is when wellness is filled, so the disclosure is where they belong. The three standalone frames are gone and the field-error pattern is now demonstrated inside the wellness disclosure, which is where it will actually be met.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 wellness disclosure only \'b7 ranges as helper text under each field at --t-caption / --muted, not as placeholders, so they stay readable once a value is typed
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 Form-specific
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 Sleep hours starts empty and counts as a question
+\f1\b0 \cf4 \cb3 \strokec4 \'a0It opened at 7.0, which is a plausible answer presented as a fact \'97 an athlete who taps nothing submits a number they never gave, and seven hours is exactly the value that looks unremarkable enough to survive review. It now reads "\'96" in --faint until the first tap on + or \uc0\u8722 , which starts it at 7.0. Because it is unanswered rather than pre-filled it counts, so wellness reads "0 of 6 answered \'b7 6 to go" and the footer cannot go live until sleep has been set.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 empty "\'96" at --font-num / --t-num-body / --w-num-strong / --faint, set value at --text \'b7 steppers 44px --surf2 + 1px --border + --accent glyph \'b7 count now of 6
+\f1\fs26 \cf4 \cb1 \strokec4 \
+\pard\pardeftab720\sa160\partightenfactor0
+
+\f0\b\fs32 \cf2 \cb3 \strokec2 Needs new token\cb1 \
+\pard\pardeftab720\sa195\partightenfactor0
+
+\fs26 \cf2 \cb3 \strokec2 A foreground-on-accent token \'97 to confirm in code
+\f1\b0 \cf4 \cb3 \strokec4 \'a0Unresolved, and deliberately not guessed. The sign-in board used var(--on-accent); the bound tokens as read here do not define it, and the kit Button solves white-on-accent with a literal #ffffff inside the component where nothing else can reach it. If --on-accent does exist in the app's own globals.css, these boards should use it; if it does not, it needs adding, because anything drawn on --accent outside a kit component has the same problem. Every such place on this board keeps #ffffff for now, which is what Button renders, at 8.62:1.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 to confirm in code: --on-accent \'b7 board currently writes #ffffff (8.62:1 on --accent) \'b7 Button hardcodes the same value internally
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 A --on-bad-strong, for parity with warn \'97 genuine gap, not assumed
+\f1\b0 \cf4 \cb3 \strokec4 \'a0The system provides --on-warn-strong for warn-coloured text on white but no equivalent for bad. I wrote var(--on-bad-strong) on the field-error message on the assumption of symmetry; it does not exist, the declaration dropped, and the message rendered in --text \'97 passing contrast while not being red, on the one pattern meant to signal error. It now uses --on-bad, which is defined and measures 8.95:1. A -strong bad variant would still be worth adding for parity, but it is listed here as missing rather than used.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 defined: --on-warn-strong #b07d0a, --on-bad #8a2418 \'b7 not defined: --on-bad-strong
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 The .phone shell, and scroll lock behind the open sheet
+\f1\b0 \cf4 \cb3 \strokec4 \'a0Code dependency, outside this screen. Two parts. First, .phone-body must stop being the scroll container: while it keeps overflow-y: auto the nineteen form frames have no viewport to stick their footers to, and the same change adds the bottom safe-area inset. Second, Today must not scroll behind the open sheet \'97 a scroll lock on the layer beneath, released on close, with the list's position preserved so dismissing the sheet returns the athlete to where they tapped. Test on iPhone Safari: it is the case where a locked underlayer most often leaks the scroll or jumps to the top on release. Both parts affect all four athlete entry forms at once.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 remove overflow-y: auto on .phone-body \'b7 add env(safe-area-inset-bottom) \'b7 scroll lock on the layer under the sheet, position restored on close \'b7 verify on iPhone Safari
+\f1\fs26 \cf4 \cb1 \strokec4 \
+
+\f0\b \cf2 \cb3 \strokec2 ScaleSelector needs three changes, in the kit
+\f1\b0 \cf4 \cb3 \strokec4 \'a0The kit component is right by name and wrong by contract: it lays its targets out with a 5px gap where the brief holds 8px, it renders button elements with aria-pressed rather than a real radio group, and it shows no visible numeral. The scales here are drawn in its exact visual language as the spec for that change \'97 a gap prop, an optional visible numeral, and a radio-group mode \'97 so wellness and RPE can share one component instead of two hand-drawn scales.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 kit: gap 5px, button + aria-pressed, no numeral \'b7 needed: gap prop, numeral, radioGroup mode
+\f1\fs26 \cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+
+\f0\b \cf2 \cb3 \strokec2 Nothing else is new
+\f1\b0 \cf4 \cb3 \strokec4 \'a0Beyond the two approved motion tokens, nothing new in colour, radius, spacing, type or duration. The sheet radius and the scrim were already in the system, waiting for exactly this. Two earlier exceptions are closed rather than carried: the off-scale 1.0625rem row name is on a named step, and the invented --t-spin is withdrawn in favour of --dur-ring, which already exists for the dial ring-in.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 already existed: --r-sheet, --scrim, --dur-ring 0.9s, --ease-ring \'b7 added this turn: --dur-move, --delay-advance
+\f1\fs26 \cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+
+\f3\fs22 \cf6 \cb3 \strokec6 Edited ATH-ADULT-03 Entry form pattern final.dc.html\cb1 \
+\pard\pardeftab720\partightenfactor0
+
+\f4\fs24 \cf2 \strokec2 \
+\pard\pardeftab720\partightenfactor0
+
+\f3\fs22 \cf6 \cb3 \strokec6 Found issues \'97 fixing\'85
+\f4\fs24 \cf2 \strokec2 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb7 \
+\pard\pardeftab720\sa195\partightenfactor0
+
+\f1\fs26 \cf4 \cb3 \strokec4 All three stale claims corrected \'97 the board's own counts now match what it renders.\cb1 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720\sa65\partightenfactor0
+\ls1\ilvl0\cf4 \cb3 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec4 Intro: 24 \uc0\u8594 \'a0
+\f0\b \cf2 \strokec2 22 artboards
+\f1\b0 \cf4 \strokec4 , "four forms" \uc0\u8594 \'a0
+\f0\b \cf2 \strokec2 three forms
+\f1\b0 \cf4 \strokec4 , with a line saying heart rate and weight is a disclosure inside wellness rather than a form. That paragraph was the one place still advertising the form this turn removed.\cb1 \
+\ls1\ilvl0\cb3 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec4 Footer note: nineteen \uc0\u8594 \'a0
+\f0\b \cf2 \strokec2 seventeen form frames
+\f1\b0 \cf4 \strokec4 , and\'a0
+\f0\b \cf2 \strokec2 three
+\f1\b0 \cf4 \strokec4 \'a0at 667, not two \'97 the new out-of-range frame is also 667.\cb1 \
+\ls1\ilvl0\cb3 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec4 Scroll-lock dependency: nineteen \uc0\u8594 \'a0
+\f0\b \cf2 \strokec2 seventeen
+\f1\b0 \cf4 \strokec4 .\cb1 \
+\pard\pardeftab720\sa195\partightenfactor0
+\cf4 \cb3 \strokec4 The two corrected notes entries, verbatim:\cb1 \
+\pard\pardeftab720\sa195\partightenfactor0
+
+\f0\b \cf2 \cb3 \strokec2 Pattern
+\f1\b0 \cf4 \cb3 \strokec4 \'a0\'97\'a0
+\f0\b \cf2 \cb3 \strokec2 The footer is pinned to the viewport, on a normally scrolling page
+\f1\b0 \cf4 \cb3 \strokec4 \'a0Scroll model as decided: the document scrolls, there is no fixed app frame and no internal scroll pane, so the footer is position sticky with bottom 0 against the document \'97 the one context where it resolves. It carries the top hairline, the safe-area inset beneath it, and appears in all seventeen form frames including the three at 667. The primary action is never below the fold at either height.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 footer --surf, 1px --border top, --shadow, padding 14px 16px + env(safe-area-inset-bottom) drawn at 20px
+\f1\fs26 \cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+
+\f0\b \cf2 \cb3 \strokec2 The .phone shell, and scroll lock behind the open sheet
+\f1\b0 \cf4 \cb3 \strokec4 \'a0Code dependency, outside this screen. Two parts. First, .phone-body must stop being the scroll container: while it keeps overflow-y: auto the seventeen form frames have no viewport to stick their footers to, and the same change adds the bottom safe-area inset. Second, Today must not scroll behind the open sheet \'97 a scroll lock on the layer beneath, released on close, with the list's position preserved so dismissing the sheet returns the athlete to where they tapped. Test on iPhone Safari: it is the case where a locked underlayer most often leaks the scroll or jumps to the top on release. Both parts affect all four athlete entry forms at once.\'a0
+\f2\fs24 \cf4 \cb5 \strokec4 remove overflow-y: auto on .phone-body \'b7 add env(safe-area-inset-bottom) \'b7 scroll lock on the layer under the sheet, position restored on close \'b7 verify on iPhone Safari
+\f1\fs26 \cf4 \cb1 \strokec4 \
+}

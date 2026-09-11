@@ -8,7 +8,7 @@ import { fetchAllPaged } from './queries/paged';
  * moment the screen opens (§0g, deliberately: the row is the outbox's anchor).
  * Two staff reports counted every such row as a session logged — the athlete
  * report and the squad weekly report — so opening a session and walking away
- * credited it, and a review that opened Conor Moroney's session inflated his
+ * credited it, and a review that opened Conor Moroney's session inflated their
  * count by one in both. Compliance, the CSV export and the programme
  * adherence tile were already filtering on status = 'complete'.
  *

@@ -77,7 +77,10 @@ console.log('\na Back that names its destination keeps going there');
     ['src/app/(athlete)/my-data/boards/[leaderboardId]/page.tsx', 'Back to leaderboards'],
     ['src/app/(athlete)/my-data/gym/[gymSessionLogId]/page.tsx', 'Back to gym history'],
     ['src/app/(athlete)/nutrition-check-in/page.tsx', 'Back to today'],
-    ['src/app/(athlete)/rpe/[sessionId]/page.tsx', 'Back to today'],
+    /* "Back to Today" since ATH-ADULT-06 (2026-09-12): the board writes the
+       destination as the screen is named — Today — and the exit is a footer
+       button. Still a Link to a stated place, which is what this pins. */
+    ['src/app/(athlete)/rpe/[sessionId]/page.tsx', 'Back to Today'],
   ];
   for (const [p, label] of named) {
     const s = strip(read(p));

@@ -37,21 +37,32 @@ export default async function RpePage({
   ]);
 
   if (!session) {
+    /* ATH-ADULT-06, 2026-09-12. The message stays deliberately vague: it
+       covers a cancelled session, another club's session and one this athlete
+       was never in, and it must never say which — so the body is verbatim and
+       the status stays 200. What changed: the outcome is stated at heading
+       size in the one emphasised card, and the way out is a real button in
+       the footer rather than only the ✕. */
     return (
       <>
         <div className="sheet-head">
-          <Link href="/today" className="sheet-x" aria-label="Close">
+          <Link href="/today" className="sheet-x" aria-label="Close the session rating">
             <span aria-hidden="true">✕</span>
           </Link>
           <h1 className="t">Rate a session</h1>
           <span style={{ width: 44 }} />
         </div>
-        <div className="empty">
-          <h2>This session isn&rsquo;t there</h2>
-          <p>
-            It may have been cancelled or is not one of yours. Nothing is lost
-            &mdash; there is nothing to rate.
+        <div className="after-card">
+          <h2 className="after-heading">This session isn&rsquo;t there</h2>
+          <p className="after-note">
+            It may have been cancelled or is not one of yours. Nothing is lost, there is nothing to
+            rate.
           </p>
+        </div>
+        <div className="subm">
+          <Link href="/today" className="btn-primary" style={{ display: 'flex', justifyContent: 'center' }}>
+            Back to Today
+          </Link>
         </div>
       </>
     );
@@ -82,7 +93,7 @@ export default async function RpePage({
   return (
     <>
       <div className="sheet-head">
-        <Link href="/today" className="sheet-x" aria-label="Close">
+        <Link href="/today" className="sheet-x" aria-label="Close the session rating">
           <span aria-hidden="true">✕</span>
         </Link>
         <h1 className="t">{rpeRowName(session.title)}</h1>
@@ -118,36 +129,38 @@ export default async function RpePage({
       </div>
 
       {existing ? (
-        <div className="card">
-          <h2 className="card-title">
-            <span className="g-good" aria-hidden="true">
-              ✓{' '}
-            </span>
-            Rated
-          </h2>
-          <p className="import-sub" style={{ marginBottom: 0 }}>
-            {existing.submitted_at
-              ? `Rated at ${new Intl.DateTimeFormat('en-GB', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: false,
-                  timeZone: timezone,
-                }).format(new Date(existing.submitted_at))}. `
-              : ''}
-            RPE <b>{existing.rpe}</b> · {existing.duration_min} min.
-          </p>
-          {/* Replaces a "Correct this entry" link. Prose, not a disabled button,
-            * for the reason spelled out on the check-in page's matching card. */}
-          <p className="import-sub" style={{ margin: '10px 0 0' }}>
-            A submitted rating can&rsquo;t be edited, by you or by anyone. If this
-            one is wrong, tell your coach: they can record a correction against it
-            from your profile. If they do, My Data marks that session{' '}
-            <b>Corrected</b> and shows you what you first rated it.
-          </p>
-          <p className="cap" style={{ display: 'flex', gap: 'var(--sp-14)' }}>
-            <Link href="/today">Back to today</Link>
-          </p>
-        </div>
+        <>
+          {/* ATH-ADULT-06, 2026-09-12: the fact the athlete came for is the
+              largest thing — it is rated, what with, when — in the one
+              emphasised card, with the recourse (a person, not a control)
+              beneath and the exit as a footer button. The duration is not
+              restated here: the session block above already carries it. */}
+          <div className="after-card">
+            <h2 className="after-heading">Already rated</h2>
+            <p className="after-fact num">
+              You rated this session {existing.rpe} of 10
+              {existing.submitted_at
+                ? ` at ${new Intl.DateTimeFormat('en-GB', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false,
+                    timeZone: timezone,
+                  }).format(new Date(existing.submitted_at))}`
+                : ''}
+              .
+            </p>
+            <p className="after-note">
+              You can&rsquo;t change a rating yourself. Tell your coach and they can correct it for
+              you.
+            </p>
+            <p className="after-note">The original stays visible in My data, marked Corrected.</p>
+          </div>
+          <div className="subm">
+            <Link href="/today" className="btn-primary" style={{ display: 'flex', justifyContent: 'center' }}>
+              Back to Today
+            </Link>
+          </div>
+        </>
       ) : closed ? (
         <div className="banner">
           <span className="g g-faint" aria-hidden="true">

@@ -27,7 +27,18 @@ corrections need an existing row and never create one).
 ## 3. What you see
 
 The session being rated, an RPE scale, a duration, and a submit button. If it is
-already rated, a "Rated" card instead, which says who can fix a wrong rating.
+already rated, an "Already rated" card instead (ATH-ADULT-06, 12 September 2026):
+one emphasised card — the accent wash — with "Already rated" as the heading, the
+fact beneath at full size ("You rated this session 5 of 10 at 11:36."), then who
+can fix a wrong rating ("Tell your coach and they can correct it for you") and that
+the original stays visible in My data. The only exit is a full-width **Back to
+Today** button in the footer at the bottom of the screen. If the session cannot be
+found — cancelled, another club's, or not one of yours, and the page never says
+which — the sheet is titled "Rate a session" and the same card reads "This session
+isn't there" with the body "It may have been cancelled or is not one of yours.
+Nothing is lost, there is nothing to rate.", again with **Back to Today** in the
+footer; the response stays 200. The close button is labelled "Close the session
+rating".
 
 ## 4. What the athlete enters here
 

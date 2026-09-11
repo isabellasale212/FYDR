@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { writeGroupFilterCookie } from '@/lib/groupFilterCookie';
 
 export type HeaderTab = { label: string; selected: boolean; onSelect: () => void };
 
@@ -63,13 +64,17 @@ export function ReportHeader({
   const pathname = usePathname();
   const params = useSearchParams();
 
-  /* The same contract GroupFilter already had: the selection lives in the
-     address, so a filtered report can be sent to a colleague and read the
-     same. Nothing about that changes here, only where the control sits. */
+  /* The same contract GroupFilter has: the selection lives in the address,
+     so a filtered report can be sent to a colleague and read the same — AND
+     in the shared cookie, so it follows the coach to Squad overview and every
+     other multi-athlete screen (§0ak, Isabella 2026-09-11). Until 2026-09-12
+     this wrote the URL only, which is why a filter set on the squad report
+     vanished on the way back to Squad overview while the reverse worked. */
   function setGroups(next: string[]) {
     const q = new URLSearchParams(params.toString());
     if (next.length === 0) q.delete('groups');
     else q.set('groups', next.join(','));
+    writeGroupFilterCookie(next);
     router.push(`${pathname}${q.toString() ? `?${q}` : ''}`);
   }
 

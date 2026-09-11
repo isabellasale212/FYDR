@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { parseGroupParam } from './groupFilter';
+import { GROUP_FILTER_COOKIE } from './groupFilterCookie';
 
 /* Server-only companion to groupFilter.ts. resolveGroupFilter() needs
  * next/headers's cookies(), which can only run in a Server Component,
@@ -11,8 +12,6 @@ import { parseGroupParam } from './groupFilter';
  * happens: parseGroupParam stays framework-agnostic, this file never gets
  * anywhere near a client bundle.
  */
-
-const GROUP_FILTER_COOKIE = 'fydr-group-filter';
 
 /** docs/06-design-system.md §7.9: the group filter "persists across
  *  navigation and app restarts, via the global filter context backed by

@@ -923,6 +923,16 @@ This is the implementation of `CLAUDE.md` §3 and of the header rule in `19-page
   navigation the provider writes the current filter into the next URL; on load a page reads
   the URL first and falls back to the persisted provider value. A URL without the params
   therefore inherits, and a URL with them wins.
+
+  **As built, and as decided 2026-09-11 (§0ak, Isabella):** the "provider" is the
+  `fydr-group-filter` cookie. Every multi-athlete screen reads it through
+  `resolveGroupFilter()` (`lib/groupFilter.server.ts`) and pressing a group chip **anywhere**
+  — the `GroupFilter` row on Squad overview and its siblings, or the `ReportHeader` chips on
+  the reports and the schedule — writes the same `fydr-group-filter` cookie through
+  `lib/groupFilterCookie.ts`, so the choice applies on the next screen in either direction.
+  A `?groups=` parameter overrides for that page load only — it exists for shared links —
+  and does not write the cookie; the server never writes it. Until 2026-09-12 `ReportHeader`
+  wrote the URL only, which is why a filter chosen on a report was gone by Squad overview.
 - The consequence is the point: a filtered view is a link a coach can paste to a colleague,
   and it survives a refresh, a browser restore and a deep link. A filter held only in React
   context does neither.

@@ -4,14 +4,13 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useTransition } from 'react';
 import { useState } from 'react';
 import { groupScopeLabel } from '@/lib/groupFilter';
+import { writeGroupFilterCookie } from '@/lib/groupFilterCookie';
 import type { Group } from '@/lib/queries/groups';
 
 type Props = {
   groups: readonly Group[];
   selected: readonly string[];
 };
-
-const GROUP_FILTER_COOKIE = 'fydr-group-filter';
 
 /**
  * The group filter, held in the URL.
@@ -64,15 +63,13 @@ export function GroupFilter({ groups, selected }: Props) {
   const apply = useCallback(
     (next: string[]) => {
       const search = new URLSearchParams(params.toString());
-      if (next.length === 0) {
-        search.delete('groups');
-        document.cookie = `${GROUP_FILTER_COOKIE}=; path=/; max-age=0`;
-      } else {
-        search.set('groups', next.join(','));
-        // 180 days: a squad-filter preference, not a session-scoped value —
-        // no reason to make a coach re-pick it every time they sign back in.
-        document.cookie = `${GROUP_FILTER_COOKIE}=${encodeURIComponent(next.join(','))}; path=/; max-age=${60 * 60 * 24 * 180}`;
-      }
+      if (next.length === 0) search.delete('groups');
+      else search.set('groups', next.join(','));
+      /* The cookie is the shared state (§0ak, 2026-09-11): pressing a chip
+         here writes it and the choice applies on every multi-athlete screen.
+         The URL is the transport for THIS page and for a link a colleague can
+         open; ReportHeader's chips write the same cookie the same way. */
+      writeGroupFilterCookie(next);
       const query = search.toString();
       setOptimistic(next);
       startTransition(() => {

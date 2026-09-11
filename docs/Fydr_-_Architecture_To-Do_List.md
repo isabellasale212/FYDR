@@ -1059,11 +1059,15 @@ trade `0096` made for gym, now made consistently.
 
   **The decision this needs** is whether the 44px floor applies to navigation as well as to actions. If it does, `.back-btn` is one rule change affecting every athlete screen — a shared-class change, so it must be flagged and confirmed before it is built, not folded into a flow. If it does not, the floor should say so, because three separate reviews have now flagged it as a violation.
 
-## 0x. Two forms have no `method="post"`, so a submit before hydration sends the password in the URL — sign-in found by the builder, change-password by the reviewer, both 2026-09-11
+## 0x. Two forms have no `method="post"`, so a submit before hydration sends the password in the URL — sign-in found by the builder, change-password by the reviewer, both 2026-09-11; **CLOSED IN FULL 2026-09-11**
+
+**Built by the builder session — `f9b660c` (sign-in native POST) and `add7d3f` (the generic guard), on `build/walkthrough`, merged into `athlete-spec-builder` 2026-09-11 as a fast-forward after the builder rebased onto `cc32ffe`.** Verified by the reviewer on the restarted dev server: the rendered sign-in form is `<form … action="/auth/sign-in" method="post">`; every `.tsx` carrying `type="password"` or `PasswordField` now declares `method="post"` on its form — `LoginForm`, `ChangePasswordForm`, `ResetConfirmForm` (the last given the attribute although it is gated, so the guard has no exemptions). `test:sign-in-native-post` (52 assertions) and `test:sign-in-attempts-left` (32) both pass; both are in prebuild.
+
+**The guard found the second instance independently.** The builder's §7 sweep flagged `ChangePasswordForm` the same day the reviewer filed it below — the recurrence the entry predicted, caught by the mechanism it asked for.
 
 **SECURITY. Above every other open item in this list.** Not a design question and not gated on any flow's proposal.
 
-- [ ] **`LoginForm.tsx:132` is `<form onSubmit={onSubmit} noValidate className="signin-form">` with no `method` attribute, and its inputs are `name="email"` and `name="password"`.** A form with no `method` submits as a native **GET**. If the athlete or staff member presses Enter or taps the button before React has hydrated, the browser navigates to `/sign-in?email=…&password=…`.
+- [x] ~~**`LoginForm.tsx:132` is `<form onSubmit={onSubmit} noValidate className="signin-form">` with no `method` attribute**~~ **Closed `f9b660c`.** Original entry follows, and its inputs are `name="email"` and `name="password"`.** A form with no `method` submits as a native **GET**. If the athlete or staff member presses Enter or taps the button before React has hydrated, the browser navigates to `/sign-in?email=…&password=…`.
 
   **That puts a plaintext password into** the browser's history and address bar, the server's access logs, Vercel's request logs, and the `Referer` header of any request the resulting page makes. It survives the sign-in succeeding or failing.
 
@@ -1130,6 +1134,14 @@ Two behaviour changes the sign-in proposal asked for, both outside the design-on
 - [ ] **C3 — DEFERRED: the no-role screen.** Proposal: when a signed-in session has no role, drop the form and show "Ask your club's staff to add you to the squad." with a "Use a different account" control. Not design-only because that control must `signOut()` the role-less session, and the copy replaces the spec'd refusal in the ATH-ADULT-01 brief's table. **Deferred, not declined** — it is a reasonable screen; it waits for its own scheduling after the 01 design lands, and needs the refusal-copy decision made alongside it.
 
 - [x] ~~**C2 — remembered device ("Signing in as … · Change").**~~ **DECLINED (Isabella, 2026-09-11): no email stored on shared devices; browser autofill instead.** Persisting the email in device storage is PII at rest with no spec entry and no decision behind it, and a squad's phones are routinely shared. The review finding it answered (F5, "email never remembered") is closed by the existing `autocomplete="username"` on the field — the browser's own autofill does the remembering, under the user's control, and nothing Fydr stores. Do not re-propose.
+
+## 0ac. Landed in the §0x merge without a handover note yet — 2026-09-11
+
+Two further builder commits fast-forwarded in alongside §0x. Recorded so the branch state and the record agree; **their defects are not closed here until the handover notes arrive**, per the process.
+
+- **`9db60c5` — ATH-ADULT-01: the sign-in phone layout, from the approved board, on this system's tokens.** The proposal record's recommendation was A1–A10 with the B-column substitutions, phone only, desktop held pending the launch-column collision. `scripts/test-ath-adult-01.ts` (new) pins it; `base.css` +151. **ATH-ADULT-01 is marked implemented (phone) pending the note** — the review's F1, F3, F4, F6 are what A1–A10 address and will be closed against the note's "Defects closed" list, not assumed.
+- **`1a363f3` — Sign-in warns at the last attempt, with an unknown email made indistinguishable from a real one.** This is proposal item C1 (F2, no lockout warning), queued as a separate behaviour commit; `src/lib/signInSubmission.ts` (new), `auth/sign-in/route.ts` +112, `docs/09-security-and-compliance.md` +36, `scripts/test-sign-in-attempts-left.ts` (new, 32 assertions, passing). The "unknown email indistinguishable" half is a security property the note should state explicitly so it can be verified rather than trusted.
+
 
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.

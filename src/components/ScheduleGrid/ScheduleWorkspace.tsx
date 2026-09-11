@@ -30,6 +30,7 @@ import { TimeGrid, type DayColumn, type RenderedBlock } from './TimeGrid';
 import { SelectedSessionPanel, type PanelSession } from './SelectedSessionPanel';
 import { WeekStatsPanel } from './WeekStatsPanel';
 import { toBaseSession, type BaseSession, type DraftSession, type EditOverlay, type GridFixture, type GroupOption, type TemplateOption } from './types';
+import { clearPending, isNetworkFailure, pendingKey, readPending, writePending } from './pending';
 
 type EffectiveSession = BaseSession & { edited: boolean; isNew: boolean };
 
@@ -133,6 +134,33 @@ export function ScheduleWorkspace({
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [confirmingDiscard, setConfirmingDiscard] = useState(false);
+
+  /* THE PENDING WEEK SURVIVES A RELOAD — §0al, Isabella 2026-09-11. The four
+     pieces of state above are the only copy of a coach's unpublished work, and
+     a reload — accidental, or the one Next forces when a refresh fails offline
+     — destroyed them. They now round-trip through sessionStorage under a key
+     for this organisation and week (see ./pending.ts for the full account).
+     Restored in an effect after mount rather than in the useState initialisers
+     so the server render and the first client render agree; `restored` gates
+     the write effect so the initial empty state can never overwrite a saved
+     week before it has been read. An empty week removes the key, so a
+     successful publish and a Discard empty the store by construction. */
+  const storageKey = useMemo(() => pendingKey(orgId, weekStart), [orgId, weekStart]);
+  const [restored, setRestored] = useState(false);
+  useEffect(() => {
+    const pending = readPending(window.sessionStorage, storageKey);
+    if (pending) {
+      setEdits(pending.edits);
+      setAdded(pending.added);
+      setRemoved(pending.removed);
+      setNewDraft(pending.newDraft);
+    }
+    setRestored(true);
+  }, [storageKey]);
+  useEffect(() => {
+    if (!restored) return;
+    writePending(window.sessionStorage, storageKey, { edits, added, removed, newDraft });
+  }, [restored, storageKey, edits, added, removed, newDraft]);
 
   const base: BaseSession[] = useMemo(
     () => initialSessions.map((s) => toBaseSession(s, timezone, (iso, tz) => decimalHourInTz(new Date(iso), tz))),
@@ -693,6 +721,11 @@ export function ScheduleWorkspace({
     setPublishing(true);
     setPublishError(null);
     const failures: string[] = [];
+    /* §0al: a dropped connection means nothing reached the server. The
+       pending state is intact and must stay on screen; a refresh offline is
+       the full-page reload that used to wipe it. Every other failure keeps
+       the refresh — see finally. */
+    let networkFailed = false;
 
     try {
 
@@ -756,8 +789,12 @@ export function ScheduleWorkspace({
         else setAdded((cur) => cur.filter((d) => d.id !== draft.id));
       }
 
+      /* A query helper that returned "Failed to fetch" rather than throwing
+         it is the same case: the request never left the device. */
+      if (failures.some((f) => isNetworkFailure(f))) networkFailed = true;
       setPublishError(failures.length > 0 ? `Not published: ${failures.join('; ')}` : null);
     } catch (error) {
+      networkFailed = isNetworkFailure(error);
       /* A rejection in any of the three loops above used to land here as an
          unhandled promise rejection: no error.tsx exists in this app, and an
          async event handler's rejection is not something an error boundary
@@ -766,13 +803,20 @@ export function ScheduleWorkspace({
          than inventing a second voice for the same outcome. */
       setPublishError(`Not published: ${error instanceof Error ? error.message : 'something went wrong'}`);
     } finally {
-      /* BOTH of these are cleanup that must run whatever happened. The reset
-         un-disables the button. The refresh matters just as much on the
-         throwing path: the loops write one session at a time, so a throw
-         halfway leaves part of the week genuinely published while the grid
-         still shows it as a pending edit. */
+      /* The reset un-disables the button whatever happened. The refresh
+         matters just as much on a THROWING path: the loops write one session
+         at a time, so a throw halfway leaves part of the week genuinely
+         published while the grid still shows it as a pending edit.
+
+         EXCEPT WHEN THE NETWORK DROPPED (§0al, 2026-09-11). Then nothing was
+         written, the grid already agrees with the database, and refreshing
+         offline makes Next fall back to a full browser navigation — which is
+         exactly the reload that lost the week and the "Not published:" line
+         before anyone read it. So the grid, the pending state and the message
+         are left as they are, and the coach publishes again when the signal
+         is back. */
       setPublishing(false);
-      router.refresh();
+      if (!networkFailed) router.refresh();
     }
   }
 
@@ -850,6 +894,9 @@ export function ScheduleWorkspace({
     setSel(null);
     setPublishError(null);
     setConfirmingDiscard(false);
+    /* Emptying the state removes the key through the write effect too; this
+       is explicit so a Discard can never be undone by a reload. */
+    clearPending(window.sessionStorage, storageKey);
   }
 
   // UX audit finding 17: Discard used to be a single unconfirmed click

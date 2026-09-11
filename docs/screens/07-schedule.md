@@ -199,9 +199,16 @@ the header says which group scope produced it.
 
 **Wrong tier.** Not applicable.
 
-**Offline.** Not handled. Unsaved edits are lost if the connection drops before
-they are applied, which is worth stating because the edit model holds changes
-before writing them.
+**Offline.** The week's pending changes — edited sessions, staged drafts,
+removals and a half-filled new draft — are kept in the browser's
+`sessionStorage` for this organisation and week from the moment they are made
+(since 12 September 2026, §0al), restored when the page reloads, and cleared by
+a successful publish or by Discard. If the connection drops at **Publish to
+athletes**, nothing is written, the banner reads *"Not published: …"*, and the
+grid and its pending changes stay exactly as they were; the page does not
+reload itself. Publish again when the signal is back. A failure part-way
+through a publish that did reach the server still reloads the week so the
+grid agrees with what was written.
 
 ---
 

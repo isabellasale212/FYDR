@@ -5,8 +5,12 @@
  *
  *   1. Scale order becomes Sleep quality, Soreness, Fatigue, Mood, Stress.
  *   2. The sleep row loses its box and becomes a plain flex row.
- *   3. "not answered" is amber — already true, asserted so the rebuild cannot
- *      quietly lose it.
+ *   3. "not answered" WAS amber, and this file pinned it. ATH-ADULT-03 A6
+ *      (Isabella, 2026-09-11) reversed that: an untouched form is a starting
+ *      state, not a fault, so the state reads "Not answered" in neutral
+ *      --muted and the footer count is what says how far there is to go.
+ *      The assertion below now pins the reversal, for the same reason it
+ *      pinned the original — so neither can quietly come back.
  *
  * WELLNESS_SCALES IS SHARED WITH A STAFF SCREEN. EntryCorrectionPanel, the
  * coach's correction form, maps the same constant, so reordering it reorders
@@ -101,11 +105,11 @@ console.log('\nthe "last night" reference chip is gone, and gone from its caller
   assert(!/\.sleep-ref\s*\{/.test(css), 'and the CSS rule is removed rather than orphaned');
 }
 
-console.log('\n"not answered" is amber, on both themes');
+console.log('\n"Not answered" is neutral, on both themes (ATH-ADULT-03 A6 reversed the amber)');
 {
-  assert(/not answered/.test(scaleInput), 'the copy is still there');
+  assert(/Not answered/.test(scaleInput), 'the copy is still there');
   const rule = /\.sc-v\.un\s*\{([^}]*)\}/.exec(css)?.[1] ?? '';
-  assert(/--warn-text/.test(rule), 'and coloured from --warn-text, not a hardcoded hex');
+  assert(/--muted/.test(rule) && !/--warn-text/.test(rule), 'and coloured from --muted, not --warn-text and not a hardcoded hex');
   /* BOTH THEMES, checked against the pattern this file actually uses. An
      earlier version of this assertion looked for a bare `:root {` and failed on
      correct code: tokens.css never writes one. It declares the palette three
@@ -113,10 +117,10 @@ console.log('\n"not answered" is amber, on both themes');
      `:root[data-theme='dark']` for the other, and `:root:not([data-theme])` for
      the system default — which is stricter than a bare root plus a media query,
      because the toggle then wins in both directions rather than only one. */
-  assert(/--warn-text:/.test(tokens), '--warn-text is a real token');
+  assert(/--muted:/.test(tokens), '--muted is a real token');
   for (const sel of [":root\\[data-theme='light'\\]", ":root\\[data-theme='dark'\\]", ':root:not\\(\\[data-theme\\]\\)']) {
     const block = new RegExp(sel + '[^{]*\\{[\\s\\S]*?\\n\\}').exec(tokens)?.[0] ?? '';
-    assert(block.includes('--warn-text'), `defined under ${sel.replace(/\\/g,'')}`);
+    assert(block.includes('--muted'), `defined under ${sel.replace(/\\/g,'')}`);
   }
 }
 

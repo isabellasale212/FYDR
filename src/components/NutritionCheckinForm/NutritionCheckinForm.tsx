@@ -43,6 +43,9 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekS
   const [note, setNote] = useState(correction?.initialNote ?? '');
   const [noteOpen, setNoteOpen] = useState(!!correction?.initialNote);
   const [error, setError] = useState<string | null>(null);
+  /* Blocked until one of the three answers is chosen (A2); `pending`, below,
+   * only while the send is in flight. */
+  const blocked = !answer;
 
   /* Same offline contract as the wellness check-in (audit S5 / athlete
    * finding 18 was this exact form hanging on "Saving…" and losing the
@@ -83,8 +86,21 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekS
     onError: (err: Error) => setError(toUserMessage(err, 'athlete')),
   });
 
+  /* submitMutation.isPending closes the same double-submit race the
+   * correction branch's correctionMutation.isPending already closed — see
+   * CheckInForm's identical guard for the full reasoning. Without it a fast
+   * double-tap enqueues two outbox rows for the same (athlete_id,
+   * week_start) slot and the loser's insert dies on
+   * nutrition_checkins_one_live_per_week. Reusing this same `pending` flag
+   * for both `disabled` and the button label is deliberate: it is exactly
+   * the same "Saving…" honesty the correction path already shows, now true
+   * for the plain path too. */
+  const pending = correction ? correctionMutation.isPending : submitMutation.isPending;
+
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (blocked) return;
+    if (pending) return;
     if (!answer) return setError('Choose an answer.');
     setError(null);
 
@@ -113,16 +129,6 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekS
     router.push(`/today?submitted=nutrition&week=${weekStart}`);
   }
 
-  /* submitMutation.isPending closes the same double-submit race the
-   * correction branch's correctionMutation.isPending already closed — see
-   * CheckInForm's identical guard for the full reasoning. Without it a fast
-   * double-tap enqueues two outbox rows for the same (athlete_id,
-   * week_start) slot and the loser's insert dies on
-   * nutrition_checkins_one_live_per_week. Reusing this same `pending` flag
-   * for both `disabled` and the button label is deliberate: it is exactly
-   * the same "Saving…" honesty the correction path already shows, now true
-   * for the plain path too. */
-  const pending = correction ? correctionMutation.isPending : submitMutation.isPending;
   const weekEnd = addDays(weekStart, 6);
 
   return (
@@ -203,14 +209,27 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekS
         </p>
       ) : null}
 
+      {/* The shared footer — ATH-ADULT-03 A1/A2, 2026-09-11: count on its own
+          line, blocked action aria-disabled in the kit secondary, nothing
+          dimmed. THE LINE BENEATH IS UNCHANGED ON PURPOSE (D7): the board's
+          addendum says this form's footer copy is defined by the ATH-ADULT-3b
+          board, because a nutrition answer CAN be corrected; until that board
+          is final the existing sentence stays. */}
       <div className="subm">
+        <p className="subm-count" data-complete={blocked ? undefined : ''}>
+          {blocked ? '0 of 1 answered · 1 to go' : 'Answered'}
+        </p>
         <button
-          className="btn-primary"
+          className={blocked ? 'btn-ghost' : 'btn-primary'}
           type="submit"
-          disabled={!answer || pending}
+          disabled={pending}
+          aria-disabled={blocked || undefined}
+          onClick={(event) => {
+            if (blocked) event.preventDefault();
+          }}
           style={{ width: '100%', minHeight: 56 }}
         >
-          {pending ? 'Saving…' : answer ? 'Done' : 'Choose an answer'}
+          {pending ? 'Saving…' : 'Done'}
         </button>
         <p className="tiny" style={{ textAlign: 'center', marginTop: 'var(--sp-8)' }}>
           {correction

@@ -15,8 +15,25 @@ is shown.
 
 ## 3. What you see
 
-The five scales, one under another, each with both end labels always visible. A
-sleep hours stepper above them. A submit button at the bottom.
+The five scales, one under another, each with both end labels always visible as
+small chips carrying their numeral (`1 · Very sore`, `5 · No soreness`). An
+unanswered scale reads **Not answered** in neutral grey; an answered one shows
+nothing beside its name — the raised key is the answer. A sleep hours stepper
+above them, which **starts empty** (`–`) and counts as a question. Below the
+scales, a collapsed disclosure, **Add heart rate or weight**, holding the two
+optional numbers, then an optional comment.
+
+**The footer is pinned to the bottom of the screen** while the page scrolls
+(ATH-ADULT-03, 2026-09-11), so the count and the action are on screen from the
+first question. It reads, on its own line, `0 of 6 answered · 6 to go`, counting
+down to `All six answered`, which is shown as a green chip. Under the count,
+one line — *You can't change this after you submit.* — with **Why can't I edit
+it?** beside it, a disclosure that opens the explanation (tell your coach; they
+record a correction; My data shows both versions). Then the submit button,
+**Submit entry**. While anything is outstanding the button is shown in the
+secondary style and is `aria-disabled` — announced, focusable, but a tap does
+nothing; it is never dimmed. Once every question is answered it becomes the
+primary button.
 
 **If today is already submitted, you see an "Already submitted" card instead of a
 form**, telling you what to do if it is wrong.
@@ -38,8 +55,15 @@ unlabelled scale is a guess.
 | Soreness | Very sore / Sore / A bit sore / Almost none / No soreness | 1 to 5 | CHECK 1 to 5 | refused | `.soreness` | **No** | staff, immediately |
 | Stress | Very stressed / Stressed / All right / Relaxed / Very relaxed | 1 to 5 | CHECK 1 to 5 | refused | `.stress` | **No** | staff, immediately |
 | Mood | Very low / Low / All right / Good / Very good | 1 to 5 | CHECK 1 to 5 | refused | `.mood` | **No** | staff, immediately |
-| Sleep | "Sleep", with "hours last night" beside it | 0 to 14, half hour steps | CHECK 0 to 14 | refused | `.sleep_hours` | **No** | staff, immediately |
-| Comment | UNVERIFIED whether this screen offers one | up to 1,000 characters | CHECK | refused | `.comment` | **No** | staff |
+| Sleep | "Sleep", with "hours last night" beside it; **starts empty** (`–`) and is counted as a question — the first tap on + or − sets 7.0, then half-hour steps | 0 to 14, half hour steps | CHECK 0 to 14; the form cannot be submitted until it is set | refused | `.sleep_hours` | **No** | staff, immediately |
+| Resting heart rate | "Resting heart rate (bpm)", inside **Add heart rate or weight**; helper text under the field: **Usually 25 to 120 bpm** | whole number, 25 to 120, optional | `validation/wellness.ts` `RESTING_HR_RANGE`, checked as typed | the field is marked invalid with *Check this. Resting heart rate is usually between 25 and 120 bpm.* beside it, and the footer reads **Fix one field to submit** until it is corrected or cleared | `.resting_hr` | **No** | staff, immediately |
+| Body mass | "Body mass (kg)", inside the same disclosure; helper text: **Usually 30 to 200 kg** | one decimal place, 30 to 200, optional | `BODY_MASS_RANGE`, checked as typed | as above: *Check this. Body mass is usually between 30 and 200 kg.* | `.body_mass_kg` | **No** | staff, immediately |
+| Comment | "Comment or injury issue (optional)", a textarea on the sheet | up to 500 characters | `max(500)` | not reachable — the field stops at 500 | `.comment` | **No** | staff |
+
+The helper text and the inline check read the same two range constants the Zod
+schema reads, so the copy cannot state one range while the validator refuses
+another. Changing a range is a data decision made in `validation/wellness.ts`,
+not a copy edit.
 
 **Editing: no, and deliberately.** `CLAUDE.md` rule 6 makes wellness entries
 immutable once submitted. A correction creates a new revision row and marks the
@@ -59,8 +83,10 @@ answers and then refuse them.
 | Element | Where | What happens | Takes you to | Writes | Confirm | Hidden when |
 |---|---|---|---|---|---|---|
 | Five scales | Body | Sets a value 1 to 5 | stays | nothing yet | no | already submitted |
-| Sleep stepper | Above the scales | Plus or minus half an hour, 0 to 14 | stays | nothing yet | no | already submitted |
-| Submit | Bottom | Saves the entry | back to Today | one `wellness_entries` row | **No confirmation step** | already submitted |
+| Sleep stepper | Above the scales | First tap sets 7.0 from empty; then plus or minus half an hour, 0 to 14 | stays | nothing yet | no | already submitted |
+| Add heart rate or weight | Below the scales | Opens the two optional fields | stays | nothing yet | no | already submitted |
+| Why can't I edit it? | Footer, beside the irreversibility line | Opens the explanation of who corrects a wrong entry | stays | nothing | no | already submitted |
+| Submit entry | Footer, pinned to the bottom of the screen | Saves the entry. `aria-disabled` (secondary style, not dimmed) while any of the six is unanswered or a field is out of range; the count line above it says which | back to Today | one `wellness_entries` row | **No confirmation step** | already submitted |
 
 ## 7. Offline and sync
 
@@ -108,4 +134,6 @@ than drop it.
 
 - Immutability is correct and the athlete cannot correct their own mistake.
   Whether that is the intended end state is worth a decision.
-- **UNVERIFIED:** whether a comment field is offered here.
+- A decimal heart rate (52.5) within range is refused by the schema (`int()`)
+  and shown the range sentence, which is the wrong reason. Rare — the input's
+  step is 1 — but the copy does not name it.

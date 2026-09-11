@@ -90,8 +90,15 @@ export function RpeForm({
     },
   });
 
+  /* Blocked until a rating is chosen; `pending` only while the send is in
+   * flight. Two states, two attributes — see the footer below (A2). */
+  const blocked = rpe === null;
+  const pending = submitMutation.isPending;
+
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (blocked) return;
+    if (pending) return;
 
     if (rpe === null) {
       setInvalid('Choose a rating.');
@@ -125,8 +132,6 @@ export function RpeForm({
       `/today?submitted=rpe&rpe=${rpe}&session=${encodeURIComponent(sessionTitle)}`,
     );
   }
-
-  const submitLabel = rpe === null ? 'Choose a rating' : 'Submit rating';
 
   return (
     <form onSubmit={onSubmit} noValidate>
@@ -209,19 +214,32 @@ export function RpeForm({
         </p>
       ) : null}
 
+      {/* The shared footer — ATH-ADULT-03 A1/A2, 2026-09-11. Pinned to the
+          viewport; the count is its own line at full --text ("0 of 1 answered
+          · 1 to go" → "Answered", the board's copy for a one-question form)
+          and a good-tone chip once answered. Blocked is aria-disabled in the
+          kit secondary, never `disabled` and never dimmed — the §0s defect
+          was the count living inside a button dimmed to 1.24:1. */}
       <div className="subm">
-        {/* submitMutation.isPending closes a double-submit race — see
+        <p className="subm-count" data-complete={blocked ? undefined : ''}>
+          {blocked ? '0 of 1 answered · 1 to go' : 'Answered'}
+        </p>
+        {/* `disabled` on pending closes a double-submit race — see
          * CheckInForm's identical guard for the full reasoning. Without it a
          * fast double-tap enqueues two outbox rows for the same
          * (athlete_id, entry_date, session_id) slot and the loser's insert
          * dies on training_entries_one_live_per_session. */}
         <button
-          className="btn-primary"
+          className={blocked ? 'btn-ghost' : 'btn-primary'}
           type="submit"
-          disabled={rpe === null || submitMutation.isPending}
+          disabled={pending}
+          aria-disabled={blocked || undefined}
+          onClick={(event) => {
+            if (blocked) event.preventDefault();
+          }}
           style={{ width: '100%', minHeight: 56 }}
         >
-          {submitLabel}
+          Submit rating
         </button>
         {/* Same sentence as the check-in form's, for the same reason: the rule
          * is easier to accept before submitting than to discover afterwards. */}

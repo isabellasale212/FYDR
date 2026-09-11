@@ -31,16 +31,14 @@ export function ScaleInput({ name, value, onChange }: Props) {
     <fieldset className="sc">
       <div className="sc-h">
         <legend className="sc-l">{copy.label}</legend>
-        {/* "not answered", and amber — Fydr Athlete App.dc.html 23c makes this a
-            prompt rather than a status. "Not set" in grey reads as a setting
-            nobody has got to; this is a question still to answer, and the
-            submit button counts these. Answered reads "4 of 5", the scale
-            position, which is what the numbered buttons below now show. */}
-        {value === null ? (
-          <span className="sc-v un">not answered</span>
-        ) : (
-          <span className="sc-v num">{value} of 5</span>
-        )}
+        {/* "Not answered", in neutral --muted — ATH-ADULT-03 A6 (2026-09-11).
+            It was amber (23c's "prompt rather than a status"), and five amber
+            flags on an untouched form treated a normal starting state as a
+            fault. The footer count is what says how far there is to go.
+            Answered shows NOTHING here: the raised key already states the
+            value, so "4 of 5" was a second copy of it competing with the
+            footer's "N of 6" — the only "of N" left on the screen. */}
+        {value === null ? <span className="sc-v un">Not answered</span> : null}
       </div>
 
       <div className="dots">
@@ -75,9 +73,14 @@ export function ScaleInput({ name, value, onChange }: Props) {
         ))}
       </div>
 
-      <div className="sc-a">
-        <span>{copy.low}</span>
-        <span>{copy.high}</span>
+      {/* The ends carry their numeral — "1 · Very sore", "5 · No soreness" —
+          as small chips (A5). The number is what ties the word to a key: an
+          athlete reading "No soreness" under the right-hand end still had to
+          work out that it meant 5. aria-hidden: the radio labels above already
+          say "5, No soreness" to a screen reader, so this would read twice. */}
+      <div className="sc-a" aria-hidden="true">
+        <span>1 · {copy.low}</span>
+        <span>5 · {copy.high}</span>
       </div>
     </fieldset>
   );

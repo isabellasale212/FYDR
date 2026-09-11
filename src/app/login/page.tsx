@@ -168,13 +168,17 @@ export default function LoginPage() {
       </section>
 
       <div className="launch-page">
-        <div className="launch-step" style={{ display: 'grid', gap: 'var(--sp-8)' }}>
-          <p className="eyebrow launch-narrow-only">Athlete and staff</p>
+        {/* ATH-ADULT-01, 2026-09-11. "For athletes and club staff", not
+            "Athlete and staff" — the review called the old line systems
+            vocabulary (F6). And one sentence, not two: "Your morning entry
+            takes 45 seconds" answered a first-run question on a screen that a
+            returning person meets at a bad moment (F1, the review's highest
+            finding). The line that survives is the one that answers the
+            question they actually have. */}
+        <div className="launch-step launch-head">
+          <p className="eyebrow launch-narrow-only">For athletes and club staff</p>
           <h1 className="launch-title">Sign in</h1>
-          <p className="launch-sub">
-            Use the email address your club invited you on. Your morning entry takes 45
-            seconds.
-          </p>
+          <p className="launch-sub">Use the email address your club invited you on.</p>
         </div>
 
         <div className="launch-step">

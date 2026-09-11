@@ -11146,7 +11146,7 @@ button.dash-stat {
    it comes to rest. */
 @keyframes launch-lift {
   from {
-    transform: translate(calc(50vw - 30px - 150px), calc(45.6dvh - 92px - 65.5px))
+    transform: translate(calc(50vw - var(--launch-x, 30px) - 150px), calc(45.6dvh - 92px - 65.5px))
       scale(1.935);
   }
 }
@@ -11245,6 +11245,13 @@ button.dash-stat {
 }
 
 /* --- The sign-in block itself, per the scene ---------------------------- */
+/* The head block: eyebrow, title, sub. This is the inline `display: grid;
+   gap: var(--sp-8)` the page used to carry, moved here so the phone layout
+   below can restate the rhythm — an inline style beats any rule. */
+.launch-head {
+  display: grid;
+  gap: var(--sp-8);
+}
 .launch-title {
   font-family: var(--font-sans), system-ui, sans-serif;
   font-weight: 800;
@@ -11275,7 +11282,7 @@ button.dash-stat {
   background: var(--splash-ground);
 }
 .launch-splash .launch-lockup {
-  transform: translate(calc(50vw - 30px - 150px), calc(45.6dvh - 92px - 65.5px))
+  transform: translate(calc(50vw - var(--launch-x, 30px) - 150px), calc(45.6dvh - 92px - 65.5px))
     scale(1.935);
 }
 .launch-splash {
@@ -11497,6 +11504,24 @@ button.dash-stat {
   .launch-narrow-only {
     display: none;
   }
+  /* HOLD, until collision 1 (to-do item 1, the claim column) is settled. The
+     lock became aria-disabled on 2026-09-11 (ATH-ADULT-01) and wears .btn-ghost
+     on the phone; the desktop frame of that board is not built, so here the
+     control keeps exactly what .btn-primary:disabled drew. Delete with the
+     desktop build. */
+  .launch .signin-submit[aria-disabled='true'] {
+    background: var(--surf2);
+    color: var(--on-accent);
+    border: none;
+    padding: var(--sp-14) var(--sp-20);
+    font-size: var(--fs-15);
+    font-weight: 700;
+    cursor: not-allowed;
+  }
+  .launch .signin-submit[aria-disabled='true']:hover {
+    background: var(--surf2);
+    color: var(--on-accent);
+  }
 
   /* Splash centred on the viewport, landing at (76, 92). 400 and 175 are half
      the splash lockup (0.80 of 1001x437 = 800x350); 58vh rather than 50 because
@@ -11514,6 +11539,120 @@ button.dash-stat {
   .launch-splash .launch-lockup {
     transform: translate(calc(50vw - var(--claim-x) - 400px), calc(58vh - 92px - 175px))
       scale(4.082);
+  }
+}
+
+/* --- ATH-ADULT-01, the phone layout — approved 2026-09-11 -----------------
+   Built from docs/designs/ath-adult-01-final/ (the ten-frame review board),
+   mapped onto THIS system's tokens: the board is drawn on Claude Design's own
+   scale (one 8px radius, a 30px heading, 11.5px captions, a 0.9s spinner),
+   none of which exists here, and CLAUDE.md §0.01 says a change is composed
+   from what the system has. The proposal record lists every substitution.
+
+   PHONE ONLY, by decision: the board's desktop frame deletes the claim column
+   that to-do item 1 built and is waiting on. So everything lives in this one
+   max-width block and the ≥1080 rules above are untouched, bar the hold rule
+   for the lock. scripts/test-ath-adult-01.ts pins the block and its tokens.
+   ------------------------------------------------------------------------- */
+@media (max-width: 1079px) {
+  .launch {
+    /* One inset for the lockup and the text, so they share an edge. The
+       scene put the lockup at 30 and the text at 28; the board puts both at
+       24. The splash keyframe reads this too, so the lockup lands where it
+       rests. */
+    --launch-x: var(--sp-24);
+  }
+  .launch-lockup {
+    left: var(--launch-x);
+  }
+  /* 160 is the lockup's rest: top 92 plus its 68px at --lk-scale 0.155. The
+     eyebrow sits 4 under it, "grouped tight" with the wordmark; the third row
+     takes the slack so the disclosure line pins to the bottom edge and 812px
+     is filled rather than leaving the form floating in the top 60%. */
+  .launch-page {
+    padding: calc(160px + var(--sp-4)) var(--launch-x) var(--sp-24);
+    gap: var(--sp-20);
+    min-height: 100dvh;
+    grid-template-rows: auto auto 1fr;
+  }
+  .launch .launch-head {
+    gap: 0;
+  }
+  .launch .launch-head .eyebrow {
+    margin: 0;
+    color: var(--faint);
+  }
+  .launch .launch-head .launch-title {
+    margin-top: var(--sp-32);
+  }
+  .launch .launch-head .launch-sub {
+    margin-top: var(--sp-8);
+    font-size: var(--fs-14);
+  }
+  .launch .signin-fields {
+    margin-top: 0;
+  }
+  /* Fields differ from what they sit on: the page is --bg, so the phone's
+     fields are --surf. (Inside the desktop's white panel they stay --field.) */
+  .launch .field {
+    background: var(--surf);
+  }
+  /* The ring on focus, from the token the system already names for it. The
+     outline stays: nothing in this stylesheet suppresses one, and this is not
+     the place to start. */
+  .launch .field:focus {
+    box-shadow: var(--ring-accent);
+  }
+  .launch .signin-submit {
+    margin-top: var(--sp-14);
+  }
+  /* The lock, in the kit secondary it now wears: not tappable, and it says
+     so — no hover, and tabular figures so the countdown does not jitter. */
+  .launch .signin-submit[aria-disabled='true'] {
+    cursor: not-allowed;
+    font-variant-numeric: tabular-nums;
+  }
+  .launch .signin-submit[aria-disabled='true']:hover {
+    border-color: var(--border);
+    color: var(--muted);
+  }
+  /* F3: "Forgot your password?" was a 15px target on the recovery path. The
+     link becomes a 44px box around the same words. */
+  .launch .signin-forgot a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 var(--sp-12);
+  }
+  /* The refusal as the banner shape (.banner's own radius and inset) with its
+     tone in the fill, the border and a round dot — the message itself stays
+     in --text, so the hue never becomes the type. */
+  .launch .form-error {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sp-10);
+    background: var(--wash-bad);
+    border: 1px solid var(--border-bad);
+    border-radius: var(--r-tab);
+    padding: var(--pad-card);
+    color: var(--text);
+  }
+  .launch .form-error::before {
+    content: '';
+    flex: none;
+    width: var(--sp-8);
+    height: var(--sp-8);
+    margin-top: var(--sp-6);
+    border-radius: var(--r-full);
+    background: var(--bad);
+  }
+  /* The disclosure line: pinned to the bottom, set as the board sets it —
+     caption size (--fs-12 is the nearest step to its 11.5) and left-aligned. */
+  .launch .launch-foot {
+    align-self: end;
+    font-size: var(--fs-12);
+    text-align: start;
   }
 }
 

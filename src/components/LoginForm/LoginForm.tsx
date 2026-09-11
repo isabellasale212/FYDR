@@ -167,6 +167,7 @@ export function LoginForm() {
             type="email"
             name="email"
             autoComplete="username"
+            enterKeyHint="next"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -181,6 +182,7 @@ export function LoginForm() {
             id="password"
             name="password"
             autoComplete="current-password"
+            enterKeyHint="go"
             required
             value={password}
             onChange={setPassword}
@@ -189,8 +191,24 @@ export function LoginForm() {
 
       </div>
 
-      <button className="btn-primary signin-submit" type="submit" disabled={busy || locked}>
-        {locked ? `Locked · ${formatCountdown(secondsRemaining)}` : busy ? 'Signing in' : 'Sign in'}
+      {/* LOCKED IS aria-disabled, NOT disabled — ATH-ADULT-01 board note 4. A
+          disabled button leaves the tab order and reads at 45% opacity, which
+          is what the countdown label needs least. aria-disabled keeps it
+          focusable and announced with its label; the press is refused here at
+          the control and again in onSubmit at the form, so Enter in a field
+          does nothing while the countdown runs. It wears the kit secondary
+          (.btn-ghost) meanwhile, so it reads as not-the-action rather than as
+          a faded copy of it. `disabled` is kept for the pending moment only. */}
+      <button
+        className={locked ? 'btn-ghost signin-submit' : 'btn-primary signin-submit'}
+        type="submit"
+        disabled={busy}
+        aria-disabled={locked || undefined}
+        onClick={(event) => {
+          if (locked) event.preventDefault();
+        }}
+      >
+        {locked ? `Locked · ${formatCountdown(secondsRemaining)}` : busy ? 'Signing in…' : 'Sign in'}
       </button>
 
       {/* BELOW the button, centred — Fydr App Launch.dc.html puts the secondary

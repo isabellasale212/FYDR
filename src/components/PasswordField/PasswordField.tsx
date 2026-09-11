@@ -20,8 +20,11 @@ export function PasswordField(props: {
   autoComplete: 'current-password' | 'new-password';
   name?: string;
   required?: boolean;
+  /** What the phone keyboard's action key says. The sign-in form passes "go"
+   *  so the key submits; a form that has a field after this one passes "next". */
+  enterKeyHint?: 'go' | 'next' | 'done';
 }) {
-  const { id, value, onChange, autoComplete, name, required } = props;
+  const { id, value, onChange, autoComplete, name, required, enterKeyHint } = props;
   const [visible, setVisible] = useState(false);
 
   return (
@@ -33,6 +36,7 @@ export function PasswordField(props: {
         name={name}
         autoComplete={autoComplete}
         required={required}
+        enterKeyHint={enterKeyHint}
         spellCheck={false}
         autoCapitalize="none"
         value={value}

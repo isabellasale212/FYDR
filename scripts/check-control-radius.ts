@@ -60,8 +60,12 @@ export const INTERACTIVE =
    (.gym-progress-track, .pp-bench-bar) are the same argument. `mark` is here
    because widening INTERACTIVE with `signin` immediately caught .signin-mark,
    which is the logo on the sign-in screen — the guard over-matching and being
-   told so, which is the trade this heuristic is supposed to make. */
-export const SHAPED_ON_PURPOSE = /swatch|knob|track|avatar|bar\b|mark\b|sg-fixture|sg-legend|dot\b/i;
+   told so, which is the trade this heuristic is supposed to make. `form-error`
+   is the same trade a second time: `launch` is in INTERACTIVE, and
+   `.launch .form-error` (ATH-ADULT-01, the refusal banner on the sign-in page)
+   is a message, not a control — it takes the banner's --r-tab and its dot
+   takes --r-full, neither of which is a button radius. */
+export const SHAPED_ON_PURPOSE = /swatch|knob|track|avatar|bar\b|mark\b|sg-fixture|sg-legend|dot\b|form-error/i;
 
 /* THE ATHLETE REDESIGN'S PILLS, approved by Isabella on 2026-09-08 as named
    exemptions rather than by changing the rule.

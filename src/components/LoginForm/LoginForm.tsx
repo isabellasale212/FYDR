@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { PasswordField } from '@/components/PasswordField/PasswordField';
 import { createClient } from '@/lib/supabase/client';
 import { safeNextPath } from '@/lib/safeRedirect';
+import { SIGN_IN_COPY, isSignInErrorCode } from '@/lib/signInSubmission';
 import type { SignInResult } from '@/app/auth/sign-in/route';
 
 /** Formats a countdown in the same honest, specific register the rest of the app's
@@ -44,21 +45,37 @@ function formatCountdown(seconds: number): string {
  * attempt-tracking/lockout logic this file also owns. A browser client is still needed here
  * (createClient() below) purely to read that assurance level — the sign-in call itself moved
  * server-side for item 4, but this one post-success read has no server-side equivalent yet.
+ *
+ * THE <form> SAYS method="post" action="/auth/sign-in", AND THAT IS NOT DECORATION. Until
+ * React has hydrated, the browser is the only thing listening to a Sign in press, and a
+ * form with no method submits as GET to its own URL with the password in the query
+ * string — seen on 2026-09-11 as `/login?email=…&password=…` in the dev log and the
+ * browser history. With a method and an action a pre-hydration submit carries the
+ * fields in the body, to the same route the fetch below uses, which answers it with a
+ * redirect back here: `?e=<code>` on failure, which the initial state below turns into
+ * the same words the fetch path would have shown. See lib/signInSubmission.ts.
  */
 export function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // `e` is a code, never a message: the middleware sends no-roles, and the sign-in route
+  // sends invalid / missing / locked back to a native (pre-hydration) submit. A code that
+  // is not one of ours shows nothing, so the URL cannot be made to display arbitrary text.
+  const code = params.get('e');
   const [error, setError] = useState<string | null>(
-    params.get('e') === 'no-roles'
-      ? 'That account holds no role in any club. Ask your club administrator to grant one.'
-      : null,
+    isSignInErrorCode(code) && code !== 'locked' ? SIGN_IN_COPY[code] : null,
   );
   const [busy, setBusy] = useState(false);
   // Wall-clock deadline, not a pre-formatted string -- so the message re-renders with a
   // live, honestly-decreasing countdown rather than going stale the moment it's shown.
-  const [lockedUntil, setLockedUntil] = useState<number | null>(null);
+  // A native submit that hit the lockout arrives as ?e=locked&s=<seconds>; the same
+  // countdown starts from that.
+  const [lockedUntil, setLockedUntil] = useState<number | null>(() => {
+    const s = code === 'locked' ? Number(params.get('s')) : NaN;
+    return Number.isFinite(s) && s > 0 ? Date.now() + s * 1000 : null;
+  });
   const [secondsRemaining, setSecondsRemaining] = useState(0);
 
   useEffect(() => {
@@ -74,6 +91,11 @@ export function LoginForm() {
   }, [lockedUntil]);
 
   const locked = lockedUntil !== null && secondsRemaining > 0;
+
+  // Open-redirect guard: `next` came off the URL, which anyone could have
+  // sent — see safeRedirect.ts's own header for the exact attack. Read once,
+  // for the fetch path's router.replace and the native path's hidden field.
+  const next = safeNextPath(params.get('next'));
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -104,10 +126,6 @@ export function LoginForm() {
       return;
     }
 
-    // Open-redirect guard: `next` came off the URL, which anyone could have
-    // sent — see safeRedirect.ts's own header for the exact attack.
-    const next = safeNextPath(params.get('next'));
-
     // The password check just passed, so there is a real session — but if this account has
     // a verified TOTP factor, that session is only aal1 and is not the real sign-in yet.
     // nextLevel is 'aal2' whenever a verified factor exists; currentLevel !== nextLevel is
@@ -129,7 +147,9 @@ export function LoginForm() {
     : error;
 
   return (
-    <form onSubmit={onSubmit} noValidate className="signin-form">
+    <form onSubmit={onSubmit} method="post" action="/auth/sign-in" noValidate className="signin-form">
+      {/* Only the native path reads this; the fetch path has `next` in scope. */}
+      {next !== '/' ? <input type="hidden" name="next" value={next} /> : null}
       <div className="signin-fields">
         {message ? (
           <p className="form-error" role="alert" style={{ margin: 0 }}>

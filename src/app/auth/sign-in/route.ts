@@ -4,6 +4,13 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { forwardedIdentityHeaders } from '@/lib/clientAddress';
 import { claimsFromSession, sessionIdFromAccessToken } from '@/lib/supabase/claims';
 import { recordSignIn, recordSignInFailure } from '@/lib/signInAudit';
+import {
+  isSameOriginSubmit,
+  nativeRedirectPath,
+  readSignInSubmission,
+  SIGN_IN_COPY,
+  type NativeOutcome,
+} from '@/lib/signInSubmission';
 
 /** login-security checklist item 4: /login has no rate limiting.
  *  09-security-and-compliance.md §8.1 / §9.4: exponential backoff after 5 failed
@@ -60,6 +67,16 @@ import { recordSignIn, recordSignInFailure } from '@/lib/signInAudit';
  *  challenge is exactly as much "signed in" or not to login_attempt_record_result as it
  *  was to the client-side signInWithPassword call this replaces. */
 
+/** TWO CALLERS, ONE ROUTE — added 2026-09-11. LoginForm's fetch sends JSON and
+ *  reads JSON back; that path is byte-for-byte what it was. The form element
+ *  itself now also says method="post" action="/auth/sign-in", so a submit the
+ *  browser performs on its own — before React has hydrated — arrives here too,
+ *  form-encoded, instead of as a GET with the password in the query string
+ *  (which is what a bare <form> does, and what happened). A native submit gets
+ *  a 303 redirect built from the OUTCOME, never the credentials, and is
+ *  accepted only from our own origin, because a form body is what login CSRF
+ *  sends. lib/signInSubmission.ts has the reasoning; nothing about the rate
+ *  limiter, the audit rows or the auth call differs between the two paths. */
 export type SignInResult =
   | { ok: true }
   | { ok: false; locked: true; lockedUntil: string; secondsRemaining: number; error: string }
@@ -71,12 +88,29 @@ export type SignInResult =
 // load-bearing on its own in the meantime.
 
 export async function POST(request: Request): Promise<NextResponse<SignInResult>> {
-  const body = await request.json().catch(() => null);
-  const email = typeof body?.email === 'string' ? body.email.trim() : '';
-  const password = typeof body?.password === 'string' ? body.password : '';
+  const { email, password, next, native } = await readSignInSubmission(request);
+
+  /* A native submit answers with a navigation; the fetch path answers with the
+     JSON it always has. Both are decided from the same outcome. The Location
+     is RELATIVE, deliberately: NextResponse.redirect wants an absolute URL
+     built from request.url, and in dev that came back as localhost for a
+     request made to 127.0.0.1 — a different cookie jar, so the session just
+     set would have been left behind. The browser resolves a relative Location
+     against the URL it actually posted to, which is the only host that can be
+     right. */
+  const answer = (outcome: NativeOutcome, json: SignInResult, status: number): NextResponse<SignInResult> =>
+    native
+      ? (new NextResponse(null, { status: 303, headers: { location: nativeRedirectPath(outcome, next) } }) as NextResponse<SignInResult>)
+      : NextResponse.json(json, { status });
+
+  if (native && !isSameOriginSubmit(request.headers)) {
+    // Login CSRF: a form body from another site. Refused before anything is
+    // checked, so an attacker's guesses do not even reach the rate limiter.
+    return NextResponse.json({ ok: false, locked: false, error: 'Sign in from the Fydr sign-in page.' }, { status: 403 });
+  }
 
   if (!email || !password) {
-    return NextResponse.json({ ok: false, locked: false, error: 'Enter your email and password.' }, { status: 400 });
+    return answer({ kind: 'missing' }, { ok: false, locked: false, error: SIGN_IN_COPY.missing }, 400);
   }
 
   // See this file's header: admin access (SUPABASE_SERVICE_ROLE_KEY) is allowed to be
@@ -98,15 +132,16 @@ export async function POST(request: Request): Promise<NextResponse<SignInResult>
   }
 
   if (gate?.is_locked) {
-    return NextResponse.json(
+    return answer(
+      { kind: 'locked', secondsRemaining: gate.seconds_remaining },
       {
         ok: false,
         locked: true,
         lockedUntil: gate.locked_until,
         secondsRemaining: gate.seconds_remaining,
-        error: 'Too many attempts.',
+        error: SIGN_IN_COPY.locked,
       },
-      { status: 429 },
+      429,
     );
   }
 
@@ -181,23 +216,33 @@ export async function POST(request: Request): Promise<NextResponse<SignInResult>
         sessionIdFromAccessToken(signInData.session?.access_token),
       );
     }
-    return NextResponse.json({ ok: true });
+    if (!native) return NextResponse.json({ ok: true });
+
+    /* The fetch path's caller does this check in the browser after the JSON
+       comes back (see LoginForm.tsx). A native submit has no caller waiting,
+       so the same question is asked here, from the session just issued: an
+       account with a verified TOTP factor is aal1 until the challenge is
+       passed, and /login/mfa is where that happens. */
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    const needsChallenge = Boolean(aal && aal.nextLevel === 'aal2' && aal.currentLevel !== aal.nextLevel);
+    return answer({ kind: needsChallenge ? 'mfa' : 'ok' }, { ok: true }, 200);
   }
 
   if (record?.is_locked) {
-    return NextResponse.json(
+    return answer(
+      { kind: 'locked', secondsRemaining: record.seconds_remaining },
       {
         ok: false,
         locked: true,
         lockedUntil: record.locked_until,
         secondsRemaining: record.seconds_remaining,
-        error: 'Too many attempts.',
+        error: SIGN_IN_COPY.locked,
       },
-      { status: 429 },
+      429,
     );
   }
 
   // Unchanged from before this route existed: a generic message either way, so a wrong
   // password and an unknown email look identical to whoever is typing.
-  return NextResponse.json({ ok: false, locked: false, error: 'That email and password do not match an account.' }, { status: 401 });
+  return answer({ kind: 'invalid' }, { ok: false, locked: false, error: SIGN_IN_COPY.invalid }, 401);
 }

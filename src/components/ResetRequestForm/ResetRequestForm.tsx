@@ -85,8 +85,12 @@ export function ResetRequestForm() {
     );
   }
 
+  // method="post": this form is server-rendered, so a submit before React has
+  // hydrated is the browser's own, and a bare form does that as GET with the
+  // email in the query string. POST keeps it in the body; the page simply
+  // re-renders. Same reasoning as LoginForm, see lib/signInSubmission.ts.
   return (
-    <form onSubmit={onSubmit} noValidate className="signin-form">
+    <form onSubmit={onSubmit} method="post" noValidate className="signin-form">
       <div className="signin-fields">
         {error ? (
           <p className="form-error" role="alert" style={{ margin: 0 }}>

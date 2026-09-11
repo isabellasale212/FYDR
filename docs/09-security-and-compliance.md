@@ -986,6 +986,24 @@ attacker locking out an account they cannot guess into, rather than eliminating 
 tradeoff (which would mean removing the lockout, reopening this exact item). Full design
 writeup, including that tradeoff, in the migration's own header comment.
 
+**A password never travels in a URL, built 2026-09-11.** `LoginForm.tsx`'s `<form>` had
+no `method` and no `action`. Once React has hydrated its `onSubmit` fetches JSON and the
+browser never submits the form itself; before hydration the browser is the only thing
+listening, and a bare form submits as **GET to its own URL with every field in the query
+string** — seen as `/login?email=…&password=…` in a request log and a browser history.
+Anything that delays hydration reproduces it. The form now says
+`method="post" action="/auth/sign-in"`, so a native submit carries the fields in the body
+to the same route the fetch uses. That route reads a form-encoded body as it reads JSON,
+answers a native submit with a `303` to `/login?e=<code>` (a code, never the message,
+never the email) or to the requested `next` after the same open-redirect guard, and asks
+the assurance-level question server-side so an account with a TOTP factor still lands on
+`/login/mfa`. Accepting a form body opens **login CSRF**, which JSON-only was immune to
+(no HTML form can send `application/json`), so a native submit is accepted only when the
+browser's `Origin` names this host — checked before anything reaches the rate limiter.
+`ResetRequestForm` gets `method="post"` for the same reason; the MFA challenge and reset
+confirm forms render nothing submittable until a mount-time check has run, so they were
+never exposed. `src/lib/signInSubmission.ts` and `scripts/test-sign-in-native-post.ts`.
+
 CAPTCHA is a deliberate cut, not a silent one: it is a real third-party vendor
 integration decision (provider choice, a new API key, a client widget, server-side
 verification) outside what this pass was scoped to build. The backoff above is real and

@@ -139,8 +139,11 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekS
             ⓘ
           </span>
           <div>
-            Correcting your answer for this week. This creates a new revision; the
-            original is kept, not overwritten.
+            {/* The real week, never "this week" (ATH-ADULT-08): a correction
+                can be made to a week a month gone. The revision sentence is
+                kept exactly. */}
+            Correcting your answer for {formatDate(weekStart, timezone)} to {formatDate(weekEnd, timezone)}.
+            This creates a new revision; the original is kept, not overwritten.
           </div>
         </div>
       ) : null}
@@ -162,6 +165,12 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekS
             onClick={() => setAnswer(a.value)}
           >
             {a.label}
+            {/* ATH-ADULT-08: once a different answer is chosen, the original
+                keeps a neutral tag rather than vanishing, so the screen still
+                shows what is being changed from. */}
+            {correction && correction.initialAnswer === a.value && answer !== a.value ? (
+              <span className="pill pill-neutral nut-answer-tag">Your answer</span>
+            ) : null}
           </button>
         ))}
       </div>
@@ -229,8 +238,20 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekS
           }}
           style={{ width: '100%', minHeight: 56 }}
         >
-          {pending ? 'Saving…' : 'Done'}
+          {pending ? 'Saving…' : correction ? 'Save correction' : 'Done'}
         </button>
+        {/* ATH-ADULT-08: a way to leave the correction without saving — a
+            secondary button in the footer, back to the answered state. Nothing
+            is written; the original stands. */}
+        {correction ? (
+          <Link
+            href={`/nutrition-check-in?week=${weekStart}`}
+            className="btn-ghost"
+            style={{ display: 'flex', justifyContent: 'center', marginTop: 'var(--sp-8)' }}
+          >
+            Keep the original
+          </Link>
+        ) : null}
         <p className="tiny" style={{ textAlign: 'center', marginTop: 'var(--sp-8)' }}>
           {correction
             ? 'Corrections send straight away and need signal. If it can’t get through, you’ll see an error here and your answer stays put.'

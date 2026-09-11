@@ -39,15 +39,28 @@ export default async function NutritionCheckInPage({
 
   const existing = await fetchCheckinForWeek(db, athleteId, weekStart);
   const weekEnd = addDays(weekStart, 6);
+  /* ATH-ADULT-08: after submit, the subhead names the thing — the real week
+     — never "this week", which is the only correct form for a week a month
+     gone. The form itself carries the week in its eyebrow. */
+  const weekLabel = `${formatDate(weekStart, timezone)} to ${formatDate(weekEnd, timezone)}`;
+  const answerLabel = existing ? (existing.answer === 'yes' ? 'Yes' : existing.answer === 'roughly' ? 'Roughly' : 'No') : null;
+  const sentAt = existing?.submitted_at
+    ? `${formatDate(existing.submitted_at.slice(0, 10), timezone)} at ${new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: timezone }).format(new Date(existing.submitted_at))}`
+    : null;
+  const afterSubmit = !!existing && !correcting;
 
   return (
     <>
       <div className="sheet-head">
-        <Link href="/today" className="sheet-x" aria-label="Close">
-          <span aria-hidden="true">✕</span>
-        </Link>
-        <h1 className="t">Weekly check-in</h1>
-        <span style={{ width: 44 }} />
+        <div className="sheet-head-row">
+          <div style={{ minWidth: 0 }}>
+            <h1 className="t">Weekly check-in</h1>
+            {afterSubmit ? <p className="s num">{weekLabel}</p> : null}
+          </div>
+          <Link href="/today" className="sheet-x" aria-label="Close the check-in">
+            <span aria-hidden="true">✕</span>
+          </Link>
+        </div>
       </div>
 
       {existing && existing.id && correcting ? (
@@ -64,50 +77,44 @@ export default async function NutritionCheckInPage({
           }}
         />
       ) : existing ? (
-        <div className="card">
-          <h2 className="card-title">
-            <span className="g-good" aria-hidden="true">
-              ✓{' '}
-            </span>
-            Already answered
-          </h2>
-          <p className="import-sub" style={{ marginBottom: 0 }}>
-            For {formatDate(weekStart, timezone)} to {formatDate(weekEnd, timezone)}, you answered{' '}
-            <b>
-              {existing.answer === 'yes' ? 'Yes' : existing.answer === 'roughly' ? 'Roughly' : 'No'}
-            </b>
-            .
-          </p>
-          <p className="cap" style={{ display: 'flex', gap: 'var(--sp-14)' }}>
-            {/* .linklike on both, 2026-09-10, for the reason set out on the
-                check-in page's matching card: without it a <Link> inside a
-                .cap renders rgb(72,78,87) / 13px / 400 / no underline, which
-                is IDENTICAL to the caption prose around it — the global reset
-                is `a { color: inherit; text-decoration: none }` and no
-                `.cap a` rule exists. Measured here before the change, both
-                links.
+        <>
+          {/* ATH-ADULT-08, 2026-09-12. The fact the athlete came for — it is
+              answered, what with, when — in the one emphasised card; the
+              existing sentence about correction beneath it; and the two ways
+              out as 44px buttons in the footer: leaving is the common case and
+              takes the primary, correcting is the secondary under it.
 
-                IT MATTERS MORE HERE THAN THERE. On check-in the undecorated
-                link was "Back", duplicating a 44px ✕ that did the same job.
-                "Change this answer" is the ONLY route into the correction
-                flow (ATH-ADULT-08) and it looked like a sentence.
+              THE ANSWER IS THE SPEC'S WORD — Yes / Roughly / No — not the
+              board's "Yes, most days / Some days": the wording of an answer
+              changes what it means (CLAUDE.md §0.06, D1 in the record).
 
-                Scoped to this file rather than a shared `.cap a` rule, so it
-                does not restyle rpe/[sessionId]'s already-rated card or
-                leaderboards/manage's inline prose link. Target size is still
-                19.5px against the 44px floor — left to the design proposal,
-                because changing it changes layout. */}
+              NO "once" CAPTION AND NO SPENT STATE: revise_nutrition_checkin
+              enforces no once-only rule today, so a caption promising one
+              would be untrue. Recorded as C1–C3. */}
+          <div className="after-card">
+            <h2 className="after-heading">Already answered</h2>
+            <p className="after-fact">
+              You answered <span className="num">{answerLabel}</span>.
+            </p>
+            {sentAt ? <p className="after-note num">Sent {sentAt}.</p> : null}
+            <p className="after-note">
+              This is the one entry you can change yourself. A correction creates a new revision and
+              the original is kept.
+            </p>
+          </div>
+          <div className="subm subm-stack">
+            <Link href="/today" className="btn-primary" style={{ display: 'flex', justifyContent: 'center' }}>
+              Back to Today
+            </Link>
             <Link
               href={`/nutrition-check-in?week=${weekStart}&correct=1`}
-              className="linklike"
+              className="btn-ghost"
+              style={{ display: 'flex', justifyContent: 'center' }}
             >
-              Change this answer
+              Correct this answer
             </Link>
-            <Link href="/today" className="linklike">
-              Back to today
-            </Link>
-          </p>
-        </div>
+          </div>
+        </>
       ) : (
         <NutritionCheckinForm
           orgId={orgId}

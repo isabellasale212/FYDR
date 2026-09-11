@@ -44,6 +44,11 @@ None.
 | One of three answers | Body | Selects | stays | nothing yet | no | already answered |
 | Note | Below | Free text, 280 characters | stays | nothing yet | no | already answered |
 | Done | Footer, pinned to the bottom of the screen | Saves. The footer's own line reads `0 of 1 answered · 1 to go` until an answer is chosen, then `Answered` as a green chip; until then the button is `aria-disabled` in the secondary style — never dimmed — and a tap does nothing (ATH-ADULT-03, 2026-09-11). The line beneath the button is unchanged pending the ATH-ADULT-3b board | back to Today | one `nutrition_checkins` row | **No confirmation** | already answered |
+| Already answered card | Body, when the week is answered (ATH-ADULT-08, 12 September 2026) | One emphasised card: "Already answered", then "You answered Yes." (Yes / Roughly / No — the spec's words), "Sent {date} at {time}.", and the sentence that this is the one entry you can change yourself. The week ("Mon 31 Aug to Sun 6 Sept") is the subhead | stays | nothing | no | not yet answered, or correcting |
+| Back to Today | Footer, primary, when answered | Leaves | Today | nothing | no | not yet answered, or correcting |
+| Correct this answer | Footer, secondary beneath Back to Today | Opens the correction with the original pre-selected. The banner names the real week ("Correcting your answer for Mon 31 Aug to Sun 6 Sept.") and keeps the revision sentence; once a different answer is chosen the original keeps a "Your answer" tag | stays, `?correct=1` | nothing until saved | no | not yet answered, or correcting |
+| Save correction | Footer, in the correction | Creates a revision; the original is kept. **Not limited to once today** — `revise_nutrition_checkin` enforces no once-only rule; recorded for decision | My data, nutrition tab | one revision row | no | not correcting |
+| Keep the original | Footer, secondary, in the correction | Leaves the correction without saving | the answered state | nothing | no | not correcting |
 
 ## 7. Offline and sync
 

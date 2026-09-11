@@ -3580,6 +3580,23 @@ a.hist-row:focus-visible {
   border-color: rgb(var(--accent-rgb) / 0.35);
   color: var(--accent-text);
 }
+/* ATH-ADULT-08 (2026-09-12): the neutral "Your answer" tag on the original
+   option during a correction, set to the row's end so the label stays
+   centred where it was. The existing neutral pill, nothing new. */
+.nut-answer {
+  position: relative;
+}
+.nut-answer-tag {
+  position: absolute;
+  right: var(--sp-14);
+}
+/* Two exits stacked in one footer (ATH-ADULT-08): the primary, then the
+   secondary at --sp-8 beneath it. */
+.subm-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
 
 /* ---------- gym logging, full screen, §9 ----------
  * Real: gym_session_logs/gym_set_logs are plain inserts and an UPDATE, not

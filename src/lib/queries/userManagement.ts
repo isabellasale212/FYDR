@@ -168,11 +168,50 @@ async function recordUserAudit(
   return { error: error?.message ?? null };
 }
 
+/** The two refusals the DATABASE makes on user_roles since 2026-09-11 (§0ae,
+ *  migrations 0101 and 0102), stated here so the panels can disable the
+ *  control before a person hits them and setUserRoles can say why in the
+ *  app's own words. The database is the guard; these are the courtesy.
+ *
+ *  - SELF_MEDIC: a sport scientist may not grant medic to themselves — it is
+ *    the one gate (CLINICAL_ONLY) their role does not hold. To others: yes.
+ *  - LAST_ADMIN: the only sport_scientist row in an org cannot be removed. */
+export const ROLE_REFUSALS = {
+  selfMedic: 'You cannot grant yourself the medic role. Another sport scientist can.',
+  lastAdmin: 'This is the only admin in the club — remove the role from someone else first, or grant it to another user before removing it here.',
+} as const;
+
+/** Whether a given role chip on a given row should be disabled, and why.
+ *  Pure, so both panels and the guard read the same rule. */
+export function roleToggleRefusal(
+  role: AppRole,
+  held: boolean,
+  isSelf: boolean,
+  sportScientistCount: number,
+): string | null {
+  if (isSelf && role === 'medic' && !held) return ROLE_REFUSALS.selfMedic;
+  if (isSelf && role === 'sport_scientist' && held && sportScientistCount <= 1) return ROLE_REFUSALS.lastAdmin;
+  return null;
+}
+
+/** How many sport_scientist rows the org holds — the count the last-admin
+ *  rule is about. Rows, not users, to match user_roles_guard exactly. */
+export async function fetchSportScientistCount(db: Db, orgId: string): Promise<number> {
+  const { count, error } = await db
+    .from('user_roles')
+    .select('user_id', { count: 'exact', head: true })
+    .eq('org_id', orgId)
+    .eq('role', 'sport_scientist');
+  if (error) throw new Error(error.message);
+  return count ?? 0;
+}
+
 /** Sets a user's roles to exactly `roles` (additive set, not a toggle) —
  *  inserts what's missing, deletes what's no longer there. Refuses to
- *  leave an organisation with zero admins, the one guardrail the spec's
- *  own "requireTyped for removing the last admin" is standing in for here,
- *  without the typed-confirmation UI. */
+ *  leave an organisation with zero admins, and refuses a self-grant of
+ *  medic — both now enforced by user_roles_guard at the database (§0ae);
+ *  the checks here exist to say why in the app's words before the
+ *  database says it in its own. */
 export async function setUserRoles(
   db: Db,
   orgId: string,
@@ -186,6 +225,10 @@ export async function setUserRoles(
   const current = new Set((currentRows ?? []).map((r) => r.role));
   const next = new Set(nextRoles);
 
+  if (targetUserId === actorId && next.has('medic') && !current.has('medic')) {
+    return { error: ROLE_REFUSALS.selfMedic, primaryOk: false };
+  }
+
   const removingAdmin = current.has('sport_scientist') && !next.has('sport_scientist');
   if (removingAdmin) {
     const { count, error: countErr } = await db
@@ -195,7 +238,7 @@ export async function setUserRoles(
       .eq('role', 'sport_scientist');
     if (countErr) return { error: countErr.message, primaryOk: false };
     if ((count ?? 0) <= 1) {
-      return { error: 'This is the only admin in the club — remove the role from someone else first, or grant it to another user before removing it here.', primaryOk: false };
+      return { error: ROLE_REFUSALS.lastAdmin, primaryOk: false };
     }
   }
 

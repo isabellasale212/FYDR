@@ -10,6 +10,8 @@ import {
   type UnlinkedAthlete,
   type UserAuditRow,
   type UserDetail,
+  ROLE_REFUSALS,
+  roleToggleRefusal,
 } from '@/lib/queries/userManagement';
 import type { RemoveMfaFactorResult } from '@/app/(staff)/settings/users/[userId]/mfa/route';
 import { Pill } from '@/components/Pill/Pill';
@@ -30,6 +32,9 @@ type Props = {
   history: UserAuditRow[];
   unlinkedAthletes: UnlinkedAthlete[];
   isSelf: boolean;
+  /** How many sport_scientist rows the org holds; the last one cannot be
+   *  removed, so the self-row chip is disabled when it is this user's. */
+  sportScientistCount: number;
   /** login-security checklist item 3: the real read this used to hardcode as "Not
    *  enrolled" for everyone — see page.tsx's own header. null means genuinely not
    *  enrolled, not "unknown". */
@@ -71,7 +76,7 @@ const AUDIT_ACTION_LABEL: Record<string, string> = {
  *  second, differently-timed edit pattern on the same data one click away
  *  would be a real inconsistency, not a faithful rendering of the
  *  wireframe's intent. */
-export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezone, user, history, unlinkedAthletes, isSelf, mfaFactor }: Props) {
+export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezone, user, history, unlinkedAthletes, isSelf, sportScientistCount, mfaFactor }: Props) {
   const router = useRouter();
   const [roles, setRoles] = useState(user.roleGrants.map((g) => g.role).sort());
   const [status, setStatus] = useState(user.status);
@@ -180,12 +185,32 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezo
               Roles
             </h2>
             <div className="chiprow">
-              {ALL_ROLES.map((role) => (
-                <button key={role} type="button" className="squad-chip" aria-pressed={roles.includes(role)} disabled={busyRole === role || status === 'deactivated'} onClick={() => toggleRole(role)}>
-                  {enumLabel(role)}
-                </button>
-              ))}
+              {ALL_ROLES.map((role) => {
+                /* §0ae: the database refuses a self-grant of medic and the
+                   removal of the last sport scientist. The chip stops people
+                   hitting that; the refusal itself is the trigger's. */
+                const refusal = roleToggleRefusal(role, roles.includes(role), isSelf, sportScientistCount);
+                return (
+                  <button
+                    key={role}
+                    type="button"
+                    className="squad-chip"
+                    aria-pressed={roles.includes(role)}
+                    disabled={busyRole === role || status === 'deactivated' || refusal !== null}
+                    title={refusal ?? undefined}
+                    onClick={() => toggleRole(role)}
+                  >
+                    {enumLabel(role)}
+                  </button>
+                );
+              })}
             </div>
+            {isSelf ? (
+              <p className="cap" style={{ marginTop: 'var(--sp-10)' }}>
+                {roleToggleRefusal('medic', roles.includes('medic'), true, sportScientistCount) ? `${ROLE_REFUSALS.selfMedic} ` : ''}
+                {roleToggleRefusal('sport_scientist', roles.includes('sport_scientist'), true, sportScientistCount) ? ROLE_REFUSALS.lastAdmin : ''}
+              </p>
+            ) : null}
             <p className="cap" style={{ marginTop: 'var(--sp-10)' }}>
               Roles are additive. This user has the union of every ticked role&apos;s permissions.
             </p>

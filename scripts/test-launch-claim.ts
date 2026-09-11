@@ -83,21 +83,33 @@ const FEATURES = [
   { key: 'this-morning', label: 'This morning', caption: 'entries against each athlete', stroke: '1.4' },
 ];
 
-console.log('the headline says what was asked for, in the face that was asked for');
+console.log('the claim column is painted above the ground, not behind it');
+{
+  /* .launch-ground is position: fixed, z-index: 0 — a stacking layer above
+     every non-positioned sibling. Until 2026-09-11 this column was exactly
+     that: its headline and grid were in the DOM, measurable (which is how the
+     to-do item measured label widths), and invisible. Found while closing
+     collision 1. */
+  const c = rule('.launch-claim');
+  assert(/position: relative/.test(c) && /z-index: 1/.test(c), '.launch-claim is positioned with z-index 1, like the lockup and the panel, so it renders above .launch-ground');
+}
+
+console.log('\nthe headline says what was asked for, in the face that was asked for');
 {
   assert(/Data, finally worth reading\./.test(flat), 'the copy is "Data, finally worth reading."');
   const h = rule('.launch-claim-h');
   assert(h !== '', '.launch-claim-h exists');
-  assert(/font-family: var\(--font-brand\)/.test(h), 'set in Sora, the brand face');
+  /* DECIDED 2026-09-11 (Isabella, closing collision 1): Roboto 800, not Sora
+     — the brand face stays wordmark-only, which test-brand-face.ts now pins
+     from its side. And a clamp after all: clamp(34px, 3.5vw, --fs-48), the
+     second of the two options the to-do item offered, chosen over a fixed 48
+     because a fixed 48 over-ran its column by 0.6px at exactly 1080. It
+     reaches the true 48 from ~1371px up. 34 is not a step on the type scale;
+     it is the number that was decided, and this is where that is recorded. */
+  assert(/font-family: var\(--font-sans\)/.test(h), 'set in Roboto (--font-sans), not the brand face');
+  assert(!/--font-brand/.test(h), 'Sora stays wordmark-only');
   assert(/font-weight: 800/.test(h), 'weight 800');
-  /* 3rem, not 48px, since the 2026-09-08 rem conversion — and the assertion's
-     intent is untouched. What it was written to reject is a FLUID size that
-     never reaches 48 (a clamp whose upper bound the viewport never hits). 3rem
-     computes to exactly 48px at the default root, so the headline is still a
-     true 48px; it now also follows a reader who has raised their text size,
-     which a fixed px never did. `max-width` is in `ch`, which scales with the
-     font, so the overflow relationship this file measured holds at any root. */
-  assert(/font-size: var\(--fs-48\)/.test(h), 'a true 48px, not a clamp that never reaches it');
+  assert(/font-size: clamp\(34px, 3\.5vw, var\(--fs-48\)\)/.test(h), 'clamp(34px, 3.5vw, --fs-48): fluid to the column, a true 48 where the column has room');
   assert(/line-height: 1\.1\b/.test(h), 'line-height 1.1');
   assert(/letter-spacing: -0\.03em/.test(h), 'tracking -0.03em');
   assert(

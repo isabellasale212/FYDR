@@ -606,8 +606,11 @@ vanish outright — no ghost, no "Removed on your screen…", no Restore — whi
 the "same act as Discard" SS-10 describes. **The confirmation copy is then
 wrong for that case**: "You can undo with Discard, until you publish" — there
 is nothing to undo to. Measured 2026-09-11 on a wizard draft. The published-
-session ghost path was **not reachable** on scratch: the seed has no future
-published non-fixture session this week and next week is empty.
+session ghost path was **verified 2026-09-11** on a session published for the
+purpose and removed again: ghost with no fill and the name struck through, in
+place; the panel reading "Removed on your screen. Athletes still see this
+session until you publish." with "Restore session"; the banner at "1 change
+not yet in the athlete app"; the removal then published.
 
 ---
 
@@ -652,12 +655,21 @@ before these edits. Nothing changes on their phone until you publish."
 
 **Steps.**
 
-1. Press "Publish to athletes" — label becomes "Publishing…" while in flight.
+1. Press "Publish to athletes" — label becomes "Publishing…" and the button is
+   disabled while in flight (verified). On success the banner returns to "The
+   athlete app is up to date" and the session appears on each participant's
+   Today week strip as a typed marker (e.g. "S 13 · Training · MD+1"), not by
+   name.
 
 **Branches.**
 
-- IF the write fails THEN a `role="alert"` line beginning "Not published:"
-  renders in the banner, and the button returns to enabled.
+- IF the write fails **server-side** THEN a `role="alert"` line beginning "Not
+  published:" renders in the banner, and the button returns to enabled.
+- **IF the network fails** THEN the line is set and then lost: the handler's
+  unconditional `router.refresh()` cannot fetch, Next falls back to a full
+  reload, and **every pending change in the week is discarded** with no
+  message. Reproduced 2026-09-11 with the network emulated offline. Filed
+  (§0al).
 - The banner **text** renders for every role; the **actions** only with
   `SESSION_EDIT`.
 

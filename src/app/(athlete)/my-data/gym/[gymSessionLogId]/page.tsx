@@ -8,9 +8,16 @@ import { requireAthlete } from '@/lib/session';
 
 export const metadata = { title: 'Gym session · Fydr' };
 
-/** An em dash for a missing number, never a 0 — the same rule the rest of My data
- *  follows, because a zero is a reading and a blank is the absence of one. */
-const dash = (v: number | null): string => (v === null ? '—' : String(v));
+/** A set as the athlete reported it, in words when a number is absent — never a
+ *  0, because a zero is a reading and a blank is the absence of one, and never a
+ *  dash, which reads as a low value at a glance (ATH-ADULT-12/13, the same rule
+ *  the rest of My data follows since 2026-09-12). */
+function describeSet(v: { reps_completed: number | null; load_kg: number | null }): string {
+  if (v.reps_completed === null && v.load_kg === null) return 'nothing logged';
+  if (v.load_kg === null) return `${v.reps_completed} reps, load not logged`;
+  if (v.reps_completed === null) return `reps not logged at ${v.load_kg} kg`;
+  return `${v.reps_completed} reps at ${v.load_kg} kg`;
+}
 
 /** My Data, gym tab, session detail — the minimal gym history view my-data/page.tsx's own
  *  header comment named as missing. fetchGymSessionLog reads gym_session_logs_current
@@ -29,6 +36,10 @@ export default async function GymSessionHistoryPage({
 
   const sets = await fetchGymSessionSetDetails(db, gymSessionLogId);
   const totalVolume = sets.reduce((sum, s) => sum + (s.reps_completed ?? 0) * (s.load_kg ?? 0), 0);
+  /* "Not logged" rather than "0 kg" when no set carries a load: a bodyweight
+     session has tonnage nobody recorded, not a tonnage of nothing. */
+  const hasLoad = sets.some((s) => s.load_kg !== null);
+  const exerciseCount = new Set(sets.map((s) => s.exercise_name)).size;
 
   /* §0v: the correction panel in the live logger promises "My data marks the day
      corrected and shows what you first reported", and until 2026-09-10 My data did
@@ -50,6 +61,38 @@ export default async function GymSessionHistoryPage({
           </span>
         ) : null}
       </div>
+      {/* ATH-ADULT-13 (2026-09-12): the summary line is the hero. The two
+          figures My data's own list leads with — tonnage and session RPE — at
+          the size the Wellness, Gym and Tests heroes use (.rd-value, settled
+          by ATH-ADULT-12), each over the fact that derives it. The one-line
+          summary the page always had is kept beneath, as the board keeps it. */}
+      <section className="card sd-hero" aria-label="Session summary">
+        <div>
+          <p className="eyebrow">Total volume</p>
+          {hasLoad ? (
+            <p className="rd-value num">
+              {formatNumber(totalVolume, 0)}
+              <span className="rd-unit">kg</span>
+            </p>
+          ) : (
+            <p className="rd-value num" data-missing="">
+              Not logged
+            </p>
+          )}
+          <p className="rd-mean">
+            {corrected.length > 0
+              ? `${sets.length} sets · recomputed after a correction`
+              : `${sets.length} ${sets.length === 1 ? 'set' : 'sets'} across ${exerciseCount} ${exerciseCount === 1 ? 'exercise' : 'exercises'}`}
+          </p>
+        </div>
+        <div>
+          <p className="eyebrow">Session RPE</p>
+          <p className="rd-value num" data-missing={session.session_rpe === null ? '' : undefined}>
+            {session.session_rpe !== null ? formatNumber(session.session_rpe, 1) : 'Not rated'}
+          </p>
+          <p className="rd-mean">as you rated it</p>
+        </div>
+      </section>
       <p className="import-sub">
         {sets.length} set{sets.length === 1 ? '' : 's'} logged
         {session.session_rpe !== null ? ` · session RPE ${formatNumber(session.session_rpe, 1)}` : ''}
@@ -92,19 +135,28 @@ export default async function GymSessionHistoryPage({
             {corrected.map((c) => (
               <li key={c.current.id} className="num">
                 {`Set ${c.current.set_number}: `}
-                {c.priorRevisions
-                  .map((rev) => `${dash(rev.reps_completed)} reps at ${dash(rev.load_kg)} kg`)
-                  .join(' → ')}
-                {` → now ${dash(c.current.reps_completed)} reps at ${dash(c.current.load_kg)} kg`}
+                {c.priorRevisions.map(describeSet).join(' → ')}
+                {` → now ${describeSet(c.current)}`}
               </li>
             ))}
           </ol>
         </section>
       ) : null}
 
-      <p className="tiny">
-        <Link href="/my-data?tab=gym">Back to gym history</Link>
-      </p>
+      {/* ONE WAY BACK, full width, named for its destination (ATH-ADULT-13;
+          §0w's third item). A .btn-ghost, not the primary: the board reserves
+          the primary halo for Save correction. The shell's own Back button
+          stands down on this route (BackButton's SELF_DISMISSING), so this is
+          the one control rather than the second of two. */}
+      <div className="subm">
+        <Link
+          href="/my-data?tab=gym"
+          className="btn-ghost"
+          style={{ display: 'flex', justifyContent: 'center' }}
+        >
+          Back to gym history
+        </Link>
+      </div>
     </>
   );
 }

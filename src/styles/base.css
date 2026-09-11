@@ -1155,6 +1155,13 @@ table.tbl td {
   border-top: 1px solid var(--hair);
   vertical-align: middle;
 }
+/* An absent number in a My data table cell is the words "Not logged", in the
+   absent-value ink (ATH-ADULT-13) — the same rule as .hist-value[data-missing]. */
+table.tbl td[data-missing] {
+  color: var(--faint);
+  font-weight: 600;
+  white-space: nowrap;
+}
 table.tbl th.r,
 table.tbl td.r {
   text-align: right;
@@ -1814,6 +1821,25 @@ body:has(.phone) {
   margin: var(--sp-4) 0 0;
   font-size: var(--fs-13);
   color: var(--muted);
+}
+
+/* A hero slot holding a word instead of a figure — "Not rated", "Not logged" on
+   the session detail (ATH-ADULT-13). The detail line's size and the absent-
+   value ink, not a 48px word: the absence of a number is not a number. */
+.rd-value[data-missing] {
+  font-size: var(--fs-16);
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--faint);
+  /* Keeps the figure's line box, so the two hero columns stay level. */
+  line-height: 3rem;
+}
+/* The session detail's hero, ATH-ADULT-13: tonnage and session RPE side by
+   side, each an eyebrow over a .rd-value over its derivation (.rd-mean). */
+.sd-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-14);
 }
 
 /* The unit after a display value — "1.90 s", Fydr Athlete App.dc.html 23m.

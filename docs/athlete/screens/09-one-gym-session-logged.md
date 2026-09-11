@@ -3,7 +3,7 @@
 ## 1. Where it sits
 
 Reached from the gym region of My data. Route
-`/my-data/gym/[gymSessionLogId]`. File 56 lines.
+`/my-data/gym/[gymSessionLogId]`.
 
 ## 2. Who reaches it and when
 
@@ -12,7 +12,25 @@ header comment named as missing.
 
 ## 3. What you see
 
-The sets logged in that session.
+The date as the heading, with a "Corrected" pill beside it when any set has a
+prior revision (§0v). Then, since ATH-ADULT-13 (12 September 2026), **a two-up
+hero card**: "Total volume" — the live sets' tonnage as a 48px figure with "kg"
+as its unit, over "N sets across M exercises" (or "N sets · recomputed after a
+correction" when a set was revised; true, because 0045's `revise_gym_set_log`
+recomputes the stored total from live sets and this page sums live sets) — and
+"Session RPE" over "as you rated it". A session with no load on any set reads
+**"Not logged"** in the tonnage slot; an unrated session reads **"Not rated"**.
+The one-line summary the page always had ("6 sets logged · session RPE 6.0 ·
+3240 kg total") is kept beneath the card.
+
+Then the sets logged in that session, as a table: set number, exercise, reps,
+load, and a "Correct" button per row. **An absent reps or load reads "Not
+logged"**, never a dash and never a zero. Beneath the table: "A correction keeps
+the original. Corrections stay open on a finished session."
+
+When a set was corrected, the "What you reported" card lists each corrected
+set's prior values in words ("8 reps at 100 kg → now 8 reps at 102.5 kg";
+"8 reps, load not logged" when a value was absent).
 
 ## 4. What the athlete enters here
 
@@ -27,7 +45,14 @@ a computed metric.**
 
 | Element | Where | What happens | Takes you to | Writes | Confirm | Hidden when |
 |---|---|---|---|---|---|---|
-| Back | Top | Returns | `/my-data` | nothing | no | never |
+| Back to gym history | Footer, full width, sticky | Returns to the gym tab | `/my-data?tab=gym` | nothing | no | never |
+| Correct | Each set row | Opens the inline correction (reps, load; Save / Cancel) | stays | `revise_gym_set_log` | no | while another row is being corrected |
+
+**One way back.** The shell's own Back button stands down on this route
+(`BackButton`'s `SELF_DISMISSING`), so the footer button is the only back
+control — the board draws one, and §0w's third item recorded the pair as this
+flow's redundancy question. The footer button is the secondary (`.btn-ghost`):
+the primary is reserved for a future Save correction.
 
 ## 7. Offline and sync
 
@@ -59,3 +84,26 @@ primary actions sit low.
 ## 12. Open issues
 
 None found.
+
+## 13. What the 12 September pass (ATH-ADULT-13) changed, and what it recorded
+
+Built from the "ATH-ADULT-12-13 · FINAL" board, A items only; the record with a
+recommendation per item is `docs/overnight-records-2026-09-12.md`:
+
+- **One way back** (§6): a full-width "Back to gym history" in a sticky footer
+  replaces the 15px text link, and the shell's Back stands down here.
+- **The summary line is the hero** (§3): tonnage and session RPE at the My data
+  hero size (`.rd-value`, 48px), each over its derivation; the original line
+  kept beneath.
+- **"N sets · recomputed after a correction"** when a set was revised.
+- **Absent values are words** — "Not logged" in the cells and in "What you
+  reported"; "Not rated" for a missing session RPE.
+- **The footer note** is the board's two sentences.
+
+Recorded, not built: the eyebrow "Gym · Lower A · complete" (the read selects
+neither the programme session's name nor `status`); tapping a row to correct
+with the logger's panel and a Save correction / Cancel footer; the per-row
+"Corrected · was 100 kg × 8" marker and the "Corrected" pill on the history
+list (no per-session revised flag on the list read; the 3px bar has no pattern
+here); "4 of 6 shown" on a small phone; no tab bar on this screen (a shell
+decision). §0v's "What you reported" card stays as built.

@@ -224,8 +224,14 @@ export function GymSessionSetsList({ sets }: Props) {
                     </>
                   ) : (
                     <>
-                      <td className="r num">{s.reps_completed ?? '—'}</td>
-                      <td className="r num">{s.load_kg !== null ? `${s.load_kg} kg` : '—'}</td>
+                      {/* Words for an absent number, never a dash — ATH-ADULT-12/13,
+                          the rule the rest of My data follows. */}
+                      <td className="r num" data-missing={s.reps_completed === null ? '' : undefined}>
+                        {s.reps_completed ?? 'Not logged'}
+                      </td>
+                      <td className="r num" data-missing={s.load_kg === null ? '' : undefined}>
+                        {s.load_kg !== null ? `${s.load_kg} kg` : 'Not logged'}
+                      </td>
                       <td className="sub">
                         <button
                           type="button"
@@ -243,9 +249,12 @@ export function GymSessionSetsList({ sets }: Props) {
           </tbody>
         </table>
       </div>
+      {/* The board's two sentences (ATH-ADULT-13). Both true of revise_gym_set_log
+          (0044/0045): the original row is kept as superseded, and nothing limits
+          how long after a session a set can be corrected. */}
       <p className="tiny">
-        Correcting a set keeps the original, marks it superseded, and records a linked
-        revision — nothing is overwritten.
+        A correction keeps the original. Corrections stay open on a finished
+        session.
       </p>
     </div>
   );

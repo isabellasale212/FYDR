@@ -484,10 +484,11 @@ a cleared duration submits `null` (§0ah).
 1. Fill "Opponent" (`id="f-opponent"`, placeholder "Ashfield RFC", max 80 chars).
 2. Fill "Date" (`id="f-date"`) and "Kick-off" (`id="f-time"`, defaults to 14:00).
 3. Choose "Home or away" — a fieldset with a legend and three chips: "Home",
-   "Away", "Neutral", each `aria-pressed`.
+   "Away", "Neutral", each `aria-pressed`. **"Home" is pressed by default.**
 4. Optionally fill "Venue" (`id="f-venue"`, placeholder "Ashcombe Park") and
    "Competition" (`id="f-competition"`, placeholder "League").
 5. Choose "Importance" — four chips: "Friendly", "Normal", "Key", "Cup final".
+   **"Normal" is pressed by default.** Date pre-fills to today; kick-off to 14:00.
    Caption: "Used to weight the match in load planning. Leave it on Normal
    unless this one is treated differently."
 6. Press "Create fixture".
@@ -530,7 +531,9 @@ but it **names nobody**. A session is what athletes are rostered to.
    name, "{Weekday} {date} · {start} – {end} · {location}", type, any
    restriction-conflict warning, and GROUP / DURATION / MD / EXPECTS, plus a
    "What the athlete sees" preview.
-2. Adjust with the four steppers: "Earlier", "Later", "Shorter", "Longer".
+2. Adjust with the four steppers — **two `−`/`+` pairs whose `aria-label`s are
+   "Earlier", "Later", "Shorter", "Longer"**; the words are not visible. Each
+   is **40px** (measured 2026-09-11).
    - Also visible: group chips; "Remove session" (when the session is not in the
      past, or is an unpublished draft); "Duplicate"; and, once this session has a
      pending change, "Cancel changes".
@@ -543,7 +546,25 @@ but it **names nobody**. A session is what athletes are rostered to.
 - IF the session is a **staged draft** THEN "Cancel changes" is **not** offered;
   "Remove session" is the same act and already carries a confirmation.
 - IF the session is in the past and already published THEN "Remove session" is
-  not offered.
+  not offered — **and neither are the four steppers**: the panel for a past
+  session carries "Duplicate" only (measured on Mon 7 Sept's "Unit skills").
+- **A draft started from the toolbar's "+ Session" does not open this panel.**
+  It opens a **three-step wizard** in the same rail — "Step 1 of 3 · What"
+  (a name input, placeholder "Session name", **no label or `id`**; the seven
+  type chips; "Next", 35px; "Give it a name to continue." until named),
+  "Step 2 of 3 · When & where" (seven day chips Mon–Sun for the shown week; the
+  same `−`/`+` steppers; a location input, **also unlabelled**), "Step 3 of 3 ·
+  Who" (the group chips; "Nobody selected means staff only — no athlete will
+  see this in their app."), ending in **"Add to {weekday}"**. A "✕" with
+  `aria-label="Discard this session"` (44px) sits in the head throughout. Only
+  once added does the draft get the selected-session panel above, with
+  "Remove session" and "Duplicate" but no "Cancel changes". The preview line
+  under it reads "Publishes to {group} · appears under Today on the morning of
+  {date}".
+- **The "What the athlete sees" preview's EXPECTS line is a fixed string per
+  type** — `scheduleGeometry.ts` `EXPECTS`: training "RPE due by 19:45", gym
+  "Sets to log", match "RPE after full time", testing "Staff entered", rehab
+  "Stage log". It does not read the session's time. Filed (§0aj).
 
 **End state.** Changes are held locally. Nothing reaches athletes until Publish.
 
@@ -557,8 +578,8 @@ but it **names nobody**. A session is what athletes are rostered to.
 
 1. Press "Remove session".
 2. A confirmation replaces the actions: "Remove this session? You can undo with
-   Discard, until you publish." with "Yes, remove" (`.sg-btn-remove`) and "Never
-   mind" (`.btn-ghost`).
+   Discard, until you publish." with "Yes, remove" (`.sg-btn-remove`, **37px**)
+   and "Never mind" (`.btn-ghost`, 44px).
 3. Press "Yes, remove".
 4. The block leaves the grid and is redrawn as a **ghost**: no fill, name struck
    through, in place. The panel stays on it and shows: the name, the time line,
@@ -579,6 +600,15 @@ but it **names nobody**. A session is what athletes are rostered to.
 **End state.** Either the session is restored, or the removal stays pending
 until Publish.
 
+**The ghost and "Restore session" apply to PUBLISHED sessions only.** Removing
+a **staged draft** (one added through the wizard and not yet published) makes it
+vanish outright — no ghost, no "Removed on your screen…", no Restore — which is
+the "same act as Discard" SS-10 describes. **The confirmation copy is then
+wrong for that case**: "You can undo with Discard, until you publish" — there
+is nothing to undo to. Measured 2026-09-11 on a wizard draft. The published-
+session ghost path was **not reachable** on scratch: the seed has no future
+published non-fixture session this week and next week is empty.
+
 ---
 
 ## STAFF-SS-12 — Use the edit-mode toolbar
@@ -588,9 +618,14 @@ entirely without `SESSION_EDIT`.
 
 **Controls, all on one row.**
 
-- "+ Session" — starts a draft **in the grid**, not the `/schedule/new` screen.
-- A divider, then the label "Apply template", then one chip per saved template.
-- "Save this week as a template" (`.btn-ghost`).
+- "+ Session" — starts a draft **in the grid** via the three-step wizard
+  (SS-10), not the `/schedule/new` screen. A `<button>`, **35px**.
+- A divider, then the label "Apply template", then one chip per saved template
+  — each an **`<a>` to `/schedule/planner/apply?week=…&template=…`**, a preview
+  screen, not an immediate application. Measured: one, "Standard 1-game week",
+  44px.
+- "Save this week as a template" (`.btn-ghost`, 44px) — an **`<a>` to
+  `/schedule/planner/new`**.
 
 **Branches.**
 

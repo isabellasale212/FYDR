@@ -1254,6 +1254,17 @@ Two behaviour changes the sign-in proposal asked for, both outside the design-on
 - [ ] **"Rehab" is both a session type and a group** on the same form, in adjacent chip rows under "Type" and "Who's in it". Not a bug; a naming collision worth knowing about before either list grows.
 
 
+## 0aj. From the STAFF-SS-09 to -12 review — 2026-09-11
+
+- [ ] **The schedule panel's "What the athlete sees" tells staff an RPE is "due by 19:45" for every training session, whatever its time.** `scheduleGeometry.ts:125`, `EXPECTS.training: 'RPE due by 19:45'` — a fixed string per session type carried over from the spec's §6 mockup. It was always a placeholder; since `lib/rpeDue.ts` landed (ATH-ADULT-02, `cfd410b`) the real due time is `starts_at + duration_min + 30 min`, so a 09:00–10:00 session is due 10:30 and the preview says 19:45. The line's whole purpose is to show staff what the athlete will be told; it now shows something the athlete is not told. **Fix:** compute it from `rpeDueAt` for training and match sessions; the other types' strings are fine.
+
+- [ ] **"Yes, remove" on a staged draft says "You can undo with Discard, until you publish" — there is nothing to undo to.** A draft that has not been published vanishes on removal (no ghost, no Restore — the "same act as Discard" SS-10 records), so the promise is empty for exactly the case where it is shown. Either branch the copy on `isDraft` or drop the second sentence for drafts.
+
+- [ ] **Four schedule controls under the 44px floor:** the `−`/`+` steppers (Earlier/Later/Shorter/Longer) at **40px**; "Yes, remove" (`.sg-btn-remove`) at **37px**; the toolbar's "+ Session" at **35px**; the wizard's "Next" at **35px**. These are the schedule's most-pressed controls in Edit mode.
+
+- [ ] **Two unlabelled inputs in the draft wizard.** Step 1's name field (placeholder "Session name") and step 2's location field have no `<label>`, no `id`, no `aria-label` — a placeholder is not an accessible name once typed over. The full-screen `/schedule/new` form labels the same two fields correctly.
+
+
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.
 

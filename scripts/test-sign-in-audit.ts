@@ -25,6 +25,10 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { signInAuditRow, recordSignIn, recordSignInFailure, signInFailureRow, SIGN_IN_ACTION, SIGN_IN_ENTITY, SIGN_IN_FAILED_ACTION } from '@/lib/signInAudit';
+/* §0ao: a case that expects the code under test to swallow and log a failure
+   captures the log and asserts on it, instead of letting it print into the
+   build output as if it were real. See scripts/lib/capture-console.ts. */
+import { captureConsoleError } from './lib/capture-console';
 import { claimsFromSession, sessionIdFromAccessToken } from '@/lib/supabase/claims';
 import type { FydrClaims } from '@/lib/supabase/claims';
 
@@ -212,9 +216,12 @@ console.log('\nthe sign-in also stamps last_seen_at, and never at the sign-in\'s
       }),
     };
     let threw = false;
-    try { await recordSignIn(db as never, claims(), h({}), 'password'); } catch { threw = true; }
+    const { logged } = await captureConsoleError(async () => {
+      try { await recordSignIn(db as never, claims(), h({}), 'password'); } catch { threw = true; }
+    });
     assert(!threw, 'an audit insert that throws is still caught');
     assert(calls.includes('update:users'), 'and last_seen_at is written anyway — the two do not share a fate');
+    assert(logged.length === 1 && logged[0] === 'sign-in audit write failed, sign-in itself unaffected Error: audit down', 'and the swallowed failure is logged, once, saying which write and that the sign-in stood');
   }
 
   {
@@ -226,9 +233,12 @@ console.log('\nthe sign-in also stamps last_seen_at, and never at the sign-in\'s
       }),
     };
     let threw = false;
-    try { await recordSignIn(db as never, claims(), h({}), 'password'); } catch { threw = true; }
+    const { logged } = await captureConsoleError(async () => {
+      try { await recordSignIn(db as never, claims(), h({}), 'password'); } catch { threw = true; }
+    });
     assert(!threw, 'a last_seen write that throws is caught too — a stamp must never cost somebody their sign-in');
     assert(calls.includes('insert:audit_log'), 'and the audit row is still written');
+    assert(logged.length === 1 && logged[0] === 'last_seen_at stamp failed, sign-in itself unaffected Error: users down', 'and the stamp failure is logged, once, by name');
   }
 
   /* THE ORG-LESS CASE. signInAuditRow refuses a row with no org because the RLS
@@ -238,7 +248,7 @@ console.log('\nthe sign-in also stamps last_seen_at, and never at the sign-in\'s
      claims are missing an org has still signed in. */
   {
     const { db, calls } = spy();
-    await recordSignIn(db as never, claims({ orgId: null }), h({}), 'password');
+    const { logged } = await captureConsoleError(() => recordSignIn(db as never, claims({ orgId: null }), h({}), 'password'));
     assert(
       calls.some((c) => c.table === 'users' && c.op === 'update'),
       'no org means no audit row, and last_seen_at is stamped regardless',
@@ -247,12 +257,14 @@ console.log('\nthe sign-in also stamps last_seen_at, and never at the sign-in\'s
       !calls.some((c) => c.table === 'audit_log'),
       'and the doomed audit insert is still not attempted',
     );
+    assert(logged.length === 1 && /^sign-in audit skipped: no org or actor in the fresh session claims \{"hasUser":true,"hasOrg":false,"method":"password"\}$/.test(logged[0] ?? ''), 'the skip is logged with what was missing, without the claims themselves');
   }
 
   {
     const { db, calls } = spy();
-    await recordSignIn(db as never, claims({ userId: '' }), h({}), 'password');
+    const { logged } = await captureConsoleError(() => recordSignIn(db as never, claims({ userId: '' }), h({}), 'password'));
     assert(calls.length === 0, 'but with no actor at all there is nobody to stamp, and nothing is written');
+    assert(logged.length === 1 && /"hasUser":false,"hasOrg":true/.test(logged[0] ?? ''), 'and that skip is logged too');
   }
 }
 
@@ -266,12 +278,18 @@ console.log('\nfailing to log must never cost somebody their sign-in');
   const errors = { from: () => ({ update: () => ({ eq: async () => ({ error: null }) }), insert: async () => ({ error: { message: 'new row violates row-level security policy' } }) }) };
 
   let threw = false;
-  try { await recordSignIn(rejects as never, claims(), h({}), 'password'); } catch { threw = true; }
+  const thrown = await captureConsoleError(async () => {
+    try { await recordSignIn(rejects as never, claims(), h({}), 'password'); } catch { threw = true; }
+  });
   assert(!threw, 'a thrown insert is caught — the rate limiter already degrades this way and so does this');
+  assert(thrown.logged.length === 1 && /Error: PostgREST unreachable$/.test(thrown.logged[0] ?? ''), 'and logged as the failure it was');
 
   threw = false;
-  try { await recordSignIn(errors as never, claims(), h({}), 'password'); } catch { threw = true; }
+  const returned = await captureConsoleError(async () => {
+    try { await recordSignIn(errors as never, claims(), h({}), 'password'); } catch { threw = true; }
+  });
   assert(!threw, 'and a returned PostgREST error is not rethrown');
+  assert(returned.logged.length === 1 && /new row violates row-level security policy/.test(returned.logged[0] ?? ''), 'but is logged with PostgREST\'s own message');
 
   /* POSITIVE CONTROL. Without this the two assertions above pass just as well
      for a function that never inserts anything at all, which is the failure
@@ -299,8 +317,9 @@ console.log('\nfailing to log must never cost somebody their sign-in');
 
   // The refusal must not reach the database either.
   sent = null;
-  await recordSignIn(working as never, claims({ orgId: null }), h({}), 'password');
+  const refused = await captureConsoleError(() => recordSignIn(working as never, claims({ orgId: null }), h({}), 'password'));
   assert(sent === null, 'a refused row is not sent at all, rather than sent and lost');
+  assert(refused.logged.length === 1 && /^sign-in audit skipped/.test(refused.logged[0] ?? ''), 'and the refusal is logged as a skip');
 }
 
 console.log('\nclaims are read from the session the auth server just issued');
@@ -393,10 +412,13 @@ console.log('\n   ...and failing to record it never costs anything either');
 {
   const rejects = { from: () => ({ update: () => ({ eq: async () => ({ error: null }) }), insert: async () => { throw new Error('down'); } }) };
   let threw = false;
-  try {
-    await recordSignInFailure(rejects as never, { orgId: 'o', userId: 'u' }, h({}), { attemptsRemaining: 4, locked: false });
-  } catch { threw = true; }
+  const { logged } = await captureConsoleError(async () => {
+    try {
+      await recordSignInFailure(rejects as never, { orgId: 'o', userId: 'u' }, h({}), { attemptsRemaining: 4, locked: false });
+    } catch { threw = true; }
+  });
   assert(!threw, 'a thrown insert is caught, like every other write on this route');
+  assert(logged.length === 1 && logged[0] === 'failed-sign-in audit write failed, sign-in result unaffected Error: down', 'and logged, once, saying the result stood');
 
   // Positive control, for the same reason as the success path's.
   let sent: unknown = null;

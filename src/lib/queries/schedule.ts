@@ -992,6 +992,9 @@ export type NewSessionInput = {
   fixtureId?: string | null;
 };
 
+/** The session_type enum (0001), as the boundary check reads it. */
+const SESSION_TYPE_VALUES: ReadonlySet<string> = new Set(['training', 'gym', 'match', 'testing', 'recovery', 'meeting', 'rehab']);
+
 export async function createSession(
   db: Db,
   orgId: string,
@@ -1004,6 +1007,16 @@ export async function createSession(
      minutes only: the column is an integer and zero would be due at kick-off. */
   if (!Number.isInteger(input.durationMin) || input.durationMin <= 0) {
     return { error: 'A session needs a duration in whole minutes.' };
+  }
+  /* §0ai (Isabella, 2026-09-11): an empty session is refused here too. A type
+     the enum does not know would be refused by Postgres with a bare cast
+     error; a session with no group has no expected attendees, and the
+     dashboard's "Sessions left to run" and compliance both key on them. */
+  if (!SESSION_TYPE_VALUES.has(input.sessionType)) {
+    return { error: 'A session needs a type.' };
+  }
+  if (input.groupIds.length === 0) {
+    return { error: 'A session needs at least one group.' };
   }
   await assertLiveSession(db);
   const seasonId = await fetchCurrentSeasonId(db, orgId);

@@ -51,8 +51,9 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
   const titleRef = useRef<HTMLInputElement>(null);
   const dateRef = useRef<HTMLInputElement>(null);
   const durationRef = useRef<HTMLInputElement>(null);
+  const groupsRef = useRef<HTMLFieldSetElement>(null);
 
-  function focusField(el: HTMLInputElement | null, message: string): void {
+  function focusField(el: HTMLElement | null, message: string): void {
     setError(message);
     el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
     el?.focus({ preventScroll: true });
@@ -102,6 +103,13 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
     const minutes = Number(duration);
     if (duration.trim() === '' || !Number.isInteger(minutes) || minutes < 5 || minutes > 240) {
       return focusField(durationRef.current, 'Set a duration between 5 and 240 minutes.');
+    }
+    /* §0ai (Isabella, 2026-09-11): a session with no group has no expected
+       attendees — nothing for "Sessions left to run" or compliance to count —
+       so it is refused, with focus on the chips. The type cannot be empty:
+       the chips are single-select from a 'training' default. */
+    if (selectedGroups.size === 0) {
+      return focusField(groupsRef.current, 'Choose at least one group.');
     }
     setError(null);
     mutation.mutate();
@@ -228,7 +236,7 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
         placeholder="Main pitch"
       />
 
-      <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
+      <fieldset ref={groupsRef} tabIndex={-1} style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
         <legend className="label">Who&rsquo;s in it</legend>
         <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
           {groups.map((g) => (
@@ -245,8 +253,8 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
         </div>
         <p className="cap" style={{ marginTop: 'var(--sp-6)' }}>
           Pick every group that should see this, for example Forwards and Backs
-          together for a full-squad session. Nobody selected means nobody is
-          named in it yet.
+          together for a full-squad session. At least one group is needed
+          &mdash; a session nobody is named in cannot be counted or rated.
         </p>
       </fieldset>
 

@@ -32,7 +32,9 @@ console.log('createSession refuses a missing duration before touching the databa
   /* A stub whose every method throws: if createSession reaches it, the
      refusal came too late (after a season lookup, or not at all). */
   const untouchable = new Proxy({}, { get: (_t, prop) => { throw new Error(`database touched via ${String(prop)}`); } }) as unknown as Parameters<typeof createSession>[0];
-  const base = { title: 'Unit skills', sessionType: 'training', startsAt: '2026-09-14T09:00:00.000Z', location: null, mdOffset: null, groupIds: [] };
+  /* One group: §0ai (built the same night) refuses an empty group list at
+     the same boundary, and this file is about the duration alone. */
+  const base = { title: 'Unit skills', sessionType: 'training', startsAt: '2026-09-14T09:00:00.000Z', location: null, mdOffset: null, groupIds: ['g1'] };
   const attempt = async (durationMin: unknown): Promise<string> => {
     try {
       const r = await createSession(untouchable, 'org', 'user', { ...base, durationMin: durationMin as number });

@@ -56,7 +56,11 @@ non-positive duration on its own.
 **Location.**
 
 **Which groups are expected.** Choosing groups rather than individuals means the
-expectation follows group membership as it changes.
+expectation follows group membership as it changes. **At least one group is
+required** (since 12 September 2026, §0ai): the form refuses to submit without
+one and moves focus to the chips, and `createSession` refuses an empty group
+list — or a type the enum does not know — on its own. The type always has a
+value; the chips are single-select from the "Training" default.
 
 **Create and Cancel.**
 
@@ -80,7 +84,7 @@ MET-007.
 | Date and time | Middle | Sets when | Stays here | Nothing until submitted | Same | None | Never |
 | Length | Middle | Sets how long; required, 5 to 240 whole minutes — the form refuses to submit without it | Stays here | Nothing until submitted | Same | None | Never |
 | Location | Middle | Sets where | Stays here | Nothing until submitted | Same | None | Never |
-| Group chips | Lower | Chooses who is expected | Stays here | Nothing until submitted | Same | None | Never |
+| Group chips | Lower | Chooses who is expected; at least one is required — the form refuses to submit without one | Stays here | Nothing until submitted | Same | None | Never |
 | **Create session** | Foot | Writes the session and returns to the schedule on that date | `/schedule?date=` | **Creates one session** | Coach and sport scientist | The form is the confirmation. There is no second dialogue | Disabled while saving, and the label changes to say so |
 | Cancel | Foot | Abandons the form | `/schedule` | Nothing | Same | None. Unsaved input is lost without warning | Never |
 

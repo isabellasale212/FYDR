@@ -90,12 +90,16 @@ console.log('\n3. the timing: nothing account-specific stands between the auth f
   assert(/after\(\(\) =>[\s\S]*?recordSignInFailure\(/.test(between), 'the failed-sign-in audit row is written in after(), off the response path');
   assert(!/await recordSignInFailure\(/.test(route), 'and is never awaited before responding');
   assert(/import \{[^}]*\bafter\b[^}]*\} from 'next\/server'/.test(route), 'after comes from next/server');
-  const hold = between.lastIndexOf('await holdUntil(startedAt, FAILED_SIGN_IN_MIN_MS)');
-  assert(hold > 0, 'every failure is held to the floor before the 401');
+  const holds = [...between.matchAll(/await holdUntil\(startedAt, FAILED_SIGN_IN_MIN_MS\)/g)].map((m) => m.index ?? -1);
+  assert(holds.length === 2, `every answer that follows the auth call is held to the floor — the plain 401 and the threshold-crossing 429 (${holds.length} holds)`);
   assert(/const startedAt = Date\.now\(\);/.test(route.slice(0, failIdx)), 'measured from the request\'s start, not from the auth call');
-  const afterHold = between.slice(hold);
+  const lockIdx = between.indexOf('if (record?.is_locked)');
+  assert(lockIdx > 0 && holds[0]! > lockIdx && holds[0]! < between.indexOf("kind: 'locked'", lockIdx), 'the post-auth 429 waits out the floor before answering');
+  const afterHold = between.slice(holds[1]!);
   assert(!/userRow|signInError\.message|signInError\.status/.test(afterHold), 'and after the hold, nothing about the account is read before answering');
-  assert(!/record\?\.is_locked[\s\S]*?holdUntil/.test(afterHold), 'the lockout answer (per email, before any account is known) is not delayed by the floor');
+  const gateIdx = route.indexOf('if (gate?.is_locked)');
+  const gateBlock = route.slice(gateIdx, route.indexOf('}', route.indexOf('429', gateIdx)));
+  assert(gateIdx > 0 && gateIdx < failIdx && !/holdUntil/.test(gateBlock), 'the gate\'s 429 — before any auth call, the same for every email — is not delayed');
 }
 
 console.log('\n4. the floor itself');

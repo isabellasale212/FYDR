@@ -1908,7 +1908,7 @@ and none of it takes longer than a day.
 ### Infrastructure
 
 - [ ] Supabase project in the **London** region — **NOT met: it is in eu-west-1 (Ireland)**, found 2026-09-07
-- [x] Vercel functions in an EU or UK region — **met 2026-09-11 16:46 BST: `dub1` (Dublin)**, measured on the live deployment. Before that they ran in `iad1` (US) by default, unrecorded; the sub-processor row above carries the correction. Re-check after any project-settings change: `x-vercel-id` on a function response must show `dub1`.
+- [x] Vercel functions in an EU or UK region — **met 2026-09-11 16:46 BST: `dub1` (Dublin)**, measured on the live deployment. Before that they ran in `iad1` (US) by default, unrecorded; the sub-processor row above carries the correction. Re-check after any project-settings change: `x-vercel-id` on a function response must show `dub1`. **If the database ever moves to London, the function region moves to `lhr1` in the same change** — adjacency to the database is the point, not Dublin.
 - [ ] Point-in-time recovery enabled
 - [ ] Independent weekly encrypted dump to a different provider and account, alerting on failure
 - [ ] Storage bucket backup decided and documented

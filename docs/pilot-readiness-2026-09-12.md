@@ -1,4 +1,6 @@
-# Pilot-readiness list — 2026-09-11
+# Pilot-readiness list — for the morning of 2026-09-12
+
+*Compiled the evening of 2026-09-11 (first committed as `pilot-readiness-2026-09-11.md`, renamed on Isabella's overnight queue). Re-checked against the to-do list at the time of the rename; the overnight summary notes any handover that changed a line.*
 
 Compiled by the reviewer from every open item on `docs/Fydr_-_Architecture_To-Do_List.md` (§0r onward, plus everything older still unticked), against the code as it stands at `bbbcf72` and production at `7df310e` + migrations through `0102`. One line per item, by its section and line. Group 1 says what fixing it needs: **build**, a **decision** from Isabella, or **both**. Nothing here changes code.
 
@@ -26,7 +28,7 @@ Not in group 1, and why: §0aq (the sign-in timing floor) is security, but the p
 Visible and embarrassing; no harm.
 
 - **§0af L1220** — below 768px the sidebar stacks 640px above every staff screen. Decided (top bar + menu), brief written; needs design then build. The single most visible staff defect on a phone.
-- **§0s L903** — the athlete check-in's submit button sits 229px below the fold and the screen looks finished without it. Sticky dropped; the fold problem is still open.
+- ~~**§0s L903** — the athlete check-in's submit button sits 229px below the fold.~~ **Closed overnight** by the ATH-ADULT-03 build (`6618b7f` + `5ae00ea`, merged `b13cc29`); the footer pins and the button measures inside the viewport at scroll 0.
 - **§0u L961** — the gym prescription line reads "3 × 8 @ No 1RM test linked to this exercise yet."
 - **§0u L971** — the nutrition check-in says "this week" about a week that has ended (decided: copy fix, keep the default).
 - **§0u L987** — a failed gym set retries only from Today, so the set count stays wrong for the rest of the workout.
@@ -116,4 +118,4 @@ Checked today from the `require*` calls, `src/lib/access.ts`, the migrations on 
 - **§1 L1971 / L1972** — `app_role` has all five roles and every screen read today gates on them.
 - **§0v L1025** and **§0ae part 2** — closed today on the list itself (built `6398493`; migration 0102).
 
-Everything above in this section still shows `- [ ]` on the to-do list. Say the word and I will tick them with the evidence line each; I have not, because several are your decisions to call closed.
+**Closed on the to-do list the same evening (`- [x]` with an evidence line each), on Isabella's "continue".** Left open on purpose: §0b L725 ("don't blanket-approve batches that mix cosmetic and access-control changes") is a standing process rule, not a task, and stays as one.

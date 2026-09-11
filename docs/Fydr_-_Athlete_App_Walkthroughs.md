@@ -263,18 +263,27 @@ its name struck through. The strike-through was omitted.
 4. Optionally type in the free-text box "Comment or injury issue (optional)".
 5. Press the submit button.
 
-**Submit button states.**
+**Submit button states — as built by `5ae00ea` (ATH-ADULT-03 commit 2, 2026-09-11; measured
+on scratch at 375×812 the same evening).**
 
 | Label | When |
 |---|---|
-| "Submit entry · {N} to go" | One or more of the five scales is still unanswered. Button is **disabled**. |
-| "Submit entry" | All five answered. Enabled. |
-| Disabled, same label | While the submission is in flight. |
+| "Submit entry", `aria-disabled="true"` (`.btn-ghost`, the 01 Locked treatment) | One or more of the **six** questions is unanswered — sleep hours now starts empty ("–") and counts. The count is its own line above the button, `.subm-count`: "0 of 6 answered · 6 to go". |
+| "Submit entry", enabled, `.btn-primary` | All six answered; the count line becomes a `--wash-good` chip. |
+| `disabled`, same label | While the submission is in flight — the only moment `disabled` is used. |
+| "Fix one field to submit" | A resting heart rate or body mass outside 25–120 bpm / 30–200 kg, checked as typed against the same schema that runs at submit; the field is marked and says why beside it. |
+
+The footer (`.subm`) is `position: sticky; bottom: 0` **and it pins** — `6618b7f` removed the
+`.phone-body` scroll pane it used to resolve against — so the button is inside the viewport at
+scroll 0 (measured: 751–804px on 812), mid-page and at the end. §0s's 229px-below-the-fold
+finding is closed by it. "Not answered" reads in `--muted`, not amber; the per-scale "X of 5"
+readout is gone; the scale ends are numbered chips ("1 · Very sore", "5 · No soreness").
 
 **Branches.**
 
-- IF fewer than five scales are answered THEN the button stays disabled and its
-  label counts what remains. There is no error message; the count *is* the message.
+- IF fewer than six questions are answered THEN the button stays blocked (refused at the
+  control and again in `onSubmit`) and the count line says what remains. There is no error
+  message; the count *is* the message.
 - IF the network fails THEN the entry is written to a local outbox and the flow
   still completes — **deliberately silent**, because the athlete has done the
   thing. `/today` retries it. See ATH-ADULT-30 for what the athlete sees.
@@ -284,10 +293,12 @@ its name struck through. The strike-through was omitted.
 **End state.** Redirect to `/today?submitted=1`, which renders a toast with a
 "Dismiss" button.
 
-**Note.** A paragraph of three sentences (40 words) states that the entry
-cannot be edited once sent, names telling the coach as the recourse, and
-promises My Data will show both the corrected value and what was first
-reported. It sits **below** the submit button, not above it. Corrections are
+**Note.** Since `5ae00ea` the irreversibility line is one sentence — "You can't change this
+after you submit." — with "Why can't I edit it?" opening the existing explanation in a native
+`<details>`. Before it, a paragraph of three sentences (40 words) stated that the entry
+cannot be edited once sent, named telling the coach as the recourse, and
+promised My Data will show both the corrected value and what was first
+reported, sitting **below** the submit button. Corrections are
 staff-only (`ENTRY_CORRECTION` = sport scientist, coach, medic) — an athlete
 cannot revise their own wellness entry.
 

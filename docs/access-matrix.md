@@ -330,6 +330,17 @@ what you hold, not what you are. That is deliberate and is stated at §2.
 | `requireSubjectAccess` | `SETTINGS_ADMIN` or `CLINICAL_ONLY` | `src/lib/session.ts:198` |
 | `loadAthleteDomainContext` | any staff, or the set the caller passes | `src/lib/athleteDomain.server.ts:93` |
 
+**One rule the database enforces on the roles themselves, since 2026-09-11
+(§0ae).** `user_roles_guard` (`0101_user_roles_guard.sql`) is a BEFORE DELETE
+OR UPDATE trigger on `user_roles` that refuses any change leaving an
+organisation with zero `sport_scientist` rows — the last admin cannot delete
+or demote their own role, by any route, including the service role and a
+cascade from `users`. Until then the only guard was `setUserRoles` in the
+browser, which any devtools could skip; the club would have had nobody able to
+grant the role back. Pinned by `supabase/tests/570_user_roles_guard_test.sql`.
+The second half of §0ae — refusing a self-grant of `medic` — is decided but not
+yet built; it will extend the same trigger.
+
 **Every other gate names a set in `src/lib/access.ts`**, one constant per
 distinct column pattern in §3 above, rather than writing role literals inline.
 That file is this grid in the form the code can share, and

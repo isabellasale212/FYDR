@@ -2842,6 +2842,11 @@ a.hist-row:focus-visible {
   color: var(--faint);
   margin-top: var(--sp-4);
 }
+/* The sleep stepper before its first tap reads "–" in --faint (ATH-ADULT-03
+   C-c); a set value is --text. Unanswered, not zero — see CheckInForm. */
+.step .val .v[data-empty] {
+  color: var(--faint);
+}
 
 /* -------- the five scales, §6 -------- */
 /* Spec §7.2: each scale block sits under a hairline with 12px of padding
@@ -2877,10 +2882,11 @@ a.hist-row:focus-visible {
   color: inherit;
   font-weight: 600;
 }
-/* Amber, not grey: an unanswered scale is a prompt, and the submit button
-   counts these. */
+/* Neutral --muted since ATH-ADULT-03 A6 (2026-09-11); it was --warn-text.
+   Five amber flags on an untouched form treated a normal starting state as a
+   fault, and the footer count already says how far there is to go. */
 .sc-v.un {
-  color: var(--warn-text);
+  color: var(--muted);
 }
 /* Spec §7.2: five equal keys at gap 8. */
 .dots {
@@ -2917,7 +2923,9 @@ a.hist-row:focus-visible {
   min-height: 44px;
   border-radius: 14px;
   border: 1px solid var(--border);
-  background: transparent;
+  /* --surf2, not transparent (ATH-ADULT-03 A9): a key with a fill reads as
+     a key. Transparent keys on the blue shell ground read as outlines. */
+  background: var(--surf2);
   color: var(--muted);
   display: flex;
   align-items: center;
@@ -2934,6 +2942,9 @@ a.hist-row:focus-visible {
   background: var(--accent);
   border-color: var(--accent-border);
   color: var(--on-accent);
+  /* The accent ring (A9, B5 — the board's --ring-select mapped onto ours):
+     the chosen key is the one thing on the row with a halo. */
+  box-shadow: var(--ring-accent);
 }
 .dots .opt input:focus-visible + span {
   outline: 2px solid var(--focus);
@@ -2942,9 +2953,22 @@ a.hist-row:focus-visible {
 .sc-a {
   display: flex;
   justify-content: space-between;
+  gap: var(--sp-8);
+  margin-top: var(--sp-6);
+}
+/* The ends as chips carrying their numeral — "1 · Very sore" (ATH-ADULT-03
+   A5, B2, B7): --fs-11 / 600 / --muted on --surf, 1px --border, the control
+   radius, --sp-4 --sp-8. They were bare --faint words, and the number is what
+   ties the word to a key. */
+.sc-a > span {
   font-size: var(--fs-11);
-  color: var(--faint);
-  margin-top: var(--sp-4);
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: var(--r-control);
+  padding: var(--sp-4) var(--sp-8);
+  white-space: nowrap;
 }
 .sc-where {
   margin-top: var(--sp-10);
@@ -3003,6 +3027,48 @@ a.hist-row:focus-visible {
   gap: var(--sp-12);
   padding-top: var(--sp-4);
 }
+/* The field-error pattern for the two optional numbers (ATH-ADULT-03 A7,
+   C-e). The field itself: 1px --bad and a 3px ring of the bad hue, the
+   accent ring's own shape with the hue swapped. Scoped to the disclosure —
+   the staff forms that set aria-invalid keep their current look. */
+.disclose-body .field[aria-invalid='true'] {
+  border-color: var(--bad);
+  box-shadow: 0 0 0 3px rgb(var(--bad-rgb) / 0.18);
+}
+/* The message beside it: --fs-13 / 600 / --bad-text (B8 — the board asked for
+   an --on-bad-strong; --bad-text is already that value), led by a small
+   glyph in the bad wash. */
+.err-line {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-6);
+  margin: var(--sp-6) 0 0;
+  font-size: var(--fs-13);
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--bad-text);
+}
+.err-dot {
+  flex: none;
+  min-width: var(--sp-18);
+  min-height: var(--sp-18);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-full);
+  background: var(--wash-bad);
+  color: var(--bad-pill-text);
+  font-size: var(--fs-11);
+  font-weight: 700;
+}
+/* Helper text under a field — "Usually 25 to 120 bpm" — at --fs-12 --muted.
+   Under the field and not a placeholder, so it stays readable once a value is
+   typed. */
+.help-line {
+  margin: var(--sp-4) 0 0;
+  font-size: var(--fs-12);
+  color: var(--muted);
+}
 
 /* Expandable per-player rows on the injury & availability report's Current
  * list (reports/injuries/page.tsx). A second native <details>, same reasoning
@@ -3026,61 +3092,136 @@ a.hist-row:focus-visible {
   transform: rotate(180deg);
 }
 
-/* Spec §7.2: the footer sits under a hairline with the home-indicator
-   clearance below it, and its button is full width at 16/700, radius 16,
-   padding 17px 20px. Incomplete is 45% opacity with the count in the label —
-   it never silently does nothing. */
+/* -------- the footer, shared by the four athlete write forms --------
+   ATH-ADULT-03 A1–A3, 2026-09-11, closing §0s. Rendered by CheckInForm,
+   RpeForm, NutritionCheckinForm and ProblemReportForm.
+
+   PINNED TO THE VIEWPORT ON A NORMALLY SCROLLING PAGE. `position: sticky;
+   bottom: 0` was here once and never worked: it resolved against .phone-body,
+   a scroll pane that could never scroll (its own comment tells that story).
+   Commit 1 of this flow removed that pane, so the document is the shell's one
+   scroll context and this now resolves against the viewport — measured at
+   375×812 and 375×667 by scripts/test-ath-adult-03-render.mjs. It is a sticky
+   child of the <form>, so it never leaves the form: at the end of the page it
+   sits in its normal place above the tab bar, and on a page shorter than the
+   viewport it is simply the last block. The tab bar stays static in flow, per
+   the 2026-09-08 decision this flow did not reopen.
+
+   IT BLEEDS TO THE SHELL'S EDGE. The negative inline margin undoes
+   .phone-body's 20px gutter so the hairline and the shadow run edge to edge
+   and nothing scrolls past beside it; the same 20px of padding puts the
+   button back on the content column. (The board draws 16px because its own
+   page gutter is 16; ours is 20, so the footer keeps to the shell's rhythm.)
+
+   IT CARRIES THE BOTTOM SAFE-AREA INSET. When pinned, the tab bar that
+   normally carries it is off-screen below, so the button would otherwise sit
+   on the home indicator. At rest above the tab bar the inset is doubled on a
+   notched phone; that is the price of the footer working mid-scroll.
+
+   NOTHING IN HERE IS OPACITY-DIMMED. The outstanding count used to live inside
+   a button matched by both `:disabled` (--o-disabled) and `[disabled]` (a 35%
+   accent fill), compounding to a measured 1.24:1. It is its own line now
+   (.subm-count) at full --text, and the blocked action is aria-disabled in the
+   kit secondary (.btn-ghost) — 01's Locked treatment — not `disabled`. The
+   only `disabled` left is the pending moment, and that button keeps its full
+   accent fill. */
 .subm {
-  padding: 14px 0 calc(8px + env(safe-area-inset-bottom, 0px));
-  margin-top: var(--sp-14);
-  border-top: 1px solid var(--hair);
+  position: sticky;
+  bottom: 0;
+  margin: var(--sp-14) calc(-1 * var(--sp-20)) 0;
+  padding: var(--sp-14) var(--sp-20) calc(var(--sp-8) + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--border);
   background: var(--surf);
-  /* NO `position: sticky; bottom: 0`, removed 2026-09-10. It was here and it
-     never once worked, on any screen, at any viewport.
-
-     WHY IT COULD NOT WORK. Sticky resolves against the nearest scroll
-     container, which is `.phone-body` (`overflow-y: auto`). That pane can
-     never overflow: `.phone` is `min-height: 100dvh`, so when the content is
-     taller than the viewport the shell GROWS to fit it and the pane gets its
-     full content height, and when the content is shorter the pane flex-grows
-     into the leftover space. Either way `scrollHeight === clientHeight` —
-     measured at 500, 667, 812, 1000 and 1400px tall, all five identical. The
-     document scrolls instead. A sticky child of a container that never
-     scrolls has nothing to stick to.
-
-     MEASURED, not reasoned: on /check-in this element's viewport top read
-     1015 / 815 / 555 at document scroll 0 / 200 / 460 — moving 1:1 with the
-     page. A working `bottom: 0` would have pinned it at <= 642 and held.
-
-     THE REMOVAL IS A NO-OP AND THAT IS THE POINT. Full-page screenshots with
-     and without the two properties are byte-identical (diff bbox None, max
-     channel difference 0), so nothing anyone has ever seen changes. This
-     deletes a rule that lies about the layout, not a behaviour.
-
-     DOCUMENT-SCROLL IS THE INTENDED MODEL, not a shortcoming to fix by
-     constraining the shell. `.athlete-tabbar` is deliberately `position:
-     static` in normal flow — see its own comment above, where making it
-     `fixed` was considered and rejected on 2026-09-08 because screens 01-12
-     of the reference all draw a solid bar in flow. This rule was the one
-     place assuming an app shell the reference does not draw.
-
-     WHAT THIS DOES NOT FIX: the submit button still sits below the fold on a
-     phone (1030px absolute on an 812px viewport). That is real and it is a
-     DESIGN question, tracked in §0s of the architecture to-do list and in the
-     ATH-ADULT-03 brief. Do not read this deletion as having addressed it. */
+  box-shadow: var(--shadow);
 }
-.subm .btn-primary {
+/* Inside a card (the report-a-problem form IS a .card) the edge to bleed to
+   is the card's, not the shell's, and the footer takes the card's bottom
+   corners so it reads as the card's last band rather than a bar laid over
+   it. No shadow: the card already casts one. */
+.card > .subm {
+  margin: var(--sp-14) calc(-1 * var(--pad-card-x)) calc(-1 * var(--pad-card-y));
+  padding-inline: var(--pad-card-x);
+  border-end-start-radius: var(--r-card);
+  border-end-end-radius: var(--r-card);
+  box-shadow: none;
+}
+/* A1: the count, its own line, --fs-13 / 700 / --text — 17.9:1 on --surf in
+   light, measured from tokens.css by test-ath-adult-03 in both themes. */
+.subm-count {
+  margin: 0 0 var(--sp-8);
+  font-size: var(--fs-13);
+  font-weight: 700;
+  color: var(--text);
+  display: inline-block;
+}
+/* A3: on the last answer the count becomes a good-tone chip — the same
+   fill/border pair the 01 and 02 banners use, at the control radius. */
+.subm-count[data-complete] {
+  background: var(--wash-good);
+  border: 1px solid var(--border-good);
+  border-radius: var(--r-control);
+  padding: var(--sp-4) var(--sp-8);
+}
+/* A4 / C-d: the irreversibility line and, on the same row, the disclosure
+   that opens the explanation. A native <details>: the summary is the row,
+   so the whole 44px band is the target and the browser's own keyboard
+   behaviour comes free. */
+.subm-why {
+  margin: 0 0 var(--sp-10);
+}
+.subm-why summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-12);
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+}
+.subm-why summary::-webkit-details-marker {
+  display: none;
+}
+.subm-note {
+  font-size: var(--fs-12);
+  color: var(--muted);
+}
+.subm-why-link {
+  flex: none;
+  font-size: var(--fs-13);
+  font-weight: 600;
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.subm-why-body {
+  margin: 0 0 var(--sp-4);
+}
+/* Spec §7.2: the button is full width at 16/700, radius per the control
+   token, padding 16px 20px. The blocked state wears .btn-ghost at the same
+   size, so the footer does not jump when the last answer lands. */
+.subm .btn-primary,
+.subm .btn-ghost {
   padding: var(--sp-16) var(--sp-20);
   border-radius: var(--r-control);
   font-size: var(--fs-16);
   font-weight: 700;
 }
+/* The pending moment — the one `disabled` left — is still the action, mid-
+   send. Full fill, full label; the label ("Saving…") is the state. Beats the
+   global `button:disabled` grey and `.btn-primary:disabled`. */
 .subm .btn-primary:disabled {
-  opacity: var(--o-disabled);
-}
-.subm .btn-primary[disabled] {
-  background: rgb(var(--accent-rgb) / 0.35);
+  background: var(--accent);
   color: var(--on-accent);
+  cursor: default;
+}
+/* Blocked is not-yet-the-action, not a control you are being refused: no
+   hover invitation, and the cursor says so. */
+.subm .btn-ghost[aria-disabled='true'] {
+  cursor: not-allowed;
+}
+.subm .btn-ghost[aria-disabled='true']:hover {
+  border-color: var(--border);
+  color: var(--muted);
 }
 
 /* ---------- RPE / CR10 rating grid, §7 ----------

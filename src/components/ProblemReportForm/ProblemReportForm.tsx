@@ -44,8 +44,15 @@ export function ProblemReportForm({ orgId, athleteId, userId }: Props) {
     onError: (err: Error) => setError(err.message),
   });
 
+  /* Blocked while there is nothing to send or too much of it (A2); `pending`
+   * only while the send is in flight. */
+  const blocked = body.trim().length === 0 || over;
+  const pending = mutation.isPending;
+
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (blocked) return;
+    if (pending) return;
     const candidate = { id: crypto.randomUUID(), category, body };
     const parsed = ProblemReportInput.safeParse(candidate);
     if (!parsed.success) {
@@ -131,14 +138,24 @@ export function ProblemReportForm({ orgId, athleteId, userId }: Props) {
         </p>
       ) : null}
 
+      {/* The shared footer — ATH-ADULT-03 A1/A2, 2026-09-11. No count line
+          here: this form has no questions to count, and the character counter
+          above already says what state it is in. The blocked action is
+          aria-disabled in the kit secondary rather than `disabled` and dimmed,
+          and inside this card the footer takes the card's own edges
+          (.card > .subm). */}
       <div className="subm">
         <button
-          className="btn-primary"
+          className={blocked ? 'btn-ghost' : 'btn-primary'}
           type="submit"
-          disabled={mutation.isPending || body.trim().length === 0 || body.length > BODY_MAX_CHARS}
+          disabled={pending}
+          aria-disabled={blocked || undefined}
+          onClick={(event) => {
+            if (blocked) event.preventDefault();
+          }}
           style={{ width: '100%', minHeight: 56 }}
         >
-          {mutation.isPending ? 'Sending…' : 'Send to staff'}
+          {pending ? 'Sending…' : 'Send to staff'}
         </button>
       </div>
     </form>

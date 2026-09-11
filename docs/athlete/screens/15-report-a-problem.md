@@ -34,7 +34,7 @@ None.
 
 | Element | Where | What happens | Takes you to | Writes | Confirm | Hidden when |
 |---|---|---|---|---|---|---|
-| Submit | Bottom | Files the report | stays, then shows it below | a `problem_reports` row | UNVERIFIED | never |
+| Send to staff | Bottom of the card, pinned to the bottom of the screen while the card is taller than it | Files the report. `aria-disabled` in the secondary style — never dimmed — while the body is empty or over 1,000 characters, and a tap then does nothing (ATH-ADULT-03, 2026-09-11) | stays, then shows it below | a `problem_reports` row | UNVERIFIED | never |
 | Close, the X | Top right | Leaves | **`/today` unconditionally** | nothing | no | never |
 
 **The close button always goes to `/today`**, regardless of which entrance was

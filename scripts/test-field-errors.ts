@@ -50,6 +50,8 @@ export const FIELD_ATTRIBUTABLE = [
     why: 'validateCorrection knows whether reps or load failed; it used to return a bare string and throw that away' },
   { file: 'src/components/ChangePasswordForm/ChangePasswordForm.tsx',
     why: 'length and reuse belong to the new password, mismatch to the confirmation, the wrong current password to that field' },
+  { file: 'src/components/CheckInForm/CheckInForm.tsx',
+    why: 'ATH-ADULT-03 C-e (2026-09-11): an out-of-range resting heart rate or body mass is checked as typed against the schema, and the field says so' },
 ] as const;
 
 const files = walk('src');

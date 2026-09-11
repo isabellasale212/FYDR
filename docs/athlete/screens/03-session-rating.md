@@ -54,7 +54,7 @@ because an unread parameter is the kind of thing that gets quietly re-wired late
 |---|---|---|---|---|---|---|
 | RPE scale | Body | Sets 1 to 10 | stays | nothing yet | no | already rated |
 | Duration | Body | Sets minutes | stays | nothing yet | no | already rated |
-| Submit | Bottom | Saves | back to Today | one `training_entries` row | **No confirmation** | already rated |
+| Submit rating | Footer, pinned to the bottom of the screen | Saves. The footer's own line reads `0 of 1 answered · 1 to go` until a rating is chosen, then `Answered` as a green chip; until then the button is `aria-disabled` in the secondary style — never dimmed — and a tap does nothing (ATH-ADULT-03, 2026-09-11) | back to Today | one `training_entries` row | **No confirmation** | already rated |
 
 ## 7. Offline and sync
 

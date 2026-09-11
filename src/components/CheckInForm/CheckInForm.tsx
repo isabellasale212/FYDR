@@ -9,8 +9,12 @@ import { submitWellnessEntry } from '@/lib/queries/wellness';
 import { qk } from '@/lib/queries/keys';
 import { dequeueWellness, enqueueWellness } from '@/lib/outbox';
 import {
+  BODY_MASS_RANGE,
+  RESTING_HR_RANGE,
   WELLNESS_SCALES,
   WellnessEntryInput,
+  fieldHelp,
+  fieldProblem,
   type WellnessScale,
 } from '@/lib/validation/wellness';
 
@@ -61,6 +65,12 @@ const EMPTY: Scales = {
   mood: null,
 };
 
+/** Where the sleep stepper lands on its first tap. Not a default: nothing is
+ *  submitted until the athlete has touched it (see the state below). */
+const SLEEP_START = 7;
+/** The five scales plus sleep. "All six answered" spells this out. */
+const TOTAL_QUESTIONS = WELLNESS_SCALES.length + 1;
+
 /**
  * The morning check-in. Six controls, one thumb, under 45 seconds.
  *
@@ -79,27 +89,27 @@ export function CheckInForm({
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  /* A plain 7-hour start. The half-hour rounding that used to guard this line
-   * belonged to the correction mode — a prefilled sleep_hours of 7.9 (real in
-   * this database, finer than the stepper can express) was rejected by the same
-   * schema that filled it in. With no prefill there is nothing to round, so the
-   * guard is not restored here; it would be dead code on a form that starts at 7.
+  /* SLEEP STARTS EMPTY — ATH-ADULT-03 C-c, decided 2026-09-11. It opened at
+   * 7.0, which is a plausible answer presented as a fact: an athlete who tapped
+   * nothing submitted a number they never gave, and seven hours is exactly the
+   * value unremarkable enough to survive review. It reads "–" until the first
+   * tap on + or −, which starts it at SLEEP_START; because it is unanswered
+   * rather than pre-filled it COUNTS, so the footer reads "0 of 6 answered".
    *
-   * The bug it caught is NOT dead, though — it moved with the prefill, to the
-   * coach's EntryCorrectionPanel. It is guarded there differently and for a
-   * reason: that form diffs every field against the original before sending, so
-   * rounding 7.9 to 8.0 would read as a change the coach never made. It matches
-   * the input's step and the correction schema to sleep_hours' own numeric(3,1)
-   * precision instead, and sets `noValidate` as this form does. See the note
-   * above the forms in EntryCorrectionPanel.tsx. */
-  const [sleepHours, setSleepHours] = useState(7);
+   * No prefill and therefore no rounding. The half-hour rounding that used to
+   * guard this line belonged to the correction mode — a prefilled sleep_hours
+   * of 7.9 (real in this database, finer than the stepper can express) was
+   * rejected by the same schema that filled it in. That bug moved with the
+   * prefill, to the coach's EntryCorrectionPanel, which guards it differently
+   * and for a reason: that form diffs every field against the original before
+   * sending, so rounding 7.9 to 8.0 would read as a change the coach never
+   * made. See the note above the forms in EntryCorrectionPanel.tsx. */
+  const [sleepHours, setSleepHours] = useState<number | null>(null);
   const [restingHr, setRestingHr] = useState('');
   const [bodyMassKg, setBodyMassKg] = useState('');
   const [comment, setComment] = useState('');
   const [scales, setScales] = useState<Scales>(EMPTY);
   const [invalid, setInvalid] = useState<string | null>(null);
-
-  const remaining = WELLNESS_SCALES.filter((s) => scales[s] === null).length;
 
   const submitMutation = useMutation({
     mutationFn: async (input: WellnessEntryInput) => {
@@ -128,8 +138,37 @@ export function CheckInForm({
     },
   });
 
+  const answered =
+    WELLNESS_SCALES.filter((s) => scales[s] !== null).length + (sleepHours === null ? 0 : 1);
+  const remaining = TOTAL_QUESTIONS - answered;
+
+  /* C-e: the two optional numbers are checked as they are typed, against the
+   * same field schema that runs at submit (validation/wellness.ts). A problem
+   * blocks the action exactly as an unanswered question does, and the field
+   * says what is wrong beside itself instead of the footer saying something
+   * generic afterwards. */
+  const hrProblem = fieldProblem('resting_hr', restingHr);
+  const bmProblem = fieldProblem('body_mass_kg', bodyMassKg);
+  const problems = (hrProblem ? 1 : 0) + (bmProblem ? 1 : 0);
+  const blocked = remaining > 0 || problems > 0;
+  const pending = submitMutation.isPending;
+
+  const countText =
+    remaining > 0
+      ? `${answered} of ${TOTAL_QUESTIONS} answered · ${remaining} to go`
+      : problems > 0
+        ? problems === 1
+          ? 'Fix one field to submit'
+          : 'Fix two fields to submit'
+        : 'All six answered';
+
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    /* Refused here as well as at the control (A2): the button is aria-disabled
+     * while blocked, not `disabled`, so Enter in a field still submits the
+     * form — and it must do nothing, not send five answers and a dash. */
+    if (blocked) return;
+    if (pending) return;
 
     const candidate = {
       id: crypto.randomUUID(),
@@ -184,10 +223,13 @@ export function CheckInForm({
         </div>
 
         <div className="step">
+          {/* Either key starts an empty stepper at SLEEP_START; neither counts
+              as a step away from nothing. After that they step by half an hour
+              within the schema's 0 to 14. */}
           <button
             type="button"
             className="btnc"
-            onClick={() => setSleepHours((h) => Math.max(0, h - 0.5))}
+            onClick={() => setSleepHours((h) => (h === null ? SLEEP_START : Math.max(0, h - 0.5)))}
             aria-label="Half an hour less sleep"
           >
             &minus;
@@ -198,15 +240,16 @@ export function CheckInForm({
               role="status"
               aria-live="polite"
               aria-labelledby="sleep-hours-label"
+              data-empty={sleepHours === null ? '' : undefined}
             >
-              {sleepHours.toFixed(1)}
+              {sleepHours === null ? '–' : sleepHours.toFixed(1)}
             </div>
             <div className="u">hours</div>
           </div>
           <button
             type="button"
             className="btnc"
-            onClick={() => setSleepHours((h) => Math.min(14, h + 0.5))}
+            onClick={() => setSleepHours((h) => (h === null ? SLEEP_START : Math.min(14, h + 0.5)))}
             aria-label="Half an hour more sleep"
           >
             +
@@ -227,32 +270,70 @@ export function CheckInForm({
 
       <details className="disclose">
         <summary>Add heart rate or weight</summary>
+        {/* The field-error pattern (A7, C-e): the range as helper text UNDER
+            the field — not a placeholder, so it stays readable once a value is
+            typed — and, when the value would be refused, the field marked
+            invalid with the sentence beside it. Both read the validator's own
+            numbers through fieldHelp/fieldProblem, so this copy cannot say
+            "25 to 120" while the schema refuses 25. */}
         <div className="disclose-body">
-          <label>
-            <span className="label">Resting heart rate (bpm)</span>
+          <div>
+            <label className="label" htmlFor="ci-hr">
+              Resting heart rate (bpm)
+            </label>
             <input
+              id="ci-hr"
               className="field"
               type="number"
               inputMode="numeric"
-              min={25}
-              max={120}
+              min={RESTING_HR_RANGE.min}
+              max={RESTING_HR_RANGE.max}
               value={restingHr}
               onChange={(e) => setRestingHr(e.target.value)}
+              aria-invalid={hrProblem ? true : undefined}
+              aria-describedby="ci-hr-help ci-hr-error"
             />
-          </label>
-          <label>
-            <span className="label">Body mass (kg)</span>
+            {hrProblem ? (
+              <p id="ci-hr-error" className="err-line" role="alert">
+                <span aria-hidden="true" className="err-dot">
+                  !
+                </span>
+                <span>{hrProblem}</span>
+              </p>
+            ) : null}
+            <p id="ci-hr-help" className="help-line">
+              {fieldHelp('resting_hr')}
+            </p>
+          </div>
+          <div>
+            <label className="label" htmlFor="ci-bm">
+              Body mass (kg)
+            </label>
             <input
+              id="ci-bm"
               className="field"
               type="number"
               inputMode="decimal"
               step="0.1"
-              min={30}
-              max={200}
+              min={BODY_MASS_RANGE.min}
+              max={BODY_MASS_RANGE.max}
               value={bodyMassKg}
               onChange={(e) => setBodyMassKg(e.target.value)}
+              aria-invalid={bmProblem ? true : undefined}
+              aria-describedby="ci-bm-help ci-bm-error"
             />
-          </label>
+            {bmProblem ? (
+              <p id="ci-bm-error" className="err-line" role="alert">
+                <span aria-hidden="true" className="err-dot">
+                  !
+                </span>
+                <span>{bmProblem}</span>
+              </p>
+            ) : null}
+            <p id="ci-bm-help" className="help-line">
+              {fieldHelp('body_mass_kg')}
+            </p>
+          </div>
         </div>
       </details>
 
@@ -281,33 +362,59 @@ export function CheckInForm({
         </p>
       ) : null}
 
+      {/* THE FOOTER — ATH-ADULT-03 A1–A4, 2026-09-11. Pinned to the viewport
+          (.subm is sticky against the document now that the shell no longer
+          declares a dead scroll pane), so the count and the action are on
+          screen from the first question. The count is its own line at full
+          --text: it used to live inside a button dimmed twice, at 1.24:1
+          (§0s). It becomes a good-tone chip on the last answer (A3). */}
       <div className="subm">
-        {/* submitMutation.isPending: a fast double-tap fires two onSubmit calls,
-         * each minting its own crypto.randomUUID() and enqueuing a distinct
-         * outbox row (see lib/outbox.ts) before either network call resolves.
-         * Without this, both rows race wellness_entries_one_live_per_day; the
-         * loser's insert dies on the unique index and, before OutboxFlusher's
-         * disambiguation below, was dequeued as "delivered" anyway — a real
-         * submission silently dropped with no trace. Disabling on isPending
-         * makes the second tap impossible to register as a second attempt in
-         * the first place. */}
+        <p className="subm-count" data-complete={blocked ? undefined : ''}>
+          {countText}
+        </p>
+        {/* Irreversibility as one line (A4), with the reasoning — who corrects
+            a wrong number, and that My Data shows both versions — behind a
+            native disclosure (C-d) rather than spelled out under every submit.
+            Said before the tap, not after: the rule is learned at the moment it
+            matters rather than discovered on a screen with no button. */}
+        <details className="subm-why">
+          <summary>
+            <span className="subm-note">You can&rsquo;t change this after you submit.</span>
+            <span className="subm-why-link">Why can&rsquo;t I edit it?</span>
+          </summary>
+          <p className="tiny subm-why-body">
+            If you get a number wrong, tell your coach &mdash; they can record a correction, and
+            My Data will show you both what they changed it to and what you first reported.
+          </p>
+        </details>
+        {/* BLOCKED IS aria-disabled, NOT disabled (A2) — the treatment
+         * ATH-ADULT-01 built for Locked. A disabled button leaves the tab
+         * order and was dimmed to unreadable; aria-disabled keeps it focusable
+         * and announced with its label, wearing the kit secondary (.btn-ghost)
+         * so it reads as not-yet-the-action rather than a faded copy of it.
+         * The press is refused here at the control and again in onSubmit.
+         *
+         * `disabled` is kept for the PENDING moment only, and that one is
+         * real: a fast double-tap fires two onSubmit calls, each minting its
+         * own crypto.randomUUID() and enqueuing a distinct outbox row (see
+         * lib/outbox.ts) before either network call resolves. Without it both
+         * rows race wellness_entries_one_live_per_day; the loser's insert dies
+         * on the unique index and, before OutboxFlusher's disambiguation, was
+         * dequeued as "delivered" anyway — a real submission silently dropped.
+         * Disabling on isPending makes the second tap impossible to register
+         * as a second attempt in the first place. */}
         <button
-          className="btn-primary"
+          className={blocked ? 'btn-ghost' : 'btn-primary'}
           type="submit"
-          disabled={remaining > 0 || submitMutation.isPending}
+          disabled={pending}
+          aria-disabled={blocked || undefined}
+          onClick={(event) => {
+            if (blocked) event.preventDefault();
+          }}
           style={{ width: '100%' }}
         >
-          {remaining > 0 ? `Submit entry · ${remaining} to go` : 'Submit entry'}
+          Submit entry
         </button>
-        {/* Said before the tap, not after. The old copy ("a correction creates a
-         * new revision") was true but described something the athlete could do;
-         * this one tells them who does it now, so the rule is learned at the
-         * moment it matters rather than discovered on a screen with no button. */}
-        <p className="tiny" style={{ textAlign: 'center', marginTop: 'var(--sp-8)' }}>
-          Once this is sent it can&rsquo;t be edited. If you get a number wrong,
-          tell your coach &mdash; they can record a correction, and My Data will
-          show you both what they changed it to and what you first reported.
-        </p>
       </div>
     </form>
   );

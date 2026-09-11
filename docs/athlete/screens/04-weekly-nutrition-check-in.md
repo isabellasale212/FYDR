@@ -43,7 +43,7 @@ None.
 |---|---|---|---|---|---|---|
 | One of three answers | Body | Selects | stays | nothing yet | no | already answered |
 | Note | Below | Free text, 280 characters | stays | nothing yet | no | already answered |
-| Submit | Bottom | Saves | back to Today | one `nutrition_checkins` row | **No confirmation** | already answered |
+| Done | Footer, pinned to the bottom of the screen | Saves. The footer's own line reads `0 of 1 answered · 1 to go` until an answer is chosen, then `Answered` as a green chip; until then the button is `aria-disabled` in the secondary style — never dimmed — and a tap does nothing (ATH-ADULT-03, 2026-09-11). The line beneath the button is unchanged pending the ATH-ADULT-3b board | back to Today | one `nutrition_checkins` row | **No confirmation** | already answered |
 
 ## 7. Offline and sync
 

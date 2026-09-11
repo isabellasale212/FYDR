@@ -988,14 +988,24 @@ ratings, gym s…". The filename carries the athlete's own id.
 
 **Entry point.** Two places:
 - "Me" → "Report a problem ›".
-- The nutrition check-in form's "Report a problem" link.
 - Direct URL `/report-problem`.
+- ~~The nutrition check-in form's "Report a problem" link~~ — **does not exist.**
+  Measured on `/nutrition-check-in` 2026-09-10 (ATH-ADULT-07): no such link.
 
 **Steps.**
 
 1. Optionally press a category chip: "Injury or pain", "Wellbeing", "Something
    else". Pressing the selected chip again clears it.
-2. Type into the body field (`id="report-body"`, label "What's going on?").
+2. Type into the body field (`id="report-body"`, label "What's going on?",
+   5 rows, **1,000-character limit** shown as a live "{n}/1000" counter). The
+   textarea has no `maxlength`; over the limit the counter is replaced by
+   "That is {n} characters over. Nothing has been cut — trim it and it will
+   send." and the button disables. At exactly 1,000 it still sends.
+   - Above the form: an `ⓘ` line — **"Goes to your club's medical staff. Not a
+     substitute for emergency care — if this is urgent, contact emergency
+     services or your GP."** Under "Your reports": "Anything you send goes
+     here, along with whether medical has seen it."
+   - The three category chips are `aria-pressed` toggles at 44px, ungrouped.
 3. Press the send button.
 
 **Send button states.**
@@ -1023,10 +1033,15 @@ dismiss → `/today`.
 
 **Steps.**
 
-1. The screen shows heading "My programme", the programme's own name, a
-   "Sessions" list, "Nutrition targets" and a "Nutrition" section.
-   - Visible: "Meal ideas ›" → `/programme/nutrition` (rendered in two places on
-     this screen).
+1. The screen shows heading "My programme", the programme's own name
+   ("Pre-season strength" — rendered as a **second `<h1>`**, so the page has
+   two), an eyebrow "GYM · ACCUMULATION · WEEK 1", a "Sessions" list, and a
+   "Nutrition targets" card ("Your standing target. Guidance only — nothing to
+   log here." — Protein 190g, Carbohydrate 440g).
+   - Visible: "Meal ideas ›" → `/programme/nutrition`, rendered **once**, at the
+     foot of the Nutrition targets card. An earlier version of this document
+     said twice and named a separate "Nutrition" section; measured 2026-09-11,
+     neither is so.
 
 **Branches.**
 
@@ -1042,8 +1057,19 @@ dismiss → `/today`.
 
 **Steps.**
 
-1. The screen shows heading "Meal ideas".
-   - Visible: "My programme" back link.
+1. The screen shows heading "Meal ideas", eyebrow "MY PROGRAMME · MEAL IDEAS".
+   - Visible: a "Back" button (the shared `BackButton`) **and** a "My programme"
+     link → `/programme` — two back controls, the same pairing as three other
+     athlete screens.
+   - Opening copy: "Portions below are scaled to your last recorded weight,
+     {kg} kg, on a training day. Reference only — nothing here is logged or
+     tracked." and, when the club has no recipes of its own, "Your club hasn't
+     added its own recipes to the library yet — these are the standard starting
+     meal ideas everyone begins with."
+   - **The weight is the staff measurement, not the athlete's own.** It reads
+     `body_composition` (skinfold, staff-entered), while `/me`'s "Body mass …
+     self-reported" reads the athlete's wellness entries. On the review account
+     the two disagree by 7.5 kg (98.5 vs 106.0) and neither screen says why.
 
 **End state.** Stays on `/programme/nutrition`.
 
@@ -1052,19 +1078,39 @@ dismiss → `/today`.
 ## ATH-ADULT-30 — Discard an entry stuck in the offline queue
 
 **Entry point.** `/today`, when a queued write has failed in a way that will
-never succeed (a conflict). Queued writes that are merely waiting are **not**
-shown — they retry silently.
+never succeed (a conflict). `OutboxFlusher` is rendered on `/today` **only** —
+which is why every domain's outbox retries from there and nowhere else.
+
+**Merely-waiting writes ARE shown**, contrary to an earlier version of this
+document: a `role="status"` line reads "☁ {n} entries are saved on this phone
+and will send when you have signal." (singular: "entry is"). What is *not*
+shown is a retry — that happens silently on the next `/today` load.
 
 **Steps.**
 
-1. A `role="alert"` notice names the stuck entry.
-2. Press "Discard this one".
+1. A `role="alert"` notice names the stuck entry: **"One saved entry could not
+   be sent: you already have {label} from another tab or device, and that one is
+   what is showing."** — where the label is "your check-in for {date}",
+   "your rating for {date}" or "your check-in for the week of {date}".
+2. Press "Discard this one" (a `.btn-ghost` inside the notice).
+
+**How a conflict is decided.** On a duplicate-key error the flusher does a
+targeted lookup: if the row already on the server matches what was queued, the
+queued copy is dropped silently as a delivered replay; only if it *differs* is
+it marked a conflict and surfaced. So the notice means "two different answers
+for the same slot", never "you pressed twice".
+
+**Gym sets are never surfaced.** Their branch assumes any duplicate is the
+athlete's own replay and dequeues it as sent, with no lookup — the code's own
+comment calls the proper check "a reasonable follow-up but a separate,
+out-of-scope change". A set logged offline with different numbers from one that
+later landed in the same slot is discarded without notice.
 
 **Branches.**
 
-- IF the write is merely queued (offline, retryable) THEN nothing is shown at
-  all and it is retried on the next load. This is deliberate: the athlete has
-  already done the thing.
+- IF the write is merely queued (offline, retryable) THEN the "☁ saved on this
+  phone" status line shows, and it is retried on the next `/today` load. The
+  *retry* is silent; the *count* is not.
 - A conflict is **the one queued-write outcome that is surfaced**.
 
 **End state.** The queued item is removed; the entry is not submitted.

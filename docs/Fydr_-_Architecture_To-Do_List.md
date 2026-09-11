@@ -1111,6 +1111,18 @@ trade `0096` made for gym, now made consistently.
 
   **Guard it.** Three cases: set one type off, mute, un-mute, assert it is still off; set one type on, mute, un-mute, assert it is on; and mute, turn one chip on by hand, un-mute, assert that chip is still on (the athlete's newer intent wins).
 
+## 0aa. Four smaller defects from the ATH-ADULT-27 to -30 review pass — 2026-09-11
+
+**Real defects, lower severity than §0r to §0z.** Grouped because none is worth a section of its own and all were measured.
+
+- [ ] **`/programme` has two `<h1>` elements.** "My programme" in the page header and "Pre-season strength" (the programme's name) inside `.prog-header`. Measured: `document.querySelectorAll('h1').length === 2`. One page, one `h1`; the programme name is an `h2` or a styled paragraph.
+
+- [ ] **Report-a-problem's over-limit message does not pluralise.** At 1,001 characters it reads "That is **1 characters** over." The copy is otherwise good — "Nothing has been cut — trim it and it will send." — and the only fix is the noun.
+
+- [ ] **A gym set queued offline is silently discarded if its slot was filled by a different value.** `OutboxFlusher.tsx`, gym branch: any duplicate-key error is treated as the athlete's own replay and dequeued as *sent*, with no lookup. The wellness, RPE and nutrition branches do the lookup (`resolve*Conflict`) and surface a real conflict on `/today`; gym does not. The code's own comment calls the guard "a reasonable follow-up but a separate, out-of-scope change." It stops being out of scope once the offline path is being redesigned (§0u's retry-only-from-`/today` item). Not data loss of a set — the slot index guarantees one live row — but loss of the athlete's *numbers* for it, without telling them.
+
+- [ ] **`/programme/nutrition` says "your last recorded weight" without saying whose record.** It scales portions to `body_composition` — the staff skinfold measurement — while `/me` shows "Body mass … self-reported" from the athlete's own wellness entries. On the review account the two are 98.5 and 106.0 kg. An athlete who typed 106 into this morning's check-in and then reads "your last recorded weight, 98.5 kg" has no way to tell which the app believes or why. **Copy, not data**: the two sources are a deliberate trust distinction and should stay separate; the sentence needs to say "your last staff measurement ({date})" and, ideally, the `/me` figure should say the same about its own source. The 7.5 kg gap itself is probably seed drift (§0f) and is not the finding.
+
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.
 

@@ -477,6 +477,7 @@ begin
   update public.organisations set tier = 'core' where id = tests.uid('orga', 'org');
 end $$;
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after this switch, so what follows measures something');
 select tests.set_jwt(tests.uid('orga', 'user_coach'));
 
 select is(

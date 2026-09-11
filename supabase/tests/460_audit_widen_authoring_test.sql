@@ -199,6 +199,7 @@ select ok(
 -- The disclosure rule, re-asserted across the tables this batch adds.
 select tests.set_jwt(tests.uid('orga','user_admin'));
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after this switch, so what follows measures something');
 
 select is(
   (select count(*)::int from (

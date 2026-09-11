@@ -85,6 +85,7 @@ begin
   end if;
 end $$;
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after this switch, so what follows measures something');
 select tests.set_jwt(tests.uid('orga', 'user_athlete_1'));
 
 select is(
@@ -129,6 +130,7 @@ select ok(
 );
 
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after this switch, so what follows measures something');
 select tests.set_jwt(tests.uid('orga', 'user_athlete_1'));
 
 -- ------------------------------------------------ nothing else was widened
@@ -145,6 +147,7 @@ begin
   end if;
 end $$;
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after this switch, so what follows measures something');
 select tests.set_jwt(tests.uid('orga', 'user_athlete_1'));
 
 select is(
@@ -198,6 +201,7 @@ select is(
 );
 
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after this switch, so what follows measures something');
 select tests.set_jwt(tests.uid('orga', 'user_athlete_1'));
 
 select is(

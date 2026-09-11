@@ -88,6 +88,7 @@ select lives_ok(
 );
 
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after this switch, so what follows measures something');
 select tests.set_jwt(tests.uid('orga', 'user_admin'));   -- only they may read audit_log
 
 /* EXACTLY ONE ROW EACH. This is the assertion the first version of 0099 would
@@ -180,6 +181,7 @@ select ok(
 
 -- ---------------------------------------------- 4. no app role may delete
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after this switch, so what follows measures something');
 select tests.set_jwt(tests.uid('orga', 'user_athlete_1'));
 select throws_ok(
   format($q$delete from wellness_entries where id = %L$q$, tests.uid('orga','well_2')),
@@ -209,6 +211,7 @@ delete from training_entries where id = tests.uid('orga','train_2');
 delete from nutrition_checkins where id = tests.uid('orga','nutr_2');
 
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after this switch, so what follows measures something');
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
 
 select is(

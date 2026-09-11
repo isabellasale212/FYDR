@@ -170,3 +170,125 @@ name is involved.
 **Filed defects for 08:** §0u's nutrition item ("fix the copy, keep the default", decided 2026-09-10) — the past-week default is kept; the copy fix is in the board's week-naming (A4/A8).
 
 **Built:** A1–A9 with B1–B4. **Not built:** C1–C3 (behaviour), D2.
+
+---
+
+## ATH-ADULT-09 — Log a gym session set by set
+
+**Source.** `docs/designs/ath-adult-09-10-11 final/` — board "ATH-ADULT-09-10-11 · Gym logger
+pattern" (13 frames), `notes.md`, the Claude Code prompt. Screen:
+`src/components/GymSessionLogger/GymSessionLogger.tsx` on `/gym/[sessionId]`.
+
+**The board is a different logger.** It draws a set-by-set screen: one exercise at a time,
+weight and reps as two 48px numbers between 52px steppers, one 56px "Log set 2 · 100 kg × 8"
+primary, and set chips as the state display. The live logger is a card per exercise with a
+row of set keys (tap the next key to log the prescribed set), a weight stepper per card, a
+session-RPE field and "Finish early / Finish session" in the footer. So most of the board is
+a rebuild (C), and the prompt's own prerequisite — "the new design system and kit components
+are in code" — is not met: there is no kit. What follows is what can be moved onto the
+board's rules without changing what the screen does.
+
+**Step 1 of the prompt, from the code.** (1) `--t-num-hero` is not a token in this system
+(no such name in `tokens.css`; the dial and the stepper values use `--fs-24`/`--fs-28`
+directly) — the "global change" the prompt asks about has nothing to change; a 48px step
+does not exist (B1). (2) Prescription: `sets`, `reps_min`, `load_basis` and the recommended
+load come from the programme exercise (`recommendedFor`); the weight step is a constant
+`WEIGHT_STEP_KG = 2.5` in the component — **no per-exercise step and no "has a weight"
+flag** beyond `load_basis === 'none'` for bodyweight (C3). (3) Offline: `logMutation` enqueues
+each set (`enqueueGymSetLog`) and `OutboxFlusher` — mounted on `/today` — retries; nothing
+flushes on the `online` event or from this screen (C4, and §0aa's discard question). (4)
+Correcting: `revise_gym_set_log` (0044/0045), online only, no limit on how many times or
+how long after, the original kept as a superseded row; My data marks the session corrected
+(§0v). (5) Personal bests: no query says "best before today" per exercise; it would be a
+max over `gym_set_logs_current` joined to exercise, filtered to dates before today (C6).
+(6) Wake Lock: iPhone Safari 16.4+ and Android Chrome support `navigator.wakeLock`; where
+absent the call rejects and the screen dims as today (C5). (7) Haptics: none in iPhone
+Safari (`navigator.vibrate` is not implemented); Android Chrome has `vibrate()` (C5).
+
+### A. Buildable now
+
+| # | Change | Before | After (real tokens) |
+|---|---|---|---|
+| A3 | Structure from spacing, not borders | `.gym-ex-card` 1px `--border` | no border; `--surf` on the tinted page; the `--r-toggle` radius kept |
+| A4 | The header never scrolls away | static `.gym-head` | `position: sticky; top: 0` on `--phone-bg`, its hairline kept |
+| A5 | Rest is plain text | already "· 90s rest" in the exercise head | unchanged |
+| A6 | Footer note "Sets save as you log them." | already there | unchanged |
+
+Two items that are composable from existing tokens are **not** A, because they reverse a
+recorded decision (see D4): the one-accent chip states (logged `--accent` + ✓, current
+`--wash-accent` + `--ring-accent`, not reached `--faint` on `--surf2` undimmed) and the
+neutral deviation line ("Prescribed 100 kg · **+2.5**" in `--muted`, real minus sign).
+
+### B
+
+| # | Board | Ours | Note |
+|---|---|---|---|
+| B1 | `--t-num-hero` 48px (and 34 → 48) | no step at 48 or 34; `--fs-32`/`--fs-48` exist | a value change on a token this system does not have. **Recommend:** decide with the rebuild (C1); nothing built |
+| B2 | `--hit-lg` 56px, `--hit-md` 52px | no such tokens; the floor is 44 | new spacing steps — flagged per §0.01. **Recommend:** if the rebuild is approved, add `--hit-lg`/`--hit-md` as named tokens in that commit |
+| B3 | `--dur-move` 300ms on `--ease-ring` for the chip fill | declined in 03 (B1) | **Recommend:** stays declined; the chip flips on `--t-state` |
+| B4 | 48px set chip "stays literal" | ours 42px | **Recommend:** 44px minimum with the rebuild |
+
+### C
+
+- **C1 The set-by-set rebuild** (two 48px numbers, one "Log set N · W kg × R" primary, steppers for both values, exercise-at-a-time). **Recommend:** its own brief once B1/B2 are decided; it changes what the screen does, not only how it looks.
+- **C2 Set chips as the correction target with no disabled control** — today a not-reached key is `disabled` so sets log in order. **Recommend:** keep order enforcement, present it as `aria-disabled` with the not-reached look (as 03 did for blocked actions), in C1.
+- **C3 Stepper increment from the exercise record** (2.5 / 1.25 / 2 kg; bodyweight = reps only): needs a `weight_step_kg` on `programme_exercises` (or the exercise library) and a migration. **Recommend:** schema first, own commit.
+- **C4 Queued sets send on the `online` event and from this screen** — the count "6 of 12 sets · 2 waiting to send". **Recommend:** mount the flusher's retry in the logger and on `window.online`; ties to §0aa's discard question.
+- **C5 Wake Lock and haptics.** **Recommend:** `navigator.wakeLock?.request('screen')` on open, release on finish/exit, re-acquire on `visibilitychange`; `navigator.vibrate?.(10)` on log — both feature-detected; small, own commit.
+- **C6 Session complete summary** (total volume first, sets done, personal bests "Best before today 100 kg × 8 · 21 Aug"). **Recommend:** a `fetchPersonalBestsBefore(date)` query, then the screen.
+
+### D
+
+- **D1 "Not logged" for an absent value** vs My data's em-dash convention (`my-data/gym/[id]`, `GymSessionSetsList`: "an em dash for a missing number, never a 0"). The 12-13 board (My data and history) owns those rows and is in this queue. **Collision — not built here; recommend** 12-13 decides the missing-value word for My data and the logger follows.
+- **D2 The gold `--gym` domain colour** stays on the tab bar and the domain chips (the board's "no second hue" is scoped to the logger).
+- **D3 Collisions with the queue:** `.gym-ex-card` and `.gym-head` are edited here and by no other queued flow; 10 and 11 share this component and are recorded below as the same series.
+- **D4 The board reverses the 2026-09-08 redesign decisions on colour.** `docs/athlete/screens/05-gym-session.md` §13 records, and `scripts/test-gym-logger-redesign.ts` pins, the gold `--gym` progress fill, gym-tinted logged keys with `--gym-on-tint` ink and a ✓, and the amber "recommended N kg" sub-line — "so it is not rebuilt a second time". The board's "one accent, amber and teal are gone from the logger" undoes all three. A spec conflict by the overnight rule, so **not built. Recommend:** confirm the reversal; then one commit repoints the keys, the fill and the deviation line to the accent family (all existing tokens) and rewrites §13 and the guard.
+
+**Filed defects for 09:** §0u item 1 ("sessions logged" counts) — built overnight (068e5ba). §0g (page-load row creation) — decided to keep. §0aa gym discard — question recorded (Builder 3).
+
+**Built:** A3, A4. **Not built:** B1–B4, C1–C6, D1, D4.
+
+---
+
+## ATH-ADULT-10 — Finish a gym session early
+
+**Source.** Same board: the finish-early control, the confirmation, the early summary.
+
+### A
+
+| # | Change | Before | After |
+|---|---|---|---|
+| A1 | The control is not shaped like logging a set | `.btn-primary` "Finish early · 4 of 12" in the footer | dashed 1px `--border-strong` outline, no fill, `--muted`, 44px (`.gym-finish-early`), same footer position |
+
+### C
+
+- **C1 Move to the header** — the board puts it in the header and leaves the footer to the logging action; on the live screen the footer's only action IS this one, so moving it leaves the footer with a note alone. **Recommend:** with the C1 rebuild of 09.
+- **C2 The confirmation** ("Keep logging" primary; "Finish early" destructive secondary with "4 sets short"; what is saved, unlogged sets are not zero, where the session goes, corrections stay open). New behaviour. **Recommend:** own commit; the dialog pattern from 03's declined discard dialog is the shape.
+- **C3 The early summary** (different title, dashed neutral bar, "Not logged" rows, no totals block). **Recommend:** with C6 of 09 (the complete summary), one commit for both summaries.
+
+### D
+
+- **D1 "Not logged"** as 09 D1 (12-13 owns My data's rows).
+
+**Built:** A1. **Not built:** C1–C3.
+
+---
+
+## ATH-ADULT-11 — Correct a logged gym set
+
+**Source.** Same board: the correction reached from the chip, the footer swap, the strip.
+
+### A
+
+- none beyond 09's chip colours: the correction panel already opens from a logged key and keeps its Save/Cancel pair.
+
+### C
+
+- **C1 "Save correction" / "Cancel" replace the logging action while the panel is open** — the panel sits inside the exercise card today and the footer is unchanged while it is open. **Recommend:** with 09's C1.
+- **C2 After saving: the chip keeps its ring, the row shows the old value, the strip reads "Set 1 corrected · was 100 kg × 8"** — the logger reads `gym_set_logs_current` only, so the superseded values are not on this screen. **Recommend:** read the superseded row alongside (as My data does since §0v) and render the strip; own commit.
+
+### D
+
+- **D1** §0v (My data marks a corrected session; built) already shows both values on My data — the strip on the logger would be the same fact in a second place; keep the wording identical when built.
+
+**Built:** nothing. **Not built:** C1–C2.

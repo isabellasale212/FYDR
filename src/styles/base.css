@@ -3609,6 +3609,16 @@ a.hist-row:focus-visible {
   flex: none;
   padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 12px;
   border-bottom: 1px solid var(--hair);
+  /* ATH-ADULT-09 (2026-09-12): the header never scrolls away — programme,
+     session name and the running count stay above the fold while the
+     exercise list scrolls under it. Sticky against the document (the shell
+     has no scroll pane since §0s commit 1), on the shell ground so the
+     list does not show through; its hairline is one of the two the board
+     allows. */
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--phone-bg);
 }
 /* .gym-head-row and .gym-close stood here, styling a Close/clock utility line
    the 2026-09-08 reference removes (screens 09/10). Dead the moment the markup
@@ -3665,7 +3675,13 @@ a.hist-row:focus-visible {
   padding-top: var(--sp-14);
 }
 .gym-ex-card {
-  border: 1px solid var(--border);
+  /* ATH-ADULT-09 (2026-09-12): structure from spacing, not borders — a
+     white surface on the tinted page with no outline, per the gym logger
+     board. The active card is still marked by its gym-tinted head below
+     (a 2026-09-08 decision this board's colour rule would reverse; that
+     reversal is recorded, not built — D4 in the overnight record). */
+  border: none;
+  background: var(--surf);
   border-radius: var(--r-toggle); /* the athlete card radius since 11 Sept 2026 — see .phone-body .card */
   overflow: hidden;
   margin-bottom: var(--sp-14);

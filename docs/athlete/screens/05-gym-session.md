@@ -16,8 +16,11 @@ An athlete with a gym session assigned to them.
 ## 3. What you see
 
 One eyebrow line ("PRE-SEASON STRENGTH · ACCUMULATION · WEEK 1 · DAY 1"), the
-session name, and a gold progress bar with its set count. Then the exercise you
-are on and the one after it, a **"2 more · Split squat, Nordic curl"** disclosure
+session name, and a gold progress bar with its set count — this header is pinned
+and never scrolls away (ATH-ADULT-09, 12 September 2026), so what is next is
+always stated. Then the exercise you are on and the one after it, each a white
+card with no border on the tinted page (structure from spacing; the active card
+is marked by its tinted head), a **"2 more · Split squat, Nordic curl"** disclosure
 row folding the rest, the optional session RPE field, and the finish button.
 
 The session's exercises are **already adjusted for this athlete**, and each

@@ -999,6 +999,17 @@ self-report, which puts it in the same class as the events above. The companion
 `entry_revision.view` event (a coach expanding a revision history) is *not* mandatory in the same
 sense; it exists because `decisions/adr-005-immutable-entries.md` O-28 asks for it.
 
+Added 2026-09-12 with migration `0104_audit_sessions.sql` (§0al, decided 2026-09-11): **any
+change to the schedule** — `sessions.create`, `sessions.update` (`metadata.changed` holds
+`{field: {from, to}}` for exactly the fields that moved; an `updated_at`-only touch writes
+nothing), `sessions.delete` (`soft: true` for the app's `deleted_at` removal, `soft: false` for
+a hard delete below the app), `session_participants.add` and `session_participants.remove`
+(`via_cascade` when the session itself was hard-deleted). Written by AFTER row triggers of the
+same shape as `0097`/`0099`, so the schedule grid's publish, the full-screen forms and the
+week-template apply are all covered without any of them calling `audit_log`. Title and location
+are recorded in full — staff-authored scheduling facts, which is what the log exists to answer —
+while `notes` is recorded as presence and length only. Both tables refuse `TRUNCATE`.
+
 ---
 
 ## 14. Row-level security

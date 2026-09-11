@@ -1,14 +1,18 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { forwardedIdentityHeaders } from '@/lib/clientAddress';
 import { claimsFromSession, sessionIdFromAccessToken } from '@/lib/supabase/claims';
 import { recordSignIn, recordSignInFailure } from '@/lib/signInAudit';
 import {
+  FAILED_SIGN_IN_MIN_MS,
+  failureBody,
+  holdUntil,
   isSameOriginSubmit,
   nativeRedirectPath,
   readSignInSubmission,
   SIGN_IN_COPY,
+  type LimiterRecord,
   type NativeOutcome,
 } from '@/lib/signInSubmission';
 
@@ -77,10 +81,17 @@ import {
  *  accepted only from our own origin, because a form body is what login CSRF
  *  sends. lib/signInSubmission.ts has the reasoning; nothing about the rate
  *  limiter, the audit rows or the auth call differs between the two paths. */
+/** ONE ATTEMPT LEFT — added 2026-09-11 (F2). A failure now carries
+ *  attemptsRemaining, and the form warns at 1. The condition it was built
+ *  under is that a real account's wrong password and an unknown email's any
+ *  password stay indistinguishable — same field, same wording, same timing.
+ *  lib/signInSubmission.ts says how; the shape of this function is the
+ *  timing half: the audit row goes in after(), and every 401 waits out
+ *  FAILED_SIGN_IN_MIN_MS from the request's start. */
 export type SignInResult =
   | { ok: true }
   | { ok: false; locked: true; lockedUntil: string; secondsRemaining: number; error: string }
-  | { ok: false; locked: false; error: string };
+  | { ok: false; locked: false; error: string; attemptsRemaining?: number | null };
 
 // No CAPTCHA here, by design and not by oversight -- see this file's header comment and
 // migration 0048's own header for the full note. It's a real third-party vendor
@@ -88,6 +99,7 @@ export type SignInResult =
 // load-bearing on its own in the meantime.
 
 export async function POST(request: Request): Promise<NextResponse<SignInResult>> {
+  const startedAt = Date.now();
   const { email, password, next, native } = await readSignInSubmission(request);
 
   /* A native submit answers with a navigation; the fetch path answers with the
@@ -156,7 +168,7 @@ export async function POST(request: Request): Promise<NextResponse<SignInResult>
   const supabase = await createClient(forwardedIdentityHeaders(request.headers));
   const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
-  let record: { is_locked: boolean; locked_until: string; seconds_remaining: number; attempts_remaining: number } | undefined;
+  let record: LimiterRecord | undefined;
   if (admin) {
     try {
       // Resolved for login_attempts.org_id only -- an admin-visibility/support
@@ -185,14 +197,19 @@ export async function POST(request: Request): Promise<NextResponse<SignInResult>
 
          Only for accounts that exist: userRow is null for an unmatched email,
          and recordSignInFailure declines the row. See its own header for why
-         that is two decisions rather than one. */
+         that is two decisions rather than one.
+
+         WRITTEN AFTER THE RESPONSE, since 2026-09-11. Awaiting it here made a
+         real account's failure measurably slower than an unknown email's —
+         one insert only the real one paid — which is an existence oracle.
+         after() runs it once the response has gone, for exactly the length
+         the platform keeps the invocation alive (Vercel: waitUntil). The row
+         still lands; recordSignInFailure never throws. */
       if (signInError) {
-        await recordSignInFailure(
-          admin,
-          { orgId: userRow?.org_id ?? null, userId: userRow?.id ?? null },
-          request.headers,
-          { attemptsRemaining: record?.attempts_remaining ?? null, locked: Boolean(record?.is_locked) },
-        );
+        const writer = admin;
+        const target = { orgId: userRow?.org_id ?? null, userId: userRow?.id ?? null };
+        const context = { attemptsRemaining: record?.attempts_remaining ?? null, locked: Boolean(record?.is_locked) };
+        after(() => recordSignInFailure(writer, target, request.headers, context));
       }
     } catch (err) {
       console.error('login_attempt_record_result unavailable, real sign-in result unaffected', err);
@@ -243,6 +260,10 @@ export async function POST(request: Request): Promise<NextResponse<SignInResult>
   }
 
   // Unchanged from before this route existed: a generic message either way, so a wrong
-  // password and an unknown email look identical to whoever is typing.
-  return answer({ kind: 'invalid' }, { ok: false, locked: false, error: SIGN_IN_COPY.invalid }, 401);
+  // password and an unknown email look identical to whoever is typing — and, held to
+  // the floor, to whoever is timing. The count is the limiter's, which never knew
+  // whether the account existed.
+  const body = failureBody(record);
+  await holdUntil(startedAt, FAILED_SIGN_IN_MIN_MS);
+  return answer({ kind: 'invalid', attemptsRemaining: body.attemptsRemaining }, body, 401);
 }

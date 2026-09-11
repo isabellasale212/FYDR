@@ -403,7 +403,10 @@ console.log('\n   ...wired into the route on the failure path only');
   const route = readFileSync('src/app/auth/sign-in/route.ts', 'utf8')
     .replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ');
   assert(/recordSignInFailure\(/.test(route), 'the route calls it');
-  assert(/admin/.test(route) && /recordSignInFailure\(\s*admin/.test(route),
+  /* Since 2026-09-11 the call sits in next/server's after(), where `admin`
+     (a let, narrowed only inside its if) is handed over as the const `writer`
+     so the closure keeps the narrowing. Either spelling is the admin client. */
+  assert(/admin/.test(route) && (/recordSignInFailure\(\s*admin/.test(route) || (/const writer = admin;/.test(route) && /recordSignInFailure\(writer/.test(route))),
     'with the ADMIN client — the anon one would be refused by the insert policy');
   assert(/select\('id, org_id'\)/.test(route),
     "and resolves the account's id alongside its org, which the lookup did not do before");

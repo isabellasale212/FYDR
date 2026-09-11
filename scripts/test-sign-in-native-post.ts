@@ -117,16 +117,16 @@ console.log('\n4. where a native submit lands is built from the outcome, never t
   assert(nativeRedirectPath({ kind: 'ok' }, 'https://evil.example') === '/', 'and refuses an absolute one — the same guard as the client path');
   assert(nativeRedirectPath({ kind: 'ok' }, '//evil.example') === '/', 'including protocol-relative');
   assert(nativeRedirectPath({ kind: 'mfa' }, '/today') === '/login/mfa?next=%2Ftoday', 'an account with a verified factor is sent to the challenge, next preserved');
-  assert(nativeRedirectPath({ kind: 'invalid' }, null) === '/login?e=invalid', 'a wrong password is a code, not the words');
+  assert(nativeRedirectPath({ kind: 'invalid', attemptsRemaining: null }, null) === '/login?e=invalid', 'a wrong password is a code, not the words');
   assert(nativeRedirectPath({ kind: 'missing' }, null) === '/login?e=missing', 'an empty submission likewise');
   assert(nativeRedirectPath({ kind: 'locked', secondsRemaining: 90.7 }, null) === '/login?e=locked&s=90', 'a lockout carries whole seconds so the form can run its countdown');
-  assert(nativeRedirectPath({ kind: 'invalid' }, '/my-data') === '/login?e=invalid&next=%2Fmy-data', 'a failure keeps next so the retry still lands where they were going');
+  assert(nativeRedirectPath({ kind: 'invalid', attemptsRemaining: null }, '/my-data') === '/login?e=invalid&next=%2Fmy-data', 'a failure keeps next so the retry still lands where they were going');
 
   /* The function's inputs are an outcome and a path. Assert the shape anyway,
      for the reader who wonders. */
   const every = [
     nativeRedirectPath({ kind: 'ok' }, '/x'), nativeRedirectPath({ kind: 'mfa' }, '/x'),
-    nativeRedirectPath({ kind: 'invalid' }, '/x'), nativeRedirectPath({ kind: 'missing' }, '/x'),
+    nativeRedirectPath({ kind: 'invalid', attemptsRemaining: 2 }, '/x'), nativeRedirectPath({ kind: 'missing' }, '/x'),
     nativeRedirectPath({ kind: 'locked', secondsRemaining: 5 }, '/x'),
   ];
   assert(every.every((p) => !/email|password|@/.test(p)), 'no redirect path names an email or a password');
@@ -146,8 +146,8 @@ console.log('\n5. the form turns the code back into the same words the fetch pat
   assert(isSignInErrorCode('no-roles') && isSignInErrorCode('invalid') && isSignInErrorCode('locked') && isSignInErrorCode('missing'), 'all four codes resolve');
   assert(!isSignInErrorCode('constructor') && !isSignInErrorCode('') && !isSignInErrorCode(null), 'and nothing else does — not even a prototype key');
   const route = strip(read('src/app/auth/sign-in/route.ts'));
-  assert(!/'That email and password do not match an account\.'/.test(route) && /SIGN_IN_COPY\.invalid/.test(route),
-    'the route no longer carries its own copy of the invalid message');
+  assert(!/'That email and password do not match an account\.'/.test(route) && /failureBody\(record\)/.test(route),
+    'the route no longer carries its own copy of the invalid message — the 401 body comes from failureBody');
   assert(/SIGN_IN_COPY\.missing/.test(route) && /SIGN_IN_COPY\.locked/.test(route), 'nor of missing or locked');
   assert(SIGN_IN_COPY.invalid === 'That email and password do not match an account.', 'and the words are the words the app has always used');
   assert(/params\.get\('s'\)/.test(form) && /setLockedUntil|lockedUntil/.test(form), 'a native lockout starts the same live countdown');

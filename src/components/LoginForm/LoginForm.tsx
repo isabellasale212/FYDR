@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { PasswordField } from '@/components/PasswordField/PasswordField';
 import { createClient } from '@/lib/supabase/client';
 import { safeNextPath } from '@/lib/safeRedirect';
-import { SIGN_IN_COPY, isSignInErrorCode } from '@/lib/signInSubmission';
+import { SIGN_IN_COPY, isSignInErrorCode, messageForFailure } from '@/lib/signInSubmission';
 import type { SignInResult } from '@/app/auth/sign-in/route';
 
 /** Formats a countdown in the same honest, specific register the rest of the app's
@@ -64,9 +64,16 @@ export function LoginForm() {
   // sends invalid / missing / locked back to a native (pre-hydration) submit. A code that
   // is not one of ours shows nothing, so the URL cannot be made to display arbitrary text.
   const code = params.get('e');
-  const [error, setError] = useState<string | null>(
-    isSignInErrorCode(code) && code !== 'locked' ? SIGN_IN_COPY[code] : null,
-  );
+  const [error, setError] = useState<string | null>(() => {
+    if (!isSignInErrorCode(code) || code === 'locked') return null;
+    // ?a= is the limiter's count, sent back to a native submit. One attempt
+    // left is the only step that changes the words — see messageForFailure.
+    if (code === 'invalid') {
+      const a = Number(params.get('a'));
+      return messageForFailure(params.has('a') && Number.isInteger(a) ? a : null);
+    }
+    return SIGN_IN_COPY[code];
+  });
   const [busy, setBusy] = useState(false);
   // Wall-clock deadline, not a pre-formatted string -- so the message re-renders with a
   // live, honestly-decreasing countdown rather than going stale the moment it's shown.
@@ -119,8 +126,12 @@ export function LoginForm() {
         // secondsRemaining every tick instead of freezing one at the moment of failure.
         setLockedUntil(new Date(result.lockedUntil).getTime());
         setSecondsRemaining(result.secondsRemaining);
+      } else if (result && !result.ok && !result.locked) {
+        // The same words the route sent, unless the count says this is the
+        // last try before a short wait (F2).
+        setError(messageForFailure(result.attemptsRemaining));
       } else {
-        setError(result?.error ?? 'That email and password do not match an account.');
+        setError(SIGN_IN_COPY.invalid);
       }
       setBusy(false);
       return;
@@ -145,6 +156,9 @@ export function LoginForm() {
   const message = locked
     ? `Too many attempts. Try again in ${formatCountdown(secondsRemaining)}.`
     : error;
+  // The last attempt before a lockout is a warning, not yet a refusal: the
+  // board draws it in the warn tone and everything else in bad.
+  const tone = message === SIGN_IN_COPY.lastAttempt ? 'warn' : 'bad';
 
   return (
     <form onSubmit={onSubmit} method="post" action="/auth/sign-in" noValidate className="signin-form">
@@ -152,7 +166,7 @@ export function LoginForm() {
       {next !== '/' ? <input type="hidden" name="next" value={next} /> : null}
       <div className="signin-fields">
         {message ? (
-          <p className="form-error" role="alert" style={{ margin: 0 }}>
+          <p className="form-error" role="alert" data-tone={tone} style={{ margin: 0 }}>
             {message}
           </p>
         ) : null}

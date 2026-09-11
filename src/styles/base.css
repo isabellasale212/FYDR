@@ -11647,6 +11647,14 @@ button.dash-stat {
     border-radius: var(--r-full);
     background: var(--bad);
   }
+  /* One attempt left (F2): the warn tone, same shape. */
+  .launch .form-error[data-tone='warn'] {
+    background: var(--wash-warn);
+    border-color: var(--border-warn);
+  }
+  .launch .form-error[data-tone='warn']::before {
+    background: var(--warn);
+  }
   /* The disclosure line: pinned to the bottom, set as the board sets it —
      caption size (--fs-12 is the nearest step to its 11.5) and left-aligned. */
   .launch .launch-foot {

@@ -1004,6 +1004,24 @@ browser's `Origin` names this host — checked before anything reaches the rate 
 confirm forms render nothing submittable until a mount-time check has run, so they were
 never exposed. `src/lib/signInSubmission.ts` and `scripts/test-sign-in-native-post.ts`.
 
+**"One attempt left", built 2026-09-11, and the enumeration condition it was built under.**
+A failed sign-in now returns the limiter's `attemptsRemaining`, and the form warns at one
+("That did not match. One attempt left before a short wait."). Isabella's condition: the
+response for an unknown email must be **indistinguishable** from a real account's wrong
+password — same field, same wording, same timing — so the count cannot be used to test
+which emails exist. Three parts. The count is safe because `login_attempt_record_result`
+is keyed on the email alone and never asks whether an account exists: an unknown address
+gets a row, a streak and a lockout on the same curve. The body is built by
+`failureBody(record)`, whose only input is that record. The timing was not safe before
+this: measured on scratch, a real account's failure took ~570ms against ~435ms for an
+unknown email, because the failed-sign-in audit row is written only for accounts that
+exist and GoTrue only runs bcrypt when there is a hash to compare. The audit row now goes
+in `next/server`'s `after()`, off the response path, and every 401 is held to a floor
+(`FAILED_SIGN_IN_MIN_MS`, 800ms from the request's start). Re-measured, interleaved: both
+answer in 808–836ms with byte-identical bodies at each step. The lockout answer is not
+delayed — it is decided per email before any account is known. Pinned by
+`scripts/test-sign-in-attempts-left.ts`.
+
 CAPTCHA is a deliberate cut, not a silent one: it is a real third-party vendor
 integration decision (provider choice, a new API key, a client widget, server-side
 verification) outside what this pass was scoped to build. The backoff above is real and

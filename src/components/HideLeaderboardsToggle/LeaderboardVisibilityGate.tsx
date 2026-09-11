@@ -33,7 +33,7 @@ export function LeaderboardVisibilityGate({ children }: { children: React.ReactN
       </p>
       <p className="import-sub" style={{ marginBottom: 0 }}>
         You turned these off on this device. You are still on any board your club
-        includes you on. <Link href="/me/leaderboards">Show them again</Link>.
+        includes you on. <Link href="/me/leaderboards" className="tap-floor">Show them again</Link>.
       </p>
     </div>
   );

@@ -9379,6 +9379,33 @@ button.dash-stat {
 /* The athlete shell is a phone column with its own inset. */
 .phone-body .back-btn {
   margin-bottom: var(--sp-10);
+  position: relative;
+}
+/* §0w: the 44px floor applies to navigation too. The button draws 29px and
+   stays 29px — the design is frozen — so the hit box is a pseudo-element the
+   athlete cannot see. Anchored to the TOP edge rather than centred: this is
+   the first child of .phone-body, a scroll container with no top padding, so
+   anything extended above it is clipped at scroll-top and hits nothing. The
+   15px below sit inside the 38px of shell spacing under the button (its own
+   10px margin plus the 28px body gap), so they overlap no other control.
+   Athlete shell only: the staff app is a pointer surface and its .back-btn
+   is unchanged. */
+.phone-body .back-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 44px;
+}
+/* §0w's other case: an inline link that is the only control on its screen.
+   Vertical padding on an INLINE element changes no line box and paints
+   nothing (the link has no background or border), but it is part of the
+   border box, so it is hit-testable. The content area of 13px Roboto is
+   15px, measured — not the 18.85px line box — so 16 each side is the smallest
+   step on the scale that reaches 44 (14 lands at 43). */
+.tap-floor {
+  padding-block: var(--sp-16);
 }
 
 /* ---------------------------------------------------------------------------

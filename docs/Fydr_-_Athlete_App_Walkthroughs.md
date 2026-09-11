@@ -898,7 +898,20 @@ the profile form's own "Save".
 - IF the save fails THEN the previous colour is restored and "Could not save
   that colour. Try again." renders.
 
-**End state.** Saves immediately on press — no Save button.
+**End state.** Saves immediately on press — no Save button. Verified 2026-09-11:
+`users.avatar_colour` is written on press, the Photo card's own preview changes
+at once, and `aria-pressed` moves to the chosen chip.
+
+**But the hero avatar at the top of `/me` does not change until the next
+navigation.** It is server-rendered from the row, while the picker updates only
+its own client-side preview — so on the same screen the athlete sees the card
+preview turn blue while the large avatar above it stays on the old colour. After
+a reload both agree. Recorded as a finding for the flow.
+
+**The eleven chips are `aria-pressed` toggles in a plain `<div>`** — no
+`role="radiogroup"`, no `fieldset`, and the "Or pick a colour for your initials"
+line is a paragraph not tied to them. Same shape as the nutrition answers
+(§0u). Each is 44px.
 
 ---
 
@@ -912,8 +925,18 @@ the profile form's own "Save".
 2. Fill "New password" (`id="new-password"`).
 3. Fill "Confirm new password" (`id="confirm-password"`).
 4. Press "Change password" — label becomes "Changing…" while in flight.
+   - Also visible: the hint "At least 12 characters." beneath the new-password
+     field. `autocomplete` is `current-password` / `new-password` /
+     `new-password` respectively, so password managers fill the right fields.
 
 **End state.** Stays on `/me`.
+
+**Not exercised** — passwords are never typed in review, and changing this
+account's would lock the remaining batches out of it. "Changing…" is therefore
+recorded from source, not observed.
+
+**The form has no `method` attribute** — the same defect as sign-in (§0x): a
+submit before hydration would put the current and new passwords in the URL.
 
 ---
 
@@ -923,13 +946,24 @@ the profile form's own "Save".
 
 **Steps.**
 
-1. Press one of the segmented options: "Light" (hint "Always light"), "Dark"
-   (hint "Always dark"), and a system option.
+1. Press one of two options in a `role="group"` labelled "Theme": "Light"
+   (hint "Always light") or "Dark" (hint "Always dark"). Each carries
+   `aria-pressed`.
+
+**There is no third option.** An earlier version of this document listed "a
+system option" and flagged its label as unverified. Measured 2026-09-11: two
+buttons. `ThemeToggle.tsx` records why — *"It had three; 'System' was dropped
+there [Design.pdf p45] and this follows it."*
+
+**The system preference is still honoured, without a button for it.** With
+nothing stored, the live button is whichever theme is *actually* showing,
+resolved from `matchMedia('(prefers-color-scheme: dark)')`, so a user on an
+OS-dark machine sees "Dark" pressed rather than being told they are on Light
+while the app renders dark. Pressing either button writes an explicit choice
+and pins it. The component's own comment names the complaint this avoids: "the
+theme switches when I click on different pages."
 
 **End state.** Applies immediately.
-
-**Unverified.** The third option's exact label and hint were not read in this
-pass.
 
 ---
 
@@ -941,7 +975,12 @@ pass.
 
 1. Press "Export my data CSV ›" (a plain `<a>` to `/me/export`, not a client link).
 
-**End state.** A CSV download of the athlete's own data.
+**End state.** A CSV download of the athlete's own data. Verified 2026-09-11 by
+fetching the endpoint: `200`, `Content-Type: text/csv; charset=utf-8`,
+`Content-Disposition: attachment; filename="my-fydr-data-{athleteId}.csv"`,
+93 lines, opening with a comment line — "# Your data, exported from Fydr.
+Everything you submitted yourself: profile, wellness check-ins, training
+ratings, gym s…". The filename carries the athlete's own id.
 
 ---
 

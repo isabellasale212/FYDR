@@ -1059,7 +1059,7 @@ trade `0096` made for gym, now made consistently.
 
   **The decision this needs** is whether the 44px floor applies to navigation as well as to actions. If it does, `.back-btn` is one rule change affecting every athlete screen — a shared-class change, so it must be flagged and confirmed before it is built, not folded into a flow. If it does not, the floor should say so, because three separate reviews have now flagged it as a violation.
 
-## 0x. The sign-in form has no `method="post"`, so a submit before hydration sends the password in the URL — found by the builder 2026-09-11, verified by the reviewer
+## 0x. Two forms have no `method="post"`, so a submit before hydration sends the password in the URL — sign-in found by the builder, change-password by the reviewer, both 2026-09-11
 
 **SECURITY. Above every other open item in this list.** Not a design question and not gated on any flow's proposal.
 
@@ -1073,7 +1073,11 @@ trade `0096` made for gym, now made consistently.
 
   **The fix is one attribute** — `method="post"` — so that a pre-hydration submit posts a body rather than building a query string. The route may then need to answer a real POST rather than 405, or the page can render a form `action` that does; either way the password never enters a URL. **Left for the builder**, because it is the sign-in page (ATH-ADULT-01, shared with every staff role) and the reviewer does not author `src/`.
 
-  **Guard it.** A source test asserting every `<form>` carrying a `type="password"` input declares `method="post"` — the shape of this bug is generic and will recur on the next form someone writes.
+  **A SECOND INSTANCE, found 2026-09-11 during the ATH-ADULT-24 review, one day after the first.** `ChangePasswordForm.tsx:111` is `<form onSubmit={onSubmit} className="card" noValidate>` — no `method` — around `current-password`, `new-password` and `confirm-password`. Measured on the running `/me`: every form on the page carrying a `type="password"` input has `method` absent. A pre-hydration submit there puts the athlete's **current and new** passwords in the URL. The page is authenticated, so the window is narrower than sign-in's, but the payload is worse.
+
+  **Both forms in the same fix.** And the guard below is no longer a nice-to-have: the second instance is exactly the recurrence it predicted, one file over.
+
+  **Guard it.** A source test asserting every `<form>` carrying a `type="password"` input declares `method="post"` — the shape of this bug is generic and has now recurred on the next form someone wrote.
 
 ## 0y. Carried over from the §0w handover — recorded, not fixed
 

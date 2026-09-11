@@ -21,7 +21,10 @@ and never scrolls away (ATH-ADULT-09, 12 September 2026), so what is next is
 always stated. Then the exercise you are on and the one after it, each a white
 card with no border on the tinted page (structure from spacing; the active card
 is marked by its tinted head), a **"2 more · Split squat, Nordic curl"** disclosure
-row folding the rest, the optional session RPE field, and the finish button.
+row folding the rest, the optional session RPE field, and the finish control —
+a dashed neutral outline reading "Finish early · N of M" while sets are
+outstanding (ATH-ADULT-10, 12 September 2026: it is not shaped like logging a
+set), and the primary "Finish session" once every set is logged.
 
 The session's exercises are **already adjusted for this athlete**, and each
 carries a way to log every set.

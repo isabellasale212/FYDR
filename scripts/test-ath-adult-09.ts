@@ -22,7 +22,6 @@ const assert = (cond: boolean, label: string): void => {
 const strip = (s: string): string => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\{\/\*[\s\S]*?\*\/\}/g, '').replace(/^\s*\/\/.*$/gm, '');
 const read = (p: string): string => readFileSync(p, 'utf8');
 const css = strip(read('src/styles/base.css'));
-const logger = strip(read('src/components/GymSessionLogger/GymSessionLogger.tsx'));
 const rule = (sel: string): string => {
   const esc = sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return new RegExp(`(?:^|[}\\n])\\s*${esc}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? '';

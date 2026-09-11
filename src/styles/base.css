@@ -3114,6 +3114,17 @@ a.hist-row:focus-visible {
   transform: rotate(180deg);
 }
 
+/* ATH-ADULT-10 (2026-09-12): the finish-early control while sets are still
+   outstanding — a dashed neutral outline, no fill, --muted, on the 44px
+   floor. It shares .btn-ghost's shape and overrides only what makes it read
+   as "not the logging action". */
+.gym-finish-early {
+  border: 1px dashed var(--border-strong);
+  background: none;
+  color: var(--muted);
+  min-height: 44px;
+}
+
 /* -------- the after-submit states, ATH-ADULT-04 / 06 / 08 (2026-09-12) --------
    Built from the "After submit states" board on this system's tokens. The
    fact the athlete came for — it is in, when, what to do if it is wrong — is

@@ -718,9 +718,16 @@ export function GymSessionLogger({
               reading as an error. */}
           {!alreadyComplete ? (
             <>
+              {/* ATH-ADULT-10 (2026-09-12): finishing early is not shaped like
+                  logging a set. While sets are outstanding this is a dashed
+                  neutral outline — no fill, --muted — so the accent primary is
+                  reserved for the act that completes the work; once every set
+                  is logged, "Finish session" is the primary as before. Same
+                  place, same call: the header placement and the confirmation
+                  the board draws are recorded, not built. */}
               <button
                 type="button"
-                className="btn-primary"
+                className={doneCount >= totalSets ? 'btn-primary' : 'btn-ghost gym-finish-early'}
                 style={{ width: '100%', marginTop: 'var(--sp-14)' }}
                 disabled={completeMutation.isPending}
                 onClick={() => completeMutation.mutate()}

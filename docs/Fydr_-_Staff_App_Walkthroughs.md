@@ -641,8 +641,11 @@ entirely without `SESSION_EDIT`.
 
 | Title | When | Actions |
 |---|---|---|
-| "The athlete app is up to date" | Nothing pending | "Published" — **disabled** |
-| "{N} change/changes not yet in the athlete app" | Anything pending | "Discard", "Publish to athletes" |
+| "The athlete app is up to date" | Nothing pending | "Published" — **disabled** (`.sg-btn-published`, 17px) |
+| "{N} change/changes not yet in the athlete app" | Anything pending | "Discard" (`.sg-btn-discard`, 37px), "Publish to athletes" (`.sg-btn-publish`, 35px) |
+
+Both states verified 2026-09-11 by staging one draft and discarding it; "1
+change not yet in the athlete app" is the singular.
 
 When pending, a subtitle reads: "Athletes still see the schedule as it was
 before these edits. Nothing changes on their phone until you publish."
@@ -671,7 +674,8 @@ up to date".
 
 1. Press "Discard".
 2. A confirmation replaces it: "Discard {N} change/changes? This can't be
-   undone." with "Yes, discard" and "Never mind".
+   undone." with "Yes, discard" (`.sg-btn-discard`, 37px) and "Never mind"
+   (`.btn-ghost`, 44px). Verified: "Discard 1 change? This can't be undone."
 3. Press "Yes, discard".
 
 **Branches.**
@@ -692,8 +696,9 @@ up to date".
 **Steps.**
 
 1. The screen lists saved templates.
-   - Per template: "Apply" (`.btn-primary`) → `/schedule/planner/apply?template={id}`
-     and "Edit" (`.btn-ghost`) → `/schedule/planner/{id}`.
+   - Per template: "Apply" (`.btn-primary`, 50px) → `/schedule/planner/apply?template={id}`
+     and "Edit" (`.btn-ghost`, 50px) → `/schedule/planner/{id}`. One template on
+     scratch: "Standard 1-game week".
    - Also visible: "+ New template" (`.btn-primary`) → `/schedule/planner/new`;
      "Schedule" back link.
 
@@ -706,24 +711,44 @@ up to date".
 
 ## STAFF-SS-16 — Open the squad report and export it
 
-**Entry point.** "Reports" in the sidebar → `/reports`. This *is* the squad
-report, not a menu.
+**Entry point.** "Reports" in the sidebar → `/reports`, which **is a menu** —
+six cards, each a link: Compliance (`/reports/compliance`), Injury &
+availability (`/reports/injuries`), Training report (`/reports/training`, "GPS
+· premium"), Athlete report (`/reports/athlete`), **Squad weekly
+(`/reports/squad`)** and Testing (`/reports/testing`), each with a one-line
+description and "CSV · PDF" or "CSV". The squad report is the fifth card. An
+earlier version of this document said `/reports` was the report itself;
+measured 2026-09-11, it is not.
 **Gate:** `REPORT_ACCESS` for the report family; the route itself takes any staff.
 
 **Steps.**
 
-1. Heading "Reports", with sections "Needing attention", "Load", "Availability",
-   "Wellness", "Gym and testing".
-   - Also visible: "Export CSV" → `/reports/squad/export`; "Export PDF" →
-     `/reports/squad/pdf`; period navigation "‹" and "›"; the group chips; "See
-     all {N} open flags ›" → `/flags`; and one link per named athlete →
-     `/squad/{id}`.
+1. On `/reports/squad`, heading **"Squad weekly"**, with sections "Needing
+   attention", "Load", "Availability", "Wellness", "Gym and testing" (all five
+   verified by name).
+   - Also visible: "Export CSV" → `/reports/squad/export?to={date}`; "Export
+     PDF" → `/reports/squad/pdf?to={date}`; period navigation — **"Previous
+     week" only when the current week is shown** ("Next week" renders only for
+     a past week); the group chips; "See all {N} open flags ›" → `/flags`; and
+     one link per named athlete → `/squad/{id}` (12 measured).
 2. Press "Export CSV" or "Export PDF" to download.
 
 **Branches.**
 
 - The export links carry the **current group filter and period** in their query
   string — an export is of what is on screen, not of the whole squad.
+  **Verified**: with Forwards selected the hrefs become
+  `…/export?groups={id}&to=2026-09-11`, the CSV serves `200 text/csv` as
+  `attachment; filename="squad-weekly-2026-09-05-to-2026-09-11.csv"`, and its
+  first line reads "# Squad weekly report, 2026-09-05 to 2026-09-11. Scope:
+  Forwards (15 athletes) …".
+- **The group filter on this screen is a URL parameter, not the cookie.**
+  Pressing a chip navigates to `/reports/squad?groups={id}` and writes no
+  cookie. The report *reads* the cookie as its default when the URL has no
+  `groups` — so a filter set on `/squad` carries into the report — but a filter
+  set here does **not** carry back to `/squad`, which shows "Whole squad" again.
+  Measured both directions 2026-09-11. The global-controls note above ("persists
+  globally … a cookie") is therefore true in one direction from this screen.
 
 ---
 

@@ -1268,6 +1268,15 @@ Two behaviour changes the sign-in proposal asked for, both outside the design-on
 - [ ] **Two unlabelled inputs in the draft wizard.** Step 1's name field (placeholder "Session name") and step 2's location field have no `<label>`, no `id`, no `aria-label` — a placeholder is not an accessible name once typed over. The full-screen `/schedule/new` form labels the same two fields correctly.
 
 
+## 0ak. The group filter is a cookie on one screen and a URL parameter on another, and only one direction carries — from the STAFF-SS-13 to -16 review, 2026-09-11
+
+- [ ] **`/squad` writes the filter to the `fydr-group-filter` cookie; `/reports/squad` writes it to `?groups=` and never to the cookie.** The report reads the cookie as its default when the URL is bare, so a filter set on Squad overview appears on the report — but a filter set on the report is gone by the time the sport scientist is back on Squad overview, which shows "Whole squad · 30 athletes" again. Measured both directions.
+
+  **Why it matters.** The staff document's global-controls note promises the filter "persists globally across screens; it is a cookie, not per-screen state" — the thing a coach relies on when moving between the report and the squad list during a selection meeting. One screen keeps that promise and one does not, and the one that does not is the one whose export scope depends on it. The URL form is defensible for a report (a shareable, exportable scope belongs in the address); the fix is for the report to *also* write the cookie when a chip is pressed, so the two agree.
+
+  **Sweep:** every other multi-athlete screen (`/dashboard`, `/reports/compliance`, `/flags`, `/nutrition`, `/leaderboards`, `/analytics`) should be checked for which of the two it does — the reviewer has measured only these two so far. Recorded here so later staff batches add to it rather than re-discovering it.
+
+
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.
 

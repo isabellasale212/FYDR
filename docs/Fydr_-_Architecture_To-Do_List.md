@@ -1176,9 +1176,16 @@ Two behaviour changes the sign-in proposal asked for, both outside the design-on
 - [ ] **The RPE to-do subtitle's "· 20 sec" has no binding source.** "20 sec" appears only in `docs/screens/legacy/training-entry.md` (non-binding) and a code comment; "45 sec" (wellness) and "about 10 sec" are in `00-product-overview` §198 and `08-notifications`. Per the B-f rule the builder ships the RPE subtitle as "Today 10:45" / "Yesterday" **without** "· 20 sec" until Isabella says otherwise. **One string to add if she wants it back; recorded here so it is a decision, not an omission.**
 
 
-## 0ae. SECURITY — the last-admin guard is client-side only; a sport scientist can delete their own admin role at the database and lock the club out — found 2026-09-11
+## 0ae. SECURITY — `user_roles` is unguarded at the database in both directions: the last admin can delete their own role, and a sport scientist can grant themselves medic — found 2026-09-11
 
-**Reported to Isabella directly, per the role-gate rule. Priority alongside §0x.**
+**Reported to Isabella directly, per the role-gate rule. Priority alongside §0x. Both halves need the same trigger.**
+
+- [ ] **A sport scientist can grant ANY role, including `medic`, to THEMSELVES.** `user_roles_admin_insert`'s `WITH CHECK` is `org_id = auth_org_id() AND auth_has_any_role('sport_scientist')` — nothing about `user_id`, nothing about which role. The only triggers on the table are `user_roles_audit` and `user_roles_bump_claims_version`; neither refuses anything. `setUserRoles` has no self or medic check. Measured on the running app: on Jane Pemberton's own row, the "Medic" toggle is `aria-pressed="false"` and **enabled** — the escalation is one click in the UI, not even a console call. (Not performed: it writes a permanent audit row and bumps her claims version.)
+
+  **Why medic specifically matters.** `CLINICAL_ONLY` is the one gate the sport scientist — the superset role — does not hold. It is what keeps athletes' problem reports, diagnoses and mechanisms off the admin's screen (see the staff document's injury-boundary section). An admin who can self-grant medic can read every athlete's own words to the medical team on a whim, with the only trace an audit row they could also read.
+
+  **DECIDED 2026-09-11 (Isabella): granting medic to OTHERS stays allowed; self-grant of medic is REFUSED at the database.** The trigger below carries both rules.
+
 
 - [ ] **`setUserRoles` refuses to remove the last `sport_scientist` in an org — but it runs in the browser, and nothing at the database enforces the same rule.** `src/lib/queries/userManagement.ts:setUserRoles` counts remaining admins and returns "This is the only admin in the club — remove the role from someone else first…" when the count would fall to zero. It is called from `UserDetailPanel.tsx:95` and `UserManagementPanel.tsx` with the **client** Supabase `db`. So the guard is JavaScript in the admin's own browser.
 
@@ -1188,16 +1195,16 @@ Two behaviour changes the sign-in proposal asked for, both outside the design-on
 
   **Measured on the running app** as Jane Pemberton, Ashcombe's only sport scientist: her own row's "Sport scientist" toggle is `aria-pressed="true"` and **not disabled**, while "Deactivate" on the same row **is** disabled. The UI protects against self-deactivation and relies on the query function for self-demotion.
 
-  **The fix is a trigger**, not more client code: `BEFORE DELETE OR UPDATE ON user_roles` that raises when the row being removed or changed is a `sport_scientist` and no other `sport_scientist` remains in the same org. Then the client-side message becomes a courtesy in front of a rule that holds. Also worth disabling the self-row admin toggle in the UI when the count is one, matching "Deactivate".
+  **The fix is one trigger, `BEFORE INSERT OR DELETE OR UPDATE ON user_roles`, carrying both rules:** (1) refuse an INSERT or UPDATE that would give `auth_user_id()` the `medic` role — self-grant of medic is never allowed, granting it to another user is; (2) refuse a DELETE or UPDATE that removes `sport_scientist` from a row when no other `sport_scientist` remains in that org. Then the client-side message becomes a courtesy in front of a rule that holds. In the UI, disable the self-row "Medic" toggle outright and the self-row "Sport scientist" toggle when the count is one, matching "Deactivate".
 
-  **Guard it.** A pgTAP test that seeds one admin in an org, attempts the delete as that admin, and asserts it is refused; and one with two admins asserting it succeeds.
+  **Guard it, four pgTAP cases.** Self-grant of medic as a sport scientist: refused. Grant of medic to another user: allowed. Delete of the only admin's own admin row: refused. Delete of one admin's row when two exist: allowed.
 
 
 ## 0af. Staff shell at phone width, and three sub-floor controls — from the STAFF-SS-01 to -04 review, 2026-09-11
 
 **The one design finding that applies to every staff screen**, recorded once here and referenced from each staff review rather than repeated.
 
-- [ ] **Below 768px the sidebar stacks full-width above the content, 640px tall.** `base.css`: `@media (max-width: 767px) { .sidebar { position: static; height: auto } }`, with the comment "the sidebar stacks full-width above the content". Between 768 and 1023px there is a 64px collapsed rail; below 768 nothing collapses. Measured at 375×812 as Jane Pemberton: the Dashboard heading at y=728, its first content section at **y=2209**, page 3,426px; Squad overview heading at y=737. Staff use phones pitch-side, and every screen opens on nine navigation rows and "Log out" before any content. **Deliberate as built and documented; wrong for the persona.** The 64px rail already exists and would carry down; a disclosure would also do. **Design question, not a defect** — filed here so the answer is made once for the shell, not per flow.
+- [ ] **Below 768px the sidebar stacks full-width above the content, 640px tall.** **DECIDED 2026-09-11 (Isabella): below 768px, a compact top bar with the navigation behind a menu control.** Shell-level brief written — `docs/design-briefs/STAFF-SHELL - Phone layout below 768px.md` — and it goes to Claude Design **before any staff flow is implemented**. Original finding follows. `base.css`: `@media (max-width: 767px) { .sidebar { position: static; height: auto } }`, with the comment "the sidebar stacks full-width above the content". Between 768 and 1023px there is a 64px collapsed rail; below 768 nothing collapses. Measured at 375×812 as Jane Pemberton: the Dashboard heading at y=728, its first content section at **y=2209**, page 3,426px; Squad overview heading at y=737. Staff use phones pitch-side, and every screen opens on nine navigation rows and "Log out" before any content. **Deliberate as built and documented; wrong for the persona.** The 64px rail already exists and would carry down; a disclosure would also do. **Design question, not a defect** — filed here so the answer is made once for the shell, not per flow.
 
 - [ ] **"Log out" in the sidebar is 17px tall** — a `<button type="submit">` styled as text. On every staff screen, at every width.
 
@@ -1206,6 +1213,15 @@ Two behaviour changes the sign-in proposal asked for, both outside the design-on
 - [ ] **"+ Invite people" on `/settings/users` has no `aria-expanded` or `aria-controls`.** It reveals the invite form; assistive tech is not told. Same gap as the RPE "Add a note" button (§0t).
 
 - [ ] **The invite form's six role controls are `aria-pressed` toggle buttons under copy that says "tick everything that applies".** The copy describes checkboxes; the controls are buttons. Either is fine; they should agree. Same ungrouped-toggle shape as §0u and §0aa.
+
+
+## 0ag. SECURITY — an ad-hoc magic-link helper minted service-role sign-ins with no production guard — found and closed 2026-09-11
+
+- [x] ~~**The reviewer's scratchpad `link.mjs` generated a magic link for any address using the service-role key, with no check that the target was scratch.**~~ **Closed the same day**: it now calls `describeTarget` from `scripts/lib/scratch-guard.mjs` and exits if the URL does not name the scratch project — verified refusing a production-shaped URL and still working against scratch.
+
+  **Sweep of `scripts/` for the same pattern, 2026-09-11:** three files hold a service-role key. `seed-auth.ts` is guarded. `create-org.ts` and `seed-staff-account.ts` are not — **correctly**: both are production tools by design (`create-org.ts`: "whose whole purpose is to be pointed at production"; `seed-staff-account.ts` issues invite links with no password, for real onboarding). The guard belongs on scratch-only tools; these are not that. No further finding.
+
+  **Why it is filed even though it lived outside the repo.** Its only protection was the `SCRATCH_` prefix on the env keys it read — a naming convention, not a check. `seed:auth` and `reset-scratch.mjs` both refuse production through the guard module precisely because "reads the scratch file" is not a safety property; a repointed or overwritten file would have made this helper a production sign-in factory. **The pattern to watch:** any script that holds a service-role key and is not routed through `describeTarget`. Worth a grep across `scripts/` and any other scratchpad before the next one is written.
 
 
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise

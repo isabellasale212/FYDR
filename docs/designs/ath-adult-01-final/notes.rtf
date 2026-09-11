@@ -1,0 +1,87 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2869
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 Georgia-Bold;\f1\fnil\fcharset0 Georgia;\f2\fnil\fcharset0 Monaco;
+\f3\fnil\fcharset0 HelveticaNeue;}
+{\colortbl;\red255\green255\blue255;\red13\green11\blue9;\red249\green248\blue242;\red13\green11\blue9;
+\red236\green234\blue224;\red109\green109\blue109;\red246\green245\blue240;}
+{\*\expandedcolortbl;;\cssrgb\c5882\c4706\c3137\c92157;\cssrgb\c98039\c97647\c96078;\cssrgb\c5882\c4706\c3137\c80000;
+\cssrgb\c94118\c93333\c90196;\cssrgb\c50196\c50196\c50196;\cssrgb\c97255\c96863\c95294;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\sa160\partightenfactor0
+
+\f0\b\fs32 \cf2 \cb3 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 What changed, and on which token\cb1 \
+\pard\pardeftab720\sa195\partightenfactor0
+
+\fs26 \cf2 \cb3 No card on the phone, card kept on desktop
+\f1\b0 \cf4 \strokec4 \'a0The form sits directly on the tinted page at 24px, with the disclosure line pinned to the bottom edge, so 812px is filled rather than leaving a floating card in the top 60%. On desktop a 440px card is centred in both axes, the wordmark inside it, and the disclosure line sits beneath the card at the card's own width.\'a0
+\f2\fs24 \cb5 phone --bg, padding 24px, no card \'b7 desktop card --surf, 1px --border, --r, --shadow, padding 20px 22px \'b7 card-to-line gap --gap-card 14px
+\f1\fs26 \cb1 \
+
+\f0\b \cf2 \cb3 \strokec2 Fields differ from whatever they sit on
+\f1\b0 \cf4 \strokec4 \'a0The page is --bg and phone fields are white --surf; inside the white desktop card they drop to --field. The relationship is kept by inverting it rather than by picking one fill, and cards stay pure white in both.\'a0
+\f2\fs24 \cb5 phone --surf on --bg \'b7 desktop --field on --surf \'b7 1px --line-strong \'b7 --r \'b7 min-height 44px
+\f1\fs26 \cb1 \
+
+\f0\b \cf2 \cb3 \strokec2 "Sign in" leads the hierarchy
+\f1\b0 \cf4 \strokec4 \'a0Three competing marks became one heading with a quiet brand unit above it: the set-type wordmark at --t-subhead and the eyebrow at --t-eyebrow in --faint, grouped tight, then 32px of air before a 30px heading.\'a0
+\f2\fs24 \cb5 heading --t-page + --t-page-tracking / --w-black \'b7 wordmark --font-brand Sora 800 at --t-subhead \'b7 Eyebrow primitive
+\f1\fs26 \cb1 \
+
+\f0\b \cf2 \cb3 \strokec2 Locked reads blocked, and is not tappable
+\f1\b0 \cf4 \strokec4 \'a0It carries aria-disabled, cursor not-allowed, and blocks submit at both the control and the form, so Enter does nothing while the countdown runs. It is deliberately not the kit's disabled prop, which dims the label to 45% and drops accent ink on the tint to 2.17:1 \'97 below the floor and against the system's own rule about alpha-muting text.\'a0
+\f2\fs24 \cb5 secondary Button styling drawn natively \'97 1px --accent, --pill-accent fill, --accent label at full strength, --r, 44px
+\f1\fs26 \cb1 \
+
+\f0\b \cf2 \cb3 \strokec2 Pending reads working
+\f1\b0 \cf4 \strokec4 \'a0Accent fill kept, plus a ring spinner. It runs on --dur-ring, the duration the dial's ring-in already uses, so no motion token was added. Reduced motion drops the rotation twice over \'97 the system's own stop and the spinner's \'97 and the label carries the state alone.\'a0
+\f2\fs24 \cb5 --dur-ring 0.9s linear \'b7 Button variant primary --accent / --on-accent
+\f1\fs26 \cb1 \
+
+\f0\b \cf2 \cb3 \strokec2 Banners come from the kit
+\f1\b0 \cf4 \strokec4 \'a0The hand-built stripe-and-fill boxes are gone. Banner carries its tone in the fill, the border and a round dot, and sets the message in --text \'97 the hue never becomes the type. The message is passed as the title so it is the emphatic line, not the caption.\'a0
+\f2\fs24 \cb5 Banner tone bad / warn \'b7 --r-round dot \'b7 message --text
+\f1\fs26 \cb1 \
+
+\f0\b \cf2 \cb3 \strokec2 The remembered device states a fact
+\f1\b0 \cf4 \strokec4 \'a0An editable pre-filled field plus a link asked the person to notice the pre-fill. It is now a row reading "Signing in as" with the address in tabular figures and one Change control, so the only editable thing on screen is the password.\'a0
+\f2\fs24 \cb5 row --surf, 1px --border, --r, --shadow \'b7 label --t-eyebrow / --faint \'b7 address --font-num / --t-num-body / --w-num-strong
+\f1\fs26 \cb1 \
+
+\f0\b \cf2 \cb3 \strokec2 No role has a next step, and no mailto
+\f1\b0 \cf4 \strokec4 \'a0The administrator's address is not available before sign-in \'97 no session exists, so no club has been resolved and there is nobody to address. Per instruction the action is replaced with the line "Ask your club's staff to add you to the squad.", and the only control left is Use a different account. The form is dropped, since there is nothing useful to retype.\'a0
+\f2\fs24 \cb5 line --t-body / --muted \'b7 Button variant secondary, full, 44px
+\f1\fs26 \cb1 \
+
+\f0\b \cf2 \cb3 \strokec2 The keyboard viewport scrolls, and the board shows its scrolled position
+\f1\b0 \cf4 \strokec4 \'a0At 375 \'d7 667 with the keyboard up the content area is 374px and the form needs 433px, so this is the one viewport where the screen scrolls. A static artboard cannot scroll, so that frame is rendered at the scrolled offset \'97 content shifted up 119px \'97 which is why the wordmark is cut at the top. Sign in, Forgot your password? and the disclosure line are all in view, which is the state worth reviewing. No-scroll still holds at 375 \'d7 812, where it was set.\'a0
+\f2\fs24 \cb5 keyboard inset 291px \'b7 content area 374px vs 433px required \'b7 offset \uc0\u8722 138px, review-board only, not a design value
+\f1\fs26 \cb1 \
+
+\f0\b \cf2 \cb3 \strokec2 Focus shows only on focus; every target clears 44px
+\f1\b0 \cf4 \strokec4 \'a0--ring-action is applied by :focus on fields and :focus-visible on links and text buttons, so nothing carries a halo at rest \'97 shown as its own frame here rather than as an interaction. The primary Button keeps the kit's resting halo, which is what marks it as the one action. Show, Change, Forgot your password? and both no-role controls are all at least 44px.\'a0
+\f2\fs24 \cb5 --ring-action on :focus / :focus-visible \'b7 min-height 44px throughout \'b7 disclosure line --t-caption / --muted
+\f1\fs26 \cb1 \
+\pard\pardeftab720\sa160\partightenfactor0
+
+\f0\b\fs32 \cf2 \cb3 \strokec2 Needs new token\cb1 \
+\pard\pardeftab720\sa195\partightenfactor0
+
+\fs26 \cf2 \cb3 Nothing \'97 but the kit needs one change
+\f1\b0 \cf4 \strokec4 \'a0No new colour, radius, spacing step, type size or duration. The spinner runs on --dur-ring, which already exists for the dial's ring-in, so the --t-spin proposed in the earlier pass is withdrawn. What is missing is not a token but a prop: Button destructures a fixed list and spreads nothing onto its element, so aria-disabled cannot reach the DOM through it. The Locked control is therefore a native button drawn to match secondary exactly. Button needs an aria-* pass-through.\'a0
+\f2\fs24 \cb5 --dur-ring 0.9s \'b7 --ease-ring cubic-bezier(0.22, 0.8, 0.36, 1)
+\f1\fs26 \cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf6 \strokec6 \
+\pard\pardeftab720\sa195\partightenfactor0
+\cf4 \cb3 \strokec4 One inconsistency worth flagging, since you asked for exact text: the keyboard note's body says "shifted up 119px" while its token line says "\uc0\u8722 138px". The 138 is correct \'97 I raised the offset to fit the disclosure line and updated the token line but not the sentence. Say the word and I'll correct the body to match.\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \
+\pard\pardeftab720\partightenfactor0
+
+\f3\fs24 \cf2 \strokec2 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb7 \
+}

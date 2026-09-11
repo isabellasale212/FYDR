@@ -1,0 +1,55 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2869
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\froman\fcharset0 Times-Bold;\f1\froman\fcharset0 Times-Roman;\f2\fmodern\fcharset0 Courier;
+}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat0\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid1}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b\fs24 \cf0 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 ATH-ADULT-02: build from the approved V2 static review board.
+\f1\b0 \
+The approved design is the V2 static board, with frames set at Thu 10 Sept 15:20 Europe/London. It comes as a Claude Design export plus notes as text. Put both in 
+\f2\fs26 docs/designs/ath-adult-02-final/
+\f1\fs24 . Any other ATH-ADULT-02 design in the repo is superseded.\
+
+\f0\b Before building, answer one question from the code:
+\f1\b0  can an RPE task appear before its session's end time? Check 
+\f2\fs26 compliance.ts
+\f1\fs24  and report what it does now. If it can, fix it so RPE tasks only appear after the session ends. Report back before building the rest.\
+
+\f0\b Then build all five states as drawn:
+\f1\b0  Full, Modified, Unavailable, All done, Two RPE outstanding.\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls1\ilvl0\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 RPE row title: "Rate \{session name\}". Subtitle: "Today HH:MM \'b7 20 sec", "Yesterday \'b7 20 sec", or "\{Day\} HH:MM \'b7 20 sec", in tabular figures.\
+\ls1\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Multiple RPE rows: oldest session first.\
+\ls1\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Today section: finished sessions show "finished HH:MM", upcoming ones show "starts in X min", as drawn.\
+\ls1\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Modified or Unavailable: a single-line Banner (warn or bad tone) above To do, linking to the full availability card below. Full: no banner, card stays below Today.\
+\ls1\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Availability cards use the tone-family tinted fill, not a left stripe.\
+\ls1\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 No WEL / RPE / NUT glyph tiles.\
+\ls1\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Nutrition row: "Weekly nutrition check-in \'b7 about 10 sec". No question text.\
+\ls1\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 The injury diagnosis block and "Team this week: \{team\}. Set by your coach." render whenever their data exists.\
+\ls1\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 All done: "You're up to date" as a row in the same slot, count reads "None left".\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b \cf0 Contrast:
+\f1\b0  measure the text on the Unavailable and Modified cards against their tinted fills. Confirm it's at least 4.5:1 in light and dark mode. Report the numbers.\
+
+\f0\b Protect:
+\f1\b0  row targets of 44px or more, the durations ("45 sec", "20 sec"), the greeting in the org's timezone, and the list being its own status.\
+
+\f0\b Verify:
+\f1\b0  screenshot all five states at 375\'d7812 on real data, plus the contrast measurements.\
+}

@@ -116,4 +116,4 @@ Checked today from the `require*` calls, `src/lib/access.ts`, the migrations on 
 - **§1 L1971 / L1972** — `app_role` has all five roles and every screen read today gates on them.
 - **§0v L1025** and **§0ae part 2** — closed today on the list itself (built `6398493`; migration 0102).
 
-Everything above in this section still shows `- [ ]` on the to-do list. Say the word and I will tick them with the evidence line each; I have not, because several are your decisions to call closed.
+**Closed on the to-do list the same evening (`- [x]` with an evidence line each), on Isabella's "continue".** Left open on purpose: §0b L725 ("don't blanket-approve batches that mix cosmetic and access-control changes") is a standing process rule, not a task, and stays as one.

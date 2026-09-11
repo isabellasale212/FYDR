@@ -1342,6 +1342,16 @@ Reviewed as Jane Pemberton at 1280×800 and 375×812, read-only — no board, ex
 
   **Left on production by this measurement:** `nobody.dub1check@example.invalid` at the 30-second lock (six attempts); ages out on its own.
 
+## 0ar. Low–medium priority, filed 2026-09-11 — a failed sign-in's audit row records no user agent
+
+- [ ] **`auth.sign_in_failed` rows carry `attempts_remaining` and `locked` only; `auth.signed_in` rows carry `method` and `user_agent`.** `src/lib/signInAudit.ts:309-314` builds the failure row's `metadata` from the `FailureContext` alone, while the success row (`:122-140`) reads `clientUserAgent(headers)` and stores it when present. Both already record `ip_address` from the same headers, so the failure path has the headers in hand and simply does not read the agent.
+
+  **How it showed up.** The 2026-09-11 timeline question on production: six rows for one actor at one IP — a 12:08 iPhone-Safari sign-in, four failures at 16:08 seven seconds apart, a 16:11 Mac-Safari sign-in. The two successes said what they were from; the four failures could not distinguish a curl test from a browser, and the reading had to come from Isabella's memory of the C1 run rather than from the rows. That is the question a safeguarding or incident review asks first, and the failure rows are the ones it asks it about.
+
+  **What to do.** Add `...(userAgent ? { user_agent: userAgent } : {})` to the failure row's metadata, from the same `clientUserAgent(headers)` the success row uses — same key, same omit-when-absent rule, so a reader can query both actions the same way. `scripts/test-sign-in-audit.ts` (in prebuild) already asserts `user_agent` on the success row twice; add the same assertion to the failure-row case so the two paths cannot drift apart again. No schema change: `metadata` is jsonb and the failure row is far under the 16 KB check.
+
+  **Left open, deliberately:** the 12:08 iPhone sign-in for `j.barnes@` is attributed to nobody until Isabella confirms whether it was hers; the row's IP matches her other five, which is evidence, not confirmation.
+
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.
 

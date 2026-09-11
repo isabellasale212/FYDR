@@ -188,14 +188,25 @@ columns, so repeated failures are rate-limited rather than merely logged.
    - Section "To do" with a count "{N} left" on the same line.
    - Section "Today" listing the day's sessions.
 2. Press a to-do row to start that task.
-   - Every to-do row is a full-width link with a three-letter domain glyph, a
-     name, a subtitle, and a "›" chevron.
+   - Every to-do row is its own card and a full-width link (min 44px, measured
+     76px): a name, a subtitle, and a "›" chevron. **No domain glyph** — the
+     three-letter "WEL"/"RPE"/"NUT" tiles were removed by the ATH-ADULT-02
+     build (`cfd410b`, 2026-09-11).
 
-| Domain | Glyph | Row name | Subtitle | Goes to |
-|---|---|---|---|---|
-| Wellness | "WEL" | "Wellness" | "45 seconds" | `/check-in` |
-| Session rating | "RPE" | **"How hard was it?"** — a fixed string, the same for every session | "20 seconds" | `/rpe/{sessionId}` |
-| Nutrition | "NUT" | "Weekly check-in" | "Did you hit your protein target most days? · about 10 seconds" | `/nutrition-check-in` |
+| Domain | Row name | Subtitle | Goes to |
+|---|---|---|---|
+| Wellness | "Wellness" | "45 sec" | `/check-in` |
+| Session rating | **"Rate {session name}"** — e.g. "Rate Contact prep", from `rpeRowName(title)`; two sessions to rate produce two distinct rows | the session's start in club time — "Today 10:45" / "Yesterday" — **no "· 20 sec"** (no binding source; pinned as an absence, §0ad) | `/rpe/{sessionId}` |
+| Nutrition | "Weekly check-in" | "about 10 sec" | `/nutrition-check-in` |
+
+   - An RPE row appears once the session's rating is **due** — `rpeDueAt =
+     starts_at + duration_min + 30 min` (`lib/rpeDue.ts`) — and carries over
+     from yesterday, oldest first, until the rating **closes** at the end of
+     the following club-local day (`rpeClosesAt`). After that the RPE screen
+     reads "This session can no longer be rated. A rating is open until the end
+     of the day after the session."
+   - When nothing is owed the list keeps its row shape and reads "You're up to
+     date"; the To do heading count reads "None left".
 
 **Branches.**
 
@@ -214,13 +225,12 @@ deliberately **absent** from the subtitle: `compliance_expectations` holds no
 such times, so it was left out rather than invented. A screenshot showing a
 timing clause is not this build.
 
-**Corrected 2026-09-10.** This table previously said an RPE row shows the
-session's own name — repeating a comment in `today/page.tsx` that says exactly
-that. It is not true: `lib/queries/compliance.ts:144` sets
-`label: 'How hard was it?'` as a fixed string and never looks the session name
-up, although it carries the `session_id`. **Two sessions to rate produce two
-identical rows.** Found by measuring the rendered screen rather than reading the
-source comment.
+**History of this row.** On 2026-09-10 this table was corrected to say the RPE
+row read "How hard was it?" for every session — `compliance.ts:144` set it as a
+fixed string, so two sessions to rate produced two identical rows (filed as
+§0r). On 2026-09-11 the ATH-ADULT-02 build (`cfd410b`) fixed it: the row and
+the RPE screen's `<h1>` are both `rpeRowName(title)` → "Rate Contact prep",
+held as a template by `test-control-names-resolve.ts`. §0r closed.
 
 **Also incomplete above:** a cancelled session renders at 55% opacity *and* with
 its name struck through. The strike-through was omitted.
@@ -311,7 +321,9 @@ name. Direct URL `/rpe/{sessionId}`.
 **Steps.**
 
 1. Choose a rating from the CR-10 list (radio inputs, 0–10 with word labels).
-   - Also visible: heading "How hard was it?"; the direction line "Rate the
+   - Also visible: heading **"Rate {session name}"** (e.g. "Rate Contact prep" —
+     was "How hard was it?" until `cfd410b`, 2026-09-11; tab title "Rate a
+     session · Fydr"); the direction line "Rate the
      whole session, not the hardest bit."; duration stepper "−"
      (`aria-label="5 minutes less"`) and "+" (`aria-label="5 minutes more"`);
      an "Add a note" button; the submit button; the sheet dismiss "✕".

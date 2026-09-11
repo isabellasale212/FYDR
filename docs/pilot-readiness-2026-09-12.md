@@ -28,7 +28,7 @@ Not in group 1, and why: §0aq (the sign-in timing floor) is security, but the p
 Visible and embarrassing; no harm.
 
 - **§0af L1220** — below 768px the sidebar stacks 640px above every staff screen. Decided (top bar + menu), brief written; needs design then build. The single most visible staff defect on a phone.
-- **§0s L903** — the athlete check-in's submit button sits 229px below the fold and the screen looks finished without it. Sticky dropped; the fold problem is still open.
+- ~~**§0s L903** — the athlete check-in's submit button sits 229px below the fold.~~ **Closed overnight** by the ATH-ADULT-03 build (`6618b7f` + `5ae00ea`, merged `b13cc29`); the footer pins and the button measures inside the viewport at scroll 0.
 - **§0u L961** — the gym prescription line reads "3 × 8 @ No 1RM test linked to this exercise yet."
 - **§0u L971** — the nutrition check-in says "this week" about a week that has ended (decided: copy fix, keep the default).
 - **§0u L987** — a failed gym set retries only from Today, so the set count stays wrong for the rest of the workout.

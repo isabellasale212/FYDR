@@ -171,8 +171,20 @@ Unless a flow says otherwise, all of these are on screen throughout:
 - The nine-row sidebar (see above), the plan link, and "Log out".
 - On any multi-athlete screen: the **group filter** — a chip row beginning
   "Whole squad" (carrying "✓" when no group is selected), then one chip per
-  group (each carrying "✓" when active), and a "Clear filter" link. The
-  selection persists globally across screens; it is a cookie, not per-screen state.
+  group (measured: Backs, Forwards, Rehab, Academy; each carrying "✓" when
+  active), and a "Clear filter" link that **appears only while a group is
+  selected**. The selection persists globally across screens; it is the
+  `fydr-group-filter` cookie, not per-screen state.
+- **At phone width the sidebar is not a rail.** Below 768px `.sidebar` is
+  `position: static` and stacks full-width above the content — measured at
+  375×812 as a **640px block** carrying the nine rows and "Log out" — so every
+  staff screen on a phone opens on the navigation, with its own heading around
+  y≈730 and its first content section further down (Dashboard: y=2209). Between
+  768 and 1023px there is a 64px collapsed rail; below that, nothing collapses.
+  `base.css`'s own comment records the stacking as intended. Every phone-width
+  measurement in this section should be read with that block above it.
+- "Log out" in the sidebar is a `<button type="submit">` measuring **17px**
+  tall; "Back" (the shared `BackButton`) is 29px on every staff screen.
 
 ---
 
@@ -213,9 +225,13 @@ Unless a flow says otherwise, all of these are on screen throughout:
 
 1. Heading "Squad overview", with a count line reading "{N} athletes in the
    squad" or "{N} athletes in the selected groups".
-   - Also visible: "Add athlete" (`.btn-primary`) → `/squad/new`; "Manage
-     groups" (`.btn-ghost`) → `/settings/groups`; the group filter chips;
-     "Clear filter"; and one link per athlete carrying their name.
+   - Also visible: "Add athlete" (`.btn-primary`, 50px) → `/squad/new`;
+     "Manage groups" (`.btn-ghost`, 44px) → `/settings/groups`; the five group
+     filter chips (44px); "Clear filter" **once a group is selected**; and one
+     link per athlete carrying their name — **15px tall at desktop, 34px at
+     phone width**, in a row per athlete.
+   - Measured: "30 athletes in the squad" → "15 athletes in the selected
+     groups" on selecting Forwards, with the athlete list falling to 15.
 2. Press a group chip to filter, or an athlete's name to open their profile.
 
 **End state.** Stays on `/squad` with the filter applied, or opens
@@ -236,10 +252,10 @@ Unless a flow says otherwise, all of these are on screen throughout:
 |---|---|---|
 | "First name" | `id="first-name"` | yes |
 | "Last name" | `id="last-name"` | yes |
-| "Date of birth" | `id="dob"`, `type="date"` | see branches |
+| "Date of birth" | `id="dob"`, `type="date"` | **yes** — `required`, and the form is not `noValidate`, so the browser refuses to submit without it |
 | "Position" | `id="position"`, a select | |
 | "Squad number" | `id="squad-number"`, `type="number"` | |
-| "Email (optional)" | `id="email"`, `type="email"` | no |
+| "Email (optional)" | `id="email"`, `type="email"` | no — hint beneath: "Leave blank to add them to the roster with no app access. You can invite them later from their profile." |
 
    - Also visible: "Save" and "Cancel".
 2. Press "Save" — label becomes "Saving…" while in flight; the button is
@@ -248,8 +264,14 @@ Unless a flow says otherwise, all of these are on screen throughout:
 **Branches.**
 
 - IF "Cancel" is pressed THEN navigate to `/squad`; nothing is written.
-- IF date of birth is left empty THEN the athlete is treated as a **minor** by
-  every age gate in the athlete app. This is not warned about on this form.
+- ~~IF date of birth is left empty THEN the athlete is treated as a minor~~ —
+  **not reachable from this form**: the field is `required` and native
+  validation blocks the submit (measured 2026-09-11). The underlying rule is
+  real — `athlete_is_minor()` returns TRUE for a null date of birth, failing
+  safe (migration 0093) — but it applies to athletes created by other paths
+  (seed, import, a date later cleared), not to one added here.
+- The form is `method="post"`; "Cancel" is a `<button type="button">`, not a
+  link.
 - IF an email is supplied THEN an account and invite link are created; see
   STAFF-SS-04.
 
@@ -265,10 +287,20 @@ Unless a flow says otherwise, all of these are on screen throughout:
 
 **Steps.**
 
-1. Fill the invite form. Its intro reads: "Creates a real account and tries to
+1. On `/settings/users` — heading "Users", a count line ("37 users · 9 staff ·
+   29 athlete accounts · 1 athlete record with no account"), a "Bulk invite
+   athletes →" link to `/settings/users/bulk-invite`, and one row per user with
+   six inline role toggles and a "Deactivate" button — press **"+ Invite
+   people"** to reveal the form. (The button carries no `aria-expanded`.)
+2. Fill the invite form. Its intro reads: "Creates a real account and tries to
    send an invite email; no SMS. If it can't be sent, you'll get an invite link
-   to pass on yourself instead."
-2. Submit.
+   to pass on yourself instead." Fields: **"Full name"** (`id="invite-name"`,
+   required), **"Email"** (`id="invite-email"`, required), and **"Roles"** —
+   six `aria-pressed` toggle buttons (Athlete, Coach, Medic, Sport scientist,
+   Strength conditioning, Nutritionist, each 44px) under "Roles are additive —
+   tick everything that applies." **At least one role is required**: the route
+   answers "Tick at least one role." with a 400 otherwise.
+3. Press **"Create account"**.
 
 **End state, two variants.**
 

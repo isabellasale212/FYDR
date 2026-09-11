@@ -1176,6 +1176,38 @@ Two behaviour changes the sign-in proposal asked for, both outside the design-on
 - [ ] **The RPE to-do subtitle's "· 20 sec" has no binding source.** "20 sec" appears only in `docs/screens/legacy/training-entry.md` (non-binding) and a code comment; "45 sec" (wellness) and "about 10 sec" are in `00-product-overview` §198 and `08-notifications`. Per the B-f rule the builder ships the RPE subtitle as "Today 10:45" / "Yesterday" **without** "· 20 sec" until Isabella says otherwise. **One string to add if she wants it back; recorded here so it is a decision, not an omission.**
 
 
+## 0ae. SECURITY — the last-admin guard is client-side only; a sport scientist can delete their own admin role at the database and lock the club out — found 2026-09-11
+
+**Reported to Isabella directly, per the role-gate rule. Priority alongside §0x.**
+
+- [ ] **`setUserRoles` refuses to remove the last `sport_scientist` in an org — but it runs in the browser, and nothing at the database enforces the same rule.** `src/lib/queries/userManagement.ts:setUserRoles` counts remaining admins and returns "This is the only admin in the club — remove the role from someone else first…" when the count would fall to zero. It is called from `UserDetailPanel.tsx:95` and `UserManagementPanel.tsx` with the **client** Supabase `db`. So the guard is JavaScript in the admin's own browser.
+
+  **What the database allows.** `user_roles_admin_delete` is `org_id = auth_org_id() AND auth_has_any_role('sport_scientist')` — any sport scientist may delete any `user_roles` row in the org, including their own `sport_scientist` row, with no count. No trigger or constraint in `supabase/migrations/` guards against an org reaching zero admins (searched for "last admin", "zero admins", admin-count patterns: none).
+
+  **The exposure.** A sport scientist who is the club's only admin can, from the browser console or any request that skips the panel's JavaScript, delete their own `sport_scientist` row. The club then has **no user who can insert into `user_roles`** — `user_roles_admin_insert` needs a sport scientist — so nobody in the app can grant the role back. Recovery is database access only. Self-inflicted, but the spec's own guardrail ("requireTyped for removing the last admin", which `setUserRoles`'s comment says it is standing in for) is the kind of rule that exists precisely because admins make mistakes, and it is currently enforceable by anyone who opens devtools.
+
+  **Measured on the running app** as Jane Pemberton, Ashcombe's only sport scientist: her own row's "Sport scientist" toggle is `aria-pressed="true"` and **not disabled**, while "Deactivate" on the same row **is** disabled. The UI protects against self-deactivation and relies on the query function for self-demotion.
+
+  **The fix is a trigger**, not more client code: `BEFORE DELETE OR UPDATE ON user_roles` that raises when the row being removed or changed is a `sport_scientist` and no other `sport_scientist` remains in the same org. Then the client-side message becomes a courtesy in front of a rule that holds. Also worth disabling the self-row admin toggle in the UI when the count is one, matching "Deactivate".
+
+  **Guard it.** A pgTAP test that seeds one admin in an org, attempts the delete as that admin, and asserts it is refused; and one with two admins asserting it succeeds.
+
+
+## 0af. Staff shell at phone width, and three sub-floor controls — from the STAFF-SS-01 to -04 review, 2026-09-11
+
+**The one design finding that applies to every staff screen**, recorded once here and referenced from each staff review rather than repeated.
+
+- [ ] **Below 768px the sidebar stacks full-width above the content, 640px tall.** `base.css`: `@media (max-width: 767px) { .sidebar { position: static; height: auto } }`, with the comment "the sidebar stacks full-width above the content". Between 768 and 1023px there is a 64px collapsed rail; below 768 nothing collapses. Measured at 375×812 as Jane Pemberton: the Dashboard heading at y=728, its first content section at **y=2209**, page 3,426px; Squad overview heading at y=737. Staff use phones pitch-side, and every screen opens on nine navigation rows and "Log out" before any content. **Deliberate as built and documented; wrong for the persona.** The 64px rail already exists and would carry down; a disclosure would also do. **Design question, not a defect** — filed here so the answer is made once for the shell, not per flow.
+
+- [ ] **"Log out" in the sidebar is 17px tall** — a `<button type="submit">` styled as text. On every staff screen, at every width.
+
+- [ ] **Athlete-name links on `/squad` are 15px at desktop and 34px at phone.** They are the primary navigation on the squad screen — one per athlete, 30 of them. Desktop is mouse-driven and 15px is arguable there; 34px on a phone is under the floor for the control a pitch-side coach taps most.
+
+- [ ] **"+ Invite people" on `/settings/users` has no `aria-expanded` or `aria-controls`.** It reveals the invite form; assistive tech is not told. Same gap as the RPE "Add a note" button (§0t).
+
+- [ ] **The invite form's six role controls are `aria-pressed` toggle buttons under copy that says "tick everything that applies".** The copy describes checkboxes; the controls are buttons. Either is fine; they should agree. Same ungrouped-toggle shape as §0u and §0aa.
+
+
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.
 

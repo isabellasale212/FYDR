@@ -331,10 +331,19 @@ nobody here can see the one they choose.", and a "Done, I've copied it" button.
 
 **Steps.**
 
-1. The profile opens with the athlete's name as heading, and panels for bio,
-   availability, injuries, wellness, gym, nutrition and weigh-ins.
+1. The profile opens with the athlete's name as heading. **The panels, measured
+   2026-09-11 as a sport scientist** (two columns at 1280, one at 375): a bio
+   block with "Edit"; **Athleticism**; **Flags** (with "Acknowledge");
+   **Goals**; **S&C history log**; **Nutrition plan**; **Injury** (with
+   "+ Add note"); **Body weight** (with "+ Log weigh-in" and "Set target
+   range"); **Availability** ("Available" / "Modified" / "Unavailable" chips and
+   "Update availability"); **Entries and corrections** ("Edit entries",
+   "Correct check-in"); **Subject access request** ("Generate subject access
+   pack →"). Page 2,721px at desktop, **5,828px at phone**.
    - Sub-routes reachable from here: `/squad/{id}/wellness`, `/squad/{id}/gym`,
      `/squad/{id}/nutrition`.
+   - **No diagnosis, mechanism or problem-report content renders for a sport
+     scientist** — measured absent. `CLINICAL_ONLY` holds.
 
 **Branches by permission** — this screen checks **seven** different sets, more
 than any other in the app:
@@ -350,15 +359,21 @@ than any other in the app:
 | See the gym panel | `ATHLETE_GYM` |
 
 - IF the athlete id does not resolve THEN the route refuses (`notFound`).
-- Nutrition is **read-only here and says so**.
+- ~~Nutrition is read-only here and says so~~ — **not for the sport scientist**:
+  the "Nutrition plan" panel carries **"Edit" → `/nutrition`**. The page's own
+  comment says the read-only rendering applies to two of the five roles; for
+  this role it is a write. Corrected 2026-09-11.
 
 **End state.** Stays on `/squad/{athleteId}`.
 
-**Flagged as needing its own pass.** This screen is the densest in the app and
-its panels each carry their own flows (availability, injury, weigh-in, entry
-correction). They are listed as STAFF-SS-06 … 09 below, but the panel-level
-control inventory was not exhaustively extracted in this pass and should be
-before a screenshot is matched to a specific panel state.
+**Panel-level control inventory extracted 2026-09-11** (the pass this note
+asked for): "Edit" (bio); "Available", "Modified", "Unavailable", "Update
+availability"; "Acknowledge" (flags); "+ Add note" (injury); "+ Log weigh-in",
+"Set target range" (body weight); "Edit entries", "Correct check-in" (entries
+and corrections); "Generate subject access pack →". The panels' own flows
+(availability, injury, weigh-in, entry correction) are not separately numbered
+in this document; the earlier note's "STAFF-SS-06 … 09" pointed at flows that
+are in fact the test page and the schedule. Left for a later pass.
 
 ---
 
@@ -370,8 +385,9 @@ before a screenshot is matched to a specific panel state.
 **Steps.**
 
 1. Under the "Bests" section, press "Mark best" (`.btn-ghost`) on a result row.
-2. A confirm control appears: "Mark as best" (`.btn-primary`), label "Saving…"
-   while in flight.
+2. A confirm control appears: "Mark as best" (`.btn-primary`, 46px) **and
+   "Cancel"** (`.btn-ghost`, 46px), label "Saving…" while in flight. Cancel
+   returns the row to "Mark best" with nothing written (exercised).
    - Also visible on this screen throughout: "Print" (calls `window.print()`),
      "Export CSV" and "Export PDF" links, and the athlete's name as heading.
 
@@ -390,8 +406,10 @@ open this screen.
 1. The screen loads **in Edit mode** for a role holding `SESSION_EDIT`. The
    header carries a segmented control, `role="group"`, `aria-label="Read or edit"`:
    "Read" and "Edit", each an `aria-pressed` button. "Edit" is pressed on load.
-   - Also visible: "Back"; the group chips; the view tabs "Week plan" (current)
-     and "Today" → `/timetable`; week navigation "‹" (`aria-label="Previous
+   - Also visible: "Back"; the group chips (a `role="group"` labelled "Filter
+     by squad group"); the view tabs — **"Week plan" is a plain `<span
+     class="sg-viewtab">`, not a link, button or tab, and carries no
+     `aria-current`** — and "Today" → `/timetable`; week navigation "‹" (`aria-label="Previous
      week"`), the week range, "›" (`aria-label="Next week"`); the chip row
      "+ Session" → `/schedule/new`, "+ Fixture" → `/schedule/fixtures/new`,
      "Week templates" → `/schedule/planner`; the status banner; and, in Edit
@@ -429,9 +447,19 @@ open this screen.
 | "MD offset (optional)" | `id="s-md"`, `type="number"`, placeholder "-2" |
 | "Location" | `id="s-location"` |
 
-2. Choose a session type from a chip row (one chip per type).
-3. Choose groups from a chip row (one chip per group).
+   - Placeholders: "Captain's run", "-2", "Main pitch". Date pre-fills from
+     `?date=`; time defaults to 09:00; duration to 60.
+2. Choose a session type from a chip row under the legend "Type" — Training,
+   Gym, Fixture, Testing, Recovery, Meeting, Rehab (`aria-pressed` buttons).
+3. Choose groups from a chip row under "Who's in it" — Backs, Forwards, Rehab,
+   Academy. (**"Rehab" is both a type and a group**, in adjacent rows.)
 4. Press "Create session".
+
+**What the form validates, and what it does not.** The form is `noValidate`
+and no field is `required`. `onSubmit` refuses only an empty name ("Give the
+session a name.") and a missing date or time ("Set a date and time."), focusing
+the field. **Duration, type, groups, location and MD offset are not checked** —
+a cleared duration submits `null` (§0ah).
 
 **Button states.**
 

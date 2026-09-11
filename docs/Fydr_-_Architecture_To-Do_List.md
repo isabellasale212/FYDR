@@ -1241,6 +1241,15 @@ Two behaviour changes the sign-in proposal asked for, both outside the design-on
   **Guard it.** A source test that `NewSessionForm` cannot submit without a duration, and a pgTAP or query test that `createSession` refuses `durationMin: null`.
 
 
+## 0ai. From the STAFF-SS-05 to -08 review — 2026-09-11
+
+- [ ] **The schedule's "Week plan" view tab is a `<span>`.** `.sg-viewtab` for the current view is a plain span with no role and no `aria-current`; "Today" beside it is a link. A view switcher where the current view is not a control tells assistive tech there is one tab, not two. Give the pair `role="tablist"`/`tab` semantics or at least mark the current one.
+
+- [ ] **`NewSessionForm` validates name, date and time only.** A session can be created with no type, no groups, no location and (§0ah) no duration. Type and groups at least should be refused — a session with no group has no expected attendees, and the dashboard's "Sessions left to run" and compliance both key on them. Decide which of the six are required and validate them in `onSubmit` the way name and date are.
+
+- [ ] **"Rehab" is both a session type and a group** on the same form, in adjacent chip rows under "Type" and "Who's in it". Not a bug; a naming collision worth knowing about before either list grows.
+
+
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.
 

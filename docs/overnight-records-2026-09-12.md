@@ -414,3 +414,71 @@ that convention is product-wide.
 **Filed defects for 13:** §0w third item (the 15px back link, "left open deliberately because the pair itself is ATH-ADULT-13's redundancy question") — closed by A1. §0v — built.
 
 **Built:** A1–A5. **Not built:** C1–C5.
+
+---
+
+## STAFF-SS-01 — Staff dashboard and the phone shell — RECORDED, NOT BUILT
+
+**Source.** `docs/designs/STAFF-SS-01 final/` — board "STAFF-SS-01 · FINAL" (8 desktop frames
+at 1440×900, 6 phone frames at 375×812), `notes.md`, the Claude Code prompt. Screens:
+`src/app/(staff)/dashboard/page.tsx`, `src/components/Sidebar/Sidebar.tsx`, the staff layout
+and `base.css`'s `@media (max-width: 767px)` block. **Per the overnight instruction this
+flow is recorded and not built: it is the staff phone shell and touches every staff screen.
+It gets its own morning decision.** Nothing below was changed.
+
+**The prompt's own gate.** "Before anything else: §0ae" — the last-admin guard is client-only
+and the prompt asks for the database trigger first, proved by a refused direct call. Not
+done overnight: a migration that changes who can remove a role is a permissions change, and
+CLAUDE.md §5 makes its test-before-rule mandatory — the morning's, with the shell decision.
+
+**Step 1 of the prompt, from the code (as far as a read goes).**
+(1) Thresholds: `thresholds` (0006) is per org and per metric with `created_by` and
+`updated_at` — the owner and date the footer line needs exist; no `set_by` display anywhere.
+(2) Flag counting: `flags` (0006) is one row per athlete per metric per detection, with
+`status` (`flag_status`, raised → acknowledged/resolved) and `resolved_at`; nothing closes a
+flag by itself. "5 athletes" is a distinct count over open rows — a query change.
+(3) Reasons: `availability_reason` gained `academic`, `representative`, `other` (0041) as
+non-injury reasons; no clinical/non-clinical marker column — the enum value is the marker.
+Whether the reason column is gated by role under RLS is a read of the availability policies
+(`docs/access-matrix.md`) the morning should confirm, not a claim to make from a grep.
+(4) The group filter reaches the dashboard's queries through `groupIds` (server side).
+(5) The week strip starts `mondayOf(effectiveToday)` club-local and draws Monday–Saturday.
+(6) Fixture range: `fetchNextFixture` reads from `kickoff_at >= now` with no upper bound;
+"in range" is not a concept the dashboard has — the board's 14 days would be new.
+(7) Role access: not enumerated here; `docs/access-matrix.md` is the source.
+(8) "Send a reminder": no such action exists anywhere in `src/` — nothing sends push or
+email (06-my-data.md §8).
+
+### A. Composable from existing tokens — but still NOT built (shell scope)
+
+| # | Board | Ours | Note |
+|---|---|---|---|
+| A1 | Tone-family cards for doubtful / ruled out (`--pill-warn` + `--warn` + `--on-warn`; bad likewise) | stripes | the same treatment ATH-ADULT-02 approved for the availability banner; dashboard-only |
+| A2 | Summary cards as buttons with the written state ("Closed · opens a list" / "Open · showing the list") and `aria-expanded` | stat cards | copy + attribute; a real a11y gain |
+| A3 | Attention rows name athletes, evidence line in `--faint` tabular | flag counts | needs (2)'s distinct count — C |
+| A4 | "Not submitted" for missing check-ins, never 0 or 0% | — | data rule 1, same words 12 now uses |
+| A5 | 44px everything on a phone (`--touch-min`) | 34px names, 17px Log out | §0af decided this is fixed once, at shell level |
+
+### B
+
+- **B1 The board says "Needs new token: nothing", and names eight that do not exist here.** Checked against `tokens.css`: `--r-sheet`, `--scrim`, `--touch-min`, `--tabbar-bg`, `--bar-blur`, `--tabbar-pad`, `--shadow-raised` and `--t-pill` are all absent (as are the `--t-*` type names and `--blue-100/200` throughout the board's captions — Claude Design's own naming, as with ATH-ADULT-01). Most of the ROLES exist: the athlete tab bar's own rules carry the bar background (no blur — `.athlete-tabbar`'s backdrop-filter was removed 2026-09-08, audit item 3, so `--bar-blur` has no role to map to), the sheets carry their radius and scrim, 44px is the raw floor every athlete control uses, and `--shadow` is the one shadow. **Recommend:** map by role onto the athlete tab bar and sheet rules when C1 is built; anything that maps to no existing value (a raised shadow, a second radius) is a new token and stops for a decision, per §0.01.
+
+### C. Behaviour
+
+- **C1 The phone shell** — bottom bar (Dashboard, Squad, Schedule, a role-driven fourth slot, More), the More sheet with the remaining sections and Log out at 52px rows, a 64px title bar with the page name and the active group chip. Every staff route. **Recommend:** its own commit, first, before any staff flow; a guard that the nine sections are reachable in exactly one place per role.
+- **C2 The dashboard rebuild** — the matchday lead card, tone cards, disclosure summary cards, the attention list by athlete, the thresholds footer line, "Not checked in" ordered by run length, the week strip yielding on a heavy morning and for S&C, role versions (S&C four toggles, nutritionist two). **Recommend:** after C1, one commit per step as the prompt says.
+- **C3 Flags badge** counting the same athletes as the attention card, absent at zero — needs (2).
+- **C4 "Send a reminder"** — does not exist; nothing dispatches (no push or email provider). **Recommend:** leave the control off until a sender exists, as the prompt allows.
+- **C5 §0ae trigger** — permissions; test first.
+
+### D. Collisions and spec conflicts
+
+- **D1 The shell shape reverses the decided direction.** §0af (Isabella, 2026-09-11): "below 768px, a compact top bar with the navigation behind a menu control" — the brief `docs/design-briefs/STAFF-SHELL - Phone layout below 768px.md` §2 calls that "the whole ask". The board draws a bottom bar of four plus More AND a 64px title bar. **Recommend:** decide which; the board's bottom bar mirrors the athlete shell (one idiom across both apps) and keeps content at y = 64 either way.
+- **D2 The gym glyph goes neutral in the staff sidebar** — `Sidebar.tsx` draws it in `--gym` (the product's one coloured icon); 12 D4 records the same question for the athlete bar. **Recommend:** one decision for both shells.
+- **D3 "Ready for {matchday}" with a 14-day range** — the dashboard has no fixture range; `docs/screens/` dashboard spec would change. **Recommend:** decide the range with C2.
+- **D4 The reason line for the medic only** — data rule 6 and CLAUDE.md §2.3; the board's non-clinical reasons without the Medical label agree with 0041's intent. RLS confirmation first.
+- **D5 Collisions with the queue:** none of this touches an athlete class. `base.css`'s `@media (max-width: 767px)` block and `.sidebar` are edited by no queued athlete flow. STAFF-SS-01 is the widest change in the queue and goes LAST by the collision rule, or first as a shell if the morning decides the shell precedes every staff flow (§0af says it does).
+
+**Filed defects for STAFF-SS-01:** §0af (the stacked sidebar, decided; the 44px items pointed at the shell brief), §0ae (client-only last-admin guard — the prompt's gate), §0y first bullet (staff `.back-btn`, closed by the shell).
+
+**Built:** nothing. **Recorded:** all of it.

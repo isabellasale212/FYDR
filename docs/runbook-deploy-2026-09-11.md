@@ -150,7 +150,7 @@ Pass: the alias reports moving to that URL, and `curl -s https://fydr.app/login 
 
 Last known-good before this deploy: `dpl_BGhqk5CdR3bXDQdmFvC71CGoKShz` = `fydr-et383maea-fydr.vercel.app` (`0510583`). Current live: `fydr-p42jd9tj0-fydr.vercel.app` (`7df310e`).
 
-> **Addendum, reviewer, 16:35 BST:** superseded the same afternoon. A dashboard redeploy for the Dublin function region produced `dpl_BuZQTttnBLTyGgGRdTtUcLJCRYJX` = `fydr-jvgpijjra-fydr.vercel.app` (same `7df310e`), which now holds `fydr.app` — that is **current live**. It still runs functions in `iad1`; see to-do §0an.
+> **Addendum, reviewer, 16:51 BST:** superseded the same afternoon, twice. A 16:28 dashboard redeploy (`dpl_BuZQTttnBLTyGgGRdTtUcLJCRYJX` = `fydr-jvgpijjra`) still ran functions in `iad1`; the 16:46 CLI deploy `dpl_5EoAexC2bSYkfrvVXJmc4Vqt6WPP` = `fydr-bkslf6d89-fydr.vercel.app` (same `7df310e`) runs them in **`dub1` (Dublin)** and holds `fydr.app` — that is **current live**. See to-do §0an.
 
 ### Database rollback
 Neither `0101` nor `0102` rewrites data, so undoing them is dropping the trigger — **as a new migration, never by editing an applied one**: create `supabase/migrations/0103_drop_user_roles_guard.sql` containing `drop trigger if exists user_roles_guard on public.user_roles; drop function if exists public.user_roles_guard();`, run §1b step 1 (the read-only list) to see it as the only remote-missing file, then `npm run db:push`. Only if §1b's pre-check found a stuck organisation after the fact, or a real user is refused something they must do.

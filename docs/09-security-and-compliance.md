@@ -138,7 +138,7 @@ graph TB
 
     subgraph SUB["Sub-processors"]
         SB[(Supabase, eu-west-1 Ireland)]
-        VC[Vercel functions, iad1 US — Dublin intended, not yet in effect]
+        VC[Vercel functions, dub1 Dublin]
         AP[APNs / FCM]
         SE[Sentry]
     end
@@ -713,7 +713,7 @@ Publish it at a stable URL and reference it from the DPA. Minimum contents:
 | Sub-processor | Purpose | Location | Transfer mechanism |
 |---|---|---|---|
 | Supabase | Database, auth, storage, functions | **Currently eu-west-1 (Ireland)**, measured 2026-09-07. London was assumed, never chosen — see O-15 in `05-architecture.md`. | **EEA, not the UK.** Covered by the UK's adequacy regulations for the EEA rather than by the data being held in the UK, which is what this row claimed until 2026-09-07. Supabase Inc is US-incorporated, so an International Data Transfer Addendum still applies to support access. `[medium on the adequacy reading, high on the region — it is measured]` |
-| Vercel | Staff web hosting (Next.js server functions, edge network) | **Functions: `iad1` (Washington DC, US) as measured on the live deployment 2026-09-11 16:35 BST** — the project was set to Dublin (`dub1`) that day and redeployed, but the deployment reports `iad1` and every function response carries `x-vercel-id: lhr1::iad1::…`; the setting takes effect only on a deployment made after it is saved, so this row changes only when a re-measure shows `dub1`. The edge network (static assets, cached pages) answers from the nearest PoP (`lhr1`, London), which is not where data is processed. Vercel Inc is US-incorporated. `[high — measured, three requests]` | UK IDTA / UK Addendum to EU SCCs. Until the function region reads Dublin, personal data is processed in the US on every server-rendered request and the transfer mechanism is doing real work rather than covering support access only. |
+| Vercel | Staff web hosting (Next.js server functions, edge network) | **Functions: `dub1` (Dublin, EU) since 2026-09-11, next to the database (eu-west-1).** Measured on the live deployment `dpl_5EoAexC2bSYkfrvVXJmc4Vqt6WPP` at 16:51 BST: `regions: ["dub1"]`, and every function response carries `x-vercel-id: lhr1::dub1::…`. **Correction to what this row assumed:** until that deploy the functions ran in **`iad1` (Washington DC, US)** — Vercel's default, never chosen — while this row said "Configure functions to a London or EU region" as if it were an instruction still to be carried out rather than a state to be checked. Every server-rendered request before 2026-09-11 16:46 BST processed personal data in the US; the data was synthetic throughout. The edge network (static assets, cached pages) answers from the nearest PoP (`lhr1`, London), which is not where data is processed. Vercel Inc is US-incorporated. `[high — measured, three requests, deployment record read]` | UK IDTA / UK Addendum to EU SCCs, now covering support access rather than routine processing. |
 | Apple APNs, Google FCM | Push notification delivery | US | UK Addendum. Note push payloads must never contain health data. See §7. |
 | Sentry or equivalent | Error monitoring | Use the EU region if you adopt it | UK Addendum |
 | Expo / EAS | Build and over-the-air updates | US | UK Addendum. Also a supply chain risk. See §9. |
@@ -1908,7 +1908,7 @@ and none of it takes longer than a day.
 ### Infrastructure
 
 - [ ] Supabase project in the **London** region — **NOT met: it is in eu-west-1 (Ireland)**, found 2026-09-07
-- [ ] Vercel functions in an EU or UK region — **NOT met as of 2026-09-11 16:35 BST: the live deployment runs functions in `iad1` (US)**. Set to Dublin that day; needs a further redeploy and a re-measure (`x-vercel-id` on a function response must show `dub1`).
+- [x] Vercel functions in an EU or UK region — **met 2026-09-11 16:46 BST: `dub1` (Dublin)**, measured on the live deployment. Before that they ran in `iad1` (US) by default, unrecorded; the sub-processor row above carries the correction. Re-check after any project-settings change: `x-vercel-id` on a function response must show `dub1`.
 - [ ] Point-in-time recovery enabled
 - [ ] Independent weekly encrypted dump to a different provider and account, alerting on failure
 - [ ] Storage bucket backup decided and documented

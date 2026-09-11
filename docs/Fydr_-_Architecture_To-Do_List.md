@@ -1087,7 +1087,7 @@ trade `0096` made for gym, now made consistently.
 
 ## 0y. Carried over from the §0w handover — recorded, not fixed
 
-- [ ] **The staff `.back-btn` is still 29px on every staff screen.** §0w's fix is scoped to `.phone-body .back-btn` because §8 is the athlete spec's floor; the staff shell has no stated floor. Same class, same 29px. **For the staff section to decide** whether the floor applies there; if it does, the same `::after` mechanism transfers, and `test-nav-hit-floor` asserts there is currently no unscoped `.back-btn::after`, so the guard will need widening with it.
+- [x] ~~**The staff `.back-btn` is still 29px on every staff screen.**~~ **Closed by decision 2026-09-11**: desktop stays 29px; below 768px it is the shell build's to fix (STAFF-SHELL brief §5.4). §0w's fix is scoped to `.phone-body .back-btn` because §8 is the athlete spec's floor; the staff shell has no stated floor. Same class, same 29px. **For the staff section to decide** whether the floor applies there; if it does, the same `::after` mechanism transfers, and `test-nav-hit-floor` asserts there is currently no unscoped `.back-btn::after`, so the guard will need widening with it.
 
 - [ ] **"Show them again" on the leaderboards gate has no link affordance** — it renders in the paragraph's muted colour with no underline. Same root cause as the "Back" / "Change this answer" links closed on ATH-ADULT-04 and -08: the global `a { color: inherit; text-decoration: none }` reset, and no class on the anchor. It now hit-tests at 65.8px (`.tap-floor`) but still looks like prose, on a screen where it is the **only** control. The existing `.linklike` pattern is the fix; **built with ATH-ADULT-18's implementation**, not before.
 
@@ -1210,15 +1210,18 @@ Two behaviour changes the sign-in proposal asked for, both outside the design-on
   **Guard it, four pgTAP cases.** Self-grant of medic as a sport scientist: refused. Grant of medic to another user: allowed. Delete of the only admin's own admin row: refused. Delete of one admin's row when two exist: allowed.
 
 
-## 0af. Staff shell at phone width, and three sub-floor controls — from the STAFF-SS-01 to -04 review, 2026-09-11
+## 0af. Staff shell at phone width — from the STAFF-SS-01 to -04 review, 2026-09-11; the 44px decision recorded the same day
+
+**DECIDED 2026-09-11 (Isabella): the 44px floor applies to staff screens below 768px only, fixed once at shell level with the phone layout, not per flow. Desktop staff controls stay as they are.** Sub-44 staff controls are no longer filed as separate defects — they are listed in the STAFF-SHELL brief (`docs/design-briefs/STAFF-SHELL - Phone layout below 768px.md`, §5.4) for the shell build to sweep. **This also closes the staff `.back-btn` question** (§0y, first bullet): desktop stays 29px; the phone shell fixes it. The items below that were filed as defects are struck and pointed at the brief.
+
 
 **The one design finding that applies to every staff screen**, recorded once here and referenced from each staff review rather than repeated.
 
 - [ ] **Below 768px the sidebar stacks full-width above the content, 640px tall.** **DECIDED 2026-09-11 (Isabella): below 768px, a compact top bar with the navigation behind a menu control.** Shell-level brief written — `docs/design-briefs/STAFF-SHELL - Phone layout below 768px.md` — and it goes to Claude Design **before any staff flow is implemented**. Original finding follows. `base.css`: `@media (max-width: 767px) { .sidebar { position: static; height: auto } }`, with the comment "the sidebar stacks full-width above the content". Between 768 and 1023px there is a 64px collapsed rail; below 768 nothing collapses. Measured at 375×812 as Jane Pemberton: the Dashboard heading at y=728, its first content section at **y=2209**, page 3,426px; Squad overview heading at y=737. Staff use phones pitch-side, and every screen opens on nine navigation rows and "Log out" before any content. **Deliberate as built and documented; wrong for the persona.** The 64px rail already exists and would carry down; a disclosure would also do. **Design question, not a defect** — filed here so the answer is made once for the shell, not per flow.
 
-- [ ] **"Log out" in the sidebar is 17px tall** — a `<button type="submit">` styled as text. On every staff screen, at every width.
+- [x] ~~**"Log out" in the sidebar is 17px tall**~~ → STAFF-SHELL brief §5.4. — a `<button type="submit">` styled as text. On every staff screen, at every width.
 
-- [ ] **Athlete-name links on `/squad` are 15px at desktop and 34px at phone.** They are the primary navigation on the squad screen — one per athlete, 30 of them. Desktop is mouse-driven and 15px is arguable there; 34px on a phone is under the floor for the control a pitch-side coach taps most.
+- [x] ~~**Athlete-name links on `/squad` are 15px at desktop and 34px at phone.**~~ → STAFF-SHELL brief §5.4 (phone); desktop stays. They are the primary navigation on the squad screen — one per athlete, 30 of them. Desktop is mouse-driven and 15px is arguable there; 34px on a phone is under the floor for the control a pitch-side coach taps most.
 
 - [ ] **"+ Invite people" on `/settings/users` has no `aria-expanded` or `aria-controls`.** It reveals the invite form; assistive tech is not told. Same gap as the RPE "Add a note" button (§0t).
 
@@ -1260,7 +1263,7 @@ Two behaviour changes the sign-in proposal asked for, both outside the design-on
 
 - [ ] **"Yes, remove" on a staged draft says "You can undo with Discard, until you publish" — there is nothing to undo to.** A draft that has not been published vanishes on removal (no ghost, no Restore — the "same act as Discard" SS-10 records), so the promise is empty for exactly the case where it is shown. Either branch the copy on `isDraft` or drop the second sentence for drafts.
 
-- [ ] **Four schedule controls under the 44px floor:** the `−`/`+` steppers (Earlier/Later/Shorter/Longer) at **40px**; "Yes, remove" (`.sg-btn-remove`) at **37px**; the toolbar's "+ Session" at **35px**; the wizard's "Next" at **35px**. These are the schedule's most-pressed controls in Edit mode.
+- [x] ~~**Four schedule controls under the 44px floor:**~~ → STAFF-SHELL brief §5.4, per the 2026-09-11 decision. Original text: the `−`/`+` steppers (Earlier/Later/Shorter/Longer) at **40px**; "Yes, remove" (`.sg-btn-remove`) at **37px**; the toolbar's "+ Session" at **35px**; the wizard's "Next" at **35px**. These are the schedule's most-pressed controls in Edit mode.
 
 - [ ] **Two unlabelled inputs in the draft wizard.** Step 1's name field (placeholder "Session name") and step 2's location field have no `<label>`, no `id`, no `aria-label` — a placeholder is not an accessible name once typed over. The full-screen `/schedule/new` form labels the same two fields correctly.
 

@@ -97,9 +97,23 @@ size, not 17px.
    the information architecture (`02-information-architecture.md` §4.1), not a
    design surface.
 3. **The active destination stays marked** (`aria-current="page"` today).
-4. **Every control in the bar and the menu meets the 44px floor.** The floor was
-   decided for the athlete shell (§0w); this brief asks that the staff phone
-   shell be built to it from the start rather than filed against later.
+4. **Every control in the bar and the menu meets the 44px floor — and so does
+   every staff control below 768px.** DECIDED 2026-09-11: the floor applies to
+   staff screens below 768px only, fixed once here at shell level, not per
+   flow; desktop staff controls stay as they are. **The sweep list, measured
+   during the sport scientist reviews, all at 375×812:**
+
+   | Screen | Control | Measured |
+   |---|---|---|
+   | every staff screen | "Log out" (`<button type="submit">` in the sidebar) | 17px |
+   | every staff screen | "Back" (`.back-btn`) | 29px |
+   | `/squad` | athlete-name links, one per athlete | 34px |
+   | `/schedule`, Edit mode | the four `−`/`+` steppers (Earlier/Later/Shorter/Longer) | 40px |
+   | `/schedule`, Edit mode | "Yes, remove" (`.sg-btn-remove`) | 37px |
+   | `/schedule`, Edit mode | toolbar "+ Session" | 35px |
+   | `/schedule`, draft wizard | "Next" | 35px |
+
+   Later staff reviews add to this table rather than filing new defects.
 5. **The menu is a real disclosure** — `aria-expanded`, `aria-controls`, focus
    moves into it on open and returns to the control on close, Escape closes it.
    Three existing disclosures in this app got this wrong (§0t, §0af).

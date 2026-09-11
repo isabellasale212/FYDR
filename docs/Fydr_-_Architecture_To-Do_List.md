@@ -1139,7 +1139,9 @@ Two behaviour changes the sign-in proposal asked for, both outside the design-on
 
 **ATH-ADULT-01, phone layout — `9db60c5`. IMPLEMENTED (phone only).** Built from the approved board on this system's tokens: A1–A10 as proposed, B1–B9 substituted onto existing steps (`--fs-28` not 30; the animated `FydrLockup` kept; `--r-control`/`--r-tab`/`--r-full` not 8px; `--fs-12` not 11.5; no spinner; labels `--fs-13`; icon reveal kept; fields 48px). All in one `@media (max-width: 1079px)` block. Desktop unchanged by decision — its frame would delete the launch claim column built under to-do item 1 (collision 1, still open; a HOLD rule in the ≥1080 block is commented for deletion with the desktop build). Guard: `test-ath-adult-01.ts`, 48 assertions, in prebuild. Reviewer verified the rendered copy on the restarted server: eyebrow "For athletes and club staff", sub "Use the email address your club invited you on.", `method="post"`, "Forgot your password?"; `enterkeyhint` and the lock state are client-rendered and are builder-verified (375×812 and 375×667, no scroll at either).
 
-**Review findings closed:** F1 (the "45 seconds" sentence), F3 ("Forgot" to 44px), F4 (ellipsis), F6 (vocabulary). **F2 → C1 below. F5 declined (§0ab).** No to-do defects were filed against 01, so none to close. `check-control-radius.ts` gained `form-error` in `SHAPED_ON_PURPOSE`.
+**Review findings closed:** F1 (the "45 seconds" sentence), F3 ("Forgot" to 44px), F4 (ellipsis), F6 (vocabulary). **F2 → C1 below. F5 declined (§0ab).** No to-do defects were filed against 01, so none to close.
+
+**The `check-control-radius.ts` exemption for `form-error` — reviewed 2026-09-11, justified, not a loosened guard.** The check treats any selector matching its INTERACTIVE word-list as a control that must read `--r-control`; `launch` is in that list so `.launch .signin-submit` would be caught. That made `.launch .form-error` — the sign-in refusal banner, a `role="alert"` message — match too. Measured: adding `form-error` to `SHAPED_ON_PURPOSE` silences exactly four selectors, `.launch .form-error` (`--r-tab`), its `::before` dot (`--r-full`), and the two `[data-tone='warn']` variants (no radius of their own); `.form-error` is never interactive anywhere in markup; the guard still passes and still enforces `--r-control` on every real control. Same over-match, same remedy and same comment style as the pre-existing `mark` exemption for the sign-in logo.
 
 **C1, "One attempt left" — `1a363f3` + `cfb22a2`. BUILT, with the enumeration guarantee.** Warn-tone banner at exactly one remaining: "That did not match. One attempt left before a short wait." Reviewer verified the banner and its `data-tone="warn"` server-side at `?e=invalid&a=1`.
 
@@ -1161,6 +1163,17 @@ Two behaviour changes the sign-in proposal asked for, both outside the design-on
 
 **Scratch state from the builder's testing, none of it the reviewer's athlete:** `login_attempts` rows for `nobody.timing@`, `nobody.timing2@`, `nobody.ui@`, `nobody.claim@`; `g.palmer@` and `h.ainsley@` each at 4 failures with 4 `auth.sign_in_failed` audit rows (one more locks them for 30s); `s.ellery@` locked once (expired) with 5 audit rows. All clear on that account's next successful sign-in.
 
+
+
+## 0ad. Compliance counts a late RPE as submitted — no cutoff exists; found by the builder while tracing ATH-ADULT-02, 2026-09-11
+
+- [ ] **The compliance report treats an RPE expectation as "not submitted" whenever no `training_entries_current` row exists for that date — and as submitted whenever one does, however late.** There is no due-by. A rating entered a week after the session counts identically to one entered that evening. **The only marker of lateness in the product** is the dashboard's "RPE, yesterday · due last night" track, which looks at a day's sessions on the *following* day and no later — the same end-of-following-day window the ATH-ADULT-02 Today rule uses, and what the builder is building 02's "outstanding" logic to.
+
+  **Why it matters.** Compliance is what staff read to decide who is and is not doing the work. A number that cannot distinguish "rated on time" from "rated when the coach chased" measures a different thing from what the report's name promises. It is also inconsistent with the dashboard sitting beside it, which does have a window.
+
+  **Not a bug in any one query** — it is an undecided rule. Needs a decision: is compliance "submitted at all" (as built) or "submitted within the window the dashboard already uses"? If the latter, `reports.ts`'s RPE branch needs a `submitted_at <= due_by` comparison against the session's end, and the same for wellness (submitted the same day) — and the report's own copy should say which it measures.
+
+- [ ] **The RPE to-do subtitle's "· 20 sec" has no binding source.** "20 sec" appears only in `docs/screens/legacy/training-entry.md` (non-binding) and a code comment; "45 sec" (wellness) and "about 10 sec" are in `00-product-overview` §198 and `08-notifications`. Per the B-f rule the builder ships the RPE subtitle as "Today 10:45" / "Yesterday" **without** "· 20 sec" until Isabella says otherwise. **One string to add if she wants it back; recorded here so it is a decision, not an omission.**
 
 
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise

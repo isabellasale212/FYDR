@@ -27,7 +27,11 @@ export function NotificationPreferencesForm({ orgId, userId, entries, initialPre
   const [prefs, setPrefs] = useState<Record<string, PreferenceState>>(initialPreferences);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [muted, setMuted] = useState(false);
+  /* From the rows, not a client flag (§0z): a row that holds a pre-mute
+     snapshot is muted, so the button reads "Turn notifications back on" after
+     a reload and on another device — the client-only flag it replaced always
+     came back as "Mute everything else". */
+  const [muted, setMuted] = useState(() => Object.values(initialPreferences).some((p) => p.muted));
 
   const disableable = entries.filter((e) => e.canDisable);
 
@@ -37,7 +41,11 @@ export function NotificationPreferencesForm({ orgId, userId, entries, initialPre
     const next = !isOn(entry, channel, prefs[entry.id]);
     setBusyId(`${entry.id}:${channel}`);
     setError(null);
-    setPrefs((p) => ({ ...p, [entry.id]: { push: null, email: null, ...p[entry.id], [channel]: next } }));
+    /* muted: false — a chip changed by hand clears that row's snapshot on the
+       server (setNotificationChannel), so the athlete's newer intent wins
+       when they un-mute. The others stay muted; the button stays until every
+       muted row has been restored or changed. */
+    setPrefs((p) => ({ ...p, [entry.id]: { push: null, email: null, ...p[entry.id], [channel]: next, muted: false } }));
     const { error: err } = await setNotificationChannel(db, orgId, userId, entry.id, channel, next);
     setBusyId(null);
     if (err) setError(`Couldn't save "${entry.label}" — try again.`);
@@ -57,7 +65,7 @@ export function NotificationPreferencesForm({ orgId, userId, entries, initialPre
     setMuted(true);
     setPrefs((p) => {
       const next = { ...p };
-      for (const id of ids) next[id] = { push: false, email: false };
+      for (const id of ids) next[id] = { push: false, email: false, muted: true };
       return next;
     });
   }
@@ -67,16 +75,21 @@ export function NotificationPreferencesForm({ orgId, userId, entries, initialPre
     const ids = disableable.map((e) => e.id);
     setBusyId('__mute_all__');
     setError(null);
-    const { error: err } = await unmuteAll(db, orgId, userId, ids);
+    const { error: err, restored } = await unmuteAll(db, orgId, userId, ids);
     setBusyId(null);
     if (err) {
       setError("Couldn't restore notifications — try again.");
       return;
     }
     setMuted(false);
+    /* What the database restored — each type's state from before the mute
+       (§0z) — not all-on. A type absent from `restored` had no snapshot:
+       either it was never muted or the athlete changed it by hand while
+       muted, and it keeps what it has. */
     setPrefs((p) => {
       const next = { ...p };
-      for (const id of ids) next[id] = { push: true, email: true };
+      for (const [id, state] of Object.entries(restored)) next[id] = state;
+      for (const id of ids) if (next[id]) next[id] = { ...next[id], muted: false };
       return next;
     });
   }

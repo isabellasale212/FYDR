@@ -37,7 +37,9 @@ None.
 
 | Element | Where | What happens | Takes you to | Writes | Confirm | Hidden when |
 |---|---|---|---|---|---|---|
-| A channel toggle | Per row | Sets the preference | stays | `notification_preferences` | no | the minor floor forces it off |
+| A channel toggle | Per row | Sets the preference; also clears that row's pre-mute snapshot, so a chip changed by hand while muted is what "Turn notifications back on" leaves in place | stays | `notification_preferences` | no | the minor floor forces it off |
+| Mute everything else | Top card | Turns off every notification that may be muted, remembering per type what it was (`mute_notifications`, migration 0103: `pre_mute_push`, `pre_mute_email`, `muted_at`). A type never touched is created muted with an "inherit" snapshot. Pressing it again changes nothing | stays | `notification_preferences` | no | while muted (the button becomes "Turn notifications back on") |
+| Turn notifications back on | Top card | Restores each muted type to exactly what it was before muting — off stays off, on comes back on, inherit stays inherit — never all-on (`unmute_notifications`; decided 11 September 2026, §0z). Shown after a reload and on another device, because muted state lives on the rows | stays | `notification_preferences` | no | when nothing is muted |
 
 ## 7. Offline and sync
 

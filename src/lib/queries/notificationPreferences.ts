@@ -19,24 +19,27 @@ import type { NotificationChannel } from '@/lib/notifications/catalogue';
  *
  * Also not built: quiet hours (the table has the columns; no UI sets them),
  * the organisation-level default/lock an admin would set for the whole
- * club, and a persisted "muted until this date" state for the athlete mute
- * rule (§5.2) — the table has no such column, so "mute everything" here is
- * a one-click bulk toggle of every disableable row, not a dated pause a
- * scheduler would later un-mute automatically.
+ * club, and a scheduler that would un-mute on a date. "Mute everything" is a
+ * bulk action, but since migration 0103 it is a REMEMBERED one: each row
+ * keeps what it was before (pre_mute_push / pre_mute_email) and when it was
+ * muted (muted_at), and un-muting restores that — see muteAll / unmuteAll.
  */
 
-export type PreferenceState = { push: boolean | null; email: boolean | null };
+/** `muted`: the row holds a pre-mute snapshot (migration 0103's muted_at), so
+ *  "Turn notifications back on" is the right label — on this device and on
+ *  any other, which the client-only flag it replaced never managed. */
+export type PreferenceState = { push: boolean | null; email: boolean | null; muted: boolean };
 
 export async function fetchMyNotificationPreferences(db: Db, userId: string): Promise<Map<string, PreferenceState>> {
   const { data, error } = await db
     .from('notification_preferences')
-    .select('notification_id, push_enabled, email_enabled')
+    .select('notification_id, push_enabled, email_enabled, muted_at')
     .eq('user_id', userId);
   if (error) throw new Error(error.message);
 
   const map = new Map<string, PreferenceState>();
   for (const row of data ?? []) {
-    map.set(row.notification_id, { push: row.push_enabled, email: row.email_enabled });
+    map.set(row.notification_id, { push: row.push_enabled, email: row.email_enabled, muted: row.muted_at !== null });
   }
   return map;
 }
@@ -49,7 +52,10 @@ export async function setNotificationChannel(
   channel: NotificationChannel,
   enabled: boolean,
 ): Promise<{ error: string | null }> {
-  const base = { org_id: orgId, user_id: userId, notification_id: notificationId };
+  /* A chip changed by hand is the athlete's newer intent, so it also clears
+     any pre-mute snapshot on the row (§0z): "Turn notifications back on"
+     will then leave this type exactly as the athlete just set it. */
+  const base = { org_id: orgId, user_id: userId, notification_id: notificationId, pre_mute_push: null, pre_mute_email: null, muted_at: null };
   const { error } =
     channel === 'push'
       ? await db.from('notification_preferences').upsert({ ...base, push_enabled: enabled }, { onConflict: 'user_id,notification_id' })
@@ -57,17 +63,40 @@ export async function setNotificationChannel(
   return { error: error?.message ?? null };
 }
 
-/** The mute-rule bulk action, §5.2 — every row in `notificationIds` gets
- *  both channels turned off in one round trip. Not the persisted, dated
- *  pause the spec describes; see this file's own header for why. */
-export async function muteAll(db: Db, orgId: string, userId: string, notificationIds: readonly string[]): Promise<{ error: string | null }> {
-  const rows = notificationIds.map((id) => ({ org_id: orgId, user_id: userId, notification_id: id, push_enabled: false, email_enabled: false }));
-  const { error } = await db.from('notification_preferences').upsert(rows, { onConflict: 'user_id,notification_id' });
+/* THE MUTE PAIR RESTORES, IT DOES NOT RESET — §0z, decided by Isabella
+ * 2026-09-11, built 2026-09-12 with migration 0103. It used to upsert
+ * all-false then all-true without reading the rows it overwrote, so four
+ * types that default to off, and any the athlete had turned off by choice,
+ * came back ON after "Turn notifications back on" — including email on types
+ * with no email channel. Both halves now run in the database
+ * (mute_notifications / unmute_notifications), own rows only, atomic per
+ * call, and are pinned by supabase/tests/590_notification_mute_restore_test.sql:
+ * off-before stays off, on-before comes back on, a chip changed by hand
+ * while muted stays as the athlete set it, a never-touched type goes back to
+ * inheriting, and pressing Mute twice keeps the first snapshot.
+ *
+ * `orgId` and `userId` are no longer needed by the write — the functions
+ * resolve the caller from the JWT — and are kept in the signature so the
+ * call sites read the same as every other writer here. */
+export async function muteAll(db: Db, _orgId: string, _userId: string, notificationIds: readonly string[]): Promise<{ error: string | null }> {
+  const { error } = await db.rpc('mute_notifications', { p_notification_ids: [...notificationIds] });
   return { error: error?.message ?? null };
 }
 
-export async function unmuteAll(db: Db, orgId: string, userId: string, notificationIds: readonly string[]): Promise<{ error: string | null }> {
-  const rows = notificationIds.map((id) => ({ org_id: orgId, user_id: userId, notification_id: id, push_enabled: true, email_enabled: true }));
-  const { error } = await db.from('notification_preferences').upsert(rows, { onConflict: 'user_id,notification_id' });
-  return { error: error?.message ?? null };
+/** Restores each muted type to its recorded state and returns what it
+ *  restored, so the form can render the truth without a refetch. A type with
+ *  no snapshot (never muted, or changed by hand since) is absent from the
+ *  result and untouched. */
+export async function unmuteAll(
+  db: Db,
+  _orgId: string,
+  _userId: string,
+  notificationIds: readonly string[],
+): Promise<{ error: string | null; restored: Record<string, PreferenceState> }> {
+  const { data, error } = await db.rpc('unmute_notifications', { p_notification_ids: [...notificationIds] });
+  const restored: Record<string, PreferenceState> = {};
+  for (const row of data ?? []) {
+    restored[row.notification_id] = { push: row.push_enabled, email: row.email_enabled, muted: false };
+  }
+  return { error: error?.message ?? null, restored };
 }

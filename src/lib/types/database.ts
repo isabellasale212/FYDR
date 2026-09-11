@@ -1928,6 +1928,9 @@ export type Database = {
         in_app_enabled: boolean
         quiet_hours_start: string | null
         quiet_hours_end: string | null
+        pre_mute_push: boolean | null
+        pre_mute_email: boolean | null
+        muted_at: string | null
         created_at: string
         updated_at: string
       }
@@ -1941,6 +1944,9 @@ export type Database = {
         in_app_enabled?: boolean
         quiet_hours_start?: string | null
         quiet_hours_end?: string | null
+        pre_mute_push?: boolean | null
+        pre_mute_email?: boolean | null
+        muted_at?: string | null
         created_at?: string
         updated_at?: string
       }
@@ -1954,6 +1960,9 @@ export type Database = {
         in_app_enabled?: boolean
         quiet_hours_start?: string | null
         quiet_hours_end?: string | null
+        pre_mute_push?: boolean | null
+        pre_mute_email?: boolean | null
+        muted_at?: string | null
         created_at?: string
         updated_at?: string
       }
@@ -4661,6 +4670,22 @@ export type Database = {
         p_payload: Json
       }
       Returns: string
+    }
+    mute_notifications: {
+      Args: {
+        p_notification_ids: string[]
+      }
+      Returns: number
+    }
+    unmute_notifications: {
+      Args: {
+        p_notification_ids: string[]
+      }
+      Returns: {
+        notification_id: string
+        push_enabled: boolean | null
+        email_enabled: boolean | null
+      }[]
     }
     revise_nutrition_checkin: {
       Args: {

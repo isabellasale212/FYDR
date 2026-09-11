@@ -1,4 +1,6 @@
-# Pilot-readiness list — 2026-09-11
+# Pilot-readiness list — for the morning of 2026-09-12
+
+*Compiled the evening of 2026-09-11 (first committed as `pilot-readiness-2026-09-11.md`, renamed on Isabella's overnight queue). Re-checked against the to-do list at the time of the rename; the overnight summary notes any handover that changed a line.*
 
 Compiled by the reviewer from every open item on `docs/Fydr_-_Architecture_To-Do_List.md` (§0r onward, plus everything older still unticked), against the code as it stands at `bbbcf72` and production at `7df310e` + migrations through `0102`. One line per item, by its section and line. Group 1 says what fixing it needs: **build**, a **decision** from Isabella, or **both**. Nothing here changes code.
 

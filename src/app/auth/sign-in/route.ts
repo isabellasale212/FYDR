@@ -245,7 +245,14 @@ export async function POST(request: Request): Promise<NextResponse<SignInResult>
     return answer({ kind: needsChallenge ? 'mfa' : 'ok' }, { ok: true }, 200);
   }
 
+  /* The failure that CROSSES the threshold is answered here, after the auth
+     call — so it is held to the same floor as a plain failure. Without this,
+     the fifth attempt against a real account (bcrypt ran) and against an
+     unknown email (it did not) would differ by exactly the amount the floor
+     exists to hide. The gate's 429 above is different: it answers before
+     any auth call, for either kind of email alike. */
   if (record?.is_locked) {
+    await holdUntil(startedAt, FAILED_SIGN_IN_MIN_MS);
     return answer(
       { kind: 'locked', secondsRemaining: record.seconds_remaining },
       {

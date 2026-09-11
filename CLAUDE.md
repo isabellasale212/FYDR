@@ -37,6 +37,28 @@ flow in both apps, so reading the exception that way would reopen the whole
 design, which is the opposite of what was granted. Having captured a flow is not
 the same as actively reviewing it.
 
+**Pattern boards widen the scope to their group, and nothing else does.** A
+pattern board approved under §0.02 — one board covering a named set of flows
+that share a layout, recorded in `docs/designs/<pattern>-final/` and in the
+pattern tables of `docs/Fydr - Design approach for data architecture.md` — puts
+**every flow the board names** under active review together, because the whole
+point of a pattern is that its screens change as one. The permitted and flagged
+categories below apply unchanged across that group: composed-from-existing-tokens
+changes may be made in any of the named flows; anything needing a new token
+stops and asks, once, for the group. Two limits hold the line. **The group is
+the board's own list**, not the pattern table's "inherit" or "sweep" rows — a
+screen that inherits a pattern is built to it when its own turn comes, it is not
+touched because a sibling was. **Serial implementation still applies** (§0.02):
+the group is one scope, not licence to change six screens in one commit without
+the collision check per class and token that §0.02 requires.
+
+**Changing a token's value is a system decision, not a pattern change.** It
+happens only on Isabella's explicit instruction, recorded with the date in
+`tokens.css` next to the value and in the decisions log, built as its own commit
+with a full contrast sweep in both themes. The 11 Sept decisions are the first
+two: `--accent` `#1f6fea` → `#17489b` (whole app) and athlete app cards to the
+9px radius token (athlete app only).
+
 **Permitted without asking, inside that scope:** changes composed from the
 existing system — the tokens in `src/styles/tokens.css`, the radius scale, the
 spacing scale, the type scale, and the two motion timings. Rearranging,
@@ -50,7 +72,9 @@ cannot be expressed in tokens that already exist, stop and ask.
 
 **Still out of scope entirely:** any screen, component or token not part of the
 flow under discussion. Noticing something wrong elsewhere is still "say so and
-leave it alone".
+leave it alone". A flow that shares a component with the group but is not on
+the board's list is outside it; shared-component changes are flagged as a
+collision under §0.02 before they are made.
 
 ### 0.02 How walkthrough design work is done (set 2026-09-10)
 

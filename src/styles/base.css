@@ -2936,8 +2936,9 @@ a.hist-row:focus-visible {
   transition: background var(--t-state), border-color var(--t-state), color var(--t-state);
 }
 /* Spec §7.2: selected is the accent FILL with the accent BORDER over it —
-   #3c85f7, a step lighter than the fill, which is what keeps the key's edge
-   visible against the fill instead of dissolving into it. */
+   --accent-border, a step lighter than the fill (per theme since 11 Sept
+   2026), which is what keeps the key's edge visible against the fill instead
+   of dissolving into it. */
 .dots .opt[data-selected] > span {
   background: var(--accent);
   border-color: var(--accent-border);
@@ -3389,7 +3390,7 @@ a.hist-row:focus-visible {
      and an accent point; dark is one flat ink, because an accent tint on a dark
      panel goes muddy. test-mark-consistency.ts asserts the two stay equal. */
   --lk-ink: var(--text);
-  --lk-trace: #c7dbfa;
+  --lk-trace: #c5d1e6; /* the accent at 25% over white — 11 Sept 2026, Isabella's decision */
   --lk-dot: var(--accent);
   display: flex;
   align-items: center;
@@ -9307,8 +9308,8 @@ button.dash-stat {
    Labels take the PILL text tokens rather than the plain-surface ones, because
    that is exactly what they are — text on that colour's own tint. Measured on
    each tile over --surf: 6.40, 5.85, 7.81 and 6.72:1. The design's own protein
-   label is the raw #1f6fea accent, which measures 4.36:1 there and is the one
-   value not copied. */
+   label was the raw accent (then #1f6fea, 4.36:1 there) and is the one value
+   not copied. */
 .nutr-rule-tile[data-macro='protein'] {
   border-color: rgb(var(--accent-rgb) / 0.42);
   background: rgb(var(--accent-rgb) / 0.08);
@@ -9386,9 +9387,9 @@ button.dash-stat {
 /* The five tones. Each sets three custom properties and lets the rules above
    read them, so a new domain is four lines rather than a new block.
 
-   Pill text uses the PILL tokens throughout. The design's GPS label is the raw
-   #1f6fea accent, which measures 3.00:1 composited on its own pill over its
-   own card tint over the page ground — the one value here not copied. */
+   Pill text uses the PILL tokens throughout. The design's GPS label was the raw
+   accent (then #1f6fea, 3.00:1 composited on its own pill over its own card
+   tint over the page ground) — the one value here not copied. */
 .rep-card[data-tone='wellness'] {
   border-color: rgb(var(--good-rgb) / 0.5);
   background: rgb(var(--good-rgb) / 0.1);
@@ -11353,7 +11354,7 @@ button.dash-stat {
    nothing morphs and only the lockup moves. */
 .launch {
   --lk-ink: var(--text);
-  --lk-trace: #c7dbfa;
+  --lk-trace: #c5d1e6; /* the accent at 25% over white — 11 Sept 2026, Isabella's decision */
   --lk-dot: var(--accent);
   /* Where the splash STARTS, as data rather than as a theme-scoped rule. In
      dark these equal the resting values, so the morph is a no-op and the

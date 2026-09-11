@@ -46,7 +46,7 @@ import type { ReactNode } from 'react';
  * awareness this component doesn't have yet. */
 
 export const PDF_COLOR = {
-  accent: '#1f6fea',
+  accent: '#17489b', // the brand accent, 11 Sept 2026, Isabella's decision
   text: '#13161c',
   muted: '#5b636e',
   faint: '#929aa5',

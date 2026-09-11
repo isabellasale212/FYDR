@@ -390,7 +390,7 @@ graph TD
     MO --> MO6[Import GPS]
     MO --> MO7[Account and settings]
 
-    style D fill:#1f6fea,color:#ffffff
+    style D fill:#17489b,color:#ffffff
     style S fill:#182241,color:#ffffff
 ```
 

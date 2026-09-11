@@ -214,7 +214,7 @@ graph LR
     B --> P
     F -.->|"registers ~4 months later,<br/>does not block"| P
 
-    style C fill:#1f6fea,color:#fff
+    style C fill:#17489b,color:#fff
     style P fill:#4dcbb2,color:#13161c
 ```
 

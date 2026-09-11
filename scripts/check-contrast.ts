@@ -87,17 +87,15 @@ export const KNOWN_BELOW_AA: ReadonlyArray<{ token: string; theme: string; why: 
       'the same design decision --faint was, and has not been taken.',
   },
   {
-    token: 'accent', theme: 'both', why:
-      'P2, audit 2026-09-09: 3.88:1 light, 2.98:1 dark on --bg. --accent is a FILL ' +
-      'token (25 background uses against 5 text uses); the 5 text uses want ' +
-      '--accent-text, which clears AA in both themes. Fixing the call sites is the ' +
-      'right change, not moving a fill colour.',
+    token: 'accent', theme: 'dark', why:
+      'P2, audit 2026-09-09: --accent is a FILL token (25 background uses against ' +
+      '5 text uses); the 5 text uses want --accent-text. Narrowed to dark on ' +
+      '11 Sept 2026: the brand navy #17489b clears AA as ink in light (7.20:1 on ' +
+      '--bg), while the dark fill #2a6ddf is still 2.87:1 there. Fixing the call ' +
+      'sites is the right change, not moving a fill colour.',
   },
-  {
-    token: 'bad-text', theme: 'dark', why:
-      'P2, audit 2026-09-09: 4.47:1 on --surf, short of 4.5 by 0.03. Real but ' +
-      'hairline; moving it costs the dark error ramp its relationship to --bad.',
-  },
+  /* bad-text (dark) was here at 4.47:1 on --surf. Fixed 11 Sept 2026: #ff7460,
+     5.61:1 on --surf, 5.22 on --bg — see scripts/test-brand-accent.ts. */
 ];
 
 const hexOf = (v: string): [number, number, number] | null => {

@@ -81,7 +81,7 @@ graph TD
     style MIN fill:#b8860b,color:#fff
     style U13 fill:#8b0000,color:#fff
     style OPT fill:#b8860b,color:#fff
-    style T fill:#1f6fea,color:#fff
+    style T fill:#17489b,color:#fff
 ```
 
 **Correction, 5 August 2026. An earlier version of this flow gated the whole account on a

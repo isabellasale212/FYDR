@@ -153,7 +153,7 @@ see a blank frame. Raised as O-607.
 
 | Token | Value | Role in the source |
 |---|---|---|
-| `--accent` | `#1f6fea` | Primary action and data |
+| `--accent` | `#17489b` (light) / `#2a6ddf` (dark) | Primary action and data. **Changed 11 Sept 2026, Isabella's decision** (`docs/decisions/adr-009-brand-accent.md`): the brand navy in light, its own fill in dark because the navy measures 1.73:1 against dark `--surf`; the one brand token that is theme-split. |
 | `--accent2` | `#33b6ff` | Bright: "now", progress |
 | `--good` | `#4dcbb2` | Positive, done |
 | `--warn` | `#f6ab2f` | Caution, behind |
@@ -398,6 +398,12 @@ for non-text UI components and meaningful graphical objects, per WCAG 2.2 SC 1.4
   deuteranopia, Brettel for tritanopia.
 
 ### 3.2 Light theme, text on surfaces
+
+> The audit tables below are the source audit of 2026-09-06 and keep their
+> values as history. They predate the Visual Lift grounds, the `--good` change
+> and the 11 Sept 2026 accent decision (`--accent` `#17489b` light / `#2a6ddf`
+> dark). The live measurement of every accent pairing in both themes is
+> `scripts/test-brand-accent.ts`, which runs in prebuild.
 
 Surfaces: `--bg` #eaedf1, `--surf` #ffffff, `--surf2` #f3f5f8, `--field` #f0f2f5.
 
@@ -2151,7 +2157,7 @@ surface, so they inherit the theme for free:
 
 | Theme | Ramp | Stops |
 |---|---|---|
-| Light | `--accent` over `--surf` | 8%, 24%, 40%, 56%, 72%, 88%, 100% giving `#edf3fd`, `#c9dcfa`, `#a5c5f7`, `#82aef3`, `#5e97f0`, `#3a80ed`, `#1f6fea` |
+| Light | `--accent` over `--surf` | 8%, 24%, 40%, 56%, 72%, 88%, 100% giving `#eaeff6`, `#c5d2e6`, `#a0b5d6`, `#7c98c7`, `#577bb7`, `#325ea7`, `#17489b` (recomputed 11 Sept 2026 for the `#17489b` accent over `#fcfdfe`) |
 | Dark | `--accent2` over `--surf` | 10%, 28%, 46%, 64%, 82%, 100% giving `#1a2d4a`, `#1f496e`, `#246492`, `#297fb7`, `#2e9bdb`, `#33b6ff` |
 
 Cell labels on a sequential heatmap switch from `--text` to a light foreground at the point
@@ -2686,7 +2692,7 @@ laptop, frequently one-handed with a trackpad in a gym, and tab order is how pow
 
 | Theme | `--focus` | Contrast against the surfaces it sits on |
 |---|---|---|
-| Light | `#1f6fea` (`--accent`) | 4.65 on `--surf`, 3.96 on `--bg`, 4.14 on `--field` |
+| Light | `#17489b` (`--accent`, since 11 Sept 2026) | 8.46 on `--surf`, 7.20 on `--bg`, 7.54 on `--field` |
 | Dark | `#33b6ff` (`--accent2`) | 7.27 on `--surf`, 6.90 on `--bg`, 6.83 on `--field` |
 
 `--accent` in dark is only 3.33 to 3.54, which passes 3:1 but with no margin against a

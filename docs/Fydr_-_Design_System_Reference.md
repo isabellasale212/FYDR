@@ -1,6 +1,11 @@
 # Fydr — design system reference
 
 **Generated 2026-09-10 from the source of truth**, not from a specification.
+Token values updated 2026-09-11 for the brand accent decision (`--accent`
+`#17489b` light / `#2a6ddf` dark, and the tokens that follow it — see
+`docs/decisions/adr-009-brand-accent.md`); the computed component values below
+were read before that change and still show the old blue where a component
+resolves the accent.
 Token values are read from `src/styles/tokens.css`; component values are
 **computed styles read from the running application**, so they are what a
 browser actually resolved rather than what the stylesheet asks for.
@@ -72,13 +77,13 @@ colour: a coach picks one per squad group, and an athlete's avatar can carry one
 
 | Token | Light | Dark |
 |---|---|---|
-| `--accent` | `#1f6fea` | _same_ |
-| `--accent-border` | `#3c85f7` | _same_ |
-| `--accent-on-tint` | `#0050c4` | `#8fb4ff` |
-| `--accent-on-wash` | `#0056bf` | `#9dbcff` |
-| `--accent-pill-text` | `#0050c4` | `#699bff` |
-| `--accent-rgb` | `31 111 234` | _same_ |
-| `--accent-text` | `#0064dc` | `#8fb4ff` |
+| `--accent` | `#17489b` | `#2a6ddf` |
+| `--accent-border` | `#1c59bf` | `#4d86e5` |
+| `--accent-on-tint` | `#17489b` | `#8fb4ff` |
+| `--accent-on-wash` | `#17489b` | `#9dbcff` |
+| `--accent-pill-text` | `#17489b` | `#8fb4ff` |
+| `--accent-rgb` | `23 72 155` | `42 109 223` |
+| `--accent-text` | `#17489b` | `#8fb4ff` |
 | `--accent2` | `#33b6ff` | _same_ |
 | `--accent2-pill-text` | `#0063a5` | `#33b6ff` |
 | `--accent2-rgb` | `51 182 255` | _same_ |
@@ -90,7 +95,7 @@ colour: a coach picks one per squad group, and an athlete's avatar can carry one
 | `--bad-on-tint` | `#7a1f14` | `#ffb3a8` |
 | `--bad-pill-text` | `#7a1f14` | `#ff7460` |
 | `--bad-rgb` | `241 90 74` | _same_ |
-| `--bad-text` | `#8a2418` | `#f15a4a` |
+| `--bad-text` | `#8a2418` | `#ff7460` |
 | `--band-1-wash` | `rgb(var(--bad-rgb) / 0.13)` | `rgb(var(--bad-rgb) / 0.08)` |
 | `--band-2-wash` | `rgb(var(--bad-rgb) / 0.07)` | `rgb(var(--bad-rgb) / 0.045)` |
 | `--band-3-wash` | `rgb(var(--warn-rgb) / 0.11)` | `rgb(var(--warn-rgb) / 0.08)` |
@@ -117,7 +122,7 @@ colour: a coach picks one per squad group, and an athlete's avatar can carry one
 | `--elev` | `#fcfdfe` | `#1d2643` |
 | `--faint` | `#626a76` | `#8492bd` |
 | `--field` | `#ebf0fa` | `#1a2340` |
-| `--focus` | `#1f6fea` | `#33b6ff` |
+| `--focus` | `#17489b` | `#33b6ff` |
 | `--gap-body` | `28px` | _same_ |
 | `--gap-grid` | `12px` | _same_ |
 | `--gap-stack` | `14px` | _same_ |
@@ -181,7 +186,7 @@ colour: a coach picks one per squad group, and an athlete's avatar can carry one
 | `--wash-good` | `rgb(var(--good-rgb) / 0.13)` | `rgb(var(--good-rgb) / 0.07)` |
 | `--wash-warn` | `rgb(var(--warn-rgb) / 0.16)` | `rgb(var(--warn-rgb) / 0.08)` |
 | `--wk-fill` | `rgba(31, 111, 234, 0.09)` | `rgba(79, 214, 255, 0.12)` |
-| `--wk-match-border` | `#1f6fea` | `#4fd6ff` |
+| `--wk-match-border` | `#17489b` | `#4fd6ff` |
 
 ## Group / avatar palette
 

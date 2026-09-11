@@ -1,16 +1,28 @@
-# Session rating, "How hard was it?"
+# Session rating, "Rate {session name}"
 
 ## 1. Where it sits
 
 Reached from a to-do item on Today, one per session. Route `/rpe/[sessionId]`.
-File `src/app/(athlete)/rpe/[sessionId]/page.tsx`, 168 lines.
+File `src/app/(athlete)/rpe/[sessionId]/page.tsx`. The heading is "Rate {session
+name}" — the same string as the Today row that opens it, built by the same
+function (`rpeRowName`), since 11 September 2026; it was the question "How hard
+was it?", which made two sessions to rate read as two identical rows. The
+question survives as the form's first line, "Rate the whole session, not the
+hardest bit."
 
 ## 2. Who reaches it and when
 
 An athlete who took part in a session, **once the session ended more than thirty
-minutes ago**. `DUE_DELAY_MIN = 30`, and the reason is recorded in the file: an
-RPE taken immediately after a session is biased by the final drill. **Not
-configurable downwards.**
+minutes ago, and until the end of the following day in club time**. Both
+instants come from `lib/rpeDue.ts` (`rpeDueAt`, `rpeClosesAt`), the one rule
+Today's to-do row also reads, so the row appears exactly when this screen will
+accept a rating and disappears exactly when it stops. `DUE_DELAY_MIN = 30`, and
+the reason is recorded in the file: an RPE taken immediately after a session is
+biased by the final drill. **Not configurable downwards.** A session with no
+duration counts as ending when it starts. After the window the screen says
+"This session can no longer be rated." — the database does not refuse a late
+row (an offline rating made in time and flushed late still lands; staff
+corrections need an existing row and never create one).
 
 ## 3. What you see
 
@@ -70,7 +82,8 @@ None.
 
 ## 10. States
 
-Loading, not yet due (under thirty minutes since the session), already rated,
+Loading, not yet due (under thirty minutes since the session), closed (after the
+end of the following day), already rated,
 error, offline queued.
 
 ## 11. Accessibility and device

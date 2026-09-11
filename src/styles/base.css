@@ -1608,26 +1608,10 @@ img.av {
   transition: color var(--t-state);
 }
 
-/* Today's "To do" heading: the label on the left, what is outstanding on the
-   right. Sentence case and full size, per Fydr Athlete App.dc.html 23a — it
-   was a small uppercase section label with a bare number after it. */
-/* Overrides .sect's small uppercase label treatment: on Today this is a real
-   heading over the list beneath it, not a section eyebrow.
-   Written as .sect.todo-head so it wins on SPECIFICITY rather than order —
-   .sect is defined further down this file, so a single-class rule up here
-   loses to it and the heading stayed uppercase. */
-.sect.todo-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--sp-12);
-  /* Spec §7.1: 17/800. */
-  font-size: var(--fs-16);
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  text-transform: none;
-  color: var(--text);
-}
+/* Today's "To do" heading used to be a full-size sentence-case heading here
+   (.sect.todo-head, 17/800). Since ATH-ADULT-02 (2026-09-11) the section
+   titles on Today are eyebrows, as the board draws them; the rule lives with
+   the rest of that screen's rows below. */
 /* My data's history list, Fydr Athlete App.dc.html 23e. A row list rather than
    a table: at 390px four columns left the readiness column reading "Missing"
    next to two columns of dots. Lives in a `card flush`, so the rows own the
@@ -2411,6 +2395,128 @@ a.hist-row:focus-visible {
   color: var(--muted);
   margin: var(--sp-6) 0 0;
 }
+
+/* ---------------------------------------------------------------------------
+ * ATH-ADULT-02, Today — approved 2026-09-11. The rows from the V2 board,
+ * on this system's tokens (the board's --r is 8px; ours is the card radius;
+ * its --gap-tile 12 is --sp-12; its 16px 18px inset is the phone shell's own
+ * --pad-card-y / --pad-card-x). .todo and .gl are shared with the staff
+ * group screens and are untouched; these are Today's own.
+ * ------------------------------------------------------------------------ */
+/* The section titles are eyebrows, as drawn; the count sits on the same
+   line, at the far end, and reads off the same array as the rows. */
+.todo-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-12);
+}
+.eyebrow.today-sect {
+  margin: 0 0 var(--sp-10);
+}
+.td-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-12);
+}
+/* A row: name, one timed line, chevron. 44px is the floor; the inset makes
+   it taller. The tiles that used to force 82px are gone — the names carry
+   the domain. */
+.td-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-14);
+  padding: var(--pad-card-y) var(--pad-card-x);
+  min-height: 44px;
+  color: inherit;
+  text-decoration: none;
+}
+.td-name {
+  display: block;
+  /* The size is inline on the page: spec §7.1's 17/700 has no step on the
+     type scale (16, 18), and it was inline before this pass for the same
+     reason — check-scale-tokens refuses a raw value here, rightly. */
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+.td-sub {
+  display: block;
+  margin-top: var(--sp-2);
+  font-size: var(--fs-13);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.td-chev {
+  margin-left: auto;
+  font-size: var(--fs-20);
+}
+/* "You're up to date": the same geometry as a row, in the same slot, so an
+   empty list is a row that says so rather than a region that vanished. */
+.td-empty {
+  cursor: default;
+}
+/* The day's sessions: name, then start · place · finished / starts in. */
+.day-row {
+  padding: var(--pad-card-y) var(--pad-card-x);
+}
+.day-name {
+  margin: 0;
+  font-size: var(--fs-15);
+  font-weight: 700;
+  line-height: 1.25;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  flex-wrap: wrap;
+}
+.day-meta {
+  margin: var(--sp-4) 0 0;
+  font-size: var(--fs-13);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+/* The one-line banner above To do when the athlete is not fully available:
+   the same banner shape ATH-ADULT-01 gave the sign-in refusal, with a link's
+   job — it goes to the card below. The message is --text; the tone is in
+   the fill, the border and the dot. Measured 13.95:1 / 10.30:1 (warn) and
+   13.19:1 / 10.90:1 (bad), light / dark. */
+.avail-line {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-10);
+  padding: var(--pad-card);
+  border-radius: var(--r-tab);
+  border: 1px solid var(--border-warn);
+  background: var(--wash-warn);
+  color: var(--text);
+  font-size: var(--fs-13);
+  font-weight: 600;
+  text-decoration: none;
+  min-height: 44px;
+}
+.avail-line::before {
+  content: '';
+  flex: none;
+  width: var(--sp-8);
+  height: var(--sp-8);
+  margin-top: var(--sp-6);
+  border-radius: var(--r-full);
+  background: var(--warn);
+}
+.avail-line[data-tone='bad'] {
+  border-color: var(--border-bad);
+  background: var(--wash-bad);
+}
+.avail-line[data-tone='bad']::before {
+  background: var(--bad);
+}
+/* "Team this week": a fact under the card, not a status banner. */
+.team-line {
+  margin: 0;
+  font-size: var(--fs-13);
+  color: var(--muted);
+}
 .next-up {
   padding: var(--sp-14);
 }
@@ -2440,14 +2546,6 @@ a.hist-row:focus-visible {
 /* Spec §7.1: an 11px ring, 3px of it border, in the card's own state colour.
    Nudged down to sit on the 17px title's optical centre rather than its box
    top. */
-.avail-ring {
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  border: 3px solid rgb(var(--state-rgb));
-  flex: none;
-  margin-top: var(--sp-6);
-}
 /* Spec §7.1: padding 16px 18px, gap 14. */
 .avail-banner {
   border-radius: var(--r-card);
@@ -2470,6 +2568,47 @@ a.hist-row:focus-visible {
   flex: none;
 }
 /* Spec §7.1: 17/700 status, 15px restrictions, 13px muted closing line. */
+/* ATH-ADULT-02, S4 (2026-09-11): the tone-family card. Fill and border were
+   already one family (the colour-mix rule above); now every word on the tint
+   is that family's ink too — the *-pill-text token, which is the one built
+   for type on a tint and measures 7.53:1 / 6.11:1 (warn, light / dark) and
+   8.81:1 / 4.95:1 (bad) against the fill, per test-ath-adult-02.ts. --text
+   and --muted would pass as numbers; they would also make the card read as a
+   plain card with a wash, which is what "tone-family" is not. Available keeps
+   the plain card and the plain ink. The ring is gone: the fill carries the
+   colour and the word was always the message. */
+/* Available is the plain card, as the board draws "Full": an all-clear is
+   not a tone. The good tint the card used to carry is gone with the ring. */
+.avail-banner:not([data-tone]) {
+  background: var(--surf);
+  border-color: var(--border);
+}
+.avail-banner[data-tone='warn'] {
+  color: var(--warn-pill-text);
+}
+.avail-banner[data-tone='bad'] {
+  color: var(--bad-pill-text);
+}
+.avail-banner[data-tone] .s {
+  color: inherit;
+}
+.avail-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-12);
+}
+/* The reason as a chip: a white chip on the tint, so it still reads as a chip
+   on a tinted ground, in the family's own ink. */
+.avail-chip {
+  flex: none;
+  font-size: var(--fs-11);
+  font-weight: 700;
+  padding: var(--sp-2) var(--sp-8);
+  border-radius: var(--r-control);
+  background: var(--surf);
+  color: inherit;
+}
 .avail-banner .k {
   font-size: var(--fs-16);
   font-weight: 700;

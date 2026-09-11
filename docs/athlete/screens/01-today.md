@@ -14,26 +14,52 @@ who is not also an athlete is redirected to `/dashboard`.
 ## 3. What you see
 
 Top to bottom on a phone, in the order the page actually renders them
-(`today/page.tsx`, corrected 8 September 2026 — the previous version of this
-list omitted items 4 and 5 entirely and had the fixture below the to-do list
-rather than above it):
+(`today/page.tsx`, reordered 11 September 2026 for ATH-ADULT-02 — the to-do
+list is now the first thing under the greeting, because 561px of an 812px
+screen used to pass before the first actionable row):
 
 1. **Who you are and what day it is**, with the matchday label for the week
    (`mdLabel`, `mdExplainer`).
-2. **The week strip**, seven days coloured by session type.
-3. **What the club is working towards**, the next fixture (`fetchNextFixture`).
-4. **Whether you are available, and what you may do today**
+2. **One line, only when something is wrong**: "Modified · …" or
+   "Unavailable · …" — the status and what you may do, linking down to the
+   full card (item 6). Nothing here when you are available.
+3. **What you owe**, as a to-do list. This is the screen's real job. Always
+   rendered: with nothing outstanding the slot holds one row reading "You're
+   up to date" and the count reads "None left".
+4. **What is on today**, the sessions from the schedule — each with its start,
+   place, and whether it has finished, is under way, or starts within two
+   hours, in club time.
+5. **The week strip**, seven days coloured by session type, with **what the
+   club is working towards**, the next fixture (`fetchNextFixture`).
+6. **Whether you are available, and what you may do today**
    (`AvailabilityBanner`). Always present, on every load, whatever the status.
-5. **Your own diagnosis, if there is one** (`InjuryClinical`). Often absent.
-6. **What you owe today**, as a to-do list. This is the screen's real job.
-7. **What is on today**, the sessions from the schedule.
-8. **Something not right?**, the link to report a problem.
+7. **Your own diagnosis, if there is one** (`InjuryClinical`). Often absent.
+8. **Team this week**, only when a rehab team allocation exists.
 
-**The availability banner, item 4, in detail**, because it is the part of this
-screen an athlete reads first when something is wrong:
+The "Something not right?" row is not on this screen; the report route is
+reached from Me.
 
-- A ring in the status colour, and the status word alone — **Available**,
-  **Modified** or **Unavailable**.
+**The to-do rows.** Each is a name, one line and a chevron — no domain tiles.
+"Wellness · 45 sec" (the 45-second entry of `00-product-overview.md` §198 and
+`08-notifications.md`); "Rate {session name} · Today HH:MM" or "· Yesterday"
+(the session's end time, club-local; no duration is claimed for a rating,
+since none is specified); "Weekly nutrition check-in · about 10 sec"
+(`08-notifications.md`, "three answers, under 10 seconds").
+
+**When a session's rating is owed.** From thirty minutes after the session
+ends until the end of the following day in club time — `lib/rpeDue.ts`, the
+one rule the row and the rating screen both read. A row therefore never opens
+a screen that refuses it; after the window the row is gone and the screen
+says "This session can no longer be rated." Two ratings owed are listed oldest
+first.
+
+**The availability card, item 6, in detail**, because it is the part of this
+screen an athlete reads when something is wrong:
+
+- The tone-family card: fill, border and every word from one family — amber
+  for Modified, red for Unavailable, the plain card for Available. The status
+  word alone — **Available**, **Modified** or **Unavailable** — with the reason
+  category as a chip beside it when not available.
 - Then what they may do. `Available` reads "Everything is on." and nothing
   further. Otherwise the restrictions, joined with a middle dot; or the reason
   category if there are no restrictions; or "No restriction recorded."
@@ -47,8 +73,8 @@ Everything from the note downwards appears **only when the status is not
 `available`**. A cleared athlete sees the status word and "Everything is on."
 and nothing else, so a stale note or a healed injury cannot contradict it.
 
-**The diagnosis block, item 5**, is a separate component and deliberately not
-part of the banner: availability is a squad fact a coach also sees, a diagnosis
+**The diagnosis block, item 7**, is a separate component and deliberately not
+part of the card: availability is a squad fact a coach also sees, a diagnosis
 is clinical and only this athlete and the medical staff see it. It shows
 `Diagnosis` and `How it happened`, each only if recorded, closing with
 "Recorded by your medical staff. Speak to them about anything here." It renders
@@ -57,7 +83,8 @@ no linked injury, or the athlete is under 18, and it never explains which of
 those applies. Saying "this is withheld from you" would tell a minor that the
 withheld thing exists, which is what the age gate in migration 0093 prevents.
 
-**Above the fold: the to-do list.** Everything else can be scrolled to.
+**Above the fold: the to-do list.** Everything else can be scrolled to. Measured
+11 September 2026 at 375×812: "To do" at 137px, the first row at 163px.
 
 ## 4. What the athlete enters here
 

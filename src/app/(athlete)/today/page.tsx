@@ -7,6 +7,8 @@ import { Toast } from '@/components/Toast/Toast';
 import { fetchAthleteAvailability } from '@/lib/queries/availability';
 import { fetchAthleteInjuryClinical } from '@/lib/queries/athleteInjuryClinical';
 import { fetchMyOutstanding } from '@/lib/queries/compliance';
+import { availabilityStatus } from '@/lib/status';
+import { availabilityLine, rpeWhen, sessionMeta } from '@/lib/todayRows';
 import {
   fetchAthleteDaySessions,
   fetchAthleteWeekSessionTypes,
@@ -18,7 +20,6 @@ import { fetchCheckinForWeek } from '@/lib/queries/nutrition';
 import { fetchMyAllocation } from '@/lib/queries/teamAllocation';
 import {
   addDays,
-  BLANK,
   enumLabel,
   formatDate,
   formatTime,
@@ -136,32 +137,53 @@ export default async function TodayPage({
   const injuryClinical = await fetchAthleteInjuryClinical(db, availability.injury?.id);
 
 
+  /* ATH-ADULT-02, 2026-09-11. Each row is a name, a subtitle and a chevron;
+     the WEL / RPE / NUT tiles are gone, the names carry the domain.
+
+     THE DURATIONS, and where each comes from — asked for explicitly, because
+     ATH-ADULT-01 removed an unverified "45 seconds" claim from the sign-in
+     page. "45 sec": 00-product-overview.md §198's success criterion and
+     08-notifications.md's push copy ("Wellness, 45 seconds"). "about 10 sec":
+     08-notifications.md ("three answers, under 10 seconds"). The RPE row
+     carries NO duration: "20 seconds" exists only in
+     docs/screens/legacy/training-entry.md, which is not binding, so it is
+     not shipped until Isabella decides. Its subtitle is when the session
+     was — "Today 10:45", "Yesterday" — from rpeWhen, in club time. */
   const todoItems = [
     ...outstanding.map((item) => ({
       domain: item.domain,
       href: item.href,
-      /* The SESSION's name is the title for an RPE task — "Team run", not
-         "Training" — per Fydr Athlete App.dc.html 23a. It was in the subtitle,
-         which made every training row read identically until you got to the
-         second line.
-         The design's subtitle also carries a timing clause ("open since
-         07:00", "due by 19:45"). compliance_expectations holds no such times —
-         only domain, session, required and waived — so that half is left out
-         rather than invented. */
-      name: item.domain === 'wellness' ? 'Wellness' : (item.label || 'Training'),
-      sub: item.domain === 'wellness' ? '45 seconds' : '20 seconds',
+      name: item.domain === 'wellness' ? 'Wellness' : item.label,
+      sub: item.domain === 'wellness' ? '45 sec' : item.session ? rpeWhen(item.session, today, timezone) : '',
     })),
     ...(!nutritionCheckin
       ? [
           {
             domain: 'nutrition' as const,
             href: '/nutrition-check-in',
-            name: 'Weekly check-in',
-            sub: 'Did you hit your protein target most days? · about 10 seconds',
+            name: 'Weekly nutrition check-in',
+            sub: 'about 10 sec',
           },
         ]
       : []),
   ];
+
+  /* The one-line banner above To do, only when something is wrong (S2). It
+     says the status and what they may do, in the card's own words, and
+     links down to the card, which keeps every line it had. Available shows
+     nothing here: an all-clear does not need to interrupt. */
+  const availState = availabilityStatus(availability.current?.status ?? null);
+  const availTone = availability.current?.status === 'unavailable' ? 'bad' : 'warn';
+  const availSummary =
+    availability.current && availability.current.status !== 'available'
+      ? availabilityLine(
+          availState.label,
+          availability.current.restrictions ?? [],
+          availability.current.reason_category ? enumLabel(availability.current.reason_category) : null,
+          enumLabel,
+        )
+      : null;
+  const nowMs = Date.now();
 
   const toastMessage = toastMessageFor(params, timezone);
 
@@ -232,6 +254,96 @@ export default async function TodayPage({
       <OutboxFlusher orgId={orgId} athleteId={athleteId} userId={claims.userId} timezone={timezone} />
 
       {toastMessage ? <Toast message={toastMessage} clearHref="/today" /> : null}
+
+      {/* S2: when something is wrong it is said once, in one line, above the
+          list — and the card it links to sits below the day with every line it
+          had. Available says nothing here. */}
+      {availSummary ? (
+        <a href="#availability" className="avail-line" data-tone={availTone}>
+          {availSummary}
+        </a>
+      ) : null}
+
+      {/* THE TO-DO LIST, always rendered, and its own status: the count reads
+          off the same array the rows render from, and with nothing outstanding
+          the slot holds one row-shaped card rather than an empty region. */}
+      <section aria-labelledby="todo-title">
+        <h2 className="eyebrow today-sect todo-head" id="todo-title">
+          <span>To do</span>
+          <span className="num">{todoItems.length > 0 ? `${todoItems.length} left` : 'None left'}</span>
+        </h2>
+        <div className="td-list">
+          {todoItems.length > 0 ? (
+            todoItems.map((item, index) => (
+              <Link key={`${item.domain}-${index}`} href={item.href} className="card td-row">
+                <span style={{ minWidth: 0 }}>
+                  {/* Spec §7.1: row name 17/700 — 1.0625rem IS that 17px at the
+                      default root, in rem so it follows the text setting. */}
+                  <span className="td-name" style={{ fontSize: '1.0625rem' }}>{item.name}</span>
+                  <span className="td-sub num">{item.sub}</span>
+                </span>
+                <span className="chev td-chev" aria-hidden="true">
+                  ›
+                </span>
+              </Link>
+            ))
+          ) : (
+            <div className="card td-row td-empty">
+              <span style={{ minWidth: 0 }}>
+                <span className="td-name" style={{ fontSize: '1.0625rem' }}>You&rsquo;re up to date</span>
+                <span className="td-sub">Nothing expected of you today is outstanding.</span>
+              </span>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* RESTORED 8 September 2026. The redesign removed this because the
+          reference does not draw it and "the to-do list is the page's only
+          actionable list now" — but the to-do list holds what an athlete owes
+          the club, not what the club has asked of them today. Without this
+          section an athlete had no way to see when or where they were training,
+          on any screen: My data's training tab is history, and Programme is the
+          gym plan, not the day.
+
+          Each row is the session's name and one line — start, place, and
+          whether it has finished, is under way, or starts within two hours
+          (sessionMeta, club time). Nothing here claims to know who is in a
+          session or what they may do in it: no data supports that (S5). */}
+      <section aria-labelledby="today-title">
+        <h2 className="eyebrow today-sect" id="today-title">
+          Today
+        </h2>
+        {sessions.length === 0 ? (
+          <EmptyState
+            headingLevel={3}
+            title="Nothing scheduled"
+            body="You are not named in a session today. Rest or check with your coach."
+          />
+        ) : (
+          <div className="td-list">
+            {sessions.map((session) => {
+              const cancelled = session.status === 'cancelled';
+              return (
+                <div key={session.id} className="card day-row" style={{ opacity: cancelled ? 0.55 : 1 }}>
+                  <p className="day-name">
+                    <span style={{ textDecoration: cancelled ? 'line-through' : 'none' }}>{session.title}</span>
+                    {/* screens/schedule.md's realtime broadcast on
+                     * cancellation is not built here — see
+                     * lib/queries/schedule.ts's header comment. An
+                     * athlete only learns of a cancellation by opening
+                     * this screen, not the moment it happens, which is
+                     * a real, documented gap for the case the spec
+                     * calls out as the one to get right. */}
+                    {cancelled ? <span className="pill pill-bad">Cancelled</span> : null}
+                  </p>
+                  <p className="day-meta num">{sessionMeta(session, nowMs, timezone)}</p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
 
       <div className="card wk-card">
         {/* A visible "THIS WEEK", not just the strip's aria-label. The design
@@ -367,138 +479,12 @@ export default async function TodayPage({
       />
 
 
+      {/* Plain text below the card, as drawn: a fact, not a status banner. */}
       {myAllocation ? (
-        <p className="banner" role="status">
-          <span className="g g-good" aria-hidden="true">
-            ✓
-          </span>
-          <span>
-            <b>Team this week: {myAllocation.team_name}.</b> Set by your coach.
-          </span>
+        <p className="team-line" role="status">
+          Team this week: {myAllocation.team_name}. <span className="dot">Set by your coach.</span>
         </p>
       ) : null}
-
-      {todoItems.length > 0 ? (
-        <section aria-labelledby="todo-title">
-          <h2 className="sect todo-head" id="todo-title">
-            <span>To do</span>
-            {/* "N left", not a bare count: the design puts the number beside
-                the list it counts and says what it means. Amber because an
-                outstanding item is a thing to act on, not a statistic. */}
-            <span className="todo-left num">{todoItems.length} left</span>
-          </h2>
-          <div className="card flush">
-            {todoItems.map((item, index) => (
-              <div key={`${item.domain}-${index}`}>
-                {index > 0 ? <div className="hair" /> : null}
-                <Link href={item.href} className="todo">
-                  <span className="gl" data-domain={item.domain} aria-hidden="true">
-                    {item.domain === 'wellness' ? 'WEL' : item.domain === 'training_rpe' ? 'RPE' : 'NUT'}
-                  </span>
-                  <span style={{ minWidth: 0 }}>
-                    {/* Spec §7.1: row name 17/700 — 1.0625rem IS that 17px at the
-                        default root, in rem so it follows the text setting. */}
-                    <span style={{ fontSize: '1.0625rem', fontWeight: 700, letterSpacing: '-0.01em' }}>
-                      {item.name}
-                    </span>
-                    <span className="tiny" style={{ display: 'block', marginTop: 'var(--sp-2)' }}>
-                      {item.sub}
-                    </span>
-                  </span>
-                  {/* No Due/Optional pill. Fydr Athlete App.dc.html 23a puts
-                      the same information in the row's own subtitle — "45
-                      seconds · open since 07:00" — where it reads as a fact
-                      about the task rather than a badge to decode, and it
-                      leaves the row a clean name-and-chevron shape. Whether a
-                      task is optional is already in item.sub. */}
-                  <span className="chev" aria-hidden="true">
-                    ›
-                  </span>
-                </Link>
-              </div>
-            ))}
-          </div>
-        </section>
-      ) : (
-        <div className="card done-card">
-          <div className="done-check" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path
-                d="M4 10.5l4 4 8-9"
-                stroke="var(--good-text)"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
-          <p className="done-title">You&rsquo;re up to date.</p>
-          <p className="done-sub">Nothing expected of you today is outstanding.</p>
-        </div>
-      )}
-
-      {/* RESTORED 8 September 2026. The redesign removed this because the
-          reference does not draw it and "the to-do list is the page's only
-          actionable list now" — but the to-do list holds what an athlete owes
-          the club, not what the club has asked of them today. Without this
-          section an athlete had no way to see when or where they were training,
-          on any screen: My data's training tab is history, and Programme is the
-          gym plan, not the day.
-
-          Kept BELOW the to-do list rather than restored to the spec's original
-          position between availability and to-do, so the redesign's intent —
-          outstanding work first — survives having the day's schedule back. */}
-      <section aria-labelledby="today-title">
-        <h2 className="sect" id="today-title">
-          Today
-        </h2>
-        {sessions.length === 0 ? (
-          <EmptyState
-            headingLevel={3}
-            title="Nothing scheduled"
-            body="You are not named in a session today. Rest or check with your coach."
-          />
-        ) : (
-          <div className="card flush">
-            {sessions.map((session, index) => {
-              const md = mdLabel(todayMdOffset);
-              const cancelled = session.status === 'cancelled';
-              return (
-                <div key={session.id}>
-                  {index > 0 ? <div className="hair" /> : null}
-                  <div className="sess" style={{ opacity: cancelled ? 0.55 : 1 }}>
-                    <span className="tm num">{formatTime(session.starts_at, timezone)}</span>
-                    <div>
-                      <div className="ti">
-                        <span style={{ textDecoration: cancelled ? 'line-through' : 'none' }}>
-                          {session.title}
-                        </span>
-                        <span className="pill pill-neutral">{enumLabel(session.session_type)}</span>
-                        {/* screens/schedule.md's realtime broadcast on
-                         * cancellation is not built here — see
-                         * lib/queries/schedule.ts's header comment. An
-                         * athlete only learns of a cancellation by opening
-                         * this screen, not the moment it happens, which is
-                         * a real, documented gap for the case the spec
-                         * calls out as the one to get right. */}
-                        {cancelled ? <span className="pill pill-bad">Cancelled</span> : null}
-                      </div>
-                      <div className="lo">
-                        {session.location ?? 'Location not set'} ·{' '}
-                        <span className="num">{session.duration_min ?? BLANK}</span> min
-                      </div>
-                    </div>
-                    {md ? (
-                      <span className="pill pill-neutral num" title={mdExplainer(todayMdOffset) ?? undefined}>
-                        {md}
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
 
     </>
   );

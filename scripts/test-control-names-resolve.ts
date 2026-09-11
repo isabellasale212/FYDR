@@ -103,6 +103,19 @@ for (const m of blank(readFileSync('src/lib/queries/compliance.ts', 'utf8')).mat
   refs.push({ name: m[1]!, where: 'src/lib/queries/compliance.ts (to-do label)' });
 }
 
+/* THE ONE TEMPLATED NAME. Since 2026-09-11 the RPE row reads "Rate {session
+   name}" and so does the screen it opens — a template, which a literal
+   comparison cannot see. The pair is held to the same function instead: both
+   the row's label and the screen's h1 must be rpeRowName(<title>), so they
+   cannot drift apart any more than two literals could. */
+{
+  const compliance = blank(readFileSync('src/lib/queries/compliance.ts', 'utf8'));
+  const rpe = blank(readFileSync('src/app/(athlete)/rpe/[sessionId]/page.tsx', 'utf8'));
+  assert(/label:\s*rpeRowName\(/.test(compliance), 'the RPE to-do row is named by rpeRowName');
+  assert(/<h1 className="t">\{rpeRowName\(session\.title\)\}<\/h1>/.test(rpe), 'and the screen it opens is headed by rpeRowName of the same title');
+  assert(!/label:\s*'How hard was it\?'/.test(compliance), 'the old literal is gone from the row');
+}
+
 const unresolved = refs.filter((r) => r.name && !labels.has(r.name));
 assert(refs.length > 0, `found control references in copy (${refs.length})`);
 for (const r of unresolved) {

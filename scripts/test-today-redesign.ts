@@ -56,9 +56,13 @@ console.log('\n"Working towards" is one full-width row');
     'and carries no chevron, because no fixture screen exists to open');
 }
 
-console.log('\nthe Modified row is compact: dot, status, one restriction line, one instruction');
+console.log('\nthe Modified row is compact: status, one restriction line, one instruction');
 {
-  assert(/avail-ring/.test(banner), 'the status dot survives');
+  /* The dot went on 2026-09-11 with ATH-ADULT-02's tone-family card (S4,
+     approved): the fill carries the colour and the word was always the
+     message. What the row SAYS is unchanged, and that is what the rest of
+     this block pins. test-ath-adult-02.ts pins the card itself. */
+  assert(!/avail-ring/.test(banner) && /data-tone=\{tone/.test(banner), 'the status dot is gone; the tone-family card carries the colour');
   assert(/state\.label/.test(banner), 'and the status word');
   assert(/restrictions/.test(banner), 'and the restriction line');
   assert(

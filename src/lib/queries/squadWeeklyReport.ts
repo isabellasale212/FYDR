@@ -7,6 +7,7 @@ import { fetchSquadList } from './squad';
 import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchAllPaged } from './paged';
 import { addDays, todayIso } from '@/lib/format';
+import { countGymSessions, fetchSessionLogIdsWithLiveSets, type GymLogRow } from '@/lib/gymSessionCounts';
 
 /* screens/reports.md, report 2 of 5 ("Squad weekly report"), built the same
  * pass as the Athlete report and for the same reason: it reads nothing that
@@ -139,10 +140,10 @@ export async function fetchSquadWeeklyReport(
   // where the base table's is NOT NULL — hence the nullable row shape and the
   // guard in the loop, the same idiom athleteReport.ts uses for the other two
   // _current views.
-  const gymLogs = await fetchAllPaged<{ athlete_id: string | null; status: string | null }>((pageFrom, pageTo) => {
+  const gymLogs = await fetchAllPaged<{ id: string | null; athlete_id: string | null; status: string | null }>((pageFrom, pageTo) => {
     let gymQuery = db
       .from('gym_session_logs_current')
-      .select('athlete_id, status')
+      .select('id, athlete_id, status')
       .eq('org_id', orgId)
       .gte('entry_date', from)
       .lte('entry_date', today)
@@ -152,13 +153,20 @@ export async function fetchSquadWeeklyReport(
     return gymQuery.range(pageFrom, pageTo);
   });
 
-  const gymByAthleteMap = new Map<string, { logged: number; completed: number }>();
+  /* §0u: "logged" is a session with at least one live set, not a row that
+   * exists (a row appears the moment the screen opens — §0g). One shared
+   * count with the athlete report, so the two cannot drift. */
+  const withSets = await fetchSessionLogIdsWithLiveSets(db, orgId, gymLogs.flatMap((r) => (r.id ? [r.id] : [])));
+  const gymRowsByAthlete = new Map<string, GymLogRow[]>();
   for (const row of gymLogs) {
     if (row.athlete_id === null) continue;
-    const cur = gymByAthleteMap.get(row.athlete_id) ?? { logged: 0, completed: 0 };
-    cur.logged += 1;
-    if (row.status === 'complete') cur.completed += 1;
-    gymByAthleteMap.set(row.athlete_id, cur);
+    const list = gymRowsByAthlete.get(row.athlete_id) ?? [];
+    list.push(row);
+    gymRowsByAthlete.set(row.athlete_id, list);
+  }
+  const gymByAthleteMap = new Map<string, { logged: number; completed: number }>();
+  for (const [athleteId, rows] of gymRowsByAthlete) {
+    gymByAthleteMap.set(athleteId, countGymSessions(rows, withSets));
   }
   const gymByAthlete: GymByAthleteRow[] = [...gymByAthleteMap.entries()]
     .map(([athlete_id, v]) => ({

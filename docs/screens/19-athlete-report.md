@@ -61,6 +61,7 @@ date of the most recent record, so a coach can see how current the picture is.
 | MET-006 | The shaded band | This athlete's own normal range | 14 days, rolling | No band until 14 days exist |
 | MET-003 | Sleep hours | Hours slept, self reported | Daily | Blank |
 | MET-007 | Session load | Rating times minutes | Per session | Blank if either is missing |
+| None | Sessions logged / completed | Gym sessions in the period. **Logged** means the session has at least one live set (`gym_set_logs_current`) — a session opened and abandoned is not logged, since the log row is written the moment the screen opens (§0u, decided 10 September 2026, built 12 September). **Completed** is the log's status. Logged is therefore a superset of completed | The period | 0 |
 | MET-010 | Acute to chronic ratio | This week's work against a typical week | 7 over 28 days | **Withheld entirely below 21 days with data**, rather than estimated |
 | MET-017 | Total distance | How far, from GPS | Per session and summed | Blank without an upload. **Premium** |
 | MET-018 | High speed distance | How far above the vendor's high speed threshold | Per session and summed | Blank. **Premium.** The threshold is the vendor's, not Fydr's |

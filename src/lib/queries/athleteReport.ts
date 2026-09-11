@@ -9,6 +9,7 @@ import { fetchMyTestSummary, type MyTestSummary } from './testing';
 import { fetchMyProgrammeSessions } from './programmes';
 import { fetchFlagsList, type FlagListRow } from './flags';
 import { fetchAllPaged } from './paged';
+import { countGymSessions, fetchSessionLogIdsWithLiveSets, type GymLogRow } from '@/lib/gymSessionCounts';
 import type { ComplianceDomain } from '@/lib/types/database';
 import type { Db } from './groups';
 
@@ -270,10 +271,10 @@ export async function fetchAthleteReport(
     // revise_gym_session_log counted twice (the superseded row AND its
     // replacement), and the report and its PDF/CSV claimed two sessions where
     // one happened. Counts of revisable rows must come from the _current view.
-    fetchAllPaged((pageFrom, pageTo) =>
+    fetchAllPaged<GymLogRow>((pageFrom, pageTo) =>
       db
         .from('gym_session_logs_current')
-        .select('status')
+        .select('id, status')
         .eq('org_id', orgId)
         .eq('athlete_id', athleteId)
         .gte('entry_date', from)
@@ -290,6 +291,13 @@ export async function fetchAthleteReport(
   ]);
 
   const sessions = await fetchAthleteSessionsInWindow(db, orgId, athleteId, from, today, timezone, loadEntries);
+
+  /* §0u: "logged" is a session with at least one live set, not a row that
+   * exists — see lib/gymSessionCounts.ts. `completed` is unchanged. */
+  const gymCounts = countGymSessions(
+    gymRows,
+    await fetchSessionLogIdsWithLiveSets(db, orgId, gymRows.flatMap((r) => (r.id ? [r.id] : []))),
+  );
 
   const dates = dateRange(from, periodDays);
   /* Built over the lead-in AND the period, then sliced back to the period. The
@@ -349,8 +357,8 @@ export async function fetchAthleteReport(
       gps,
     },
     gymAndTesting: {
-      sessionsLogged: gymRows.length,
-      sessionsCompleted: gymRows.filter((r) => r.status === 'complete').length,
+      sessionsLogged: gymCounts.logged,
+      sessionsCompleted: gymCounts.completed,
       tests: testSummary,
     },
   };

@@ -78,6 +78,7 @@ PDF so a number is never green on screen and amber on paper.
 | MET-010 | ACWR | This week against a typical week | 7 over 28 days | **Withheld entirely below 21 days with data.** A blank here means not enough history, not a ratio of zero |
 | None | Vs baseline | How this week compares with the athlete's own norm | The week | Blank without a norm |
 | MET-013 | Severity and Open | Availability in the limited form, and how many injuries are open | Now | Unknown where no record exists |
+| None | Sessions logged / completed (gym) | Per athlete, gym sessions this week. **Logged** means the session has at least one live set (`gym_set_logs_current`) — a session opened and abandoned is not logged, since the log row is written the moment the screen opens (§0u, decided 10 September 2026, built 12 September). **Completed** is the log's status. One shared count with the athlete report (`lib/gymSessionCounts.ts`) | The week | 0 |
 
 **The band shown around the ratio is a display convention, not the alert rule.**
 The rule that actually raises a flag lives in the club's own thresholds table and

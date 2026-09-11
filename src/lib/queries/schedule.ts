@@ -977,7 +977,11 @@ export type NewSessionInput = {
   title: string;
   sessionType: string;
   startsAt: string;
-  durationMin: number | null;
+  /** Whole minutes, required — §0ah (Isabella, 2026-09-11). A session with no
+   *  duration is due for rating thirty minutes after it STARTS (lib/rpeDue.ts
+   *  reads `duration_min ?? 0`), which put "Rate …" on an athlete's Today
+   *  while they were still on the pitch. Refused below before any I/O. */
+  durationMin: number;
   location: string | null;
   mdOffset: number | null;
   groupIds: string[];
@@ -994,6 +998,13 @@ export async function createSession(
   userId: string,
   input: NewSessionInput,
 ): Promise<{ error: string | null }> {
+  /* §0ah: the column is nullable for rows that already exist, so the boundary
+     is here. Checked before the live-session and season lookups so a caller
+     that bypasses the form is refused without a round trip. Whole positive
+     minutes only: the column is an integer and zero would be due at kick-off. */
+  if (!Number.isInteger(input.durationMin) || input.durationMin <= 0) {
+    return { error: 'A session needs a duration in whole minutes.' };
+  }
   await assertLiveSession(db);
   const seasonId = await fetchCurrentSeasonId(db, orgId);
   if (!seasonId) return { error: 'No current season is set up for this club.' };
@@ -1222,6 +1233,11 @@ export async function updateSession(
    * reason, at the cost of a bit more plumbing (`updated_at` now flows
    * through `Session`/`BaseSession`/`SessionDetail` to reach this call).
    */
+  /* §0ah, the other write boundary: an edit that cleared the duration would
+     recreate the null the creation path now refuses. Same rule, same words. */
+  if (!Number.isInteger(input.durationMin) || input.durationMin <= 0) {
+    return { error: 'A session needs a duration in whole minutes.' };
+  }
   const { data: updated, error } = await db
     .from('sessions')
     .update({

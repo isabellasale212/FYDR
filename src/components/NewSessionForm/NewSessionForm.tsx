@@ -50,6 +50,7 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
      view, so the refusal lands where the fix has to happen. */
   const titleRef = useRef<HTMLInputElement>(null);
   const dateRef = useRef<HTMLInputElement>(null);
+  const durationRef = useRef<HTMLInputElement>(null);
 
   function focusField(el: HTMLInputElement | null, message: string): void {
     setError(message);
@@ -65,7 +66,7 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
           title,
           sessionType,
           startsAt: zonedTimeToUtcIso(date, time, timezone),
-          durationMin: duration ? Number(duration) : null,
+          durationMin: Number(duration),
           location: location.trim() ? location.trim() : null,
           mdOffset: mdOffset.trim() ? Number(mdOffset) : null,
           groupIds: [...selectedGroups],
@@ -93,6 +94,15 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
     event.preventDefault();
     if (!title.trim()) return focusField(titleRef.current, 'Give the session a name.');
     if (!date || !time) return focusField(dateRef.current, 'Set a date and time.');
+    /* §0ah (Isabella, 2026-09-11): the duration is required. The form is
+       noValidate, so the input's own min/max never stopped a cleared field
+       reaching createSession as null — and a null duration is due for rating
+       thirty minutes after the session STARTS. The default of 60 stays; the
+       field just cannot be emptied or pushed outside its declared range. */
+    const minutes = Number(duration);
+    if (duration.trim() === '' || !Number.isInteger(minutes) || minutes < 5 || minutes > 240) {
+      return focusField(durationRef.current, 'Set a duration between 5 and 240 minutes.');
+    }
     setError(null);
     mutation.mutate();
   }
@@ -179,12 +189,14 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
             Duration (min)
           </label>
           <input
+            ref={durationRef}
             id="s-duration"
             className="field"
             type="number"
             inputMode="numeric"
             min={5}
             max={240}
+            required
             value={duration}
             onChange={(event) => setDuration(event.target.value)}
           />

@@ -47,7 +47,11 @@ of buttons rather than a dropdown.
 
 **Date and start time**, side by side.
 
-**Length**, in minutes.
+**Length**, in minutes, 5 to 240, required (since 12 September 2026, §0ah:
+a session with no length would be due for rating thirty minutes after it
+starts). It opens on 60 and cannot be emptied; the form refuses to submit
+and moves focus to the field, and `createSession` refuses a missing or
+non-positive duration on its own.
 
 **Location.**
 
@@ -74,7 +78,7 @@ MET-007.
 | Title | Top of the form | Names the session | Stays here | Nothing until submitted | Coach and sport scientist | None | Never |
 | Kind buttons | Below the title | Chooses the kind | Stays here | Nothing until submitted | Same | None | Never |
 | Date and time | Middle | Sets when | Stays here | Nothing until submitted | Same | None | Never |
-| Length | Middle | Sets how long | Stays here | Nothing until submitted | Same | None | Never |
+| Length | Middle | Sets how long; required, 5 to 240 whole minutes — the form refuses to submit without it | Stays here | Nothing until submitted | Same | None | Never |
 | Location | Middle | Sets where | Stays here | Nothing until submitted | Same | None | Never |
 | Group chips | Lower | Chooses who is expected | Stays here | Nothing until submitted | Same | None | Never |
 | **Create session** | Foot | Writes the session and returns to the schedule on that date | `/schedule?date=` | **Creates one session** | Coach and sport scientist | The form is the confirmation. There is no second dialogue | Disabled while saving, and the label changes to say so |

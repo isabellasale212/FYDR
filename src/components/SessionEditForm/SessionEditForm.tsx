@@ -65,7 +65,7 @@ export function SessionEditForm({ orgId, session, groups, timezone, titleSuggest
           title,
           sessionType,
           startsAt: zonedTimeToUtcIso(date, time, timezone),
-          durationMin: duration ? Number(duration) : null,
+          durationMin: Number(duration),
           location: location.trim() ? location.trim() : null,
           mdOffset: mdOffset.trim() ? Number(mdOffset) : null,
           groupIds: [...selectedGroups],
@@ -97,6 +97,13 @@ export function SessionEditForm({ orgId, session, groups, timezone, titleSuggest
     event.preventDefault();
     if (!title.trim()) return setError('Give the session a name.');
     if (!date || !time) return setError('Set a date and time.');
+    /* §0ah: the same rule as NewSessionForm — an edit cannot clear the
+       duration, or the session's rating falls due thirty minutes after it
+       starts. */
+    const minutes = Number(duration);
+    if (duration.trim() === '' || !Number.isInteger(minutes) || minutes < 5 || minutes > 240) {
+      return setError('Set a duration between 5 and 240 minutes.');
+    }
     setError(null);
     mutation.mutate();
   }
@@ -186,6 +193,7 @@ export function SessionEditForm({ orgId, session, groups, timezone, titleSuggest
             inputMode="numeric"
             min={5}
             max={240}
+            required
             value={duration}
             onChange={(event) => setDuration(event.target.value)}
           />

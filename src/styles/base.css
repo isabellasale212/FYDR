@@ -1637,17 +1637,22 @@ body:has(.phone) {
   gap: var(--sp-12);
   align-items: center;
   padding: var(--sp-12) var(--pad-card-x, 18px);
+  /* The board's "row 44px min" (ATH-ADULT-12): a row with one line on the
+     left — a test with no result — landed at 39px from padding alone, and
+     the gym rows are links. */
+  min-height: 44px;
 }
 /* §7.3 says "12px/600 faint date". Muted instead, and this is the one place
    this app departs from a §2 literal on purpose.
    --faint is #929aa5, 2.84:1 on a light card. That is the right ink for a mark
    whose meaning is carried by something beside it — the day letter above a date
-   in full ink, the chevron on a row that is itself the link, the em dash beside
-   the words "not submitted". This date is none of those: it is the row's
-   identity, the only place it appears, and 28 of them stack down the wellness
-   list. --muted is 6.0:1 and reads at 12px.
-   The em dash keeps --faint (.hist-value[data-missing] below): §9 rule 1 asks
-   for it there, and "not submitted" sits next to it saying the same thing. */
+   in full ink, the chevron on a row that is itself the link, the words "Not
+   submitted" beside a detail line that says what is absent. This date is none
+   of those: it is the row's identity, the only place it appears, and 28 of
+   them stack down the wellness list. --muted is 6.0:1 and reads at 12px.
+   The absent value keeps --faint (.hist-value[data-missing] below): §9 rule 1
+   asks for it there, and the detail line sits next to it saying the same
+   thing. */
 .hist-date {
   margin: 0;
   font-size: var(--fs-12);
@@ -1667,6 +1672,10 @@ body:has(.phone) {
   font-size: var(--fs-16);
   font-weight: 700;
   letter-spacing: -0.01em;
+  /* Right-aligned in its track (the board's "value right-aligned"): with the
+     wellness track at 92px a left-aligned score sat mid-row, a column's width
+     from the words in the rows around it. */
+  text-align: right;
 }
 /* Spec §7.3's footer row: flex: none, border-top hairline, and a 13.5/600
    accent link. The size and weight live on the link rather than the row, so a
@@ -1711,11 +1720,16 @@ body:has(.phone) {
 .hist-foot a:hover {
   text-decoration: underline;
 }
-/* A day with nothing logged shows the blank marker, quieter than a score —
-   it is the absence of a number, not a low one. */
+/* A day with nothing logged says so in words — "Not submitted", "Not logged"
+   — quieter than a score, at the detail line's size: it is the absence of a
+   number, not a low one, and a dash read as a low one at a glance
+   (ATH-ADULT-12 board, 2026-09-12). One line, always: the value track is
+   sized per list to hold the longest word. */
 .hist-value[data-missing] {
   color: var(--faint);
-  font-weight: 500;
+  font-size: var(--fs-13);
+  font-weight: 600;
+  white-space: nowrap;
 }
 .hist-corrected {
   padding: 0 var(--pad-card-x, 18px) var(--sp-12);
@@ -1733,13 +1747,17 @@ body:has(.phone) {
   gap: var(--sp-14);
   margin: var(--sp-2) 0 var(--sp-10);
 }
-/* Spec §3: hero figure 38/800/−0.04em, line-height 1.
+/* Spec §3 gave the hero figure 38/800/−0.04em, line-height 1; the ATH-ADULT-12
+   board (2026-09-12) sets it at 48 — "figure --t-num-hero 48px / --accent" —
+   and --fs-48 is a step this system has, so the rule moved to it rather than
+   to a token named for the board. The session detail (ATH-ADULT-13) reads the
+   same rule for its two figures.
    nowrap is kept from the measured fix that put it here: "41.5 cm" broke after
    the number and dropped "cm" onto a line of its own, doubling the headline to
    84px. */
 .rd-value {
   margin: 0;
-  font-size: var(--fs-38);
+  font-size: var(--fs-48);
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.04em;

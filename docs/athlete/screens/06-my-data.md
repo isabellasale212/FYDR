@@ -29,6 +29,14 @@ four readiness days, three of everything else — under a **"See all N ->"** lin
 that expands it in place via `?all=1`. There is no all-days, all-sessions or
 all-tests page; the link is that route, not a new one.
 
+**An absent value in a list row is words, never a dash and never a zero**
+(ATH-ADULT-12, 12 September 2026). A wellness day with no entry reads "No
+morning check-in" on the detail line and **"Not submitted"** in the value
+column; a gym session with no tonnage and a test with no result read **"Not
+logged"**. The words sit in the value column at 13px/600 in `--faint`, on one
+line — the wellness value track is 92px to hold them. The Sessions table keeps
+the app-wide table blank ('·') until its own rebuild; see §14.
+
 The wellness region is a readiness line with a 14 day rolling mean, a plus or
 minus 1 SD band, and (new) a filled area beneath the line, drawn per segment so a
 missing day leaves a gap in the fill exactly as it leaves one in the line.
@@ -48,11 +56,11 @@ and its flags are delivered to a tab nobody can open.
 
 | Metric ID | Label | Meaning | Window | When missing |
 |---|---|---|---|---|
-| MET-001 | Readiness | Their own readiness | Daily, charted | **A day with no entry is a gap, never a zero** |
+| MET-001 | Readiness | Their own readiness | Daily, charted | **A day with no entry is a gap on the chart, never a zero; "Not submitted" in the list** |
 | MET-006 | The shaded area and dashed line | 14 day rolling mean plus or minus 1 SD | 14 days | no band until there is history |
 | MET-003 | Sleep | Hours slept | Daily | gap |
 | MET-004 | Soreness | 1 to 5, 5 is none | Daily | gap |
-| MET-028 | Test results | Their own results | All | empty |
+| MET-028 | Test results | Their own results | All | "Not logged" |
 | MET-029 | Personal best | **Best ever, not best in window** | All time | empty |
 | MET-037 | Board position | Where they sit | Per board | board hidden |
 
@@ -167,3 +175,26 @@ wraps instead of being clipped — measured at 22.5px past the card edge on
 matched by substring and a bare `seg` would also have exempted `.lbw-segmented`,
 `.sg-segment` and `.dash-stat-bar-seg` — two of them staff controls that must
 stay at 6px.
+
+## 14. What the 12 September pass (ATH-ADULT-12) changed, and what it recorded
+
+Built from the "ATH-ADULT-12-13 · FINAL" board, A items only — the rest is in
+`docs/overnight-records-2026-09-12.md` with a recommendation per item:
+
+- **Absent values are words** (§3): "Not submitted" / "Not logged" replace the
+  em dash in the value column of the wellness, gym and tests lists; the
+  wellness detail line reads "No morning check-in"; a test with no result has
+  no date line (the value column says it).
+- **The hero figure is 48px** (`--fs-48`, a token that exists), from 38.
+- **A history row is at least 44px.**
+
+Recorded, not built: five segments on the track (reverses §13's three, and the
+guard), the live segment as a white card (reverses the accent-filled pill),
+uncoloured deltas measured against the 28-day average (reverses §13's green ▲
+and is a different comparison from "on last week"), a plain-English fact line
+per hero, Sessions and Nutrition as hero-card tabs with an RPE chart, empty
+states that name the last entry and offer "Show this season", Tests listing
+only assigned tests, a period menu on the title line, the tab bar without the
+gold gym glyph, readiness "out of 5" (MET-001 is 0–100), and the two chart
+tokens `--chart-h` / `--chart-stroke`.
+

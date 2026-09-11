@@ -46,16 +46,16 @@ import { requireAthlete } from '@/lib/session';
 
 export const metadata = { title: 'My data · Fydr' };
 
-/** The absent-value marker in a history row, 23e. BLANK ('·', U+00B7) is the
- *  right mark inside a dense table, where a row is one line and a dot reads as
- *  a held space. In these lists it is not: measured at 22px it renders 5.5px
- *  wide in --faint, a speck beside a two-digit score, and the eye reads it as
- *  a rendering fault rather than as "nothing here". An em dash is the same
- *  statement at a size that carries it.
- *
- *  Only the display changes. Absent is still absent and still never zero —
- *  the row says "not submitted" in words beside it. */
-const NO_VALUE = '\u2014';
+/* AN ABSENT VALUE IS WORDS in these lists — "Not submitted", "Not logged" —
+   in the value column, never a dash and never a zero. ATH-ADULT-12
+   (2026-09-12), which also settles what 09 and 10 deferred to it: a dash
+   reads as a low value at a glance, and the em dash that stood here (chosen
+   over 23e's '·' because the dot rendered as a speck) was still a mark the
+   reader had to decode. The words are the statement itself. BLANK ('·') is
+   still right inside a dense TABLE, where a row is one line and a dot reads
+   as a held space; the Sessions table keeps it until its own rebuild.
+
+   Absent is still absent and still never zero. */
 
 /** The rolling band the readiness chart draws around the line, and the span of
  *  the readiness view now that the period control has gone. */
@@ -869,9 +869,13 @@ async function WellnessTab({
       <section
         className="card flush"
         aria-labelledby="wellness-entries-title"
-        /* Spec §7.3: the value column is a fixed 54px on wellness, so the
-           column's left edge does not move when a "—" replaces a score. */
-        style={{ '--hist-val-w': '54px' } as React.CSSProperties}
+        /* Spec §7.3 fixed the value column at 54px on wellness so the
+           column's left edge does not move when an absent day replaces a
+           score. 92px since ATH-ADULT-12 — the tests column's width — because
+           the absent day is now the words "Not submitted" (~88px at 13px/600)
+           and the track must hold them on one line. Still fixed, for the same
+           reason. */
+        style={{ '--hist-val-w': '92px' } as React.CSSProperties}
       >
         {/* Fydr Athlete App.dc.html 23e: a row list, not a four-column table.
             At 390px the table was rendering "Missing" and two columns of dots
@@ -903,18 +907,20 @@ async function WellnessTab({
                       </span>
                     ) : null}
                   </p>
-                  {/* "not submitted", never a row of zeros — the same rule the
-                      chart footer states. Sleep and soreness because those are
-                      the two the design shows, and the two an athlete recognises
-                      as the reason a score moved. */}
+                  {/* Never a row of zeros — the same rule the chart footer
+                      states. Sleep and soreness because those are the two the
+                      design shows, and the two an athlete recognises as the
+                      reason a score moved. An absent day says what is absent
+                      here and "Not submitted" in the value column, the
+                      board's row. */}
                   <p className="hist-detail num">
                     {entry
                       ? `sleep ${dash(entry.sleep_hours)} h · soreness ${dash(entry.soreness)}`
-                      : 'not submitted'}
+                      : 'No morning check-in'}
                   </p>
                 </div>
                 <p className="hist-value num" data-missing={entry ? undefined : ''}>
-                  {entry ? formatNumber(entry.readiness_score, 0) : NO_VALUE}
+                  {entry ? formatNumber(entry.readiness_score, 0) : 'Not submitted'}
                 </p>
               </div>
               {corrected ? (
@@ -1336,10 +1342,10 @@ function dayMonth(iso: string, timezone: string): string {
 /** Tonnes once there are tonnes to speak of, kilograms below that.
  *  A 360 kg session shown as "0.4 t" has lost a digit of real precision to
  *  keep a unit consistent; the unit is the cheaper thing to vary, and every
- *  row states its own. Null is the blank marker, never 0 — a session logged
+ *  row states its own. Null is "Not logged", never 0 — a session logged
  *  without loads is not a session with no load in it. */
 function volumeLabel(kg: number | null): string {
-  if (kg === null) return NO_VALUE;
+  if (kg === null) return 'Not logged';
   return kg >= 1000 ? `${formatNumber(kg / 1000, 1)} t` : `${formatNumber(kg, 0)} kg`;
 }
 
@@ -1604,15 +1610,18 @@ async function TestingTab({
                     <p className="hist-name" title={TEST_NAME_EXPLAINER[s.name.toLowerCase()]}>
                       {s.name}
                     </p>
-                    <p className="hist-date">
-                      {s.latestDate ? formatDate(s.latestDate, timezone) : 'No result yet'}
-                    </p>
+                    {/* No date line when there is no result: the value column
+                        says "Not logged", and a second line saying the same
+                        thing is the redundancy ATH-ADULT-12's rows drop. */}
+                    {s.latestDate ? (
+                      <p className="hist-date">{formatDate(s.latestDate, timezone)}</p>
+                    ) : null}
                   </div>
                   <div className="hist-right">
                     <p className="hist-value num" data-missing={s.latestValue === null ? '' : undefined}>
                       {s.latestValue !== null
                         ? withUnit(s.latestValue.toFixed(s.decimal_places), s.unit)
-                        : NO_VALUE}
+                        : 'Not logged'}
                     </p>
                     {st.kind === 'off' ? (
                       <p className="hist-delta num">

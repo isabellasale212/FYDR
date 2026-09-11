@@ -292,3 +292,125 @@ neutral deviation line ("Prescribed 100 kg · **+2.5**" in `--muted`, real minus
 - **D1** §0v (My data marks a corrected session; built) already shows both values on My data — the strip on the logger would be the same fact in a second place; keep the wording identical when built.
 
 **Built:** nothing. **Not built:** C1–C2.
+
+---
+
+## ATH-ADULT-12 — My data
+
+**Source.** `docs/designs/ath-adult-12-13 final/` — board "ATH-ADULT-12-13 · FINAL" (14 frames),
+`notes.md`, the Claude Code prompt. Screen: `src/app/(athlete)/my-data/page.tsx` (1,926 lines,
+five `?tab=` routes, three segments drawn).
+
+**The board is a different information architecture.** Five tabs on the segmented track
+(Wellness, Gym, Sessions, Nutrition, Tests), every tab a hero card (eyebrow, 48px figure, a
+delta that never judges, a plain-English fact line, one chart) over a list card with a
+denominator caption, and words for every absent value. The live screen draws three segments
+with a footer card reaching the other destinations, hero cards on Wellness/Gym/Tests only,
+tables on Sessions and Nutrition, a period `<select>` under the track, and an em dash for an
+absent value. The prompt's prerequisites ("the new design system and kit components are in
+code", "the gym logger (09-11) is built") are not met — there is no kit, and 09's rebuild
+(C1) is recorded, not built.
+
+**Step 1 of the prompt, from the code.** (1) Readiness: MET-001 is a 0–100 composite,
+`readiness_score` on `wellness_entries`, headlined as such today; the board's "3.8 of 5"
+would be a different metric (D5). (2) Programme blocks carry no dates the athlete surface
+reads; "since {date}" is the fallback. (3) Last entry per domain, unbounded by the period:
+no query — `fetchMyEarliestRecord` gives the *earliest* across all domains for the `all`
+window, nothing gives the latest per domain (C6). (4) Corrections: no per-session revised
+flag — the detail page reads `fetchGymSetRevisionChains` per session (§0v), the list reads
+nothing; `total_volume_kg` is **stored** and 0045's `revise_gym_set_log` recomputes it from
+live sets, so "recomputed after a correction" is true. (5) Week boundary: the nutrition
+check-in uses a Monday week (`weekStart`); the training tab has no "this week" (C3).
+(6) Nutrition: the live check-in asks **one** question (08 D2 stands). (7) Tests: `fetchMyTestSummary`
+is built from `test_results`, so only definitions with at least one result are listed —
+an assigned test with no result does not appear at all (the `latestValue === null` branch
+is defensive), and "never assigned" is not a distinction the read makes (C7). (8) Usual-range band: MET-006, a 14-day rolling mean ±1 SD
+(`rollingBand`, `ROLLING_DAYS = 14`) — defined, in the registry, already drawn.
+
+### A. Buildable now — existing tokens, no behaviour change
+
+| # | Change | Before | After (real tokens) |
+|---|---|---|---|
+| A1 | An absent value is words, never a dash | `NO_VALUE` (em dash) in `.hist-value[data-missing]` on the wellness, gym and tests lists; detail line "not submitted" | "Not submitted" (wellness, detail "No morning check-in"), "Not logged" (gym tonnage; the tests list's defensive no-result branch) in the value column; `.hist-value[data-missing]` `--fs-13` / 600 / `--faint`; `NO_VALUE` retired from this page |
+| A2 | The wellness value column holds the word | `--hist-val-w: 54px` | `92px` (the tests column's width) — "Not submitted" at 13px/600 measures ~88px; the column stays fixed so its left edge still does not move |
+| A3 | Hero figure at the board's size | `.rd-value` `--fs-38` | `--fs-48` (exists; `.brand .wm` is its one other reader) |
+| A4 | Rows at the tap floor | `.hist-row` padding-only (a date-only row lands at 39px) | `min-height: 44px` |
+| A5 | List captions | already "n = 24 of 28 days" (wellness), "tonnage from logged sets" (gym), "latest against your PB" (tests) | unchanged |
+| A6 | "See all N →" as the last row, 44px | already `.hist-more` at 12+20+12 | unchanged |
+
+A1 resolves 09 D1 / 10 D1 (deferred to this flow): the missing-value form on My data is a
+word; the logger follows when C1 of 09 is built. The training table keeps the app-wide
+table blank (`BLANK`, '·') until its own rebuild (C2) — a table cell is not a list row, and
+that convention is product-wide.
+
+### B
+
+| # | Board | Ours | Note |
+|---|---|---|---|
+| B1 | `--chart-h: 84px`, `--chart-stroke: 2.5px` | no chart tokens; the readiness SVG is 880-unit viewBox scaled, the gym bars a fixed 72px | new tokens — flagged per §0.01, not built. **Recommend:** add both when the Sessions chart (C2) is built, one commit, `06-design-system.md` updated with it |
+| B2 | `--blue-200` for prior values in every chart | no such token; the readiness line is `--chart-wellness`, gym bars `--chart-gym` | a new colour role. **Recommend:** map to `--wash-accent-strong` if the accent-and-neutrals rule is confirmed (D7 first) |
+| B3 | `--t-body-2xs` segment labels (~11px) for five segments in 343px | `.md-seg` `--fs-14` | a value exists (`--fs-11`) but the segment count is D1's |
+| B4 | `--hit-lg` 56px empty-state button | no such token | with C6 |
+| B5 | `--pill-accent` / `--border-accent-w` for the corrected markers | `.pill-neutral` today; `--wash-accent` / `--border-accent` exist | **Recommend:** the existing neutral pill (§0v) stays; retint with 13's C3 |
+| B6 | Eyebrow in `--faint` | `.eyebrow` is `--muted`, shared with Today's section titles | out of this flow's scope; **Recommend:** leave |
+
+### C. Behaviour
+
+- **C1 Five tabs** — also D1. **C2 Sessions and Nutrition as hero-card tabs** (RPE eleven-bar chart with this week solid, a Monday-week boundary, "n = 3 rated sessions this week"; nutrition weeks as question/answer rows). **Recommend:** their own brief after D1 is decided; the RPE week needs `docs/metrics.md` entries for "RPE this week" and "28-day RPE mean".
+- **C3 The plain-English line** ("Readiness steady over 28 days, averaging 67.", "Two CMJ results is not enough to show a trend.") — needs a rule for "steady" and a minimum n. **Recommend:** state the rule in `metrics.md` first; facts only.
+- **C4 Deltas against the 28-day average** ("↓ 0.1 vs your 28-day average") — the live delta is "on last week" (MET-001 against the prior week). A different comparison is a different metric. **Recommend:** decide with C3.
+- **C5 Gym hero "Back squat best 102.5 kg, up 5 kg this block"** — the live hero is "12 sets done of 14 assigned"; a per-exercise best needs 09's C6 query and dated blocks. **Recommend:** after 09 C6.
+- **C6 Empty period with older data** — "Nothing in the last 28 days." + "Your last gym session was Thu 13 Aug, 29 days ago…" + a "Show this season" button that does not widen the period on its own; "Nothing on record yet." for never. Needs a latest-date-per-domain query unbounded by the period. **Recommend:** `fetchMyLatestRecordByDomain`, then the three empty states; the button is a Link to `?period=season`.
+- **C7 Tests lists only assigned tests, and an assigned test with no result reads "Not logged"** — today neither case is listed (see step 1, item 7). **Recommend:** a read of the athlete's assigned definitions joined to results, in `TestingTab`; own commit.
+- **C8 Period on the title line as a menu** with the current option carrying the wash and a tick — `PeriodSelector` is a shared staff `<select>` (ten staff pages). A custom menu is a new component. **Recommend:** keep the select; if the menu is wanted, it is an athlete-only component, own brief.
+- **C9 The five-segment row wraps at Larger Text** — moot at three segments; with D1.
+
+### D. Collisions and spec conflicts
+
+- **D1 Five segments** reverses the 8 September decision — `06-my-data.md` §3/§13 ("six segments to three") and `test-my-data-redesign.ts` ("Wellness, Gym and Tests are the three segments", "Training and Nutrition are not among them", the `md-more` footer card with its three routes). **Not built. Recommend:** accept the board's five — the objection that drove the footer card (three destinations orphaned) is answered by five tabs, and Leaderboards keeps its footer row; one commit rewrites `SEGMENTS`, the guard and §13.
+- **D2 The active segment as a white card with a shadow** reverses `.md-seg[aria-selected='true']`'s recorded decision ("A SOLID ACCENT-FILLED PILL, not the card-coloured chip with a shadow that 23e drew") and the guard's "the live segment is an accent-filled pill". **Recommend:** with D1.
+- **D3 Deltas never coloured** (`--muted`, figure `--text` bold, ↑ ↓ not ▲ ▼) reverses `.rd-delta[data-dir='up']` → `--good-text` (§13, guarded: "▲ on last week is green now") and the amber `down`/`off`. **Recommend:** accept the board — "a lower RPE and a lower readiness do not mean the same thing" is the better rule — one commit for `.rd-delta`, `.hist-delta`, the guard and §13.
+- **D4 The tab bar drops the gold gym glyph** — `AthleteTabBar` records "the only coloured icon in the product — gold in both themes, inheriting nothing from the active state" (Spec §6), and 09 D2 kept the domain colour on the bar. The bar is on every athlete screen. **Recommend:** decide once for the shell, own commit.
+- **D5 Readiness "3.8 of 5"** — MET-001 is 0–100 in `docs/metrics.md` and both apps; the prompt itself says the out-of-5 figure is a placeholder until the composite is confirmed. The composite IS defined. **Recommend:** keep 0–100; nothing to change.
+- **D6 Nutrition history with two questions** — 08 D2: the live check-in has one. **Recommend:** as recorded there.
+- **D7 The band in `--wash-accent` and the line in `--accent`** — `WellnessChart` is shared with staff pages (`--chart-wellness`). **Recommend:** if accepted, an athlete-only prop, not a change to the shared colours.
+- **D8 Collisions in the queue:** `.rd-value`, `.hist-row` and `.hist-value` are edited here and by no other flow; 13 *reads* `.rd-value` and edits nothing shared, so 12 goes first and 13 is verified against the settled size. STAFF-SS-01 touches no athlete class.
+
+**Filed defects for 12:** §0v — built (`6398493`). §0g (readiness area fill on short runs) — cosmetic, no direction. §0h (vertical rhythm) — needs a decision.
+
+**Built:** A1–A4. **Not built:** B1–B6, C1–C9, D1–D7.
+
+---
+
+## ATH-ADULT-13 — One gym session from history
+
+**Source.** Same board: frames "Session detail", "Session detail, one corrected set",
+"Correcting a set from history", "Session detail · small phone". Screen:
+`src/app/(athlete)/my-data/gym/[gymSessionLogId]/page.tsx` and `GymSessionSetsList.tsx`.
+
+### A
+
+| # | Change | Before | After |
+|---|---|---|---|
+| A1 | One way back, full width, named for its destination | a `.tiny` text link "Back to gym history" (15px hit area, §0w) beside the shell's Back button | a `.subm` footer with the same label as a full-width `.btn-ghost` (secondary — the board reserves the primary for Save correction); the shell's Back stands down on `/my-data/gym/` as it does on the sheets, so there is one way back. Label pinned by `test-back-consistency` — unchanged. Closes the third item of §0w |
+| A2 | The summary line is the hero | one `.import-sub` line "6 sets logged · session RPE 5.8 · 4050 kg total" | a `.card` hero: "Total volume" `4050` (`.rd-value`, `--fs-48`) with "6 sets across 2 exercises" beneath, "Session RPE" `5.8` (or "Not rated"); the original line kept under it; the "kg" unit as `.rd-unit`. All from data the page already reads |
+| A3 | Totals admit a correction | "6 sets logged · …" | "6 sets · recomputed after a correction" under the volume when any set has a prior revision (true: 0045 recomputes `total_volume_kg` from live sets, and this page sums live sets) |
+| A4 | Absent set values are words | `'—'` in the reps/load cells and `dash()` in "What you reported" | "Not logged" in `--faint` |
+| A5 | The footer note | "Correcting a set keeps the original, marks it superseded, and records a linked revision — nothing is overwritten." | the board's "A correction keeps the original. Corrections stay open on a finished session." |
+
+### C
+
+- **C1 The eyebrow "Gym · Lower A · complete"** — `fetchGymSessionLog` selects neither the programme session's name nor `status`. **Recommend:** extend the select (`status`, `programme_sessions(name)`); one commit with C3.
+- **C2 Tap a row to correct; the footer swaps to Save correction (primary) and Cancel; no per-row "Correct" buttons; the logger's panel** — the panel today is inline in the table row with its own Save/Cancel. New interaction. **Recommend:** with 09's C1/11's C1, so the panel is one component.
+- **C3 "Corrected · was 100 kg × 8" on the row, a "Corrected" pill on the history list row, "Set 1 was corrected on Fri 14 Aug. Both values are kept on record."** — the list has no per-session revised flag (a query), and the row marker needs a 3px bar the system has no pattern for (B5 of 12). **Recommend:** flag on `gym_session_logs_current` or a chained read; then the row marker.
+- **C4 "4 of 6 shown"** on a small phone — a truncated set list. **Recommend:** don't: a session's sets are one list, and 667px is not the floor.
+- **C5 No tab bar on this screen** — the shell draws the bar on every athlete route; hiding it per route is a shell change. **Recommend:** with D4 of 12 (the shell decision).
+
+### D
+
+- **D1 §0v's "What you reported" card** (built 2026-09-10, with its reasoning for no "by" line) stays as built; C3 moves the same fact onto the row. **Not touched here.**
+- **D2 "Not logged" for a set value** — 09/10 D1, resolved by 12 A1: words.
+
+**Filed defects for 13:** §0w third item (the 15px back link, "left open deliberately because the pair itself is ATH-ADULT-13's redundancy question") — closed by A1. §0v — built.
+
+**Built:** A1–A5. **Not built:** C1–C5.

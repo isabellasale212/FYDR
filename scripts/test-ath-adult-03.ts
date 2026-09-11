@@ -101,7 +101,10 @@ console.log('A1. the footer is pinned to the viewport, on a normally scrolling p
   assert(/box-shadow:\s*var\(--shadow\)/.test(subm), 'with --shadow (B5)');
   assert(/calc\(-1 \* var\(--sp-20\)\)/.test(subm) && /var\(--sp-20\)/.test(/padding:\s*([^;]+);/.exec(subm)?.[1] ?? ''), 'it bleeds to the shell edge — the negative inline margin undoes .phone-body\'s 20px gutter and the padding puts the button back on the content column');
   const inCard = rule('.card > .subm');
-  assert(/--pad-card-x/.test(inCard) && /--pad-card-y/.test(inCard) && /border-end-start-radius:\s*var\(--r-card\)/.test(inCard) && /border-end-end-radius:\s*var\(--r-card\)/.test(inCard), 'inside a card (the report form) it bleeds to the card\'s edge instead and takes the card\'s two bottom corners, from the card token');
+  /* `inherit`, since the ATH-ADULT-02 follow-up (2026-09-12): athlete cards
+     are --r-toggle and staff cards --r-card, and this band must close
+     whichever card it sits in. */
+  assert(/--pad-card-x/.test(inCard) && /--pad-card-y/.test(inCard) && /border-end-start-radius:\s*inherit/.test(inCard) && /border-end-end-radius:\s*inherit/.test(inCard), 'inside a card (the report form) it bleeds to the card\'s edge instead and inherits the card\'s two bottom corners');
 }
 
 console.log('\nA1/A2. nothing in the footer is dimmed, and a blocked action is not `disabled`');

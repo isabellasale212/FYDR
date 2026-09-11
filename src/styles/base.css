@@ -1492,6 +1492,17 @@ body:has(.phone) {
 }
 .phone-body .card {
   padding: var(--pad-card-y) var(--pad-card-x);
+  /* ATHLETE CARDS TAKE THE 9px TOKEN — Isabella's decision, 11 Sept 2026, the
+     second token-value decision under CLAUDE.md §0.01 and recorded in the
+     to-do list's decisions log. Not a new token: --r-toggle is 9px already;
+     this rule is repointed at it. Athlete route group only — the global .card
+     above keeps --r-card for the staff app. .empty, .avail-banner and
+     .gym-ex-card, the athlete surfaces that draw a card by another class,
+     follow it below and in their own blocks. */
+  border-radius: var(--r-toggle);
+}
+.phone-body .empty {
+  border-radius: var(--r-toggle);
 }
 /* Spec §7.3 gives the hero card 16px 18px 14px — two pixels less underneath,
    because a chart's own bottom padding already sits inside its box. Selected
@@ -1523,33 +1534,10 @@ body:has(.phone) {
   padding: calc(22px + env(safe-area-inset-top, 0px)) 0 14px;
   min-height: 44px;
 }
-/* Spec §7.1: 42px, round. Filled with the accent rather than tinted with it,
-   white on top, and set in a soft accent ring — the athlete's own initials are
-   the first thing on their first screen, and a 12%-tint circle did not read as
-   anything. A gradient was tried here and rejected: this is a flat fill. */
-.av {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: var(--on-accent);
-  font-size: var(--fs-15);
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  box-shadow:
-    0 0 0 3px var(--wash-accent),
-    0 4px 12px rgb(var(--accent-rgb) / 0.4);
-}
-/* An uploaded photo keeps the ring and the lift, but not the fill — there is
-   nothing to fill behind an image. */
-img.av {
-  background: none;
-  object-fit: cover;
-}
+/* THE HEADER AVATAR IS GONE — ATH-ADULT-02 follow-up, Isabella's decision
+   2026-09-11: the greeting is the date line and the name, as the board draws
+   it. The 42px accent circle (.av / img.av) that stood here had Today as its
+   only caller, so its rules went with it rather than being left orphaned. */
 /* Spec §3: screen title 24/800/−0.03em. */
 .hd .d {
   font-size: var(--fs-24);
@@ -2147,7 +2135,8 @@ a.hist-row:focus-visible {
    is somewhere for it to go. Was a stacked block with the eyebrow above. */
 .wk-towards {
   padding: var(--sp-12) var(--pad-card) var(--sp-14);
-  border-top: 1px solid var(--hair);
+  /* No hairline above it since 2026-09-12: the strip that used to sit above
+     it in this card is now its own section above To do. */
   display: flex;
   align-items: center;
   gap: var(--sp-12);
@@ -2172,6 +2161,27 @@ a.hist-row:focus-visible {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: var(--sp-4);
+}
+/* THE COMPACT STRIP, above To do — ATH-ADULT-02 follow-up, Isabella's decision
+   2026-09-11. The same seven columns and the same MD labels, on the ground
+   rather than in a card: no card padding, each day tighter (gap --sp-2,
+   padding --sp-4), the day number a 24px circle at --fs-13 instead of the
+   card's 30px at --fs-14. Every value is an existing token; the day fills and
+   the match border are unchanged, so a training day still reads as a wash and
+   a matchday as an outline. Measured at 375×812 with the availability line
+   showing: the strip is 70px tall and To do's first row moved from 244px to
+   367px — still inside the fold, with the whole row (to 443px) in view. */
+.wk-compact {
+  padding: 0;
+}
+.wk-compact .wk-day {
+  gap: var(--sp-2);
+  padding: var(--sp-4) 0;
+}
+.wk-compact .wk-day .wn {
+  width: var(--sp-24);
+  height: var(--sp-24);
+  font-size: var(--fs-13);
 }
 /* Spec §7.1: each column carries its own state as a fill and a border —
    training a wash, match a bordered outline, rest neither. That is what
@@ -2488,16 +2498,26 @@ a.hist-row:focus-visible {
 /* The one-line banner above To do when the athlete is not fully available:
    the same banner shape ATH-ADULT-01 gave the sign-in refusal, with a link's
    job — it goes to the card below. The message is --text; the tone is in
-   the fill, the border and the dot. Measured 13.95:1 / 10.30:1 (warn) and
-   13.19:1 / 10.90:1 (bad), light / dark. */
+   the fill, the border and the dot.
+
+   THE FILL IS MIXED INTO --surf, NOT LAID OVER THE GROUND (ATH-ADULT-02
+   follow-up, 2026-09-12). It shipped as --wash-warn / --border-warn — a 16%
+   amber alpha — which reads amber on a neutral page and cancels to grey-beige
+   on the athlete app's blue ground: rgb(246,171,47) at 0.16 over #dbe7fb
+   composites to about rgb(222,224,226), the exact cancellation the
+   availability card's own comment below describes. The card's rule — the
+   tone mixed into the card surface — gives rgb(254,245,230) on any ground,
+   so the line now takes it. Measured by test-ath-adult-02-followup.ts:
+   --text on the mix 15.6:1 / 10.9:1 (warn) and 15.0:1 / 11.4:1 (bad),
+   light / dark. */
 .avail-line {
   display: flex;
   align-items: flex-start;
   gap: var(--sp-10);
   padding: var(--pad-card);
   border-radius: var(--r-tab);
-  border: 1px solid var(--border-warn);
-  background: var(--wash-warn);
+  border: 1px solid rgb(var(--warn-rgb) / 0.4);
+  background: color-mix(in srgb, rgb(var(--warn-rgb)) 12%, var(--surf));
   color: var(--text);
   font-size: var(--fs-13);
   font-weight: 600;
@@ -2514,8 +2534,8 @@ a.hist-row:focus-visible {
   background: var(--warn);
 }
 .avail-line[data-tone='bad'] {
-  border-color: var(--border-bad);
-  background: var(--wash-bad);
+  border-color: rgb(var(--bad-rgb) / 0.4);
+  background: color-mix(in srgb, rgb(var(--bad-rgb)) 12%, var(--surf));
 }
 .avail-line[data-tone='bad']::before {
   background: var(--bad);
@@ -2557,7 +2577,8 @@ a.hist-row:focus-visible {
    top. */
 /* Spec §7.1: padding 16px 18px, gap 14. */
 .avail-banner {
-  border-radius: var(--r-card);
+  /* --r-toggle, the athlete card radius since 11 Sept 2026 — see .phone-body .card. */
+  border-radius: var(--r-toggle);
   padding: var(--sp-16) var(--sp-18);
   display: flex;
   gap: var(--sp-14);
@@ -3142,8 +3163,11 @@ a.hist-row:focus-visible {
 .card > .subm {
   margin: var(--sp-14) calc(-1 * var(--pad-card-x)) calc(-1 * var(--pad-card-y));
   padding-inline: var(--pad-card-x);
-  border-end-start-radius: var(--r-card);
-  border-end-end-radius: var(--r-card);
+  /* inherit, not a token: the card's corners are --r-card on staff screens and
+     --r-toggle on athlete ones (11 Sept 2026), and this band must match
+     whichever card it closes. */
+  border-end-start-radius: inherit;
+  border-end-end-radius: inherit;
   box-shadow: none;
 }
 /* A1: the count, its own line, --fs-13 / 700 / --text — 17.9:1 on --surf in
@@ -3574,7 +3598,7 @@ a.hist-row:focus-visible {
 }
 .gym-ex-card {
   border: 1px solid var(--border);
-  border-radius: var(--r-card);
+  border-radius: var(--r-toggle); /* the athlete card radius since 11 Sept 2026 — see .phone-body .card */
   overflow: hidden;
   margin-bottom: var(--sp-14);
 }
@@ -3867,11 +3891,11 @@ a.hist-row:focus-visible {
   justify-content: center;
   flex: none;
 }
-/* Both avatar slots take either an initials <span> or an uploaded <img>.
- * The photo has to fill the square rather than letterbox inside it, and a
- * non-square upload must crop, not squash — object-fit does both. */
-img.me-avatar,
-img.av {
+/* The avatar slot takes either an initials <span> or an uploaded <img>. The
+ * photo has to fill the square rather than letterbox inside it, and a
+ * non-square upload must crop, not squash — object-fit does both. (Today's
+ * header glyph, img.av, shared this rule until 2026-09-12; it is gone.) */
+img.me-avatar {
   object-fit: cover;
 }
 .me-profile .nm {

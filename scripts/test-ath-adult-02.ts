@@ -144,8 +144,11 @@ console.log('\nthe page: order (S1, S2, S3), the rows, the empty state');
   const at = (needle: string): number => page.indexOf(needle);
   const todo = at('id="todo-title"'), today = at('id="today-title"'), week = at('className="card wk-card"'), avail = at('<AvailabilityBanner'), diag = at('<InjuryClinical'), team = at('Team this week'), bannerLine = at('href="#availability"');
   assert(todo > 0 && today > todo, 'To do comes before Today');
-  assert(week > today, 'S1: the week strip is kept, below Today');
-  assert(/wk-towards/.test(page), 'with "Working towards"');
+  /* S1 as amended by the follow-up (Isabella, 2026-09-11): the seven-day
+     strip is compact and sits ABOVE To do; the card below Today keeps
+     "Working towards". test-ath-adult-02-followup.ts pins the strip. */
+  assert(at('className="wk-strip wk-compact"') > 0 && at('className="wk-strip wk-compact"') < todo, 'S1 (amended): the week strip is kept, compact, above To do');
+  assert(week > today && /wk-towards/.test(page), 'and the card below Today keeps "Working towards"');
   assert(avail > week, 'S2: the availability card sits below the week');
   assert(bannerLine > 0 && bannerLine < todo, 'and the one-line banner sits above To do, linking down');
   assert(/availability\.current\.status !== 'available'[\s\S]*?availabilityLine\(/.test(page) && /\{availSummary \? \([\s\S]{0,200}href="#availability"/.test(page), 'the banner renders only when the athlete is not fully available');
@@ -192,19 +195,18 @@ console.log('\nS4. the availability card, and the contrast measured from tokens.
   const ratio = (a: [number, number, number], b: [number, number, number]): number => { const la = lum(a), lb = lum(b); return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05); };
   const mix = (tone: [number, number, number], surf: [number, number, number], p: number): [number, number, number] =>
     [0, 1, 2].map((i) => Math.round((1 - p) * surf[i]! + p * tone[i]!)) as [number, number, number];
-  const over = (tone: [number, number, number], bg: [number, number, number], a: number): [number, number, number] =>
-    [0, 1, 2].map((i) => Math.round((1 - a) * bg[i]! + a * tone[i]!)) as [number, number, number];
   assert(/color-mix\(in srgb, rgb\(var\(--state-rgb\)\) 12%, var\(--surf\)\)/.test(/\.avail-banner\s*\{([^}]*)\}/.exec(css)?.[1] ?? ''), 'the card fill is 12% of the tone mixed into --surf (the rule the banner already had)');
-  const washAlpha = { light: { warn: 0.16, bad: 0.13 }, dark: { warn: 0.08, bad: 0.08 } };
   for (const [theme, src] of [['light', light], ['dark', dark]] as const) {
     for (const tone of ['warn', 'bad'] as const) {
       const fill = mix(hex(src, `--${tone}`), hex(src, '--surf'), 0.12);
       const text = hex(src, `--${tone}-pill-text`);
       const r = ratio(text, fill);
       assert(r >= 4.5, `${theme} ${tone} card: --${tone}-pill-text on the tint = ${r.toFixed(2)}:1`);
-      const wash = over(hex(src, `--${tone}`), hex(src, '--bg'), washAlpha[theme][tone]);
-      const rb = ratio(hex(src, '--text'), wash);
-      assert(rb >= 4.5, `${theme} ${tone} banner: --text on --wash-${tone} over --bg = ${rb.toFixed(2)}:1`);
+      /* The line takes the card's own mix since the follow-up (2026-09-12);
+         the over-the-ground wash it shipped with went grey-beige. Measured in
+         test-ath-adult-02-followup.ts; here only that it is the same fill. */
+      const rb = ratio(hex(src, '--text'), fill);
+      assert(rb >= 4.5, `${theme} ${tone} banner: --text on the same 12% mix over --surf = ${rb.toFixed(2)}:1`);
       const rc = ratio(text, hex(src, '--surf'));
       assert(rc >= 4.5, `${theme} ${tone} chip: --${tone}-pill-text on --surf = ${rc.toFixed(2)}:1`);
     }

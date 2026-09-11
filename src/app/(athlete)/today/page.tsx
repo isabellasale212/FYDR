@@ -23,7 +23,6 @@ import {
   enumLabel,
   formatDate,
   formatTime,
-  initials,
   mdExplainer,
   mdLabel,
   todayIso,
@@ -94,8 +93,7 @@ export default async function TodayPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, orgId, athleteId, claims, timezone, firstName, lastName } =
-    await requireAthlete();
+  const { db, orgId, athleteId, claims, timezone, firstName } = await requireAthlete();
   const params = await searchParams;
   const today = todayIso(timezone);
   const weekStart = mondayOf(today);
@@ -107,7 +105,6 @@ export default async function TodayPage({
     nutritionCheckin,
     myAllocation,
     weekMd,
-    userRow,
     weekSessionTypes,
     nextFixture,
     sessions,
@@ -117,10 +114,6 @@ export default async function TodayPage({
       fetchCheckinForWeek(db, athleteId, nutritionWeekStart),
       fetchMyAllocation(db, athleteId, weekStart),
       fetchWeekMdLabels(db, orgId, weekStart, timezone),
-      // Only for the header glyph. This page drew initials unconditionally,
-      // so an athlete who had uploaded a photo on Me still saw initials
-      // here — the photo was never fetched on this route at all.
-      db.from('users').select('avatar_url, avatar_colour').eq('id', claims.userId).maybeSingle(),
       // Match/training/recovery/rest colouring for the week strip.
       fetchAthleteWeekSessionTypes(db, orgId, athleteId, weekStart, timezone),
       /* What the week is building towards. From today, not from the week's
@@ -209,29 +202,11 @@ export default async function TodayPage({
 
   return (
     <>
+      {/* NO AVATAR — ATH-ADULT-02 follow-up, Isabella's decision 2026-09-11,
+          matching the board: the header is the date line and the greeting.
+          The tab bar's Me covers the navigation the glyph used to hint at,
+          and the users query that existed only to fetch it went with it. */}
       <div className="hd">
-        {userRow.data?.avatar_url ? (
-          /* Supabase Storage URL, already public and sized by the uploader.
-           * next/image would need a remotePatterns entry for a host that
-           * varies per project, for a 30px glyph. */
-          // eslint-disable-next-line @next/next/no-img-element
-          <img className="av" src={userRow.data.avatar_url} alt="" width={30} height={30} />
-        ) : (
-          <span
-            className="av"
-            aria-hidden="true"
-            style={
-              userRow.data?.avatar_colour
-                ? {
-                    background: `var(--group-${userRow.data.avatar_colour.toLowerCase()})`,
-                    color: 'var(--on-accent)',
-                  }
-                : undefined
-            }
-          >
-            {initials({ first_name: firstName, last_name: lastName })}
-          </span>
-        )}
         {/* Fydr Athlete App.dc.html 23a: an eyebrow carrying the date and
             today's matchday offset, then a greeting rather than the date as
             the headline. The count that used to sit here as a pill moved to
@@ -263,6 +238,81 @@ export default async function TodayPage({
           {availSummary}
         </a>
       ) : null}
+
+      {/* THE WEEK, COMPACT, ABOVE TO DO — ATH-ADULT-02 follow-up, Isabella's
+          decision 2026-09-11. The seven-day row with its MD labels sits on the
+          ground here, under the greeting and the availability line, so the
+          shape of the week is read before the list of what is owed; the card
+          below Today keeps "Working towards". Measured at 375×812 with the
+          availability line showing: To do's first row moved from 244px to
+          367px, still inside the fold (see this commit's handover). */}
+      <section aria-labelledby="week-title">
+        <h2 className="eyebrow today-sect" id="week-title">
+          This week
+        </h2>
+        <div className="wk-strip wk-compact">
+        {weekDays.map((date, i) => {
+          const isToday = date === today;
+          const offset = weekMd.get(date) ?? null;
+          const md = mdLabel(offset);
+          const tone = md === 'MD' ? 'md' : md === 'MD-1' ? 'md-1' : undefined;
+          const explainer = mdExplainer(offset);
+
+          /* Day kind, so match, training and rest days are told apart at a
+           * glance rather than by reading MD labels. Match wins over
+           * everything (a matchday with a shakeout on it is still a
+           * matchday); recovery only counts as recovery when nothing harder
+           * shares the day; anything else with a session is training. A day
+           * with no session of this athlete's own is rest — genuinely rest,
+           * since fetchAthleteWeekSessionTypes resolves the same "mine" set
+           * as the day list below, not merely a day nothing was loaded for. */
+          const types = weekSessionTypes.get(date);
+          const kind = !types
+            ? 'rest'
+            : types.has('match')
+              ? 'match'
+              : types.size === 1 && types.has('recovery')
+                ? 'recovery'
+                : 'training';
+          const kindLabel =
+            kind === 'match' ? 'Match' : kind === 'training' ? 'Training' : kind === 'recovery' ? 'Recovery' : 'Rest';
+          /* Abbreviated for the 40px column the MD label shares. "Training" and
+             "Recovery" overrun it at 10.5px; the full word is still on the row
+             for screen readers and on hover. */
+          const kindShort =
+            kind === 'match' ? 'Match' : kind === 'training' ? 'Train' : kind === 'recovery' ? 'Rec' : 'Rest';
+
+          return (
+            <div key={date} className="wk-day" data-today={isToday} data-kind={kind}>
+              <span className="wi">{WEEKDAY_INITIAL[i]}</span>
+              <span className="wn num">{Number(date.slice(8, 10))}</span>
+              {/* Colour is never the only channel — the kind is also spelled
+                  out for screen readers and on hover. */}
+              <span className="visually-hidden">{kindLabel}</span>
+              {/* Spec §7.1 puts the MD label on this line and carries the day's
+                  kind in the column's own fill and border — so the dot that was
+                  here, and the legend under the card that explained the dot,
+                  both go.
+
+                  MD needs a fixture to count towards. When the calendar has
+                  none the line falls back to the kind in a word, which is the
+                  fact the legend was carrying anyway; an empty third line would
+                  drop it and leave the column's colour unexplained. */}
+              <span className="wo num" data-tone={tone} title={explainer ?? kindLabel}>
+                {/* Rest prints nothing. The word only earns the line where
+                    there is something on: a week with no sessions rendered
+                    "Rest" seven times, which is a wall of identical text
+                    saying what seven empty columns already said. A day with
+                    nothing scheduled is shown by having nothing — no fill, no
+                    label — which is the same rule the rest of this app applies
+                    to an absent value. */}
+                {md ?? (kind === 'rest' ? '' : kindShort)}
+              </span>
+            </div>
+            );
+          })}
+        </div>
+      </section>
 
       {/* THE TO-DO LIST, always rendered, and its own status: the count reads
           off the same array the rows render from, and with nothing outstanding
@@ -345,86 +395,19 @@ export default async function TodayPage({
         )}
       </section>
 
-      <div className="card wk-card">
-        {/* A visible "THIS WEEK", not just the strip's aria-label. The design
-            (01-final.png) heads this card with it, and a sighted athlete had
-            nothing naming the row of seven dates — the label existed for a
-            screen reader only. */}
-        <p className="eyebrow wk-card-label">This week</p>
-        <div className="wk-strip">
-        {weekDays.map((date, i) => {
-          const isToday = date === today;
-          const offset = weekMd.get(date) ?? null;
-          const md = mdLabel(offset);
-          const tone = md === 'MD' ? 'md' : md === 'MD-1' ? 'md-1' : undefined;
-          const explainer = mdExplainer(offset);
-
-          /* Day kind, so match, training and rest days are told apart at a
-           * glance rather than by reading MD labels. Match wins over
-           * everything (a matchday with a shakeout on it is still a
-           * matchday); recovery only counts as recovery when nothing harder
-           * shares the day; anything else with a session is training. A day
-           * with no session of this athlete's own is rest — genuinely rest,
-           * since fetchAthleteWeekSessionTypes resolves the same "mine" set
-           * as the day list below, not merely a day nothing was loaded for. */
-          const types = weekSessionTypes.get(date);
-          const kind = !types
-            ? 'rest'
-            : types.has('match')
-              ? 'match'
-              : types.size === 1 && types.has('recovery')
-                ? 'recovery'
-                : 'training';
-          const kindLabel =
-            kind === 'match' ? 'Match' : kind === 'training' ? 'Training' : kind === 'recovery' ? 'Recovery' : 'Rest';
-          /* Abbreviated for the 40px column the MD label shares. "Training" and
-             "Recovery" overrun it at 10.5px; the full word is still on the row
-             for screen readers and on hover. */
-          const kindShort =
-            kind === 'match' ? 'Match' : kind === 'training' ? 'Train' : kind === 'recovery' ? 'Rec' : 'Rest';
-
-          return (
-            <div key={date} className="wk-day" data-today={isToday} data-kind={kind}>
-              <span className="wi">{WEEKDAY_INITIAL[i]}</span>
-              <span className="wn num">{Number(date.slice(8, 10))}</span>
-              {/* Colour is never the only channel — the kind is also spelled
-                  out for screen readers and on hover. */}
-              <span className="visually-hidden">{kindLabel}</span>
-              {/* Spec §7.1 puts the MD label on this line and carries the day's
-                  kind in the column's own fill and border — so the dot that was
-                  here, and the legend under the card that explained the dot,
-                  both go.
-
-                  MD needs a fixture to count towards. When the calendar has
-                  none the line falls back to the kind in a word, which is the
-                  fact the legend was carrying anyway; an empty third line would
-                  drop it and leave the column's colour unexplained. */}
-              <span className="wo num" data-tone={tone} title={explainer ?? kindLabel}>
-                {/* Rest prints nothing. The word only earns the line where
-                    there is something on: a week with no sessions rendered
-                    "Rest" seven times, which is a wall of identical text
-                    saying what seven empty columns already said. A day with
-                    nothing scheduled is shown by having nothing — no fill, no
-                    label — which is the same rule the rest of this app applies
-                    to an absent value. */}
-                {md ?? (kind === 'rest' ? '' : kindShort)}
-              </span>
-            </div>
-            );
-          })}
-        </div>
-
-        {/* Fydr Athlete App.dc.html 23a: what the week is building towards,
-            inside the same card as the week it counts.
-            Not a link: there is no athlete-facing fixture screen to open, and
-            the design's chevron would promise one. Not showing a meet time
-            either — the design has "meet 12:15" but fixtures carry only a
-            kickoff_at, so that clause would be invented.
-            Absent entirely when nothing is scheduled, rather than an empty
-            heading: a club with no fixture on the calendar is not working
-            towards anything this app knows about, and saying so in a box is
-            noise on the screen an athlete opens every morning. */}
-        {nextFixture ? (
+      {/* "Working towards" keeps its card below Today; the seven-day strip
+          that shared it moved above To do (see the section under the
+          greeting). Fydr Athlete App.dc.html 23a: what the week is building
+          towards. Not a link: there is no athlete-facing fixture screen to
+          open, and the design's chevron would promise one. Not showing a meet
+          time either — the design has "meet 12:15" but fixtures carry only a
+          kickoff_at, so that clause would be invented. The whole card is
+          absent when nothing is scheduled, rather than an empty box: a club
+          with no fixture on the calendar is not working towards anything this
+          app knows about, and saying so on the screen an athlete opens every
+          morning is noise. */}
+      {nextFixture ? (
+        <div className="card wk-card">
           <div className="wk-towards">
             <div>
               <p className="eyebrow">Working towards</p>
@@ -442,8 +425,8 @@ export default async function TodayPage({
                 is a control that lies about being one. The row is laid out with
                 room for it, so adding one is a line when the screen exists. */}
           </div>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
 
       <AvailabilityBanner
         status={availability.current?.status ?? null}

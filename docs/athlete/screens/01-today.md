@@ -18,23 +18,36 @@ Top to bottom on a phone, in the order the page actually renders them
 list is now the first thing under the greeting, because 561px of an 812px
 screen used to pass before the first actionable row):
 
-1. **Who you are and what day it is**, with the matchday label for the week
-   (`mdLabel`, `mdExplainer`).
+1. **What day it is and the greeting** — the date line with the matchday
+   label for the week (`mdLabel`, `mdExplainer`), then "Morning, {name}".
+   No avatar (removed 12 September 2026, ATH-ADULT-02 follow-up): the tab
+   bar's Me is the way to the profile.
 2. **One line, only when something is wrong**: "Modified · …" or
    "Unavailable · …" — the status and what you may do, linking down to the
-   full card (item 6). Nothing here when you are available.
-3. **What you owe**, as a to-do list. This is the screen's real job. Always
+   full card (item 7). Nothing here when you are available. Its fill is the
+   tone mixed into the card surface, the same rule as the card, so it reads
+   amber or red on the blue ground rather than grey.
+3. **This week**, the seven-day strip, compact: each day's initial, its
+   number (today filled) and its MD label, coloured by session type. On the
+   ground, not in a card (moved up from item 5 on 12 September 2026 so the
+   shape of the week is read before the list; To do's first row stays inside
+   an 812px screen, measured at 367px).
+4. **What you owe**, as a to-do list. This is the screen's real job. Always
    rendered: with nothing outstanding the slot holds one row reading "You're
    up to date" and the count reads "None left".
-4. **What is on today**, the sessions from the schedule — each with its start,
+5. **What is on today**, the sessions from the schedule — each with its start,
    place, and whether it has finished, is under way, or starts within two
    hours, in club time.
-5. **The week strip**, seven days coloured by session type, with **what the
-   club is working towards**, the next fixture (`fetchNextFixture`).
-6. **Whether you are available, and what you may do today**
+6. **What the club is working towards**, the next fixture
+   (`fetchNextFixture`), in its own card — absent when no fixture is scheduled.
+7. **Whether you are available, and what you may do today**
    (`AvailabilityBanner`). Always present, on every load, whatever the status.
-7. **Your own diagnosis, if there is one** (`InjuryClinical`). Often absent.
-8. **Team this week**, only when a rehab team allocation exists.
+8. **Your own diagnosis, if there is one** (`InjuryClinical`). Often absent.
+9. **Team this week**, only when a rehab team allocation exists.
+
+Every card on this screen — and on every athlete screen — has 9px corners
+(`--r-toggle`, Isabella's decision of 11 September 2026); staff cards keep
+18px.
 
 The "Something not right?" row is not on this screen; the report route is
 reached from Me.
@@ -53,7 +66,7 @@ a screen that refuses it; after the window the row is gone and the screen
 says "This session can no longer be rated." Two ratings owed are listed oldest
 first.
 
-**The availability card, item 6, in detail**, because it is the part of this
+**The availability card, item 7, in detail**, because it is the part of this
 screen an athlete reads when something is wrong:
 
 - The tone-family card: fill, border and every word from one family — amber

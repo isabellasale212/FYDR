@@ -8,6 +8,16 @@ browser actually resolved rather than what the stylesheet asks for.
 Every value below is exact. Where a token differs between themes both are given;
 where a single value is shown, it is the same in both.
 
+**Count: 171 tokens, and this document names all 171.** By section — Staff role
+colours 6 (the `--domain-*` set, listed under a heading that explains why they
+are not role colours), Colour 110, Group / avatar palette 10, Radius 9, Spacing
+scale 15, Type scale 16, Motion 3, Elevation 2. `src/styles/tokens.css` declares
+171 distinct custom properties; CLAUDE.md's "171-token system" is the same
+number. `--font-sans` and `--font-brand` are set in `layout.tsx`, not
+`tokens.css`, and are not in the 171. Reconciled 2026-09-11 after a builder
+handover noted the sections were never totalled — nothing was missing from
+either side, the count had just never been written down.
+
 ---
 
 ## Fonts

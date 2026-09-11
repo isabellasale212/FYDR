@@ -1039,19 +1039,49 @@ trade `0096` made for gym, now made consistently.
 
   **Note for whoever implements it:** gym corrections write `gym_set_logs.correction`, not `entry_revision.created` like wellness, nutrition and training. Anything that surfaces "what you first reported" generically across domains has to read both action names, and the gym metadata carries the actual old and new numbers, which is safe here because they are measurements rather than free text (contrast migration `0100`).
 
-## 0w. Three navigation controls in the athlete app are under the 44px floor — 2026-09-10
+## 0w. Three navigation controls in the athlete app are under the 44px floor — 2026-09-10; two of three closed 2026-09-11
+
+**Built by the builder session, commit `cb32bca` on `build/walkthrough`, fast-forwarded into `athlete-spec-builder` 2026-09-11.** Verified by the reviewer at 375×812 as Conor Moroney after the merge: the athlete Back button hit-tests rows 0–44 with its 29px visible box unchanged (a `::after` extension anchored to the top edge, because the button is the first child of the scroll container and anything extended upward would be clipped); the gate link carries `.tap-floor` (`padding-block: var(--sp-16)`) and hit-tests at 65.8px on two lines at this width. No new token; pixel-identical before and after. Guard: `test:nav-hit-floor`, in prebuild.
+
+**Decision recorded:** the 44px floor applies to navigation in the athlete shell. Scoped to `.phone-body .back-btn`, not `.back-btn` globally — the staff `.back-btn` is still 29px and is filed separately below for the staff section.
+
+**One figure in the original entry was wrong, in the direction that understated the defect.** "Show them again" was recorded here at 34px; that was a bounding rect over two wrapped lines at the reviewer's width. An inline link hit-tests on its content area, and 13px Roboto's is **15px**. Corrected below.
 
 **Real defects, same priority as §0r to §0v.** All measured on the running app. Grouped because they are one rule broken in three places, and because the same fix decision covers all of them.
 
-- [ ] **The shared `BackButton` renders 29px tall.** Measured on `/my-data/gym/{id}`, `/my-data/boards/{id}` and `/me/leaderboards` — every athlete screen that uses it. `.back-btn` sets `padding: var(--sp-6) var(--sp-12) var(--sp-6) var(--sp-8)` around a 13px/600 label, which lands at 29, not 44.
+- [x] ~~**The shared `BackButton` renders 29px tall.**~~ **Closed `cb32bca`** — hit area extended to 44px, visible box unchanged. Measured on `/my-data/gym/{id}`, `/my-data/boards/{id}` and `/me/leaderboards` — every athlete screen that uses it. `.back-btn` sets `padding: var(--sp-6) var(--sp-12) var(--sp-6) var(--sp-8)` around a 13px/600 label, which lands at 29, not 44.
 
   It is a **navigation** control rather than a primary action, which is the usual argument for letting it be small — but the app's own 44px floor is stated without that exception (`ScaleInput`'s comment calls 44 "§8's floor"), and this is the control an athlete reaches for one-handed on the way out of a screen.
 
-- [ ] **The "Show them again" link in the hidden-leaderboards gate is 34px.** It is the *only* control on that screen — the gate replaces all content — so an athlete who hid leaderboards and wants them back has one 34px target and nothing else.
+- [x] ~~**The "Show them again" link in the hidden-leaderboards gate is 34px.**~~ **Closed `cb32bca`** — it hit-tested at **15px**, not 34 (see above); now `.tap-floor`. It is the *only* control on that screen — the gate replaces all content — so an athlete who hid leaderboards and wants them back has one 34px target and nothing else.
 
-- [ ] **The "Back" and "Back to gym history" pair on `/my-data/gym/{id}` are both under the floor** and adjacent (§0v's flow, ATH-ADULT-13): a 29px button and a 19.5px text link, doing nearly the same job, neither at 44.
+- [ ] **The "Back to gym history" link on `/my-data/gym/{id}` is still under the floor** — the Back button beside it is now closed by the shared fix, but the inline link hit-tests at **15px**. `.tap-floor` would fix its height in one line; **left open deliberately** because the pair itself is ATH-ADULT-13's redundancy question (two back affordances, one adjacent to the other only at narrow widths — at 500px it sits 758px below), and fixing the height first would pre-empt the design answer. Original wording follows: the pair and adjacent (§0v's flow, ATH-ADULT-13): a 29px button and a 19.5px text link, doing nearly the same job, neither at 44.
 
   **The decision this needs** is whether the 44px floor applies to navigation as well as to actions. If it does, `.back-btn` is one rule change affecting every athlete screen — a shared-class change, so it must be flagged and confirmed before it is built, not folded into a flow. If it does not, the floor should say so, because three separate reviews have now flagged it as a violation.
+
+## 0x. The sign-in form has no `method="post"`, so a submit before hydration sends the password in the URL — found by the builder 2026-09-11, verified by the reviewer
+
+**SECURITY. Above every other open item in this list.** Not a design question and not gated on any flow's proposal.
+
+- [ ] **`LoginForm.tsx:132` is `<form onSubmit={onSubmit} noValidate className="signin-form">` with no `method` attribute, and its inputs are `name="email"` and `name="password"`.** A form with no `method` submits as a native **GET**. If the athlete or staff member presses Enter or taps the button before React has hydrated, the browser navigates to `/sign-in?email=…&password=…`.
+
+  **That puts a plaintext password into** the browser's history and address bar, the server's access logs, Vercel's request logs, and the `Referer` header of any request the resulting page makes. It survives the sign-in succeeding or failing.
+
+  **Reproduced, not theorised.** The builder hit it on 2026-09-11 when Next 16's dev-origin block stopped hydration at `127.0.0.1`. The same window exists in production for anyone on a slow connection, a device with JS delayed, or JS blocked — and the sign-in page is the one page every user, staff and athlete, must pass through.
+
+  **Confirmed against the source by the reviewer** the same day: no `method=` anywhere in the file; both input names present.
+
+  **The fix is one attribute** — `method="post"` — so that a pre-hydration submit posts a body rather than building a query string. The route may then need to answer a real POST rather than 405, or the page can render a form `action` that does; either way the password never enters a URL. **Left for the builder**, because it is the sign-in page (ATH-ADULT-01, shared with every staff role) and the reviewer does not author `src/`.
+
+  **Guard it.** A source test asserting every `<form>` carrying a `type="password"` input declares `method="post"` — the shape of this bug is generic and will recur on the next form someone writes.
+
+## 0y. Carried over from the §0w handover — recorded, not fixed
+
+- [ ] **The staff `.back-btn` is still 29px on every staff screen.** §0w's fix is scoped to `.phone-body .back-btn` because §8 is the athlete spec's floor; the staff shell has no stated floor. Same class, same 29px. **For the staff section to decide** whether the floor applies there; if it does, the same `::after` mechanism transfers, and `test-nav-hit-floor` asserts there is currently no unscoped `.back-btn::after`, so the guard will need widening with it.
+
+- [ ] **"Show them again" on the leaderboards gate has no link affordance** — it renders in the paragraph's muted colour with no underline. Same root cause as the "Back" / "Change this answer" links closed on ATH-ADULT-04 and -08: the global `a { color: inherit; text-decoration: none }` reset, and no class on the anchor. It now hit-tests at 65.8px (`.tap-floor`) but still looks like prose, on a screen where it is the **only** control. The existing `.linklike` pattern is the fix; **built with ATH-ADULT-18's implementation**, not before.
+
+- [ ] **`/me/leaderboards` carries two back controls** — the shared Back button and a `←` link in `.sheet-head`, 38px apart. Design finding for ATH-ADULT-17/18, recorded in their briefs. **Guard gap worth its own line:** `test-back-consistency` sweeps staff routes only, so the athlete shell can grow a duplicate back control without any test noticing.
 
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.

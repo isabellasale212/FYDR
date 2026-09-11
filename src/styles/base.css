@@ -3114,6 +3114,57 @@ a.hist-row:focus-visible {
   transform: rotate(180deg);
 }
 
+/* -------- the after-submit states, ATH-ADULT-04 / 06 / 08 (2026-09-12) --------
+   Built from the "After submit states" board on this system's tokens. The
+   fact the athlete came for — it is in, when, what to do if it is wrong — is
+   the largest thing on the screen, in one emphasised card; the space below
+   it is left empty; the way out is a 44px button in the footer. See
+   docs/overnight-records-2026-09-12.md for every mapping.
+
+   THE EMPHASISED CARD is the accent wash family (the board's --blue-100 on
+   --blue-200), on the athlete card radius. One per screen, never with the
+   selected ring. --text on the wash over the athlete ground measures 12:1
+   light / 10:1 dark (test-ath-adult-04). */
+.after-card {
+  background: var(--wash-accent);
+  border: 1px solid var(--border-accent-soft);
+  border-radius: var(--r-toggle);
+  box-shadow: var(--shadow);
+  padding: var(--sp-18);
+}
+/* The heading at --fs-28 (the board's 30px has no step on our scale; 28 is
+   the nearest), the fact beneath it at --fs-20 in full --text, the recourse
+   at --fs-13 --muted. Read order: it is in · when · what to do. */
+.after-heading {
+  margin: 0;
+  font-size: var(--fs-28);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+.after-fact {
+  margin: var(--sp-8) 0 0;
+  font-size: var(--fs-20);
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.3;
+}
+.after-note {
+  margin: var(--sp-10) 0 0;
+  font-size: var(--fs-13);
+  color: var(--muted);
+  line-height: 1.45;
+}
+/* On a page with no form the footer is a direct child of the shell rather
+   than the last child of a <form>. The shell's own child rule zeroes the
+   block margins; `auto` here pushes the footer to the bottom of the screen,
+   so the empty space sits between the card and the action, as the board
+   draws it, and the button lands where the thumb is. (0,3,0) beats the
+   (0,2,0) reset. */
+.phone-body.phone-body > .subm {
+  margin-top: auto;
+}
+
 /* -------- the footer, shared by the four athlete write forms --------
    ATH-ADULT-03 A1–A3, 2026-09-11, closing §0s. Rendered by CheckInForm,
    RpeForm, NutritionCheckinForm and ProblemReportForm.

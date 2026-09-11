@@ -47,6 +47,10 @@ export default async function CheckInPage({
     [...recent].reverse().find((e) => e.sleep_hours !== null)?.sleep_hours ?? null;
 
   const backHref = entryDate === today ? '/today' : '/my-data?tab=wellness';
+  /* ATH-ADULT-04: the exit is a button labelled after where it goes. Today's
+     entry returns to Today; a past day opened from My data returns to My data.
+     There is no referrer to consult — the branch is the destination. */
+  const backLabel = entryDate === today ? 'Back to Today' : 'Back to My data';
 
   return (
     <>
@@ -68,9 +72,16 @@ export default async function CheckInPage({
             <h1 className="t">
               {entryDate === today ? 'This morning' : formatDate(entryDate, timezone)}
             </h1>
-            <p className="s">
-              45 seconds &middot; <b>5 is always the best you can feel</b>
-            </p>
+            {/* ATH-ADULT-04: the form's subhead belongs to the form. It used
+                to render unconditionally, telling an athlete who had already
+                submitted how long a task takes that they could not start. 23c's
+                directive — how long it takes, then the one rule that makes
+                every scale readable — now appears only when the form does. */}
+            {!existing && entryDate === today ? (
+              <p className="s">
+                45 seconds &middot; <b>5 is always the best you can feel</b>
+              </p>
+            ) : null}
           </div>
           <Link href={backHref} className="sheet-x" aria-label="Close the check-in">
             <span aria-hidden="true">✕</span>
@@ -79,12 +90,23 @@ export default async function CheckInPage({
       </div>
 
       {existing ? (
-        <div className="card">
-          <h2 className="card-title">Already submitted</h2>
-          <p className="import-sub" style={{ marginBottom: 0 }}>
-            {entryDate === today ? 'You sent today' : `You sent ${formatDate(entryDate, timezone)}`}
-            &rsquo;s check-in at{' '}
-            <span className="num">
+        <>
+          {/* ATH-ADULT-04, 2026-09-12. The fact the athlete came for is the
+              largest thing on the screen: it is in, when, and what to do if
+              it is wrong — in that order. One emphasised card (--wash-accent),
+              nothing decorative in the space below it, and the way out is a
+              44px button in the footer labelled after its destination.
+
+              NO "Corrected" PILL YET: the board draws one for a past day
+              corrected by staff, but this page's fetch reads
+              wellness_entries_current without revision_of, so the page cannot
+              tell a corrected day from an original. That is a query change,
+              recorded as C1 in docs/overnight-records-2026-09-12.md. */}
+          <div className="after-card">
+            <h2 className="after-heading">Already submitted</h2>
+            <p className="after-fact num">
+              {entryDate === today ? 'You sent today' : `You sent ${formatDate(entryDate, timezone)}`}
+              &rsquo;s check-in at{' '}
               {existing.submitted_at
                 ? new Intl.DateTimeFormat('en-GB', {
                     hour: '2-digit',
@@ -93,48 +115,26 @@ export default async function CheckInPage({
                     timeZone: timezone,
                   }).format(new Date(existing.submitted_at))
                 : '—'}
-            </span>
-            .
-          </p>
-          {/* What used to be a "Correct this entry" link. It is prose, not a
-            * disabled button: a control that can never become enabled for this
-            * reader is a worse answer than a sentence telling them who can do
-            * the thing. Says what happens to the original too, because the
-            * reason an athlete hesitates to report a mistake is the fear that
-            * "correcting it" means someone sees them changing their answer —
-            * they should know it is recorded either way. */}
-          <p className="import-sub" style={{ margin: '10px 0 0' }}>
-            A submitted check-in can&rsquo;t be edited, by you or by anyone. If
-            something in it is wrong, tell your coach: they can record a
-            correction against it from your profile. If they do, My Data marks
-            that day <b>Corrected</b> and shows you what you first reported.
-          </p>
-          {/* .linklike, not a bare Link. Measured 2026-09-10: without it this
-              anchor rendered rgb(72,78,87) / 13px / 400 / no underline —
-              IDENTICAL on every axis to the paragraph above it, because the
-              global reset is `a { color: inherit; text-decoration: none }`,
-              `.cap` supplies the muted caption colour, and no `.cap a` rule
-              exists to give it an appearance back. The card's only action was
-              indistinguishable from a sentence.
-
-              THE EXISTING PATTERN, NOT A NEW ONE: .linklike is described in
-              base.css as an inline link affordance "sized to sit inside a .cap
-              caption line", and is already used on <Link> in flags/page.tsx and
-              reports/compliance/page.tsx. --accent-text is 5.45:1 on --surf.
-
-              SCOPED HERE RATHER THAN AS A `.cap a` RULE, deliberately. That
-              rule would also restyle rpe/[sessionId]'s already-rated card and
-              leaderboards/manage's inline "testing wall" link — a different
-              flow and a different kind of link (inline in prose, which has
-              context a standalone action word does not). Narrower first.
-
-              WHAT THIS DOES NOT FIX: the target is 28.6 x 19.5px against the
-              app's own 44px floor. Sizing it changes layout, so it is left to
-              the ATH-ADULT-04 design proposal rather than decided here. */}
-          <p className="cap" style={{ display: 'flex', gap: 'var(--sp-14)' }}>
-            <Link href={backHref} className="linklike">Back</Link>
-          </p>
-        </div>
+              .
+            </p>
+            {/* The recourse is a person, not a control: a control that can
+              * never become enabled for this reader is a worse answer than a
+              * sentence telling them who can do the thing, and what happens to
+              * the original — the reason an athlete hesitates to report a
+              * mistake is the fear that "correcting it" means someone sees them
+              * changing their answer. */}
+            <p className="after-note">
+              You can&rsquo;t change an entry yourself. Tell your coach or medical staff and they
+              can correct it for you.
+            </p>
+            <p className="after-note">The original stays visible in My data, marked Corrected.</p>
+          </div>
+          <div className="subm">
+            <Link href={backHref} className="btn-primary" style={{ display: 'flex', justifyContent: 'center' }}>
+              {backLabel}
+            </Link>
+          </div>
+        </>
       ) : entryDate === today ? (
         <CheckInForm
           orgId={orgId}
@@ -144,16 +144,20 @@ export default async function CheckInPage({
           lastNightSleepHours={lastSleep}
         />
       ) : (
-        <div className="card">
-          <h2 className="card-title">Nothing submitted</h2>
-          <p className="import-sub" style={{ marginBottom: 0 }}>
-            No check-in was recorded for {formatDate(entryDate, timezone)}, and a
-            past day can&rsquo;t be filled in after the fact.
-          </p>
-          <p className="cap">
-            <Link href={backHref} className="linklike">Back</Link>
-          </p>
-        </div>
+        <>
+          <div className="after-card">
+            <h2 className="after-heading">Nothing submitted</h2>
+            <p className="after-note">
+              No check-in was recorded for {formatDate(entryDate, timezone)}, and a past day
+              can&rsquo;t be filled in after the fact.
+            </p>
+          </div>
+          <div className="subm">
+            <Link href={backHref} className="btn-primary" style={{ display: 'flex', justifyContent: 'center' }}>
+              {backLabel}
+            </Link>
+          </div>
+        </>
       )}
     </>
   );

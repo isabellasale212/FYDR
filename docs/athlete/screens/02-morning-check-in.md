@@ -36,7 +36,14 @@ nothing; it is never dimmed. Once every question is answered it becomes the
 primary button.
 
 **If today is already submitted, you see an "Already submitted" card instead of a
-form**, telling you what to do if it is wrong.
+form** (ATH-ADULT-04, 12 September 2026): one emphasised card — the accent wash —
+with "Already submitted" as the heading, the time you sent it beneath at full
+size, then who can correct it ("Tell your coach or medical staff…") and that the
+original stays visible in My data. The "45 seconds" subhead is not shown, since
+there is nothing to start. The only exit is a full-width button in the footer at
+the bottom of the screen, labelled after where it goes: **Back to Today** for
+today's entry, **Back to My data** for a past day. A past day with no entry shows
+"Nothing submitted" in the same shape.
 
 ## 4. What the athlete enters here
 

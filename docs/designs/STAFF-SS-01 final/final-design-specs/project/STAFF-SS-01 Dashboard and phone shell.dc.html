@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/fonts.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/icons.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/colors.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/typography.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/spacing.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/shape.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/motion.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/base.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/styles.css" />
+<script src="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/_ds_bundle.js"></script>
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-core); color: var(--text); }
+  a { color: var(--accent); text-decoration: none; pointer-events: none; }
+  a:hover { color: var(--blue-600); }
+  * { transition: none !important; animation: none !important; }
+</style>
+</helmet>
+<div style="padding: 40px; background: var(--bg); box-sizing: border-box">
+
+  <div style="max-width: 1520px; margin: 0 auto 34px; display: flex; flex-direction: column; gap: 8px">
+    <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">STAFF-SS-01 · FINAL · review board · static</p>
+    <p style="margin: 0; font-size: var(--t-hero); font-weight: var(--w-black); letter-spacing: var(--t-hero-tracking); line-height: var(--lh-hero); color: var(--text)">Read the dashboard, and the staff shell on a phone</p>
+    <p style="margin: 0; max-width: 68ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Thirteen artboards. Nothing is clickable and no hovers or transitions are active. Every desktop frame is a true 1440 × 900 viewport with nothing below the fold — the ten-second read has to finish on the first screen. All frames are one club-local instant: Mon 7 Sept 2026, 07:40 Europe/London, match Sat 12 Sept v Colthorne RFC. Squad of 30, signed in as Jane Pemberton unless the frame says otherwise.</p>
+  </div>
+
+  <div style="max-width: 1520px; margin: 0 auto 44px; display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 420px)); gap: var(--gap-card)">
+    <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--on-tint-label); text-transform: uppercase">The shell decision · §0af</p>
+      <p style="margin: 0; font-size: var(--t-card); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">Below 768px the sidebar becomes a bottom bar of four plus More</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">The nine rows and Log out stop stacking above the content. Dashboard, Squad, Schedule and Flags sit in a fixed bottom bar; the remaining five destinations and Log out live in a More sheet. Content starts at y = 64 instead of y = 2209, and every row in the sheet is 52px. The 214px sidebar at 1024 and up, and the 64px rail between 768 and 1023, are untouched.</p>
+    </div>
+    <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">The gate, stated once</p>
+      <p style="margin: 0; font-size: var(--t-card); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Every role sees the status and the restriction. Only the medic sees the reason.</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Data rule 6 in the system: coaching staff see availability status and a restriction line only. So &ldquo;Ruled out · Alex Grant (Academic)&rdquo; loses its bracket for everyone but the medic, and the restriction line — what the athlete may do — stays, because that is what a session is planned against.</p>
+    </div>
+    <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">What 72 became</p>
+      <p style="margin: 0; font-size: var(--t-card); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Named athletes first, with the evidence. The rest behind one count.</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">The card leads with the number of athletes who need attention, not the number of flag rows. Each one names the athlete, the reading in plain words and the dates behind it. &ldquo;70 other open flags&rdquo; is one row at the bottom of the list, and it is a link, not a headline.</p>
+    </div>
+  </div>
+
+  <sc-for list="{{ desktops }}" as="f" hint-placeholder-count="7">
+    <div style="max-width: 1520px; margin: 0 auto 44px; display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">{{ f.label }} <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 1440 × 900</span></p>
+
+      <div id="{{ f.id }}" style="position: relative; width: 1440px; height: 900px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; display: flex">
+
+        <div style="flex: 0 0 214px; width: 214px; background: var(--surf); border-right: 1px solid var(--border); display: flex; flex-direction: column">
+          <div style="padding: 20px 22px 14px; display: flex; align-items: baseline; justify-content: space-between">
+            <span style="font-family: var(--font-brand); font-size: var(--t-subhead); font-weight: var(--w-black); letter-spacing: -0.03em; color: var(--text)">Fydr.</span>
+            <span aria-hidden="true" style="font-size: var(--t-body-sm); color: var(--faint)">&#171;</span>
+          </div>
+          <nav style="display: flex; flex-direction: column">
+            <sc-for list="{{ f.nav }}" as="n" hint-placeholder-count="9">
+              <div style="{{ n.rowStyle }}">
+                <i class="{{ n.iconClass }}" style="{{ n.iconStyle }}"></i>
+                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ n.label }}</span>
+                <span style="{{ n.badgeStyle }}">{{ n.badge }}</span>
+              </div>
+            </sc-for>
+          </nav>
+          <div style="margin-top: auto; padding: 14px 22px 20px; border-top: 1px solid var(--hair); display: flex; flex-direction: column; gap: 10px">
+            <p style="margin: 0; font-size: var(--t-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--faint)">{{ f.signedIn }}</p>
+            <div style="display: flex; align-items: center; gap: 10px; font-size: var(--t-body); font-weight: var(--w-semi); color: var(--text)">
+              <i class="ph-fill ph-sign-out" style="font-size: 20px; line-height: 1; color: var(--muted)"></i>
+              <span>Log out</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+          <div style="flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: var(--pad-bar); background: var(--bar-bg); border-bottom: 1px solid var(--border)">
+            <div style="display: flex; align-items: center; gap: var(--gap-chip)">
+              <span style="display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: var(--r); background: var(--wash-accent); border: 1px solid var(--accent); font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--accent); white-space: nowrap"><span aria-hidden="true">&#10003;</span> Whole squad</span>
+              <span style="display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: var(--r); background: var(--surf); border: 1px solid var(--border); font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--text); white-space: nowrap">Backs</span>
+              <span style="display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: var(--r); background: var(--surf); border: 1px solid var(--border); font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--text); white-space: nowrap">Forwards</span>
+              <span style="display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: var(--r); background: var(--surf); border: 1px solid var(--border); font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--text); white-space: nowrap">Rehab</span>
+              <span style="display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: var(--r); background: var(--surf); border: 1px solid var(--border); font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--text); white-space: nowrap">Academy</span>
+            </div>
+            <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-num-meta); font-weight: var(--w-num); font-variant-numeric: tabular-nums; color: var(--muted)">30 athletes in the squad</p>
+          </div>
+
+          <div style="flex: 1 1 auto; min-height: 0; padding: 16px 32px 10px; box-sizing: border-box; display: flex; flex-direction: column; gap: var(--gap-tile); overflow: hidden">
+
+            <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px">
+              <div>
+                <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Eyebrow" hint-size="auto,16px">{{ f.eyebrow }}</x-import>
+                <p style="margin: 4px 0 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Dashboard</p>
+              </div>
+              <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); color: var(--muted)">{{ f.headMeta }}</p>
+            </div>
+
+            <sc-if value="{{ f.lead.isMatch }}" hint-placeholder-val="{{ true }}">
+              <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: flex; gap: 22px; align-items: stretch">
+                <div style="flex: 0 0 286px; display: flex; flex-direction: column; gap: 7px">
+                  <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--on-tint-label); text-transform: uppercase">{{ f.lead.eyebrow }}</p>
+                  <p style="margin: 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--on-tint-value)">{{ f.lead.title }}</p>
+                  <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); font-variant-numeric: tabular-nums; color: var(--on-tint-meta); text-wrap: pretty">{{ f.lead.sub }}</p>
+                  <div style="margin-top: 2px; display: flex; gap: 18px">
+                    <sc-for list="{{ f.lead.stats }}" as="s" hint-placeholder-count="3">
+                      <div>
+                        <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-num-stat); font-weight: var(--w-num-strong); line-height: var(--lh-num); font-variant-numeric: tabular-nums; color: var(--on-tint-value)">{{ s.n }}</p>
+                        <p style="margin: 2px 0 0; font-size: var(--t-caption); font-weight: var(--w-semi); color: var(--on-tint-label)">{{ s.label }}</p>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="flex: 1 1 auto; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--gap-tile)">
+                  <div style="background: var(--pill-warn); border: 1px solid var(--warn); border-radius: var(--r); padding: 12px 14px; display: flex; flex-direction: column; gap: 6px">
+                    <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--on-warn)">{{ f.lead.doubtfulTitle }}</p>
+                    <sc-for list="{{ f.lead.doubtful }}" as="d" hint-placeholder-count="4">
+                      <div>
+                        <p style="margin: 0; font-size: var(--t-body-xs); font-weight: var(--w-semi); line-height: var(--lh-tight); color: var(--on-warn)">{{ d.name }}</p>
+                        <p style="margin: 1px 0 0; font-size: var(--t-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-warn-meta)">{{ d.line }}</p>
+                        <p style="{{ d.reasonStyle }}">{{ d.reason }}</p>
+                      </div>
+                    </sc-for>
+                    <p style="{{ f.lead.medEyebrowWarn }}">Medical · visible to medical staff</p>
+                  </div>
+                  <div style="background: var(--pill-bad); border: 1px solid var(--bad); border-radius: var(--r); padding: 12px 14px; display: flex; flex-direction: column; gap: 6px">
+                    <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--on-bad)">{{ f.lead.outTitle }}</p>
+                    <sc-for list="{{ f.lead.out }}" as="d" hint-placeholder-count="3">
+                      <div>
+                        <p style="margin: 0; font-size: var(--t-body-xs); font-weight: var(--w-semi); line-height: var(--lh-tight); color: var(--on-bad)">{{ d.name }}</p>
+                        <p style="margin: 1px 0 0; font-size: var(--t-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-bad-meta)">{{ d.line }}</p>
+                        <p style="{{ d.reasonStyle }}">{{ d.reason }}</p>
+                      </div>
+                    </sc-for>
+                    <p style="{{ f.lead.medEyebrowBad }}">Medical · visible to medical staff</p>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ f.lead.isWeek }}" hint-placeholder-val="{{ false }}">
+              <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: var(--pad-card-lead); display: flex; flex-direction: column; gap: 14px">
+                <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px">
+                  <div>
+                    <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--on-tint-label); text-transform: uppercase">{{ f.lead.eyebrow }}</p>
+                    <p style="margin: 4px 0 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--on-tint-value)">{{ f.lead.title }}</p>
+                  </div>
+                  <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-body-sm); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--on-tint-meta)">{{ f.lead.sub }}</p>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--gap-tile)">
+                  <sc-for list="{{ f.week }}" as="d" hint-placeholder-count="6">
+                    <div style="{{ d.tileStyle }}">
+                      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px">
+                        <span style="{{ d.dayStyle }}">{{ d.day }}</span>
+                        <span style="{{ d.mdStyle }}">{{ d.md }}</span>
+                      </div>
+                      <p style="{{ d.sessionStyle }}">{{ d.session }}</p>
+                      <p style="{{ d.metaStyle }}">{{ d.meta }}</p>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ f.showStrip }}" hint-placeholder-val="{{ true }}">
+              <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 11px 14px; display: flex; flex-direction: column; gap: 8px">
+                <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 16px">
+                  <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Eyebrow" hint-size="auto,16px">This week</x-import>
+                  <span style="font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--accent)">Schedule &rsaquo;</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--gap-tile)">
+                  <sc-for list="{{ f.week }}" as="d" hint-placeholder-count="6">
+                    <div style="{{ d.tileStyle }}">
+                      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px">
+                        <span style="{{ d.dayStyle }}">{{ d.day }}</span>
+                        <span style="{{ d.mdStyle }}">{{ d.md }}</span>
+                      </div>
+                      <p style="{{ d.sessionStyle }}">{{ d.session }}</p>
+                      <p style="{{ d.metaStyle }}">{{ d.meta }}</p>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <div style="display: grid; grid-template-columns: repeat({{ f.cardCols }}, minmax(0, 1fr)); gap: var(--gap-card)">
+              <sc-for list="{{ f.cards }}" as="c" hint-placeholder-count="3">
+                <div style="{{ c.wrapStyle }}">
+                  <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px">
+                    <div style="min-width: 0">
+                      <p style="{{ c.labelStyle }}">{{ c.label }}</p>
+                      <p style="{{ c.statStyle }}">{{ c.stat }}</p>
+                      <p style="{{ c.subStyle }}">{{ c.sub }}</p>
+                    </div>
+                    <span style="{{ c.chevStyle }}">{{ c.chev }}</span>
+                  </div>
+                  <p style="{{ c.stateStyle }}">{{ c.state }}</p>
+                </div>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ f.panel.isList }}" hint-placeholder-val="{{ true }}">
+              <div style="flex: 1 1 auto; min-height: 0; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden">
+                <div style="flex: 0 0 auto; display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 9px 18px; border-bottom: 1px solid var(--hair)">
+                  <p style="margin: 0; font-size: var(--t-card); font-weight: var(--w-bold); color: var(--text)">{{ f.panel.title }}</p>
+                  <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-num-meta); font-weight: var(--w-num); font-variant-numeric: tabular-nums; color: var(--muted)">{{ f.panel.meta }}</p>
+                </div>
+                <div style="{{ f.panel.gridStyle }}">
+                  <sc-for list="{{ f.panel.items }}" as="i" hint-placeholder-count="4">
+                    <div style="{{ i.rowStyle }}">
+                      <div style="flex: 1 1 auto; min-width: 0">
+                        <p style="margin: 0; font-size: var(--t-num-row); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ i.name }}</p>
+                        <p style="margin: 3px 0 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--text)">{{ i.reading }}</p>
+                        <p style="margin: 2px 0 0; font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); line-height: var(--lh-base); font-variant-numeric: tabular-nums; color: var(--faint)">{{ i.evidence }}</p>
+                      </div>
+                      <span style="flex: 0 0 auto; display: inline-flex; align-items: center; min-height: 28px; padding: 0 10px; border-radius: var(--r); background: var(--pill-accent); font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--accent)">{{ i.action }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="flex: none; margin-top: auto; padding: 10px 18px; border-top: 1px solid var(--hair); display: flex; align-items: center; justify-content: space-between; gap: 16px">
+                  <p style="{{ f.panel.restStyle }}">{{ f.panel.rest }} <span style="font-weight: var(--w-semi); color: var(--accent)">See all flags &rsaquo;</span></p>
+                  <p style="margin: 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); color: var(--muted)">{{ f.panel.thresholds }} <span style="font-weight: var(--w-semi); color: var(--accent)">Change &rsaquo;</span></p>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ f.panel.isClear }}" hint-placeholder-val="{{ false }}">
+              <div style="flex: 1 1 auto; min-height: 0; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: var(--pad-card-lead); display: flex; flex-direction: column; gap: 8px">
+                <p style="margin: 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">{{ f.panel.title }}</p>
+                <p style="margin: 0; max-width: 68ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ f.panel.body }}</p>
+                <p style="margin: 6px 0 0; font-family: var(--font-num); font-size: var(--t-num-meta); font-weight: var(--w-num); font-variant-numeric: tabular-nums; color: var(--faint)">{{ f.panel.meta }}</p>
+              </div>
+            </sc-if>
+
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-wrap: wrap; gap: var(--gap-card); max-width: 1440px">
+        <sc-for list="{{ f.notes }}" as="n" hint-placeholder-count="2">
+          <div style="flex: 1 1 300px; min-width: 0; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px 16px">
+            <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ n.title }}</p>
+            <p style="margin: 4px 0 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ n.body }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-for>
+
+  <div style="max-width: 1520px; margin: 0 auto 16px">
+    <p style="margin: 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); color: var(--text)">The staff shell on a phone</p>
+  </div>
+
+  <div style="max-width: 1520px; margin: 0 auto 44px; display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start">
+    <sc-for list="{{ phones }}" as="p" hint-placeholder-count="5">
+      <div style="display: flex; flex-direction: column; gap: 10px; width: 375px">
+        <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">{{ p.label }} <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 375 × 812</span></p>
+
+        <div id="{{ p.id }}" style="position: relative; width: 375px; height: 812px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; display: flex; flex-direction: column">
+
+          <div style="flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 64px; padding: 0 16px; box-sizing: border-box; background: var(--bar-bg); border-bottom: 1px solid var(--border)">
+            <div style="min-width: 0">
+              <p style="margin: 0; font-size: var(--t-card-lg); font-weight: var(--w-black); letter-spacing: -0.02em; line-height: var(--lh-tight); color: var(--text)">{{ p.title }}</p>
+              <p style="margin: 1px 0 0; font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--muted)">{{ p.sub }}</p>
+            </div>
+            <span style="display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 12px; border-radius: var(--r); background: var(--wash-accent); border: 1px solid var(--accent); font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--accent); white-space: nowrap"><span aria-hidden="true">&#10003;</span> Whole squad</span>
+          </div>
+
+          <div style="flex: 1 1 auto; min-height: 0; position: relative; overflow: hidden">
+            <div style="position: absolute; inset: 0; padding: 14px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: var(--gap-tile); overflow: hidden">
+
+              <sc-if value="{{ p.showLead }}" hint-placeholder-val="{{ true }}">
+                <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px; display: flex; flex-direction: column; gap: 10px">
+                  <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--on-tint-label); text-transform: uppercase">Ready for Saturday</p>
+                  <p style="margin: 0; font-size: var(--t-subhead); font-weight: var(--w-black); letter-spacing: -0.02em; line-height: var(--lh-tight); color: var(--on-tint-value)">v Colthorne RFC · Sat 12 Sept</p>
+                  <div style="display: flex; gap: 16px">
+                    <div>
+                      <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-num-stat-sm); font-weight: var(--w-num-strong); line-height: var(--lh-num); font-variant-numeric: tabular-nums; color: var(--on-tint-value)">20</p>
+                      <p style="margin: 1px 0 0; font-size: var(--t-caption); font-weight: var(--w-semi); color: var(--on-tint-label)">Full</p>
+                    </div>
+                    <div>
+                      <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-num-stat-sm); font-weight: var(--w-num-strong); line-height: var(--lh-num); font-variant-numeric: tabular-nums; color: var(--on-tint-value)">4</p>
+                      <p style="margin: 1px 0 0; font-size: var(--t-caption); font-weight: var(--w-semi); color: var(--on-tint-label)">Doubtful</p>
+                    </div>
+                    <div>
+                      <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-num-stat-sm); font-weight: var(--w-num-strong); line-height: var(--lh-num); font-variant-numeric: tabular-nums; color: var(--on-tint-value)">3</p>
+                      <p style="margin: 1px 0 0; font-size: var(--t-caption); font-weight: var(--w-semi); color: var(--on-tint-label)">Ruled out</p>
+                    </div>
+                  </div>
+                  <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); line-height: var(--lh-base); font-variant-numeric: tabular-nums; color: var(--on-tint-meta)">27 of 30 have a status · 3 not recorded</p>
+                </div>
+              </sc-if>
+
+              <sc-for list="{{ p.cards }}" as="c" hint-placeholder-count="3">
+                <div style="{{ c.wrapStyle }}">
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px">
+                    <div style="min-width: 0">
+                      <p style="{{ c.labelStyle }}">{{ c.label }}</p>
+                      <p style="{{ c.statStyle }}">{{ c.stat }}</p>
+                    </div>
+                    <span style="{{ c.chevStyle }}">{{ c.chev }}</span>
+                  </div>
+                  <p style="{{ c.stateStyle }}">{{ c.state }}</p>
+                </div>
+              </sc-for>
+
+              <sc-if value="{{ p.panel.isList }}" hint-placeholder-val="{{ false }}">
+                <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden">
+                  <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--hair)">
+                    <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">{{ p.panel.title }}</p>
+                    <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-num); font-variant-numeric: tabular-nums; color: var(--muted)">{{ p.panel.meta }}</p>
+                  </div>
+                  <sc-for list="{{ p.panel.items }}" as="i" hint-placeholder-count="3">
+                    <div style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 11px 14px; border-bottom: 1px solid var(--hair)">
+                      <div style="flex: 1 1 auto; min-width: 0">
+                        <p style="margin: 0; font-size: var(--t-num-body); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ i.name }}</p>
+                        <p style="margin: 2px 0 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--text)">{{ i.reading }}</p>
+                        <p style="margin: 1px 0 0; font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); line-height: var(--lh-base); font-variant-numeric: tabular-nums; color: var(--faint)">{{ i.evidence }}</p>
+                      </div>
+                      <span aria-hidden="true" style="flex: 0 0 auto; font-size: var(--t-card-lg); color: var(--faint)">&rsaquo;</span>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{ p.panel.hasRest }}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; padding: 11px 14px; border-bottom: 1px solid var(--hair)">
+                      <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-num-body); font-weight: var(--w-num); font-variant-numeric: tabular-nums; color: var(--muted)">{{ p.panel.rest }}</p>
+                      <span style="font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--accent)">See all flags &rsaquo;</span>
+                    </div>
+                  </sc-if>
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; padding: 11px 14px">
+                    <p style="margin: 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted)">Thresholds set by Jane Pemberton · 24 Aug</p>
+                    <span style="font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--accent)">Change &rsaquo;</span>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ p.showStrip }}" hint-placeholder-val="{{ false }}">
+                <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 12px 14px">
+                  <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+                    <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Eyebrow" hint-size="auto,16px">This week</x-import>
+                    <span style="font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--accent)">Schedule &rsaquo;</span>
+                  </div>
+                  <div style="margin-top: 10px; display: flex; flex-direction: column">
+                    <sc-for list="{{ p.week }}" as="d" hint-placeholder-count="3">
+                      <div style="display: flex; align-items: center; gap: 12px; min-height: 44px; border-top: 1px solid var(--hair)">
+                        <span style="flex: 0 0 76px; font-family: var(--font-num); font-size: var(--t-num-cell); font-weight: var(--w-num); font-variant-numeric: tabular-nums; color: var(--text)">{{ d.day }}</span>
+                        <span style="flex: 0 0 40px; font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-num-strong); font-variant-numeric: tabular-nums; color: var(--accent)">{{ d.md }}</span>
+                        <span style="flex: 1 1 auto; min-width: 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ d.session }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ p.showMore }}" hint-placeholder-val="{{ false }}">
+                <div style="position: absolute; inset: 0; background: var(--scrim)"></div>
+                <div style="position: absolute; left: 0; right: 0; bottom: 0; background: var(--surf); border-top: 1px solid var(--border); border-radius: var(--r-sheet); box-shadow: var(--shadow-raised); padding: 14px 0 10px">
+                  <div style="padding: 0 18px 10px; display: flex; align-items: baseline; justify-content: space-between">
+                    <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Eyebrow" hint-size="auto,16px">More</x-import>
+                    <span aria-hidden="true" style="font-size: var(--t-card-lg); color: var(--faint)">&times;</span>
+                  </div>
+                  <sc-for list="{{ p.moreRows }}" as="m" hint-placeholder-count="6">
+                    <div style="{{ m.rowStyle }}">
+                      <i class="{{ m.iconClass }}" style="{{ m.iconStyle }}"></i>
+                      <span style="flex: 1 1 auto; min-width: 0">{{ m.label }}</span>
+                      <span style="{{ m.badgeStyle }}">{{ m.badge }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+            </div>
+          </div>
+
+          <div style="flex: 0 0 auto; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: var(--tabbar-pad); background: var(--tabbar-bg); border-top: 1px solid var(--border)">
+            <sc-for list="{{ p.tabs }}" as="t" hint-placeholder-count="5">
+              <div style="{{ t.wrapStyle }}">
+                <i class="{{ t.iconClass }}" style="{{ t.iconStyle }}"></i>
+                <span style="{{ t.labelStyle }}">{{ t.label }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px 16px">
+          <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ p.note.title }}</p>
+          <p style="margin: 4px 0 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ p.note.body }}</p>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="max-width: 900px; margin: 48px auto 0; display: flex; flex-direction: column; gap: var(--gap-card)">
+    <p style="margin: 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); color: var(--text)">What changed, and on which token</p>
+    <sc-for list="{{ changes }}" as="c" hint-placeholder-count="8">
+      <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 16px">
+          <p style="margin: 0; font-size: var(--t-card); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ c.title }}</p>
+          <span style="{{ c.tagStyle }}">{{ c.tag }}</span>
+        </div>
+        <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ c.body }}</p>
+        <p style="margin: 0; font-family: var(--font-mono); font-size: var(--t-num-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--faint); word-break: break-word">{{ c.tokens }}</p>
+      </div>
+    </sc-for>
+
+    <p style="margin: 24px 0 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); color: var(--text)">Needs new token</p>
+    <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 8px">
+      <p style="margin: 0; font-size: var(--t-card); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Nothing</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Three places came close and were resolved on existing tokens instead. The staff bottom bar is the athlete tab bar's own values, one column wider. The More sheet is <span style="font-family: var(--font-mono)">--r-sheet</span> over <span style="font-family: var(--font-mono)">--scrim</span>, as the athlete period menu already is. The disclosure chevron would have needed a transform duration, which the motion set does not carry and should not gain, so the glyph swaps between ▸ and ▾ and nothing animates.</p>
+      <p style="margin: 0; font-family: var(--font-mono); font-size: var(--t-num-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--faint); word-break: break-word">--tabbar-bg · --tabbar-pad · --r-sheet · --scrim · --shadow-raised · --touch-min, all unchanged</p>
+    </div>
+
+    <p style="margin: 24px 0 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); color: var(--text)">Open against code</p>
+    <sc-for list="{{ opens }}" as="o" hint-placeholder-count="7">
+      <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px">
+        <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ o.q }}</p>
+        <p style="margin: 4px 0 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ o.why }}</p>
+      </div>
+    </sc-for>
+
+    <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--on-tint-label); text-transform: uppercase">Where the data came from</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">Names, counts and readings on these frames are illustrative and consistent within the board. The only figures taken from the attached material are the ones the persona review measured: the sidebar's nine rows, the three summary cards and their stats, the six-day strip, the group chips, and the phone measurements (heading y = 728, first content y = 2209, page 3,426px, names 34px, Log out 17px). The five role PDFs carry one line of text each and no readable body content, so the role frames are drawn from the review and from data rule 6, not from those captures.</p>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const NAV = [
+  { key: 'dash', label: 'Dashboard', icon: 'layout' },
+  { key: 'squad', label: 'Squad', icon: 'users' },
+  { key: 'sched', label: 'Schedule', icon: 'clock' },
+  { key: 'flags', label: 'Flags', icon: 'flag' },
+  { key: 'reports', label: 'Reports', icon: 'briefcase' },
+  { key: 'gym', label: 'Gym', icon: 'barbell' },
+  { key: 'nutrition', label: 'Nutrition', icon: 'fork-knife' },
+  { key: 'analytics', label: 'Analytics', icon: 'chart-bar' },
+  { key: 'settings', label: 'Settings', icon: 'gear' }
+];
+
+const WEEK = [
+  { day: 'Mon 7', md: 'MD-5', session: 'Gym, lower A', meta: '16:00 · 24 assigned', today: true },
+  { day: 'Tue 8', md: 'MD-4', session: 'Pitch, conditioning', meta: '18:30 · Pitch 1' },
+  { day: 'Wed 9', md: 'MD-3', session: 'Rest', meta: 'No session' },
+  { day: 'Thu 10', md: 'MD-2', session: 'Team run', meta: '18:30 · Pitch 1' },
+  { day: 'Fri 11', md: 'MD-1', session: "Captain's run", meta: '18:00 · Pitch 2' },
+  { day: 'Sat 12', md: 'MD', session: 'v Colthorne RFC', meta: '15:00 · Home' }
+];
+
+const OFFWEEK = [
+  { day: 'Mon 20', md: '', session: 'Gym, lower A', meta: '16:00 · 24 assigned', today: true },
+  { day: 'Tue 21', md: '', session: 'Pitch, conditioning', meta: '18:30 · Pitch 1' },
+  { day: 'Wed 22', md: '', session: 'Rest', meta: 'No session' },
+  { day: 'Thu 23', md: '', session: 'Gym, upper A', meta: '18:00 · Gym' },
+  { day: 'Fri 24', md: '', session: 'Skills', meta: '18:00 · Pitch 2' },
+  { day: 'Sat 25', md: '', session: 'Rest', meta: 'No session' }
+];
+
+const ATT = [
+  { name: 'Nash, Elliot', reading: 'Soreness 2 of 5, down from 4 yesterday.', evidence: 'Fri 4 · Sat 3 · Mon 2 · baseline 4', action: 'Open profile' },
+  { name: 'Selby, Adam', reading: 'Sleep 4.5 h, a third night under 6 h.', evidence: 'Sat 5.5 · Sun 5.0 · Mon 4.5 · baseline 7.5', action: 'Open profile' },
+  { name: 'Okonkwo, David', reading: 'Acute to chronic ratio 1.62, above 1.5 for two days.', evidence: 'acute 412 AU · chronic 254 AU · n = 21 sessions', action: 'Open profile' },
+  { name: 'Beattie, Tom', reading: 'Body mass 96.2 kg, down 2.4% over seven days.', evidence: 'Mon 31 Aug 98.6 kg · Mon 7 Sept 96.2 kg · self-reported', action: 'Open profile' },
+  { name: 'Raman, Priya', reading: 'Soreness 2 of 5 and sleep 5.0 h on the same morning.', evidence: 'soreness 2, baseline 4 · sleep 5.0 h, baseline 7.0', action: 'Open profile' }
+];
+
+const MISSING = [
+  { name: 'Whitcombe, Sam', reading: 'Not submitted · three mornings in a row.', evidence: 'Last entry Thu 3 Sept', action: 'Send a reminder' },
+  { name: 'Moroney, Conor', reading: 'Not submitted · two mornings in a row.', evidence: 'Last entry Fri 4 Sept', action: 'Send a reminder' },
+  { name: 'Grant, Alex', reading: 'Not submitted · this morning.', evidence: 'Last entry Sun 6 Sept', action: 'Send a reminder' },
+  { name: 'Hale, Ben', reading: 'Not submitted · this morning.', evidence: 'Last entry Sun 6 Sept', action: 'Send a reminder' },
+  { name: 'Ferris, Jack', reading: 'Not submitted · two mornings in a row.', evidence: 'Last entry Fri 4 Sept', action: 'Send a reminder' },
+  { name: 'Duarte, Iker', reading: 'Not submitted · this morning.', evidence: 'Last entry Sun 6 Sept', action: 'Send a reminder' }
+];
+
+const DOUBTFUL = [
+  { name: 'Selby, Adam', line: 'Modified · running and gym only, no contact', reason: 'Grade 1 left hamstring strain. Reviewed Fri 11 Sept.' },
+  { name: 'Nash, Elliot', line: 'Modified · no contact', reason: 'Left shoulder AC joint, grade 1. Contact cleared on reassessment.' },
+  { name: 'Ferris, Jack', line: 'Modified · running only', reason: 'Right calf tightness, no diagnosis recorded.' },
+  { name: 'Raman, Priya', line: 'Modified · gym only', reason: 'Concussion return to play, stage 3 of 6.' }
+];
+
+const OUT = [
+  { name: 'Grant, Alex', line: 'Unavailable · not available for selection', reason: 'Academic — away on placement until Mon 14 Sept.' },
+  { name: 'Beattie, Tom', line: 'Unavailable · no training', reason: 'Right ankle sprain, grade 2. No load for 10 days.' },
+  { name: 'Okonkwo, David', line: 'Unavailable · no training', reason: 'Lumbar spine, under external review.' }
+];
+
+class Component extends DCLogic {
+  nav(role, badge) {
+    const rows = NAV.filter(n => role === 'ss' || n.key !== 'analytics');
+    return rows.map(n => {
+      const on = n.key === 'dash';
+      const ink = on ? 'var(--accent)' : 'var(--text)';
+      return {
+        label: n.label,
+        iconClass: 'ph-fill ph-' + n.icon,
+        iconStyle: 'flex: none; font-size: 20px; line-height: 1; color: ' + ink,
+        rowStyle: 'position: relative; display: flex; align-items: center; gap: 14px; padding: 11px 22px; font-size: var(--t-body); font-weight: var(--w-semi); color: ' + ink + (on ? '; box-shadow: inset 3px 0 0 var(--accent)' : ''),
+        badge: n.key === 'flags' && badge ? badge : '',
+        badgeStyle: n.key === 'flags' && badge
+          ? 'margin-left: auto; font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: 11px; font-weight: var(--w-num); color: var(--on-bad); background: var(--pill-bad); border-radius: var(--r); padding: 1px 7px'
+          : 'display: none'
+      };
+    });
+  }
+
+  week(highlightToday, source) {
+    return (source || WEEK).map(d => {
+      const on = !!d.today && highlightToday !== false;
+      return {
+        day: d.day, md: d.md, session: d.session, meta: d.meta,
+        tileStyle: 'border-radius: var(--r); padding: 8px 10px; box-sizing: border-box; display: flex; flex-direction: column; gap: 3px; background: ' + (on ? 'var(--wash-accent)' : 'var(--surf2)') + '; border: 1px solid ' + (on ? 'var(--accent)' : 'var(--border)'),
+        dayStyle: 'font-family: var(--font-num); font-size: var(--t-num-cell); font-weight: var(--w-num-strong); font-variant-numeric: tabular-nums; color: var(--text)',
+        mdStyle: d.md ? 'font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-num-strong); font-variant-numeric: tabular-nums; color: ' + (on ? 'var(--accent)' : 'var(--faint)') : 'display: none',
+        sessionStyle: 'margin: 0; font-size: var(--t-body-xs); font-weight: var(--w-semi); line-height: var(--lh-tight); color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap',
+        metaStyle: 'margin: 0; font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap'
+      };
+    });
+  }
+
+  card(c) {
+    const open = !!c.open;
+    return {
+      label: c.label, stat: c.stat, sub: c.sub || '',
+      chev: open ? '\u25BE' : '\u25B8',
+      state: open ? 'Open · showing the list' : 'Closed · opens a list',
+      wrapStyle: 'flex: none; text-align: left; border-radius: var(--r); box-shadow: var(--shadow); padding: 11px 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 5px; min-height: 44px; background: ' + (open ? 'var(--surf)' : 'var(--surf2)') + '; border: 1px solid ' + (open ? 'var(--accent)' : 'var(--border)'),
+      labelStyle: 'margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--muted)',
+      statStyle: 'margin: 4px 0 0; font-family: var(--font-num); font-size: var(--t-num-lead); font-weight: var(--w-num-strong); line-height: var(--lh-num); font-variant-numeric: tabular-nums; color: var(--text)',
+      subStyle: c.sub ? 'margin: 3px 0 0; font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--muted)' : 'display: none',
+      chevStyle: 'flex: none; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: var(--r); background: var(--surf); border: 1px solid var(--border); font-size: 10px; color: ' + (open ? 'var(--accent)' : 'var(--muted)'),
+      stateStyle: 'margin: 0; font-size: var(--t-caption); font-weight: var(--w-semi); color: ' + (open ? 'var(--accent)' : 'var(--faint)')
+    };
+  }
+
+  lead(o) {
+    const reasons = !!o.reasons;
+    const wrap = list => list.slice(0, o.limit || 4).map(d => ({
+      name: d.name,
+      line: d.line,
+      reason: reasons ? d.reason : '',
+      reasonStyle: reasons
+        ? 'margin: 3px 0 0; font-size: var(--t-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: ' + (o.tone === 'bad' ? 'var(--on-bad)' : 'var(--on-warn)')
+        : 'display: none'
+    }));
+    return {
+      isMatch: true, isWeek: false,
+      eyebrow: 'Ready for Saturday',
+      title: 'v Colthorne RFC · Sat 12 Sept, 15:00',
+      sub: o.sub || '27 of 30 have a current status · 3 not recorded · MD in 5 days',
+      stats: o.stats || [{ n: '20', label: 'Full' }, { n: '4', label: 'Doubtful' }, { n: '3', label: 'Ruled out' }],
+      medEyebrowWarn: reasons ? 'margin: 2px 0 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--on-warn)' : 'display: none',
+      medEyebrowBad: reasons ? 'margin: 2px 0 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--on-bad)' : 'display: none',
+      doubtfulTitle: reasons ? 'Doubtful · 4, with reason' : 'Doubtful · 4',
+      outTitle: reasons ? 'Ruled out · 3, with reason' : 'Ruled out · 3',
+      doubtful: wrap(DOUBTFUL).map(d => ({ ...d, reasonStyle: reasons ? 'margin: 3px 0 0; font-size: var(--t-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-warn)' : 'display: none' })),
+      out: wrap(OUT).map(d => ({ ...d, reasonStyle: reasons ? 'margin: 3px 0 0; font-size: var(--t-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-bad)' : 'display: none' }))
+    };
+  }
+
+  listPanel(o) {
+    const cols = 2;
+    return {
+      isList: true, isClear: false,
+      title: o.title, meta: o.meta,
+      gridStyle: cols === 2
+        ? 'flex: 0 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-content: start'
+        : 'flex: 0 0 auto; display: flex; flex-direction: column',
+      items: o.items.map((i, n) => ({
+        ...i,
+        rowStyle: 'flex: none; display: flex; align-items: center; gap: 16px; padding: 10px 18px; min-height: 44px; box-sizing: border-box'
+          + (n >= cols ? '; border-top: 1px solid var(--hair)' : '')
+          + (cols === 2 && n % 2 === 1 ? '; border-left: 1px solid var(--hair)' : '')
+          + (o.bar && n === 0 ? '; box-shadow: inset 3px 0 0 var(--bad)' : '')
+      })),
+      hasRest: !!o.rest, rest: o.rest || '',
+      restStyle: o.rest
+        ? 'margin: 0; font-family: var(--font-num); font-size: var(--t-num-body); font-weight: var(--w-num); font-variant-numeric: tabular-nums; color: var(--muted)'
+        : 'display: none',
+      thresholds: 'Thresholds set by Jane Pemberton · 24 Aug ·'
+    };
+  }
+
+  renderVals() {
+    const FOURTH = {
+      ss: { label: 'Flags', icon: 'flag', key: 'flags' },
+      coach: { label: 'Flags', icon: 'flag', key: 'flags' },
+      medic: { label: 'Flags', icon: 'flag', key: 'flags' },
+      sc: { label: 'Gym', icon: 'barbell', key: 'gym' },
+      nut: { label: 'Nutrition', icon: 'fork-knife', key: 'nutrition' }
+    };
+    const tabs = (active, role) => [
+      { label: 'Dashboard', icon: 'layout', key: 'dash' },
+      { label: 'Squad', icon: 'users', key: 'squad' },
+      { label: 'Schedule', icon: 'clock', key: 'sched' },
+      FOURTH[role || 'ss'],
+      { label: 'More', icon: 'dots-three', key: 'more' }
+    ].map(t => {
+      const on = t.key === active;
+      const ink = on ? 'var(--accent)' : 'var(--muted)';
+      return {
+        label: t.label,
+        iconClass: 'ph ph-' + t.icon,
+        iconStyle: 'font-size: 24px; line-height: 1; color: ' + ink,
+        wrapStyle: 'display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 44px; padding: 4px 2px; box-sizing: border-box',
+        labelStyle: 'font-size: var(--t-pill); font-weight: ' + (on ? 'var(--w-bold)' : 'var(--w-semi)') + '; color: ' + ink
+      };
+    });
+
+    const moreFor = role => [
+      { label: 'Flags', icon: 'flag', key: 'flags' },
+      { label: 'Reports', icon: 'briefcase', key: 'reports' },
+      { label: 'Gym', icon: 'barbell', key: 'gym' },
+      { label: 'Nutrition', icon: 'fork-knife', key: 'nutrition' },
+      { label: 'Analytics', icon: 'chart-bar', key: 'analytics' },
+      { label: 'Settings', icon: 'gear', key: 'settings' },
+      { label: 'Log out', icon: 'sign-out', key: 'logout' }
+    ].filter(m => m.key !== FOURTH[role || 'ss'].key && (role === 'ss' || role === undefined || m.key !== 'analytics'))
+     .map((m, i) => ({
+      label: m.label,
+      iconClass: 'ph ph-' + m.icon,
+      iconStyle: 'flex: none; font-size: 24px; line-height: 1; color: ' + (m.active ? 'var(--accent)' : 'var(--muted)'),
+      rowStyle: 'display: flex; align-items: center; gap: 14px; min-height: 52px; padding: 0 18px; box-sizing: border-box; font-size: var(--t-body-lg); font-weight: var(--w-semi); color: var(--text)' + (i ? '; border-top: 1px solid var(--hair)' : ''),
+      badge: '', badgeStyle: 'display: none'
+    }));
+    const moreRows = moreFor('ss');
+
+    const cardsSS = open => [
+      this.card({ label: 'Needs attention today', stat: '2 athletes', open: open === 'att' }),
+      this.card({ label: 'Not checked in', stat: '4 of 30', open: open === 'miss' }),
+      this.card({ label: 'Availability', stat: '20 full · 4 modified · 3 unavailable', open: open === 'avail' })
+    ];
+
+    const desktops = [
+      {
+        id: 'd1', label: '1 · Sport scientist, normal morning, match on Saturday',
+        eyebrow: 'Mon 7 Sept · MD-5 · Ashcombe RFC',
+        headMeta: 'Signed in as Jane Pemberton · sport scientist',
+        signedIn: 'Jane Pemberton · sport scientist',
+        nav: this.nav('ss', 2), week: this.week(), showStrip: true, cardCols: 3,
+        lead: this.lead({}),
+        cards: cardsSS('att'),
+        panel: this.listPanel({ title: 'Needs attention today · 2 athletes', meta: 'highest first · facts only', items: ATT.slice(0, 2), rest: '20 other open flags, none above a club threshold', bar: true }),
+        notes: [
+          { title: 'The ten-second read, in order', body: 'Matchday question, week, then the three toggles with one open. Nothing sits below 900px, so nothing that answers the four questions needs a scroll.' },
+          { title: 'No reason on any name', body: 'Doubtful and Ruled out carry the status and the restriction line. “(Academic)” and every clinical line are absent for this role.' },
+          { title: 'Attention is athletes, not rows', body: 'The stat is “2 athletes”. The 20 remaining flags are a footer line with a link, and the card says whether it is open.' }
+        ]
+      },
+      {
+        id: 'd2', label: '2 · Heavy morning · 5 high priority, 70 other flags, 6 missing check-ins',
+        eyebrow: 'Mon 7 Sept · MD-5 · Ashcombe RFC',
+        headMeta: 'Signed in as Jane Pemberton · sport scientist',
+        signedIn: 'Jane Pemberton · sport scientist',
+        nav: this.nav('ss', 5), week: this.week(), showStrip: false, cardCols: 3,
+        lead: this.lead({}),
+        cards: [
+          this.card({ label: 'Needs attention today', stat: '5 athletes', sub: '70 other open flags', open: true }),
+          this.card({ label: 'Not checked in', stat: '6 of 30', sub: 'Wellness in 24 of 30 this morning' }),
+          this.card({ label: 'Availability', stat: '20 full · 4 modified · 3 unavailable', sub: '27 of 30 recorded' })
+        ],
+        panel: this.listPanel({ title: 'Needs attention today · 5 athletes', meta: 'wellness first, then load · facts only', items: [ATT[0], ATT[1], ATT[4], ATT[3], ATT[2]], rest: '70 other open flags, none above a club threshold', bar: true }),
+        notes: [
+          { title: 'Five names fit; the week strip yields', body: 'On a heavy morning the strip collapses out and the lead card keeps its place. On desktop the list runs two columns, so no named athlete is pushed behind a count. The week is one row away in the sidebar; the five names are not.' },
+          { title: '70 is a footer, once', body: 'The old headline read “72 open flags · 5 high priority”. The count now appears once, after the names, as the least prominent line on the card.' },
+          { title: 'Every row carries its evidence', body: 'Dates and values, never a conclusion. No row says “fatigued” or “at risk”.' }
+        ]
+      },
+      {
+        id: 'd3', label: '3 · Quiet morning · no one flagged, everyone checked in',
+        eyebrow: 'Mon 7 Sept · MD-5 · Ashcombe RFC',
+        headMeta: 'Signed in as Jane Pemberton · sport scientist',
+        signedIn: 'Jane Pemberton · sport scientist',
+        nav: this.nav('ss', 0), week: this.week(), showStrip: true, cardCols: 3,
+        lead: this.lead({ sub: '30 of 30 have a current status · MD in 5 days', stats: [{ n: '23', label: 'Full' }, { n: '4', label: 'Doubtful' }, { n: '3', label: 'Ruled out' }] }),
+        cards: [
+          this.card({ label: 'Needs attention today', stat: 'No one flagged today', sub: 'No open flags', open: true }),
+          this.card({ label: 'Not checked in', stat: 'Everyone checked in', sub: 'Wellness in 30 of 30 this morning' }),
+          this.card({ label: 'Availability', stat: '23 full · 4 modified · 3 unavailable', sub: '30 of 30 recorded' })
+        ],
+        panel: { isList: false, isClear: true, title: 'No one flagged today.', body: 'Nothing is outstanding and nobody is above a threshold this morning. Availability is unchanged from Sunday, and the four modified and three unavailable athletes above are the ones already known.', meta: 'n = 30 of 30 morning entries · thresholds unchanged since Mon 31 Aug' },
+        notes: [
+          { title: 'An all-clear is information', body: 'The card reads “No one flagged today” as its own button text, and the panel says what was checked and over what sample, so it cannot read as a failed load.' },
+          { title: 'The Flags badge counts the same athletes', body: 'The sidebar badge is the number of athletes needing attention today, so it agrees with the toggle beside it — 2 on a normal morning, 5 on a heavy one, and absent rather than 0 on a quiet one. A badge reading 5 next to “No one flagged today” is the contradiction the all-clear exists to avoid.' },
+          { title: 'The stat line still holds the number', body: '“Everyone checked in” replaces “0 of 30”, and the denominator moves to the caption where it stays visible.' }
+        ]
+      },
+      {
+        id: 'd4', label: '4 · No match in range · the week leads',
+        eyebrow: 'Mon 20 July · off-season · Ashcombe RFC',
+        headMeta: 'Signed in as Jane Pemberton · sport scientist',
+        signedIn: 'Jane Pemberton · sport scientist',
+        nav: this.nav('ss', 2), week: this.week(true, OFFWEEK), showStrip: false, cardCols: 3,
+        lead: { isMatch: false, isWeek: true, eyebrow: 'No match in the next 14 days', title: 'This week · pre-season block 2', sub: 'Next fixture Sat 5 Sept v Marleigh · 47 days' },
+        cards: cardsSS('att'),
+        panel: this.listPanel({ title: 'Needs attention today · 2 athletes', meta: 'highest first · facts only', items: ATT.slice(0, 2), rest: '20 other open flags, none above a club threshold', bar: true }),
+        notes: [
+          { title: 'The lead swaps, the order does not', body: 'With no fixture inside 14 days the week takes the emphasised card and the matchday card is absent, not empty. The next fixture and its distance in days are stated so the absence is legible.' },
+          { title: 'One emphasised card per screen still holds', body: 'The week card takes --blue-100 only because the matchday card is gone. The two never appear together.' }
+        ]
+      },
+      {
+        id: 'd5', label: '5 · Coach · differences only',
+        eyebrow: 'Mon 7 Sept · MD-5 · Ashcombe RFC',
+        headMeta: 'Signed in as Kate Doyle · coach',
+        signedIn: 'Kate Doyle · coach',
+        nav: this.nav('coach', 2), week: this.week(), showStrip: true, cardCols: 3,
+        lead: this.lead({}),
+        cards: [
+          this.card({ label: 'Needs attention today', stat: '2 athletes', open: true }),
+          this.card({ label: 'Not checked in', stat: '4 of 30' }),
+          this.card({ label: 'Availability', stat: '20 full · 4 modified · 3 unavailable' })
+        ],
+        panel: this.listPanel({ title: 'Needs attention today · 2 athletes', meta: 'affects selection or load', items: [ATT[0], ATT[2]], rest: '20 other open flags, none above a club threshold', bar: true }),
+        notes: [
+          { title: 'Eight sidebar rows, Analytics absent', body: 'As captured in STAFF-COACH-01. Nothing moves; the row is not there.' },
+          { title: 'No clinical detail anywhere', body: 'Identical to the sport scientist on the lead card. The attention list drops rows whose only content is a medical reading and keeps availability and load.' },
+          { title: 'Weigh-ins are not on this dashboard', body: 'Body mass belongs to S&C and nutrition. A coach sees the restriction line, not the kilograms.' }
+        ]
+      },
+      {
+        id: 'd6', label: '6 · Medic · differences only · the only role with clinical detail',
+        eyebrow: 'Mon 7 Sept · MD-5 · Ashcombe RFC',
+        headMeta: 'Signed in as Ruth Callaghan · medical',
+        signedIn: 'Ruth Callaghan · medical',
+        nav: this.nav('medic', 3), week: this.week(), showStrip: false, cardCols: 3,
+        lead: this.lead({ reasons: true }),
+        cards: [
+          this.card({ label: 'Needs attention today', stat: '3 athletes', open: true }),
+          this.card({ label: 'Not checked in', stat: '4 of 30' }),
+          this.card({ label: 'Availability', stat: '20 full · 4 modified · 3 unavailable' })
+        ],
+        panel: this.listPanel({
+          title: 'Needs attention today · 3 athletes',
+          meta: 'medical · visible to medical staff and the athlete · 20 other open flags',
+          bar: true,
+          items: [
+            { name: 'Selby, Adam', reading: 'Review due today · grade 1 left hamstring strain.', evidence: 'Injured Wed 2 Sept · running progression day 5 · last review Fri 4 Sept', action: 'Open record' },
+            ATT[0], ATT[4]
+          ],
+          bar: true
+        }),
+        notes: [
+          { title: 'The reason appears, under its own eyebrow', body: 'Each doubtful and ruled-out name gains one reason line inside the tone-family card. The eyebrow “Medical · visible to medical staff” is the same wording the athlete app uses on ATH-ADULT-02, so an athlete and a medic read the same sentence about who can see it.' },
+          { title: 'A review due is an attention row', body: 'The only role whose attention list carries a clinical item, and it is placed first with the --border-accent-w bar.' },
+          { title: 'Eight sidebar rows, Analytics absent', body: 'As captured in STAFF-MEDIC-01.' }
+        ]
+      },
+      {
+        id: 'd7', label: '7 · S&C, and the nutritionist · differences only',
+        eyebrow: 'Mon 7 Sept · MD-5 · Ashcombe RFC',
+        headMeta: 'Signed in as Owen Hartnell · S&C · nutritionist differences noted below',
+        signedIn: 'Owen Hartnell · S&C',
+        nav: this.nav('sc', 2), week: this.week(), showStrip: false, cardCols: 4,
+        lead: this.lead({}),
+        cards: [
+          this.card({ label: 'Needs attention today', stat: '2 athletes', sub: 'Load and weigh-ins only', open: true }),
+          this.card({ label: 'Gym today', stat: '9 of 24 logged', sub: 'Lower A · 16:00' }),
+          this.card({ label: 'Weigh-ins', stat: '24 of 30', sub: '6 not submitted this morning' }),
+          this.card({ label: 'Availability', stat: '20 full · 4 modified · 3 unavailable', sub: '27 of 30 recorded' })
+        ],
+        panel: this.listPanel({ title: 'Needs attention today · 2 athletes', meta: 'weigh-ins first, then load · facts only', items: [ATT[3], ATT[2]], rest: '20 other open flags, none above a club threshold', bar: true }),
+        notes: [
+          { title: 'S&C gains two cards, loses the clinical reason', body: 'Gym today and Weigh-ins join the row, so the toggles run four across at the same 44px minimum, and the week strip gives way as it does on a heavy morning. The lead card is the sport scientist’s, unchanged, with no reasons.' },
+          { title: 'The nutritionist is this frame minus two cards', body: 'Weigh-ins only: the attention list keeps body-mass rows and drops load, Gym today is absent, and the lead card keeps the three availability counts with no names, because a nutritionist does not pick a team. Everything else is identical, which is why there is no eighth frame.' },
+          { title: 'Eight sidebar rows for both, Analytics absent', body: 'As captured in STAFF-SC-01 and STAFF-NUT-01. The nutritionist can navigate to almost everything and act on almost none of it; that is a permissions question, listed under Open against code.' }
+        ]
+      }
+    ];
+
+    const missPanelItems = MISSING.slice(0, 4).map(m => ({ ...m }));
+
+    const phones = [
+      {
+        id: 'p8', label: '8 · The staff shell · navigation closed',
+        title: 'Dashboard', sub: 'Mon 7 Sept · MD-5',
+        showLead: true, showStrip: true, showMore: false,
+        week: WEEK.slice(0, 2), tabs: tabs('dash'),
+        cards: [
+          this.card({ label: 'Needs attention today', stat: '2 athletes' }),
+          this.card({ label: 'Not checked in', stat: '4 of 30' })
+        ],
+        panel: { isList: false }, moreRows,
+        note: { title: 'Content starts at y = 64', body: 'The nine rows and Log out are gone from the top of the page. The title bar is 64px, the first content pixel is y = 64 and the matchday answer is fully on screen without a scroll. Measured before: heading y = 728, first content y = 2209.' }
+      },
+      {
+        id: 'p9', label: '9 · The staff shell · navigation open (More)',
+        title: 'Dashboard', sub: 'Mon 7 Sept · MD-5',
+        showLead: true, showStrip: false, showMore: true,
+        week: WEEK.slice(0, 3), tabs: tabs('more'),
+        cards: [this.card({ label: 'Needs attention today', stat: '2 athletes' })],
+        panel: { isList: false }, moreRows,
+        note: { title: 'Five rows and Log out, at 52px each', body: 'The four in the bar plus these five are the nine sections. Log out sits last, at 52px rather than the 17px measured in the review. The sheet is --r-sheet over --scrim, as the athlete period menu is.' }
+      },
+      {
+        id: 'p10', label: '10 · Dashboard · sport scientist, normal morning',
+        title: 'Dashboard', sub: 'Mon 7 Sept · MD-5 · 30 athletes',
+        showLead: true, showStrip: false, showMore: false,
+        week: WEEK.slice(0, 3), tabs: tabs('dash'),
+        cards: [
+          this.card({ label: 'Needs attention today', stat: '2 athletes' }),
+          this.card({ label: 'Not checked in', stat: '4 of 30' }),
+          this.card({ label: 'Availability', stat: '20 full · 4 modified · 3 out' })
+        ],
+        panel: { isList: false }, moreRows,
+        note: { title: 'Three closed toggles, each 44px or more', body: 'Same order as desktop, stacked. The stat stays the button text and the state line under it says “Closed · opens a list”, which is what aria-expanded=“false” announces.' }
+      },
+      {
+        id: 'p11', label: '11 · High-priority attention list opened',
+        title: 'Dashboard', sub: 'Mon 7 Sept · MD-5 · 30 athletes',
+        showLead: false, showStrip: false, showMore: false,
+        week: WEEK.slice(0, 3), tabs: tabs('dash'),
+        cards: [this.card({ label: 'Needs attention today', stat: '2 athletes', open: true })],
+        panel: { isList: true, title: 'Needs attention today', meta: '2 athletes', items: ATT.slice(0, 2), hasRest: true, rest: '20 other open flags' },
+        moreRows,
+        note: { title: 'The name is the tap target, at 44px', body: 'Rows are 44px minimum against the 34px measured on squad names. The evidence line stays on the row rather than moving behind a tap, because it is what lets a decision happen pitch-side.' }
+      },
+      {
+        id: 'p12', label: '12 · Missing check-ins opened',
+        title: 'Dashboard', sub: 'Mon 7 Sept · MD-5 · 30 athletes',
+        showLead: false, showStrip: false, showMore: false,
+        week: WEEK.slice(0, 3), tabs: tabs('dash'),
+        cards: [this.card({ label: 'Not checked in', stat: '4 of 30', open: true })],
+        panel: { isList: true, title: 'Not checked in', meta: '4 of 30', items: missPanelItems, hasRest: false },
+        moreRows,
+        note: { title: 'Longest run first, and it says “Not submitted”', body: 'Ordered by consecutive mornings, not alphabetically, so the athlete to chase is at the top. “Not submitted” is the athlete app’s own wording for a missing value; it is never rendered as 0.' }
+      }
+    ];
+
+    phones.push({
+      id: 'p13', label: '13 · The staff shell · S&C, fourth slot is Gym',
+      title: 'Dashboard', sub: 'Mon 7 Sept · MD-5 · 30 athletes',
+      showLead: true, showStrip: false, showMore: false,
+      week: WEEK.slice(0, 2), tabs: tabs('dash', 'sc'),
+      cards: [
+        this.card({ label: 'Gym today', stat: '9 of 24 logged' }),
+        this.card({ label: 'Weigh-ins', stat: '24 of 30' })
+      ],
+      panel: { isList: false }, moreRows: moreFor('sc'),
+      note: { title: 'The fourth slot is the role’s own destination', body: 'Flags for the sport scientist, coach and medic; Gym for S&C; Nutrition for the nutritionist. Whatever takes the slot leaves the More sheet, and Flags joins it, so the nine sections are always reachable in exactly one place. Dashboard, Squad and Schedule never move.' }
+    });
+
+    const tagStyle = kind => 'flex: none; font-size: var(--t-pill); font-weight: var(--w-bold); padding: 2px 8px; border-radius: var(--r); text-transform: uppercase; letter-spacing: 0.06em; background: ' + (kind === 'pattern' ? 'var(--pill-accent)' : 'var(--surf2)') + '; color: ' + (kind === 'pattern' ? 'var(--accent)' : 'var(--muted)');
+
+    const changes = [
+      { tag: 'pattern', title: 'The matchday card is the one emphasised card, and it is the only one', body: 'The lead keeps “Ready for {matchday}” with doubtful and ruled out. It takes the emphasised treatment, which means no other card on the dashboard may, and the week strip below it is a default card. When no fixture falls inside 14 days the week card takes the emphasis instead and the matchday card is absent rather than empty.', tokens: 'card emphasised --blue-100 + 1px --blue-200 + --shadow · padding --pad-card-lead · title --t-section / --w-black / --t-section-tracking · counts --font-num / --t-num-stat / --w-num-strong / tabular-nums' },
+      { tag: 'pattern', title: 'Doubtful and ruled out are tone-family cards, not stripes', body: 'Each list is a card whose fill, border and foreground come from one tone family — warn for doubtful, bad for ruled out — the same treatment approved on ATH-ADULT-02 for Modified and Unavailable. Text is full-opacity on the tint, never alpha-muted. The 3px bar is retained only for the first row of a dense list.', tokens: 'doubtful --pill-warn + 1px --warn + --on-warn / --on-warn-meta · out --pill-bad + 1px --bad + --on-bad / --on-bad-meta · dense row --border-accent-w 3px --bad' },
+      { tag: 'pattern', title: 'A summary card is a button, and it says which state it is in', body: 'The stat stays the button text. Closed carries the --surf2 well fill with a ▸ affordance and the line “Closed · opens a list”; open carries a white fill, an accent border, ▾ and “Open · showing the list”. The written state is what aria-expanded announces, so the review’s “Expand/Collapse toggles” finding is answered in form as well as substance.', tokens: 'closed --surf2 + 1px --border · open --surf + 1px --accent · both --shadow + --r · state line --t-caption / --w-semi / --accent or --faint · min-height --touch-min' },
+      { tag: 'pattern', title: 'Attention counts athletes and names them; the flag total is a footer', body: 'The stat is “5 athletes”, never “72 open flags”. Each row is name, then the reading in plain words, then the dates and values behind it. On desktop the rows run two columns so every named athlete stays on the first screen. The remaining flags are one line at the foot of the panel with a link. Zero reads “No one flagged today” as the button text, with a panel stating the sample.', tokens: 'name --t-num-row / --w-bold · reading --t-body-sm / --text · evidence --font-num / --t-num-caption / --faint / tabular-nums · footer --t-num-body / --muted above --hair' },
+      { tag: 'pattern', title: 'No metric is high priority by default; the club sets the thresholds', body: 'Priority is a club setting, not a Fydr opinion, so every attention panel closes with “Thresholds set by Jane Pemberton · 24 Aug · Change ›” linking to where they are set. The footer count reads “none above a club threshold” rather than “none high priority”. Wellness readings lead the list and load readings follow, so ACWR stays available as a reading without being the first thing a heavy morning shows.', tokens: 'footer line --t-body-xs / --muted with --accent link · no new token · rest count --font-num / --t-num-body / tabular-nums' },
+      { tag: 'pattern', title: 'The gym glyph is neutral, like every other icon', body: 'The one coloured icon is gone from the staff shell. Gym takes --text in the sidebar and --muted in the More sheet, and --accent when it is the active destination, the same as the other eight. Highlight gold stays available for gym content, not for navigation.', tokens: 'sidebar icon --text / --accent when active · sheet icon --muted / --accent when active · --highlight no longer used in navigation' },
+      { tag: 'pattern', title: 'The fourth phone slot follows the role', body: 'Dashboard, Squad and Schedule are fixed. The fourth slot is Flags for the sport scientist, coach and medic, Gym for S&C and Nutrition for the nutritionist. Whatever takes the slot leaves the More sheet and Flags joins it, so all nine sections stay reachable in exactly one place.', tokens: 'no new token · bar --tabbar-bg + --tabbar-pad · ph regular 24px · label --t-pill' },
+      { tag: 'pattern', title: 'No row states a diagnosis or a judgement', body: 'Every attention row is a measurement, a direction and a sample: “Soreness 2 of 5, down from 4 yesterday” with “Fri 4 · Sat 3 · Mon 2 · baseline 4”. Deltas use ▲ ▼ and minus signs and carry no adjective. Nothing on the dashboard says fatigued, at risk, poor or improving.', tokens: 'no token change · content rule · direction glyphs ▲ ▼, en dash for ranges, minus sign for negatives' },
+      { tag: 'pattern', title: 'Availability shows the status and the restriction. Only the medic sees the reason', body: 'Data rule 6 applied literally. “Ruled out · Alex Grant (Academic)” becomes “Grant, Alex — Unavailable · not available for selection” for every role but the medic, who gains one reason line per name under the eyebrow “Medical · visible to medical staff” — the same sentence the athlete reads on their own card.', tokens: 'reason line --t-caption / --w-regular / --on-warn or --on-bad inside the tone card · eyebrow --t-eyebrow / --w-semi / --t-eyebrow-tracking' },
+      { tag: 'pattern', title: 'Missing check-ins are ordered by run length and say “Not submitted”', body: 'The list is who and how many mornings in a row, longest run first, each row carrying its last entry date and a “Send a reminder” action. A missing morning is never rendered as 0 and never as 0%; it reduces the stated denominator instead.', tokens: 'no token change · data rule 1 · row --touch-min · action --pill-accent + --accent / --t-body-xs' },
+      { tag: 'pattern', title: 'Below 768px the sidebar becomes four tabs plus More', body: 'Dashboard, Squad, Schedule and Flags in a fixed bottom bar; the other five sections and Log out in a More sheet at 52px a row. Content begins at y = 64 behind a 64px title bar that carries the page name and the group chip. The 214px sidebar at 1024 and up and the 64px rail between 768 and 1023 are unchanged.', tokens: 'bar --tabbar-bg + --bar-blur + --tabbar-pad · icons ph regular 24px · label --t-pill · sheet --r-sheet + --shadow-raised over --scrim · rows 52px' },
+      { tag: 'pattern', title: 'Everything tappable on a phone is at least 44px', body: 'Athlete and flag rows, summary cards, the group chip, sheet rows and every tab reach --touch-min or more. The two measured defects — 34px names and 17px Log out — are both fixed by the shell, not per screen.', tokens: '--touch-min: 44px · sheet rows 52px · tab column min-height 44px · bottom padding from --tabbar-pad clears the home indicator' },
+      { tag: 'screen-specific', title: 'The week strip yields on a heavy morning', body: 'When five athletes need attention the six-day strip is not rendered and the attention panel takes the space. It is the only element on the dashboard that gives way, and it does so because the week is one sidebar row away while the five names are not.', tokens: 'no token change · layout rule on the dashboard only' },
+      { tag: 'screen-specific', title: 'S&C runs four toggles, the nutritionist two', body: 'Gym today and Weigh-ins join the toggle row for S&C, at the same card treatment and the same minimum height. The nutritionist keeps Weigh-ins and Not checked in, loses Gym today and the named availability lists, and keeps the three counts.', tokens: 'grid-template-columns repeat(4, minmax(0, 1fr)) · --gap-card' },
+      { tag: 'screen-specific', title: 'The group filter bar and its chips are unchanged', body: 'Five chips, “✓ Whole squad” selected, “30 athletes in the squad” on the right. The chips keep the selected treatment from SS-02. On a phone the active chip alone appears in the title bar at 44px and opens the same list.', tokens: 'bar --bar-bg + --pad-bar · chip selected --wash-accent + 1px --accent + --accent · unselected --surf + 1px --border' }
+    ].map(c => ({ ...c, tagStyle: tagStyle(c.tag) }));
+
+    const opens = [
+      { q: 'What makes a flag high priority?', why: 'The review reports the count “72 open flags · 5 high priority” and nothing about the rule behind it. There is no Fydr codebase in this project, and neither the bound design system nor its two templates contains flag or threshold logic, so the board shows five named athletes without claiming to know why they qualified. The ordering on these frames is illustrative.' },
+      { q: 'Is an open flag one per athlete, or one per athlete per metric per day?', why: 'A squad of 30 producing 72 open flags implies several rows per athlete. The card’s copy depends on which: “70 other open flags” is honest for rows, and wrong if the unit is athletes.' },
+      { q: 'Does a flag close by itself, and when?', why: '“Open” implies a close. If flags only close on acknowledgement, the count grows all season and the footer number stops meaning anything; if they close when the reading returns to baseline, the number is a today number and should say so.' },
+      { q: 'Is an unavailability reason stored with a clinical or non-clinical marker?', why: '“Academic” is not medical detail, but it is still a reason. This board hides every reason from every role but the medic, which is safe. If the field carries a non-clinical marker, a coach could see “away on placement” and plan better.' },
+      { q: 'Is the role gate on the reason field enforced server side?', why: 'The system states medical detail is enforced server side and stated in the UI. The review found the last-admin guard running in the browser (§0ae), so this one needs confirming rather than assuming.' },
+      { q: 'Does the group filter recompute the flag counts and the availability denominator server side?', why: 'The filter is global by definition — it rewrites every denominator. The counts on the toggles and the “27 of 30” caption must move with it, including the “other open flags” footer.' },
+      { q: 'Does the six-day strip start Monday club-local, or roll from today?', why: 'The review measured Mon 7 → Sat 12 on a Monday, which cannot distinguish the two. On a Thursday, one shows two past days and the other does not.' },
+      { q: 'How far ahead is a fixture “in range”?', why: 'The lead card swaps to the week when no match is in range. The board uses 14 days as a placeholder and says so on frame 4.' },
+      { q: 'What is the availability denominator when an athlete has no status?', why: 'The board shows “27 of 30 have a current status · 3 not recorded” rather than counting those three as available. Whether the code has a null status, or defaults to full, changes the first number a coach reads.' },
+      { q: 'Can the nutritionist act on the eight sections they can navigate to?', why: 'STAFF-NUT-01 notes the role can reach almost everything and act on almost none of it. If that is right, those rows belong at the gated treatment (62% and a badge) rather than looking live.' },
+      { q: 'Which four sections belong in the bottom bar?', why: 'Dashboard, Squad, Schedule and Flags are chosen from what the persona does pitch-side. Navigation counts would settle it; nothing in the attached material carries them.' }
+    ];
+
+    return { desktops, phones, changes, opens };
+  }
+}
+</script>
+</body>
+</html>

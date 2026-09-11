@@ -296,6 +296,7 @@ export function signInFailureRow(
   context: FailureContext,
 ): SignInAuditRow | null {
   if (!target.orgId || !target.userId) return null;
+  const userAgent = clientUserAgent(headers);
 
   return {
     org_id: target.orgId,
@@ -310,6 +311,11 @@ export function signInFailureRow(
     metadata: {
       attempts_remaining: context.attemptsRemaining,
       locked: context.locked,
+      /* §0ar (2026-09-11): the same key, cap and omit-when-absent rule as
+         the success row above, from the same clientUserAgent(). A review
+         asks "browser or curl?" of the FAILURE rows first, and four of them
+         on production could not answer it. */
+      ...(userAgent ? { user_agent: userAgent } : {}),
     },
     ip_address: clientAddress(headers),
   };

@@ -346,6 +346,17 @@ console.log('\nA FAILED sign-in is recorded too, and by the service role');
   assert(row?.metadata.attempts_remaining === 4, 'metadata carries where in the streak this was');
   assert(row?.metadata.locked === false, 'and whether it tripped the lockout');
 
+  /* §0ar (2026-09-11): the failure row records the user agent the same way
+     the success row does — same key, same omit-when-absent rule, same 512
+     cap — so a review can ask "browser or curl?" of the rows it asks it
+     about first. Four failures on production could not be told apart from a
+     curl test until Isabella's memory of the C1 run answered it. */
+  const withUa = signInFailureRow(target, h({ 'x-real-ip': '88.98.10.1', 'user-agent': 'Mozilla/5.0 (iPhone)' }), { attemptsRemaining: 3, locked: false });
+  assert(withUa?.metadata.user_agent === 'Mozilla/5.0 (iPhone)', 'the failure row carries the browser under the same key as the success row');
+  assert(!('user_agent' in (row?.metadata ?? {})), 'and omits the key when no agent was sent, as the success row does');
+  const hugeFail = signInFailureRow(target, h({ 'user-agent': 'x'.repeat(900) }), { attemptsRemaining: 3, locked: false });
+  assert((hugeFail?.metadata.user_agent as string).length === 512, 'capped at 512 like the success row — the same clientUserAgent()');
+
   /* THE ACTOR IS CLAIMED, NOT PROVEN, and that is the one thing about this row
      that could mislead. actor_id is the account somebody tried to sign in TO;
      nothing establishes that they are that person — the sign-in failed. It is

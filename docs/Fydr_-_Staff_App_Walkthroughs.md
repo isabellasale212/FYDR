@@ -951,17 +951,60 @@ why the narrow choice is rarely the right one, inside the control.
 
 ## STAFF-SS-26 — Publish and manage leaderboards
 
-**Entry point.** "Manage published boards →" → `/leaderboards/manage`; "+ New"
-→ `/leaderboards/new`.
-**Gate:** `LEADERBOARD_EDIT` — sport scientist, coach, S&C. **Not** medic, **not**
-nutritionist.
+**Entry point.** "Manage published boards →" → `/leaderboards/manage`;
+"+ New leaderboard" → `/leaderboards/new`.
 
-**Branch worth naming.** `/leaderboards/{id}` checks both `LEADERBOARD_EDIT`
-**and** `CLINICAL_ONLY`, and refuses otherwise — so a medic reaches a published
-board by a different gate than a coach does.
+**Gates, corrected 2026-09-11 from the `require*` calls rather than the in-page
+`hasAnyRole` reads** (the same method error §SS-28 records):
 
-**Flagged.** The control inventory for the manage and new screens was not
-extracted in this pass.
+| Route | Gate | Who |
+|---|---|---|
+| `/leaderboards/manage` | `requireStaff()` only | every staff role |
+| `/leaderboards/new` | `LEADERBOARD_EDIT`, else **redirect to `/leaderboards/manage`** | sport scientist, coach, S&C |
+| `/leaderboards/{id}` | `requireStaff()` only | every staff role |
+
+An earlier version said `/leaderboards/{id}` "checks both `LEADERBOARD_EDIT`
+and `CLINICAL_ONLY`, and refuses otherwise". It refuses nobody: the page is
+open to every staff role, and the two constants decide what renders —
+`canManage` (`LEADERBOARD_EDIT`) shows the board actions, `isMedical`
+(`CLINICAL_ONLY`) shapes the content.
+
+**Steps, measured 2026-09-11 as a sport scientist.**
+
+1. `/leaderboards/manage`: one `.card` link per board — "Total session load ·
+   Whole squad · all time · Published" — and "+ New leaderboard"
+   (`.btn-primary`). The intro links back to "the testing wall"
+   (`/leaderboards`) for internal-only results, and states the three rules:
+   wellness and body composition never rank; a board renders only once at least
+   three athletes qualify; under-18s appear only if they opt in themselves.
+2. `/leaderboards/new` is one form in six numbered steps, every choice a
+   `squad-chip` with `aria-pressed`:
+   - **1. Metric** — the eligible metrics (eleven on the Premium preview:
+     Accelerations … Total session load), then a second row of the
+     **ineligible** ones rendered `disabled` (Body mass, Readiness score,
+     Sleep, Soreness) under the note "Not every metric can be ranked. Wellness
+     and body composition never can, and some depend on your plan. Tap one
+     below to see why."
+   - **2. Aggregation** — Total / Mean / Best in window.
+   - **3. Population** — Whole squad / One group.
+   - **4. Window** — Last 28 days / This season (pressed) / All time.
+   - **5. Visibility** — Staff only (pressed) / Published to athletes.
+   - **6. Name** — one text input; then "Save" (`.btn-primary`).
+3. `/leaderboards/{id}`: the board's name as the heading; "Download CSV" and
+   "Print PDF" (a server-rendered PDF at `/leaderboards/{id}/pdf`, **not**
+   `window.print()`); the summary line ("Published to athletes · Whole squad ·
+   All time · Ranking Total session load, total."); a **Board actions** group
+   with "Unpublish" and "Delete board" for `LEADERBOARD_EDIT`; the group filter
+   chips; then the ranking (#, Athlete, Unit, Relative to leader) with
+   "n = 27 athletes".
+
+**Branches.**
+
+- IF a disabled metric is tapped THEN, by the copy, its reason appears. **It
+  does not**: a `disabled` button never fires `click`, so the `onClick` that
+  would show the reason is unreachable (to-do §0ap).
+- IF the role lacks `LEADERBOARD_EDIT` THEN `/new` redirects to `/manage` and
+  the board page renders without "Board actions".
 
 ---
 
@@ -971,16 +1014,27 @@ extracted in this pass.
 role-gated sidebar row.**
 **Gate:** `ANALYTICS` — sport scientist alone.
 
-**Steps.**
+**Steps, measured 2026-09-11.**
 
-1. `/analytics` opens; `/analytics/build` is the builder.
+1. `/analytics` opens on **four fixed boards** — "Training load", "Wellness",
+   "Gym volume", "Acute:chronic ratio" — each a `<select>` pair, **Metric**
+   (ACWR, Readiness, Total distance, Volume load, Training load, Session RPE,
+   Sleep, Sleep quality, Fatigue, Soreness, Stress, Mood, Resting HR) and
+   **Window** (28 days, 8 weeks, 12 weeks, 26 weeks), one named athlete
+   (default: the first alphabetically, "Aholelei, Sione · Loosehead prop")
+   drawn against the population ("n = 30 · whole squad"), and a "Compare two"
+   chip (`?compare=1`) that adds a second athlete under "Compare against".
+   The group filter chips narrow the population.
+2. `/analytics/build` ("Build a view") still exists — Metric, Athlete
+   ("Everyone in scope (30)" or one), Timeline (Today … ), Show as (Trend over
+   time / Bar, by athlete / …) — **but nothing links to it.** The page header
+   says so: the four-board design "has no builder and no link to one, so this
+   page has neither." It is reachable by URL only.
 
 **Branches.**
 
-- IF any other role navigates to `/analytics` directly THEN the route refuses.
-  They never see the row.
-
-**Flagged.** Control inventory not extracted in this pass.
+- IF any other role navigates to `/analytics` directly THEN it redirects to
+  `/dashboard?e=no-analytics`. They never see the row.
 
 ---
 
@@ -1022,6 +1076,11 @@ section the coach does not, plus the ability to create an injury. A screenshot
 showing "PROBLEM REPORTS" or "+ Injury" is a medic's; one showing only the
 injury list is not.
 
+**The sport scientist sees the coach column** (measured 2026-09-11): "Print",
+"Team allocation →" and "Rehab groups →" (both `.tiny` links), the group
+filter chips, and six `.load-row` links — name, body area, side, since-date —
+and nothing else. No "+ Injury", no "PROBLEM REPORTS".
+
 An earlier draft of this table guessed "clinical columns". That was wrong in
 detail — worth recording, because the guess sounded right and only looking
 settled it. The team-allocation screen states the asymmetry
@@ -1044,15 +1103,38 @@ what renders, not who gets in.
 
 **Steps.**
 
-1. Sections in order: "Plan", "Integrations", "Profile", "Photo", "Password and
-   sign-in", "Club details".
-   - "Integrations" rows link to `/settings/imports` with a state label:
-     "Connected", "Locked", or "Open".
-   - "Profile", "Photo" and "Password and sign-in" are the same components the
-     athlete app uses (`AvatarUploadForm`, `ChangePasswordForm`) — see
-     ATH-ADULT-22/23/24 in the athlete document for their control detail.
-   - "Club details" carries a "Logo" row with "Upload"/"Replace" and "Remove",
-     and a "Save" button (label "Saving…" in flight).
+1. Sections in order (measured 2026-09-11; an earlier list had six in a
+   different order and missed two): **Plan**, **Integrations**, **Profile**,
+   **Photo**, **Edit profile**, **Club details**, **Password and sign-in**,
+   **Two-factor authentication**. A Light/Dark appearance segment sits above
+   "Plan".
+   - "Plan" carries the Basic/Premium **preview** switch (`PlanPreviewSwitch`,
+     a cookie — "Your club's real plan does not change") and the feature list
+     each plan turns on.
+   - "Integrations" rows: Catapult Openfield "Connected" and Vendor CSV import
+     "Open" (both → `/settings/imports`), Apple Health "Not connectable yet —
+     needs the Fydr phone app". "Locked" replaces "Open" off the premium plan.
+   - "Profile" is read-only (Name, Club, Role, Timezone); "Edit profile" is the
+     editable pair — Name, Phone, "Save" — with "Club, role and timezone are set
+     by the club and aren't editable here."
+   - "Photo" and "Password and sign-in" are the same components the athlete app
+     uses (`AvatarUploadForm` with its eleven initials colours, Default … Plum;
+     `ChangePasswordForm`) — see ATH-ADULT-22/23/24 in the athlete document.
+   - "Club details": a "Logo" row ("Upload" with no logo set; "Replace" and
+     "Remove" once one is), Club name, Sport (`<select>`, nine sports), Timezone,
+     Country code, and "Save" ("Saving…" in flight).
+   - "Two-factor authentication": status ("Not enrolled" / "On"), "Set up
+     two-factor authentication", and for coach, medical and admin roles a
+     warn-toned banner "Your role requires two-factor authentication…". The
+     requirement is **prompted, not enforced** — recorded in
+     `09-security-and-compliance.md` (RLS `aal` follow-up, O-323).
+2. Below the sections, a settings list (`.set-list-row`): Thresholds, Password
+   and two-factor (`#password`, in-page), Exports, Groups, GPS imports,
+   Notifications, Users, Subject access requests, Data retention, Audit log —
+   each gated as SS-30 lists, and the Exports and GPS-imports rows hidden from
+   roles without `REPORT_ACCESS` / `GPS_IMPORT` — then **Log out** ("Ends this
+   session on this browser only"), a `<form>` whose only control is a 5px-wide
+   "›" submit button (to-do §0ap).
 
 **Branches.**
 
@@ -1070,13 +1152,13 @@ Each is its own route with its own gate.
 | ID | Screen | Route | Gate |
 |---|---|---|---|
 | STAFF-SS-30a | Audit log | `/settings/audit` | `SETTINGS_ADMIN` |
-| STAFF-SS-30b | Exports | `/settings/exports` | — |
-| STAFF-SS-30c | Groups | `/settings/groups`, `/new`, `/{id}` | `GROUP_EDIT` (+`SESSION_EDIT` on the list) |
+| STAFF-SS-30b | Exports | `/settings/exports` | `requireReportAccess()` → `REPORT_ACCESS` — sport scientist, coach, medic, S&C |
+| STAFF-SS-30c | Groups | `/settings/groups`, `/new`, `/{id}` | the list is `requireStaff()` — open to every staff role; `/new` redirects to the list without `GROUP_EDIT`; `GROUP_EDIT` shows "+ New group" and the reorder arrows, `SESSION_EDIT` shows "Open team allocation →" |
 | STAFF-SS-30d | Imports (GPS) | `/settings/imports` | `GPS_IMPORT` — sport scientist alone |
 | STAFF-SS-30e | Notifications | `/settings/notifications` | — |
 | STAFF-SS-30f | Retention | `/settings/retention` | `SETTINGS_ADMIN` |
-| STAFF-SS-30g | Subject access | `/settings/subject-access`, `/{id}/review` | `SETTINGS_ADMIN`; review is `CLINICAL_ONLY` |
-| STAFF-SS-30h | Thresholds | `/settings/thresholds`, `/new` | `THRESHOLD_EDIT` |
+| STAFF-SS-30g | Subject access | `/settings/subject-access`, `/{id}/review` | the list is `requireSubjectAccess()` — `SETTINGS_ADMIN` **or** `CLINICAL_ONLY`; the review is `CLINICAL_ONLY` alone (else `?e=no-sar-access`) |
+| STAFF-SS-30h | Thresholds | `/settings/thresholds`, `/new` | `THRESHOLD_EDIT` — refused **in page**, not by redirect |
 | STAFF-SS-30i | Users | `/settings/users`, `/{id}`, `/bulk-invite` | `SETTINGS_ADMIN` |
 
 **Branch worth naming.** A subject-access **request** is administered by the
@@ -1092,11 +1174,19 @@ can complete the flow alone.
 
 **Steps.**
 
-1. Press a type chip — "All", or one per action type (underscores rendered as
-   spaces).
-2. Press "Apply filters" (`.btn-primary`).
+1. Press a type chip — "All", or one per **entity type present in this club's
+   log** (`fetchEntityTypes` reads the distinct values, so the row differs per
+   club; underscores rendered as spaces). On scratch on 2026-09-11: athletes,
+   availability, injuries, injury clinical, organisation, report, sar request,
+   session attendance, sign in, team allocations, user, user roles. **No
+   session or schedule type** — sessions are not audited (to-do §0al), so no
+   chip can exist for them.
+2. Set the filters — From / To (`<input type="date">`, defaulting to the last
+   30 days), Staff member and Athlete (`<select>`), Search (`<input>`) — and
+   press "Apply filters" (`.btn-primary`).
    - Also visible: "Show all time" (`.btn-ghost`), "Clear filters"
-     (`.btn-ghost`), quick-range chips, and pagination "← Previous" / "Next →".
+     (`.btn-ghost`), and pagination — "Next →" on page 1, "← Previous" once
+     past it. There are **no quick-range chips** here; those are on Exports.
 
 **End state.** Stays on `/settings/audit` with the filter in the query string.
 
@@ -1106,24 +1196,39 @@ can complete the flow alone.
 
 **Entry point.** `/settings/exports`.
 
-**Steps.**
+**Steps** ("Pick what, pick who, pick when" is the hub row's own summary).
 
-1. Choose a quick range chip.
-2. Press "Generate" — label becomes "Generating…" while in flight.
+1. **What:** six domain checkboxes, all on by default — Wellness entries,
+   Training RPE entries, Gym session and set logs, Test results, Body
+   composition, Nutrition check-ins.
+2. **Who:** the group filter chips; the heading reads the scope back ("Whole
+   squad · 30 athletes in scope").
+3. **When:** From / To (`<input type="date">`), or a quick range chip — Last 7
+   / 30 / 90 days.
+4. Press "Generate" — label becomes "Generating…" while in flight; one CSV per
+   domain, "straight to your downloads — no queue to check back on".
+
+**Copy, flagged.** The intro reads "**Coach** access: every domain below,
+squad-wide." for every non-medic role, the sport scientist included (to-do
+§0ap).
 
 ---
 
 ## STAFF-SS-33 — Print a screen
 
-**Entry point.** The "Print" button, present on the dashboard, the testing
-screens and other report surfaces.
+**Entry point.** The "Print" button (`PrintButton`, `.btn-ghost.no-print`),
+present on the dashboard, `/injuries`, `/reports/testing` and the testing
+detail screen. The leaderboard board's "Print PDF" is **not** this control —
+it is a server-rendered PDF route (SS-26).
 
 **Steps.**
 
 1. Press "Print" — calls `window.print()`. No confirmation, no state change.
 
-**Note.** A dedicated `@media print` stylesheet exists, so the printed output is
-not the screen verbatim.
+**Note.** `base.css`'s `@media print` block hides the sidebar, every `button`,
+`.btn-primary`/`.btn-ghost` link and **every `<form>`**, strips shadows, sets
+`.injuries-board` rows to 9pt, and a 12mm page margin — so the printed output
+is not the screen verbatim.
 
 ---
 

@@ -1,166 +1,66 @@
-# Design brief — STAFF-SHELL, the staff layout below 768px
+# Design brief — STAFF-SS-32, Generate an export
 
 **For Claude Design.** Everything below is the current state, measured on the
-running application on 2026-09-11 at **375×812** as a sport scientist. Nothing
-here is aspirational.
+running application on 2026-09-11 at **1280×800 and 375×812** as a sport
+scientist. Nothing here is aspirational.
 
-**This is a shell brief, not a flow brief.** It covers the frame every staff
-screen renders inside at phone width. **It goes to Claude Design before any
-staff flow is implemented**, because every staff flow's phone measurement sits
-underneath the thing this brief is about — and a proposal for any one flow
-that redesigns the shell would be redesigning all forty.
-
-**Persona.** An experienced sport scientist at a semi-pro rugby club who is also
-the club's Fydr admin. At a desk on Monday; at the side of the pitch on Thursday
-with a phone, wanting to know who is missing from wellness before the session
-starts.
+**Read the STAFF-SHELL brief first.** Below 768px the sidebar stacks 640px above
+every staff screen; that shell is being redesigned before any staff flow is
+implemented, and the 44px floor below 768px is fixed there, not per flow.
 
 ---
 
-## 1. What exists now — measured
+## 1. The flow, verbatim from the walkthrough document
 
-The staff app is a two-column grid, `.app`, with the sidebar as a column:
+## STAFF-SS-32 — Generate an export
 
-| Width | Sidebar | Rule |
-|---|---|---|
-| ≥ 1024px | **236px** column, `position: sticky`, `height: 100vh`, scrolls itself | base |
-| 768–1023px | **64px** collapsed rail (`grid-template-columns: 64px minmax(0,1fr)`) | `@media (min-width: 768px) and (max-width: 1023px)` |
-| **< 768px** | **`position: static; height: auto`** — stacks full-width **above** the content | `@media (max-width: 767px)` |
+**Entry point.** `/settings/exports`.
 
-`base.css` records the last row as intended: *"No rail below 768px — the sidebar
-stacks full-width above the content."*
+**Steps** ("Pick what, pick who, pick when" is the hub row's own summary).
 
-**At 375×812 the stacked sidebar is 640px tall**, `--surf` background with a
-`--border` bottom edge, and holds in order:
+1. **What:** six domain checkboxes, all on by default — Wellness entries,
+   Training RPE entries, Gym session and set logs, Test results, Body
+   composition, Nutrition check-ins.
+2. **Who:** the group filter chips; the heading reads the scope back ("Whole
+   squad · 30 athletes in scope").
+3. **When:** From / To (`<input type="date">`), or a quick range chip — Last 7
+   / 30 / 90 days.
+4. Press "Generate" — label becomes "Generating…" while in flight; one CSV per
+   domain, "straight to your downloads — no queue to check back on".
 
-| Element | Top | Height |
-|---|---|---|
-| Brand block — the 132px wordmark | 28 | 84 |
-| Nine nav rows: Dashboard · Squad overview · Schedule · Reports · Nutrition · Gym programme · Leaderboard · Analytics · Settings | — | **40px each**, `aria-current="page"` on the active one |
-| Identity — "Jane Pemberton" / "Ashcombe Rugby Club · sport_scientist" | — | — |
-| "Log out" — a `<button type="submit">` | 578 | **17px** |
-| "© 2026 Fydr" | — | — |
+**Copy, flagged.** The intro reads "**Coach** access: every domain below,
+squad-wide." for every non-medic role, the sport scientist included (to-do
+§0ap).
 
-**What that does to every screen.** The page's own `h1` lands around y≈730,
-below the first fold. Measured: Dashboard heading y=728, its first content
-section y=**2209**, page 3,426px; Squad overview heading y=737; Settings › Users
-14,301px. The pitch-side question — "who is missing today" — is two to three
-screens down on every screen that answers it.
-
-**No menu control exists.** There is no hamburger, no disclosure, no
-`aria-expanded` anywhere in the shell. `test-back-consistency` sweeps staff
-routes for back-control consistency but nothing asserts anything about
-navigation at phone width.
+*Factual corrections from this pass are already applied above.*
 
 ---
 
-## 2. The proposal, in Isabella's words
+## 2. Persona review
 
-**Below 768px: a compact top bar, with the navigation behind a menu control.**
+**Full review: `docs/walkthrough-reviews/staff-ss-26-to-33-review.md`.**
 
-That is the whole ask. The rest of this brief is what the top bar has to carry,
-what the menu has to contain, and what must not change.
+## 3. Tokens in play
+
+The full palette — 171 tokens with exact light and dark values — is
+`docs/Fydr_-_Design_System_Reference.md`, and the complete file is at the foot of
+this brief.
 
 ---
 
-## 3. What the top bar must carry
+## 4. The constraint any proposal must satisfy
 
-Derived from what the stacked sidebar carries today and what a phone needs
-instead:
+1. **Six domain checkboxes, the group filter as "who", a date range as "when", one Generate** — the hub row's own summary; a proposal keeps the three questions in that order.
+2. **The scope is read back in the heading** ("Whole squad · 30 athletes in scope") — keep it; it is the one line that stops a wrong export.
+3. **The role sentence names the role correctly or not at all** — "Coach access" for a sport scientist is filed (§0ap).
+4. **Only `tokens.css` values.** Anything not in the file below is flagged as a
+   proposed new token, never used.
 
-1. **The brand.** The 132px wordmark is the app's face (`.brand .wm`, pinned by
-   `test-brand-face.ts` — reverse-engineered face decision recorded 2026-09-07);
-   the bar needs a smaller mark, and which mark is a decision for the proposal
-   to state, not assume.
-2. **The current screen's identity** — because with the nav hidden, "where am I"
-   has to be answered by the bar or the `h1`, and the `h1` is currently the
-   first thing after 640px of sidebar.
-3. **The menu control** — a real `<button aria-expanded aria-controls>` with a
-   44px target, since every staff back-control finding (§0y, §0af) is about
-   sub-floor targets in this shell.
-4. **Nothing else by default.** The group filter, the plan link and "Log out"
-   are not bar furniture; they belong in the menu or on the screen.
+## 5. What a proposal should address
 
-## 4. What the menu must contain
-
-Exactly what the sidebar contains today, in its order, because the desktop
-sidebar and the phone menu are the same nine destinations and must not diverge:
-the nine rows, the identity block, and "Log out" — the last at a real target
-size, not 17px.
-
-## 5. The constraint any proposal must satisfy
-
-1. **Nothing changes at ≥768px.** The 236px sidebar and the 64px rail are built,
-   pinned, and out of scope. The proposal is for `@media (max-width: 767px)`
-   only.
-2. **The nine destinations, their order and their labels are fixed.** They are
-   the information architecture (`02-information-architecture.md` §4.1), not a
-   design surface.
-3. **The active destination stays marked** (`aria-current="page"` today).
-4. **Every control in the bar and the menu meets the 44px floor — and so does
-   every staff control below 768px.** DECIDED 2026-09-11: the floor applies to
-   staff screens below 768px only, fixed once here at shell level, not per
-   flow; desktop staff controls stay as they are. **The sweep list, measured
-   during the sport scientist reviews, all at 375×812:**
-
-   | Screen | Control | Measured |
-   |---|---|---|
-   | every staff screen | "Log out" (`<button type="submit">` in the sidebar) | 17px |
-   | every staff screen | "Back" (`.back-btn`) | 29px |
-   | `/squad` | athlete-name links, one per athlete | 34px |
-   | `/schedule`, Edit mode | the four `−`/`+` steppers (Earlier/Later/Shorter/Longer) | 40px |
-   | `/schedule`, Edit mode | "Yes, remove" (`.sg-btn-remove`) | 37px |
-   | `/schedule`, Edit mode | toolbar "+ Session" | 35px |
-   | `/schedule`, draft wizard | "Next" | 35px |
-   | `/schedule`, status banner | "Published" (disabled), "Publish to athletes", "Discard", "Yes, discard" | 17 / 35 / 37 / 37px |
-   | `/nutrition` | "New plan"; the three day-type buttons; six `−`/`+` steppers | 35 / 37 / 32px |
-   | `/leaderboards` | the three lens tabs (Result / Improvement / Standard) | 31px |
-   | `/leaderboards/*`, `/settings/*` sub-screens, `/settings/groups` | the eyebrow breadcrumb links ("Leaderboard", "Settings", "Squad overview") | 13px |
-   | `/leaderboards/manage` | "the testing wall" inline link | 35px |
-   | `/analytics`, `/analytics/build` | every Metric / Window / Athlete / Timeline / Show-as `<select>` | 30px |
-   | `/injuries` | "Team allocation →", "Rehab groups →" (`.tiny`) | 19px |
-   | `/settings` | Light / Dark segment; Basic / Premium preview switch; "Connected" / "Open" integration buttons | 36 / 30 / 41px |
-   | `/settings/groups` | reorder `▲` / `▼` (`.reorder-btn`); "Open team allocation →" | 28×22 / 37px |
-   | `/settings/imports` | "the template" inline link | 15px |
-   | `/settings/exports` | the six domain checkboxes (native, 15×13; the labelled row is the target) | 15×13 |
-
-   Not in this table because they are not 44px matters: the hub's Log out
-   submit at 4.8px wide (§0ap, both widths) and the three screens that scroll
-   sideways at 375 (§0ap).
-
-   Later staff reviews add to this table rather than filing new defects.
-5. **The menu is a real disclosure** — `aria-expanded`, `aria-controls`, focus
-   moves into it on open and returns to the control on close, Escape closes it.
-   Three existing disclosures in this app got this wrong (§0t, §0af).
-6. **The content column must start at the top of the screen** once the bar is
-   in place — the whole point. A bar taller than ~56px spends the phone's
-   scarcest dimension on chrome.
-7. **Only `tokens.css` values.** The full file is at the foot of this brief.
-   Anything not in it is flagged as a proposed new token, never used.
-
-## 6. Open questions the proposal should answer, not assume
-
-- **Which mark goes in the bar** — the wordmark scaled, or a monogram. The
-  wordmark is the face; a monogram is a new asset.
-- **Whether the group filter chips stay on-screen at phone width** or move
-  behind the menu. They are on every multi-athlete screen and are 44px wide
-  each; five of them at 375px already wrap.
-- **The 768–1023 rail.** Not in scope, but the proposal should say whether its
-  menu model would also serve the rail, so the two do not end up as two
-  patterns.
-
-## 7. Tokens in play
-
-| Element | Current |
-|---|---|
-| Sidebar surface | `--surf` `#fcfdfe` |
-| Sidebar edge | `--border` `#d4dff5` |
-| Page ground | `--bg` `#e4ebf9` |
-| Nav row | 40px, text `--muted`, active `--text` |
-| Wordmark | 132px wide, Sora 800 via `--font-brand` |
-
-**The full palette — 171 tokens — is `docs/Fydr_-_Design_System_Reference.md`,
-and the complete file is below.**
+1. **Native checkboxes at 15×13** with the label as the target — the row is fine as a target; the proposal shows the checked/unchecked state readable at a glance at 375.
+2. **2,293px at phone** — six checkbox rows with descriptions, then the dates; whether the descriptions collapse.
+3. **"Generating…"** as the in-flight state on a button that downloads six files — what the page says when it is done.
 
 ---
 

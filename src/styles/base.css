@@ -1431,10 +1431,19 @@ body:has(.phone) {
    
    The rhythm is documented properly now: 06-design-system.md §2.7, and the
    value lives in --gap-body. */
+/* NO overflow-y: auto, since 2026-09-11 (§0s, ATH-ADULT-03 commit 1). It was
+   here, and it never scrolled: .phone is min-height 100dvh and grows to its
+   content, so this pane was never bounded by the viewport — scrollHeight
+   equalled clientHeight on all fifteen athlete routes — and the document
+   scrolled instead. Harmless to look at, except that position: sticky
+   resolves against the nearest scroll container, which was this, so a
+   bottom-pinned footer could never pin. Removing it is a byte-identical
+   render, measured on every route, and lets the document be the one
+   scroll context the shell actually has. The bottom safe-area inset lives
+   on .athlete-tabbar, where the document ends. */
 .phone-body {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
   padding: 0 var(--sp-20) var(--sp-8);
   display: flex;
   flex-direction: column;
@@ -9523,8 +9532,10 @@ button.dash-stat {
 /* §0w: the 44px floor applies to navigation too. The button draws 29px and
    stays 29px — the design is frozen — so the hit box is a pseudo-element the
    athlete cannot see. Anchored to the TOP edge rather than centred: this is
-   the first child of .phone-body, a scroll container with no top padding, so
-   anything extended above it is clipped at scroll-top and hits nothing. The
+   the first child of .phone-body, which has no top padding, so at scroll-top
+   the button's top edge is the document's — anything extended above it is
+   outside the page and hits nothing (it was the pane's clip when .phone-body
+   still declared overflow; it is the viewport's now, same result). The
    15px below sit inside the 38px of shell spacing under the button (its own
    10px margin plus the 28px body gap), so they overlap no other control.
    Athlete shell only: the staff app is a pointer surface and its .back-btn

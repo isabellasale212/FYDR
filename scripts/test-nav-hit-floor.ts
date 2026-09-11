@@ -14,10 +14,12 @@
  * visible box does not:
  *   - `.phone-body .back-btn::after` is an invisible 44px-tall box anchored to
  *     the button's top edge. Anchored to the top, not centred, because the
- *     button is the first child of `.phone-body`, a scroll container with no
- *     top padding — anything extended ABOVE it is clipped at scroll-top and
- *     hits nothing. Below it are 38px of shell spacing, so the extra 15px
- *     overlap nothing.
+ *     button is the first child of `.phone-body`, which has no top padding —
+ *     at scroll-top its top edge is the document's, so anything extended
+ *     ABOVE it is outside the page and hits nothing (it was the pane's clip
+ *     while .phone-body declared overflow; since §0s removed that, it is the
+ *     viewport's — same result). Below it are 38px of shell spacing, so the
+ *     extra 15px overlap nothing.
  *   - `.tap-floor` on the gate link is vertical padding on an INLINE element,
  *     which changes no line box and paints nothing (the link has no background
  *     or border) but is part of its border box, so it is hit-testable.
@@ -62,7 +64,7 @@ console.log('1. the athlete Back button hits 44px tall without drawing any large
   assert(/content:\s*''/.test(hit) && /position:\s*absolute/.test(hit), 'and carries an absolutely positioned ::after');
   assert(/height:\s*44px/.test(hit), `the hit box is ${FLOOR}px tall`);
   assert(/top:\s*0/.test(hit) && /left:\s*0/.test(hit) && /right:\s*0/.test(hit),
-    'anchored to the top edge and the full button width (extending upward is clipped by the scroll container)');
+    'anchored to the top edge and the full button width (extending upward leaves the page at scroll-top and hits nothing)');
   assert(!/bottom:\s*0/.test(hit), 'and not stretched to the bottom, which would make it the button height rather than 44');
   assert(!/background|border|box-shadow|color/.test(hit), 'it paints nothing');
   assert(/pointer-events|cursor/.test(hit) === false || !/pointer-events:\s*none/.test(hit),

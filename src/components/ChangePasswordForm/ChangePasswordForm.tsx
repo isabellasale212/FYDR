@@ -107,8 +107,11 @@ export function ChangePasswordForm() {
     setConfirm('');
   }
 
+  // method="post": server-rendered, and three password fields. A submit before
+  // React has hydrated is the browser's own, and a bare form does that as GET
+  // with every field in the query string. See lib/signInSubmission.ts.
   return (
-    <form onSubmit={onSubmit} className="card" noValidate>
+    <form onSubmit={onSubmit} method="post" className="card" noValidate>
       <h2 className="card-title">Password and sign-in</h2>
 
       {success ? (

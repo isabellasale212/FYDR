@@ -22,8 +22,11 @@
  *      render their <form> only after a mount-time check, so they cannot be
  *      submitted before hydration at all — asserted here so that gate is not
  *      removed without this noticing.
+ *   5. The generic rule §0x asks for: every <form> in the app that carries a
+ *      password field says method="post", so the next one written is covered.
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import {
   isNativeFormSubmit,
   isSameOriginSubmit,
@@ -168,6 +171,39 @@ console.log('\n6. the rest of the sign-in surface');
   const cForm = confirm.indexOf('<form');
   assert(/'checking'/.test(confirm) && cGate > 0 && cGate < cForm,
     'the reset confirm renders nothing submittable until its link check has run');
+}
+
+console.log('\n7. the generic shape — every form that carries a password posts (§0x)');
+{
+  /* The bug is not specific to the sign-in page: any server-rendered <form>
+     with a password field and no method will GET it before hydration. So the
+     rule is stated once, over every component, and the next form somebody
+     writes is covered the day it is written. PasswordField is the app's own
+     wrapper around <input type="password">, so it counts as one. */
+  const walk = (dir: string, out: string[] = []): string[] => {
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const p = join(dir, e.name);
+      if (e.isDirectory()) walk(p, out);
+      else if (e.name.endsWith('.tsx')) out.push(p);
+    }
+    return out;
+  };
+  const carriesPassword = (src: string): boolean =>
+    /type="password"/.test(src) || /<PasswordField\b/.test(src) || /'password'\s*\}/.test(src);
+  const offenders: string[] = [];
+  let checked = 0;
+  for (const f of [...walk('src/components'), ...walk('src/app')]) {
+    const src = strip(read(f));
+    if (!/<form\b/.test(src) || !carriesPassword(src)) continue;
+    if (f.endsWith('PasswordField.tsx')) continue; // the input, not a form
+    checked += 1;
+    const tags = [...src.matchAll(/<form\b[^>]*>/g)].map((m) => m[0]);
+    if (!tags.every((t) => /\bmethod="post"/i.test(t))) offenders.push(f);
+  }
+  assert(checked >= 3, `found the forms that carry a password (${checked}: sign-in, reset confirm, change password)`);
+  assert(offenders.length === 0, offenders.length === 0
+    ? 'and every one of them says method="post"'
+    : `${offenders.length} carry a password and no method="post": ${offenders.join(', ')}`);
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

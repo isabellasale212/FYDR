@@ -160,8 +160,12 @@ export function ResetConfirmForm() {
     );
   }
 
+  // This form only exists after the link check above, so React is already
+  // listening by the time it can be submitted. method="post" anyway: it
+  // carries a password, and the guard that every such form posts is worth
+  // more than the exemption.
   return (
-    <form onSubmit={onSubmit} noValidate className="signin-form">
+    <form onSubmit={onSubmit} method="post" noValidate className="signin-form">
       <div className="signin-fields">
         {error ? (
           <p className="form-error" role="alert" style={{ margin: 0 }}>

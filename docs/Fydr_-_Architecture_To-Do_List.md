@@ -1147,7 +1147,17 @@ Two behaviour changes the sign-in proposal asked for, both outside the design-on
 
 **Live timing is a measurement, not a test.** Builder's scratch numbers: 401s 808–843ms unknown vs 808–814ms real; threshold 429 816 vs 817; gate 429 63 vs 97 (pre-auth, one RPC either way). **Isabella is re-running this independently**: a fresh unknown email and a fresh real account, five interleaved failures each, expecting four 401s, a 429 at the fifth, and a 429 on a sixth while locked.
 
-- [ ] **Found and not fixed (builder):** the 800ms floor is tuned to scratch latency from one machine. If production's GoTrue round-trip on the real-account path ever exceeds it, the timing gap reappears. **Worth four interleaved failures on production after the deploy** that carries this.
+- [ ] **REQUIRED STEP — do not close the C1 item until this is done: re-measure the timing floor on PRODUCTION after the deploy that carries `1a363f3` + `cfb22a2`.** The 800ms `FAILED_SIGN_IN_MIN_MS` was tuned to scratch latency from one machine. If production's GoTrue round-trip on the real-account path (bcrypt, network) ever exceeds it, the hold no longer masks the difference and the enumeration gap reappears — silently, because every test is a source test and none measures a live server. **The check:** at least six interleaved failed attempts against a fresh unknown email and a fresh real account on `fydr.app`, comparing status, body and elapsed ms per step, exactly as run on scratch below. **Pass:** attempts 1–4 within ~50ms of each other and all above the floor; the threshold 429 likewise; bodies byte-identical. **Fail:** any real-account 401 or threshold 429 above ~900ms while the unknown stays at the floor — that is the gap, and the floor needs raising to cover production's worst case. Record the numbers here. The two accounts used lock for 30 seconds and clear on their next successful sign-in.
+
+  **Reviewer's own scratch run, 2026-09-11, independent of the builder's**, `nobody.reviewer@` (no account) against `d.okonkwo@` (real, untouched by the builder), six interleaved attempts each, via the local dev server:
+
+  | step | unknown | real | bodies |
+  |---|---|---|---|
+  | 1–4 | 401 · 829 / 833 / 829 ms (#1 2538 ms — dev-server cold start, `next.js: 717ms` route compile in the server log; no later request above 19ms) | 401 · 834 / 816 / 814 / 853 ms | byte-identical, `attemptsRemaining` 4→1 |
+  | 5 | 429 · 816 ms | 429 · 808 ms | identical (`lockedUntil` masked), `secondsRemaining: 30` |
+  | 6, locked | 429 · 112 ms | 429 · 55 ms | identical shape; `secondsRemaining` 29 vs 30 because the two locks were set ~800 ms apart and the field is derived from `lockedUntil` — clock, not a leak |
+
+  Δ between unknown and real at steps 2–5: 8–24 ms. The pre-auth gate 429 is unheld by design (both under 120 ms). **The claim holds on scratch.** Production is the remaining question, hence this step.
 
 **Scratch state from the builder's testing, none of it the reviewer's athlete:** `login_attempts` rows for `nobody.timing@`, `nobody.timing2@`, `nobody.ui@`, `nobody.claim@`; `g.palmer@` and `h.ainsley@` each at 4 failures with 4 `auth.sign_in_failed` audit rows (one more locks them for 30s); `s.ellery@` locked once (expired) with 5 audit rows. All clear on that account's next successful sign-in.
 

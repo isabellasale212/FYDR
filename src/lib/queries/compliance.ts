@@ -1,4 +1,6 @@
 import type { ComplianceDomain } from '@/lib/types/database';
+import { addDays } from '@/lib/format';
+import { outstandingRpe, rpeRowName, type OutstandingRpeSession } from '@/lib/todayRows';
 import { fetchGroupAthleteIds, type Db } from './groups';
 
 /* Compliance is whether an expected entry was actually submitted.
@@ -75,20 +77,33 @@ export type OutstandingItem = {
   session_id: string | null;
   label: string;
   href: string;
+  /** The session an RPE task is for — its time is the row's subtitle. */
+  session: OutstandingRpeSession | null;
 };
 
-/** What one athlete still owes today. Wellness first: it is the entry the whole
- *  morning depends on. */
+/** What one athlete still owes. Wellness first: it is the entry the whole
+ *  morning depends on. Then every session rating that is DUE and not yet
+ *  given, oldest first.
+ *
+ *  TWO DAYS, NOT ONE, since 2026-09-11 (ATH-ADULT-02). A rating is wanted
+ *  from thirty minutes after the session ends until the end of the following
+ *  day in club time, so yesterday's expectations are read alongside today's —
+ *  that pair IS the window. Before this the list showed today's sessions
+ *  from midnight (an athlete could tap a session that had not started and be
+ *  told "Not quite yet") and never showed yesterday's at all. The time rule
+ *  lives in lib/rpeDue.ts, where the RPE screen reads the same one. */
 export async function fetchMyOutstanding(
   db: Db,
   athleteId: string,
   date: string,
+  now: number = Date.now(),
 ): Promise<OutstandingItem[]> {
+  const yesterday = addDays(date, -1);
   const { data: expectations, error } = await db
     .from('compliance_expectations')
-    .select('domain, session_id, is_required, waived_reason')
+    .select('expectation_date, domain, session_id, is_required, waived_reason')
     .eq('athlete_id', athleteId)
-    .eq('expectation_date', date)
+    .in('expectation_date', [yesterday, date])
     .eq('is_required', true);
 
   if (error) throw new Error(error.message);
@@ -96,56 +111,63 @@ export async function fetchMyOutstanding(
   const rows = (expectations ?? []).filter((e) => e.domain !== 'nutrition');
   if (rows.length === 0) return [];
 
-  const [wellness, training] = await Promise.all([
-    db
-      .from('wellness_entries_current')
-      .select('id')
-      .eq('athlete_id', athleteId)
-      .eq('entry_date', date)
-      .maybeSingle(),
-    db
-      .from('training_entries_current')
-      .select('session_id')
-      .eq('athlete_id', athleteId)
-      .eq('entry_date', date),
+  const wellnessOwed = rows.some((r) => r.domain === 'wellness' && r.expectation_date === date);
+  const rpeRows = rows.filter((r) => r.domain === 'training_rpe' && r.session_id);
+  const sessionIds = rpeRows.map((r) => r.session_id as string);
+
+  const [wellness, training, sessions] = await Promise.all([
+    wellnessOwed
+      ? db
+          .from('wellness_entries_current')
+          .select('id')
+          .eq('athlete_id', athleteId)
+          .eq('entry_date', date)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+    sessionIds.length > 0
+      ? db
+          .from('training_entries_current')
+          .select('session_id')
+          .eq('athlete_id', athleteId)
+          .in('session_id', sessionIds)
+      : Promise.resolve({ data: [], error: null }),
+    sessionIds.length > 0
+      ? db.from('sessions').select('id, title, starts_at, duration_min').in('id', sessionIds)
+      : Promise.resolve({ data: [], error: null }),
   ]);
 
   if (wellness.error) throw new Error(wellness.error.message);
   if (training.error) throw new Error(training.error.message);
-
-  const ratedSessions = new Set(
-    (training.data ?? []).map((t) => t.session_id ?? ''),
-  );
+  if (sessions.error) throw new Error(sessions.error.message);
 
   const out: OutstandingItem[] = [];
 
-  for (const row of rows) {
-    if (row.domain === 'wellness') {
-      if (!wellness.data) {
-        out.push({
-          domain: 'wellness',
-          session_id: null,
-          label: 'Morning check-in',
-          href: '/check-in',
-        });
-      }
-      continue;
-    }
-    if (row.domain === 'training_rpe' && row.session_id) {
-      if (!ratedSessions.has(row.session_id)) {
-        out.push({
-          domain: 'training_rpe',
-          session_id: row.session_id,
-          /* The question mark matters: the screen this opens is titled
-             "How hard was it?" in its h1 AND its metadata title, so a to-do row
-             saying "How hard was it" named a screen that does not exist under
-             that name. Caught by test-control-names-resolve.ts. The screen's
-             wording is canonical — it is the question being asked. */
-          label: 'How hard was it?',
-          href: `/rpe/${row.session_id}`,
-        });
-      }
-    }
+  if (wellnessOwed && !wellness.data) {
+    out.push({ domain: 'wellness', session_id: null, label: 'Morning check-in', href: '/check-in', session: null });
+  }
+
+  const dateBySession = new Map(rpeRows.map((r) => [r.session_id as string, r.expectation_date]));
+  const candidates: OutstandingRpeSession[] = (sessions.data ?? []).map((s) => ({
+    id: s.id,
+    title: s.title,
+    starts_at: s.starts_at,
+    duration_min: s.duration_min,
+    entry_date: dateBySession.get(s.id) ?? date,
+  }));
+  const rated = new Set((training.data ?? []).map((t) => t.session_id ?? ''));
+
+  for (const session of outstandingRpe(rpeRows, candidates, rated, now)) {
+    out.push({
+      domain: 'training_rpe',
+      session_id: session.id,
+      /* The row and the RPE screen's heading are one function of one title,
+         which is what lets test-control-names-resolve.ts hold them to the
+         same string. "How hard was it?" was the screen's old title; two
+         sessions to rate produced two identical rows (review F3). */
+      label: rpeRowName(session.title),
+      href: `/rpe/${session.id}`,
+      session,
+    });
   }
 
   return out;

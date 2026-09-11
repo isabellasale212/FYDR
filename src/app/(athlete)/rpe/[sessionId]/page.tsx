@@ -3,15 +3,18 @@ import { RpeForm } from '@/components/RpeForm/RpeForm';
 import { fetchSessionForRpe, fetchTrainingEntryForSession } from '@/lib/queries/training';
 import { fetchWeekMdLabels, mondayOf } from '@/lib/queries/schedule';
 import { dateInTz, enumLabel, formatDate, formatTime, mdExplainer, mdLabel } from '@/lib/format';
+import { DUE_DELAY_MIN, rpeDueAt, rpeIsClosed } from '@/lib/rpeDue';
+import { rpeRowName } from '@/lib/todayRows';
 import { requireAthlete } from '@/lib/session';
 
-export const metadata = { title: 'How hard was it? · Fydr' };
-
-/** MD-2 in "the session ended under 30 minutes ago" gate: RPE taken
- *  immediately after a session is biased by the final drill
- *  (screens/training-entry.md, 04-data-model.md §5). Not configurable
- *  downwards. */
-const DUE_DELAY_MIN = 30;
+/* "Rate {session name}" since 2026-09-11 (ATH-ADULT-02, RPE decision 3). The
+ * heading used to be the question itself, "How hard was it?", and so did the
+ * to-do row that opens this screen — which made two sessions to rate read as
+ * two identical rows. The row now names the session, so the heading does
+ * too, through the same function, and test-control-names-resolve.ts holds
+ * the pair to one template. The question survives on the form's own first
+ * line, "Rate the whole session, not the hardest bit." */
+export const metadata = { title: 'Rate a session · Fydr' };
 
 /* `?correct=1` used to switch this page into a correction form. It is no longer
  * read: migration 0058 made `revise_training_entry` coach/medical only at the
@@ -40,7 +43,7 @@ export default async function RpePage({
           <Link href="/today" className="sheet-x" aria-label="Close">
             <span aria-hidden="true">✕</span>
           </Link>
-          <h1 className="t">How hard was it?</h1>
+          <h1 className="t">Rate a session</h1>
           <span style={{ width: 44 }} />
         </div>
         <div className="empty">
@@ -66,12 +69,15 @@ export default async function RpePage({
   const mdOffset = weekMd.get(entryDate) ?? null;
   const md = mdLabel(mdOffset);
 
-  const dueAt =
-    session.duration_min !== null
-      ? new Date(session.starts_at).getTime() +
-        (session.duration_min + DUE_DELAY_MIN) * 60_000
-      : null;
-  const notYetDue = dueAt !== null && Date.now() < dueAt;
+  /* Both gates from lib/rpeDue.ts, the rule Today's to-do row reads: due
+     thirty minutes after the end (a session with no duration now counts as
+     ending when it starts — it used to skip this gate entirely), closed at
+     the end of the following day in club time, the moment the row
+     disappears. Nothing in the database refuses a late row; see rpeClosesAt
+     for why that is deliberate. */
+  const now = Date.now();
+  const notYetDue = now < rpeDueAt(session);
+  const closed = rpeIsClosed(session, timezone, now);
 
   return (
     <>
@@ -79,7 +85,7 @@ export default async function RpePage({
         <Link href="/today" className="sheet-x" aria-label="Close">
           <span aria-hidden="true">✕</span>
         </Link>
-        <h1 className="t">How hard was it?</h1>
+        <h1 className="t">{rpeRowName(session.title)}</h1>
         <span
           className="tiny num"
           style={{ width: 56, textAlign: 'end', whiteSpace: 'nowrap' }}
@@ -141,6 +147,16 @@ export default async function RpePage({
           <p className="cap" style={{ display: 'flex', gap: 'var(--sp-14)' }}>
             <Link href="/today">Back to today</Link>
           </p>
+        </div>
+      ) : closed ? (
+        <div className="banner">
+          <span className="g g-faint" aria-hidden="true">
+            ◌
+          </span>
+          <div>
+            <b>This session can no longer be rated.</b> A rating is open until the
+            end of the day after the session.
+          </div>
         </div>
       ) : notYetDue ? (
         <div className="banner">

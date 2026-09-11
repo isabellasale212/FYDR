@@ -71,23 +71,34 @@ export function AvailabilityBanner({
   timezone,
 }: Props) {
   const state = availabilityStatus(status);
+  /* The tone-family card (ATH-ADULT-02, S4, 2026-09-11): fill, border and
+     every word from one family, no ring. `data-tone` is what the stylesheet
+     keys the text colour on — the *-pill-text tokens, the ones built for
+     type on a tint, measured at 4.5:1 or better in both themes by
+     test-ath-adult-02.ts. Available stays the plain card. */
+  const tone = status === 'available' || status === null ? null : state.tone === 'bad' ? 'bad' : 'warn';
 
   return (
     <div
+      /* The anchor the one-line banner above To do links down to. */
+      id="availability"
       className="avail-banner"
+      data-tone={tone ?? undefined}
       style={{ '--state-rgb': TONE_RGB[state.tone] } as CSSProperties}
     >
-      {/* Spec §7.1: an 11px ring in the state's colour, not a glyph.
-          The glyph was a second channel beside the colour, which is a rule this
-          app applies everywhere — but not one that is needed here, because the
-          status WORD sits immediately to its right. "Modified" is the message;
-          the mark is punctuation. */}
-      <span className="avail-ring" aria-hidden="true" />
       <div style={{ flex: 1, minWidth: 0 }}>
         {/* Just the status word. Fydr Athlete App.dc.html 23a reads "Modified",
             not "Modified availability" — the card is about availability, so
-            the noun was doing no work. */}
-        <div className="k">{state.label}</div>
+            the noun was doing no work. The ring that used to sit beside it is
+            gone with the tone-family card: the fill carries the colour now,
+            and the word was always the message. Beside it, the reason as a
+            chip — a white chip on the tint, so it still reads as a chip. */}
+        <div className="avail-head">
+          <div className="k">{state.label}</div>
+          {status !== 'available' && reasonCategory ? (
+            <span className="avail-chip">{enumLabel(reasonCategory)}</span>
+          ) : null}
+        </div>
         <div className="v">
           {status === 'available'
             ? 'Everything is on.'

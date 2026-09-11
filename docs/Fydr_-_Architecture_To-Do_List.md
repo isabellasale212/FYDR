@@ -1083,6 +1083,22 @@ trade `0096` made for gym, now made consistently.
 
 - [ ] **`/me/leaderboards` carries two back controls** — the shared Back button and a `←` link in `.sheet-head`, 38px apart. Design finding for ATH-ADULT-17/18, recorded in their briefs. **Guard gap worth its own line:** `test-back-consistency` sweeps staff routes only, so the athlete shell can grow a duplicate back control without any test noticing.
 
+## 0z. "Turn notifications back on" resets every preference to on instead of restoring what the athlete had — 2026-09-11
+
+**Real defect, same priority as §0r to §0w.** Found in source during the ATH-ADULT-20 review; the control was deliberately not pressed on the review account because doing so would have altered its state irreversibly-by-the-control.
+
+- [ ] **`unmuteAll` in `notificationPreferences.ts:69` upserts `push_enabled: true, email_enabled: true` for every disableable type.** It never reads the row it is overwriting. `muteAll` likewise writes all-false without recording what it replaced. So the pair is not mute/unmute; it is set-all-off / set-all-on.
+
+  **What an athlete sees.** Four of the sixteen types default to off — "Matchday fuelling reminder", "A flag was shared with you", "Weekly personal summary", "Weekly leaderboard" — and any athlete may have turned others off by choice. Press "Mute everything else" before a holiday, press "Turn notifications back on" after it, and every one of those is now **on**. The label promises restoration; the behaviour is a reset to the loudest possible state, including notifications the athlete had specifically declined.
+
+  **It also sets `email_enabled: true` on types that have no email channel.** Harmless today, since delivery is not live, but it means the stored preference no longer describes the catalogue.
+
+  **The fix needs one of two designs, and it is a decision.** Either (a) `muteAll` records the pre-mute state — a per-user snapshot, or a `muted_at` on each row alongside the previous values — and `unmuteAll` restores it; or (b) the un-mute restores catalogue *defaults* rather than all-on, which is at least honest to the four default-off types but still discards the athlete's own choices. (a) is what the label promises. Whichever is chosen, the label must match it.
+
+  **The minor case makes this worse, not better.** ATH-ADULT-20 already special-cases the three `minorFloorOff` types out of the un-mute set so they are not turned on — which shows the all-on behaviour was noticed and patched for one audience rather than fixed.
+
+  **Guard it.** A test that sets one type off, mutes, un-mutes, and asserts that type is still off.
+
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.
 

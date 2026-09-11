@@ -739,7 +739,16 @@ prompt", value "On" or "Off", chevron "›"). Direct URL `/me/notifications`.
 1. The screen shows heading "Notifications" and a "Pause everything" card, then
    one row per notification type.
    - Every row shows its label, its trigger sentence, and its channel controls.
-   - Also visible: "← Me" back link, and the mute control (ATH-ADULT-20).
+   - Also visible: a "Back" button (the shared `BackButton`) **and** a "← Me"
+     link — two back controls, the same pairing as `/me/leaderboards`; the mute
+     control (ATH-ADULT-20); and a closing paragraph that reads
+     **"In-app notifications are always on and can't be turned off here.
+     Preferences save instantly. Push and email delivery aren't live yet — these
+     settings will apply as soon as they are."**
+   - **No "Email on" / "Email off" chip renders for an adult athlete.** The only
+     two types with an email channel — "Availability changed" and "New privacy
+     notice" — are `canDisable: false`, so both render "Always on". The Email
+     rendering in the table below is real in code and unreachable on this screen.
 2. Press a channel chip to toggle it.
 
 **Channel control states, per row.**
@@ -751,8 +760,9 @@ prompt", value "On" or "Off", chevron "›"). Direct URL `/me/notifications`.
 | "Always on" | `canDisable` is false — no control at all. |
 | "In-app only" | The type has no push or email channel. |
 
-**The 17 athlete notification types**, in the order they render, with their
-triggers:
+**The 16 athlete notification types**, in the order they render, with their
+triggers (the heading previously said 17; the table, the note beneath it, the
+catalogue and the running screen all say 16):
 
 | Label | Trigger | Default |
 |---|---|---|
@@ -761,7 +771,7 @@ triggers:
 | "Session rating prompt" | A session you need to rate has ended | push on |
 | "Session rating reminder" | A session rating is still outstanding | push on |
 | "Matchday fuelling reminder" | The evening before a fixture | push off |
-| "Weekly nutrition check-in" | The week has ended and you haven't checked in | push off |
+| "Weekly nutrition check-in" | The week has ended and you haven't checked in | push **on** (an earlier version of this table said off; `catalogue.ts` and the running screen say on) |
 | "New programme assigned" | A gym or rehab programme starts | push on |
 | "Programme changed" | Your assigned programme is edited by staff | push on |
 | "Rehab programme assigned" | Medical assigns you a rehab programme | push on |
@@ -810,6 +820,13 @@ not sampled. Every one renders a row on this screen.
 
 **End state.** Stays on `/me/notifications`.
 
+**"Turn notifications back on" does not restore — it resets.** `unmuteAll`
+writes `push_enabled: true, email_enabled: true` for every disableable type,
+without reading what they were before. An athlete who had turned "Weekly
+leaderboard" off, then muted everything for a holiday, comes back to find it on.
+Measured in source 2026-09-11; the control was deliberately **not pressed** on
+the review account for exactly this reason. Filed as a defect.
+
 ---
 
 ## ATH-ADULT-21 — Edit my profile
@@ -823,8 +840,11 @@ not sampled. Every one renders a row on this screen.
 
 **Branches.**
 
-- Date of birth is **not editable here**: it needs staff. Name and position are
-  likewise staff-owned.
+- Date of birth is **not editable here**: it needs staff. Name, position **and
+  squad number** are likewise staff-owned — the card says so: "Your name, date of
+  birth, position and squad number are set by staff and aren't editable here."
+- On success a `role="status"` line reads **"✓ Saved."** beneath the button.
+  Verified by submitting the form unchanged.
 
 **End state.** Stays on `/me`.
 

@@ -11507,6 +11507,16 @@ button.dash-stat {
   .launch-claim {
     display: grid;
     align-content: center;
+    /* ABOVE THE GROUND. .launch-ground is position: fixed with z-index: 0,
+       which is a stacking layer over every non-positioned sibling — and this
+       column was the one child of .launch left non-positioned when 092aa44
+       (3 Sept) replaced the blanket `.launch > *` rule with a z-index per
+       child. The lockup and the form panel got theirs; the claim did not, so
+       the headline and the grid were painted behind the ground: present in
+       the DOM, measurable, and invisible, on production too. Found 2026-09-11
+       while closing collision 1, which decided this column stays. */
+    position: relative;
+    z-index: 1;
     /* NO FLOW GAP. Every space in this column is specified in the brief as a
        margin from the thing above it — 56px below the wordmark, 48px below the
        headline — and a gap would silently add itself to both. */
@@ -11517,27 +11527,29 @@ button.dash-stat {
     --claim-lead: 56px;
     padding: calc(178px + var(--claim-lead)) var(--claim-x) 40px;
   }
-  /* THE BRAND FACE, ON SOMETHING THAT IS NOT THE MARK. Asked for explicitly,
-     and worth naming as a decision rather than leaving to be inferred: until
-     now Sora meant "this is the logo" and nothing else, so the page's claim now
-     shares a face with its wordmark. See scripts/test-brand-face.ts, which pins
-     the mark's own rules and is unaffected — this is a headline set in Sora,
-     not an instance of the mark, which is why it carries -0.03em rather than
-     the mark's -0.035em. */
+  /* ROBOTO, NOT SORA — decided 2026-09-11 (Isabella), closing collision 1.
+     For three days this headline was the one thing outside the mark set in
+     the brand face, by an earlier instruction, kept honest only by tracking.
+     The decision took the simpler line: one mark, one face. The claim column
+     and the grid stay; the ATH-ADULT-01 board's centred desktop card is not
+     built.
+
+     AND A CLAMP AFTER ALL. The to-do item measured a fixed 48px over-running
+     its column by 0.6px at exactly 1080 and offered two answers; this is the
+     first — clamp(34px, 3.5vw, 48px), reaching the true 48 from ~1371px up.
+     34 is not a step on the type scale; it is the number that was decided,
+     recorded in scripts/test-launch-claim.ts. -0.03em stays, still distinct
+     from the mark's -0.035em. */
   .launch-claim-h {
     margin: 0;
-    font-family: var(--font-brand), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
     font-weight: 800;
-    font-size: var(--fs-48);
+    font-size: clamp(34px, 3.5vw, var(--fs-48));
     line-height: 1.1;
     letter-spacing: -0.03em;
     color: var(--text);
-    /* 11ch as specified, but capped at the column. MEASURED, not guessed: at
-       48px this text is 406.1px wide at 11ch, against 405.5px of content at
-       1080px — the exact width where this column first appears — so a bare 11ch
-       over-runs by 0.6px there and nowhere else. The previous rule was a clamp
-       for the same reason, and its comment said so; min() keeps the requested
-       48px everywhere instead of shrinking the type to avoid a hairline. */
+    /* 11ch, capped at the column. With the clamp the hairline over-run the
+       fixed 48 had at 1080 (406.1px against 405.5px) no longer arises. */
     max-width: min(11ch, 100%);
     text-wrap: balance;
   }
@@ -11643,25 +11655,6 @@ button.dash-stat {
   .launch-narrow-only {
     display: none;
   }
-  /* HOLD, until collision 1 (to-do item 1, the claim column) is settled. The
-     lock became aria-disabled on 2026-09-11 (ATH-ADULT-01) and wears .btn-ghost
-     on the phone; the desktop frame of that board is not built, so here the
-     control keeps exactly what .btn-primary:disabled drew. Delete with the
-     desktop build. */
-  .launch .signin-submit[aria-disabled='true'] {
-    background: var(--surf2);
-    color: var(--on-accent);
-    border: none;
-    padding: var(--sp-14) var(--sp-20);
-    font-size: var(--fs-15);
-    font-weight: 700;
-    cursor: not-allowed;
-  }
-  .launch .signin-submit[aria-disabled='true']:hover {
-    background: var(--surf2);
-    color: var(--on-accent);
-  }
-
   /* Splash centred on the viewport, landing at (76, 92). 400 and 175 are half
      the splash lockup (0.80 of 1001x437 = 800x350); 58vh rather than 50 because
      the scene sets it below centre, and 58% of its 854px stage is the 320 it
@@ -11688,10 +11681,12 @@ button.dash-stat {
    none of which exists here, and CLAUDE.md §0.01 says a change is composed
    from what the system has. The proposal record lists every substitution.
 
-   PHONE ONLY, by decision: the board's desktop frame deletes the claim column
-   that to-do item 1 built and is waiting on. So everything lives in this one
-   max-width block and the ≥1080 rules above are untouched, bar the hold rule
-   for the lock. scripts/test-ath-adult-01.ts pins the block and its tokens.
+   THE LAYOUT IS PHONE-ONLY, and stays so: collision 1 was decided on
+   2026-09-11 in favour of the claim column, so the board's centred desktop
+   card is not built and the ≥1080 rules keep their layout. The form's STATES
+   are another matter — the refusal banner, the 44px recovery link, the focus
+   ring, the lock — and those were carried to every width the same day; they
+   sit just below this block, once. scripts/test-ath-adult-01.ts pins both.
    ------------------------------------------------------------------------- */
 @media (max-width: 1079px) {
   .launch {
@@ -11736,63 +11731,8 @@ button.dash-stat {
   .launch .field {
     background: var(--surf);
   }
-  /* The ring on focus, from the token the system already names for it. The
-     outline stays: nothing in this stylesheet suppresses one, and this is not
-     the place to start. */
-  .launch .field:focus {
-    box-shadow: var(--ring-accent);
-  }
   .launch .signin-submit {
     margin-top: var(--sp-14);
-  }
-  /* The lock, in the kit secondary it now wears: not tappable, and it says
-     so — no hover, and tabular figures so the countdown does not jitter. */
-  .launch .signin-submit[aria-disabled='true'] {
-    cursor: not-allowed;
-    font-variant-numeric: tabular-nums;
-  }
-  .launch .signin-submit[aria-disabled='true']:hover {
-    border-color: var(--border);
-    color: var(--muted);
-  }
-  /* F3: "Forgot your password?" was a 15px target on the recovery path. The
-     link becomes a 44px box around the same words. */
-  .launch .signin-forgot a {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 44px;
-    padding: 0 var(--sp-12);
-  }
-  /* The refusal as the banner shape (.banner's own radius and inset) with its
-     tone in the fill, the border and a round dot — the message itself stays
-     in --text, so the hue never becomes the type. */
-  .launch .form-error {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--sp-10);
-    background: var(--wash-bad);
-    border: 1px solid var(--border-bad);
-    border-radius: var(--r-tab);
-    padding: var(--pad-card);
-    color: var(--text);
-  }
-  .launch .form-error::before {
-    content: '';
-    flex: none;
-    width: var(--sp-8);
-    height: var(--sp-8);
-    margin-top: var(--sp-6);
-    border-radius: var(--r-full);
-    background: var(--bad);
-  }
-  /* One attempt left (F2): the warn tone, same shape. */
-  .launch .form-error[data-tone='warn'] {
-    background: var(--wash-warn);
-    border-color: var(--border-warn);
-  }
-  .launch .form-error[data-tone='warn']::before {
-    background: var(--warn);
   }
   /* The disclosure line: pinned to the bottom, set as the board sets it —
      caption size (--fs-12 is the nearest step to its 11.5) and left-aligned. */
@@ -11801,6 +11741,69 @@ button.dash-stat {
     font-size: var(--fs-12);
     text-align: start;
   }
+}
+
+/* --- ATH-ADULT-01, the form's states at every width — 2026-09-11 -----------
+   Carried out of the phone block the day collision 1 was decided: these are
+   states of the sign-in form, not its layout, and a staff member at a desk
+   meets the same refusal, the same lock and the same recovery link as an
+   athlete on a phone. The desktop panel keeps its own layout above.
+   ------------------------------------------------------------------------- */
+/* The ring on focus, from the token the system already names for it. The
+   outline stays: nothing in this stylesheet suppresses one, and this is not
+   the place to start. */
+.launch .field:focus {
+  box-shadow: var(--ring-accent);
+}
+/* The lock, in the kit secondary it wears (.btn-ghost, set in LoginForm):
+   not tappable, and it says so — no hover, and tabular figures so the
+   countdown does not jitter. */
+.launch .signin-submit[aria-disabled='true'] {
+  cursor: not-allowed;
+  font-variant-numeric: tabular-nums;
+}
+.launch .signin-submit[aria-disabled='true']:hover {
+  border-color: var(--border);
+  color: var(--muted);
+}
+/* F3: "Forgot your password?" was a 15px target on the recovery path. The
+   link becomes a 44px box around the same words. */
+.launch .signin-forgot a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 var(--sp-12);
+}
+/* The refusal as the banner shape (.banner's own radius and inset) with its
+   tone in the fill, the border and a round dot — the message itself stays
+   in --text, so the hue never becomes the type. */
+.launch .form-error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-10);
+  background: var(--wash-bad);
+  border: 1px solid var(--border-bad);
+  border-radius: var(--r-tab);
+  padding: var(--pad-card);
+  color: var(--text);
+}
+.launch .form-error::before {
+  content: '';
+  flex: none;
+  width: var(--sp-8);
+  height: var(--sp-8);
+  margin-top: var(--sp-6);
+  border-radius: var(--r-full);
+  background: var(--bad);
+}
+/* One attempt left (F2): the warn tone, same shape. */
+.launch .form-error[data-tone='warn'] {
+  background: var(--wash-warn);
+  border-color: var(--border-warn);
+}
+.launch .form-error[data-tone='warn']::before {
+  background: var(--warn);
 }
 
 /* --- Squad weekly: the wellness card ------------------------------------- */

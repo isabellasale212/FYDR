@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { UserDetailPanel } from '@/components/UserDetailPanel/UserDetailPanel';
-import { fetchUnlinkedAthletes, fetchUserAuditHistory, fetchUserDetail } from '@/lib/queries/userManagement';
+import { fetchSportScientistCount, fetchUnlinkedAthletes, fetchUserAuditHistory, fetchUserDetail } from '@/lib/queries/userManagement';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { requireStaff } from '@/lib/session';
 import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
@@ -31,11 +31,12 @@ export default async function UserDetailPage({ params }: { params: Promise<{ use
   const { db, orgId, claims, timezone } = await requireStaff();
   if (!hasAnyRole(claims.roles, SETTINGS_ADMIN)) redirect('/settings');
 
-  const [user, history, unlinked, mfaFactors] = await Promise.all([
+  const [user, history, unlinked, mfaFactors, sportScientistCount] = await Promise.all([
     fetchUserDetail(db, orgId, userId),
     fetchUserAuditHistory(db, orgId, userId),
     fetchUnlinkedAthletes(db, orgId),
     createAdminClient().auth.admin.mfa.listFactors({ userId }),
+    fetchSportScientistCount(db, orgId),
   ]);
   if (!user) notFound();
 
@@ -60,6 +61,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ use
         history={history}
         unlinkedAthletes={unlinked}
         isSelf={user.id === claims.userId}
+        sportScientistCount={sportScientistCount}
         timezone={timezone}
         mfaFactor={verifiedMfaFactor ? { id: verifiedMfaFactor.id, created_at: verifiedMfaFactor.created_at } : null}
       />

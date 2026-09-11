@@ -111,17 +111,37 @@ console.log('\n4. A10 rhythm and A5 fill, from the spacing scale');
   assert(/margin-top:\s*0/.test(rule('.launch .signin-fields')), 'the form block carries no margin of its own');
   assert(/margin-top:\s*var\(--sp-14\)/.test(rule('.launch .signin-submit')), 'fields → button 14 (--sp-14), the same gap as between fields');
   assert(/background:\s*var\(--surf\)/.test(rule('.launch .field')), 'A5: phone fields are --surf on --bg');
-  assert(/box-shadow:\s*var\(--ring-accent\)/.test(rule('.launch .field:focus')), 'A8: a focused field adds --ring-accent (the outline stays — the app never suppresses one)');
   assert(!/outline:\s*none/.test(block), 'no outline is removed anywhere in the block');
+}
+
+console.log('\n4b. collision 1 closed 2026-09-11 — the component states reach the desktop, the layout does not');
+{
+  /* Decided: the claim column stays (Roboto 800, clamp), so the board's
+     desktop frame is not built. The phone FIXES that are states of the form,
+     not its layout, are carried to every width inside the existing layout:
+     banner (bad and warn), the 44px forgot link, the focus ring, the lock.
+     They now sit OUTSIDE the phone block, once, and the HOLD rule is gone. */
+  const outside = css.replace(block, '');
+  for (const sel of ['.launch .field:focus', '.launch .signin-forgot a', '.launch .form-error', '.launch .form-error::before', ".launch .form-error[data-tone='warn']", ".launch .signin-submit[aria-disabled='true']"]) {
+    assert(rule(sel, outside) !== '', `${sel} applies at every width`);
+    assert(rule(sel, block) === '', `and is no longer duplicated inside the phone block`);
+  }
+  assert(/box-shadow:\s*var\(--ring-accent\)/.test(rule('.launch .field:focus', outside)), 'A8: a focused field adds --ring-accent (the outline stays — the app never suppresses one)');
+  assert(/min-height:\s*44px/.test(rule('.launch .signin-forgot a', outside)), 'F3: the forgot link is a 44px target on desktop too');
+  /* The layout stays phone-only: the desktop panel keeps its own inset, its
+     --field fills on the white panel, its centred foot. */
+  for (const sel of ['.launch-page', '.launch .field', '.launch .launch-foot', '.launch .launch-head .launch-title']) {
+    assert(rule(sel, block) !== '' , `${sel} stays inside the phone block`);
+  }
 }
 
 console.log('\n5. A3 the recovery link, A7 the banner, B4 the disclosure');
 {
-  const a = rule('.launch .signin-forgot a');
+  const a = rule('.launch .signin-forgot a', css);
   assert(/min-height:\s*44px/.test(a) && /display:\s*inline-flex/.test(a) && /padding:\s*0 var\(--sp-12\)/.test(a), 'F3: "Forgot your password?" is a 44px target');
-  const e = rule('.launch .form-error');
+  const e = rule('.launch .form-error', css);
   for (const t of ['--wash-bad', '--border-bad', '--r-tab', '--pad-card', '--text']) assert(e.includes(`var(${t})`), `A7: the refusal is the banner shape — ${t}`);
-  const dot = rule('.launch .form-error::before');
+  const dot = rule('.launch .form-error::before', css);
   assert(/border-radius:\s*var\(--r-full\)/.test(dot) && /background:\s*var\(--bad\)/.test(dot) && /width:\s*var\(--sp-8\)/.test(dot), 'with the tone in a round dot, not in the type');
   const f = rule('.launch .launch-foot');
   assert(/font-size:\s*var\(--fs-12\)/.test(f) && /text-align:\s*start/.test(f), 'B4: the disclosure is --fs-12 (no 11.5 step), left-aligned as drawn');
@@ -140,12 +160,12 @@ console.log('\n6. the block is composed from the system');
   assert(!/@keyframes|animation:/.test(block), 'B6: no spinner, no new motion — the label carries the pending state');
 }
 
-console.log('\n7. desktop is held');
+console.log('\n7. the desktop keeps its layout and takes the states');
 {
-  assert(desktop.includes(".launch .signin-submit[aria-disabled='true']"), 'the ≥1080 block carries the hold rule for the lock');
-  const hold = rule(".launch .signin-submit[aria-disabled='true']", desktop);
-  assert(/background:\s*var\(--surf2\)/.test(hold) && /color:\s*var\(--on-accent\)/.test(hold), 'which reproduces what .btn-primary:disabled drew there, until collision 1 is settled');
-  assert(!desktop.includes('--launch-x'), 'and nothing else from the phone build reaches it');
+  assert(!desktop.includes("[aria-disabled='true']"), 'the HOLD rule is gone — the lock is .btn-ghost at every width');
+  assert(!desktop.includes('--launch-x'), 'and the phone inset does not reach the ≥1080 block');
+  const h = rule('.launch-claim-h', desktop);
+  assert(/font-family: var\(--font-sans\)/.test(h) && /font-size: clamp\(34px, 3\.5vw, var\(--fs-48\)\)/.test(h), 'collision 1 as decided: the headline is Roboto 800 at clamp(34px, 3.5vw, --fs-48), and the claim column stays');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

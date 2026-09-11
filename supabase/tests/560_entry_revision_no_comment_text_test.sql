@@ -52,6 +52,7 @@ select lives_ok(
 );
 
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after this switch, so what follows measures something');
 select tests.set_jwt(tests.uid('orga', 'user_admin'));   -- only they may read audit_log
 
 select ok(

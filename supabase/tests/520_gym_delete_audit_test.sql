@@ -80,6 +80,7 @@ select set_config('request.jwt.claims', '', true);
 delete from gym_set_logs where id = tests.uid('orga','set_1');
 
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after this switch, so what follows measures something');
 select tests.set_jwt(tests.uid('orga', 'user_admin'));   -- only they may read audit_log
 
 select is(
@@ -128,6 +129,7 @@ select set_config('request.jwt.claims', '', true);
 delete from gym_session_logs where id = tests.uid('orga','log_2');
 
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after this switch, so what follows measures something');
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
 
 select is(

@@ -338,8 +338,16 @@ or demote their own role, by any route, including the service role and a
 cascade from `users`. Until then the only guard was `setUserRoles` in the
 browser, which any devtools could skip; the club would have had nobody able to
 grant the role back. Pinned by `supabase/tests/570_user_roles_guard_test.sql`.
-The second half of §0ae — refusing a self-grant of `medic` — is decided but not
-yet built; it will extend the same trigger.
+The second half of §0ae, `0102_user_roles_no_self_medic.sql`, extends the same
+trigger to `BEFORE INSERT OR DELETE OR UPDATE`: a user cannot grant `medic` to
+themselves — by insert, by re-pointing another's medic row, or by turning one
+of their own rows into medic — while granting it to others is unchanged. The
+rule is about the acting user, so a connection with no JWT (service role,
+seeds) is not refused by it. Pinned by `580_user_roles_self_medic_test.sql`.
+In the app, the self-row "Medic" chip and the self-row "Sport scientist" chip
+(when the org has one) are disabled with the reason in their title, and
+`setUserRoles` refuses both in the same words before the database does
+(`roleToggleRefusal`, `ROLE_REFUSALS` in `src/lib/queries/userManagement.ts`).
 
 **Every other gate names a set in `src/lib/access.ts`**, one constant per
 distinct column pattern in §3 above, rather than writing role literals inline.

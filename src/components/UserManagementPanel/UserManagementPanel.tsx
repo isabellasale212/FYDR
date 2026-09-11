@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { linkAthleteToUser, setUserRoles, setUserStatus, type UnlinkedAthlete, type UserWithRoles } from '@/lib/queries/userManagement';
+import { linkAthleteToUser, setUserRoles, setUserStatus, type UnlinkedAthlete, type UserWithRoles, roleToggleRefusal } from '@/lib/queries/userManagement';
 import { Pill } from '@/components/Pill/Pill';
 import { enumLabel, formatDate } from '@/lib/format';
 import { USER_STATUS } from '@/lib/status';
@@ -33,6 +33,10 @@ export function UserManagementPanel({ orgId, currentUserId, currentActorRole, ti
   const [search, setSearch] = useState('');
 
   const filtered = users.filter((u) => `${u.full_name} ${u.email}`.toLowerCase().includes(search.trim().toLowerCase()));
+  /* The count the last-admin rule is about (§0ae): sport_scientist rows in
+     the org — one per user here, since roles is a set per user. Read off the
+     same list the rows render from, so it moves when a grant does. */
+  const sportScientistCount = users.reduce((n, u) => n + (u.roles.includes('sport_scientist') ? 1 : 0), 0);
 
   function refresh() {
     router.refresh();
@@ -97,6 +101,7 @@ export function UserManagementPanel({ orgId, currentUserId, currentActorRole, ti
               orgId={orgId}
               user={u}
               isSelf={u.id === currentUserId}
+              sportScientistCount={sportScientistCount}
               currentUserId={currentUserId}
               currentActorRole={currentActorRole}
               timezone={timezone}
@@ -320,6 +325,7 @@ function UserRow({
   orgId,
   user,
   isSelf,
+  sportScientistCount,
   currentUserId,
   currentActorRole,
   timezone,
@@ -331,6 +337,7 @@ function UserRow({
   orgId: string;
   user: UserWithRoles;
   isSelf: boolean;
+  sportScientistCount: number;
   currentUserId: string;
   currentActorRole: AppRole;
   timezone: string;
@@ -400,18 +407,25 @@ function UserRow({
             </p>
           </div>
           <div className="chiprow">
-            {ALL_ROLES.map((role) => (
-              <button
-                key={role}
-                type="button"
-                className="squad-chip"
-                aria-pressed={user.roles.includes(role)}
-                disabled={busyRole === role || user.status === 'deactivated'}
-                onClick={() => toggleRole(role)}
-              >
-                {enumLabel(role)}
-              </button>
-            ))}
+            {ALL_ROLES.map((role) => {
+              /* §0ae: the database refuses a self-grant of medic and the
+                 removal of the last sport scientist; the chip stops people
+                 hitting that. */
+              const refusal = roleToggleRefusal(role, user.roles.includes(role), isSelf, sportScientistCount);
+              return (
+                <button
+                  key={role}
+                  type="button"
+                  className="squad-chip"
+                  aria-pressed={user.roles.includes(role)}
+                  disabled={busyRole === role || user.status === 'deactivated' || refusal !== null}
+                  title={refusal ?? undefined}
+                  onClick={() => toggleRole(role)}
+                >
+                  {enumLabel(role)}
+                </button>
+              );
+            })}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-8)' }}>
             <Pill status={USER_STATUS[user.status]} />

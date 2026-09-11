@@ -113,7 +113,7 @@ console.log('\nthe third wordmark declaration stays gone');
   );
 }
 
-console.log('\nthe brand face is used by ONE thing that is not the mark, deliberately');
+console.log('\nthe brand face is used by the mark and nothing else — the launch headline gave it back');
 {
   /* Added 2026-09-07 with the launch page rewrite, and recorded here because
      this file previously said the brand face meant "this is the logo" and
@@ -126,13 +126,18 @@ console.log('\nthe brand face is used by ONE thing that is not the mark, deliber
      somebody later unifies these two numbers "for consistency", the headline
      becomes the mark, which is the thing the three wordmark surfaces were
      unified to prevent. */
+  /* DECIDED 2026-09-11 (Isabella): the launch headline is Roboto 800. The
+     paragraph above records why a Sora headline was ever allowed and what kept
+     it honest; the decision that closed collision 1 took the simpler line —
+     one mark, one face — and the headline reads --font-sans. Its -0.03em
+     tracking stays, still distinct from the mark's -0.035em. */
   const h = rule('.launch-claim-h');
   assert(h !== '', '.launch-claim-h exists');
-  assert(/font-family: var\(--font-brand\)/.test(h), 'the launch headline is set in the brand face, by instruction');
-  assert(/font-weight: 800/.test(h), 'at the one weight Sora is loaded at');
+  assert(/font-family: var\(--font-sans\)/.test(h) && !/--font-brand/.test(h), 'the launch headline is Roboto — the brand face is the mark\'s alone again');
+  assert(/font-weight: 800/.test(h), 'at 800');
   assert(
     /letter-spacing: -0\.03em/.test(h) && !/letter-spacing: -0\.035em/.test(h),
-    'but at -0.03em, NOT the mark\'s -0.035em — a headline in the brand face is not an instance of the mark',
+    'at -0.03em, not the mark\'s -0.035em',
   );
   const marks = WORDMARKS.map((w) => rule(w.sel));
   assert(

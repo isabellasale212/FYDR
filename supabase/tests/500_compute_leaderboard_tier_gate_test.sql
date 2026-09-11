@@ -85,6 +85,7 @@ end $$;
 -- screens check the tier BEFORE calling this function, so a direct call was the
 -- whole bypass.
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after this switch, so what follows measures something');
 select tests.set_jwt(tests.uid('orga','user_admin'));
 
 -- ------------------------------------------------- the leak, and its control
@@ -113,6 +114,7 @@ begin
   update public.organisations set tier = 'performance' where id = tests.uid('orga','org');
 end $$;
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after this switch, so what follows measures something');
 select tests.set_jwt(tests.uid('orga','user_admin'));
 
 select is(
@@ -140,6 +142,7 @@ begin
    where key = 'training.total_session_load';
 end $$;
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after this switch, so what follows measures something');
 select tests.set_jwt(tests.uid('orga','user_admin'));
 
 select is(
@@ -159,6 +162,7 @@ begin
    where key = 'gps.total_distance_m';
 end $$;
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after this switch, so what follows measures something');
 select tests.set_jwt(tests.uid('orga','user_admin'));
 
 select is(
@@ -176,6 +180,7 @@ begin
    where key = 'gps.total_distance_m';
 end $$;
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after this switch, so what follows measures something');
 select tests.set_jwt(tests.uid('orga','user_athlete_1'));
 
 select is(

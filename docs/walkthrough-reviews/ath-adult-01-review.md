@@ -155,3 +155,10 @@ safe. The uncertainty is a feeling, not a fault.
 attributes; a labelled password reveal (`aria-label="Show password"`); the whole
 screen in one viewport with no scroll; 48px field targets; the deliberate refusal
 to say which field was wrong; and the lockout countdown.
+
+---
+
+## Decisions recorded 2026-09-11
+
+- **F5 (email never remembered): the "remembered device" proposal is DECLINED** — no email stored on shared devices; browser autofill instead. Closed by `autocomplete="username"` on the field. See §0ab.
+- **The no-role screen (proposal C3) is DEFERRED** to its own scheduling after the 01 design lands. See §0ab.

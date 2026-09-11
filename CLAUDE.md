@@ -105,6 +105,19 @@ after a brief was sent without one. For each flow, before it reaches design:
 4. **Fold the findings into that flow's brief** — one package, one source. The
    review is not a separate document design has to be told to go and read.
 
+**Every brief carries `tokens.css` in full, with this instruction to Claude
+Design, verbatim.** Set 2026-09-11, after ATH-ADULT-01's proposal came back
+built on Claude Design's own system — a different accent, one radius, a 30/19/
+13.5/11.5px type scale, its own motion durations — and the builder had to map
+every value back onto our 171 by role, with nine that had no step to land on:
+
+> Use only these custom properties. Any value not in this file must be flagged
+> as a proposed new token, never used.
+
+The brief's "Tokens in play" table stays as the summary; the full file is what
+makes the instruction enforceable. A proposal that arrives with values outside
+the file is returned, not mapped.
+
 **Review the running screen, not the walkthrough document.** The first review
 disproved two things the brief asserted, both of which had been taken from the
 document rather than the component: that a lockout and a mistype look the same

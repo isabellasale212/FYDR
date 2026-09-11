@@ -1123,6 +1123,14 @@ trade `0096` made for gym, now made consistently.
 
 - [ ] **`/programme/nutrition` says "your last recorded weight" without saying whose record.** It scales portions to `body_composition` — the staff skinfold measurement — while `/me` shows "Body mass … self-reported" from the athlete's own wellness entries. On the review account the two are 98.5 and 106.0 kg. An athlete who typed 106 into this morning's check-in and then reads "your last recorded weight, 98.5 kg" has no way to tell which the app believes or why. **Copy, not data**: the two sources are a deliberate trust distinction and should stay separate; the sentence needs to say "your last staff measurement ({date})" and, ideally, the `/me` figure should say the same about its own source. The 7.5 kg gap itself is probably seed drift (§0f) and is not the finding.
 
+## 0ab. ATH-ADULT-01 proposal items C2 and C3 — decided 2026-09-11
+
+Two behaviour changes the sign-in proposal asked for, both outside the design-only rule for a flow's first implementation. Recorded here so they are not re-proposed as if undecided.
+
+- [ ] **C3 — DEFERRED: the no-role screen.** Proposal: when a signed-in session has no role, drop the form and show "Ask your club's staff to add you to the squad." with a "Use a different account" control. Not design-only because that control must `signOut()` the role-less session, and the copy replaces the spec'd refusal in the ATH-ADULT-01 brief's table. **Deferred, not declined** — it is a reasonable screen; it waits for its own scheduling after the 01 design lands, and needs the refusal-copy decision made alongside it.
+
+- [x] ~~**C2 — remembered device ("Signing in as … · Change").**~~ **DECLINED (Isabella, 2026-09-11): no email stored on shared devices; browser autofill instead.** Persisting the email in device storage is PII at rest with no spec entry and no decision behind it, and a squad's phones are routinely shared. The review finding it answered (F5, "email never remembered") is closed by the existing `autocomplete="username"` on the field — the browser's own autofill does the remembering, under the user's control, and nothing Fydr stores. Do not re-propose.
+
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.
 

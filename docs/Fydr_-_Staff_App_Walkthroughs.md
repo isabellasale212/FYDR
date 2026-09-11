@@ -859,10 +859,19 @@ why the narrow choice is rarely the right one, inside the control.
 
 **Steps.**
 
-1. Heading "Nutrition", with week navigation "‹ Previous week" and "Next week ›",
-   and the group filter.
-   - Also visible: "Manual target" (`.btn-ghost`) → `/nutrition/new`; "New plan"
-     (`.btn-primary`).
+1. Heading "Nutrition", with week navigation "‹ Previous week" (a link →
+   `/nutrition?week=…`; **"Next week ›" renders only for a past week**), and the
+   group filter.
+   - Also visible: "Manual target" (`.btn-ghost`, 44px) → `/nutrition/new`;
+     "New plan" (`.btn-primary`, 35px); three sections — **"Plans"** (one
+     button per plan: "Academy · 5 athletes", "Backs · 14 athletes",
+     "Forwards · 15 athletes · 1 override"; **no `aria-pressed` or
+     `aria-current`** marks the selected one), **"Day type"** (three buttons:
+     "Training day 6.0 g/kg", "Match day 7.5 g/kg", "Rest day 3.5 g/kg", 37px),
+     and **"Needs a word"** (a chase list, one button per athlete — "Okonkwo,
+     Dan · 0/7 · Weighed in"). The plan panel carries six `−`/`+` steppers at
+     32px. **3,520px at desktop, 6,099px at phone** — the longest staff screen
+     after the leaderboard wall.
 2. Press "New plan" — a create panel toggles open.
 3. Press "Create" (disabled until valid).
 4. On a plan: "Duplicate" (`.btn-ghost`), "Food library" (`.btn-ghost`), and
@@ -885,10 +894,12 @@ why the narrow choice is rarely the right one, inside the control.
 **Steps.**
 
 1. Heading "Gym programme", with the selected programme's name as a second heading.
-   - Also visible: "+ New programme" (`.btn-primary`, rendered twice on the
-     screen) → `/programmes/new`; "Exercise library" (`.btn-ghost`) →
-     `/programmes/exercises`; and a detail link whose **label depends on
-     permission**.
+   - Also visible: "+ New programme" (`.btn-primary`, 50px, rendered **once** —
+     an earlier version said twice) → `/programmes/new`; "Exercise library"
+     (`.btn-ghost`, 44px) → `/programmes/exercises`; a list of programmes
+     (measured: "In-Season max", "Return to running" — a rehab programme —
+     "Pre-season strength"); and a detail link whose **label depends on
+     permission**. Fits one desktop screen (800px); 1,662 at phone.
 2. Press the detail link.
 
 **Detail link states.**
@@ -917,10 +928,16 @@ why the narrow choice is rarely the right one, inside the control.
 **Steps.**
 
 1. Heading "Leaderboard".
-   - Also visible: "Manage published boards →" (`.btn-ghost`) →
-     `/leaderboards/manage`; the group chips; a lens selector; a scope chip row;
-     a family chip row whose chips carry counts and are **disabled when the
-     count is zero**; and "Profile ›" → `/squad/{id}` for the selected athlete.
+   - Also visible: "Manage published boards →" (`.btn-ghost`, 44px) →
+     `/leaderboards/manage`; the group chips; a **lens selector** — "Result",
+     "Improvement", "Standard", each a `<button role="tab">` at 31px **with no
+     enclosing `tablist` and no `aria-selected`**; a **scope** chip row —
+     "Positional unit" (pressed), "Age band"; a **family** chip row with
+     counts — "Speed & power 4" (pressed), "Endurance 2", "Strength 1",
+     "GPS 14", "Habits 2" — disabled when the count is zero (none was, on
+     scratch, so the branch was not observed); and "Profile ›" → `/squad/{id}`
+     for the selected athlete. **3,840px at desktop, 6,592px at phone — the
+     longest staff screen.**
 
 **Branches.**
 

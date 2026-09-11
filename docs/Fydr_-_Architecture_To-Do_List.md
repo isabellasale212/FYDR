@@ -1293,6 +1293,13 @@ Two behaviour changes the sign-in proposal asked for, both outside the design-on
 - [ ] **Publishing a session to athletes writes no audit row. Neither does removing one.** `sessions` carries only `sessions_set_updated_at`; `schedule.ts` never touches `audit_log`. Measured after the exercise above: the window holds six `report.squad_weekly.view` rows and two `.export` rows from reading a report, and **nothing** for creating a session that appeared on five athletes' phones or for deleting it. Reading is audited; the staff app's single highest-reach write is not. Not an access gap — an accountability one: "who changed the week, when" is unanswerable today. **Decided: goes into the next audit-trigger batch** — a trigger on `sessions` and `session_participants` of the same shape as the athlete-entry ones (§0p, §0q, `0099`), recording create, update, soft-delete and participant changes with the actor.
 
 
+## 0am. From the STAFF-SS-23 to -25 review — 2026-09-11
+
+- [ ] **The leaderboard lens is three `role="tab"` buttons with no `tablist` and no `aria-selected`.** "Result" / "Improvement" / "Standard" on `/leaderboards`: each carries `role="tab"`, none is marked selected, and no ancestor carries `role="tablist"`. Assistive tech is told there are tabs and nothing else. Either complete the pattern (`tablist`, `aria-selected`, arrow-key movement) or drop the role and use `aria-pressed` like every other chip row on the screen. Same family as the schedule's "Week plan" span (§0ai).
+
+- [ ] **The nutrition plan list exposes no selected state.** The three plan buttons under "Plans" carry neither `aria-pressed` nor `aria-current`, though one is visually selected and the panel to the right is its detail. The day-type buttons beside them are the same shape. Announce the selection.
+
+
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.
 

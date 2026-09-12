@@ -157,7 +157,7 @@ export function PlayerProfileFlags({
         <p className="cap" style={{ marginTop: 'var(--sp-16)' }}>
           {acknowledged.length > 0
             ? 'Nothing awaiting acknowledgement — every open flag has been seen.'
-            : 'No open flags for this athlete.'}
+            : 'No open flags for this athlete · n = 0.'}
         </p>
       ) : (
         <div className="pp-flags-list">

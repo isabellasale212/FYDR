@@ -877,6 +877,18 @@ export default async function AthletePage({
                   Edit
                 </Link>
               </div>
+              {/* An empty panel states the requirement, never a zero
+                  (STAFF-SS-02-05 C8, 2026-09-12): the targets are per
+                  kilogram, so a plan without a weigh-in has nothing to scale. */}
+              {!nutrition ? (
+                <p className="cap" style={{ margin: '0 0 var(--sp-8)' }}>
+                  No plan assigned. Targets are per kilogram, so a plan needs a weigh-in.
+                </p>
+              ) : bodyWeight.latestKg === null ? (
+                <p className="cap" style={{ margin: '0 0 var(--sp-8)' }}>
+                  Targets are per kilogram, so this plan needs a weigh-in.
+                </p>
+              ) : null}
               <div className="pp-macro-tiles">
                 <div className="pp-macro-tile">
                   <p className="num pp-macro-value" style={{ margin: 0 }}>
@@ -926,7 +938,7 @@ export default async function AthletePage({
                     </p>
                   ) : (
                     <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
-                      No weigh-in recorded.
+                      No weigh-in recorded. A trend needs three weigh-ins.
                     </p>
                   )}
                   {/* This note used to read "No target range on record." with no
@@ -1018,7 +1030,7 @@ export default async function AthletePage({
               <p className="cap" style={{ marginTop: 'var(--sp-6)' }}>
                 {profile.range.label.toLowerCase()} · {bodyWeight.history.length} weigh-in
                 {bodyWeight.history.length === 1 ? '' : 's'} in this window
-                {bodyWeight.history.length < 2 ? ' — not enough for a trend line' : ''}
+                {bodyWeight.history.length < 3 ? ' — a trend needs three weigh-ins' : ''}
                 {spark?.band
                   ? ' · solid line and fill are logged weigh-ins, the dashed bracket is the staff target range'
                   : ''}

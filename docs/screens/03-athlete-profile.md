@@ -74,6 +74,13 @@ expected return the medic has not set reads *"Expected return not known"*; a
 clinical field nobody has filled reads *"Not recorded"*, never a dash. For a
 non-medic the card stops after the expected return.
 
+**Empty panels state the requirement, never a zero** (STAFF-SS-02-05 C8, 12 September
+2026): "No weigh-in recorded. A trend needs three weigh-ins." and the body-weight
+caption's "— a trend needs three weigh-ins" under three; "No plan assigned. Targets are
+per kilogram, so a plan needs a weigh-in." (or "…so this plan needs a weigh-in." when
+a plan has no weight to scale to); "No open flags for this athlete · n = 0."; the
+injury panel's "This is not the same as being cleared."
+
 **Entries and corrections.** The intro states the rules once: entries are never
 overwritten, a correction records a new dated revision against your name, the
 window is a fixed 28 days, and gym set logs and the weekly nutrition check-in are

@@ -74,7 +74,7 @@ to create an injury record, and the `/injuries` board shows "+ Injury" to the co
 | ~~STAFF-SS-01~~ | ~~D3~~ | ~~"Ready for {matchday}" only within 14 days.~~ **Built** (`FIXTURE_RANGE_DAYS = 14`; "Squad readiness · No fixture in the next 14 days" beyond it). The board's "the week card leads and the matchday card is absent" is a structure change, with C2's remaining steps · | | |
 | STAFF-SS-01 | Q7 | On a phone, the in-page group filter bar would show only the active chip. | Unclear what then changes the group; the shell's title bar already shows the active group as a chip. | **Leave the chip row as it is** (it wraps; every chip is 44px) · small |
 | ~~STAFF-SS-02-05~~ | ~~C4~~ | ~~Who will read what, before a status change lands.~~ **Built** (`AvailabilityAudience` on both forms; the coaches by role — no per-athlete coach exists in the data) · | | |
-| STAFF-SS-02-05 | C8 | Empty profile panels state the requirement ("a trend needs three weigh-ins", "no plan assigned, targets are per kilogram, so a plan needs a weigh-in"). | Per-panel copy on each panel's own empty branch; needs the body-weight and nutrition panels read first. | **Build** as one copy pass · medium |
+| ~~STAFF-SS-02-05~~ | ~~C8~~ | ~~Empty panels state the requirement.~~ **Built** (body weight, nutrition plan, flags; the injury panel from A4) · | | |
 | ~~STAFF-SS-02-05~~ | ~~D2~~ | ~~One rule for blocked controls.~~ **Built** (`BlockedButton`: aria-disabled, the reason on tap/focus, never a title — the builder's chips, the weigh-in trio, the bio Edit, the correction button, the leaderboard family chips; 06-design-system.md §7.0) · | | |
 | ~~PATTERN-S3~~ | ~~C4~~ | ~~Who sees what, by name.~~ **Built** with STAFF-SS-02-05 C4 · | | |
 

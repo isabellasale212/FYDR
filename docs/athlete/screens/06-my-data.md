@@ -14,15 +14,19 @@ Every athlete, any time. Base package.
 
 ## 3. What you see
 
-A page title, a **three-segment pill track — Wellness, Gym, Tests** — and that
-tab's content. Below it a footer card of three rows reaching the destinations the
-track no longer carries.
+A page title, a **five-segment pill track — Wellness, Gym, Sessions, Nutrition,
+Tests** (since 12 September 2026, ATH-ADULT-12 D1 reversed) — and that tab's
+content. Below it a footer card with one row, Leaderboards: the only route in to
+`/my-data/boards`.
 
-**TABS AND SEGMENTS ARE DIFFERENT LISTS.** Five `?tab=` routes still exist and
-still render (`wellness`, `training`, `nutrition`, `testing`, `gym`); the bar
-draws three of them. `SEGMENTS` is what the bar draws, `TABS` is the route
-vocabulary, and `SEGMENT_DOMAINS` is derived from `SEGMENTS` so flag routing
-cannot drift from the bar.
+**TABS AND SEGMENTS ARE ONE LIST AGAIN** — in a different order. Five `?tab=`
+routes (`wellness`, `training`, `nutrition`, `testing`, `gym`); the bar draws all
+five, labelled Wellness · Gym · Sessions · Nutrition · Tests. The labels sit at
+`--fs-11` so five fit 343px on one row; at larger text the track wraps to two
+rows of 44px rather than scrolling or clipping. The live segment stays the
+accent-filled pill (D2 kept). `SEGMENT_DOMAINS` is derived from `SEGMENTS`, so
+training and nutrition flags now land in their tabs; `gps` and `compliance` still
+fall through to "Also noted for you".
 
 Each tab is a headline card over a list card, and every list shows a preview —
 four readiness days, three of everything else — under a **"See all N ->"** link
@@ -44,8 +48,8 @@ The wellness region is a readiness line with a 14 day rolling mean, a plus or
 minus 1 SD band, and (new) a filled area beneath the line, drawn per segment so a
 missing day leaves a gap in the fill exactly as it leaves one in the line.
 
-**`gps` and `compliance` flags still have no segment, and `training` and
-`nutrition` join them.** All four fall through to the "Also noted for you" notice
+**`gps` and `compliance` flags have no segment** (training and nutrition have
+theirs back since 12 September). They fall through to the "Also noted for you" notice
 above the tab content, which is shown whichever tab is open — so dropping two
 tabs from the bar did not hide any flag. This was the failure mode worth
 checking: leave a domain in `SEGMENT_DOMAINS` whose tab is no longer in the bar
@@ -83,8 +87,6 @@ there is also no GPS for an athlete on any package.
 |---|---|---|---|---|---|---|
 | A segment | Top | Switches tab | `/my-data?tab=` | nothing | no | never |
 | See all N | List footer | Expands the list in place | `/my-data?tab=…&all=1` | nothing | no | the list is already whole |
-| Sessions and RPE | Footer card | The training tab | `/my-data?tab=training` | nothing | no | never |
-| Weekly check-ins | Footer card | The nutrition tab | `/my-data?tab=nutrition` | nothing | no | never |
 | Leaderboards | Footer card | The board list | `/my-data/boards` | nothing | no | never |
 | A logged gym session | Gym region | Opens the session | `/my-data/gym/[id]` | nothing | no | none logged |
 | A past day | Wellness region | Opens that day's entry, read only | `/check-in?date=...` | nothing | no | no entry |
@@ -191,8 +193,9 @@ Built from the "ATH-ADULT-12-13 · FINAL" board, A items only — the rest is in
 - **The hero figure is 48px** (`--fs-48`, a token that exists), from 38.
 - **A history row is at least 44px.**
 
-Recorded, not built: five segments on the track (reverses §13's three, and the
-guard), the live segment as a white card (reverses the accent-filled pill),
+Since built or decided: five segments on the track (12 September, D1 reversed —
+the footer card keeps only Leaderboards), the live segment stays the
+accent-filled pill (D2 declined), and further recorded, not built:
 uncoloured deltas measured against the 28-day average (reverses §13's green ▲
 and is a different comparison from "on last week"), a plain-English fact line
 per hero, Sessions and Nutrition as hero-card tabs with an RPE chart, empty

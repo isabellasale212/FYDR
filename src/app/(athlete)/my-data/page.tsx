@@ -169,14 +169,26 @@ type Tab = (typeof TABS)[number];
  *  So TABS stays the route vocabulary and SEGMENTS is only what the bar draws.
  *  Both dropped tabs are reached from the footer card at the bottom of this
  *  page (`md-more`), which is also the only remaining route to /my-data/boards. */
-const SEGMENTS = ['wellness', 'gym', 'testing'] as const;
+/* FIVE since 2026-09-12 (ATH-ADULT-12 D1, reversed by Isabella): Sessions and
+   Nutrition stop being rows on a footer card and become tabs of their own,
+   so the one control that claims to enumerate My data enumerates it. The
+   objection that drove the 8 September footer card — three destinations
+   orphaned — is answered by giving two of them their tab back; Leaderboards
+   keeps its footer row, being a separate screen rather than a view of this
+   one. The labels sit at --fs-11 so five fit 343px, and the track wraps to
+   two rows at larger text rather than scrolling or clipping (B3, C9). */
+const SEGMENTS = ['wellness', 'gym', 'training', 'nutrition', 'testing'] as const;
 
 const SEGMENT_LABELS: Record<(typeof SEGMENTS)[number], string> = {
   wellness: 'Wellness',
   gym: 'Gym',
-  /* "Tests", per 23m, not "Testing". The route key stays `testing` — a URL an
-     athlete has already been sent must keep working — and this is the label
-     CLAUDE.md §6 defines. */
+  /* "Sessions", the board's word: what you trained and how hard it felt. The
+     route key stays `training` — a URL an athlete has already been sent must
+     keep working. */
+  training: 'Sessions',
+  nutrition: 'Nutrition',
+  /* "Tests", per 23m, not "Testing". The route key stays `testing`, and this
+     is the label CLAUDE.md §6 defines. */
   testing: 'Tests',
 };
 
@@ -581,26 +593,9 @@ export default async function MyDataPage({
        *  card and the three destinations go with it — that is the decision, not
        *  a side effect. */}
       <div className="card flush md-more">
-        <Link href="/my-data?tab=training" className="me-row">
-          <span className="k">
-            Sessions and RPE
-            <span className="s">what you trained and how hard it felt</span>
-          </span>
-          <span className="chev" aria-hidden="true">
-            &rsaquo;
-          </span>
-        </Link>
-        <div className="hair" />
-        <Link href="/my-data?tab=nutrition" className="me-row">
-          <span className="k">
-            Weekly check-ins
-            <span className="s">your nutrition answers, week by week</span>
-          </span>
-          <span className="chev" aria-hidden="true">
-            &rsaquo;
-          </span>
-        </Link>
-        <div className="hair" />
+        {/* Leaderboards alone since 2026-09-12: Sessions and Weekly check-ins
+            are tabs again (D1). This row stays the only route in to
+            /my-data/boards. */}
         <Link href="/my-data/boards" className="me-row">
           <span className="k">
             Leaderboards

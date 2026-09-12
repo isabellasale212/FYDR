@@ -2126,6 +2126,9 @@ a.hist-row:focus-visible {
    route to three of them. */
 .md-seg-track {
   display: flex;
+  /* Five segments since 2026-09-12 (ATH-ADULT-12 D1): wraps to a second row
+     at larger text sizes rather than scrolling or clipping (C9). */
+  flex-wrap: wrap;
   gap: var(--sp-4);
   /* The changelog's own numbers: a --surf2 band with 4px of padding. It was a
      16px-radius track with 2px gaps that scrolled horizontally, because the old
@@ -2136,17 +2139,19 @@ a.hist-row:focus-visible {
   background: var(--surf2);
 }
 .md-seg {
-  /* flex: 1, which the six-segment track could not use — sharing 390px six ways
-     gave 60px each and "Leaderboards" did not fit. Three equal segments is what
-     the reference draws and what the width now allows. */
-  flex: 1 1 0;
+  /* Five segments share 343px at --fs-11 — "Nutrition" is the widest label
+     and sets the floor. Basis auto: each segment is as wide as its label,
+     the five share what is left, and only when the labels no longer fit
+     one row (Larger Text) does the track wrap to 3 + 2 (ATH-ADULT-12
+     D1/B3/C9, 2026-09-12). The accent-filled live pill stays (D2 kept). */
+  flex: 1 1 auto;
   min-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--sp-10) var(--sp-14);
+  padding: var(--sp-10) var(--sp-6);
   border-radius: var(--r-full);
-  font-size: var(--fs-14);
+  font-size: var(--fs-11);
   font-weight: 600;
   color: var(--muted);
   text-decoration: none;

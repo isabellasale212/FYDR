@@ -1242,6 +1242,13 @@ Holds `SESSION_EDIT`, `THRESHOLD_EDIT`, `GROUP_EDIT`, `AVAILABILITY_EDIT`,
 
 ## Identical to the sport scientist
 
+**Verified 2026-09-12 for 01, 02, 05 and 07** by fingerprinting each route for
+a coach (Mark Iremonger) and the sport scientist at 1280 and 375 — headings,
+controls, every leaf node, page height — and diffing. Identical except:
+"Add athlete" absent on `/squad` (02); the SAR section and three role-disabled
+Body-weight controls on the profile (05, see 05a). The phone shell differs only
+by the More sheet's missing "Analytics" row.
+
 | ID | Flow | Entry point |
 |---|---|---|
 | STAFF-COACH-01 | Read the dashboard | sidebar "Dashboard" |
@@ -1274,6 +1281,21 @@ mechanism (`CLINICAL_ONLY`). They see availability status, restrictions and
 expected return; not what is wrong. This is the injury boundary and it is
 enforced in the database, not the page.
 
+**Measured 2026-09-12 as Mark Iremonger on James Barnes's profile (injured),
+both widths.** The Injury section reads status · body area · restrictions ·
+expected return and nothing clinical; `/injuries/{id}` opens with an `i`
+banner "This is what coaching staff see. Diagnosis, clinical notes and
+treatment plan are medical only and are not shown here, by design." Also
+absent for the coach: the **Subject access request** section and its
+"Generate subject access pack →". Present but **disabled** (`disabled` +
+`aria-disabled`, reason in a `title`): the Body weight section's "+ Log
+weigh-in", "Set target range" and "Edit entries" — weigh-ins are
+`WEIGH_IN_EDIT` (sport scientist, medic, S&C, nutritionist), the target range
+`NUTRITION_EDIT`. Present and live: "+ Log injury" → `/injuries/new` — the
+coach may create an injury record (§3.2 "New injury VC VC VC VC X",
+`injuries_staff_insert`), although the `/injuries` board hides its "+ Injury"
+from the same role.
+
 ### STAFF-COACH-23 — Nutrition: meal library only
 
 `/nutrition` opens, but the coach holds `MEAL_LIBRARY_EDIT` and **not**
@@ -1290,10 +1312,14 @@ withheld by `CLINICAL_ONLY`, the same way they are on the athlete profile.
 
 ## Cannot reach at all
 
-- `/analytics`, `/analytics/build` — `ANALYTICS`.
+- `/analytics` — `ANALYTICS`; redirects to `/dashboard?e=no-analytics`.
+  `/analytics/build` **opens** and renders an in-page refusal ("Not part of
+  this role") with no data — measured 2026-09-12.
 - `/settings/audit`, `/settings/retention`, `/settings/users*`,
   `/settings/subject-access`, `/squad/new`, `/squad` administration —
-  `SETTINGS_ADMIN`. **`/injuries` and `/reports/injuries` are NOT on this list:
+  `SETTINGS_ADMIN`. Measured 2026-09-12: the settings routes land on a bare
+  `/settings` with no message, except `/settings/subject-access`, which
+  carries `?e=no-sar-access`; `/squad/new` lands on `/squad` silently. **`/injuries` and `/reports/injuries` are NOT on this list:
   both open for a coach, with clinical content withheld.**
 - `/settings/imports` — `GPS_IMPORT`.
 - `/programmes` authoring — `PROGRAMME_EDIT` / `PROGRAMME_AUTHOR` /

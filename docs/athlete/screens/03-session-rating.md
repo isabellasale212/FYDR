@@ -78,6 +78,15 @@ already done.
 - **Retried on the next load** of the app.
 - **If the app is closed before sync completes**, the entry is still in the queue
   and goes on the next open.
+- **A queued rating is dated when it was made, not when it arrived** (§0ad,
+  Builder Q6, 12 September 2026). The outbox sends its `queuedAt` as
+  `submitted_at`; the database keeps it only when it is earlier than the
+  arrival time and within 24 hours of it, otherwise the arrival time stands
+  (migration 0105). So an athlete who rated pitch-side with no signal is not
+  marked missing by the compliance cutoff, and a phone whose clock is set
+  ahead or set to last week cannot post-date or back-date a rating. The
+  screen itself still refuses a rating after the end of the following day
+  (`rpeIsClosed`); the outbox never refuses one.
 
 **UNVERIFIED: what the athlete sees while an entry is queued**, and what happens
 if the same day is submitted twice from two devices. Looked in

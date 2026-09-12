@@ -106,6 +106,15 @@ A session the report cannot find any more (removed after its expectation was
 generated) has no window to judge against, so a rating for it counts. Wellness
 and gym are unchanged: an entry on the day counts.
 
+**A rating made offline is judged by when it was made.** The athlete app's
+outbox sends the time it queued the rating, and the database keeps it as
+`submitted_at` when it is earlier than the arrival time and within 24 hours of
+it (migration 0105) — so a rating made in time with no signal does not become a
+miss when the phone reconnects the next day, and a phone's clock cannot move a
+rating more than a day, or forwards at all. The athlete report's own compliance
+figure reads the same classifier (`fetchAthleteCompliancePct`), so the two
+cannot disagree about an athlete.
+
 ---
 
 ## 6. Every thing you can act on

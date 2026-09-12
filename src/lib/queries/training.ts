@@ -126,6 +126,16 @@ export async function submitTrainingEntry(
   db: Db,
   input: TrainingEntryInput,
   identity: { orgId: string; athleteId: string; userId: string },
+  /* WHEN THE ATHLETE RATED, if that was not now. The outbox passes the time it
+     queued the rating on the phone (§0ad, Builder Q6, 2026-09-12): compliance
+     judges submitted_at against the end of the following day, and a rating
+     made in time with no signal must not become a miss because the phone
+     found bars a day later. The database, not this caller, decides whether
+     to believe it — 0105's trigger keeps the value only when it is earlier
+     than arrival and within 24 hours of it, else arrival stands — so a clock
+     set wrong can neither post-date nor back-date a rating past a day. The
+     online screen sends nothing and gets the arrival time, as before. */
+  options: { submittedAt?: string } = {},
 ): Promise<void> {
   const { error } = await db.from('training_entries').insert({
     id: input.id,
@@ -138,6 +148,7 @@ export async function submitTrainingEntry(
     comment: input.comment ? input.comment : null,
     source: 'self_report',
     created_by: identity.userId,
+    ...(options.submittedAt ? { submitted_at: options.submittedAt } : {}),
   });
 
   if (error) throw new Error(error.message);

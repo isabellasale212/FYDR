@@ -144,5 +144,27 @@ console.log('\n5. the athlete report\'s own compliance figure — the same rule,
   assert(!/Not yet applied/.test(read('docs/metrics.md')), 'metrics.md no longer says the athlete report is pending');
 }
 
+console.log('\n6. the outbox sends when the athlete rated, and the database decides whether to believe the phone (Builder Q6, decided 2026-09-12)');
+{
+  const mig = read('supabase/migrations/0105_training_submitted_at_clamp.sql');
+  assert(/before insert on public\.training_entries/.test(mig), '0105: a BEFORE INSERT trigger on training_entries');
+  assert(/new\.submitted_at >= now\(\)/.test(mig), 'a value at or after arrival is replaced — nothing can be post-dated');
+  assert(/new\.submitted_at < now\(\) - interval '24 hours'/.test(mig), 'and older than 24 hours before arrival is replaced — a clock set wrong cannot back-date past a day');
+  assert(!/before update|after update/.test(mig), 'insert only: a row\'s submitted_at is never rewritten');
+  const t = read('supabase/tests/610_training_submitted_at_clamp_test.sql');
+  assert(/interval '2 hours'/.test(t) && /interval '24 hours'/.test(t) && /interval '30 hours'/.test(t) && /\+ interval '10 minutes'/.test(t), '610 covers kept (2h, 24h), too old (30h) and a clock set ahead');
+  assert(/revise_training_entry/.test(t), 'and a staff correction\'s own time');
+  const training = strip(read('src/lib/queries/training.ts'));
+  assert(/options: \{ submittedAt\?: string \} = \{\}/.test(training) && /submitted_at: options\.submittedAt/.test(training), 'submitTrainingEntry writes submitted_at only when told when');
+  const flusher = strip(read('src/components/OutboxFlusher/OutboxFlusher.tsx'));
+  assert(/submitTrainingEntry\([\s\S]{0,200}\{ submittedAt: item\.queuedAt \}/.test(flusher), 'the outbox flush passes the time it queued the rating');
+  const rpeForm = strip(read('src/components/RpeForm/RpeForm.tsx'));
+  assert(/submitTrainingEntry\(createClient\(\), input, \{ orgId, athleteId, userId \}\)/.test(rpeForm) && !/submittedAt/.test(rpeForm), 'the online screen sends nothing and gets the arrival time');
+  assert(!/rpeIsClosed|rpeClosesAt/.test(training) && !/rpeIsClosed/.test(flusher), 'neither refuses a late row: the report judges, the write path does not');
+  assert(/queuedAt/.test(read('docs/athlete/screens/03-session-rating.md')) && /24 hours/.test(read('docs/athlete/screens/03-session-rating.md')), '03-session-rating.md §7 states the rule');
+  assert(/24 hours/.test(read('docs/04-data-model.md')), '04-data-model.md says what submitted_at is');
+  assert(/queued/.test(read('docs/screens/20-compliance-report.md')), '20-compliance-report.md says an offline rating is judged by when it was made');
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

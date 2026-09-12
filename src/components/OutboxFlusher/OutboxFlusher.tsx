@@ -225,11 +225,19 @@ export function OutboxFlusher({ orgId, athleteId, userId, timezone }: Props) {
 
       for (const item of trainingItems) {
         try {
-          await submitTrainingEntry(db, item.input, {
-            orgId,
-            athleteId,
-            userId,
-          });
+          /* queuedAt travels as submitted_at (§0ad, Builder Q6): the rating
+             was made when it was queued, not when the phone reconnected.
+             0105's trigger decides whether to believe the phone's clock. */
+          await submitTrainingEntry(
+            db,
+            item.input,
+            {
+              orgId,
+              athleteId,
+              userId,
+            },
+            { submittedAt: item.queuedAt },
+          );
           dequeueTraining(item.input.id);
           sent += 1;
         } catch (err) {

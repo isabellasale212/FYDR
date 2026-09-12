@@ -411,6 +411,11 @@ create table training_entries (
   session_load  numeric(8,1),               -- rpe * duration_min, computed
   comment       text,
   source        data_source not null default 'self_report',
+  -- When the athlete rated. The arrival time by default; the outbox sends
+  -- the time it queued the rating and 0105's trigger keeps that only when it
+  -- is earlier than arrival and within 24 hours of it (§0ad, 2026-09-12) —
+  -- a rating made offline in time is not a miss, and a phone's clock is not
+  -- trusted further than a day. Compliance judges this on the original row.
   submitted_at  timestamptz not null default now(),
   revision_of   uuid references training_entries(id),
   superseded_by uuid references training_entries(id),

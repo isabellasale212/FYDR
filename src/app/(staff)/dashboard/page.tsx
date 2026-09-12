@@ -306,6 +306,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       <DashboardHeadlineStats
         stats={stats}
         isAnchoredToPast={isAnchoredToPast}
+        timezone={timezone}
         needYouHref={`/flags${qs({ groups: groupsQs, date: effectiveToday })}`}
         wellnessReportHref="/reports/compliance"
         squadHref="/squad"

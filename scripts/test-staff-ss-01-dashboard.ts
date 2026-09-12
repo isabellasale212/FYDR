@@ -8,6 +8,7 @@
  *      stays a plain row.
  */
 import { readFileSync } from 'node:fs';
+import { missingRuns, runLabel } from '@/lib/missingRuns';
 
 let passed = 0, failed = 0;
 const assert = (cond: boolean, label: string): void => {
@@ -48,6 +49,37 @@ console.log('\nA2. a summary card is a button and says which state it is in');
   const open = rule("button.dash-stat[aria-expanded='true']");
   assert(/background:\s*var\(--surf\)/.test(open) && /box-shadow:\s*inset 0 0 0 1px var\(--accent\)/.test(open), 'open: the surface with an accent border');
   assert(/font-size:\s*var\(--fs-11\)/.test(rule('.dash-stat-state')) && /font-weight:\s*600/.test(rule('.dash-stat-state')), 'the state line at --fs-11 / 600');
+}
+
+console.log('\nA4. missing check-ins by run length, and "Not submitted"');
+{
+  const today = '2026-09-12';
+  const missing = [{ id: 'a', name: 'Sam Wren' }, { id: 'b', name: 'Alex Grant' }, { id: 'c', name: 'Kai Mercer' }];
+  const exp = (id: string, dates: string[]) => dates.map((d) => ({ athlete_id: id, expectation_date: d }));
+  const expectations = [
+    ...exp('a', ['2026-09-12', '2026-09-11', '2026-09-10', '2026-09-09']),
+    ...exp('b', ['2026-09-12', '2026-09-11', '2026-09-09']), // the 10th was a rest day
+    ...exp('c', ['2026-09-12']),
+  ];
+  const entries = [
+    { athlete_id: 'a', entry_date: '2026-09-09' },
+    { athlete_id: 'b', entry_date: '2026-09-01' },
+    { athlete_id: 'a', entry_date: '2026-09-13' }, // the future never counts
+  ];
+  const runs = missingRuns(missing, expectations, entries, today);
+  assert(runs.map((r) => r.name).join(', ') === 'Alex Grant, Sam Wren, Kai Mercer', 'longest run first, then by name');
+  assert(runs[0]!.runDays === 3 && runs[0]!.lastEntry === '2026-09-01', 'Alex: three expected mornings missed (the rest day neither counts nor breaks), last entry 1 Sept');
+  assert(runs[1]!.runDays === 3 && runs[1]!.lastEntry === '2026-09-09', 'Sam: three, and the run ends at the morning that has an entry');
+  assert(runs[2]!.runDays === 1 && runs[2]!.lastEntry === null, 'Kai: this morning only, no entry on record');
+  assert(runLabel(1) === '1 morning' && runLabel(3) === '3 mornings in a row', 'the words');
+  const q = strip(read('src/lib/queries/dashboard.ts'));
+  assert(/wellnessMissing: MissingRun\[\]/.test(q) && !/wellnessMissingNames/.test(q), 'the headline stats carry the runs, not a name list');
+  assert(/missingRuns\(/.test(q), 'computed by the pure function');
+  assert(/const ids = wellnessExp\.missingIds;[\s\S]{0,600}\.from\('compliance_expectations'\)[\s\S]{0,300}\.eq\('domain', 'wellness'\)[\s\S]{0,200}\.in\('athlete_id', ids\)/.test(q), 'from the missing athletes\' own expectations');
+  const c = strip(read('src/components/DashboardHeadlineStats/DashboardHeadlineStats.tsx'));
+  assert(/Not submitted · \{runLabel\(row\.runDays\)\}/.test(c), 'each row: "Not submitted · N mornings in a row"');
+  assert(/last entry \$\{formatDate\(row\.lastEntry, timezone\)\}/.test(c) && /no entry in the last 90 days/.test(c), 'and the last entry date, or that there is none in the window');
+  assert(!/0%/.test(c.slice(c.indexOf("expanded === 'wellness'"), c.indexOf("expanded === 'available'"))), 'never 0%');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

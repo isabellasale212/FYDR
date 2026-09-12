@@ -35,5 +35,20 @@ console.log('A1. Doubtful and Ruled out as tone cards');
   assert(!/ROW_DOT/.test(page) || /className=\{ROW_DOT\[r\.key\]/.test(page), 'the dot column is unchanged for the plain row');
 }
 
+console.log('\nA2. a summary card is a button and says which state it is in');
+{
+  const src = strip(read('src/components/DashboardHeadlineStats/DashboardHeadlineStats.tsx'));
+  assert((src.match(/<StatState open=\{expanded === '(wellness|available)'\} \/>/g) ?? []).length === 2, 'both toggle cards render the written state');
+  assert(/open \? 'Open · showing the list' : 'Closed · opens a list'/.test(src), '"Closed · opens a list" / "Open · showing the list" — what aria-expanded announces, written');
+  assert(/open \? '▾' : '▸'/.test(src), 'the glyph swaps ▸ / ▾ — nothing rotates');
+  assert(!/dash-flags-chevron/.test(src), 'the rotating chevron is gone from these two cards');
+  assert(/aria-expanded=\{expanded === 'wellness'\}/.test(src) && /aria-expanded=\{expanded === 'available'\}/.test(src), 'aria-expanded stays on both');
+  const closed = rule('button.dash-stat');
+  assert(/background:\s*var\(--surf2\)/.test(closed), 'closed: a --surf2 well (the stat is the button text)');
+  const open = rule("button.dash-stat[aria-expanded='true']");
+  assert(/background:\s*var\(--surf\)/.test(open) && /box-shadow:\s*inset 0 0 0 1px var\(--accent\)/.test(open), 'open: the surface with an accent border');
+  assert(/font-size:\s*var\(--fs-11\)/.test(rule('.dash-stat-state')) && /font-weight:\s*600/.test(rule('.dash-stat-state')), 'the state line at --fs-11 / 600');
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

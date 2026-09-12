@@ -5800,12 +5800,30 @@ img.me-avatar {
    these two). Everything above this rule already makes .dash-stat look right
    for an <a>; a <button> needs its own browser defaults reset to match. */
 button.dash-stat {
-  background: none;
+  /* STAFF-SS-01 A2 (2026-09-12): a card that opens a list says so in its
+     shape as well as its words — closed is a --surf2 well, open is the
+     surface with an accent border (an inset ring, so the strip's hairlines
+     and widths do not move). */
+  background: var(--surf2);
   border: none;
   border-left: 1px solid var(--hair);
   font-family: inherit;
   text-align: left;
   width: 100%;
+  transition: background var(--t-state);
+}
+button.dash-stat[aria-expanded='true'] {
+  background: var(--surf);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.dash-stat-state {
+  margin-top: var(--sp-6);
+  font-size: var(--fs-11);
+  font-weight: 600;
+  color: var(--muted);
+}
+button.dash-stat[aria-expanded='true'] .dash-stat-state {
+  color: var(--accent-text);
 }
 .dash-stat-label {
   font-size: var(--fs-11);

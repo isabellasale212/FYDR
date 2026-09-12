@@ -99,7 +99,7 @@ Formulas are in `docs/metrics.md`. They are not repeated here.
 |---|---|---|---|---|---|---|---|
 | Group filter chips | Top bar | Narrows every number on the page | Stays here, with the group in the address | Nothing. A cookie remembers your choice | Any staff | None | Never |
 | Need you tile | Tile strip | Opens the flags for that day | `/flags?date=` | Nothing | Any staff | None | Never |
-| Wellness in tile | Tile strip | Expands in place to name who is missing | Stays here | Nothing | Any staff | None | Never |
+| Wellness in tile | Tile strip | Expands in place to name who is missing. The tile is a button that says which state it is in — "Closed · opens a list" / "Open · showing the list", the words `aria-expanded` announces, with a ▸ / ▾ glyph that swaps rather than rotates; closed it is a `--surf2` well, open it is the surface with an accent ring (STAFF-SS-01 A2, 12 September 2026). The Available tile is the same | Stays here | Nothing | Any staff | None | Never |
 | Available tile | Tile strip | Expands in place to name who is modified or out, each with a reason | Stays here | Nothing | Any staff | None | Never |
 | Open flags tile | Tile strip | Opens the flags screen | `/flags` | Nothing | Any staff | None | Never |
 | To matchday tile | Tile strip | Opens the next fixture | `/schedule/fixtures/[id]` | Nothing | Any staff | None | Falls back to `/schedule` when no fixture is booked |

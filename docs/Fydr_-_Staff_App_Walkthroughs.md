@@ -1523,7 +1523,7 @@ most likely source of a "why is this button missing" question.
 | STAFF-NUT-01 | Read the dashboard | sidebar "Dashboard" |
 | STAFF-NUT-02 | Browse the squad | sidebar "Squad overview" |
 | STAFF-NUT-23 | Build a nutrition plan and assign it | sidebar "Nutrition" |
-| STAFF-NUT-29 | Settings hub — own profile only | sidebar "Settings" |
+| STAFF-NUT-29 | Settings hub — seven sections and five rows (Thresholds → refusal, Password, Groups (read), Notifications ("Nothing to configure"), Log out); no Exports; the Integrations links bounce (§0av) | sidebar "Settings" |
 | STAFF-NUT-33 | Print a screen | "Print" |
 
 ## Differs
@@ -1531,8 +1531,14 @@ most likely source of a "why is this button missing" question.
 ### STAFF-NUT-05 — Athlete profile: weigh-ins only
 
 May record a weigh-in (`WEIGH_IN_EDIT`). Everything else on the profile is
-read-only: no bio edit, no availability, no entry correction, no injury access,
-**and no gym panel** — `ATHLETE_GYM` excludes this role, the only one it excludes.
+read-only: the bio "Edit" and "Correct check-in" blocked with a reason
+(`BlockedButton`), no Availability panel, no SAR section, no "+ Log injury",
+"View plan" / "View full detail ›" on the programme. Measured 2026-09-12 as Sana
+Mirza: the **censored Injury panel renders** (status, area, restrictions, return —
+the 2026-09-06 decision, migration 0074, reversing D-01), and the profile header
+still offers the **"Gym" tab**, which `/squad/{id}/gym` then refuses in place
+("Not part of this role…") — `ATHLETE_GYM` excludes this role, the only one it
+excludes; the tab link does not know (§0av).
 
 ### STAFF-NUT-07 — Schedule: read-only, and it says so
 
@@ -1543,12 +1549,18 @@ is authored by the sport scientist and the coach."
 
 - `/analytics` — `ANALYTICS`.
 - **Four of the six reports** — athlete, squad, testing and training all need
-  `REPORT_ACCESS`, which excludes this role; `requireReportAccess()` redirects to
-  `/settings?e=no-report-access`. **Compliance and injuries do open**, and the
+  `REPORT_ACCESS`, which excludes this role; measured 2026-09-12 they redirect to
+  **`/reports?e=no-report-access`**, where an `i` banner says some reports below
+  aren't open to the role (`/settings/exports` alone goes to
+  `/settings?e=no-report-access`). **Compliance and injuries do open**, and the
   injuries report renders without its clinical columns. Squad weekly being closed
   to this role is deliberate and re-decided twice — see STAFF-SS-17…22.
-- All scheduling, all injuries, all programme authoring, all leaderboard
-  publishing, all settings administration, GPS imports.
+- All scheduling (`/timetable` opens — 0076), all injuries (`/injuries/*` →
+  `/dashboard`), all programme authoring (the list opens read-only), all
+  leaderboard publishing (`/leaderboards/manage` opens and offers "+ New
+  leaderboard", which bounces — §0az), all settings administration
+  (`/settings/groups` opens as the read list; thresholds refuses in place;
+  notifications renders "Nothing to configure" — §0av), GPS imports.
 
 **Resolved rather than left open.** The "Reports" row renders for this role and
 is not a dead end: `/reports` itself takes any staff and computes, per report,

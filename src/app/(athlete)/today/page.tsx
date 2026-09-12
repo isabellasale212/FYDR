@@ -3,7 +3,6 @@ import { AvailabilityBanner } from '@/components/AvailabilityBanner/Availability
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { InjuryClinical } from '@/components/InjuryClinical/InjuryClinical';
 import { OutboxFlusher } from '@/components/OutboxFlusher/OutboxFlusher';
-import { Toast } from '@/components/Toast/Toast';
 import { fetchAthleteAvailability } from '@/lib/queries/availability';
 import { fetchAthleteInjuryClinical } from '@/lib/queries/athleteInjuryClinical';
 import { fetchMyOutstanding } from '@/lib/queries/compliance';
@@ -41,28 +40,12 @@ const WEEKDAY_INITIAL = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
  *  a real time (see notifications/page.tsx's own "nothing sends a push
  *  yet" note), so stating one would be inventing a time this app cannot
  *  keep. */
-function toastMessageFor(
-  params: Record<string, string | string[] | undefined>,
-  timezone: string,
-): string | null {
-  const submitted = typeof params.submitted === 'string' ? params.submitted : null;
-  if (submitted === '1') return 'Wellness submitted · queued, syncs on signal';
-  if (submitted === 'rpe') {
-    const rpe = typeof params.rpe === 'string' ? params.rpe : null;
-    const session = typeof params.session === 'string' ? params.session : null;
-    return rpe && session ? `RPE ${rpe} submitted for ${session}` : 'RPE submitted';
-  }
-  if (submitted === 'nutrition') {
-    /* Same phrasing as wellness: the check-in is queued on the phone first
-       (lib/outbox.ts), so "submitted" is true even before the server has it. */
-    const week = typeof params.week === 'string' ? params.week : null;
-    return week
-      ? `Nutrition check-in submitted for week of ${formatDate(week, timezone)} · queued, syncs on signal`
-      : 'Nutrition check-in submitted · queued, syncs on signal';
-  }
-  if (submitted === 'gym') return 'Gym session logged.';
-  return null;
-}
+/* PATTERN-S6 A2 (2026-09-12): no toast on Today. Each entry form still
+   returns here with ?submitted= (the queue-then-Today behaviour is
+   protected), but the list losing its row is the answer, and the outbox's
+   own status line says what is still held on the phone. The toast used to
+   say "Wellness submitted · queued, syncs on signal" over a list that had
+   already changed. */
 
 /**
  * The compliance surface, ATHLETE-APP-SPEC.md §5, as redrawn on 2026-09-08.
@@ -94,7 +77,9 @@ export default async function TodayPage({
   searchParams: SearchParams;
 }) {
   const { db, orgId, athleteId, claims, timezone, firstName } = await requireAthlete();
-  const params = await searchParams;
+  /* ?submitted= still arrives from the entry forms; nothing reads it now
+     (S6 A2). Awaited so the route stays dynamic on the query, as before. */
+  await searchParams;
   const today = todayIso(timezone);
   const weekStart = mondayOf(today);
   const nutritionWeekStart = addDays(weekStart, -7);
@@ -178,8 +163,6 @@ export default async function TodayPage({
       : null;
   const nowMs = Date.now();
 
-  const toastMessage = toastMessageFor(params, timezone);
-
   /* Time-of-day aware in the ORGANISATION's timezone, not the server's. A
      greeting that says "Morning" at nine at night is worse than no greeting,
      and this app is read on a phone in the club's own country. */
@@ -227,8 +210,6 @@ export default async function TodayPage({
       </div>
 
       <OutboxFlusher orgId={orgId} athleteId={athleteId} userId={claims.userId} timezone={timezone} />
-
-      {toastMessage ? <Toast message={toastMessage} clearHref="/today" /> : null}
 
       {/* S2: when something is wrong it is said once, in one line, above the
           list — and the card it links to sits below the day with every line it

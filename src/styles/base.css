@@ -13238,6 +13238,25 @@ a.hist-row:active { background: var(--surf-sunken); }
   color: var(--muted);
 }
 
+/* PATTERN-S6 (12 Sept 2026): the outbox's one status region on Today and
+   its conflict notice. Waiting is a promise kept — the good pair the 01/02
+   banners use; sent is information, a plain surface; a conflict is a lost
+   answer — the bad pair, not warn. Nothing here animates. */
+.outbox-waiting {
+  background: var(--wash-good);
+  border-color: var(--border-good);
+  color: var(--text);
+}
+.outbox-sent {
+  background: var(--surf);
+  border-color: var(--border);
+  color: var(--text);
+}
+.outbox-conflict {
+  background: var(--wash-bad);
+  border-color: var(--border-bad);
+  color: var(--text);
+}
 /* Who will read what, before an availability change lands
    (AvailabilityAudience, 2026-09-12): a --surf2 well with the three readers
    as rows, then Confirm (the write) and Back. */

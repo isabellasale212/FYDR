@@ -165,9 +165,24 @@ already done.
 - **If the app is closed before sync completes**, the entry is still in the queue
   and goes on the next open.
 
-**UNVERIFIED: what the athlete sees while an entry is queued**, and what happens
-if the same day is submitted twice from two devices. Looked in
-`src/lib/outbox.ts` and the screen's own component.
+**What the athlete sees while an entry is queued** (PATTERN-S6, 12 September
+2026): one `role="status"` line under the title, a good-tone card — "3 entries
+are saved on this phone and will send when you have signal." — the sentence
+`OutboxFlusher` has always used. When a flush sends, the same region reads
+"3 entries sent at 12:04. Nothing is waiting." as a plain card, once, and is
+absent on the next load: the count changes in place, never a toast. With
+nothing waiting and nothing just sent there is no region at all. The entry forms
+still return here, and the to-do list losing its row is the success — the
+"Wellness submitted · queued, syncs on signal" toast that used to sit over it is
+gone.
+
+**The same day submitted twice from two devices** (§0aa): a conflict is shown
+as a `role="alert"` notice in the bad tone — "One saved entry could not be sent:
+you already have your check-in for the week of Mon 24 Aug from another tab or
+device, and that one is what is showing." — with "Discard this one" (or, for a
+gym set, "Use my numbers" / "Keep what is showing") as ghost controls inside
+the notice and nowhere else. The queue screen and "See what is waiting" are
+recorded, not built (PATTERN-S6 C1).
 
 ## 8. Notifications
 

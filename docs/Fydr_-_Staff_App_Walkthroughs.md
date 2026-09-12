@@ -1256,7 +1256,7 @@ Holds `SESSION_EDIT`, `THRESHOLD_EDIT`, `GROUP_EDIT`, `AVAILABILITY_EDIT`,
 
 ## Identical to the sport scientist
 
-**Verified 2026-09-12 for 01, 02, 05, 07, 08 to 15, 16 and 17/18/20/21/22** by fingerprinting each
+**Verified 2026-09-12 for 01, 02, 05, 07, 08 to 15, 16, 17/18/20/21/22, 25 and 26** by fingerprinting each
 route for a coach (Mark Iremonger) and the sport scientist at 1280 and 375 — headings,
 controls, every leaf node, page height — and diffing (10 and 11 by driving Edit mode,
 the panel and the remove confirmation for both). Identical except:
@@ -1314,8 +1314,11 @@ from the same role.
 ### STAFF-COACH-23 — Nutrition: meal library only
 
 `/nutrition` opens, but the coach holds `MEAL_LIBRARY_EDIT` and **not**
-`NUTRITION_EDIT`. "Food library" is present; "New plan", "Create" and "Assign"
-are absent.
+`NUTRITION_EDIT`. "Food library" is present; "New plan" and "Manual target" are
+absent. **"Assign" and the six day-type `−`/`+` steppers are present and
+`disabled`** — measured 2026-09-12 as Mark Iremonger at both widths — with no
+`title`, no `aria-disabled` and no sentence on the page saying why (to-do §0av).
+"Duplicate" is disabled for every role ("Not available yet").
 
 ### STAFF-COACH-28 — Injuries: the board opens, the diagnosis does not
 

@@ -62,19 +62,26 @@ export function RosterTable({ orgId, groupIds, initialRows }: Props) {
       {rows.length === 0 ? (
         <p className="cap">No athlete matches that filter.</p>
       ) : (
-        <table className="tbl">
+        /* STAFF-SS-02-05 C2 / B4 (2026-09-12): on a phone each row is a 60px
+           grid — the name as the link, the position beneath, the pill right,
+           the restriction line across the row — and the header row and squad
+           number are not drawn; desktop keeps the five measured columns and
+           both washes (base.css, .roster below 768px). The roles are written
+           out because a display: grid row would otherwise drop the table's
+           semantics for a screen reader. */
+        <table className="tbl roster" role="table">
           <caption className="visually-hidden">
             Squad roster with current availability
           </caption>
           <thead>
-            <tr>
-              <th scope="col" className="r">
+            <tr role="row">
+              <th scope="col" role="columnheader" className="r">
                 No.
               </th>
-              <th scope="col">Athlete</th>
-              <th scope="col">Position</th>
-              <th scope="col">Availability</th>
-              <th scope="col">Restrictions</th>
+              <th scope="col" role="columnheader">Athlete</th>
+              <th scope="col" role="columnheader">Position</th>
+              <th scope="col" role="columnheader">Availability</th>
+              <th scope="col" role="columnheader">Restrictions</th>
             </tr>
           </thead>
           <tbody>
@@ -91,18 +98,18 @@ export function RosterTable({ orgId, groupIds, initialRows }: Props) {
                    to answer. Available stays untinted: it is the normal case,
                    and tinting the majority would make the exceptions harder to
                    see rather than easier. */
-                <tr key={row.id} data-availability={row.availability}>
-                  <td className="r num">{row.squad_number ?? BLANK}</td>
-                  <td>
+                <tr key={row.id} role="row" data-availability={row.availability}>
+                  <td role="cell" className="r num">{row.squad_number ?? BLANK}</td>
+                  <td role="cell">
                     <Link href={`/squad/${row.id}`} className="nm">
                       {row.first_name} {row.last_name}
                     </Link>
                   </td>
-                  <td className="sub">{row.position ?? BLANK}</td>
-                  <td>
+                  <td role="cell" className="sub">{row.position ?? BLANK}</td>
+                  <td role="cell">
                     <Pill status={status} />
                   </td>
-                  <td className="sub">
+                  <td role="cell" className="sub roster-restrictions" data-empty={row.restrictions.length === 0 ? '' : undefined}>
                     {row.restrictions.length > 0
                       ? row.restrictions.map(enumLabel).join(' · ')
                       : BLANK}

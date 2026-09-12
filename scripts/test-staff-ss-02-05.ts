@@ -21,6 +21,7 @@ const assert = (cond: boolean, label: string): void => {
 };
 const read = (p: string): string => readFileSync(p, 'utf8');
 const flat = (s: string): string => s.replace(/\{\/\*[\s\S]*?\*\/\}/g, '').replace(/\s+/g, ' ');
+const strip = (s: string): string => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\{\/\*[\s\S]*?\*\/\}/g, '').replace(/^\s*\/\/.*$/gm, '');
 
 console.log('A1. Not recorded');
 {
@@ -51,6 +52,21 @@ console.log('\nA4–A6. the injury card');
   assert(/\{value \?\? 'Not recorded'\}/.test(f), 'a missing clinical value is "Not recorded"');
   assert(!/\{value \?\? '—'\}/.test(f), 'and not a dash');
   assert(/Expected return not known/.test(f), 'an unset expected return is said');
+}
+
+console.log('\nC2 / B4. the squad list on a phone: 60px rows, the name as the link, the pill right, the restriction line on the row (2026-09-12)');
+{
+  const roster = strip(read('src/components/RosterTable/RosterTable.tsx'));
+  assert(/<table className="tbl roster" role="table">/.test(roster) && /role="row"/.test(roster) && /role="cell"/.test(roster) && /role="columnheader"/.test(roster), 'the table carries its roles explicitly, so the phone grid keeps table semantics');
+  assert(/className="sub roster-restrictions"[^>]*data-empty=\{row\.restrictions\.length === 0 \? '' : undefined\}/.test(roster), 'the restriction cell says when it is empty, so the phone row can drop it');
+  const css = read('src/styles/base.css');
+  const phone = css.slice(css.indexOf('.roster thead {'), css.indexOf('.roster thead {') + 2200);
+  assert(/@media \(max-width: 767px\)[\s\S]{0,400}\.roster tr \{/.test(css), 'the phone layout is below 768px only — desktop keeps the five columns');
+  assert(/\.roster tr \{[^}]*display:\s*grid[^}]*min-height:\s*60px/.test(phone), 'a row is a 60px grid');
+  assert(/\.roster thead \{[^}]*display:\s*none/.test(phone) && /table\.tbl\.roster td\.r \{[^}]*display:\s*none/.test(phone), 'the header row and the squad number are not drawn on a phone');
+  assert(/\.roster td:nth-child\(4\) \{[^}]*grid-column:\s*2[^}]*grid-row:\s*1 \/ span 2/.test(phone), 'the pill sits right, across the name and position');
+  assert(/table\.tbl\.roster td\.roster-restrictions\[data-empty\] \{[^}]*display:\s*none/.test(phone), 'an empty restriction line is not drawn');
+  assert(/table\.tbl\.roster td a\.nm \{[^}]*min-height:\s*44px/.test(phone) && /table\.tbl\.roster td a\.nm \{[^}]*font-size:\s*var\(--fs-16\)/.test(phone), 'the name is the tap target, at the row\'s size');
 }
 
 console.log('\nthe specs');

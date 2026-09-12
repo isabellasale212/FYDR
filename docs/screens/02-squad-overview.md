@@ -63,6 +63,14 @@ cannot widen the group filter.
 - **Restrictions**, the specific limits recorded against a modified athlete, in
   the words whoever set them used.
 
+**On a phone (below 768px)** the same table is drawn as rows (STAFF-SS-02-05
+C2, 12 September 2026): each athlete a 60px row with the name as the link, the
+position beneath it, the availability pill on the right and the restriction
+line across the row when there is one; the header row and the squad number are
+not drawn, and the modified / unavailable washes stay on the row. The table's
+roles are written out so the grid keeps its semantics for a screen reader.
+Desktop keeps the columns above.
+
 ---
 
 ## 5. Every number on this page

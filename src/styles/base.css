@@ -9903,6 +9903,70 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .tbl tr[data-availability='unavailable'] {
   background: rgb(var(--bad-rgb) / 0.07);
 }
+/* STAFF-SS-02-05 C2 / B4 (12 Sept 2026): the squad list on a phone. Each row
+   a 60px grid against the 34px measured — the name is the link, the position
+   beneath it, the pill right across both, the restriction line on the row —
+   with the header row and the squad number not drawn. Desktop keeps the
+   five measured columns and both washes above. The washes stay on the row
+   (they are on the tr). */
+@media (max-width: 767px) {
+  .roster thead {
+    display: none;
+  }
+  .roster tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--sp-12);
+    align-items: center;
+    min-height: 60px;
+    padding: var(--sp-10) var(--sp-16);
+    border-top: 1px solid var(--hair);
+  }
+  .roster tbody tr:first-child {
+    border-top: 0;
+  }
+  /* table.tbl td's own hairline and padding are the desktop cell's;
+     the phone row draws one line per row, on the tr. Specificity matches
+     the base rule (table.tbl td) and the shell's 44px floor rule for .nm
+     (.main table.tbl .nm), which is why both are spelled out. */
+  table.tbl.roster td {
+    display: block;
+    padding: 0;
+    border: 0;
+  }
+  table.tbl.roster td.r {
+    display: none;
+  }
+  .main table.tbl.roster td a.nm {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-block: 0;
+    padding-block: 0;
+    font-size: var(--fs-16);
+    font-weight: 700;
+    color: var(--accent-text);
+  }
+  .roster td:nth-child(3) {
+    margin-top: calc(-1 * var(--sp-8));
+    font-size: var(--fs-13);
+    color: var(--muted);
+  }
+  .roster td:nth-child(4) {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    justify-self: end;
+  }
+  .roster-restrictions {
+    grid-column: 1 / -1;
+    margin-top: var(--sp-4);
+    font-size: var(--fs-13);
+    color: var(--text);
+  }
+  table.tbl.roster td.roster-restrictions[data-empty] {
+    display: none;
+  }
+}
 
 /* Training report: the board and the athlete rail, side by side. 1.55/1 is the
    design's own split — the board carries six columns of figures and needs the

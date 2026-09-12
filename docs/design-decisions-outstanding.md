@@ -49,6 +49,8 @@ same footing, each dated at the value). STAFF-SS-02-05 C9 is approved with a wid
 its row: **the coach does not see body mass at all — the section as well as the three
 buttons** (Q27 of the data-architecture briefing, closed 2026-09-12).
 
+**Later the same day (evening):** PATTERN-S4 D1 (sessions live on create, no publish/discard) — **DECLINED**: publish stays; "nothing changes on their phone until you publish" is the schedule's core promise and dropping it discards the offline-publish protection just built (§0al). Every S4 row that depends on D1 falls with it. And a new rule outside the sheet: the injured-athlete proposal gate applies to every role except the medic, at the database (to-do §0bb).
+
 **Two decisions from the same message, outside the sheet:** the coach keeps the permission
 to create an injury record, and the `/injuries` board shows "+ Injury" to the coach as well
 (the coach's form is the non-clinical one, PATTERN-S3 C9; clinical fields stay medic-only)

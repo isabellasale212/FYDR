@@ -15,6 +15,7 @@ import { enqueueGymSetLog, dequeueGymSetLog } from '@/lib/outbox';
 import { GymSetLogInput } from '@/lib/validation/gym';
 import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { loadLabel, schemeLine } from '@/lib/gymPrescription';
+import { acquireWakeLock, buzz, releaseWakeLock } from '@/lib/wakeLock';
 
 function elapsed(startedAt: string | null, now: number): string {
   if (!startedAt) return '00:00';
@@ -98,6 +99,31 @@ export function GymSessionLogger({
    * windows and blocked site data throw rather than return null. */
   const draftKey = `fydr-gym-draft-${gymSessionLogId}`;
   const [drafts, setDrafts] = useState<Record<string, { reps: string; load: string }>>({});
+
+  /* The screen stays on for the session (ATH-ADULT-09 C5, approved
+     2026-09-12): a phone that dims between sets is the phone the athlete
+     has to unlock twelve times. Feature-detected in lib/wakeLock.ts — absent
+     or refused means the screen dims as it always did. The browser drops a
+     lock when the tab hides, so it is asked for again when the tab is back;
+     released on leaving the screen. */
+  useEffect(() => {
+    let sentinel: Awaited<ReturnType<typeof acquireWakeLock>> = null;
+    let gone = false;
+    const acquire = async () => {
+      if (gone || document.visibilityState !== 'visible') return;
+      sentinel = await acquireWakeLock(navigator);
+    };
+    void acquire();
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void acquire();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      gone = true;
+      document.removeEventListener('visibilitychange', onVisible);
+      void releaseWakeLock(sentinel);
+    };
+  }, []);
 
   // Restored in an effect, not in the initial state, so the server render and
   // the first client render agree.
@@ -212,6 +238,9 @@ export function GymSessionLogger({
     },
     onSuccess: (_void, input) => {
       dequeueGymSetLog(input.id);
+      /* Felt, not heard: a 10 ms buzz where the browser has one (Android
+         Chrome), nothing on iPhone Safari — ATH-ADULT-09 C5. */
+      buzz(navigator);
       // The row is real now, so its draft is no longer the only copy.
       // programme_exercise_id is nullable on the input (an ad-hoc set belongs
       // to no prescribed exercise); drafts are only ever keyed by a real one,

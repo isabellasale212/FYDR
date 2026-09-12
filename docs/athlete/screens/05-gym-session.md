@@ -67,6 +67,13 @@ level.
 with previous performance**, both needing history queries a fuller pass would
 add — and, since 8 September, **no elapsed-session clock** (§13).
 
+**The screen stays on for the session** (ATH-ADULT-09 C5, 12 September 2026): the
+logger asks for a screen Wake Lock on open, again when the tab comes back into
+view, and releases it on leaving. Where the browser has no Wake Lock, or refuses
+one, the screen dims as before. A logged set gives a 10 ms vibration where the
+browser has `navigator.vibrate` (Android Chrome); iPhone Safari has none and
+nothing else changes.
+
 ## 7. Offline and sync
 
 The entry is saved on the phone first and sent when there is signal

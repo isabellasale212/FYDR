@@ -190,6 +190,8 @@ Unless a flow says otherwise, all of these are on screen throughout:
 
 ## STAFF-SS-01 — Read the dashboard
 
+**Built 2026-09-12 (`59eee8d`, `58f0aca`, `a458c8e`, `ecb9c59`), measured as Jane at 1280.** Doubtful and Ruled out are tone-family cards on the readiness card (`data-tone` warn / bad); the two summary cards say their state ("▸ Closed · opens a list" / "▾ Open · showing the list"); the missing-check-in list is ordered by mornings in a row ("Not submitted · 28 mornings in a row · last entry Sat 15 Aug"); "Ready for {matchday}" only when the fixture is within 14 days, else "Squad readiness · No fixture in the next 14 days".
+
 **Entry point.** Sign-in lands here. "Dashboard" in the sidebar.
 
 **Steps.**
@@ -327,6 +329,8 @@ nobody here can see the one they choose.", and a "Done, I've copied it" button.
 ---
 
 ## STAFF-SS-05 — Open an athlete's profile
+
+**Built 2026-09-12 (`11dc42f`, `47a659e`).** Blocked controls (the weigh-in trio, the bio Edit, "Correct check-in" for roles that may not) are `BlockedButton`s — `aria-disabled`, focusable, the reason shown beneath on tap; no `title`, no `disabled`. "Update availability" now opens a step — "Before this lands — who will read what" (the athlete by name, the coaches and the S&C by role, medical staff and the sport scientist) with "Confirm and update" / "Back" — before the write, on both availability forms.
 
 **Built 2026-09-12 (`ea1fcac`).** An empty injury panel reads "No current restrictions. This is not the same as being cleared."; a missing clinical value "Not recorded"; an unset return "Expected return not known"; the corrections intro states the fixed 28-day window and that gym set logs and the weekly check-in are not correctable there; the availability form's note is labelled "Note" with the hint "Coach visible. Describe the restriction, not the injury. Do not name a diagnosis or a protocol." The rest of the STAFF-SS-02-05 board is on `docs/design-decisions-outstanding.md`.
 

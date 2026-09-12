@@ -533,13 +533,16 @@ but it **names nobody**. A session is what athletes are rostered to.
 
 **Steps.**
 
-1. The selected-session panel opens in the right-hand rail, showing the session
+1. The selected-session panel opens in the `.sg-panels` region — **below the
+   grid, not a right-hand rail: at 1280 it starts 1,644px down the page, at 375
+   3,364px** (measured 2026-09-12; the page does not scroll to it) — showing the session
    name, "{Weekday} {date} · {start} – {end} · {location}", type, any
    restriction-conflict warning, and GROUP / DURATION / MD / EXPECTS, plus a
    "What the athlete sees" preview.
 2. Adjust with the four steppers — **two `−`/`+` pairs whose `aria-label`s are
    "Earlier", "Later", "Shorter", "Longer"**; the words are not visible. Each
-   is **40px** (measured 2026-09-11).
+   is 38×40 at 1280 and **38×44 at 375** since `6a2f1d4` (measured 2026-09-12; was
+   40px at both on 2026-09-11).
    - Also visible: group chips; "Remove session" (when the session is not in the
      past, or is an unpublished draft); "Duplicate"; and, once this session has a
      pending change, "Cancel changes".
@@ -584,8 +587,10 @@ but it **names nobody**. A session is what athletes are rostered to.
 
 1. Press "Remove session".
 2. A confirmation replaces the actions: "Remove this session? You can undo with
-   Discard, until you publish." with "Yes, remove" (`.sg-btn-remove`, **37px**)
-   and "Never mind" (`.btn-ghost`, 44px).
+   Discard, until you publish." — or, on a staged draft, "Remove this draft? It was
+   never published, so there is nothing to undo." (`b2062d3`) — with "Yes, remove"
+   (`.sg-btn-remove`) and "Never mind" (`.btn-ghost`), **both 44px at 375** since
+   `6a2f1d4` (37 / 44 on 2026-09-11; 37 stays at desktop by decision).
 3. Press "Yes, remove".
 4. The block leaves the grid and is redrawn as a **ghost**: no fill, name struck
    through, in place. The panel stays on it and shows: the name, the time line,
@@ -1251,9 +1256,10 @@ Holds `SESSION_EDIT`, `THRESHOLD_EDIT`, `GROUP_EDIT`, `AVAILABILITY_EDIT`,
 
 ## Identical to the sport scientist
 
-**Verified 2026-09-12 for 01, 02, 05 and 07** by fingerprinting each route for
-a coach (Mark Iremonger) and the sport scientist at 1280 and 375 — headings,
-controls, every leaf node, page height — and diffing. Identical except:
+**Verified 2026-09-12 for 01, 02, 05, 07, 08, 09, 10 and 11** by fingerprinting each
+route for a coach (Mark Iremonger) and the sport scientist at 1280 and 375 — headings,
+controls, every leaf node, page height — and diffing (10 and 11 by driving Edit mode,
+the panel and the remove confirmation for both). Identical except:
 "Add athlete" absent on `/squad` (02); the SAR section and three role-disabled
 Body-weight controls on the profile (05, see 05a). The phone shell differs only
 by the More sheet's missing "Analytics" row.

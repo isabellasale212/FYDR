@@ -41,6 +41,7 @@ every athlete's weight for it is unresolvable.
 | Element and label | Where it sits | What happens | Where it goes | What it writes | Permission | Confirmation | Hidden when |
 |---|---|---|---|---|---|---|---|
 | Add an exercise | Header | Creates one | Stays here | Writes an exercise | S&C and sport scientist | Form submission | **Not built** |
+| Weight step | The create form, beside Primary muscle (the slot the design drew as an inert Unit picker) | Chooses what the athlete's weight stepper moves by for this movement: 0.5 / 1 / 1.25 (microloaded bar) / 2 (dumbbells) / 2.5 (a plate a side, the default) / 5 (plate-loaded machine) kg | Stays here | `exercises.weight_step_kg` (migration 0108, ATH-ADULT-09 C3, 12 September 2026) | S&C and sport scientist | With the form | Never. Existing exercises keep 2.5 — there is no edit form for a library row yet |
 | Edit an exercise | A row | Changes it | Stays here | Updates the exercise | Same | Form submission | **Not built** |
 | **Link a test** | An exercise | Names the test that measures its one repetition maximum | Stays here | Sets the link | Same | Form submission | **Not built** |
 

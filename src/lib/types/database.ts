@@ -616,6 +616,7 @@ export type Database = {
         created_at: string
         deleted_at: string | null
         one_rm_test_definition_id: string | null
+        weight_step_kg: number
       }
       Insert: {
         id?: string
@@ -630,6 +631,7 @@ export type Database = {
         created_at?: string
         deleted_at?: string | null
         one_rm_test_definition_id?: string | null
+        weight_step_kg?: number
       }
       Update: {
         id?: string
@@ -644,6 +646,7 @@ export type Database = {
         created_at?: string
         deleted_at?: string | null
         one_rm_test_definition_id?: string | null
+        weight_step_kg?: number
       }
       Relationships: [
         {
@@ -1928,11 +1931,11 @@ export type Database = {
         in_app_enabled: boolean
         quiet_hours_start: string | null
         quiet_hours_end: string | null
+        created_at: string
+        updated_at: string
         pre_mute_push: boolean | null
         pre_mute_email: boolean | null
         muted_at: string | null
-        created_at: string
-        updated_at: string
       }
       Insert: {
         id?: string
@@ -1944,11 +1947,11 @@ export type Database = {
         in_app_enabled?: boolean
         quiet_hours_start?: string | null
         quiet_hours_end?: string | null
+        created_at?: string
+        updated_at?: string
         pre_mute_push?: boolean | null
         pre_mute_email?: boolean | null
         muted_at?: string | null
-        created_at?: string
-        updated_at?: string
       }
       Update: {
         id?: string
@@ -1960,11 +1963,11 @@ export type Database = {
         in_app_enabled?: boolean
         quiet_hours_start?: string | null
         quiet_hours_end?: string | null
+        created_at?: string
+        updated_at?: string
         pre_mute_push?: boolean | null
         pre_mute_email?: boolean | null
         muted_at?: string | null
-        created_at?: string
-        updated_at?: string
       }
       Relationships: [
         {
@@ -4440,11 +4443,34 @@ export type Database = {
       }
       Returns: number
     }
+    athlete_entry_fields: {
+      Args: {
+        p_table: string
+      }
+      Returns: {
+          content: string[]
+          free_text: string
+        }[]
+    }
     athlete_is_minor: {
       Args: {
         p_athlete_id: string
       }
       Returns: boolean
+    }
+    audit_acting_role: {
+      Args: Record<string, never>
+      Returns: Database["public"]["Enums"]["app_role"]
+    }
+    audit_client_ip: {
+      Args: Record<string, never>
+      Returns: string
+    }
+    audit_session_snapshot: {
+      Args: {
+        p_row: Json
+      }
+      Returns: Json
     }
     auth_athlete_id: {
       Args: Record<string, never>
@@ -4575,6 +4601,12 @@ export type Database = {
           attempts_remaining: number
         }[]
     }
+    mute_notifications: {
+      Args: {
+        p_notification_ids: string[]
+      }
+      Returns: number
+    }
     resolve_my_assigned_sessions_by_week: {
       Args: {
         p_athlete_id: string
@@ -4671,22 +4703,6 @@ export type Database = {
       }
       Returns: string
     }
-    mute_notifications: {
-      Args: {
-        p_notification_ids: string[]
-      }
-      Returns: number
-    }
-    unmute_notifications: {
-      Args: {
-        p_notification_ids: string[]
-      }
-      Returns: {
-        notification_id: string
-        push_enabled: boolean | null
-        email_enabled: boolean | null
-      }[]
-    }
     revise_nutrition_checkin: {
       Args: {
         p_original_id: string
@@ -4712,6 +4728,10 @@ export type Database = {
       }
       Returns: string
     }
+    rls_auto_enable: {
+      Args: Record<string, never>
+      Returns: unknown
+    }
     seed_default_thresholds: {
       Args: {
         p_org_id: string
@@ -4724,6 +4744,16 @@ export type Database = {
         p_rehab_programme_id: string
       }
       Returns: unknown
+    }
+    unmute_notifications: {
+      Args: {
+        p_notification_ids: string[]
+      }
+      Returns: {
+          notification_id: string
+          push_enabled: boolean
+          email_enabled: boolean
+        }[]
     }
     write_audit_event: {
       Args: {

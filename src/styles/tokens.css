@@ -240,8 +240,16 @@
      28px is also what eight athlete screens rendered by ACCIDENT before that
      day, from a doubled margin (see 0h) — so this is the same spacing she had
      already signed off, now coming from one place instead of a flex gap plus a
-     per-block margin that produced 18, 26, 28, 32 and 40.5px across the app. */
-  --gap-body: 28px;
+     per-block margin that produced 18, 26, 28, 32 and 40.5px across the app.
+
+     20px since 12 Sept 2026, Isabella's decision — "the vertical gaps in the
+     athlete app are too large": one step down the spacing ramp, to the
+     --sp-20 value, after the 28px had been seen across the whole athlete
+     flow set on a 375×812 phone. A token value change under CLAUDE.md §0.01,
+     its own commit. Still the athlete shell's own rhythm with one reader
+     (.phone-body); --gap-stack, the staff .stack rhythm, is unchanged. The
+     in-list gap (14px, --gap-stack) was judged beside it at 375×812 and left. */
+  --gap-body: 20px;
   --gap-grid: 12px;
   --pad-card: 16px;
   --pad-field: 12px 14px;

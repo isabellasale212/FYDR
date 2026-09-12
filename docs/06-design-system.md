@@ -272,7 +272,7 @@ and none should be invented.
 | Use | Value | Token |
 |---|---|---|
 | Stack gap | 14px | `--gap-stack` |
-| **Athlete body gap** | **28px** | `--gap-body` |
+| **Athlete body gap** | **20px** | `--gap-body` |
 | Card padding | 16px | `--pad-card` |
 | Field padding | 12px vertical, 14px horizontal | |
 | Two-column and tile grid gap | 12px | `--gap-grid` |
@@ -280,7 +280,16 @@ and none should be invented.
 **The athlete body gap is the one documented exception to this table, and §2.7's
 own rule ("if a gap is not 12 or 14 ... it needs a comment") is what obliges this
 paragraph.** `.phone-body` — the athlete shell, and only that — spaces its body
-blocks 28px apart, on every one of the eleven athlete screens including Today.
+blocks 20px apart, on every athlete screen including Today.
+
+**20px since 2026-09-12, Isabella's decision** ("the vertical gaps in the athlete
+app are too large"): one step down the spacing ramp from 28px, to the `--sp-20`
+value — a token value change under CLAUDE.md §0.01, its own commit, dated beside
+the value in `tokens.css`. The gap between cards *within* a list (`.stack`,
+`--gap-stack`, 14px) was judged beside it at 375×812 on Today, My data and the
+check-in form and left: 14 inside a list against 20 between sections reads as
+one rhythm, not loose. Staff screens are untouched — `--gap-body` has one
+reader, `.phone-body`. The history below is the 28px decision it replaces.
 
 Settled 2026-09-08, after both alternatives were tried on a real phone. It ran at
 14px for one revision and read too tight; before that it had been rendering 18,
@@ -289,7 +298,8 @@ per-block `margin-top` were both contributing and flex children do not collapse
 margins. 28px is what most screens had been showing by accident, so it is also
 what was signed off on 4 September — the change is that it now comes from one
 place. Today briefly kept a 16px override selected off its week card; that is
-deleted, and 28px is the only gap in the athlete app.
+deleted, and one value is the only section gap in the athlete app (28px then,
+20px now).
 
 **It is deliberately NOT `--gap-stack`.** That token is read by `.stack` on 21
 staff screens and by `.profile-grid`; the athlete shell needed its own value, not

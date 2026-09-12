@@ -1228,11 +1228,31 @@ async function NutritionTab({
                 {shown.map((c) => (
                   <tr key={c.id}>
                     <td className="num sub">{formatDate(c.week_start, timezone)}</td>
-                    <td className="nm">{ANSWER_LABEL[c.answer] ?? c.answer}</td>
+                    <td className="nm">
+                      {ANSWER_LABEL[c.answer] ?? c.answer}
+                      {/* ATH-ADULT-08 C1 (2026-09-12): the one correction, marked
+                          the way every other corrected entry here is — the
+                          neutral pill and what it was. */}
+                      {c.prior ? (
+                        <>
+                          <span className="pill pill-neutral" style={{ marginInlineStart: 8, verticalAlign: 'middle' }}>
+                            Corrected
+                          </span>
+                          <span className="sub" style={{ display: 'block', marginTop: 'var(--sp-2)' }}>
+                            was {ANSWER_LABEL[c.prior.answer] ?? c.prior.answer}
+                          </span>
+                        </>
+                      ) : null}
+                    </td>
                     <td className="sub">
-                      <Link href={`/nutrition-check-in?week=${c.week_start}&correct=1`}>
-                        Correct
-                      </Link>
+                      {/* A corrected week offers no second correction: 0107
+                          refuses it, and the check-in page shows the spent
+                          state, so the link would only lead to a refusal. */}
+                      {c.prior ? null : (
+                        <Link href={`/nutrition-check-in?week=${c.week_start}&correct=1`}>
+                          Correct
+                        </Link>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -1253,7 +1273,7 @@ async function NutritionTab({
           * "Who may correct what" table. */}
         {checkins.length > 0 ? (
           <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
-            This one you can still change yourself &mdash; only you know the
+            This one you can still change yourself, once &mdash; only you know the
             answer, so no coach can correct it for you. Changing it keeps the old
             answer on record.
           </p>

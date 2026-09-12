@@ -1993,7 +1993,8 @@ most days this week?", with three permitted answers.
 create type nutrition_checkin_answer as enum ('yes','roughly','no');
 
 -- One live row per athlete per ISO week. Immutable: a correction is a revision row,
--- per ADR-005 and CLAUDE.md rule 6.
+-- per ADR-005 and CLAUDE.md rule 6 — and ONE correction only: revise_nutrition_checkin
+-- refuses to revise a revision (entry_already_corrected, migration 0107, 12 Sept 2026).
 create table nutrition_checkins (
   id             uuid primary key default gen_random_uuid(),  -- client-generated offline
   org_id         uuid not null references organisations(id),

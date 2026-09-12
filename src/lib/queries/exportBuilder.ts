@@ -1,6 +1,6 @@
 import { fetchWellnessForAthletes, type WellnessEntry } from './wellness';
 import { fetchBodyCompositionForAthletes } from './bodyComposition';
-import { fetchCheckinsForAthletes, type NutritionCheckin } from './nutrition';
+import { fetchCheckinsForAthletes, type CurrentCheckin } from './nutrition';
 import { fetchGroupAthleteIds, type Db } from './groups';
 
 /* screens/exports.md job 1, the staff bulk export builder. See
@@ -252,7 +252,7 @@ export async function fetchBodyCompositionExportRows(db: Db, orgId: string, athl
   return rows.sort((a, b) => a.measured_on.localeCompare(b.measured_on));
 }
 
-export type NutritionCheckinExportRow = NutritionCheckin & { athlete_id: string };
+export type NutritionCheckinExportRow = CurrentCheckin & { athlete_id: string };
 
 /** Same in-memory-upper-bound technique as body composition, reusing
  *  nutrition.ts's fetchCheckinsForAthletes. */

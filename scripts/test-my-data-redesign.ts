@@ -74,10 +74,11 @@ console.log('\n...but the two dropped tabs are still ROUTES, so their URLs keep 
   }
   assert(/tab === 'training'/.test(page), 'and the training tab still renders');
   assert(/tab === 'nutrition'/.test(page), 'and the nutrition tab still renders');
-  /* If this ever fails, an athlete who submits the weekly check-in lands on a
-     tab that no longer exists. */
-  assert(/\/my-data\?tab=nutrition/.test(nutritionForm),
-    "NutritionCheckinForm's success redirect still has somewhere to land");
+  /* ATH-ADULT-08 C2 (2026-09-12): a saved correction stays on the check-in
+     page (?saved=1, "Correction saved") rather than leaving for My data; the
+     nutrition tab is where My data's own links and the saved copy point. */
+  assert(/nutrition-check-in\?week=\$\{weekStart\}&saved=1/.test(nutritionForm) && !/\/my-data\?tab=nutrition/.test(nutritionForm),
+    "NutritionCheckinForm's success return stays on the check-in page");
 }
 
 console.log('\nand a footer card is the route in to leaderboards');

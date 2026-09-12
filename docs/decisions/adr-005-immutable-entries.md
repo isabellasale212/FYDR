@@ -193,7 +193,7 @@ or RPE entry, it is describing behaviour that existed until 2026-08-30 and no lo
 |---|---|---|---|
 | `wellness_entries` | **No** (since 0058) | **Yes** | Player profile, "Entries and corrections" card |
 | `training_entries` (RPE) | **No** (since 0058) | **Yes** | Player profile, same card |
-| `nutrition_checkins` | Yes | **No** — no staff write path exists | Athlete app, My Data → Nutrition |
+| `nutrition_checkins` | Yes, **once** (`entry_already_corrected` on a second attempt — migration 0107, 2026-09-12) | **No** — no staff write path exists | Athlete app, My Data → Nutrition |
 | `gym_session_logs` / `gym_set_logs` | Yes | **No** — no staff write path exists | Athlete app, My Data → Gym |
 
 The asymmetry in the bottom two rows is deliberate and is `0045`'s own rule: *a correction

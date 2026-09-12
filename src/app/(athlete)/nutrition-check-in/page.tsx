@@ -35,18 +35,32 @@ export default async function NutritionCheckInPage({
   // what it actually offers.
   const requestedWeek = typeof params.week === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(params.week) ? params.week : lastCompletedWeek;
   const weekStart = requestedWeek > lastCompletedWeek ? lastCompletedWeek : requestedWeek;
-  const correcting = params.correct === '1';
 
   const existing = await fetchCheckinForWeek(db, athleteId, weekStart);
+  /* ATH-ADULT-08 C1–C3 (2026-09-12). ONCE. A check-in can be corrected one
+     time (migration 0107 refuses a second as entry_already_corrected). The
+     page reads the chain, so a spent week is refused BEFORE the form is
+     offered: ?correct=1 on it shows the spent state, never a form that fails
+     on save. ?saved=1 is only a heading choice on top of the same read — the
+     server re-reads the chain, nothing about the state is trusted from the
+     URL. */
+  const spent = !!existing?.prior;
+  const justSaved = spent && params.saved === '1';
+  const correcting = params.correct === '1' && !!existing && !spent;
   const weekEnd = addDays(weekStart, 6);
   /* ATH-ADULT-08: after submit, the subhead names the thing — the real week
      — never "this week", which is the only correct form for a week a month
      gone. The form itself carries the week in its eyebrow. */
   const weekLabel = `${formatDate(weekStart, timezone)} to ${formatDate(weekEnd, timezone)}`;
-  const answerLabel = existing ? (existing.answer === 'yes' ? 'Yes' : existing.answer === 'roughly' ? 'Roughly' : 'No') : null;
-  const sentAt = existing?.submitted_at
-    ? `${formatDate(existing.submitted_at.slice(0, 10), timezone)} at ${new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: timezone }).format(new Date(existing.submitted_at))}`
-    : null;
+  const label = (answer: 'yes' | 'roughly' | 'no'): string => (answer === 'yes' ? 'Yes' : answer === 'roughly' ? 'Roughly' : 'No');
+  const stamp = (iso: string): string =>
+    `${formatDate(iso.slice(0, 10), timezone)} at ${new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: timezone }).format(new Date(iso))}`;
+  const answerLabel = existing ? label(existing.answer) : null;
+  const priorLabel = existing?.prior ? label(existing.prior.answer) : null;
+  const sentAt = existing?.submitted_at ? stamp(existing.submitted_at) : null;
+  /* When the live row is the correction, its submitted_at is when the
+     correction was made; the original's is when the week was first answered. */
+  const correctedAt = existing?.prior && existing.submitted_at ? stamp(existing.submitted_at) : null;
   const afterSubmit = !!existing && !correcting;
 
   return (
@@ -77,6 +91,58 @@ export default async function NutritionCheckInPage({
             initialNote: existing.note ?? '',
           }}
         />
+      ) : existing && justSaved ? (
+        <>
+          {/* C2: a saved correction stays here rather than leaving for My data,
+              so the athlete sees it landed — the new answer, when, the
+              original kept, and that it cannot change again. */}
+          <div className="after-card">
+            <h2 className="after-heading">Correction saved</h2>
+            <p className="after-fact">
+              You answered <span className="num">{answerLabel}</span>.
+            </p>
+            <p className="after-note num">
+              Saved {correctedAt}. Your original answer, {priorLabel}, is kept.
+            </p>
+            <p className="after-note">My data shows the week marked Corrected, with both versions.</p>
+            <p className="after-note">This answer can’t be changed again.</p>
+          </div>
+          <div className="subm subm-stack">
+            <Link href="/today" className="btn-primary" style={{ display: 'flex', justifyContent: 'center' }}>
+              Back to Today
+            </Link>
+          </div>
+        </>
+      ) : existing && spent ? (
+        <>
+          {/* C1, the spent state: the one correction is used. Stated before
+              any control, with the Corrected pill beside the heading (the
+              same mark the wellness check-in carries), both values named,
+              and the coach as the remaining route. No correction offered. */}
+          <div className="after-card">
+            <h2 className="after-heading">
+              Already answered
+              <span className="pill pill-neutral" style={{ marginInlineStart: 8, verticalAlign: 'middle' }}>
+                Corrected
+              </span>
+            </h2>
+            <p className="after-fact">
+              You answered <span className="num">{answerLabel}</span>.
+            </p>
+            <p className="after-note num">
+              Corrected {correctedAt}. Originally {priorLabel}.
+            </p>
+            <p className="after-note">
+              You have used your one correction for this check-in, so it can’t be changed again.
+            </p>
+            <p className="after-note">If it still looks wrong, tell your coach. Both versions stay visible in My data.</p>
+          </div>
+          <div className="subm subm-stack">
+            <Link href="/today" className="btn-primary" style={{ display: 'flex', justifyContent: 'center' }}>
+              Back to Today
+            </Link>
+          </div>
+        </>
       ) : existing ? (
         <>
           {/* ATH-ADULT-08, 2026-09-12. The fact the athlete came for — it is
@@ -89,9 +155,10 @@ export default async function NutritionCheckInPage({
               board's "Yes, most days / Some days": the wording of an answer
               changes what it means (CLAUDE.md §0.06, D1 in the record).
 
-              NO "once" CAPTION AND NO SPENT STATE: revise_nutrition_checkin
-              enforces no once-only rule today, so a caption promising one
-              would be untrue. Recorded as C1–C3. */}
+              THE "once" CAPTION (C3) sits in the footer above the buttons,
+              and is true since migration 0107 — a second correction is
+              refused, and this page shows the spent state instead of the
+              form (C1). */}
           <div className="after-card">
             <h2 className="after-heading">Already answered</h2>
             <p className="after-fact">
@@ -104,6 +171,7 @@ export default async function NutritionCheckInPage({
             </p>
           </div>
           <div className="subm subm-stack">
+            <p className="cap subm-caption">You can correct this once after you submit.</p>
             <Link href="/today" className="btn-primary" style={{ display: 'flex', justifyContent: 'center' }}>
               Back to Today
             </Link>

@@ -169,7 +169,7 @@ name is involved.
 
 **Filed defects for 08:** §0u's nutrition item ("fix the copy, keep the default", decided 2026-09-10) — the past-week default is kept; the copy fix is in the board's week-naming (A4/A8).
 
-**Built:** A1–A9 with B1–B4. **Not built:** C1–C3 (behaviour), D2.
+**Built:** A1–A9 with B1–B4; C1–C3 on 2026-09-12 (decision sheet group (c)) — migration 0107, the chain read, the spent state, "Correction saved", the caption, My data's Corrected mark. **Not built:** D2 (declined — the second question).
 
 ---
 

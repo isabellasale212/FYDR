@@ -87,7 +87,9 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekS
       );
       if (result.error) throw new HumanError(result.error);
     },
-    onSuccess: () => router.push('/my-data?tab=nutrition'),
+    /* C2 (2026-09-12): stay on this page — it re-reads the chain and shows
+       "Correction saved" — rather than leaving for My data. */
+    onSuccess: () => router.push(`/nutrition-check-in?week=${weekStart}&saved=1`),
     onError: (err: Error) => setError(toUserMessage(err, 'athlete')),
   });
 
@@ -262,7 +264,7 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekS
         ) : null}
         <p className="tiny" style={{ textAlign: 'center', marginTop: 'var(--sp-8)' }}>
           {correction
-            ? 'Corrections send straight away and need signal. If it can’t get through, you’ll see an error here and your answer stays put.'
+            ? 'This is your one correction — you can’t change it again after you save. It sends straight away and needs signal; if it can’t get through, you’ll see an error here and your answer stays put.'
             : 'Saved on this phone first — it sends even if your signal drops.'}
         </p>
       </div>

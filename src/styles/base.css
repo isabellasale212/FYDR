@@ -3285,6 +3285,12 @@ a.hist-row:focus-visible {
   border-radius: var(--r-control);
   padding: var(--sp-4) var(--sp-8);
 }
+/* ATH-ADULT-08 C3 (12 Sept 2026): the limit stated before the athlete
+   starts — "You can correct this once after you submit." — a caption on its
+   own line above the footer's buttons, in the caption's own --fs-13 --muted. */
+.subm-caption {
+  margin: 0 0 var(--sp-8);
+}
 /* A4 / C-d: the irreversibility line and, on the same row, the disclosure
    that opens the explanation. A native <details>: the summary is the row,
    so the whole 44px band is the target and the browser's own keyboard

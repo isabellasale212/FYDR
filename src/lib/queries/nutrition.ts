@@ -11,15 +11,51 @@ import type { Db } from './groups';
  * "an athlete with no target", which the spec itself says is a normal,
  * usable case, not a degraded one. */
 
-export type NutritionCheckin = {
+export type NutritionAnswer = 'yes' | 'roughly' | 'no';
+
+/** The live answer for a week, as every reader sees it. */
+export type CurrentCheckin = {
   id: string;
   week_start: string;
-  answer: 'yes' | 'roughly' | 'no';
+  answer: NutritionAnswer;
   note: string | null;
   submitted_at: string | null;
 };
 
-const COLUMNS = 'id, week_start, answer, note, submitted_at';
+/** The athlete's own read: the live answer plus the one correction behind it.
+ *  ATH-ADULT-08 C1 (2026-09-12): when the live row is itself a revision,
+ *  `prior` is the answer it replaced — the original the athlete first gave —
+ *  and no further correction is offered (migration 0107 refuses it as
+ *  entry_already_corrected). Null for an uncorrected check-in. The staff
+ *  bulk read (fetchCheckinsForAthletes) returns CurrentCheckin instead: the
+ *  chase list wants the current answer and does not read the chain. */
+export type NutritionCheckin = CurrentCheckin & {
+  prior: { answer: NutritionAnswer; submitted_at: string | null } | null;
+};
+
+const COLUMNS = 'id, week_start, answer, note, submitted_at, revision_of';
+
+/** The superseded originals behind corrected check-ins, read from the BASE
+ *  table by id — the one place that read is right, for the reason
+ *  entryRevisions.ts gives: the superseded row is the product here.
+ *  `nutrition_checkins_athlete_select` (0012) scopes it to the athlete's own
+ *  rows with no superseded_by predicate, so the athlete reads their own
+ *  original and physically nobody else's. Returns a map keyed by the prior
+ *  row's id. */
+async function fetchPriorAnswers(
+  db: Db,
+  ids: string[],
+): Promise<Map<string, { answer: NutritionAnswer; submitted_at: string | null }>> {
+  const out = new Map<string, { answer: NutritionAnswer; submitted_at: string | null }>();
+  if (ids.length === 0) return out;
+  const { data, error } = await db
+    .from('nutrition_checkins')
+    .select('id, answer, submitted_at')
+    .in('id', ids);
+  if (error) throw new Error(error.message);
+  for (const row of data ?? []) out.set(row.id, { answer: row.answer, submitted_at: row.submitted_at });
+  return out;
+}
 
 export async function fetchCheckinForWeek(
   db: Db,
@@ -34,12 +70,14 @@ export async function fetchCheckinForWeek(
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data || data.id === null || data.answer === null) return null;
+  const priors = await fetchPriorAnswers(db, data.revision_of ? [data.revision_of] : []);
   return {
     id: data.id,
     week_start: data.week_start ?? weekStart,
     answer: data.answer,
     note: data.note,
     submitted_at: data.submitted_at,
+    prior: data.revision_of ? (priors.get(data.revision_of) ?? null) : null,
   };
 }
 
@@ -69,11 +107,26 @@ export async function fetchRecentCheckins(
     .lte('week_start', to)
     .order('week_start', { ascending: false });
   if (error) throw new Error(error.message);
-  return (data ?? [])
-    .filter((d): d is typeof d & { id: string; week_start: string; answer: 'yes' | 'roughly' | 'no' } =>
+  const rows = (data ?? []).filter(
+    (d): d is typeof d & { id: string; week_start: string; answer: NutritionAnswer } =>
       d.id !== null && d.week_start !== null && d.answer !== null,
-    )
-    .map((d) => ({ id: d.id, week_start: d.week_start, answer: d.answer, note: d.note, submitted_at: d.submitted_at }));
+  );
+  /* One chained read for every corrected week in the window, so My data can
+     mark the week Corrected and show what it was — the board's saved state
+     promises exactly that ("My data shows the week marked Corrected, with
+     both versions"). */
+  const priors = await fetchPriorAnswers(
+    db,
+    rows.map((d) => d.revision_of).filter((id): id is string => id !== null),
+  );
+  return rows.map((d) => ({
+    id: d.id,
+    week_start: d.week_start,
+    answer: d.answer,
+    note: d.note,
+    submitted_at: d.submitted_at,
+    prior: d.revision_of ? (priors.get(d.revision_of) ?? null) : null,
+  }));
 }
 
 /** Staff-side bulk read for /nutrition's "Needs a word" chase list and the selected-
@@ -90,7 +143,7 @@ export async function fetchCheckinsForAthletes(
   orgId: string,
   athleteIds: readonly string[],
   sinceWeekStart: string,
-): Promise<Map<string, NutritionCheckin[]>> {
+): Promise<Map<string, CurrentCheckin[]>> {
   if (athleteIds.length === 0) return new Map();
   const { data, error } = await db
     .from('nutrition_checkins_current')
@@ -101,7 +154,7 @@ export async function fetchCheckinsForAthletes(
     .order('week_start', { ascending: false });
   if (error) throw new Error(error.message);
 
-  const byAthlete = new Map<string, NutritionCheckin[]>();
+  const byAthlete = new Map<string, CurrentCheckin[]>();
   for (const row of data ?? []) {
     if (row.id === null || row.athlete_id === null || row.week_start === null || row.answer === null) continue;
     const list = byAthlete.get(row.athlete_id) ?? [];
@@ -149,10 +202,13 @@ export async function reviseCheckin(
     p_note: note,
   });
   if (error) {
+    /* 0107: the one correction is spent. The page refuses before the form is
+       offered (the spent state), so this is the concurrent-tab case. */
+    if (error.message.includes('entry_already_corrected')) {
+      return { error: 'You have used your one correction for this check-in. It can’t be changed again.' };
+    }
     if (error.message.includes('entry_not_revisable')) {
-      return {
-        error: 'This week has already been corrected once, or the window has closed.',
-      };
+      return { error: 'This check-in has changed since you opened it. Open it again from My data.' };
     }
     /* Same rule as reviseWellnessEntry: never a raw driver string. */
     return { error: humanizeDbError(error.message, 'athlete') };

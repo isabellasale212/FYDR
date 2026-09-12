@@ -1362,8 +1362,8 @@ Holds `CLINICAL_ONLY` **alone**, plus `REHAB_PROGRAMME`, `PROGRAMME_AUTHOR`,
 | STAFF-MEDIC-01 | Read the dashboard | sidebar "Dashboard" |
 | STAFF-MEDIC-02 | Browse the squad — minus "Add athlete" (`SETTINGS_ADMIN`), measured 2026-09-12 | sidebar "Squad overview" |
 | STAFF-MEDIC-16/17/18/20/21/22 | Reports and exports | sidebar "Reports" |
-| STAFF-MEDIC-25 | Explore the leaderboard wall | sidebar "Leaderboard" |
-| STAFF-MEDIC-29 | Settings hub — own profile only | sidebar "Settings" |
+| STAFF-MEDIC-25 | Explore the leaderboard wall — identical; the board page adds "Suppress an athlete" (the medical suppression) and withholds Board actions | sidebar "Leaderboard" |
+| STAFF-MEDIC-29 | Settings hub — **not** identical and not "own profile only": seven sections (no Club details, no plan switch) and seven rows — Thresholds (leads to an in-page refusal), Password and two-factor, Exports, Groups (read list), Notifications, Subject access requests, Log out; the Integrations links bounce back (measured 2026-09-12, §0av) | sidebar "Settings" |
 | STAFF-MEDIC-33 | Print a screen | "Print" |
 
 ## Differs

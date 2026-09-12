@@ -1949,7 +1949,16 @@ async function GymTab({
               <div className="hair" />
               <Link href={`/my-data/gym/${s.id}`} className="hist-row">
                 <div style={{ minWidth: 0 }}>
-                  <p className="hist-date">{formatDate(s.entry_date, timezone)}</p>
+                  <p className="hist-date">
+                    {formatDate(s.entry_date, timezone)}
+                    {/* ATH-ADULT-13 C3: the same neutral pill the wellness and
+                        RPE rows carry, off the live sets' revision_of. */}
+                    {s.corrected ? (
+                      <span className="pill pill-neutral" style={{ marginInlineStart: 8, verticalAlign: 'middle' }}>
+                        Corrected
+                      </span>
+                    ) : null}
+                  </p>
                   <p className="hist-detail">
                     {s.session_name ?? 'Gym session'} &middot; <span className="num">{s.set_count}</span>{' '}
                     {s.set_count === 1 ? 'set' : 'sets'}

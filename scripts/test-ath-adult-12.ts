@@ -99,5 +99,17 @@ console.log('\nthe spec');
   assert(/48px|--fs-48/.test(spec), 'and the hero size');
 }
 
+console.log('\nC7 — Tests lists the club\'s tests; one without a result reads "Not logged" (2026-09-12)');
+{
+  const q = strip(read('src/lib/queries/testing.ts'));
+  const fn = q.slice(q.indexOf('export async function fetchMyTestSummary'), q.indexOf('\nexport ', q.indexOf('export async function fetchMyTestSummary') + 10));
+  assert(/from\('test_definitions'\)/.test(fn) && /is\('deleted_at', null\)/.test(fn) && /order\('sort_order'/.test(fn), 'the summary starts from the club\'s live test definitions, in the club\'s order');
+  assert(/latestValue: null,\s*latestDate: null,/.test(fn) && /opts\.includeUnlogged \? \[\.\.\.byTest\.values\(\)\]/.test(fn), 'a definition with no result is a row with nothing in it, not a missing row; the order is the club\'s, not alphabetical');
+  assert(/fetchMyTestSummary\(db, athleteId, \{ includeUnlogged: true \}\)/.test(page) && !/includeUnlogged/.test(strip(read('src/lib/queries/athleteReport.ts'))), 'My data asks for the unlogged rows; the staff athlete report keeps tests with a result only');
+  const tab = page.slice(page.indexOf('async function TestingTab'));
+  assert(/'Not logged'/.test(tab) && /data-missing=\{s\.latestValue === null \? '' : undefined\}/.test(tab), 'the row reads "Not logged" in the value column');
+  assert(/title="No tests set up yet"/.test(tab) && !/title="No results yet"/.test(tab), 'the empty state is for a club with no tests, not an athlete with no results');
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

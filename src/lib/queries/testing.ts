@@ -620,7 +620,33 @@ export type MyTestSummary = {
  *  picked here, by comparing every is_best row against the current champion
  *  rather than trusting date order. This was the one real place that fix
  *  hadn't been applied yet — the athlete's own PB pill was still wrong. */
-export async function fetchMyTestSummary(db: Db, athleteId: string): Promise<MyTestSummary[]> {
+export async function fetchMyTestSummary(
+  db: Db,
+  athleteId: string,
+  opts: { includeUnlogged?: boolean } = {},
+): Promise<MyTestSummary[]> {
+  /* ATH-ADULT-12 C7 (2026-09-12), for the athlete's own My data
+     (`includeUnlogged`): the list is the club's tests, not the athlete's
+     results. Every live definition is a row, in the club's own order
+     (sort_order, then name); one the athlete has no result for reads "Not
+     logged" rather than being absent — a test the club measures and has
+     not measured on this athlete is a fact about the athlete. There is no
+     per-athlete assignment of tests in this schema (test_definitions is
+     org-wide; results carry the session), so "assigned" is the club's set;
+     if a narrower assignment is ever wanted it is a migration, recorded on
+     the decision sheet. Read through test_definitions_org_select. The
+     staff athlete report keeps the old shape — tests with a result only —
+     by leaving the option off. */
+  const { data: defs, error: defsError } = opts.includeUnlogged
+    ? await db
+        .from('test_definitions')
+        .select('id, name, unit, decimal_places, higher_is_better')
+        .is('deleted_at', null)
+        .order('sort_order', { ascending: true })
+        .order('name', { ascending: true })
+    : { data: [], error: null };
+  if (defsError) throw new Error(defsError.message);
+
   /* PAGED, and this one has no window to widen — it is ALL TIME by design and
    * always has been (there is no gte on test_date, deliberately: a personal
    * best is all-time or it is not a personal best). That makes it unbounded by
@@ -653,8 +679,23 @@ export async function fetchMyTestSummary(db: Db, athleteId: string): Promise<MyT
   );
 
   const byTest = new Map<string, MyTestSummary>();
+  for (const d of defs ?? []) {
+    byTest.set(d.id, {
+      test_definition_id: d.id,
+      name: d.name,
+      unit: d.unit,
+      decimal_places: d.decimal_places,
+      higher_is_better: d.higher_is_better,
+      pbValue: null,
+      pbDate: null,
+      latestValue: null,
+      latestDate: null,
+    });
+  }
   for (const r of data) {
     if (!r.test_definitions) continue;
+    /* A result against a definition the club has since retired still
+       happened: it keeps its row, after the live ones. */
     const cur = byTest.get(r.test_definition_id) ?? {
       test_definition_id: r.test_definition_id,
       name: r.test_definitions.name,
@@ -682,5 +723,7 @@ export async function fetchMyTestSummary(db: Db, athleteId: string): Promise<MyT
     }
     byTest.set(r.test_definition_id, cur);
   }
-  return [...byTest.values()].sort((a, b) => a.name.localeCompare(b.name));
+  /* The club's order when the club's list was read; by name otherwise, as
+     the staff report has always had it. */
+  return opts.includeUnlogged ? [...byTest.values()] : [...byTest.values()].sort((a, b) => a.name.localeCompare(b.name));
 }

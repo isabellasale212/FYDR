@@ -139,6 +139,14 @@ and they are different:
   would fill it; no action, no fabricated zero. Also the wording on All on
   record.
 
+**Tests lists the club's tests** (ATH-ADULT-12 C7, 12 September 2026): every
+live test definition, in the club's own order, whether or not this athlete has
+a result — one without reads "Not logged" in the value column, with no date
+line. "Assigned" is the club's set: the schema has no per-athlete assignment
+of tests (`test_definitions` is org-wide). The empty state is for a club with
+no tests set up, not an athlete with no results. The staff athlete report keeps
+listing tests with a result only.
+
 ## 11. Accessibility and device
 
 Translated for a web app per Stage A0. **UNVERIFIED:** text scaling at 200
@@ -217,8 +225,7 @@ the footer card keeps only Leaderboards), the live segment stays the
 accent-filled pill (D2 declined), and further recorded, not built:
 uncoloured deltas measured against the 28-day average (reverses §13's green ▲
 and is a different comparison from "on last week"), a plain-English fact line
-per hero, Sessions and Nutrition as hero-card tabs with an RPE chart, Tests listing
-only assigned tests, a period menu on the title line, the tab bar without the
+per hero, Sessions and Nutrition as hero-card tabs with an RPE chart, a period menu on the title line, the tab bar without the
 gold gym glyph, readiness "out of 5" (MET-001 is 0–100), and the two chart
 tokens `--chart-h` / `--chart-stroke`.
 

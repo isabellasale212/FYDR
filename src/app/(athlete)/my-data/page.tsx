@@ -1553,7 +1553,7 @@ async function TestingTab({
   showAll: boolean;
   periodKey: RangeKey;
 }) {
-  const summary = await fetchMyTestSummary(db, athleteId);
+  const summary = await fetchMyTestSummary(db, athleteId, { includeUnlogged: true });
   /* Three rows, per the reference, unless ?all=1. The list is all-time and
      unwindowed, so this is the only thing standing between an athlete with
      twenty test definitions and a twenty-row card. */
@@ -1656,10 +1656,13 @@ async function TestingTab({
 
         {summary.length === 0 ? (
           <div style={{ padding: '0 var(--pad-card-x) var(--pad-card-y)' }}>
+            {/* ATH-ADULT-12 C7: the list is the club's tests, so it is empty
+                only when the club has none — an athlete with no results sees
+                each test with "Not logged". */}
             <EmptyState
               headingLevel={3}
-              title="No results yet"
-              body="Nothing has been logged for you yet. Results are entered by your coach or physio at a testing session."
+              title="No tests set up yet"
+              body="Your club has not set up any tests. Results are entered by your coach or physio at a testing session."
             />
           </div>
         ) : (

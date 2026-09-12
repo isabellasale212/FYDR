@@ -300,6 +300,7 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
                       leaving. */}
                   <div className="sg-block-row">
                     <span className="sg-block-time num">{g.timeText}</span>
+                    <span className="pill pill-neutral sg-block-removed-pill">Removed</span>
                   </div>
                   <div className="sg-block-name">{g.title}</div>
                 </button>
@@ -373,7 +374,7 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
         </div>
 
         <div className="sg-legend-row">
-          {(['training', 'gym', 'rehab', 'testing', 'match', 'recovery'] as DbSessionType[]).map((t) => (
+          {(['training', 'gym', 'rehab', 'testing', 'match', 'recovery', 'meeting'] as DbSessionType[]).map((t) => (
             <span key={t} className="sg-legend-item">
               <span
                 className="sg-legend-swatch"
@@ -383,7 +384,7 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
             </span>
           ))}
           <span className="sg-caption">
-            {days.reduce((sum, d) => sum + d.contactMins, 0)} athlete contact minutes · staff sessions excluded ·{' '}
+            {days.reduce((sum, d) => sum + d.contactMins, 0)} session minutes · staff sessions excluded ·{' '}
             {clockLabel(h0)} to {clockLabel(h1)} · red line is now
             {mode === 'edit' ? ' · drag a block to move it' : ''}
           </span>

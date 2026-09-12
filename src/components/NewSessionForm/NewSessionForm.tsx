@@ -109,7 +109,10 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
        so it is refused, with focus on the chips. The type cannot be empty:
        the chips are single-select from a 'training' default. */
     if (selectedGroups.size === 0) {
-      return focusField(groupsRef.current, 'Choose at least one group.');
+      return focusField(
+        groupsRef.current,
+        'Choose at least one group. Without a group, nobody is expected at this session, so it will not appear on any athlete’s Today.',
+      );
     }
     setError(null);
     mutation.mutate();

@@ -593,3 +593,89 @@ small and is A below; the rest is C and needs the data first.
 - **D3** STAFF-SS-02-05 (same day) touches the same injury card copy (A1–A3 shared, built once).
 
 **Built:** A1–A3 (in the SS-02-05 commit, one card). **Recorded:** C1–C10, D1–D3 — appended to the decision sheet.
+
+---
+
+## PATTERN-S4 — Schedule and week grid
+
+**Source.** `docs/designs/PATTERN-S4-final/` — board "PATTERN-S4 · FINAL" (14 artboards + 3
+appendix frames), `notes.md`, the Claude Code prompt. Screens: `/schedule` (`ScheduleWorkspace`,
+`TimeGrid`, `SelectedSessionPanel`, `WeekStatsPanel`), `/schedule/new` (`NewSessionForm`),
+`/schedule/planner/*`, `/timetable`. Landed 2026-09-12 (`058123a`).
+
+**The board's headline is a reversal.** "Sessions are live when they are created. No pending
+queue, no Publish, no Discard." The live grid holds edits, drafts and removals until
+**Publish to athletes** (`docs/screens/07-schedule.md` §6: "There is no per-session Save,
+deliberately… one session published out of a week would put a half-updated schedule on
+athletes' phones"); §0al built the held week's offline persistence on that model on
+2026-09-12, and 0104 audits the publish. That is **D1**, and most of the board (the grid-click
+popover that writes on Add, a drag that writes at once, the destructive confirmation's three
+timeframes, "6 sessions live in the athlete app") depends on it. Recorded, not built.
+
+### A. Buildable now — copy, a11y, existing tokens, no behaviour change
+
+| # | Change | Before | After |
+|---|---|---|---|
+| A1 | The current view is a tab and says it is current | `role="tab" aria-selected="true"` | + `aria-current="page"` on the selected one |
+| A2 | The legend carries all seven types | six | + Meeting, in its muted neutral |
+| A3 | "session minutes", not "contact minutes" | "445 athlete contact minutes", "Contact time per group", "Contact time is within 40 minutes…" | "session minutes" / "Session minutes per group" / "Session time is within…" — the figure is session length, not length × attendees |
+| A5 | The missing-group refusal states the consequence | "Choose at least one group." | + "Without a group, nobody is expected at this session, so it will not appear on any athlete's Today." |
+| A6 | The primary says what it will make | "Add to Thursday" | "Add session · Thu 10, 16:00, 60 min" — a clause whose value is missing is dropped |
+| A7 | Read-only names its editor in a well | a `.tiny` line | the same sentence in a `--surf2` well with a 1px `--border`, standing where Read/Edit sits |
+| A8 | A removed block carries a "Removed" pill | strike-through at 0.65 | + `.pill.pill-neutral` "Removed", so the strike is not the only signal |
+
+### B
+
+| # | Board | Ours | Note |
+|---|---|---|---|
+| B1 | `--grid-hour-h: 40px` (14 hours = 560px) | `PXH = 66` | a new layout token; the grid fits a 900px viewport at 40 — with the popover (C2), decide then |
+| B2 | `--ghost-removed: 0.55` | 0.65 in place | keep 0.65; the pill (A8) is the second signal |
+| B3 | `--ring-invalid: 0 0 0 3px rgba(241,90,74,0.16)` | composable: `rgb(var(--bad-rgb) / 0.16)` | with the popover's refusal (C2) |
+| B4 | phone sheet `--r-sheet` over a scrim | `--r-card`, `--ink-rgb` (as SS-01) | with C6 |
+
+### C
+
+- **C1 Live sessions** — D1. **C2 The grid-click popover** (320px, anchored, flips at the edges; a phone sheet) writing on "Add session" — depends on C1. **C3 A drag writes immediately** — C1. **C4 Read-only past/rated sessions with the reason** — needs the rule for editing a rated session (Q2). **C5 Distinct expected attendees** with denominators — a query (Q1). **C6 The phone: day-first with the dashboard's week strip, 44px rows** — a new phone layout for the grid (the shell is SS-01's). **C7 Template apply: offsets to dates, collision well** — `/schedule/planner/apply` restructure. **C8 "Nothing scheduled" as a dash per group** — the stats panel lists only groups with sessions; listing all needs the groups read. **C9 The destructive confirmation's three timeframes** — C1. **C10 "N sessions live in the athlete app" and the other denominators** — C1/C5.
+
+### D
+
+- **D1 Live-on-create reverses the held-until-publish model** (07-schedule.md §6, §0al, 0104). **Recommend:** decide once; if reversed, the publish machinery, the sessionStorage hold, the ghost/Restore and the banner all go, and the audit trigger records each write as its own act (already true).
+- **D2** "Timetable" exists (`/timetable`, the Schedule row's Today tab) — the board's Q8 is answered; nothing to change. **D3** Fixture is a separate creation route by design (07-schedule.md). **D4** §0aj's "RPE due by 19:45" (Q4) is built as `expectsLabel` from `rpeDueAt` (5f68cb6) — the board printed the stale string.
+
+**Built:** A1–A3, A5–A8. **Recorded:** B1–B4, C1–C10, D1 — appended to the decision sheet.
+
+---
+
+## PATTERN-S5 — Programme authoring
+
+**Source.** `docs/designs/PATTERN-S5-final/` — board "PATTERN-S5 · FINAL" (10 artboards),
+`notes.md`, the prompt. Screens: `/programmes/*` (`ProgrammeBuilder`, `ProgrammeForm`, the
+assignment and override screens), the athlete profile's programme block, `/nutrition`
+(`NutritionWorkspace`). Landed 2026-09-12 (`ed163fd`).
+
+**The board's own dependency.** Q1 — "Is the prescription stored against the logged set, or
+read from the programme?" — decides whether "a logged set keeps the prescription it was
+logged against" is a display or a migration. Today `gym_set_logs` holds the actuals and the
+programme exercise is joined live (`fetchGymSessionSetDetails`); editing a block rewrites
+what a past set is compared against. That is **C1** and it is a migration.
+
+### A
+
+| # | Change | Before | After |
+|---|---|---|---|
+| A1 | A bodyweight exercise says what it logs, in words | a disabled load input | "logs reps only" as a plain value in the load slot; no disabled input on the row |
+| A7 | The coach's detail link is the tell | "Change plan" / "Edit ›" for every role | "Edit this programme" for a role that may author (`PROGRAMME_AUTHOR`), "View full detail" otherwise; the header pill "Change plan" / "View plan" likewise |
+
+### B
+
+- none by the board's account; `--line-dashed` maps to the existing dashed `--border-strong` (the finish-early control's), `--blue-100/200` to the wash family, `--t-num-hero` to `--fs-48`.
+
+### C
+
+- **C1 The prescription snapshot on the logged set** (reps, load, step as at logging; "38 sets already logged keep the prescription they were logged against"). ⚠ migration. **C2 Effective dates on every prescription write** ("Sessions from Sat 12 Sept") — with C1. **C3 The adjustment screen** (one card with controls, parent rows in `--muted`, a required note, remove-override as a tertiary) — the override note required server side (Q5). **C4 Distinct athletes as an assignment's headline, with the arithmetic** — the same distinct-count query as S4 C5 / SS-01 A3. **C5 The mid-block confirmation screen** — with C1/C2. **C6 The primary carrying the number or date it commits** — with C2/C4. **C7 Nutrition rules authored per kilogram with the worked example, "not set" as a dashed frame, the squad mean with its n, the closing line** — `NutritionWorkspace` restructure; the rules exist as columns (Q7). **C8 "each side" for a unilateral exercise** — a flag the exercise record lacks (Q3). **C9 Weeks-down grid with "not reached"** — the block view. **C10 The phone adjust screen** — with C3.
+
+### D
+
+- **D1** PATTERN-S3's Approved pill for a rehab proposal appearing as an assignment — with S3 C6 (proposal states, ⚠ migration). **D2** ATH-ADULT-09's "Prescribed 100 kg · +2.5" reference line depends on C1 — the logger's rebuild (09 C1, approved) should read the snapshot when it exists.
+
+**Built:** A1, A7. **Recorded:** C1–C10, D1–D2 — appended to the decision sheet.

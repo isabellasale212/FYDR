@@ -13152,3 +13152,20 @@ a.hist-row:active { background: var(--surf-sunken); }
   gap: var(--sp-8);
   margin-top: var(--sp-12);
 }
+
+/* PATTERN-S4 A7/A8 (2026-09-12): read-only names its editor in a well
+   standing where Read/Edit sits for an editor; a removed block carries a
+   pill so the strike-through is not the only signal (the pill is exempt). */
+.sg-readonly-well {
+  display: inline-block;
+  padding: var(--sp-8) var(--sp-12);
+  border: 1px solid var(--border);
+  border-radius: var(--r-control);
+  background: var(--surf2);
+  font-size: var(--fs-13);
+  color: var(--text);
+}
+.sg-block-removed-pill {
+  margin-left: auto;
+  text-decoration: none;
+}

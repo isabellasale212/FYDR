@@ -96,6 +96,7 @@ to create an injury record, and the `/injuries` board shows "+ Injury" to the co
 | ATH-ADULT-12 | B6 | Hero eyebrows in `--faint` instead of `--muted`. | `.eyebrow` is shared with Today's section titles; a contrast step down on a shared class. | **Decline** · none |
 | STAFF-SS-01 | — | (built) the bottom bar + More sheet, superseding §0af's compact top bar | decided and built `af09c17` | — |
 | PATTERN-S3 | D2 | A one-time "you were told" card at the top of the athlete's Today, above To do, displacing the availability line's emphasis until the status screen is opened. | Today is ATH-ADULT-02, built and signed off; "one emphasised card per screen" means the new card takes the emphasis from the availability line. | **Decide with C1** — recommend the card replaces the line only while unread · with C1 |
+| PATTERN-S4 | D1 | Sessions are live the moment they are created, moved or removed — no pending queue, no Publish, no Discard. | Reverses the schedule's held-until-publish model (07-schedule.md §6: one session published alone puts a half-updated week on phones; §0al's offline hold and the ghost/Restore were built on it today). Most of the S4 board (the grid-click popover writing on Add, a drag writing at once, the three-timeframe confirmation, "N sessions live") depends on this. | **Decide once.** If reversed: the publish machinery, the sessionStorage hold, the ghost/Restore and the banner go; each write is already its own audited act (0104) · large |
 | PATTERN-S3 | D1 | The coach sees the protocol stage today ("Return to play protocol, stage 3 of 6" on the allocation screen). | Either a seed string or an unenforced rule; the board says a coach never reads a stage. ⚠ permissions | **Enforce with C8** (the render drops the site and stage segments for the coach) · small |
 
 ## (c) Needs new data or a query
@@ -140,6 +141,21 @@ to create an injury record, and the `/injuries` board shows "+ Injury" to the co
 | PATTERN-S3 | C7 | Availability history: one row per change — time, status, the restriction line as it read then, what changed, who. Never edited; a correction adds a row. | No explicit previous value or author on every path. **⚠ migration** (a view over the table and the audit log) | Audit-trigger the availability table as 0104 did sessions, then the view · medium |
 | PATTERN-S3 | C8 | Body site and side are not coach-visible: a coach reads the status word, the restriction line and the expected return, nothing else. | Rendered to the coach today; the board puts it behind a club setting defaulting to off. **⚠ permissions ⚠ migration** | Decide the default; the render rule is small, RLS on the column is the real change · medium |
 | PATTERN-S3 | C9 | The injury form split by permission (clinical fields in their own column, save works without them) and a pitch-side four-field form at 44px. | A restructure of `NewInjuryForm` / `InjuryMedicalForm`. | **Build** after C8 decides what the coach's form carries · medium |
+| PATTERN-S4 | C2 / B1 / B3 | Clicking an empty grid slot opens a 320px popover anchored at the click (date and time pre-filled, drag sets the duration, a ghost holds the slot, flips at the edges; a bottom sheet on a phone) and "Add session" writes it. | Depends on D1 (writes on Add). `--grid-hour-h: 40px` and `--ring-invalid` are its tokens (the ring composes from `--bad-rgb`; the hour height is a new layout value). | With D1 · large |
+| PATTERN-S4 | C3 | A drag writes the move immediately; typed edits are held until Save changes. | Depends on D1. | With D1 · medium |
+| PATTERN-S4 | C4 | A session in the past, or already rated, opens read-only with the reason. | Needs the rule for editing a rated session (does the rating follow, detach or revise?). | Decide the rule first · small after |
+| PATTERN-S4 | C5 | Expected attendees are counted as distinct athletes across the selected groups, with the denominator ("0 of 30 athletes are expected"). | A query; and whether an unavailable athlete is still expected. | The same distinct count as SS-01 A3 and S5 C4 · medium |
+| PATTERN-S4 | C6 / B4 | The phone: day-first with the dashboard's week strip and 44px rows — no grid at 375. | A new phone layout for the schedule inside SS-01's shell. | **Build** · medium |
+| PATTERN-S4 | C7 | Applying a template states where each offset lands and what happens to what is already there. | `/schedule/planner/apply` restructure; merge-or-replace is undecided (Q5). | Decide merge/replace, then build · medium |
+| PATTERN-S4 | C8 | A group with no session reads a dash and "5 athletes · nothing scheduled", not 0m. | The stats panel lists only groups with sessions. | Read all groups; small · small |
+| PATTERN-S4 | C9 / C10 | The destructive confirmation answers three timeframes; every count states its denominator ("6 sessions live in the athlete app"). | Depend on D1. | With D1 · small after |
+| PATTERN-S5 | C1 | A logged set keeps the prescription it was logged against — reps, load and step snapshotted at logging, so editing a block never rewrites what a past set is compared to. | `gym_set_logs` holds the actuals and joins the programme exercise live. **⚠ migration** | **Build first** — it is what "Prescribed 100 kg · +2.5" on the logger (09 C1, approved) should read · medium |
+| PATTERN-S5 | C2 / C5 / C6 | Every prescription write states its effective date ("Save from Sat 12 Sept"; "38 sets already logged keep the prescription they were logged against"); the mid-block confirmation screen; the primary carries the number or date it commits. | With C1. | After C1 · medium |
+| PATTERN-S5 | C3 / C10 | The per-athlete adjustment screen: one card with controls, parent rows in `--muted`, a required note, remove-override as a tertiary; the phone version stacked. | The override note is not required server side (Q5). **⚠ migration** (a check) | Build with the check · medium |
+| PATTERN-S5 | C4 | An assignment's headline is the distinct athlete count, with its arithmetic. | The distinct-count query (S4 C5 / SS-01 A3). | With that query · small after |
+| PATTERN-S5 | C7 | A nutrition plan authored as rules per kilogram with the worked example, "not set" as a dashed frame, the squad mean with its n, "Coach-set guidance, not a clinical prescription". | `NutritionWorkspace` restructure; the rules exist as columns. | **Build** · medium |
+| PATTERN-S5 | C8 | "each side" beside a unilateral exercise's name. | The exercise record has no unilateral flag. **⚠ migration** | Schema first · small |
+| PATTERN-S5 | C9 | Weeks run down, sessions across; a week not reached reads "not reached", never 0 of 24. | The block view does not exist in this shape. | With C2 · medium |
 
 ## (d) Needs a new token
 
@@ -162,5 +178,5 @@ to create an injury record, and the `/injuries` board shows "+ Injury" to the co
 
 **Not on this sheet, because they were built:** every A item of 04, 06, 08, 09 (A3, A4), 10
 (A1), 12 (A1–A4), 13 (A1–A5), the STAFF-SS-01 shell (C1, A5, B1 for the shell), and
-STAFF-SS-02-05's A1–A6 with PATTERN-S3's A1–A3 (one commit, 2026-09-12) — see the records
-and the handovers in the commit log.
+STAFF-SS-02-05's A1–A6 with PATTERN-S3's A1–A3, PATTERN-S4's A1–A3 and A5–A8, and
+PATTERN-S5's A1 and A7 (2026-09-12) — see the records and the handovers in the commit log.

@@ -84,7 +84,7 @@ export function WeekStatsPanel({ sessions, typical, groups }: Props) {
       <div className="card">
         <p className="card-title">This week against a normal week</p>
         <p className="sg-cmp-sub">
-          Sessions and contact minutes, not load. Typical is the mean of {weeksPhrase(typical.weeksUsed)} with a
+          Sessions and session minutes, not load. Typical is the mean of {weeksPhrase(typical.weeksUsed)} with a
           fixture.
         </p>
 
@@ -131,7 +131,7 @@ export function WeekStatsPanel({ sessions, typical, groups }: Props) {
           {typical.weeksUsed === 0
             ? 'Not enough real history yet to compare this week against a typical one.'
             : totalTone === 'within'
-              ? `A normal week. Contact time is within 40 minutes of your ${typical.weeksUsed}-week mean for a fixture week.`
+              ? `A normal week. Session time is within 40 minutes of your ${typical.weeksUsed}-week mean for a fixture week.`
               : totalTone === 'over'
                 ? `This week carries ${Math.round(thisTotal - typicalTotal)} minutes more contact time than a normal fixture week.`
                 : `This week is ${Math.round(typicalTotal - thisTotal)} minutes lighter than a normal fixture week.`}
@@ -139,7 +139,7 @@ export function WeekStatsPanel({ sessions, typical, groups }: Props) {
       </div>
 
       <div className="card">
-        <p className="card-title">Contact time per group</p>
+        <p className="card-title">Session minutes per group</p>
         <p className="sg-cmp-sub">Scheduled minutes this week, pitch and gym.</p>
         <div className="sg-group-bars">
           {groupRows.length === 0 ? (

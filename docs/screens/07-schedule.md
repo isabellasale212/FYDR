@@ -125,6 +125,18 @@ athletes, at the top of this page, puts it on their phones."* — because that
 control is genuinely far away: measured on 2026-09-09 with the panel at y=700,
 the banner sat at y=-1782.
 
+**Words settled by PATTERN-S4 (12 September 2026):** the grid's footer and the week
+statistics count **session minutes** — session length, not length × attendees; never
+"contact minutes". The legend carries all seven session types, Meeting included. The
+Week plan tab is `role="tab"` with `aria-selected` and `aria-current="page"`. A staged
+draft's primary says what it will make — "Add session · Thu 10, 16:00, 60 min". A
+removed block carries a neutral **Removed** pill beside its time as well as the
+strike-through. The read-only line for a role that cannot author ("Read only. The
+schedule is authored by the sport scientist and the coach.") stands in a bordered well
+where Read/Edit sits for an editor. The board's headline — sessions live on create, no
+publish — is a reversal of this page's held-until-publish model and is on the decision
+sheet as PATTERN-S4 D1, not built.
+
 **"Yes, remove" says what will happen.** On a committed session the confirmation
 reads *"Remove this session? You can undo with Discard, until you publish."* — true,
 because the ghost and Restore exist until the week is published. On a staged draft

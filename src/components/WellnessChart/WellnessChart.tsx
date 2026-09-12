@@ -57,6 +57,13 @@ type Props = {
    *  enough history to compute a rolling band and draws nothing without it. The
    *  band is MET-006 and still the point of the card; this fill sits under it. */
   area?: boolean;
+  /** Accent and neutrals only — ATH-ADULT-12 D7, decided 2026-09-12 as an
+   *  athlete-only prop, never a change to the shared colours. On the
+   *  athlete's My data no colour ranks a value: a day outside the usual
+   *  range keeps its ring but in the accent, not warn or bad; the caption
+   *  under the chart counts those days in words. The three staff pages keep
+   *  the warn / bad markers. */
+  accentOnly?: boolean;
   /** Draw the daily value as a BAR per day instead of a joined line.
    *
    *  The staff athlete report reads one athlete's readiness day by day, and a
@@ -108,6 +115,7 @@ export function WellnessChart({
   flags = [],
   compact = false,
   area = false,
+  accentOnly = false,
   bars = false,
 }: Props) {
   // Bars need room per day; the compact box has none. Compact wins.
@@ -331,8 +339,9 @@ export function WellnessChart({
               const bx = Math.max(ml, Math.min(w - mr - bw, x(i) - bw / 2));
               const top = y(clamp(b.value));
               const base = y(min);
-              const fill =
-                position === 'above'
+              const fill = accentOnly
+                ? 'var(--accent)'
+                : position === 'above'
                   ? 'var(--warn)'
                   : position === 'below'
                     ? 'var(--bad)'
@@ -375,8 +384,9 @@ export function WellnessChart({
           // the dot's own height already says, and read as a third symbol to
           // decode. Colour alone is not the only channel — the caption below
           // the chart counts these in words too.
-          const fill =
-            position === 'above' ? 'var(--warn)' : position === 'below' ? 'var(--bad)' : 'var(--accent)';
+          const fill = accentOnly
+            ? 'var(--accent)'
+            : position === 'above' ? 'var(--warn)' : position === 'below' ? 'var(--bad)' : 'var(--accent)';
 
           return (
             <g key={b.date}>

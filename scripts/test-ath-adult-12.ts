@@ -79,6 +79,19 @@ console.log('\nwhat this flow did NOT change (recorded, not built)');
   assert(!/--chart-h|--chart-stroke|--blue-200|--t-num-hero/.test(read('src/styles/tokens.css')), 'no new token (B1, B2)');
 }
 
+console.log('\nD7 (decided 2026-09-12): accent and neutrals only on the athlete\'s chart, as a prop');
+{
+  const chart = strip(read('src/components/WellnessChart/WellnessChart.tsx'));
+  assert(/accentOnly\?: boolean;/.test(chart) && /accentOnly = false/.test(chart), 'WellnessChart takes accentOnly, off by default — the staff pages are unchanged');
+  assert((chart.match(/const fill = accentOnly\s*\? 'var\(--accent\)'/g) ?? []).length === 2, 'both marker sites use the accent when set');
+  assert(/<WellnessChart[\s\S]{0,400}accentOnly/.test(page), 'My data sets it');
+  for (const p of ['src/app/(staff)/squad/[athleteId]/page.tsx', 'src/app/(staff)/squad/[athleteId]/wellness/page.tsx', 'src/app/(staff)/reports/athlete/[athleteId]/page.tsx']) {
+    let src = '';
+    try { src = strip(read(p)); } catch { continue; }
+    assert(!/accentOnly/.test(src), `${p.split('/').slice(-2).join('/')} does not — the shared chart colours stand`);
+  }
+}
+
 console.log('\nthe spec');
 {
   const spec = read('docs/athlete/screens/06-my-data.md');

@@ -837,6 +837,7 @@ async function WellnessTab({
             flags={flagMarkers}
             compact
             area
+            accentOnly
           />
         )}
 

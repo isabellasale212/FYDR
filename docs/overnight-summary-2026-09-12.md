@@ -95,12 +95,51 @@ pushed. Records: `docs/overnight-records-2026-09-12.md`. Questions:
   it only when earlier than arrival and within 24 hours (pgTAP 610: kept at 2h and 24h,
   arrival at 30h and for a clock set ahead; a staff correction untouched). Scratch only.
 
+## The second queue — afternoon/evening of 2026-09-12 (standing approvals in force)
+
+- **1. Athlete card spacing** — already built before the queue (`94099bd`, `--gap-body`
+  28 → 20px; the in-list gap judged and left). Nothing further.
+- `75c6a6e` **§0aa** — `resolveGymSetConflict`: a gym set queued offline whose slot holds
+  different numbers is a visible conflict on Today with both values and two ways out
+  ("Use my numbers" corrects the live set; "Keep what is showing" drops the queued one);
+  the same numbers under another id dequeue as delivered. Verified on scratch with a
+  colliding queue against James Barnes's set 2.
+- `5003959` **§0at** — migration 0106: `gym_session_logs_current.total_volume_kg` is derived
+  from the live sets (filtered to loaded sets, null otherwise); the stored column is dead.
+  Not too slow: 0.455 ms for the whole org, 0.1 ms for the biggest session (6 sets).
+  45 of 45 complete sessions now carry a tonnage (41 were null).
+- **4. ATH-ADULT-04 / 06 / 08 — nothing further built.** Every A and B item was built in
+  the first queue. The remaining items are C without a decided direction on the to-do
+  list (04 C1 the corrected state on the check-in page, C4 "Corrected by"; 06 C1 the
+  subhead; 08 C1–C3 the once-only correction and the saved state) or D (08 D2 the second
+  question). Skipped under the rule.
+- **5. ATH-ADULT-09 / 10 / 11 — nothing further built.** 09 has a D (D4, the colour
+  reversal of the 2026-09-08 decisions) → the flow is skipped under the rule; its B items
+  are the unapproved 56/52/48 sizes (B1, B2), a motion token (B3, protected) and the 48px
+  chip (B4, tied to the rebuild). 10 and 11 are C items with no decided direction.
+- **6. ATH-ADULT-12 / 13 — nothing further built.** 12 has D1–D7 → skipped under the rule;
+  its B items are either new tokens with no substitute (B1 chart tokens) or tied to a D
+  (B2 `--blue-200`, B3 segment labels) or a C (B4, B5). 13's remaining items are C (the
+  eyebrow needs two more columns; the row-tap correction; the per-row marker) with no
+  decided direction.
+- `af09c17` **STAFF-SS-01, the staff phone shell** — built as decided: below 768px a 64px
+  title bar (page name + active group chip), a bottom bar of Dashboard / Squad / Schedule /
+  a role slot (Flags · Gym · Nutrition) / More, and a More sheet (52px rows, Log out at a
+  real size, a real disclosure); the sidebar's rows moved to `Sidebar/rows.ts` so both
+  shells draw one table; the 44px floor for staff controls below 768 in the same block;
+  the board's eight missing tokens each mapped to an existing one, none added. All 60
+  staff routes affected (listed in the handover); before/after on seven screens at
+  375×812 plus the desktop dashboard unchanged. Not built: the dashboard rebuild (C2),
+  the Flags badge (C3), reminders (C4), the §0ae trigger (C5) — none decided.
+- Question 7 filed: the board's "only the active chip appears" for the in-page group bar.
+
 ## Prebuild chain
 
 `… && test:ath-adult-04 && test:ath-adult-06 && test:ath-adult-08 && test:ath-adult-09 &&
-test:ath-adult-10 && test:ath-adult-12 && test:ath-adult-13 && test:rpe-compliance-cutoff` — 18
-new TS guards in the chain (brand-accent through rpe-compliance-cutoff) plus three pgTAP
-files (590, 600, 610), all green at `0c63b4c`.
+test:ath-adult-10 && test:ath-adult-12 && test:ath-adult-13 && test:rpe-compliance-cutoff &&
+test:athlete-gap-body && test:gym-set-conflict && test:gym-tonnage-derived &&
+test:staff-phone-shell` — 22 new TS guards in the chain today plus four pgTAP files
+(590, 600, 610, 620), all green at the last commit.
 
 ---
 

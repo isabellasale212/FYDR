@@ -28,7 +28,7 @@ Not in group 1, and why: §0aq (the sign-in timing floor) is security, but the p
 
 Visible and embarrassing; no harm.
 
-- **§0af L1220** — below 768px the sidebar stacks 640px above every staff screen. Decided (top bar + menu), brief written; needs design then build. The single most visible staff defect on a phone.
+- **§0af L1220** — below 768px the sidebar stacks 640px above every staff screen. Decided 2026-09-12: bottom bar with a "More" sheet (the STAFF-SS-01 board); needs build. The single most visible staff defect on a phone.
 - ~~**§0s L903** — the athlete check-in's submit button sits 229px below the fold.~~ **Closed overnight** by the ATH-ADULT-03 build (`6618b7f` + `5ae00ea`, merged `b13cc29`); the footer pins and the button measures inside the viewport at scroll 0.
 - **§0u L961** — the gym prescription line reads "3 × 8 @ No 1RM test linked to this exercise yet."
 - **§0u L971** — the nutrition check-in says "this week" about a week that has ended (decided: copy fix, keep the default).
@@ -46,7 +46,7 @@ Visible and embarrassing; no harm.
 - **§0ap L1331** — Exports says "Coach access" to the sport scientist.
 - **§0as** (filed today) — the GPS import page says re-uploading duplicates rows; it has replaced them since 0064/0072. Copy only.
 - **§0aq L1339** — failed sign-ins from Dublin take 1.1–1.6 s, above the 800 ms floor; profile and decide whether to raise `FAILED_SIGN_IN_MIN_MS`.
-- **STAFF-SS-01 D1 (new)** — the approved dashboard board's bottom bar + "More" sheet reverses §0af's decided compact top bar with a menu; the builder built nothing and recommends holding §0af. Decision needed before any staff phone work.
+- ~~**STAFF-SS-01 D1**~~ — **decided 2026-09-12 (Isabella): the staff phone shell is a bottom bar with a "More" sheet**, superseding §0af's top bar. Staff phone work can proceed against the STAFF-SS-01 board.
 - **§0e L181** — "some pages, including a forgot-password page, show the wrong logo": `/login/reset` measured correct on production; needs you to say where you saw it before anyone can fix it.
 - ~~**§0e L244–251** — move production to London.~~ **Decided against 2026-09-12:** production stays in eu-west-1; the compliance doc now states Ireland and the EEA-adequacy basis and withdraws the "stays in the UK" claim.
 - **§0b L713** — a saved group-filter cookie naming a deleted group: behaviour unverified (decided target: fall back to everyone). A club renames or deletes a group in week one.

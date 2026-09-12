@@ -56,10 +56,16 @@ navigation at phone width.
 
 ## 2. The proposal, in Isabella's words
 
-**Below 768px: a compact top bar, with the navigation behind a menu control.**
+> **SUPERSEDED 2026-09-12 (Isabella): below 768px the staff shell is a bottom bar
+> with a "More" sheet — the shape of the approved STAFF-SS-01 board
+> (`docs/designs/STAFF-SS-01 final/`), which decides that board's D1. Read
+> "top bar" below as "bottom bar" and "menu" as "the More sheet"; §3's list of
+> what the bar must carry, §4's constraints and §5's sweep table stand as written.**
 
-That is the whole ask. The rest of this brief is what the top bar has to carry,
-what the menu has to contain, and what must not change.
+~~**Below 768px: a compact top bar, with the navigation behind a menu control.**~~
+
+That is the whole ask. The rest of this brief is what the bar has to carry,
+what the sheet has to contain, and what must not change.
 
 ---
 

@@ -92,7 +92,7 @@
   **Carry this along when push is built, agreed 2026-09-08:** add `comment on table public.push_tokens` recording that the seeded rows are an assumption rather than observed devices. Isabella asked for it batched into the next migration that touches the table rather than given one of its own, so it is not queued as work in its own right. The exact statement is written out ready to paste at the top of the `push_tokens` block in `supabase/seed.sql`.
 
   **Not blocked on:** the email half of Q-30, which is now DONE — see below.
-- [ ] **NOT CODE, and it is yours: tell the medical staff that `mechanism` is now athlete-visible.** Added 2026-09-08, the same day the field started rendering on the athlete's own Today screen for anyone 18 or over.
+- [ ] **NOT CODE, and it is yours — confirmed 2026-09-12: Isabella has the onboarding sentence and delivers it herself. Stays open until the first club is onboarded.** **Tell the medical staff that `mechanism` is now athlete-visible.** Added 2026-09-08, the same day the field started rendering on the athlete's own Today screen for anyone 18 or over.
 
   **The message, in substance:** the Mechanism field on the injury form is now read by the player it is about. It should carry a factual description of how the injury happened — "Inversion in a ruck", "Direct contact, fell onto point of shoulder in tackle" — and not clinical interpretation. Anything that is an assessment finding, an opinion, or a note to another clinician belongs in **Clinical notes**, which stays medical-only and is not a column of the athlete's view at all.
 
@@ -244,7 +244,7 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   Also worth knowing: "our data stays in the UK" is described in that same paragraph as removing "an entire conversation with every club".
 
-- [ ] **MOVE PRODUCTION TO eu-west-2 (LONDON).** The action arising from the item above. Not urgent while every account is synthetic; **materially cheaper now than after a real club is on it**, which is the only reason it has a place this high.
+- [x] **DECIDED AGAINST 2026-09-12 (Isabella): production stays in eu-west-1 (Ireland). Closed, with its four prerequisites, none of which is now needed. `09-security-and-compliance.md` states Ireland and the EEA-adequacy basis; the "stays in the UK" claim is withdrawn there.** ~~MOVE PRODUCTION TO eu-west-2 (LONDON).~~ The action arising from the item above. Not urgent while every account is synthetic; **materially cheaper now than after a real club is on it**, which is the only reason it has a place this high.
 
   **Four prerequisites, and the fourth comes before anything is touched.**
 
@@ -318,7 +318,7 @@ Both come after the sign-in-history item in 0b, which is in progress.
 
   </details>
 
-- [ ] **Upgrade Supabase from Free to Pro tier before inviting the first real club, design partner, or any person whose data isn't something you typed in yourself.** Not "before full completion", before the first real account. Free tier has no automated backups and no point-in-time recovery; confirmed 2026-09-05 that Claude Code also cannot take a manual backup from its own environment (no `pg_dump`/`psql` on PATH, `supabase db dump` needs Docker, not available). As of 2026-09-05 all production accounts are synthetic test data created by you, so this is not yet urgent, it becomes urgent the moment that stops being true.
+- [ ] **HARD GATE, reaffirmed 2026-09-12 (Isabella): gated on signing the pilot club, not now — the upgrade happens before the first real account, and nothing real is invited until it has.** **Upgrade Supabase from Free to Pro tier before inviting the first real club, design partner, or any person whose data isn't something you typed in yourself.** Not "before full completion", before the first real account. Free tier has no automated backups and no point-in-time recovery; confirmed 2026-09-05 that Claude Code also cannot take a manual backup from its own environment (no `pg_dump`/`psql` on PATH, `supabase db dump` needs Docker, not available). As of 2026-09-05 all production accounts are synthetic test data created by you, so this is not yet urgent, it becomes urgent the moment that stops being true.
 
 ## 0. Verification — do this before trusting any further Claude Code output on this repo
 - [ ] Log into the Supabase dashboard directly and check the `organisations` table yourself. Not through Claude Code.
@@ -1178,7 +1178,7 @@ Two behaviour changes the sign-in proposal asked for, both outside the design-on
 
 ## 0ad. Compliance counts a late RPE as submitted — no cutoff exists; found by the builder while tracing ATH-ADULT-02, 2026-09-11
 
-- [ ] **The compliance report treats an RPE expectation as "not submitted" whenever no `training_entries_current` row exists for that date — and as submitted whenever one does, however late.** There is no due-by. A rating entered a week after the session counts identically to one entered that evening. **The only marker of lateness in the product** is the dashboard's "RPE, yesterday · due last night" track, which looks at a day's sessions on the *following* day and no later — the same end-of-following-day window the ATH-ADULT-02 Today rule uses, and what the builder is building 02's "outstanding" logic to.
+- [ ] **DECIDED 2026-09-12 (Isabella) — build:** an RPE counts as **submitted only if it arrives before the rating closes** — `rpeClosesAt` in `lib/rpeDue.ts`, the end of the following club-local day — and **later counts as missed**. The compliance report, its export and the dashboard track all read the same rule from `rpeDue.ts`; the entry's `created_at` (club-local) against `rpeClosesAt(session)`. Guard: a test with one rating inside the window and one after it, asserting submitted and missed respectively; plus the athlete who never rates, unchanged. Not a schema change. Original finding follows. **The compliance report treats an RPE expectation as "not submitted" whenever no `training_entries_current` row exists for that date — and as submitted whenever one does, however late.** There is no due-by. A rating entered a week after the session counts identically to one entered that evening. **The only marker of lateness in the product** is the dashboard's "RPE, yesterday · due last night" track, which looks at a day's sessions on the *following* day and no later — the same end-of-following-day window the ATH-ADULT-02 Today rule uses, and what the builder is building 02's "outstanding" logic to.
 
   **Why it matters.** Compliance is what staff read to decide who is and is not doing the work. A number that cannot distinguish "rated on time" from "rated when the coach chased" measures a different thing from what the report's name promises. It is also inconsistent with the dashboard sitting beside it, which does have a window.
 

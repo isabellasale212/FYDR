@@ -712,22 +712,27 @@ Publish it at a stable URL and reference it from the DPA. Minimum contents:
 
 | Sub-processor | Purpose | Location | Transfer mechanism |
 |---|---|---|---|
-| Supabase | Database, auth, storage, functions | **Currently eu-west-1 (Ireland)**, measured 2026-09-07. London was assumed, never chosen — see O-15 in `05-architecture.md`. | **EEA, not the UK.** Covered by the UK's adequacy regulations for the EEA rather than by the data being held in the UK, which is what this row claimed until 2026-09-07. Supabase Inc is US-incorporated, so an International Data Transfer Addendum still applies to support access. `[medium on the adequacy reading, high on the region — it is measured]` |
+| Supabase | Database, auth, storage, functions | **eu-west-1 (Ireland) — decided 2026-09-12 (Isabella): production stays there.** Measured 2026-09-07; London was assumed, never chosen (O-15 in `05-architecture.md`), and the move to London was considered and **decided against**. | **EEA, not the UK.** Covered by the UK's adequacy regulations for the EEA rather than by the data being held in the UK, which is what this row claimed until 2026-09-07. Supabase Inc is US-incorporated, so an International Data Transfer Addendum still applies to support access. `[medium on the adequacy reading, high on the region — it is measured]` |
 | Vercel | Staff web hosting (Next.js server functions, edge network) | **Functions: `dub1` (Dublin, EU) since 2026-09-11, next to the database (eu-west-1).** Measured on the live deployment `dpl_5EoAexC2bSYkfrvVXJmc4Vqt6WPP` at 16:51 BST: `regions: ["dub1"]`, and every function response carries `x-vercel-id: lhr1::dub1::…`. **Correction to what this row assumed:** until that deploy the functions ran in **`iad1` (Washington DC, US)** — Vercel's default, never chosen — while this row said "Configure functions to a London or EU region" as if it were an instruction still to be carried out rather than a state to be checked. Every server-rendered request before 2026-09-11 16:46 BST processed personal data in the US; the data was synthetic throughout. The edge network (static assets, cached pages) answers from the nearest PoP (`lhr1`, London), which is not where data is processed. Vercel Inc is US-incorporated. `[high — measured, three requests, deployment record read]` | UK IDTA / UK Addendum to EU SCCs, now covering support access rather than routine processing. |
 | Apple APNs, Google FCM | Push notification delivery | US | UK Addendum. Note push payloads must never contain health data. See §7. |
 | Sentry or equivalent | Error monitoring | Use the EU region if you adopt it | UK Addendum |
 | Expo / EAS | Build and over-the-air updates | US | UK Addendum. Also a supply chain risk. See §9. |
 | Email provider (Resend, Postmark, similar) | Invites, reports, notifications | Check region | UK Addendum |
 
-**Choose the London Supabase region at project creation.** You cannot change it later
-without a migration, and "our data stays in the UK" removes an entire conversation with
-every club. `[high]`
+**The data is held in Ireland (eu-west-1), and that is the decision — 2026-09-12, Isabella.**
+The basis for saying so to a club is the UK's adequacy regulations for the EEA: personal
+data may be transferred to and held in the EEA without further safeguards, so "your data
+is held in the EU, under UK adequacy" is the accurate sentence. **Do not say "your data
+stays in the UK"** — it does not, and the earlier draft of this section said it would. The
+London move was costed while the data was still synthetic (to-do §0e) and decided against;
+Vercel's functions sit beside the database in Dublin for the same reason (row above). What
+still applies from the US-incorporated vendor: an International Data Transfer Addendum for
+Supabase's support access, unchanged by the region.
 
-> **This was not done, and was not noticed until 2026-09-07.** Both existing projects are in
-> eu-west-1 (Ireland). The advice above stands for any project created from here; for the
-> existing one it is a migration, and the reasoning about removing a conversation with every
-> club is exactly what makes it worth doing while the data is still synthetic. O-15 in
-> `05-architecture.md` records how the assumption became four statements of fact.
+> **History, kept because the assumption became four statements of fact.** London was
+> assumed at project creation and never chosen; found 2026-09-07, both projects in eu-west-1.
+> O-15 in `05-architecture.md` records how. The paragraph above replaces the earlier advice
+> to choose London, which no longer describes a decision anyone intends to take.
 
 ---
 
@@ -1907,8 +1912,8 @@ and none of it takes longer than a day.
 
 ### Infrastructure
 
-- [ ] Supabase project in the **London** region — **NOT met: it is in eu-west-1 (Ireland)**, found 2026-09-07
-- [x] Vercel functions in an EU or UK region — **met 2026-09-11 16:46 BST: `dub1` (Dublin)**, measured on the live deployment. Before that they ran in `iad1` (US) by default, unrecorded; the sub-processor row above carries the correction. Re-check after any project-settings change: `x-vercel-id` on a function response must show `dub1`. **If the database ever moves to London, the function region moves to `lhr1` in the same change** — adjacency to the database is the point, not Dublin.
+- [x] Supabase project region — **eu-west-1 (Ireland), decided 2026-09-12 to stay there**; the London requirement is withdrawn. The claim to clubs is EEA under UK adequacy, never "in the UK".
+- [x] Vercel functions in an EU or UK region — **met 2026-09-11 16:46 BST: `dub1` (Dublin)**, measured on the live deployment. Before that they ran in `iad1` (US) by default, unrecorded; the sub-processor row above carries the correction. Re-check after any project-settings change: `x-vercel-id` on a function response must show `dub1`. The database stays in Ireland (decided 2026-09-12), so `dub1` is the settled region; the standing rule if that were ever revisited is that the function region moves with the database — adjacency is the point, not Dublin.
 - [ ] Point-in-time recovery enabled
 - [ ] Independent weekly encrypted dump to a different provider and account, alerting on failure
 - [ ] Storage bucket backup decided and documented

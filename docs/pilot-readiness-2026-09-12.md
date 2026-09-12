@@ -12,13 +12,13 @@ Data loss, wrong data shown, security, or something a club would see go wrong in
 
 | # | Item | Needs |
 |---|---|---|
-| 1 | **§0a L318 / §2 L1981 — Supabase is on the Free tier: no automated backups, no point-in-time recovery.** First real athlete's data has no restore path. | **You** — upgrade to Pro before the first real account; nothing to build. |
+| 1 | **§0a L318 / §2 L1981 — Supabase is on the Free tier: no automated backups, no point-in-time recovery.** First real athlete's data has no restore path. | **You** — decided 2026-09-12: gated on signing the pilot club; hard gate before the first real account. |
 | 2 | **§0al L1289 — a network failure at schedule publish wipes every pending change in the week and the "Not published" line with it.** A coach on club wifi loses the week they just built. | **Build** (high priority, decided: sessionStorage persistence, never `router.refresh()` after a failure). |
 | 3 | **§0aa L1128 — a gym set queued offline is silently discarded if its slot was filled by a different value.** An athlete's set disappears with "sent" showing. | **Build.** |
 | 4 | **§0u L995 / L1005 — "Sessions logged" in two staff reports counts gym sessions that were only opened, never logged.** Wrong numbers on the squad weekly report from day one. | **Build** (decided: a session counts once it has one live set). |
-| 5 | **§0ad L1176 — the compliance report counts an RPE as submitted however late it arrives; no due-by exists.** The compliance percentage a club reads in week one is inflated by anything back-filled. | **Both** — the cutoff is yours (the §0ad options are written up); then build. |
-| 6 | **§0e L92 — tell the medical staff that `mechanism` is athlete-visible.** A medic who writes a mechanism note thinking it is private is the first-week incident this list exists to prevent. | **You** — one sentence in the club's onboarding; not code. |
-| 7 | **§4 L1991 / L1992 / §5 L1998 — special-category (medical) data obligations confirmed, a DPA template, and legal review before the first pilot club.** Real athletes' injury records without a signed DPA is the exposure, not a bug. | **You / legal.** |
+| 5 | **§0ad L1176 — the compliance report counts an RPE as submitted however late it arrives; no due-by exists.** The compliance percentage a club reads in week one is inflated by anything back-filled. | **Build** — decided 2026-09-12: submitted only if it arrives before the rating closes (`rpeClosesAt`, end of the following club-local day); later is missed. |
+| 6 | **§0e L92 — tell the medical staff that `mechanism` is athlete-visible.** A medic who writes a mechanism note thinking it is private is the first-week incident this list exists to prevent. | **You** — confirmed 2026-09-12: you have the sentence and deliver it. |
+| 7 | **§4 L1991 / L1992 / §5 L1998 — special-category (medical) data obligations confirmed, a DPA template, and legal review before the first pilot club.** Real athletes' injury records without a signed DPA is the exposure, not a bug. | **You / legal** — 2026-09-12: solicitor quote being obtained. |
 | 8 | **§0ai L1255 — a session can be created with no type, no groups, no location (and §0ah L1242, no duration).** A session with no group has no expected attendance, so compliance silently excludes it; a null duration makes its RPE due at once. | **Build** (refuse type and groups at least; duration per §0ah). |
 
 Not in group 1, and why: §0aq (the sign-in timing floor) is security, but the production measurement shows the real and unknown paths matching — it is a latent weakening, not an exposure; it sits in group 2. §0ae part 2 is closed by 0102 on production (box closed today). §0e L185 (49 of 59 tables unaudited) is posture, not a week-one failure; group 3, with the sessions slice in group 2.
@@ -46,7 +46,7 @@ Visible and embarrassing; no harm.
 - **§0as** (filed today) — the GPS import page says re-uploading duplicates rows; it has replaced them since 0064/0072. Copy only.
 - **§0aq L1339** — failed sign-ins from Dublin take 1.1–1.6 s, above the 800 ms floor; profile and decide whether to raise `FAILED_SIGN_IN_MIN_MS`.
 - **§0e L181** — "some pages, including a forgot-password page, show the wrong logo": `/login/reset` measured correct on production; needs you to say where you saw it before anyone can fix it.
-- **§0e L244–251** — move production to London. Not a defect; the last cheap moment is before a real club's data is in it, and "your data stays in the UK" is a conversation the compliance doc says you would rather not have. Decision.
+- ~~**§0e L244–251** — move production to London.~~ **Decided against 2026-09-12:** production stays in eu-west-1; the compliance doc now states Ireland and the EEA-adequacy basis and withdraws the "stays in the UK" claim.
 - **§0b L713** — a saved group-filter cookie naming a deleted group: behaviour unverified (decided target: fall back to everyone). A club renames or deletes a group in week one.
 - **§0b L723** — the analytics screen's stricter readiness needs its own label ("Complete-day readiness"); not found in the code.
 - **§0b L728** — the New week template screen's gate reads "coach or medical", not "coach or sport scientist"; a medic can get in. Unverified today; a role-gate item, so yours to confirm before it is scheduled.

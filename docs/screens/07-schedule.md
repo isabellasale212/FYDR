@@ -125,6 +125,13 @@ athletes, at the top of this page, puts it on their phones."* — because that
 control is genuinely far away: measured on 2026-09-09 with the panel at y=700,
 the banner sat at y=-1782.
 
+**"Yes, remove" says what will happen.** On a committed session the confirmation
+reads *"Remove this session? You can undo with Discard, until you publish."* — true,
+because the ghost and Restore exist until the week is published. On a staged draft
+it reads *"Remove this draft? It was never published, so there is nothing to
+undo."* — a draft vanishes on removal (the same act as Discard), so the undo promise
+is only made where it holds (§0aj, 12 September 2026).
+
 **A removal has its own undo too.** Removing a session no longer clears the
 selection, so the panel stays on it and shows a compact removed state: the
 session's name and time, the line *"Removed on your screen. Athletes still see

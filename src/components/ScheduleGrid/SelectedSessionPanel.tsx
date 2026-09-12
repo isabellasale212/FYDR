@@ -548,8 +548,16 @@ export function SelectedSessionPanel({
               </>
             ) : confirmingRemove ? (
               <>
+                {/* §0aj (2026-09-12): the promise is only made where it is
+                    true. A committed session leaves a ghost with Restore
+                    until the week is published — Discard undoes it. A staged
+                    draft was never published and vanishes on removal (the
+                    "same act as Discard" SS-10 records); telling the coach
+                    they could undo it was empty for exactly that case. */}
                 <span className="tiny" style={{ color: 'var(--bad-text)' }}>
-                  Remove this session? You can undo with Discard, until you publish.
+                  {isDraft
+                    ? 'Remove this draft? It was never published, so there is nothing to undo.'
+                    : 'Remove this session? You can undo with Discard, until you publish.'}
                 </span>
                 <button
                   type="button"

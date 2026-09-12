@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/fonts.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/icons.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/colors.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/typography.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/spacing.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/shape.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/motion.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/base.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/styles.css" />
+<script src="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/_ds_bundle.js"></script>
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-core); color: var(--text); }
+  a { color: var(--accent); text-decoration: none; pointer-events: none; }
+  a:hover { color: var(--blue-600); }
+  * { transition: none !important; animation: none !important; }
+</style>
+</helmet>
+<div style="padding: 40px; background: var(--bg); box-sizing: border-box">
+
+  <div style="max-width: 1520px; margin: 0 auto 34px; display: flex; flex-direction: column; gap: 8px">
+    <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">STAFF-SS-02-05 &middot; FINAL &middot; review board &middot; static</p>
+    <p style="margin: 0; font-size: var(--t-hero); font-weight: var(--w-black); letter-spacing: var(--t-hero-tracking); line-height: var(--lh-hero); color: var(--text)">The squad list, and the athlete profile in the version each role sees</p>
+    <p style="margin: 0; max-width: 68ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Twelve artboards &mdash; seven at 1440 &times; 900 and five at 375 &times; 812. Nothing is clickable and no hovers or transitions are active. Same club-local instant as the dashboard board: Mon 7 Sept 2026, 07:40 Europe/London, match Sat 12 Sept v Colthorne RFC, squad of 30. The desktop profile is taller than 900px by design, so each desktop frame is the true first screen and the caption under it names the panels that continue below the fold. The phone profile is not: every panel is one tap from the top.</p>
+  </div>
+
+  <div style="max-width: 1520px; margin: 0 auto 44px; display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 420px)); gap: var(--gap-card)">
+    <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--on-tint-label); text-transform: uppercase">The phone decision</p>
+      <p style="margin: 0; font-size: var(--t-card); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">Status at the top, then a jump bar. No panel is more than one tap away</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">The 5,828px seven-screen scroll is replaced by a 132px status header and a sticky 52px jump bar that names the panel you are in and its place in the role's order, with All panels beside it. Tapping it opens the full list &mdash; every panel, 44px a row, with a value beside each name. Nothing slides sideways and no panel name sits off the right edge. Availability moves from y = 2706 to one tap; entries and corrections from y = 5102 to one tap. The panels themselves are unchanged &mdash; the same cards as desktop, one column wide.</p>
+    </div>
+    <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">Withheld is not read-only</p>
+      <p style="margin: 0; font-size: var(--t-card); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Read-only says who can change it. Withheld leaves no trace at all</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">A panel a role can see but not edit keeps its full content and closes with a line naming the owner &mdash; &ldquo;Set by medical staff&rdquo;, &ldquo;Edited by the sport scientist&rdquo;. Nothing is greyed. A panel a role cannot see is not rendered: no heading, no placeholder, no lock, no &ldquo;hidden&rdquo; row, and no count that would only make sense if a diagnosis existed.</p>
+    </div>
+    <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">One word for no status</p>
+      <p style="margin: 0; font-size: var(--t-card); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">&ldquo;Not recorded&rdquo; everywhere. &ldquo;Not set&rdquo; is retired</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">The squad list said &ldquo;Not set&rdquo; and the dashboard said &ldquo;not recorded&rdquo; for the same absence. The dashboard's word wins, because it is the one already used in a sentence &mdash; &ldquo;27 of 30 have a status &middot; 3 not recorded&rdquo; &mdash; and because an athlete's availability is a record, not a setting. It is a neutral pill, never a tone.</p>
+    </div>
+  </div>
+
+  <sc-for list="{{ desktops }}" as="f" hint-placeholder-count="7">
+    <div style="max-width: 1520px; margin: 0 auto 44px; display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">{{ f.label }} <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">&middot; 1440 &times; 900</span></p>
+
+      <div id="{{ f.id }}" style="position: relative; width: 1440px; height: 900px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; display: flex">
+
+        <div style="flex: 0 0 214px; width: 214px; background: var(--surf); border-right: 1px solid var(--border); display: flex; flex-direction: column">
+          <div style="padding: 20px 22px 14px; display: flex; align-items: baseline; justify-content: space-between">
+            <span style="font-family: var(--font-brand); font-size: var(--t-subhead); font-weight: var(--w-black); letter-spacing: -0.03em; color: var(--text)">Fydr.</span>
+            <span aria-hidden="true" style="font-size: var(--t-body-sm); color: var(--faint)">&#171;</span>
+          </div>
+          <nav style="display: flex; flex-direction: column">
+            <sc-for list="{{ f.nav }}" as="n" hint-placeholder-count="9">
+              <div style="{{ n.rowStyle }}">
+                <i class="{{ n.iconClass }}" style="{{ n.iconStyle }}"></i>
+                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ n.label }}</span>
+              </div>
+            </sc-for>
+          </nav>
+          <div style="margin-top: auto; padding: 14px 22px 20px; border-top: 1px solid var(--hair); display: flex; flex-direction: column; gap: 10px">
+            <p style="margin: 0; font-size: var(--t-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--faint)">{{ f.signedIn }}</p>
+            <div style="display: flex; align-items: center; gap: 10px; font-size: var(--t-body); font-weight: var(--w-semi); color: var(--text)">
+              <i class="ph-fill ph-sign-out" style="font-size: 20px; line-height: 1; color: var(--muted)"></i>
+              <span>Log out</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+          <div style="flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: var(--pad-bar); background: var(--bar-bg); border-bottom: 1px solid var(--border)">
+            <div style="display: flex; align-items: center; gap: var(--gap-chip)">
+              <sc-for list="{{ f.chips }}" as="c" hint-placeholder-count="5">
+                <span style="{{ c.style }}">{{ c.label }}</span>
+              </sc-for>
+            </div>
+            <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-num-meta); font-weight: var(--w-num); font-variant-numeric: tabular-nums; color: var(--muted)">{{ f.countLine }}</p>
+          </div>
+
+          <div style="flex: 1 1 auto; min-height: 0; padding: 16px 32px 0; box-sizing: border-box; display: flex; flex-direction: column; gap: var(--gap-tile); overflow: hidden">
+
+            <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px">
+              <div>
+                <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Eyebrow" hint-size="auto,16px">{{ f.eyebrow }}</x-import>
+                <p style="margin: 4px 0 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">{{ f.title }}</p>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--gap-chip)">
+                <sc-for list="{{ f.headActions }}" as="a" hint-placeholder-count="2">
+                  <span style="{{ a.style }}">{{ a.label }}</span>
+                </sc-for>
+              </div>
+            </div>
+
+            <sc-if value="{{ f.isList }}" hint-placeholder-val="{{ false }}">
+              <p style="margin: 0; max-width: 100ch; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ f.listIntro }}</p>
+              <div style="display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px; box-sizing: border-box; background: var(--field); border: 1px solid var(--border); border-radius: var(--r)">
+                <i class="ph ph-magnifying-glass" style="font-size: 16px; line-height: 1; color: var(--faint)"></i>
+                <span style="font-size: var(--t-body-sm); font-weight: var(--w-regular); color: var(--faint)">Name or position</span>
+              </div>
+              <div style="flex: 1 1 auto; min-height: 0; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r) var(--r) 0 0; box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column">
+                <div style="display: grid; grid-template-columns: 46px minmax(0, 220px) minmax(0, 150px) 150px minmax(0, 1fr); gap: 12px; padding: 9px 18px; border-bottom: 1px solid var(--border)">
+                  <sc-for list="{{ f.cols }}" as="h" hint-placeholder-count="5">
+                    <span style="font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--muted)">{{ h }}</span>
+                  </sc-for>
+                </div>
+                <sc-for list="{{ f.rows }}" as="r" hint-placeholder-count="18">
+                  <div style="{{ r.rowStyle }}">
+                    <span style="font-family: var(--font-num); font-size: var(--t-num-cell-sm); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">{{ r.no }}</span>
+                    <span style="font-size: var(--t-num-body); font-weight: var(--w-bold); color: var(--accent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ r.name }}</span>
+                    <span style="font-size: var(--t-body-sm); font-weight: var(--w-regular); color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ r.position }}</span>
+                    <span style="{{ r.pillStyle }}">{{ r.status }}</span>
+                    <span style="{{ r.restStyle }}">{{ r.rest }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ f.isProfile }}" hint-placeholder-val="{{ true }}">
+              <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px 18px; display: flex; flex-direction: column; gap: 12px">
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 24px">
+                  <div style="display: flex; align-items: flex-start; gap: 14px; min-width: 0">
+                    <span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: var(--r-round); background: var(--accent); font-size: var(--t-body); font-weight: var(--w-bold); color: #fff">{{ f.hero.initials }}</span>
+                    <div style="min-width: 0; display: flex; flex-direction: column; gap: 4px">
+                      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+                        <p style="margin: 0; font-size: var(--t-subhead); font-weight: var(--w-black); letter-spacing: -0.02em; line-height: var(--lh-tight); color: var(--on-tint-value)">{{ f.hero.name }}</p>
+                        <span style="{{ f.hero.pillStyle }}">{{ f.hero.status }}</span>
+                      </div>
+                      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-semi); line-height: var(--lh-base); color: var(--on-tint-label)">{{ f.hero.sub }}</p>
+                      <p style="{{ f.hero.restStyle }}">{{ f.hero.rest }}</p>
+                      <p style="{{ f.hero.ownerStyle }}">{{ f.hero.owner }}</p>
+                    </div>
+                  </div>
+                  <div style="flex: none; display: flex; align-items: center; gap: var(--gap-chip)">
+                    <sc-for list="{{ f.hero.actions }}" as="a" hint-placeholder-count="4">
+                      <span style="{{ a.style }}">{{ a.label }}</span>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; border-top: 1px solid var(--blue-200); padding-top: 10px">
+                  <div style="display: flex; gap: 30px">
+                    <sc-for list="{{ f.hero.bio }}" as="b" hint-placeholder-count="6">
+                      <div>
+                        <p style="margin: 0; font-size: var(--t-caption); font-weight: var(--w-semi); color: var(--on-tint-label)">{{ b.label }}</p>
+                        <p style="margin: 2px 0 0; font-family: var(--font-num); font-size: var(--t-num-body); font-weight: var(--w-num-strong); font-variant-numeric: tabular-nums; line-height: var(--lh-num); color: var(--on-tint-value)">{{ b.value }}</p>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--on-tint-meta)">{{ f.hero.plan }}</p>
+                </div>
+              </div>
+
+              <div style="flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--gap-card); align-content: start; overflow: hidden">
+                <sc-for list="{{ f.columns }}" as="col" hint-placeholder-count="2">
+                  <div style="min-width: 0; display: flex; flex-direction: column; gap: var(--gap-card)">
+                    <sc-for list="{{ col.panels }}" as="pan" hint-placeholder-count="3">
+                      <div style="{{ pan.wrapStyle }}">
+                        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 14px">
+                          <div style="min-width: 0">
+                            <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ pan.title }}</p>
+                            <p style="{{ pan.metaStyle }}">{{ pan.meta }}</p>
+                          </div>
+                          <span style="{{ pan.actionStyle }}">{{ pan.action }}</span>
+                        </div>
+                        <sc-for list="{{ pan.rows }}" as="r" hint-placeholder-count="2">
+                          <div style="{{ r.slotStyle }}">
+
+                            <sc-if value="{{ r.isText }}" hint-placeholder-val="{{ false }}">
+                              <p style="{{ r.textStyle }}">{{ r.t }}</p>
+                            </sc-if>
+
+                            <sc-if value="{{ r.isDial }}" hint-placeholder-val="{{ false }}">
+                              <div style="display: flex; align-items: center; gap: 14px">
+                                <div style="flex: none; position: relative; width: 76px; height: 76px">
+                                  <svg viewBox="0 0 76 76" style="width: 76px; height: 76px; display: block">
+                                    <circle cx="38" cy="38" r="32" fill="none" stroke="var(--track-off)" stroke-width="7"></circle>
+                                    <circle cx="38" cy="38" r="32" fill="none" stroke="var(--accent2)" stroke-width="7" stroke-linecap="butt" stroke-dasharray="{{ r.dash }}" transform="rotate(-90 38 38)"></circle>
+                                  </svg>
+                                  <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center">
+                                    <span style="font-family: var(--font-num); font-size: var(--t-num-stat-sm); font-weight: var(--w-num-strong); font-variant-numeric: tabular-nums; line-height: var(--lh-num); color: var(--text)">{{ r.value }}</span>
+                                    <span style="font-size: 9px; font-weight: var(--w-semi); color: var(--faint)">{{ r.unit }}</span>
+                                  </div>
+                                </div>
+                                <div style="min-width: 0">
+                                  <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--accent)">{{ r.band }}</p>
+                                  <p style="margin: 3px 0 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ r.t }}</p>
+                                </div>
+                              </div>
+                            </sc-if>
+
+                            <sc-if value="{{ r.isBars }}" hint-placeholder-val="{{ false }}">
+                              <div style="display: flex; flex-direction: column; gap: 6px">
+                                <sc-for list="{{ r.items }}" as="b" hint-placeholder-count="4">
+                                  <div style="{{ b.wrapStyle }}">
+                                    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+                                      <span style="font-size: var(--t-body-xs); font-weight: var(--w-bold); color: var(--text)">{{ b.label }}</span>
+                                      <span style="font-family: var(--font-num); font-size: var(--t-num-cell); font-weight: var(--w-num-strong); font-variant-numeric: tabular-nums; color: var(--text)">{{ b.value }}</span>
+                                    </div>
+                                    <div style="margin-top: 5px; height: 4px; border-radius: var(--r); background: var(--track-off); overflow: hidden">
+                                      <div style="{{ b.fillStyle }}"></div>
+                                    </div>
+                                    <div style="margin-top: 4px; display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+                                      <span style="{{ b.pctStyle }}">{{ b.pct }}</span>
+                                      <span style="font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">{{ b.sub }}</span>
+                                    </div>
+                                    <p style="{{ b.lowerStyle }}">{{ b.lower }}</p>
+                                  </div>
+                                </sc-for>
+                              </div>
+                            </sc-if>
+
+                            <sc-if value="{{ r.isFlags }}" hint-placeholder-val="{{ false }}">
+                              <div style="display: flex; flex-direction: column; gap: 8px">
+                                <sc-for list="{{ r.items }}" as="g" hint-placeholder-count="2">
+                                  <div style="border: 1px solid var(--border); border-radius: var(--r); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; box-shadow: inset 3px 0 0 var(--warn)">
+                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap">
+                                      <span style="display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: var(--r); background: var(--surf2); border: 1px solid var(--border); font-size: var(--t-pill); font-weight: var(--w-semi); color: var(--muted)">{{ g.kind }}</span>
+                                      <span style="display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: var(--r); background: var(--pill-warn); border: 1px solid var(--warn); font-size: var(--t-pill); font-weight: var(--w-semi); color: var(--on-warn)">{{ g.state }}</span>
+                                      <span style="font-family: var(--font-num); font-size: var(--t-num-cell-sm); font-weight: var(--w-num-strong); font-variant-numeric: tabular-nums; color: var(--text)">{{ g.stat }}</span>
+                                      <span style="font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--muted)">{{ g.expected }}</span>
+                                    </div>
+                                    <p style="margin: 0; font-size: var(--t-body-xs); font-weight: var(--w-semi); line-height: var(--lh-base); color: var(--text); text-wrap: pretty">{{ g.rule }}</p>
+                                    <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); line-height: var(--lh-base); font-variant-numeric: tabular-nums; color: var(--faint)">{{ g.evidence }}</p>
+                                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px">
+                                      <span style="font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">{{ g.raised }}</span>
+                                      <span style="{{ g.actionsStyle }}">
+                                        <span style="display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: var(--r); background: var(--accent); box-shadow: var(--ring-action); font-size: var(--t-body-xs); font-weight: var(--w-semi); color: #fff">Acknowledge</span>
+                                        <span style="display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: var(--r); border: 1px solid var(--accent); font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--accent)">Add note</span>
+                                      </span>
+                                    </div>
+                                  </div>
+                                </sc-for>
+                              </div>
+                            </sc-if>
+
+                            <sc-if value="{{ r.isStat }}" hint-placeholder-val="{{ false }}">
+                              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px">
+                                <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-num-stat); font-weight: var(--w-num-strong); line-height: var(--lh-num); font-variant-numeric: tabular-nums; color: var(--text)">{{ r.value }}<span style="font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-num); color: var(--muted)"> {{ r.unit }}</span></p>
+                                <p style="{{ r.deltaStyle }}">{{ r.delta }}</p>
+                              </div>
+                            </sc-if>
+
+                            <sc-if value="{{ r.isTiles }}" hint-placeholder-val="{{ false }}">
+                              <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gap-chip)">
+                                <sc-for list="{{ r.items }}" as="t" hint-placeholder-count="4">
+                                  <div style="background: var(--surf2); border: 1px solid var(--border); border-radius: var(--r); padding: 8px 6px; text-align: center">
+                                    <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-num-row); font-weight: var(--w-num-strong); line-height: var(--lh-num); font-variant-numeric: tabular-nums; color: var(--text)">{{ t.n }}</p>
+                                    <p style="margin: 2px 0 0; font-size: var(--t-caption); font-weight: var(--w-semi); color: var(--muted)">{{ t.label }}</p>
+                                  </div>
+                                </sc-for>
+                              </div>
+                            </sc-if>
+
+                            <sc-if value="{{ r.isChart }}" hint-placeholder-val="{{ false }}">
+                              <div>
+                                <div style="height: 56px; border: 1px solid var(--border); border-radius: var(--r); background: repeating-linear-gradient(135deg, #f3f5f8 0 10px, #eaedf1 10px 20px)"></div>
+                                <p style="margin: 5px 0 0; font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">{{ r.t }}</p>
+                              </div>
+                            </sc-if>
+
+                            <sc-if value="{{ r.isTable }}" hint-placeholder-val="{{ false }}">
+                              <div>
+                                <p style="{{ r.capStyle }}">{{ r.cap }}</p>
+                                <div style="{{ r.headStyle }}">
+                                  <sc-for list="{{ r.cols }}" as="h" hint-placeholder-count="5">
+                                    <span style="font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--muted)">{{ h }}</span>
+                                  </sc-for>
+                                </div>
+                                <sc-for list="{{ r.items }}" as="tr" hint-placeholder-count="3">
+                                  <div style="{{ tr.rowStyle }}">
+                                    <sc-for list="{{ tr.cells }}" as="c" hint-placeholder-count="5">
+                                      <span style="{{ c.style }}">{{ c.v }}</span>
+                                    </sc-for>
+                                  </div>
+                                </sc-for>
+                              </div>
+                            </sc-if>
+
+                            <sc-if value="{{ r.isPills }}" hint-placeholder-val="{{ false }}">
+                              <div>
+                                <p style="{{ r.capStyle }}">{{ r.cap }}</p>
+                                <div style="display: flex; gap: var(--gap-chip)">
+                                  <sc-for list="{{ r.items }}" as="o" hint-placeholder-count="3">
+                                    <span style="{{ o.style }}">{{ o.label }}</span>
+                                  </sc-for>
+                                </div>
+                              </div>
+                            </sc-if>
+
+                            <sc-if value="{{ r.isField }}" hint-placeholder-val="{{ false }}">
+                              <div>
+                                <p style="margin: 0 0 4px; font-size: var(--t-caption); font-weight: var(--w-semi); color: var(--muted)">{{ r.label }}</p>
+                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 36px; padding: 0 10px; box-sizing: border-box; background: var(--field); border: 1px solid var(--border); border-radius: var(--r)">
+                                  <span style="font-size: var(--t-body-sm); font-weight: var(--w-regular); color: var(--text)">{{ r.value }}</span>
+                                  <span aria-hidden="true" style="font-size: 10px; color: var(--faint)">&#9662;</span>
+                                </div>
+                                <p style="{{ r.helpStyle }}">{{ r.help }}</p>
+                              </div>
+                            </sc-if>
+
+                            <sc-if value="{{ r.isButtons }}" hint-placeholder-val="{{ false }}">
+                              <div style="display: flex; flex-wrap: wrap; gap: var(--gap-chip)">
+                                <sc-for list="{{ r.items }}" as="b" hint-placeholder-count="2">
+                                  <span style="{{ b.style }}">{{ b.label }}</span>
+                                </sc-for>
+                              </div>
+                            </sc-if>
+
+                            <sc-if value="{{ r.isEmpty }}" hint-placeholder-val="{{ false }}">
+                              <div style="border: 1px dashed var(--line-dashed); border-radius: var(--r); padding: 14px; text-align: center">
+                                <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">{{ r.t }}</p>
+                                <p style="margin: 4px 0 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ r.sub }}</p>
+                              </div>
+                            </sc-if>
+
+                            <sc-if value="{{ r.isOwner }}" hint-placeholder-val="{{ false }}">
+                              <div style="background: var(--surf2); border: 1px solid var(--border); border-radius: var(--r); padding: 8px 10px">
+                                <p style="margin: 0; font-size: var(--t-caption); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--muted)">{{ r.t }}</p>
+                                <p style="margin: 3px 0 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ r.sub }}</p>
+                              </div>
+                            </sc-if>
+
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+          </div>
+        </div>
+      </div>
+
+      <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; max-width: 1000px">
+        <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ f.note.title }}</p>
+        <p style="margin: 4px 0 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ f.note.body }}</p>
+        <p style="{{ f.note.orderStyle }}">{{ f.note.order }}</p>
+      </div>
+    </div>
+  </sc-for>
+
+  <div style="max-width: 1520px; margin: 0 auto 44px; display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start">
+    <sc-for list="{{ phones }}" as="p" hint-placeholder-count="4">
+      <div style="display: flex; flex-direction: column; gap: 10px; width: 375px">
+        <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">{{ p.label }} <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">&middot; 375 &times; 812</span></p>
+
+        <div id="{{ p.id }}" style="position: relative; width: 375px; height: 812px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; display: flex; flex-direction: column">
+
+          <div style="flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 64px; padding: 0 16px; box-sizing: border-box; background: var(--bar-bg); border-bottom: 1px solid var(--border)">
+            <div style="min-width: 0">
+              <p style="margin: 0; font-size: var(--t-card-lg); font-weight: var(--w-black); letter-spacing: -0.02em; line-height: var(--lh-tight); color: var(--text)">{{ p.title }}</p>
+              <p style="margin: 1px 0 0; font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--muted)">{{ p.sub }}</p>
+            </div>
+            <span style="display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 12px; border-radius: var(--r); background: var(--wash-accent); border: 1px solid var(--accent); font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--accent); white-space: nowrap">{{ p.chip }}</span>
+          </div>
+
+          <div style="flex: 1 1 auto; min-height: 0; position: relative; overflow: hidden">
+            <div style="position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden">
+
+              <sc-if value="{{ p.isProfile }}" hint-placeholder-val="{{ true }}">
+                <div style="flex: none; background: var(--blue-100); border-bottom: 1px solid var(--blue-200); padding: 12px 16px; display: flex; flex-direction: column; gap: 6px">
+                  <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+                    <p style="margin: 0; font-size: var(--t-card); font-weight: var(--w-black); letter-spacing: -0.02em; line-height: var(--lh-tight); color: var(--on-tint-value)">{{ p.hero.name }}</p>
+                    <span style="{{ p.hero.pillStyle }}">{{ p.hero.status }}</span>
+                  </div>
+                  <p style="margin: 0; font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--on-tint-label)">{{ p.hero.sub }}</p>
+                  <p style="{{ p.hero.restStyle }}">{{ p.hero.rest }}</p>
+                  <p style="{{ p.hero.ownerStyle }}">{{ p.hero.owner }}</p>
+                </div>
+                <div style="flex: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 52px; padding: 0 16px; box-sizing: border-box; background: var(--bar-bg); border-bottom: 1px solid var(--border)">
+                  <div style="min-width: 0">
+                    <p style="margin: 0; font-size: var(--t-body); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ p.jump.current }}</p>
+                    <p style="margin: 1px 0 0; font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--muted)">{{ p.jump.position }}</p>
+                  </div>
+                  <span style="flex: none; display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 14px; border-radius: var(--r); border: 1px solid var(--accent); font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--accent); white-space: nowrap">All panels <span aria-hidden="true" style="font-size: 10px">&#9662;</span></span>
+                </div>
+              </sc-if>
+
+              <div style="flex: 1 1 auto; min-height: 0; padding: 14px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: var(--gap-tile); overflow: hidden">
+
+                <sc-if value="{{ p.isList }}" hint-placeholder-val="{{ false }}">
+                  <div style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; box-sizing: border-box; background: var(--field); border: 1px solid var(--border); border-radius: var(--r)">
+                    <i class="ph ph-magnifying-glass" style="font-size: 16px; line-height: 1; color: var(--faint)"></i>
+                    <span style="font-size: var(--t-body-sm); font-weight: var(--w-regular); color: var(--faint)">Name or position</span>
+                  </div>
+                  <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden">
+                    <sc-for list="{{ p.rows }}" as="r" hint-placeholder-count="7">
+                      <div style="{{ r.rowStyle }}">
+                        <div style="flex: 1 1 auto; min-width: 0">
+                          <p style="margin: 0; font-size: var(--t-num-row); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--accent)">{{ r.name }}</p>
+                          <p style="margin: 2px 0 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); color: var(--muted)">{{ r.position }}</p>
+                          <p style="{{ r.restStyle }}">{{ r.rest }}</p>
+                        </div>
+                        <span style="{{ r.pillStyle }}">{{ r.status }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-for list="{{ p.panels }}" as="pan" hint-placeholder-count="3">
+                  <div style="{{ pan.wrapStyle }}">
+                    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 14px">
+                      <div style="min-width: 0">
+                        <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ pan.title }}</p>
+                        <p style="{{ pan.metaStyle }}">{{ pan.meta }}</p>
+                      </div>
+                      <span style="{{ pan.actionStyle }}">{{ pan.action }}</span>
+                    </div>
+                    <sc-for list="{{ pan.rows }}" as="r" hint-placeholder-count="2">
+                      <div style="{{ r.slotStyle }}">
+
+                        <sc-if value="{{ r.isText }}" hint-placeholder-val="{{ false }}">
+                          <p style="{{ r.textStyle }}">{{ r.t }}</p>
+                        </sc-if>
+
+                        <sc-if value="{{ r.isStat }}" hint-placeholder-val="{{ false }}">
+                          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px">
+                            <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-num-stat); font-weight: var(--w-num-strong); line-height: var(--lh-num); font-variant-numeric: tabular-nums; color: var(--text)">{{ r.value }}<span style="font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-num); color: var(--muted)"> {{ r.unit }}</span></p>
+                            <p style="{{ r.deltaStyle }}">{{ r.delta }}</p>
+                          </div>
+                        </sc-if>
+
+                        <sc-if value="{{ r.isFlags }}" hint-placeholder-val="{{ false }}">
+                          <div style="display: flex; flex-direction: column; gap: 8px">
+                            <sc-for list="{{ r.items }}" as="g" hint-placeholder-count="2">
+                              <div style="border: 1px solid var(--border); border-radius: var(--r); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; box-shadow: inset 3px 0 0 var(--warn)">
+                                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap">
+                                  <span style="display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: var(--r); background: var(--surf2); border: 1px solid var(--border); font-size: var(--t-pill); font-weight: var(--w-semi); color: var(--muted)">{{ g.kind }}</span>
+                                  <span style="display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: var(--r); background: var(--pill-warn); border: 1px solid var(--warn); font-size: var(--t-pill); font-weight: var(--w-semi); color: var(--on-warn)">{{ g.state }}</span>
+                                  <span style="font-family: var(--font-num); font-size: var(--t-num-cell-sm); font-weight: var(--w-num-strong); font-variant-numeric: tabular-nums; color: var(--text)">{{ g.stat }}</span>
+                                </div>
+                                <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--muted)">{{ g.expected }}</p>
+                                <p style="margin: 0; font-size: var(--t-body-xs); font-weight: var(--w-semi); line-height: var(--lh-base); color: var(--text); text-wrap: pretty">{{ g.rule }}</p>
+                                <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); line-height: var(--lh-base); font-variant-numeric: tabular-nums; color: var(--faint); text-wrap: pretty">{{ g.evidence }}</p>
+                                <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">{{ g.raised }}</p>
+                                <div style="{{ g.actionsStyle }}">
+                                  <span style="display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 14px; border-radius: var(--r); background: var(--accent); box-shadow: var(--ring-action); font-size: var(--t-body-xs); font-weight: var(--w-semi); color: #fff">Acknowledge</span>
+                                  <span style="display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 14px; border-radius: var(--r); border: 1px solid var(--accent); font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--accent)">Add note</span>
+                                </div>
+                              </div>
+                            </sc-for>
+                          </div>
+                        </sc-if>
+
+                        <sc-if value="{{ r.isDial }}" hint-placeholder-val="{{ false }}">
+                          <div style="display: flex; align-items: center; gap: 14px">
+                            <div style="flex: none; position: relative; width: 76px; height: 76px">
+                              <svg viewBox="0 0 76 76" style="width: 76px; height: 76px; display: block">
+                                <circle cx="38" cy="38" r="32" fill="none" stroke="var(--track-off)" stroke-width="7"></circle>
+                                <circle cx="38" cy="38" r="32" fill="none" stroke="var(--accent2)" stroke-width="7" stroke-linecap="butt" stroke-dasharray="{{ r.dash }}" transform="rotate(-90 38 38)"></circle>
+                              </svg>
+                              <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center">
+                                <span style="font-family: var(--font-num); font-size: var(--t-num-stat-sm); font-weight: var(--w-num-strong); font-variant-numeric: tabular-nums; line-height: var(--lh-num); color: var(--text)">{{ r.value }}</span>
+                                <span style="font-size: 9px; font-weight: var(--w-semi); color: var(--faint)">{{ r.unit }}</span>
+                              </div>
+                            </div>
+                            <div style="min-width: 0">
+                              <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--accent)">{{ r.band }}</p>
+                              <p style="margin: 3px 0 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ r.t }}</p>
+                            </div>
+                          </div>
+                        </sc-if>
+
+                        <sc-if value="{{ r.isBars }}" hint-placeholder-val="{{ false }}">
+                          <div style="display: flex; flex-direction: column; gap: 6px">
+                            <sc-for list="{{ r.items }}" as="b" hint-placeholder-count="4">
+                              <div style="{{ b.wrapStyle }}">
+                                <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+                                  <span style="font-size: var(--t-body-xs); font-weight: var(--w-bold); color: var(--text)">{{ b.label }}</span>
+                                  <span style="font-family: var(--font-num); font-size: var(--t-num-cell); font-weight: var(--w-num-strong); font-variant-numeric: tabular-nums; color: var(--text)">{{ b.value }}</span>
+                                </div>
+                                <div style="margin-top: 5px; height: 4px; border-radius: var(--r); background: var(--track-off); overflow: hidden">
+                                  <div style="{{ b.fillStyle }}"></div>
+                                </div>
+                                <div style="margin-top: 4px; display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+                                  <span style="{{ b.pctStyle }}">{{ b.pct }}</span>
+                                  <span style="font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">{{ b.sub }}</span>
+                                </div>
+                                <p style="{{ b.lowerStyle }}">{{ b.lower }}</p>
+                              </div>
+                            </sc-for>
+                          </div>
+                        </sc-if>
+
+                        <sc-if value="{{ r.isChart }}" hint-placeholder-val="{{ false }}">
+                          <div>
+                            <div style="height: 56px; border: 1px solid var(--border); border-radius: var(--r); background: repeating-linear-gradient(135deg, #f3f5f8 0 10px, #eaedf1 10px 20px)"></div>
+                            <p style="margin: 5px 0 0; font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">{{ r.t }}</p>
+                          </div>
+                        </sc-if>
+
+                        <sc-if value="{{ r.isTiles }}" hint-placeholder-val="{{ false }}">
+                          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gap-chip)">
+                            <sc-for list="{{ r.items }}" as="t" hint-placeholder-count="4">
+                              <div style="background: var(--surf2); border: 1px solid var(--border); border-radius: var(--r); padding: 8px 6px; text-align: center">
+                                <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-num-row); font-weight: var(--w-num-strong); line-height: var(--lh-num); font-variant-numeric: tabular-nums; color: var(--text)">{{ t.n }}</p>
+                                <p style="margin: 2px 0 0; font-size: var(--t-caption); font-weight: var(--w-semi); color: var(--muted)">{{ t.label }}</p>
+                              </div>
+                            </sc-for>
+                          </div>
+                        </sc-if>
+
+                        <sc-if value="{{ r.isPills }}" hint-placeholder-val="{{ false }}">
+                          <div>
+                            <p style="{{ r.capStyle }}">{{ r.cap }}</p>
+                            <div style="display: flex; gap: var(--gap-chip)">
+                              <sc-for list="{{ r.items }}" as="o" hint-placeholder-count="3">
+                                <span style="{{ o.style }}">{{ o.label }}</span>
+                              </sc-for>
+                            </div>
+                          </div>
+                        </sc-if>
+
+                        <sc-if value="{{ r.isField }}" hint-placeholder-val="{{ false }}">
+                          <div>
+                            <p style="margin: 0 0 4px; font-size: var(--t-caption); font-weight: var(--w-semi); color: var(--muted)">{{ r.label }}</p>
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 44px; padding: 0 12px; box-sizing: border-box; background: var(--field); border: 1px solid var(--border); border-radius: var(--r)">
+                              <span style="font-size: var(--t-body-sm); font-weight: var(--w-regular); color: var(--text)">{{ r.value }}</span>
+                              <span aria-hidden="true" style="font-size: 10px; color: var(--faint)">&#9662;</span>
+                            </div>
+                            <p style="{{ r.helpStyle }}">{{ r.help }}</p>
+                          </div>
+                        </sc-if>
+
+                        <sc-if value="{{ r.isButtons }}" hint-placeholder-val="{{ false }}">
+                          <div style="display: flex; flex-wrap: wrap; gap: var(--gap-chip)">
+                            <sc-for list="{{ r.items }}" as="b" hint-placeholder-count="2">
+                              <span style="{{ b.style }}">{{ b.label }}</span>
+                            </sc-for>
+                          </div>
+                        </sc-if>
+
+                        <sc-if value="{{ r.isTable }}" hint-placeholder-val="{{ false }}">
+                          <div>
+                            <p style="{{ r.capStyle }}">{{ r.cap }}</p>
+                            <div style="{{ r.headStyle }}">
+                              <sc-for list="{{ r.cols }}" as="h" hint-placeholder-count="4">
+                                <span style="font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--muted)">{{ h }}</span>
+                              </sc-for>
+                            </div>
+                            <sc-for list="{{ r.items }}" as="tr" hint-placeholder-count="3">
+                              <div style="{{ tr.rowStyle }}">
+                                <sc-for list="{{ tr.cells }}" as="c" hint-placeholder-count="4">
+                                  <span style="{{ c.style }}">{{ c.v }}</span>
+                                </sc-for>
+                              </div>
+                            </sc-for>
+                          </div>
+                        </sc-if>
+
+                        <sc-if value="{{ r.isEmpty }}" hint-placeholder-val="{{ false }}">
+                          <div style="border: 1px dashed var(--line-dashed); border-radius: var(--r); padding: 14px; text-align: center">
+                            <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">{{ r.t }}</p>
+                            <p style="margin: 4px 0 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ r.sub }}</p>
+                          </div>
+                        </sc-if>
+
+                        <sc-if value="{{ r.isOwner }}" hint-placeholder-val="{{ false }}">
+                          <div style="background: var(--surf2); border: 1px solid var(--border); border-radius: var(--r); padding: 8px 10px">
+                            <p style="margin: 0; font-size: var(--t-caption); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--muted)">{{ r.t }}</p>
+                            <p style="margin: 3px 0 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ r.sub }}</p>
+                          </div>
+                        </sc-if>
+
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-for>
+
+              </div>
+            </div>
+          </div>
+
+          <div style="{{ p.sheetScrimStyle }}"></div>
+          <div style="{{ p.sheetStyle }}">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px 8px">
+              <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ p.sheetTitle }}</p>
+              <span aria-hidden="true" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; font-size: 16px; color: var(--muted)">&times;</span>
+            </div>
+            <div style="padding: 0 16px 16px; display: flex; flex-direction: column">
+              <sc-for list="{{ p.sections }}" as="s" hint-placeholder-count="11">
+                <div style="{{ s.style }}">
+                  <span style="{{ s.labelStyle }}">{{ s.label }}</span>
+                  <span style="{{ s.metaStyle }}">{{ s.meta }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="flex: 0 0 auto; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: var(--tabbar-pad); background: var(--tabbar-bg); border-top: 1px solid var(--border)">
+            <sc-for list="{{ p.tabs }}" as="t" hint-placeholder-count="5">
+              <div style="{{ t.wrapStyle }}">
+                <i class="{{ t.iconClass }}" style="{{ t.iconStyle }}"></i>
+                <span style="{{ t.labelStyle }}">{{ t.label }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px 16px">
+          <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ p.note.title }}</p>
+          <p style="margin: 4px 0 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ p.note.body }}</p>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="max-width: 900px; margin: 48px auto 0; display: flex; flex-direction: column; gap: var(--gap-card)">
+    <p style="margin: 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); color: var(--text)">What changed, and on which token</p>
+    <sc-for list="{{ changes }}" as="c" hint-placeholder-count="10">
+      <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 16px">
+          <p style="margin: 0; font-size: var(--t-card); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ c.title }}</p>
+          <span style="{{ c.tagStyle }}">{{ c.tag }}</span>
+        </div>
+        <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ c.body }}</p>
+        <p style="margin: 0; font-family: var(--font-mono); font-size: var(--t-num-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--faint); word-break: break-word">{{ c.tokens }}</p>
+      </div>
+    </sc-for>
+
+    <p style="margin: 24px 0 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); color: var(--text)">Needs new token</p>
+    <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 8px">
+      <p style="margin: 0; font-size: var(--t-card); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Nothing</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Two things came close. The sticky section bar on the phone profile is the sticky-bar pair already in the system, <span style="font-family: var(--font-mono)">--bar-bg</span> with <span style="font-family: var(--font-mono)">--bar-blur</span>, and its chips are the group-filter chip at <span style="font-family: var(--font-mono)">--touch-min</span>. The read-only owner line wanted a fifth pill family and did not get one: it is <span style="font-family: var(--font-mono)">--surf2</span> in <span style="font-family: var(--font-mono)">--border</span> with <span style="font-family: var(--font-mono)">--muted</span> text, which is the well treatment the nutrition and gym wells already use.</p>
+      <p style="margin: 0; font-family: var(--font-mono); font-size: var(--t-num-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--faint); word-break: break-word">--bar-bg &middot; --bar-blur &middot; --surf2 &middot; --line-dashed &middot; --track-off &middot; --touch-min &middot; --wash-bad &middot; --wash-warn &middot; --wash-accent, all unchanged</p>
+    </div>
+
+    <p style="margin: 24px 0 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); color: var(--text)">Open against code</p>
+    <sc-for list="{{ opens }}" as="o" hint-placeholder-count="8">
+      <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px">
+        <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ o.q }}</p>
+        <p style="margin: 4px 0 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ o.why }}</p>
+      </div>
+    </sc-for>
+
+    <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--on-tint-label); text-transform: uppercase">Where the data came from</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">The squad list rows, the bio strip, the eight position benchmarks, the two compliance flags and their evidence, the nutrition macros, the body-weight figure, the wellness and RPE correction tables and the availability form are all read off the four role captures of Dan Okonkwo's profile and the squad list. Okonkwo's own availability is &ldquo;Not set&rdquo; in those captures, so he is the subject of frames 2 and 7's language rule and Adam Selby &mdash; row 7, modified, return-to-play stage 3 of 6 &mdash; is the subject wherever an injury and a restriction have to be visible. Diagnosis and mechanism lines on the medic frame are illustrative: no capture shows that role's clinical fields, which is why they are also listed under Open against code.</p>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const NAV = [
+  { key: 'dash', label: 'Dashboard', icon: 'layout' },
+  { key: 'squad', label: 'Squad overview', icon: 'users' },
+  { key: 'sched', label: 'Schedule', icon: 'clock' },
+  { key: 'reports', label: 'Reports', icon: 'briefcase' },
+  { key: 'nutrition', label: 'Nutrition', icon: 'fork-knife' },
+  { key: 'gym', label: 'Gym programme', icon: 'barbell' },
+  { key: 'leaderboard', label: 'Leaderboard', icon: 'chart-bar' },
+  { key: 'settings', label: 'Settings', icon: 'gear' }
+];
+
+const SQUAD = [
+  { no: 1, name: 'Dan Okonkwo', position: 'Loosehead prop', status: 'Not recorded', rest: '' },
+  { no: 2, name: 'James Barnes', position: 'Hooker', status: 'Modified', rest: 'No contact · No scrummaging · Running 80% volume · Gym lower modified' },
+  { no: 3, name: 'Viliami Tameifuna', position: 'Tighthead prop', status: 'Modified', rest: 'No sprinting' },
+  { no: 4, name: 'Max Chapman', position: 'Lock', status: 'Available', rest: '' },
+  { no: 5, name: 'Henry Ross', position: 'Lock', status: 'Available', rest: '' },
+  { no: 6, name: 'Sam Wren', position: 'Flanker', status: 'Unavailable', rest: 'No weight bearing training' },
+  { no: 7, name: 'Adam Selby', position: 'Flanker', status: 'Modified', rest: 'No contact · No collision drills' },
+  { no: 8, name: 'Louis Fox', position: 'Number 8', status: 'Available', rest: '' },
+  { no: 9, name: 'Alex Grant', position: 'Scrum-half', status: 'Unavailable', rest: 'Not available for selection' },
+  { no: 10, name: 'Matt Reid', position: 'Fly-half', status: 'Available', rest: '' },
+  { no: 11, name: 'Waisake Naholo', position: 'Wing', status: 'Available', rest: '' },
+  { no: 12, name: 'Manu Piutau', position: 'Centre', status: 'Available', rest: '' },
+  { no: 13, name: 'Tom Ward', position: 'Centre', status: 'Available', rest: '' },
+  { no: 14, name: 'Ollie Delaney', position: 'Wing', status: 'Available', rest: '' },
+  { no: 15, name: 'Nathan Bennett', position: 'Full-back', status: 'Available', rest: '' },
+  { no: 16, name: 'Sione Afolabi', position: 'Loosehead prop', status: 'Available', rest: '' },
+  { no: 17, name: 'Rory Hastings', position: 'Hooker', status: 'Unavailable', rest: 'No running' },
+  { no: 18, name: 'Tomasi Koloafai', position: 'Tighthead prop', status: 'Available', rest: '' },
+  { no: 19, name: 'Isileli Nadolo', position: 'Lock', status: 'Modified', rest: 'No maximal kicking · Change of direction volume capped' },
+  { no: 20, name: 'Ben Sullivan', position: 'Lock', status: 'Available', rest: '' },
+  { no: 21, name: 'Conor Moroney', position: 'Flanker', status: 'Available', rest: '' },
+  { no: 22, name: 'Josh Ferris', position: 'Number 8', status: 'Available', rest: '' }
+];
+
+const BENCH = [
+  { label: '10m sprint', value: '1.9 s', pct: 14, sub: 'median 1.7 · best 1.7 · n=22', lower: true },
+  { label: 'CMJ height', value: '31.0 cm', pct: 4, sub: 'median 38.2 · best 70.0 · n=18' },
+  { label: '40m sprint', value: '5.57 s', pct: 33, sub: 'median 5.46 · best 5.31 · n=15', lower: true },
+  { label: 'Bronco test', value: '313.1 s', pct: 59, sub: 'median 316.6 · best 289.3 · n=22', lower: true },
+  { label: 'IMTP peak force', value: '3508 N', pct: 33, sub: 'median 3633 · best 3871 · n=15' },
+  { label: 'Yo-Yo IR1', value: '1786 m', pct: 68, sub: 'median 1772 · best 1980 · n=15' },
+  { label: 'Broad jump', value: '248 cm', pct: 49, sub: 'median 254 · best 265 · n=15' }
+];
+
+const FLAGS = [
+  { kind: 'Compliance', state: 'Escalated', stat: '0 of 7 days', expected: 'against 4 of 7 days expected', rule: 'Fires when Wellness check-ins, 7 days is below 4 of 7, for 1 day running.', evidence: '1 day against a fixed value · flagged Fri 28 Aug', raised: 'raised Sat 29 Aug' },
+  { kind: 'Compliance', state: 'Escalated', stat: '0 of 7 days', expected: 'against 4 of 7 days expected', rule: 'Fires when Wellness check-ins, 7 days is below 4 of 7, for 1 day running.', evidence: '1 day against a fixed value · flagged Sat 5 Sept', raised: 'raised Sun 6 Sept' }
+];
+
+const WELL_ROWS = [
+  ['Sun 16 Aug', '6.8 h', '3', '4', '4', '5', '5'],
+  ['Sat 15 Aug', '7.6 h', '3', '3', '5', '5', '3'],
+  ['Fri 14 Aug', '8.0 h', '3', '4', '5', '5', '4']
+];
+
+class Component extends DCLogic {
+  nav(role) {
+    const rows = NAV.filter(n => role !== 'nut' || n.key !== 'gym');
+    return rows.map(n => {
+      const on = n.key === 'squad';
+      const ink = on ? 'var(--accent)' : 'var(--text)';
+      return {
+        label: n.label,
+        iconClass: 'ph-fill ph-' + n.icon,
+        iconStyle: 'flex: none; font-size: 20px; line-height: 1; color: ' + ink,
+        rowStyle: 'position: relative; display: flex; align-items: center; gap: 14px; padding: 11px 22px; font-size: var(--t-body); font-weight: var(--w-semi); color: ' + ink + (on ? '; box-shadow: inset 3px 0 0 var(--accent)' : '')
+      };
+    });
+  }
+
+  chips(active) {
+    return ['Whole squad', 'Backs', 'Forwards', 'Rehab', 'Academy'].map(label => {
+      const on = label === (active || 'Whole squad');
+      return {
+        label: on ? '\u2713 ' + label : label,
+        style: 'display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: var(--r); font-size: var(--t-body-xs); font-weight: var(--w-semi); white-space: nowrap; background: ' + (on ? 'var(--wash-accent)' : 'var(--surf)') + '; border: 1px solid ' + (on ? 'var(--accent)' : 'var(--border)') + '; color: ' + (on ? 'var(--accent)' : 'var(--text)')
+      };
+    });
+  }
+
+  btn(label, variant, h) {
+    const height = h || 36;
+    const base = 'display: inline-flex; align-items: center; justify-content: center; height: ' + height + 'px; padding: 0 14px; border-radius: var(--r); font-size: var(--t-body-xs); font-weight: var(--w-semi); white-space: nowrap; ';
+    if (variant === 'primary') return { label, style: base + 'background: var(--accent); box-shadow: var(--ring-action); color: #fff' };
+    if (variant === 'ghost') return { label, style: base + 'color: var(--accent)' };
+    return { label, style: base + 'border: 1px solid var(--accent); color: var(--accent)' };
+  }
+
+  pill(status, big) {
+    const tone = {
+      'Available': ['var(--pill-good)', 'var(--good)', 'var(--on-good)'],
+      'Modified': ['var(--pill-warn)', 'var(--warn)', 'var(--on-warn)'],
+      'Unavailable': ['var(--pill-bad)', 'var(--bad)', 'var(--on-bad)'],
+      'Not recorded': ['var(--surf2)', 'var(--border)', 'var(--muted)']
+    }[status];
+    return 'display: inline-flex; align-items: center; height: ' + (big ? 26 : 22) + 'px; padding: 0 10px; border-radius: var(--r); font-size: ' + (big ? 'var(--t-body-xs)' : 'var(--t-pill)') + '; font-weight: var(--w-semi); white-space: nowrap; background: ' + tone[0] + '; border: 1px solid ' + tone[1] + '; color: ' + tone[2];
+  }
+
+  hero(o) {
+    const actions = (o.actions || []).map(a => this.btn(a.label, a.variant, 32));
+    return {
+      initials: o.initials, name: o.name, status: o.status, sub: o.sub,
+      pillStyle: this.pill(o.status, true),
+      rest: o.rest || '',
+      restStyle: o.rest
+        ? 'margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-value); text-wrap: pretty'
+        : 'display: none',
+      owner: o.owner || '',
+      ownerStyle: o.owner
+        ? 'margin: 0; font-size: var(--t-caption); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--on-tint-label)'
+        : 'display: none',
+      bio: o.bio || [], plan: o.plan || '', actions
+    };
+  }
+
+  row(r) {
+    const out = {
+      isText: false, isDial: false, isBars: false, isFlags: false, isStat: false, isTiles: false,
+      isChart: false, isTable: false, isPills: false, isField: false, isButtons: false, isEmpty: false, isOwner: false,
+      slotStyle: 'min-width: 0',
+      t: '', sub: '', value: '', unit: '', delta: '', band: '', dash: '', cap: '', label: '', help: '',
+      items: [], cols: [],
+      textStyle: 'display: none', deltaStyle: 'display: none', capStyle: 'display: none',
+      helpStyle: 'display: none', headStyle: 'display: none'
+    };
+    if (r.kind === 'text') {
+      out.isText = true; out.t = r.t;
+      out.textStyle = 'margin: 0; font-size: ' + (r.small ? 'var(--t-body-xs)' : 'var(--t-body-sm)') + '; font-weight: var(--w-regular); line-height: var(--lh-base); color: ' + (r.tone === 'faint' ? 'var(--faint)' : r.tone === 'text' ? 'var(--text)' : 'var(--muted)') + '; text-wrap: pretty';
+    } else if (r.kind === 'dial') {
+      out.isDial = true; out.value = r.value; out.unit = r.unit; out.band = r.band; out.t = r.t;
+      out.dash = Math.round(201 * r.pct / 100) + ' 201';
+    } else if (r.kind === 'bars') {
+      out.isBars = true;
+      out.items = r.items.map(b => {
+        const wash = b.pct < 20 ? 'var(--wash-bad)' : b.pct < 45 ? 'var(--wash-warn)' : 'var(--wash-accent)';
+        const fill = b.pct < 20 ? 'var(--bad)' : b.pct < 45 ? 'var(--warn)' : 'var(--accent2)';
+        return {
+          label: b.label, value: b.value, sub: b.sub,
+          pct: b.pct + this.ord(b.pct) + ' percentile',
+          wrapStyle: 'border-radius: var(--r); padding: 7px 9px; background: ' + wash,
+          fillStyle: 'height: 100%; width: ' + b.pct + '%; background: ' + fill,
+          pctStyle: 'font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-num-strong); font-variant-numeric: tabular-nums; color: var(--text)',
+          lower: b.lower ? 'Lower is better on this test' : '',
+          lowerStyle: b.lower
+            ? 'margin: 4px 0 0; font-size: var(--t-caption); font-weight: var(--w-semi); color: var(--muted)'
+            : 'display: none'
+        };
+      });
+    } else if (r.kind === 'flags') {
+      out.isFlags = true;
+      out.items = r.items.map(g => ({
+        kind: g.kind, state: g.state, stat: g.stat, expected: g.expected, rule: g.rule, evidence: g.evidence, raised: g.raised,
+        actionsStyle: r.canAct ? 'display: inline-flex; align-items: center; gap: var(--gap-chip); flex-wrap: wrap' : 'display: none'
+      }));
+    } else if (r.kind === 'stat') {
+      out.isStat = true; out.value = r.value; out.unit = r.unit; out.delta = r.delta || '';
+      out.deltaStyle = r.delta
+        ? 'margin: 0; font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-num); font-variant-numeric: tabular-nums; color: var(--muted)'
+        : 'display: none';
+    } else if (r.kind === 'tiles') {
+      out.isTiles = true; out.items = r.items;
+    } else if (r.kind === 'chart') {
+      out.isChart = true; out.t = r.t;
+    } else if (r.kind === 'table') {
+      out.isTable = true; out.cols = r.cols;
+      const grid = 'display: grid; grid-template-columns: ' + r.grid + '; gap: 8px; align-items: center';
+      out.headStyle = grid + '; padding: 6px 0; border-bottom: 1px solid var(--border)';
+      out.cap = r.cap || '';
+      out.capStyle = r.cap
+        ? 'margin: 0 0 6px; font-size: var(--t-caption); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--muted)'
+        : 'display: none';
+      out.items = r.items.map((cells, i) => ({
+        rowStyle: grid + '; min-height: ' + (r.tall ? '44px' : '30px') + '; padding: 4px 0' + (i ? '; border-top: 1px solid var(--hair)' : ''),
+        cells: cells.map((v, n) => ({
+          v: v,
+          style: n === 0
+            ? 'font-family: var(--font-num); font-size: var(--t-num-cell-sm); font-weight: var(--w-num); font-variant-numeric: tabular-nums; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap'
+            : (n === cells.length - 1 && r.lastIsAction)
+              ? 'display: inline-flex; align-items: center; justify-content: center; height: 30px; padding: 0 10px; border-radius: var(--r); border: 1px solid var(--accent); font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--accent); white-space: nowrap'
+              : 'font-family: var(--font-num); font-size: var(--t-num-cell-sm); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--muted)'
+        }))
+      }));
+    } else if (r.kind === 'pills') {
+      out.isPills = true; out.cap = r.cap || '';
+      out.capStyle = r.cap
+        ? 'margin: 0 0 6px; font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--text)'
+        : 'display: none';
+      out.items = r.items.map(o => ({
+        label: o.label,
+        style: 'display: inline-flex; align-items: center; justify-content: center; min-width: 74px; height: ' + (r.tall ? 44 : 34) + 'px; padding: 0 12px; border-radius: var(--r); font-size: var(--t-body-xs); font-weight: var(--w-semi); background: ' + (o.on ? 'var(--accent)' : 'var(--surf)') + '; border: 1px solid ' + (o.on ? 'var(--accent)' : 'var(--border)') + '; color: ' + (o.on ? '#fff' : 'var(--text)')
+      }));
+    } else if (r.kind === 'field') {
+      out.isField = true; out.label = r.label; out.value = r.value; out.help = r.help || '';
+      out.helpStyle = r.help
+        ? 'margin: 4px 0 0; font-size: var(--t-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted)'
+        : 'display: none';
+    } else if (r.kind === 'buttons') {
+      out.isButtons = true;
+      out.items = r.items.map(b => this.btn(b.label, b.variant, r.tall ? 44 : 36));
+    } else if (r.kind === 'empty') {
+      out.isEmpty = true; out.t = r.t; out.sub = r.sub;
+    } else if (r.kind === 'owner') {
+      out.isOwner = true; out.t = r.t; out.sub = r.sub;
+    }
+    return out;
+  }
+
+  ord(n) {
+    if (n % 10 === 1 && n !== 11) return 'st';
+    if (n % 10 === 2 && n !== 12) return 'nd';
+    if (n % 10 === 3 && n !== 13) return 'rd';
+    return 'th';
+  }
+
+  panel(o) {
+    const act = o.action ? this.btn(o.action.label, o.action.variant || 'secondary', 30) : null;
+    return {
+      title: o.title,
+      meta: o.meta || '',
+      metaStyle: o.meta
+        ? 'margin: 3px 0 0; font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--muted)'
+        : 'display: none',
+      action: act ? act.label : '',
+      actionStyle: act ? 'flex: none; ' + act.style.replace('display: inline-flex', 'display: inline-flex') : 'display: none',
+      wrapStyle: 'flex: none; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 12px 14px; display: flex; flex-direction: column; gap: 10px',
+      rows: (o.rows || []).map(r => this.row(r))
+    };
+  }
+
+  /* ---- panel library, one definition per panel, role differences passed in ---- */
+
+  pAthleticism() {
+    return this.panel({
+      title: 'Athleticism', meta: 'vs Forwards · 15 players',
+      rows: [
+        { kind: 'dial', value: '35', unit: 'percentile', pct: 35, band: 'Developing', t: 'Composite of the position-relative percentiles below. 50 = average for a Loosehead prop.' },
+        { kind: 'bars', items: BENCH.slice(0, 4) },
+        { kind: 'text', small: true, tone: 'faint', t: 'Three tests have no result in this window and are not shown as zero.' }
+      ]
+    });
+  }
+
+  pFlags(canAct) {
+    return this.panel({
+      title: 'Flags', meta: '2 open · 2 awaiting acknowledgement',
+      action: { label: 'Thresholds', variant: 'ghost' },
+      rows: [{ kind: 'flags', items: FLAGS, canAct: canAct }]
+    });
+  }
+
+  pGoals(canEdit) {
+    return this.panel({
+      title: 'Goals',
+      action: canEdit ? { label: 'Edit', variant: 'ghost' } : null,
+      rows: [
+        { kind: 'text', tone: 'text', t: 'Goal: F8' },
+        { kind: 'text', t: 'No coaching note on record — only the programme\u2019s own stated goal is shown here.' }
+      ].concat(canEdit ? [] : [{ kind: 'owner', t: 'Read-only · edited by the coach', sub: 'The goal and any coaching note are the coach\u2019s to change.' }])
+    });
+  }
+
+  pScLog() {
+    return this.panel({
+      title: 'S&C history log',
+      rows: [{ kind: 'empty', t: 'No adaptation log entries', sub: 'Adaptation notes are planned but not available yet. Nothing has been recorded here.' }]
+    });
+  }
+
+  pNutrition(mode) {
+    const rows = [
+      { kind: 'text', small: true, t: 'A plan is a set of rules per kilogram of body mass. Today\u2019s targets at 104.2 kg:' },
+      { kind: 'tiles', items: [{ n: '\u2014', label: 'kcal' }, { n: '167', label: 'protein g' }, { n: '387', label: 'carbs g' }, { n: '\u2014', label: 'fat g' }] },
+      { kind: 'text', small: true, tone: 'faint', t: 'Energy and fat are not set on this plan, so they stay as dashes rather than zeros.' }
+    ];
+    if (mode === 'ro') rows.push({ kind: 'owner', t: 'Read-only · edited by the nutritionist', sub: 'Per-athlete adjustments live on the assignment and carry a note; they never rewrite the club plan.' });
+    return this.panel({
+      title: 'Nutrition plan', meta: 'In-Season max · assigned Tue 19 Aug',
+      action: mode === 'edit' ? { label: 'Edit', variant: 'ghost' } : null,
+      rows: rows
+    });
+  }
+
+  pBodyWeight(canLog, mode) {
+    const rows = [
+      { kind: 'stat', value: '104.2', unit: 'kg', delta: '\u25B2 1.1 kg · 20 d' },
+      { kind: 'text', small: true, t: 'No staff target range set. Body mass is self-reported at the morning weigh-in.' },
+      { kind: 'chart', t: 'this season · 4 weigh-ins in this window' }
+    ];
+    if (canLog) rows.push({ kind: 'buttons', items: [{ label: 'Log weigh-in', variant: 'primary' }, { label: 'Set target range', variant: 'secondary' }, { label: 'Edit entries', variant: 'secondary' }] });
+    if (mode === 'ro') rows.push({ kind: 'owner', t: 'Read-only · recorded by S&C and the nutritionist', sub: 'Weigh-ins are entered by whoever runs the morning weigh-in, or by the athlete in their app.' });
+    return this.panel({ title: 'Body weight', meta: '4 weigh-ins · n = 4', rows: rows });
+  }
+
+  pInjury(mode) {
+    if (mode === 'ss' || mode === 'sc') {
+      return this.panel({
+        title: 'Injury', meta: 'restrictions only',
+        rows: [
+          { kind: 'text', tone: 'text', t: 'Modified · No contact, no collision drills.' },
+          { kind: 'text', small: true, t: 'Expected return to full training: Mon 21 Sept.' },
+          { kind: 'owner', t: 'Read-only · set by medical staff', sub: 'Ruth Callaghan, medic · last reviewed Fri 11 Sept.' }
+        ]
+      });
+    }
+    if (mode === 'coach') {
+      return this.panel({
+        title: 'Injury', meta: 'restrictions only',
+        rows: [
+          { kind: 'text', tone: 'text', t: 'Modified · No contact, no collision drills.' },
+          { kind: 'text', small: true, t: 'Expected return to full training: Mon 21 Sept.' },
+          { kind: 'owner', t: 'Read-only · set by medical staff', sub: 'Ruth Callaghan, medic · last reviewed Fri 11 Sept.' }
+        ]
+      });
+    }
+    return this.panel({
+      title: 'Injury', meta: '1 current · 3 this season',
+      action: { label: 'Log injury', variant: 'secondary' },
+      rows: [
+        { kind: 'text', tone: 'text', t: 'Modified · No contact, no collision drills.' },
+        { kind: 'text', small: true, t: 'Expected return to full training: Mon 21 Sept.' },
+        { kind: 'table', cap: 'Clinical record · medical staff and the athlete only', grid: 'minmax(0, 1fr) minmax(0, 1.6fr)', cols: ['Field', 'Recorded'], items: [
+          ['Diagnosis', 'Concussion, no loss of consciousness'],
+          ['Mechanism', 'Head contact in a tackle, Sat 30 Aug, v Marnbrook'],
+          ['Stage', '3 of 6 · symptom-free 4 days'],
+          ['Reviewed', 'Fri 11 Sept · Ruth Callaghan']
+        ] },
+        { kind: 'buttons', items: [{ label: 'Update the record', variant: 'secondary' }, { label: 'Advance the stage', variant: 'secondary' }] }
+      ]
+    });
+  }
+
+  pAvailability(mode) {
+    if (mode === 'edit') {
+      return this.panel({
+        title: 'Availability',
+        rows: [
+          { kind: 'pills', cap: 'Set availability', items: [{ label: 'Available' }, { label: 'Modified', on: true }, { label: 'Unavailable' }] },
+          { kind: 'text', small: true, t: 'For a non-injury reason only — illness, personal leave, exams, representative honours, or other. For an injury, use the injury record instead.' },
+          { kind: 'field', label: 'Reason', value: 'Injury — linked to the current record' },
+          { kind: 'field', label: 'Note', value: 'No contact, no collision drills', help: 'Coach visible. Describe the restriction, not the injury. Do not name a diagnosis or a protocol.' },
+          { kind: 'buttons', items: [{ label: 'Update availability', variant: 'primary' }] }
+        ]
+      });
+    }
+    return this.panel({
+      title: 'Availability',
+      rows: [
+        { kind: 'text', tone: 'text', t: 'Modified · No contact, no collision drills.' },
+        { kind: 'text', small: true, t: 'Expected return to full training: Mon 21 Sept.' },
+        { kind: 'owner', t: 'Read-only · set by medical staff', sub: 'Ruth Callaghan, medic · Fri 11 Sept. A coach can record a non-injury absence from this panel; this one is injury-linked, so it is the medic\u2019s.' }
+      ]
+    });
+  }
+
+  pEntries(mode) {
+    const rows = [
+      { kind: 'text', small: true, t: 'The last 28 days of Adam\u2019s wellness check-ins and session ratings. Correcting one keeps the original and records a new, dated revision against your name — entries are never overwritten.' },
+      { kind: 'table', cap: 'Wellness check-ins', grid: '78px 52px 34px 34px 40px 34px 34px' + (mode === 'edit' ? ' 104px' : ''), cols: ['Date', 'Sleep', 'Qual', 'Fat', 'Sore', 'Stress', 'Mood'].concat(mode === 'edit' ? [''] : []), lastIsAction: mode === 'edit', tall: mode === 'edit',
+        items: WELL_ROWS.map(r => mode === 'edit' ? r.concat(['Correct check-in']) : r) },
+      { kind: 'table', cap: 'Session ratings (RPE)', grid: '78px minmax(0, 1fr) 40px 52px 44px' + (mode === 'edit' ? ' 104px' : ''), cols: ['Date', 'Session', 'RPE', 'Minutes', 'Load'].concat(mode === 'edit' ? [''] : []), lastIsAction: mode === 'edit', tall: mode === 'edit',
+        items: [['Fri 14 Aug', 'Captain\u2019s run', '5.1', '45', '230'].concat(mode === 'edit' ? ['Correct rating'] : [])] },
+      { kind: 'text', small: true, tone: 'faint', t: 'Gym set logs and the weekly nutrition check-in are not correctable here. Neither table has a staff write path, so those two stay the athlete\u2019s own to fix from their app.' }
+    ];
+    if (mode === 'ro') rows.push({ kind: 'owner', t: 'Read-only · corrected by the sport scientist, the coach or the medic', sub: 'You can read the entries and the revision history. Ask one of them to correct a value.' });
+    return this.panel({ title: 'Entries and corrections', meta: 'Fri 14 Aug to Thu 10 Sept · fixed 28-day window', rows: rows });
+  }
+
+  pSar() {
+    return this.panel({
+      title: 'Subject access request',
+      action: { label: 'Export this athlete', variant: 'secondary' },
+      rows: [
+        { kind: 'text', small: true, t: 'Everything held about this athlete, as CSV and PDF, including clinical records they are entitled to see. The export is logged against your name.' },
+        { kind: 'text', small: true, tone: 'faint', t: 'No request on record.' }
+      ]
+    });
+  }
+
+  pGym() {
+    return this.panel({
+      title: 'Gym programme', meta: 'In-Season max · week 2 of 4',
+      action: { label: 'Adjust for this athlete', variant: 'secondary' },
+      rows: [
+        { kind: 'text', small: true, t: 'Lower A and Upper A, twice each per week, ending Tue 29 Sept. An adjustment lives on this athlete\u2019s assignment and carries a note; it never rewrites the club programme.' },
+        { kind: 'tiles', items: [{ n: '8', label: 'sessions' }, { n: '6', label: 'logged' }, { n: '2', label: 'missed' }, { n: '\u2014', label: 'e1RM' }] },
+        { kind: 'text', small: true, tone: 'faint', t: 'Estimated 1RM needs three logged top sets in the block; there are two, so it stays a dash.' }
+      ]
+    });
+  }
+
+  pEmptyPanels(which) {
+    const map = {
+      athleticism: this.panel({ title: 'Athleticism', meta: 'vs Backs · 15 players', rows: [{ kind: 'empty', t: 'No test results yet', sub: 'The composite needs at least one benchmark result. Nothing has been recorded for Kai since he was added on Thu 4 Sept.' }] }),
+      flags: this.panel({ title: 'Flags', meta: 'none open', rows: [{ kind: 'empty', t: 'Nothing flagged', sub: 'No rule has fired for Kai. Flags need seven days of check-ins before a compliance rule can fire at all.' }] }),
+      injury: this.panel({ title: 'Injury', meta: 'restrictions only', rows: [{ kind: 'empty', t: 'No injury history on record', sub: 'Nothing has been recorded since Kai was added. This is not the same as being cleared.' }, { kind: 'owner', t: 'Read-only · set by medical staff', sub: 'A medic records the first entry.' }] }),
+      weight: this.panel({ title: 'Body weight', meta: 'n = 0', rows: [{ kind: 'empty', t: 'No weigh-in recorded', sub: 'No target range and no trend line. A trend needs three weigh-ins.' }, { kind: 'buttons', items: [{ label: 'Log weigh-in', variant: 'primary' }, { label: 'Set target range', variant: 'secondary' }] }] }),
+      entries: this.panel({ title: 'Entries and corrections', meta: 'Fri 14 Aug to Thu 10 Sept · fixed 28-day window', rows: [{ kind: 'empty', t: 'No entries in this window', sub: 'Kai has an account but has not submitted a morning check-in or a session rating yet. There is nothing to correct.' }] }),
+      nutrition: this.panel({ title: 'Nutrition plan', action: { label: 'Assign a plan', variant: 'secondary' }, rows: [{ kind: 'empty', t: 'No plan assigned', sub: 'Targets are per kilogram of body mass, so a plan needs a weigh-in first.' }] }),
+      goals: this.panel({ title: 'Goals', rows: [{ kind: 'empty', t: 'No goal set', sub: 'The coach sets the position goal when the athlete joins a group.' }, { kind: 'owner', t: 'Read-only · edited by the coach', sub: '' }] }),
+      sclog: this.panel({ title: 'S&C history log', rows: [{ kind: 'empty', t: 'No adaptation log entries', sub: 'Adaptation notes are planned but not available yet. Nothing has been recorded here.' }] }),
+      availability: this.panel({ title: 'Availability', rows: [{ kind: 'text', tone: 'text', t: 'Not recorded.' }, { kind: 'text', small: true, t: 'Kai has no availability status, so he is not counted as available and not counted as out. He is one of the three in \u201C27 of 30 have a status \u00B7 3 not recorded\u201D on the dashboard.' }, { kind: 'owner', t: 'Read-only · set by medical staff', sub: 'Ruth Callaghan, medic. A coach can record a non-injury absence here.' }] })
+    };
+    return map[which];
+  }
+
+  section(list, active) {
+    return list.map((s, i) => {
+      const on = s.label === active;
+      return {
+        label: s.label, meta: s.meta,
+        style: 'display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 6px 10px; border-radius: var(--r); background: ' + (on ? 'var(--wash-accent)' : 'transparent') + (i ? '; border-top: 1px solid var(--hair)' : ''),
+        labelStyle: 'font-size: var(--t-body); font-weight: ' + (on ? 'var(--w-bold)' : 'var(--w-semi)') + '; color: ' + (on ? 'var(--accent)' : 'var(--text)'),
+        metaStyle: 'font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--muted); text-align: right; white-space: nowrap'
+      };
+    });
+  }
+
+  jump(list, active) {
+    const i = list.findIndex(s => s.label === active);
+    return { current: active, position: 'panel ' + (i + 1) + ' of ' + list.length };
+  }
+
+  tabs(active, role) {
+    const FOURTH = {
+      ss: { label: 'Flags', icon: 'flag', key: 'flags' },
+      coach: { label: 'Flags', icon: 'flag', key: 'flags' },
+      medic: { label: 'Flags', icon: 'flag', key: 'flags' },
+      sc: { label: 'Gym', icon: 'barbell', key: 'gym' },
+      nut: { label: 'Nutrition', icon: 'fork-knife', key: 'nutrition' }
+    };
+    return [
+      { label: 'Dashboard', icon: 'layout', key: 'dash' },
+      { label: 'Squad', icon: 'users', key: 'squad' },
+      { label: 'Schedule', icon: 'clock', key: 'sched' },
+      FOURTH[role || 'ss'],
+      { label: 'More', icon: 'dots-three', key: 'more' }
+    ].map(t => {
+      const on = t.key === active;
+      const ink = on ? 'var(--accent)' : 'var(--muted)';
+      return {
+        label: t.label,
+        iconClass: 'ph ph-' + t.icon,
+        iconStyle: 'font-size: 24px; line-height: 1; color: ' + ink,
+        wrapStyle: 'display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 44px; padding: 4px 2px; box-sizing: border-box',
+        labelStyle: 'font-size: var(--t-pill); font-weight: ' + (on ? 'var(--w-bold)' : 'var(--w-semi)') + '; color: ' + ink
+      };
+    });
+  }
+
+  listRows(n) {
+    return SQUAD.slice(0, n).map((r, i) => {
+      const wash = r.status === 'Unavailable' ? 'var(--wash-bad)' : r.status === 'Modified' ? 'var(--wash-warn)' : 'transparent';
+      return {
+        no: r.no, name: r.name, position: r.position, status: r.status,
+        rest: r.rest || '\u2014',
+        rowStyle: 'display: grid; grid-template-columns: 46px minmax(0, 220px) minmax(0, 150px) 150px minmax(0, 1fr); gap: 12px; align-items: center; min-height: 33px; padding: 4px 18px; background: ' + wash + (i ? '; border-top: 1px solid var(--hair)' : ''),
+        pillStyle: this.pill(r.status),
+        restStyle: r.rest
+          ? 'font-size: var(--t-body-xs); font-weight: var(--w-regular); color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap'
+          : 'font-family: var(--font-num); font-size: var(--t-num-cell-sm); color: var(--faint)'
+      };
+    });
+  }
+
+  phoneRows(n) {
+    return SQUAD.slice(0, n).map((r, i) => {
+      const wash = r.status === 'Unavailable' ? 'var(--wash-bad)' : r.status === 'Modified' ? 'var(--wash-warn)' : 'var(--surf)';
+      return {
+        name: r.name, position: r.position, status: r.status, rest: r.rest || '',
+        rowStyle: 'display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 9px 14px; background: ' + wash + (i ? '; border-top: 1px solid var(--hair)' : ''),
+        pillStyle: this.pill(r.status),
+        restStyle: r.rest
+          ? 'margin: 3px 0 0; font-size: var(--t-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--text); text-wrap: pretty'
+          : 'display: none'
+      };
+    });
+  }
+
+  renderVals() {
+    const SELBY_BIO = [
+      { label: 'Position', value: 'Flanker' }, { label: 'Jersey', value: '#7' }, { label: 'Group', value: 'Forwards · Rehab' },
+      { label: 'Height', value: '188 cm' }, { label: 'Age', value: '24' }, { label: 'Weight', value: '104.2 kg' }
+    ];
+    const SELBY_BIO_COACH = SELBY_BIO.filter(b => b.label !== 'Weight');
+    const OKONKWO_BIO = [
+      { label: 'Position', value: 'Loosehead prop' }, { label: 'Jersey', value: '#1' }, { label: 'Group', value: 'Forwards' },
+      { label: 'Height', value: '185 cm' }, { label: 'Age', value: '29' }, { label: 'Weight', value: '118.4 kg' }
+    ];
+    const PLAN = 'Development plan · In-Season max · week 2 of 4 · ends Tue 29 Sept';
+
+    const selbyHero = extra => this.hero(Object.assign({
+      initials: 'AS', name: 'Adam Selby', status: 'Modified',
+      sub: 'Flanker · #7 · Forwards, Rehab',
+      rest: 'No contact, no collision drills. Expected return to full training Mon 21 Sept.',
+      owner: 'Set by medical staff · Ruth Callaghan · Fri 11 Sept',
+      bio: SELBY_BIO, plan: PLAN
+    }, extra || {}));
+
+    const desktops = [
+      {
+        id: 'd1', label: '1 · Squad list · sport scientist',
+        isList: true, isProfile: false,
+        nav: this.nav('ss'), signedIn: 'Jane Pemberton · sport scientist',
+        chips: this.chips('Whole squad'), countLine: '30 athletes in the squad',
+        eyebrow: 'Whole squad · Ashcombe Rugby Club', title: 'Squad overview',
+        headActions: [this.btn('Add athlete', 'primary', 40), this.btn('Manage groups', 'ghost', 40)],
+        listIntro: 'Injury-linked availability is set by medical staff. A coach can also record a non-injury absence directly — illness, personal, academic, representative, or other — from an athlete\u2019s profile.',
+        cols: ['No.', 'Athlete', 'Position', 'Availability', 'Restrictions'],
+        rows: this.listRows(20),
+        note: {
+          title: 'Two columns carry the answer, and the name stays the link',
+          body: 'Availability and Restrictions stay side by side, and a modified or unavailable row keeps its wash so the eye finds it without reading. \u201CNot set\u201D is now \u201CNot recorded\u201D, in a neutral pill that is not a tone. An athlete with no restriction gets an em dash, never an empty cell. The count line follows the group filter, as measured.',
+          order: 'Rows 21–30 continue below the fold. The table scrolls; the header row and the first column do not compress.'
+        }
+      },
+      {
+        id: 'd2', label: '2 · Profile · sport scientist · Dan Okonkwo, availability not recorded',
+        isList: false, isProfile: true,
+        nav: this.nav('ss'), signedIn: 'Jane Pemberton · sport scientist',
+        chips: this.chips('Whole squad'), countLine: '30 athletes in the squad',
+        eyebrow: 'Squad overview · Athlete', title: 'Dan Okonkwo',
+        headActions: [this.btn('Period · This season 2026/27', 'secondary', 40)],
+        hero: this.hero({
+          initials: 'DO', name: 'Dan Okonkwo', status: 'Not recorded',
+          sub: 'Loosehead prop · #1 · Forwards',
+          rest: 'No restriction recorded. Not counted as available and not counted as out.',
+          owner: 'Set by medical staff · nothing recorded',
+          bio: OKONKWO_BIO, plan: PLAN,
+          actions: [{ label: 'Nutrition', variant: 'secondary' }, { label: 'Wellness', variant: 'secondary' }, { label: 'Gym', variant: 'secondary' }, { label: 'Edit', variant: 'secondary' }]
+        }),
+        columns: [
+          { panels: [this.pAthleticism(), this.pScLog()] },
+          { panels: [this.pFlags(true), this.pGoals(true)] }
+        ],
+        note: {
+          title: 'Flags beside Athleticism, kept exactly',
+          body: 'The desktop pairing the review called right is untouched: Athleticism opens the left column and Flags opens the right, so the composite and the reason it matters are read together. The status header is the only emphasised card on the screen, and it carries the same words and tones as the dashboard — name, position, group, status, restrictions. Okonkwo has no status, so the header says \u201CNot recorded\u201D once, in a neutral pill, and says what that means.',
+          order: 'Panel order for this role: Athleticism, Flags, S&C history log, Goals, Nutrition plan (editable), Injury, Body weight, Availability, Entries and corrections, Subject access request. The last six continue below the fold.'
+        }
+      },
+      {
+        id: 'd3', label: '3 · Profile · medic · Adam Selby — Injury and Availability lead, diagnosis and mechanism visible',
+        isList: false, isProfile: true,
+        nav: this.nav('medic'), signedIn: 'Ruth Callaghan · medic',
+        chips: this.chips('Whole squad'), countLine: '30 athletes in the squad',
+        eyebrow: 'Squad overview · Athlete', title: 'Adam Selby',
+        headActions: [this.btn('Period · Last 28 days', 'secondary', 40)],
+        hero: selbyHero({ owner: 'Set by you · Fri 11 Sept', actions: [{ label: 'Wellness', variant: 'secondary' }, { label: 'Gym', variant: 'secondary' }, { label: 'Edit', variant: 'secondary' }] }),
+        columns: [
+          { panels: [this.pInjury('medic')] },
+          { panels: [this.pAvailability('edit')] }
+        ],
+        note: {
+          title: 'The only role with a clinical record, and the only one who sets availability',
+          body: 'Injury opens the left column with diagnosis, mechanism, stage and review date in a table captioned \u201Cmedical staff and the athlete only\u201D. Availability opens the right column as a live form: three status buttons, a reason, and a note labelled \u201Ccoach visible — not a clinical field\u201D, which is the distinction the form already makes and is worth keeping. Everything else is the same panel, in the same design, further down.',
+          order: 'Panel order for this role: Injury, Availability, Body weight, Flags, Athleticism, Goals, Nutrition plan, S&C history log, Entries and corrections, Subject access request.'
+        }
+      },
+      {
+        id: 'd4', label: '4 · Profile · coach · Adam Selby — availability first, injury card stops at expected return',
+        isList: false, isProfile: true,
+        nav: this.nav('coach'), signedIn: 'Kate Doyle · coach',
+        chips: this.chips('Forwards'), countLine: '15 athletes in the selected groups',
+        eyebrow: 'Squad overview · Athlete', title: 'Adam Selby',
+        headActions: [this.btn('Period · This season 2026/27', 'secondary', 40)],
+        hero: selbyHero({ bio: SELBY_BIO_COACH, actions: [{ label: 'Wellness', variant: 'secondary' }, { label: 'Gym', variant: 'secondary' }] }),
+        columns: [
+          { panels: [this.pAvailability('ro'), this.pInjury('coach')] },
+          { panels: [this.pFlags(true), this.pGoals(true)] }
+        ],
+        note: {
+          title: 'The injury card ends after expected return, and the header drops body mass',
+          body: 'Can he be picked, and what can he do: Availability is the first panel and Injury the second, and Injury carries status, restrictions and expected return and then stops. There is no disabled row, no \u201Cclinical detail hidden\u201D line and no lock, because any of those would confirm that a diagnosis exists. The read-only line names the owner instead — \u201CSet by medical staff · Ruth Callaghan · Fri 11 Sept\u201D — which is true whether or not there is anything clinical behind it. Body mass is the one bio figure removed from this role\u2019s header: five figures, not six, and no gap or dash where the sixth was.',
+          order: 'Panel order for this role: Availability, Injury (restrictions only), Flags, Goals, Athleticism, Body weight, Nutrition plan, Entries and corrections, S&C history log. The clinical record is not in the list.'
+        }
+      },
+      {
+        id: 'd5', label: '5 · Profile · S&C · Adam Selby — gym and weigh-ins actionable, everything else read-only',
+        isList: false, isProfile: true,
+        nav: this.nav('sc'), signedIn: 'Owen Hartnell · strength & conditioning',
+        chips: this.chips('Whole squad'), countLine: '30 athletes in the squad',
+        eyebrow: 'Squad overview · Athlete', title: 'Adam Selby',
+        headActions: [this.btn('Period · This season 2026/27', 'secondary', 40)],
+        hero: selbyHero({ actions: [{ label: 'Gym', variant: 'secondary' }, { label: 'Wellness', variant: 'secondary' }] }),
+        columns: [
+          { panels: [this.pGym(), this.pScLog()] },
+          { panels: [this.pBodyWeight(true), this.pAvailability('ro')] }
+        ],
+        note: {
+          title: 'Two panels with buttons, the rest with an owner line',
+          body: 'The gym programme and Body weight are the only panels carrying actions. Bio, Availability and Entries and corrections keep all of their content and close with a line naming who can change it, so nothing looks broken and nobody is hunting for a disabled control. Injury reads as restrictions only, in the same wording the coach gets.',
+          order: 'Panel order for this role: Gym programme, Body weight, S&C history log, Athleticism, Availability (read-only), Flags, Injury (restrictions only), Nutrition plan (read-only), Entries and corrections (read-only), Goals.'
+        }
+      },
+      {
+        id: 'd6', label: '6 · Profile · nutritionist · Adam Selby — one write, and no gym panel at all',
+        isList: false, isProfile: true,
+        nav: this.nav('nut'), signedIn: 'Tomo Mirov · nutritionist',
+        chips: this.chips('Whole squad'), countLine: '30 athletes in the squad',
+        eyebrow: 'Squad overview · Athlete', title: 'Adam Selby',
+        headActions: [this.btn('Period · This season 2026/27', 'secondary', 40)],
+        hero: selbyHero({ owner: '', rest: 'No contact, no collision drills.', actions: [{ label: 'Nutrition', variant: 'secondary' }] }),
+        columns: [
+          { panels: [this.pBodyWeight(true)] },
+          { panels: [this.pNutrition('edit')] }
+        ],
+        note: {
+          title: 'A weigh-in is the only write, and the gym panel is not rendered',
+          body: 'Body weight opens with Log weigh-in; the nutrition plan is editable because this role owns it. There is no gym panel, no bio edit, no availability control, no entry correction and no injury access — those panels are absent, not disabled, and nothing on the screen counts them or hints that they exist. The status header still carries status and restrictions, because a nutritionist planning a weigh-in needs to know he is in rehab.',
+          order: 'Panel order for this role: Body weight, Nutrition plan, Athleticism, Flags, Goals, Subject access request. Six panels, not ten.'
+        }
+      },
+      {
+        id: 'd7', label: '7 · Profile · sport scientist · Kai Mercer, added Thu 4 Sept — every panel empty',
+        isList: false, isProfile: true,
+        nav: this.nav('ss'), signedIn: 'Jane Pemberton · sport scientist',
+        chips: this.chips('Whole squad'), countLine: '30 athletes in the squad',
+        eyebrow: 'Squad overview · Athlete', title: 'Kai Mercer',
+        headActions: [this.btn('Period · This season 2026/27', 'secondary', 40)],
+        hero: this.hero({
+          initials: 'KM', name: 'Kai Mercer', status: 'Not recorded',
+          sub: 'Fly-half · #29 · Academy',
+          rest: 'No restriction recorded. Added to the roster Thu 4 Sept; no app account yet.',
+          owner: 'Set by medical staff · nothing recorded',
+          bio: [{ label: 'Position', value: 'Fly-half' }, { label: 'Jersey', value: '#29' }, { label: 'Group', value: 'Academy' }, { label: 'Height', value: '179 cm' }, { label: 'Age', value: '19' }, { label: 'Weight', value: '\u2014' }],
+          plan: 'Development plan · none assigned',
+          actions: [{ label: 'Invite to the app', variant: 'primary' }, { label: 'Edit', variant: 'secondary' }]
+        }),
+        columns: [
+          { panels: [this.pEmptyPanels('athleticism'), this.pEmptyPanels('weight')] },
+          { panels: [this.pEmptyPanels('flags'), this.pEmptyPanels('availability')] }
+        ],
+        note: {
+          title: 'Nothing reads as a zero, and nothing reads as a clean bill',
+          body: 'Every empty panel says what is missing and what it would take: the composite needs one benchmark, a trend needs three weigh-ins, a compliance rule needs seven days of check-ins, a nutrition plan needs a weigh-in because targets are per kilogram. Weight is an em dash in the bio strip, not 0 kg. \u201CNo injury history on record\u201D is followed by \u201CThis is not the same as being cleared\u201D, because an empty medical panel is the one place silence could be read as a finding.',
+          order: 'Panel order is the role\u2019s usual one. Empty panels are not reordered to the bottom — an empty Flags panel is information, and moving it would hide it.'
+        }
+      }
+    ].map(f => Object.assign({ isList: false, isProfile: false, listIntro: '', cols: [], rows: [], columns: [], hero: { bio: [], actions: [] } }, f, {
+      note: Object.assign({ orderStyle: 'margin: 6px 0 0; font-family: var(--font-num); font-size: var(--t-num-caption); font-weight: var(--w-regular); line-height: var(--lh-base); font-variant-numeric: tabular-nums; color: var(--faint); text-wrap: pretty' }, f.note)
+    }));
+
+    const SECTIONS_SS = [
+      { label: 'Flags', meta: '2 open' },
+      { label: 'Athleticism', meta: '35th percentile' },
+      { label: 'Availability', meta: 'Modified' },
+      { label: 'Entries and corrections', meta: '4 in 28 days' },
+      { label: 'Body weight', meta: '104.2 kg' },
+      { label: 'Nutrition plan', meta: 'In-Season max' },
+      { label: 'Injury', meta: 'restrictions only' },
+      { label: 'Goals', meta: 'F8' },
+      { label: 'S&C history log', meta: 'empty' },
+      { label: 'Subject access request', meta: 'none' }
+    ];
+    const SECTIONS_MED = [
+      { label: 'Injury', meta: '1 current' },
+      { label: 'Availability', meta: 'Modified' },
+      { label: 'Body weight', meta: '104.2 kg' },
+      { label: 'Flags', meta: '2 open' },
+      { label: 'Athleticism', meta: '35th percentile' },
+      { label: 'Entries and corrections', meta: '4 in 28 days' },
+      { label: 'Nutrition plan', meta: 'In-Season max' },
+      { label: 'Goals', meta: 'F8' },
+      { label: 'Subject access request', meta: 'none' }
+    ];
+
+    const phones = [
+      {
+        id: 'p8', label: '8 · Squad list · phone',
+        isList: true, isProfile: false,
+        title: 'Squad overview', sub: '30 athletes in the squad', chip: '\u2713 Whole squad',
+        rows: this.phoneRows(7), panels: [], sections: [], tabs: this.tabs('squad', 'ss'),
+        note: { title: 'The name is the tap target, at 60px', body: 'Rows are 60px against the 34px measured, and the name is 17px bold. Availability keeps its pill on the right and the restriction line stays on the row rather than moving behind a tap — it is what a coach is reading the list for.' }
+      },
+      {
+        id: 'p9', label: '9 · Profile · sport scientist · top of screen',
+        isList: false, isProfile: true,
+        title: 'Adam Selby', sub: 'Flanker · #7 · Forwards, Rehab', chip: '\u2713 Whole squad',
+        hero: {
+          name: 'Adam Selby', status: 'Modified', sub: 'Flanker · #7 · Forwards, Rehab',
+          pillStyle: this.pill('Modified', true),
+          rest: 'No contact, no collision drills. Expected return Mon 21 Sept.',
+          restStyle: 'margin: 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-value); text-wrap: pretty',
+          owner: 'Set by medical staff · Fri 11 Sept',
+          ownerStyle: 'margin: 0; font-size: var(--t-caption); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--on-tint-label)'
+        },
+        sections: this.section(SECTIONS_SS, 'Flags'), jump: this.jump(SECTIONS_SS, 'Flags'),
+        panels: [this.pFlags(true), this.pAthleticism()],
+        rows: [], tabs: this.tabs('squad', 'ss'),
+        note: { title: '132px of status, then a jump bar that names where you are', body: 'The header is the dashboard\u2019s own words and tones. Under it, a sticky 52px bar states the panel you are in and its place in the role\u2019s order — \u201CFlags · panel 1 of 10\u201D — with All panels beside it. Nothing scrolls sideways and no panel name is hidden off the right edge. The first panel below is the role\u2019s first panel, so the default screen is still Flags and Athleticism.' }
+      },
+      {
+        id: 'p10', label: '10 · Profile · jumped to Availability',
+        isList: false, isProfile: true,
+        title: 'Adam Selby', sub: 'Flanker · #7 · Forwards, Rehab', chip: '\u2713 Whole squad',
+        hero: {
+          name: 'Adam Selby', status: 'Modified', sub: 'Flanker · #7 · Forwards, Rehab',
+          pillStyle: this.pill('Modified', true),
+          rest: 'No contact, no collision drills. Expected return Mon 21 Sept.',
+          restStyle: 'margin: 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-value); text-wrap: pretty',
+          owner: 'Set by medical staff · Fri 11 Sept',
+          ownerStyle: 'margin: 0; font-size: var(--t-caption); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--on-tint-label)'
+        },
+        sections: this.section(SECTIONS_SS, 'Availability'), jump: this.jump(SECTIONS_SS, 'Availability'),
+        panels: [this.pAvailability('ro'), this.pEntries('edit')],
+        rows: [], tabs: this.tabs('squad', 'ss'),
+        note: { title: 'y = 2706 becomes one tap, and y = 5102 the next panel down', body: 'Availability and Entries and corrections are the two panels a pitch-side admin needs, and they are now adjacent in the jump order. The bar reads \u201CAvailability · panel 3 of 10\u201D, so the jump is confirmed without scrolling back up. Availability is read-only for this role and says so; the correction buttons are 44px and sit on the row they correct.' }
+      },
+      {
+        id: 'p11', label: '11 · Profile · medic · top of screen',
+        isList: false, isProfile: true,
+        title: 'Adam Selby', sub: 'Flanker · #7 · Forwards, Rehab', chip: '\u2713 Whole squad',
+        hero: {
+          name: 'Adam Selby', status: 'Modified', sub: 'Flanker · #7 · Forwards, Rehab',
+          pillStyle: this.pill('Modified', true),
+          rest: 'No contact, no collision drills. Expected return Mon 21 Sept.',
+          restStyle: 'margin: 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-value); text-wrap: pretty',
+          owner: 'Set by you · Fri 11 Sept',
+          ownerStyle: 'margin: 0; font-size: var(--t-caption); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--on-tint-label)'
+        },
+        sections: this.section(SECTIONS_MED, 'Injury'), jump: this.jump(SECTIONS_MED, 'Injury'),
+        panels: [this.pInjury('medic')],
+        rows: [], tabs: this.tabs('squad', 'medic'),
+        note: { title: 'Same shell, same header, different first panel', body: 'The medic\u2019s order leads with Injury and Availability, and the clinical table is the same one as desktop with its caption intact. The bar reads \u201CInjury · panel 1 of 9\u201D. Nine, not ten, and nothing says which one is missing — each role only ever sees its own list.' }
+      },
+      {
+        id: 'p12', label: '12 · Profile · sport scientist · All panels open',
+        isList: false, isProfile: true,
+        title: 'Adam Selby', sub: 'Flanker · #7 · Forwards, Rehab', chip: '\u2713 Whole squad',
+        hero: {
+          name: 'Adam Selby', status: 'Modified', sub: 'Flanker · #7 · Forwards, Rehab',
+          pillStyle: this.pill('Modified', true),
+          rest: 'No contact, no collision drills. Expected return Mon 21 Sept.',
+          restStyle: 'margin: 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-value); text-wrap: pretty',
+          owner: 'Set by medical staff · Fri 11 Sept',
+          ownerStyle: 'margin: 0; font-size: var(--t-caption); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--on-tint-label)'
+        },
+        sections: this.section(SECTIONS_SS, 'Flags'), jump: this.jump(SECTIONS_SS, 'Flags'),
+        panels: [this.pFlags(true)],
+        rows: [], tabs: this.tabs('squad', 'ss'),
+        sheetOpen: true, sheetTitle: 'All panels · sport scientist',
+        note: { title: 'The whole list at once, with a value beside each name', body: 'All ten panels, in the role\u2019s order, each 44px and each carrying what it holds — \u201CFlags · 2 open\u201D, \u201CBody weight · 104.2 kg\u201D, \u201CS&C history log · empty\u201D. A pitch-side admin can see that a panel is empty before spending a tap on it. The list is the role\u2019s own: a coach opening this sheet sees nine rows and no gap where a tenth would be.' }
+      }
+    ].map(p => Object.assign({
+      jump: { current: '', position: '' }, sheetTitle: '',
+      sheetScrimStyle: p.sheetOpen ? 'position: absolute; inset: 0; background: var(--scrim); z-index: 2' : 'display: none',
+      sheetStyle: p.sheetOpen
+        ? 'position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; background: var(--surf); border-top: 1px solid var(--border); border-radius: var(--r-sheet) var(--r-sheet) 0 0; box-shadow: var(--shadow)'
+        : 'display: none'
+    }, p));
+
+    const changes = [
+      { tag: 'pattern', title: 'Every profile opens with the same status header', body: 'Name, position, group, availability status and restrictions, in the dashboard\u2019s words and tones: Available on --pill-good, Modified on --pill-warn, Unavailable on --pill-bad, Not recorded neutral. It is the one emphasised card on the screen, and it carries the bio strip and the development plan line so the tinted development bar and the bio row stop being two separate bands.', tokens: '--blue-100 / --blue-200 / --on-tint-value / --on-tint-label / --on-tint-meta · --pill-good --pill-warn --pill-bad · --surf2 for Not recorded' },
+      { tag: 'pattern', title: '\u201CNot recorded\u201D is the only word for no status', body: 'The squad list\u2019s \u201CNot set\u201D is retired. The pill is neutral, not a tone, because no status is not a state of availability; and the sentence form the dashboard already uses — \u201C3 not recorded\u201D — now matches the pill beside the name.', tokens: '--surf2 fill · --border · --muted text, no semantic pair' },
+      { tag: 'pattern', title: 'Panels are ordered by role, not by page', body: 'One panel library, one design each, ordered per role: sport scientist Flags and Athleticism; medic Injury and Availability; coach Availability then Injury; S&C the gym programme and Body weight; nutritionist Body weight and the nutrition plan. Nothing is restyled by role — only sequence changes.', tokens: 'no token change · --gap-card between panels, --gap-tile inside' },
+      { tag: 'pattern', title: 'Read-only panels keep their content and name their owner', body: 'A read-only panel ends with a well: an uppercase line — \u201CRead-only · set by medical staff\u201D, \u201CRead-only · edited by the nutritionist\u201D — and one sentence naming the person and the date. No control is rendered at 45% opacity; disabled is for a control you could have used, not for one that was never yours.', tokens: '--surf2 in --border, --muted text · --t-caption uppercase at --t-eyebrow-tracking' },
+      { tag: 'pattern', title: 'Withheld panels are absent, and nothing counts them', body: 'A panel a role cannot see has no heading, no placeholder, no lock glyph and no \u201Chidden\u201D row, and no count anywhere on the screen changes shape when it is missing. The nutritionist\u2019s profile is six panels and never says so.', tokens: 'no token' },
+      { tag: 'pattern', title: 'The coach\u2019s injury card stops after expected return', body: 'Status, restrictions, expected return, then the card ends. Diagnosis, mechanism, stage and review notes are not rendered and nothing marks their place. The panel reads as complete on its own terms, which is the point.', tokens: 'no token · same panel shell as the medic\u2019s' },
+      { tag: 'pattern', title: 'The phone profile is a status header plus a jump bar', body: 'The seven-screen scroll is gone. A 132px header, then a sticky 52px bar naming the current panel and its position — \u201CFlags · panel 1 of 10\u201D — with All panels beside it. Tapping that opens the full list as a sheet: every panel in the role\u2019s order, 44px a row, each with a value beside its name so an empty panel is visible before it costs a tap. No sideways scroll, and no panel name off the right edge. Availability moves from y = 2706 to one tap and entries and corrections from y = 5102 to one tap.', tokens: '--bar-bg with --bar-blur on the jump bar · --r-sheet on the sheet · --scrim behind it · rows at --touch-min · --wash-accent on the current row' },
+      { tag: 'pattern', title: 'Squad rows are 60px on a phone and the name is the link', body: 'Against the 34px measured. The pill stays on the right and the restriction line stays on the row; neither moves behind a tap. Desktop rows keep the five measured columns and both washes.', tokens: '--touch-min floor · --wash-warn and --wash-bad row washes · --accent on the name' },
+      { tag: 'pattern', title: 'Empty panels state the requirement, never a zero', body: 'A missing value is an em dash in --faint and leaves the denominator: \u201Cn = 0\u201D, \u201Ca trend needs three weigh-ins\u201D, \u201Cno plan assigned — targets are per kilogram, so a plan needs a weigh-in\u201D. The empty injury panel adds \u201CThis is not the same as being cleared.\u201D', tokens: '--line-dashed empty frame · --faint dashes · no --bad, no zeros' },
+      { tag: 'screen-specific', title: 'Flags stays beside Athleticism for the sport scientist', body: 'Kept exactly as the review found it: Athleticism opens the left column, Flags the right, so the composite and the reason it matters are read together. This pairing is this role on this screen, not a rule for other roles.', tokens: 'two-column grid at minmax(0, 1fr) each' },
+      { tag: 'screen-specific', title: '\u201CLower is better on this test\u201D sits under the three tests it applies to', body: 'Kept on 10m sprint, 40m sprint and the Bronco test, beside the percentile rather than in a legend, because the percentile is the number it corrects.', tokens: '--t-caption at --w-semi in --muted' },
+      { tag: 'pattern', title: 'The coach-visible note says what may go in it', body: 'The medic\u2019s note field now carries the hint \u201CCoach visible. Describe the restriction, not the injury. Do not name a diagnosis or a protocol.\u201D It is the one place a clinical detail can leak into a coach-visible field by hand, so the rule sits on the field rather than in a policy document.', tokens: '--t-caption in --muted under --field' },
+      { tag: 'pattern', title: 'The restriction line never names a protocol', body: '\u201CReturn to play protocol, stage 3 of 6\u201D is a clinical fact and now appears only in the medic\u2019s clinical record, as the Stage row. Everywhere else — the squad list, every status header, every injury and availability panel — the restriction reads \u201CNo contact, no collision drills\u201D, which is what a coach acts on.', tokens: 'no token' },
+      { tag: 'screen-specific', title: 'The coach\u2019s status header carries five bio figures, not six', body: 'Body mass is removed for the coach and kept for the sport scientist, medic, S&C and nutritionist. Nothing marks the gap: the strip is five figures wide. Logged under Open against code as a club setting rather than a fixed permission.', tokens: 'no token · same header card' },
+      { tag: 'screen-specific', title: 'The availability form keeps its reason field and its coach-visible note', body: 'Three status buttons, a reason, and the note field with its hint. That hint is the form telling the medic where the boundary is.', tokens: '--field fill · --border · pills at 34px desktop and --touch-min on phone' },
+      { tag: 'screen-specific', title: 'Corrections say what a correction does, once, at the top of the panel', body: 'Kept from the running screen: entries are never overwritten, a correction records a new dated revision against your name, the window is a fixed 28 days, and gym set logs and the weekly nutrition check-in are not correctable here.', tokens: 'no token' }
+    ].map(c => Object.assign({
+      tagStyle: 'flex: none; display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: var(--r); font-size: var(--t-pill); font-weight: var(--w-semi); background: ' + (c.tag === 'pattern' ? 'var(--wash-accent)' : 'var(--surf2)') + '; border: 1px solid ' + (c.tag === 'pattern' ? 'var(--accent)' : 'var(--border)') + '; color: ' + (c.tag === 'pattern' ? 'var(--accent)' : 'var(--muted)')
+    }, c));
+
+    const opens = [
+      { q: 'Is body mass hidden from the coach by role, or by a club setting?', why: 'The coach\u2019s status header drops body mass on this board, so a coach reads availability and restrictions without a weight figure. The captures show the bio strip with weight for every role, so this is a change rather than an observation, and clubs differ on whether coaches see weight at all. Treat it as a club-level setting — on or off for the coach role — rather than a fixed permission, and confirm the default.' },
+      { q: 'Does the coach role actually see Nutrition plan, Body weight, Entries and corrections and the S&C history log?', why: 'The coach capture shows all of them, with Edit on nutrition and Correct check-in on the entries table — but that capture is of an athlete with no injury, so it cannot separate \u201Cthe coach has this permission\u201D from \u201Cthe seed gave this user every role\u201D. The frame follows the capture. Confirm against the permission set.' },
+      { q: 'What does the S&C gym panel list per athlete?', why: 'The brief names ATHLETE_GYM as actionable for S&C and absent for the nutritionist, but no capture shows the panel\u2019s contents at profile level. The frame shows the assigned block, week position, session counts and an adjust action, all of which are consistent with the development plan bar; the actual rows, sets and adherence figures are not established.' },
+      { q: 'Which fields does the medic\u2019s clinical record hold, and what are they called?', why: 'The brief says the medic is the only role that sees diagnosis and mechanism. No capture shows either field, so Diagnosis, Mechanism, Stage and Reviewed are illustrative names in an illustrative order. The boundary is spec; the field list is not.' },
+      { q: 'Is the injury panel\u2019s \u201CLog injury\u201D control available to the sport scientist?', why: 'It renders in the sport scientist capture, on an athlete with no current restriction. Whether pressing it opens a clinical form — and if so what that role may then write — is not observable from a still.' },
+      { q: 'Does the profile\u2019s availability control exist for the coach, and is it limited to non-injury reasons?', why: 'The squad list intro says a coach can record a non-injury absence directly from the profile, and the coach capture shows the full form including the injury-linked case. The frame renders it read-only for the coach on an injury-linked status. Confirm whether the form is hidden, limited to non-injury reasons, or open.' },
+      { q: 'Is the period control on the profile per-role or per-user?', why: 'The captures show \u201CThis season · 2026/27\u201D for three roles and \u201CLast 28 days\u201D for the medic. That may be a default per role, a remembered choice, or seed noise.' },
+      { q: 'What exactly is the ACWR and wellness-rating card, and is it one of the ten panels?', why: 'It renders between Flags and Goals in all four captures but is not in the ten panels the review inventoried by name. It is not drawn on this board rather than guessed at. Name it and it can be placed in each role\u2019s order.' },
+      { q: 'Which roles can raise or acknowledge a flag?', why: 'Acknowledge and Add note render for the sport scientist, coach and medic in the captures. S&C and nutritionist flag access is not established, so the S&C frame shows the panel without actions and the nutritionist frame shows it read-only.' },
+      { q: 'Who can see the subject access request panel?', why: 'It is in the sport scientist\u2019s ten. Whether it belongs to that role as admin rather than as sport scientist decides whether it appears on the other four profiles at all.' }
+    ];
+
+    return { desktops, phones, changes, opens };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/fonts.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/icons.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/colors.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/typography.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/spacing.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/shape.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/motion.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/base.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/styles.css" />
+<script src="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/_ds_bundle.js"></script>
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-core); color: var(--text); }
+  a { color: var(--accent); text-decoration: none; pointer-events: none; }
+  a:hover { color: var(--blue-600); }
+  * { transition: none !important; animation: none !important; }
+</style>
+</helmet>
+
+<div style="padding: 40px; background: var(--bg); box-sizing: border-box">
+
+  <div style="max-width: 1520px; margin: 0 auto 34px; display: flex; flex-direction: column; gap: 8px">
+    <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">PATTERN-S3 &middot; FINAL &middot; review board &middot; static</p>
+    <p style="margin: 0; font-size: var(--t-hero); font-weight: var(--w-black); letter-spacing: var(--t-hero-tracking); line-height: var(--lh-hero); color: var(--text)">Injuries and availability, across both apps</p>
+    <p style="margin: 0; max-width: 68ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Fourteen artboards &mdash; seven staff desktop at 1440 &times; 900, two staff phone and five athlete phone at 375 &times; 812. Nothing is clickable and no hovers or transitions are active. One club-local instant: Fri 11 Sept 2026, 16:20 Europe/London, match Sat 12 Sept v Colthorne RFC, squad of 30. Four people: Ruth Callaghan (medic), Owen Hartnell (S&amp;C), Kate Doyle (coach), and the athlete. Desktop frames taller than 900px are clipped at the fold and the caption names what continues.</p>
+  </div>
+
+  <div style="max-width: 1520px; margin: 0 auto 44px; display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 420px)); gap: var(--gap-card)">
+    <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--on-tint-label); text-transform: uppercase">The gap this closes</p>
+      <p style="margin: 0; font-size: var(--t-card); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">The athlete is told once, and the telling stays until they read it</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">A status change writes one card at the top of Today &mdash; &ldquo;Your status has changed&rdquo; &mdash; above To do, carrying the new status word and who set it. It is not a toast and it does not expire on a timer: it stays on every Today until the status screen has been opened once, then it is gone and the availability card carries the status as before. Opening it is the only thing that clears it.</p>
+    </div>
+    <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">The stage decision</p>
+      <p style="margin: 0; font-size: var(--t-card); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Fydr holds the stage number. The club's protocol holds the stage</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">The only stage data in the captures is &ldquo;stage 3 of 6&rdquo;. So the ladder is numbered, not named: the current stage carries what is actually recorded against it &mdash; the restriction line, the review date, the expected return &mdash; and every other stage is a number and a state word. What the next stage needs is not invented; the screen says the protocol is the source and asks the medic to confirm they have read it.</p>
+    </div>
+    <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">Two records, never one</p>
+      <p style="margin: 0; font-size: var(--t-card); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">An absence is the coach's. An injury is the medic's</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">The coach's absence form has no clinical half and says so: no diagnosis field, no site, no stage, no injury board row, and a well naming what it does not create. It shares the availability words and tones with the medic's record because a coach reading a squad list must not have to tell them apart, and it shares nothing else.</p>
+    </div>
+  </div>
+
+  <div style="max-width: 1520px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start">
+    <sc-for list="{{ frames }}" as="f" hint-placeholder-count="14">
+      <div style="{{ f.slotStyle }}">
+        <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">{{ f.label }} <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">{{ f.dims }}</span></p>
+
+        <div id="{{ f.id }}" style="{{ f.boxStyle }}">
+
+          <sc-if value="{{ f.isDesktop }}" hint-placeholder-val="{{ true }}">
+            <div style="flex: 0 0 214px; width: 214px; background: var(--surf); border-right: 1px solid var(--border); display: flex; flex-direction: column">
+              <div style="padding: 20px 22px 14px; display: flex; align-items: baseline; justify-content: space-between">
+                <span style="font-family: var(--font-brand); font-size: var(--t-subhead); font-weight: var(--w-black); letter-spacing: -0.03em; color: var(--text)">Fydr.</span>
+                <span aria-hidden="true" style="font-size: var(--t-body-sm); color: var(--faint)">&#171;</span>
+              </div>
+              <nav style="display: flex; flex-direction: column">
+                <sc-for list="{{ f.nav }}" as="n" hint-placeholder-count="8">
+                  <div style="{{ n.rowStyle }}">
+                    <i class="{{ n.iconClass }}" style="{{ n.iconStyle }}"></i>
+                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ n.label }}</span>
+                  </div>
+                </sc-for>
+              </nav>
+              <div style="margin-top: auto; padding: 14px 22px 20px; border-top: 1px solid var(--hair); display: flex; flex-direction: column; gap: 10px">
+                <p style="margin: 0; font-size: var(--t-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--faint)">{{ f.signedIn }}</p>
+                <div style="display: flex; align-items: center; gap: 10px; font-size: var(--t-body); font-weight: var(--w-semi); color: var(--text)">
+                  <i class="ph-fill ph-sign-out" style="font-size: 20px; line-height: 1; color: var(--muted)"></i>
+                  <span>Log out</span>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+
+            <sc-if value="{{ f.isDesktop }}" hint-placeholder-val="{{ true }}">
+              <div style="flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: var(--pad-bar); background: var(--bar-bg); border-bottom: 1px solid var(--border)">
+                <div style="display: flex; align-items: center; gap: var(--gap-chip)">
+                  <sc-for list="{{ f.chips }}" as="c" hint-placeholder-count="5">
+                    <span style="{{ c.style }}">{{ c.label }}</span>
+                  </sc-for>
+                </div>
+                <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-num-meta); font-weight: var(--w-num); font-variant-numeric: tabular-nums; color: var(--muted)">{{ f.countLine }}</p>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ f.isPhone }}" hint-placeholder-val="{{ false }}">
+              <div style="flex: 0 0 auto; padding: 16px 16px 12px; background: var(--surf); border-bottom: 1px solid var(--border)">
+                <p style="{{ f.phoneBackStyle }}">{{ f.phoneBack }}</p>
+                <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">{{ f.eyebrow }}</p>
+                <p style="margin: 3px 0 0; font-size: var(--t-subhead); font-weight: var(--w-black); letter-spacing: -0.02em; line-height: var(--lh-tight); color: var(--text)">{{ f.title }}</p>
+                <p style="{{ f.phoneSubStyle }}">{{ f.phoneSub }}</p>
+              </div>
+            </sc-if>
+
+            <div style="{{ f.contentStyle }}">
+
+              <sc-if value="{{ f.isDesktop }}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px">
+                  <div style="min-width: 0">
+                    <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">{{ f.eyebrow }}</p>
+                    <p style="margin: 4px 0 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">{{ f.title }}</p>
+                    <p style="{{ f.introStyle }}">{{ f.intro }}</p>
+                  </div>
+                  <div style="flex: none; display: flex; align-items: center; gap: var(--gap-chip)">
+                    <sc-for list="{{ f.headActions }}" as="a" hint-placeholder-count="2">
+                      <span style="{{ a.style }}">{{ a.label }}</span>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+
+              <div style="{{ f.gridStyle }}">
+                <sc-for list="{{ f.cols }}" as="col" hint-placeholder-count="2">
+                  <div style="min-width: 0; display: flex; flex-direction: column; gap: var(--gap-tile)">
+                    <sc-for list="{{ col.panels }}" as="p" hint-placeholder-count="2">
+                      <div style="{{ p.cardStyle }}">
+
+                        <sc-if value="{{ p.hasHead }}" hint-placeholder-val="{{ true }}">
+                          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px">
+                            <div style="min-width: 0">
+                              <p style="{{ p.titleStyle }}">{{ p.title }}</p>
+                              <p style="{{ p.subStyle }}">{{ p.sub }}</p>
+                            </div>
+                            <div style="flex: none; display: flex; align-items: center; gap: var(--gap-chip)">
+                              <sc-for list="{{ p.actions }}" as="a" hint-placeholder-count="1">
+                                <span style="{{ a.style }}">{{ a.label }}</span>
+                              </sc-for>
+                            </div>
+                          </div>
+                        </sc-if>
+
+                        <sc-for list="{{ p.blocks }}" as="b" hint-placeholder-count="3">
+                          <div style="{{ b.wrapStyle }}">
+
+                            <sc-if value="{{ b.isPara }}" hint-placeholder-val="{{ true }}">
+                              <p style="{{ b.style }}">{{ b.text }}</p>
+                            </sc-if>
+
+                            <sc-if value="{{ b.isStat }}" hint-placeholder-val="{{ false }}">
+                              <p style="{{ b.eyebrowStyle }}">{{ b.eyebrow }}</p>
+                              <p style="{{ b.valueStyle }}">{{ b.value }}</p>
+                              <p style="{{ b.subStyle }}">{{ b.sub }}</p>
+                            </sc-if>
+
+                            <sc-if value="{{ b.isKV }}" hint-placeholder-val="{{ false }}">
+                              <div style="border: 1px solid var(--hair); border-radius: var(--r); overflow: hidden">
+                                <div style="display: grid; grid-template-columns: minmax(0, 120px) minmax(0, 1fr); gap: 12px; padding: 7px 12px; background: var(--surf2); border-bottom: 1px solid var(--hair)">
+                                  <span style="font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--muted)">Field</span>
+                                  <span style="font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--muted)">Recorded</span>
+                                </div>
+                                <sc-for list="{{ b.rows }}" as="r" hint-placeholder-count="4">
+                                  <div style="{{ r.style }}">
+                                    <span style="font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--muted)">{{ r.k }}</span>
+                                    <span style="{{ r.vStyle }}">{{ r.v }}</span>
+                                  </div>
+                                </sc-for>
+                              </div>
+                            </sc-if>
+
+                            <sc-if value="{{ b.isField }}" hint-placeholder-val="{{ false }}">
+                              <p style="{{ b.labelStyle }}">{{ b.label }}</p>
+                              <div style="{{ b.fieldStyle }}">
+                                <span style="{{ b.valueStyle }}">{{ b.value }}</span>
+                                <span style="{{ b.caretStyle }}">&#8963;</span>
+                              </div>
+                              <p style="{{ b.hintStyle }}">{{ b.hint }}</p>
+                            </sc-if>
+
+                            <sc-if value="{{ b.isSeg }}" hint-placeholder-val="{{ false }}">
+                              <p style="{{ b.labelStyle }}">{{ b.label }}</p>
+                              <div style="display: flex; flex-wrap: wrap; gap: var(--gap-chip)">
+                                <sc-for list="{{ b.opts }}" as="o" hint-placeholder-count="3">
+                                  <span style="{{ o.style }}">{{ o.label }}</span>
+                                </sc-for>
+                              </div>
+                              <p style="{{ b.hintStyle }}">{{ b.hint }}</p>
+                            </sc-if>
+
+                            <sc-if value="{{ b.isStages }}" hint-placeholder-val="{{ false }}">
+                              <div style="display: flex; flex-direction: column; gap: 6px">
+                                <sc-for list="{{ b.items }}" as="s" hint-placeholder-count="6">
+                                  <div style="{{ s.style }}">
+                                    <span style="{{ s.numStyle }}">{{ s.n }}</span>
+                                    <div style="min-width: 0; flex: 1 1 auto">
+                                      <p style="{{ s.nameStyle }}">{{ s.name }}</p>
+                                      <p style="{{ s.bodyStyle }}">{{ s.body }}</p>
+                                    </div>
+                                    <span style="{{ s.tagStyle }}">{{ s.tag }}</span>
+                                  </div>
+                                </sc-for>
+                              </div>
+                            </sc-if>
+
+                            <sc-if value="{{ b.isRows }}" hint-placeholder-val="{{ false }}">
+                              <div style="display: flex; flex-direction: column">
+                                <sc-for list="{{ b.items }}" as="r" hint-placeholder-count="3">
+                                  <div style="{{ r.style }}">
+                                    <div style="min-width: 0; flex: 1 1 auto">
+                                      <p style="{{ r.nameStyle }}">{{ r.name }}</p>
+                                      <p style="{{ r.metaStyle }}">{{ r.meta }}</p>
+                                    </div>
+                                    <span style="{{ r.pillStyle }}">{{ r.pill }}</span>
+                                  </div>
+                                </sc-for>
+                              </div>
+                            </sc-if>
+
+                            <sc-if value="{{ b.isTable }}" hint-placeholder-val="{{ false }}">
+                              <div style="border: 1px solid var(--hair); border-radius: var(--r); overflow: hidden">
+                                <div style="{{ b.headStyle }}">
+                                  <sc-for list="{{ b.cols }}" as="c" hint-placeholder-count="4">
+                                    <span style="font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--muted)">{{ c }}</span>
+                                  </sc-for>
+                                </div>
+                                <sc-for list="{{ b.rows }}" as="r" hint-placeholder-count="5">
+                                  <div style="{{ r.style }}">
+                                    <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="4">
+                                      <span style="{{ c.style }}">{{ c.text }}</span>
+                                    </sc-for>
+                                  </div>
+                                </sc-for>
+                              </div>
+                            </sc-if>
+
+                            <sc-if value="{{ b.isWell }}" hint-placeholder-val="{{ false }}">
+                              <div style="{{ b.wellStyle }}">
+                                <p style="{{ b.eyebrowStyle }}">{{ b.eyebrow }}</p>
+                                <p style="{{ b.style }}">{{ b.text }}</p>
+                              </div>
+                            </sc-if>
+
+                            <sc-if value="{{ b.isBtns }}" hint-placeholder-val="{{ false }}">
+                              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-chip)">
+                                <sc-for list="{{ b.items }}" as="a" hint-placeholder-count="2">
+                                  <span style="{{ a.style }}">{{ a.label }}</span>
+                                </sc-for>
+                              </div>
+                              <p style="{{ b.hintStyle }}">{{ b.hint }}</p>
+                            </sc-if>
+
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <sc-if value="{{ f.hasTabs }}" hint-placeholder-val="{{ false }}">
+              <div style="flex: 0 0 auto; display: flex; align-items: center; justify-content: space-around; padding: 8px 4px 12px; background: var(--surf); border-top: 1px solid var(--border)">
+                <sc-for list="{{ f.tabs }}" as="t" hint-placeholder-count="5">
+                  <div style="display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 56px">
+                    <i class="{{ t.iconClass }}" style="{{ t.iconStyle }}"></i>
+                    <span style="{{ t.labelStyle }}">{{ t.label }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+
+        <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px 16px; display: flex; flex-direction: column; gap: 5px">
+          <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ f.note.title }}</p>
+          <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ f.note.body }}</p>
+          <p style="{{ f.note.foldStyle }}">{{ f.note.fold }}</p>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="max-width: 900px; margin: 56px auto 0; display: flex; flex-direction: column; gap: var(--gap-card)">
+
+    <p style="margin: 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">What changed, and on which token</p>
+
+    <sc-for list="{{ notes }}" as="n" hint-placeholder-count="12">
+      <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 14px">
+          <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ n.title }}</p>
+          <span style="{{ n.scopeStyle }}">{{ n.scope }}</span>
+        </div>
+        <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ n.body }}</p>
+        <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">{{ n.tokens }}</p>
+      </div>
+    </sc-for>
+
+    <p style="margin: 24px 0 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">Needs new token</p>
+    <sc-for list="{{ newTokens }}" as="n" hint-placeholder-count="1">
+      <div style="background: var(--surf); border: 1px solid rgba(var(--warn-rgb), 0.5); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ n.title }}</p>
+        <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ n.body }}</p>
+        <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">{{ n.tokens }}</p>
+      </div>
+    </sc-for>
+
+    <p style="margin: 24px 0 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">Open against code</p>
+    <sc-for list="{{ opens }}" as="n" hint-placeholder-count="10">
+      <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ n.title }}</p>
+        <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ n.body }}</p>
+      </div>
+    </sc-for>
+
+    <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--on-tint-label); text-transform: uppercase">Where the data came from</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">Every field name, status word, restriction line, site, date and athlete on this board is read off the six walkthrough captures and the three approved boards. The injury row shape &mdash; site, side, since, expected back &mdash; and the report's four columns are MEDIC-28 and MEDIC-19. The coach's limited view is COACH-28's allocation screen. The rehab programme, its rehab tag and its stage count are SC-24a and MEDIC-24. The athlete's banner wording is ATH-ADULT-34. The availability words, tones, the coach-visible note hint and the read-only well are the approved STAFF-SS-02-05 board. Nothing about proposal states, stage names, history rows or club policy is read from a capture &mdash; all four are designed here and listed under Open against code.</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:1200}}">
+const NAV = [
+  { key: 'dash', label: 'Dashboard', icon: 'layout' },
+  { key: 'squad', label: 'Squad overview', icon: 'users' },
+  { key: 'sched', label: 'Schedule', icon: 'clock' },
+  { key: 'reports', label: 'Reports', icon: 'briefcase' },
+  { key: 'nutrition', label: 'Nutrition', icon: 'fork-knife' },
+  { key: 'gym', label: 'Gym programme', icon: 'barbell' },
+  { key: 'leaderboard', label: 'Leaderboard', icon: 'chart-bar' },
+  { key: 'settings', label: 'Settings', icon: 'gear' }
+];
+
+const CARD = 'background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;';
+const TONE = {
+  good: ['var(--pill-good)', 'var(--good)', 'var(--on-good)'],
+  warn: ['var(--pill-warn)', 'var(--warn)', 'var(--on-warn)'],
+  bad: ['var(--pill-bad)', 'var(--bad)', 'var(--on-bad)'],
+  none: ['var(--surf2)', 'var(--border)', 'var(--muted)']
+};
+const STATUS_TONE = { 'Available': 'good', 'Modified': 'warn', 'Unavailable': 'bad', 'Not recorded': 'none' };
+
+class Component extends DCLogic {
+
+  nav(active) {
+    return NAV.map(n => {
+      const on = n.key === active;
+      const ink = on ? 'var(--accent)' : 'var(--text)';
+      return {
+        label: n.label,
+        iconClass: 'ph-fill ph-' + n.icon,
+        iconStyle: 'flex: none; font-size: 20px; line-height: 1; color: ' + ink,
+        rowStyle: 'position: relative; display: flex; align-items: center; gap: 14px; padding: 11px 22px; font-size: var(--t-body); font-weight: var(--w-semi); color: ' + ink + (on ? '; box-shadow: inset 3px 0 0 var(--accent)' : '')
+      };
+    });
+  }
+
+  chips(active) {
+    return ['Whole squad', 'Backs', 'Forwards', 'Rehab', 'Academy'].map(label => {
+      const on = label === (active || 'Whole squad');
+      return {
+        label: on ? '\u2713 ' + label : label,
+        style: 'display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: var(--r); font-size: var(--t-body-xs); font-weight: var(--w-semi); white-space: nowrap; background: ' + (on ? 'var(--wash-accent)' : 'var(--surf)') + '; border: 1px solid ' + (on ? 'var(--accent)' : 'var(--border)') + '; color: ' + (on ? 'var(--accent)' : 'var(--text)')
+      };
+    });
+  }
+
+  btn(label, variant, h) {
+    const height = h || 36;
+    const base = 'display: inline-flex; align-items: center; justify-content: center; height: ' + height + 'px; padding: 0 14px; border-radius: var(--r); font-size: var(--t-body-xs); font-weight: var(--w-semi); white-space: nowrap; ';
+    if (variant === 'primary') return { label, style: base + 'background: var(--accent); box-shadow: var(--ring-action); color: #fff' };
+    if (variant === 'ghost') return { label, style: base + 'color: var(--accent)' };
+    if (variant === 'off') return { label, style: base + 'border: 1px solid var(--border); color: var(--faint)' };
+    return { label, style: base + 'border: 1px solid var(--accent); color: var(--accent)' };
+  }
+
+  pill(status, big) {
+    const t = TONE[STATUS_TONE[status] || status] || TONE.none;
+    return 'display: inline-flex; align-items: center; height: ' + (big ? 26 : 22) + 'px; padding: 0 10px; border-radius: var(--r); font-size: ' + (big ? 'var(--t-body-xs)' : 'var(--t-pill)') + '; font-weight: var(--w-semi); white-space: nowrap; background: ' + t[0] + '; border: 1px solid ' + t[1] + '; color: ' + t[2];
+  }
+
+  // ---- blocks -------------------------------------------------------------
+
+  para(text, o) {
+    o = o || {};
+    const ink = o.ink || 'var(--muted)';
+    const size = o.size || 'var(--t-body-sm)';
+    const weight = o.weight || 'var(--w-regular)';
+    return {
+      isPara: true, text,
+      wrapStyle: 'display: block',
+      style: 'margin: 0; font-size: ' + size + '; font-weight: ' + weight + '; line-height: var(--lh-base); color: ' + ink + '; text-wrap: pretty'
+    };
+  }
+
+  eyebrow(text, ink) {
+    return {
+      isPara: true, text,
+      wrapStyle: 'display: block',
+      style: 'margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: ' + (ink || 'var(--muted)')
+    };
+  }
+
+  stat(eyebrow, value, sub, tone) {
+    const ink = tone ? TONE[tone][2] : 'var(--text)';
+    return {
+      isStat: true, eyebrow, value, sub,
+      wrapStyle: 'display: block',
+      eyebrowStyle: 'margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: ' + ink,
+      valueStyle: 'margin: 4px 0 0; font-size: var(--t-subhead); font-weight: var(--w-black); letter-spacing: -0.02em; line-height: var(--lh-tight); color: ' + ink,
+      subStyle: sub ? 'margin: 5px 0 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: ' + ink + '; text-wrap: pretty' : 'display: none'
+    };
+  }
+
+  kv(rows) {
+    return {
+      isKV: true,
+      wrapStyle: 'display: block',
+      rows: rows.map((r, i) => ({
+        k: r[0], v: r[1],
+        style: 'display: grid; grid-template-columns: minmax(0, 120px) minmax(0, 1fr); gap: 12px; padding: 7px 12px' + (i ? '; border-top: 1px solid var(--hair)' : ''),
+        vStyle: 'font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: ' + (r[2] === 'faint' ? 'var(--faint)' : 'var(--text)') + '; text-wrap: pretty'
+      }))
+    };
+  }
+
+  field(label, value, o) {
+    o = o || {};
+    const empty = !!o.empty;
+    return {
+      isField: true, label, value, hint: o.hint || '',
+      wrapStyle: 'display: block',
+      labelStyle: 'margin: 0 0 4px; font-size: var(--t-caption); font-weight: var(--w-semi); color: ' + (o.required ? 'var(--text)' : 'var(--muted)'),
+      fieldStyle: 'display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: ' + (o.h || 34) + 'px; padding: ' + (o.h ? '8px 12px' : '0 12px') + '; box-sizing: border-box; background: var(--field); border: 1px solid var(--border); border-radius: var(--r)',
+      valueStyle: 'font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: ' + (empty ? 'var(--faint)' : 'var(--text)') + '; text-wrap: pretty',
+      caretStyle: o.select ? 'flex: none; font-size: var(--t-body-xs); color: var(--faint)' : 'display: none',
+      hintStyle: o.hint ? 'margin: 4px 0 0; font-size: var(--t-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty' : 'display: none'
+    };
+  }
+
+  seg(label, opts, active, o) {
+    o = o || {};
+    return {
+      isSeg: true, label, hint: o.hint || '',
+      wrapStyle: 'display: block',
+      labelStyle: label ? 'margin: 0 0 6px; font-size: var(--t-caption); font-weight: var(--w-semi); color: var(--text)' : 'display: none',
+      hintStyle: o.hint ? 'margin: 6px 0 0; font-size: var(--t-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty' : 'display: none',
+      opts: opts.map(label2 => {
+        const on = label2 === active;
+        const tone = STATUS_TONE[label2];
+        const t = on && tone ? TONE[tone] : null;
+        const h = o.h || 34;
+        const base = 'display: inline-flex; align-items: center; justify-content: center; height: ' + h + 'px; padding: 0 14px; border-radius: var(--r); font-size: var(--t-body-xs); font-weight: var(--w-semi); white-space: nowrap; ';
+        if (on && t) return { label: label2, style: base + 'background: ' + t[0] + '; border: 1px solid ' + t[1] + '; color: ' + t[2] };
+        if (on) return { label: label2, style: base + 'background: var(--wash-accent); border: 1px solid var(--accent); color: var(--accent)' };
+        return { label: label2, style: base + 'background: var(--surf); border: 1px solid var(--border); color: var(--text)' };
+      })
+    };
+  }
+
+  stages(items) {
+    return {
+      isStages: true,
+      wrapStyle: 'display: block',
+      items: items.map(s => {
+        const now = s.state === 'now';
+        const next = s.state === 'next';
+        const done = s.state === 'done';
+        const bg = now ? 'var(--pill-warn)' : (next ? 'var(--blue-50)' : 'var(--surf)');
+        const bd = now ? 'var(--warn)' : (next ? 'var(--blue-200)' : 'var(--hair)');
+        const ink = now ? 'var(--on-warn)' : 'var(--text)';
+        return {
+          n: s.n, name: s.name, body: s.body || '', tag: s.tag || '',
+          style: 'display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; background: ' + bg + '; border: 1px solid ' + bd + '; border-radius: var(--r)',
+          numStyle: 'flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: var(--r-round); font-family: var(--font-num); font-size: var(--t-pill); font-weight: var(--w-bold); font-variant-numeric: tabular-nums; background: ' + (now ? 'var(--warn)' : (done ? 'var(--accent)' : 'var(--surf2)')) + '; color: ' + (now || done ? '#fff' : 'var(--muted)'),
+          nameStyle: 'margin: 2px 0 0; font-size: var(--t-body-xs); font-weight: ' + (now ? 'var(--w-bold)' : 'var(--w-semi)') + '; line-height: var(--lh-tight); color: ' + ink,
+          bodyStyle: s.body ? 'margin: 4px 0 0; font-size: var(--t-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: ' + (now ? 'var(--on-warn)' : 'var(--muted)') + '; text-wrap: pretty' : 'display: none',
+          tagStyle: s.tag ? 'flex: none; margin-top: 2px; font-size: var(--t-caption); font-weight: var(--w-semi); text-transform: uppercase; letter-spacing: var(--t-eyebrow-tracking); color: ' + (now ? 'var(--on-warn)' : 'var(--faint)') : 'display: none'
+        };
+      })
+    };
+  }
+
+  rows(items, o) {
+    o = o || {};
+    return {
+      isRows: true,
+      wrapStyle: 'display: block',
+      items: items.map((r, i) => ({
+        name: r.name, meta: r.meta || '', pill: r.pill || '',
+        style: 'display: flex; align-items: center; gap: 12px; padding: ' + (o.h ? '0 0' : '9px 0') + '; min-height: ' + (o.h || 0) + 'px' + (i ? '; border-top: 1px solid var(--hair)' : ''),
+        nameStyle: 'margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: ' + (r.ink || 'var(--text)'),
+        metaStyle: r.meta ? 'margin: 3px 0 0; font-size: var(--t-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty' : 'display: none',
+        pillStyle: r.pill ? this.pill(r.pillTone || r.pill) : 'display: none'
+      }))
+    };
+  }
+
+  table(cols, rows, widths) {
+    const grid = 'display: grid; grid-template-columns: ' + widths + '; gap: 12px; padding: 8px 12px;';
+    return {
+      isTable: true, cols,
+      wrapStyle: 'display: block',
+      headStyle: grid + ' background: var(--surf2); border-bottom: 1px solid var(--hair)',
+      rows: rows.map((r, i) => ({
+        style: grid + (i ? ' border-top: 1px solid var(--hair);' : ''),
+        cells: r.map((c, j) => ({
+          text: typeof c === 'string' ? c : c.t,
+          style: 'font-size: var(--t-body-xs); font-weight: ' + (j === 0 ? 'var(--w-semi)' : 'var(--w-regular)') + '; line-height: var(--lh-base); color: ' + ((typeof c === 'object' && c.faint) ? 'var(--faint)' : 'var(--text)') + (j > 0 ? '; font-family: var(--font-num); font-variant-numeric: tabular-nums' : '') + '; text-wrap: pretty'
+        }))
+      }))
+    };
+  }
+
+  well(eyebrow, text) {
+    return {
+      isWell: true, eyebrow, text,
+      wrapStyle: 'display: block',
+      wellStyle: 'background: var(--surf2); border: 1px solid var(--border); border-radius: var(--r); padding: 10px 12px',
+      eyebrowStyle: 'margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--muted)',
+      style: 'margin: 5px 0 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty'
+    };
+  }
+
+  btns(items, hint) {
+    return {
+      isBtns: true, hint: hint || '',
+      wrapStyle: 'display: block',
+      hintStyle: hint ? 'margin: 6px 0 0; font-size: var(--t-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty' : 'display: none',
+      items: items.map(a => this.btn(a.label, a.variant, a.h || 36))
+    };
+  }
+
+  panel(o) {
+    const tone = o.tone;
+    const t = tone ? TONE[tone] : null;
+    let card = CARD;
+    if (tone === 'emph') card = 'background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;';
+    else if (t) card = 'background: ' + t[0] + '; border: 1px solid ' + t[1] + '; border-radius: var(--r); box-shadow: var(--shadow); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;';
+    const ink = tone === 'emph' ? 'var(--on-tint-value)' : (t ? t[2] : 'var(--text)');
+    const sub = tone === 'emph' ? 'var(--on-tint-label)' : (t ? t[2] : 'var(--muted)');
+    return {
+      cardStyle: card,
+      hasHead: !!o.title,
+      title: o.title || '', sub: o.sub || '',
+      titleStyle: 'margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: ' + ink,
+      subStyle: o.sub ? 'margin: 3px 0 0; font-size: var(--t-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: ' + sub : 'display: none',
+      actions: (o.actions || []).map(a => this.btn(a.label, a.variant, a.h || 30)),
+      blocks: o.blocks || []
+    };
+  }
+
+  tabs(kind, active) {
+    const set = kind === 'staff'
+      ? [['Dashboard', 'layout'], ['Squad', 'users'], ['Schedule', 'clock'], ['Flags', 'flag'], ['More', 'dots-three']]
+      : [['Today', 'clock'], ['My data', 'chart-bar'], ['Gym', 'barbell'], ['Me', 'user']];
+    return set.map(([label, icon]) => {
+      const on = label === active;
+      const gold = icon === 'barbell';
+      const ink = on ? 'var(--accent)' : (gold ? 'var(--highlight)' : 'var(--muted)');
+      return {
+        label,
+        iconClass: 'ph ph-' + icon,
+        iconStyle: 'font-size: 24px; line-height: 1; color: ' + ink,
+        labelStyle: 'font-size: var(--t-caption); font-weight: ' + (on ? 'var(--w-bold)' : 'var(--w-regular)') + '; color: ' + ink
+      };
+    });
+  }
+
+  frame(o) {
+    const phone = !!o.phone;
+    return {
+      id: o.id, label: o.label,
+      dims: phone ? '\u00b7 375 \u00d7 812' : '\u00b7 1440 \u00d7 900',
+      slotStyle: 'width: ' + (phone ? '375px' : '1440px') + '; display: flex; flex-direction: column; gap: 10px',
+      boxStyle: 'position: relative; width: ' + (phone ? '375px' : '1440px') + '; height: ' + (phone ? '812px' : '900px') + '; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; display: flex',
+      isDesktop: !phone, isPhone: phone,
+      nav: this.nav(o.navActive || 'squad'),
+      signedIn: o.signedIn || '',
+      chips: this.chips(o.chip),
+      countLine: o.countLine || '',
+      eyebrow: o.eyebrow || '', title: o.title || '',
+      intro: o.intro || '',
+      introStyle: o.intro ? 'margin: 6px 0 0; max-width: 92ch; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty' : 'display: none',
+      headActions: (o.headActions || []).map(a => this.btn(a.label, a.variant, 40)),
+      phoneBack: o.back || '',
+      phoneBackStyle: o.back ? 'margin: 0 0 8px; font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--accent)' : 'display: none',
+      phoneSub: o.phoneSub || '',
+      phoneSubStyle: o.phoneSub ? 'margin: 4px 0 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted)' : 'display: none',
+      contentStyle: 'flex: 1 1 auto; min-height: 0; padding: ' + (phone ? '14px 16px 0' : '18px 32px 0') + '; box-sizing: border-box; display: flex; flex-direction: column; gap: var(--gap-tile); overflow: hidden',
+      gridStyle: 'display: grid; grid-template-columns: ' + (o.grid || 'minmax(0, 1fr)') + '; gap: var(--gap-tile); align-items: start',
+      cols: o.cols,
+      hasTabs: !!o.tabs, tabs: o.tabs || [],
+      note: {
+        title: o.note.title, body: o.note.body,
+        fold: o.note.fold || '',
+        foldStyle: o.note.fold ? 'margin: 2px 0 0; font-size: var(--t-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty' : 'display: none'
+      }
+    };
+  }
+
+  renderVals() {
+    const P = (o) => this.panel(o);
+    const RESTRICTION_HINT = 'Coach visible. Describe the restriction, not the injury. Do not name a diagnosis or a protocol.';
+
+    const SELBY_CLINICAL = this.kv([
+      ['Diagnosis', 'Concussion, no loss of consciousness'],
+      ['Mechanism', 'Head contact in a tackle, Sat 30 Aug \u00b7 Marnbrook'],
+      ['Stage', '3 of 6 \u00b7 symptom-free 4 days'],
+      ['Reviewed', 'Fri 11 Sept \u00b7 Ruth Callaghan']
+    ]);
+
+    const frames = [
+
+      // 1 --------------------------------------------------------------- medic log injury, empty
+      this.frame({
+        id: 's3-1', label: '1 \u00b7 Medic \u00b7 Log an injury, empty form',
+        navActive: 'reports', signedIn: 'Ruth Callaghan \u00b7 medic',
+        chip: 'Whole squad', countLine: '30 athletes in the squad',
+        eyebrow: 'Injuries \u00b7 New record', title: 'Log an injury',
+        intro: 'Nothing is recorded yet. Availability does not change until you save. What you record on the left is what everyone sees; what you record on the right stays with medical staff and the athlete.',
+        headActions: [{ label: 'Cancel', variant: 'ghost' }],
+        grid: 'minmax(0, 1fr) minmax(0, 1fr)',
+        cols: [
+          {
+            panels: [
+              P({
+                title: 'Record now', sub: 'Five fields. Everyone sees these.',
+                blocks: [
+                  this.field('Athlete', 'Search the squad', { empty: true, select: true, required: true }),
+                  this.field('Date of injury', 'Fri 11 Sept 2026', { select: true, required: true }),
+                  this.field('Site', 'Body area \u2014 then side, if it has one', { empty: true, select: true, required: true }),
+                  this.seg('Availability', ['Available', 'Modified', 'Unavailable'], null, { hint: 'Setting this replaces the athlete\u2019s current status the moment you save.' }),
+                  this.field('Restrictions', 'What they can and cannot do', { empty: true, h: 56, hint: RESTRICTION_HINT }),
+                  this.field('Expected return', 'Not known', { select: true, hint: 'Leave as Not known rather than guessing. It renders as a word, never a blank.' })
+                ]
+              }),
+              P({
+                blocks: [
+                  this.btns([{ label: 'Save record', variant: 'primary', h: 40 }, { label: 'Save and add clinical detail later', variant: 'secondary', h: 40 }],
+                    'Saving writes the availability, the squad list row, the injury board row and the athlete\u2019s status card in one action.')
+                ]
+              })
+            ]
+          },
+          {
+            panels: [
+              P({
+                title: 'Clinical record', sub: 'Medical staff and the athlete only. None of this reaches a coach.',
+                blocks: [
+                  this.field('Diagnosis', 'Not recorded', { empty: true }),
+                  this.field('Mechanism', 'How it happened, and where', { empty: true, h: 50 }),
+                  this.field('Return to play protocol', 'None \u2014 or pick the club protocol', { empty: true, select: true }),
+                  this.field('Stage', 'Set once a protocol is picked', { empty: true, select: true }),
+                  this.well('Not required to save', 'An injury with no clinical detail still sets availability. It appears on the injuries report under Unknown, with \u201cneeds a medical entry\u201d against it, until you come back to it.')
+                ]
+              }),
+              P({
+                title: 'Academy',
+                blocks: [
+                  this.para('If the club sets different return rules for academy athletes, they appear here and on the athlete\u2019s status screen. None are recorded.', { ink: 'var(--faint)' })
+                ]
+              })
+            ]
+          }
+        ],
+        note: {
+          title: 'Two columns, and only the left one is required',
+          body: 'The split is the permission boundary drawn as layout: the left column is what a coach will read within seconds of saving, the right column is what only medical staff and the athlete ever see. Save is reachable with the right column empty, because an availability that is right and a diagnosis that is late beats both being late. The restriction field carries the coach-visible hint at the point of writing, not in a policy document.',
+          fold: 'Continues below the fold: nothing. The form is the screen.'
+        }
+      }),
+
+      // 2 --------------------------------------------------------------- medic injury record
+      this.frame({
+        id: 's3-2', label: '2 \u00b7 Medic \u00b7 Injury record, mid-rehab',
+        navActive: 'reports', signedIn: 'Ruth Callaghan \u00b7 medic',
+        chip: 'Whole squad', countLine: '30 athletes in the squad',
+        eyebrow: 'Injuries \u00b7 Adam Selby', title: 'Head \u00b7 since Sun 26 Jul',
+        headActions: [{ label: 'Advance the stage', variant: 'primary' }, { label: 'Update the record', variant: 'secondary' }],
+        grid: 'minmax(0, 1fr) minmax(0, 1.05fr) minmax(0, 0.95fr)',
+        cols: [
+          {
+            panels: [
+              P({
+                tone: 'warn',
+                blocks: [
+                  this.stat('Availability today', 'Modified', 'No contact \u00b7 No collision drills. Expected back Sat 12 Sept. Set by you, Fri 11 Sept.', 'warn')
+                ]
+              }),
+              P({
+                title: 'Clinical record', sub: 'Medical staff and the athlete only',
+                blocks: [SELBY_CLINICAL]
+              }),
+              P({
+                title: 'Availability history', actions: [{ label: 'All 7 changes', variant: 'ghost' }],
+                blocks: [
+                  this.rows([
+                    { name: 'Modified \u00b7 stage 2 \u2192 3', meta: 'Fri 11 Sept 09:12 \u00b7 Ruth Callaghan \u00b7 medic' },
+                    { name: 'Modified \u00b7 restrictions rewritten', meta: 'Fri 4 Sept 08:55 \u00b7 Ruth Callaghan \u00b7 medic' }
+                  ])
+                ]
+              })
+            ]
+          },
+          {
+            panels: [
+              P({
+                title: 'Return to play', sub: 'Stage 3 of 6 \u00b7 club protocol',
+                blocks: [
+                  this.stages([
+                    { n: 1, name: 'Stage 1', state: 'done', tag: 'Done' },
+                    { n: 2, name: 'Stage 2', state: 'done', tag: 'Done' },
+                    { n: 3, name: 'Stage 3', state: 'now', tag: 'Now', body: 'What he may do at this stage: no contact, no collision drills. Symptom-free 4 days. Reviewed Fri 11 Sept.' },
+                    { n: 4, name: 'Stage 4', state: 'next', tag: 'Next', body: 'What this stage needs is in the club\u2019s protocol. Fydr holds the number, not the criteria.' },
+                    { n: 5, name: 'Stage 5', state: 'later' },
+                    { n: 6, name: 'Stage 6', state: 'later', tag: 'Cleared' }
+                  ]),
+                  this.para('Only medical staff advance a stage. Advancing moves one stage; setting any other stage is done on the record and needs a reason.', { ink: 'var(--faint)', size: 'var(--t-caption)' })
+                ]
+              })
+            ]
+          },
+          {
+            panels: [
+              P({
+                title: 'Restrictions', sub: 'What the coach reads',
+                blocks: [
+                  this.field('', 'No contact \u00b7 No collision drills', { h: 46, hint: RESTRICTION_HINT })
+                ]
+              }),
+              P({
+                title: 'Rehab programme', actions: [{ label: 'Open', variant: 'ghost' }],
+                blocks: [
+                  this.rows([
+                    { name: 'Return to running', meta: 'rehab \u00b7 5 athletes \u00b7 1 stage \u00b7 proposed by Owen Hartnell, Fri 11 Sept 16:20', pill: 'Awaiting you', pillTone: 'warn' }
+                  ]),
+                  this.btns([{ label: 'Review the proposal', variant: 'secondary', h: 34 }])
+                ]
+              }),
+              P({
+                title: 'Problem reports', sub: '1 acknowledged \u00b7 from the athlete',
+                blocks: [
+                  this.para('\u201cThe headaches came back yesterday evening after the bike session. Not as bad as two weeks ago, but I thought you should know before Thursday.\u201d', { ink: 'var(--text)' }),
+                  this.para('Adam Selby \u00b7 11 Aug 17:15 \u00b7 Injury or pain', { ink: 'var(--faint)', size: 'var(--t-caption)' })
+                ]
+              })
+            ]
+          }
+        ],
+        note: {
+          title: 'The stage ladder is numbered, and says who owns the words',
+          body: 'Stage 3 carries everything actually recorded against it \u2014 the restriction line, the symptom-free count, the review date. Stage 4 carries one sentence saying the criteria live in the club\u2019s protocol. Stages 5 and 6 are a number and a state word, and 6 is tagged Cleared because that is the only stage whose meaning the record itself establishes. No stage is named, because no capture names one.',
+          fold: 'Continues below the fold: body weight, wellness entries, the S&C history log, subject access request. The record\u2019s own panels are all above it.'
+        }
+      }),
+
+      // 3 --------------------------------------------------------------- advance the stage
+      this.frame({
+        id: 's3-3', label: '3 \u00b7 Medic \u00b7 Advance the stage, confirmation',
+        navActive: 'reports', signedIn: 'Ruth Callaghan \u00b7 medic',
+        chip: 'Whole squad', countLine: '30 athletes in the squad',
+        eyebrow: 'Injuries \u00b7 Adam Selby \u00b7 Head', title: 'Advance to stage 4 of 6',
+        intro: 'One stage, forward, by the person who reviewed him. Everything below is what changes when you confirm.',
+        grid: 'minmax(0, 1fr) minmax(0, 1fr)',
+        cols: [
+          {
+            panels: [
+              P({
+                title: 'Now \u00b7 stage 3', tone: 'warn',
+                blocks: [
+                  this.para('Modified. No contact \u00b7 No collision drills.', { ink: 'var(--on-warn)', weight: 'var(--w-semi)' }),
+                  this.para('Symptom-free 4 days. Reviewed Fri 11 Sept by you. Expected back Sat 12 Sept.', { ink: 'var(--on-warn)' })
+                ]
+              }),
+              P({
+                title: 'What stage 4 needs',
+                blocks: [
+                  this.para('Not recorded in Fydr. The club\u2019s return to play protocol is the source, and this screen will not restate it.', { ink: 'var(--text)' }),
+                  this.seg('', ['\u2713  I have reviewed the criteria for stage 4'], '\u2713  I have reviewed the criteria for stage 4', { h: 40 }),
+                  this.para('Required. Recorded against your name with the change.', { ink: 'var(--faint)', size: 'var(--t-caption)' })
+                ]
+              })
+            ]
+          },
+          {
+            panels: [
+              P({
+                title: 'After \u00b7 stage 4',
+                blocks: [
+                  this.seg('Availability', ['Available', 'Modified', 'Unavailable'], 'Modified', { hint: 'Advancing a stage does not change availability on its own. Change it here if it should.' }),
+                  this.field('Restrictions', 'Rewrite for stage 4', { empty: true, h: 50, required: true, hint: RESTRICTION_HINT }),
+                  this.field('Expected return', 'Sat 12 Sept', { select: true })
+                ]
+              }),
+              P({
+                title: 'Who sees this',
+                blocks: [
+                  this.rows([
+                    { name: 'Adam Selby', meta: '\u201cYour status has changed\u201d on Today, until he opens it once. Then his status screen, in full, with the clinical detail.' },
+                    { name: 'Kate Doyle \u00b7 coach', meta: 'The new restriction line, the status word and the expected return. Not the site, not the stage, not the diagnosis.' },
+                    { name: 'Everyone else', meta: 'The squad list row and the availability count on the dashboard.' }
+                  ])
+                ]
+              }),
+              P({
+                blocks: [
+                  this.btns([{ label: 'Advance to stage 4', variant: 'primary', h: 40 }, { label: 'Cancel', variant: 'ghost', h: 40 }],
+                    'To set any stage other than the next one, close this and use Update the record, which asks for a reason. There is no jump from here.')
+                ]
+              })
+            ]
+          }
+        ],
+        note: {
+          title: 'Skipping is possible, and it is never the shorter path',
+          body: 'This screen advances exactly one stage. Jumping straight to stage 6 is a different control on a different screen and costs a reason field, so the fastest route is always the correct one. The confirm line is a checkbox rather than prose because it is recorded: the history row reads \u201cstage 3 \u2192 4, criteria confirmed, Ruth Callaghan\u201d.',
+          fold: 'Nothing below the fold. The confirmation is a whole screen, not a modal, because it asks for a rewritten restriction line.'
+        }
+      }),
+
+      // 4 --------------------------------------------------------------- coach absence
+      this.frame({
+        id: 's3-4', label: '4 \u00b7 Coach \u00b7 Record a non-injury absence',
+        navActive: 'squad', signedIn: 'Kate Doyle \u00b7 coach',
+        chip: 'Forwards', countLine: '15 athletes in the selected groups',
+        eyebrow: 'Squad overview \u00b7 Max Chapman', title: 'Record an absence',
+        intro: 'For illness, personal, academic, representative or other. If this is an injury, medical staff record it \u2014 this form cannot open an injury record and does not create one.',
+        grid: 'minmax(0, 1fr) minmax(0, 1fr)',
+        cols: [
+          {
+            panels: [
+              P({
+                title: 'The absence',
+                blocks: [
+                  this.seg('Reason', ['Illness', 'Personal', 'Academic', 'Representative', 'Other'], 'Academic'),
+                  this.seg('Availability', ['Modified', 'Unavailable'], 'Unavailable', { hint: 'Available is not offered here: an absence that leaves an athlete fully available is not a record.' }),
+                  this.field('From', 'Mon 14 Sept', { select: true, required: true }),
+                  this.field('Until', 'Not known', { select: true, hint: 'Not known is a word on every screen that reads this. It never renders as a blank or a zero.' }),
+                  this.field('Note', 'Away on a university placement. Back for the Thursday session.', { h: 50, hint: 'Visible to the athlete and to all staff. This is not a medical record \u2014 do not describe symptoms.' })
+                ]
+              }),
+              P({
+                blocks: [
+                  this.btns([{ label: 'Record absence', variant: 'primary', h: 40 }, { label: 'Cancel', variant: 'ghost', h: 40 }])
+                ]
+              })
+            ]
+          },
+          {
+            panels: [
+              P({
+                title: 'What this does not do',
+                blocks: [
+                  this.well('No clinical record', 'This creates an availability row and nothing else. No injury record, no site, no diagnosis, no return to play stage, and no row on the injury board. Medical staff are not notified.'),
+                  this.para('Adam Selby\u2019s Modified status, two rows above this one on the squad list, is an injury and is medical\u2019s. You can read its restriction line; you cannot change it, and this form will not offer to.', { ink: 'var(--muted)' }),
+                  this.well('What you do not see on an injury', 'Body site and side are not shown to a coach. You read the status word, the restriction line and the expected return \u2014 \u201cModified \u00b7 No contact, no collision drills \u00b7 back Sat 12 Sept\u201d, with no \u201cHead\u201d in front of it. Site stays with medical staff, the sport scientist and the athlete.')
+                ]
+              }),
+              P({
+                title: 'Already recorded for Max', sub: 'This season',
+                blocks: [
+                  this.rows([
+                    { name: 'Illness', meta: 'Mon 3 Aug to Wed 5 Aug \u00b7 recorded by Kate Doyle \u00b7 coach', pill: 'Unavailable' },
+                    { name: 'Representative', meta: 'Sat 18 Jul \u00b7 recorded by Jane Pemberton \u00b7 sport scientist', pill: 'Unavailable' }
+                  ])
+                ]
+              }),
+              P({
+                title: 'How this reads elsewhere',
+                blocks: [
+                  this.para('Squad list: Unavailable \u00b7 Away on a university placement. Injuries report: under Unavailable, site an em dash, \u201cAcademic\u201d in What they can do, expected back an em dash. The athlete: \u201cUnavailable \u00b7 Academic\u201d on Today, opening his status screen.', { ink: 'var(--muted)' })
+                ]
+              })
+            ]
+          }
+        ],
+        note: {
+          title: 'The same words, and none of the shape',
+          body: 'An absence and an injury share the four availability words and their tones, because a coach scanning a squad list must read one column, not two. Everything else differs: no site, no clinical column, no stage, no injury board row, and a well that names each absence rather than leaving the reader to infer it. The Available option is withheld from the availability control rather than disabled, because an absence that changes nothing is not a record worth writing.',
+          fold: 'Continues below the fold: nothing. The form is the screen.'
+        }
+      }),
+
+      // 5 --------------------------------------------------------------- S&C propose
+      this.frame({
+        id: 's3-5', label: '5 \u00b7 S&C \u00b7 Propose a rehab programme',
+        navActive: 'gym', signedIn: 'Owen Hartnell \u00b7 strength & conditioning',
+        chip: 'Rehab', countLine: '5 athletes in the selected groups',
+        eyebrow: 'Gym programme \u00b7 Return to running \u00b7 rehab', title: 'Propose for Adam Selby',
+        intro: 'A rehab programme for an injured athlete is a proposal until medical staff approve it. It is not assigned, does not appear on his Gym tab, and does not count towards his sessions until then.',
+        headActions: [{ label: 'Send to medical for approval', variant: 'primary' }, { label: 'Save draft', variant: 'secondary' }],
+        grid: 'minmax(0, 1.1fr) minmax(0, 0.9fr)',
+        cols: [
+          {
+            panels: [
+              P({
+                title: 'What you are proposing', sub: 'Return to running \u00b7 rehab \u00b7 stage 1',
+                actions: [{ label: 'Draft', variant: 'off' }],
+                blocks: [
+                  this.table(['Exercise', 'Sets', 'Reps', 'Load'], [
+                    ['Romanian deadlift', '3', '8\u201310', { t: '\u2014', faint: true }],
+                    ['Straight line running', '4', '60 m', { t: '70%', faint: false }],
+                    ['Calf raise, single leg', '3', '12', { t: '\u2014', faint: true }]
+                  ], 'minmax(0, 1fr) 54px 74px 74px'),
+                  this.field('Why this fits the restriction', 'Linear running only, no change of direction and no contact exposure. Volume is below his pre-injury running block.', { h: 50, hint: 'Visible to medical staff and to you. Not to the athlete.' })
+                ]
+              }),
+              P({
+                title: 'What medical recorded', sub: 'Read-only',
+                blocks: [
+                  this.para('Modified \u00b7 No contact \u00b7 No collision drills. Expected back Sat 12 Sept.', { ink: 'var(--text)', weight: 'var(--w-semi)' }),
+                  this.well('Read-only \u00b7 set by medical staff', 'Ruth Callaghan, medic \u00b7 Fri 11 Sept. You are proposing against this line. If it changes before approval, the proposal returns to you.')
+                ]
+              })
+            ]
+          },
+          {
+            panels: [
+              P({
+                title: 'Your proposals', sub: 'All athletes \u00b7 this season',
+                blocks: [
+                  this.rows([
+                    { name: 'Adam Selby \u00b7 Return to running', meta: 'Sent Fri 11 Sept 16:20 \u00b7 awaiting Ruth Callaghan', pill: 'Proposed', pillTone: 'warn' },
+                    { name: 'Rory Hastings \u00b7 Return to running', meta: 'Approved Fri 4 Sept 11:02 by Ruth Callaghan \u00b7 assigned', pill: 'Approved', pillTone: 'good' },
+                    { name: 'Sam Wren \u00b7 Lower limb loading', meta: 'Returned Wed 2 Sept 08:40 by Ruth Callaghan', pill: 'Returned', pillTone: 'bad' }
+                  ])
+                ]
+              }),
+              P({
+                title: 'Returned \u00b7 Sam Wren',
+                tone: 'bad',
+                blocks: [
+                  this.para('\u201cNo weight bearing until the Friday review. Send it back with the loading removed and I will approve it.\u201d', { ink: 'var(--on-bad)' }),
+                  this.para('Ruth Callaghan \u00b7 medic \u00b7 Wed 2 Sept 08:40', { ink: 'var(--on-bad)', size: 'var(--t-caption)' })
+                ]
+              }),
+              P({
+                title: 'Standard gym',
+                blocks: [
+                  this.para('In-Season max, Upper body B and the two pre-season blocks are yours to edit outright. Only a programme tagged rehab, for an athlete with a current injury record, goes through medical.', { ink: 'var(--muted)' })
+                ]
+              })
+            ]
+          }
+        ],
+        note: {
+          title: 'Three states, one row shape, no email',
+          body: 'Proposed, Approved and Returned are the same row in the same list with three tones, so the S&C never has to ask what happened to something he sent. A returned proposal carries the medic\u2019s reason in full on the screen rather than in a notification, because the reason is the instruction for the next version. The medic\u2019s restriction line sits beside the proposal as a read-only panel naming its owner, per the approved pattern.',
+          fold: 'Continues below the fold: the programme\u2019s other two blocks, the exercise library link, the assignment list.'
+        }
+      }),
+
+      // 6 --------------------------------------------------------------- medic review proposal
+      this.frame({
+        id: 's3-6', label: '6 \u00b7 Medic \u00b7 Review an S&C proposal',
+        navActive: 'gym', signedIn: 'Ruth Callaghan \u00b7 medic',
+        chip: 'Rehab', countLine: '5 athletes in the selected groups',
+        eyebrow: 'Gym programme \u00b7 Awaiting approval', title: 'Return to running \u00b7 Adam Selby',
+        intro: 'Proposed by Owen Hartnell, Fri 11 Sept 16:20. Approving assigns it to Adam today. Returning it sends it back with your reason and assigns nothing.',
+        grid: 'minmax(0, 1.1fr) minmax(0, 0.9fr)',
+        cols: [
+          {
+            panels: [
+              P({
+                title: 'The proposal', sub: 'Stage 1 \u00b7 three exercises',
+                actions: [{ label: 'Proposed', variant: 'off' }],
+                blocks: [
+                  this.table(['Exercise', 'Sets', 'Reps', 'Load'], [
+                    ['Romanian deadlift', '3', '8\u201310', { t: '\u2014', faint: true }],
+                    ['Straight line running', '4', '60 m', '70%'],
+                    ['Calf raise, single leg', '3', '12', { t: '\u2014', faint: true }]
+                  ], 'minmax(0, 1fr) 54px 74px 74px'),
+                  this.para('Owen\u2019s note: \u201cLinear running only, no change of direction and no contact exposure. Volume is below his pre-injury running block.\u201d', { ink: 'var(--muted)' })
+                ]
+              }),
+              P({
+                title: 'Against your record', tone: 'emph',
+                blocks: [
+                  this.para('Modified \u00b7 No contact \u00b7 No collision drills \u00b7 stage 3 of 6 \u00b7 expected back Sat 12 Sept.', { ink: 'var(--on-tint-value)', weight: 'var(--w-semi)' }),
+                  this.para('Owen sees the restriction line and the expected return. He does not see the diagnosis, the mechanism or the stage.', { ink: 'var(--on-tint-meta)' })
+                ]
+              })
+            ]
+          },
+          {
+            panels: [
+              P({
+                title: 'Your decision',
+                blocks: [
+                  this.btns([{ label: 'Approve and assign', variant: 'primary', h: 40 }]),
+                  this.field('Or return it, with a reason', 'What needs to change', { empty: true, h: 56, required: true, hint: 'Visible to the S&C. Describe the restriction, not the injury. Do not name a diagnosis or a protocol.' }),
+                  this.btns([{ label: 'Return to Owen', variant: 'secondary', h: 36 }], 'Returning without a reason is not possible. The reason is the whole message.')
+                ]
+              }),
+              P({
+                title: 'Awaiting you', sub: '1 proposal',
+                blocks: [
+                  this.rows([
+                    { name: 'Adam Selby \u00b7 Return to running', meta: 'Owen Hartnell \u00b7 Fri 11 Sept 16:20', pill: 'Proposed', pillTone: 'warn' }
+                  ]),
+                  this.para('Also on your dashboard, under Needs attention today.', { ink: 'var(--faint)', size: 'var(--t-caption)' })
+                ]
+              })
+            ]
+          }
+        ],
+        note: {
+          title: 'Approve is one press. Return costs a sentence',
+          body: 'Approve is the single primary action on the screen and assigns immediately. Return is a secondary beneath a required field, so the shape of the screen says which one is routine. The reason field carries the same boundary hint as the restriction field, one role along: what a medic writes to an S&C is as coach-visible as a restriction line and must not name a diagnosis.',
+          fold: 'Continues below the fold: the programme\u2019s block list, its assignment history, the athlete\u2019s current gym assignment.'
+        }
+      }),
+
+      // 7 --------------------------------------------------------------- history
+      this.frame({
+        id: 's3-7', label: '7 \u00b7 Availability history for one athlete',
+        navActive: 'squad', signedIn: 'Ruth Callaghan \u00b7 medic',
+        chip: 'Whole squad', countLine: '30 athletes in the squad',
+        eyebrow: 'Squad overview \u00b7 Adam Selby', title: 'Availability history',
+        intro: 'Every change since he joined the roster. Seven rows, newest first. A row is never edited and never removed \u2014 a correction adds a row.',
+        headActions: [{ label: 'Export CSV', variant: 'secondary' }, { label: 'Print', variant: 'secondary' }],
+        cols: [
+          {
+            panels: [
+              P({
+                blocks: [
+                  this.table(['When', 'Status', 'Restrictions', 'What changed', 'Set by'], [
+                    ['Fri 11 Sept 09:12', 'Modified', 'No contact \u00b7 No collision drills', 'Stage 2 \u2192 3, criteria confirmed', 'Ruth Callaghan \u00b7 medic'],
+                    ['Fri 4 Sept 08:55', 'Modified', 'No contact \u00b7 No running above 70%', 'Restrictions rewritten, expected return Sat 12 Sept', 'Ruth Callaghan \u00b7 medic'],
+                    ['Mon 31 Aug 07:40', 'Modified', 'No contact', 'Stage 1 \u2192 2', 'Ruth Callaghan \u00b7 medic'],
+                    ['Sun 30 Aug 18:02', 'Unavailable', 'No training', 'Injury recorded \u00b7 Head \u00b7 protocol started at stage 1', 'Ruth Callaghan \u00b7 medic'],
+                    ['Sun 26 Jul 11:20', 'Unavailable', 'No training', 'Injury recorded \u00b7 Head', 'Ruth Callaghan \u00b7 medic'],
+                    ['Wed 15 Jul 09:00', 'Unavailable', 'Away with the representative squad', 'Absence recorded \u00b7 Representative', 'Kate Doyle \u00b7 coach'],
+                    ['Mon 6 Jul 08:15', 'Available', '\u2014', 'Added to the roster', 'Jane Pemberton \u00b7 sport scientist']
+                  ], 'minmax(0, 150px) minmax(0, 110px) minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 190px)')
+                ]
+              }),
+              P({
+                title: 'What a row holds',
+                blocks: [
+                  this.para('Timestamp, the status word, the restriction line as it read at the time, what changed, and the person. The status column carries no tone here: a history is a list of facts, not a list of alarms, and tinting seven rows would say the oldest matters least.', { ink: 'var(--muted)' }),
+                  this.well('If a club disputes an injury', 'This screen and its CSV are the record. It is also the only screen on this board whose data is not visible in any capture \u2014 see Open against code.')
+                ]
+              })
+            ]
+          }
+        ],
+        note: {
+          title: 'Seven rows, one per change, no overwrite',
+          body: 'The pattern already in the product \u2014 entries are never overwritten, a correction writes a new dated revision against your name \u2014 applied to availability. Both a coach\u2019s absence and a medic\u2019s injury land in the same table, distinguished by the What changed column and the role beside the name, so nobody has to hold two histories in their head.',
+          fold: 'Nothing below the fold. Seven rows is the whole history for this athlete; a longer one scrolls the table, and the header row and first column stay.'
+        }
+      }),
+
+      // 8 --------------------------------------------------------------- phone: log pitch-side
+      this.frame({
+        id: 's3-8', label: '8 \u00b7 Medic \u00b7 Log an injury, pitch-side', phone: true,
+        eyebrow: 'Injuries \u00b7 new', title: 'Log an injury',
+        phoneSub: 'Three things now. The rest at a desk.',
+        tabs: this.tabs('staff', 'Squad'),
+        cols: [
+          {
+            panels: [
+              P({
+                blocks: [
+                  this.field('Athlete', 'Adam Selby \u00b7 #7', { select: true, h: 44 }),
+                  this.field('Site', 'Head', { select: true, h: 44 }),
+                  this.seg('Availability', ['Available', 'Modified', 'Unavailable'], 'Unavailable', { h: 44 })
+                ]
+              }),
+              P({
+                blocks: [
+                  this.field('Restrictions', 'No training', { h: 52, hint: RESTRICTION_HINT })
+                ]
+              }),
+              P({
+                blocks: [
+                  this.btns([{ label: 'Save \u00b7 sets availability now', variant: 'primary', h: 48 }],
+                    'Diagnosis, mechanism, the protocol and the expected return are added later. He appears on the injuries report under Unknown until they are.')
+                ]
+              })
+            ]
+          }
+        ],
+        note: {
+          title: 'The pitch-side form is the desk form with four fields',
+          body: 'Athlete, site, availability, restrictions \u2014 the four that change what anyone else sees. Every control is 44px or more and the availability buttons are a full-width row of three. The clinical column is not hidden, it is simply not on this screen, and the save button says what saving does.',
+          fold: 'Nothing below the fold.'
+        }
+      }),
+
+      // 9 --------------------------------------------------------------- phone: injury record
+      this.frame({
+        id: 's3-9', label: '9 \u00b7 Medic \u00b7 Injury record', phone: true,
+        back: '\u2039 Injuries',
+        eyebrow: 'Adam Selby \u00b7 #7 \u00b7 Forwards, Rehab', title: 'Head \u00b7 since Sun 26 Jul',
+        phoneSub: 'Modified \u00b7 No contact, no collision drills. Expected back Sat 12 Sept.',
+        tabs: this.tabs('staff', 'Squad'),
+        cols: [
+          {
+            panels: [
+              P({
+                title: 'Return to play', sub: 'Stage 3 of 6',
+                blocks: [
+                  this.stages([
+                    { n: 3, name: 'Stage 3', state: 'now', tag: 'Now', body: 'No contact, no collision drills. Symptom-free 4 days.' },
+                    { n: 4, name: 'Stage 4', state: 'next', tag: 'Next', body: 'Criteria are in the club\u2019s protocol.' }
+                  ]),
+                  this.btns([{ label: 'Advance the stage', variant: 'primary', h: 44 }])
+                ]
+              }),
+              P({
+                title: 'Clinical record', sub: 'Medical staff and the athlete only',
+                blocks: [SELBY_CLINICAL]
+              })
+            ]
+          }
+        ],
+        note: {
+          title: 'Two panels, and the status is the header',
+          body: 'The phone record leads with the decision a medic makes pitch-side \u2014 the stage and whether to advance it \u2014 and carries the clinical table below it unchanged. Availability, restrictions and history are one tap behind the All panels bar the approved profile board established; they are not redrawn here.',
+          fold: 'Continues below the fold: availability, restrictions, rehab programme, problem reports, history.'
+        }
+      }),
+
+      // 10 -------------------------------------------------------------- athlete today
+      this.frame({
+        id: 's3-10', label: '10 \u00b7 Athlete \u00b7 Today, status has changed', phone: true,
+        eyebrow: 'Fri 11 Sept \u00b7 MD-1', title: 'Afternoon, Adam',
+        tabs: this.tabs('athlete', 'Today'),
+        cols: [
+          {
+            panels: [
+              P({
+                tone: 'emph',
+                actions: [{ label: 'Read it', variant: 'primary', h: 34 }],
+                title: 'Your status has changed',
+                sub: 'Modified \u00b7 set by medical staff, Fri 11 Sept 09:12',
+                blocks: [
+                  this.para('This stays here until you have opened it once.', { ink: 'var(--on-tint-meta)', size: 'var(--t-caption)' })
+                ]
+              }),
+              P({
+                title: 'To do', sub: '2 left',
+                blocks: [
+                  this.rows([
+                    { name: 'Wellness', meta: '45 seconds' },
+                    { name: 'Weekly nutrition check-in', meta: 'about 10 seconds' }
+                  ], { h: 44 })
+                ]
+              }),
+              P({
+                title: 'Today',
+                blocks: [
+                  this.rows([
+                    { name: 'Rehab running', meta: '11:00 \u00b7 Gym \u00b7 finished 11:40' },
+                    { name: 'Captain\u2019s run', meta: '18:00 \u00b7 Pitch 2 \u00b7 contact, not you' }
+                  ])
+                ]
+              }),
+              P({
+                tone: 'warn',
+                blocks: [
+                  this.stat('', 'Modified', 'No contact. No collision drills.', 'warn')
+                ]
+              })
+            ]
+          }
+        ],
+        note: {
+          title: 'The one-time card sits above To do and below nothing',
+          body: 'It is the emphasised card \u2014 one per screen \u2014 so the availability card below it keeps its tone family and the two never compete. It carries the status word, who set it and when, and a single 34px action. It does not expire, does not repeat once read, and does not become a second banner: after it is opened, Today is the approved ATH-ADULT-02 screen exactly, with the availability card carrying the status as before.',
+          fold: 'Nothing below the fold.'
+        }
+      }),
+
+      // 11 -------------------------------------------------------------- status modified
+      this.frame({
+        id: 's3-11', label: '11 \u00b7 Athlete \u00b7 Status: Modified', phone: true,
+        back: '\u2039 Today',
+        eyebrow: 'Your availability', title: 'Modified',
+        phoneSub: 'Set by medical staff \u00b7 Fri 11 Sept',
+        tabs: this.tabs('athlete', 'Today'),
+        cols: [
+          {
+            panels: [
+              P({
+                tone: 'warn',
+                blocks: [this.stat('Can you train today', 'Yes, with changes', null, 'warn')]
+              }),
+              P({
+                title: 'What you can and cannot do',
+                blocks: [
+                  this.rows([
+                    { name: 'No contact' },
+                    { name: 'No collision drills' }
+                  ]),
+                  this.para('Anything not listed here is unchanged. If a session is not right, tell a coach before it starts.', { ink: 'var(--muted)', size: 'var(--t-caption)' })
+                ]
+              }),
+              P({
+                title: 'When you are back',
+                blocks: [
+                  this.stat('', 'Sat 12 Sept', 'What medical staff expect today. It changes when you are reviewed. Last reviewed Fri 11 Sept.')
+                ]
+              }),
+              P({
+                title: 'Your medical detail', sub: 'Visible to you and medical staff. Not to your coaches.',
+                blocks: [SELBY_CLINICAL]
+              })
+            ]
+          }
+        ],
+        note: {
+          title: 'Three questions, in the order they are asked',
+          body: 'Can I train, what can I do, when am I back \u2014 one card each, in that order, in plain words. The restriction line renders as one line per restriction rather than a middot run, because a list is read and a sentence is skimmed. The clinical detail sits last, under a heading naming who else can see it; it is the same table the medic reads, unedited.',
+          fold: 'Continues below the fold: the rest of your medical detail \u2014 mechanism, stage and review date.'
+        }
+      }),
+
+      // 12 -------------------------------------------------------------- status unavailable + stages
+      this.frame({
+        id: 's3-12', label: '12 \u00b7 Athlete \u00b7 Unavailable, with rehab stages', phone: true,
+        back: '\u2039 Today',
+        eyebrow: 'Your availability', title: 'Unavailable',
+        phoneSub: 'Set by medical staff \u00b7 Wed 2 Sept',
+        tabs: this.tabs('athlete', 'Today'),
+        cols: [
+          {
+            panels: [
+              P({
+                tone: 'bad',
+                blocks: [this.stat('Can you train today', 'No, not today', 'Rehab only. Your rehab programme is on your Gym tab.', 'bad')]
+              }),
+              P({
+                title: 'What you can and cannot do',
+                blocks: [
+                  this.rows([
+                    { name: 'No running' },
+                    { name: 'Rehab programme only' }
+                  ])
+                ]
+              }),
+              P({
+                title: 'Your rehab', sub: 'Stage 2 of 6',
+                blocks: [
+                  this.stages([
+                    { n: 1, name: 'Stage 1', state: 'done', tag: 'Done' },
+                    { n: 2, name: 'Stage 2', state: 'now', tag: 'You are here', body: 'Rehab running, four sessions logged.' },
+                    { n: 3, name: 'Stage 3', state: 'next', tag: 'Next' }
+                  ]),
+                  this.para('Six stages in all. Medical staff move you between them \u2014 they will tell you what the next one needs.', { ink: 'var(--muted)', size: 'var(--t-caption)' })
+                ]
+              }),
+              P({
+                title: 'When you are back',
+                blocks: [this.stat('', 'Not known yet', 'No return date has been set. It is set when you reach the last stage.')]
+              })
+            ]
+          }
+        ],
+        note: {
+          title: 'The athlete sees the number and the state word, never the criteria',
+          body: 'Same ladder as the medic\u2019s, three stages deep instead of six so the answer stays above the fold, and with the same honesty: Fydr holds the stage number, the club\u2019s protocol holds what each stage needs, and the screen says medical staff will tell him rather than inventing a checklist. \u201cNot known yet\u201d is a word, not a blank.',
+          fold: 'Continues below the fold: your medical detail, the same table the medic reads.'
+        }
+      }),
+
+      // 13 -------------------------------------------------------------- status unavailable, no record
+      this.frame({
+        id: 's3-13', label: '13 \u00b7 Athlete \u00b7 Unavailable, no clinical record', phone: true,
+        back: '\u2039 Today',
+        eyebrow: 'Your availability', title: 'Unavailable',
+        phoneSub: 'Set by medical staff \u00b7 Fri 11 Sept',
+        tabs: this.tabs('athlete', 'Today'),
+        cols: [
+          {
+            panels: [
+              P({
+                tone: 'bad',
+                blocks: [this.stat('Can you train today', 'No, not today', null, 'bad')]
+              }),
+              P({
+                title: 'Why',
+                blocks: [
+                  this.para('Not recorded yet.', { ink: 'var(--text)', weight: 'var(--w-bold)', size: 'var(--t-card-sm)' }),
+                  this.para('Medical staff set your status on Fri 11 Sept and have not added a reason. This is not the same as being cleared.', { ink: 'var(--muted)' })
+                ]
+              }),
+              P({
+                title: 'What you can and cannot do',
+                blocks: [
+                  this.para('Nothing is recorded. Ask medical staff before you train.', { ink: 'var(--text)' })
+                ]
+              }),
+              P({
+                title: 'When you are back',
+                blocks: [this.stat('', 'Not recorded', null)]
+              }),
+              P({
+                title: 'Academy',
+                blocks: [
+                  this.para('If the club sets different return rules for academy athletes, they appear here. None are recorded.', { ink: 'var(--faint)', size: 'var(--t-caption)' })
+                ]
+              })
+            ]
+          }
+        ],
+        note: {
+          title: 'Every empty answer is a word, and one of them is a warning',
+          body: 'Kai Mercer is one of the three the injuries report files under Unknown with \u201cneeds a medical entry\u201d. On his own screen that reads as \u201cNot recorded yet\u201d in three places rather than three blanks, and the empty-injury sentence from the approved board \u2014 \u201cThis is not the same as being cleared\u201d \u2014 is carried word for word. The academy slot is a place for a club policy line, with no policy written into it.',
+          fold: 'Nothing below the fold. There is no medical detail panel, because there is no medical detail \u2014 it is absent, not empty.'
+        }
+      }),
+
+      // 14 -------------------------------------------------------------- available again
+      this.frame({
+        id: 's3-14', label: '14 \u00b7 Athlete \u00b7 Available again', phone: true,
+        back: '\u2039 Today',
+        eyebrow: 'Your availability', title: 'Available',
+        phoneSub: 'Cleared by medical staff \u00b7 Mon 21 Sept',
+        tabs: this.tabs('athlete', 'Today'),
+        cols: [
+          {
+            panels: [
+              P({
+                tone: 'good',
+                blocks: [this.stat('Can you train today', 'Yes. Everything is on.', 'Cleared Mon 21 Sept by Ruth Callaghan \u00b7 medic.', 'good')]
+              }),
+              P({
+                title: 'What you can and cannot do',
+                blocks: [
+                  this.para('No restrictions.', { ink: 'var(--text)' })
+                ]
+              }),
+              P({
+                title: 'Your last injury', sub: 'Closed',
+                blocks: [
+                  this.rows([
+                    { name: 'Head', meta: 'Sun 26 Jul to Mon 21 Sept \u00b7 57 days \u00b7 six stages' }
+                  ]),
+                  this.para('This record is closed. Your medical detail stays visible to you and to medical staff.', { ink: 'var(--muted)', size: 'var(--t-caption)' })
+                ]
+              }),
+              P({
+                title: 'Your medical detail', sub: 'Visible to you and medical staff. Not to your coaches.',
+                blocks: [
+                  this.kv([
+                    ['Diagnosis', 'Concussion, no loss of consciousness'],
+                    ['Mechanism', 'Head contact in a tackle, Sat 30 Aug \u00b7 Marnbrook'],
+                    ['Stage', '6 of 6 \u00b7 cleared'],
+                    ['Reviewed', 'Mon 21 Sept \u00b7 Ruth Callaghan']
+                  ])
+                ]
+              })
+            ]
+          }
+        ],
+        note: {
+          title: 'Cleared is stated, not implied by an absence of warnings',
+          body: 'The good tone appears once, on the answer card, and the rest of the screen keeps its default surfaces. The closed record stays on the screen with its dates and its day count, because the athlete asking \u201cam I back\u201d a week later should not have to work out whether the record was closed or deleted.',
+          fold: 'Continues below the fold: the rest of your medical detail \u2014 stage 6 of 6, cleared, and the review date.'
+        }
+      })
+    ];
+
+    const scopePill = (s) => 'flex: none; display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: var(--r); font-size: var(--t-pill); font-weight: var(--w-semi); background: ' + (s === 'pattern' ? 'var(--wash-accent)' : 'var(--surf2)') + '; border: 1px solid ' + (s === 'pattern' ? 'var(--accent)' : 'var(--border)') + '; color: ' + (s === 'pattern' ? 'var(--accent)' : 'var(--muted)');
+
+    const notes = [
+      ['pattern', 'The athlete is told once, and the telling waits', 'A status change writes an emphasised card at the top of Today above To do, carrying the status word, who set it, when, and one action. It is not a toast and has no timer: it renders on every Today until the status screen has been opened once. Only opening it clears it. After that, Today is the approved ATH-ADULT-02 screen with no residue.', '--blue-100 fill --blue-200 border \u00b7 --on-tint-value / --on-tint-label / --on-tint-meta \u00b7 one emphasised card per screen, so the availability card keeps its tone family'],
+      ['pattern', 'The status screen answers three questions, in order', 'Can I train today, what can I do and not do, when am I back \u2014 one card each, in that order, on every status frame including the empty one. The answer is a sentence in the display size, not a pill: \u201cYes, with changes\u201d, \u201cNo, not today\u201d, \u201cYes. Everything is on.\u201d The pill stays in the header where the rest of the product puts it.', '--t-subhead / --w-black / -0.02em on the answer \u00b7 --t-eyebrow question label \u00b7 tone card --pill-warn / --warn / --on-warn and family'],
+      ['pattern', 'A restriction line renders as a list on the athlete\u2019s screen', 'The same middot-joined string the coach reads \u2014 \u201cNo contact \u00b7 No collision drills\u201d \u2014 splits into one row per restriction for the athlete, because he is acting on it rather than scanning it. The string is unchanged in the data and unchanged everywhere staff read it.', 'rows at --t-body-sm / --w-bold, 1px --hair between \u00b7 no new token'],
+      ['pattern', 'Stages are numbered. Criteria belong to the club\u2019s protocol', 'The ladder renders stage numbers with a state word \u2014 Done, Now, Next, Later, Cleared. The current stage carries what is recorded against it. The next stage carries one sentence saying the criteria are in the club\u2019s protocol, not in Fydr. No stage is named on any frame, staff or athlete, because no capture names one.', 'now --pill-warn + --warn border + --on-warn \u00b7 next --blue-50 + --blue-200 \u00b7 later --surf + --hair \u00b7 numerals --font-num tabular-nums in --r-round'],
+      ['pattern', 'Advancing moves one stage, and skipping costs more', 'The advance screen advances to the next stage only, and asks for a rewritten restriction line and a confirmation that the protocol criteria were reviewed. Setting any other stage happens on the record and requires a reason. The short path and the correct path are the same path.', 'primary --accent + --ring-action, exactly one per view \u00b7 required confirm as a pressed segmented control at 40px'],
+      ['pattern', 'The confirmation states who sees what, by name', 'Before the change lands, the screen lists the athlete, the named coach and everyone else with what each will read. This is the permission rule made visible at the moment it is exercised, rather than stated once in settings.', 'rows at --t-body-sm bold + --t-caption --muted meta \u00b7 no token change'],
+      ['pattern', 'An absence shares the words and none of the shape', 'Illness, personal, academic, representative, other. Same four availability words, same tones, same squad-list column \u2014 and no site, no diagnosis, no stage, no injury board row, no medical notification. A well names each of those absences rather than leaving it to be inferred. Available is not offered as a status on the absence form.', '--surf2 well in --border with --muted text \u00b7 pills reuse --pill-bad / --pill-warn unchanged'],
+      ['pattern', 'A proposal has three states and one row shape', 'Proposed, Approved, Returned \u2014 the same row, three tones, in a list both the S&C and the medic can see without email. A returned proposal carries the medic\u2019s reason in full, because the reason is the instruction for the next version. Returning without one is not possible.', 'Proposed --pill-warn \u00b7 Approved --pill-good \u00b7 Returned --pill-bad \u00b7 returned reason on a --pill-bad card with --on-bad text'],
+      ['pattern', 'The coach-visible hint travels with the boundary, not the role', 'The medic\u2019s restriction field carries \u201cCoach visible. Describe the restriction, not the injury. Do not name a diagnosis or a protocol.\u201d The same sentence, one role along, sits on the medic\u2019s return-to-S&C reason field. Any free-text field that leaves the clinical circle carries it.', '--t-caption in --muted directly under the --field'],
+      ['pattern', 'Every history row is a fact, and no row is a colour', 'Availability history is one row per change \u2014 timestamp, status word, the restriction line as it read then, what changed, and the person with their role. Rows are never edited or removed; a correction adds a row. The status column carries no tone, because tinting seven rows would say the oldest matters least.', 'table at --t-body-xs, --font-num tabular-nums on every column but the first \u00b7 1px --hair between rows \u00b7 no --wash-* on this table'],
+      ['pattern', 'Body site is not coach-visible', 'A coach reads the status word, the restriction line and the expected return, and nothing else. Site and side \u2014 \u201cHead\u201d, \u201cCalf \u00b7 Right\u201d \u2014 stay with medical staff, the sport scientist and the athlete, because a body area plus a restriction is a diagnosis in two pieces. The captures render site to the coach on the allocation screen and in the coach\u2019s report column; this board does not, and the difference is a club setting defaulting to off \u2014 listed under Open against code.', 'no token change \u00b7 the coach\u2019s injury and allocation rows drop the site segment; the middot run starts at the restriction'],
+      ['pattern', 'Missing values stay words on every new screen', '\u201cNot known\u201d for an expected return the medic has not set, \u201cNot recorded\u201d for one nobody has, \u201cNot known yet\u201d on the athlete\u2019s screen, an em dash in --faint in a table cell. No zeros, no blanks, and \u201cThis is not the same as being cleared\u201d carried word for word from the approved board.', '--faint em dash in cells \u00b7 --text for the worded value \u00b7 no --bad, no zeros'],
+      ['screen-specific', 'The injury form is split by permission, not by importance', 'Left column: athlete, date, site, availability, restrictions, expected return \u2014 everything a coach reads. Right column: diagnosis, mechanism, protocol, stage \u2014 medical staff and the athlete only. Save works with the right column empty, and the well says what happens if you leave it that way.', 'two-column grid at minmax(0, 1fr) each \u00b7 --field fill \u00b7 40px primary'],
+      ['screen-specific', 'The pitch-side form is four fields at 44px', 'Athlete, site, availability, restrictions \u2014 the four that change what anyone else sees. The availability control is a full-width row of three 44px buttons. The save button says what saving does rather than saying Save.', '--touch-min 44px on every control \u00b7 48px primary \u00b7 --gap-chip between the three status buttons'],
+      ['screen-specific', 'Approve is one press; return is a secondary under a required field', 'The medic\u2019s review screen has one primary. Return sits beneath the reason field as a secondary, so the shape of the screen says which decision is routine without disabling the other.', 'one --ring-action per view \u00b7 secondary 1px --accent outline'],
+      ['screen-specific', 'The academy slot is a place, not a policy', 'A line on the injury form and on the athlete\u2019s status screen, reading \u201cIf the club sets different return rules for academy athletes, they appear here. None are recorded.\u201d It makes no claim about age and states no rule.', '--faint at --t-caption \u00b7 no token change']
+    ].map(n => ({ scope: n[0], title: n[1], body: n[2], tokens: n[3], scopeStyle: scopePill(n[0]) }));
+
+    const newTokens = [{
+      title: 'Nothing',
+      body: 'No new colour, radius, spacing step, type size, shadow or duration. The stage ladder is the three card treatments already documented \u2014 tone family for the current stage, --blue-50 / --blue-200 for the next, default surface for the rest. The proposal states are the three existing pill families. The one-time card is the emphasised card, used once per screen as the system requires. The history table is the table shell at its existing sizes.',
+      tokens: '--pill-warn / --warn / --on-warn \u00b7 --pill-good / --good / --on-good \u00b7 --pill-bad / --bad / --on-bad \u00b7 --blue-50 / --blue-100 / --blue-200 \u00b7 --surf2 \u00b7 --hair \u00b7 --field \u00b7 --r \u00b7 --shadow \u00b7 --ring-action \u2014 all unchanged'
+    }];
+
+    const opens = [
+      ['Do stage names and criteria exist anywhere in the data?', 'The only stage data in any capture is \u201cReturn to play protocol, stage 3 of 6\u201d and \u201cstage 3 of 6 \u00b7 symptom-free 4 days\u201d. Whether the protocol is a named list of stages with criteria, or a bare counter, decides whether the ladder can carry names and whether the advance screen can show a checklist instead of a confirmation. The board assumes a bare counter.'],
+      ['Does the availability row hold an author, a timestamp and a previous value?', 'The whole history screen depends on it, and no capture shows a history. If a change overwrites the row rather than appending, the seven-row table cannot be built and the dispute case is not served. This is the single largest assumption on the board.'],
+      ['What states does an injury programme proposal actually have?', 'SC-24a establishes INJURY_PROGRAMME_PROPOSER on the S&C alone, but the two captured steps show the ordinary programme detail with \u201cEdit this programme \u2192\u201d and no propose control, no state pill and no proposal list. Proposed, Approved and Returned are designed here. Confirm the state names, who can transition, and whether a returned proposal carries a reason field.'],
+      ['Does approval assign the programme, or is assigning separate?', 'The frame treats Approve as approve-and-assign, which is the behaviour the S&C\u2019s list implies (\u201cApproved \u00b7 assigned\u201d). If assignment is a second action, the button label is wrong.'],
+      ['Can a coach create an availability row at all, and with which reasons?', 'The approved squad list says a coach can record a non-injury absence directly from a profile. The reason list \u2014 illness, personal, academic, representative, other \u2014 comes from that intro line and from \u201cAcademic\u201d appearing as a reason in MEDIC-19 and ATH-ADULT-34. Confirm the enum, and confirm that Available is not a selectable outcome.'],
+      ['Is there any notification mechanism for the athlete?', 'ATH-ADULT-34 shows the availability banner on Today when a current row exists, and nothing that marks the row as new or as read. The one-time card needs a per-athlete read flag against the availability row. If no such flag exists, it has to be added \u2014 this is the gap the brief named, and it is a data change, not only a screen.'],
+      ['Does the coach genuinely see the protocol stage today?', 'COACH-28\u2019s team allocation renders \u201cHead \u00b7 Return to play protocol, stage 3 of 6 \u00b7 No contact +1 \u00b7 back Sat 12 Sept\u201d to Kate Doyle, inside a caption claiming the limited view. That restriction string names a protocol and a stage, against the rule the approved boards carry. Either the string is wrong in the seed or the rule is not enforced on this screen.'],
+      ['Is there a club setting for \u201csite visible to coach\u201d, and is it off?', 'The board withholds body site and side from the coach everywhere: the status word, the restriction line and the expected return are the whole coach view. The captures do the opposite \u2014 COACH-28\u2019s allocation screen renders \u201cHead\u201d, \u201cCalf \u00b7 Right\u201d and \u201cShoulder \u00b7 Right\u201d to Kate Doyle, and the coach\u2019s injuries report carries a Site column. Treat this as a club-level setting rather than a fixed permission, defaulting to off, and confirm the default and the field name. Site is unchanged for medical staff, the sport scientist and the athlete.'],
+      ['Is there a club policy setting for academy or under-18 return rules?', 'Nothing in any capture or in settings suggests one. The board reserves a slot and states that nothing is recorded. If the club stores it, name the field; if it does not, the slot renders empty and says so.'],
+      ['Where does the injury form live, and can it be reached from an athlete profile?', 'MEDIC-28 shows \u201c+ Injury\u201d on /injuries for the medic and its absence for the sport scientist and coach. Whether the same form is reachable from a profile, and whether it pre-fills the athlete, is not observable.'],
+      ['Are expected return and days lost stored, or derived?', 'MEDIC-19 shows \u201cEXPECTED BACK\u201d per athlete and \u201cDAYS LOST 113 across 6 athletes\u201d. The board treats expected back as a stored date the medic sets and days lost as derived. Confirm before the closed-record line \u201c57 days\u201d is built.'],
+      ['Which roles can see the availability history?', 'The frame is drawn for the medic. Whether a coach, the sport scientist or the athlete can open the same table \u2014 and whether the restriction column is redacted for anyone \u2014 is not established.']
+    ].map(o => ({ title: o[0], body: o[1] }));
+
+    return { frames, notes, newTokens, opens };
+  }
+}
+</script>
+</body>
+</html>

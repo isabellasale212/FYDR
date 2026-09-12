@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { AthleteInjuryRow, InjuryClinical } from '@/lib/queries/injuries';
 import type { InjuryProgrammeStatus } from '@/lib/queries/injuryTimeline';
 import { bodyAreaPhrase, enumLabel, formatDate } from '@/lib/format';
+import { ReadOnlyOwner } from '@/components/ReadOnlyOwner/ReadOnlyOwner';
 
 /** The injury card on the player profile. One card, role-driven content.
  *
@@ -41,6 +42,10 @@ type Props = {
   /** Rehab programme state for the active injury. Non-null only for a medic,
    *  fetched by the page on the same condition as `clinical`. */
   programmeStatus: InjuryProgrammeStatus | null;
+  /** STAFF-SS-02-05 C5: who set the current injury-linked availability and
+   *  when — the read-only owner line for a reader who is not the medic. Null
+   *  when the availability is not injury-linked (a coach's own absence). */
+  availabilitySetBy: { name: string | null; date: string } | null;
   timezone: string;
 };
 
@@ -65,7 +70,7 @@ function ClinicalField({ label, value }: { label: string; value: string | null }
   );
 }
 
-export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, programmeStatus, timezone }: Props) {
+export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, programmeStatus, availabilitySetBy, timezone }: Props) {
   const active = injuries.find((i) => i.status !== 'closed') ?? null;
   const past = injuries.filter((i) => i.status === 'closed');
 
@@ -260,6 +265,18 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
                   ? `Expected return ${formatDate(active.expected_return, timezone)}`
                   : 'Expected return not known'}
               </p>
+              {/* STAFF-SS-02-05 C5 (2026-09-12): the panel ends by naming its
+                  owner — who set this injury-linked availability and when. A
+                  reader who is not the medic cannot change it, and now knows
+                  who can. Nothing clinical is said here, and nothing dimmed. */}
+              {availabilitySetBy ? (
+                <ReadOnlyOwner
+                  owner="medical staff"
+                  name={availabilitySetBy.name}
+                  date={availabilitySetBy.date}
+                  note="A coach can record a non-injury absence from the Availability panel; one that is injury-linked, as this one is, is the medic's."
+                />
+              ) : null}
               {/* Stop. Nothing below this line for a non-medic, in any state. */}
             </>
           )}

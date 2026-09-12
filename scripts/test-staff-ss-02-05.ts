@@ -69,6 +69,22 @@ console.log('\nC2 / B4. the squad list on a phone: 60px rows, the name as the li
   assert(/table\.tbl\.roster td a\.nm \{[^}]*min-height:\s*44px/.test(phone) && /table\.tbl\.roster td a\.nm \{[^}]*font-size:\s*var\(--fs-16\)/.test(phone), 'the name is the tap target, at the row\'s size');
 }
 
+console.log('\nC5. a read-only panel ends with its owner line (2026-09-12)');
+{
+  const well = strip(read('src/components/ReadOnlyOwner/ReadOnlyOwner.tsx'));
+  assert(/export function ReadOnlyOwner\(/.test(well) && /className="ro-owner"/.test(well) && /className="ro-owner-k"/.test(well), 'ReadOnlyOwner: the well, an uppercase line and a sentence');
+  assert(/Read-only · set by \{owner\}/.test(well) || /Read-only · \{owner\}/.test(well), '"Read-only · set by medical staff"');
+  const css = read('src/styles/base.css');
+  assert(/\.ro-owner\s*\{[^}]*background:\s*var\(--surf2\)[^}]*border:\s*1px solid var\(--border\)/.test(css) || /\.ro-owner\s*\{[^}]*border:\s*1px solid var\(--border\)[^}]*background:\s*var\(--surf2\)/.test(css), 'the well treatment: --surf2 in --border');
+  assert(!/\.ro-owner[^{]*\{[^}]*opacity/.test(css), 'nothing at 45% opacity — read-only is not disabled');
+  const profile = strip(read('src/app/(staff)/squad/[athleteId]/page.tsx'));
+  assert(/canEditNutrition \? \(\s*<Link href="\/nutrition" className="btn-ghost">\s*Edit/.test(profile) && /View\s*<\/Link>/.test(profile), 'the Nutrition plan panel offers Edit only to NUTRITION_EDIT — View otherwise');
+  assert(/<ReadOnlyOwner\s+owner="the nutritionist or the sport scientist"/.test(profile), 'and the read-only well names who owns it');
+  assert(/fetchUserNames\(|fetchStaffNames\(|nameById/.test(profile) && /set_by/.test(strip(read('src/lib/queries/availability.ts'))), 'the availability read carries set_by so the injury card can name who set it');
+  const card = strip(read('src/components/InjuryCard/InjuryCard.tsx'));
+  assert(/<ReadOnlyOwner\s+owner="medical staff"/.test(card) && /availabilitySetBy/.test(card), 'the injury card ends with "Read-only · set by medical staff · Ruth Callaghan · Fri 11 Sept" for a reader who is not the medic');
+}
+
 console.log('\nthe specs');
 {
   assert(/Not recorded/.test(read('docs/screens/02-squad-overview.md')), '02-squad-overview.md says "Not recorded"');

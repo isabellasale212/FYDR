@@ -16,6 +16,8 @@ import { restrictionLine } from '@/lib/restrictions';
  * CONTRACT.md rule 3, ADR-007. */
 
 export type CurrentAvailability = {
+  /** Who set it and when — the read-only owner line (STAFF-SS-02-05 C5). */
+  set_by: string | null;
   athlete_id: string;
   status: AvailabilityStatus;
   restrictions: string[] | null;
@@ -67,7 +69,7 @@ export async function fetchCurrentAvailability(
   let q = db
     .from('availability')
     .select(
-      'athlete_id, status, restrictions, reason_category, injury_id, effective_from, note',
+      'athlete_id, status, restrictions, reason_category, injury_id, effective_from, note, set_by',
     )
     .eq('org_id', orgId)
     .is('effective_to', null);

@@ -116,6 +116,19 @@ absent — no heading, no lock, no buttons — as is the Body mass card on the
 athlete nutrition page and the body-mass column of the wellness export. A coach
 who also holds one of those roles sees it; roles are unions.
 
+**Read-only panels name their owner** (STAFF-SS-02-05 C5, 12 September 2026). A
+panel a role reads but cannot change ends with a well — an uppercase line
+"Read-only · set by medical staff" / "Read-only · set by the nutritionist or the
+sport scientist" and one sentence naming the person and the date — rather than a
+dimmed control: disabled is for a control you could have used. Today: the Injury
+card for anyone but the medic when the current availability is injury-linked
+(who set it, when, and that a coach may still record a non-injury absence from
+the Availability panel); the Nutrition plan panel for a role outside
+`NUTRITION_EDIT`, which also offers "View" rather than "Edit" (the rule that
+reaches the athlete — personal, group or club default — its author and its
+effective date). Recorded, not built: the programme block's owner line (the
+assignment carries no author).
+
 **The clinical record. Medics only.** Diagnosis, mechanism, severity, tissue
 type, imaging, referral, clinical notes and treatment plan. Nobody else sees this
 region at all, and its absence is not announced to them.

@@ -21,6 +21,7 @@
 - **Token value changes, decided 2026-09-11 (Isabella) — the first two under CLAUDE.md §0.01's "system decision" rule; each is its own commit with a full contrast sweep in both themes, dated beside the value in `tokens.css`:**
   - **`--accent` — approved, in build (builder).** Light `#1f6fea` → `#17489b`; dark `#2a6ddf`, not the navy, because `#17489b` is 1.7:1 on dark surfaces. Two dark-theme dependants move with it: `--accent-pill-text` `#699bff` → `#8fb4ff`, `--bad-text` `#f15a4a` → `#ff7460`. Whole app, both route groups. **Built `e6ab6b1`** (ADR-009 `docs/decisions/adr-009-brand-accent.md`; 112-assertion guard; dated comments beside each value in `tokens.css` — verified).
   - **Athlete app cards → the existing 9px radius token (`--r-toggle`) — approved, in build, follows in the ATH-ADULT-02 follow-up commit.** Athlete route group only; staff cards stay on `--r-card` (18px). No new token: the value already exists, the card rule is repointed. **Built `4b7b4fa`** (ATH-ADULT-02 follow-up; `/today` cards measure `border-radius: 9px` as Conor).
+- **Athlete shell rhythm, decided 2026-09-12 (Isabella): `--gap-body` 28px → 20px (the `--sp-20` step), athlete app only.** The third token value change under CLAUDE.md §0.01, built `94099bd` with the date beside the value; no contrast sweep because no colour moved. §0h re-settled.
 - **Staff phone shell, decided 2026-09-12 (Isabella): below 768px it is a bottom bar with a "More" sheet.** Decides STAFF-SS-01's D1 in favour of the approved board and supersedes §0af's 2026-09-11 "compact top bar with a menu". The STAFF-SHELL brief's constraints other than the bar's position carry over.
 
 ## 0c. Not yet built — decided, needs a rule shape access.ts doesn't have yet
@@ -1167,6 +1168,8 @@ Two behaviour changes the sign-in proposal asked for, both outside the design-on
 - **STAFF-SS-01 — `ab3d97e`. RECORDED, NOT BUILT, as instructed.** *Verified: the commit touches no `src/` or `supabase/` file.* **Decision for Isabella (D1):** the board's bottom bar + "More" sheet reverses §0af's decided compact top bar with a menu; the builder recommends holding §0af's decision. Eight named tokens in the board do not exist in `tokens.css` (B1). The §0ae trigger the prompt names is already 0101/0102.
 - **§0aa — `ea93b20`. NOT BUILT** (docs only, verified); direction needed — see the item.
 
+**Athlete shell rhythm — `94099bd`. IMPLEMENTED** (merged `3120a68`, 2026-09-12 ~10:50; dev server restarted). `--gap-body` 28 → 20px, dated beside the value; guard `test-athlete-gap-body.ts`; every athlete route's block gap moves; screens with one body child unchanged. *Spot-check on `/today` as Conor: token 20px, `.phone-body` gap 20px, five block gaps all 20px.*
+
 **Queued by the builder next, own commit:** collision 1 — the launch headline at Roboto 800 `clamp(34px, 3.5vw, 48px)` with the claim column kept; 01's banner, warn tone, 44px forgot, focus ring and lock state carried to desktop within the existing layout; the HOLD rule deleted.
 
 **C1, "One attempt left" — `1a363f3` + `cfb22a2`. BUILT, with the enumeration guarantee.** Warn-tone banner at exactly one remaining: "That did not match. One attempt left before a short wait." Reviewer verified the banner and its `data-tone="warn"` server-side at `?e=invalid&a=1`.
@@ -1417,7 +1420,7 @@ Reviewed as Jane Pemberton at 1280×800 and 375×812, read-only — no board, ex
 
 ## 0h. Vertical rhythm on the athlete app, filed 2026-09-08 — measured, needs a decision before any fix
 
-- [x] **SETTLED 2026-09-08 at 28px, after 14px was tried on a phone and read too tight.** The athlete body sits at `--gap-body: 28px`; Today stays at 16px. Measured on all eleven routes after the change.
+- [x] **RE-SETTLED 2026-09-12 (Isabella) at 20px — `94099bd`, the third §0.01 token value change; merged `3120a68`.** One step down the ramp (`--sp-20`), kept as the named rhythm rather than aliased; the in-list `--gap-stack` 14px judged beside it and left; staff untouched (`--gap-body` has one reader). *Reviewer spot-check on `/today` as Conor at 375: `--gap-body` computes 20px, `.phone-body` gap 20px, every block-to-block gap 20px, page 994px.* Guard `test-athlete-gap-body.ts` (11) in prebuild. Earlier settlement follows. **SETTLED 2026-09-08 at 28px, after 14px was tried on a phone and read too tight.** The athlete body sits at `--gap-body: 28px`; Today stays at 16px. Measured on all eleven routes after the change.
 
   **28px IS WHAT EIGHT SCREENS ALREADY RENDERED BY ACCIDENT**, from a flex gap plus a per-block margin. So the visual outcome is what was signed off on 4 September — the difference is that it now comes from ONE place instead of producing 18, 26, 28, 32 and 40.5px across the app depending on which block happened to carry which margin. The reversal was a value change, not an undo: none of the removed margins came back.
 

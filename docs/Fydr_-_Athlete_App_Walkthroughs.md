@@ -438,6 +438,8 @@ of this screen dated a week behind is correct, not stale.
 
 ## ATH-ADULT-08 — Correct a nutrition check-in already submitted
 
+**Built 2026-09-12 (`00a7119`, migration 0107 — scratch only).** The check-in can be corrected **once**: a second attempt is refused at the database (`entry_already_corrected`) and before the form (the spent state — "Already answered", the Corrected pill, "You have used your one correction for this check-in, so it can't be changed again."); the answered card carries "You can correct this once after you submit."; saving a correction returns to this page as "Correction saved" with the original kept; My data marks the week Corrected with "was {answer}" and no Correct link. Source-verified.
+
 **Built 2026-09-12 (`a69c958`).** "Already answered" as the heading, the answer shown under a "Your answer" tag, two exits as buttons — "Back to Today" (`.btn-primary`) and "Correct this answer", which names the week it corrects. The second question the board drew (the live check-in has one) and the once-only rule are recorded in the builder's record, not built. Read from source; Conor's check-in is still on his To do.
 
 **Entry point.** Two places, both real:

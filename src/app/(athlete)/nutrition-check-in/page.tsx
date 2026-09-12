@@ -70,6 +70,7 @@ export default async function NutritionCheckInPage({
           userId={claims.userId}
           timezone={timezone}
           weekStart={weekStart}
+          lastCompletedWeek={lastCompletedWeek}
           correction={{
             originalId: existing.id,
             initialAnswer: existing.answer,
@@ -122,6 +123,7 @@ export default async function NutritionCheckInPage({
           userId={claims.userId}
           timezone={timezone}
           weekStart={weekStart}
+          lastCompletedWeek={lastCompletedWeek}
         />
       )}
     </>

@@ -20,6 +20,13 @@ compliance domain. One question, once a week.
 
 One question, three answers, and an optional note.
 
+**The question names its week** (§0u, decided 10 September 2026, built 12 September):
+"Did you hit your protein target most days **last week (24 to 30 Aug)**?" for the
+default — the last completed week, which is the only week the question can honestly be
+asked about and is unchanged — and "…most days **in the week of 10 to 16 Aug**?" when a
+correction opens an older week, where "last week" alone would be wrong and the dates
+carry the meaning. It never says "this week". The correction banner names the same dates.
+
 ## 4. What the athlete enters here
 
 | Field | As worded | Type and range | Validation | On invalid | Stored | Editable | Who sees it |
@@ -91,6 +98,6 @@ than drop it.
 
 ## 12. Open issues
 
-- **UNVERIFIED:** the exact wording of the one question and its three answers.
-  For a screen whose entire content is one question, this is the most important
-  missing fact in this file.
+- The exact wording of the question is now in §3; the three answers are "Yes /
+  Roughly / No" (the `nutrition_checkin_answer` enum). Whether those are the final
+  words is still a product question (ATH-ADULT-08 D1).

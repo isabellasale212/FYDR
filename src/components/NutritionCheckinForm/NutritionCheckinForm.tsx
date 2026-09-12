@@ -11,6 +11,7 @@ import { enqueueNutritionCheckin, dequeueNutritionCheckin } from '@/lib/outbox';
 import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { NutritionCheckinInput } from '@/lib/validation/nutrition';
 import { isoWeekInfo, formatDate, addDays } from '@/lib/format';
+import { weekQuestion } from '@/lib/nutritionWeekCopy';
 
 const ANSWERS = [
   { value: 'yes', label: 'Yes' },
@@ -26,6 +27,10 @@ type Props = {
   userId: string;
   timezone: string;
   weekStart: string;
+  /** The default week — the last completed one — so the question can say
+   *  "last week (24 to 30 Aug)" for it and name an older week by its dates
+   *  alone (§0u, decided 2026-09-10). The choice of week is the page's. */
+  lastCompletedWeek: string;
   correction?: Correction;
 };
 
@@ -35,7 +40,7 @@ type Props = {
  *  and No red tells an athlete which answer the app wants, which the spec
  *  calls out by name as the exact pressure that turns a self-report into
  *  self-presentation. */
-export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekStart, correction }: Props) {
+export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekStart, lastCompletedWeek, correction }: Props) {
   const router = useRouter();
   const [answer, setAnswer] = useState<'yes' | 'roughly' | 'no' | null>(
     correction?.initialAnswer ?? null,
@@ -151,8 +156,11 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekS
       <p className="eyebrow">
         Week {isoWeekInfo(weekStart).isoWeek} · {formatDate(weekStart, timezone)} to {formatDate(weekEnd, timezone)}
       </p>
+      {/* Names its week (§0u): "last week (24 to 30 Aug)" for the default,
+          "in the week of 10 to 16 Aug" for a correction of an older one. It
+          used to say "this week" over a week line that said otherwise. */}
       <p className="dir" style={{ marginTop: 'var(--sp-8)' }}>
-        Did you hit your protein target most days this week?
+        {weekQuestion(weekStart, lastCompletedWeek, timezone)}
       </p>
 
       <div className="stack" style={{ marginTop: 'var(--sp-14)', gap: 'var(--sp-10)' }}>

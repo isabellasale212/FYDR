@@ -1,5 +1,6 @@
 'use client';
 
+import { BlockedButton } from '@/components/BlockedButton/BlockedButton';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
@@ -76,49 +77,41 @@ export function BodyWeightPanel({
   return (
     <div>
       <div className="pp-weight-actions">
-        <button
-          type="button"
+        {/* Reachable while blocked, with the reason shown on tap (BlockedButton,
+            2026-09-12, §0av): a disabled button gets no hover on touch and no
+            focus anywhere, so on a phone the coach saw three greyed controls
+            and never the sentence. */}
+        <BlockedButton
           className="btn-ghost"
-          disabled={!canLog}
-          aria-disabled={!canLog}
-          title={canLog ? undefined : 'Logging a weigh-in belongs to the sport scientist, the medic, the S&C and the nutritionist.'}
+          blocked={!canLog}
+          reason="Logging a weigh-in belongs to the sport scientist, the medic, the S&C and the nutritionist."
           onClick={() => setMode((m) => (m === 'log' ? 'closed' : 'log'))}
           aria-pressed={mode === 'log'}
         >
           + Log weigh-in
-        </button>
-        <button
-          type="button"
+        </BlockedButton>
+        <BlockedButton
           className="btn-ghost"
-          disabled={!canLog}
-          aria-disabled={!canLog}
-          title={
-            canLog
-              ? 'Staff only — an athlete never sees their target range.'
-              : 'Setting a body-mass target range belongs to the sport scientist and the nutritionist.'
-          }
+          blocked={!canLog}
+          reason="Setting a body-mass target range belongs to the sport scientist and the nutritionist."
           onClick={() => setMode((m) => (m === 'target' ? 'closed' : 'target'))}
           aria-pressed={mode === 'target'}
         >
           {live ? 'Change target range' : 'Set target range'}
-        </button>
-        <button
-          type="button"
+        </BlockedButton>
+        <BlockedButton
           className="btn-ghost"
-          disabled={!canLog || entries.length === 0}
-          aria-disabled={!canLog || entries.length === 0}
-          title={
+          blocked={!canLog || entries.length === 0}
+          reason={
             !canLog
               ? 'Editing a weigh-in belongs to the sport scientist, the medic, the S&C and the nutritionist.'
-              : entries.length === 0
-                ? 'Nothing logged yet.'
-                : undefined
+              : 'Nothing logged yet.'
           }
           onClick={() => setMode((m) => (m === 'edit' ? 'closed' : 'edit'))}
           aria-pressed={mode === 'edit'}
         >
           Edit entries
-        </button>
+        </BlockedButton>
       </div>
 
       {mode === 'log' ? (

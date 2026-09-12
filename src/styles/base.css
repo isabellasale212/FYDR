@@ -13109,3 +13109,18 @@ a.hist-row:active { background: var(--surf-sunken); }
     line-height: 20px;
   }
 }
+
+/* A blocked control (BlockedButton, 2026-09-12): keeps its box, mutes its
+   ink, keeps the pointer — it is reachable and says why on tap. The reason
+   takes a full line of a wrapping row, beneath the control it describes. */
+[data-blocked] {
+  color: var(--muted);
+  cursor: pointer;
+}
+.blocked-why {
+  display: block;
+  flex-basis: 100%;
+  margin-top: var(--sp-4);
+  font-size: var(--fs-12);
+  color: var(--muted);
+}

@@ -1,0 +1,71 @@
+# Test-club run-through — the step log (started 2026-09-12 20:40, scratch only)
+
+The plan is `docs/test-club-run-plan-2026-09-13.md`; Isabella's answers to its §0, 2026-09-12: scratch;
+the reviewer runs `create:org --commit` (target confirmed on the dry run first); **Harlow Vale RFC,
+senior women's squad** — the target market, and this club stays as the standing demo club; the roster
+and staff renamed for a women's squad, keeping the under-18, the one who turns 18 in the season and
+the rehab case; the GPS CSV from the app's template; the medic enrolled in TOTP with the secret kept
+out of chat and the repo.
+
+Nothing here touches production (`asbxorjytxsvrzefwzqp`). Every write is inside `org_id
+d4174e69-2a77-45ac-a580-868a5c213d51`. Ashcombe, Conor and Matt Reid untouched. No code changes.
+
+**Method.** Headless Chrome per identity (`--remote-debugging-port 9510–9517`, own profiles under
+`~/.fydr-hv-profile-*`), driven over CDP; every screen at **1280×900 and 375×812**; the wrong side of
+every gate probed at the database (PostgREST with the wrong role's own session — `rls-probe.mjs`) as
+well as at the screen; `audit_log` read after every write (`hv-audit-ro.mjs`, read-only). Screenshots in
+the session scratchpad `hv-shots/`.
+
+**Passwords.** The reviewer never types a password. Each identity arrives through its single-use
+invite link (which signs them in) or a scratch-only magic link (`link.mjs`, which refuses production);
+the "Choose your password" step is rendered and checked but not completed. Flagged as a boundary in
+the step log where it matters.
+
+## Identities
+
+| Role | Name | Sign-in | Profile port |
+|---|---|---|---|
+| Sport scientist, first admin | Priya Nair | p.nair@harlowvale.example | 9510 |
+| Head coach | Bethan Rees | b.rees@harlowvale.example | 9511 |
+| Medic (TOTP) | Dr Hannah Lisk | h.lisk@harlowvale.example | 9512 |
+| S&C | Amara Okafor | a.okafor@harlowvale.example | 9513 |
+| Nutritionist | Laura Quinn | l.quinn@harlowvale.example | 9514 |
+| Second sport scientist | Samantha Byrne | s.byrne@harlowvale.example | 9515 |
+| Athlete (adult) | see roster | | 9516 |
+| Athlete (under 18) | see roster | | 9517 |
+
+Roster (12) — the plan's appendix renamed for a women's squad:
+
+| # | Name | DOB | Position | Group |
+|---|---|---|---|---|
+| 1 | Megan Hollis | 1998-03-14 | Loosehead prop | Forwards |
+| 2 | Abena Mensah | 1996-11-02 | Hooker | Forwards |
+| 3 | Erin Rooke | 2001-07-19 | Lock | Forwards |
+| 4 | Bryony Talbot | 1999-01-28 | Flanker | Forwards |
+| 5 | Zara Oduya | 2000-05-05 | No. 8 | Forwards |
+| 6 | Siobhan Kavanagh | 1997-09-30 | Scrum-half | Backs |
+| 7 | Ffion Prosser | 2002-02-11 | Fly-half | Backs |
+| 8 | Chidinma Achebe | 1998-12-08 | Centre | Backs |
+| 9 | Holly Fenwick | 2003-06-22 | Wing | Backs |
+| 10 | Maeve Delaney | 1995-04-17 | Full-back | Backs — on a rehab path from day one |
+| 11 | Tia Nkemelu | 2009-10-03 | Wing | Academy — **under 18 all season** |
+| 12 | Caitlin Brice | 2008-11-20 | Centre | Academy — **turns 18 on 20 Nov 2026**, in season |
+
+## Day 0 — the club exists
+
+| Step | Actor | Action | Expected | Measured | Audit | Gate probes |
+|---|---|---|---|---|---|---|
+| 1 | reviewer, `create:org` | Dry run printed `database stfgzkuvczbpxyevxkak.supabase.co`, then `--commit` (20:40): org `d4174e69`, season 2026/27 (1 Jul 2026 – 30 Jun 2027, current), auth user `28b787f5`, users row active, `sport_scientist` granted, one invite link. Tier `performance` (= "Premium"), `Europe/London`, `GB`. | one org, one season, one admin, single-use link | as expected | *(not read — the script's own writes are service-role; see step 3 for the first audited write)* | **Invisible to Ashcombe at the database:** as Jane (SS, 9500) `organisations` returns her one row; `organisations?id=eq.d4174e69`, `seasons?org_id=eq.…`, `users?org_id=eq.…` all `0` rows. |
+| 1b | anyone | The same invite link a second time (profile 9515, cold) | refused | `/login?e=invite-link` — refused, no session | — | — |
+| 2 | Priya | Follows the link at 1280 | signed in, asked to choose a password | `/login/reset/confirm` — "Choose your password. You will be signed in as soon as it is set." Two password fields, 12-character minimum. **Password not set (reviewer rule).** | — | — |
+| 2b | Priya | `/dashboard` without setting a password | ? | **Reaches the dashboard signed in** — the invite token alone is a session. She has an account with no password; her next sign-in needs a reset link. *Observation, not a defect: the confirm page says she "will be signed in as soon as it is set", so the copy promises a gate the flow does not have. Filed as F-05.* | — | — |
+| 2c | Priya | Every sidebar row, empty club, 1280 and 375 | each screen's empty state | Dashboard: "No open flags right now", "0 of 0 today · not expected", "Nothing scheduled" ×6, "Fit and available · no restriction" — calm, with **no thresholds in existence** (F-03). Squad: "0 athletes in the squad" + "No athlete matches that filter." (F-02). Schedule: "No templates yet", seven empty days, Published pill blocked. Reports: six report cards, all reachable. Nutrition: "No plans yet", day types at defaults 6.0 / 7.5 / 3.5 g/kg, "No athletes in the current group filter." (F-02). Gym programme: "No programmes yet" + New programme + Exercise library. Leaderboard: "No athletes in this filter — clear the filter" (F-02). Analytics: "Nobody in scope — widen it" (F-02). Settings: Plan (Premium on), Integrations ("Catapult Openfield · Connected" — F-04), Thresholds "0 active", the eleven setting rows. No sideways scroll on any row at 375; the phone bar is Dashboard · Squad · Schedule · Flags · More on every row; every control ≥44px at 375. | — | — |
+| 3 | Priya | Club details: logo uploaded (96px PNG) and saved; profile phone saved | saved, logo shown, two audit rows | "✓ Saved." twice; the logo renders at 48px from `storage/…/logos/d4174e69…`. Beneath the profile: "! Your role requires two-factor authentication. Set it up below — this club's policy is that coach, medical and admin accounts carry a second factor" (prompted, not enforced — plan §0 item 7). | **1 of 2**: `users.update {changed:[phone]}` by `28b787f5` as `sport_scientist`, with `ip_address`. The organisation save wrote **no row** — known: `organisations` is the shape exclusion in §0e ("it IS the org"), still unresolved. Recorded in the audit matrix. | — |
+| 4 | Priya | Plan | Premium rows present | Settings › Plan: the toggle reads Premium; "GPS exports, Training report, Analytics · bar chart, Apple Health connection" listed; Analytics in her sidebar. | — | — |
+| 5 | Priya | Groups: Forwards, Backs (positional), Academy (age), each with a description and colour, from `/settings/groups/new` | three groups, audited | "3 groups. Every athlete is in at least one group." — positional 2, age 1, reorder arrows on the positional pair. **Team selections: "No teams are set up yet, so there is nothing to select into"** and no way to make one — `teams` has an insert policy but no screen writes it (F-07). `/injuries/team-allocation` on the empty club: "Unallocated 0 · Everyone is on a team this week." (F-07). | **none** — `groups` carries no audit trigger (F-06; the 34 audited tables read from `pg_trigger` on scratch, `hv-triggers-ro.mjs`). | — |
+| 6 | Priya | Thresholds: "Start with the default set", then one deactivated (Sleep dropped), one created ("Readiness under 2": readiness below a fixed 2, high, notifies coach + medic) | seeded set, edits audited | Empty state names the failure mode ("Nothing is being watched yet, so no flag can be raised") and offers the five-rule starter set; after: "4 active, 1 inactive" → "3 active, 2 inactive" → "4 active, 2 inactive". **No threshold can be edited** — a row offers Deactivate / Retire only; `58-thresholds.md` row 50 says a threshold "opens for editing, keeping a revision" (F-09). The new-threshold form's notify chips read "Sport_scientist", "Strength_conditioning" (F-01). **D-39 is half built:** the dashboard read "Open flags 0 · all acknowledged" on a club with no rules at all; only the thresholds screen says nothing is watched (F-03). | 5 × `thresholds.insert` (the seed, actor Priya), `thresholds.update {changed:[is_active]}`, `thresholds.insert` — **7 of 7** | — |
+| 7 | Priya | Notifications: "High-severity flag raised" push → off | persists | "Push off" after a reload. | none — a personal preference (`notification_preferences` is not on the audited list; accepted). | — |
+| 7b | Hannah (medic) | Two-factor: "Set up two-factor authentication" → QR + key → code from the key (computed in the scratchpad, `totp.py`; the key is in `hv-totp-secret.txt`, nowhere else) → "Confirm and turn on" | enrolled | "Two-factor authentication is on for your account · Status On · Added Sat 12 Sept · no recovery code — an admin has to remove this for you." Enrolment is Auth-side (`auth.mfa_factors`); the admin's removal route writes its own `audit_log` row (`settings/users/[userId]/mfa/route.ts:52`). | none for the enrolment (Auth schema only; accepted) | — |
+| 8 | Priya | Invite people: Bethan Rees (coach) | account, link, audit | "Account created — Send this link to Bethan Rees yourself — no invite email went out." (reserved `.example` domain). Link single-use, confirms the address, no password set. **Bulk invite is athletes only** — the four remaining staff went through the single form, one each (by design; four forms). All six listed. **Every invited account shows "● Active" before its link is used** — `user_status` has `invited`, the route writes `active`; the list cannot tell an accepted account from a pending invite (F-12). "1 users" (F-10). | `users.insert`, `users.update {claims_version}`, `user_roles.insert {role:coach}`, `user.created {roles:[coach]}`, `invite.email_not_sent {note: reserved .example}` — **5 rows per invite** | **Screen:** on Priya's own row Medic is `disabled` + title "You cannot grant yourself the medic role. Another sport scientist can."; Sport scientist `disabled` + title "This is the only admin in the club — …"; Deactivate `disabled`, no reason (F-11: `disabled`+`title`, not BlockedButton — on a phone no reason is reachable). **Database, Priya's own session:** `POST user_roles {medic, self}` → **403** 0102's message; `DELETE user_roles?role=eq.sport_scientist&user_id=eq.self` → **403** 0101's message; **`PATCH users?id=eq.self {"status":"deactivated"}` → 200 — GATE, §0bd**, reverted 60 s later; `claims_version` unchanged, her token kept working. |
+| 8b | Samantha (second SS) / Priya | Samantha removes her **own** SS role now that Priya holds one (0101's positive branch); Priya re-grants it; Samantha signs back in by magic link | allowed, then stale-claims sign-out | Chip enabled on both SS rows once two exist; the removal lands, her next request is bounced to `/login?e=stale-claims` (the claims-version gate); the re-grant lands; magic link → dashboard as `sport_scientist`. | `users.update {claims_version}`, `user_roles.delete {role:sport_scientist}`, `user_roles.changed {removed:[sport_scientist]}`; the re-grant mirrors it | Coach mirror of §0bd: Bethan `PATCH users {status:suspended}` 200, `{status:active}` 200, `{email:someone.else@…}` 200, reverted 200 — a non-admin flips her own status and email. |
+| 9 | each staff | Follows their link at 1280; `/dashboard`; at 375 the bar and the More sheet | role-shaped nav | Landed: coach, medic, S&C, nutritionist, second SS. Sidebar: 8 rows for the four, 9 (with Analytics) for the SS — the always-refused rows filed on §0av today, not yet built. Bar: Dashboard · Squad · Schedule · **Flags** · More (SS, coach, medic); **Gym** for S&C; **Nutrition** for the nutritionist; the displaced row joins the sheet; Escape closes the sheet. Sidebar user line reads `Harlow Vale RFC · strength_conditioning` (F-01). | — | — |

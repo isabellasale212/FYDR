@@ -6,6 +6,7 @@ import type {
   InjuryStatus,
 } from '@/lib/types/database';
 import { fetchGroupAthleteIds, type Db } from './groups';
+import { restrictionLine } from '@/lib/restrictions';
 
 /* Availability, as a coach may read it.
  *
@@ -168,7 +169,7 @@ export async function fetchNotFullyAvailable(
         position: athlete.position,
         squad_number: athlete.squad_number,
         status,
-        restrictions: current?.restrictions ?? [],
+        restrictions: restrictionLine(current?.restrictions),
         reason_category: current?.reason_category ?? null,
         body_area: injury?.body_area ?? null,
         side: injury?.side ?? null,

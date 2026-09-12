@@ -68,6 +68,13 @@ scientist (everything). "Confirm and update" is the write; "Back" returns to the
 form. The same step sits on the medic's form on the injury record. The rows state
 what each reader can read under the RLS in force today, and change with it.
 
+**The restriction line never names a protocol** (PATTERN-S3 D1, enforced 12 September
+2026): every read of `availability.restrictions` passes through `lib/restrictions.ts`,
+which drops any entry naming a protocol, a stage or a diagnosis — for every viewer, on
+every screen (squad list, dashboard, allocation, timetable, the athlete's own Today).
+The return-to-play stage is a clinical fact and lives in the clinical record's treatment
+plan, read by medical staff only.
+
 **Injury.** The current injury, if any, as `InjuryCard`. With no open injury it
 reads *"No current restrictions. This is not the same as being cleared."* An
 expected return the medic has not set reads *"Expected return not known"*; a

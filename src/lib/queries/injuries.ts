@@ -9,6 +9,7 @@ import type {
 import { fetchCurrentAvailability, fetchOpenInjuries } from './availability';
 import { fetchGroupAthleteIds, type Db } from './groups';
 import { mustAffect } from '@/lib/write';
+import { restrictionLine } from '@/lib/restrictions';
 
 /* screens/injury-dashboard.md and injury-record.md, screens 12 and 13, cut down hard —
  * see each function's own comment for what and why. No new schema at all: injuries,
@@ -185,7 +186,7 @@ export async function fetchInjuryDetail(db: Db, orgId: string, injuryId: string)
     actual_return: data.actual_return,
     occurred_in: data.occurred_in,
     availability_status: avail?.status ?? null,
-    restrictions: avail?.restrictions ?? null,
+    restrictions: avail ? restrictionLine(avail.restrictions) : null,
   };
 }
 

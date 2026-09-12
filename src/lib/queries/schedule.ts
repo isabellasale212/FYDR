@@ -12,6 +12,7 @@ import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchAllPaged } from './paged';
 import { computeConflicts } from './restrictionConflicts';
 import { mustAffect } from '@/lib/write';
+import { restrictionLine } from '@/lib/restrictions';
 
 export type Session = Pick<
   SessionRow,
@@ -678,7 +679,7 @@ export async function fetchWeekSessionsDetailed(
     const restrictionConflictCount = counted.filter((id) => {
       const avail = availByAthlete.get(id);
       if (!avail) return false;
-      return computeConflicts(session.session_type, session.planned_rpe, avail.restrictions ?? []).length > 0;
+      return computeConflicts(session.session_type, session.planned_rpe, restrictionLine(avail.restrictions)).length > 0;
     }).length;
 
     return {

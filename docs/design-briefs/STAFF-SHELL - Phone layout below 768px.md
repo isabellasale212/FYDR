@@ -56,6 +56,8 @@ navigation at phone width.
 
 ## 2. The proposal, in Isabella's words
 
+> **BUILT `af09c17` (2026-09-12): `StaffPhoneShell` — 64px title bar, bottom bar of four plus More, the More sheet as a disclosure, the 44px floor applied generically below 768px. Measured as Jane at 375: sidebar `display: none`, tabs 58px, title bar 64px. The sweep table in §5 is now the list to re-measure on the built shell.**
+>
 > **SUPERSEDED 2026-09-12 (Isabella): below 768px the staff shell is a bottom bar
 > with a "More" sheet — the shape of the approved STAFF-SS-01 board
 > (`docs/designs/STAFF-SS-01 final/`), which decides that board's D1. Read

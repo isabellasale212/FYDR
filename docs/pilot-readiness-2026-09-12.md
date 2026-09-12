@@ -14,13 +14,13 @@ Data loss, wrong data shown, security, or something a club would see go wrong in
 |---|---|---|
 | 1 | **§0a L318 / §2 L1981 — Supabase is on the Free tier: no automated backups, no point-in-time recovery.** First real athlete's data has no restore path. | **You** — decided 2026-09-12: gated on signing the pilot club; hard gate before the first real account. |
 | 2 | ~~**§0al L1289 — a network failure at schedule publish wipes every pending change.**~~ | **Closed overnight, `71035f5`** — sessionStorage round-trip, no refresh after a failure. |
-| 3 | **§0aa L1128 — a gym set queued offline is silently discarded if its slot was filled by a different value.** An athlete's set disappears with "sent" showing. | **Decision, then build** — not built overnight (`ea93b20`): no direction on the list. Builder question 3 recommends `resolveGymSetConflict` (dequeue only when the stored value equals the queued one; otherwise surface it on Today). Say yes or otherwise. |
+| 3 | ~~**§0aa L1128 — a gym set queued offline is silently discarded.**~~ | **Closed, `75c6a6e`** — a differing value is a visible conflict with two ways out. |
 | 4 | ~~**§0u L995 / L1005 — "Sessions logged" counts sessions that were only opened.**~~ | **Closed overnight, `068e5ba` + `e052fd0`.** |
 | 5 | ~~**§0ad L1176 — the compliance report counts an RPE as submitted however late it arrives.**~~ | **Closed this morning, `9ec24c8` + `67cf9aa` + `0c63b4c`** — 284 of 631 this season (was 302); James Barnes 51% (was 52). Migration 0105 is on scratch only. |
 | 6 | **§0e L92 — tell the medical staff that `mechanism` is athlete-visible.** A medic who writes a mechanism note thinking it is private is the first-week incident this list exists to prevent. | **You** — confirmed 2026-09-12: you have the sentence and deliver it. |
 | 7 | **§4 L1991 / L1992 / §5 L1998 — special-category (medical) data obligations confirmed, a DPA template, and legal review before the first pilot club.** Real athletes' injury records without a signed DPA is the exposure, not a bug. | **You / legal** — 2026-09-12: solicitor quote being obtained. |
 | 8 | ~~**§0ai L1255 (+§0ah L1242) — a session can be created with no type, no groups, no duration.**~~ | **Closed at the form overnight, `eff27bb` + `586520d`** — measured: duration `required`, "Choose at least one group." refusal. Two edges remain as Builder questions 1, 2 and 4 (nullable column, week-template path, the grid's "Add to day"). |
-| 9 | **§0at (new, 2026-09-12) — gym tonnage is stored only after a correction, so My data's history says "Not logged" for 41 of 45 real sessions and staff volume means average the corrected few.** An athlete's first logged session reads "Not logged" the next day. | **Build** — derive the session total from live sets at read time (or maintain the column on every set log + backfill); one guard test. |
+| 9 | ~~**§0at — gym tonnage stored only after a correction.**~~ | **Closed, `5003959` + migration 0106** — derived through the view; 0 of 45 null; 0106 on scratch only. |
 
 Not in group 1, and why: §0aq (the sign-in timing floor) is security, but the production measurement shows the real and unknown paths matching — it is a latent weakening, not an exposure; it sits in group 2. §0ae part 2 is closed by 0102 on production (box closed today). §0e L185 (49 of 59 tables unaudited) is posture, not a week-one failure; group 3, with the sessions slice in group 2.
 
@@ -28,7 +28,7 @@ Not in group 1, and why: §0aq (the sign-in timing floor) is security, but the p
 
 Visible and embarrassing; no harm.
 
-- **§0af L1220** — below 768px the sidebar stacks 640px above every staff screen. Decided 2026-09-12: bottom bar with a "More" sheet (the STAFF-SS-01 board); needs build. The single most visible staff defect on a phone.
+- ~~**§0af L1220** — below 768px the sidebar stacks 640px above every staff screen.~~ **Closed, `af09c17`** — bottom bar + More sheet, 44px floor applied generically; measured.
 - ~~**§0s L903** — the athlete check-in's submit button sits 229px below the fold.~~ **Closed overnight** by the ATH-ADULT-03 build (`6618b7f` + `5ae00ea`, merged `b13cc29`); the footer pins and the button measures inside the viewport at scroll 0.
 - **§0u L961** — the gym prescription line reads "3 × 8 @ No 1RM test linked to this exercise yet."
 - **§0u L971** — the nutrition check-in says "this week" about a week that has ended (decided: copy fix, keep the default).

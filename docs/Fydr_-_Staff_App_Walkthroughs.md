@@ -1256,7 +1256,7 @@ Holds `SESSION_EDIT`, `THRESHOLD_EDIT`, `GROUP_EDIT`, `AVAILABILITY_EDIT`,
 
 ## Identical to the sport scientist
 
-**Verified 2026-09-12 for 01, 02, 05, 07, 08 to 11 and 12 to 15** by fingerprinting each
+**Verified 2026-09-12 for 01, 02, 05, 07, 08 to 15, 16 and 17/18/20/21/22** by fingerprinting each
 route for a coach (Mark Iremonger) and the sport scientist at 1280 and 375 — headings,
 controls, every leaf node, page height — and diffing (10 and 11 by driving Edit mode,
 the panel and the remove confirmation for both). Identical except:

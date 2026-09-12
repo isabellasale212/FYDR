@@ -7,6 +7,7 @@ import {
   dequeueNutritionCheckin,
   dequeueTraining,
   dequeueWellness,
+  markGymSetConflict,
   markNutritionCheckinConflict,
   markTrainingConflict,
   markWellnessConflict,
@@ -14,6 +15,7 @@ import {
   pendingNutritionCheckins,
   pendingTraining,
   pendingWellness,
+  type PendingGymSetLog,
   type PendingNutritionCheckin,
   type PendingTraining,
   type PendingWellness,
@@ -21,7 +23,8 @@ import {
 import { submitWellnessEntry, fetchWellnessDay } from '@/lib/queries/wellness';
 import { submitTrainingEntry, fetchTrainingEntryForSession } from '@/lib/queries/training';
 import { submitCheckin, fetchCheckinForWeek } from '@/lib/queries/nutrition';
-import { submitGymSetLog } from '@/lib/queries/programmes';
+import { fetchGymSetForSlot, fetchGymSetNaming, reviseGymSetLog, submitGymSetLog } from '@/lib/queries/programmes';
+import { classifyGymSetConflict, describeGymSet } from '@/lib/gymSetConflict';
 import { createClient } from '@/lib/supabase/client';
 import type { Db } from '@/lib/queries/groups';
 import { formatDate } from '@/lib/format';
@@ -98,16 +101,45 @@ async function resolveNutritionConflict(
   }
 }
 
-type ConflictDomain = 'wellness' | 'training' | 'nutrition';
-type ConflictItem = { domain: ConflictDomain; id: string; label: string };
+/** The gym version — §0aa, decided 2026-09-12. Same shape as the three above,
+ *  with one more thing to say: gym is the domain where "another row is live"
+ *  can still mean the athlete's numbers are safe (a second tab logged the
+ *  SAME set), and where a different row is a loss of their numbers, not just
+ *  a duplicate. So the lookup returns the row's values, the decision compares
+ *  them (lib/gymSetConflict.ts), and a real conflict stores what is live so
+ *  Today can show both sets of numbers. */
+async function resolveGymSetConflict(
+  db: Db,
+  athleteId: string,
+  item: PendingGymSetLog,
+): Promise<ConflictOutcome> {
+  void athleteId; // RLS scopes gym_set_logs_current to the athlete's own rows
+  try {
+    const live = await fetchGymSetForSlot(db, item.input);
+    if (classifyGymSetConflict(item.input, live) === 'delivered') return 'delivered';
+    const naming = await fetchGymSetNaming(db, item.input.exercise_id, item.input.gym_session_log_id);
+    markGymSetConflict(item.input.id, live ? { ...live, ...naming } : null);
+    return 'conflict';
+  } catch {
+    return 'unknown';
+  }
+}
+
+type ConflictDomain = 'wellness' | 'training' | 'nutrition' | 'gym';
+type ConflictItem = {
+  domain: ConflictDomain;
+  id: string;
+  label: string;
+  /** Gym only: the two sets of numbers, and whether "Use my numbers" can be
+   *  offered (it needs a live row to correct). */
+  gym?: { queued: string; live: string | null; liveId: string | null };
+};
 
 /** Reads every domain's queue fresh from localStorage and splits it into
  *  "still trying" (the pending count) and "flagged as a real, unresolved
  *  conflict" (see PendingWellness's own conflictAt comment in lib/outbox.ts).
- *  Gym set logs have no conflictAt (this pass's disambiguation is scoped to
- *  the three plain-submit forms named in the integration audit's majors fix,
- *  not gym logging's own separate UI), so every queued gym item still counts
- *  as plain "pending". Module scope, not a hook: it closes over nothing
+ *  Gym set logs joined the other three on 2026-09-12 (§0aa) — a flagged gym
+ *  item is a conflict, not pending. Module scope, not a hook: it closes over nothing
  *  reactive, so defining it once here keeps it a stable reference for both
  *  the flush effect and the discard handler below without an
  *  exhaustive-deps concern. */
@@ -139,13 +171,30 @@ function snapshot(timezone: string): { pendingCount: number; conflicts: Conflict
         id: item.input.id,
         label: `your check-in for the week of ${formatDate(item.input.week_start, timezone)}`,
       })),
+    ...gym
+      .filter((item) => item.conflictAt)
+      .map((item) => {
+        const live = item.conflictLive ?? null;
+        const name = live?.exercise_name ?? 'this exercise';
+        const day = live?.entry_date ? ` on ${formatDate(live.entry_date, timezone)}` : '';
+        return {
+          domain: 'gym' as const,
+          id: item.input.id,
+          label: `set ${item.input.set_number} of ${name}${day}`,
+          gym: {
+            queued: describeGymSet(item.input),
+            live: live ? describeGymSet(live) : null,
+            liveId: live?.id ?? null,
+          },
+        };
+      }),
   ];
 
   const pendingCount =
     wellness.filter((item) => !item.conflictAt).length +
     training.filter((item) => !item.conflictAt).length +
     nutrition.filter((item) => !item.conflictAt).length +
-    gym.length;
+    gym.filter((item) => !item.conflictAt).length;
 
   return { pendingCount, conflicts };
 }
@@ -154,6 +203,7 @@ function discardConflict(domain: ConflictDomain, id: string): void {
   if (domain === 'wellness') dequeueWellness(id);
   if (domain === 'training') dequeueTraining(id);
   if (domain === 'nutrition') dequeueNutritionCheckin(id);
+  if (domain === 'gym') dequeueGymSetLog(id);
 }
 
 /** Retries anything a check-in, an RPE rating, the weekly nutrition check-in
@@ -185,7 +235,7 @@ export function OutboxFlusher({ orgId, athleteId, userId, timezone }: Props) {
       const wellnessItems = pendingWellness().filter((item) => !item.conflictAt);
       const trainingItems = pendingTraining().filter((item) => !item.conflictAt);
       const nutritionItems = pendingNutritionCheckins().filter((item) => !item.conflictAt);
-      const gymSetItems = pendingGymSetLogs();
+      const gymSetItems = pendingGymSetLogs().filter((item) => !item.conflictAt);
       if (
         wellnessItems.length === 0 &&
         trainingItems.length === 0 &&
@@ -280,16 +330,19 @@ export function OutboxFlusher({ orgId, athleteId, userId, timezone }: Props) {
           sent += 1;
         } catch (err) {
           if (isDuplicateKeyError(err)) {
-            dequeueGymSetLog(item.input.id);
-            sent += 1;
+            /* §0aa (2026-09-12): the same fetch-before-conclude guard as the
+               three loops above. It used to dequeue here unconditionally —
+               every collision read as the athlete's own replay — so a set
+               queued offline whose slot another tab had since filled with
+               different numbers was dropped without a word. */
+            const outcome = await resolveGymSetConflict(db, athleteId, item);
+            if (outcome === 'delivered') {
+              dequeueGymSetLog(item.input.id);
+              sent += 1;
+            }
+            /* 'conflict' is already marked by the resolver; 'unknown' stays
+               queued for the next flush, like any other no-signal failure. */
           }
-          /* Gym set logs keep the original assume-it's-my-own-replay
-             behaviour: this pass's disambiguation (integration-audit majors
-             fix) is scoped to the three plain-submit forms with the button
-             double-tap race — CheckInForm, RpeForm, NutritionCheckinForm.
-             GymSessionLogger is a different UI, not covered here; applying
-             the same fetch-before-conclude guard to gym_set_logs_current is
-             a reasonable follow-up but a separate, out-of-scope change. */
         }
       }
 
@@ -315,6 +368,34 @@ export function OutboxFlusher({ orgId, athleteId, userId, timezone }: Props) {
     setConflicts(after.conflicts);
   }
 
+  /** Gym only: the athlete keeps THEIR numbers by correcting the live set
+   *  with them — the same revise_gym_set_log path the logger and My data
+   *  use, so the other tab's row is kept as superseded and My data marks
+   *  the session corrected. Online only, as every correction is; a failure
+   *  leaves the conflict on screen to try again or discard. */
+  const [correcting, setCorrecting] = useState<string | null>(null);
+  async function handleUseMine(id: string) {
+    const item = pendingGymSetLogs().find((i) => i.input.id === id);
+    const liveId = item?.conflictLive?.id;
+    if (!item || !liveId) return;
+    setCorrecting(id);
+    try {
+      const result = await reviseGymSetLog(createClient(), liveId, {
+        reps_completed: item.input.reps_completed,
+        load_kg: item.input.load_kg,
+        rpe: item.input.rpe,
+      });
+      if (result.error) return;
+      dequeueGymSetLog(id);
+      const after = snapshot(timezone);
+      setPending(after.pendingCount);
+      setConflicts(after.conflicts);
+      router.refresh();
+    } finally {
+      setCorrecting(null);
+    }
+  }
+
   if (pending === 0 && conflicts.length === 0) return null;
 
   return (
@@ -330,11 +411,36 @@ export function OutboxFlusher({ orgId, athleteId, userId, timezone }: Props) {
             !
           </span>
           <span>
-            One saved entry could not be sent: you already have {c.label} from
-            another tab or device, and that one is what is showing.{' '}
-            <button type="button" className="btn-ghost" onClick={() => handleDiscard(c.domain, c.id)}>
-              Discard this one
-            </button>
+            {c.gym ? (
+              <>
+                One saved set could not be sent: {c.label} is already logged
+                {c.gym.live ? ` as ${c.gym.live}` : ''} from another tab or device, and that one
+                is what is showing. Your queued numbers were {c.gym.queued}.
+                <span style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-8)', marginTop: 'var(--sp-8)' }}>
+                  {c.gym.liveId ? (
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      disabled={correcting === c.id}
+                      onClick={() => void handleUseMine(c.id)}
+                    >
+                      {correcting === c.id ? 'Saving…' : 'Use my numbers'}
+                    </button>
+                  ) : null}
+                  <button type="button" className="btn-ghost" onClick={() => handleDiscard(c.domain, c.id)}>
+                    Keep what is showing
+                  </button>
+                </span>
+              </>
+            ) : (
+              <>
+                One saved entry could not be sent: you already have {c.label} from
+                another tab or device, and that one is what is showing.{' '}
+                <button type="button" className="btn-ghost" onClick={() => handleDiscard(c.domain, c.id)}>
+                  Discard this one
+                </button>
+              </>
+            )}
           </span>
         </p>
       ))}

@@ -79,8 +79,22 @@ already done.
 - **If the app is closed before sync completes**, the entry is still in the queue
   and goes on the next open.
 
-**UNVERIFIED: what the athlete sees while an entry is queued**, and what happens
-if the same day is submitted twice from two devices. Looked in
+- **A queued set whose slot was filled by a different set is a visible
+  conflict, not a silent drop** (§0aa, 12 September 2026). On a duplicate-key
+  error the flusher looks the slot up in `gym_set_logs_current`
+  (`fetchGymSetForSlot`): the athlete's own row live, or another row with the
+  same numbers, means the set landed and the item goes; a different row with
+  different numbers is flagged with what is live (`lib/gymSetConflict.ts`).
+  Today then shows "One saved set could not be sent: set 2 of Back squat on
+  Wed 2 Sept is already logged as 8 reps at 100 kg from another tab or device,
+  and that one is what is showing. Your queued numbers were 8 reps at 105 kg."
+  with two ways out — **Use my numbers** (a correction of the live set through
+  `revise_gym_set_log`, so the other row is kept as superseded and My data
+  marks the session corrected) or **Keep what is showing** (drops the queued
+  item). Nothing is guessed: a collision the lookup cannot explain is also
+  surfaced.
+
+**UNVERIFIED: what the athlete sees while an entry is queued.** Looked in
 `src/lib/outbox.ts` and the screen's own component.
 
 ## 8. Notifications

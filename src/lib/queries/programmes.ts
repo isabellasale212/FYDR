@@ -1006,6 +1006,45 @@ export async function submitGymSetLog(
   if (error) throw new Error(error.message);
 }
 
+/** The set that is LIVE in a slot — the identity gym_set_logs_one_live_per_slot
+ *  (0045) is built from: the session log, the exercise (the programme exercise
+ *  when the set came from a programme, else the library exercise) and the set
+ *  number. OutboxFlusher asks this after a duplicate-key error so a queued
+ *  set is never assumed to have landed (§0aa). Reads the _current view: a
+ *  corrected slot's live row is the correction, which is the row whose numbers
+ *  are showing. Null when nothing is live there (RLS: the athlete's own). */
+export async function fetchGymSetForSlot(
+  db: Db,
+  input: Pick<GymSetLogInput, 'gym_session_log_id' | 'programme_exercise_id' | 'exercise_id' | 'set_number'>,
+): Promise<{ id: string; reps_completed: number | null; load_kg: number | null; rpe: number | null } | null> {
+  let query = db
+    .from('gym_set_logs_current')
+    .select('id, reps_completed, load_kg, rpe')
+    .eq('gym_session_log_id', input.gym_session_log_id)
+    .eq('set_number', input.set_number);
+  query = input.programme_exercise_id
+    ? query.eq('programme_exercise_id', input.programme_exercise_id)
+    : query.is('programme_exercise_id', null).eq('exercise_id', input.exercise_id);
+  const { data, error } = await query.limit(1).maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data || data.id === null) return null;
+  return { id: data.id, reps_completed: data.reps_completed, load_kg: data.load_kg, rpe: data.rpe };
+}
+
+/** The two facts the conflict banner names a set by: which exercise, which
+ *  day. Read once when the conflict is flagged, stored with it. */
+export async function fetchGymSetNaming(
+  db: Db,
+  exerciseId: string,
+  gymSessionLogId: string,
+): Promise<{ exercise_name: string | null; entry_date: string | null }> {
+  const [ex, log] = await Promise.all([
+    db.from('exercises').select('name').eq('id', exerciseId).maybeSingle(),
+    db.from('gym_session_logs_current').select('entry_date').eq('id', gymSessionLogId).maybeSingle(),
+  ]);
+  return { exercise_name: ex.data?.name ?? null, entry_date: log.data?.entry_date ?? null };
+}
+
 export type GymSetCorrectionInput = {
   reps_completed: number | null;
   load_kg: number | null;

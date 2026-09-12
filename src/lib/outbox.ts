@@ -65,6 +65,22 @@ export type PendingNutritionCheckin = {
 export type PendingGymSetLog = {
   input: GymSetLogInput;
   queuedAt: string;
+  /** See PendingWellness's conflictAt comment. Gym joined the other three on
+   *  2026-09-12 (§0aa): OutboxFlusher looks the slot up on a duplicate-key
+   *  error and flags the item only when a DIFFERENT set is live there. */
+  conflictAt?: string;
+  /** What is live in the slot, captured when the conflict was flagged, so
+   *  Today can show both sets of numbers and name the set without a network
+   *  call. Null when the lookup found nothing live (the collision was on the
+   *  id). */
+  conflictLive?: {
+    id: string;
+    reps_completed: number | null;
+    load_kg: number | null;
+    rpe: number | null;
+    exercise_name: string | null;
+    entry_date: string | null;
+  } | null;
 };
 
 function read<T>(key: string): T[] {
@@ -214,4 +230,18 @@ export function dequeueGymSetLog(id: string): void {
 
 export function pendingGymSetLogs(): PendingGymSetLog[] {
   return read<PendingGymSetLog>(GYM_SET_KEY);
+}
+
+/** See PendingWellness's conflictAt comment; identical reasoning. The live
+ *  values are stored with the flag so the banner on Today can say what is
+ *  showing and what was queued. */
+export function markGymSetConflict(id: string, live: PendingGymSetLog['conflictLive']): void {
+  write(
+    GYM_SET_KEY,
+    read<PendingGymSetLog>(GYM_SET_KEY).map((item) =>
+      item.input.id === id
+        ? { ...item, conflictAt: item.conflictAt ?? new Date().toISOString(), conflictLive: live ?? null }
+        : item,
+    ),
+  );
 }

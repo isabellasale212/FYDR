@@ -1177,6 +1177,7 @@ Two behaviour changes the sign-in proposal asked for, both outside the design-on
 - **STAFF-SS-01, Dashboard and phone shell — `af09c17`. IMPLEMENTED** (the shell and the 44px floor; C2 the dashboard rebuild, C3 the Flags badge, C4 "Send a reminder", C5 the trigger, and the phone group-chip question recorded, not built). *Spot-check above under §0af.* The STAFF-SHELL brief's sweep table is the record of what the generic floor covers; page-specific markup without the shared classes (the wizard "Next", the settings integration buttons, the exports checkboxes) was not re-measured by the builder — a later staff review re-measures those on the built shell.
 - **§0aa — `75c6a6e`. IMPLEMENTED.** *Source: `OutboxFlusher.tsx:338` → `resolveGymSetConflict`; `gymSetConflict.ts` `classifyGymSetConflict`.* Not exercised live (it needs a colliding queued set; the builder's verification on James Barnes wrote nothing).
 - **§0at — `5003959`, migration 0106. IMPLEMENTED.** *Spot-check above under §0at: 0 of 45 null through the view; the 11 Aug row reads "4.8 t".*
+- **Prebuild after the merge (reviewer machine):** 102 suites, 0 failed; `next build` exit 0.
 
 **Queued by the builder next, own commit:** collision 1 — the launch headline at Roboto 800 `clamp(34px, 3.5vw, 48px)` with the claim column kept; 01's banner, warn tone, 44px forgot, focus ring and lock state carried to desktop within the existing layout; the HOLD rule deleted.
 

@@ -745,7 +745,12 @@ export default async function AthletePage({
                 <h2 className="card-title" id="pp-availability-title">
                   Availability
                 </h2>
-                <SetAvailabilityFormCoach orgId={orgId} userId={claims.userId} athleteId={athlete.id} />
+                <SetAvailabilityFormCoach
+                  orgId={orgId}
+                  userId={claims.userId}
+                  athleteId={athlete.id}
+                  athleteName={`${athlete.first_name} ${athlete.last_name}`}
+                />
               </section>
             ) : null}
           </div>

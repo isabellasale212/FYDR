@@ -13124,3 +13124,31 @@ a.hist-row:active { background: var(--surf-sunken); }
   font-size: var(--fs-12);
   color: var(--muted);
 }
+
+/* Who will read what, before an availability change lands
+   (AvailabilityAudience, 2026-09-12): a --surf2 well with the three readers
+   as rows, then Confirm (the write) and Back. */
+.avail-audience {
+  margin-top: var(--sp-14);
+  padding: var(--sp-12) var(--sp-14);
+  border: 1px solid var(--border);
+  border-radius: var(--r-field);
+  background: var(--surf2);
+}
+.avail-audience-rows {
+  margin: var(--sp-8) 0 0;
+  padding-inline-start: var(--sp-18);
+  font-size: var(--fs-13);
+  color: var(--muted);
+  display: grid;
+  gap: var(--sp-6);
+}
+.avail-audience-rows b {
+  color: var(--text);
+}
+.avail-audience-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+  margin-top: var(--sp-12);
+}

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { setAvailability } from '@/lib/queries/injuries';
+import { AvailabilityAudience } from '@/components/AvailabilityAudience/AvailabilityAudience';
 import type { AvailabilityReason } from '@/lib/types/database';
 
 const STATUSES = ['available', 'modified', 'unavailable'] as const;
@@ -28,7 +29,7 @@ function label(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1).replace(/_/g, ' ');
 }
 
-type Props = { orgId: string; userId: string; athleteId: string };
+type Props = { orgId: string; userId: string; athleteId: string; athleteName: string };
 
 /**
  * Coach-reachable, non-injury availability. ADR-008 / migration 0041.
@@ -67,12 +68,13 @@ type Props = { orgId: string; userId: string; athleteId: string };
  * looks at reasonCategory at all once it does — see that component's own
  * comment.
  */
-export function SetAvailabilityFormCoach({ orgId, userId, athleteId }: Props) {
+export function SetAvailabilityFormCoach({ orgId, userId, athleteId, athleteName }: Props) {
   const router = useRouter();
   const [status, setStatus] = useState<(typeof STATUSES)[number]>('unavailable');
   const [reasonCategory, setReasonCategory] = useState<AvailabilityReason>('personal');
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -156,15 +158,30 @@ export function SetAvailabilityFormCoach({ orgId, userId, athleteId }: Props) {
         </p>
       ) : null}
 
-      <button
-        type="button"
-        className="btn-primary"
-        style={{ marginTop: 'var(--sp-14)' }}
-        disabled={mutation.isPending}
-        onClick={() => mutation.mutate()}
-      >
-        {mutation.isPending ? 'Saving…' : 'Update availability'}
-      </button>
+      {/* Who will read what, before it lands (PATTERN-S3 / STAFF-SS-02-05
+          C4, 2026-09-12): the permission rule made visible at the moment it
+          is exercised. The button opens the step; Confirm is the write. */}
+      {confirming ? (
+        <AvailabilityAudience
+          athleteName={athleteName}
+          status={status}
+          injuryLinked={false}
+          hasNote={note.trim() !== ''}
+          pending={mutation.isPending}
+          onConfirm={() => mutation.mutate()}
+          onBack={() => setConfirming(false)}
+        />
+      ) : (
+        <button
+          type="button"
+          className="btn-primary"
+          style={{ marginTop: 'var(--sp-14)' }}
+          disabled={mutation.isPending}
+          onClick={() => setConfirming(true)}
+        >
+          Update availability
+        </button>
+      )}
     </div>
   );
 }

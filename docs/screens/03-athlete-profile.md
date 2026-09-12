@@ -58,6 +58,16 @@ field, *"Coach visible. Describe the restriction, not the injury. Do not name a
 diagnosis or a protocol."* — the hint travels with the one free-text field that
 leaves the clinical circle (PATTERN-S3).
 
+**Before an availability change lands, the form says who will read what**
+(PATTERN-S3 / STAFF-SS-02-05 C4, 12 September 2026): pressing "Update availability"
+opens a step listing the athlete by name (the status word, restrictions, expected
+return, the injury record except the clinical notes), the coaches and the S&C by
+role (the status word, the restriction line, the reason category, your note —
+never a diagnosis, a mechanism or a protocol stage) and medical staff and the sport
+scientist (everything). "Confirm and update" is the write; "Back" returns to the
+form. The same step sits on the medic's form on the injury record. The rows state
+what each reader can read under the RLS in force today, and change with it.
+
 **Injury.** The current injury, if any, as `InjuryCard`. With no open injury it
 reads *"No current restrictions. This is not the same as being cleared."* An
 expected return the medic has not set reads *"Expected return not known"*; a

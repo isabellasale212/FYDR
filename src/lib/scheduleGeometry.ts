@@ -20,6 +20,9 @@
  * name it — the same outcome the spec's literal exception produced, now
  * derived from real membership data instead of asserted by string. */
 
+import { rpeDueAt } from '@/lib/rpeDue';
+import { formatTime, zonedTimeToUtcIso } from '@/lib/format';
+
 /* UX audit finding 1: this grid used to hard-bound H0/H1 to a literal 8–18
  * constant with a comment arguing that was deliberate. It was not correct —
  * screens/schedule.md §"Layout" is explicit the web time grid runs "07:00 to
@@ -120,16 +123,35 @@ export const TYPE_STYLE: Record<DbSessionType, TypeStyle> = {
 
 /* §6's EXPECTS map, keys translated to this schema's real session_type
  * vocabulary (training/testing, not the spec's mockup pitch/test — see
- * schedule.ts header for why the real DB enum wins on naming). */
-export const EXPECTS: Record<DbSessionType, string> = {
-  training: 'RPE due by 19:45',
+ * schedule.ts header for why the real DB enum wins on naming).
+ *
+ * training and match carry NO string here since §0aj (2026-09-12): the map
+ * used to say "RPE due by 19:45" for every training session whatever its
+ * time — the spec mockup's placeholder — and the line's whole purpose is to
+ * show staff what the athlete will be told. The real rule is lib/rpeDue.ts
+ * (a rating is first accepted thirty minutes after the session ends), so
+ * expectsLabel below computes it from the session's own time. */
+export const EXPECTS: Record<Exclude<DbSessionType, 'training' | 'match'>, string> = {
   gym: 'Sets to log',
-  match: 'RPE after full time',
   testing: 'Staff entered',
   rehab: 'Stage log',
   recovery: '—',
   meeting: '—',
 };
+
+/** What the athlete is asked for after this session, as the athlete app
+ *  would say it. For a rated session type the time is rpeDueAt — the instant
+ *  Today's row appears and the RPE screen first accepts a rating — in club
+ *  time; the other types keep their fixed strings. */
+export function expectsLabel(
+  session: { type: DbSessionType; dow: string; start: number; mins: number },
+  timezone: string,
+): string {
+  if (session.type !== 'training' && session.type !== 'match') return EXPECTS[session.type];
+  const starts_at = zonedTimeToUtcIso(session.dow, clockLabel(session.start), timezone);
+  const due = rpeDueAt({ starts_at, duration_min: session.mins });
+  return `RPE due from ${formatTime(new Date(due).toISOString(), timezone)}`;
+}
 
 export function clockLabel(decimalHour: number): string {
   const totalMin = Math.round(decimalHour * 60);

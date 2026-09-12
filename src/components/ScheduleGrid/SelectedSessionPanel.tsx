@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { EXPECTS, TYPE_STYLE, clockLabel, type DbSessionType } from '@/lib/scheduleGeometry';
+import { TYPE_STYLE, clockLabel, expectsLabel, type DbSessionType } from '@/lib/scheduleGeometry';
 import { enumLabel, mdLabel } from '@/lib/format';
 import type { GroupOption } from './types';
 
@@ -452,7 +452,7 @@ export function SelectedSessionPanel({
           </div>
           <div>
             <div className="sg-fact-label">Expects</div>
-            <div className="sg-fact-value num">{EXPECTS[session.type]}</div>
+            <div className="sg-fact-value num">{expectsLabel(session, timezone)}</div>
           </div>
         </div>
       ) : isPrecommit && mode === 'edit' ? (
@@ -639,7 +639,7 @@ export function SelectedSessionPanel({
               <div className="lo">
                 {session.location ?? 'Location not set'} · <span className="num">{session.mins}</span> min
               </div>
-              <div className="sg-preview-expects">{EXPECTS[session.type]}</div>
+              <div className="sg-preview-expects">{expectsLabel(session, timezone)}</div>
             </div>
           </div>
         </div>

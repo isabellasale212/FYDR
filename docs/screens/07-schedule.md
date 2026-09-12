@@ -90,6 +90,7 @@ existed neither creation screen was linked from anywhere.
 |---|---|---|---|---|
 | MET-007 | Session load, where a block shows one | How hard a session was for an athlete | Per session | Blank until entries are in |
 | MET-011 | Attendance counts on a block | How many were present | Per session | Blank before the session happens |
+| None | "Expects" on the selected session, and the "What the athlete sees" preview | What the athlete app will ask for after this session. For a training or match session: "RPE due from 10:30" — thirty minutes after the session's own end, the instant Today's row appears and the RPE screen first accepts a rating (`lib/rpeDue.ts`, the one rule; §0aj, 12 September 2026 — it was a fixed "due by 19:45" for every training session before). Gym "Sets to log", testing "Staff entered", rehab "Stage log", recovery and meeting "—" | Per session | — |
 
 Most of this page is not numbers. It is placement in time, which is the point of
 it.

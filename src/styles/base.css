@@ -13449,6 +13449,29 @@ a.hist-row:active { background: var(--surf-sunken); }
   text-decoration: none;
 }
 
+/* PATTERN-S3 C5 (12 Sept 2026): what an absence does not carry, as a well on
+   the coach's absence form — the same surf2-in-border well. */
+.absence-well {
+  margin-top: var(--sp-14);
+  padding: var(--sp-10) var(--sp-12);
+  border: 1px solid var(--border);
+  border-radius: var(--r-control);
+  background: var(--surf2);
+}
+.absence-well-k {
+  margin: 0;
+  font-size: var(--fs-11);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.absence-well-v {
+  margin: var(--sp-4) 0 0;
+  font-size: var(--fs-13);
+  color: var(--muted);
+  line-height: 1.45;
+}
 /* STAFF-SS-02-05 C5 (12 Sept 2026): a read-only panel ends with its owner —
    the well treatment above, an uppercase line and a sentence, nothing dimmed. */
 .ro-owner {

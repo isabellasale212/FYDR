@@ -8,7 +8,12 @@ import { setAvailability } from '@/lib/queries/injuries';
 import { AvailabilityAudience } from '@/components/AvailabilityAudience/AvailabilityAudience';
 import type { AvailabilityReason } from '@/lib/types/database';
 
-const STATUSES = ['available', 'modified', 'unavailable'] as const;
+/* PATTERN-S3 C5 (2026-09-12): this is an ABSENCE form. Available is withheld
+   from the control rather than disabled — an absence that leaves an athlete
+   fully available is not a record — and ending an absence is its own act
+   ("Mark available again"), which writes the Available row through the same
+   confirmed path. */
+const ABSENCE_STATUSES = ['modified', 'unavailable'] as const;
 
 // Deliberately a subset of the full availability_reason enum. 'injury' is excluded
 // because it is refused by RLS regardless (availability_coach_insert_noninjury,
@@ -29,7 +34,15 @@ function label(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1).replace(/_/g, ' ');
 }
 
-type Props = { orgId: string; userId: string; athleteId: string; athleteName: string };
+type Props = {
+  orgId: string;
+  userId: string;
+  athleteId: string;
+  athleteName: string;
+  /** Whether a coach-recorded, non-injury absence is open right now — when
+   *  it is, "Mark available again" is offered as the way to end it. */
+  currentAbsence: boolean;
+};
 
 /**
  * Coach-reachable, non-injury availability. ADR-008 / migration 0041.
@@ -68,18 +81,21 @@ type Props = { orgId: string; userId: string; athleteId: string; athleteName: st
  * looks at reasonCategory at all once it does — see that component's own
  * comment.
  */
-export function SetAvailabilityFormCoach({ orgId, userId, athleteId, athleteName }: Props) {
+export function SetAvailabilityFormCoach({ orgId, userId, athleteId, athleteName, currentAbsence }: Props) {
   const router = useRouter();
-  const [status, setStatus] = useState<(typeof STATUSES)[number]>('unavailable');
+  const [status, setStatus] = useState<(typeof ABSENCE_STATUSES)[number]>('unavailable');
   const [reasonCategory, setReasonCategory] = useState<AvailabilityReason>('personal');
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
+  /* "Mark available again": the write is status available with the reason
+     riding along (the policy requires one — see the header). */
+  const [ending, setEnding] = useState(false);
 
   const mutation = useMutation({
     mutationFn: () =>
       setAvailability(createClient(), orgId, athleteId, userId, {
-        status,
+        status: ending ? 'available' : status,
         restrictions: [],
         reasonCategory,
         note: note.trim() || null,
@@ -95,20 +111,44 @@ export function SetAvailabilityFormCoach({ orgId, userId, athleteId, athleteName
         return;
       }
       setError(null);
+      setEnding(false);
+      setConfirming(false);
       router.refresh();
     },
   });
 
   return (
     <div className="card">
-      <p className="label">Set availability</p>
+      <p className="label">Record an absence</p>
       <p className="tiny" style={{ marginTop: 'var(--sp-4)', marginBottom: 0 }}>
-        For a non-injury reason only — illness, personal leave, exams, representative
-        honours, or other. For an injury, use the injury record instead.
+        For illness, personal, academic, representative or other. If this is an injury, medical staff record it &mdash; this form cannot
+        open an injury record and does not create one.
       </p>
 
-      <div className="chiprow" style={{ marginTop: 'var(--sp-10)' }}>
-        {STATUSES.map((s) => (
+      {/* The reason first: it is what the absence IS. Chips, the same control
+          the availability words use beneath. */}
+      <p className="label" style={{ marginTop: 'var(--sp-14)' }} id="avail-coach-reason-label">
+        Reason
+      </p>
+      <div className="chiprow" role="group" aria-labelledby="avail-coach-reason-label" style={{ marginTop: 'var(--sp-6)' }}>
+        {NON_INJURY_REASONS.map((r) => (
+          <button
+            key={r.value}
+            type="button"
+            className="squad-chip"
+            aria-pressed={reasonCategory === r.value}
+            onClick={() => setReasonCategory(r.value)}
+          >
+            {r.label}
+          </button>
+        ))}
+      </div>
+
+      <p className="label" style={{ marginTop: 'var(--sp-14)' }} id="avail-coach-status-label">
+        Availability
+      </p>
+      <div className="chiprow" role="group" aria-labelledby="avail-coach-status-label" style={{ marginTop: 'var(--sp-6)' }}>
+        {ABSENCE_STATUSES.map((s) => (
           <button
             key={s}
             type="button"
@@ -120,29 +160,12 @@ export function SetAvailabilityFormCoach({ orgId, userId, athleteId, athleteName
           </button>
         ))}
       </div>
-
-      {status !== 'available' ? (
-        <>
-          <label className="label" htmlFor="avail-coach-reason" style={{ marginTop: 'var(--sp-14)' }}>
-            Reason
-          </label>
-          <select
-            id="avail-coach-reason"
-            className="field"
-            value={reasonCategory}
-            onChange={(event) => setReasonCategory(event.target.value as AvailabilityReason)}
-          >
-            {NON_INJURY_REASONS.map((r) => (
-              <option key={r.value} value={r.value}>
-                {r.label}
-              </option>
-            ))}
-          </select>
-        </>
-      ) : null}
+      <p className="tiny" style={{ marginTop: 'var(--sp-6)', marginBottom: 0 }}>
+        Available is not offered here: an absence that leaves an athlete fully available is not a record.
+      </p>
 
       <label className="label" htmlFor="avail-coach-note" style={{ marginTop: 'var(--sp-14)' }}>
-        Note (coach visible &mdash; not a clinical field)
+        Note
       </label>
       <input
         id="avail-coach-note"
@@ -151,6 +174,19 @@ export function SetAvailabilityFormCoach({ orgId, userId, athleteId, athleteName
         maxLength={NOTE_MAX}
         onChange={(event) => setNote(event.target.value)}
       />
+      <p className="tiny" style={{ marginTop: 'var(--sp-6)', marginBottom: 0 }}>
+        Visible to the athlete and to all staff. This is not a medical record — do not describe symptoms.
+      </p>
+
+      {/* What an absence does not carry, said rather than left to be inferred
+          (the board's well). */}
+      <div className="absence-well">
+        <p className="absence-well-k">No clinical record</p>
+        <p className="absence-well-v">
+          This creates an availability row and nothing else. No injury record, no site, no diagnosis, no return to play
+          stage, no row on the injury board. Medical staff are not notified.
+        </p>
+      </div>
 
       {error ? (
         <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-10)' }}>
@@ -164,23 +200,46 @@ export function SetAvailabilityFormCoach({ orgId, userId, athleteId, athleteName
       {confirming ? (
         <AvailabilityAudience
           athleteName={athleteName}
-          status={status}
+          status={ending ? 'available' : status}
           injuryLinked={false}
           hasNote={note.trim() !== ''}
           pending={mutation.isPending}
           onConfirm={() => mutation.mutate()}
-          onBack={() => setConfirming(false)}
+          onBack={() => {
+            setConfirming(false);
+            setEnding(false);
+          }}
         />
       ) : (
-        <button
-          type="button"
-          className="btn-primary"
-          style={{ marginTop: 'var(--sp-14)' }}
-          disabled={mutation.isPending}
-          onClick={() => setConfirming(true)}
-        >
-          Update availability
-        </button>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-10)', marginTop: 'var(--sp-14)' }}>
+          <button
+            type="button"
+            className="btn-primary"
+            disabled={mutation.isPending}
+            onClick={() => {
+              setEnding(false);
+              setConfirming(true);
+            }}
+          >
+            Record absence
+          </button>
+          {/* Ending an absence is its own act, offered only while a
+              non-injury absence is open: the Available row, through the
+              same confirmed path. */}
+          {currentAbsence ? (
+            <button
+              type="button"
+              className="btn-ghost"
+              disabled={mutation.isPending}
+              onClick={() => {
+                setEnding(true);
+                setConfirming(true);
+              }}
+            >
+              Mark available again
+            </button>
+          ) : null}
+        </div>
       )}
     </div>
   );

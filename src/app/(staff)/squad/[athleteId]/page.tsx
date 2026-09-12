@@ -782,6 +782,16 @@ export default async function AthletePage({
                   userId={claims.userId}
                   athleteId={athlete.id}
                   athleteName={`${athlete.first_name} ${athlete.last_name}`}
+                  /* A non-injury absence this form could end: no injury link, a
+                     real non-injury reason (the coach's update policy, 0068,
+                     excludes a row with reason 'injury'), and not Available. */
+                  currentAbsence={
+                    !!availabilityRow &&
+                    availabilityRow.injury_id === null &&
+                    availabilityRow.reason_category !== null &&
+                    availabilityRow.reason_category !== 'injury' &&
+                    availabilityRow.status !== 'available'
+                  }
                 />
               </section>
             ) : null}

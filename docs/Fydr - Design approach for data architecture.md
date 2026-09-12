@@ -116,7 +116,7 @@ Collected from every approved board. Claude Code answers these in its "report be
 ### Open product decisions (Isabella)
 
 26. RPE is stored 1 to 10. The standard session-RPE scale (CR-10) is 0 to 10. Decide before real data.
-27. Which staff roles see body mass (confirmed: medic, S&C, nutritionist; coach undecided).
+27. **RESOLVED 2026-09-12.** Which staff roles see body mass (confirmed: medic, S&C, nutritionist; coach undecided). → The coach does **not** see body mass — the profile section as well as its buttons. Queued on the builder as STAFF-SS-02-05 C9 (the rule covers the whole section).
 
 ## Where things live
 

@@ -19,6 +19,43 @@ expressed in the 171 tokens; each is a proposed new token (or a substitute), per
 
 ---
 
+## Decisions — 2026-09-12 (Isabella), recorded by the reviewer
+
+Read each row below against its group; a row not named here is **approved and queued**
+("everything else in groups (a) to (d)").
+
+**Struck — already live:** STAFF-SS-01 C5 (the last-admin guard at the database is migration
+0101, on production since 2026-09-11; 0102 covers the self-grant).
+
+**Declined:** ATH-ADULT-08 D1 (the answers' words stay "Yes / Roughly / No") · ATH-ADULT-12
+D2 (the active segment stays the accent-filled pill) · ATH-ADULT-12 C4 (deltas stay "on last
+week") · ATH-ADULT-12 B6 (hero eyebrows stay `--muted`) · ATH-ADULT-12 D5 (readiness stays
+0–100) · **the 3px bar pattern** wherever it appears (ATH-ADULT-12 B5's `--border-accent-w`
+row bar and the same bar in STAFF-SS-01 B1 — the rest of B1's substitutions stand) ·
+ATH-ADULT-10 C2 (no confirmation before finishing early) · **motion tokens** (ATH-ADULT-09 B3
+and any other `--ease-*` / duration proposal — the "no motion tokens" rule stands) · **the
+second nutrition question** (ATH-ADULT-08/12 D2/D6) · STAFF-SS-01 C4 ("Send a reminder").
+
+**Gold — kept on navigation, reversed inside the gym logger:** ATH-ADULT-12 D4 / STAFF-SS-01
+D2 declined (the gym glyph keeps its gold on the athlete tab bar and the staff sidebar);
+ATH-ADULT-09 D4 **approved** (inside the logger the logged keys, the progress fill and the
+"recommended" line move to the accent family).
+
+**Approved and queued — everything else in (a) to (d)**, including the gym logger rebuild
+(ATH-ADULT-09 C1) **with two new tokens, `--hit-lg: 56px` and `--hit-md: 52px`** (09 B2 —
+a §0.01 system decision: the builder dates them beside their values in `tokens.css` and
+records them in the Decisions Log; the other (d) rows that name a token are approved on the
+same footing, each dated at the value). STAFF-SS-02-05 C9 is approved with a wider rule than
+its row: **the coach does not see body mass at all — the section as well as the three
+buttons** (Q27 of the data-architecture briefing, closed 2026-09-12).
+
+**Two decisions from the same message, outside the sheet:** the coach keeps the permission
+to create an injury record, and the `/injuries` board shows "+ Injury" to the coach as well
+(the coach's form is the non-clinical one, PATTERN-S3 C9; clinical fields stay medic-only)
+— filed as a defect on to-do §0av. And Q27 above.
+
+---
+
 ## (a) Cheap and uncontroversial
 
 | Flow | ID | What it changes | Why it isn't built | Recommendation · cost |

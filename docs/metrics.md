@@ -479,10 +479,11 @@ the same instant the RPE screen refuses one (`src/lib/rpeDue.ts`,
 `rpeSubmittedInTime`). Later is a miss. Matched per session, judged on the
 original row's `submitted_at`, never a correction's. Wellness has no cutoff
 beyond its own day. Where it is built: `src/lib/complianceRpe.ts`, read by
-`fetchComplianceReport`. **Not yet applied** on the athlete report's own
-compliance figure (`athleteReport.ts`) or the dashboard's "RPE, yesterday"
-track — the track only ever looks inside the window, so it cannot disagree; the
-athlete report can, and is filed as a question.
+`fetchComplianceReport` (the squad report) and `fetchAthleteCompliancePct`
+(the athlete report) — one classifier, one session read
+(`queries/rpeSessionWindows.ts`), so the two figures cannot disagree about an
+athlete. The dashboard's "RPE, yesterday" track only ever looks inside the
+window, so it cannot disagree either.
 
 ---
 

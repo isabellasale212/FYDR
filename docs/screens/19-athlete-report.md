@@ -67,6 +67,7 @@ date of the most recent record, so a coach can see how current the picture is.
 | MET-018 | High speed distance | How far above the vendor's high speed threshold | Per session and summed | Blank. **Premium.** The threshold is the vendor's, not Fydr's |
 | MET-029 | Best on the day | **The best attempt on a test day, not a lifetime best.** See D-40 | Per test date | Blank |
 | MET-013 | Availability | Whether they can train and play | Across the period | Unknown where no record exists |
+| MET-012 | Compliance | Share of this athlete's expected entries that arrived — and, for session RPE, arrived **in time**: before the end of the following club-local day, the same `rpeClosesAt` rule the compliance report, Today and the RPE screen use (§0ad, 12 September 2026). Judged on the original submission, never a staff correction's time; matched per session. Waived days excluded from both sides | The period | Blank, not 0, when nothing was expected |
 
 **Latest date** appears beside the GPS figures. It is not a metric: it is the date
 of the most recent record, shown so that a full looking report built on month old

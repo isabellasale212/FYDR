@@ -9,6 +9,8 @@ import { fetchMyTestSummary, type MyTestSummary } from './testing';
 import { fetchMyProgrammeSessions } from './programmes';
 import { fetchFlagsList, type FlagListRow } from './flags';
 import { fetchAllPaged } from './paged';
+import { classifyRpeSubmissions, rpeExpectationKey } from '@/lib/complianceRpe';
+import { fetchRpeSessionWindows } from './rpeSessionWindows';
 import { countGymSessions, fetchSessionLogIdsWithLiveSets, type GymLogRow } from '@/lib/gymSessionCounts';
 import type { ComplianceDomain } from '@/lib/types/database';
 import type { Db } from './groups';
@@ -287,7 +289,7 @@ export async function fetchAthleteReport(
     fetchMyTestSummary(db, athleteId),
     fetchMyProgrammeSessions(db, athleteId),
     fetchFlagsList(db, orgId, []),
-    fetchAthleteCompliancePct(db, orgId, athleteId, from, today),
+    fetchAthleteCompliancePct(db, orgId, athleteId, from, today, timezone),
   ]);
 
   const sessions = await fetchAthleteSessionsInWindow(db, orgId, athleteId, from, today, timezone, loadEntries);
@@ -403,6 +405,11 @@ async function fetchAthleteCompliancePct(
   athleteId: string,
   from: string,
   to: string,
+  /* §0ad: an RPE counts only if submitted before the end of the following
+     club-local day — the same rule, from the same function, as the squad
+     compliance report (Builder Q5, 2026-09-12: two figures disagreeing about
+     one athlete is worse than either being wrong). */
+  timezone: string,
 ): Promise<number | null> {
   /* All four reads are paged and all four are one-athlete. Over the 730-day
    * cap the expectations read alone is 3 domains × 730 = ~2,190 rows, so this
@@ -413,7 +420,7 @@ async function fetchAthleteCompliancePct(
     fetchAllPaged((pageFrom, pageTo) =>
       db
         .from('compliance_expectations')
-        .select('expectation_date, domain, waived_reason')
+        .select('athlete_id, expectation_date, domain, session_id, waived_reason')
         .eq('org_id', orgId)
         .eq('athlete_id', athleteId)
         .gte('expectation_date', from)
@@ -435,12 +442,17 @@ async function fetchAthleteCompliancePct(
         .order('id')
         .range(pageFrom, pageTo),
     ),
+    /* The BASE TABLE, originals only — the athlete's own submission time is
+     * what the cutoff judges, and a staff correction is a new row stamped
+     * with the correction's moment. Same read, same reason, as
+     * fetchComplianceReport's. */
     fetchAllPaged((pageFrom, pageTo) =>
       db
-        .from('training_entries_current')
-        .select('entry_date')
+        .from('training_entries')
+        .select('athlete_id, entry_date, session_id, submitted_at')
         .eq('org_id', orgId)
         .eq('athlete_id', athleteId)
+        .is('revision_of', null)
         .gte('entry_date', from)
         .lte('entry_date', to)
         .order('entry_date')
@@ -466,9 +478,22 @@ async function fetchAthleteCompliancePct(
     ),
   ]);
 
+  const rpeExpectations = expectations.filter((e) => e.domain === 'training_rpe');
+  const rpe = classifyRpeSubmissions(
+    rpeExpectations,
+    training,
+    await fetchRpeSessionWindows(
+      db,
+      rpeExpectations.map((e) => e.session_id).filter((id): id is string => id !== null),
+    ),
+    timezone,
+  );
+
   const submitted: Record<ComplianceDomain, Set<string>> = {
     wellness: new Set(wellness.map((r) => r.entry_date).filter((d): d is string => d !== null)),
-    training_rpe: new Set(training.map((r) => r.entry_date).filter((d): d is string => d !== null)),
+    // Keyed by the expectation (athlete and session), in time only —
+    // lib/complianceRpe.ts, the squad report's own classifier.
+    training_rpe: rpe.inTime,
     gym: new Set(gym.map((r) => r.entry_date).filter((d): d is string => d !== null)),
     nutrition: new Set(),
   };
@@ -481,7 +506,8 @@ async function fetchAthleteCompliancePct(
     // fetchComplianceReport takes, for the same reason.
     if (exp.waived_reason !== null) continue;
     expected += 1;
-    if (submitted[exp.domain].has(exp.expectation_date)) met += 1;
+    const key = exp.domain === 'training_rpe' ? rpeExpectationKey(exp) : exp.expectation_date;
+    if (submitted[exp.domain].has(key)) met += 1;
   }
 
   return expected > 0 ? Math.round((100 * met) / expected) : null;

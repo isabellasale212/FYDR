@@ -1,12 +1,8 @@
 import type { AppRole, ComplianceDomain, Json } from '@/lib/types/database';
 import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchAllPaged } from './paged';
-import {
-  classifyRpeSubmissions,
-  rpeExpectationKey,
-  type RpeSessionWindow,
-  type RpeSubmission,
-} from '@/lib/complianceRpe';
+import { classifyRpeSubmissions, rpeExpectationKey, type RpeSubmission } from '@/lib/complianceRpe';
+import { fetchRpeSessionWindows } from './rpeSessionWindows';
 import { fetchNotFullyAvailable, type NotFullyAvailableRow } from './availability';
 
 /* screens/reports.md, cut down hard, then entirely un-cut as the schema
@@ -106,10 +102,6 @@ type ComplianceExpectationRow = {
  *  than this, but the three are consumed identically and one shape keeps the
  *  three paged reads symmetrical. */
 type SubmissionRow = { athlete_id: string | null; entry_date: string | null };
-
-/** How many session ids go in one `in` — the same 200 gymSessionCounts uses,
- *  well inside what a URL holds. */
-const SESSION_ID_CHUNK = 200;
 
 /** The most recent day this org has a real compliance_expectations row for,
  *  in scope. Used to default the report's window sensibly instead of a
@@ -285,25 +277,13 @@ export async function fetchComplianceReport(
 
   /* The sessions the RPE expectations name, for their windows. Every
    * training_rpe expectation carries a session (0044 generates them from the
-   * day's sessions); read in chunks because a season's worth of ids is too
-   * many for one `in`. Soft-deleted sessions are read too: a session removed
-   * after its expectation was generated still had a window. */
-  const rpeSessionIds = Array.from(
-    new Set(required.filter((e) => e.domain === 'training_rpe' && e.session_id).map((e) => e.session_id as string)),
+   * day's sessions). The same read the athlete report uses. */
+  const rpeExpectations = required.filter((e) => e.domain === 'training_rpe');
+  const sessionWindows = await fetchRpeSessionWindows(
+    db,
+    rpeExpectations.map((e) => e.session_id).filter((id): id is string => id !== null),
   );
-  const sessionWindows: RpeSessionWindow[] = [];
-  for (let i = 0; i < rpeSessionIds.length; i += SESSION_ID_CHUNK) {
-    const chunk = rpeSessionIds.slice(i, i + SESSION_ID_CHUNK);
-    const { data, error } = await db.from('sessions').select('id, starts_at, duration_min').in('id', chunk);
-    if (error) throw new Error(error.message);
-    for (const row of data ?? []) sessionWindows.push(row);
-  }
-  const rpe = classifyRpeSubmissions(
-    required.filter((e) => e.domain === 'training_rpe'),
-    training,
-    sessionWindows,
-    timezone,
-  );
+  const rpe = classifyRpeSubmissions(rpeExpectations, training, sessionWindows, timezone);
 
   const submittedKey = (athleteId: string | null, date: string | null) => `${athleteId}:${date}`;
   // wellness_entries_current / gym_session_logs_current type every column as

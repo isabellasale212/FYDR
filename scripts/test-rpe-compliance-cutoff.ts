@@ -98,7 +98,7 @@ console.log('\n3. the report reads what the rule needs');
   assert(/\.is\('revision_of', null\)/.test(fn), 'originals only — the athlete\'s own submission time, never a correction\'s');
   assert(/select\('athlete_id, entry_date, session_id, submitted_at'\)/.test(fn), 'with session_id and submitted_at');
   assert(/select\('athlete_id, expectation_date, domain, session_id, is_required, waived_reason'\)/.test(fn), 'the expectations carry their session');
-  assert(/\.from\('sessions'\)/.test(fn) && /select\('id, starts_at, duration_min'\)/.test(fn), 'and the sessions\' own start and duration are read');
+  assert(/fetchRpeSessionWindows\(/.test(fn), 'and the sessions\' own start and duration are read (the shared read, section 5)');
   assert(/classifyRpeSubmissions\(/.test(fn), 'classified by the shared function');
   assert(/import \{[^}]*classifyRpeSubmissions[^}]*\} from '@\/lib\/complianceRpe'/.test(reports), 'imported from lib/complianceRpe');
   const lib = strip(read('src/lib/complianceRpe.ts'));
@@ -123,6 +123,25 @@ console.log('\n4. the spec says which thing the report measures');
   assert(/Last entry/.test(spec) && /late/.test(spec), 'and says what "Last entry" does with a late rating');
   const metrics = read('docs/metrics.md');
   assert(/rpeClosesAt/.test(metrics), 'metrics.md MET-012 carries the RPE cutoff');
+}
+
+console.log('\n5. the athlete report\'s own compliance figure — the same rule, the same function (Builder Q5, decided 2026-09-12)');
+{
+  const ar = strip(read('src/lib/queries/athleteReport.ts'));
+  const fn = ar.slice(ar.indexOf('async function fetchAthleteCompliancePct'), ar.indexOf('const SESSION_COLUMNS'));
+  assert(/timezone: string,?\s*\)/.test(fn.slice(0, 400)), 'fetchAthleteCompliancePct takes the timezone');
+  assert(/fetchAthleteCompliancePct\(db, orgId, athleteId, from, today, timezone\)/.test(ar), 'and is passed it');
+  assert(/\.from\('training_entries'\)/.test(fn) && !/training_entries_current/.test(fn), 'RPE from the base table');
+  assert(/\.is\('revision_of', null\)/.test(fn), 'originals only');
+  assert(/select\('athlete_id, entry_date, session_id, submitted_at'\)/.test(fn), 'with session_id and submitted_at');
+  assert(/select\('athlete_id, expectation_date, domain, session_id, waived_reason'\)/.test(fn), 'the expectations carry their session');
+  assert(/classifyRpeSubmissions\(/.test(fn) && /rpeExpectationKey\(/.test(fn), 'classified and keyed by the shared function');
+  assert(/fetchRpeSessionWindows\(/.test(fn), 'the sessions\' windows come from the shared read');
+  const reports = strip(read('src/lib/queries/reports.ts'));
+  assert(/fetchRpeSessionWindows\(/.test(reports) && !/SESSION_ID_CHUNK/.test(reports), 'which the squad report uses too — one chunked read, not two');
+  const windows = strip(read('src/lib/queries/rpeSessionWindows.ts'));
+  assert(/export async function fetchRpeSessionWindows/.test(windows) && /\.from\('sessions'\)/.test(windows) && /select\('id, starts_at, duration_min'\)/.test(windows), 'defined once in queries/rpeSessionWindows.ts');
+  assert(!/Not yet applied/.test(read('docs/metrics.md')), 'metrics.md no longer says the athlete report is pending');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

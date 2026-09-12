@@ -60,7 +60,10 @@ export function sheetRows(roles: readonly AppRole[], premium: boolean): PhoneRow
  *  sidebar row whose route prefixes the path, plus the three routes that
  *  were folded into a row (Sidebar.tsx's own header lists them) and Flags.
  *  The brand when nothing matches, so the bar is never blank. */
-const FOLDED: Record<string, string> = { '/timetable': 'Schedule', '/testing': 'Reports', '/flags': 'Flags', '/compliance': 'Reports', '/injuries': 'Dashboard' };
+/* /injuries is its own screen family (the board, a record, team allocation,
+   rehab groups) reached from the dashboard's injury panel — it is titled by
+   what it is, not by the row it hangs off. */
+const FOLDED: Record<string, string> = { '/timetable': 'Schedule', '/testing': 'Reports', '/flags': 'Flags', '/compliance': 'Reports', '/injuries': 'Injuries' };
 export function pageTitle(pathname: string): string {
   const hit = (route: string) => pathname === route || pathname.startsWith(`${route}/`);
   const row = SIDEBAR_ROWS.find((r) => hit(r.route));

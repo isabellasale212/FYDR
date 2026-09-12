@@ -76,6 +76,7 @@ console.log('\n2. the title bar names the screen');
   assert(pageTitle('/timetable') === 'Schedule', '/timetable → Schedule (merged into it)');
   assert(pageTitle('/testing/x/y') === 'Reports', '/testing → Reports (its entry point)');
   assert(pageTitle('/settings/users/bulk-invite') === 'Settings', 'a deep settings route → Settings');
+  assert(pageTitle('/injuries/abc') === 'Injuries', '/injuries/[id] → Injuries (its own screen family, not the dashboard row it hangs off)');
   assert(pageTitle('/platform/sign-in-probes') === 'Fydr', 'an unknown route → the brand');
 }
 

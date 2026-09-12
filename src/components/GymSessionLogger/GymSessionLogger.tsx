@@ -259,9 +259,9 @@ export function GymSessionLogger({
     onError: (err) => setError(toUserMessage(err, 'athlete')),
   });
 
-  /* One plate a side on a barbell. The brief does not name a step; 2.5 is the
-     smallest change most gyms can actually make. */
-  const WEIGHT_STEP_KG = 2.5;
+  /* The step is the exercise's own (ex.weight_step_kg, migration 0108 —
+     ATH-ADULT-09 C3): 2.5 a plate a side, 2 for a dumbbell, 1.25 microloaded.
+     It used to be a constant 2.5 here for every movement. */
 
   /* What the coach set, resolved for this athlete: an absolute kg prescription,
      or a percent_1rm already resolved against their own latest 1RM (migration
@@ -646,8 +646,8 @@ export function GymSessionLogger({
                       <div className="gym-stepper">
                         <button
                           type="button"
-                          onClick={() => bumpWeight(ex, -WEIGHT_STEP_KG)}
-                          aria-label={`Decrease the weight for ${ex.exercise_name}`}
+                          onClick={() => bumpWeight(ex, -ex.weight_step_kg)}
+                          aria-label={`Decrease the weight for ${ex.exercise_name} by ${ex.weight_step_kg} kg`}
                         >
                           &minus;
                         </button>
@@ -657,8 +657,8 @@ export function GymSessionLogger({
                         </span>
                         <button
                           type="button"
-                          onClick={() => bumpWeight(ex, WEIGHT_STEP_KG)}
-                          aria-label={`Increase the weight for ${ex.exercise_name}`}
+                          onClick={() => bumpWeight(ex, ex.weight_step_kg)}
+                          aria-label={`Increase the weight for ${ex.exercise_name} by ${ex.weight_step_kg} kg`}
                         >
                           +
                         </button>

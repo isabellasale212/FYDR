@@ -445,6 +445,7 @@ create table exercises (
   is_unilateral  boolean not null default false,
   video_url      text,
   cues           text,
+  weight_step_kg numeric(5,2) not null default 2.5,  -- the athlete's stepper increment; > 0 (0108, 12 Sept 2026)
   created_at     timestamptz not null default now(),
   deleted_at     timestamptz
 );

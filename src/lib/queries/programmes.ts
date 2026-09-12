@@ -59,6 +59,8 @@ export async function createExercise(
     primaryMuscle: string | null;
     cues: string | null;
     oneRmTestDefinitionId: string | null;
+    /** The stepper's increment, kg (0108). */
+    weightStepKg: number;
   },
 ): Promise<{ error: string | null }> {
   const { error } = await db.from('exercises').insert({
@@ -68,6 +70,7 @@ export async function createExercise(
     primary_muscle: input.primaryMuscle,
     cues: input.cues,
     one_rm_test_definition_id: input.oneRmTestDefinitionId,
+    weight_step_kg: input.weightStepKg,
   });
   /* Raw driver strings never leave this file — audit S5. */
   return { error: error ? humanizeDbError(error.message, 'staff') : null };
@@ -688,7 +691,24 @@ export type ResolvedExercise = {
   resolved_load_kg: number | null;
   one_rm_missing: boolean;
   one_rm_test_date: string | null;
+  /* ATH-ADULT-09 C3 (migration 0108): the increment the athlete's weight
+   * stepper moves by — a property of the movement (2.5 a plate a side, 2 for
+   * a dumbbell, 1.25 microloaded). Read by a second select on `exercises`
+   * for the RESOLVED exercise ids, so a substitute override steps by the
+   * substitute's value; resolve_programme_exercises itself is unchanged. */
+  weight_step_kg: number;
 };
+
+/** exercises_org_select lets every member of the org read the library, the
+ *  athlete included, which is what the logger's read relies on. */
+async function fetchWeightSteps(db: Db, exerciseIds: string[]): Promise<Map<string, number>> {
+  const out = new Map<string, number>();
+  if (exerciseIds.length === 0) return out;
+  const { data, error } = await db.from('exercises').select('id, weight_step_kg').in('id', exerciseIds);
+  if (error) throw new Error(error.message);
+  for (const row of data ?? []) out.set(row.id, Number(row.weight_step_kg));
+  return out;
+}
 
 /** athleteId is optional. Omitted (or undefined), this is the squad-generic
  *  parent view the staff programme list has always shown. Passed, this
@@ -708,6 +728,7 @@ export async function fetchSessionExercises(
     p_athlete_id: athleteId ?? null,
   });
   if (error) throw new Error(error.message);
+  const steps = await fetchWeightSteps(db, [...new Set((data ?? []).map((r) => r.exercise_id))]);
   return (data ?? [])
     .map((r) => ({
       programme_exercise_id: r.programme_exercise_id,
@@ -729,6 +750,7 @@ export async function fetchSessionExercises(
       resolved_load_kg: r.resolved_load_kg,
       one_rm_missing: r.one_rm_missing ?? false,
       one_rm_test_date: r.one_rm_test_date,
+      weight_step_kg: steps.get(r.exercise_id) ?? 2.5,
     }))
     .sort((a, b) => a.sequence - b.sequence);
 }

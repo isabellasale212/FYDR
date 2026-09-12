@@ -41,6 +41,21 @@ console.log('B4 — the set keys stand on the 44px floor (decision sheet group (
   assert(!/42px/.test(key), 'the 42px height is gone');
 }
 
+console.log('\nC3 — the stepper moves by the exercise\'s own step (migration 0108, 2026-09-12)');
+{
+  const logger = strip(read('src/components/GymSessionLogger/GymSessionLogger.tsx'));
+  assert(!/WEIGHT_STEP_KG/.test(logger), 'the constant 2.5 is gone from the logger');
+  assert(/bumpWeight\(ex, -ex\.weight_step_kg\)/.test(logger) && /bumpWeight\(ex, ex\.weight_step_kg\)/.test(logger), '− and + move by ex.weight_step_kg');
+  assert(/by \$\{ex\.weight_step_kg\} kg/.test(logger), 'and the buttons say the step');
+  const q = strip(read('src/lib/queries/programmes.ts'));
+  assert(/weight_step_kg: number;/.test(q) && /from\('exercises'\)\.select\('id, weight_step_kg'\)/.test(q) && /weight_step_kg: steps\.get\(r\.exercise_id\) \?\? 2\.5/.test(q), 'fetchSessionExercises reads the step for the resolved exercise ids, 2.5 when unknown');
+  const mig = read('supabase/migrations/0108_exercise_weight_step.sql');
+  assert(/add column weight_step_kg numeric\(5,2\) not null default 2\.5/.test(mig) && /check \(weight_step_kg > 0/.test(mig), '0108: the column, default 2.5, checked positive');
+  const form = strip(read('src/components/ExerciseForm/ExerciseForm.tsx'));
+  assert(/<span className="exlib-flabel">Weight step<\/span>/.test(form) && /weightStepKg,/.test(form) && !/<span className="exlib-flabel">Unit<\/span>/.test(form), 'the library form sets it in the slot the inert Unit picker held');
+  assert(/WEIGHT_STEPS = \[0\.5, 1, 1\.25, 2, 2\.5, 5\]/.test(form), 'with 1.25, 2 and 2.5 among the choices');
+}
+
 console.log('\nA3/A4. spacing, and a pinned header');
 {
   const card = rule('.gym-ex-card');

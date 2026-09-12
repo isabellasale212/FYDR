@@ -59,6 +59,7 @@ level.
 | Element | Where | What happens | Takes you to | Writes | Confirm | Hidden when |
 |---|---|---|---|---|---|---|
 | Log a set | Per exercise | Records weight and reps | stays | a `gym_set_logs` row | UNVERIFIED | the exercise is exempt for this athlete |
+| − / + on the weight | The weight row | Moves the weight by the exercise's own step — `exercises.weight_step_kg` (migration 0108, ATH-ADULT-09 C3, 12 September 2026): 2.5 kg a plate a side by default, 2 for a dumbbell, 1.25 microloaded, as set on the library's create form; a substitute override steps by the substitute's value. Never below zero. Bodyweight (load basis none) has no stepper: reps only | stays | nothing until the set is logged | no | no load to set |
 | Start session | On open | `startOrGetSessionLog` creates or resumes the session log | stays | a `gym_session_logs` row | no | never |
 | N more · … | After the last shown exercise | Expands the rest of the session | stays | nothing | no | nothing is folded |
 | Finish session / Finish early · N of M | End of the list | `completeMutation` closes the session log | stays | `gym_session_logs` | no | the session is already complete |

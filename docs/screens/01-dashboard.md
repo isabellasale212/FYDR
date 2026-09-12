@@ -64,6 +64,11 @@ screen.
 
 **Needs attention.** The ranked list of athletes who need a conversation, each
 with a one line reason. This is the page. Everything else is the packaging.
+The panel's headline counts **athletes** — "5 athletes" over "need attention ·
+12 open flags · 3 not yet reviewed by anyone" — and, when the list is cut,
+"top 5 of 8 athletes" (on a phone, "· top 5 of 8 shown" on the same line)
+(STAFF-SS-01 A3, 12 September 2026). The phone bar's Flags slot carries the same number as a
+badge (C3), read for the active group filter on every staff page.
 
 **Today.** What is scheduled, in time order, or a line saying nothing is.
 

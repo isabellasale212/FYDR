@@ -5676,8 +5676,22 @@ img.me-avatar {
 }
 .dash-flags-pills {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--sp-8);
   margin-top: var(--sp-6);
+}
+/* STAFF-SS-01 A3 (12 Sept 2026): on a phone the header's scope span stood on
+   the pills; it joins the meta line there instead. */
+.dash-flags-scope-inline {
+  display: none;
+}
+@media (max-width: 767px) {
+  .dash-flags-head-scope {
+    display: none;
+  }
+  .dash-flags-scope-inline {
+    display: inline;
+  }
 }
 /* Pushed right by the text block's own growth rather than a margin on itself,
    so it stays on the first line's optical row at every width. */
@@ -13072,11 +13086,32 @@ a.hist-row:active { background: var(--surf-sunken); }
     border-radius: var(--r-control);
   }
   .ph-tab-glyph {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 23px;
     height: 23px;
+  }
+  /* STAFF-SS-01 C3 (12 Sept 2026): the Flags slot's count — athletes with an
+     open flag, the dashboard panel's own number — a small filled count on
+     the glyph's corner in the accent with --on-accent ink (the one pair the
+     system guarantees at 4.5:1 in both themes; --bad has no ink token and
+     white on it measures 3.1:1). A count, not a warning. */
+  .ph-count-mark {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 var(--sp-4);
+    border-radius: var(--r-full);
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: var(--fs-11);
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
   }
   .ph-tab-glyph .ic {
     width: 20px;

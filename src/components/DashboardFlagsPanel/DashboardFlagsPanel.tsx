@@ -8,6 +8,8 @@ import type { AttentionRow } from '@/lib/queries/flags';
 type Props = {
   rows: AttentionRow[];
   openTotal: number;
+  /** Distinct athletes behind those flags — the headline (STAFF-SS-01 A3). */
+  athleteTotal: number;
   awaitingAck: number;
   /** Severity counts across ALL open flags (not just the top rows), from
    *  fetchDashboardAttention — so the header reports the squad, not the page. */
@@ -37,7 +39,7 @@ function FlagIcon() {
  * One athlete open at a time. The point of the panel is triage across the
  * squad; several rows open at once turns it back into the scrolling list it
  * replaced. */
-export function DashboardFlagsPanel({ rows, openTotal, awaitingAck, bySeverity }: Props) {
+export function DashboardFlagsPanel({ rows, openTotal, athleteTotal, awaitingAck, bySeverity }: Props) {
   const [openId, setOpenId] = useState<string | null>(null);
   /* Collapsed on load, per the design review. The dashboard's job is to say
      what needs attention; forty-two flags expanded by default pushed the rest
@@ -74,9 +76,15 @@ export function DashboardFlagsPanel({ rows, openTotal, awaitingAck, bySeverity }
           <FlagIcon />
         </span>
         <span className="dash-flags-headtext">
+          {/* STAFF-SS-01 A3 (2026-09-12): the headline counts ATHLETES — a
+              coach talks to people, not to flags — and the Flags tab badge
+              shows the same number. The flag count keeps its place beneath,
+              with its denominator. */}
           <span className="dash-flags-headline">
-            <span className="dash-flags-count">{openTotal}</span>
-            <span className="dash-flags-word">open flag{openTotal === 1 ? '' : 's'}</span>
+            <span className="dash-flags-count">{athleteTotal}</span>
+            <span className="dash-flags-word">
+              athlete{athleteTotal === 1 ? '' : 's'}
+            </span>
           </span>
           {high > 0 || medium > 0 ? (
             <span className="dash-flags-pills">
@@ -89,13 +97,21 @@ export function DashboardFlagsPanel({ rows, openTotal, awaitingAck, bySeverity }
               total above, and a third pill on every card would spend the row's
               attention on the tier that least needs it. */}
           <span className="dash-flags-head-meta">
+            {`need${athleteTotal === 1 ? 's' : ''} attention · ${openTotal} open flag${openTotal === 1 ? '' : 's'} · `}
             {awaitingAck === 0
-              ? 'all of these have been reviewed'
-              : `${awaitingAck} of these haven't been reviewed by anyone yet`}
+              ? 'all reviewed'
+              : `${awaitingAck} not yet reviewed by anyone`}
+            {/* On a phone the scope joins this line (the header's own scope
+                span hides below 768px — measured overlapping the pills at 375). */}
+            {rows.length < athleteTotal ? (
+              <span className="dash-flags-scope-inline"> · top {rows.length} of {athleteTotal} shown</span>
+            ) : null}
           </span>
         </span>
-        {rows.length < openTotal ? (
-          <span className="dash-flags-head-scope">top {rows.length} athletes</span>
+        {rows.length < athleteTotal ? (
+          <span className="dash-flags-head-scope">
+            top {rows.length} of {athleteTotal} athletes
+          </span>
         ) : null}
         <span className="dash-flags-head-chevron" data-open={listOpen} aria-hidden="true">
           &#9660;

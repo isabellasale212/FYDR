@@ -292,6 +292,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         <DashboardFlagsPanel
           rows={stats.attentionRows}
           openTotal={stats.openFlags}
+          athleteTotal={stats.attentionAthletes}
           awaitingAck={stats.awaitingAckFlags}
           bySeverity={stats.flagsBySeverity}
         />

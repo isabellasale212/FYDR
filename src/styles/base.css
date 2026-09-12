@@ -5800,12 +5800,30 @@ img.me-avatar {
    these two). Everything above this rule already makes .dash-stat look right
    for an <a>; a <button> needs its own browser defaults reset to match. */
 button.dash-stat {
-  background: none;
+  /* STAFF-SS-01 A2 (2026-09-12): a card that opens a list says so in its
+     shape as well as its words — closed is a --surf2 well, open is the
+     surface with an accent border (an inset ring, so the strip's hairlines
+     and widths do not move). */
+  background: var(--surf2);
   border: none;
   border-left: 1px solid var(--hair);
   font-family: inherit;
   text-align: left;
   width: 100%;
+  transition: background var(--t-state);
+}
+button.dash-stat[aria-expanded='true'] {
+  background: var(--surf);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.dash-stat-state {
+  margin-top: var(--sp-6);
+  font-size: var(--fs-11);
+  font-weight: 600;
+  color: var(--muted);
+}
+button.dash-stat[aria-expanded='true'] .dash-stat-state {
+  color: var(--accent-text);
 }
 .dash-stat-label {
   font-size: var(--fs-11);
@@ -6335,6 +6353,29 @@ button.dash-stat {
 }
 .dash-ready-row-dot > .dash-squad-dot {
   margin-top: var(--sp-6);
+}
+/* STAFF-SS-01 A1 (2026-09-12): Doubtful and Ruled out as tone-family cards —
+   the athlete availability line's own fill and border (.avail-line: 12% of
+   the tone over --surf, a 0.4 border), the tone's ink for the label and the
+   count, on the control radius, with the row's own padding turned into the
+   card's inset. The dot stays: it is what ties the row to its segment of the
+   bar above. A card, not a stripe. */
+.dash-ready-row[data-tone='warn'],
+.dash-ready-row[data-tone='bad'] {
+  margin-top: var(--sp-6);
+  padding: var(--sp-10) var(--sp-12);
+  border-top: none;
+  border-radius: var(--r-control);
+}
+.dash-ready-row[data-tone='warn'] {
+  background: color-mix(in srgb, rgb(var(--warn-rgb)) 12%, var(--surf));
+  border: 1px solid rgb(var(--warn-rgb) / 0.4);
+  color: var(--text);
+}
+.dash-ready-row[data-tone='bad'] {
+  background: color-mix(in srgb, rgb(var(--bad-rgb)) 12%, var(--surf));
+  border: 1px solid rgb(var(--bad-rgb) / 0.4);
+  color: var(--text);
 }
 .dash-load-track {
   position: absolute;
@@ -13067,4 +13108,47 @@ a.hist-row:active { background: var(--surf-sunken); }
     margin-block: calc(-1 * var(--sp-12));
     line-height: 20px;
   }
+}
+
+/* A blocked control (BlockedButton, 2026-09-12): keeps its box, mutes its
+   ink, keeps the pointer — it is reachable and says why on tap. The reason
+   takes a full line of a wrapping row, beneath the control it describes. */
+[data-blocked] {
+  color: var(--muted);
+  cursor: pointer;
+}
+.blocked-why {
+  display: block;
+  flex-basis: 100%;
+  margin-top: var(--sp-4);
+  font-size: var(--fs-12);
+  color: var(--muted);
+}
+
+/* Who will read what, before an availability change lands
+   (AvailabilityAudience, 2026-09-12): a --surf2 well with the three readers
+   as rows, then Confirm (the write) and Back. */
+.avail-audience {
+  margin-top: var(--sp-14);
+  padding: var(--sp-12) var(--sp-14);
+  border: 1px solid var(--border);
+  border-radius: var(--r-field);
+  background: var(--surf2);
+}
+.avail-audience-rows {
+  margin: var(--sp-8) 0 0;
+  padding-inline-start: var(--sp-18);
+  font-size: var(--fs-13);
+  color: var(--muted);
+  display: grid;
+  gap: var(--sp-6);
+}
+.avail-audience-rows b {
+  color: var(--text);
+}
+.avail-audience-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+  margin-top: var(--sp-12);
 }

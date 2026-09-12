@@ -1,5 +1,6 @@
 'use client';
 
+import { BlockedButton } from '@/components/BlockedButton/BlockedButton';
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
@@ -351,18 +352,16 @@ function ActionsCell({
           {historyOpen ? 'Hide history' : 'History'}
         </button>
       ) : null}
-      <button
-        type="button"
+      <BlockedButton
         className="btn-ghost"
         style={{ padding: '4px 10px' }}
-        disabled={!canCorrect}
-        aria-disabled={!canCorrect}
-        aria-expanded={formOpen}
-        title={canCorrect ? undefined : 'Correcting an entry belongs to the sport scientist, the coach and the medic.'}
+        blocked={!canCorrect}
+        reason="Correcting an entry belongs to the sport scientist, the coach and the medic."
+        aria-expanded={canCorrect ? formOpen : undefined}
         onClick={onToggleForm}
       >
         {formOpen ? 'Cancel' : `Correct ${label}`}
-      </button>
+      </BlockedButton>
     </td>
   );
 }

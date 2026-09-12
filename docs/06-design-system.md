@@ -1223,6 +1223,20 @@ Two consequences that must hold everywhere:
 
 ## 7. Components
 
+### 7.0 A blocked control says why — never `disabled`, never a `title`
+
+**Decided 2026-09-12** (STAFF-SS-02-05 D2 / Builder question 8; it closes §0ap's dead
+"Tap one below to see why" and §0av's three greyed weigh-in buttons). A control the
+reader may not use — by role, by plan, by eligibility — is `BlockedButton`
+(`src/components/BlockedButton/`): it carries `aria-disabled="true"`, stays focusable
+and tappable, and shows its reason beneath itself on tap or focus as a `role="status"`
+the button is described by. It never uses the `disabled` attribute (a disabled button
+dispatches no click in any browser and gets no focus, so a reason in its `title` was
+never shown to anyone on a phone) and never a `title`. The visible box keeps its
+design; only the ink is muted (`[data-blocked]`), and the reason (`.blocked-why`) takes
+a full line of a wrapping row. A control that is merely busy (`isPending`) is a
+different thing and may still be `disabled`.
+
 ### 7.1 The real classes
 
 **Source.** These exist, with this CSS. Everything Fydr builds composes from them.

@@ -332,7 +332,7 @@ export default async function SettingsPage() {
               </span>
             </Link>
           ) : (
-            <div className="set-list-row" data-disabled="true" aria-disabled="true" title="Requires a role with athlete-level export access, see the access matrix.">
+            <div className="set-list-row" data-disabled="true" aria-disabled="true">
               <span>
                 <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600, display: 'block', color: 'var(--faint)' }}>Exports</span>
                 <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>Coach or medical role required</span>

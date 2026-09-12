@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import type { HeadlineStats, SquadStateEntry } from '@/lib/queries/dashboard';
-import { availabilityLabel } from '@/lib/format';
+import { availabilityLabel, formatDate } from '@/lib/format';
+import { runLabel } from '@/lib/missingRuns';
 
 type Props = {
   stats: HeadlineStats;
   isAnchoredToPast: boolean;
+  timezone: string;
   needYouHref: string;
   wellnessReportHref: string;
   squadHref: string;
@@ -57,14 +59,27 @@ function namedWithReason(entries: SquadStateEntry[]): string[] {
  *     coach would then have to re-filter to find the exact names this tile
  *     is already counting — slower, not faster, for "straight to the
  *     problem". Expanding shows the real names right here instead:
- *     wellnessMissingNames is computed off the identical expected/submitted
+ *     wellnessMissing is computed off the identical expected/submitted
  *     pair the percentage itself uses (dashboard.ts's own comment on why,
  *     rather than a second, differently-filtered query), and Available
  *     reuses the Squad state card's modified/unavailable lists. Both still
  *     keep a footer link to the full page for anyone who wants more. */
+/** The written state of a summary card that opens a list — STAFF-SS-01 A2
+ *  (2026-09-12). The stat is the button text; this line says what pressing
+ *  does, in the words aria-expanded announces, and the glyph swaps ▸ / ▾
+ *  rather than rotating (no motion token). */
+function StatState({ open }: { open: boolean }) {
+  return (
+    <div className="dash-stat-state">
+      <span aria-hidden="true">{open ? '▾' : '▸'}</span> {open ? 'Open · showing the list' : 'Closed · opens a list'}
+    </div>
+  );
+}
+
 export function DashboardHeadlineStats({
   stats,
   isAnchoredToPast,
+  timezone,
   needYouHref,
   wellnessReportHref,
   squadHref,
@@ -126,10 +141,8 @@ export function DashboardHeadlineStats({
               : isAnchoredToPast
                 ? 'window closed 09:00 that day'
                 : 'window closes 09:00'}
-            <span className="dash-flags-chevron" data-open={expanded === 'wellness'} aria-hidden="true" style={{ marginLeft: 'var(--sp-6)' }}>
-              ⌄
-            </span>
           </div>
+          <StatState open={expanded === 'wellness'} />
         </button>
 
         <button
@@ -162,10 +175,8 @@ export function DashboardHeadlineStats({
           </div>
           <div className="dash-stat-foot">
             injury status set by medical, other absences by coach
-            <span className="dash-flags-chevron" data-open={expanded === 'available'} aria-hidden="true" style={{ marginLeft: 'var(--sp-6)' }}>
-              ⌄
-            </span>
           </div>
+          <StatState open={expanded === 'available'} />
         </button>
 
         <Link href={flagsHref} className="dash-stat" data-urgent={stats.openFlags > 0}>
@@ -226,15 +237,22 @@ export function DashboardHeadlineStats({
               {stats.wellnessSub}
             </span>
           </div>
-          {stats.wellnessMissingNames.length === 0 ? (
+          {stats.wellnessMissing.length === 0 ? (
             <p className="tiny dash-stat-expand-empty">
               {stats.wellnessPct === null ? 'Nobody was expected to submit today.' : 'Nobody outstanding — everyone expected has submitted.'}
             </p>
           ) : (
-            stats.wellnessMissingNames.map((name) => (
-              <div key={name} className="dash-stat-expand-row">
+            /* STAFF-SS-01 A4: who, how many mornings in a row, last entry —
+               longest run first. A missing morning is "Not submitted",
+               never 0 or 0%. */
+            stats.wellnessMissing.map((row) => (
+              <div key={row.athleteId} className="dash-stat-expand-row">
                 <span className="dash-squad-dot" style={{ background: 'var(--warn)' }} aria-hidden="true" />
-                <span style={{ fontSize: 'var(--fs-13)', fontWeight: 600 }}>{name}</span>
+                <span style={{ fontSize: 'var(--fs-13)', fontWeight: 600 }}>{row.name}</span>
+                <span className="tiny" style={{ color: 'var(--muted)' }}>
+                  Not submitted · {runLabel(row.runDays)} ·{' '}
+                  {row.lastEntry ? `last entry ${formatDate(row.lastEntry, timezone)}` : 'no entry in the last 90 days'}
+                </span>
               </div>
             ))
           )}

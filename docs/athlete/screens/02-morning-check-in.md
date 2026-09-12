@@ -39,8 +39,13 @@ primary button.
 form** (ATH-ADULT-04, 12 September 2026): one emphasised card — the accent wash —
 with "Already submitted" as the heading, the time you sent it beneath at full
 size, then who can correct it ("Tell your coach or medical staff…") and that the
-original stays visible in My data. The "45 seconds" subhead is not shown, since
-there is nothing to start. The only exit is a full-width button in the footer at
+original stays visible in My data. When staff have corrected the day, a neutral
+"Corrected" pill sits beside the heading and a line beneath the fact reads
+"Corrected by {name} on {date}. What you first reported is in My data." — the same
+words as My data's history row; naming the staff member is permitted
+(`docs/athlete/visibility.md` withholds nothing about it) and the page reads the
+day's revision chain to know (ATH-ADULT-04 C1/C4, decided 12 September 2026). The
+"45 seconds" subhead is not shown, since there is nothing to start. The only exit is a full-width button in the footer at
 the bottom of the screen, labelled after where it goes: **Back to Today** for
 today's entry, **Back to My data** for a past day. A past day with no entry shows
 "Nothing submitted" in the same shape.

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { setAvailability } from '@/lib/queries/injuries';
+import { AvailabilityAudience } from '@/components/AvailabilityAudience/AvailabilityAudience';
 import { humanizeDbError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import type { AvailabilityReason } from '@/lib/types/database';
 
@@ -30,7 +31,7 @@ function label(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1).replace(/_/g, ' ');
 }
 
-type Props = { orgId: string; userId: string; athleteId: string; injuryId: string | null };
+type Props = { orgId: string; userId: string; athleteId: string; athleteName: string; injuryId: string | null };
 
 /** Medical only, per migration 0012's availability RLS: "there is no coach insert
  *  policy on this table. Not a restricted one, not one gated on a column: none." Sets
@@ -48,13 +49,14 @@ type Props = { orgId: string; userId: string; athleteId: string; injuryId: strin
  *  (0042), which requires it non-null on every insert regardless of status —
  *  see SetAvailabilityFormCoach's own comment for why that form does the
  *  opposite on purpose. */
-export function SetAvailabilityForm({ orgId, userId, athleteId, injuryId }: Props) {
+export function SetAvailabilityForm({ orgId, userId, athleteId, athleteName, injuryId }: Props) {
   const router = useRouter();
   const [status, setStatus] = useState<(typeof STATUSES)[number]>('modified');
   const [restrictions, setRestrictions] = useState<Set<string>>(new Set());
   const [reasonCategory, setReasonCategory] = useState<AvailabilityReason | null>('injury');
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
 
   function handleStatusClick(s: (typeof STATUSES)[number]) {
     setStatus(s);
@@ -172,15 +174,30 @@ export function SetAvailabilityForm({ orgId, userId, athleteId, injuryId }: Prop
         </p>
       ) : null}
 
-      <button
-        type="button"
-        className="btn-primary"
-        style={{ marginTop: 'var(--sp-14)' }}
-        disabled={mutation.isPending}
-        onClick={() => mutation.mutate()}
-      >
-        {mutation.isPending ? 'Saving…' : 'Update availability'}
-      </button>
+      {/* Who will read what, before it lands (PATTERN-S3 / STAFF-SS-02-05
+          C4, 2026-09-12): the permission rule made visible at the moment it
+          is exercised. The button opens the step; Confirm is the write. */}
+      {confirming ? (
+        <AvailabilityAudience
+          athleteName={athleteName}
+          status={status}
+          injuryLinked={injuryId !== null}
+          hasNote={note.trim() !== ''}
+          pending={mutation.isPending}
+          onConfirm={() => mutation.mutate()}
+          onBack={() => setConfirming(false)}
+        />
+      ) : (
+        <button
+          type="button"
+          className="btn-primary"
+          style={{ marginTop: 'var(--sp-14)' }}
+          disabled={mutation.isPending}
+          onClick={() => setConfirming(true)}
+        >
+          Update availability
+        </button>
+      )}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { BlockedButton } from '@/components/BlockedButton/BlockedButton';
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
@@ -276,17 +277,16 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
             const unavailable = familyUnavailable(f);
             const disabled = unavailable !== null;
             return (
-              <button
+              <BlockedButton
                 key={f}
-                type="button"
                 className={`squad-chip${disabled ? ' lbw-chip-disabled' : ''}`}
                 aria-pressed={effectiveFamily === f}
-                disabled={disabled}
-                title={unavailable ?? undefined}
-                onClick={() => !disabled && setFamily(f)}
+                blocked={disabled}
+                reason={unavailable ?? ''}
+                onClick={() => setFamily(f)}
               >
                 {f} <span className="lbw-chip-count">{familyCounts[f] ?? 0}</span>
-              </button>
+              </BlockedButton>
             );
           })}
         </div>

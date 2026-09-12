@@ -98,6 +98,7 @@ export default async function InjuryDetailPage({
               orgId={orgId}
               userId={claims.userId}
               athleteId={injury.athlete_id}
+              athleteName={`${injury.first_name} ${injury.last_name}`}
               injuryId={injury.id}
             />
           </div>

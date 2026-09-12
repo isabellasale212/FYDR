@@ -5,6 +5,7 @@ import { fetchNextFixture, fetchWeekSessions, mondayOf, rangeBounds, type WeekSe
 import { fetchAllPaged } from './paged';
 import { fetchTimetableDay } from './timetable';
 import { anchorMdOffsetsToWeek, availabilityLabel, dateInTz, daysBetween, formatTime, matchdayWeekday, mdLabel, zonedTimeToUtcIso } from '../format';
+import { missingRuns, type MissingRun } from '@/lib/missingRuns';
 
 /* DASHBOARD-SPEC.md, the coach's 07:00 screen. Every section here composes
  * real, already-shipped query functions (schedule, availability,
@@ -268,7 +269,9 @@ export type HeadlineStats = {
    *  disagree (the trap fetchWellnessComplianceForDay's separate is_required
    *  filter would set, per reports.ts's own header on why that filter is
    *  wrong here). Sorted by last name, same convention as that function. */
-  wellnessMissingNames: string[];
+  /** Who has not submitted this morning, longest run of missed mornings
+   *  first, with their last entry date — STAFF-SS-01 A4 (2026-09-12). */
+  wellnessMissing: MissingRun[];
 };
 
 export async function fetchHeadlineStats(
@@ -333,18 +336,44 @@ export async function fetchHeadlineStats(
   const toMatchdayDays = fixture ? daysBetween(effectiveToday, dateInTz(new Date(fixture.kickoff_at), timezone)) : null;
   const sessionsLeft = weekSessions.filter((s) => s.entry_date > effectiveToday && s.session_type !== 'match').length;
 
-  // Names for the "Wellness in" tile's expand panel — one extra lookup, only
-  // when there's actually someone missing, on the same ids wellnessExp
-  // already resolved above (never a second, differently-scoped query).
-  let wellnessMissingNames: string[] = [];
+  // The "Wellness in" tile's expand panel — only when someone is missing, on
+  // the same ids wellnessExp already resolved above (never a second,
+  // differently-scoped query). STAFF-SS-01 A4 (2026-09-12): ordered by how
+  // many expected mornings in a row have no entry, with the last entry date
+  // — so three reads: the names, the missing athletes' wellness expectations
+  // over the last 28 days, and their entries over the last 90. The run and
+  // the ordering are lib/missingRuns.ts's, tested with rows.
+  let wellnessMissing: MissingRun[] = [];
   if (wellnessExp.missingIds.length > 0) {
-    const { data: missingAthletes, error: missingErr } = await db
-      .from('athletes')
-      .select('id, first_name, last_name')
-      .eq('org_id', orgId)
-      .in('id', wellnessExp.missingIds);
-    if (missingErr) throw new Error(missingErr.message);
-    wellnessMissingNames = (missingAthletes ?? []).map((a) => `${a.first_name} ${a.last_name}`).sort((a, b) => a.localeCompare(b));
+    const ids = wellnessExp.missingIds;
+    const [missingAthletes, missingExpectations, missingEntries] = await Promise.all([
+      db.from('athletes').select('id, first_name, last_name').eq('org_id', orgId).in('id', ids),
+      db
+        .from('compliance_expectations')
+        .select('athlete_id, expectation_date')
+        .eq('org_id', orgId)
+        .eq('domain', 'wellness')
+        .eq('is_required', true)
+        .in('athlete_id', ids)
+        .gte('expectation_date', addDays(effectiveToday, -28))
+        .lte('expectation_date', effectiveToday),
+      db
+        .from('wellness_entries_current')
+        .select('athlete_id, entry_date')
+        .eq('org_id', orgId)
+        .in('athlete_id', ids)
+        .gte('entry_date', addDays(effectiveToday, -90))
+        .lte('entry_date', effectiveToday),
+    ]);
+    if (missingAthletes.error) throw new Error(missingAthletes.error.message);
+    if (missingExpectations.error) throw new Error(missingExpectations.error.message);
+    if (missingEntries.error) throw new Error(missingEntries.error.message);
+    wellnessMissing = missingRuns(
+      (missingAthletes.data ?? []).map((a) => ({ id: a.id, name: `${a.first_name} ${a.last_name}` })),
+      missingExpectations.data ?? [],
+      missingEntries.data ?? [],
+      effectiveToday,
+    );
   }
 
   return {
@@ -364,7 +393,7 @@ export async function fetchHeadlineStats(
     toMatchdayDays,
     fixtureId: fixture?.id ?? null,
     opponent: fixture?.opponent ?? null,
-    wellnessMissingNames,
+    wellnessMissing,
     sessionsLeft,
   };
 }
@@ -575,6 +604,13 @@ export type SaturdayReadiness = {
 
 const CIRCUMFERENCE = 251;
 
+/** How far ahead a fixture counts as "the matchday" the readiness card is
+ *  for — STAFF-SS-01 D3, decided 2026-09-12: 14 days. Beyond it the card
+ *  reads "Squad readiness" with "No fixture in the next 14 days", rather
+ *  than naming a match a fortnight or more away as if the week were about
+ *  it. The "To matchday" tile keeps counting to the real next fixture. */
+export const FIXTURE_RANGE_DAYS = 14;
+
 export async function fetchSaturdayReadiness(
   db: Db,
   orgId: string,
@@ -583,7 +619,7 @@ export async function fetchSaturdayReadiness(
   timezone: string,
 ): Promise<SaturdayReadiness> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
-  const [fixture, availRows, notFully, weekSessions, flagsThisWeek] = await Promise.all([
+  const [nextFixture, availRows, notFully, weekSessions, flagsThisWeek] = await Promise.all([
     // Real local midnight, not a literal UTC one — see fetchHeadlineStats's
     // own fetchNextFixture call above for the full explanation.
     fetchNextFixture(db, orgId, zonedTimeToUtcIso(effectiveToday, '00:00', timezone)),
@@ -592,6 +628,9 @@ export async function fetchSaturdayReadiness(
     fetchWeekSessions(db, orgId, mondayOf(effectiveToday), groupIds, timezone),
     fetchFlagsByDateRange(db, orgId, groupIds, mondayOf(effectiveToday), addDays(mondayOf(effectiveToday), 5)),
   ]);
+
+  // Within range, or not the card's fixture (D3).
+  const fixture = nextFixture && daysBetween(effectiveToday, dateInTz(new Date(nextFixture.kickoff_at), timezone)) <= FIXTURE_RANGE_DAYS ? nextFixture : null;
 
   const squad = availRows.length;
   const modifiedRows = notFully.filter((r) => r.status === 'modified');

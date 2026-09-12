@@ -1,5 +1,6 @@
 'use client';
 
+import { BlockedButton } from '@/components/BlockedButton/BlockedButton';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
@@ -49,7 +50,6 @@ export function LeaderboardBuilderForm({ orgId, userId, catalogue, groups }: Pro
   const [windowType, setWindowType] = useState<(typeof WINDOWS)[number]['value']>('season');
   const [visibility, setVisibility] = useState<'staff' | 'published'>('staff');
   const [error, setError] = useState<string | null>(null);
-  const [showWhyDisabled, setShowWhyDisabled] = useState<string | null>(null);
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -120,31 +120,22 @@ export function LeaderboardBuilderForm({ orgId, userId, catalogue, groups }: Pro
         depend on your plan. Tap one below to see why.
       </p>
       <div className="chiprow" style={{ marginTop: 'var(--sp-6)', flexWrap: 'wrap' }}>
+        {/* aria-disabled and reachable (BlockedButton), not `disabled`: a
+            disabled button dispatches no click in any browser, so the tap
+            the copy above promises never landed — §0ap, closed 2026-09-12.
+            The reason shows beneath the chip on tap or focus. */}
         {ineligible.map((m) => (
-          <button
+          <BlockedButton
             key={m.key}
-            type="button"
             className="squad-chip"
-            disabled
-            style={{ opacity: 0.6, cursor: 'not-allowed' }}
-            onClick={() => setShowWhyDisabled(m.key)}
-            aria-describedby={showWhyDisabled === m.key ? `why-${m.key}` : undefined}
+            blocked
+            reason={`${m.label} cannot be ranked. ${m.ineligible_reason}`}
           >
             {m.label}
-          </button>
+          </BlockedButton>
         ))}
       </div>
-      {ineligible.map((m) =>
-        showWhyDisabled === m.key ? (
-          <div className="note" key={m.key} id={`why-${m.key}`} role="alertdialog" style={{ marginTop: 'var(--sp-10)' }}>
-            <div className="note-glyph" aria-hidden="true">!</div>
-            <p className="note-text">
-              <b>{m.label} cannot be ranked.</b> {m.ineligible_reason}
-            </p>
-          </div>
-        ) : null,
-      )}
-
+      
       <p className="label" style={{ marginTop: 'var(--sp-18)' }}>
         2. Aggregation
       </p>

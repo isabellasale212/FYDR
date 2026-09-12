@@ -1,5 +1,6 @@
 'use client';
 
+import { BlockedButton } from '@/components/BlockedButton/BlockedButton';
 import { useState, type ReactNode, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -155,15 +156,13 @@ export function PlayerProfileBio({
             {editing ? 'Cancel' : 'Edit'}
           </button>
         ) : (
-          <button
-            type="button"
+          <BlockedButton
             className="btn-ghost-pill"
-            disabled
-            aria-disabled="true"
-            title="Medical reads the roster and does not edit it — only a coach can change these details."
+            blocked
+            reason="Medical reads the roster and does not edit it — only a coach can change these details."
           >
             Edit
-          </button>
+          </BlockedButton>
         )}
         {wellnessMini}
       </div>

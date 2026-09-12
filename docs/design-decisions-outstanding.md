@@ -60,23 +60,23 @@ to create an injury record, and the `/injuries` board shows "+ Injury" to the co
 
 | Flow | ID | What it changes | Why it isn't built | Recommendation · cost |
 |---|---|---|---|---|
-| ATH-ADULT-04 | C4 | The check-in page would say *who* corrected an entry ("Corrected by Jane Pemberton"). | A visibility decision — whether an athlete sees which member of staff changed their entry — not stated in `docs/athlete/visibility.md`. | **Keep to "Corrected on {date}"** unless visibility.md says otherwise · small |
+| ~~ATH-ADULT-04~~ | ~~C4~~ | ~~The check-in page would say *who* corrected an entry.~~ **Built with C1** — visibility.md withholds nothing about it and My data already names the person; "Corrected by {name} on {date}" · | | |
 | ATH-ADULT-06 | C1 | A subhead "Today 11:30 · Pitch" under the RPE screen's title. | The session block beneath the head already carries the same facts; the subhead would say them twice. | **Keep as built** (no subhead) · small |
 | ATH-ADULT-09 | B4 | The set keys (the buttons an athlete taps to log a set) go from 42px to 44px tall — the app's own floor. | Recorded as "44px minimum with the rebuild"; also §0u's second bullet. Not a token: 44 is the floor every other athlete control uses. | **Build now** — one rule, independent of the rebuild · small |
-| ATH-ADULT-09 | C5 | The screen stays awake during a session (Wake Lock) and a set logged gives a short vibration on Android. | New behaviour, no decided direction; both feature-detected, nothing on iPhone Safari for haptics. | **Build** — `navigator.wakeLock` on open/visibility, `navigator.vibrate(10)` on log · small |
+| ~~ATH-ADULT-09~~ | ~~C5~~ | ~~Wake Lock and a buzz on log.~~ **Built** (`lib/wakeLock.ts`; on open, on visibility, released on leave; 10 ms buzz where present) · | | |
 | ATH-ADULT-10 | C1 | "Finish early" moves from the footer to the header, leaving the footer to logging. | On the live screen the footer's only action IS finish; moving it leaves a note alone. Belongs with the 09 rebuild. | **Wait for 09 C1**; keep as built · small |
 | ATH-ADULT-13 | C4 | On a small phone the set list shows "4 of 6 shown" and truncates. | A session's sets are one list; 667px is not the floor. | **Decline** · small |
 | ATH-ADULT-13 | C5 | The session detail hides the athlete tab bar ("a pushed screen"). | The shell draws the bar on every athlete route; hiding it per route is a shell decision, and the screen already has one way back. | **Decline** — keep the bar · small |
 | ATH-ADULT-13 | D1 | The §0v "What you reported" card is replaced by a per-row "Corrected · was 100 kg × 8" marker. | The card was built 2026-09-10 with its reasoning (no "by" line); the row marker needs the 3px bar the system lacks (12 B5) and the row-tap correction (13 C2). | **Keep the card until 13 C2/C3 land**, then fold · small now |
-| STAFF-SS-01 | A1 | Dashboard: Doubtful and Ruled out become tone-family cards (warn/bad fill and border), not stripes — the treatment ATH-ADULT-02 approved for the availability line. | Shell scope was record-only overnight; the dashboard rebuild (C2) was not decided. | **Build** as the first dashboard step · small |
-| STAFF-SS-01 | A2 | Dashboard summary cards become buttons that say which state they are in ("Closed · opens a list" / "Open · showing the list") with `aria-expanded`. | As above. | **Build** · small |
-| STAFF-SS-01 | A4 | The dashboard's missing check-ins say "Not submitted", never 0 or 0%, ordered by mornings in a row. | As above; the ordering needs the run-length count (a small derivation over existing rows). | **Build** · small–medium |
-| STAFF-SS-01 | D3 | "Ready for {matchday}" only when the fixture is within 14 days; otherwise the week card leads. | The dashboard has no fixture range today (`fetchNextFixture` has no upper bound); 14 is the board's placeholder. | **Accept 14 days** and record it in the dashboard spec · small |
+| ~~STAFF-SS-01~~ | ~~A1~~ | ~~Doubtful and Ruled out as tone-family cards.~~ **Built** (the availability line's fill and border on the two readiness rows) · | | |
+| ~~STAFF-SS-01~~ | ~~A2~~ | ~~Summary cards say which state they are in.~~ **Built** ("Closed · opens a list" / "Open · showing the list", ▸/▾, a --surf2 well closed, the surface with an accent ring open) · | | |
+| ~~STAFF-SS-01~~ | ~~A4~~ | ~~Missing check-ins by run length, "Not submitted".~~ **Built** (`lib/missingRuns.ts`; the Wellness in list, longest run first, last entry date) · | | |
+| ~~STAFF-SS-01~~ | ~~D3~~ | ~~"Ready for {matchday}" only within 14 days.~~ **Built** (`FIXTURE_RANGE_DAYS = 14`; "Squad readiness · No fixture in the next 14 days" beyond it). The board's "the week card leads and the matchday card is absent" is a structure change, with C2's remaining steps · | | |
 | STAFF-SS-01 | Q7 | On a phone, the in-page group filter bar would show only the active chip. | Unclear what then changes the group; the shell's title bar already shows the active group as a chip. | **Leave the chip row as it is** (it wraps; every chip is 44px) · small |
-| STAFF-SS-02-05 | C4 | The profile's confirmation before a status change lists who will see what (the athlete, the named coach, everyone else) — PATTERN-S3's rule. | A new step on the availability forms; no data needed. | **Build** on `SetAvailabilityForm` and the coach form · medium |
+| ~~STAFF-SS-02-05~~ | ~~C4~~ | ~~Who will read what, before a status change lands.~~ **Built** (`AvailabilityAudience` on both forms; the coaches by role — no per-athlete coach exists in the data) · | | |
 | STAFF-SS-02-05 | C8 | Empty profile panels state the requirement ("a trend needs three weigh-ins", "no plan assigned, targets are per kilogram, so a plan needs a weigh-in"). | Per-panel copy on each panel's own empty branch; needs the body-weight and nutrition panels read first. | **Build** as one copy pass · medium |
-| STAFF-SS-02-05 | D2 | The profile's three disabled weight buttons and the leaderboard builder's chips follow one rule: `aria-disabled` and the reason shown, never a greyed control the reader cannot reach. | The board's rule 4 and §0av / §0ap say the same thing; a decision, not data. | **Decide once** (Builder question 8's recommendation) · small |
-| PATTERN-S3 | C4 | Before a status change lands, the screen lists who sees what, by name. | Same as STAFF-SS-02-05 C4. | with it · — |
+| ~~STAFF-SS-02-05~~ | ~~D2~~ | ~~One rule for blocked controls.~~ **Built** (`BlockedButton`: aria-disabled, the reason on tap/focus, never a title — the builder's chips, the weigh-in trio, the bio Edit, the correction button, the leaderboard family chips; 06-design-system.md §7.0) · | | |
+| ~~PATTERN-S3~~ | ~~C4~~ | ~~Who sees what, by name.~~ **Built** with STAFF-SS-02-05 C4 · | | |
 
 ## (b) Reverses something we decided
 
@@ -102,7 +102,7 @@ to create an injury record, and the `/injuries` board shows "+ Injury" to the co
 
 | Flow | ID | What it changes | Why it isn't built | Recommendation · cost |
 |---|---|---|---|---|
-| ATH-ADULT-04 | C1 | The check-in page shows a "Corrected" pill and "Corrected on {date}" when staff corrected the day. | The page's fetch (`fetchWellnessDay`) does not select the revision's `revision_of`/`submitted_at`. | **Build** — select two columns, show the pill and the date · small |
+| ~~ATH-ADULT-04~~ | ~~C1~~ | ~~The check-in page shows a "Corrected" pill and the correction when staff corrected the day.~~ **Built** (the day's revision chain; pill + "Corrected by {name} on {date}"; "You sent … at" is the athlete's own time) · | | |
 | ATH-ADULT-08 | C1 | A check-in can be corrected once; a second attempt sees a "spent" card instead of the form. | `revise_nutrition_checkin` needs to refuse when the original is itself a revision; the page needs `revision_of`. The design-approach doc lists "corrected once" as decided; the to-do list does not. **⚠ migration** | **Build as one commit** — the refusal, the read, the spent state, then the caption (C3) · medium |
 | ATH-ADULT-08 | C2 | After saving a correction the page shows a "Correction saved" card instead of leaving for My data. | Today a saved correction navigates to `/my-data?tab=nutrition`. | With C1 · small |
 | ATH-ADULT-08 | C3 | The caption "You can correct this once after you submit." | Asserts C1; not shown until true. | With C1 · none |

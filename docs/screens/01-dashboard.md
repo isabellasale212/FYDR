@@ -67,7 +67,11 @@ with a one line reason. This is the page. Everything else is the packaging.
 
 **Today.** What is scheduled, in time order, or a line saying nothing is.
 
-**Ready for Saturday.** The selection picture for the next fixture, on one card:
+**Ready for Saturday.** The selection picture for the next fixture, on one card —
+when that fixture is within **14 days** (`FIXTURE_RANGE_DAYS`, STAFF-SS-01 D3,
+12 September 2026). Further out, the card reads "Squad readiness" with "No fixture
+in the next 14 days": the week is not about a match a fortnight away. The "To
+matchday" tile still counts to the real next fixture.
 the opponent and how many days away, a ring showing how many of the squad can be
 named, a bar showing the three way availability split, and five rows. The first
 three are that split with the players named. The last two are the other things
@@ -99,12 +103,12 @@ Formulas are in `docs/metrics.md`. They are not repeated here.
 |---|---|---|---|---|---|---|---|
 | Group filter chips | Top bar | Narrows every number on the page | Stays here, with the group in the address | Nothing. A cookie remembers your choice | Any staff | None | Never |
 | Need you tile | Tile strip | Opens the flags for that day | `/flags?date=` | Nothing | Any staff | None | Never |
-| Wellness in tile | Tile strip | Expands in place to name who is missing | Stays here | Nothing | Any staff | None | Never |
+| Wellness in tile | Tile strip | Expands in place to name who is missing — longest run of missed expected mornings first, each row "Not submitted · N mornings in a row · last entry {date}" (or "no entry in the last 90 days"); a rest day neither counts nor breaks a run; never 0 or 0% (STAFF-SS-01 A4, 12 September 2026). The tile is a button that says which state it is in — "Closed · opens a list" / "Open · showing the list", the words `aria-expanded` announces, with a ▸ / ▾ glyph that swaps rather than rotates; closed it is a `--surf2` well, open it is the surface with an accent ring (STAFF-SS-01 A2, 12 September 2026). The Available tile is the same | Stays here | Nothing | Any staff | None | Never |
 | Available tile | Tile strip | Expands in place to name who is modified or out, each with a reason | Stays here | Nothing | Any staff | None | Never |
 | Open flags tile | Tile strip | Opens the flags screen | `/flags` | Nothing | Any staff | None | Never |
 | To matchday tile | Tile strip | Opens the next fixture | `/schedule/fixtures/[id]` | Nothing | Any staff | None | Falls back to `/schedule` when no fixture is booked |
 | An attention row | Needs attention | Opens that athlete | `/squad/[athleteId]` | Nothing | Any staff | None | Never |
-| Fit and available, Doubtful, Ruled out rows | Ready for Saturday | Opens the squad | `/squad` | Nothing | Any staff | None | Never |
+| Fit and available, Doubtful, Ruled out rows | Ready for Saturday | Opens the squad. Doubtful and Ruled out are tone-family cards — the warn / bad fill and border the athlete's own availability line uses — while Fit and available stays a plain row (STAFF-SS-01 A1, 12 September 2026) | `/squad` | Nothing | Any staff | None | Never |
 | Flags affecting selection row | Ready for Saturday | Opens the flags screen | `/flags` | Nothing | Any staff | None | Never |
 | Sessions left to run row | Ready for Saturday | Opens the schedule | `/schedule` | Nothing | Any staff | None | Never |
 | Compliance link | Outstanding entries | Opens the compliance report | `/reports/compliance` | Nothing | Coach or medic today | None | Never |

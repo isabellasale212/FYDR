@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { CheckInForm } from '@/components/CheckInForm/CheckInForm';
 import { fetchWellnessByAthlete, fetchWellnessDay } from '@/lib/queries/wellness';
+import { fetchWellnessWithRevisions } from '@/lib/queries/entryRevisions';
 import { addDays, formatDate, todayIso } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
 
@@ -35,13 +36,25 @@ export default async function CheckInPage({
      removed that reference and this query with it; both are back, because
      "7.0" with nothing to compare it to gives an athlete no way to notice they
      have typed last night's number into tonight's field. */
-  const [existing, recent] = await Promise.all([
+  const [existing, recent, chains] = await Promise.all([
     fetchWellnessDay(db, athleteId, entryDate),
     fetchWellnessByAthlete(db, athleteId, {
       from: addDays(entryDate, -7),
       to: addDays(entryDate, -1),
     }),
+    /* ATH-ADULT-04 C1 (decided 2026-09-12): the day's revision chain — the
+       read My data's history rows use — so a corrected day is told from an
+       original. The _current view alone cannot say. */
+    fetchWellnessWithRevisions(db, orgId, athleteId, { from: entryDate, to: entryDate }),
   ]);
+  /* Corrected: a chain with something behind the live row, the same test My
+     data applies. C4: naming who corrected it is what My data already does,
+     and docs/athlete/visibility.md withholds nothing about it. */
+  const corrected = chains.find((c) => c.priorRevisions.length > 0) ?? null;
+  /* "You sent … at": the athlete's own submission time. The _current row on a
+     corrected day is the staff revision, stamped with the correction's
+     moment; the original is the oldest row in the chain. */
+  const sentAt = corrected?.priorRevisions[0]?.submitted_at ?? existing?.submitted_at ?? null;
 
   const lastSleep =
     [...recent].reverse().find((e) => e.sleep_hours !== null)?.sleep_hours ?? null;
@@ -97,23 +110,28 @@ export default async function CheckInPage({
               nothing decorative in the space below it, and the way out is a
               44px button in the footer labelled after its destination.
 
-              NO "Corrected" PILL YET: the board draws one for a past day
-              corrected by staff, but this page's fetch reads
-              wellness_entries_current without revision_of, so the page cannot
-              tell a corrected day from an original. That is a query change,
-              recorded as C1 in docs/overnight-records-2026-09-12.md. */}
+              THE "Corrected" PILL (C1, 2026-09-12) sits beside the heading for
+              a day staff corrected, with who and when beneath the fact — the
+              same words as My data's history row. */}
           <div className="after-card">
-            <h2 className="after-heading">Already submitted</h2>
+            <h2 className="after-heading">
+              Already submitted
+              {corrected ? (
+                <span className="pill pill-neutral" style={{ marginInlineStart: 8, verticalAlign: 'middle' }}>
+                  Corrected
+                </span>
+              ) : null}
+            </h2>
             <p className="after-fact num">
               {entryDate === today ? 'You sent today' : `You sent ${formatDate(entryDate, timezone)}`}
               &rsquo;s check-in at{' '}
-              {existing.submitted_at
+              {sentAt
                 ? new Intl.DateTimeFormat('en-GB', {
                     hour: '2-digit',
                     minute: '2-digit',
                     hour12: false,
                     timeZone: timezone,
-                  }).format(new Date(existing.submitted_at))
+                  }).format(new Date(sentAt))
                 : '—'}
               .
             </p>
@@ -123,6 +141,13 @@ export default async function CheckInPage({
               * the original — the reason an athlete hesitates to report a
               * mistake is the fear that "correcting it" means someone sees them
               * changing their answer. */}
+            {corrected ? (
+              <p className="after-note">
+                {`Corrected by ${corrected.correctedBy ?? 'a member of staff'}${
+                  corrected.correctedAt ? ` on ${formatDate(corrected.correctedAt, timezone)}` : ''
+                }. What you first reported is in My data.`}
+              </p>
+            ) : null}
             <p className="after-note">
               You can&rsquo;t change an entry yourself. Tell your coach or medical staff and they
               can correct it for you.

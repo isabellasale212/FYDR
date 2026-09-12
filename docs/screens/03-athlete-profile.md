@@ -109,7 +109,12 @@ range drawn behind it, so today reads against their history rather than against
 the squad.
 
 **Body weight.** Recent weights, the trend, and the agreed target range where one
-is set. A weigh in can be logged here.
+is set. A weigh in can be logged here. **The coach does not see body mass at all**
+(STAFF-SS-02-05 C9, decided 12 September 2026): for a role outside
+`BODY_MASS_VIEW` (sport scientist, S&C, nutritionist, medic) the whole card is
+absent — no heading, no lock, no buttons — as is the Body mass card on the
+athlete nutrition page and the body-mass column of the wellness export. A coach
+who also holds one of those roles sees it; roles are unions.
 
 **The clinical record. Medics only.** Diagnosis, mechanism, severity, tissue
 type, imaging, referral, clinical notes and treatment plan. Nobody else sees this
@@ -141,7 +146,7 @@ creates a new record and marks the old one superseded rather than overwriting it
 | Element and label | Where it sits | What happens when used | Where it takes you | What it writes | Permission | Confirmation | Disabled or hidden when |
 |---|---|---|---|---|---|---|---|
 | Set availability | Availability card | Records a new availability status with reason and restrictions | Stays here | A new availability record; the previous one is closed | Coach, medic, sport scientist | Yes, the form must be submitted | Hidden from S&C and nutritionist |
-| Log a weigh in | Body weight card | Records a weight for a date | Stays here | A new body weight record | Coach, medic, sport scientist | Form submission | Hidden from others |
+| Log a weigh in | Body weight card | Records a weight for a date | Stays here | A new body weight record | Sport scientist, S&C, nutritionist, medic (`WEIGH_IN_EDIT`) | Form submission | The card itself is absent for the coach (`BODY_MASS_VIEW`, 12 September 2026) |
 | Edit biographical details | Bio card | Changes position, squad number and similar | Stays here | Updates the athlete record | **Coach only** | Form submission | Hidden from everyone else, medics included |
 | Correct an entry | Corrections panel | Supersedes a submitted entry with a new one | Stays here | A new entry marked as the live one; the old marked superseded. **Never an overwrite** | Coach, medic, sport scientist | Form submission | Hidden from others |
 | Wellness, Gym, Nutrition chips | Domain chips | Opens that domain for this athlete | `/squad/[athleteId]/wellness` and siblings | Nothing | Coach or medic today | None | Never |

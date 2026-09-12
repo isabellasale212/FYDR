@@ -14,7 +14,7 @@ import {
 import { fetchGroups } from '@/lib/queries/groups';
 import { recordReportView } from '@/lib/queries/reports';
 import { requireReportAccess } from '@/lib/session';
-import { actingRole } from '@/lib/access';
+import { BODY_MASS_VIEW, actingRole, hasAnyRole } from '@/lib/access';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -66,6 +66,10 @@ function athleteLabel(athleteId: string | null, nameById: Map<string, string>): 
  *  click, not N separate ones. */
 export async function POST(request: Request): Promise<NextResponse<GenerateResult>> {
   const { db, orgId, claims } = await requireReportAccess();
+  /* STAFF-SS-02-05 C9 (decided 2026-09-12): the coach does not see body mass
+     at all — the wellness export drops the column and the body composition
+     export is refused, for a role outside BODY_MASS_VIEW. */
+  const canSeeBodyMass = hasAnyRole(claims.roles, BODY_MASS_VIEW);
 
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== 'object') return fail('Invalid request.', 400);
@@ -114,7 +118,7 @@ export async function POST(request: Request): Promise<NextResponse<GenerateResul
           stress: r.stress ?? '',
           mood: r.mood ?? '',
           resting_hr: r.resting_hr ?? '',
-          body_mass_kg: r.body_mass_kg ?? '',
+          body_mass_kg: canSeeBodyMass ? (r.body_mass_kg ?? '') : '',
           readiness_score: r.readiness_score ?? '',
           submitted_at: r.submitted_at ?? '',
         })),
@@ -128,7 +132,7 @@ export async function POST(request: Request): Promise<NextResponse<GenerateResul
           ['stress', 'Stress (1-5, 5 best)'],
           ['mood', 'Mood (1-5, 5 best)'],
           ['resting_hr', 'Resting HR'],
-          ['body_mass_kg', 'Body mass (kg)'],
+          ...(canSeeBodyMass ? ([['body_mass_kg', 'Body mass (kg)']] as ['body_mass_kg', string][]) : []),
           ['readiness_score', 'Readiness score'],
           ['submitted_at', 'Submitted at'],
         ],
@@ -220,6 +224,8 @@ export async function POST(request: Request): Promise<NextResponse<GenerateResul
           ['conditions', 'Conditions'],
         ],
       );
+    } else if (key === 'body_composition' && !canSeeBodyMass) {
+      return fail('Body composition is not available to your role.', 403);
     } else if (key === 'body_composition') {
       const rows = await fetchBodyCompositionExportRows(db, orgId, athleteIds, from, to);
       csv = toCsv(

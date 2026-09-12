@@ -35,7 +35,7 @@ import { resolvePeriod } from '@/lib/period.server';
 import { availabilityStatus } from '@/lib/status';
 import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
-import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, CLINICAL_ONLY, ENTRY_CORRECTION, INJURY_ACCESS, PROGRAMME_AUTHOR, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
+import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, BODY_MASS_VIEW, CLINICAL_ONLY, ENTRY_CORRECTION, INJURY_ACCESS, PROGRAMME_AUTHOR, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Athlete · Fydr' };
 
@@ -346,6 +346,10 @@ export default async function AthletePage({
      wholesale would have taken the weigh-in HISTORY away from a coach. */
   const canSeeWeighIns = hasAnyRole(claims.roles, ALL_STAFF);
   const canLogWeighIn = hasAnyRole(claims.roles, WEIGH_IN_EDIT);
+  /* STAFF-SS-02-05 C9 (decided 2026-09-12): the coach does not see body mass
+     at all — the whole Body weight card is absent, not locked. Withheld
+     panels are absent and nothing counts them (the board's rule). */
+  const canSeeBodyMass = hasAnyRole(claims.roles, BODY_MASS_VIEW);
   const weighIns = canSeeWeighIns ? await fetchBodyCompositionEntries(db, orgId, athleteId) : [];
   /* The staff-set body-mass target range (migration 0060). Gated on the SAME two
    * roles for the same reason as the weigh-in controls above: body_mass_target_ranges
@@ -589,7 +593,9 @@ export default async function AthletePage({
               ) : null
             }
             ageDisplay={emDash(profile.age)}
-            weightDisplay={bodyWeight.latestKg !== null ? `${formatNumber(bodyWeight.latestKg, 1)} kg` : EM_DASH}
+            weightDisplay={
+              !canSeeBodyMass ? null : bodyWeight.latestKg !== null ? `${formatNumber(bodyWeight.latestKg, 1)} kg` : EM_DASH
+            }
             initialPosition={athlete.position}
             initialSquadNumber={athlete.squad_number}
             initialHeightCm={athlete.height_cm}
@@ -930,6 +936,7 @@ export default async function AthletePage({
               </div>
             </section>
 
+            {canSeeBodyMass ? (
             <section className="card pp-card" aria-labelledby="pp-weight-title">
               <div className="pp-weight-top">
                 <div>
@@ -1051,6 +1058,7 @@ export default async function AthletePage({
                 targetRanges={targetRanges}
               />
             </section>
+            ) : null}
           </div>
         </div>
 

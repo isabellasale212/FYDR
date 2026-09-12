@@ -5,6 +5,7 @@ import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { loadAthleteDomainContext } from '@/lib/athleteDomain.server';
 import { enumLabel, formatDate, formatNumber, mdLabel } from '@/lib/format';
 import { massState } from '@/lib/nutritionRules';
+import { BODY_MASS_VIEW, hasAnyRole } from '@/lib/access';
 import { resolveRange, type RangeKey } from '@/lib/period';
 import {
   fetchBodyCompositionEntries,
@@ -139,6 +140,9 @@ export default async function AthleteNutritionPage({
   if (ctx.denied) return <AthleteDomainDenied orgName={ctx.orgName} domain="Nutrition" />;
 
   const { db, orgId, timezone, today, athlete, groups, groupIds, season, periodKey } = ctx;
+  /* STAFF-SS-02-05 C9 (decided 2026-09-12): the coach does not see body mass
+     at all — the Body mass card is absent for a role outside BODY_MASS_VIEW. */
+  const canSeeBodyMass = hasAnyRole(ctx.claims.roles, BODY_MASS_VIEW);
 
   const earliest = await fetchEarliestBodyCompositionDate(db, orgId);
   const range = resolveRange(periodKey, today, season?.starts_on ?? null, earliest);
@@ -244,12 +248,18 @@ export default async function AthleteNutritionPage({
 
   const bands: PositionalBand[] = unit
     ? [
-        summarisePositional(athleteId, massInWindow, {
-          key: 'mass',
-          label: 'Body mass',
-          unit: ' kg',
-          decimals: 1,
-        }),
+        /* C9: the positional Body mass row is the coach's own mass shown
+           against the unit's; absent for a role outside BODY_MASS_VIEW. */
+        ...(canSeeBodyMass
+          ? [
+              summarisePositional(athleteId, massInWindow, {
+                key: 'mass',
+                label: 'Body mass',
+                unit: ' kg',
+                decimals: 1,
+              }),
+            ]
+          : []),
         summarisePositional(athleteId, energyByAthlete, {
           key: 'kcal',
           label: 'Energy target',
@@ -394,6 +404,7 @@ export default async function AthleteNutritionPage({
           )}
         </section>
 
+        {canSeeBodyMass ? (
         <section className="card pp-card" aria-labelledby="n-mass-title">
           <div className="pp-card-head">
             <h2 className="card-title" id="n-mass-title" style={{ margin: 0 }}>
@@ -448,6 +459,7 @@ export default async function AthleteNutritionPage({
             <p className="pp-weight-note">No staff target range set.</p>
           )}
         </section>
+        ) : null}
 
         <section className="card pp-card" aria-labelledby="n-checkin-title">
           <div className="pp-card-head">

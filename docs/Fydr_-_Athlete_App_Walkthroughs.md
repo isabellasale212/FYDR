@@ -306,6 +306,8 @@ cannot revise their own wellness entry.
 
 ## ATH-ADULT-04 — Wellness entry: already submitted today
 
+**Built 2026-09-12 (`d3298f4`).** On a day staff corrected, the card carries a neutral "Corrected" pill beside the heading and, under the fact, "Corrected by {name} on {date}. What you first reported is in My data."; "You sent … at" is the original submission's time, not the correction's. Source-verified; no corrected day on the review athlete to render.
+
 **Built 2026-09-12 (`99db8a6`).** The screen is an `.after-card`: "Already submitted" as the heading, the fact first, and the exit is a `.btn-primary` button — "Back to Today" for today's entry, "Back to My data" for a past day — not a link in running text. The note "The original stays visible in My data, marked Corrected." stands (§0v built). Read from source; Conor had no entry today to render it live.
 
 **Entry point.** Opening `/check-in` when today's entry exists.

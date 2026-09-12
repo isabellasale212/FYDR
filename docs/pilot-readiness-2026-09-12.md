@@ -40,7 +40,7 @@ Visible and embarrassing; no harm.
 - ~~**§0aj L1264** — "Yes, remove" on a staged draft promises an undo that does not exist.~~ **Closed, `b2062d3`.**
 - ~~**§0ak L1273** — the group filter is a cookie on one screen and a URL parameter on another.~~ **Closed overnight, `f2b72ea`**, exercised both directions.
 - ~~**§0al L1293** — publishing or removing a session writes no audit row.~~ **Closed overnight, `f5a59c4` (migration 0104, scratch only).**
-- **§0ap L1327** — the leaderboard builder says "Tap one below to see why" and the disabled chips cannot be tapped. *Not built (`220d8e9`): Builder question 8 — reachable tap vs inline reason is yours to decide.*
+- ~~**§0ap L1327** — the leaderboard builder says "Tap one below to see why" and the disabled chips cannot be tapped.~~ **Closed, `11dc42f`** — `BlockedButton`, the reason on tap, one rule everywhere.
 - **§0ap L1329** — the Settings hub's Log out row is a 5px-wide target dressed as a row (the sidebar's Log out works, so not blocking).
 - ~~**§0ap L1333** — subject-access, retention and the board ranking scroll the page sideways at 375.~~ **Closed, `6235ae5`** — 375 on all three.
 - ~~**§0ap L1331** — Exports says "Coach access" to the sport scientist.~~ **Closed, `e59dceb`.**

@@ -482,3 +482,114 @@ email (06-my-data.md §8).
 **Filed defects for STAFF-SS-01:** §0af (the stacked sidebar, decided; the 44px items pointed at the shell brief), §0ae (client-only last-admin guard — the prompt's gate), §0y first bullet (staff `.back-btn`, closed by the shell).
 
 **Built:** nothing. **Recorded:** all of it.
+
+---
+
+## STAFF-SS-02 / SS-05 — Squad list and athlete profile
+
+**Source.** `docs/designs/STAFF-SS-02-05 final/` — board "STAFF-SS-02-05 · FINAL" (12
+artboards: 7 desktop, 5 phone), `notes.md`, the Claude Code prompt. Screens:
+`src/app/(staff)/squad/page.tsx` (+ `RosterTable`), `src/app/(staff)/squad/[athleteId]/page.tsx`
+and its panels (`InjuryCard`, `BodyWeightPanel`, `PlayerProfileFlags`, `EntryCorrectionPanel`,
+`SetAvailabilityForm`, `SetAvailabilityFormCoach`). Landed on `athlete-spec-builder` 2026-09-12
+(`63d9009`), recorded the same day under the standing rule (record, build A and B, append C
+and D to `docs/design-decisions-outstanding.md`).
+
+**The prompt's own gate.** Step 1 asks nine questions against the real permission model
+"with a user holding exactly one role" before Step 2. Not answered tonight: the fixture
+accounts on scratch hold one role each (Jane sport scientist, the medic and coach fixtures
+exist), but a per-role, per-panel, per-write inventory is a review, not a build, and it is
+what decides most of the C rows below. Recommended as the first morning step.
+
+### A. Buildable now — existing tokens, copy, no behaviour change
+
+| # | Change | Before | After |
+|---|---|---|---|
+| A1 | "Not recorded" is the only word for no status | `AVAILABILITY_STATUS.unknown.label` "Not set" — the roster, the profile header and every pill that reads the table | "Not recorded", neutral pill unchanged; matches the dashboard's "3 not recorded" |
+| A2 | The coach-visible note says what may go in it | `SetAvailabilityForm`'s note label "Note (coach visible — not a clinical field)", no hint | the label "Note" and, under the field, "Coach visible. Describe the restriction, not the injury. Do not name a diagnosis or a protocol." (`.tiny`) |
+| A3 | Corrections state what a correction does, once, at the top | the intro names never-overwritten and the dated revision; the window and the two non-correctable domains are unstated | the intro adds "The window is a fixed 28 days. Gym set logs and the weekly nutrition check-in are not correctable here." |
+| A4 | The empty injury panel adds "This is not the same as being cleared." | "No current restrictions." | "No current restrictions. This is not the same as being cleared." |
+| A5 | Missing clinical values are words | `ClinicalField` renders "—" | "Not recorded" (the medic's own fields, not a table cell) |
+| A6 | An expected return the medic has not set is said | nothing rendered | "Expected return not known" (`.sub`, same place) |
+
+### B — nearest existing token
+
+| # | Board | Ours | Note |
+|---|---|---|---|
+| B1 | The status header as the one emphasised card (`--blue-100` / `--blue-200`) | `--wash-accent` / `--border-accent-soft`, the mapping ATH-ADULT-04 used | with C1 (the header absorbs the plan bar and the bio row — a layout change) |
+| B2 | Phone jump bar on `--bar-bg` + `--bar-blur`, sheet `--r-sheet` over `--scrim` | the athlete bar's fill, `--r-card`, `--ink-rgb` at 0.35 (as SS-01) | with C3 |
+| B3 | Read-only owner line in `--t-caption` uppercase at `--t-eyebrow-tracking` | `.eyebrow` | with C4 |
+| B4 | Squad rows at 60px on a phone, restriction line on the row | 44px rows from the shell floor; the restriction is a column | a phone restructure of the roster table into rows — C2 |
+
+### C. Behaviour, data, permissions
+
+- **C1 The status header** — name, position, group, availability, restrictions, bio figures, development plan, one emphasised card; the coach's bio strip without body mass. Needs the club setting for body mass (Q1) and a per-role render. ⚠ permissions (what the coach sees).
+- **C2 The squad list on a phone** — 60px rows, the name as the link, the pill right, the restriction line on the row. A responsive restructure of `RosterTable`.
+- **C3 The phone profile's jump bar and "All panels" sheet** — a sticky 52px bar naming the current panel and its position, a sheet listing every panel in the role's order at 44px with a value each. A new component (the sheet pattern from SS-01 is the shape).
+- **C4 Panels ordered by role from one library; withheld panels absent** — a per-role panel order and the absence rule; needs the Step 1 inventory. ⚠ permissions.
+- **C5 Read-only panels name their owner** — "Read-only · set by medical staff · Ruth Callaghan · Fri 11 Sept": needs who-and-when on each panel's last write (the availability row has `created_by`; the nutrition plan and thresholds carry `updated_at`, not always a person). Data.
+- **C6 The coach's injury card stops after expected return** — already true on the card (nothing renders below it for a non-medic; asserted in the component). No change; recorded as confirmed.
+- **C7 The restriction line never names a protocol** — the strings are free text on the availability row (and the seed's "Return to play protocol, stage 3 of 6"); a rule, not a render. Seed and copy guidance (A2 is the guidance half).
+- **C8 Empty panels state the requirement** — "a trend needs three weigh-ins", "no plan assigned, targets are per kilogram, so a plan needs a weigh-in": per-panel copy that depends on each panel's own empty condition; the body-weight and nutrition panels' empty branches need reading first. Medium.
+- **C9 Body mass hidden from the coach** — a club setting, default off for the coach (Q1). ⚠ permissions ⚠ migration (a setting).
+
+### D. Collisions and spec conflicts
+
+- **D1** SS-01's shell (built) is the phone frame; C3 sits inside it — no class collision (`.ph-*` untouched).
+- **D2** §0av's three disabled weight buttons ("+ Log weigh-in" etc.) — the board's rule 4 ("nothing at 45% opacity; disabled is for a control you could have used, not one that was never yours") says the same thing as Builder question 8's recommendation: `aria-disabled` and the reason shown, or the sentence printed once. One decision for the leaderboard chips, the weight trio and this board.
+- **D3** PATTERN-S3 (same day) owns the injury and availability panels' content rules (site not coach-visible, the ladder, history); this board's A4–A6 touch only copy on the existing card and are compatible with S3's words.
+- **D4** `docs/screens/03-athlete-profile.md` and `02-squad.md` describe the current panels; C1–C4 change the structure and are recorded, not built.
+
+**Built:** A1–A6. **Recorded:** B1–B4 (with their C), C1–C9, D2 — appended to the decision sheet.
+
+---
+
+## PATTERN-S3 — Injuries and availability (both apps)
+
+**Source.** `docs/designs/PATTERN-S3-final/` — board "PATTERN-S3 · FINAL" (4 parts), `notes.md`,
+the Claude Code prompt. Screens named: the athlete's Today (one-time card) and a status
+screen; the medic's injury record, advance screen and review; the coach's pitch-side form;
+the S&C's proposal list; availability history; the absence form; the injury form
+(`/injuries/new`, `NewInjuryForm`, `InjuryMedicalForm`, `InjuryCard`, `InjuryClinical`,
+`SetAvailabilityForm`, `SetAvailabilityFormCoach`, `AvailabilityBanner`). A pattern board:
+under CLAUDE.md §0.01 its named flows are one scope; serial implementation still applies.
+
+**Most of the board is new data.** Its own "open against code" list says so: a per-athlete
+read flag for the one-time card (Q6), an availability history with author, timestamp and
+previous value (Q2 — "the single largest assumption on the board"), proposal states (Q3),
+a club setting for site-visible-to-coach (Q8), academy return rules (Q9), stage names and
+criteria (Q1). None exists today as described. What can be built from copy and tokens is
+small and is A below; the rest is C and needs the data first.
+
+### A. Buildable now
+
+| # | Change | Before | After |
+|---|---|---|---|
+| A1 | The coach-visible hint travels with the boundary | the availability note field's label carries "(coach visible — not a clinical field)" | the sentence under the field, word for word (built with SS-02-05 A2 — same field) |
+| A2 | Missing values are words on the injury card | "—" in the clinical fields; nothing for an unset expected return | "Not recorded"; "Expected return not known" (built with SS-02-05 A5/A6 — same card) |
+| A3 | "This is not the same as being cleared" | absent | on the empty injury panel (SS-02-05 A4) |
+
+### B
+
+- **B1** none by the board's own account ("Needs new token: nothing"); the names it uses (`--blue-50`, `--blue-100`, `--blue-200`, `--on-tint-*`, `--t-subhead`, `--ring-action`, `--gap-chip`, `--line-dashed`) map by role onto the wash family, the accent ring and the existing dashed border, as before. No new token needed for A1–A3.
+
+### C. Behaviour, data, permissions
+
+- **C1 The one-time card on Today** ("told once, and the telling waits" until the status screen is opened) — needs a per-athlete read flag against the availability row. ⚠ migration. Also: the athlete's Today is ATH-ADULT-02's built screen; adding a card above To do is a change to a signed-off flow (collides with 02's record) — flag when scheduled.
+- **C2 The athlete's status screen** — three cards (can I train today / what can I do / when am I back), the restriction list as rows, the ladder, the academy slot, "Not known yet". A new athlete route (no status screen exists; `/me` shows the line). Large.
+- **C3 The stage ladder, the advance screen (one stage only, rewritten restriction line, criteria-reviewed confirmation), set-any-stage with a reason** — needs the protocol as data (Q1: a bare counter today, `stage n of 6` in a string). ⚠ migration.
+- **C4 The confirmation that names who sees what** before a status change lands — a new step on the availability forms; the permission rule made visible. Medium; no data.
+- **C5 The absence form** (illness, personal, academic, representative, other; Available not offered) — `availability_reason` has the non-injury values since 0041 and `SetAvailabilityFormCoach` exists; the board's form shape and the "no site, no diagnosis, no stage, no board row, no medical notification" well are copy and layout on it. Medium. ⚠ permissions (which roles).
+- **C6 Proposals with three states (Proposed / Approved / Returned) and a required return reason** — proposal states beyond "proposed" do not exist (Q3). ⚠ migration.
+- **C7 Availability history** — one row per change with author, timestamp, previous value; rows never edited. The availability table is append-only by date range today but carries no explicit previous value or author on every path (Q2). ⚠ migration (likely a view over `availability` + the audit log from 0097-style triggers).
+- **C8 Body site not coach-visible** — the card renders `bodyAreaPhrase` to every staff role; the board withholds site and side from the coach behind a club setting defaulting to off. ⚠ permissions ⚠ migration (the setting; and RLS if the column is to be withheld at the database rather than in the render).
+- **C9 The injury form split by permission** (left column for all injury roles, right column clinical) and the pitch-side four-field form at 44px — `NewInjuryForm` / `InjuryMedicalForm` restructure. Medium.
+- **C10 "Not known" / "Not recorded" on the new screens** — with each screen.
+
+### D
+
+- **D1** The coach sees the protocol stage today (Q7: COACH-28's allocation screen renders "Return to play protocol, stage 3 of 6" to a coach) — either the seed string or an unenforced rule; C8 decides. ⚠ permissions.
+- **D2** ATH-ADULT-02 (Today, built and signed off) — C1 adds a card above To do; the availability banner on Today is 02's and keeps its tone family ("one emphasised card per screen", so the new card would displace it). Collision to resolve when C1 is scheduled.
+- **D3** STAFF-SS-02-05 (same day) touches the same injury card copy (A1–A3 shared, built once).
+
+**Built:** A1–A3 (in the SS-02-05 commit, one card). **Recorded:** C1–C10, D1–D3 — appended to the decision sheet.

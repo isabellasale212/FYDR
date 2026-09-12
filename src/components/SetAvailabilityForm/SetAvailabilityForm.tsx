@@ -149,9 +149,22 @@ export function SetAvailabilityForm({ orgId, userId, athleteId, injuryId }: Prop
       ) : null}
 
       <label className="label" htmlFor="avail-note" style={{ marginTop: 'var(--sp-14)' }}>
-        Note (coach visible &mdash; not a clinical field)
+        Note
       </label>
-      <input id="avail-note" className="field" value={note} onChange={(event) => setNote(event.target.value)} />
+      <input
+        id="avail-note"
+        className="field"
+        value={note}
+        onChange={(event) => setNote(event.target.value)}
+        aria-describedby="avail-note-hint"
+      />
+      {/* The hint travels with the boundary, not the role (PATTERN-S3 /
+          STAFF-SS-02-05, 2026-09-12): this is the one free-text field that
+          leaves the clinical circle by hand, so the rule sits on the field. */}
+      <p className="tiny" id="avail-note-hint" style={{ marginTop: 'var(--sp-4)' }}>
+        Coach visible. Describe the restriction, not the injury. Do not name a diagnosis or a
+        protocol.
+      </p>
 
       {error ? (
         <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-10)' }}>

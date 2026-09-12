@@ -25,7 +25,10 @@ export const AVAILABILITY_STATUS: Record<
   available: { tone: 'good', glyph: '●', label: 'Available' },
   modified: { tone: 'warn', glyph: '◐', label: 'Modified' },
   unavailable: { tone: 'bad', glyph: '⊘', label: 'Unavailable' },
-  unknown: { tone: 'neutral', glyph: '◌', label: 'Not set' },
+  /* "Not recorded", not "Not set" (STAFF-SS-02-05, 2026-09-12): no status is
+     not a state of availability, and the dashboard already counts "3 not
+     recorded". Neutral, never a tone. */
+  unknown: { tone: 'neutral', glyph: '◌', label: 'Not recorded' },
 };
 
 export const SEVERITY_STATUS: Record<FlagSeverity, Status> = {

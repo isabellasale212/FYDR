@@ -40,6 +40,9 @@ empty table and a line explaining why.
 
 ## 4. What you see
 
+An athlete with no availability status shows a neutral **"Not recorded"** pill —
+never "Not set" (STAFF-SS-02-05, 12 September 2026); it is the dashboard's word.
+
 **The top bar** holds the page title and the group filter. The filter is the same
 one as everywhere else and remembers itself between screens.
 

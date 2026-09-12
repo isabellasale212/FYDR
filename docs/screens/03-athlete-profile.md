@@ -51,7 +51,23 @@ showing whether they are available.
 so on. Editable by a coach.
 
 **Availability.** The current status with its reason and any restrictions, and
-the control to change it.
+the control to change it. No status reads **"Not recorded"** on a neutral pill —
+never "Not set" (STAFF-SS-02-05, 12 September 2026): no status is not a state of
+availability. The staff form's note field is labelled "Note" and carries, under the
+field, *"Coach visible. Describe the restriction, not the injury. Do not name a
+diagnosis or a protocol."* — the hint travels with the one free-text field that
+leaves the clinical circle (PATTERN-S3).
+
+**Injury.** The current injury, if any, as `InjuryCard`. With no open injury it
+reads *"No current restrictions. This is not the same as being cleared."* An
+expected return the medic has not set reads *"Expected return not known"*; a
+clinical field nobody has filled reads *"Not recorded"*, never a dash. For a
+non-medic the card stops after the expected return.
+
+**Entries and corrections.** The intro states the rules once: entries are never
+overwritten, a correction records a new dated revision against your name, the
+window is a fixed 28 days, and gym set logs and the weekly nutrition check-in are
+not correctable here.
 
 **Flags.** Alerts currently raised against this athlete, each with what triggered
 it.

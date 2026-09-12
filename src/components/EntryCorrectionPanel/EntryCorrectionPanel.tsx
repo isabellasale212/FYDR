@@ -101,8 +101,8 @@ export function EntryCorrectionPanel({
       <p className="import-sub" style={{ margin: '4px 0 0' }}>
         The {WINDOW_LABEL} of {athleteFirstName}&rsquo;s wellness check-ins and session
         ratings. {canCorrect
-          ? 'Correcting one keeps the original and records a new, dated revision against your name — entries are never overwritten.'
-          : 'Correcting an entry belongs to the sport scientist, the coach and the medic.'}
+          ? 'Correcting one keeps the original and records a new, dated revision against your name — entries are never overwritten. The window is a fixed 28 days. Gym set logs and the weekly nutrition check-in are not correctable here.'
+          : 'Correcting an entry belongs to the sport scientist, the coach and the medic. The window is a fixed 28 days. Gym set logs and the weekly nutrition check-in are not correctable here.'}
       </p>
       <p className="cap" style={{ margin: '6px 0 0' }}>
         {correctedWellness + correctedTraining === 0

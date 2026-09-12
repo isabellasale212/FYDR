@@ -36,6 +36,10 @@ expressed in the 171 tokens; each is a proposed new token (or a substitute), per
 | STAFF-SS-01 | A4 | The dashboard's missing check-ins say "Not submitted", never 0 or 0%, ordered by mornings in a row. | As above; the ordering needs the run-length count (a small derivation over existing rows). | **Build** · small–medium |
 | STAFF-SS-01 | D3 | "Ready for {matchday}" only when the fixture is within 14 days; otherwise the week card leads. | The dashboard has no fixture range today (`fetchNextFixture` has no upper bound); 14 is the board's placeholder. | **Accept 14 days** and record it in the dashboard spec · small |
 | STAFF-SS-01 | Q7 | On a phone, the in-page group filter bar would show only the active chip. | Unclear what then changes the group; the shell's title bar already shows the active group as a chip. | **Leave the chip row as it is** (it wraps; every chip is 44px) · small |
+| STAFF-SS-02-05 | C4 | The profile's confirmation before a status change lists who will see what (the athlete, the named coach, everyone else) — PATTERN-S3's rule. | A new step on the availability forms; no data needed. | **Build** on `SetAvailabilityForm` and the coach form · medium |
+| STAFF-SS-02-05 | C8 | Empty profile panels state the requirement ("a trend needs three weigh-ins", "no plan assigned, targets are per kilogram, so a plan needs a weigh-in"). | Per-panel copy on each panel's own empty branch; needs the body-weight and nutrition panels read first. | **Build** as one copy pass · medium |
+| STAFF-SS-02-05 | D2 | The profile's three disabled weight buttons and the leaderboard builder's chips follow one rule: `aria-disabled` and the reason shown, never a greyed control the reader cannot reach. | The board's rule 4 and §0av / §0ap say the same thing; a decision, not data. | **Decide once** (Builder question 8's recommendation) · small |
+| PATTERN-S3 | C4 | Before a status change lands, the screen lists who sees what, by name. | Same as STAFF-SS-02-05 C4. | with it · — |
 
 ## (b) Reverses something we decided
 
@@ -54,6 +58,8 @@ expressed in the 171 tokens; each is a proposed new token (or a substitute), per
 | ATH-ADULT-12 | D7 | The readiness band in `--wash-accent` and the line in `--accent`, "accent and neutrals only". | `WellnessChart` is shared with staff pages (`--chart-wellness`); changing its colours changes staff screens. | If accepted, an athlete-only prop, not a change to the shared colours · small |
 | ATH-ADULT-12 | B6 | Hero eyebrows in `--faint` instead of `--muted`. | `.eyebrow` is shared with Today's section titles; a contrast step down on a shared class. | **Decline** · none |
 | STAFF-SS-01 | — | (built) the bottom bar + More sheet, superseding §0af's compact top bar | decided and built `af09c17` | — |
+| PATTERN-S3 | D2 | A one-time "you were told" card at the top of the athlete's Today, above To do, displacing the availability line's emphasis until the status screen is opened. | Today is ATH-ADULT-02, built and signed off; "one emphasised card per screen" means the new card takes the emphasis from the availability line. | **Decide with C1** — recommend the card replaces the line only while unread · with C1 |
+| PATTERN-S3 | D1 | The coach sees the protocol stage today ("Return to play protocol, stage 3 of 6" on the allocation screen). | Either a seed string or an unenforced rule; the board says a coach never reads a stage. ⚠ permissions | **Enforce with C8** (the render drops the site and stage segments for the coach) · small |
 
 ## (c) Needs new data or a query
 
@@ -82,6 +88,21 @@ expressed in the 171 tokens; each is a proposed new token (or a substitute), per
 | STAFF-SS-01 | C4 | "Send a reminder" on a missing check-in. | Nothing in the product sends a push or an email (no provider). | **Leave off until a sender exists** · large (a sender) |
 | STAFF-SS-01 | C5 | The last-admin guard enforced at the database (the prompt's own gate). | A permissions migration; the client-only guard was §0ae's finding. **⚠ migration ⚠ permissions** | **Build, test first** (a pgTAP file, then the trigger) · small–medium |
 | STAFF-SS-01 | D4 | Only the medic sees an unavailability *reason*; non-clinical reasons (Academic) show without the "Medical" label. | Whether the reason column is gated by role under RLS needs reading against `docs/access-matrix.md` before the copy is built. **⚠ permissions** | Confirm the policy first, then the copy · small |
+| STAFF-SS-02-05 | C1 / B1 | Every profile opens with one emphasised status header — name, position, group, availability, restrictions, bio figures, development plan — the coach's without body mass. | A per-role render and the body-mass club setting (C9). `--blue-100/200` → `--wash-accent` / `--border-accent-soft`. **⚠ permissions** | After the Step 1 inventory; the header first, the setting second · medium |
+| STAFF-SS-02-05 | C2 / B4 | The squad list on a phone: 60px rows, the name as the link, the pill right, the restriction line on the row. | A responsive restructure of the roster table into rows. | **Build** · medium |
+| STAFF-SS-02-05 | C3 / B2 | The phone profile gets a sticky 52px jump bar ("Flags · panel 1 of 10") and an "All panels" sheet listing every panel with a value each. | A new component; SS-01's sheet is the shape; the panel order is C4's. | After C4 · medium |
+| STAFF-SS-02-05 | C4 / B3 | Panels ordered by role from one library; a panel a role cannot see is absent — no heading, lock or count. | Needs the per-role, per-panel inventory the prompt's Step 1 asks for. **⚠ permissions** | The inventory first (a review), then the order · large |
+| STAFF-SS-02-05 | C5 | Read-only panels end with an owner line ("Read-only · set by medical staff · Ruth Callaghan · Fri 11 Sept"). | Who-and-when is not on every panel's last write (availability has `created_by`; plans and thresholds carry a time, not always a person). | Add the person where missing, then the line · medium |
+| STAFF-SS-02-05 | C7 | Restriction text never names a protocol or a diagnosis. | A rule on free text, not a render; the seed carries "Return to play protocol, stage 3 of 6". A2 (the hint) is the guidance half. | Fix the seed; keep the hint · small |
+| STAFF-SS-02-05 | C9 | Body mass hidden from the coach by default, as a club setting. | A setting that does not exist. **⚠ migration ⚠ permissions** | Decide the default, then one setting + one render rule · medium |
+| PATTERN-S3 | C1 | The athlete is told once about a status change: an emphasised card on Today that stays until the status screen has been opened. | Needs a per-athlete read flag against the availability row. **⚠ migration** | With C2; the flag first · medium |
+| PATTERN-S3 | C2 | An athlete status screen answering three questions (can I train today / what can I do / when am I back), the restriction list as rows, the stage ladder, the academy slot. | A new athlete route; nothing like it exists (`/me` shows the line). | Own brief · large |
+| PATTERN-S3 | C3 | Stages numbered with state words; advancing moves one stage and asks for a rewritten restriction line and a criteria-reviewed confirmation; any other stage needs a reason. | The protocol is a bare counter in a string today, not data. **⚠ migration** | Schema for stages first · large |
+| PATTERN-S3 | C5 | The absence form: illness / personal / academic / representative / other, the same four availability words, Available not offered, a well naming what an absence does not carry. | `availability_reason` has the values (0041) and the coach form exists; the shape and the well are new. **⚠ permissions** (which roles) | **Build** on `SetAvailabilityFormCoach` · medium |
+| PATTERN-S3 | C6 | Rehab programme proposals with three states (Proposed / Approved / Returned) and a required return reason, in one list the S&C and the medic both see. | Only "proposed" exists. **⚠ migration** | Schema first · large |
+| PATTERN-S3 | C7 | Availability history: one row per change — time, status, the restriction line as it read then, what changed, who. Never edited; a correction adds a row. | No explicit previous value or author on every path. **⚠ migration** (a view over the table and the audit log) | Audit-trigger the availability table as 0104 did sessions, then the view · medium |
+| PATTERN-S3 | C8 | Body site and side are not coach-visible: a coach reads the status word, the restriction line and the expected return, nothing else. | Rendered to the coach today; the board puts it behind a club setting defaulting to off. **⚠ permissions ⚠ migration** | Decide the default; the render rule is small, RLS on the column is the real change · medium |
+| PATTERN-S3 | C9 | The injury form split by permission (clinical fields in their own column, save works without them) and a pitch-side four-field form at 44px. | A restructure of `NewInjuryForm` / `InjuryMedicalForm`. | **Build** after C8 decides what the coach's form carries · medium |
 
 ## (d) Needs a new token
 
@@ -103,5 +124,6 @@ expressed in the 171 tokens; each is a proposed new token (or a substitute), per
 ---
 
 **Not on this sheet, because they were built:** every A item of 04, 06, 08, 09 (A3, A4), 10
-(A1), 12 (A1–A4), 13 (A1–A5) and the STAFF-SS-01 shell (C1, A5, B1 for the shell) — see the
-records and the handovers in the commit log.
+(A1), 12 (A1–A4), 13 (A1–A5), the STAFF-SS-01 shell (C1, A5, B1 for the shell), and
+STAFF-SS-02-05's A1–A6 with PATTERN-S3's A1–A3 (one commit, 2026-09-12) — see the records
+and the handovers in the commit log.

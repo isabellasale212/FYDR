@@ -59,7 +59,7 @@ function ClinicalField({ label, value }: { label: string; value: string | null }
     <div>
       <span className="label">{label}</span>
       <span className="nm" style={{ display: 'block', marginTop: 'var(--sp-2)' }}>
-        {value ?? '—'}
+        {value ?? 'Not recorded'}
       </span>
     </div>
   );
@@ -100,7 +100,7 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
         /* One line, nothing else. No empty-state graphic and no disabled fields:
            both would imply there is something here to reveal. */
         <p className="import-sub" style={{ margin: '4px 0 0' }}>
-          No current restrictions.
+          No current restrictions. This is not the same as being cleared.
         </p>
       ) : (
         <>
@@ -253,11 +253,13 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
                   ? restrictions.map((r) => enumLabel(r)).join(' · ')
                   : 'No restrictions recorded.'}
               </p>
-              {active.expected_return ? (
-                <p className="sub" style={{ margin: '6px 0 0' }}>
-                  Expected return {formatDate(active.expected_return, timezone)}
-                </p>
-              ) : null}
+              {/* Said either way (PATTERN-S3, 2026-09-12): an expected return
+                  nobody has set is "not known", not a missing line. */}
+              <p className="sub" style={{ margin: '6px 0 0' }}>
+                {active.expected_return
+                  ? `Expected return ${formatDate(active.expected_return, timezone)}`
+                  : 'Expected return not known'}
+              </p>
               {/* Stop. Nothing below this line for a non-medic, in any state. */}
             </>
           )}

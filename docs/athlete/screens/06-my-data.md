@@ -123,6 +123,22 @@ membership. **UNVERIFIED: whether an athlete in no positional group is told why
 their comparisons are empty.** The staff surface says so explicitly; the athlete
 side was not found to.
 
+**The empty period, on the Wellness, Gym, Sessions and Nutrition tabs**
+(ATH-ADULT-12 C6, 12 September 2026, to PATTERN-S6's grammar). Two states,
+and they are different:
+
+- **Nothing in this period** — data exists outside the window. An emphasised
+  card: "Nothing in the last 28 days." (the control's own label), then "Your
+  last gym session was Thu 13 Aug, 29 days ago. It is still on record, just
+  before the period you have chosen. Gym sessions appear here once you finish
+  one." and one full-width secondary action — "Show this season" when the last
+  entry falls inside the season, otherwise "Show all on record" — a link that
+  changes the period. The period never widens on its own. The last entry is
+  read per domain, unbounded by the period (`fetchMyLatestRecord`).
+- **Nothing on record yet** — a brand-new athlete: the card says so and what
+  would fill it; no action, no fabricated zero. Also the wording on All on
+  record.
+
 ## 11. Accessibility and device
 
 Translated for a web app per Stage A0. **UNVERIFIED:** text scaling at 200
@@ -201,8 +217,7 @@ the footer card keeps only Leaderboards), the live segment stays the
 accent-filled pill (D2 declined), and further recorded, not built:
 uncoloured deltas measured against the 28-day average (reverses §13's green ▲
 and is a different comparison from "on last week"), a plain-English fact line
-per hero, Sessions and Nutrition as hero-card tabs with an RPE chart, empty
-states that name the last entry and offer "Show this season", Tests listing
+per hero, Sessions and Nutrition as hero-card tabs with an RPE chart, Tests listing
 only assigned tests, a period menu on the title line, the tab bar without the
 gold gym glyph, readiness "out of 5" (MET-001 is 0–100), and the two chart
 tokens `--chart-h` / `--chart-stroke`.

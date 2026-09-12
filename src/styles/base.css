@@ -13238,6 +13238,36 @@ a.hist-row:active { background: var(--surf-sunken); }
   color: var(--muted);
 }
 
+/* ATH-ADULT-12 C6 (12 Sept 2026), to PATTERN-S6's empty-state grammar: the
+   empty period on My data as the emphasised card (the wash pair
+   .after-card uses — the board's --blue-100 / --blue-200), what is empty
+   and its window as the title, the last entry and what fills it as the
+   body, one full-width secondary action that changes the period. */
+.empty-period {
+  background: var(--wash-accent);
+  border: 1px solid var(--border-accent-soft);
+  border-radius: var(--r-toggle);
+  padding: var(--sp-16) var(--sp-18);
+}
+.empty-period-title {
+  margin: 0;
+  font-size: var(--fs-16);
+  font-weight: 700;
+  line-height: 1.3;
+}
+.empty-period-body {
+  margin: var(--sp-8) 0 0;
+  font-size: var(--fs-13);
+  color: var(--muted);
+  line-height: 1.5;
+}
+.empty-period-action {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  margin-top: var(--sp-12);
+}
 /* PATTERN-S6 (12 Sept 2026): the outbox's one status region on Today and
    its conflict notice. Waiting is a promise kept — the good pair the 01/02
    banners use; sent is information, a plain surface; a conflict is a lost

@@ -2,6 +2,8 @@ import { Fragment } from 'react';
 import type React from 'react';
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
+import { emptyPeriodCopy, type EmptyDomain } from '@/lib/myDataEmpty';
+import { fetchMyLatestRecord } from '@/lib/queries/myLatestRecord';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { WellnessChart, type FlagMarker } from '@/components/WellnessChart/WellnessChart';
 import { FlagNotice } from '@/components/FlagNotice/FlagNotice';
@@ -36,6 +38,7 @@ import {
 import {
   PERIOD_PARAM,
   clampPeriod,
+  rangeLabel,
   resolveRange,
   type RangeKey,
   type ResolvedRange,
@@ -282,6 +285,53 @@ async function fetchMyEarliestRecord(
 /** The window, spelled out, under the control. my-data.md region C: "The
  *  resolved range is mandatory: 'Last 28 days' alone does not tell the athlete
  *  whether today is included." */
+/** The empty period — ATH-ADULT-12 C6 (2026-09-12), to PATTERN-S6's grammar.
+ *  Reads the athlete's latest entry in the domain, any period, so the copy can
+ *  say when it was and that it is still on record; offers the one action that
+ *  widens the window (a Link that changes the period — never automatic); or,
+ *  with nothing on record at all, says so with no action. */
+async function EmptyPeriod({
+  db,
+  athleteId,
+  domain,
+  tab,
+  periodKey,
+  seasonStart,
+  today,
+  timezone,
+}: {
+  db: Awaited<ReturnType<typeof requireAthlete>>['db'];
+  athleteId: string;
+  domain: EmptyDomain;
+  tab: Tab;
+  periodKey: RangeKey;
+  seasonStart: string | null;
+  today: string;
+  timezone: string;
+}) {
+  const latest = await fetchMyLatestRecord(db, athleteId, domain);
+  const copy = emptyPeriodCopy({
+    domain,
+    periodKey,
+    rangeLabel: rangeLabel(periodKey),
+    latest,
+    latestLabel: latest ? formatDate(latest, timezone) : null,
+    seasonStart,
+    today,
+  });
+  return (
+    <div className="empty-period">
+      <h3 className="empty-period-title">{copy.title}</h3>
+      <p className="empty-period-body">{copy.body}</p>
+      {copy.action ? (
+        <Link href={`/my-data?tab=${tab}&${PERIOD_PARAM}=${copy.action.period}`} className="btn-ghost empty-period-action">
+          {copy.action.label}
+        </Link>
+      ) : null}
+    </div>
+  );
+}
+
 function WindowLine({ range, timezone }: { range: ResolvedRange; timezone: string }) {
   return (
     <p className="cap" style={{ margin: '6px 0 0' }}>
@@ -523,6 +573,7 @@ export default async function MyDataPage({
           timezone={timezone}
           flags={flagsByDomain.get('wellness') ?? []}
           periodKey={periodKey}
+          seasonStart={season?.starts_on ?? null}
           showAll={showAll}
         />
       ) : tab === 'training' ? (
@@ -535,6 +586,8 @@ export default async function MyDataPage({
           range={range}
           timezone={timezone}
           flags={flagsByDomain.get('training') ?? []}
+          periodKey={periodKey}
+          seasonStart={season?.starts_on ?? null}
         />
       ) : tab === 'nutrition' ? (
         <NutritionTab
@@ -542,9 +595,10 @@ export default async function MyDataPage({
           athleteId={athleteId}
           from={from}
           today={today}
-          range={range}
           timezone={timezone}
           flags={flagsByDomain.get('nutrition') ?? []}
+          periodKey={periodKey}
+          seasonStart={season?.starts_on ?? null}
         />
       ) : tab === 'testing' ? (
         <TestingTab
@@ -562,10 +616,10 @@ export default async function MyDataPage({
           athleteId={athleteId}
           from={from}
           today={today}
-          range={range}
           timezone={timezone}
           flags={flagsByDomain.get('gym') ?? []}
           periodKey={periodKey}
+          seasonStart={season?.starts_on ?? null}
           showAll={showAll}
         />
       )}
@@ -678,6 +732,7 @@ async function WellnessTab({
   flags,
   showAll,
   periodKey,
+  seasonStart,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
   orgId: string;
@@ -690,6 +745,7 @@ async function WellnessTab({
   flags: VisibleFlag[];
   showAll: boolean;
   periodKey: RangeKey;
+  seasonStart: string | null;
 }) {
   /* NOT PAGED, and provably so rather than by assumption:
    * `wellness_entries_one_live_per_day` (migration 0004) means
@@ -816,11 +872,7 @@ async function WellnessTab({
         </div>
 
         {submitted === 0 ? (
-          <EmptyState
-            headingLevel={3}
-            title="Nothing logged yet"
-            body="Your check-ins appear here once you start submitting."
-          />
+          <EmptyPeriod db={db} athleteId={athleteId} domain="wellness" tab="wellness" periodKey={periodKey} seasonStart={seasonStart} today={today} timezone={timezone} />
         ) : (
           /* compact, per 23e — and because the labels were unreadable here.
              This SVG's 880-unit viewBox renders 320px wide inside the card, a
@@ -998,6 +1050,8 @@ async function TrainingTab({
   range,
   timezone,
   flags,
+  periodKey,
+  seasonStart,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
   orgId: string;
@@ -1007,6 +1061,8 @@ async function TrainingTab({
   range: ResolvedRange;
   timezone: string;
   flags: VisibleFlag[];
+  periodKey: RangeKey;
+  seasonStart: string | null;
 }) {
   /* LIST_LIMIT + 1, so a full page is the signal that there is more rather than
    * a second count query. This call used to pass no limit at all and therefore
@@ -1052,14 +1108,7 @@ async function TrainingTab({
         <FlagNotice flags={flags} heading="Noted by staff" timezone={timezone} />
 
         {sessions.length === 0 ? (
-          <EmptyState
-            headingLevel={3}
-            title="Nothing in this window"
-            body={`You are not named in any session between ${formatDate(
-              range.from,
-              timezone,
-            )} and ${formatDate(range.to, timezone)}.`}
-          />
+          <EmptyPeriod db={db} athleteId={athleteId} domain="training" tab="training" periodKey={periodKey} seasonStart={seasonStart} today={today} timezone={timezone} />
         ) : (
           <>
             <div style={{ overflowX: 'auto' }}>
@@ -1171,17 +1220,19 @@ async function NutritionTab({
   athleteId,
   from,
   today,
-  range,
   timezone,
   flags,
+  periodKey,
+  seasonStart,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
   athleteId: string;
   from: string;
   today: string;
-  range: ResolvedRange;
   timezone: string;
   flags: VisibleFlag[];
+  periodKey: RangeKey;
+  seasonStart: string | null;
 }) {
   /* NOT PAGED, provably: `nutrition_checkins_one_live_per_week` (migration 0004)
    * bounds nutrition_checkins_current to one row per athlete per week, so the
@@ -1203,14 +1254,7 @@ async function NutritionTab({
         <FlagNotice flags={flags} heading="Noted by staff" timezone={timezone} />
 
         {checkins.length === 0 ? (
-          <EmptyState
-            headingLevel={3}
-            title="Nothing answered yet"
-            body={`No check-ins between ${formatDate(range.from, timezone)} and ${formatDate(
-              range.to,
-              timezone,
-            )}. Your weekly check-ins appear here once you start answering.`}
-          />
+          <EmptyPeriod db={db} athleteId={athleteId} domain="nutrition" tab="nutrition" periodKey={periodKey} seasonStart={seasonStart} today={today} timezone={timezone} />
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table className="tbl">
@@ -1714,21 +1758,21 @@ async function GymTab({
   athleteId,
   from,
   today,
-  range,
   timezone,
   flags,
   showAll,
   periodKey,
+  seasonStart,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
   athleteId: string;
   from: string;
   today: string;
-  range: ResolvedRange;
   timezone: string;
   flags: VisibleFlag[];
   showAll: boolean;
   periodKey: RangeKey;
+  seasonStart: string | null;
 }) {
   const weekStarts = Array.from({ length: GYM_HEADLINE_WEEKS }, (_, i) =>
     addDays(mondayOf(today), -7 * (GYM_HEADLINE_WEEKS - 1 - i)),
@@ -1894,14 +1938,7 @@ async function GymTab({
 
         {sessions.length === 0 ? (
           <div style={{ padding: '0 var(--pad-card-x) var(--pad-card-y)' }}>
-            <EmptyState
-              headingLevel={3}
-              title="Nothing logged yet"
-              body={`No completed gym sessions between ${formatDate(
-                range.from,
-                timezone,
-              )} and ${formatDate(range.to, timezone)}.`}
-            />
+            <EmptyPeriod db={db} athleteId={athleteId} domain="gym" tab="gym" periodKey={periodKey} seasonStart={seasonStart} today={today} timezone={timezone} />
           </div>
         ) : (
           shownSessions.map((s) => (

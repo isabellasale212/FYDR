@@ -10517,6 +10517,18 @@ button.dash-stat {
     gap: var(--sp-10);
   }
 }
+/* On a phone the 1100px grid's fixed columns (296px + 50px of gaps) already
+   exceed the 343px content width, so the gap column ran 8px past the edge
+   and the whole page scrolled sideways (§0ap, measured 383px at 375).
+   Clamped: 222px of fixed columns and 30px of gaps leave the name and the
+   bar 91px between them. */
+@media (max-width: 767px) {
+  .lb-head,
+  .lb-row {
+    grid-template-columns: 30px minmax(0, 1fr) 64px minmax(0, 1fr) 72px 56px;
+    gap: var(--sp-6);
+  }
+}
 .lb-head {
   padding: 0 var(--sp-4) var(--sp-10);
   font-size: var(--fs-11);

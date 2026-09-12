@@ -57,6 +57,7 @@ export default async function SubjectAccessPage({ searchParams }: { searchParams
           body="None have been opened. Start one from an athlete's own profile page."
         />
       ) : (
+        <div style={{ overflowX: 'auto' }}>
         <table className="tbl">
           <caption className="visually-hidden">Subject access requests</caption>
           <thead>
@@ -109,6 +110,7 @@ export default async function SubjectAccessPage({ searchParams }: { searchParams
             })}
           </tbody>
         </table>
+        </div>
       )}
     </>
   );

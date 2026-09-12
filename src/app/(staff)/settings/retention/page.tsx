@@ -53,6 +53,7 @@ export default async function RetentionPage() {
         <h2 className="card-title" id="schedule-title">
           The schedule
         </h2>
+        <div style={{ overflowX: 'auto' }}>
         <table className="tbl">
           <caption className="visually-hidden">Data retention schedule</caption>
           <thead>
@@ -77,6 +78,7 @@ export default async function RetentionPage() {
             ))}
           </tbody>
         </table>
+        </div>
       </section>
 
       <section className="card" aria-labelledby="nightly-title">
@@ -94,6 +96,7 @@ export default async function RetentionPage() {
         {nightlyReports.length === 0 ? (
           <p className="cap">No nightly report has run yet. The next one runs at 02:15 UTC.</p>
         ) : (
+          <div style={{ overflowX: 'auto' }}>
           <table className="tbl">
             <caption className="visually-hidden">Nightly retention reports</caption>
             <thead>
@@ -117,6 +120,7 @@ export default async function RetentionPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </section>
 

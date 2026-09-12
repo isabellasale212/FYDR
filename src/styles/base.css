@@ -3726,10 +3726,11 @@ a.hist-row:focus-visible {
 }
 .gym-progress-fill {
   height: 100%;
-  /* --gym, the domain colour, as the design draws it. It was the accent,
-     which is every other progress bar in the product; this one is the gym
-     session's own. */
-  background: var(--gym);
+  /* The accent again — ATH-ADULT-09 D4, reversed by Isabella 2026-09-12.
+     It was --gym from 2026-09-08 ("the gym session's own"); the board's rule
+     is one accent inside the logger, with the gold kept on the tab bar and
+     the domain chips. */
+  background: var(--accent);
   border-radius: var(--r-pill);
   transition: width var(--t-state);
 }
@@ -3771,17 +3772,25 @@ a.hist-row:focus-visible {
   cursor: pointer;
   transition: background var(--t-state), border-color var(--t-state), color var(--t-state);
 }
+/* The three key states, one accent — ATH-ADULT-09 D4 (reversed 2026-09-12):
+   not reached is --faint on --surf2, undimmed (it is not a control that
+   failed, it is a set not yet reached); the current one is the accent wash
+   with the accent ring; a logged one is the accent itself with a ✓. */
 .gym-set-key:disabled {
   cursor: default;
-  opacity: var(--o-disabled);
+  background: var(--surf2);
+  color: var(--faint);
 }
-/* --gym-on-tint, not --gym: §2 rule 1, a semantic colour is never text. The
-   gold reads about 1.9:1 on its own tint; §2 names #6b4708 / #ffdda6 for this
-   and those are the token's two values. */
+.gym-set-key[data-next] {
+  background: var(--wash-accent);
+  border-color: var(--border-accent-soft);
+  color: var(--accent-text);
+  box-shadow: var(--ring-accent);
+}
 .gym-set-key[data-logged] {
-  background: rgb(var(--gym-rgb) / 0.22);
-  border-color: rgb(var(--gym-rgb) / 0.6);
-  color: var(--gym-on-tint);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
   opacity: 1;
   cursor: pointer;
 }
@@ -3819,10 +3828,11 @@ a.hist-row:focus-visible {
   color: var(--muted);
 }
 /* §9 rule 4: when the athlete has overridden the prescription the coach's
-   number stays on screen, in warn ink so it reads as the thing departed from
-   rather than as another muted caption. */
+   number stays on screen. In --muted since 2026-09-12 (09 D4): a deviation
+   is a fact — "prescribed 100 kg · +2.5" — not a warning, so it carries no
+   tone; the weight held in the stepper is what the athlete reads first. */
 .gym-weight-label .n[data-warn] {
-  color: var(--warn-pill-text);
+  color: var(--muted);
   font-weight: 600;
 }
 .gym-stepper {
@@ -3895,17 +3905,16 @@ a.hist-row:focus-visible {
   min-height: 44px;
 }
 
-/* The exercise you are on, 23g. --gym rather than the accent, because this is
-   the gym domain's own colour everywhere else in the product (the tab bar's
-   dumbbell, this screen's progress fill). The tint comes from --gym-tint,
-   which is defined per theme — see its note in tokens.css for why one
-   color-mix could not serve both grounds. */
+/* The exercise you are on, 23g — in the accent wash since 2026-09-12 (09 D4
+   reversed): one accent inside the logger. The gold stays on the tab bar's
+   dumbbell and the domain chips, where it names the domain rather than a
+   state. */
 .gym-ex-card[data-active] {
-  border-color: rgb(var(--gym-rgb) / 0.55);
+  border-color: var(--border-accent-soft);
 }
 .gym-ex-card[data-active] .gym-ex-head {
-  background: var(--gym-tint);
-  border-bottom-color: rgb(var(--gym-rgb) / 0.3);
+  background: var(--wash-accent);
+  border-bottom-color: var(--border-accent-soft);
 }
 .gym-ex-head {
   background: var(--surf2);

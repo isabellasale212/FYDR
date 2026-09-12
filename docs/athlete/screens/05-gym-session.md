@@ -143,7 +143,19 @@ than drop it.
   this redesign and the changelog does not raise it, so per CLAUDE.md §0 it is
   reported rather than quietly corrected. A one-line fix whenever it is wanted.
 
-## 13. What the 8 September redesign changed
+## 13. What the 8 September redesign changed — and the colour reversed on 12 September
+
+**REVERSED 12 September 2026 (Isabella, ATH-ADULT-09 D4): inside the logger there is
+one accent.** The progress fill is `--accent`; a logged set key is the accent with
+`--on-accent` ink and a ✓; the current key is `--wash-accent` with `--ring-accent`; a
+not-reached key is `--faint` on `--surf2`, undimmed; the live exercise head is the
+accent wash; the weight row's deviation sub-line reads "prescribed 100 kg · +2.5" (a
+real minus sign for a drop) in `--muted` — a fact, not a warning. The gold stays on
+the tab bar's dumbbell and the domain chips, where it names the domain rather than a
+state (12 D4 / SS-01 D2 declined). The part-done `pill-warn` badge stays: a status.
+`scripts/test-gym-logger-redesign.ts` now pins this. The paragraphs below record the
+8 September state it replaced.
+
 
 **MOST OF THE AMBER THE CHANGELOG CALLS NEW WAS ALREADY BUILT**, which is worth
 recording so it is not "rebuilt" a second time. Already on screen before this

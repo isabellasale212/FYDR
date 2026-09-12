@@ -47,23 +47,33 @@ const rule = (sel: string): string => {
   return new RegExp(`${escaped}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? '';
 };
 
-console.log('the amber was already built — these are regression guards, not new work');
+console.log('one accent inside the logger — ATH-ADULT-09 D4, REVERSED by Isabella 2026-09-12');
 {
-  assert(/background:\s*var\(--gym\)/.test(rule('.gym-progress-fill')),
-    'the progress fill is the gym gold, not the accent every other bar uses');
+  /* The 2026-09-08 gold (progress fill, gym-tinted logged keys, the amber
+     "recommended" line) was pinned here so it would not be rebuilt by
+     accident. It has now been reversed on purpose: inside the logger the
+     logged keys, the progress fill and the deviation line move to the accent
+     family; the gold stays on the tab bar and the domain chips (12 D4 / SS-01
+     D2 declined). */
+  assert(/background:\s*var\(--accent\)/.test(rule('.gym-progress-fill')),
+    'the progress fill is the accent');
   const logged = rule(".gym-set-key[data-logged]");
-  assert(/--gym-rgb/.test(logged), 'a logged set key is gym-tinted');
-  assert(/--gym-on-tint/.test(logged),
-    'and its ink is --gym-on-tint — the gold itself reads about 1.9:1 on its own tint');
+  assert(/background:\s*var\(--accent\)/.test(logged) && /color:\s*var\(--on-accent\)/.test(logged), 'a logged set key is the accent with --on-accent ink');
+  assert(!/--gym/.test(logged), 'and no longer gym-tinted');
   assert(/'\\u2713'/.test(src) || /\u2713/.test(src), 'a logged set draws a checkmark, not its number');
-  assert(/--gym-tint/.test(rule(".gym-ex-card[data-active] .gym-ex-head")),
-    'the live exercise carries the gym tint');
-  assert(/pill-warn/.test(src), 'and the part-done badge is the amber pill');
+  const next = rule(".gym-set-key[data-next]");
+  assert(/background:\s*var\(--wash-accent\)/.test(next) && /box-shadow:\s*var\(--ring-accent\)/.test(next), 'the current key is --wash-accent with --ring-accent');
+  const notReached = rule('.gym-set-key:disabled');
+  assert(/background:\s*var\(--surf2\)/.test(notReached) && /color:\s*var\(--faint\)/.test(notReached) && !/opacity/.test(notReached), 'a not-reached key is --faint on --surf2, undimmed');
+  assert(/background:\s*var\(--wash-accent\)/.test(rule(".gym-ex-card[data-active] .gym-ex-head")) && !/--gym-tint/.test(rule(".gym-ex-card[data-active] .gym-ex-head")),
+    'the live exercise carries the accent wash');
+  assert(/pill-warn/.test(src), 'the part-done badge is still the amber pill — a status, not the logger\'s hue');
   assert(/overridden \? 'Your weight' : 'Recommended'/.test(src),
-    'the weight row already relabels to "Your weight" when the athlete moves off the prescription');
-  assert(/recommended <span className="num">\{rec\}<\/span> kg/.test(src),
-    'with the coach\'s number kept on screen as the sub-line');
-  assert(/--warn-pill-text/.test(rule('.gym-weight-label .n[data-warn]')), 'in amber');
+    'the weight row relabels to "Your weight" when the athlete moves off the prescription');
+  assert(/prescribed <span className="num">\{rec\}<\/span> kg · \{deviation\}/.test(src),
+    'with the coach\'s number and the signed difference as the sub-line — "prescribed 100 kg · +2.5"');
+  assert(/color:\s*var\(--muted\)/.test(rule('.gym-weight-label .n[data-warn]')) && !/--warn/.test(rule('.gym-weight-label .n[data-warn]')), 'in --muted, never amber: a deviation is a fact, not a warning');
+  assert(/\\u2212/.test(src) || /−/.test(src), 'a negative difference uses a real minus sign');
 }
 
 console.log('\nthe header loses its utility line');

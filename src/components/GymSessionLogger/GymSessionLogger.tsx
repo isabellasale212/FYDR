@@ -496,6 +496,7 @@ export function GymSessionLogger({
                         type="button"
                         className="gym-set-key"
                         data-logged={loggedRow ? '' : undefined}
+                        data-next={!loggedRow && isNext ? '' : undefined}
                         aria-pressed={!!loggedRow}
                         disabled={!loggedRow && (!isNext || logMutation.isPending)}
                         aria-label={
@@ -624,6 +625,10 @@ export function GymSessionLogger({
                     );
                   }
                   const overridden = rec !== null && cur !== rec;
+                  /* The deviation as a signed figure with a real minus sign
+                     (09 D4): "prescribed 100 kg · +2.5" / "· −2.5". */
+                  const deviation =
+                    rec !== null && cur !== null ? `${cur - rec >= 0 ? '+' : '\u2212'}${Math.abs(cur - rec)}` : '';
                   return (
                     <div className="gym-weight">
                       <div className="gym-weight-label">
@@ -631,7 +636,7 @@ export function GymSessionLogger({
                         <div className="n" data-warn={overridden ? '' : undefined}>
                           {overridden ? (
                             <>
-                              recommended <span className="num">{rec}</span> kg
+                              prescribed <span className="num">{rec}</span> kg · {deviation}
                             </>
                           ) : (
                             'change it if it is not right today'

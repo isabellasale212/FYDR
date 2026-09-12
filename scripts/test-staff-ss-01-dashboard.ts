@@ -114,5 +114,18 @@ console.log('\nA3 / C3. the attention panel counts athletes, and the Flags tab b
   assert(/counts \*\*athletes\*\*/.test(spec) && /Flags slot carries the same number/.test(spec), '01-dashboard.md describes the athlete count and the badge');
 }
 
+console.log('\nC2 (the thresholds line). "Thresholds set by Jane Pemberton · 24 Aug · Change ›" closes the attention panel (2026-09-12)');
+{
+  const th = strip(read('src/lib/queries/thresholds.ts'));
+  assert(/export async function fetchThresholdProvenance\(/.test(th) && /order\('updated_at', \{ ascending: false \}\)/.test(th) && /created_by/.test(th), 'fetchThresholdProvenance: the most recently changed active threshold, who created it, when');
+  const panel = strip(read('src/components/DashboardFlagsPanel/DashboardFlagsPanel.tsx'));
+  assert(/provenance: ThresholdProvenance \| null;/.test(panel) || /provenance\?: ThresholdProvenance \| null;/.test(panel), 'the panel takes the provenance');
+  assert(/className="dash-flags-thresholds"/.test(panel) && /Thresholds set by \{provenance\.setBy \?\? 'the club defaults'\}/.test(panel.replace(/\s+/g, ' ')) && /Change &rsaquo;|Change ›/.test(panel), 'the line: "Thresholds set by {name} · {date} · Change ›"');
+  assert(/canEditThresholds \? \(/.test(panel) || /href="\/settings\/thresholds"/.test(panel), '"Change" links to where they are set');
+  const dash = strip(read('src/app/(staff)/dashboard/page.tsx'));
+  assert(/fetchThresholdProvenance\(db, orgId\)/.test(dash) && /provenance=\{/.test(dash) && /canEditThresholds=\{hasAnyRole\(claims\.roles, THRESHOLD_EDIT\)\}/.test(dash), 'the dashboard reads it once and says who may change them');
+  assert(/one stored date everywhere/i.test(read('src/lib/queries/thresholds.ts')) || /same stored date/i.test(read('src/lib/queries/thresholds.ts')), 'the read states the one-date rule');
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

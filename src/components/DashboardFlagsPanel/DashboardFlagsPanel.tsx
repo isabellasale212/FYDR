@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import type { ThresholdProvenance } from '@/lib/queries/thresholds';
 import { enumLabel } from '@/lib/format';
 import type { AttentionRow } from '@/lib/queries/flags';
 
@@ -10,6 +11,11 @@ type Props = {
   openTotal: number;
   /** Distinct athletes behind those flags — the headline (STAFF-SS-01 A3). */
   athleteTotal: number;
+  /** STAFF-SS-01 C2: who set the thresholds and when — the line that closes
+   *  the panel. Null when the club has no active threshold. */
+  provenance: ThresholdProvenance | null;
+  changedAtLabel: string | null;
+  canEditThresholds: boolean;
   awaitingAck: number;
   /** Severity counts across ALL open flags (not just the top rows), from
    *  fetchDashboardAttention — so the header reports the squad, not the page. */
@@ -39,7 +45,21 @@ function FlagIcon() {
  * One athlete open at a time. The point of the panel is triage across the
  * squad; several rows open at once turns it back into the scrolling list it
  * replaced. */
-export function DashboardFlagsPanel({ rows, openTotal, athleteTotal, awaitingAck, bySeverity }: Props) {
+export function DashboardFlagsPanel({ rows, openTotal, athleteTotal, awaitingAck, bySeverity, provenance, changedAtLabel, canEditThresholds }: Props) {
+  /* "Thresholds set by Jane Pemberton · 24 Aug · Change ›" — the same stored
+     date everywhere (the board's correction), linking to where they are set
+     for a role that may change them, and stating them for one that may not. */
+  const thresholdsLine =
+    provenance && changedAtLabel ? (
+      <p className="dash-flags-thresholds">
+        Thresholds set by {provenance.setBy ?? 'the club defaults'} · <span className="num">{changedAtLabel}</span>
+        {canEditThresholds ? (
+          <>
+            {' '}· <Link href="/settings/thresholds">Change &rsaquo;</Link>
+          </>
+        ) : null}
+      </p>
+    ) : null;
   const [openId, setOpenId] = useState<string | null>(null);
   /* Collapsed on load, per the design review. The dashboard's job is to say
      what needs attention; forty-two flags expanded by default pushed the rest
@@ -51,7 +71,8 @@ export function DashboardFlagsPanel({ rows, openTotal, athleteTotal, awaitingAck
     return (
       <div className="dash-flags-panel" data-empty="true">
         <FlagIcon />
-        <span className="dash-flags-summary">No open flags right now.</span>
+        <span className="dash-flags-summary">No open flags right now — none above a club threshold.</span>
+        {thresholdsLine}
       </div>
     );
   }
@@ -208,6 +229,7 @@ export function DashboardFlagsPanel({ rows, openTotal, athleteTotal, awaitingAck
         </Link>
       </div>
       ) : null}
+      {thresholdsLine}
     </div>
   );
 }

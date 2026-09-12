@@ -259,3 +259,40 @@ export async function archiveThreshold(db: Db, id: string, orgId: string): Promi
     throw new Error('Not saved: thresholds belong to the coach and the sport scientist.');
   }
 }
+
+/** Who set the club's thresholds, and when — STAFF-SS-01 C2 (2026-09-12), the
+ *  line that closes every attention panel: "Thresholds set by Jane Pemberton
+ *  · 24 Aug · Change ›". ONE STORED DATE EVERYWHERE (the board's own
+ *  correction): the most recently changed ACTIVE threshold's `updated_at`
+ *  (0006's trigger keeps it), and the person who created that row — the
+ *  table records `created_by`, not an editor, so "set by" is the author of
+ *  the last-changed rule. The club's defaults (0059) carry no creator and
+ *  read "the club defaults". Null when the club has no active threshold. */
+export type ThresholdProvenance = {
+  /** The person's name, or null for a default rule. */
+  setBy: string | null;
+  /** YYYY-MM-DD of the latest change, in the caller's timezone to format. */
+  changedAt: string;
+  active: number;
+};
+
+export async function fetchThresholdProvenance(db: Db, orgId: string): Promise<ThresholdProvenance | null> {
+  const { data, error } = await db
+    .from('thresholds')
+    .select('id, created_by, updated_at')
+    .eq('org_id', orgId)
+    .is('deleted_at', null)
+    .eq('is_active', true)
+    .order('updated_at', { ascending: false })
+    .order('id');
+  if (error) throw new Error(error.message);
+  const rows = data ?? [];
+  const latest = rows[0];
+  if (!latest) return null;
+  let setBy: string | null = null;
+  if (latest.created_by) {
+    const { data: user } = await db.from('users').select('full_name').eq('id', latest.created_by).maybeSingle();
+    setBy = user?.full_name ?? null;
+  }
+  return { setBy, changedAt: latest.updated_at, active: rows.length };
+}

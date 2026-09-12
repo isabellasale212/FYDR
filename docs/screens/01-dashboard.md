@@ -68,7 +68,12 @@ The panel's headline counts **athletes** — "5 athletes" over "need attention �
 12 open flags · 3 not yet reviewed by anyone" — and, when the list is cut,
 "top 5 of 8 athletes" (on a phone, "· top 5 of 8 shown" on the same line)
 (STAFF-SS-01 A3, 12 September 2026). The phone bar's Flags slot carries the same number as a
-badge (C3), read for the active group filter on every staff page.
+badge (C3), read for the active group filter on every staff page. The panel closes
+with "Thresholds set by Jane Pemberton · 24 Aug · Change ›" (C2): the most recently
+changed active threshold's `updated_at` and the person who created it — one stored
+date everywhere; "the club defaults" for a rule with no creator; "Change ›" only for
+a role in `THRESHOLD_EDIT`. With no open flags the line still stands under "No open
+flags right now — none above a club threshold.".
 
 **Today.** What is scheduled, in time order, or a line saying nothing is.
 

@@ -11,6 +11,8 @@ import { addDays, formatDate, formatLongDate, matchdayWeekday, todayIso } from '
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
+import { fetchThresholdProvenance } from '@/lib/queries/thresholds';
+import { THRESHOLD_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Dashboard · Fydr' };
 
@@ -127,7 +129,7 @@ function dayTitle(date: string, wallClockToday: string): string {
  *  file's header before extending this page — most of the judgement calls
  *  live there, not here. */
 export default async function DashboardPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, timezone } = await requireStaff();
+  const { db, orgId, timezone, claims } = await requireStaff();
 
   // 01-roles-and-permissions.md (superseded) §2: admin gets `no` for "View squad
   // dashboard" — every panel below is named-athlete availability, load and
@@ -184,7 +186,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
    * it seeded the whole account with a key no report accepts. Longer windows
    * live on Analytics, which has its own per-board controls. */
 
-  const [groups, stats, week, timeline, readiness, outstanding] = await Promise.all([
+  const [groups, stats, week, timeline, readiness, outstanding, provenance] = await Promise.all([
     fetchGroups(db, orgId),
     fetchHeadlineStats(db, orgId, groupIds, effectiveToday, wallClockToday, timezone),
     fetchWeekStrip(db, orgId, groupIds, weekStart, effectiveToday, timezone),
@@ -193,6 +195,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
     fetchTimeline(db, orgId, groupIds, selectedDay, new Date().toISOString(), timezone),
     fetchSaturdayReadiness(db, orgId, groupIds, effectiveToday, timezone),
     fetchOutstandingTracks(db, orgId, groupIds, effectiveToday),
+    /* STAFF-SS-01 C2: who set the thresholds and when, for the line that
+       closes the attention panel — one stored date, read once. */
+    fetchThresholdProvenance(db, orgId),
   ]);
 
   /* The week strip's header line, derived from the strip's own days rather
@@ -293,6 +298,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           rows={stats.attentionRows}
           openTotal={stats.openFlags}
           athleteTotal={stats.attentionAthletes}
+          provenance={provenance}
+          changedAtLabel={provenance ? formatDate(provenance.changedAt, timezone) : null}
+          canEditThresholds={hasAnyRole(claims.roles, THRESHOLD_EDIT)}
           awaitingAck={stats.awaitingAckFlags}
           bySeverity={stats.flagsBySeverity}
         />

@@ -47,6 +47,7 @@ Visible and embarrassing; no harm.
 - ~~**§0as** — the GPS import page says re-uploading duplicates rows.~~ **Closed, `effc471`.**
 - **§0aq L1339** — failed sign-ins from Dublin take 1.1–1.6 s, above the 800 ms floor; profile and decide whether to raise `FAILED_SIGN_IN_MIN_MS`.
 - **§0ba (new, decided 2026-09-12)** — SAR withholding: the admin reads a category, not the medic's free text. Schema change; before pilot, not blocking.
+- **§0bb (new, decided 2026-09-12)** — the injured-athlete proposal gate applies to every role except the medic, at the database. Before pilot.
 - ~~**§0az**~~ — the reorder arrows blocked with a reason and `moveGroup` refusing out loud. **Closed, `3e7b806`.** (The dead "+ New leaderboard" and the reasonless "+ Meal" bullets of §0az stay open.)
 - ~~**STAFF-SS-01 D1**~~ — **decided 2026-09-12 (Isabella): the staff phone shell is a bottom bar with a "More" sheet**, superseding §0af's top bar. Staff phone work can proceed against the STAFF-SS-01 board.
 - **§0e L181** — "some pages, including a forgot-password page, show the wrong logo": `/login/reset` measured correct on production; needs you to say where you saw it before anyone can fix it.

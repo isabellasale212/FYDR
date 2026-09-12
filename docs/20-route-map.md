@@ -103,6 +103,7 @@ Deep links arriving from push are shell namespaced (`/staff/...`, `/athlete/...`
 | 20 | Athlete profile | `/squad/:athleteId` | `screens/athlete-profile.md` | staff web, staff phone | coach, medical | `/squad` |
 | 20a | Athlete nutrition | `/squad/:athleteId/nutrition` | *(none, built to a client request — see §4.20a)* | staff web | coach, medical | `/squad/:athleteId` |
 | 20a | Athlete wellness | `/squad/:athleteId/wellness` | *(none, built to a client request — see §4.20a)* | staff web | coach, medical | `/squad/:athleteId` |
+| 20e | Availability history | `/squad/:athleteId/availability` | `screens/63-availability-history.md` | staff web | every staff role | `/squad/:athleteId` |
 | 20a | Athlete gym | `/squad/:athleteId/gym` | *(none, built to a client request — see §4.20a)* | staff web | coach, medical | `/squad/:athleteId` |
 | 15 | Schedule | `/schedule` | `screens/schedule.md` | staff web, staff phone | coach, medical | none |
 | 11 | Timetable and register | `/schedule/timetable` | `screens/timetable.md` | staff web, staff phone | coach, medical | `/schedule` |

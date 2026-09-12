@@ -73,6 +73,11 @@ list is the availability history (PATTERN-S3 C7). Permissions are the database's
 unchanged: coach and sport scientist for a non-injury row, the medic
 unconditionally.
 
+**Availability history** (PATTERN-S3 C7, 12 September 2026): "Availability
+history ›" under the injury card opens `/squad/[athleteId]/availability` —
+every change on record, one row per change, newest first, with a CSV. See
+`63-availability-history.md`.
+
 **Before an availability change lands, the form says who will read what**
 (PATTERN-S3 / STAFF-SS-02-05 C4, 12 September 2026): pressing "Record absence"
 (or "Update availability" on the medic's form) opens a step listing the athlete by name (the status word, restrictions, expected

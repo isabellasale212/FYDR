@@ -753,6 +753,12 @@ export default async function AthletePage({
               timezone={timezone}
             />
 
+            {/* PATTERN-S3 C7 (2026-09-12): every change on record, one row per
+                change, for anyone who can read the availability line. */}
+            <Link href={`/squad/${athlete.id}/availability`} className="btn-ghost-pill" style={{ padding: '8px 16px', alignSelf: 'flex-start' }}>
+              Availability history &rsaquo;
+            </Link>
+
             {/* Logging an injury is separate from the card above: the card shows
                 the current one, this creates a new record, and §3.2 gives that
                 to all four injury roles rather than the medic alone. */}

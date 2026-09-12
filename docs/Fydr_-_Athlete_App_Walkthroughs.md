@@ -306,6 +306,8 @@ cannot revise their own wellness entry.
 
 ## ATH-ADULT-04 — Wellness entry: already submitted today
 
+**Built 2026-09-12 (`99db8a6`).** The screen is an `.after-card`: "Already submitted" as the heading, the fact first, and the exit is a `.btn-primary` button — "Back to Today" for today's entry, "Back to My data" for a past day — not a link in running text. The note "The original stays visible in My data, marked Corrected." stands (§0v built). Read from source; Conor had no entry today to render it live.
+
 **Entry point.** Opening `/check-in` when today's entry exists.
 
 **Steps.**
@@ -365,6 +367,8 @@ cannot be edited.
 ---
 
 ## ATH-ADULT-06 — Rate a session: session not found
+
+**Built 2026-09-12 (`13f68e4`), measured live on `/rpe/00000000-…`.** The outcome is at heading size — "This session isn't there" as an `<h2>` at 28px under the "Rate a session" page title — and the one exit is "Back to Today", an `a.btn-primary`. "Already rated" takes the same shape.
 
 **Entry point.** `/rpe/{sessionId}` with an id that does not resolve for this
 athlete.
@@ -429,6 +433,8 @@ of this screen dated a week behind is correct, not stale.
 ---
 
 ## ATH-ADULT-08 — Correct a nutrition check-in already submitted
+
+**Built 2026-09-12 (`a69c958`).** "Already answered" as the heading, the answer shown under a "Your answer" tag, two exits as buttons — "Back to Today" (`.btn-primary`) and "Correct this answer", which names the week it corrects. The second question the board drew (the live check-in has one) and the once-only rule are recorded in the builder's record, not built. Read from source; Conor's check-in is still on his To do.
 
 **Entry point.** Two places, both real:
 - `/nutrition-check-in` when the week already has an answer — the screen shows
@@ -521,6 +527,8 @@ length before and after.
 
 ## ATH-ADULT-10 — Finish a gym session
 
+**Built in part 2026-09-12 (`1771cf0`), measured live.** "Finish early" is no longer shaped like logging a set: "Finish early · 0 of 12" is a `.btn-ghost.gym-finish-early` with a 1px dashed neutral border, transparent, 44px. Its move to the header, the confirmation and the early summary are recorded, not built.
+
 **Entry point.** The finish button at the foot of `/gym/{sessionId}`, present
 from the moment the screen loads.
 
@@ -587,6 +595,8 @@ My data marks that day corrected and shows what was first reported.
 
 ## ATH-ADULT-12 — Browse My data
 
+**Built in part 2026-09-12 (`e581211`), measured live at 375.** An absent value is a word — "Not submitted" / "Not logged" — never 0; the hero figure is 48px (`--fs-48`); history rows are 73px with the value column right-aligned. **Filed from the measurement, §0at:** the Gym history row reads a stored `total_volume_kg` that only a correction ever writes, so it says "Not logged" for a session whose detail sums 4762 kg. The five-segment period control and the rest of the board are recorded, not built.
+
 **Entry point.** The "My data" tab. Direct URL `/my-data`, or `/my-data?tab=…`.
 
 **Steps.**
@@ -626,6 +636,8 @@ My data marks that day corrected and shows what was first reported.
 ---
 
 ## ATH-ADULT-13 — Open one gym session from history
+
+**Built in part 2026-09-12 (`98cfeec`), measured live on Conor's 11 Aug session.** The summary is a two-up hero (session RPE "6.8" at 48px beside total volume), there is **one** way back — "Back to gym history" as a full-width `.btn-ghost` (335×57) — and the shell Back stands down here, which closes §0w's third item. "Recomputed after a correction", "Not logged" and "Not rated" are the absent-value words. The eyebrow, tap-a-row correction and per-row "Corrected · was" marker are recorded, not built.
 
 **Entry point.** `/my-data?tab=gym` → a session row.
 

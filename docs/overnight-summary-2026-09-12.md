@@ -101,3 +101,48 @@ pushed. Records: `docs/overnight-records-2026-09-12.md`. Questions:
 test:ath-adult-10 && test:ath-adult-12 && test:ath-adult-13 && test:rpe-compliance-cutoff` — 18
 new TS guards in the chain (brand-accent through rpe-compliance-cutoff) plus three pgTAP
 files (590, 600, 610), all green at `0c63b4c`.
+
+---
+
+## Reviewer (appended the morning of 2026-09-12, after the merge to `3103ad9`)
+
+**What happened to the poll.** The 30-minute cron was armed at 22:41 and never fired — the session sat idle overnight and the scheduler only fires into an active session. The one merge made overnight was the first pass, before the cron: `6618b7f` + `5ae00ea` (ATH-ADULT-03 / §0s) as `b13cc29`, spot-checked and recorded (`25c0f73`, `1aa26af`). Everything else the builder pushed was merged this morning in one go.
+
+**The merge.** One conflict, `docs/overnight-questions-2026-09-12.md` (both sections written by both sides); aborted per the rule, Isabella ruled "reviewer section verbatim, Builder section appended", and by then the builder had resolved it identically on their side (`d02ae17`, `922f2ff`), so the morning merge of `3103ad9` was a clean fast-forward. Dev server restarted. Prebuild after the merge: see the last line.
+
+**Handovers recorded, one spot-check each** (to-do list §0ac-style block; walkthrough sections 04, 06, 08, 10, 12, 13 annotated; decisions log linked to `e6ab6b1` and `4b7b4fa`):
+
+| Commit | Claim checked | Result |
+|---|---|---|
+| `e6ab6b1` accent | the four token values and their dated comments in `tokens.css` | as stated, light `#17489b`, dark `#2a6ddf`, `#8fb4ff`, `#ff7460`, each "11 Sept 2026, Isabella's decision" |
+| `4b7b4fa` 02 follow-up | `/today` as Conor at 375 | cards `border-radius: 9px`, no avatar, This week above To do |
+| `71035f5` §0al publish | source | sessionStorage round-trip; `router.refresh()` only `if (!networkFailed)` |
+| `f2b72ea` §0ak | live, both directions as Jane | report → squad carried "Forwards"; squad → report carried "Backs + Forwards · 29 athletes"; reset |
+| `586520d` §0ah | `/schedule/new` DOM | duration `required`, `min=5`, default 60 |
+| `d8938b1` §0z | scratch DB | `mute_notifications` / `unmute_notifications`, `muted_at` column present |
+| `4c7a127` §0ar | source | failure row spreads `user_agent` as the success row does |
+| `f5a59c4` §0al audit | scratch DB | `sessions_audit`, `session_participants_audit` triggers; one `sessions.create/.delete`, one `session_participants.add` row from the builder's test |
+| `dd02445` §0ao | `npm run test:sign-in-audit` | 0 stderr lines (was 21), passes |
+| `068e5ba`+`e052fd0` §0u | source | "logged" = at least one live set (`squadWeeklyReport.ts:156`) |
+| `ea93b20` §0aa, `ab3d97e` SS-01 | `git show --stat` | docs only, nothing built — as stated |
+| `eff27bb` §0ai | live submit with a name and no group | "Choose at least one group." `role=alert`, focus to the fieldset, no navigation |
+| `99db8a6` 04, `a69c958` 08 | source (Conor has no entry today / check-in still due) | after-cards with heading + `.btn-primary` exits as stated |
+| `13f68e4` 06 | `/rpe/<bogus>` live | "This session isn't there" `<h2>` 28px; "Back to Today" `a.btn-primary` |
+| `e50d5da` 09 | `/gym/b4373061` live | `.gym-ex-card` border 0, no shadow; `.gym-head` sticky top 0; set keys still 42px (expected, B) |
+| `1771cf0` 10 | same page | "Finish early · 0 of 12" `.btn-ghost.gym-finish-early`, 1px dashed, 44px |
+| `e581211` 12 | `/my-data` live | hero 48px, four "Not …" words, rows 73px, values right-aligned — **and §0at, below** |
+| `98cfeec` 13 | Conor's 11 Aug session | one back control, "Back to gym history" `.btn-ghost` 335×57; hero "6.8" 48px |
+| `9ec24c8` §0ad | `/reports/compliance` live | "284 of 631 submitted" this season |
+| `67cf9aa` Q5 | `/reports/athlete/…000002` live | James Barnes 51% |
+| `0c63b4c` Q6 / 0105 | scratch DB | `training_entries_clamp_submitted_at` trigger present |
+
+**Found while checking (`e581211`), filed as §0at, group 1 on the pilot list:** `total_volume_kg` is written only by the correction RPC — 41 of 45 complete sessions with live sets on scratch have a null total, and the four with one are exactly the corrected ones. My data's Gym history now says "Not logged" beside a detail page that sums the same sets to 4762 kg (Conor, 11 Aug); staff volume means average the corrected four. The words are right; the column is the bug.
+
+**Closed on the to-do list:** §0al (both halves), §0ak, §0ah (form), §0z, §0ar, §0ao, §0u (both), §0ai (form), §0ad, §0w's third item. **Left open with a note:** §0aa (no direction — Builder Q3). **Pilot list moved:** group 1 lost items 2, 4, 5, 8 and gained §0at; §0aa now reads "decision, then build".
+
+**For Isabella, in the questions file (Reviewer 6–9):** STAFF-SS-01's D1 (bottom bar vs §0af's top bar), §0aa's direction, §0at's fix direction, and the note that 0103/0104/0105 are on scratch only.
+
+**Prebuild after the merge (reviewer machine, dev server running):** 98 suites, 0 failed; `next build` exit 0.
+
+**Migrations:** scratch is at 0105; production at 0102. 0103, 0104, 0105 are on scratch and not on production.
+

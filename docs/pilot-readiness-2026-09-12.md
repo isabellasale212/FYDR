@@ -13,13 +13,14 @@ Data loss, wrong data shown, security, or something a club would see go wrong in
 | # | Item | Needs |
 |---|---|---|
 | 1 | **§0a L318 / §2 L1981 — Supabase is on the Free tier: no automated backups, no point-in-time recovery.** First real athlete's data has no restore path. | **You** — decided 2026-09-12: gated on signing the pilot club; hard gate before the first real account. |
-| 2 | **§0al L1289 — a network failure at schedule publish wipes every pending change in the week and the "Not published" line with it.** A coach on club wifi loses the week they just built. | **Build** (high priority, decided: sessionStorage persistence, never `router.refresh()` after a failure). |
-| 3 | **§0aa L1128 — a gym set queued offline is silently discarded if its slot was filled by a different value.** An athlete's set disappears with "sent" showing. | **Build.** |
-| 4 | **§0u L995 / L1005 — "Sessions logged" in two staff reports counts gym sessions that were only opened, never logged.** Wrong numbers on the squad weekly report from day one. | **Build** (decided: a session counts once it has one live set). |
-| 5 | **§0ad L1176 — the compliance report counts an RPE as submitted however late it arrives; no due-by exists.** The compliance percentage a club reads in week one is inflated by anything back-filled. | **Build** — decided 2026-09-12: submitted only if it arrives before the rating closes (`rpeClosesAt`, end of the following club-local day); later is missed. |
+| 2 | ~~**§0al L1289 — a network failure at schedule publish wipes every pending change.**~~ | **Closed overnight, `71035f5`** — sessionStorage round-trip, no refresh after a failure. |
+| 3 | **§0aa L1128 — a gym set queued offline is silently discarded if its slot was filled by a different value.** An athlete's set disappears with "sent" showing. | **Decision, then build** — not built overnight (`ea93b20`): no direction on the list. Builder question 3 recommends `resolveGymSetConflict` (dequeue only when the stored value equals the queued one; otherwise surface it on Today). Say yes or otherwise. |
+| 4 | ~~**§0u L995 / L1005 — "Sessions logged" counts sessions that were only opened.**~~ | **Closed overnight, `068e5ba` + `e052fd0`.** |
+| 5 | ~~**§0ad L1176 — the compliance report counts an RPE as submitted however late it arrives.**~~ | **Closed this morning, `9ec24c8` + `67cf9aa` + `0c63b4c`** — 284 of 631 this season (was 302); James Barnes 51% (was 52). Migration 0105 is on scratch only. |
 | 6 | **§0e L92 — tell the medical staff that `mechanism` is athlete-visible.** A medic who writes a mechanism note thinking it is private is the first-week incident this list exists to prevent. | **You** — confirmed 2026-09-12: you have the sentence and deliver it. |
 | 7 | **§4 L1991 / L1992 / §5 L1998 — special-category (medical) data obligations confirmed, a DPA template, and legal review before the first pilot club.** Real athletes' injury records without a signed DPA is the exposure, not a bug. | **You / legal** — 2026-09-12: solicitor quote being obtained. |
-| 8 | **§0ai L1255 — a session can be created with no type, no groups, no location (and §0ah L1242, no duration).** A session with no group has no expected attendance, so compliance silently excludes it; a null duration makes its RPE due at once. | **Build** (refuse type and groups at least; duration per §0ah). |
+| 8 | ~~**§0ai L1255 (+§0ah L1242) — a session can be created with no type, no groups, no duration.**~~ | **Closed at the form overnight, `eff27bb` + `586520d`** — measured: duration `required`, "Choose at least one group." refusal. Two edges remain as Builder questions 1, 2 and 4 (nullable column, week-template path, the grid's "Add to day"). |
+| 9 | **§0at (new, 2026-09-12) — gym tonnage is stored only after a correction, so My data's history says "Not logged" for 41 of 45 real sessions and staff volume means average the corrected few.** An athlete's first logged session reads "Not logged" the next day. | **Build** — derive the session total from live sets at read time (or maintain the column on every set log + backfill); one guard test. |
 
 Not in group 1, and why: §0aq (the sign-in timing floor) is security, but the production measurement shows the real and unknown paths matching — it is a latent weakening, not an exposure; it sits in group 2. §0ae part 2 is closed by 0102 on production (box closed today). §0e L185 (49 of 59 tables unaudited) is posture, not a week-one failure; group 3, with the sessions slice in group 2.
 
@@ -32,19 +33,20 @@ Visible and embarrassing; no harm.
 - **§0u L961** — the gym prescription line reads "3 × 8 @ No 1RM test linked to this exercise yet."
 - **§0u L971** — the nutrition check-in says "this week" about a week that has ended (decided: copy fix, keep the default).
 - **§0u L987** — a failed gym set retries only from Today, so the set count stays wrong for the rest of the workout.
-- **§0z L1100** — "Turn notifications back on" resets every preference instead of restoring them (decided: restore).
+- ~~**§0z L1100** — "Turn notifications back on" resets every preference.~~ **Closed overnight, `d8938b1` (migration 0103, scratch only).**
 - **§0aa L1130** — `/programme/nutrition` says "your last recorded weight" without saying it is the staff skinfold measurement, while `/me` shows the athlete's own self-reported mass.
-- **§0ah L1242** — a session saves with no duration (also in group 1 via §0ai; listed here for the form itself).
+- ~~**§0ah L1242** — a session saves with no duration.~~ **Closed at the form, `586520d`**; the nullable column and the week-template path are Builder questions 1 and 2.
 - **§0aj L1262** — "What the athlete sees" says an RPE is "due by 19:45" for every training session whatever its time.
 - **§0aj L1264** — "Yes, remove" on a staged draft promises an undo that does not exist.
-- **§0ak L1273** — the group filter is a cookie on one screen and a URL parameter on another (decided: shared, both directions).
-- **§0al L1293** — publishing or removing a session writes no audit row (decided: into the next audit batch).
+- ~~**§0ak L1273** — the group filter is a cookie on one screen and a URL parameter on another.~~ **Closed overnight, `f2b72ea`**, exercised both directions.
+- ~~**§0al L1293** — publishing or removing a session writes no audit row.~~ **Closed overnight, `f5a59c4` (migration 0104, scratch only).**
 - **§0ap L1327** — the leaderboard builder says "Tap one below to see why" and the disabled chips cannot be tapped.
 - **§0ap L1329** — the Settings hub's Log out row is a 5px-wide target dressed as a row (the sidebar's Log out works, so not blocking).
 - **§0ap L1333** — subject-access, retention and the board ranking scroll the page sideways at 375.
 - **§0ap L1331** — Exports says "Coach access" to the sport scientist.
 - **§0as** (filed today) — the GPS import page says re-uploading duplicates rows; it has replaced them since 0064/0072. Copy only.
 - **§0aq L1339** — failed sign-ins from Dublin take 1.1–1.6 s, above the 800 ms floor; profile and decide whether to raise `FAILED_SIGN_IN_MIN_MS`.
+- **STAFF-SS-01 D1 (new)** — the approved dashboard board's bottom bar + "More" sheet reverses §0af's decided compact top bar with a menu; the builder built nothing and recommends holding §0af. Decision needed before any staff phone work.
 - **§0e L181** — "some pages, including a forgot-password page, show the wrong logo": `/login/reset` measured correct on production; needs you to say where you saw it before anyone can fix it.
 - ~~**§0e L244–251** — move production to London.~~ **Decided against 2026-09-12:** production stays in eu-west-1; the compliance doc now states Ireland and the EEA-adequacy basis and withdraws the "stays in the UK" claim.
 - **§0b L713** — a saved group-filter cookie naming a deleted group: behaviour unverified (decided target: fall back to everyone). A club renames or deletes a group in week one.
@@ -64,7 +66,7 @@ Accessibility, cosmetics, deferred features, and process notes.
 
 - **§0t L915 / L945 / L953** — CR10 ratings 4 and 6 have empty accessible names; "Add a note" drops focus to `<body>`; a stale CSS comment on anchor positions.
 - **§0u L967 / L983** — gym set buttons at 42px; the three nutrition answers are not a radio group.
-- **§0w L1060**, **§0y L1092 / L1094** — a 15px inline link; "Show them again" with no link affordance; two back controls on `/me/leaderboards`.
+- ~~**§0w L1060**~~ (closed by `98cfeec`), **§0y L1092 / L1094** — "Show them again" with no link affordance; two back controls on `/me/leaderboards`.
 - **§0aa L1124 / L1126** — two `<h1>` on `/programme`; "1 characters over".
 - **§0ab L1136** — the no-role screen (C3), deferred by decision.
 - **§0ad L1182** — the RPE subtitle's "· 20 sec" has no binding source.
@@ -72,8 +74,8 @@ Accessibility, cosmetics, deferred features, and process notes.
 - **§0ai L1253 / L1257** — the "Week plan" tab is a `<span>`; "Rehab" is both a type and a group.
 - **§0aj L1268** — two unlabelled inputs in the draft wizard.
 - **§0am L1298 / L1300** — the leaderboard lens is tabs without a tablist; the plan list has no selected state.
-- **§0ao L1317** — prebuild prints ~51 expected error lines per build.
-- **§0ar L1347** — failed sign-in audit rows record no user agent.
+- ~~**§0ao L1317** — prebuild prints ~51 expected error lines per build.~~ **Closed overnight, `dd02445`** — the chain writes nothing to stderr.
+- ~~**§0ar L1347** — failed sign-in audit rows record no user agent.~~ **Closed overnight, `4c7a127`.**
 - **§0e L81** — push notifications, on hold by decision until ~3 weeks of real sign-in data.
 - **§0e L185** — widen the audit triggers across the remaining 49 tables, in batches (sessions first — group 2).
 - **§0b L687** — the platform-level view of sign-ins against non-existent addresses; "not urgent" by its own text.

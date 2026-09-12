@@ -32,7 +32,7 @@ const DEFAULT_WINDOW_DAYS = 30;
  *  here also narrows every other filtered screen, by design (the filter is
  *  genuinely global, not scoped to this page). */
 export default async function ExportsPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, claims, timezone } = await requireReportAccess();
+  const { db, orgId, timezone } = await requireReportAccess();
   const sp = await searchParams;
   const groupIds = await resolveGroupFilter(sp.groups);
 
@@ -54,9 +54,11 @@ export default async function ExportsPage({ searchParams }: { searchParams: Sear
       </div>
 
       <p className="sub" style={{ marginBottom: 'var(--sp-14)', maxWidth: '70ch' }}>
+        {/* No role word (§0ap, 2026-09-12): the medic/other ternary read
+            "Coach access" to the sport scientist, the S&C and the
+            nutritionist. The domains listed below are already this role's own. */}
         A CSV per domain, straight to your downloads — no queue to check back on.{' '}
-        {claims.roles.includes('medic') ? 'Medical' : 'Coach'} access: every domain below,
-        squad-wide.
+        Every domain below, squad-wide.
       </p>
 
       <div style={{ margin: '0 0 16px' }}>

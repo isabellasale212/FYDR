@@ -3961,6 +3961,16 @@ a.hist-row:focus-visible {
    The reference's own disclosure row, "1 more · Nordic curl". A control, so
    --r-control like every other one; the reference draws it square-cornered and
    it is not one of the athlete pills. */
+/* ATH-ADULT-11 C2 (12 Sept 2026): "Set 1 corrected · was 100 kg × 8" under
+   the set keys — the neutral corrected marker in words, --muted, one line a
+   set. Flush with the keys and the weight row (the card pads its children
+   itself). */
+.gym-corrected-strip {
+  padding: var(--sp-8) 0 0;
+  font-size: var(--fs-12);
+  color: var(--muted);
+  line-height: 1.5;
+}
 /* ---------- the session summaries, ATH-ADULT-09 C6 / 10 C3 (12 Sept 2026) ----------
    Session complete and Finished early, on the logger once the session is
    closed. The totals at --fs-48 (the two numbers the board sets the logging

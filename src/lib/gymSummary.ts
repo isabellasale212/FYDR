@@ -115,3 +115,10 @@ export function minutesBetween(startedAt: string | null, completedAt: string | n
   if (!Number.isFinite(ms) || ms < 0) return null;
   return Math.round(ms / 60000);
 }
+
+/** What a corrected set was: "100 kg × 8", "× 10" with no load — the
+ *  strip's "Set 1 corrected · was 100 kg × 8" (ATH-ADULT-11 C2). */
+export function wasLine(set: { reps_completed: number | null; load_kg: number | null }): string {
+  const reps = set.reps_completed !== null ? String(set.reps_completed) : 'no reps';
+  return set.load_kg !== null ? `${formatKg(set.load_kg)} kg × ${reps}` : `× ${reps}`;
+}

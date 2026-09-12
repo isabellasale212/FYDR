@@ -18,7 +18,7 @@ import { GymSetLogInput } from '@/lib/validation/gym';
 import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { loadLabel, schemeLine } from '@/lib/gymPrescription';
 import { acquireWakeLock, buzz, releaseWakeLock } from '@/lib/wakeLock';
-import { bestSetsByExercise, formatKg, minutesBetween, newBests, sessionVolumeKg, setsLine, type PriorBest } from '@/lib/gymSummary';
+import { bestSetsByExercise, formatKg, minutesBetween, newBests, sessionVolumeKg, setsLine, wasLine, type PriorBest } from '@/lib/gymSummary';
 import { formatDate } from '@/lib/format';
 
 function elapsed(startedAt: string | null, now: number): string {
@@ -51,6 +51,9 @@ type Props = {
    *  complete session (ATH-ADULT-09 C6). An array, not a Map: it crosses the
    *  server → client boundary. */
   priorBests: readonly (PriorBest & { exercise_id: string })[];
+  /** ATH-ADULT-11 C2: each live set that is a correction, with the values it
+   *  replaced — the strip "Set 1 corrected · was 100 kg × 8". */
+  corrections: readonly { id: string; was: { reps_completed: number | null; load_kg: number | null } }[];
   totalSets: number;
   timezone: string;
   exercises: readonly ResolvedExercise[];
@@ -90,6 +93,7 @@ export function GymSessionLogger({
   startedAt,
   completedAt,
   priorBests,
+  corrections,
   totalSets,
   timezone,
   exercises,
@@ -259,6 +263,7 @@ export function GymSessionLogger({
   const minutes = minutesBetween(startedAt, completedAt);
   const setsFor = (ex: ResolvedExercise) => summarySets.filter((r) => r.exercise_id === ex.exercise_id);
   const nameById = new Map(exercises.map((ex) => [ex.exercise_id, ex.exercise_name]));
+  const correctedIds = new Set(corrections.map((c) => c.id));
 
   /* The exercise being worked on, 23g's gold-bordered card: the FIRST with
      sets still to log, in prescribed order. First rather than "the one most
@@ -707,7 +712,7 @@ export function GymSessionLogger({
                         disabled={!loggedRow && (!isNext || logMutation.isPending)}
                         aria-label={
                           loggedRow
-                            ? `Set ${setNumber} logged, ${loggedRow.reps_completed ?? 'no'} reps at ${
+                            ? `Set ${setNumber} logged${correctedIds.has(loggedRow.id) ? ', corrected' : ''}, ${loggedRow.reps_completed ?? 'no'} reps at ${
                                 loggedRow.load_kg !== null ? `${loggedRow.load_kg} kg` : 'no load'
                               }. Correct it.`
                             : `Log set ${setNumber} of ${ex.sets}, ${ex.exercise_name}`
@@ -735,6 +740,25 @@ export function GymSessionLogger({
                     );
                   })}
                 </div>
+
+                {/* ATH-ADULT-11 C2 (2026-09-12): a corrected set says so where
+                    it is, with what it was — the superseded row, read by the
+                    page from the base table as My data does. The neutral
+                    marker in words; no bar, no second colour. */}
+                {done.some((row) => correctedIds.has(row.id)) ? (
+                  <div className="gym-corrected-strip num">
+                    {done
+                      .filter((row) => correctedIds.has(row.id))
+                      .map((row) => {
+                        const c = corrections.find((x) => x.id === row.id);
+                        return c ? (
+                          <div key={row.id}>
+                            Set {row.set_number} corrected · was {wasLine(c.was)}
+                          </div>
+                        ) : null;
+                      })}
+                  </div>
+                ) : null}
 
                 {/* The correction, inline and only for the set being corrected.
                     23g has no such row because nothing in a still needs

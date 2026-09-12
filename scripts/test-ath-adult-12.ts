@@ -73,10 +73,23 @@ console.log('\nA4. a history row is a target');
 console.log('\nwhat this flow did NOT change (recorded, not built)');
 {
   const bar = /SEGMENTS[^=]*=\s*\[([^\]]*)\]/.exec(page)?.[1] ?? '';
-  assert(!/'training'/.test(bar) && !/'nutrition'/.test(bar), 'three segments still (D1)');
-  assert(/--good/.test(rule(".rd-delta[data-dir='up']")), 'the ▲ delta is still green (D3)');
+  assert(/'training'/.test(bar) && /'nutrition'/.test(bar), 'five segments (D1 reversed 2026-09-12; pinned in test-my-data-redesign.ts)');
+  assert(rule(".rd-delta[data-dir='up']") === '', 'the delta is no longer coloured (D3 reversed 2026-09-12; pinned in test-my-data-redesign.ts)');
   assert(/BLANK/.test(page), "the training table keeps the app-wide table blank until its own rebuild (C2)");
   assert(!/--chart-h|--chart-stroke|--blue-200|--t-num-hero/.test(read('src/styles/tokens.css')), 'no new token (B1, B2)');
+}
+
+console.log('\nD7 (decided 2026-09-12): accent and neutrals only on the athlete\'s chart, as a prop');
+{
+  const chart = strip(read('src/components/WellnessChart/WellnessChart.tsx'));
+  assert(/accentOnly\?: boolean;/.test(chart) && /accentOnly = false/.test(chart), 'WellnessChart takes accentOnly, off by default — the staff pages are unchanged');
+  assert((chart.match(/const fill = accentOnly\s*\? 'var\(--accent\)'/g) ?? []).length === 2, 'both marker sites use the accent when set');
+  assert(/<WellnessChart[\s\S]{0,400}accentOnly/.test(page), 'My data sets it');
+  for (const p of ['src/app/(staff)/squad/[athleteId]/page.tsx', 'src/app/(staff)/squad/[athleteId]/wellness/page.tsx', 'src/app/(staff)/reports/athlete/[athleteId]/page.tsx']) {
+    let src = '';
+    try { src = strip(read(p)); } catch { continue; }
+    assert(!/accentOnly/.test(src), `${p.split('/').slice(-2).join('/')} does not — the shared chart colours stand`);
+  }
 }
 
 console.log('\nthe spec');

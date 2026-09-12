@@ -8,6 +8,15 @@ import type { GroupOption } from './types';
 // Built per call from the org's real timezone, not a hardcoded one — see
 // schedule/page.tsx's own weekdayLongFmt/dayMonthFmt for the same fix and
 // its reasoning.
+/** The primary says what it will make (PATTERN-S4, 2026-09-12): "Add
+ *  session · Thu 10, 16:00, 60 min". A clause whose value is missing is
+ *  dropped, never printed empty. */
+function addLabel(session: { dow: string; start: number; mins: number }): string {
+  const day = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${session.dow}T12:00:00Z`));
+  const parts = [day, clockLabel(session.start), session.mins > 0 ? `${session.mins} min` : null].filter((p): p is string => p !== null);
+  return `Add session · ${parts.join(', ')}`;
+}
+
 function domFmt(timezone: string) {
   return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: timezone });
 }
@@ -513,7 +522,7 @@ export function SelectedSessionPanel({
             ) : null}
             {step === WIZARD_STEPS.length - 1 ? (
               <button type="button" className="sg-btn-add" onClick={onAddToDay} disabled={!session.title.trim()}>
-                Add to {weekday}
+                {addLabel(session)}
               </button>
             ) : null}
           </div>
@@ -540,7 +549,7 @@ export function SelectedSessionPanel({
             {isPrecommit ? (
               <>
                 <button type="button" className="sg-btn-add" onClick={onAddToDay} disabled={!session.title.trim()}>
-                  Add to {weekday}
+                  {addLabel(session)}
                 </button>
                 <button type="button" className="btn-ghost" onClick={onCancelDraft}>
                   Cancel

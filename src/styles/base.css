@@ -1797,32 +1797,22 @@ body:has(.phone) {
   flex: 0 1 auto;
   margin-left: auto;
 }
-/* Spec §7.3: 14/700 over a 12.5px muted line. */
+/* A DELTA STATES THE CHANGE AND NEVER JUDGES IT — ATH-ADULT-12 D3, reversed
+   by Isabella 2026-09-12. One arrow (↑ ↓, never ▲ ▼ in colour), the figure in
+   --text bold, what it is measured against, all in --muted: "a lower RPE and
+   a lower readiness do not mean the same thing", so no colour ranks a
+   direction. This replaces the 2026-09-08 green ▲ / amber ▼ (which itself
+   replaced 23e's accent); the reasoning that a red dip "reads as an alarm
+   nobody raised" now applies to green and amber too. */
 .rd-delta {
   margin: 0;
   font-size: var(--fs-14);
+  font-weight: 400;
+  color: var(--muted);
+}
+.rd-delta b {
+  color: var(--text);
   font-weight: 700;
-}
-/* REVERSED BY THE 2026-09-08 REFERENCE, which draws "▲ 6 on last week" in
-   green (screens 03/04) where 23e drew it in the accent. The old reasoning is
-   kept because it is still half right and still governs the OTHER direction:
-   green/red on a wellness delta overstates it, readiness moving a few points
-   between weeks is what readiness does, and a red number for an ordinary dip
-   reads as an alarm nobody raised.
-
-   So only the UP direction moves. Down and 'off' keep the amber below rather
-   than becoming red — an athlete a little off last week is not in a warning
-   state, and the reference draws that half amber too. The arrow still carries
-   the direction for a reader who cannot separate two hues. */
-.rd-delta[data-dir='up'] {
-  color: var(--good-text);
-}
-/* Being 0.10 s off a personal best is the ordinary state of every athlete on
-   every day that is not their best day, and --bad-text is a red reserved for a
-   value that needs acting on. 23m draws it in the amber this uses. */
-.rd-delta[data-dir='off'],
-.rd-delta[data-dir='down'] {
-  color: var(--warn-text);
 }
 .rd-mean {
   margin: var(--sp-4) 0 0;
@@ -1937,24 +1927,14 @@ body:has(.phone) {
   min-width: 0;
 }
 /* Sits under the value: how this result stands against the personal best. The
-   words say the direction ("off PB", "new PB") as well as the colour — the
-   same reason .rd-delta keeps its arrow. */
+   words say the direction ("off PB", "ahead of PB", "at PB"); no colour does
+   — the same rule as .rd-delta since 2026-09-12 (12 D3). */
 .hist-delta {
   margin: var(--sp-2) 0 0;
   font-size: var(--fs-12);
-  font-weight: 600;
-  white-space: nowrap;
-  color: var(--warn-text);
-}
-.hist-delta[data-at-pb] {
-  color: var(--muted);
   font-weight: 500;
-}
-/* Matches .rd-delta[data-dir='up'] above. The Tests headline and the row
-   beneath it state the same fact about the same result; two colours for it on
-   one screen is a difference that means nothing. */
-.hist-delta[data-ahead] {
-  color: var(--accent-text);
+  white-space: nowrap;
+  color: var(--muted);
 }
 /* The chevron on a gym session row. The row is a link — it opens the session
    so a mis-logged set can be corrected — and an affordance with no mark is an
@@ -2126,6 +2106,9 @@ a.hist-row:focus-visible {
    route to three of them. */
 .md-seg-track {
   display: flex;
+  /* Five segments since 2026-09-12 (ATH-ADULT-12 D1): wraps to a second row
+     at larger text sizes rather than scrolling or clipping (C9). */
+  flex-wrap: wrap;
   gap: var(--sp-4);
   /* The changelog's own numbers: a --surf2 band with 4px of padding. It was a
      16px-radius track with 2px gaps that scrolled horizontally, because the old
@@ -2136,17 +2119,19 @@ a.hist-row:focus-visible {
   background: var(--surf2);
 }
 .md-seg {
-  /* flex: 1, which the six-segment track could not use — sharing 390px six ways
-     gave 60px each and "Leaderboards" did not fit. Three equal segments is what
-     the reference draws and what the width now allows. */
-  flex: 1 1 0;
+  /* Five segments share 343px at --fs-11 — "Nutrition" is the widest label
+     and sets the floor. Basis auto: each segment is as wide as its label,
+     the five share what is left, and only when the labels no longer fit
+     one row (Larger Text) does the track wrap to 3 + 2 (ATH-ADULT-12
+     D1/B3/C9, 2026-09-12). The accent-filled live pill stays (D2 kept). */
+  flex: 1 1 auto;
   min-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--sp-10) var(--sp-14);
+  padding: var(--sp-10) var(--sp-6);
   border-radius: var(--r-full);
-  font-size: var(--fs-14);
+  font-size: var(--fs-11);
   font-weight: 600;
   color: var(--muted);
   text-decoration: none;
@@ -3726,10 +3711,11 @@ a.hist-row:focus-visible {
 }
 .gym-progress-fill {
   height: 100%;
-  /* --gym, the domain colour, as the design draws it. It was the accent,
-     which is every other progress bar in the product; this one is the gym
-     session's own. */
-  background: var(--gym);
+  /* The accent again — ATH-ADULT-09 D4, reversed by Isabella 2026-09-12.
+     It was --gym from 2026-09-08 ("the gym session's own"); the board's rule
+     is one accent inside the logger, with the gold kept on the tab bar and
+     the domain chips. */
+  background: var(--accent);
   border-radius: var(--r-pill);
   transition: width var(--t-state);
 }
@@ -3748,9 +3734,10 @@ a.hist-row:focus-visible {
   overflow: hidden;
   margin-bottom: var(--sp-14);
 }
-/* SPEC §7.4, the set keys. One box a set, flex: 1, 42px tall, radius 12 —
-   logged takes the gold fill, border and a tick; pending shows its index on
-   the card border. */
+/* SPEC §7.4, the set keys. One box a set, flex: 1, 44px tall (the athlete
+   app's floor — 42px until 12 Sept 2026, ATH-ADULT-09 B4), radius 12 —
+   logged takes the accent fill, border and a tick; pending shows its index
+   on the card border. */
 .gym-set-keys {
   display: flex;
   gap: var(--sp-8);
@@ -3758,7 +3745,7 @@ a.hist-row:focus-visible {
 .gym-set-key {
   flex: 1;
   min-width: 0;
-  min-height: 42px;
+  min-height: 44px;
   border-radius: 12px;
   border: 1px solid var(--border);
   background: transparent;
@@ -3771,17 +3758,25 @@ a.hist-row:focus-visible {
   cursor: pointer;
   transition: background var(--t-state), border-color var(--t-state), color var(--t-state);
 }
+/* The three key states, one accent — ATH-ADULT-09 D4 (reversed 2026-09-12):
+   not reached is --faint on --surf2, undimmed (it is not a control that
+   failed, it is a set not yet reached); the current one is the accent wash
+   with the accent ring; a logged one is the accent itself with a ✓. */
 .gym-set-key:disabled {
   cursor: default;
-  opacity: var(--o-disabled);
+  background: var(--surf2);
+  color: var(--faint);
 }
-/* --gym-on-tint, not --gym: §2 rule 1, a semantic colour is never text. The
-   gold reads about 1.9:1 on its own tint; §2 names #6b4708 / #ffdda6 for this
-   and those are the token's two values. */
+.gym-set-key[data-next] {
+  background: var(--wash-accent);
+  border-color: var(--border-accent-soft);
+  color: var(--accent-text);
+  box-shadow: var(--ring-accent);
+}
 .gym-set-key[data-logged] {
-  background: rgb(var(--gym-rgb) / 0.22);
-  border-color: rgb(var(--gym-rgb) / 0.6);
-  color: var(--gym-on-tint);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
   opacity: 1;
   cursor: pointer;
 }
@@ -3819,10 +3814,11 @@ a.hist-row:focus-visible {
   color: var(--muted);
 }
 /* §9 rule 4: when the athlete has overridden the prescription the coach's
-   number stays on screen, in warn ink so it reads as the thing departed from
-   rather than as another muted caption. */
+   number stays on screen. In --muted since 2026-09-12 (09 D4): a deviation
+   is a fact — "prescribed 100 kg · +2.5" — not a warning, so it carries no
+   tone; the weight held in the stepper is what the athlete reads first. */
 .gym-weight-label .n[data-warn] {
-  color: var(--warn-pill-text);
+  color: var(--muted);
   font-weight: 600;
 }
 .gym-stepper {
@@ -3895,17 +3891,16 @@ a.hist-row:focus-visible {
   min-height: 44px;
 }
 
-/* The exercise you are on, 23g. --gym rather than the accent, because this is
-   the gym domain's own colour everywhere else in the product (the tab bar's
-   dumbbell, this screen's progress fill). The tint comes from --gym-tint,
-   which is defined per theme — see its note in tokens.css for why one
-   color-mix could not serve both grounds. */
+/* The exercise you are on, 23g — in the accent wash since 2026-09-12 (09 D4
+   reversed): one accent inside the logger. The gold stays on the tab bar's
+   dumbbell and the domain chips, where it names the domain rather than a
+   state. */
 .gym-ex-card[data-active] {
-  border-color: rgb(var(--gym-rgb) / 0.55);
+  border-color: var(--border-accent-soft);
 }
 .gym-ex-card[data-active] .gym-ex-head {
-  background: var(--gym-tint);
-  border-bottom-color: rgb(var(--gym-rgb) / 0.3);
+  background: var(--wash-accent);
+  border-bottom-color: var(--border-accent-soft);
 }
 .gym-ex-head {
   background: var(--surf2);
@@ -13151,4 +13146,31 @@ a.hist-row:active { background: var(--surf-sunken); }
   flex-wrap: wrap;
   gap: var(--sp-8);
   margin-top: var(--sp-12);
+}
+
+/* PATTERN-S4 A7/A8 (2026-09-12): read-only names its editor in a well
+   standing where Read/Edit sits for an editor; a removed block carries a
+   pill so the strike-through is not the only signal (the pill is exempt). */
+.sg-readonly-well {
+  display: inline-block;
+  padding: var(--sp-8) var(--sp-12);
+  border: 1px solid var(--border);
+  border-radius: var(--r-control);
+  background: var(--surf2);
+  font-size: var(--fs-13);
+  color: var(--text);
+}
+.sg-block-removed-pill {
+  margin-left: auto;
+  text-decoration: none;
+}
+
+/* A value the programme builder reads rather than writes (PATTERN-S5 A1):
+   sits where a field would, at the field's height, with no frame. */
+.pb-reads-only {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--muted);
+  font-weight: 500;
 }

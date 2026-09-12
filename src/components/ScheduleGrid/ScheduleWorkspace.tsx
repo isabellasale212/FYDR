@@ -997,7 +997,7 @@ export function ScheduleWorkspace({
             </button>
             </div>
             ) : (
-            <span className="tiny">Read only. The schedule is authored by the sport scientist and the coach.</span>
+            <span className="sg-readonly-well">Read only. The schedule is authored by the sport scientist and the coach.</span>
             )}
           </>
         }
@@ -1006,7 +1006,7 @@ export function ScheduleWorkspace({
              current-page marker rather than two buttons, because they are two
              routes, not two views of one. */
           <div className="sg-viewtabs" role="tablist">
-            <span className="sg-viewtab" role="tab" aria-selected="true">
+            <span className="sg-viewtab" role="tab" aria-selected="true" aria-current="page">
               Week plan
             </span>
             <Link href={timetableHref} className="sg-viewtab" role="tab" aria-selected="false">

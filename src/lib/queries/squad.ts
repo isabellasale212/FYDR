@@ -12,6 +12,7 @@ import {
 import { fetchGroupAthleteIds, fetchMembershipsByAthlete, type Db } from './groups';
 import { fetchAllPaged } from './paged';
 import { mustAffect } from '@/lib/write';
+import { restrictionLine } from '@/lib/restrictions';
 
 export type SquadRow = {
   id: string;
@@ -119,7 +120,7 @@ export async function fetchSquadList(
       squad_number: a.squad_number,
       status: a.status,
       availability: current?.status ?? 'unknown',
-      restrictions: current?.restrictions ?? [],
+      restrictions: restrictionLine(current?.restrictions),
       group_ids: memberships.get(a.id) ?? [],
     };
   });

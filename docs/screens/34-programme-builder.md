@@ -26,6 +26,10 @@ One programme: its blocks, its sessions, its exercises, and who is on it.
 
 ## 4. What you see
 
+**A bodyweight exercise says what it logs, in words** (PATTERN-S5, 12 September
+2026): with the load basis set to none, the load slot reads "logs reps only" as a plain
+value — no disabled input on the row. The row says which numbers this screen owns.
+
 A header with the programme's name. Its blocks, each a time bounded phase. Within
 each block, the sessions, and within each session the exercises with sets, reps,
 load basis, tempo and rest. Then the athletes assigned.

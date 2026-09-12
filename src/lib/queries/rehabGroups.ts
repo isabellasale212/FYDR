@@ -1,6 +1,7 @@
 import type { AvailabilityStatus, BodyArea, BodySide } from '@/lib/types/database';
 import { fetchCurrentAvailability, fetchOpenInjuries } from './availability';
 import type { Db } from './groups';
+import { restrictionLine } from '@/lib/restrictions';
 
 /* screens/rehab-groups.md, screen 42, cut down hard.
  *
@@ -141,7 +142,7 @@ export async function fetchRehabBoard(db: Db, orgId: string): Promise<RehabBoard
         last_name: athlete.last_name,
         squad_number: athlete.squad_number,
         availability: current?.status ?? 'unavailable',
-        restrictions: current?.restrictions ?? [],
+        restrictions: restrictionLine(current?.restrictions),
         body_area: injury?.body_area ?? null,
         side: injury?.side ?? null,
         expected_return: injury?.expected_return ?? null,

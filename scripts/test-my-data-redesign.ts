@@ -45,15 +45,25 @@ const page = strip(readFileSync('src/app/(athlete)/my-data/page.tsx', 'utf8'));
 const css = readFileSync('src/styles/base.css', 'utf8');
 const nutritionForm = readFileSync('src/components/NutritionCheckinForm/NutritionCheckinForm.tsx', 'utf8');
 
-console.log('the tab bar: three segments, as drawn');
+console.log('the tab bar: five segments — ATH-ADULT-12 D1, reversed by Isabella 2026-09-12');
 {
+  /* Three from 2026-09-08 (Wellness, Gym, Tests, with Sessions and Nutrition
+     behind a footer card) became five: the objection that drove the footer
+     card — three destinations orphaned — is answered by giving two of them
+     their tab back. Leaderboards keeps its footer row: it is a separate
+     screen, not a view of this one. */
   const bar = /SEGMENTS[^=]*=\s*\[([^\]]*)\]/.exec(page)?.[1] ?? '';
-  assert(/'wellness'/.test(bar) && /'gym'/.test(bar) && /'testing'/.test(bar),
-    'Wellness, Gym and Tests are the three segments');
-  assert(!/'training'/.test(bar) && !/'nutrition'/.test(bar),
-    'Training and Nutrition are not among them');
+  assert(bar.replace(/\s+/g, '').replace(/,$/, '') === "'wellness','gym','training','nutrition','testing'", 'Wellness, Gym, Sessions, Nutrition, Tests — in that order');
+  assert(/training: 'Sessions'/.test(page) && /nutrition: 'Nutrition'/.test(page), 'labelled Sessions and Nutrition (the route keys stay training / nutrition)');
   assert(!/className="md-seg"[^>]*>\s*Leaderboards/.test(page),
-    'and Leaderboards is not a segment either');
+    'and Leaderboards is not a segment');
+  /* B3 + C9: five labels fit 343px at --fs-11; at Larger Text the row wraps to
+     two 44px rows rather than scrolling or clipping. */
+  const seg = /\.md-seg\s*\{([^}]*)\}/.exec(css)?.[1] ?? '';
+  assert(/font-size:\s*var\(--fs-11\)/.test(seg), 'segment labels at --fs-11');
+  assert(/flex:\s*1 1 auto/.test(seg), 'each segment is as wide as its label and shares the rest — five fit one row at the default size');
+  const track = /\.md-seg-track\s*\{([^}]*)\}/.exec(css)?.[1] ?? '';
+  assert(/flex-wrap:\s*wrap/.test(track), 'the track wraps, never scrolls or clips');
 }
 
 console.log('\n...but the two dropped tabs are still ROUTES, so their URLs keep working');
@@ -70,19 +80,15 @@ console.log('\n...but the two dropped tabs are still ROUTES, so their URLs keep 
     "NutritionCheckinForm's success redirect still has somewhere to land");
 }
 
-console.log('\nand a footer card is the route in to all three');
+console.log('\nand a footer card is the route in to leaderboards');
 {
   assert(/md-more/.test(page), 'the footer card exists');
-  for (const [href, what] of [
-    ['/my-data\\?tab=training', 'training sessions and RPE'],
-    ['/my-data\\?tab=nutrition', 'nutrition check-ins'],
-    ['/my-data/boards', 'leaderboards'],
-  ] as const) {
-    assert(new RegExp(`href="${href}"`).test(page), `reaches ${what}`);
-  }
+  assert(/href="\/my-data\/boards"/.test(page), 'reaches leaderboards — the only route in to /my-data/boards');
+  assert(!/className="me-row"[^>]*href="\/my-data\?tab=training"/.test(page) && !/href="\/my-data\?tab=training" className="me-row"/.test(page), 'Sessions left the footer card for its tab');
+  assert(!/href="\/my-data\?tab=nutrition" className="me-row"/.test(page), 'and so did Weekly check-ins');
 }
 
-console.log('\nflags from the two dropped tabs fall through to "Also noted for you"');
+console.log('\nflags with no segment fall through to "Also noted for you" (gps and compliance now; training and nutrition have their tabs back)');
 {
   /* SEGMENT_DOMAINS decides which flags land inside a tab and which are shown
      above the tab content as orphans. Leave training/nutrition in it and their
@@ -168,10 +174,21 @@ console.log('\nthe guard still guards');
     'and a staff segmented control cannot borrow the athlete pill');
 }
 
-console.log('\nthe readiness delta follows the new reference into green');
+console.log('\na delta states the change and never judges it — ATH-ADULT-12 D3, reversed by Isabella 2026-09-12');
 {
-  const up = /\.rd-delta\[data-dir='up'\]\s*\{([^}]*)\}/.exec(css)?.[1] ?? '';
-  assert(/--good/.test(up), "▲ on last week is green now, not the accent");
+  /* Green ▲ / amber ▼ (2026-09-08) reversed: a lower RPE and a lower
+     readiness do not mean the same thing, so no colour ranks a trend. Muted
+     ink, the figure in --text bold, ↑ ↓ never ▲ ▼. The same for the tests
+     tab's off-PB / ahead / at-PB lines. */
+  const delta = /\.rd-delta\s*\{([^}]*)\}/.exec(css)?.[1] ?? '';
+  assert(/color:\s*var\(--muted\)/.test(delta) && /font-weight:\s*400/.test(delta), '.rd-delta is --muted at 400');
+  assert(!/\.rd-delta\[data-dir='up'\]/.test(css) && !/\.rd-delta\[data-dir='down'\]/.test(css), 'no per-direction colour rule is left');
+  assert(/\.rd-delta b\s*\{[^}]*color:\s*var\(--text\)[^}]*font-weight:\s*700/.test(css), 'the figure is --text bold');
+  assert(/\{readinessDelta >= 0 \? '↑' : '↓'\}/.test(page) && !/▲|▼/.test(page), '↑ ↓, never ▲ ▼');
+  assert(/<b>\{Math\.abs\(readinessDelta\)\}<\/b> on last week/.test(page), '"↑ 4 on last week" with the figure bold — the comparison unchanged (C4 declined)');
+  const hist = /\.hist-delta\s*\{([^}]*)\}/.exec(css)?.[1] ?? '';
+  assert(/color:\s*var\(--muted\)/.test(hist) && !/--warn/.test(hist), '.hist-delta is --muted, not amber');
+  assert(!/\.hist-delta\[data-ahead\]\s*\{[^}]*--accent/.test(css), 'and "ahead of PB" is not the accent either');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

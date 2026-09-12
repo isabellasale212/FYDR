@@ -5,6 +5,7 @@ import { fetchCurrentAvailability } from './availability';
 import { fetchGroupAthleteIds, type Db } from './groups';
 import { computeConflicts } from './restrictionConflicts';
 import { dayBounds, type Session } from './schedule';
+import { restrictionLine } from '@/lib/restrictions';
 
 // No dedicated exported alias for these two enums in lib/types/database.ts
 // (only a handful of enums get one) — same local-alias pattern lib/tier.ts
@@ -166,7 +167,7 @@ export async function fetchTimetableDay(
         const athlete = athleteById.get(athleteId);
         if (!athlete) return null;
         const avail = availByAthlete.get(athleteId);
-        const restrictions = avail?.restrictions ?? [];
+        const restrictions = restrictionLine(avail?.restrictions);
         const record = attendanceByKey.get(`${session.id}:${athleteId}`);
         return {
           athlete_id: athleteId,

@@ -61,20 +61,20 @@ to create an injury record, and the `/injuries` board shows "+ Injury" to the co
 | Flow | ID | What it changes | Why it isn't built | Recommendation · cost |
 |---|---|---|---|---|
 | ~~ATH-ADULT-04~~ | ~~C4~~ | ~~The check-in page would say *who* corrected an entry.~~ **Built with C1** — visibility.md withholds nothing about it and My data already names the person; "Corrected by {name} on {date}" · | | |
-| ATH-ADULT-06 | C1 | A subhead "Today 11:30 · Pitch" under the RPE screen's title. | The session block beneath the head already carries the same facts; the subhead would say them twice. | **Keep as built** (no subhead) · small |
-| ATH-ADULT-09 | B4 | The set keys (the buttons an athlete taps to log a set) go from 42px to 44px tall — the app's own floor. | Recorded as "44px minimum with the rebuild"; also §0u's second bullet. Not a token: 44 is the floor every other athlete control uses. | **Build now** — one rule, independent of the rebuild · small |
+| ~~ATH-ADULT-06~~ | ~~C1~~ | ~~A subhead under the RPE title.~~ **Kept as built** (decided 2026-09-12) · | | |
+| ~~ATH-ADULT-09~~ | ~~B4~~ | ~~The set keys go from 42px to 44px tall.~~ **Built** · | | |
 | ~~ATH-ADULT-09~~ | ~~C5~~ | ~~Wake Lock and a buzz on log.~~ **Built** (`lib/wakeLock.ts`; on open, on visibility, released on leave; 10 ms buzz where present) · | | |
 | ATH-ADULT-10 | C1 | "Finish early" moves from the footer to the header, leaving the footer to logging. | On the live screen the footer's only action IS finish; moving it leaves a note alone. Belongs with the 09 rebuild. | **Wait for 09 C1**; keep as built · small |
-| ATH-ADULT-13 | C4 | On a small phone the set list shows "4 of 6 shown" and truncates. | A session's sets are one list; 667px is not the floor. | **Decline** · small |
-| ATH-ADULT-13 | C5 | The session detail hides the athlete tab bar ("a pushed screen"). | The shell draws the bar on every athlete route; hiding it per route is a shell decision, and the screen already has one way back. | **Decline** — keep the bar · small |
+| ~~ATH-ADULT-13~~ | ~~C4~~ | ~~"4 of 6 shown".~~ **Declined** · | | |
+| ~~ATH-ADULT-13~~ | ~~C5~~ | ~~No tab bar on the session detail.~~ **Declined** — the bar stays · | | |
 | ATH-ADULT-13 | D1 | The §0v "What you reported" card is replaced by a per-row "Corrected · was 100 kg × 8" marker. | The card was built 2026-09-10 with its reasoning (no "by" line); the row marker needs the 3px bar the system lacks (12 B5) and the row-tap correction (13 C2). | **Keep the card until 13 C2/C3 land**, then fold · small now |
 | ~~STAFF-SS-01~~ | ~~A1~~ | ~~Doubtful and Ruled out as tone-family cards.~~ **Built** (the availability line's fill and border on the two readiness rows) · | | |
 | ~~STAFF-SS-01~~ | ~~A2~~ | ~~Summary cards say which state they are in.~~ **Built** ("Closed · opens a list" / "Open · showing the list", ▸/▾, a --surf2 well closed, the surface with an accent ring open) · | | |
 | ~~STAFF-SS-01~~ | ~~A4~~ | ~~Missing check-ins by run length, "Not submitted".~~ **Built** (`lib/missingRuns.ts`; the Wellness in list, longest run first, last entry date) · | | |
 | ~~STAFF-SS-01~~ | ~~D3~~ | ~~"Ready for {matchday}" only within 14 days.~~ **Built** (`FIXTURE_RANGE_DAYS = 14`; "Squad readiness · No fixture in the next 14 days" beyond it). The board's "the week card leads and the matchday card is absent" is a structure change, with C2's remaining steps · | | |
-| STAFF-SS-01 | Q7 | On a phone, the in-page group filter bar would show only the active chip. | Unclear what then changes the group; the shell's title bar already shows the active group as a chip. | **Leave the chip row as it is** (it wraps; every chip is 44px) · small |
+| ~~STAFF-SS-01~~ | ~~Q7~~ | ~~Only the active chip on a phone.~~ **Left as is** (decided 2026-09-12) · | | |
 | ~~STAFF-SS-02-05~~ | ~~C4~~ | ~~Who will read what, before a status change lands.~~ **Built** (`AvailabilityAudience` on both forms; the coaches by role — no per-athlete coach exists in the data) · | | |
-| STAFF-SS-02-05 | C8 | Empty profile panels state the requirement ("a trend needs three weigh-ins", "no plan assigned, targets are per kilogram, so a plan needs a weigh-in"). | Per-panel copy on each panel's own empty branch; needs the body-weight and nutrition panels read first. | **Build** as one copy pass · medium |
+| ~~STAFF-SS-02-05~~ | ~~C8~~ | ~~Empty panels state the requirement.~~ **Built** (body weight, nutrition plan, flags; the injury panel from A4) · | | |
 | ~~STAFF-SS-02-05~~ | ~~D2~~ | ~~One rule for blocked controls.~~ **Built** (`BlockedButton`: aria-disabled, the reason on tap/focus, never a title — the builder's chips, the weigh-in trio, the bio Edit, the correction button, the leaderboard family chips; 06-design-system.md §7.0) · | | |
 | ~~PATTERN-S3~~ | ~~C4~~ | ~~Who sees what, by name.~~ **Built** with STAFF-SS-02-05 C4 · | | |
 
@@ -82,21 +82,22 @@ to create an injury record, and the `/injuries` board shows "+ Injury" to the co
 
 | Flow | ID | What it changes | Why it isn't built | Recommendation · cost |
 |---|---|---|---|---|
-| ATH-ADULT-08 | D1 | The nutrition answers read "Yes, most days / Some days / No" instead of "Yes / Roughly / No". | The spec (`04-weekly-nutrition-check-in.md`, the `nutrition_checkin_answer` enum) fixes the words; changing an answer's wording changes what it means (CLAUDE.md §0.06). | **Keep the spec's words** unless the spec is changed first · small (copy) — but the enum values stay |
-| ATH-ADULT-09 | D4 | The gym logger drops the gold: logged keys, the progress fill and the "recommended" line move to the accent family. | Reverses the 2026-09-08 redesign decisions recorded in `05-gym-session.md` §13 and pinned by `test-gym-logger-redesign.ts` ("so it is not rebuilt a second time"). | **Reverse** — the board's one-accent rule reads better on the logger and the domain colour stays on the tab bar (12 D4 decides that) · medium |
-| ATH-ADULT-12 | D1 | My data draws five segments (Wellness, Gym, Sessions, Nutrition, Tests) instead of three plus a footer card. | Reverses the 8 September decision (`06-my-data.md` §3/§13; `test-my-data-redesign.ts` pins three) — the footer card exists because three destinations would otherwise be orphaned. | **Reverse to five** — five tabs answer the orphan objection directly; Leaderboards keeps its footer row · medium |
-| ATH-ADULT-12 | B3 | Segment labels at ~11px so five fit in 343px. | Depends on D1; `--fs-11` exists. | With D1 · small |
-| ATH-ADULT-12 | C9 | The five-segment row wraps to two rows at iOS Larger Text. | Depends on D1. | With D1 · small |
-| ATH-ADULT-12 | D2 | The active segment is a white card with a shadow, not a solid accent-filled pill. | Reverses the recorded decision in `base.css` (`.md-seg[aria-selected]`: "A SOLID ACCENT-FILLED PILL, not the card-coloured chip… 23e drew") and the guard. | **Reverse with D1** — one decision for the control · small |
-| ATH-ADULT-12 | D3 | Deltas are never coloured: muted ink, the figure in bold, ↑↓ not ▲▼ — "a lower RPE and a lower readiness do not mean the same thing". | Reverses `06-my-data.md` §13's green ▲ (guarded) and the amber down/off. | **Reverse** — the board's rule is the better one · small |
-| ATH-ADULT-12 | C4 | Deltas compare against the 28-day average ("↓ 0.1 vs your 28-day average") instead of "on last week". | A different comparison is a different metric (MET-001 against the prior week today); needs a `metrics.md` entry. | **Decide with D3**; if reversed, one registry entry · medium |
-| ATH-ADULT-12 / STAFF-SS-01 | D4 / D2 | The gym glyph loses its gold on the athlete tab bar and the staff sidebar; every icon neutral, the active one in the accent. | `AthleteTabBar` records "the only coloured icon in the product — gold in both themes" (spec §6); 09 D2 kept it; the staff sidebar draws it the same way. | **One decision for both shells** — recommend keep the gold (it is the product's one domain colour on navigation; the logger's own one-accent rule is separate) · small either way |
-| ATH-ADULT-12 | D5 | Readiness headlined "3.8 of 5" instead of 0–100. | MET-001 is a 0–100 composite in `docs/metrics.md`, shown as such in both apps; the board's own prompt calls the out-of-5 figure a placeholder until the composite is confirmed — it is. | **Keep 0–100** · none |
-| ATH-ADULT-12 | D7 | The readiness band in `--wash-accent` and the line in `--accent`, "accent and neutrals only". | `WellnessChart` is shared with staff pages (`--chart-wellness`); changing its colours changes staff screens. | If accepted, an athlete-only prop, not a change to the shared colours · small |
-| ATH-ADULT-12 | B6 | Hero eyebrows in `--faint` instead of `--muted`. | `.eyebrow` is shared with Today's section titles; a contrast step down on a shared class. | **Decline** · none |
+| ~~ATH-ADULT-08~~ | ~~D1~~ | ~~"Yes, most days / Some days / No".~~ **Declined** — Yes / Roughly / No stay · | | |
+| ~~ATH-ADULT-09~~ | ~~D4~~ | ~~The logger drops the gold.~~ **Reversed and built** (fill, keys — logged / current / not reached —, the live head, the deviation line "prescribed 100 kg · +2.5" in --muted; the gold stays on navigation) · | | |
+| ~~ATH-ADULT-12~~ | ~~D1~~ | ~~Five segments.~~ **Reversed and built** (Wellness · Gym · Sessions · Nutrition · Tests; Leaderboards keeps its footer row) · | | |
+| ~~ATH-ADULT-12~~ | ~~B3~~ | ~~Labels at 11px.~~ **Built** with D1 (`--fs-11`) · | | |
+| ~~ATH-ADULT-12~~ | ~~C9~~ | ~~Wraps at Larger Text.~~ **Built** with D1 (basis auto, flex-wrap) · | | |
+| ~~ATH-ADULT-12~~ | ~~D2~~ | ~~The active segment as a white card.~~ **Declined** — the accent-filled pill stays · | | |
+| ~~ATH-ADULT-12~~ | ~~D3~~ | ~~Deltas never coloured.~~ **Reversed and built** (`.rd-delta` and `.hist-delta` in --muted, the figure --text bold, ↑ ↓) · | | |
+| ~~ATH-ADULT-12~~ | ~~C4~~ | ~~Deltas vs the 28-day average.~~ **Declined** 2026-09-12 — the comparison stays "on last week" · | | |
+| ~~ATH-ADULT-12 / STAFF-SS-01~~ | ~~D4 / D2~~ | ~~The gym glyph loses its gold on navigation.~~ **Declined** 2026-09-12 — the gold stays on the athlete tab bar and the staff sidebar · | | |
+| ~~ATH-ADULT-12~~ | ~~D5~~ | ~~Readiness "of 5".~~ **Declined** — 0–100 stays · | | |
+| ~~ATH-ADULT-12~~ | ~~D7~~ | ~~Accent and neutrals only on the athlete's chart.~~ **Built** as `accentOnly`, an athlete-only prop (the line and band were already the accent; the out-of-range markers now are too on My data; staff pages unchanged) · | | |
+| ~~ATH-ADULT-12~~ | ~~B6~~ | ~~Eyebrows in --faint.~~ **Declined** · | | |
 | STAFF-SS-01 | — | (built) the bottom bar + More sheet, superseding §0af's compact top bar | decided and built `af09c17` | — |
-| PATTERN-S3 | D2 | A one-time "you were told" card at the top of the athlete's Today, above To do, displacing the availability line's emphasis until the status screen is opened. | Today is ATH-ADULT-02, built and signed off; "one emphasised card per screen" means the new card takes the emphasis from the availability line. | **Decide with C1** — recommend the card replaces the line only while unread · with C1 |
-| PATTERN-S3 | D1 | The coach sees the protocol stage today ("Return to play protocol, stage 3 of 6" on the allocation screen). | Either a seed string or an unenforced rule; the board says a coach never reads a stage. ⚠ permissions | **Enforce with C8** (the render drops the site and stage segments for the coach) · small |
+| PATTERN-S3 | D2 | A one-time "you were told" card at the top of the athlete's Today, displacing the availability line's emphasis until the status screen is opened. | **Decided 2026-09-12: reverse — the card takes the emphasis while unread.** Waits on C1 (the read flag, ⚠ migration), which is "not now". | With C1, when C1 is scheduled · — |
+| PATTERN-S4 | D1 | Sessions are live the moment they are created, moved or removed — no pending queue, no Publish, no Discard. | Reverses the schedule's held-until-publish model (07-schedule.md §6: one session published alone puts a half-updated week on phones; §0al's offline hold and the ghost/Restore were built on it today). Most of the S4 board (the grid-click popover writing on Add, a drag writing at once, the three-timeframe confirmation, "N sessions live") depends on this. | **Decide once.** If reversed: the publish machinery, the sessionStorage hold, the ghost/Restore and the banner go; each write is already its own audited act (0104) · large |
+| ~~PATTERN-S3~~ | ~~D1~~ | ~~The coach sees the protocol stage.~~ **Enforced** (`lib/restrictions.ts` drops protocol / stage / diagnosis entries from the restriction line at every query read, for every viewer; the seed no longer writes one — SS-02-05 C7 done with it) · | | |
 
 ## (c) Needs new data or a query
 
@@ -130,7 +131,7 @@ to create an injury record, and the `/injuries` board shows "+ Injury" to the co
 | STAFF-SS-02-05 | C3 / B2 | The phone profile gets a sticky 52px jump bar ("Flags · panel 1 of 10") and an "All panels" sheet listing every panel with a value each. | A new component; SS-01's sheet is the shape; the panel order is C4's. | After C4 · medium |
 | STAFF-SS-02-05 | C4 / B3 | Panels ordered by role from one library; a panel a role cannot see is absent — no heading, lock or count. | Needs the per-role, per-panel inventory the prompt's Step 1 asks for. **⚠ permissions** | The inventory first (a review), then the order · large |
 | STAFF-SS-02-05 | C5 | Read-only panels end with an owner line ("Read-only · set by medical staff · Ruth Callaghan · Fri 11 Sept"). | Who-and-when is not on every panel's last write (availability has `created_by`; plans and thresholds carry a time, not always a person). | Add the person where missing, then the line · medium |
-| STAFF-SS-02-05 | C7 | Restriction text never names a protocol or a diagnosis. | A rule on free text, not a render; the seed carries "Return to play protocol, stage 3 of 6". A2 (the hint) is the guidance half. | Fix the seed; keep the hint · small |
+| ~~STAFF-SS-02-05~~ | ~~C7~~ | ~~Restriction text never names a protocol.~~ **Built** with PATTERN-S3 D1 (the read-side filter and the seed) · | | |
 | STAFF-SS-02-05 | C9 | Body mass hidden from the coach by default, as a club setting. | A setting that does not exist. **⚠ migration ⚠ permissions** | Decide the default, then one setting + one render rule · medium |
 | PATTERN-S3 | C1 | The athlete is told once about a status change: an emphasised card on Today that stays until the status screen has been opened. | Needs a per-athlete read flag against the availability row. **⚠ migration** | With C2; the flag first · medium |
 | PATTERN-S3 | C2 | An athlete status screen answering three questions (can I train today / what can I do / when am I back), the restriction list as rows, the stage ladder, the academy slot. | A new athlete route; nothing like it exists (`/me` shows the line). | Own brief · large |
@@ -140,6 +141,21 @@ to create an injury record, and the `/injuries` board shows "+ Injury" to the co
 | PATTERN-S3 | C7 | Availability history: one row per change — time, status, the restriction line as it read then, what changed, who. Never edited; a correction adds a row. | No explicit previous value or author on every path. **⚠ migration** (a view over the table and the audit log) | Audit-trigger the availability table as 0104 did sessions, then the view · medium |
 | PATTERN-S3 | C8 | Body site and side are not coach-visible: a coach reads the status word, the restriction line and the expected return, nothing else. | Rendered to the coach today; the board puts it behind a club setting defaulting to off. **⚠ permissions ⚠ migration** | Decide the default; the render rule is small, RLS on the column is the real change · medium |
 | PATTERN-S3 | C9 | The injury form split by permission (clinical fields in their own column, save works without them) and a pitch-side four-field form at 44px. | A restructure of `NewInjuryForm` / `InjuryMedicalForm`. | **Build** after C8 decides what the coach's form carries · medium |
+| PATTERN-S4 | C2 / B1 / B3 | Clicking an empty grid slot opens a 320px popover anchored at the click (date and time pre-filled, drag sets the duration, a ghost holds the slot, flips at the edges; a bottom sheet on a phone) and "Add session" writes it. | Depends on D1 (writes on Add). `--grid-hour-h: 40px` and `--ring-invalid` are its tokens (the ring composes from `--bad-rgb`; the hour height is a new layout value). | With D1 · large |
+| PATTERN-S4 | C3 | A drag writes the move immediately; typed edits are held until Save changes. | Depends on D1. | With D1 · medium |
+| PATTERN-S4 | C4 | A session in the past, or already rated, opens read-only with the reason. | Needs the rule for editing a rated session (does the rating follow, detach or revise?). | Decide the rule first · small after |
+| PATTERN-S4 | C5 | Expected attendees are counted as distinct athletes across the selected groups, with the denominator ("0 of 30 athletes are expected"). | A query; and whether an unavailable athlete is still expected. | The same distinct count as SS-01 A3 and S5 C4 · medium |
+| PATTERN-S4 | C6 / B4 | The phone: day-first with the dashboard's week strip and 44px rows — no grid at 375. | A new phone layout for the schedule inside SS-01's shell. | **Build** · medium |
+| PATTERN-S4 | C7 | Applying a template states where each offset lands and what happens to what is already there. | `/schedule/planner/apply` restructure; merge-or-replace is undecided (Q5). | Decide merge/replace, then build · medium |
+| PATTERN-S4 | C8 | A group with no session reads a dash and "5 athletes · nothing scheduled", not 0m. | The stats panel lists only groups with sessions. | Read all groups; small · small |
+| PATTERN-S4 | C9 / C10 | The destructive confirmation answers three timeframes; every count states its denominator ("6 sessions live in the athlete app"). | Depend on D1. | With D1 · small after |
+| PATTERN-S5 | C1 | A logged set keeps the prescription it was logged against — reps, load and step snapshotted at logging, so editing a block never rewrites what a past set is compared to. | `gym_set_logs` holds the actuals and joins the programme exercise live. **⚠ migration** | **Build first** — it is what "Prescribed 100 kg · +2.5" on the logger (09 C1, approved) should read · medium |
+| PATTERN-S5 | C2 / C5 / C6 | Every prescription write states its effective date ("Save from Sat 12 Sept"; "38 sets already logged keep the prescription they were logged against"); the mid-block confirmation screen; the primary carries the number or date it commits. | With C1. | After C1 · medium |
+| PATTERN-S5 | C3 / C10 | The per-athlete adjustment screen: one card with controls, parent rows in `--muted`, a required note, remove-override as a tertiary; the phone version stacked. | The override note is not required server side (Q5). **⚠ migration** (a check) | Build with the check · medium |
+| PATTERN-S5 | C4 | An assignment's headline is the distinct athlete count, with its arithmetic. | The distinct-count query (S4 C5 / SS-01 A3). | With that query · small after |
+| PATTERN-S5 | C7 | A nutrition plan authored as rules per kilogram with the worked example, "not set" as a dashed frame, the squad mean with its n, "Coach-set guidance, not a clinical prescription". | `NutritionWorkspace` restructure; the rules exist as columns. | **Build** · medium |
+| PATTERN-S5 | C8 | "each side" beside a unilateral exercise's name. | The exercise record has no unilateral flag. **⚠ migration** | Schema first · small |
+| PATTERN-S5 | C9 | Weeks run down, sessions across; a week not reached reads "not reached", never 0 of 24. | The block view does not exist in this shape. | With C2 · medium |
 
 ## (d) Needs a new token
 
@@ -162,5 +178,5 @@ to create an injury record, and the `/injuries` board shows "+ Injury" to the co
 
 **Not on this sheet, because they were built:** every A item of 04, 06, 08, 09 (A3, A4), 10
 (A1), 12 (A1–A4), 13 (A1–A5), the STAFF-SS-01 shell (C1, A5, B1 for the shell), and
-STAFF-SS-02-05's A1–A6 with PATTERN-S3's A1–A3 (one commit, 2026-09-12) — see the records
-and the handovers in the commit log.
+STAFF-SS-02-05's A1–A6 with PATTERN-S3's A1–A3, PATTERN-S4's A1–A3 and A5–A8, and
+PATTERN-S5's A1 and A7 (2026-09-12) — see the records and the handovers in the commit log.

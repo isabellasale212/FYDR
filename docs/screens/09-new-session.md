@@ -59,8 +59,11 @@ non-positive duration on its own.
 expectation follows group membership as it changes. **At least one group is
 required** (since 12 September 2026, §0ai): the form refuses to submit without
 one and moves focus to the chips, and `createSession` refuses an empty group
-list — or a type the enum does not know — on its own. The type always has a
-value; the chips are single-select from the "Training" default.
+list — or a type the enum does not know — on its own. The refusal states the
+consequence (PATTERN-S4, 12 September 2026): "Choose at least one group. Without a
+group, nobody is expected at this session, so it will not appear on any athlete's
+Today." The type always has a value; the chips are single-select from the
+"Training" default.
 
 **Create and Cancel.**
 

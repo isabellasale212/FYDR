@@ -588,10 +588,14 @@ where a.org_id = 'a0000000-0000-4000-8000-000000000001'
 -- 9. Injuries, clinical detail and availability
 --
 -- Five injuries, each carrying an injury_clinical row that NO coach and NO athlete ever
--- sees in full. The Selby record is the interesting one: coaching staff read
--- "return to play protocol, stage 3 of 6" from availability.restrictions and never the
--- word on the clinical row. That is option 1 from 01-roles-and-permissions.md §4, which
--- is the recommendation while O-995 is open.
+-- sees in full. The Selby record is the interesting one: the return-to-play STAGE is a
+-- clinical fact and lives on the clinical row's treatment plan; the restriction line
+-- coaching staff read carries only what they act on ("no contact", "no collision
+-- drills"). Until 2026-09-12 this seed wrote "return to play protocol, stage 3 of 6"
+-- into availability.restrictions under option 1 of the superseded
+-- 01-roles-and-permissions.md §4; PATTERN-S3 D1 (Isabella, 2026-09-12) enforces the
+-- boundary — lib/restrictions.ts drops any such entry at every read — and the seed
+-- no longer writes one.
 -- ===========================================================================
 
 insert into injuries (id, org_id, athlete_id, body_area, side, onset_date, status,
@@ -689,7 +693,7 @@ insert into availability (org_id, athlete_id, status, restrictions, reason_categ
    'Reviewed daily. Contact decision Thursday morning.'),
   ('a0000000-0000-4000-8000-000000000001', 'a71e0000-0000-4000-8000-000000000007',
    'modified',
-   array['return to play protocol, stage 3 of 6', 'no contact', 'no collision drills'],
+   array['no contact', 'no collision drills'],
    'injury', '19700000-0000-4000-8000-000000000003',
    now() - interval '11 days', 'e5e20000-0000-4000-8000-00000000000d',
    'Stage advances one per 24 hours if symptom free. Reassessed Friday.'),

@@ -27,11 +27,18 @@ const rule = (sel: string): string => {
   return new RegExp(`(?:^|[}\\n])\\s*${esc}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? '';
 };
 
-console.log('what is deliberately unchanged (D4 — the 2026-09-08 colour decisions stand until reversed)');
+console.log('D4 — reversed 2026-09-12 (the logger is one accent; pinned in test-gym-logger-redesign.ts)');
 {
-  assert(/--gym-rgb/.test(rule('.gym-set-key[data-logged]')), 'logged keys are still gym-tinted');
-  assert(/--warn-pill-text/.test(rule('.gym-weight-label .n[data-warn]')), 'the "recommended" sub-line is still amber');
-  assert(/background:\s*var\(--gym\)/.test(rule('.gym-progress-fill')), 'the progress fill is still gold');
+  assert(!/--gym-rgb/.test(rule('.gym-set-key[data-logged]')), 'logged keys are no longer gym-tinted');
+  assert(!/--warn-pill-text/.test(rule('.gym-weight-label .n[data-warn]')), 'the deviation sub-line is no longer amber');
+  assert(!/background:\s*var\(--gym\)/.test(rule('.gym-progress-fill')), 'the progress fill is no longer gold');
+}
+
+console.log('B4 — the set keys stand on the 44px floor (decision sheet group (a), 2026-09-12)');
+{
+  const key = rule('.gym-set-key');
+  assert(/min-height:\s*44px/.test(key), 'a set key is at least 44px tall');
+  assert(!/42px/.test(key), 'the 42px height is gone');
 }
 
 console.log('\nA3/A4. spacing, and a pinned header');

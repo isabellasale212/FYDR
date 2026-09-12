@@ -3,6 +3,7 @@ import { humanizeDbError } from '@/lib/writeErrors';
 import { fetchCurrentAvailability, fetchOpenInjuries } from './availability';
 import { fetchCurrentSeasonId } from './schedule';
 import type { Db } from './groups';
+import { restrictionLine } from '@/lib/restrictions';
 
 /* screens/team-allocation.md, screen 14, cut down hard. No new schema: teams and
  * team_allocations have existed since migration 0003 and their RLS already matches
@@ -142,7 +143,7 @@ export async function fetchWeekBoard(db: Db, orgId: string, weekStart: string): 
     const injury = injuryByAthlete.get(athleteId);
     return {
       availability: current?.status ?? null,
-      restrictions: current?.restrictions ?? [],
+      restrictions: restrictionLine(current?.restrictions),
       body_area: injury?.body_area ?? null,
       side: injury?.side ?? null,
       expected_return: injury?.expected_return ?? null,

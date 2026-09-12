@@ -3734,9 +3734,10 @@ a.hist-row:focus-visible {
   overflow: hidden;
   margin-bottom: var(--sp-14);
 }
-/* SPEC §7.4, the set keys. One box a set, flex: 1, 42px tall, radius 12 —
-   logged takes the gold fill, border and a tick; pending shows its index on
-   the card border. */
+/* SPEC §7.4, the set keys. One box a set, flex: 1, 44px tall (the athlete
+   app's floor — 42px until 12 Sept 2026, ATH-ADULT-09 B4), radius 12 —
+   logged takes the accent fill, border and a tick; pending shows its index
+   on the card border. */
 .gym-set-keys {
   display: flex;
   gap: var(--sp-8);
@@ -3744,7 +3745,7 @@ a.hist-row:focus-visible {
 .gym-set-key {
   flex: 1;
   min-width: 0;
-  min-height: 42px;
+  min-height: 44px;
   border-radius: 12px;
   border: 1px solid var(--border);
   background: transparent;

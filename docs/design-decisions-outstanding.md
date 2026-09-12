@@ -62,7 +62,7 @@ to create an injury record, and the `/injuries` board shows "+ Injury" to the co
 |---|---|---|---|---|
 | ~~ATH-ADULT-04~~ | ~~C4~~ | ~~The check-in page would say *who* corrected an entry.~~ **Built with C1** — visibility.md withholds nothing about it and My data already names the person; "Corrected by {name} on {date}" · | | |
 | ~~ATH-ADULT-06~~ | ~~C1~~ | ~~A subhead under the RPE title.~~ **Kept as built** (decided 2026-09-12) · | | |
-| ATH-ADULT-09 | B4 | The set keys (the buttons an athlete taps to log a set) go from 42px to 44px tall — the app's own floor. | Recorded as "44px minimum with the rebuild"; also §0u's second bullet. Not a token: 44 is the floor every other athlete control uses. | **Build now** — one rule, independent of the rebuild · small |
+| ~~ATH-ADULT-09~~ | ~~B4~~ | ~~The set keys go from 42px to 44px tall.~~ **Built** · | | |
 | ~~ATH-ADULT-09~~ | ~~C5~~ | ~~Wake Lock and a buzz on log.~~ **Built** (`lib/wakeLock.ts`; on open, on visibility, released on leave; 10 ms buzz where present) · | | |
 | ATH-ADULT-10 | C1 | "Finish early" moves from the footer to the header, leaving the footer to logging. | On the live screen the footer's only action IS finish; moving it leaves a note alone. Belongs with the 09 rebuild. | **Wait for 09 C1**; keep as built · small |
 | ~~ATH-ADULT-13~~ | ~~C4~~ | ~~"4 of 6 shown".~~ **Declined** · | | |

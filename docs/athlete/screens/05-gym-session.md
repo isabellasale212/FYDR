@@ -127,6 +127,9 @@ than drop it.
 - **Supported browsers.** UNVERIFIED: no browser support policy found.
 - **Thumb reach.** The primary action sits at the bottom of the screen on the
   entry forms, which is the reachable third on a phone.
+- **Target size.** Every set key stands on the athlete app's 44px floor
+  (`.gym-set-key { min-height: 44px }`; 42px until 12 September 2026 —
+  ATH-ADULT-09 B4, built ahead of the set-by-set rebuild).
 
 ## 12. Open issues
 

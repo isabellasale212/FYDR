@@ -1418,17 +1418,27 @@ reviews; the sport scientist administers. **Neither can complete the flow alone.
 
 - `/analytics` — `ANALYTICS`.
 - `/schedule` **editing**, `/schedule/new`, `/schedule/fixtures/*`,
-  `/schedule/planner/*`, `/timetable` — `SESSION_EDIT`. G-33 took scheduling off
+  `/schedule/planner/*` — `SESSION_EDIT`. G-33 took scheduling off
   this role; RLS enforces it, and the schedule screen renders the read-only line.
-  **`/injuries/team-allocation` is NOT on this list** — corrected 2026-09-10: it
-  is `requireInjuryAccess`, which the medic holds, not `SESSION_EDIT`.
-- `/settings/groups`, `/settings/thresholds` — `GROUP_EDIT` / `THRESHOLD_EDIT`.
+  **`/timetable` is NOT on this list** — corrected 2026-09-12: the 2026-09-06
+  decision (migration 0076) opened the timetable to every staff role; measured
+  open for the medic. **`/injuries/team-allocation` is NOT on this list** —
+  corrected 2026-09-10: it is `requireInjuryAccess`, which the medic holds, not
+  `SESSION_EDIT` (the allocation selects are `SESSION_EDIT`'s; the medic reads).
+- `/settings/thresholds` — `THRESHOLD_EDIT`; renders an in-page refusal, not a
+  redirect. **`/settings/groups` opens** (the list is `requireStaff()`; "+ New
+  group" absent) — corrected 2026-09-12 — and its reorder arrows render for the
+  medic although `groups_staff_update` refuses the write: a silent no-op, to-do §0az.
 - `/settings/audit`, `/settings/retention`, `/settings/users*`, `/squad/new` —
   `SETTINGS_ADMIN`.
 - `/settings/imports` — `GPS_IMPORT`.
-- Leaderboard publishing — `LEADERBOARD_EDIT`.
+- Leaderboard publishing — `LEADERBOARD_EDIT`: `/leaderboards/new` bounces to
+  `/leaderboards/manage`, which opens and still offers "+ New leaderboard" (§0az).
+  The board page gives the medic "Suppress an athlete" (the medical suppression)
+  and no Board actions.
 - Nutrition plan authoring — `NUTRITION_EDIT`; and the **meal library**, which
-  needs `MEAL_LIBRARY_EDIT` the medic does not hold.
+  needs `MEAL_LIBRARY_EDIT` the medic does not hold — `/nutrition` opens as a
+  view and "+ Meal" renders `disabled` with no reason (§0az).
 
 ---
 

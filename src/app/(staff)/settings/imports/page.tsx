@@ -130,12 +130,17 @@ export default async function ImportsPage({ searchParams }: { searchParams: Sear
             </div>
           )}
           <p className="cap">
-            Each export contains the accepted GPS records that batch inserted, matched by batch,
-            not by date — so re-importing the same session stays separable. Rejected rows are not
-            stored and cannot be exported. An export is a record of what was imported, not an
-            import file: to upload, start from the template on the form above. There is no revert
-            and no duplicate detection yet — re-uploading the same file makes a second batch of the
-            same rows. Check the list above before re-uploading.
+            {/* §0as (2026-09-12): this used to end "no duplicate detection yet —
+                re-uploading the same file makes a second batch of the same rows",
+                false since 0064/0072: gps_records is unique per athlete, date
+                and session and commitGpsImport upserts on those columns, so a
+                re-upload replaces. "No revert" is still true. */}
+            Each export contains the accepted GPS records that batch wrote, matched by batch, not
+            by date. Rejected rows are not stored and cannot be exported. An export is a record of
+            what was imported, not an import file: to upload, start from the template on the form
+            above. There is no revert. Re-uploading a corrected file replaces the rows it matches
+            — the same athlete, date and session — and adds the rest; nothing is doubled. The
+            history above records which upload last wrote each row.
           </p>
         </section>
       </div>

@@ -101,10 +101,10 @@ rejection given a row number and a reason.
 - **The S&C cannot reach this**, although GPS is central to their work. Part of
   the role remap, decision D-07.
 - **Two displayed measures can never be uploaded.** Decision D-24.
-- **Resolved, and it is a serious defect. Re-uploading duplicates every row.**
-  The import always inserts (`src/lib/queries/gpsImport.ts:234`), there is no
-  replace or merge, and no unique constraint exists to catch it: the three indexes
-  on the records table are ordinary, not unique
-  (`supabase/migrations/0023_gps_records.sql:99`). Upload the same file twice and
-  every distance doubles, silently. Decision D-42, ranked with the high risk
-  items.
+- **Closed. Re-uploading no longer duplicates rows** — since migrations 0064/0072
+  `gps_records` is unique per `(org_id, athlete_id, record_date, session_id)` and
+  `commitGpsImport` upserts on exactly those columns, so a re-upload replaces the
+  rows it matches and adds the rest; the new batch id goes with the replaced rows.
+  There is still no revert. The page's own caption said the opposite until
+  12 September 2026 (§0as) and now says what the upsert does. (Original finding,
+  D-42: the import always inserted and no unique constraint existed.)

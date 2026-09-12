@@ -31,3 +31,5 @@
 - **STAFF-SS-02-05 C9: the rule covers the whole Body weight section for the coach, not only the three buttons** (Q27 closed).
 - **§0av, injury two-doors: keep the coach's create permission; add "+ Injury" on the `/injuries` board for the coach; the coach's form is the non-clinical one (S3 C9).**
 
+10. **Should the admin be able to read a clinician's SAR withholding reason at the database?** Measured 2026-09-12 with each role's own session against PostgREST on scratch: `sar_clinical_reviews` (decision include/withhold, injury_id, and the free-text `reason` that 0032 requires for a withholding) returns rows to the medic **and to the sport scientist**; every other clinical table returns rows to the medic alone. 0032's policy names "admin, medical" on purpose — the admin assembles the pack and must know what was withheld — and no admin screen renders the reason (the review page is `CLINICAL_ONLY`). The question is whether the *reason* should be admin-readable at all, or whether the admin needs only the decision. Compliance call (security doc §6); not filed as a defect.
+

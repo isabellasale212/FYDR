@@ -1360,7 +1360,7 @@ Holds `CLINICAL_ONLY` **alone**, plus `REHAB_PROGRAMME`, `PROGRAMME_AUTHOR`,
 | ID | Flow | Entry point |
 |---|---|---|
 | STAFF-MEDIC-01 | Read the dashboard | sidebar "Dashboard" |
-| STAFF-MEDIC-02 | Browse the squad | sidebar "Squad overview" |
+| STAFF-MEDIC-02 | Browse the squad — minus "Add athlete" (`SETTINGS_ADMIN`), measured 2026-09-12 | sidebar "Squad overview" |
 | STAFF-MEDIC-16/17/18/20/21/22 | Reports and exports | sidebar "Reports" |
 | STAFF-MEDIC-25 | Explore the leaderboard wall | sidebar "Leaderboard" |
 | STAFF-MEDIC-29 | Settings hub — own profile only | sidebar "Settings" |
@@ -1370,8 +1370,15 @@ Holds `CLINICAL_ONLY` **alone**, plus `REHAB_PROGRAMME`, `PROGRAMME_AUTHOR`,
 
 ### STAFF-MEDIC-05 — Athlete profile: the only role that sees clinical detail
 
-Identical to STAFF-SS-05, **plus** diagnosis and mechanism. The medic is the
-only staff role that reads them — the sport scientist does not.
+Identical to STAFF-SS-05, **plus** the clinical Injury panel — onset, diagnosis,
+mechanism, severity, tissue type, imaging, treatment plan, with "Edit" and
+"Manage injury & programme →" to `/injuries/{id}` — and **minus** the "Subject
+access request" section (`SETTINGS_ADMIN`). Measured 2026-09-12 as Ruth
+Callaghan: 227 leaves to the sport scientist's 211; 3,378px / 6,134px at phone.
+The medic is the only staff role that reads the clinical panel — verified at the
+database on the same day: `injury_clinical`, `problem_reports` and
+`problem_report_notes` return rows to the medic's session and zero to every
+other role's, the admin included (`docs/walkthrough-reviews/staff-medic-01-to-05-review.md`).
 
 ### STAFF-MEDIC-19 — The injuries report
 

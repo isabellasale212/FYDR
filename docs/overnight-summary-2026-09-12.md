@@ -79,9 +79,25 @@ pushed. Records: `docs/overnight-records-2026-09-12.md`. Questions:
 - `06-my-data.md` §10 still says the period control is gone; the code has had it back since
   the same afternoon and §12 records the disagreement as a decision.
 
+## Added after the queue — §0ad (compliance cutoff), morning of 2026-09-12
+
+- `9ec24c8` **§0ad** — an RPE counts only if its original submission was before `rpeClosesAt`
+  (`rpeSubmittedInTime`, `lib/complianceRpe.ts`); matched per session; the report reads
+  originals from `training_entries`. Scratch, this season: 284 of 631 (was 302 under the
+  old rule — 17 double-credited day matches, 1 genuinely late).
+- `d02ae17`, `922f2ff` — merges of `origin/athlete-spec-builder`; the same questions-file
+  conflict twice (the reviewer's branch has no Builder section), resolved as ruled:
+  their Reviewer list, then Builder 1–6.
+- `67cf9aa` **Builder Q5** — the athlete report's compliance figure uses the same
+  classifier and the same session read (`queries/rpeSessionWindows.ts`). James Barnes,
+  this season: 51% (was 52%).
+- `0c63b4c` **Builder Q6** — the outbox sends `queuedAt`; migration 0105's trigger keeps
+  it only when earlier than arrival and within 24 hours (pgTAP 610: kept at 2h and 24h,
+  arrival at 30h and for a clock set ahead; a staff correction untouched). Scratch only.
+
 ## Prebuild chain
 
 `… && test:ath-adult-04 && test:ath-adult-06 && test:ath-adult-08 && test:ath-adult-09 &&
-test:ath-adult-10 && test:ath-adult-12 && test:ath-adult-13` — 17 new TS guards in the chain
-tonight (brand-accent through ath-adult-13) plus two pgTAP files (590, 600), all green at
-`ab3d97e`.
+test:ath-adult-10 && test:ath-adult-12 && test:ath-adult-13 && test:rpe-compliance-cutoff` — 18
+new TS guards in the chain (brand-accent through rpe-compliance-cutoff) plus three pgTAP
+files (590, 600, 610), all green at `0c63b4c`.

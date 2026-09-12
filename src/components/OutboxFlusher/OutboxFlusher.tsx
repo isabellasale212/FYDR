@@ -7,7 +7,6 @@ import {
   dequeueNutritionCheckin,
   dequeueTraining,
   dequeueWellness,
-  markGymSetConflict,
   markNutritionCheckinConflict,
   markTrainingConflict,
   markWellnessConflict,
@@ -15,7 +14,6 @@ import {
   pendingNutritionCheckins,
   pendingTraining,
   pendingWellness,
-  type PendingGymSetLog,
   type PendingNutritionCheckin,
   type PendingTraining,
   type PendingWellness,
@@ -23,8 +21,9 @@ import {
 import { submitWellnessEntry, fetchWellnessDay } from '@/lib/queries/wellness';
 import { submitTrainingEntry, fetchTrainingEntryForSession } from '@/lib/queries/training';
 import { submitCheckin, fetchCheckinForWeek } from '@/lib/queries/nutrition';
-import { fetchGymSetForSlot, fetchGymSetNaming, reviseGymSetLog, submitGymSetLog } from '@/lib/queries/programmes';
-import { classifyGymSetConflict, describeGymSet } from '@/lib/gymSetConflict';
+import { reviseGymSetLog } from '@/lib/queries/programmes';
+import { describeGymSet } from '@/lib/gymSetConflict';
+import { flushGymSets, isDuplicateKeyError, type ConflictOutcome } from '@/lib/gymOutboxFlush';
 import { createClient } from '@/lib/supabase/client';
 import type { Db } from '@/lib/queries/groups';
 import { formatDate } from '@/lib/format';
@@ -40,11 +39,9 @@ type Props = { orgId: string; athleteId: string; userId: string; timezone: strin
  *  (CheckInForm/RpeForm/NutritionCheckinForm) prevents the fast-double-tap
  *  route to (b) at the source; this is defence in depth for the case it
  *  still happens across two tabs or two devices. */
-function isDuplicateKeyError(err: unknown): boolean {
-  return err instanceof Error && err.message.toLowerCase().includes('duplicate key');
-}
-
-type ConflictOutcome = 'delivered' | 'conflict' | 'unknown';
+/* isDuplicateKeyError and ConflictOutcome live in lib/gymOutboxFlush.ts since
+   ATH-ADULT-09 C4, with the gym resolver; the three resolvers below are the
+   same shape. */
 
 /** Disambiguates (a) from (b) above by asking the *_current view, keyed by
  *  the same identity the slot's own unique index is built from, which id is
@@ -101,29 +98,8 @@ async function resolveNutritionConflict(
   }
 }
 
-/** The gym version — §0aa, decided 2026-09-12. Same shape as the three above,
- *  with one more thing to say: gym is the domain where "another row is live"
- *  can still mean the athlete's numbers are safe (a second tab logged the
- *  SAME set), and where a different row is a loss of their numbers, not just
- *  a duplicate. So the lookup returns the row's values, the decision compares
- *  them (lib/gymSetConflict.ts), and a real conflict stores what is live so
- *  Today can show both sets of numbers. */
-async function resolveGymSetConflict(
-  db: Db,
-  athleteId: string,
-  item: PendingGymSetLog,
-): Promise<ConflictOutcome> {
-  void athleteId; // RLS scopes gym_set_logs_current to the athlete's own rows
-  try {
-    const live = await fetchGymSetForSlot(db, item.input);
-    if (classifyGymSetConflict(item.input, live) === 'delivered') return 'delivered';
-    const naming = await fetchGymSetNaming(db, item.input.exercise_id, item.input.gym_session_log_id);
-    markGymSetConflict(item.input.id, live ? { ...live, ...naming } : null);
-    return 'conflict';
-  } catch {
-    return 'unknown';
-  }
-}
+/* The gym version — §0aa — is resolveGymSetConflict in lib/gymOutboxFlush.ts,
+   shared with the logger since ATH-ADULT-09 C4. */
 
 type ConflictDomain = 'wellness' | 'training' | 'nutrition' | 'gym';
 type ConflictItem = {
@@ -235,12 +211,12 @@ export function OutboxFlusher({ orgId, athleteId, userId, timezone }: Props) {
       const wellnessItems = pendingWellness().filter((item) => !item.conflictAt);
       const trainingItems = pendingTraining().filter((item) => !item.conflictAt);
       const nutritionItems = pendingNutritionCheckins().filter((item) => !item.conflictAt);
-      const gymSetItems = pendingGymSetLogs().filter((item) => !item.conflictAt);
+      const gymSetCount = pendingGymSetLogs().filter((item) => !item.conflictAt).length;
       if (
         wellnessItems.length === 0 &&
         trainingItems.length === 0 &&
         nutritionItems.length === 0 &&
-        gymSetItems.length === 0
+        gymSetCount === 0
       )
         return;
 
@@ -323,28 +299,10 @@ export function OutboxFlusher({ orgId, athleteId, userId, timezone }: Props) {
         }
       }
 
-      for (const item of gymSetItems) {
-        try {
-          await submitGymSetLog(db, orgId, item.input);
-          dequeueGymSetLog(item.input.id);
-          sent += 1;
-        } catch (err) {
-          if (isDuplicateKeyError(err)) {
-            /* §0aa (2026-09-12): the same fetch-before-conclude guard as the
-               three loops above. It used to dequeue here unconditionally —
-               every collision read as the athlete's own replay — so a set
-               queued offline whose slot another tab had since filled with
-               different numbers was dropped without a word. */
-            const outcome = await resolveGymSetConflict(db, athleteId, item);
-            if (outcome === 'delivered') {
-              dequeueGymSetLog(item.input.id);
-              sent += 1;
-            }
-            /* 'conflict' is already marked by the resolver; 'unknown' stays
-               queued for the next flush, like any other no-signal failure. */
-          }
-        }
-      }
+      /* The gym loop — §0aa's fetch-before-conclude guard included — is
+         flushGymSets, shared with the logger (ATH-ADULT-09 C4). */
+      const gym = await flushGymSets(db, orgId, athleteId);
+      sent += gym.sent;
 
       if (cancelled) return;
       const after = snapshot(timezone);

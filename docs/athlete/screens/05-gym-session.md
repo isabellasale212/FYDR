@@ -83,6 +83,11 @@ gym with no bars must never be shown a network error for something they have
 already done.
 
 - **Queued in `localStorage`**, one key per domain.
+- **Retried from the logger itself** (ATH-ADULT-09 C4, 12 September 2026): the
+  screen retries its own session's queued sets when it opens and the moment
+  the browser fires `online`, and refreshes so they appear as logged rows.
+  Today's flusher keeps retrying everything, including a session the athlete
+  closed. One function, `lib/gymOutboxFlush.ts`, does both.
 - **Retried on the next load** of the app.
 - **If the app is closed before sync completes**, the entry is still in the queue
   and goes on the next open.
@@ -102,8 +107,12 @@ already done.
   item). Nothing is guessed: a collision the lookup cannot explain is also
   surfaced.
 
-**UNVERIFIED: what the athlete sees while an entry is queued.** Looked in
-`src/lib/outbox.ts` and the screen's own component.
+**What the athlete sees while a set is queued** (C4): the progress row reads
+"6 of 12 sets · 2 waiting to send" — the count of this session's sets that
+have not reached the server, beside the count that has. A set that fails to
+send still shows its error and the tick is still the fast retry; the count is
+what stays on screen after the error is gone. A flagged conflict is not
+counted as waiting — it is Today's to show.
 
 ## 8. Notifications
 

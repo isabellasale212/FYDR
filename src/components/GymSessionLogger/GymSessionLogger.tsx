@@ -12,6 +12,7 @@ import {
   type ResolvedExercise,
 } from '@/lib/queries/programmes';
 import { enqueueGymSetLog, dequeueGymSetLog } from '@/lib/outbox';
+import { flushGymSets, queuedGymSets } from '@/lib/gymOutboxFlush';
 import { GymSetLogInput } from '@/lib/validation/gym';
 import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { loadLabel, schemeLine } from '@/lib/gymPrescription';
@@ -28,6 +29,8 @@ function elapsed(startedAt: string | null, now: number): string {
 
 type Props = {
   orgId: string;
+  /** For the queued-set retry's conflict lookup (lib/gymOutboxFlush.ts). */
+  athleteId: string;
   gymSessionLogId: string;
   sessionName: string;
   /** Programme, block, week and day — the design's eyebrow above the name. */
@@ -71,6 +74,7 @@ type Props = {
  */
 export function GymSessionLogger({
   orgId,
+  athleteId,
   gymSessionLogId,
   sessionName,
   sessionMeta,
@@ -124,6 +128,37 @@ export function GymSessionLogger({
       void releaseWakeLock(sentinel);
     };
   }, []);
+
+  /* ATH-ADULT-09 C4 (2026-09-12): this session's queued sets are retried
+     from here — on open, and the moment the browser says it is back online
+     — not only by Today's flusher. `waiting` is what the progress row calls
+     "· 2 waiting to send"; it is read from the outbox in an effect so the
+     server render and the first client render agree (the server has no
+     outbox). A retry that lands refreshes the page so the sets appear as
+     logged rows. */
+  const [waiting, setWaiting] = useState(0);
+  useEffect(() => {
+    let gone = false;
+    const retry = async () => {
+      setWaiting(queuedGymSets(gymSessionLogId));
+      if (queuedGymSets(gymSessionLogId) === 0) return;
+      const { sent } = await flushGymSets(createClient(), orgId, athleteId, { sessionLogId: gymSessionLogId });
+      if (gone) return;
+      setWaiting(queuedGymSets(gymSessionLogId));
+      if (sent > 0) {
+        /* The "check your signal" line from the failed tap is stale once the
+           set has landed — measured: it stayed on screen after the retry. */
+        setError(null);
+        router.refresh();
+      }
+    };
+    void retry();
+    window.addEventListener('online', retry);
+    return () => {
+      gone = true;
+      window.removeEventListener('online', retry);
+    };
+  }, [orgId, athleteId, gymSessionLogId, router]);
 
   // Restored in an effect, not in the initial state, so the server render and
   // the first client render agree.
@@ -257,6 +292,9 @@ export function GymSessionLogger({
       router.refresh();
     },
     onError: (err) => setError(toUserMessage(err, 'athlete')),
+    /* Sent or not, the waiting count is read back from the outbox: a failed
+       set is now "waiting to send" on the progress row as well as an error. */
+    onSettled: () => setWaiting(queuedGymSets(gymSessionLogId)),
   });
 
   /* The step is the exercise's own (ex.weight_step_kg, migration 0108 —
@@ -402,6 +440,13 @@ export function GymSessionLogger({
           </div>
           <span className="prog num">
             {doneCount} of {totalSets} sets
+            {/* C4: what has not reached the server yet, on the same row —
+                "6 of 12 sets · 2 waiting to send". */}
+            {waiting > 0 ? (
+              <>
+                {' '}&middot; {waiting} waiting to send
+              </>
+            ) : null}
             {/* On the progress row, not on a utility line of its own: the clock
                 is back without the Close/timer bar the reference removed. */}
             {!alreadyComplete && startedAt ? (

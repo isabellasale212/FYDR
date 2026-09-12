@@ -60,6 +60,7 @@ export default async function GymSessionPage({
   return (
     <GymSessionLogger
       orgId={orgId}
+      athleteId={athleteId}
       timezone={timezone}
       gymSessionLogId={gymSessionLogId}
       sessionName={mine?.session_name ?? 'Gym session'}

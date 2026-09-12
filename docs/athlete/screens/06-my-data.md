@@ -33,7 +33,10 @@ all-tests page; the link is that route, not a new one.
 (ATH-ADULT-12, 12 September 2026). A wellness day with no entry reads "No
 morning check-in" on the detail line and **"Not submitted"** in the value
 column; a gym session with no tonnage and a test with no result read **"Not
-logged"**. The words sit in the value column at 13px/600 in `--faint`, on one
+logged"**. A session's tonnage is derived from its live sets at read time
+(`gym_session_logs_current`, migration 0106, §0at) — before that the stored
+column was written only after a correction, and almost every real session read
+"Not logged". "No tonnage" now means no set carried a load. The words sit in the value column at 13px/600 in `--faint`, on one
 line — the wellness value track is 92px to hold them. The Sessions table keeps
 the app-wide table blank ('·') until its own rebuild; see §14.
 

@@ -552,7 +552,7 @@ create table gym_session_logs (
   started_at           timestamptz,
   completed_at         timestamptz,
   session_rpe          numeric(3,1),
-  total_volume_kg      numeric(10,1),         -- computed sum of set volume
+  total_volume_kg      numeric(10,1),         -- DEAD as a source since 0106: the view derives it
   status               gym_log_status not null default 'in_progress',  -- in_progress|complete|abandoned
   comment              text,
   source               data_source not null default 'self_report',
@@ -1637,6 +1637,14 @@ create view training_entries_current   with (security_invoker = true) as
 
 Every read of "current" data goes through these views rather than the base tables. They are
 `security_invoker`, so the base table policies in §14 apply unchanged.
+
+**`gym_session_logs_current` and `gym_set_logs_current`** (0045) are the gym pair. Since
+0106 (§0at, 12 September 2026) `gym_session_logs_current.total_volume_kg` is **derived, not
+stored**: the sum of the live sets' `volume_kg` over the sets that carry both reps and a
+load, null when none does. The base column `gym_session_logs.total_volume_kg` is dead as a
+source — it was written only by 0045's correction RPC and by nothing on ordinary logging,
+so 41 of 45 complete sessions on scratch carried a null. One source of truth, nothing to
+backfill; measured at 0.5 ms for a whole org through the view.
 
 Nutrition's own current-revision view sits over `nutrition_checkins`, not `nutrition_entries` —
 this section used to name the latter, which was never actually built. `nutrition_entries` is

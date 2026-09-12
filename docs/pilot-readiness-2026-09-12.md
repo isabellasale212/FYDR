@@ -46,6 +46,8 @@ Visible and embarrassing; no harm.
 - ~~**§0ap L1331** — Exports says "Coach access" to the sport scientist.~~ **Closed, `e59dceb`.**
 - ~~**§0as** — the GPS import page says re-uploading duplicates rows.~~ **Closed, `effc471`.**
 - **§0aq L1339** — failed sign-ins from Dublin take 1.1–1.6 s, above the 800 ms floor; profile and decide whether to raise `FAILED_SIGN_IN_MIN_MS`.
+- **§0ba (new, decided 2026-09-12)** — SAR withholding: the admin reads a category, not the medic's free text. Schema change; before pilot, not blocking.
+- **§0az (direction decided 2026-09-12)** — silent no-op controls (the group reorder arrows first) get the `BlockedButton` treatment.
 - ~~**STAFF-SS-01 D1**~~ — **decided 2026-09-12 (Isabella): the staff phone shell is a bottom bar with a "More" sheet**, superseding §0af's top bar. Staff phone work can proceed against the STAFF-SS-01 board.
 - **§0e L181** — "some pages, including a forgot-password page, show the wrong logo": `/login/reset` measured correct on production; needs you to say where you saw it before anyone can fix it.
 - ~~**§0e L244–251** — move production to London.~~ **Decided against 2026-09-12:** production stays in eu-west-1; the compliance doc now states Ireland and the EEA-adequacy basis and withdraws the "stays in the UK" claim.
@@ -85,7 +87,7 @@ Accessibility, cosmetics, deferred features, and process notes.
 - **§0b L720** — warn before granting a role that combines with nutritionist.
 - **§0b L733** — Settings designed as one coherent screen.
 - **§0b L735 / L736 / L737 / L738 / L743 / L744 / L745** — reopen a dismissed flag; GPS halves; the D-11 verdict cutoffs (not found by grep — verify); warn before editing a board's measure (no such edit exists in the UI today); exercise delete; programme-edit warning; programme versioning.
-- **§0b L748–751, §3 L1988, §2 L1982** — the shared offline-then-sync foundation, service worker and IndexedDB. Large; §0al's narrow fix (group 1) is the pilot-relevant slice.
+- **§0b L748–751, §3 L1988, §2 L1982** — the shared offline-then-sync foundation, service worker and IndexedDB. **Decided 2026-09-12: post-pilot; the limitation is stated plainly to the club** (the medic's pitch-side case recorded against it).
 - **§0b L752** — club-configurable positional groupings (a rugby pilot uses the hardcoded six).
 - **§0b L754** — two "sync" buttons with the same name.
 - **§0b L758** — the retention run is not resumable or transactional; no retention period elapses in a pilot.

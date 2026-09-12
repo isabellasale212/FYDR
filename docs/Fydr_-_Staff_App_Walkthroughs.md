@@ -1256,7 +1256,7 @@ Holds `SESSION_EDIT`, `THRESHOLD_EDIT`, `GROUP_EDIT`, `AVAILABILITY_EDIT`,
 
 ## Identical to the sport scientist
 
-**Verified 2026-09-12 for 01, 02, 05, 07, 08 to 15, 16, 17/18/20/21/22, 25 and 26** by fingerprinting each
+**Verified 2026-09-12 for 01, 02, 05, 07, 08 to 15, 16, 17/18/20/21/22, 25, 26, 30c, 30h and 33** by fingerprinting each
 route for a coach (Mark Iremonger) and the sport scientist at 1280 and 375 — headings,
 controls, every leaf node, page height — and diffing (10 and 11 by driving Edit mode,
 the panel and the remove confirmation for both). Identical except:
@@ -1282,7 +1282,7 @@ by the More sheet's missing "Analytics" row.
 | STAFF-COACH-17/18/20/21/22 | Athlete, compliance, squad, testing, training reports | by route |
 | STAFF-COACH-25 | Explore the leaderboard wall | sidebar "Leaderboard" |
 | STAFF-COACH-26 | Publish and manage leaderboards | "Manage published boards →" |
-| STAFF-COACH-29 | Settings hub — own profile, photo, password only | sidebar "Settings" |
+| STAFF-COACH-29 | Settings hub — **not** identical: seven sections (no Club details, no plan switch) and six list rows (Thresholds, Password and two-factor, Exports, Groups, Notifications, Log out); the Integrations "Connected" / "Open" links bounce the coach back to the hub (measured 2026-09-12, to-do §0av) | sidebar "Settings" |
 | STAFF-COACH-30c | Groups | `/settings/groups` |
 | STAFF-COACH-30h | Thresholds | `/settings/thresholds` |
 | STAFF-COACH-33 | Print a screen | "Print" |

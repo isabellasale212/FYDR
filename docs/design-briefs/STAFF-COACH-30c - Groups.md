@@ -1,181 +1,92 @@
-# Design brief — STAFF-SHELL, the staff layout below 768px
+# Design brief — STAFF-COACH-30c, Groups
 
 **For Claude Design.** Everything below is the current state, measured on the
-running application on 2026-09-11 at **375×812** as a sport scientist. Nothing
-here is aspirational.
+running application on 2026-09-12 at **1280×900 and 375×812** as a coach (Mark
+Iremonger, one role). Nothing here is aspirational.
 
-**This is a shell brief, not a flow brief.** It covers the frame every staff
-screen renders inside at phone width. **It goes to Claude Design before any
-staff flow is implemented**, because every staff flow's phone measurement sits
-underneath the thing this brief is about — and a proposal for any one flow
-that redesigns the shell would be redesigning all forty.
-
-**Persona.** An experienced sport scientist at a semi-pro rugby club who is also
-the club's Fydr admin. At a desk on Monday; at the side of the pitch on Thursday
-with a phone, wanting to know who is missing from wellness before the session
-starts.
+**Read the STAFF-SHELL brief and the STAFF-SS-30 brief first.** The phone shell
+is built (`af09c17` + `6a2f1d4`); this flow is measured on it. Where the coach's
+screen is identical to the sport scientist's by measurement, the SS-30 brief is
+the design surface; this brief carries what differs for the coach and what the
+sport scientist's review could not see.
 
 ---
 
-## 1. What exists now — measured
+## 1. The flow, verbatim from the walkthrough document
 
-The staff app is a two-column grid, `.app`, with the sidebar as a column:
+*From the coach section (identical table):*
 
-| Width | Sidebar | Rule |
+| ID | Flow | Entry point |
 |---|---|---|
-| ≥ 1024px | **236px** column, `position: sticky`, `height: 100vh`, scrolls itself | base |
-| 768–1023px | **64px** collapsed rail (`grid-template-columns: 64px minmax(0,1fr)`) | `@media (min-width: 768px) and (max-width: 1023px)` |
-| **< 768px** | **`position: static; height: auto`** — stacks full-width **above** the content | `@media (max-width: 767px)` |
+| STAFF-COACH-01 | Read the dashboard | sidebar "Dashboard" |
+| STAFF-COACH-02 | Browse the squad and filter by group | sidebar "Squad overview" |
+| STAFF-COACH-05 | Open an athlete's profile | athlete name on `/squad` |
+| STAFF-COACH-07 | Read the week's schedule | sidebar "Schedule" |
+| STAFF-COACH-08 | Create a session | "+ Session" |
+| STAFF-COACH-09 | Create a fixture | "+ Fixture" |
+| STAFF-COACH-10 | Edit a session in the grid | click a block in Edit mode |
+| STAFF-COACH-11 | Remove a session, and restore it | "Remove session" |
+| STAFF-COACH-12 | Use the edit-mode toolbar | `/schedule` Edit mode |
+| STAFF-COACH-13 | Publish the week to athletes | banner |
+| STAFF-COACH-14 | Discard every pending change | banner "Discard" |
+| STAFF-COACH-15 | Manage week templates | "Week templates" |
+| STAFF-COACH-16 | Squad report and export | sidebar "Reports" |
+| STAFF-COACH-17/18/20/21/22 | Athlete, compliance, squad, testing, training reports | by route |
+| STAFF-COACH-25 | Explore the leaderboard wall | sidebar "Leaderboard" |
+| STAFF-COACH-26 | Publish and manage leaderboards | "Manage published boards →" |
+| STAFF-COACH-29 | Settings hub — **not** identical: seven sections (no Club details, no plan switch) and six list rows (Thresholds, Password and two-factor, Exports, Groups, Notifications, Log out); the Integrations "Connected" / "Open" links bounce the coach back to the hub (measured 2026-09-12, to-do §0av) | sidebar "Settings" |
+| STAFF-COACH-30c | Groups | `/settings/groups` |
+| STAFF-COACH-30h | Thresholds | `/settings/thresholds` |
+| STAFF-COACH-33 | Print a screen | "Print" |
 
-`base.css` records the last row as intended: *"No rail below 768px — the sidebar
-stacks full-width above the content."*
+*The flow itself, as the sport scientist section states it:*
 
-**At 375×812 the stacked sidebar is 640px tall**, `--surf` background with a
-`--border` bottom edge, and holds in order:
+## STAFF-SS-30 — Settings sub-screens
 
-| Element | Top | Height |
-|---|---|---|
-| Brand block — the 132px wordmark | 28 | 84 |
-| Nine nav rows: Dashboard · Squad overview · Schedule · Reports · Nutrition · Gym programme · Leaderboard · Analytics · Settings | — | **40px each**, `aria-current="page"` on the active one |
-| Identity — "Jane Pemberton" / "Ashcombe Rugby Club · sport_scientist" | — | — |
-| "Log out" — a `<button type="submit">` | 578 | **17px** |
-| "© 2026 Fydr" | — | — |
+Each is its own route with its own gate.
 
-**What that does to every screen.** The page's own `h1` lands around y≈730,
-below the first fold. Measured: Dashboard heading y=728, its first content
-section y=**2209**, page 3,426px; Squad overview heading y=737; Settings › Users
-14,301px. The pitch-side question — "who is missing today" — is two to three
-screens down on every screen that answers it.
+| ID | Screen | Route | Gate |
+|---|---|---|---|
+| STAFF-SS-30a | Audit log | `/settings/audit` | `SETTINGS_ADMIN` |
+| STAFF-SS-30b | Exports | `/settings/exports` | `requireReportAccess()` → `REPORT_ACCESS` — sport scientist, coach, medic, S&C |
+| STAFF-SS-30c | Groups | `/settings/groups`, `/new`, `/{id}` | the list is `requireStaff()` — open to every staff role; `/new` redirects to the list without `GROUP_EDIT`; `GROUP_EDIT` shows "+ New group" and the reorder arrows, `SESSION_EDIT` shows "Open team allocation →" |
+| STAFF-SS-30d | Imports (GPS) | `/settings/imports` | `GPS_IMPORT` — sport scientist alone |
+| | *Built 2026-09-12 (`effc471`): the page's re-upload sentence now states the upsert — matching rows replaced, the rest added, nothing doubled; no revert.* | | |
+| STAFF-SS-30e | Notifications | `/settings/notifications` | — |
+| STAFF-SS-30f | Retention | `/settings/retention` | `SETTINGS_ADMIN` |
+| STAFF-SS-30g | Subject access | `/settings/subject-access`, `/{id}/review` | the list is `requireSubjectAccess()` — `SETTINGS_ADMIN` **or** `CLINICAL_ONLY`; the review is `CLINICAL_ONLY` alone (else `?e=no-sar-access`) |
+| STAFF-SS-30h | Thresholds | `/settings/thresholds`, `/new` | `THRESHOLD_EDIT` — refused **in page**, not by redirect |
+| STAFF-SS-30i | Users | `/settings/users`, `/{id}`, `/bulk-invite` | `SETTINGS_ADMIN` |
 
-**No menu control exists.** There is no hamburger, no disclosure, no
-`aria-expanded` anywhere in the shell. `test-back-consistency` sweeps staff
-routes for back-control consistency but nothing asserts anything about
-navigation at phone width.
+**Branch worth naming.** A subject-access **request** is administered by the
+sport scientist, but its **review** is `CLINICAL_ONLY` — the medic. Neither role
+can complete the flow alone.
+
+*Factual corrections from this pass are already applied above.*
 
 ---
 
-## 2. The proposal, in Isabella's words
+## 2. Persona review
 
-> **BUILT `af09c17` (2026-09-12): `StaffPhoneShell` — 64px title bar, bottom bar of four plus More, the More sheet as a disclosure, the 44px floor applied generically below 768px. Measured as Jane at 375: sidebar `display: none`, tabs 58px, title bar 64px. The sweep table in §5 is now the list to re-measure on the built shell.**
->
-> **SUPERSEDED 2026-09-12 (Isabella): below 768px the staff shell is a bottom bar
-> with a "More" sheet — the shape of the approved STAFF-SS-01 board
-> (`docs/designs/STAFF-SS-01 final/`), which decides that board's D1. Read
-> "top bar" below as "bottom bar" and "menu" as "the More sheet"; §3's list of
-> what the bar must carry, §4's constraints and §5's sweep table stand as written.**
+**Full review: `docs/walkthrough-reviews/staff-coach-29-to-33-review.md`.**
 
-~~**Below 768px: a compact top bar, with the navigation behind a menu control.**~~
+## 3. Tokens in play
 
-That is the whole ask. The rest of this brief is what the bar has to carry,
-what the sheet has to contain, and what must not change.
+The full palette — 171 tokens with exact light and dark values — is
+`docs/Fydr_-_Design_System_Reference.md`, and the complete file is at the foot of
+this brief.
 
 ---
 
-## 3. What the top bar must carry
+## 4. The constraint any proposal must satisfy
 
-Derived from what the stacked sidebar carries today and what a phone needs
-instead:
+1. **Identical to STAFF-SS-30c by fingerprint** (list, new, one group), both widths; the SS-30 brief is the design surface.
+2. **Only `tokens.css` values.** Anything not in the file below is flagged as a
+   proposed new token, never used.
 
-1. **The brand.** The 132px wordmark is the app's face (`.brand .wm`, pinned by
-   `test-brand-face.ts` — reverse-engineered face decision recorded 2026-09-07);
-   the bar needs a smaller mark, and which mark is a decision for the proposal
-   to state, not assume.
-2. **The current screen's identity** — because with the nav hidden, "where am I"
-   has to be answered by the bar or the `h1`, and the `h1` is currently the
-   first thing after 640px of sidebar.
-3. **The menu control** — a real `<button aria-expanded aria-controls>` with a
-   44px target, since every staff back-control finding (§0y, §0af) is about
-   sub-floor targets in this shell.
-4. **Nothing else by default.** The group filter, the plan link and "Log out"
-   are not bar furniture; they belong in the menu or on the screen.
+## 5. What a proposal should address
 
-## 4. What the menu must contain
-
-Exactly what the sidebar contains today, in its order, because the desktop
-sidebar and the phone menu are the same nine destinations and must not diverge:
-the nine rows, the identity block, and "Log out" — the last at a real target
-size, not 17px.
-
-## 5. The constraint any proposal must satisfy
-
-1. **Nothing changes at ≥768px.** The 236px sidebar and the 64px rail are built,
-   pinned, and out of scope. The proposal is for `@media (max-width: 767px)`
-   only.
-2. **The nine destinations, their order and their labels are fixed.** They are
-   the information architecture (`02-information-architecture.md` §4.1), not a
-   design surface.
-3. **The active destination stays marked** (`aria-current="page"` today).
-4. **Every control in the bar and the menu meets the 44px floor — and so does
-   every staff control below 768px.** DECIDED 2026-09-11: the floor applies to
-   staff screens below 768px only, fixed once here at shell level, not per
-   flow; desktop staff controls stay as they are. **The sweep list, measured
-   during the sport scientist reviews, all at 375×812:**
-
-   | Screen | Control | Measured |
-   |---|---|---|
-   | every staff screen | "Log out" (`<button type="submit">` in the sidebar) | 17px |
-   | every staff screen | "Back" (`.back-btn`) | 29px |
-   | `/squad` | athlete-name links, one per athlete | 34px |
-   | `/schedule`, Edit mode | the four `−`/`+` steppers (Earlier/Later/Shorter/Longer) | 40px |
-   | `/schedule`, Edit mode | "Yes, remove" (`.sg-btn-remove`) | 37px |
-   | `/schedule`, Edit mode | toolbar "+ Session" | 35px |
-   | `/schedule`, draft wizard | "Next" | 35px |
-   | `/schedule`, status banner | "Published" (disabled), "Publish to athletes", "Discard", "Yes, discard" | 17 / 35 / 37 / 37px |
-   | `/nutrition` | "New plan"; the three day-type buttons; six `−`/`+` steppers | 35 / 37 / 32px |
-   | `/leaderboards` | the three lens tabs (Result / Improvement / Standard) | 31px |
-   | `/leaderboards/*`, `/settings/*` sub-screens, `/settings/groups` | the eyebrow breadcrumb links ("Leaderboard", "Settings", "Squad overview") | 13px |
-   | `/leaderboards/manage` | "the testing wall" inline link | 35px |
-   | `/analytics`, `/analytics/build` | every Metric / Window / Athlete / Timeline / Show-as `<select>` | 30px |
-   | `/injuries` | "Team allocation →", "Rehab groups →" (`.tiny`) | 19px |
-   | `/settings` | Light / Dark segment; Basic / Premium preview switch; "Connected" / "Open" integration buttons | 36 / 30 / 41px |
-   | `/settings/groups` | reorder `▲` / `▼` (`.reorder-btn`); "Open team allocation →" | 28×22 / 37px |
-   | `/settings/imports` | "the template" inline link | 15px |
-   | `/settings/exports` | the six domain checkboxes (native, 15×13; the labelled row is the target) | 15×13 |
-   | `/reports/squad` (re-measured on the built shell, 2026-09-12) | week arrow "‹"; the athlete-name links in the attention list (no padding) | 31 / 15px |
-   | `/reports/testing` | "Manage tests →" | 19px |
-   | `/reports/training` | "Training" / "Match day" chips; "Heat"; "Day" / "Week"; "Rest of the week" | 35 / 22 / 40 / 37px |
-   | `/nutrition`, `/leaderboards` | "Profile ›" for the selected athlete | 17 / 19px |
-   | `/settings` (re-measured on the built shell) | "Connected" / "Open" (`.set-row-btn`) | 41px |
-   | `/settings/groups` (re-measured) | "Open team allocation →" (`a.btn-ghost`, not floored) | 37px |
-   | `/settings/thresholds/new` | the three "baseline" inline links | 13px |
-
-   Not in this table because they are not 44px matters: the hub's Log out
-   submit at 4.8px wide (§0ap, both widths) and the three screens that scroll
-   sideways at 375 (§0ap).
-
-   Later staff reviews add to this table rather than filing new defects.
-5. **The menu is a real disclosure** — `aria-expanded`, `aria-controls`, focus
-   moves into it on open and returns to the control on close, Escape closes it.
-   Three existing disclosures in this app got this wrong (§0t, §0af).
-6. **The content column must start at the top of the screen** once the bar is
-   in place — the whole point. A bar taller than ~56px spends the phone's
-   scarcest dimension on chrome.
-7. **Only `tokens.css` values.** The full file is at the foot of this brief.
-   Anything not in it is flagged as a proposed new token, never used.
-
-## 6. Open questions the proposal should answer, not assume
-
-- **Which mark goes in the bar** — the wordmark scaled, or a monogram. The
-  wordmark is the face; a monogram is a new asset.
-- **Whether the group filter chips stay on-screen at phone width** or move
-  behind the menu. They are on every multi-athlete screen and are 44px wide
-  each; five of them at 375px already wrap.
-- **The 768–1023 rail.** Not in scope, but the proposal should say whether its
-  menu model would also serve the rail, so the two do not end up as two
-  patterns.
-
-## 7. Tokens in play
-
-| Element | Current |
-|---|---|
-| Sidebar surface | `--surf` `#fcfdfe` |
-| Sidebar edge | `--border` `#d4dff5` |
-| Page ground | `--bg` `#e4ebf9` |
-| Nav row | 40px, text `--muted`, active `--text` |
-| Wordmark | 132px wide, Sora 800 via `--font-brand` |
-
-**The full palette — 171 tokens — is `docs/Fydr_-_Design_System_Reference.md`,
-and the complete file is below.**
+1. **"Open team allocation →" at 37px at 375** — in the sweep; nothing else coach-specific.
 
 ---
 
@@ -209,9 +120,18 @@ as a proposed new token, never used.**
    --highlight is decorative and never encodes status, §4.2 change 3.
    --------------------------------------------------------------------------- */
 :root {
-  --accent: #1f6fea;
-  /* Spec §2: the accent's border, the same value in both themes. */
-  --accent-border: #3c85f7;
+  /* BRAND ACCENT — 11 Sept 2026, Isabella's decision: #1f6fea -> #17489b, the
+     whole app. Recorded in docs/decisions/adr-009-brand-accent.md, guarded by
+     scripts/test-brand-accent.ts. This is the LIGHT fill; dark overrides it
+     below, because a navy this deep measures 1.73:1 against dark --surf and a
+     primary button would vanish into its card. As ink it clears AA on every
+     light ground (8.46 surf, 7.20 bg, 6.91 --phone-bg), which is why the four
+     light accent inks in §3.7 now simply ARE this value. */
+  --accent: #17489b;
+  /* Spec §2: the accent's border — the same hue and saturation one lightness
+     step up, the ratio #3c85f7 had to #1f6fea. Theme-split since 11 Sept 2026
+     (Isabella's decision): each fill gets its own step, see the dark block. */
+  --accent-border: #1c59bf;
   --accent2: #33b6ff;
   /* Light-theme handoff §5: Good is #4fd6ff. Was #4dcbb2 (teal) site-wide with
      three scoped blocks (.phone, .nutrition-workspace, .sg) overriding it to
@@ -232,8 +152,9 @@ as a proposed new token, never used.**
      Reusing --highlight itself for that would quietly undo the fix; a
      same-value, differently-named token keeps both true at once. */
   --gym: #f5c518;
-  /* Text on a solid --accent fill. 4.66:1 in both themes, so it is single valued
-     like the fill it sits on. Derived, §14 has no entry for it.
+  /* Text on a solid --accent fill. 8.62:1 on the light navy, 4.83:1 on the dark
+     fill (11 Sept 2026), so it stays single valued. Derived, §14 has no entry
+     for it.
      
      IT WENT DARK FOR ONE COMMIT AND CAME BACK. 0f4b574 repointed --accent to
      the analytics spec's softer #5b9bf0, where white measures 2.84:1 and fails
@@ -275,7 +196,7 @@ as a proposed new token, never used.**
      to this line — every visible tint anywhere in this app was riding on
      a plain solid colour or a token used without the slash, never on this
      triplet-plus-alpha pattern actually working. */
-  --accent-rgb: 31 111 234;
+  --accent-rgb: 23 72 155; /* 11 Sept 2026, Isabella's decision — light; dark carries its own */
   --accent2-rgb: 51 182 255;
   --good-rgb: 79 214 255;
   --warn-rgb: 246 171 47;
@@ -419,8 +340,16 @@ as a proposed new token, never used.**
      28px is also what eight athlete screens rendered by ACCIDENT before that
      day, from a doubled margin (see 0h) — so this is the same spacing she had
      already signed off, now coming from one place instead of a flex gap plus a
-     per-block margin that produced 18, 26, 28, 32 and 40.5px across the app. */
-  --gap-body: 28px;
+     per-block margin that produced 18, 26, 28, 32 and 40.5px across the app.
+
+     20px since 12 Sept 2026, Isabella's decision — "the vertical gaps in the
+     athlete app are too large": one step down the spacing ramp, to the
+     --sp-20 value, after the 28px had been seen across the whole athlete
+     flow set on a 375×812 phone. A token value change under CLAUDE.md §0.01,
+     its own commit. Still the athlete shell's own rhythm with one reader
+     (.phone-body); --gap-stack, the staff .stack rhythm, is unchanged. The
+     in-list gap (14px, --gap-stack) was judged beside it at 375×812 and left. */
+  --gap-body: 20px;
   --gap-grid: 12px;
   --pad-card: 16px;
   --pad-field: 12px 14px;
@@ -610,7 +539,7 @@ as a proposed new token, never used.**
   --surf2: #eff3fb;
   --gym-tint: #fef8e4;
   --wk-fill: rgba(31, 111, 234, 0.09);
-  --wk-match-border: #1f6fea;
+  --wk-match-border: #17489b; /* the accent — 11 Sept 2026, Isabella's decision */
   --gym-on-tint: #6b4708;
   --elev: #fcfdfe;
   --text: #13161c;
@@ -699,6 +628,14 @@ as a proposed new token, never used.**
        --warn-text         #925900              4.81 on bg   (already deviated)
        --bad-text          #8a2418              7.48 on bg   unchanged
 
+     ACCENT INKS COLLAPSED TO THE ACCENT, 11 Sept 2026, Isabella's decision.
+     The rows above for --accent-text and --accent-pill-text are history: with
+     the brand navy #17489b the fill itself clears AA as ink on every light
+     ground (8.46 surf / 7.20 bg / 6.91 --phone-bg / 5.83 on its own 22% pill
+     fill / 6.48 on the strong wash), so --accent-text, --accent-pill-text,
+     --accent-on-tint and --accent-on-wash are the one value. Keeping the tuned
+     brighter blues would have put a 213° blue beside a navy button.
+
      --faint is CLOSED as of 2026-09-09, and this paragraph is what kept it
      open: it said "remains the handoff's value and remains failing — 2.38:1
      ... Left as specified because no nearby value fixes it ... Still open",
@@ -708,7 +645,7 @@ as a proposed new token, never used.**
      following the pessimistic one. The darker caption layer was indeed a
      design decision, and Isabella took it. #626a76 / #484e57, 4.57 and 7.01
      on this ground. */
-  --accent-text: #0064dc;
+  --accent-text: #17489b; /* 11 Sept 2026, Isabella's decision */
   --accent2-text: #006eb0;
   --good-text: #0d5f75;
   --warn-text: #b07d0a;
@@ -718,7 +655,7 @@ as a proposed new token, never used.**
 
   /* §3.7, text on that colour's own tint — the handoff's on-* column,
      applied exactly. */
-  --accent-pill-text: #0050c4;
+  --accent-pill-text: #17489b; /* 11 Sept 2026, Isabella's decision */
   --accent2-pill-text: #0063a5;
   --good-pill-text: #0d5f75;
   /* Text on the STRONGEST tint of a bright ramp. The %Max ramp's top band is a
@@ -741,7 +678,7 @@ as a proposed new token, never used.**
      its gold block header, the pill-text pair lands at 3.6-3.9:1 in dark.
      These are the values the design specifies for that exact case. */
   --bad-on-tint: #7a1f14;
-  --accent-on-tint: #0050c4;
+  --accent-on-tint: #17489b; /* 11 Sept 2026, Isabella's decision */
   --warn-pill-text: #6b4708;
   --bad-pill-text: #7a1f14;
   --highlight-pill-text: #7f6000;
@@ -763,10 +700,11 @@ Every alpha here is the handoff's own figure (§4 and §5),
      stack of cards that reads better on a blue wash. Per
      CHANGELOG-athlete-app-edits.md, "app-wide". */
   --phone-bg: #dbe7fb;
-  /* Accent ink for the phone's tinted grounds. --accent-text (#0064dc) is
-     tuned for a white card and measures 4.37 on --phone-bg and 3.80 on the
-     week card's wash — both under 4.5. This clears 5.46 and 4.75. */
-  --accent-on-wash: #0056bf;
+  /* Accent ink for the phone's tinted grounds. Used to be its own value because
+     the old --accent-text was tuned for a white card and fell to 4.37 on
+     --phone-bg; the navy accent measures 6.91 there and 5.74 on the week
+     card's wash, so it is the accent too. */
+  --accent-on-wash: #17489b; /* 11 Sept 2026, Isabella's decision */
   --border-accent: rgb(var(--accent-rgb) / 0.5);
   --border-accent-soft: rgb(var(--accent-rgb) / 0.42);
   --border-hover: rgb(var(--accent-rgb) / 0.4);
@@ -802,8 +740,9 @@ Every alpha here is the handoff's own figure (§4 and §5),
      Theme-split like every other on-surface colour in this block instead. */
   --tab-inactive: #4a5578;
 
-  /* §14.1 focus, §14.4 skeleton. */
-  --focus: #1f6fea;
+  /* §14.1 focus, §14.4 skeleton. The focus ring is the accent: 8.46:1 against
+     --surf, 7.20 against --bg. */
+  --focus: #17489b; /* 11 Sept 2026, Isabella's decision */
   --skeleton: #eeeeef;
 
   /* screens/groups.md palette. Ten of the twelve documented slots: Amber and
@@ -911,6 +850,17 @@ Every alpha here is the handoff's own figure (§4 and §5),
      dashboard is drawn on. */
   --bg: #202b4e;
   --surf: #1d2643;
+  /* THE DARK FILL — 11 Sept 2026, Isabella's decision. The brand navy #17489b
+     measures 1.73:1 against this theme's --surf (1.61 --bg, 1.97 --phone-bg):
+     a primary button that disappears into its card. So dark carries the same
+     hue and saturation at the lightness that keeps --on-accent at 4.83:1 and
+     the fill 3.08:1 off the card (3.53 off the athlete ground; 2.87 off --bg,
+     as the old fill's 2.98 was — a labelled solid button, not a boundary).
+     --accent-rgb moves with it so every wash, ring and border alpha in this
+     block follows; --accent-border is the same one-step lift as light's. */
+  --accent: #2a6ddf; /* 11 Sept 2026, Isabella's decision */
+  --accent-rgb: 42 109 223; /* 11 Sept 2026, Isabella's decision */
+  --accent-border: #4d86e5; /* 11 Sept 2026, Isabella's decision */
   --surf-sunken: #121a33;
   --surf2: #2b3559;
   --gym-tint: #48432f;
@@ -938,11 +888,11 @@ Every alpha here is the handoff's own figure (§4 and §5),
   --accent2-text: #33b6ff;
   --good-text: #8ceaff;
   --warn-text: #ffdda6;
-  --bad-text: #f15a4a;
+  --bad-text: #ff7460; /* 11 Sept 2026, Isabella's decision — was #f15a4a, 4.47:1 on --surf; now 5.61 surf, 5.22 bg, 5.17 on the bad wash */
   --highlight-fg: #f5c518;
   --avatar-text-fg: #6f9bff;
 
-  --accent-pill-text: #699bff;
+  --accent-pill-text: #8fb4ff; /* 11 Sept 2026, Isabella's decision — was #699bff, 4.34:1 on its own pill fill; now 5.71 */
   --accent2-pill-text: #33b6ff;
   --good-pill-text: #4fd6ff;
   --on-bright-tint: #101219;
@@ -967,11 +917,13 @@ Every alpha here is the handoff's own figure (§4 and §5),
           from --surf by roughly the same luminance ratio it does in light
           (~1.07-1.16). A literal copy of light's 0.13/0.16 would have made
           dark's rows shout.
-       2. Never let a wash break the text that sits on it. --bad-text (#f15a4a)
-          measures only 4.94:1 on plain --surf in dark, so any red wash under
-          it eats the AA margin: 0.08 holds 4.54:1, 0.10 already drops to
-          4.43:1. That is what caps --wash-bad and --band-1-wash here, and it
-          is why they are the two values furthest from their light siblings.
+       2. Never let a wash break the text that sits on it. --bad-text was the
+          raw #f15a4a here and measured 4.47:1 on plain --surf (this note once
+          said 4.94, against an earlier --surf), so any red wash under it ate
+          the AA margin — which is what capped --wash-bad and --band-1-wash at
+          0.08, the two values furthest from their light siblings. Since
+          11 Sept 2026 --bad-text is #ff7460 (5.61 on --surf, 5.17 on the
+          0.08 wash); the caps stay, the margin is real now.
      Borders and the focus ring move the other way, up rather than down: a
      1px outline and a 3px ring have to survive on a dark ground. */
   --wash-accent-soft: rgb(var(--accent-rgb) / 0.1);
@@ -1055,6 +1007,17 @@ Every alpha here is the handoff's own figure (§4 and §5),
        differ in nothing. */
     --bg: #202b4e;
     --surf: #1d2643;
+    /* THE DARK FILL — 11 Sept 2026, Isabella's decision. The brand navy #17489b
+       measures 1.73:1 against this theme's --surf (1.61 --bg, 1.97 --phone-bg):
+       a primary button that disappears into its card. So dark carries the same
+       hue and saturation at the lightness that keeps --on-accent at 4.83:1 and
+       the fill 3.08:1 off the card (3.53 off the athlete ground; 2.87 off --bg,
+       as the old fill's 2.98 was — a labelled solid button, not a boundary).
+       --accent-rgb moves with it so every wash, ring and border alpha in this
+       block follows; --accent-border is the same one-step lift as light's. */
+    --accent: #2a6ddf; /* 11 Sept 2026, Isabella's decision */
+    --accent-rgb: 42 109 223; /* 11 Sept 2026, Isabella's decision */
+    --accent-border: #4d86e5; /* 11 Sept 2026, Isabella's decision */
     --surf-sunken: #121a33;
     --surf2: #2b3559;
     --gym-tint: #48432f;
@@ -1082,11 +1045,11 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --accent2-text: #33b6ff;
     --good-text: #8ceaff;
     --warn-text: #ffdda6;
-    --bad-text: #f15a4a;
+    --bad-text: #ff7460; /* 11 Sept 2026, Isabella's decision */
     --highlight-fg: #f5c518;
     --avatar-text-fg: #6f9bff;
 
-    --accent-pill-text: #699bff;
+    --accent-pill-text: #8fb4ff; /* 11 Sept 2026, Isabella's decision */
     --accent2-pill-text: #33b6ff;
     --good-pill-text: #4fd6ff;
     --on-bright-tint: #101219;
@@ -1108,6 +1071,14 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --wash-accent-soft: rgb(var(--accent-rgb) / 0.1);
     --wash-accent: rgb(var(--accent-rgb) / 0.16);
     --wash-accent-strong: rgb(var(--accent-rgb) / 0.22);
+    /* --phone-bg and --accent-on-wash were MISSING from this block until
+       11 Sept 2026 — the only two tokens the explicit dark block set that this
+       one did not, so an OS-dark athlete with no stored choice got the light
+       #dbe7fb shell ground under dark text. Found by diffing the two blocks by
+       name while splitting the accent; scripts/test-brand-accent.ts now
+       asserts the two define the same set. */
+    --phone-bg: #141b33;
+    --accent-on-wash: #9dbcff;
     --border-accent: rgb(var(--accent-rgb) / 0.62);
     --border-accent-soft: rgb(var(--accent-rgb) / 0.52);
     --border-hover: rgb(var(--accent-rgb) / 0.52);
@@ -1182,7 +1153,7 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --surf2: #f3f5f8;
     --gym-tint: #fef8e4;
     --wk-fill: rgba(31, 111, 234, 0.09);
-    --wk-match-border: #1f6fea;
+    --wk-match-border: #17489b;
     --gym-on-tint: #6b4708;
     --elev: #ffffff;
     --text: #13161c;
@@ -1198,7 +1169,7 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --barfill: rgba(16, 18, 23, 0.155);
     --shadow: none;
 
-    --accent-text: #0065de;
+    --accent-text: #17489b;
     --accent2-text: #0070b3;
     /* Deliberately NOT tracking the screen theme's re-derivation above. This
        block keeps its own lighter --bg (#eaedf1) and its own restrained wash
@@ -1212,7 +1183,7 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --warn-text: #995d00;
     --bad-text: #8a2418;
 
-    --accent-pill-text: #0051c6;
+    --accent-pill-text: #17489b;
     --accent2-pill-text: #0064a6;
     --good-pill-text: #0d5f75;
     /* Text on the STRONGEST tint of a bright ramp. The %Max ramp's top band is a
@@ -1227,7 +1198,7 @@ Every alpha here is the handoff's own figure (§4 and §5),
        its gold block header, the pill-text pair lands at 3.6-3.9:1 in dark.
        These are the values the design specifies for that exact case. */
     --bad-on-tint: #7a1f14;
-    --accent-on-tint: #0050c4;
+    --accent-on-tint: #17489b;
     --warn-pill-text: #6b4708;
     --bad-pill-text: #7a1f14;
 

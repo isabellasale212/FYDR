@@ -384,6 +384,8 @@ athlete.
 
 ## ATH-ADULT-07 — Submit the weekly nutrition check-in
 
+**Built 2026-09-12 (`fc3c5e0`), measured live.** The question names its week — "Did you hit your protein target most days last week (31 Aug to 6 Sept)?" — and "in the week of 10 to 16 Aug" on a correction; "this week" is gone. The default week (the last completed one) is unchanged, as decided.
+
 **Entry point.** The "Weekly check-in" to-do row on `/today`. Direct URL
 `/nutrition-check-in`.
 

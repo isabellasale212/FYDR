@@ -219,6 +219,8 @@ Unless a flow says otherwise, all of these are on screen throughout:
 
 ## STAFF-SS-02 — Browse the squad and filter by group
 
+**Built 2026-09-12 (`ea1fcac`), measured as a coach.** The availability pills read "◌ Not recorded · ◐ Modified · ● Available · ⊘ Unavailable" — "Not recorded" is now the one word for no status, everywhere the table is read. The athlete-name links clear 44px at 375 since `6a2f1d4`.
+
 **Entry point.** "Squad overview" in the sidebar → `/squad`.
 
 **Steps.**
@@ -325,6 +327,8 @@ nobody here can see the one they choose.", and a "Done, I've copied it" button.
 ---
 
 ## STAFF-SS-05 — Open an athlete's profile
+
+**Built 2026-09-12 (`ea1fcac`).** An empty injury panel reads "No current restrictions. This is not the same as being cleared."; a missing clinical value "Not recorded"; an unset return "Expected return not known"; the corrections intro states the fixed 28-day window and that gym set logs and the weekly check-in are not correctable there; the availability form's note is labelled "Note" with the hint "Coach visible. Describe the restriction, not the injury. Do not name a diagnosis or a protocol." The rest of the STAFF-SS-02-05 board is on `docs/design-decisions-outstanding.md`.
 
 **Entry point.** An athlete's name on `/squad`; "View player profile" on
 `/dashboard`; many report rows.
@@ -522,6 +526,8 @@ but it **names nobody**. A session is what athletes are rostered to.
 ---
 
 ## STAFF-SS-10 — Edit a session in the grid
+
+**Built 2026-09-12 (`5f68cb6`, `b2062d3`).** The selected-session panel's Expects line is computed from `rpeDueAt` — "RPE due from 11:15" for a 09:30–10:45 session — not a fixed "due by 19:45"; removing a staged draft now asks "Remove this draft? It was never published, so there is nothing to undo.", and a committed session keeps the Discard-undo wording.
 
 **Entry point.** `/schedule` in Edit mode → click a session block.
 
@@ -1155,6 +1161,7 @@ Each is its own route with its own gate.
 | STAFF-SS-30b | Exports | `/settings/exports` | `requireReportAccess()` → `REPORT_ACCESS` — sport scientist, coach, medic, S&C |
 | STAFF-SS-30c | Groups | `/settings/groups`, `/new`, `/{id}` | the list is `requireStaff()` — open to every staff role; `/new` redirects to the list without `GROUP_EDIT`; `GROUP_EDIT` shows "+ New group" and the reorder arrows, `SESSION_EDIT` shows "Open team allocation →" |
 | STAFF-SS-30d | Imports (GPS) | `/settings/imports` | `GPS_IMPORT` — sport scientist alone |
+| | *Built 2026-09-12 (`effc471`): the page's re-upload sentence now states the upsert — matching rows replaced, the rest added, nothing doubled; no revert.* | | |
 | STAFF-SS-30e | Notifications | `/settings/notifications` | — |
 | STAFF-SS-30f | Retention | `/settings/retention` | `SETTINGS_ADMIN` |
 | STAFF-SS-30g | Subject access | `/settings/subject-access`, `/{id}/review` | the list is `requireSubjectAccess()` — `SETTINGS_ADMIN` **or** `CLINICAL_ONLY`; the review is `CLINICAL_ONLY` alone (else `?e=no-sar-access`) |
@@ -1193,6 +1200,8 @@ can complete the flow alone.
 ---
 
 ## STAFF-SS-32 — Generate an export
+
+**Built 2026-09-12 (`e59dceb`), measured.** The intro reads "Every domain below, squad-wide." for every role; the "Coach access" sentence is gone.
 
 **Entry point.** `/settings/exports`.
 

@@ -30,21 +30,21 @@ Visible and embarrassing; no harm.
 
 - ~~**§0af L1220** — below 768px the sidebar stacks 640px above every staff screen.~~ **Closed, `af09c17`** — bottom bar + More sheet, 44px floor applied generically; measured.
 - ~~**§0s L903** — the athlete check-in's submit button sits 229px below the fold.~~ **Closed overnight** by the ATH-ADULT-03 build (`6618b7f` + `5ae00ea`, merged `b13cc29`); the footer pins and the button measures inside the viewport at scroll 0.
-- **§0u L961** — the gym prescription line reads "3 × 8 @ No 1RM test linked to this exercise yet."
-- **§0u L971** — the nutrition check-in says "this week" about a week that has ended (decided: copy fix, keep the default).
+- ~~**§0u L961** — the gym prescription line reads "3 × 8 @ No 1RM test linked to this exercise yet."~~ **Closed, `a546137`.**
+- ~~**§0u L971** — the nutrition check-in says "this week" about a week that has ended.~~ **Closed, `fc3c5e0`.**
 - **§0u L987** — a failed gym set retries only from Today, so the set count stays wrong for the rest of the workout.
 - ~~**§0z L1100** — "Turn notifications back on" resets every preference.~~ **Closed overnight, `d8938b1` (migration 0103, scratch only).**
 - **§0aa L1130** — `/programme/nutrition` says "your last recorded weight" without saying it is the staff skinfold measurement, while `/me` shows the athlete's own self-reported mass.
 - ~~**§0ah L1242** — a session saves with no duration.~~ **Closed at the form, `586520d`**; the nullable column and the week-template path are Builder questions 1 and 2.
-- **§0aj L1262** — "What the athlete sees" says an RPE is "due by 19:45" for every training session whatever its time.
-- **§0aj L1264** — "Yes, remove" on a staged draft promises an undo that does not exist.
+- ~~**§0aj L1262** — "What the athlete sees" says an RPE is "due by 19:45".~~ **Closed, `5f68cb6`** — "RPE due from HH:MM" from `rpeDueAt`.
+- ~~**§0aj L1264** — "Yes, remove" on a staged draft promises an undo that does not exist.~~ **Closed, `b2062d3`.**
 - ~~**§0ak L1273** — the group filter is a cookie on one screen and a URL parameter on another.~~ **Closed overnight, `f2b72ea`**, exercised both directions.
 - ~~**§0al L1293** — publishing or removing a session writes no audit row.~~ **Closed overnight, `f5a59c4` (migration 0104, scratch only).**
-- **§0ap L1327** — the leaderboard builder says "Tap one below to see why" and the disabled chips cannot be tapped.
+- **§0ap L1327** — the leaderboard builder says "Tap one below to see why" and the disabled chips cannot be tapped. *Not built (`220d8e9`): Builder question 8 — reachable tap vs inline reason is yours to decide.*
 - **§0ap L1329** — the Settings hub's Log out row is a 5px-wide target dressed as a row (the sidebar's Log out works, so not blocking).
-- **§0ap L1333** — subject-access, retention and the board ranking scroll the page sideways at 375.
-- **§0ap L1331** — Exports says "Coach access" to the sport scientist.
-- **§0as** (filed today) — the GPS import page says re-uploading duplicates rows; it has replaced them since 0064/0072. Copy only.
+- ~~**§0ap L1333** — subject-access, retention and the board ranking scroll the page sideways at 375.~~ **Closed, `6235ae5`** — 375 on all three.
+- ~~**§0ap L1331** — Exports says "Coach access" to the sport scientist.~~ **Closed, `e59dceb`.**
+- ~~**§0as** — the GPS import page says re-uploading duplicates rows.~~ **Closed, `effc471`.**
 - **§0aq L1339** — failed sign-ins from Dublin take 1.1–1.6 s, above the 800 ms floor; profile and decide whether to raise `FAILED_SIGN_IN_MIN_MS`.
 - ~~**STAFF-SS-01 D1**~~ — **decided 2026-09-12 (Isabella): the staff phone shell is a bottom bar with a "More" sheet**, superseding §0af's top bar. Staff phone work can proceed against the STAFF-SS-01 board.
 - **§0e L181** — "some pages, including a forgot-password page, show the wrong logo": `/login/reset` measured correct on production; needs you to say where you saw it before anyone can fix it.

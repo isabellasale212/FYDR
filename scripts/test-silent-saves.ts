@@ -58,6 +58,14 @@ const SCREENS: { name: string; page: string; set: string; writes: [string, strin
     writes: [['src/lib/queries/weekTemplates.ts', ['archiveTemplate', 'restoreTemplate']]] },
   { name: '/leaderboards board actions', page: 'src/app/(staff)/leaderboards/[leaderboardId]/page.tsx', set: 'LEADERBOARD_EDIT',
     writes: [['src/lib/queries/leaderboards.ts', ['setBoardVisibility', 'deleteBoard']]] },
+  /* The seventh, §0az (decided 2026-09-12): the group reorder arrows rendered
+     for every role, and moveGroup's two UPDATEs checked `.error` only — the
+     medic's press swapped nothing and the screen refreshed as if it had. The
+     control is not hidden but blocked (BlockedButton, the reason on tap —
+     test-blocked-controls.ts asserts that half); the write is what this file
+     asserts. */
+  { name: '/settings/groups reorder', page: 'src/app/(staff)/settings/groups/page.tsx', set: 'GROUP_EDIT',
+    writes: [['src/lib/queries/groups.ts', ['moveGroup']]] },
 ];
 
 console.log('\n-- the control is offered only to roles that can write --');
@@ -91,6 +99,17 @@ for (const s of SCREENS) {
       assert(b.length > 0 && checks, `${fn}() checks how many rows it changed`);
     }
   }
+}
+
+/* moveGroup reads before it writes, so the loose check above would pass on
+   its sibling read. Both of its UPDATEs go through mustAffect with `.select('id')`
+   chained — each is one row addressed by id that was on screen, so zero rows
+   can only mean refused (the medic under 0078's groups_staff_update). */
+{
+  const b = body('src/lib/queries/groups.ts', 'moveGroup');
+  const updates = b.match(/mustAffect\(\s*db\.from\('groups'\)\.update\([^)]*\)[^\n]*?\.select\('id'\)/g) ?? [];
+  assert(updates.length === 2, `moveGroup() runs both of its updates through mustAffect with .select('id') (${updates.length} of 2)`);
+  assert(!/Promise\.all/.test(b), 'and in order, so a refused first swap never leaves a half-swapped pair');
 }
 
 console.log(`\n${passed} passed, ${failed} failed\n`);

@@ -71,7 +71,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, GroupRow } from '@/lib/types/database';
 import { humanizeDbError } from '@/lib/writeErrors';
 import { fetchAllPaged, type PagedResponse } from './paged';
-import { mustAffectOrThrow } from '@/lib/write';
+import { mustAffect, mustAffectOrThrow } from '@/lib/write';
 
 export type Db = SupabaseClient<Database>;
 
@@ -453,14 +453,24 @@ export async function moveGroup(
   const neighbour = ordered[neighbourIndex];
   if (!neighbour) return { error: null }; // already first/last — a no-op, not an error
 
-  const [a, b] = await Promise.all([
-    db.from('groups').update({ sort_order: neighbour.sort_order }).eq('id', target.id).eq('org_id', orgId),
-    db.from('groups').update({ sort_order: target.sort_order }).eq('id', neighbour.id).eq('org_id', orgId),
-  ]);
-
-  if (a.error) return { error: humanizeDbError(a.error.message, 'staff') };
-  if (b.error) return { error: humanizeDbError(b.error.message, 'staff') };
-  return { error: null };
+  /* §0az (decided 2026-09-12). These two UPDATEs used to run in parallel and
+     check `.error` only: for a role outside groups_staff_update (0078 — the
+     medic, the S&C, the nutritionist) PostgREST filtered both to zero rows and
+     returned no error, so the screen refreshed as if the swap had happened.
+     Each is one row addressed by id that was on screen a moment ago, so zero
+     rows can only mean refused; and they run in order so a refused first
+     write never leaves the pair half-swapped. */
+  const refusal = 'Not saved: reordering squad groups belongs to the coach and the sport scientist.';
+  const onError = (message: string) => humanizeDbError(message, 'staff');
+  const a = await mustAffect(
+    db.from('groups').update({ sort_order: neighbour.sort_order }).eq('id', target.id).eq('org_id', orgId).select('id'),
+    { refusal, onError },
+  );
+  if (a.error) return a;
+  return mustAffect(
+    db.from('groups').update({ sort_order: target.sort_order }).eq('id', neighbour.id).eq('org_id', orgId).select('id'),
+    { refusal, onError },
+  );
 }
 
 export async function archiveGroup(db: Db, id: string, orgId: string): Promise<void> {

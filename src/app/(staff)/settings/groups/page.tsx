@@ -148,12 +148,18 @@ export default async function GroupsPage() {
                   key={g.id}
                   style={{
                     display: 'flex',
+                    flexWrap: 'wrap',
                     alignItems: 'center',
                     gap: 'var(--sp-8)',
                     borderTop: '1px solid var(--hair)',
                     paddingInlineEnd: 10,
                   }}
                 >
+                  {/* §0az: the arrows render for every role; a role outside
+                      GROUP_EDIT gets them blocked with the reason on tap,
+                      and moveGroup refuses out loud if the policy filters
+                      the write anyway. The row wraps so the reason takes a
+                      full line beneath the group. */}
                   {rows.length > 1 ? (
                     <GroupReorderButtons
                       orgId={orgId}
@@ -161,6 +167,7 @@ export default async function GroupsPage() {
                       groupName={g.name}
                       canMoveUp={index > 0}
                       canMoveDown={index < rows.length - 1}
+                      canEdit={canEditGroups}
                     />
                   ) : null}
                   <Link href={`/settings/groups/${g.id}`} className="todo" style={{ flex: 1, minWidth: 0 }}>

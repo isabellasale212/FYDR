@@ -46,6 +46,7 @@ another.
 |---|---|---|---|---|---|---|---|
 | A group's name | The list | Opens it | `/settings/groups/[groupId]` | Nothing | Any staff today | None | Never |
 | New group | Header | Opens the create screen | `/settings/groups/new` | Nothing | Coach and sport scientist | None | **Not built** |
+| ▲ / ▼ beside a group | The list, when a type has two or more groups | Swaps the group with its neighbour of the same type | Stays here | `groups.sort_order` on both rows, each checked for the row it changed (`moveGroup`, `mustAffect`) | Coach and sport scientist (`GROUP_EDIT`). Every other role sees the same arrows blocked — `aria-disabled`, the reason beneath the row on tap: "Reordering groups belongs to the coach and the sport scientist." — never a silent no-op (§0az, decided 2026-09-12) | None | Never; the first group's ▲ and the last group's ▼ are disabled |
 
 **An athlete may be in several groups**, and that is the intended use. Groups are
 not a hierarchy and do not have to be exclusive.

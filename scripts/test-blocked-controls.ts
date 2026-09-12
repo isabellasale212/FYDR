@@ -32,6 +32,7 @@ console.log('\nthe sites');
     ['src/components/PlayerProfileBio/PlayerProfileBio.tsx', /<BlockedButton[\s\S]{0,200}blocked\s+reason="Medical reads the roster/],
     ['src/components/EntryCorrectionPanel/EntryCorrectionPanel.tsx', /<BlockedButton[\s\S]{0,300}blocked=\{!canCorrect\}/],
     ['src/components/LeaderboardWall/LeaderboardWall.tsx', /<BlockedButton[\s\S]{0,300}blocked=\{disabled\}/],
+    ['src/components/GroupReorderButtons/GroupReorderButtons.tsx', /<BlockedButton[\s\S]{0,200}blocked\s+reason=\{REASON\}/],
   ];
   for (const [p, re] of sites) {
     const src = strip(read(p));
@@ -42,6 +43,15 @@ console.log('\nthe sites');
   const builder = strip(read('src/components/LeaderboardBuilderForm/LeaderboardBuilderForm.tsx'));
   assert(!/disabled\s*\n?\s*style=[\s\S]{0,120}onClick/.test(builder) && !/\n\s*disabled\n/.test(builder.slice(builder.indexOf('ineligible.map'), builder.indexOf('ineligible.map') + 800)), "§0ap's guard: no `disabled` beside an onClick on the ineligible row");
   assert(/Tap one below to see why/.test(builder), 'the copy that promised the tap still stands — and the tap lands now');
+  /* §0az: the reorder arrows. Two of them in a 28px column, so the reason
+     is placed by the parent at the end of the wrapping row (BlockedButton's
+     controlled reason), and the page still tells the column who may move. */
+  const reorder = strip(read('src/components/GroupReorderButtons/GroupReorderButtons.tsx'));
+  assert(/blocked\s+reason=\{REASON\}[\s\S]{0,200}whyId=\{whyId\}[\s\S]{0,200}onShownChange=/.test(reorder), 'the reorder arrows hand their reason to the column');
+  assert(/<span className="blocked-why" role="status" id=\{whyId\} style=\{\{ order: 1 \}\}>/.test(reorder), 'and the column shows one reason for both, beneath the row');
+  assert(!/\bdisabled=\{!canEdit/.test(reorder), 'a role that may not reorder is never given a `disabled` arrow');
+  const groupsPage = strip(read('src/app/(staff)/settings/groups/page.tsx'));
+  assert(/<GroupReorderButtons[\s\S]{0,300}canEdit=\{canEditGroups\}/.test(groupsPage), 'the groups page passes GROUP_EDIT to the column');
   const settings = strip(read('src/app/(staff)/settings/page.tsx'));
   assert(!/data-disabled="true" aria-disabled="true" title=/.test(settings), "the Settings hub's exports row carries no title (its reason is printed in the row)");
 }

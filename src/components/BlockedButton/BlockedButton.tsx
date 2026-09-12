@@ -25,11 +25,24 @@ type Props = Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'disabled' | 't
   blocked: boolean;
   /** Why the reader may not use it. Shown on tap or focus while blocked. */
   reason: string;
+  /** The controlled reason (§0az, the group reorder arrows). A control in a
+   *  column too narrow to carry its own line hands the showing to its parent:
+   *  when `onShownChange` is given the component renders no `.blocked-why` of
+   *  its own and reports show / hide instead, and `whyId` is the id the parent
+   *  gives the one span it renders, so the button is still described by it. */
+  onShownChange?: (shown: boolean) => void;
+  whyId?: string;
 };
 
-export function BlockedButton({ blocked, reason, onClick, onFocus, onBlur, className, children, ...rest }: Props) {
-  const [shown, setShown] = useState(false);
-  const whyId = useId();
+export function BlockedButton({ blocked, reason, onClick, onFocus, onBlur, className, children, onShownChange, whyId: parentWhyId, ...rest }: Props) {
+  const [shownState, setShownState] = useState(false);
+  const ownId = useId();
+  const whyId = parentWhyId ?? ownId;
+  const shown = shownState;
+  const setShown = (v: boolean): void => {
+    setShownState(v);
+    onShownChange?.(v);
+  };
   if (!blocked) {
     return (
       <button type="button" className={className} onClick={onClick} onFocus={onFocus} onBlur={onBlur} {...rest}>
@@ -61,7 +74,7 @@ export function BlockedButton({ blocked, reason, onClick, onFocus, onBlur, class
       >
         {children}
       </button>
-      {shown ? (
+      {shown && !onShownChange ? (
         <span className="blocked-why" role="status" id={whyId}>
           {reason}
         </span>

@@ -284,15 +284,22 @@ export function ProgrammeBuilder({
                                         ? 'Target RPE'
                                         : 'Load'}
                               </span>
-                              <input
-                                className="field"
-                                type="number"
-                                step="0.5"
-                                inputMode="decimal"
-                                value={loadValue}
-                                onChange={(e) => setLoadValue(e.target.value)}
-                                disabled={loadBasis === 'none'}
-                              />
+                              {/* A bodyweight exercise says what it logs, in
+                                  words (PATTERN-S5, 2026-09-12): a plain value,
+                                  not a disabled field — the row says which
+                                  numbers this screen owns. */}
+                              {loadBasis === 'none' ? (
+                                <span className="nm pb-reads-only">logs reps only</span>
+                              ) : (
+                                <input
+                                  className="field"
+                                  type="number"
+                                  step="0.5"
+                                  inputMode="decimal"
+                                  value={loadValue}
+                                  onChange={(e) => setLoadValue(e.target.value)}
+                                />
+                              )}
                             </label>
                             <label style={{ flex: 1 }}>
                               <span className="label">Rest (s)</span>

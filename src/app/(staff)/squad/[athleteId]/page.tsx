@@ -35,7 +35,7 @@ import { resolvePeriod } from '@/lib/period.server';
 import { availabilityStatus } from '@/lib/status';
 import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
-import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, CLINICAL_ONLY, ENTRY_CORRECTION, INJURY_ACCESS, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
+import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, CLINICAL_ONLY, ENTRY_CORRECTION, INJURY_ACCESS, PROGRAMME_AUTHOR, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Athlete · Fydr' };
 
@@ -375,6 +375,11 @@ export default async function AthletePage({
   /* D-26: the medic edits biographical details too, and the sport scientist was
      refused here although the policy allowed it. Both fixed; see 0071. */
   const canEditBio = hasAnyRole(claims.roles, ATHLETE_BIO_EDIT);
+  /* PATTERN-S5 A7 (2026-09-12): the programme link's label is the tell —
+     "Edit this programme" for a role that may author one, "View full
+     detail" for one that may not. The route is the same; the page it opens
+     already refuses the write. */
+  const canAuthorProgramme = hasAnyRole(claims.roles, PROGRAMME_AUTHOR);
 
   /* The coach-facing correction path the club asked for: "the athlete shouldnt be
    * able to edit an entry only the coach should be able to do it on the system —
@@ -523,7 +528,7 @@ export default async function AthletePage({
               {programme.endsOn ? ` · ends ${formatDate(programme.endsOn, timezone)}` : ''}
             </span>
             <Link href={`/programmes/${programme.programmeId}`} className="btn-ghost-pill accent">
-              Change plan
+              {canAuthorProgramme ? 'Change plan' : 'View plan'}
             </Link>
           </div>
         ) : null}
@@ -855,7 +860,7 @@ export default async function AthletePage({
                 </h2>
                 {programme ? (
                   <Link href={`/programmes/${programme.programmeId}`} className="pp-link">
-                    Edit ›
+                    {canAuthorProgramme ? 'Edit this programme' : 'View full detail'} ›
                   </Link>
                 ) : null}
               </div>

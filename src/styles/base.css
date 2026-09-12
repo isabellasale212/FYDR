@@ -13169,3 +13169,13 @@ a.hist-row:active { background: var(--surf-sunken); }
   margin-left: auto;
   text-decoration: none;
 }
+
+/* A value the programme builder reads rather than writes (PATTERN-S5 A1):
+   sits where a field would, at the field's height, with no frame. */
+.pb-reads-only {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--muted);
+  font-weight: 500;
+}

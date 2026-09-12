@@ -81,6 +81,11 @@ per kilogram, so a plan needs a weigh-in." (or "…so this plan needs a weigh-in
 a plan has no weight to scale to); "No open flags for this athlete · n = 0."; the
 injury panel's "This is not the same as being cleared."
 
+**The programme link is the tell** (PATTERN-S5, 12 September 2026): "Edit this
+programme" / "Change plan" for a role that may author a programme
+(`PROGRAMME_AUTHOR`), "View full detail" / "View plan" for one that may not. Same
+route; the programme page refuses the write on its own.
+
 **Entries and corrections.** The intro states the rules once: entries are never
 overwritten, a correction records a new dated revision against your name, the
 window is a fixed 28 days, and gym set logs and the weekly nutrition check-in are

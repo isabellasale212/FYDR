@@ -67,7 +67,7 @@ Visible and embarrassing; no harm.
 Accessibility, cosmetics, deferred features, and process notes.
 
 - **§0t L915 / L945 / L953** — CR10 ratings 4 and 6 have empty accessible names; "Add a note" drops focus to `<body>`; a stale CSS comment on anchor positions.
-- **§0u L967 / L983** — gym set buttons at 42px; the three nutrition answers are not a radio group.
+- ~~**§0u L967**~~ (closed, `45816c8` — 44px) / **§0u L983** — the three nutrition answers are not a radio group.
 - ~~**§0w L1060**~~ (closed by `98cfeec`), **§0y L1092 / L1094** — "Show them again" with no link affordance; two back controls on `/me/leaderboards`.
 - **§0aa L1124 / L1126** — two `<h1>` on `/programme`; "1 characters over".
 - **§0ab L1136** — the no-role screen (C3), deferred by decision.

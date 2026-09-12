@@ -405,6 +405,8 @@ are in fact the test page and the schedule. Left for a later pass.
 
 ## STAFF-SS-07 — Read the week's schedule
 
+**Built 2026-09-12 (`b3cbaab`, PATTERN-S4 A items), measured as the coach at 375.** The day headers and the legend count session minutes, not contact minutes ("445 session minutes · staff sessions excluded …"); Meeting is in the legend; the current view tab carries `aria-current="page"` (both tabs `role="tab"`, still no tablist); the toolbar primary says what it will make; the missing-group refusal states the consequence; read-only sits in a well; a removed session carries a Removed pill.
+
 **Entry point.** "Schedule" in the sidebar → `/schedule`.
 **Gate:** `SESSION_EDIT` decides *editing*, not access — every staff role can
 open this screen.
@@ -1461,10 +1463,10 @@ Holds `PROGRAMME_EDIT`, `PROGRAMME_AUTHOR`, `INJURY_PROGRAMME_PROPOSER`
 | STAFF-SC-01 | Read the dashboard | sidebar "Dashboard" |
 | STAFF-SC-02 | Browse the squad | sidebar "Squad overview" |
 | STAFF-SC-16/17/18/20/21/22 | Reports and exports | sidebar "Reports" |
-| STAFF-SC-24 | Author a gym programme | sidebar "Gym programme" |
+| STAFF-SC-24 | Author a gym programme — identical for the list and standard programmes; a **rehab** programme is read-only (`REHAB_PROGRAMME`) and `/programmes/new` is gym-only for the S&C (measured 2026-09-12) | sidebar "Gym programme" |
 | STAFF-SC-25 | Explore the leaderboard wall | sidebar "Leaderboard" |
 | STAFF-SC-26 | Publish and manage leaderboards | "Manage published boards →" |
-| STAFF-SC-29 | Settings hub — own profile only | sidebar "Settings" |
+| STAFF-SC-29 | Settings hub — seven sections and five rows (Thresholds → refusal, Exports, Groups, Notifications, Log out); the Integrations links bounce (§0av) | sidebar "Settings" |
 | STAFF-SC-33 | Print a screen | "Print" |
 
 ## Differs
@@ -1472,15 +1474,21 @@ Holds `PROGRAMME_EDIT`, `PROGRAMME_AUTHOR`, `INJURY_PROGRAMME_PROPOSER`
 ### STAFF-SC-24a — Propose an injury programme
 
 `INJURY_PROGRAMME_PROPOSER` belongs to **S&C alone** — not to the sport
-scientist, not to the medic. This is the one power the superset role does not
-hold. It appears on `/programmes/{programmeId}`.
+scientist, not to the medic. It is exercised inside "+ Assign" on
+`/programmes/{programmeId}`: choosing an athlete with an open injury turns the
+button into **"Propose"** and adds, before the act, "This athlete has an open
+injury, so this goes to the medic as a proposal. It will not reach the athlete
+until a medic signs it off." (measured 2026-09-12 as Owen Hartnell; migrations
+0079–0081). It is a constraint as much as a power: the sport scientist, who does
+not hold it, assigns the same injured athlete directly with no sign-off.
 
 ### STAFF-SC-05 — Athlete profile: gym and weigh-ins, no clinical detail, no bio edit
 
 Sees the gym panel (`ATHLETE_GYM`) and may record a weigh-in (`WEIGH_IN_EDIT`),
 but holds neither `ATHLETE_BIO_EDIT`, `AVAILABILITY_EDIT` nor `ENTRY_CORRECTION`
-— so bio, availability and entry corrections are all read-only, and diagnosis
-and mechanism are withheld.
+— measured 2026-09-12: the bio "Edit" and the "Correct check-in" buttons are
+blocked (`BlockedButton`, the reason on tap), the **Availability panel is absent**,
+the Subject access section absent, and diagnosis and mechanism are withheld.
 
 ## Cannot reach at all
 
@@ -1488,9 +1496,13 @@ and mechanism are withheld.
 - All scheduling — `SESSION_EDIT`. **`/injuries` and `/reports/injuries` are NOT
   closed to S&C: `INJURY_ACCESS` includes this role, with clinical content
   withheld.**
-- `/settings/groups`, `/settings/thresholds`, `/settings/audit`,
+- `/settings/thresholds` (in-page refusal), `/settings/audit`,
   `/settings/retention`, `/settings/users*`, `/settings/imports`, `/squad/new`.
-- Nutrition authoring and the meal library.
+  **`/settings/groups` opens** as the read list (measured 2026-09-12; its reorder
+  arrows are §0az's).
+- Nutrition authoring — and the meal library's **writes**: `/nutrition` opens as a
+  view with "Food library" readable and "+ Meal", "Assign" and the steppers
+  disabled without a reason (§0av, §0az).
 
 ---
 

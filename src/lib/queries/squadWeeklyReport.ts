@@ -121,7 +121,7 @@ export async function fetchSquadWeeklyReport(
     fetchSquadList(db, orgId, groupIds),
     fetchAcwr(db, orgId, timezone, groupIds),
     fetchWellnessTrend(db, orgId, timezone, groupIds),
-    fetchComplianceReport(db, orgId, groupIds, from, today),
+    fetchComplianceReport(db, orgId, groupIds, from, today, timezone),
     fetchDashboardAttention(db, orgId, today, groupIds, 10),
     fetchNotFullyAvailable(db, orgId, groupIds),
     fetchGroupAthleteIds(db, orgId, groupIds),

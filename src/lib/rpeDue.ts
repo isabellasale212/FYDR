@@ -53,3 +53,18 @@ export function rpeClosesAt(session: RpeSession, timezone: string): number {
 export function rpeIsClosed(session: RpeSession, timezone: string, now: number = Date.now()): boolean {
   return now >= rpeClosesAt(session, timezone);
 }
+
+/** Whether a rating submitted at `submittedAt` counts as submitted — §0ad,
+ *  decided 2026-09-12: only if it was submitted before rpeClosesAt; anything
+ *  later is a miss. The same instant the screen stops accepting one, read the
+ *  other way round, so the compliance report, Today's row and the RPE screen
+ *  cannot disagree about a rating. Strictly before: rpeIsClosed is `now >=
+ *  closesAt`, so the close itself is already refused.
+ *
+ *  Judge the ORIGINAL submission's time. A staff correction
+ *  (revise_training_entry) is a new row whose submitted_at is the correction's
+ *  moment; the athlete's rating was made when the first row says it was. */
+export function rpeSubmittedInTime(session: RpeSession, submittedAt: string | number, timezone: string): boolean {
+  const at = typeof submittedAt === 'number' ? submittedAt : new Date(submittedAt).getTime();
+  return at < rpeClosesAt(session, timezone);
+}

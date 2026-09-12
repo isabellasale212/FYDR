@@ -47,7 +47,7 @@ export async function GET(request: Request) {
   const period = await resolveCompliancePeriod(db, orgId, today, periodParamsFromUrl(url));
   const fromDate = period.range.from;
 
-  const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchComplianceReport(db, orgId, groupIds, fromDate, today)]);
+  const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchComplianceReport(db, orgId, groupIds, fromDate, today, timezone)]);
   const groupNameById = new Map(groups.map((g) => [g.id, g.name]));
 
   // One row per athlete, not per domain·athlete — waivedCount is a

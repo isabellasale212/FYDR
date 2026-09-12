@@ -37,7 +37,7 @@ export async function GET(request: Request) {
   const period = await resolveCompliancePeriod(db, orgId, today, periodParamsFromUrl(url));
   const fromDate = period.range.from;
 
-  const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchComplianceReport(db, orgId, groupIds, fromDate, today)]);
+  const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchComplianceReport(db, orgId, groupIds, fromDate, today, timezone)]);
 
   const buffer = await renderToBuffer(
     <PdfReport footer={`${orgName} · Fydr · generated ${formatDate(today, timezone)} · not for redistribution without the club's own policy`}>

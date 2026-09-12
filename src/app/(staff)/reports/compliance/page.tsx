@@ -88,7 +88,7 @@ export default async function ComplianceReportPage({
 
   const [groups, report] = await Promise.all([
     fetchGroups(db, orgId),
-    fetchComplianceReport(db, orgId, groupIds, fromDate, today),
+    fetchComplianceReport(db, orgId, groupIds, fromDate, today, timezone),
   ]);
 
   /* The four headline numbers, all derived from report.byAthlete rather than

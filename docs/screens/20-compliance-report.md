@@ -80,11 +80,31 @@ their percentage looks survivable.
 | MET-012 | Squad mean | Share of expected entries that arrived | The chosen period | **Empty, not zero**, when nothing was expected. Nobody expected is not the same as nobody complying |
 | MET-012 | Under half | Athletes below fifty percent | The chosen period | An empty list is a good outcome and says so |
 | None | Waived days | Days deliberately not counted | The chosen period | Zero is a real answer |
-| None | Last entry | When this athlete last submitted | Looks back beyond the period on purpose | Says the athlete has never submitted, rather than showing a blank |
+| None | Last entry | When this athlete last entered anything — a late RPE included | Looks back beyond the period on purpose | Says the athlete has never submitted, rather than showing a blank |
 
 **Waived days are a count, not a metric**, and they exist to stop the mean lying.
 A day nobody was expected to submit on, a rest day for instance, would otherwise
 drag every percentage down.
+
+**An RPE counts only if it was submitted in time** — §0ad, decided 2026-09-12.
+"In time" is before the end of the following club-local day: the instant the
+RPE screen stops accepting a rating and Today's row disappears, `rpeClosesAt` in
+`src/lib/rpeDue.ts`, read by all three so they cannot disagree. A rating entered
+later — when the coach chased, a week on — is a **miss** for the count, and still
+an entry for the **Last entry** column, because "3 weeks ago" beside a rating
+made yesterday would be false. Two details a reader of the number should know:
+
+- The time judged is the **athlete's original submission**. A staff correction
+  is a new revision stamped with the correction's own time; the report reads the
+  original row (`training_entries`, `revision_of` null), so correcting an
+  on-time rating a week later does not turn it into a miss.
+- Each RPE expectation names a **session**, and is matched to the rating for
+  that session. Before this an athlete with a morning and an afternoon session
+  who rated one was credited with both.
+
+A session the report cannot find any more (removed after its expectation was
+generated) has no window to judge against, so a rating for it counts. Wellness
+and gym are unchanged: an entry on the day counts.
 
 ---
 

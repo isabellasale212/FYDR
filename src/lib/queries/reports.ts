@@ -1,6 +1,12 @@
 import type { AppRole, ComplianceDomain, Json } from '@/lib/types/database';
 import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchAllPaged } from './paged';
+import {
+  classifyRpeSubmissions,
+  rpeExpectationKey,
+  type RpeSessionWindow,
+  type RpeSubmission,
+} from '@/lib/complianceRpe';
 import { fetchNotFullyAvailable, type NotFullyAvailableRow } from './availability';
 
 /* screens/reports.md, cut down hard, then entirely un-cut as the schema
@@ -89,6 +95,7 @@ type ComplianceExpectationRow = {
   athlete_id: string;
   expectation_date: string;
   domain: ComplianceDomain;
+  session_id: string | null;
   is_required: boolean;
   waived_reason: string | null;
 };
@@ -99,6 +106,10 @@ type ComplianceExpectationRow = {
  *  than this, but the three are consumed identically and one shape keeps the
  *  three paged reads symmetrical. */
 type SubmissionRow = { athlete_id: string | null; entry_date: string | null };
+
+/** How many session ids go in one `in` — the same 200 gymSessionCounts uses,
+ *  well inside what a URL holds. */
+const SESSION_ID_CHUNK = 200;
 
 /** The most recent day this org has a real compliance_expectations row for,
  *  in scope. Used to default the report's window sensibly instead of a
@@ -148,6 +159,10 @@ export async function fetchComplianceReport(
   groupIds: readonly string[],
   fromDate: string,
   toDate: string,
+  /* The org's timezone: an RPE counts only if submitted before the end of the
+     following club-local day (§0ad; lib/rpeDue.ts), and "following day" is a
+     club-time fact. */
+  timezone: string,
 ): Promise<ComplianceReport> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
 
@@ -185,7 +200,7 @@ export async function fetchComplianceReport(
   const expectations = await fetchAllPaged<ComplianceExpectationRow>((pageFrom, pageTo) =>
     db
       .from('compliance_expectations')
-      .select('athlete_id, expectation_date, domain, is_required, waived_reason')
+      .select('athlete_id, expectation_date, domain, session_id, is_required, waived_reason')
       .eq('org_id', orgId)
       .in('athlete_id', athleteIds)
       // expectation_date is a `date` column: fromDate/toDate are compared as
@@ -228,11 +243,23 @@ export async function fetchComplianceReport(
         .order('id')
         .range(pageFrom, pageTo),
     ),
-    fetchAllPaged<SubmissionRow>((pageFrom, pageTo) =>
+    /* THE BASE TABLE, ORIGINALS ONLY — not the _current view the other two
+     * read, and for a reason the other two do not have. §0ad (decided
+     * 2026-09-12): an RPE counts only if it was submitted before the end of
+     * the following club-local day, so the row's submitted_at is now judged.
+     * A staff correction (revise_training_entry) inserts a NEW row with
+     * submitted_at = now() and the _current view shows that one — reading it
+     * would turn an on-time rating corrected a week later into a miss. The
+     * original row (revision_of null) is never deleted and carries the
+     * athlete's own submission time; that is the row that answers "was it
+     * rated in time". Whether the chain was later corrected is a different
+     * question, and not compliance's. */
+    fetchAllPaged<RpeSubmission>((pageFrom, pageTo) =>
       db
-        .from('training_entries_current')
-        .select('athlete_id, entry_date')
+        .from('training_entries')
+        .select('athlete_id, entry_date, session_id, submitted_at')
         .in('athlete_id', athleteIds)
+        .is('revision_of', null)
         .gte('entry_date', fromDate)
         .lte('entry_date', toDate)
         .order('entry_date')
@@ -256,17 +283,43 @@ export async function fetchComplianceReport(
     ),
   ]);
 
+  /* The sessions the RPE expectations name, for their windows. Every
+   * training_rpe expectation carries a session (0044 generates them from the
+   * day's sessions); read in chunks because a season's worth of ids is too
+   * many for one `in`. Soft-deleted sessions are read too: a session removed
+   * after its expectation was generated still had a window. */
+  const rpeSessionIds = Array.from(
+    new Set(required.filter((e) => e.domain === 'training_rpe' && e.session_id).map((e) => e.session_id as string)),
+  );
+  const sessionWindows: RpeSessionWindow[] = [];
+  for (let i = 0; i < rpeSessionIds.length; i += SESSION_ID_CHUNK) {
+    const chunk = rpeSessionIds.slice(i, i + SESSION_ID_CHUNK);
+    const { data, error } = await db.from('sessions').select('id, starts_at, duration_min').in('id', chunk);
+    if (error) throw new Error(error.message);
+    for (const row of data ?? []) sessionWindows.push(row);
+  }
+  const rpe = classifyRpeSubmissions(
+    required.filter((e) => e.domain === 'training_rpe'),
+    training,
+    sessionWindows,
+    timezone,
+  );
+
   const submittedKey = (athleteId: string | null, date: string | null) => `${athleteId}:${date}`;
-  // wellness_entries_current / training_entries_current type every column as
+  // wellness_entries_current / gym_session_logs_current type every column as
   // nullable (a view-typing quirk noted elsewhere in this build, e.g.
   // analytics.ts) even though a real row is never missing one — submittedKey
   // accepts the nullable shape directly rather than asserting it away.
+  // training_rpe is keyed by the SESSION and judged against its window
+  // (lib/complianceRpe.ts); its key is the expectation's own.
   const submittedByDomain: Record<ComplianceDomain, Set<string>> = {
     wellness: new Set(wellness.map((r) => submittedKey(r.athlete_id, r.entry_date))),
-    training_rpe: new Set(training.map((r) => submittedKey(r.athlete_id, r.entry_date))),
+    training_rpe: rpe.inTime,
     gym: new Set(gym.map((r) => submittedKey(r.athlete_id, r.entry_date))),
     nutrition: new Set(),
   };
+  const keyFor = (exp: ComplianceExpectationRow): string =>
+    exp.domain === 'training_rpe' ? rpeExpectationKey(exp) : submittedKey(exp.athlete_id, exp.expectation_date);
 
   const summaryByDomain = new Map<ComplianceDomain, { expected: number; submitted: number; waived: number }>();
   for (const d of REPORT_DOMAINS) summaryByDomain.set(d, { expected: 0, submitted: 0, waived: 0 });
@@ -285,7 +338,12 @@ export async function fetchComplianceReport(
     if (!bucket) continue;
 
     const waived = exp.waived_reason !== null;
-    const submitted = submittedByDomain[domain].has(submittedKey(exp.athlete_id, exp.expectation_date));
+    const submitted = submittedByDomain[domain].has(keyFor(exp));
+    /* "Last entry" is when the athlete last entered anything, in time or not:
+       a rating made late is a miss for the count and still an entry for the
+       column — "3 weeks ago" beside a rating they made yesterday would be
+       false. */
+    const entered = domain === 'training_rpe' ? rpe.any.has(keyFor(exp)) : submitted;
 
     if (waived) {
       bucket.waived += 1;
@@ -304,7 +362,7 @@ export async function fetchComplianceReport(
         if (submitted) cur.submitted += 1;
         athleteRow.perDomain[domain] = cur;
       }
-      if (submitted && (!athleteRow.lastSubmission || exp.expectation_date > athleteRow.lastSubmission)) {
+      if (entered && (!athleteRow.lastSubmission || exp.expectation_date > athleteRow.lastSubmission)) {
         athleteRow.lastSubmission = exp.expectation_date;
       }
     }

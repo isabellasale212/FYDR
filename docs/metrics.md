@@ -472,6 +472,18 @@ distinction matters: no expectations is not the same as total non compliance.
 expected and submitted pair rather than by a second query, so the count and the
 names can never disagree (`src/lib/queries/dashboard.ts:255`).
 
+**The RPE domain on the compliance report has a cutoff** (§0ad, decided
+2026-09-12). A session rating counts as submitted only if the athlete's original
+submission was before `rpeClosesAt` — the end of the following club-local day,
+the same instant the RPE screen refuses one (`src/lib/rpeDue.ts`,
+`rpeSubmittedInTime`). Later is a miss. Matched per session, judged on the
+original row's `submitted_at`, never a correction's. Wellness has no cutoff
+beyond its own day. Where it is built: `src/lib/complianceRpe.ts`, read by
+`fetchComplianceReport`. **Not yet applied** on the athlete report's own
+compliance figure (`athleteReport.ts`) or the dashboard's "RPE, yesterday"
+track — the track only ever looks inside the window, so it cannot disagree; the
+athlete report can, and is filed as a question.
+
 ---
 
 ## MET-013. Squad availability split

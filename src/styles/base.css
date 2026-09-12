@@ -13035,11 +13035,36 @@ a.hist-row:active { background: var(--surf-sunken); }
   .main .reorder-btn {
     min-width: 44px;
   }
+  /* §0au (2026-09-12), the review's measurements on the built shell: the
+     class list above missed every control that is a plain <button> (the
+     schedule's group chips, its Read/Edit segment, the flag "Acknowledge",
+     the profile's "Edit"), the week arrows at 32×32, and `a.tiny` links; and
+     the roster names came out at 43 (19px of text plus 12 and 12). So: every
+     button in the content column, except the grid's session blocks (their
+     height IS the session's length); the arrows wide as well as tall; the
+     view tabs, chips and segment by class; and inline links on a 20px line
+     so 12 + 20 + 12 clears the floor. */
+  .main button:not(.sg-block) {
+    min-height: 44px;
+  }
+  .main .sg-weeknav-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .main .sg-viewtab,
+  .main .squad-chip,
+  .main .sg-segment,
+  .main .btn-ghost-pill {
+    min-height: 44px;
+  }
+  .main a.tiny,
+  .main .pp-link,
   .main table.tbl .nm,
   .main .eyebrow a,
   .main .tiny a {
     display: inline-block;
     padding-block: var(--sp-12);
     margin-block: calc(-1 * var(--sp-12));
+    line-height: 20px;
   }
 }

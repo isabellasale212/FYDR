@@ -1355,7 +1355,7 @@ Reviewed as Jane Pemberton at 1280×800 and 375×812, read-only — no board, ex
 
   **What to do.** Add `...(userAgent ? { user_agent: userAgent } : {})` to the failure row's metadata, from the same `clientUserAgent(headers)` the success row uses — same key, same omit-when-absent rule, so a reader can query both actions the same way. `scripts/test-sign-in-audit.ts` (in prebuild) already asserts `user_agent` on the success row twice; add the same assertion to the failure-row case so the two paths cannot drift apart again. No schema change: `metadata` is jsonb and the failure row is far under the 16 KB check.
 
-  **Left open, deliberately:** the 12:08 iPhone sign-in for `j.barnes@` is attributed to nobody until Isabella confirms whether it was hers; the row's IP matches her other five, which is evidence, not confirmation.
+  **Accounted for, 2026-09-12 (Isabella):** the 12:08 iPhone-Safari sign-in for `j.barnes@` on 2026-09-11 was hers. All six rows for that actor that day are hers — one morning sign-in from a phone, the four C1 test failures, the browser check. Nothing unexplained on the account.
 
 ## 0as. Filed 2026-09-11 while compiling the pilot-readiness list — the GPS import page still says duplicates are not detected
 

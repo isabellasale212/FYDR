@@ -59,6 +59,7 @@ somebody.
 | MET-028 | Result | Test result | **Yes.** `test_results` |
 | MET-029 | Best | Best attempt on a test day | **Yes.** Same rule, and see the note below |
 | MET-030 | Prescribed load | Prescribed gym load | **UNVERIFIED which athlete screen renders it** |
+| MET-041 | Tonnage (athlete gym page, `total_volume_kg` from `gym_session_logs_current`, 0106) | Total volume (session summary, `sessionVolumeKg`) and tonnage (My data) | **Same rule** — Σ load × reps over live sets carrying both; 0106's view and `lib/gymSummary.ts` state it identically (12 September 2026) |
 | MET-031 | Protein | Protein target | **Yes.** Recomputed on every weigh in, both surfaces |
 | MET-032 | Carbs | Carbohydrate target | **Yes** |
 | MET-033 | Fat | Fat target | **Yes** |

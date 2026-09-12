@@ -12,6 +12,7 @@ import { todayIso } from '@/lib/format';
 import { humanizeDbError } from '@/lib/writeErrors';
 import type { Db } from './groups';
 import { fetchAllPaged } from './paged';
+import { beats, type PriorBest } from '@/lib/gymSummary';
 import { recordInjuryEvent } from './injuryTimeline';
 import { mustAffect } from '@/lib/write';
 
@@ -933,6 +934,8 @@ export async function startOrGetSessionLog(
   id: string | null;
   status: GymLogStatus | null;
   startedAt: string | null;
+  /** Set once the session is finished — the summary's duration (09 C6). */
+  completedAt: string | null;
   error: string | null;
 }> {
   // The org's local today, not the server's UTC one — every sibling write
@@ -947,16 +950,16 @@ export async function startOrGetSessionLog(
   const today = todayIso(timezone);
   const { data: existing, error: findErr } = await db
     .from('gym_session_logs')
-    .select('id, status, started_at')
+    .select('id, status, started_at, completed_at')
     .eq('org_id', orgId)
     .eq('athlete_id', athleteId)
     .eq('programme_session_id', programmeSessionId)
     .eq('entry_date', today)
     .neq('status', 'abandoned')
     .maybeSingle();
-  if (findErr) return { id: null, status: null, startedAt: null, error: humanizeDbError(findErr.message, 'athlete') };
+  if (findErr) return { id: null, status: null, startedAt: null, completedAt: null, error: humanizeDbError(findErr.message, 'athlete') };
   if (existing) {
-    return { id: existing.id, status: existing.status, startedAt: existing.started_at, error: null };
+    return { id: existing.id, status: existing.status, startedAt: existing.started_at, completedAt: existing.completed_at, error: null };
   }
 
   const startedAt = new Date().toISOString();
@@ -973,8 +976,8 @@ export async function startOrGetSessionLog(
     })
     .select('id, status')
     .single();
-  if (error) return { id: null, status: null, startedAt: null, error: humanizeDbError(error.message, 'athlete') };
-  return { id: data.id, status: data.status, startedAt, error: null };
+  if (error) return { id: null, status: null, startedAt: null, completedAt: null, error: humanizeDbError(error.message, 'athlete') };
+  return { id: data.id, status: data.status, startedAt, completedAt: null, error: null };
 }
 
 export type LoggedSet = {
@@ -1732,6 +1735,80 @@ export async function fetchBestSetLoadsForAthletes(
       if (prev === undefined || r.load_kg > prev) byExercise.set(r.exercise_id, r.load_kg);
       out.set(athleteId, byExercise);
     }
+  }
+  return out;
+}
+
+/** The athlete's best working set per exercise from the complete sessions
+ *  logged strictly BEFORE a date — MET-040, the "Best before today 100 kg × 8
+ *  · 21 Aug" line on the session summary (ATH-ADULT-09 C6). The same working-
+ *  set definition as fetchBestSetLoadsForAthletes above (non-warm-up, load
+ *  and reps above zero) and the same two-step read — sessions, then their
+ *  sets in chunks — for the same reasons; the one difference is that this
+ *  keeps the reps and the date beside the load, because the athlete is shown
+ *  what they beat and when, not a band. Ties are decided by lib/gymSummary's
+ *  `beats`: heavier load, then more reps; a later equal set does not replace
+ *  an earlier one, so the date shown is the first time the best was hit. */
+export async function fetchPersonalBestsBefore(
+  db: Db,
+  orgId: string,
+  athleteId: string,
+  exerciseIds: readonly string[],
+  beforeDate: string,
+): Promise<Map<string, PriorBest>> {
+  if (exerciseIds.length === 0) return new Map();
+  type SessionRow = { id: string | null; entry_date: string | null };
+  const sessions = await fetchAllPaged<SessionRow>((from, to) =>
+    db
+      .from('gym_session_logs_current')
+      .select('id, entry_date')
+      .eq('org_id', orgId)
+      .eq('athlete_id', athleteId)
+      .eq('status', 'complete')
+      .lt('entry_date', beforeDate)
+      .order('entry_date')
+      .order('id')
+      .range(from, to),
+  );
+  const dateByLog = new Map<string, string>();
+  for (const s of sessions) if (s.id !== null && s.entry_date !== null) dateByLog.set(s.id, s.entry_date);
+  if (dateByLog.size === 0) return new Map();
+
+  const logIds = [...dateByLog.keys()];
+  const chunks: string[][] = [];
+  for (let i = 0; i < logIds.length; i += SESSION_LOG_ID_CHUNK) chunks.push(logIds.slice(i, i + SESSION_LOG_ID_CHUNK));
+
+  type SetRow = { gym_session_log_id: string | null; exercise_id: string | null; load_kg: number | null; reps_completed: number | null };
+  const perChunk = await Promise.all(
+    chunks.map((chunk) =>
+      fetchAllPaged<SetRow>((from, to) =>
+        db
+          .from('gym_set_logs_current')
+          .select('gym_session_log_id, exercise_id, load_kg, reps_completed')
+          .eq('org_id', orgId)
+          .eq('is_warmup', false)
+          .gt('load_kg', 0)
+          .gt('reps_completed', 0)
+          .in('gym_session_log_id', chunk)
+          .in('exercise_id', [...exerciseIds])
+          .order('gym_session_log_id')
+          .order('id')
+          .range(from, to),
+      ),
+    ),
+  );
+
+  /* Walk the sessions in date order so an equal best keeps its first date. */
+  const rows = perChunk.flat().filter(
+    (r): r is SetRow & { gym_session_log_id: string; exercise_id: string; load_kg: number; reps_completed: number } =>
+      r.gym_session_log_id !== null && r.exercise_id !== null && r.load_kg !== null && r.reps_completed !== null,
+  );
+  rows.sort((a, b) => (dateByLog.get(a.gym_session_log_id) ?? '').localeCompare(dateByLog.get(b.gym_session_log_id) ?? ''));
+  const out = new Map<string, PriorBest>();
+  for (const r of rows) {
+    const candidate = { load_kg: r.load_kg, reps: r.reps_completed, entry_date: dateByLog.get(r.gym_session_log_id) ?? beforeDate };
+    const prev = out.get(r.exercise_id);
+    if (prev === undefined || beats(candidate, prev)) out.set(r.exercise_id, candidate);
   }
   return out;
 }

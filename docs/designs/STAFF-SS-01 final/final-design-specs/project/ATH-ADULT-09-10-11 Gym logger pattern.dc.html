@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/fonts.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/icons.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/colors.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/typography.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/spacing.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/shape.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/motion.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/base.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/styles.css" />
+<script src="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/_ds_bundle.js"></script>
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-core); color: var(--text); }
+  a { color: var(--accent); text-decoration: none; pointer-events: none; }
+  a:hover { color: var(--blue-600); }
+  * { transition: none !important; animation: none !important; }
+</style>
+</helmet>
+<div style="--t-num-hero: 48px; padding: 40px; background: var(--bg); box-sizing: border-box">
+
+  <div style="max-width: 1720px; margin: 0 auto 32px; display: flex; flex-direction: column; gap: 8px">
+    <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">ATH-ADULT-09-10-11 · FINAL · static review board</p>
+    <p style="margin: 0; font-size: var(--t-hero); font-weight: var(--w-black); letter-spacing: var(--t-hero-tracking); line-height: var(--lh-tight); color: var(--text)">The athlete gym logger pattern</p>
+    <p style="margin: 0; max-width: 68ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Thirteen artboards covering logging a session set by set, finishing early, and correcting a logged set. The coach prescribes sets, weight and reps; the athlete confirms with one tap or adjusts with steppers first. A set records weight and reps only. Structure is carried by spacing and one accent rather than by borders: white surfaces sit on the tinted page, the two numbers being logged are the largest thing on the screen, and every label around them is quiet. Nothing is clickable and no transitions are active. Session shown is Conor Moroney, Lower A, 12 sets across 4 exercises — the session the three reviews were walked on.</p>
+  </div>
+
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+    <div style="max-width: 1720px; margin: 0 auto 36px">
+      <p style="margin: 0 0 4px; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">{{ g.name }}</p>
+      <p style="margin: 0 0 14px; max-width: 68ch; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ g.blurb }}</p>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 36px; align-items: flex-start">
+        <sc-for list="{{ g.frames }}" as="f" hint-placeholder-count="4">
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">{{ f.label }} <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· {{ f.dims }}</span></p>
+
+            <div id="{{ f.id }}" data-screen-label="{{ f.label }}" style="{{ f.frameStyle }}">
+
+              <div style="position: absolute; left: 0; right: 0; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 18px 16px 12px; box-sizing: border-box; z-index: 2">
+                <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--faint); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Pre-season strength · Wk 1 · Day 1</p>
+                <div style="margin-top: 5px; display: flex; align-items: center; justify-content: space-between; gap: 12px">
+                  <p style="flex: 1 1 auto; min-width: 0; margin: 0; font-size: var(--t-card-lg); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">{{ f.title }}</p>
+                  <sc-if value="{{ f.hasFinish }}" hint-placeholder-val="{{ true }}">
+                    <span style="flex: 0 0 auto; display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: var(--r); background: transparent; border: 1px dashed var(--line-dashed); color: var(--muted); font-size: var(--t-body-xs); font-weight: var(--w-semi)">{{ f.finishLabel }}</span>
+                  </sc-if>
+                </div>
+                <p style="{{ f.progressStyle }}">{{ f.progress }}</p>
+              </div>
+
+              <div style="{{ f.pageStyle }}">
+
+                <sc-if value="{{ f.hasBanner }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-bottom: 16px">
+                    <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Banner" tone="{{ f.bannerTone }}" title="{{ f.bannerTitle }}" hint-size="100%,44px"></x-import>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ f.hasLogged }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; padding: 8px 12px; border-radius: var(--r); background: var(--wash-accent); box-sizing: border-box">
+                    <span style="font-family: var(--font-num); font-size: var(--t-body-sm); font-weight: var(--w-semi); font-variant-numeric: tabular-nums; color: var(--text)">{{ f.loggedText }}</span>
+                    <a href="#correct" style="font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--accent); text-decoration: underline; text-underline-offset: 2px">Correct it</a>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ f.hasCurrent }}" hint-placeholder-val="{{ true }}">
+                  <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px">
+                    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+                      <span style="font-size: var(--t-card); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ f.exName }}</span>
+                      <span style="font-family: var(--font-num); font-size: var(--t-body-sm); font-weight: var(--w-semi); font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap">{{ f.setLabel }}</span>
+                    </div>
+
+                    <div style="{{ f.chipGridStyle }}">
+                      <sc-for list="{{ f.chips }}" as="c" hint-placeholder-count="4">
+                        <span style="{{ c.style }}"><span style="{{ c.fillStyle }}"></span><span style="{{ c.labelStyle }}">{{ c.label }}</span></span>
+                      </sc-for>
+                    </div>
+
+                    <div style="margin-top: 18px; display: flex; flex-direction: column; gap: 18px">
+                      <sc-for list="{{ f.steppers }}" as="s" hint-placeholder-count="2">
+                        <div>
+                          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px">
+                            <span style="flex: 0 0 auto; width: 52px; height: 52px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r); background: var(--surf2); font-size: var(--t-card-lg); font-weight: var(--w-bold); color: var(--accent)">−</span>
+                            <span style="flex: 1 1 auto; min-width: 0; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 2px">
+                              <span style="font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">{{ s.label }}</span>
+                              <span style="display: flex; align-items: baseline; justify-content: center; gap: 4px; white-space: nowrap"><span style="font-family: var(--font-num); font-size: var(--t-num-hero); font-weight: var(--w-num-strong); font-variant-numeric: tabular-nums; line-height: var(--lh-num); letter-spacing: -0.025em; color: var(--text)">{{ s.value }}</span><span style="font-family: var(--font-num); font-size: var(--t-num-row); font-weight: var(--w-semi); color: var(--muted)">{{ s.unit }}</span></span>
+                            </span>
+                            <span style="flex: 0 0 auto; width: 52px; height: 52px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r); background: var(--surf2); font-size: var(--t-card-lg); font-weight: var(--w-bold); color: var(--accent)">+</span>
+                          </div>
+                          <p style="margin: 8px 0 0; text-align: center; font-family: var(--font-num); font-size: var(--t-caption); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--muted)">{{ s.ref }}<span style="font-weight: var(--w-bold); color: var(--muted)">{{ s.refDelta }}</span></p>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ f.hasCorrect }}" hint-placeholder-val="{{ false }}">
+                  <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--ring-select), var(--shadow); padding: 16px">
+                    <p style="margin: 0; font-size: var(--t-card); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Correcting set 1 · Back squat</p>
+                    <p style="margin: 6px 0 0; font-family: var(--font-num); font-size: var(--t-body-xs); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--muted)">You first logged 100 kg × 8</p>
+                    <div style="margin-top: 18px; display: flex; flex-direction: column; gap: 18px">
+                      <sc-for list="{{ correctSteppers }}" as="s" hint-placeholder-count="2">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px">
+                          <span style="flex: 0 0 auto; width: 52px; height: 52px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r); background: var(--surf2); font-size: var(--t-card-lg); font-weight: var(--w-bold); color: var(--accent)">−</span>
+                          <span style="flex: 1 1 auto; min-width: 0; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 2px">
+                            <span style="font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">{{ s.label }}</span>
+                            <span style="display: flex; align-items: baseline; justify-content: center; gap: 4px; white-space: nowrap"><span style="font-family: var(--font-num); font-size: var(--t-num-hero); font-weight: var(--w-num-strong); font-variant-numeric: tabular-nums; line-height: var(--lh-num); letter-spacing: -0.025em; color: var(--text)">{{ s.value }}</span><span style="font-family: var(--font-num); font-size: var(--t-num-row); font-weight: var(--w-semi); color: var(--muted)">{{ s.unit }}</span></span>
+                          </span>
+                          <span style="flex: 0 0 auto; width: 52px; height: 52px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r); background: var(--surf2); font-size: var(--t-card-lg); font-weight: var(--w-bold); color: var(--accent)">+</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                    <p style="margin: 16px 0 0; font-size: var(--t-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">The original is kept. This set shows as corrected, with what you first logged, here and in My data.</p>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ f.hasNextLine }}" hint-placeholder-val="{{ false }}">
+                  <p style="margin: 18px 2px 0; display: flex; align-items: baseline; gap: 8px; font-size: var(--t-body-xs); color: var(--muted)"><span style="font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">Then</span><span style="font-family: var(--font-num); font-weight: var(--w-semi); font-variant-numeric: tabular-nums; color: var(--text)">{{ f.nextLine }}</span></p>
+                </sc-if>
+
+                <sc-if value="{{ f.hasUpNext }}" hint-placeholder-val="{{ true }}">
+                  <p style="margin: 20px 2px 10px; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--faint); text-transform: uppercase">{{ f.upNextLabel }}</p>
+                  <div style="display: flex; flex-direction: column; gap: 2px">
+                    <sc-for list="{{ f.upcoming }}" as="u" hint-placeholder-count="3">
+                      <div style="{{ u.rowStyle }}">
+                        <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                          <span style="font-size: var(--t-body-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ u.name }}</span>
+                          <span style="font-family: var(--font-num); font-size: var(--t-body-xs); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--muted)">{{ u.sub }}</span>
+                        </span>
+                        <span style="{{ u.tagStyle }}">{{ u.tag }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ f.hasSummary }}" hint-placeholder-val="{{ false }}">
+                  <div style="{{ f.summaryHeadStyle }}">
+                    <p style="margin: 0; font-size: var(--t-card); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ f.summaryTitle }}</p>
+                    <p style="margin: 8px 0 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ f.summaryBody }}</p>
+                  </div>
+                  <sc-if value="{{ f.hasTotals }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top: 16px; background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px">
+                      <div style="display: flex; align-items: flex-start; gap: 16px">
+                        <sc-for list="{{ f.totals }}" as="t" hint-placeholder-count="2">
+                          <span style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+                            <span style="font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">{{ t.label }}</span>
+                            <span style="display: flex; align-items: baseline; gap: 4px; white-space: nowrap"><span style="font-family: var(--font-num); font-size: var(--t-num-hero); font-weight: var(--w-num-strong); font-variant-numeric: tabular-nums; line-height: var(--lh-num); letter-spacing: -0.025em; color: var(--text)">{{ t.value }}</span><span style="font-family: var(--font-num); font-size: var(--t-num-row); font-weight: var(--w-semi); color: var(--muted)">{{ t.unit }}</span></span>
+                            <span style="font-family: var(--font-num); font-size: var(--t-caption); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--muted); text-wrap: pretty">{{ t.note }}</span>
+                          </span>
+                        </sc-for>
+                      </div>
+                      <div style="margin-top: 18px; display: flex; flex-direction: column; gap: 8px">
+                        <span style="font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">Best you have logged</span>
+                        <sc-for list="{{ f.bests }}" as="b" hint-placeholder-count="2">
+                          <span style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+                            <span style="font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">{{ b.name }}</span>
+                            <span style="font-family: var(--font-num); font-size: var(--t-num-row); font-weight: var(--w-num-strong); font-variant-numeric: tabular-nums; color: var(--accent); white-space: nowrap">{{ b.value }}</span>
+                          </span>
+                          <span style="font-family: var(--font-num); font-size: var(--t-caption); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--muted)">{{ b.prev }}</span>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </sc-if>
+
+                  <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 2px">
+                    <sc-for list="{{ f.summaryRows }}" as="r" hint-placeholder-count="4">
+                      <div style="display: flex; align-items: center; gap: 12px; background: var(--surf); border-radius: var(--r); padding: 12px 14px; min-height: 44px; box-sizing: border-box">
+                        <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                          <span style="font-size: var(--t-body-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ r.name }}</span>
+                          <span style="{{ r.subStyle }}">{{ r.sub }}</span>
+                        </span>
+                        <span style="{{ r.tagStyle }}">{{ r.tag }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <p style="margin: 16px 2px 0; font-size: var(--t-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ f.summaryFoot }}</p>
+                </sc-if>
+              </div>
+
+              <div style="position: absolute; left: 0; right: 0; bottom: 0; background: var(--surf); border-top: 1px solid var(--border); padding: 12px 16px 0; box-sizing: border-box; z-index: 2">
+                <p style="margin: 0; font-size: var(--t-caption); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ f.footNote }}</p>
+                <div style="margin-top: 10px">
+                  <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Button" dc-props="{{ primaryProps }}" hint-size="100%,56px">{{ f.primaryLabel }}</x-import>
+                </div>
+                <sc-if value="{{ f.hasSecondary }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top: 8px; display: inline-flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; padding: 10px 18px; border-radius: var(--r); background: transparent; color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">{{ f.secondaryLabel }}</div>
+                </sc-if>
+                <div aria-hidden="true" style="height: 20px"></div>
+              </div>
+
+              <sc-if value="{{ f.hasDialog }}" hint-placeholder-val="{{ false }}">
+                <div style="position: absolute; inset: 0; background: var(--scrim); display: flex; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box; z-index: 3">
+                  <div role="alertdialog" style="width: 100%; background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 20px">
+                    <p style="margin: 0; font-size: var(--t-card); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Finish early, 4 sets short?</p>
+                    <p style="margin: 8px 0 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">8 of 12 sets are logged and saved. The 4 you have not logged stay not logged — they are not recorded as zero. The session goes to My data marked finished early, and you can still correct any logged set.</p>
+                    <div style="margin-top: 18px; display: flex; flex-direction: column; gap: 8px">
+                      <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Button" dc-props="{{ primaryProps }}" hint-size="100%,56px">Keep logging</x-import>
+                      <div style="display: inline-flex; align-items: center; justify-content: center; width: 100%; min-height: 56px; padding: 10px 18px; border-radius: var(--r); background: var(--pill-bad); color: var(--on-bad); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Finish early · 8 of 12</div>
+                    </div>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-for>
+
+  <div style="max-width: 920px; margin: 48px auto 0; display: flex; flex-direction: column; gap: var(--gap-card)">
+    <p style="margin: 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">The rules, and what they rest on</p>
+
+    <sc-for list="{{ notes }}" as="n" hint-placeholder-count="16">
+      <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <div style="display: flex; align-items: baseline; gap: 8px">
+          <span style="{{ n.tagStyle }}">{{ n.tag }}</span>
+          <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ n.title }}</p>
+        </div>
+        <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ n.body }}</p>
+        <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">{{ n.tokens }}</p>
+      </div>
+    </sc-for>
+
+    <p style="margin: 24px 0 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">Approved new tokens</p>
+
+    <sc-for list="{{ approved }}" as="a" hint-placeholder-count="1">
+      <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--ring-select), var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ a.title }}</p>
+        <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ a.body }}</p>
+        <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">{{ a.tokens }}</p>
+      </div>
+    </sc-for>
+
+    <p style="margin: 24px 0 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">Code dependencies</p>
+
+    <sc-for list="{{ gaps }}" as="g" hint-placeholder-count="4">
+      <div style="background: var(--surf); border: 1px solid rgba(var(--warn-rgb), 0.5); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ g.title }}</p>
+        <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ g.body }}</p>
+        <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">{{ g.tokens }}</p>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+class Component extends DCLogic {
+  renderVals() {
+    const ROW = 'display: flex; align-items: center; gap: 12px; background: var(--surf); border-radius: var(--r); padding: 12px 14px; min-height: 44px; box-sizing: border-box;';
+    const ROW_DONE = 'display: flex; align-items: center; gap: 12px; background: var(--surf); border-left: var(--border-accent-w) solid var(--accent); border-radius: var(--r); padding: 12px 14px; min-height: 44px; box-sizing: border-box;';
+
+    const pill = (tone) => {
+      const base = 'flex: 0 0 auto; font-size: var(--t-num-nano); font-weight: var(--w-bold); letter-spacing: 0.06em; text-transform: uppercase; border-radius: var(--r); padding: 3px 8px; white-space: nowrap; ';
+      if (tone === 'done') return base + 'color: var(--accent); background: var(--pill-accent);';
+      if (tone === 'short') return base + 'color: var(--muted); background: transparent; border: 1px dashed var(--line-dashed);';
+      return 'flex: 0 0 auto; font-family: var(--font-num); font-size: var(--t-body-xs); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint); white-space: nowrap;';
+    };
+
+    const chip = (state, label) => {
+      const base = 'position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; height: 48px; border-radius: var(--r); font-family: var(--font-num); font-size: var(--t-card); font-weight: var(--w-bold); font-variant-numeric: tabular-nums; box-sizing: border-box; ';
+      const NOFILL = 'display: none;';
+      const lab = (c) => 'position: relative; color: ' + c + ';';
+      if (state === 'filling') return { label, style: base + 'background: var(--pill-accent);', fillStyle: 'position: absolute; left: 0; top: 0; bottom: 0; width: 62%; background: var(--accent);', labelStyle: lab('#ffffff') };
+      if (state === 'logged') return { label, style: base + 'background: var(--accent);', fillStyle: NOFILL, labelStyle: lab('#ffffff') };
+      if (state === 'corrected') return { label, style: base + 'background: var(--accent); box-shadow: var(--ring-select);', fillStyle: NOFILL, labelStyle: lab('#ffffff') };
+      if (state === 'now') return { label, style: base + 'background: var(--pill-accent); box-shadow: var(--ring-select);', fillStyle: NOFILL, labelStyle: lab('var(--accent)') };
+      return { label, style: base + 'background: var(--surf2);', fillStyle: NOFILL, labelStyle: lab('var(--faint)') };
+    };
+
+    const stepper = (label, value, unit, ref, delta) => ({ label, value, unit: unit || '', ref: ref || '', refDelta: delta || '' });
+
+    const mk = (o) => {
+      const h = o.h || 812;
+      const headH = o.finishLabel === null ? 108 : 127;
+      return {
+        id: o.id, label: o.label, dims: '375 × ' + h,
+        frameStyle: 'position: relative; width: 375px; height: ' + h + 'px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r);',
+        pageStyle: 'position: absolute; left: 0; right: 0; top: ' + headH + 'px; padding: 16px 16px 190px; box-sizing: border-box;',
+        title: o.title || 'Lower A',
+        hasFinish: o.finishLabel !== null,
+        finishLabel: o.finishLabel || 'Finish early',
+        progress: o.progress,
+        progressStyle: 'margin: 10px 0 0; font-family: var(--font-num); font-size: var(--t-body-sm); font-weight: var(--w-semi); font-variant-numeric: tabular-nums; color: var(--muted);',
+
+        hasBanner: !!o.bannerTone, bannerTone: o.bannerTone || 'good', bannerTitle: o.bannerTitle || '',
+        hasLogged: !!o.loggedText, loggedText: o.loggedText || '',
+
+        hasCurrent: !!o.exName,
+        exName: o.exName || '', setLabel: o.setLabel || '',
+        chipGridStyle: 'margin-top: 14px; display: grid; grid-template-columns: repeat(' + ((o.chips || []).length || 3) + ', minmax(0, 1fr)); gap: 8px;',
+        chips: o.chips || [],
+        steppers: o.steppers || [],
+
+        hasCorrect: !!o.correct,
+
+        hasNextLine: !!o.nextLine,
+        nextLine: o.nextLine || '',
+        hasUpNext: !!(o.upcoming && o.upcoming.length),
+        upNextLabel: o.upNextLabel || 'Then',
+        upcoming: o.upcoming || [],
+
+        hasTotals: !!(o.totals && o.totals.length),
+        totals: o.totals || [],
+        bests: o.bests || [],
+        hasSummary: !!o.summaryTitle,
+        summaryTitle: o.summaryTitle || '',
+        summaryBody: o.summaryBody || '',
+        summaryFoot: o.summaryFoot || '',
+        summaryRows: o.summaryRows || [],
+        summaryHeadStyle: 'background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px;'
+          + (o.summaryTone === 'short' ? ' border-left: var(--border-accent-w) dashed var(--line-dashed);' : ''),
+
+        footNote: o.footNote,
+        primaryLabel: o.primaryLabel,
+        hasSecondary: !!o.secondaryLabel,
+        secondaryLabel: o.secondaryLabel || '',
+        hasDialog: !!o.dialog
+      };
+    };
+
+    const upRow = (name, sub, tag, tone) => ({ name, sub, tag, rowStyle: tone === 'done' ? ROW_DONE : ROW, tagStyle: pill(tone) });
+    const sumRow = (name, sub, tag, tone, faint) => ({
+      name, sub, tag, tagStyle: pill(tone),
+      subStyle: 'font-family: var(--font-num); font-size: var(--t-body-xs); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: ' + (faint ? 'var(--faint)' : 'var(--muted)') + ';'
+    });
+
+    const REST = [
+      upRow('Romanian deadlift', '3 × 8 · 80 kg', '0 of 3', 'plain'),
+      upRow('Split squat', '3 × 10 each · 24 kg', '0 of 3', 'plain')
+    ];
+
+    const tag = (kind) => kind === 'pattern'
+      ? 'font-size: var(--t-num-nano); font-weight: var(--w-bold); letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); background: var(--pill-accent); border-radius: var(--r); padding: 3px 7px; white-space: nowrap;'
+      : 'font-size: var(--t-num-nano); font-weight: var(--w-bold); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: var(--surf2); border-radius: var(--r); padding: 3px 7px; white-space: nowrap;';
+    const note = (kind, title, body, tokens) => ({ tag: kind === 'pattern' ? 'Pattern' : 'Screen-specific', tagStyle: tag(kind), title, body, tokens });
+
+    return {
+      primaryProps: { variant: 'primary', full: true, style: { minHeight: '56px' } },
+
+      correctSteppers: [stepper('Weight', '100', 'kg'), stepper('Reps', '5')],
+
+      groups: [
+        {
+          name: 'ATH-ADULT-09 · Log a session set by set',
+          blurb: 'The header and the footer never move. Current exercise, set number and what is next stay above the fold; the footer holds the one tap that logs the prescribed set.',
+          frames: [
+            mk({
+              id: 'g-start', label: 'Session start', progress: '0 of 12 sets · 4 exercises',
+              exName: 'Back squat', setLabel: 'Set 1 of 3 · Rest 90s',
+              chips: [chip('now', '1'), chip('todo', '2'), chip('todo', '3')],
+              steppers: [stepper('Weight', '100', 'kg', 'Prescribed 100 kg'), stepper('Reps', '8', '', 'Prescribed 8')],
+              upcoming: REST,
+              footNote: 'Sets save as you log them. Change a number if it is not right today.',
+              primaryLabel: 'Log set 1 · 100 kg × 8'
+            }),
+            mk({
+              id: 'g-log', label: 'Logging a set · prescribed values', progress: '3 of 12 sets · 00:12:40',
+              exName: 'Back squat', setLabel: 'Set 2 of 3 · Rest 90s',
+              chips: [chip('logged', '✓'), chip('now', '2'), chip('todo', '3')],
+              steppers: [stepper('Weight', '100', 'kg', 'Prescribed 100 kg'), stepper('Reps', '8', '', 'Prescribed 8')],
+              upcoming: REST,
+              footNote: 'Sets save as you log them.',
+              primaryLabel: 'Log set 2 · 100 kg × 8'
+            }),
+            mk({
+              id: 'g-adjust', label: 'Adjusting a set · weight changed', progress: '3 of 12 sets · 00:13:05',
+              exName: 'Back squat', setLabel: 'Set 2 of 3 · Rest 90s',
+              chips: [chip('logged', '✓'), chip('now', '2'), chip('todo', '3')],
+              steppers: [stepper('Weight', '102.5', 'kg', 'Prescribed 100 kg · ', '+2.5'), stepper('Reps', '8', '', 'Prescribed 8')],
+              upcoming: REST,
+              footNote: 'Sets save as you log them.',
+              primaryLabel: 'Log set 2 · 102.5 kg × 8'
+            }),
+            mk({
+              id: 'g-increment', label: 'Increment from the exercise · 1.25 kg steps', progress: '9 of 12 sets · 00:34:20',
+              exName: 'Bench press', setLabel: 'Set 2 of 3 · Rest 120s',
+              chips: [chip('logged', '✓'), chip('now', '2'), chip('todo', '3')],
+              steppers: [stepper('Weight', '61.25', 'kg', 'Prescribed 60 kg · ', '+1.25'), stepper('Reps', '6', '', 'Prescribed 6')],
+              nextLine: 'Nordic curl · 3 × 6 bodyweight',
+              footNote: 'This exercise steps in 1.25 kg. The step comes from the exercise, not the app.',
+              primaryLabel: 'Log set 2 · 61.25 kg × 6'
+            }),
+            mk({
+              id: 'g-filling', label: 'The moment a set is logged · chip filling', progress: '3 of 12 sets · 00:13:06',
+              exName: 'Back squat', setLabel: 'Set 2 of 3 · Rest 90s',
+              chips: [chip('logged', '✓'), chip('filling', '✓'), chip('todo', '3')],
+              steppers: [stepper('Weight', '102.5', 'kg', 'Prescribed 100 kg · ', '+2.5'), stepper('Reps', '8', '', 'Prescribed 8')],
+              nextLine: 'Romanian deadlift · 3 × 8 @ 80 kg',
+              footNote: 'The chip fills with the tick over --dur-move and the phone gives one light tap. Nothing else moves.',
+              primaryLabel: 'Log set 2 · 102.5 kg × 8'
+            }),
+            mk({
+              id: 'g-logged', label: 'Set logged · moving to the next set', progress: '4 of 12 sets · 00:13:11',
+              loggedText: 'Set 2 logged · 102.5 kg × 8',
+              exName: 'Back squat', setLabel: 'Set 3 of 3 · Rest 90s',
+              chips: [chip('logged', '✓'), chip('logged', '✓'), chip('now', '3')],
+              steppers: [stepper('Weight', '102.5', 'kg', 'Prescribed 100 kg · ', '+2.5'), stepper('Reps', '8', '', 'Prescribed 8')],
+              nextLine: 'Romanian deadlift · 3 × 8 @ 80 kg',
+              footNote: 'Sets save as you log them.',
+              primaryLabel: 'Log set 3 · 102.5 kg × 8'
+            }),
+            mk({
+              id: 'g-next-ex', label: 'Last set done · next exercise', progress: '6 of 12 sets · 00:18:44',
+              loggedText: 'Back squat complete · 3 of 3 sets',
+              exName: 'Romanian deadlift', setLabel: 'Set 1 of 3 · Rest 90s',
+              chips: [chip('now', '1'), chip('todo', '2'), chip('todo', '3')],
+              steppers: [stepper('Weight', '80', 'kg', 'Prescribed 80 kg'), stepper('Reps', '8', '', 'Prescribed 8')],
+              nextLine: 'Split squat · 3 × 10 each @ 24 kg',
+              footNote: 'Sets save as you log them.',
+              primaryLabel: 'Log set 1 · 80 kg × 8'
+            }),
+            mk({
+              id: 'g-offline', label: 'Offline · sets queued', progress: '6 of 12 sets · 2 waiting to send',
+              bannerTone: 'good', bannerTitle: 'Saved on this phone · sends when you have signal',
+              exName: 'Romanian deadlift', setLabel: 'Set 1 of 3 · Rest 90s',
+              chips: [chip('now', '1'), chip('todo', '2'), chip('todo', '3')],
+              steppers: [stepper('Weight', '80', 'kg', 'Prescribed 80 kg'), stepper('Reps', '8', '', 'Prescribed 8')],
+              nextLine: 'Split squat · 3 × 10 each @ 24 kg',
+              footNote: 'Keep logging. Everything is on this phone and sends when you have signal.',
+              primaryLabel: 'Log set 1 · 80 kg × 8'
+            }),
+            mk({
+              id: 'g-small', label: 'Small phone · logging a set', h: 667, progress: '3 of 12 sets · 00:12:40',
+              exName: 'Back squat', setLabel: 'Set 2 of 3 · Rest 90s',
+              chips: [chip('logged', '✓'), chip('now', '2'), chip('todo', '3')],
+              steppers: [stepper('Weight', '100', 'kg', 'Prescribed 100 kg'), stepper('Reps', '8', '', 'Prescribed 8')],
+              nextLine: 'Romanian deadlift · 3 × 8 @ 80 kg',
+              footNote: 'Sets save as you log them.',
+              primaryLabel: 'Log set 2 · 100 kg × 8'
+            })
+          ]
+        },
+        {
+          name: 'ATH-ADULT-10 · Finish a session early',
+          blurb: 'Finishing is the one action on this screen that is not a set, so it does not look like one: a dashed outline control in the header, never the footer, and it confirms with the shortfall spelled out.',
+          frames: [
+            mk({
+              id: 'g-finish-confirm', label: 'Finish early · confirmation', progress: '8 of 12 sets · 00:41:16',
+              exName: 'Split squat', setLabel: 'Set 3 of 3 · Rest 60s',
+              chips: [chip('logged', '✓'), chip('logged', '✓'), chip('now', '3')],
+              steppers: [stepper('Weight', '24', 'kg', 'Prescribed 24 kg'), stepper('Reps', '10', '', 'Prescribed 10 each')],
+              nextLine: 'Nordic curl · 3 × 6 bodyweight',
+              footNote: 'Sets save as you log them.',
+              primaryLabel: 'Log set 3 · 24 kg × 10',
+              dialog: true
+            }),
+            mk({
+              id: 'g-finish-summary', label: 'Finish early · summary', progress: '8 of 12 sets logged · 4 not logged',
+              finishLabel: null, summaryTone: 'short',
+              summaryTitle: 'Finished early · 8 of 12 sets',
+              summaryBody: 'Everything you logged is saved. The 4 sets you did not log are recorded as not logged, not as zero.',
+              summaryRows: [
+                sumRow('Back squat', '102.5 kg × 8, 8, 8', '3 of 3', 'done'),
+                sumRow('Romanian deadlift', '80 kg × 8, 8', '2 of 3', 'short'),
+                sumRow('Split squat', '24 kg × 10, 10, 10', '3 of 3', 'done'),
+                sumRow('Nordic curl', 'Not logged', '0 of 3', 'short', true)
+              ],
+              summaryFoot: 'This session is in My data, marked finished early. You can still correct any logged set.',
+              footNote: 'Sent to My data.',
+              primaryLabel: 'Back to today',
+              secondaryLabel: 'Correct a set'
+            })
+          ]
+        },
+        {
+          name: 'ATH-ADULT-11 · Complete, and correcting a logged set',
+          blurb: 'A logged set is corrected by pressing its chip — a 48px target inside the card, away from the 56px footer action, so it cannot be hit in place of logging the next set.',
+          frames: [
+            mk({
+              id: 'g-complete', label: 'Session complete · summary', progress: '12 of 12 sets · 00:52:09',
+              finishLabel: null,
+              summaryTitle: 'Session complete · 12 of 12 sets',
+              summaryBody: 'Every prescribed set is logged and saved.',
+              totals: [
+                { label: 'Total volume', value: '7,290', unit: 'kg', note: 'Weight × reps across 12 sets' },
+                { label: 'Sets done', value: '12', unit: 'of 12', note: '4 exercises · 52 min' }
+              ],
+              bests: [
+                { name: 'Back squat', value: '102.5 kg × 8', prev: 'Best before today 100 kg × 8 · 21 Aug' }
+              ],
+              summaryRows: [
+                sumRow('All four exercises', '102.5 kg squat · 80 kg RDL · 24 kg split · bodyweight', '12 of 12', 'done')
+              ],
+              summaryFoot: 'This session is in My data, set by set. You can still correct any logged set.',
+              footNote: 'Sent to My data.',
+              primaryLabel: 'Back to today',
+              secondaryLabel: 'Correct a set'
+            }),
+            mk({
+              id: 'g-correct', label: 'Correcting a logged set', progress: '4 of 12 sets · 00:14:02',
+              correct: true,
+              footNote: 'The set you are correcting is already saved. Saving again replaces what your coach sees.',
+              primaryLabel: 'Save correction',
+              secondaryLabel: 'Cancel'
+            })
+          ]
+        }
+      ],
+
+      notes: [
+        note('pattern', 'The two numbers are the screen, at 48px',
+          'Weight and reps are set at 48px in tabular figures, centred between their steppers, and nothing else competes with them. The unit rides alongside at --t-num-row in --muted rather than inside the big figure, which is what makes a four-digit value fit: "102.5 kg" measures 163px against the 187px the card leaves between two 52px steppers at 375, so it holds at 667 as well as 812. Labels are --t-num-nano uppercase in --faint, the exercise name --t-card, the set position --t-body-sm in --muted.',
+          'values --font-num / --t-num-hero at the proposed 48px / --w-num-strong / tabular-nums / -0.025em · unit --t-num-row / --w-semi / --muted · widest case "102.5 kg" 163px inside 187px'),
+
+        note('pattern', 'Logging a set is one fill and one tap of haptic',
+          'On log, the current chip fills with the accent from the left and the tick lands, over --dur-move. The phone gives one light impact at the same moment, which is the feedback that actually reaches an athlete who is not looking at the screen. Nothing else animates — no count roll, no card transition, no row entrance. Under prefers-reduced-motion the fill is instant and the haptic stays, because it is not motion.',
+          'chip fill --pill-accent to --accent over --dur-move 300ms on --ease-ring · haptic light impact, once, on write to the local queue · reduced motion: fill instant, haptic unchanged'),
+
+        note('pattern', 'Structure comes from spacing, not from borders',
+          'White surfaces sit directly on the tinted page with no outline — the tint is what lifts them, which is the system\'s own argument for the page colour. Only two hairlines survive, on the pinned header and the pinned footer, where one surface really does scroll under another. Upcoming and summary rows are 2px apart rather than boxed, and the one shadow carries the current card.',
+          'cards --surf, no border, --shadow · rows --surf at 2px gaps, no border · hairlines only on the pinned header and footer'),
+
+        note('pattern', 'One accent, and no second hue',
+          'Every state on these screens is carried by the deep accent, its own tint, or a neutral: logged sets are --accent fill, the current set is --pill-accent with the selection ring, a completed exercise keeps the 3px accent bar, and shortfall is a dashed neutral outline. Amber and teal are gone from the logger entirely. The single exception is the destructive action in the finish-early dialog, which stays in the bad family because the system reserves that pairing for exactly that.',
+          'accent only: --accent, --pill-accent, --wash-accent, --ring-select, --border-accent-w · neutrals --surf2, --line-dashed, --faint · exception --pill-bad + --on-bad on the dialog\'s destructive action'),
+
+        note('pattern', 'One tap logs the prescribed set, and the tap says what it will write',
+          'The footer action reads "Log set 2 · 100 kg × 8" rather than "Done", so the athlete confirms the numbers without reading them anywhere else first. It is --hit-lg, full width, the only primary on the screen.',
+          'Button variant primary, full, --hit-lg 56px + --ring-action · label carries {set} · {weight} × {reps}'),
+
+        note('pattern', 'The header states position and never scrolls away',
+          'Programme eyebrow, session name, "Set 2 of 3 · Rest 90s" in the card, and the running "{done} of {total} sets" sit in a pinned header and a pinned card above the fold at both 812 and 667. What is next is always stated — as a labelled list where there is room, as a single "Then" line where there is not — and never behind a disclosure, since the progress count includes those sets.',
+          'header --bg + 1px --border bottom · progress --font-num / --t-body-sm / --w-semi / --muted with tabular-nums · Then line --t-body-xs, value in --text'),
+
+        note('pattern', 'Adjusting is steppers, never a keypad',
+          'Two --hit-md squares flanking the value, no border, no input field. A keypad on a bench with chalked hands is the failure case this pattern exists to remove. The prescribed value stays under the control as reference and does not move when the value changes.',
+          'stepper --hit-md 52px --surf2 fill + --accent glyph, no border · reference --t-caption / --muted, centred under the value'),
+
+        note('pattern', 'Going off the prescription is information, not an error',
+          'An adjusted value reads "Prescribed 100 kg · +2.5" in --muted with the difference in bold. No warn colour and no error treatment: above or below the coach\'s number is a fact about the session, and the athlete was told to change it if it is not right today. The bold difference is the only emphasis, so the deviation is findable without being scolded.',
+          'reference --t-caption / --w-regular / --muted with the delta at --w-bold, same colour · signed with + or the minus sign, never a hyphen'),
+
+        note('pattern', 'Set chips are the state display and the correction target',
+          'One chip per prescribed set, 48px, in the exercise card: logged is the accent fill with ✓, the current set is the accent tint with the selection ring, sets not yet reached are --faint on --surf2. There is no disabled control anywhere — a set that is not next simply has no action, which removes the app\'s most common "the button does nothing".',
+          'chips 48px, grid gap 8px, --r · logged --accent + #ffffff · current --pill-accent + --accent + --ring-select · not reached --surf2 + --faint'),
+
+        note('pattern', 'An absent value reads "Not logged"',
+          'Never a dash and never a zero. A set the athlete did not do is written as "Not logged" wherever it appears — summary rows, exercise counts, and anything downstream — with the count beside it stating the denominator ("0 of 3"). A dash asks the reader to infer; the words say it.',
+          'absent value "Not logged" at --t-body-xs / --faint · count chip dashed --line-dashed / --muted · never 0, never —'),
+
+        note('pattern', 'Offline reads exactly as it does on the entry forms',
+          'Queued sets show the same Banner in the good tone with the same sentence — "Saved on this phone · sends when you have signal" — and the header count carries its own denominator, "6 of 12 sets · 2 waiting to send", so the number the finish control depends on is never quietly wrong. The footer note tells the athlete to carry on rather than to retry.',
+          'Banner tone good, as ATH-ADULT-03 · count "{done} of {total} sets · {queued} waiting to send"'),
+
+        note('pattern', 'Nothing on this pattern says the athlete cannot change it',
+          'Gym sets are correctable, so the entry-form line "You can\'t change this after you submit." and its "Why can\'t I edit it?" link are absent by design. The footer note states what is true: "Sets save as you log them."',
+          'no irreversibility line, no recourse link · footer note --t-caption / --muted'),
+
+        note('screen-specific', 'Finishing early is not shaped like logging a set',
+          'The control is in the header, dashed outline on no fill, --muted ink, 44px, next to the session name — not in the footer column the athlete has been tapping. Its label stays "Finish early"; the shortfall count moved into the confirmation, where it has room to be a sentence rather than a suffix.',
+          'header control transparent + 1px dashed --line-dashed + --muted, 44px · never --accent, never --hit-lg'),
+
+        note('screen-specific', 'Finishing early confirms, and the confirmation states the consequence',
+          '"Finish early, 4 sets short?" then, in order: what is already saved, that unlogged sets are not zero, where the session goes, and that corrections stay open. Keep logging is the primary under the thumb; Finish early is the destructive secondary carrying the count. This is the one added step in the pattern and it guards the one action the athlete cannot repeat.',
+          'dialog --surf card over --scrim, no border · Keep logging Button variant primary --hit-lg · Finish early --pill-bad + --on-bad at 8.95:1, --hit-lg'),
+
+        note('screen-specific', 'The finish-early summary cannot be mistaken for a complete one',
+          'Four things differ and none of them is a second hue: the title ("Finished early · 8 of 12 sets" against "Session complete · 12 of 12 sets"), the head\'s dashed neutral bar, the per-exercise counts, and the rows that read "Not logged". Complete carries accent counts on every row and no bar at all.',
+          'early head 3px dashed --line-dashed bar + short counts · complete head no bar + --pill-accent counts on every row'),
+
+        note('screen-specific', 'Session complete is the one screen allowed to be pleased',
+          'Total volume and sets done are set at the same 48px as the logging values, with total volume first because it is the number that grows over a block, and both carry their derivation underneath ("Weight × reps across 12 sets"). Personal bests follow as a short list in the accent, each with what it beat and when — "Best before today 100 kg × 8 · 21 Aug" — so the claim is checkable rather than a compliment. No gradient, no glass, no confetti, no new colour, and no praise copy: the restraint is what makes the numbers read as a record rather than a reward.',
+          'totals --font-num / --t-num-hero / tabular-nums on --surf · derivation --t-caption / --muted · bests --t-num-row / --accent with the prior value in --muted · finish-early has no totals block at all'),
+
+        note('screen-specific', 'Rest is reference text, and nothing else',
+          'The prescribed rest sits beside the set position as "Set 2 of 3 · Rest 90s" in --muted — same size, same weight, same colour as the position it follows. There is no timer, no countdown, no clock glyph, no ring and no accent, because none of those are things the athlete is meant to act on. The number comes from the programme and reads as part of the prescription.',
+          'rest --t-body-sm / --w-semi / --muted, inline after the set position · no icon, no --accent, no progress element, no live value'),
+
+        note('screen-specific', 'Correction is reached from the chip, and the panel says only what is true',
+          'Pressing a logged chip opens "Correcting set 1 · Back squat" in place, with the same steppers pre-filled and "You first logged 100 kg × 8" above them. The review found the live panel promising a corrected marker and an original value that My data never shows; this board resolves that by surfacing rather than rewording — the corrected chip keeps the selection ring, the summary row shows the superseded value, and the copy claims exactly that. Saving acknowledges in the logged strip: "Set 1 corrected · was 100 kg × 8".',
+          'panel --surf + --ring-select before --shadow, no border · corrected chip keeps --ring-select · §0v resolved by surfacing'),
+
+        note('screen-specific', 'Correcting suspends the footer action rather than adding a third button',
+          'While the panel is open the footer primary is Save correction and the ghost secondary is Cancel — the logging action is gone, so the --hit-lg target cannot log a new set while a correction is open. The footer note states the effect: "Saving again replaces what your coach sees."',
+          'footer primary Save correction --hit-lg · Cancel ghost --accent on --surf, 44px · no logging action present')
+      ],
+
+      approved: [
+        {
+          title: '--t-num-hero moves from 34px to 48px',
+          body: 'A value change on the existing token, not a second one. 34px was sized for a dial centre read at a desk; the gym logger is read at arm\'s length by someone who is tired, and it is the only screen in the app where a numeral is the primary content rather than a cell in a table. Raising the token rather than adding --t-num-display keeps one display numeral size in the system. The two places --t-num-hero is used elsewhere should be checked at the new value; the unit is set separately at --t-num-row, so nothing that pairs a number with a unit grows by 14px.',
+          tokens: 'changed: --t-num-hero 34px → 48px, tracking -0.025em at this size · unit stays --t-num-row 17px · no new size token · this board sets --t-num-hero: 48px on its root and every value reads var(--t-num-hero), so the frames exercise the proposed value rather than a literal'
+        },
+        {
+          title: '--hit-lg 56px and --hit-md 52px',
+          body: 'Approved this turn. The system floors mobile targets at 44px and the kit Button has no size above its default; this pattern needs two sizes above that floor because the hand using them is tired and wet. --hit-lg is the logging action and every action in the finish-early dialog; --hit-md is the stepper square. The 48px set chip sits between them and stays a literal, since it is a display element that happens to be tappable rather than an action.',
+          tokens: 'added: --hit-lg 56px, --hit-md 52px · existing floor 44px unchanged · set chips remain 48px literal'
+        }
+      ],
+
+      gaps: [
+        {
+          title: 'Stepper increments come from the exercise record',
+          body: 'Weight step, unit and whether a weight control exists at all are per-exercise data, not design constants. The board shows a barbell squat stepping 2.5 kg and a bench press stepping 1.25 kg to prove the control handles a finer step without changing shape — the value is wider, everything else holds. Dumbbells step 2 kg, a Nordic curl has no weight control at all and logs reps only.',
+          tokens: 'per-exercise: weight_increment, unit, has_load · board shows 2.5 kg and 1.25 kg · bodyweight exercises render reps only'
+        },
+        {
+          title: 'Keep the screen awake while a session is in progress',
+          body: 'Wake Lock, taken when the session opens and released on finish or exit. An athlete resting 90 seconds between sets should not have to wake and unlock the phone to log the next one, and a locked screen is where a set gets skipped. Release it explicitly — a wake lock left held after the session ends drains the battery for the rest of the day.',
+          tokens: 'navigator.wakeLock.request("screen") on session open · release on finish, on exit, and on visibilitychange · re-acquire when the page becomes visible again'
+        },
+        {
+          title: 'Queued sets must send as soon as signal returns',
+          body: 'Not only on a visit to Today. The review found queued sets surviving both a network restore and a page reload, flushing only when /today was opened — so the header count and the finish control\'s shortfall both stay wrong until the athlete opens a screen they have no reason to open mid-session. "2 waiting to send" is drawn here on the assumption the queue drains on reconnect, on the gym screen, without navigation. Until it does, this pattern displays a number it cannot honour.',
+          tokens: 'fydr-outbox-gym-set flushes on the online event and on the gym screen, not on route change · count "{queued} waiting to send" depends on it · §0u'
+        },
+        {
+          title: 'Nothing else is new',
+          body: 'Beyond --hit-lg, --hit-md and the --t-num-hero value change, no new colour, radius, shadow or motion — the set-logged fill runs on the existing --dur-move and --ease-ring. The refined-light treatment removes tokens rather than adding them: the emphasised blue card, the semantic good and warn tones, and most card borders are simply not used here. The dense-row accent bar, the scrim, the selection ring, the Banner and the destructive dialog pairing are all reused unchanged.',
+          tokens: 'reused: --border-accent-w 3px, --scrim, --ring-select, --wash-accent, --pill-accent, Banner good, --pill-bad + --on-bad · unused here: --blue-100/200 emphasised card, --warn, --good'
+        }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+/* Fydr shape and elevation.
+
+   One radius for every element — 8px. Shape no longer signals element type: a pill and a
+   card cut identically, so fill and border carry that distinction alone. Two exceptions,
+   both deliberate: --r-round for anything that reads as circular (8px on a 9px status dot
+   renders a square), and --r-sheet for bottom sheets.
+
+   One shadow for the whole product, now two-layer: a tight contact shadow plus a wide
+   negative-spread ambient one. Still not a scale — a card that needs to feel more urgent
+   earns it with a tinted border, never a heavier shadow.
+
+   See uploads/SPEC-shape-and-colour.md for the decision record. */
+
+:root {
+  /* ---- radius: one step for every element ---- */
+  --r: 8px; /* @kind radius */
+  --r-sheet: 8px 8px 0 0; /* @kind radius */
+  --r-round: 50%; /* @kind radius */
+  /* The toggle knob is 16px at sm, where --r would be half its size and render a full
+     circle. It gets its own value so the knob reads square. */
+  --r-knob: 3px; /* @kind radius */
+
+  /* Aliases, retained so existing markup keeps working. All resolve to --r; prefer --r
+     in new work. --r-round is NOT among them — circular elements must name it. */
+  --r-cell: var(--r); /* @kind radius */
+  --r-row: var(--r); /* @kind radius */
+  --r-icon: var(--r); /* @kind radius */
+  --r-icon-lg: var(--r); /* @kind radius */
+  --r-control: var(--r); /* @kind radius */
+  --r-button: var(--r); /* @kind radius */
+  --r-inset: var(--r); /* @kind radius */
+  --r-tile: var(--r); /* @kind radius */
+  --r-card: var(--r); /* @kind radius */
+  --r-pill: var(--r); /* @kind radius */
+
+  /* ---- elevation: still one shadow for the whole product ---- */
+  --shadow: 0 1px 2px rgba(23,40,80,0.07), 0 6px 16px -6px rgba(23,40,80,0.14); /* @kind shadow */
+  --shadow-knob: 0 1px 3px rgba(23,40,80,0.26); /* @kind shadow */
+  /* A deeper raised level, for a plinth carrying a headline number. Cards still own
+     --shadow and nothing else may use this to out-rank them; it exists so the dial
+     value reads as sitting ON the ring rather than in it. */
+  --shadow-raised: 0 2px 4px rgba(23,40,80,0.14), 0 8px 18px -6px rgba(23,40,80,0.28); /* @kind shadow */
+
+  /* ---- rings. Where a card carries both, the ring is listed FIRST:
+         box-shadow: var(--ring-select), var(--shadow); ---- */
+  --ring-select: 0 0 0 3px rgba(23,72,155,0.16); /* @kind shadow */
+  --ring-action: 0 0 0 4px rgba(23,72,155,0.18); /* @kind shadow */
+  --ring-action-hover: 0 0 0 5px rgba(23,72,155,0.24); /* @kind shadow */
+  --ring-dot: 0 0 0 4px rgba(23,72,155,0.22); /* @kind shadow */
+
+  /* ---- borders ---- */
+  --border-w: 1px;
+  --border-accent-w: 3px;      /* dense list rows only — cards take a tinted border instead */
+
+  /* ---- blur, used only on sticky bars ---- */
+  --bar-bg: rgba(225,233,246,0.85);
+  --bar-blur: blur(14px); /* @kind other */
+  --tabbar-bg: rgba(255,255,255,0.94);
+}

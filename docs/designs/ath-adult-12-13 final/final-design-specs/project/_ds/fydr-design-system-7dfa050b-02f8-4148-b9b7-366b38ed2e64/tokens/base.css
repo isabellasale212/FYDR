@@ -1,0 +1,30 @@
+/* Fydr base resets.
+   Deliberately small. The product styles elements, not documents. */
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sora);
+  line-height: var(--lh-base);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: var(--selection); }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--text); }
+
+.mono, code, pre { font-family: var(--font-mono); }
+
+/* Every number that sits in a column gets tabular figures. */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,46 @@
+/* Fydr spacing.
+   A 4px grid with the half-steps the product actually uses. Gaps are named for
+   the job they do, because "the gap between cards" is a decision, not a number. */
+
+:root {
+  --s-1: 2px;
+  --s-2: 4px;
+  --s-3: 6px;
+  --s-4: 8px;
+  --s-5: 10px;
+  --s-6: 12px;
+  --s-7: 14px;
+  --s-8: 16px;
+  --s-9: 18px;
+  --s-10: 20px;
+  --s-11: 22px;
+  --s-12: 26px;
+  --s-13: 30px;
+  --s-14: 40px;
+  --s-15: 44px;
+
+  /* ---- named jobs ---- */
+  --gap-card: 14px;          /* between stacked or side-by-side cards */
+  --gap-tile: 12px;          /* between stat tiles — they are separate cards, not cells */
+  --gap-chip: 6px;           /* between chips in a row */
+  --gap-row: 8px;            /* between grid columns in a table row */
+
+  --pad-card: 18px;          /* standard card */
+  --pad-card-wide: 18px 20px;
+  --pad-card-lead: 20px 22px;/* the read / overview card */
+  --pad-cell: 8px 6px;       /* table cell */
+  --pad-page: 30px 40px 80px;
+  --pad-page-wide: 30px 44px 80px;
+  --pad-bar: 11px 40px;      /* sticky filter bar */
+
+  /* ---- shell ---- */
+  --sidebar-w: 214px;
+  --sidebar-rail-w: 64px;
+  --content-max: 1180px;
+  --prose-max: 68ch;
+
+  /* ---- mobile ---- */
+  --touch-min: 44px;
+  --tabbar-pad: 8px 6px 36px;
+  --sheet-top: 62px;
+}

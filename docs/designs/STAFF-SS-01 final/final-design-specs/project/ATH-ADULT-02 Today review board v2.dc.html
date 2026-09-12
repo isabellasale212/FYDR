@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/fonts.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/icons.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/colors.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/typography.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/spacing.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/shape.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/motion.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/base.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/styles.css" />
+<script src="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/_ds_bundle.js"></script>
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-core); color: var(--text); }
+  a { color: var(--accent); text-decoration: none; pointer-events: none; }
+  * { transition: none !important; animation: none !important; }
+</style>
+</helmet>
+<div style="padding: 40px; background: var(--bg); box-sizing: border-box">
+
+  <div style="max-width: 1560px; margin: 0 auto 32px; display: flex; flex-direction: column; gap: 8px">
+    <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">ATH-ADULT-02 · review board · static · v2</p>
+    <p style="margin: 0; font-size: var(--t-hero); font-weight: var(--w-black); letter-spacing: var(--t-hero-tracking); line-height: var(--lh-tight); color: var(--text)">Land on Today and read what is outstanding</p>
+    <p style="margin: 0; max-width: 68ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted)">Five artboards. Nothing is clickable, no hovers or transitions are active. All frames are rendered at one club-local instant — Thu 10 Sept, 15:20 Europe/London — so the RPE rows can be checked against it. This screen has no desktop layout in the athlete app, so there is no 1440 frame.</p>
+  </div>
+
+  <div style="max-width: 1560px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start">
+    <sc-for list="{{ frames }}" as="f" hint-placeholder-count="5">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">{{ f.label }} <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 375 × 812</span></p>
+
+        <div id="{{ f.id }}" style="position: relative; width: 375px; height: 812px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden">
+          <div style="position: absolute; inset: 0; overflow: hidden; padding: 20px 16px 36px; box-sizing: border-box">
+
+            <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Eyebrow" hint-size="auto,16px">Thu 10 Sept · MD-2</x-import>
+            <p style="margin: 6px 0 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Afternoon, Conor</p>
+
+            <sc-if value="{{ f.showBanner }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top: 16px">
+                <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Banner" tone="{{ f.tone }}" title="{{ f.bannerText }}" hint-size="100%,44px"></x-import>
+              </div>
+            </sc-if>
+
+            <div style="margin-top: 24px; display: flex; align-items: baseline; justify-content: space-between; gap: 12px">
+              <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Eyebrow" hint-size="auto,16px">To do</x-import>
+              <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Eyebrow" hint-size="auto,16px">{{ f.countLabel }}</x-import>
+            </div>
+
+            <div style="margin-top: 10px; display: flex; flex-direction: column; gap: var(--gap-tile)">
+              <sc-for list="{{ f.todos }}" as="t" hint-placeholder-count="3">
+                <div style="display: flex; align-items: center; gap: 14px; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; min-height: 44px; box-sizing: border-box">
+                  <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+                    <span style="font-size: var(--t-num-row); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ t.name }}</span>
+                    <span style="font-family: var(--font-num); font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); font-variant-numeric: tabular-nums; color: var(--muted)">{{ t.sub }}</span>
+                  </span>
+                  <span aria-hidden="true" style="flex: 0 0 auto; font-size: var(--t-card-lg); color: var(--faint)">&rsaquo;</span>
+                </div>
+              </sc-for>
+
+              <sc-if value="{{ f.isEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px">
+                  <p style="margin: 0; font-size: var(--t-num-row); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">You're up to date</p>
+                  <p style="margin: 3px 0 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted)">Nothing expected of you today is outstanding.</p>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="margin-top: 24px">
+              <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Eyebrow" hint-size="auto,16px">Today</x-import>
+              <div style="margin-top: 10px; display: flex; flex-direction: column; gap: var(--gap-tile)">
+                <sc-for list="{{ f.sessions }}" as="s" hint-placeholder-count="2">
+                  <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px">
+                    <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ s.name }}</p>
+                    <p style="margin: 4px 0 0; font-family: var(--font-num); font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); font-variant-numeric: tabular-nums; color: var(--muted)">{{ s.meta }}</p>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="margin-top: 24px">
+              <div style="{{ f.availCardStyle }}">
+                <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px">
+                  <p style="{{ f.availTitleStyle }}">{{ f.availTitle }}</p>
+                  <span style="{{ f.availPillStyle }}">{{ f.availPill }}</span>
+                </div>
+                <p style="{{ f.availBodyStyle }}">{{ f.availBody }}</p>
+
+                <sc-if value="{{ f.hasDiagnosis }}" hint-placeholder-val="{{ false }}">
+                  <div style="{{ f.diagWrapStyle }}">
+                    <p style="{{ f.diagEyebrowStyle }}">Medical · visible to you and medical staff</p>
+                    <p style="{{ f.diagBodyStyle }}">Grade 1 left hamstring strain, non-contact, sprinting. Running progression continues; no contact until reviewed Friday.</p>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+
+            <sc-if value="{{ f.hasTeam }}" hint-placeholder-val="{{ false }}">
+              <p style="margin: 24px 0 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted)">Team this week: {{ f.teamName }}. <span style="color: var(--faint)">Set by your coach.</span></p>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="max-width: 900px; margin: 48px auto 0; display: flex; flex-direction: column; gap: var(--gap-card)">
+
+    <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--on-tint-label); text-transform: uppercase">Answered first, as asked</p>
+      <p style="margin: 0; font-size: var(--t-card); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">Can an RPE task appear before its session's end time?</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">I cannot answer this from the code, and I am not going to infer it. There is no Fydr codebase in this project — I searched the bound design system and its two templates as well, and neither contains task-building logic, an RPE builder or a compliance module. Every earlier mention of compliance.ts:144 in this thread came from the persona review document you attached, not from reading source.</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">What I have done instead is treat it as a design rule and enforce it in the board's data, so the state you called out cannot be drawn. The Full frame is a 15:20 club-local afternoon with a 16:00 team run still to come: that session produces no RPE row, and the only RPE row present belongs to the 10:00 gym session that has finished. If the built screen can still produce "Rate team run · Today 16:00", the defect is in the task builder and needs the repository connected to fix at source.</p>
+    </div>
+
+    <div style="background: var(--surf); border: 1px solid rgba(var(--warn-rgb), 0.5); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">Confirmed, and changed</p>
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">The left accent stripe on a card is not the system pattern</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">I checked, and it is the opposite of the rule. The system states that the tinted border replaces the 3px left bar as the card-level urgency device, and that --border-accent-w 3px is retained for dense list rows only: cards get the tinted fill, rows keep the bar. The availability card is a card, so the stripe I drew on the approved board was wrong. It now takes its fill, border and foreground from one tone family, which is the documented semantic-card treatment.</p>
+      <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">modified --pill-warn fill + 1px --warn + --on-warn text · unavailable --pill-bad + 1px --bad + --on-bad · full stays default --surf + --border · --border-accent-w now unused on this screen</p>
+    </div>
+
+    <p style="margin: 24px 0 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">What changed, and on which token</p>
+
+    <sc-for list="{{ notes }}" as="n" hint-placeholder-count="8">
+      <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ n.title }}</p>
+        <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ n.body }}</p>
+        <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">{{ n.tokens }}</p>
+      </div>
+    </sc-for>
+
+    <p style="margin: 24px 0 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">Needs new token</p>
+    <div style="background: var(--surf); border: 1px solid rgba(var(--warn-rgb), 0.5); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Nothing</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">No new colour, radius, spacing step, type size or duration. Two items that were exceptions in earlier passes are now closed rather than carried: the off-scale 1.0625rem row name is on --t-num-row, and the stripe-on-a-card is replaced by the documented tone-family treatment. The one open item is not a token but the code question above.</p>
+      <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">--t-num-row 17px · --pill-warn / --on-warn · --pill-bad / --on-bad</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+class Component extends DCLogic {
+  renderVals() {
+    const NOW = 15 * 60 + 20;
+
+    const wellness = { name: 'Wellness', sub: '45 sec', at: -1 };
+    const nutrition = { name: 'Weekly nutrition check-in', sub: 'about 10 sec', at: 1e9 };
+
+    // An RPE task exists only once its session has ended. `endsAt` is minutes
+    // from midnight club-local for today, or negative for a previous day.
+    const rpe = (name, endsAt, dayLabel) => {
+      if (dayLabel === undefined && endsAt > NOW) return null;
+      const hh = Math.floor(endsAt / 60), mm = endsAt % 60;
+      const clock = String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+      const when = dayLabel === undefined
+        ? 'Today ' + clock
+        : (dayLabel === 'Yesterday' ? 'Yesterday' : dayLabel + ' ' + clock);
+      return { name: 'Rate ' + name, sub: when + ' · 20 sec', at: dayLabel === undefined ? endsAt : -1000 + endsAt };
+    };
+
+    const build = (items) => items
+      .filter(Boolean)
+      .sort((a, b) => a.at - b.at);
+
+    const cardDefault = 'background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px;';
+    const cardTone = (tone) => 'background: var(--pill-' + tone + '); border: 1px solid var(--' + tone + '); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px;';
+    const pill = 'font-size: var(--t-pill); font-weight: var(--w-bold); border-radius: var(--r); padding: 3px 8px;';
+
+    const mk = (o) => {
+      const todos = o.todos || [];
+      const tone = o.tone;
+      const ink = tone ? 'var(--on-' + tone + ')' : 'var(--text)';
+      const inkBody = tone ? 'var(--on-' + tone + ')' : 'var(--muted)';
+      return {
+        id: o.id,
+        label: o.label,
+        todos,
+        isEmpty: todos.length === 0,
+        countLabel: todos.length === 0 ? 'None left' : todos.length + ' left',
+        sessions: o.sessions,
+        showBanner: !!tone,
+        tone: tone || 'warn',
+        bannerText: o.bannerText || '',
+
+        availCardStyle: tone ? cardTone(tone) : cardDefault,
+        availTitleStyle: 'margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: ' + ink + ';',
+        availBodyStyle: 'margin: 6px 0 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: ' + inkBody + '; text-wrap: pretty;',
+        availTitle: o.availTitle,
+        availBody: o.availBody,
+        availPill: o.availPill,
+        availPillStyle: tone
+          ? pill + ' background: var(--surf); color: var(--on-' + tone + ');'
+          : pill + ' background: var(--pill-good); color: var(--on-good);',
+
+        hasDiagnosis: !!o.diagnosis,
+        diagWrapStyle: 'margin-top: 12px; padding-top: 12px; border-top: 1px solid ' + (tone ? 'rgba(var(--' + tone + '-rgb), 0.45)' : 'var(--hair)') + ';',
+        diagEyebrowStyle: 'margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: ' + ink + ';',
+        diagBodyStyle: 'margin: 6px 0 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: ' + inkBody + '; text-wrap: pretty;',
+
+        hasTeam: !!o.team,
+        teamName: o.team || ''
+      };
+    };
+
+    return {
+      frames: [
+        mk({
+          id: 'tb2-full', label: 'Full',
+          todos: build([wellness, rpe('gym — lower body', 11 * 60 + 15), rpe('team run', 17 * 60), nutrition]),
+          sessions: [
+            { name: 'Gym — lower body', meta: '10:00 · Gym · finished 11:15' },
+            { name: 'Team run', meta: '16:00 · Pitch · starts in 40 min' }
+          ],
+          availTitle: 'Available', availBody: 'Everything is on.', availPill: 'Full'
+        }),
+        mk({
+          id: 'tb2-modified', label: 'Modified',
+          todos: build([wellness, rpe('rehab running', 11 * 60 + 40), nutrition]),
+          sessions: [
+            { name: 'Rehab running', meta: '11:00 · Gym · finished 11:40' },
+            { name: 'Team run', meta: '16:00 · Pitch · contact, not you' }
+          ],
+          tone: 'warn', bannerText: 'Modified · running and gym only, no contact',
+          availTitle: 'Modified', availBody: 'Running and gym only. No contact.',
+          availPill: 'Injury', diagnosis: true, team: 'Rehab B'
+        }),
+        mk({
+          id: 'tb2-unavailable', label: 'Unavailable',
+          todos: build([wellness, nutrition]),
+          sessions: [{ name: 'Team run', meta: '16:00 · Pitch · you are not in this one' }],
+          tone: 'bad', bannerText: 'Unavailable · left hamstring, no running or contact',
+          availTitle: 'Unavailable', availBody: 'No running and no contact. Rehab only, reviewed Friday.',
+          availPill: 'Injury', diagnosis: true, team: 'Rehab A'
+        }),
+        mk({
+          id: 'tb2-done', label: 'All done',
+          todos: [],
+          sessions: [
+            { name: 'Gym — lower body', meta: '10:00 · Gym · finished 11:15' },
+            { name: 'Team run', meta: '16:00 · Pitch · starts in 40 min' }
+          ],
+          availTitle: 'Available', availBody: 'Everything is on.', availPill: 'Full'
+        }),
+        mk({
+          id: 'tb2-tworpe', label: 'Two RPE outstanding',
+          todos: build([
+            wellness,
+            rpe('gym — upper body', 19 * 60 + 30, 'Yesterday'),
+            rpe('team run', 11 * 60 + 30),
+            nutrition
+          ]),
+          sessions: [
+            { name: 'Team run', meta: '10:00 · Pitch · finished 11:30' },
+            { name: 'Skills', meta: '16:30 · Pitch · starts in 70 min' }
+          ],
+          availTitle: 'Available', availBody: 'Everything is on.', availPill: 'Full'
+        })
+      ],
+
+      notes: [
+        {
+          title: 'An RPE row cannot exist before its session ends',
+          body: 'The row is built from the session\'s end time against the club-local clock, so a session still to come produces nothing. In the Full frame the 16:00 team run is 40 minutes away and has no row; the only RPE row is the 10:00 gym session, which finished at 11:15. The state called out in the brief is now unrepresentable in this board.',
+          tokens: 'no token change — a data rule. Subtitle stays --font-num / --t-body-xs / --muted with tabular-nums'
+        },
+        {
+          title: 'RPE rows say when the session was',
+          body: 'The subtitle carries the session time ahead of the duration: "Today 11:15 · 20 sec" for one earlier today, "Yesterday · 20 sec" for one carried over, "{Day} HH:MM · 20 sec" for anything older. Tabular figures keep the times aligned down a stack of rows.',
+          tokens: '--font-num + font-variant-numeric tabular-nums · --t-body-xs / --w-regular / --muted'
+        },
+        {
+          title: 'Multiple RPE rows run oldest first',
+          body: 'Two outstanding tasks are ordered by session end time, so yesterday\'s gym session sits above this morning\'s team run. The oldest is the one most at risk of being forgotten and the one whose recall is worst, so it is the one the thumb reaches first.',
+          tokens: 'ordering only · rows unchanged at --surf / 1px --border / --r / --shadow'
+        },
+        {
+          title: 'Availability uses the tone-family card, not a stripe',
+          body: 'Modified and Unavailable now take fill, border and foreground from one tone family — the documented card-level urgency device. Nothing is alpha-muted on the tint: body copy sits at the family\'s own foreground rather than --muted, and the status pill inverts to a white chip so it still reads as a chip on a tinted ground.',
+          tokens: 'modified --pill-warn + 1px --warn + --on-warn · unavailable --pill-bad + 1px --bad + --on-bad · pill --surf chip + --on-warn / --on-bad · divider rgba(var(--warn-rgb), 0.45)'
+        },
+        {
+          title: 'Modified and Unavailable also surface above To do',
+          body: 'A single-line Banner sits between the greeting and To do carrying the status and a short reason, linking down to the full card, which keeps all of its content. Full shows no banner: an all-clear does not need to interrupt, and the card below still states it.',
+          tokens: 'Banner tone warn / bad · --r-round dot · message --text'
+        },
+        {
+          title: 'No glyph tiles',
+          body: 'WEL, RPE and NUT are gone. Each row is title, timed subtitle and chevron, which lets a row sit at the 44px minimum instead of the 82px the 44px tiles forced, and the titles carry the domain on their own.',
+          tokens: 'row padding 16px 18px, min-height 44px · --r · --shadow · chevron --t-card-lg / --faint'
+        },
+        {
+          title: 'Diagnosis and team render whenever their data exists',
+          body: 'The medical block sits inside the availability card under a "visible to you and medical staff" eyebrow — the athlete is one of the two parties permitted to see it. "Team this week" renders below the card whenever a team is set. Both appear in Modified and Unavailable and are absent from the three Available frames, where neither has data.',
+          tokens: 'eyebrow --t-eyebrow + --t-eyebrow-tracking at the tone foreground · body --t-body-xs'
+        },
+        {
+          title: 'The list is its own status',
+          body: 'The count reads "3 left" or "None left" off the same array the rows render from, so it cannot disagree with them, and with nothing outstanding the To do slot holds one row-shaped card reading "You\'re up to date" rather than an empty region. The greeting is club-local — every frame here is one instant, Thu 10 Sept 15:20 Europe/London, which is what makes "Afternoon" and every session time consistent.',
+          tokens: 'count in the Eyebrow primitive · empty card --surf / --border / --r / --shadow, same geometry as a row'
+        }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

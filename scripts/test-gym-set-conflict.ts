@@ -44,17 +44,19 @@ console.log('1. the decision');
   assert(describeGymSet({ reps_completed: null, load_kg: null, rpe: null }) === 'nothing logged', 'and for nothing');
 }
 
-console.log('\n2. the flusher');
+console.log('\n2. the flusher (the gym loop is lib/gymOutboxFlush.ts since ATH-ADULT-09 C4, shared with the logger)');
 {
   const f = strip(read('src/components/OutboxFlusher/OutboxFlusher.tsx'));
-  assert(/async function resolveGymSetConflict\(/.test(f), 'resolveGymSetConflict exists');
-  assert(/fetchGymSetForSlot\(/.test(f), 'and looks the slot up in gym_set_logs_current');
-  assert(/classifyGymSetConflict\(/.test(f), 'and decides with the pure function');
-  const gymLoop = f.slice(f.indexOf('for (const item of gymSetItems)'), f.indexOf('if (cancelled) return;', f.indexOf('for (const item of gymSetItems)')));
+  const g = strip(read('src/lib/gymOutboxFlush.ts'));
+  assert(/export async function resolveGymSetConflict\(/.test(g), 'resolveGymSetConflict exists');
+  assert(/fetchGymSetForSlot\(/.test(g), 'and looks the slot up in gym_set_logs_current');
+  assert(/classifyGymSetConflict\(/.test(g), 'and decides with the pure function');
+  const gymLoop = g.slice(g.indexOf('for (const item of items)'), g.indexOf('const queued = '));
   assert(/isDuplicateKeyError\(err\)[\s\S]*resolveGymSetConflict\(db, athleteId, item\)/.test(gymLoop), 'the gym branch resolves on a duplicate-key error');
-  assert(/markGymSetConflict\(item\.input\.id, live \? \{ \.\.\.live, \.\.\.naming \} : null\)/.test(f), 'and the resolver marks a real conflict with the live values and the set\'s name and day');
+  assert(/markGymSetConflict\(item\.input\.id, live \? \{ \.\.\.live, \.\.\.naming \} : null\)/.test(g), 'and the resolver marks a real conflict with the live values and the set\'s name and day');
   assert(!/isDuplicateKeyError\(err\)\)\s*\{\s*dequeueGymSetLog/.test(gymLoop), 'and no longer dequeues blind');
-  assert(/pendingGymSetLogs\(\)\.filter\(\(item\) => !item\.conflictAt\)/.test(f), 'a flagged gym item is skipped by the next flush');
+  assert(/pendingGymSetLogs\(\)\.filter\(\s*\(item\) => !item\.conflictAt/.test(g) && /pendingGymSetLogs\(\)\.filter\(\(item\) => !item\.conflictAt\)/.test(f), 'a flagged gym item is skipped by the next flush');
+  assert(/await flushGymSets\(db, orgId, athleteId\)/.test(f), "and Today's flusher runs that loop");
   assert(/domain: 'gym' as const/.test(f), 'gym conflicts are in the snapshot');
   assert(/gym\.filter\(\(item\) => !item\.conflictAt\)\.length/.test(f), 'and not counted as pending');
   assert(/if \(domain === 'gym'\) dequeueGymSetLog\(id\)/.test(f), 'discard works for gym');

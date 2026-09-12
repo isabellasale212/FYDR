@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
@@ -12,10 +13,13 @@ import {
   type ResolvedExercise,
 } from '@/lib/queries/programmes';
 import { enqueueGymSetLog, dequeueGymSetLog } from '@/lib/outbox';
+import { flushGymSets, queuedGymSets } from '@/lib/gymOutboxFlush';
 import { GymSetLogInput } from '@/lib/validation/gym';
 import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { loadLabel, schemeLine } from '@/lib/gymPrescription';
 import { acquireWakeLock, buzz, releaseWakeLock } from '@/lib/wakeLock';
+import { bestSetsByExercise, formatKg, minutesBetween, newBests, sessionVolumeKg, setsLine, type PriorBest } from '@/lib/gymSummary';
+import { formatDate } from '@/lib/format';
 
 function elapsed(startedAt: string | null, now: number): string {
   if (!startedAt) return '00:00';
@@ -28,6 +32,8 @@ function elapsed(startedAt: string | null, now: number): string {
 
 type Props = {
   orgId: string;
+  /** For the queued-set retry's conflict lookup (lib/gymOutboxFlush.ts). */
+  athleteId: string;
   gymSessionLogId: string;
   sessionName: string;
   /** Programme, block, week and day — the design's eyebrow above the name. */
@@ -39,6 +45,12 @@ type Props = {
    *  It does not: "55 MIN" is what the session is meant to take, and an athlete
    *  forty minutes into it has no way to know that from the plan. */
   startedAt: string | null;
+  /** When the session was finished — the "52 min" on the summary. */
+  completedAt: string | null;
+  /** MET-040 before today, per exercise, read by the page only for a
+   *  complete session (ATH-ADULT-09 C6). An array, not a Map: it crosses the
+   *  server → client boundary. */
+  priorBests: readonly (PriorBest & { exercise_id: string })[];
   totalSets: number;
   timezone: string;
   exercises: readonly ResolvedExercise[];
@@ -71,10 +83,13 @@ type Props = {
  */
 export function GymSessionLogger({
   orgId,
+  athleteId,
   gymSessionLogId,
   sessionName,
   sessionMeta,
   startedAt,
+  completedAt,
+  priorBests,
   totalSets,
   timezone,
   exercises,
@@ -124,6 +139,37 @@ export function GymSessionLogger({
       void releaseWakeLock(sentinel);
     };
   }, []);
+
+  /* ATH-ADULT-09 C4 (2026-09-12): this session's queued sets are retried
+     from here — on open, and the moment the browser says it is back online
+     — not only by Today's flusher. `waiting` is what the progress row calls
+     "· 2 waiting to send"; it is read from the outbox in an effect so the
+     server render and the first client render agree (the server has no
+     outbox). A retry that lands refreshes the page so the sets appear as
+     logged rows. */
+  const [waiting, setWaiting] = useState(0);
+  useEffect(() => {
+    let gone = false;
+    const retry = async () => {
+      setWaiting(queuedGymSets(gymSessionLogId));
+      if (queuedGymSets(gymSessionLogId) === 0) return;
+      const { sent } = await flushGymSets(createClient(), orgId, athleteId, { sessionLogId: gymSessionLogId });
+      if (gone) return;
+      setWaiting(queuedGymSets(gymSessionLogId));
+      if (sent > 0) {
+        /* The "check your signal" line from the failed tap is stale once the
+           set has landed — measured: it stayed on screen after the retry. */
+        setError(null);
+        router.refresh();
+      }
+    };
+    void retry();
+    window.addEventListener('online', retry);
+    return () => {
+      gone = true;
+      window.removeEventListener('online', retry);
+    };
+  }, [orgId, athleteId, gymSessionLogId, router]);
 
   // Restored in an effect, not in the initial state, so the server render and
   // the first client render agree.
@@ -184,6 +230,35 @@ export function GymSessionLogger({
 
   const doneCount = loggedSets.length;
   const pct = totalSets > 0 ? Math.round((doneCount / totalSets) * 100) : 0;
+
+  /* THE SUMMARIES — ATH-ADULT-09 C6 (session complete) and ATH-ADULT-10 C3
+     (finished early), 2026-09-12. Once the session is closed the set list
+     gives way to a summary; "Correct a set" brings the list back beneath it.
+     The two must not be mistaken for each other: complete is the one screen
+     allowed to be pleased — total volume first (MET-041, the number that
+     grows over a block), sets done, then the new bests with what they beat
+     and when (MET-040) so the claim is checkable; early has a different
+     title, a dashed card, per-exercise rows that read "Not logged", and no
+     totals block at all. No gradient, no confetti, no praise copy. */
+  const [showSets, setShowSets] = useState(false);
+  const finishedEarly = alreadyComplete && doneCount < totalSets;
+  const summarySets = loggedSets.map((r) => ({
+    exercise_id: r.exercise_id,
+    set_number: r.set_number,
+    reps_completed: r.reps_completed,
+    load_kg: r.load_kg,
+  }));
+  const volumeKg = sessionVolumeKg(summarySets);
+  const priorByExercise = new Map(priorBests.map((b) => [b.exercise_id, b]));
+  const bests = newBests(
+    exercises.map((ex) => ex.exercise_id),
+    summarySets,
+    priorByExercise,
+  );
+  const bestToday = bestSetsByExercise(summarySets);
+  const minutes = minutesBetween(startedAt, completedAt);
+  const setsFor = (ex: ResolvedExercise) => summarySets.filter((r) => r.exercise_id === ex.exercise_id);
+  const nameById = new Map(exercises.map((ex) => [ex.exercise_id, ex.exercise_name]));
 
   /* The exercise being worked on, 23g's gold-bordered card: the FIRST with
      sets still to log, in prescribed order. First rather than "the one most
@@ -257,6 +332,9 @@ export function GymSessionLogger({
       router.refresh();
     },
     onError: (err) => setError(toUserMessage(err, 'athlete')),
+    /* Sent or not, the waiting count is read back from the outbox: a failed
+       set is now "waiting to send" on the progress row as well as an error. */
+    onSettled: () => setWaiting(queuedGymSets(gymSessionLogId)),
   });
 
   /* The step is the exercise's own (ex.weight_step_kg, migration 0108 —
@@ -360,8 +438,12 @@ export function GymSessionLogger({
       } catch {
         /* Nothing to clean up if storage is unavailable. */
       }
-      router.push('/programme?submitted=gym');
+      /* ATH-ADULT-09 C6 / 10 C3 (2026-09-12): the session stays on screen as
+         its summary — the server re-reads the closed log and renders it — in
+         place of the old jump to /programme?submitted=gym. The spec's §6 row
+         always said "stays". */
       router.refresh();
+      window.scrollTo({ top: 0 });
     },
     onError: (err) => setError(toUserMessage(err, 'athlete')),
   });
@@ -401,7 +483,22 @@ export function GymSessionLogger({
             <div className="gym-progress-fill" style={{ width: `${pct}%` }} />
           </div>
           <span className="prog num">
-            {doneCount} of {totalSets} sets
+            {finishedEarly ? (
+              <>
+                {doneCount} of {totalSets} sets logged &middot; {totalSets - doneCount} not logged
+              </>
+            ) : (
+              <>
+                {doneCount} of {totalSets} sets
+              </>
+            )}
+            {/* C4: what has not reached the server yet, on the same row —
+                "6 of 12 sets · 2 waiting to send". */}
+            {waiting > 0 ? (
+              <>
+                {' '}&middot; {waiting} waiting to send
+              </>
+            ) : null}
             {/* On the progress row, not on a utility line of its own: the clock
                 is back without the Close/timer bar the reference removed. */}
             {!alreadyComplete && startedAt ? (
@@ -421,7 +518,116 @@ export function GymSessionLogger({
             </p>
           ) : null}
 
-          {shownExercises.map((ex) => {
+          {alreadyComplete && !finishedEarly ? (
+            <>
+              <div className="card gym-sum">
+                <h2 className="gym-sum-title">
+                  Session complete · {doneCount} of {totalSets} sets
+                </h2>
+                <p className="gym-sum-sub">Every prescribed set is logged and saved.</p>
+              </div>
+              <div className="card gym-sum-totals">
+                <div className="gym-sum-grid">
+                  <div>
+                    <div className="gym-sum-k">Total volume</div>
+                    <div className="gym-sum-num num">
+                      {formatKg(volumeKg)}
+                      <small>kg</small>
+                    </div>
+                    <div className="gym-sum-der">Weight × reps across {doneCount} sets</div>
+                  </div>
+                  <div>
+                    <div className="gym-sum-k">Sets done</div>
+                    <div className="gym-sum-num num">
+                      {doneCount}
+                      <small>of {totalSets}</small>
+                    </div>
+                    <div className="gym-sum-der">
+                      {exercises.length} exercises
+                      {minutes !== null ? ` · ${minutes} min` : ''}
+                    </div>
+                  </div>
+                </div>
+                {bests.length > 0 ? (
+                  <div className="gym-sum-bests">
+                    <div className="gym-sum-k">Best you have logged</div>
+                    {bests.map((nb) => (
+                      <div key={nb.exercise_id} className="gym-sum-best">
+                        <div className="gym-sum-best-row">
+                          <span className="nm">{nameById.get(nb.exercise_id) ?? 'Exercise'}</span>
+                          <span className="gym-sum-best-val num">
+                            {formatKg(nb.best.load_kg)} kg × {nb.best.reps}
+                          </span>
+                        </div>
+                        <div className="gym-sum-der num">
+                          Best before today {formatKg(nb.prior.load_kg)} kg × {nb.prior.reps} · {formatDate(nb.prior.entry_date, timezone)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+              <div className="card gym-sum-all">
+                <div className="gym-sum-all-head">
+                  <span className="nm">All {exercises.length} exercises</span>
+                  <span className="pill pill-accent num">
+                    {doneCount} of {totalSets}
+                  </span>
+                </div>
+                <p className="gym-sum-der num">
+                  {exercises
+                    .map((ex) => {
+                      const best = bestToday.get(ex.exercise_id);
+                      const done = setsFor(ex);
+                      /* No working set with a load: a bodyweight movement says
+                         so; anything else says the load was not logged —
+                         "bodyweight" would be a reading for a bench press
+                         whose 1RM was never linked. */
+                      const load = best
+                        ? `${formatKg(best.load_kg)} kg`
+                        : done.length === 0
+                          ? 'not logged'
+                          : ex.load_basis === 'none'
+                            ? 'bodyweight'
+                            : 'no load logged';
+                      return `${ex.exercise_name} ${load}`;
+                    })
+                    .join(' · ')}
+                </p>
+              </div>
+              <p className="cap">This session is in My data, set by set. You can still correct any logged set.</p>
+            </>
+          ) : null}
+
+          {finishedEarly ? (
+            <>
+              <div className="card gym-sum gym-sum-early">
+                <h2 className="gym-sum-title">
+                  Finished early · {doneCount} of {totalSets} sets
+                </h2>
+                <p className="gym-sum-sub">
+                  Everything you logged is saved. The {totalSets - doneCount} sets you did not log are recorded as not logged, not as zero.
+                </p>
+              </div>
+              {exercises.map((ex) => {
+                const done = setsFor(ex);
+                return (
+                  <div key={ex.programme_exercise_id} className="card gym-sum-row">
+                    <div style={{ minWidth: 0 }}>
+                      <div className="nm">{ex.exercise_name}</div>
+                      <div className="gym-sum-der num">{setsLine(done)}</div>
+                    </div>
+                    <span className={`pill num ${done.length >= ex.sets ? 'pill-accent' : 'gym-sum-pill-short'}`}>
+                      {done.length} of {ex.sets}
+                    </span>
+                  </div>
+                );
+              })}
+              <p className="cap">This session is in My data, marked finished early. You can still correct any logged set.</p>
+            </>
+          ) : null}
+
+          {(!alreadyComplete || showSets ? shownExercises : []).map((ex) => {
             const done = setsByExercise.get(ex.programme_exercise_id) ?? [];
             const isActive = ex.programme_exercise_id === activeExerciseId;
             /* The prescription IS the prefill now, read at the moment a set
@@ -670,7 +876,7 @@ export function GymSessionLogger({
             );
           })}
 
-          {hiddenExercises.length > 0 ? (
+          {hiddenExercises.length > 0 && (!alreadyComplete || showSets) ? (
             <button
               type="button"
               className="gym-more"
@@ -703,7 +909,22 @@ export function GymSessionLogger({
               </label>
             </div>
           ) : (
-            <p className="cap">This session is done.</p>
+            <div className="subm subm-stack">
+              <p className="cap subm-caption">Sent to My data.</p>
+              <Link href="/today" className="btn-primary" style={{ display: 'flex', justifyContent: 'center' }}>
+                Back to today
+              </Link>
+              {!showSets ? (
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: 'var(--sp-8)' }}
+                  onClick={() => setShowSets(true)}
+                >
+                  Correct a set
+                </button>
+              ) : null}
+            </div>
           )}
 
           {/* THE FINISH CONTROL, NO LONGER FLOATING — which is what the

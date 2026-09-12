@@ -1493,9 +1493,74 @@ Any request to make readiness rankable should be refused with that sentence.
 
 ---
 
+## MET-040. Best logged set
+
+**Name on screen.** "Best you have logged" on the athlete's session summary,
+with "Best before today 100 kg × 8 · 21 Aug" beneath it.
+
+**Surfaces.** Athlete app (the gym session summary, ATH-ADULT-09 C6, 12
+September 2026). The staff app's positional band on the athlete's gym page reads
+the same working-set rule for its heaviest-load comparison
+(`fetchBestSetLoadsForAthletes`), without the reps or the date.
+
+**What it means.** The best single working set an athlete has logged for one
+exercise: the heaviest load, and at the same load, the more reps. A "new best"
+on the summary is a set today that beats the best from every complete session
+before today.
+
+**Exact calculation.** Over live sets (`gym_set_logs_current`) that are not
+warm-ups, with load above zero and reps above zero (a zero-rep set is a failed
+attempt; a zero-kilogram set is bodyweight work; neither is evidence of a load
+lifted). Per exercise, take the set with the highest `load_kg`; break a tie on
+`reps_completed`; an equal set later does not replace an earlier one, so the
+date shown is the first time that best was hit. "Before today" is every
+**complete** session with `entry_date` strictly before the session's date
+(`src/lib/queries/programmes.ts`, `fetchPersonalBestsBefore`; the comparison is
+`beats` in `src/lib/gymSummary.ts`).
+
+**Not a 1RM, and not an estimate of one.** The same stance MET-030's notes take:
+Fydr never derives a one-rep max from a submaximal set. This is the heaviest set
+actually lifted.
+
+**When data is missing.** An exercise with no complete session before today has
+nothing to beat, so it is never called a best — a best is a comparison. A
+bodyweight movement (load basis none) never appears here.
+
+**Roles and tier.** The athlete, about themselves. Base.
+
+---
+
+## MET-041. Session volume
+
+**Name on screen.** "Total volume" on the athlete's session summary, in
+kilograms, with "Weight × reps across 12 sets" beneath it; "tonnage" on the
+athlete's My data gym rows and the staff athlete gym page.
+
+**Surfaces.** Both, staff app and athlete app.
+
+**What it means.** How much weight was moved in a session: the sum over its sets
+of load × reps.
+
+**Exact calculation.** Over the session's live sets, every set that carries both
+a load and a rep count contributes `load_kg × reps_completed`; a set missing
+either contributes nothing. This is exactly the rule migration 0106 derives
+`gym_session_logs_current.total_volume_kg` by, so the summary's number
+(`sessionVolumeKg` in `src/lib/gymSummary.ts`) and the tonnage in My data and
+on the staff page are one number for one session. Rounded to one decimal.
+
+**When data is missing.** A session with no loaded set reads 0 on the summary
+(the derivation line says why) and "No tonnage" in My data.
+
+**Roles and tier.** The athlete about themselves; all staff. Base.
+
+---
+
 ## Batch 3 summary, and the registry total
 
-**39 metrics.** Batch 1 covered wellness, load, compliance and the dashboard.
+**41 metrics** (MET-040 and MET-041 added 12 September 2026 for the athlete's
+session summary; the batch text below predates them).
+
+**39 metrics at batch 3.** Batch 1 covered wellness, load, compliance and the dashboard.
 Batch 2 covered GPS and the training report. Batch 3 covered testing, gym,
 nutrition and leaderboards.
 

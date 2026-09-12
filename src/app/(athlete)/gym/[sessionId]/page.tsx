@@ -3,9 +3,11 @@ import { GymSessionLogger } from '@/components/GymSessionLogger/GymSessionLogger
 import {
   fetchLoggedSets,
   fetchMyProgrammeSessions,
+  fetchPersonalBestsBefore,
   fetchSessionExercises,
   startOrGetSessionLog,
 } from '@/lib/queries/programmes';
+import { todayIso } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
 
 export const metadata = { title: 'Gym session · Fydr' };
@@ -43,7 +45,7 @@ export default async function GymSessionPage({
   const mine = myProgramme.find((r) => r.session_id === sessionId) ?? null;
   if (exercises.length === 0) notFound();
 
-  const { id: gymSessionLogId, status, startedAt, error } = await startOrGetSessionLog(
+  const { id: gymSessionLogId, status, startedAt, completedAt, error } = await startOrGetSessionLog(
     db,
     orgId,
     athleteId,
@@ -56,10 +58,18 @@ export default async function GymSessionPage({
 
   const loggedSets = await fetchLoggedSets(db, gymSessionLogId);
   const totalSets = exercises.reduce((sum, ex) => sum + ex.sets, 0);
+  /* ATH-ADULT-09 C6: the summary's "Best before today" (MET-040) — read only
+     once the session is complete, over the sessions before today's date. */
+  const priors =
+    status === 'complete'
+      ? await fetchPersonalBestsBefore(db, orgId, athleteId, exercises.map((ex) => ex.exercise_id), todayIso(timezone))
+      : new Map();
+  const priorBests = [...priors.entries()].map(([exercise_id, b]) => ({ exercise_id, ...b }));
 
   return (
     <GymSessionLogger
       orgId={orgId}
+      athleteId={athleteId}
       timezone={timezone}
       gymSessionLogId={gymSessionLogId}
       sessionName={mine?.session_name ?? 'Gym session'}
@@ -77,6 +87,8 @@ export default async function GymSessionPage({
           .join(' · ') || null
       }
       startedAt={startedAt}
+      completedAt={completedAt}
+      priorBests={priorBests}
       totalSets={totalSets}
       exercises={exercises}
       loggedSets={loggedSets}

@@ -52,7 +52,7 @@ level.
 
 | Metric ID | Label | Meaning | Window | When missing |
 |---|---|---|---|---|
-| MET-030 | The prescription | What to lift, resolved for this athlete | This session | says plainly it cannot resolve |
+| MET-030 | The prescription | What to lift, resolved for this athlete. The exercise head reads "3 × 8 @ 100 kg · 90s rest"; when there is no load value the "@ …" clause is omitted (§0u, 12 September 2026) and the weight row says why — "No 1RM test linked to this exercise yet." / "No one rep max on file. Log the load you lift." / "Load not set" | This session | says plainly it cannot resolve, in the weight row, never inside the prescription line |
 
 ## 6. Every thing you can act on
 

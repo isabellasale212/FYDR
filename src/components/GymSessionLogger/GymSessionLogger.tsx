@@ -14,7 +14,7 @@ import {
 import { enqueueGymSetLog, dequeueGymSetLog } from '@/lib/outbox';
 import { GymSetLogInput } from '@/lib/validation/gym';
 import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
-import { formatDate } from '@/lib/format';
+import { loadLabel, schemeLine } from '@/lib/gymPrescription';
 
 function elapsed(startedAt: string | null, now: number): string {
   if (!startedAt) return '00:00';
@@ -52,34 +52,9 @@ type Props = {
  * asserting a unit the schema does not track; notes (shown separately by the
  * caller, if present) carry the real unit until this domain has a
  * measurement_type column — real, open gap, too large for this pass. */
-function loadLabel(ex: ResolvedExercise, timezone: string): string {
-  if (ex.load_basis === 'none') return 'No prescribed load';
-  if (ex.load_basis === 'absolute') {
-    if (ex.load_value === null) return 'Load not set';
-    const bare = ex.category === 'plyo' || ex.category === 'conditioning' || ex.category === 'mobility';
-    return bare ? String(ex.load_value) : `${ex.load_value} kg`;
-  }
-  if (ex.load_basis === 'percent_bw') return ex.load_value !== null ? `${ex.load_value}% bodyweight` : 'Not set';
-  if (ex.load_basis === 'rpe') return ex.load_value !== null ? `Target RPE ${ex.load_value}` : 'Target RPE not set';
-  // percent_1rm, resolved (migration 0043) against the athlete's own latest
-  // 1RM test result — a real number, never estimated (O-389 stays open on
-  // purpose). Missing means missing, in one of two distinct honest shapes:
-  // the exercise has no 1RM test linked at all, or it does and this athlete
-  // simply has no result on file yet. screens/gym-logging.md's own copy for
-  // the second case, kept verbatim.
-  if (ex.resolved_load_kg !== null) {
-    return `${ex.resolved_load_kg} kg (${ex.load_value}% of your 1RM${ex.one_rm_test_date ? `, tested ${formatDate(ex.one_rm_test_date, timezone)}` : ''})`;
-  }
-  if (!ex.one_rm_linked) return 'No 1RM test linked to this exercise yet.';
-  return 'No one rep max on file. Log the load you lift.';
-}
-
-function schemeLabel(ex: ResolvedExercise): string {
-  const reps =
-    ex.reps_max !== null && ex.reps_max !== ex.reps_min ? `${ex.reps_min}–${ex.reps_max}` : `${ex.reps_min ?? '?'}`;
-  return `${ex.sets} × ${reps}`;
-}
-
+/* loadLabel, schemeLabel and the head's line live in lib/gymPrescription.ts
+   since §0u (2026-09-12): the line carries a load VALUE or nothing, the
+   weight row carries the reason there is none. */
 
 /**
  * Full screen, not a sheet — ATHLETE-APP-SPEC.md §9 is explicit this is a
@@ -436,10 +411,7 @@ export function GymSessionLogger({
                 <div className="gym-ex-head">
                   <div style={{ minWidth: 0 }}>
                     <span className="nm">{ex.exercise_name}</span>
-                    <span className="scheme num">
-                      {schemeLabel(ex)} @ {loadLabel(ex, timezone)}
-                      {ex.rest_seconds ? ` · ${ex.rest_seconds}s rest` : ''}
-                    </span>
+                    <span className="scheme num">{schemeLine(ex, timezone)}</span>
                   </div>
                   {/* 23g's per-exercise pill. Three states, because the count
                       only means something once there is something to count:

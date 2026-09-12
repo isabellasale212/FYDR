@@ -405,6 +405,8 @@ are in fact the test page and the schedule. Left for a later pass.
 
 ## STAFF-SS-07 — Read the week's schedule
 
+**Built 2026-09-12 (`b3cbaab`, PATTERN-S4 A items), measured as the coach at 375.** The day headers and the legend count session minutes, not contact minutes ("445 session minutes · staff sessions excluded …"); Meeting is in the legend; the current view tab carries `aria-current="page"` (both tabs `role="tab"`, still no tablist); the toolbar primary says what it will make; the missing-group refusal states the consequence; read-only sits in a well; a removed session carries a Removed pill.
+
 **Entry point.** "Schedule" in the sidebar → `/schedule`.
 **Gate:** `SESSION_EDIT` decides *editing*, not access — every staff role can
 open this screen.

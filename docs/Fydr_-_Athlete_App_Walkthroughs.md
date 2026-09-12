@@ -472,6 +472,8 @@ length before and after.
 
 ## ATH-ADULT-09 — Log a gym session set by set
 
+**Built 2026-09-12 (`7824358`, `45816c8`).** Inside the logger the fill, the set keys (logged / current / not reached), the live exercise head and the deviation line are on the accent — the gold stays on the tab bar; the set keys stand on the 44px floor (measured 44px as Conor).
+
 **Entry point.** The "Gym" tab → `/programme` → a session row. Direct URL
 `/gym/{sessionId}`.
 
@@ -598,6 +600,8 @@ My data marks that day corrected and shows what was first reported.
 ---
 
 ## ATH-ADULT-12 — Browse My data
+
+**Built 2026-09-12 (`ada5db5`, `029ab76`, `ca69a4b`), measured as Conor at 375.** Five segments — Wellness · Gym · Sessions · Nutrition · Tests — on one row at 11px (the footer card keeps only Leaderboards); a delta states the change and never judges it ("↓ 12 on last week", muted ink, the figure bold, ↑↓); the readiness chart's day markers are accent and neutrals only (`accentOnly`).
 
 **Built in part 2026-09-12 (`e581211`), measured live at 375.** An absent value is a word — "Not submitted" / "Not logged" — never 0; the hero figure is 48px (`--fs-48`); history rows are 73px with the value column right-aligned. **Filed from the measurement, §0at:** the Gym history row reads a stored `total_volume_kg` that only a correction ever writes, so it says "Not logged" for a session whose detail sums 4762 kg. The five-segment period control and the rest of the board are recorded, not built.
 

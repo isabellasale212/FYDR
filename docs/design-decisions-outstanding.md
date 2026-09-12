@@ -60,7 +60,7 @@ to create an injury record, and the `/injuries` board shows "+ Injury" to the co
 
 | Flow | ID | What it changes | Why it isn't built | Recommendation · cost |
 |---|---|---|---|---|
-| ATH-ADULT-04 | C4 | The check-in page would say *who* corrected an entry ("Corrected by Jane Pemberton"). | A visibility decision — whether an athlete sees which member of staff changed their entry — not stated in `docs/athlete/visibility.md`. | **Keep to "Corrected on {date}"** unless visibility.md says otherwise · small |
+| ~~ATH-ADULT-04~~ | ~~C4~~ | ~~The check-in page would say *who* corrected an entry.~~ **Built with C1** — visibility.md withholds nothing about it and My data already names the person; "Corrected by {name} on {date}" · | | |
 | ATH-ADULT-06 | C1 | A subhead "Today 11:30 · Pitch" under the RPE screen's title. | The session block beneath the head already carries the same facts; the subhead would say them twice. | **Keep as built** (no subhead) · small |
 | ATH-ADULT-09 | B4 | The set keys (the buttons an athlete taps to log a set) go from 42px to 44px tall — the app's own floor. | Recorded as "44px minimum with the rebuild"; also §0u's second bullet. Not a token: 44 is the floor every other athlete control uses. | **Build now** — one rule, independent of the rebuild · small |
 | ATH-ADULT-09 | C5 | The screen stays awake during a session (Wake Lock) and a set logged gives a short vibration on Android. | New behaviour, no decided direction; both feature-detected, nothing on iPhone Safari for haptics. | **Build** — `navigator.wakeLock` on open/visibility, `navigator.vibrate(10)` on log · small |
@@ -102,7 +102,7 @@ to create an injury record, and the `/injuries` board shows "+ Injury" to the co
 
 | Flow | ID | What it changes | Why it isn't built | Recommendation · cost |
 |---|---|---|---|---|
-| ATH-ADULT-04 | C1 | The check-in page shows a "Corrected" pill and "Corrected on {date}" when staff corrected the day. | The page's fetch (`fetchWellnessDay`) does not select the revision's `revision_of`/`submitted_at`. | **Build** — select two columns, show the pill and the date · small |
+| ~~ATH-ADULT-04~~ | ~~C1~~ | ~~The check-in page shows a "Corrected" pill and the correction when staff corrected the day.~~ **Built** (the day's revision chain; pill + "Corrected by {name} on {date}"; "You sent … at" is the athlete's own time) · | | |
 | ATH-ADULT-08 | C1 | A check-in can be corrected once; a second attempt sees a "spent" card instead of the form. | `revise_nutrition_checkin` needs to refuse when the original is itself a revision; the page needs `revision_of`. The design-approach doc lists "corrected once" as decided; the to-do list does not. **⚠ migration** | **Build as one commit** — the refusal, the read, the spent state, then the caption (C3) · medium |
 | ATH-ADULT-08 | C2 | After saving a correction the page shows a "Correction saved" card instead of leaving for My data. | Today a saved correction navigates to `/my-data?tab=nutrition`. | With C1 · small |
 | ATH-ADULT-08 | C3 | The caption "You can correct this once after you submit." | Asserts C1; not shown until true. | With C1 · none |

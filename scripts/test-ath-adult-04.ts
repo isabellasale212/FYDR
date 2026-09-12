@@ -43,7 +43,7 @@ console.log('\nA2–A5. the already-submitted card');
 {
   const card = page.slice(page.indexOf('{existing ? ('), page.indexOf(') : entryDate === today ? ('));
   assert(/className="after-card"/.test(card), 'the emphasised card');
-  assert(/<h2 className="after-heading">Already submitted<\/h2>/.test(card), '"Already submitted" as the heading');
+  assert(/<h2 className="after-heading">\s*Already submitted/.test(card), '"Already submitted" as the heading');
   assert(/className="after-fact num"/.test(card) && /You sent today/.test(card) && /check-in at/.test(card), 'the fact line: "You sent today’s check-in at HH:MM."');
   assert(/You can’t change an entry yourself\. Tell your coach or medical staff and they\s+can correct it for you\./.test(card), 'the board\'s recourse sentence');
   assert(/The original stays visible in My data, marked Corrected\./.test(card), 'and what happens to the original');
@@ -107,9 +107,26 @@ console.log('\nthe contrast, measured from tokens.css');
   }
 }
 
+console.log('\nC1 + C4 (decided 2026-09-12): a corrected day says so, and by whom');
+{
+  /* C1: the page reads the day's revision chain (the same read My data uses)
+     rather than the _current view alone, so a corrected day is told from an
+     original. C4: visibility.md forbids nothing about naming the staff member
+     who corrected an entry, and My data's history rows already say "Corrected
+     by {name}", so the check-in page says the same — one wording, one source. */
+  assert(/fetchWellnessWithRevisions\(db, orgId, athleteId, \{ from: entryDate, to: entryDate \}\)/.test(page), 'the page reads the day\'s chain');
+  assert(/const corrected = /.test(page) && /priorRevisions\.length > 0/.test(page), 'and decides "corrected" the way My data does');
+  assert(/<span className="pill pill-neutral"[^>]*>\s*Corrected\s*<\/span>/.test(page), 'a Corrected pill beside the heading');
+  assert(/Corrected by \$\{corrected\.correctedBy \?\? 'a member of staff'\}/.test(page), '"Corrected by {name}" — the wording My data uses, with its fallback');
+  assert(/on \$\{formatDate\(corrected\.correctedAt, timezone\)\}/.test(page), 'and the date');
+  assert(!/NO "Corrected" PILL YET/.test(read('src/app/(athlete)/check-in/page.tsx')), 'the "not yet" note is gone');
+  assert(/const sentAt = corrected\?\.priorRevisions\[0\]\?\.submitted_at \?\? existing\?\.submitted_at/.test(page), '"You sent … at" is the athlete\'s own time on a corrected day, not the correction\'s');
+}
+
 console.log('\nthe spec');
 {
   const spec = read('docs/athlete/screens/02-morning-check-in.md');
+  assert(/Corrected by/.test(spec), 'and the corrected state');
   assert(/Back to Today/.test(spec) && /Back to My data/.test(spec) && /emphasised card/.test(spec), '02-morning-check-in.md describes the after-submit card and its footer button');
 }
 

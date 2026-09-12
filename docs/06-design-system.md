@@ -2265,6 +2265,17 @@ export const webGrid = {
 } as const;
 ```
 
+**Below `md` (767px and under) the staff app is a phone shell** — STAFF-SS-01, decided
+2026-09-12: the sidebar is not rendered; a fixed 64px title bar (`.ph-titlebar`: the
+screen's name and the active group chip) and a fixed bottom bar of five (`.ph-tabbar`:
+Dashboard, Squad, Schedule, a fourth slot by role, More) frame the content, which starts at
+the top of the screen; the sections the bar does not carry, the identity block and Log out
+sit in a More sheet (`.ph-sheet`, 52px rows, `--r-card` top corners, a scrim of `--ink-rgb`
+at 0.35). Composed entirely from the athlete tab bar's own rules and existing tokens — the
+board's eight named tokens do not exist here and were each mapped. The same media block
+raises every staff control to the 44px floor on a phone (decided 2026-09-11, §0af); nothing
+changes at 768px and above.
+
 Standard compositions at `xl`:
 
 | Surface | Composition |

@@ -268,11 +268,14 @@ a {
   }
 }
 @media (max-width: 767px) {
+  /* GONE below 768px since STAFF-SS-01 (Isabella, 2026-09-12). It used to
+     stack full-width above the content — 640px of navigation and Log out
+     before the first heading on every staff screen (§0af measured the
+     dashboard's first content at y=2209). The phone shell — a 64px title
+     bar, a bottom bar of four plus More, and a More sheet — carries the
+     same nine destinations; see the .ph-* block near the end of this file. */
   .sidebar {
-    position: static;
-    height: auto;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
+    display: none;
   }
 }
 
@@ -557,7 +560,11 @@ a {
 @media (max-width: 767px) {
   .main {
     --main-pad: 16px;
-    padding: var(--sp-18) var(--main-pad) var(--sp-48);
+    /* Below the fixed 64px title bar, and clear of the fixed bottom bar
+       (its 9 + 23 + 6 + 12 + 10px plus the home-indicator inset lands near
+       64px too). STAFF-SS-01: the content column starts at the top of the
+       screen. */
+    padding: calc(64px + var(--sp-18)) var(--main-pad) calc(var(--sp-48) + 64px + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -12790,5 +12797,237 @@ a.hist-row:active { background: var(--surf-sunken); }
   .me-stat-sub,
   .hist-date {
     color: var(--text);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * STAFF-SS-01 — the staff shell on a phone. Decided by Isabella 2026-09-12:
+ * below 768px the sidebar becomes a bottom bar of four plus More, with the
+ * remaining sections and Log out in a More sheet at 52px a row, and a 64px
+ * title bar carrying the page name and the group chip. Supersedes §0af's
+ * compact-top-bar note. Desktop (1024+) and the 64px rail (768–1023) are
+ * untouched: the shell is display:none at every width but a phone's.
+ *
+ * TOKENS. The board named eight that do not exist here; each is mapped onto
+ * what the athlete shell already uses (see StaffPhoneShell.tsx's header):
+ * the bar is .athlete-tabbar's own fill and padding one column wider, the
+ * sheet's top corners are --r-card, its shadow --shadow, the scrim is
+ * --ink-rgb at 0.35 (the check-in spec's own backdrop figure, composed from
+ * the existing triplet), labels --fs-12, and the floor is the raw 44px every
+ * athlete control uses. No blur, for the reason the athlete bar has none.
+ *
+ * THE 44px FLOOR FOR STAFF CONTROLS BELOW 768 lives here too — decided
+ * 2026-09-11 (§0af): fixed once at shell level, not per flow, and only on a
+ * phone; desktop staff controls stay as they are. The sweep list is the
+ * STAFF-SHELL brief's §5.4 table.
+ * ------------------------------------------------------------------------ */
+.ph-shell {
+  display: none;
+}
+@media (max-width: 767px) {
+  .ph-shell {
+    display: block;
+  }
+  .ph-titlebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 30;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-12);
+    padding: 0 var(--sp-16);
+    background: var(--surf);
+    border-bottom: 1px solid var(--border);
+  }
+  .ph-title {
+    margin: 0;
+    font-size: var(--fs-18);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ph-group {
+    flex: none;
+    max-width: 50%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* The athlete tab bar, one column wider, fixed to the bottom so the page
+     scrolls beneath it. Same fill, same border, same padding (9px 6px, and
+     the home-indicator inset ADDED to a real base). */
+  .ph-tabbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    background: color-mix(in srgb, var(--elev) 94%, transparent);
+    border-top: 1px solid var(--border);
+    padding: 9px 6px calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+  .ph-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-6);
+    min-height: 44px;
+    padding: var(--sp-6) 0;
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: var(--fs-12);
+    font-weight: 600;
+    color: var(--muted);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color var(--t-state);
+  }
+  /* All icons neutral, the active one in the accent — the board's rule for
+     the staff bar, and the same rule the sidebar's own rows follow. */
+  .ph-tab[data-active] {
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .ph-tab:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: -2px;
+    border-radius: var(--r-control);
+  }
+  .ph-tab-glyph {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 23px;
+    height: 23px;
+  }
+  .ph-tab-glyph .ic {
+    width: 20px;
+    height: 20px;
+  }
+  .ph-sheet-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 31;
+    background: rgb(var(--ink-rgb) / 0.35);
+  }
+  .ph-sheet {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 32;
+    max-height: 80dvh;
+    overflow-y: auto;
+    background: var(--surf);
+    border-radius: var(--r-card) var(--r-card) 0 0;
+    box-shadow: var(--shadow);
+    padding: var(--sp-12) var(--sp-16) calc(var(--sp-16) + env(safe-area-inset-bottom, 0px));
+  }
+  .ph-sheet-title {
+    margin: 0 0 var(--sp-6);
+    font-size: var(--fs-11);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .ph-sheet-row {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-12);
+    width: 100%;
+    min-height: 52px;
+    padding: 0 var(--sp-6);
+    border: none;
+    border-radius: var(--r-control);
+    background: none;
+    font-family: inherit;
+    font-size: var(--fs-15);
+    font-weight: 600;
+    color: var(--text);
+    text-decoration: none;
+    text-align: left;
+    cursor: pointer;
+  }
+  .ph-sheet-row[aria-current='page'] {
+    color: var(--accent);
+    background: var(--wash-accent-soft);
+  }
+  .ph-sheet-row:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: -2px;
+  }
+  .ph-sheet-glyph {
+    display: inline-flex;
+    width: 20px;
+    height: 20px;
+    color: var(--muted);
+  }
+  .ph-sheet-glyph .ic {
+    width: 20px;
+    height: 20px;
+  }
+  .ph-sheet-row[aria-current='page'] .ph-sheet-glyph {
+    color: var(--accent);
+  }
+  .ph-sheet-preview {
+    color: var(--warn-pill-text);
+  }
+  .ph-sheet-who {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+    padding: var(--sp-10) var(--sp-6);
+    font-size: var(--fs-13);
+    color: var(--muted);
+  }
+  .ph-sheet-who b {
+    color: var(--text);
+  }
+  .ph-sheet-signout {
+    color: var(--muted);
+  }
+
+  /* THE 44px FLOOR, staff controls below 768 (brief §5.4's sweep list). The
+     visible boxes keep their desktop design; only the minimum height moves.
+     Inline text links get their hit box from padding balanced by a negative
+     margin, so nothing on the line moves. */
+  .main .back-btn,
+  .main .btn-ghost,
+  .main .btn-primary,
+  .main select,
+  .main .sg-stepper-btn,
+  .main .sg-btn-remove,
+  .main .sg-btn-add,
+  .main .sg-btn-publish,
+  .main .sg-btn-published,
+  .main .sg-btn-discard,
+  .main .nutr-stepper-btn,
+  .main .lbw-segmented button,
+  .main .theme-seg-btn,
+  .main .reorder-btn {
+    min-height: 44px;
+  }
+  .main .reorder-btn {
+    min-width: 44px;
+  }
+  .main table.tbl .nm,
+  .main .eyebrow a,
+  .main .tiny a {
+    display: inline-block;
+    padding-block: var(--sp-12);
+    margin-block: calc(-1 * var(--sp-12));
   }
 }

@@ -347,8 +347,10 @@ for (const [file, name, want] of [
 /* The sidebar. Each row carries its own array, and `['coach','medic']` there is
  * the same phrase it was everywhere else: "any staff". Asserted per row so a
  * failure names the destination rather than a count. */
-const sidebar = readFileSync('src/components/Sidebar/Sidebar.tsx', 'utf8');
-const rows = [...sidebar.matchAll(/label: '([^']+)',\s*\n\s*route: '([^']+)',\s*\n\s*roles: (\[[^\]]*\]|\w+),/g)];
+/* rows.ts since STAFF-SS-01 (2026-09-12): the row table moved out of the
+   component so the phone shell reads the same one. */
+const sidebar = readFileSync('src/components/Sidebar/rows.ts', 'utf8');
+const rows = [...sidebar.matchAll(/label: '([^']+)',\s*route: '([^']+)',\s*roles: (\[[^\]]*\]|\w+)\s*\}/g)];
 assert(rows.length > 0, 'the sidebar declares rows this test can read');
 /* One row narrows, and only one. §3.4 and D-02 both make Analytics the sport
    scientist's alone, confirmed 2026-09-05. It is named here rather than skipped

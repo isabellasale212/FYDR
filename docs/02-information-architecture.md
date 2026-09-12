@@ -324,6 +324,17 @@ structure where it is not.
 
 ### 4.6 Staff mobile, committed
 
+**Built as a responsive shell on 12 September 2026 (STAFF-SS-01, decided by Isabella):
+below 768px the staff web app draws a bottom bar of four plus More, with the remaining
+sections and Log out in a More sheet, and a 64px title bar naming the screen.** The bar
+is Dashboard, Squad, Schedule and a fourth slot by role — Flags for the sport scientist,
+coach and medic; Gym for S&C; Nutrition for the nutritionist — so the nine sidebar rows
+and Flags are each reachable in exactly one place (`src/components/StaffPhoneShell/`,
+drawing from the same row table as the sidebar, `Sidebar/rows.ts`). This supersedes
+§0af's compact-top-bar note in the to-do list. It is a responsive layout of the web app,
+not the native phone app the paragraphs below commit to; the five-tab grouping below
+remains the native app's proposal.
+
 **Status: COMMITTED, 5 August 2026.** The client confirmed staff need a phone app as well as
 the web dashboard. O-6, O-24 and O-725 are resolved: **both**. A fifteen-item flat sidebar
 will not fit a tab bar, and this is the grouping that solves it.

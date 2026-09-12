@@ -131,7 +131,7 @@ console.log('\nthe sidebar is untouched — the design is frozen');
   /* A platform tool is not a club's navigation. Adding a row would also mean
      deciding what every club's staff see where it would have been, which is a
      design change nobody asked for. URL-reachable is correct for this. */
-  const sidebar = read('src/components/Sidebar/Sidebar.tsx');
+  const sidebar = read('src/components/Sidebar/Sidebar.tsx') + read('src/components/Sidebar/rows.ts');
   assert(!/sign-in-probes|platform\//.test(sidebar), 'no sidebar row was added for it');
 }
 

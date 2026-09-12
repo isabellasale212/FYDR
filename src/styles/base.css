@@ -6336,6 +6336,29 @@ button.dash-stat {
 .dash-ready-row-dot > .dash-squad-dot {
   margin-top: var(--sp-6);
 }
+/* STAFF-SS-01 A1 (2026-09-12): Doubtful and Ruled out as tone-family cards —
+   the athlete availability line's own fill and border (.avail-line: 12% of
+   the tone over --surf, a 0.4 border), the tone's ink for the label and the
+   count, on the control radius, with the row's own padding turned into the
+   card's inset. The dot stays: it is what ties the row to its segment of the
+   bar above. A card, not a stripe. */
+.dash-ready-row[data-tone='warn'],
+.dash-ready-row[data-tone='bad'] {
+  margin-top: var(--sp-6);
+  padding: var(--sp-10) var(--sp-12);
+  border-top: none;
+  border-radius: var(--r-control);
+}
+.dash-ready-row[data-tone='warn'] {
+  background: color-mix(in srgb, rgb(var(--warn-rgb)) 12%, var(--surf));
+  border: 1px solid rgb(var(--warn-rgb) / 0.4);
+  color: var(--text);
+}
+.dash-ready-row[data-tone='bad'] {
+  background: color-mix(in srgb, rgb(var(--bad-rgb)) 12%, var(--surf));
+  border: 1px solid rgb(var(--bad-rgb) / 0.4);
+  color: var(--text);
+}
 .dash-load-track {
   position: absolute;
   inset: 2px 0;

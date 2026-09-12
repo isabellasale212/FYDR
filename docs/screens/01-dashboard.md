@@ -104,7 +104,7 @@ Formulas are in `docs/metrics.md`. They are not repeated here.
 | Open flags tile | Tile strip | Opens the flags screen | `/flags` | Nothing | Any staff | None | Never |
 | To matchday tile | Tile strip | Opens the next fixture | `/schedule/fixtures/[id]` | Nothing | Any staff | None | Falls back to `/schedule` when no fixture is booked |
 | An attention row | Needs attention | Opens that athlete | `/squad/[athleteId]` | Nothing | Any staff | None | Never |
-| Fit and available, Doubtful, Ruled out rows | Ready for Saturday | Opens the squad | `/squad` | Nothing | Any staff | None | Never |
+| Fit and available, Doubtful, Ruled out rows | Ready for Saturday | Opens the squad. Doubtful and Ruled out are tone-family cards — the warn / bad fill and border the athlete's own availability line uses — while Fit and available stays a plain row (STAFF-SS-01 A1, 12 September 2026) | `/squad` | Nothing | Any staff | None | Never |
 | Flags affecting selection row | Ready for Saturday | Opens the flags screen | `/flags` | Nothing | Any staff | None | Never |
 | Sessions left to run row | Ready for Saturday | Opens the schedule | `/schedule` | Nothing | Any staff | None | Never |
 | Compliance link | Outstanding entries | Opens the compliance report | `/reports/compliance` | Nothing | Coach or medic today | None | Never |

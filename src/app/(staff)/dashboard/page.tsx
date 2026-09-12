@@ -521,6 +521,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                   key={r.key}
                   href={ROW_HREF[r.key]}
                   className={ROW_DOT[r.key] ? 'dash-ready-row dash-ready-row-dot' : 'dash-ready-row'}
+                  /* STAFF-SS-01 A1 (2026-09-12): Doubtful and Ruled out are
+                     tone-family cards — the treatment ATH-ADULT-02 approved for
+                     the athlete's own availability line — not dot rows. Fit and
+                     available stays a plain row: it is the rule, not the
+                     exception. */
+                  data-tone={r.key === 'modified' ? 'warn' : r.key === 'unavailable' ? 'bad' : undefined}
                 >
                   {ROW_DOT[r.key] ? (
                     <span className="dash-squad-dot" style={{ background: ROW_DOT[r.key] }} aria-hidden="true" />

@@ -67,7 +67,11 @@ with a one line reason. This is the page. Everything else is the packaging.
 
 **Today.** What is scheduled, in time order, or a line saying nothing is.
 
-**Ready for Saturday.** The selection picture for the next fixture, on one card:
+**Ready for Saturday.** The selection picture for the next fixture, on one card —
+when that fixture is within **14 days** (`FIXTURE_RANGE_DAYS`, STAFF-SS-01 D3,
+12 September 2026). Further out, the card reads "Squad readiness" with "No fixture
+in the next 14 days": the week is not about a match a fortnight away. The "To
+matchday" tile still counts to the real next fixture.
 the opponent and how many days away, a ring showing how many of the squad can be
 named, a bar showing the three way availability split, and five rows. The first
 three are that split with the players named. The last two are the other things

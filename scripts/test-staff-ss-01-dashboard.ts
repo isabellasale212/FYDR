@@ -82,5 +82,17 @@ console.log('\nA4. missing check-ins by run length, and "Not submitted"');
   assert(!/0%/.test(c.slice(c.indexOf("expanded === 'wellness'"), c.indexOf("expanded === 'available'"))), 'never 0%');
 }
 
+console.log('\nD3. "Ready for {matchday}" only when the fixture is within 14 days');
+{
+  const q = strip(read('src/lib/queries/dashboard.ts'));
+  assert(/export const FIXTURE_RANGE_DAYS = 14;/.test(q), 'the range is one named constant, 14');
+  assert(/const fixture = nextFixture && daysBetween\(effectiveToday, dateInTz\(new Date\(nextFixture\.kickoff_at\), timezone\)\) <= FIXTURE_RANGE_DAYS \? nextFixture : null;/.test(q),
+    'the readiness card treats a fixture further out as no fixture');
+  const page = strip(read('src/app/(staff)/dashboard/page.tsx'));
+  assert(/No fixture in the next \$\{FIXTURE_RANGE_DAYS\} days/.test(page), 'and says so: "No fixture in the next 14 days"');
+  assert(/Ready for \$\{matchday\}/.test(page) && /'Squad readiness'/.test(page), '"Ready for {matchday}" inside the range, "Squad readiness" outside it');
+  assert(/FIXTURE_RANGE_DAYS|14 days/.test(read('docs/screens/01-dashboard.md')), '01-dashboard.md records the range');
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

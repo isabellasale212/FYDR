@@ -4,7 +4,7 @@ import { DashboardHeadlineStats } from '@/components/DashboardHeadlineStats/Dash
 import { Dial } from '@/components/Dial/Dial';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { PrintButton } from '@/components/PrintButton/PrintButton';
-import { fetchEffectiveToday, fetchHeadlineStats, fetchOutstandingTracks, fetchSaturdayReadiness, fetchTimeline, fetchWeekStrip, type ReadinessRowKey, type SessionPip } from '@/lib/queries/dashboard';
+import { FIXTURE_RANGE_DAYS, fetchEffectiveToday, fetchHeadlineStats, fetchOutstandingTracks, fetchSaturdayReadiness, fetchTimeline, fetchWeekStrip, type ReadinessRowKey, type SessionPip } from '@/lib/queries/dashboard';
 import { fetchGroups } from '@/lib/queries/groups';
 import { mondayOf } from '@/lib/queries/schedule';
 import { addDays, formatDate, formatLongDate, matchdayWeekday, todayIso } from '@/lib/format';
@@ -481,7 +481,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                   {matchday ? `Ready for ${matchday}` : 'Squad readiness'}
                 </h2>
                 <p className="tiny" style={{ marginTop: 'var(--sp-2)' }}>
-                  {readiness.opponent ? `v ${readiness.opponent} · ${readiness.homeAway ?? ''} · ${daysOutLabel(readiness.daysOut)}` : 'No fixture scheduled'}
+                  {readiness.opponent ? `v ${readiness.opponent} · ${readiness.homeAway ?? ''} · ${daysOutLabel(readiness.daysOut)}` : `No fixture in the next ${FIXTURE_RANGE_DAYS} days`}
                 </p>
                 {/* Squad size and the active group scope, carried over from the
                     Squad state card's subtitle. It sits better next to the ring

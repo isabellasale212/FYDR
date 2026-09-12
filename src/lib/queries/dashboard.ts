@@ -604,6 +604,13 @@ export type SaturdayReadiness = {
 
 const CIRCUMFERENCE = 251;
 
+/** How far ahead a fixture counts as "the matchday" the readiness card is
+ *  for — STAFF-SS-01 D3, decided 2026-09-12: 14 days. Beyond it the card
+ *  reads "Squad readiness" with "No fixture in the next 14 days", rather
+ *  than naming a match a fortnight or more away as if the week were about
+ *  it. The "To matchday" tile keeps counting to the real next fixture. */
+export const FIXTURE_RANGE_DAYS = 14;
+
 export async function fetchSaturdayReadiness(
   db: Db,
   orgId: string,
@@ -612,7 +619,7 @@ export async function fetchSaturdayReadiness(
   timezone: string,
 ): Promise<SaturdayReadiness> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
-  const [fixture, availRows, notFully, weekSessions, flagsThisWeek] = await Promise.all([
+  const [nextFixture, availRows, notFully, weekSessions, flagsThisWeek] = await Promise.all([
     // Real local midnight, not a literal UTC one — see fetchHeadlineStats's
     // own fetchNextFixture call above for the full explanation.
     fetchNextFixture(db, orgId, zonedTimeToUtcIso(effectiveToday, '00:00', timezone)),
@@ -621,6 +628,9 @@ export async function fetchSaturdayReadiness(
     fetchWeekSessions(db, orgId, mondayOf(effectiveToday), groupIds, timezone),
     fetchFlagsByDateRange(db, orgId, groupIds, mondayOf(effectiveToday), addDays(mondayOf(effectiveToday), 5)),
   ]);
+
+  // Within range, or not the card's fixture (D3).
+  const fixture = nextFixture && daysBetween(effectiveToday, dateInTz(new Date(nextFixture.kickoff_at), timezone)) <= FIXTURE_RANGE_DAYS ? nextFixture : null;
 
   const squad = availRows.length;
   const modifiedRows = notFully.filter((r) => r.status === 'modified');

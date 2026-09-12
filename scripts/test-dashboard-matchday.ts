@@ -105,9 +105,12 @@ console.log('\na club with no fixture is told nothing rather than something wron
     /'Squad readiness'/.test(p) || /Squad readiness/.test(p),
     'and the card falls back to a neutral title rather than naming a day it does not have',
   );
+  /* "No fixture in the next 14 days" since STAFF-SS-01 D3 (2026-09-12): the
+     card's fixture is the next one only within FIXTURE_RANGE_DAYS, so the
+     subtitle names the range rather than claiming nothing is scheduled. */
   assert(
-    /No fixture scheduled/.test(p),
-    'while the subtitle that already said so is left alone',
+    /No fixture in the next \$\{FIXTURE_RANGE_DAYS\} days/.test(p),
+    'while the subtitle says there is no fixture in the range',
   );
 }
 

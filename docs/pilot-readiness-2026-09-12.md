@@ -32,7 +32,7 @@ Visible and embarrassing; no harm.
 - ~~**§0s L903** — the athlete check-in's submit button sits 229px below the fold.~~ **Closed overnight** by the ATH-ADULT-03 build (`6618b7f` + `5ae00ea`, merged `b13cc29`); the footer pins and the button measures inside the viewport at scroll 0.
 - ~~**§0u L961** — the gym prescription line reads "3 × 8 @ No 1RM test linked to this exercise yet."~~ **Closed, `a546137`.**
 - ~~**§0u L971** — the nutrition check-in says "this week" about a week that has ended.~~ **Closed, `fc3c5e0`.**
-- **§0u L987** — a failed gym set retries only from Today, so the set count stays wrong for the rest of the workout.
+- ~~**§0u L987** — a failed gym set retries only from Today, so the set count stays wrong for the rest of the workout.~~ **Closed, `84b258e`** — retried from the logger on open and on `online`; the row says what is waiting.
 - ~~**§0z L1100** — "Turn notifications back on" resets every preference.~~ **Closed overnight, `d8938b1` (migration 0103, scratch only).**
 - **§0aa L1130** — `/programme/nutrition` says "your last recorded weight" without saying it is the staff skinfold measurement, while `/me` shows the athlete's own self-reported mass.
 - ~~**§0ah L1242** — a session saves with no duration.~~ **Closed at the form, `586520d`**; the nullable column and the week-template path are Builder questions 1 and 2.

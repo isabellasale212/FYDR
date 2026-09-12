@@ -476,6 +476,8 @@ length before and after.
 
 **Built 2026-09-12 (`7824358`, `45816c8`).** Inside the logger the fill, the set keys (logged / current / not reached), the live exercise head and the deviation line are on the accent — the gold stays on the tab bar; the set keys stand on the 44px floor (measured 44px as Conor).
 
+**Built 2026-09-12 (`84b258e`), measured read-only as Conor at 375.** A set that fails to send is retried from this screen — on open and the moment the phone comes back online — not only from Today, and the progress row says so while it waits: "N of M sets · K waiting to send · HH:MM". One shared `flushGymSets` serves both screens. The §0u item this walkthrough raised ("only retried from `/today`") is closed.
+
 **Entry point.** The "Gym" tab → `/programme` → a session row. Direct URL
 `/gym/{sessionId}`.
 
@@ -536,6 +538,8 @@ length before and after.
 ## ATH-ADULT-10 — Finish a gym session
 
 **Built in part 2026-09-12 (`1771cf0`), measured live.** "Finish early" is no longer shaped like logging a set: "Finish early · 0 of 12" is a `.btn-ghost.gym-finish-early` with a 1px dashed neutral border, transparent, 44px. Its move to the header, the confirmation and the early summary are recorded, not built.
+
+**Built 2026-09-12 (`3a2daac`), measured as Dan Okonkwo at 375 on a completed Upper B.** Finishing now stays on the screen and the set list gives way to a summary. Complete: "Session complete · 11 of 11 sets", Total volume (`6,228 kg`, 48px, "Weight × reps across 11 sets" — MET-041, the same number My data and the staff gym page show), Sets done ("3 exercises · 1 min"), "Best you have logged" per exercise with "Best before today 104 kg × 5 · Thu 13 Aug" (MET-040), every exercise with its load, "Sent to My data.", then two 44px+ buttons — "Back to today" and "Correct a set", which reveals the logged sets. Finished early: a dashed card "Finished early · N of M sets" and one row per exercise ("Hang clean × 3 · 1 of 5", "Box jump Not logged · 0 of 4"), no totals — the builder's own render, not re-measured here. Still open from the builder's note: after "Correct a set" the next unlogged key is live on a closed session (on the sheet under 09 C1).
 
 **Entry point.** The finish button at the foot of `/gym/{sessionId}`, present
 from the moment the screen loads.

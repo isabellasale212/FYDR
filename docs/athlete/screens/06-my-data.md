@@ -164,10 +164,13 @@ draw.** Deleting it takes the three destinations with it.
 
 **The period control removed** (§10).
 
-**Other changes**: the readiness card's "▲ 6 on last week" moves from the accent
-to `--good-text` — the reference draws it green, and `--good` is the product's
-cyan-not-green positive colour, settled product-wide in `tokens.css`, so the
-token was used rather than a new hex introduced; the mean line drops its trailing
+**Other changes**: the readiness card's "▲ 6 on last week" moved from the accent
+to `--good-text` on 8 September — **and on 12 September (ATH-ADULT-12 D3, reversed)
+every delta stopped being coloured**: "↓ 4 on last week" in `--muted` with the
+figure in `--text` bold, ↑ ↓ never ▲ ▼, the tests tab's "off PB" / "ahead of PB" /
+"at PB" the same — a lower RPE and a lower readiness do not mean the same thing,
+so no colour ranks a direction; the comparison itself stays "on last week" (C4
+declined); the mean line drops its trailing
 date; the coverage caption under the chart is trimmed to the one sentence that is
 not period residue ("Days you missed are left blank, never counted as zero" is
 MET-001's defining property, not decoration); the gym list's caption reads

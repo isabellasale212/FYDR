@@ -793,9 +793,12 @@ async function WellnessTab({
         <div className="rd-head">
           <p className="rd-value num">{latestReadiness !== null ? latestReadiness : BLANK}</p>
           <div className="rd-meta">
+            {/* A delta states the change and never judges it (D3, 2026-09-12):
+                one arrow, the figure in bold, what it is measured against.
+                No colour ranks the direction. */}
             {readinessDelta !== null ? (
-              <p className="rd-delta num" data-dir={readinessDelta >= 0 ? 'up' : 'down'}>
-                {readinessDelta >= 0 ? '▲' : '▼'} {Math.abs(readinessDelta)} on last week
+              <p className="rd-delta num">
+                {readinessDelta >= 0 ? '↑' : '↓'} <b>{Math.abs(readinessDelta)}</b> on last week
               </p>
             ) : null}
             {/* "your 14-day mean 62", exactly as drawn. The trailing "· to
@@ -1529,15 +1532,15 @@ async function TestingTab({
             </p>
             <div className="rd-meta">
               {standing.kind === 'off' ? (
-                <p className="rd-delta num" data-dir="off">
-                  ▼ {withUnit(standing.amount.toFixed(featured.decimal_places), featured.unit)} off your PB
+                <p className="rd-delta num">
+                  ↓ <b>{withUnit(standing.amount.toFixed(featured.decimal_places), featured.unit)}</b> off your PB
                 </p>
               ) : standing.kind === 'ahead' ? (
-                <p className="rd-delta num" data-dir="up">
-                  ▲ {withUnit(standing.amount.toFixed(featured.decimal_places), featured.unit)} ahead of your recorded PB
+                <p className="rd-delta num">
+                  ↑ <b>{withUnit(standing.amount.toFixed(featured.decimal_places), featured.unit)}</b> ahead of your recorded PB
                 </p>
               ) : standing.kind === 'at' ? (
-                <p className="rd-delta" data-dir="up">
+                <p className="rd-delta">
                   At your personal best
                 </p>
               ) : null}

@@ -74,7 +74,7 @@ console.log('\nwhat this flow did NOT change (recorded, not built)');
 {
   const bar = /SEGMENTS[^=]*=\s*\[([^\]]*)\]/.exec(page)?.[1] ?? '';
   assert(/'training'/.test(bar) && /'nutrition'/.test(bar), 'five segments (D1 reversed 2026-09-12; pinned in test-my-data-redesign.ts)');
-  assert(/--good/.test(rule(".rd-delta[data-dir='up']")), 'the ▲ delta is still green (D3)');
+  assert(rule(".rd-delta[data-dir='up']") === '', 'the delta is no longer coloured (D3 reversed 2026-09-12; pinned in test-my-data-redesign.ts)');
   assert(/BLANK/.test(page), "the training table keeps the app-wide table blank until its own rebuild (C2)");
   assert(!/--chart-h|--chart-stroke|--blue-200|--t-num-hero/.test(read('src/styles/tokens.css')), 'no new token (B1, B2)');
 }

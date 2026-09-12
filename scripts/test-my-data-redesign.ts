@@ -174,10 +174,21 @@ console.log('\nthe guard still guards');
     'and a staff segmented control cannot borrow the athlete pill');
 }
 
-console.log('\nthe readiness delta follows the new reference into green');
+console.log('\na delta states the change and never judges it — ATH-ADULT-12 D3, reversed by Isabella 2026-09-12');
 {
-  const up = /\.rd-delta\[data-dir='up'\]\s*\{([^}]*)\}/.exec(css)?.[1] ?? '';
-  assert(/--good/.test(up), "▲ on last week is green now, not the accent");
+  /* Green ▲ / amber ▼ (2026-09-08) reversed: a lower RPE and a lower
+     readiness do not mean the same thing, so no colour ranks a trend. Muted
+     ink, the figure in --text bold, ↑ ↓ never ▲ ▼. The same for the tests
+     tab's off-PB / ahead / at-PB lines. */
+  const delta = /\.rd-delta\s*\{([^}]*)\}/.exec(css)?.[1] ?? '';
+  assert(/color:\s*var\(--muted\)/.test(delta) && /font-weight:\s*400/.test(delta), '.rd-delta is --muted at 400');
+  assert(!/\.rd-delta\[data-dir='up'\]/.test(css) && !/\.rd-delta\[data-dir='down'\]/.test(css), 'no per-direction colour rule is left');
+  assert(/\.rd-delta b\s*\{[^}]*color:\s*var\(--text\)[^}]*font-weight:\s*700/.test(css), 'the figure is --text bold');
+  assert(/\{readinessDelta >= 0 \? '↑' : '↓'\}/.test(page) && !/▲|▼/.test(page), '↑ ↓, never ▲ ▼');
+  assert(/<b>\{Math\.abs\(readinessDelta\)\}<\/b> on last week/.test(page), '"↑ 4 on last week" with the figure bold — the comparison unchanged (C4 declined)');
+  const hist = /\.hist-delta\s*\{([^}]*)\}/.exec(css)?.[1] ?? '';
+  assert(/color:\s*var\(--muted\)/.test(hist) && !/--warn/.test(hist), '.hist-delta is --muted, not amber');
+  assert(!/\.hist-delta\[data-ahead\]\s*\{[^}]*--accent/.test(css), 'and "ahead of PB" is not the accent either');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

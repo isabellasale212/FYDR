@@ -51,7 +51,7 @@ Visible and embarrassing; no harm.
 - ~~**§0e L244–251** — move production to London.~~ **Decided against 2026-09-12:** production stays in eu-west-1; the compliance doc now states Ireland and the EEA-adequacy basis and withdraws the "stays in the UK" claim.
 - **§0b L713** — a saved group-filter cookie naming a deleted group: behaviour unverified (decided target: fall back to everyone). A club renames or deletes a group in week one.
 - **§0b L723** — the analytics screen's stricter readiness needs its own label ("Complete-day readiness"); not found in the code.
-- **§0b L728** — the New week template screen's gate reads "coach or medical", not "coach or sport scientist"; a medic can get in. Unverified today; a role-gate item, so yours to confirm before it is scheduled.
+- ~~**§0b L728** — the New week template screen's gate reads "coach or medical".~~ **Closed 2026-09-12** — measured as medic, S&C and nutritionist: all redirected to the read-only schedule; the gate is `SESSION_EDIT`.
 - **§0b L729** — New fixture: an expired session on submit silently redirects with nothing saved.
 - **§0b L731 / L732** — wellness expected on training days only, derived from the schedule (and whether match days count). If compliance still expects a check-in on rest days, the percentage is wrong the way §0ad's is; verify before deciding.
 - **§0b L734** — a nutrition plan for an athlete with no recorded weight should give general guidance, not skip them; not found in the code.

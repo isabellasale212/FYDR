@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/fonts.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/icons.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/colors.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/typography.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/spacing.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/shape.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/motion.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/base.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/styles.css" />
+<script src="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/_ds_bundle.js"></script>
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-core); color: var(--text); }
+  a { color: var(--accent); text-decoration: none; pointer-events: none; }
+  a:hover { color: var(--blue-600); }
+  * { transition: none !important; animation: none !important; }
+</style>
+</helmet>
+
+<div style="padding: 40px; background: var(--bg); box-sizing: border-box">
+
+  <div style="max-width: 1440px; margin: 0 auto 36px; display: flex; flex-direction: column; gap: 8px">
+    <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">PATTERN-S6 · FINAL · REVIEW BOARD · STATIC</p>
+    <p style="margin: 0; font-size: var(--t-hero); font-weight: var(--w-black); letter-spacing: var(--t-hero-tracking); line-height: var(--lh-tight); color: var(--text)">System states: offline, failed, empty, done</p>
+    <p style="margin: 0; max-width: 68ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Twelve artboards: seven athlete phone at 375 × 812, four staff desktop at 1440 × 900, one staff phone at 375 × 812. The offline, failed and empty states already approved on the entry-form, gym logger, My data and schedule boards carry in unchanged; what is new here is the one place an athlete sees everything waiting to send, what a successful send looks like, a session that expires mid-form, permission denied, and a live write that fails on the schedule. Nothing is clickable and no transitions are active. Athlete is Conor Moroney, staff are Jane Pemberton (sport scientist) and Kate Doyle (coach), Ashcombe Rugby Club. Board instant: Thursday 10 September 2026, 12:04 Europe/London.</p>
+  </div>
+
+  <div style="max-width: 1440px; margin: 0 auto 40px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap-card)">
+    <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--on-tint-label)">THE GAP THIS CLOSES</p>
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">Queued items live on the screen that made them</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">Three things queued across wellness, RPE and the gym logger showed in three places and nowhere together. Today now carries one count, and the count opens one list that names each item and when it was saved.</p>
+    </div>
+    <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">SUCCESS IS USUALLY SILENCE</p>
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">A send that worked changes a count, not the screen</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Nothing is celebrated. The waiting line becomes a sent line in the same place, and is gone on the next load. No toast, no tick, no praise — the athlete already did the thing.</p>
+    </div>
+    <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">HELD, ON EITHER DEVICE</p>
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Both apps queue. Only the staff queue is invisible to others</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">A staff write normally reaches 30 phones as it is made, so a held one is a promise not yet kept: "Nobody else can see this until you have signal." Availability and injury sort first and say what they will change. A drag on the grid stays disabled, because it saves on drop and cannot be held safely.</p>
+    </div>
+  </div>
+
+  <p style="max-width: 1440px; margin: 0 auto 14px; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">Athlete, phone</p>
+  <p style="max-width: 68ch; margin: 0 0 18px; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">A gym basement with no signal, mid-morning. Seven frames: the count on Today, the list it opens, the moment it sends, the emptied list, a session that expired mid-form, the form returned to intact, and the plain failure that was already approved.</p>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 36px; align-items: flex-start; margin-bottom: 48px">
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">1 · Today, offline with three waiting <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 375 × 812</span></p>
+      <div data-screen-label="01 Today offline" style="display: flex; flex-direction: column; width: 375px; height: 812px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="flex: 0 0 auto; padding: 16px 16px 0">
+          <p style="margin: 0 0 6px; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">THU 10 SEPT · MD-2</p>
+          <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Afternoon, Conor</p>
+        </div>
+        <div style="flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 14px">
+          <div role="status" style="display: flex; align-items: flex-start; gap: 10px; background: var(--pill-good); border-radius: var(--r); padding: 12px 14px; min-height: 44px; box-sizing: border-box">
+            <i class="ph ph-cloud-arrow-up" style="font-size: 18px; color: var(--on-good); line-height: 1.1"></i>
+            <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+              <span style="font-size: var(--t-body-sm); font-weight: var(--w-bold); line-height: var(--lh-base); color: var(--on-good); text-wrap: pretty"><span style="font-family: var(--font-num); font-variant-numeric: tabular-nums">3</span> entries are saved on this phone and will send when you have signal</span>
+              <span style="font-size: var(--t-body-xs); font-weight: var(--w-bold); color: var(--accent)">See what is waiting &rsaquo;</span>
+            </span>
+          </div>
+          <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">TO DO</p>
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <div style="display: flex; align-items: center; gap: 12px; background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px; min-height: 56px; box-sizing: border-box">
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">Weekly nutrition check-in</span>
+                <span style="font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--muted)">about 10 sec</span>
+              </span>
+              <span style="color: var(--faint); font-size: 18px">&rsaquo;</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px; min-height: 56px; box-sizing: border-box">
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">Gym · Lower A</span>
+                <span style="font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--muted)">6 of 12 sets · 2 waiting to send</span>
+              </span>
+              <span style="color: var(--faint); font-size: 18px">&rsaquo;</span>
+            </div>
+          </div>
+          <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 4px">
+            <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">This morning is answered.</p>
+            <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Your check-in and your rating for the team run are two of the three saved on this phone.</p>
+          </div>
+        </div>
+        <div style="flex: 0 0 auto; background: var(--surf); border-top: 1px solid var(--border); padding: 8px 8px 0">
+          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr))">
+            <sc-for list="{{ tabsToday }}" as="b" hint-placeholder-count="4">
+              <span style="display: flex; flex-direction: column; align-items: center; gap: 3px; min-height: 44px; padding: 4px 0">
+                <i class="{{ b.icon }}" style="{{ b.iconStyle }}"></i>
+                <span style="{{ b.labelStyle }}">{{ b.label }}</span>
+              </span>
+            </sc-for>
+          </div>
+          <div aria-hidden="true" style="height: 20px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">2 · Waiting to send · the one list <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 375 × 812</span></p>
+      <div data-screen-label="02 Queue" style="display: flex; flex-direction: column; width: 375px; height: 812px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="flex: 0 0 auto; padding: 16px 16px 0">
+          <p style="margin: 0 0 6px; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--accent)">&lsaquo; Today</p>
+          <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Waiting to send</p>
+          <p style="margin: 6px 0 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Everything saved on this phone, oldest first. Nothing here has reached the club yet.</p>
+        </div>
+        <div style="flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 14px">
+          <div style="flex: 0 0 auto; background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden">
+            <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 14px 16px 10px">
+              <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">On this phone</span>
+              <span style="font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--faint)">4 entries · 5 writes</span>
+            </div>
+            <sc-for list="{{ queue }}" as="q" hint-placeholder-count="3">
+              <div style="border-top: 1px solid var(--border); padding: 12px 16px; min-height: 44px; box-sizing: border-box; display: flex; align-items: center; gap: 12px">
+                <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                  <span style="font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">{{ q.what }}</span>
+                  <span style="font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--muted)">{{ q.meta }}</span>
+                </span>
+                <span style="font-family: var(--font-num); font-size: var(--t-body-xs); font-weight: var(--w-semi); font-variant-numeric: tabular-nums; color: var(--faint); white-space: nowrap">{{ q.saved }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div role="alert" style="flex: 0 0 auto; background: var(--pill-bad); border-radius: var(--r); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px">
+            <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); line-height: var(--lh-base); color: var(--on-bad); text-wrap: pretty">One saved entry could not be sent: you already have your check-in for the week of Mon 24 Aug from another tab or device, and that one is what is showing.</p>
+            <span style="display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; padding: 10px 14px; border-radius: var(--r); background: transparent; color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Discard this one</span>
+          </div>
+
+          <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">These send on their own — you need not be on this screen. Nothing here is edited or discarded except an entry the club has a different answer for.</p>
+        </div>
+        <div style="flex: 0 0 auto; background: var(--surf); border-top: 1px solid var(--border); padding: 8px 8px 0">
+          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr))">
+            <sc-for list="{{ tabsToday }}" as="b" hint-placeholder-count="4">
+              <span style="display: flex; flex-direction: column; align-items: center; gap: 3px; min-height: 44px; padding: 4px 0">
+                <i class="{{ b.icon }}" style="{{ b.iconStyle }}"></i>
+                <span style="{{ b.labelStyle }}">{{ b.label }}</span>
+              </span>
+            </sc-for>
+          </div>
+          <div aria-hidden="true" style="height: 20px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">3 · Reconnected, items sent <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 375 × 812</span></p>
+      <div data-screen-label="03 Reconnected" style="display: flex; flex-direction: column; width: 375px; height: 812px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="flex: 0 0 auto; padding: 16px 16px 0">
+          <p style="margin: 0 0 6px; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">THU 10 SEPT · MD-2</p>
+          <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Afternoon, Conor</p>
+        </div>
+        <div style="flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 14px">
+          <div role="status" style="display: flex; align-items: flex-start; gap: 10px; background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 12px 14px; min-height: 44px; box-sizing: border-box">
+            <i class="ph ph-check" style="font-size: 18px; color: var(--muted); line-height: 1.1"></i>
+            <span style="flex: 1 1 auto; min-width: 0; font-size: var(--t-body-sm); font-weight: var(--w-semi); line-height: var(--lh-base); color: var(--text); text-wrap: pretty"><span style="font-family: var(--font-num); font-variant-numeric: tabular-nums">3</span> entries sent at 12:04. Nothing is waiting.</span>
+          </div>
+          <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">TO DO</p>
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <div style="display: flex; align-items: center; gap: 12px; background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px; min-height: 56px; box-sizing: border-box">
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">Weekly nutrition check-in</span>
+                <span style="font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--muted)">about 10 sec</span>
+              </span>
+              <span style="color: var(--faint); font-size: 18px">&rsaquo;</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px; min-height: 56px; box-sizing: border-box">
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">Gym · Lower A</span>
+                <span style="font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--muted)">6 of 12 sets · all sent</span>
+              </span>
+              <span style="color: var(--faint); font-size: 18px">&rsaquo;</span>
+            </div>
+          </div>
+          <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 4px">
+            <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">This morning is answered.</p>
+            <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Sleep 7.5 h, soreness 3, readiness computed on send. You cannot change it now.</p>
+          </div>
+        </div>
+        <div style="flex: 0 0 auto; background: var(--surf); border-top: 1px solid var(--border); padding: 8px 8px 0">
+          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr))">
+            <sc-for list="{{ tabsToday }}" as="b" hint-placeholder-count="4">
+              <span style="display: flex; flex-direction: column; align-items: center; gap: 3px; min-height: 44px; padding: 4px 0">
+                <i class="{{ b.icon }}" style="{{ b.iconStyle }}"></i>
+                <span style="{{ b.labelStyle }}">{{ b.label }}</span>
+              </span>
+            </sc-for>
+          </div>
+          <div aria-hidden="true" style="height: 20px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">4 · Waiting to send · emptied <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 375 × 812</span></p>
+      <div data-screen-label="04 Queue empty" style="display: flex; flex-direction: column; width: 375px; height: 812px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="flex: 0 0 auto; padding: 16px 16px 0">
+          <p style="margin: 0 0 6px; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--accent)">&lsaquo; Today</p>
+          <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Waiting to send</p>
+        </div>
+        <div style="flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 14px">
+          <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px; display: flex; flex-direction: column; gap: 8px">
+            <p style="margin: 0; font-size: var(--t-card); font-weight: var(--w-black); letter-spacing: -0.01em; line-height: var(--lh-tight); color: var(--text)">Nothing is waiting.</p>
+            <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Everything you have saved on this phone has reached the club. The last three went at 12:04. Anything you answer without signal will appear here until it sends.</p>
+            <span style="display: inline-flex; align-items: center; justify-content: center; align-self: stretch; min-height: 44px; margin-top: 6px; padding: 10px 16px; border: 1px solid var(--accent); border-radius: var(--r); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Back to Today</span>
+          </div>
+          <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--faint); text-wrap: pretty">This screen is reachable from the waiting count on Today. With nothing waiting, that count is not shown and this screen is not offered.</p>
+        </div>
+        <div style="flex: 0 0 auto; background: var(--surf); border-top: 1px solid var(--border); padding: 8px 8px 0">
+          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr))">
+            <sc-for list="{{ tabsToday }}" as="b" hint-placeholder-count="4">
+              <span style="display: flex; flex-direction: column; align-items: center; gap: 3px; min-height: 44px; padding: 4px 0">
+                <i class="{{ b.icon }}" style="{{ b.iconStyle }}"></i>
+                <span style="{{ b.labelStyle }}">{{ b.label }}</span>
+              </span>
+            </sc-for>
+          </div>
+          <div aria-hidden="true" style="height: 20px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">5 · Session expired mid-form <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 375 × 812</span></p>
+      <div data-screen-label="05 Session expired" style="display: flex; flex-direction: column; width: 375px; height: 812px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="flex: 0 0 auto; padding: 16px 16px 0">
+          <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">This morning</p>
+          <p style="margin: 4px 0 0; font-size: var(--t-body-sm); color: var(--muted)">45 seconds · 5 is always the best you can feel</p>
+        </div>
+        <div style="flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 12px">
+          <div role="alert" style="display: flex; align-items: flex-start; gap: 10px; background: var(--pill-bad); border-radius: var(--r); padding: 12px 14px; box-sizing: border-box">
+            <span aria-hidden="true" style="flex: 0 0 auto; width: 8px; height: 8px; margin-top: 5px; border-radius: var(--r-round); background: var(--bad)"></span>
+            <span style="flex: 1 1 auto; min-width: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); line-height: var(--lh-base); color: var(--on-bad); text-wrap: pretty">You have been signed out, so that did not send. Your six answers are still here.</span>
+          </div>
+          <sc-for list="{{ wellnessAnswered }}" as="q" hint-placeholder-count="3">
+            <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 12px 14px">
+              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">{{ q.label }}</span>
+              </div>
+              <div style="margin-top: 10px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px">
+                <sc-for list="{{ q.scale }}" as="s" hint-placeholder-count="5">
+                  <span style="{{ s.style }}">{{ s.n }}</span>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="flex: 0 0 auto; background: var(--surf); border-top: 1px solid var(--border); padding: 12px 16px 0">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+            <span style="font-size: var(--t-body-xs); font-weight: var(--w-bold); color: var(--accent); background: var(--pill-accent); border-radius: var(--r); padding: 4px 8px">All six answered</span>
+            <span style="font-size: var(--t-body-xs); font-weight: var(--w-bold); color: var(--accent); text-decoration: underline">Why can't I edit it?</span>
+          </div>
+          <p style="margin: 6px 0 10px; font-size: var(--t-body-xs); color: var(--muted)">Your answers stay on this phone while you sign in.</p>
+          <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Button" dc-props="{{ btnPhone }}" hint-size="100%,56px">Sign in and send</x-import>
+          <div aria-hidden="true" style="height: 20px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">6 · Signed in again, form intact <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 375 × 812</span></p>
+      <div data-screen-label="06 Signed in again" style="display: flex; flex-direction: column; width: 375px; height: 812px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="flex: 0 0 auto; padding: 16px 16px 0">
+          <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">This morning</p>
+          <p style="margin: 4px 0 0; font-size: var(--t-body-sm); color: var(--muted)">45 seconds · 5 is always the best you can feel</p>
+        </div>
+        <div style="flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 12px">
+          <div role="status" style="display: flex; align-items: flex-start; gap: 10px; background: var(--pill-accent); border-radius: var(--r); padding: 12px 14px; box-sizing: border-box">
+            <i class="ph ph-check" style="font-size: 18px; color: var(--accent); line-height: 1.1"></i>
+            <span style="flex: 1 1 auto; min-width: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); line-height: var(--lh-base); color: var(--accent); text-wrap: pretty">Signed in as Conor. Your six answers are as you left them — nothing was retyped.</span>
+          </div>
+          <sc-for list="{{ wellnessAnswered }}" as="q" hint-placeholder-count="3">
+            <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 12px 14px">
+              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">{{ q.label }}</span>
+              </div>
+              <div style="margin-top: 10px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px">
+                <sc-for list="{{ q.scale }}" as="s" hint-placeholder-count="5">
+                  <span style="{{ s.style }}">{{ s.n }}</span>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="flex: 0 0 auto; background: var(--surf); border-top: 1px solid var(--border); padding: 12px 16px 0">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+            <span style="font-size: var(--t-body-xs); font-weight: var(--w-bold); color: var(--accent); background: var(--pill-accent); border-radius: var(--r); padding: 4px 8px">All six answered</span>
+            <span style="font-size: var(--t-body-xs); font-weight: var(--w-bold); color: var(--accent); text-decoration: underline">Why can't I edit it?</span>
+          </div>
+          <p style="margin: 6px 0 10px; font-size: var(--t-body-xs); color: var(--muted)">You can't change this after you submit.</p>
+          <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Button" dc-props="{{ btnPhone }}" hint-size="100%,56px">Submit entry</x-import>
+          <div aria-hidden="true" style="height: 20px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">7 · Submit failed · approved, unchanged <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 375 × 812</span></p>
+      <div data-screen-label="07 Submit failed" style="display: flex; flex-direction: column; width: 375px; height: 812px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="flex: 0 0 auto; padding: 16px 16px 0">
+          <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">This morning</p>
+          <p style="margin: 4px 0 0; font-size: var(--t-body-sm); color: var(--muted)">45 seconds · 5 is always the best you can feel</p>
+        </div>
+        <div style="flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 12px">
+          <div role="alert" style="display: flex; align-items: flex-start; gap: 10px; background: var(--pill-bad); border-radius: var(--r); padding: 12px 14px; box-sizing: border-box">
+            <span aria-hidden="true" style="flex: 0 0 auto; width: 8px; height: 8px; margin-top: 5px; border-radius: var(--r-round); background: var(--bad)"></span>
+            <span style="flex: 1 1 auto; min-width: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); line-height: var(--lh-base); color: var(--on-bad); text-wrap: pretty">That did not send. Your answers are still here.</span>
+          </div>
+          <sc-for list="{{ wellnessAnswered }}" as="q" hint-placeholder-count="3">
+            <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 12px 14px">
+              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">{{ q.label }}</span>
+              </div>
+              <div style="margin-top: 10px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px">
+                <sc-for list="{{ q.scale }}" as="s" hint-placeholder-count="5">
+                  <span style="{{ s.style }}">{{ s.n }}</span>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="flex: 0 0 auto; background: var(--surf); border-top: 1px solid var(--border); padding: 12px 16px 0">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+            <span style="font-size: var(--t-body-xs); font-weight: var(--w-bold); color: var(--accent); background: var(--pill-accent); border-radius: var(--r); padding: 4px 8px">All six answered</span>
+            <span style="font-size: var(--t-body-xs); font-weight: var(--w-bold); color: var(--accent); text-decoration: underline">Why can't I edit it?</span>
+          </div>
+          <p style="margin: 6px 0 10px; font-size: var(--t-body-xs); color: var(--muted)">You can't change this after you submit.</p>
+          <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Button" dc-props="{{ btnPhone }}" hint-size="100%,56px">Try again</x-import>
+          <div aria-hidden="true" style="height: 20px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p style="max-width: 1440px; margin: 0 auto 14px; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">Staff, desktop</p>
+  <p style="max-width: 68ch; margin: 0 0 18px; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Four frames. Typed changes queue offline the way athlete entries do, with the difference said plainly — nobody else can see them yet — and availability first. A drag stays disabled, because it saves on drop. A failed live write has to undo something the eye already saw. Permission denied says nothing about what exists, and the empty state carries the one grammar.</p>
+
+  <div style="display: flex; flex-direction: column; gap: 36px; margin-bottom: 48px">
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">8 · Offline while editing the schedule · changes held <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 1440 × 900</span></p>
+      <div data-screen-label="08 Staff offline" style="display: flex; width: 1440px; height: 900px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="flex: 0 0 214px; background: var(--surf); border-right: 1px solid var(--border); padding: 18px 12px; display: flex; flex-direction: column; gap: 4px; box-sizing: border-box">
+          <p style="margin: 0 0 14px; padding: 0 8px; font-family: var(--font-brand); font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--text)">Fydr.</p>
+          <sc-for list="{{ navSchedule }}" as="n" hint-placeholder-count="9">
+            <span style="{{ n.style }}"><i class="{{ n.icon }}" style="{{ n.iconStyle }}"></i>{{ n.label }}</span>
+          </sc-for>
+        </div>
+        <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+          <div style="flex: 0 0 auto; border-bottom: 1px solid var(--border); background: var(--surf); padding: 10px 40px; display: flex; align-items: center; gap: 8px">
+            <sc-for list="{{ groupChips }}" as="c" hint-placeholder-count="5">
+              <span style="{{ c.style }}">{{ c.label }}</span>
+            </sc-for>
+            <span style="margin-left: auto; font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--muted)">30 athletes in the squad</span>
+          </div>
+          <div style="flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 24px 40px 0; display: flex; flex-direction: column; gap: 16px">
+            <div>
+              <p style="margin: 0 0 4px; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">WEEK OF MONDAY 7 SEPTEMBER · MD SATURDAY 12 · AT COLTHORNE RFC · WHOLE SQUAD</p>
+              <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Schedule</p>
+            </div>
+            <div role="status" style="background: var(--pill-warn); border-radius: var(--r); padding: 14px 18px; display: flex; align-items: flex-start; gap: 12px">
+              <i class="ph ph-wifi-slash" style="font-size: 20px; color: var(--on-warn); line-height: 1.1"></i>
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--on-warn)">No connection. What you change is saved on this computer and sends when you have signal</span>
+                <span style="font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-warn); text-wrap: pretty">Nobody else can see a held change until it sends, so athletes still have the week below and it is current as of 11:58. Moving a block on the grid is the one thing that cannot be held: a drag saves the moment you drop it.</span>
+              </span>
+              <span style="flex: 0 0 auto; font-size: var(--t-num-nano); font-weight: var(--w-bold); letter-spacing: 0.06em; text-transform: uppercase; color: var(--on-warn); background: var(--wash-warn); border-radius: var(--r); padding: 4px 8px">OFFLINE</span>
+            </div>
+            <div style="display: flex; align-items: stretch; gap: 16px">
+              <div style="flex: 1 1 auto; min-width: 0; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden">
+                <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 10px 14px 8px">
+                  <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">Waiting to send, from this computer</span>
+                  <span style="font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--faint)">2 changes · time-critical first</span>
+                </div>
+                <div style="border-top: 1px solid var(--border); border-left: var(--border-accent-w) solid var(--accent); padding: 10px 14px; display: flex; align-items: baseline; gap: 12px">
+                  <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                    <span style="font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">Nash, Elliot · availability → Unavailable, right hamstring</span>
+                    <span style="font-size: var(--t-body-xs); font-weight: var(--w-regular); color: var(--muted)">When it sends: he comes off Saturday's selection list, the squad count reads 29 of 30 available, and medical staff are notified.</span>
+                  </span>
+                  <span style="flex: 0 0 auto; font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--faint)">11:59</span>
+                </div>
+                <div style="border-top: 1px solid var(--border); padding: 10px 14px; display: flex; align-items: baseline; gap: 12px">
+                  <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                    <span style="font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">New session · Recovery swim, Sun 13 Sept 17:00, 45 min</span>
+                    <span style="font-size: var(--t-body-xs); font-weight: var(--w-regular); color: var(--muted)">When it sends: 14 athletes in Backs get it on their Today, each with its RPE task.</span>
+                  </span>
+                  <span style="flex: 0 0 auto; font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--faint)">12:02</span>
+                </div>
+              </div>
+              <div style="flex: 0 0 260px; display: flex; flex-direction: column; gap: 8px">
+                <span style="display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 0 14px; border: 1px solid var(--accent); border-radius: var(--r); color: var(--accent); font-size: var(--t-body-sm); font-weight: var(--w-bold); box-sizing: border-box">+ Session</span>
+                <span style="display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 0 14px; border: 1px solid var(--accent); border-radius: var(--r); color: var(--accent); font-size: var(--t-body-sm); font-weight: var(--w-bold); box-sizing: border-box">+ Fixture</span>
+                <span style="display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 0 14px; border-radius: var(--r); color: var(--muted); font-size: var(--t-body-sm); font-weight: var(--w-semi); box-sizing: border-box; opacity: 0.45">Week templates</span>
+                <span style="font-size: var(--t-body-xs); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">A typed change is held. Week templates read the server, so they are unavailable offline.</span>
+              </div>
+            </div>
+            <div style="flex: 1 1 auto; min-height: 0; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column">
+              <div style="display: grid; grid-template-columns: 56px repeat(7, minmax(0, 1fr)); border-bottom: 1px solid var(--border)">
+                <span></span>
+                <sc-for list="{{ weekDays }}" as="d" hint-placeholder-count="7">
+                  <span style="{{ d.style }}"><span style="font-weight: var(--w-bold); color: var(--text)">{{ d.name }}</span> {{ d.date }}<br /><span style="font-family: var(--font-num); font-variant-numeric: tabular-nums; color: var(--faint)">{{ d.md }} · {{ d.mins }}</span></span>
+                </sc-for>
+              </div>
+              <div style="flex: 1 1 auto; min-height: 0; position: relative; overflow: hidden; display: grid; grid-template-columns: 56px repeat(7, minmax(0, 1fr))">
+                <div style="display: flex; flex-direction: column; border-right: 1px solid var(--hair)">
+                  <sc-for list="{{ hours }}" as="h" hint-placeholder-count="6">
+                    <span style="flex: 1 1 0; padding: 4px 8px; font-family: var(--font-num); font-size: var(--t-caption); font-variant-numeric: tabular-nums; color: var(--faint); border-top: 1px solid var(--hair)">{{ h }}</span>
+                  </sc-for>
+                </div>
+                <sc-for list="{{ gridCols }}" as="c" hint-placeholder-count="7">
+                  <div style="{{ c.style }}">
+                    <sc-for list="{{ c.slots }}" as="s" hint-placeholder-count="6">
+                      <span style="flex: 1 1 0; border-top: 1px solid var(--hair)"></span>
+                    </sc-for>
+                    <sc-if value="{{ c.hasBlock }}" hint-placeholder-val="{{ false }}">
+                      <span style="{{ c.blockStyle }}">
+                        <span style="font-family: var(--font-num); font-size: var(--t-caption); font-variant-numeric: tabular-nums; color: var(--accent)">{{ c.blockTime }}</span>
+                        <span style="font-size: var(--t-body-xs); font-weight: var(--w-bold); color: var(--text)">{{ c.blockName }}</span>
+                      </span>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="flex: 0 0 auto; border-top: 1px solid var(--border); padding: 8px 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px">
+                <span style="font-size: var(--t-caption); color: var(--muted)">Training · Gym · Rehab · Testing · Fixture · Meeting · Recovery</span>
+                <span style="font-family: var(--font-num); font-size: var(--t-caption); font-variant-numeric: tabular-nums; color: var(--muted)">445 session minutes · 09:00 to 15:00 shown, Saturday's fixture ends at 15:20 · a block cannot be moved while offline</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">9 · A live write that failed · the dragged block returns <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 1440 × 900</span></p>
+      <div data-screen-label="09 Live write failed" style="display: flex; width: 1440px; height: 900px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="flex: 0 0 214px; background: var(--surf); border-right: 1px solid var(--border); padding: 18px 12px; display: flex; flex-direction: column; gap: 4px; box-sizing: border-box">
+          <p style="margin: 0 0 14px; padding: 0 8px; font-family: var(--font-brand); font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--text)">Fydr.</p>
+          <sc-for list="{{ navSchedule }}" as="n" hint-placeholder-count="9">
+            <span style="{{ n.style }}"><i class="{{ n.icon }}" style="{{ n.iconStyle }}"></i>{{ n.label }}</span>
+          </sc-for>
+        </div>
+        <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+          <div style="flex: 0 0 auto; border-bottom: 1px solid var(--border); background: var(--surf); padding: 10px 40px; display: flex; align-items: center; gap: 8px">
+            <sc-for list="{{ groupChips }}" as="c" hint-placeholder-count="5">
+              <span style="{{ c.style }}">{{ c.label }}</span>
+            </sc-for>
+            <span style="margin-left: auto; font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--muted)">30 athletes in the squad</span>
+          </div>
+          <div style="flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 24px 40px 0; display: flex; flex-direction: column; gap: 16px">
+            <div>
+              <p style="margin: 0 0 4px; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">WEEK OF MONDAY 7 SEPTEMBER · MD SATURDAY 12 · AT COLTHORNE RFC · WHOLE SQUAD</p>
+              <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Schedule</p>
+            </div>
+            <div role="alert" style="background: var(--surf); border: 1px solid var(--bad); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px 18px; display: flex; align-items: flex-start; gap: 12px">
+              <span aria-hidden="true" style="flex: 0 0 auto; width: 9px; height: 9px; margin-top: 6px; border-radius: var(--r-round); background: var(--bad)"></span>
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">That move did not save, so Unit skills is back where it was</span>
+                <span style="font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">You moved it to Monday 09:45 – 11:00. It is at Monday 09:30 – 10:45, which is what the 27 athletes in Backs and Forwards still have. Nothing was changed on their phones.</span>
+              </span>
+              <span style="flex: 0 0 auto; display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border: 1px solid var(--accent); border-radius: var(--r); color: var(--accent); font-size: var(--t-body-sm); font-weight: var(--w-bold); box-sizing: border-box">Try again</span>
+            </div>
+            <div style="flex: 1 1 auto; min-height: 0; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column">
+              <div style="display: grid; grid-template-columns: 56px repeat(7, minmax(0, 1fr)); border-bottom: 1px solid var(--border)">
+                <span></span>
+                <sc-for list="{{ weekDays }}" as="d" hint-placeholder-count="7">
+                  <span style="{{ d.style }}"><span style="font-weight: var(--w-bold); color: var(--text)">{{ d.name }}</span> {{ d.date }}<br /><span style="font-family: var(--font-num); font-variant-numeric: tabular-nums; color: var(--faint)">{{ d.md }} · {{ d.mins }}</span></span>
+                </sc-for>
+              </div>
+              <div style="flex: 1 1 auto; min-height: 0; overflow: hidden; display: grid; grid-template-columns: 56px repeat(7, minmax(0, 1fr))">
+                <div style="display: flex; flex-direction: column; border-right: 1px solid var(--hair)">
+                  <sc-for list="{{ hours }}" as="h" hint-placeholder-count="6">
+                    <span style="flex: 1 1 0; padding: 4px 8px; font-family: var(--font-num); font-size: var(--t-caption); font-variant-numeric: tabular-nums; color: var(--faint); border-top: 1px solid var(--hair)">{{ h }}</span>
+                  </sc-for>
+                </div>
+                <div style="position: relative; display: flex; flex-direction: column; border-right: 1px solid var(--hair)">
+                  <sc-for list="{{ hours }}" as="h" hint-placeholder-count="6">
+                    <span style="flex: 1 1 0; border-top: 1px solid var(--hair)"></span>
+                  </sc-for>
+                  <span style="position: absolute; left: 52%; right: 4px; top: 12.5%; height: 20.83%; border: 1px dashed var(--line-dashed); border-radius: var(--r); background: transparent; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; padding: 5px 7px; box-sizing: border-box">
+                    <span style="font-family: var(--font-num); font-size: var(--t-caption); font-variant-numeric: tabular-nums; color: var(--faint)">09:45 – 11:00</span>
+                    <span style="font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--faint)">Did not save</span>
+                  </span>
+                  <span style="position: absolute; left: 4px; right: 52%; top: 8.33%; height: 20.83%; border: 1px solid var(--border); border-left: var(--border-accent-w) solid var(--accent); border-radius: var(--r); background: var(--surf); box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 2px; padding: 5px 7px; box-sizing: border-box">
+                    <span style="font-family: var(--font-num); font-size: var(--t-caption); font-variant-numeric: tabular-nums; color: var(--accent)">09:30 – 10:45</span>
+                    <span style="font-size: var(--t-body-xs); font-weight: var(--w-bold); color: var(--text)">Unit skills</span>
+                  </span>
+                </div>
+                <sc-for list="{{ gridColsTail }}" as="c" hint-placeholder-count="6">
+                  <div style="{{ c.style }}">
+                    <sc-for list="{{ c.slots }}" as="s" hint-placeholder-count="6">
+                      <span style="flex: 1 1 0; border-top: 1px solid var(--hair)"></span>
+                    </sc-for>
+                    <sc-if value="{{ c.hasBlock }}" hint-placeholder-val="{{ false }}">
+                      <span style="{{ c.blockStyle }}">
+                        <span style="font-family: var(--font-num); font-size: var(--t-caption); font-variant-numeric: tabular-nums; color: var(--accent)">{{ c.blockTime }}</span>
+                        <span style="font-size: var(--t-body-xs); font-weight: var(--w-bold); color: var(--text)">{{ c.blockName }}</span>
+                      </span>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="flex: 0 0 auto; border-top: 1px solid var(--border); padding: 8px 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px">
+                <span style="font-size: var(--t-caption); color: var(--muted)">Training · Gym · Rehab · Testing · Fixture · Meeting · Recovery</span>
+                <span style="font-family: var(--font-num); font-size: var(--t-caption); font-variant-numeric: tabular-nums; color: var(--muted)">445 session minutes · the move that failed is shown dashed until you act on it</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 36px; align-items: flex-start">
+
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">10 · Permission denied <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 1440 × 900</span></p>
+        <div data-screen-label="10 Permission denied" style="display: flex; width: 1440px; height: 900px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+          <div style="flex: 0 0 214px; background: var(--surf); border-right: 1px solid var(--border); padding: 18px 12px; display: flex; flex-direction: column; gap: 4px; box-sizing: border-box">
+            <p style="margin: 0 0 14px; padding: 0 8px; font-family: var(--font-brand); font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--text)">Fydr.</p>
+            <sc-for list="{{ navDash }}" as="n" hint-placeholder-count="9">
+              <span style="{{ n.style }}"><i class="{{ n.icon }}" style="{{ n.iconStyle }}"></i>{{ n.label }}</span>
+            </sc-for>
+            <span style="margin-top: auto; display: flex; flex-direction: column; gap: 2px; padding: 10px 8px; font-size: var(--t-body-xs); color: var(--muted)"><span style="font-weight: var(--w-bold); color: var(--text)">Kate Doyle</span>Ashcombe Rugby Club · coach</span>
+          </div>
+          <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+            <div style="flex: 0 0 auto; border-bottom: 1px solid var(--border); background: var(--surf); padding: 10px 40px; display: flex; align-items: center; gap: 8px">
+              <sc-for list="{{ groupChips }}" as="c" hint-placeholder-count="5">
+                <span style="{{ c.style }}">{{ c.label }}</span>
+              </sc-for>
+              <span style="margin-left: auto; font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--muted)">30 athletes in the squad</span>
+            </div>
+            <div style="flex: 1 1 auto; min-height: 0; padding: 30px 40px; box-sizing: border-box">
+              <div style="max-width: 620px; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 28px; display: flex; flex-direction: column; gap: 10px">
+                <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">NOT AVAILABLE</p>
+                <p style="margin: 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">This is not available to you.</p>
+                <p style="margin: 0; max-width: 60ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">It may not exist, or your role may not include it. Nothing more can be said about it here. If a colleague sent you this link, ask them what it was and they can tell you.</p>
+                <p style="margin: 0; max-width: 60ch; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">You are signed in as Kate Doyle, coach. Your role covers availability status and restriction lines; diagnosis and treatment notes belong to medical staff and the athlete.</p>
+                <div style="margin-top: 10px; display: flex; align-items: center; gap: 12px">
+                  <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Button" dc-props="{{ btnDesk }}" hint-size="auto,46px">Back to dashboard</x-import>
+                  <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: var(--r); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">See what your role covers</span>
+                </div>
+                <p style="margin: 6px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); color: var(--faint)">Reference 7f21c0 · 10 Sept 2026, 12:04. Quote it if you ask an admin about this.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">11 · Empty state · a squad group with no data <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 1440 × 900</span></p>
+        <div data-screen-label="11 Staff empty state" style="display: flex; width: 1440px; height: 900px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+          <div style="flex: 0 0 214px; background: var(--surf); border-right: 1px solid var(--border); padding: 18px 12px; display: flex; flex-direction: column; gap: 4px; box-sizing: border-box">
+            <p style="margin: 0 0 14px; padding: 0 8px; font-family: var(--font-brand); font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--text)">Fydr.</p>
+            <sc-for list="{{ navSquad }}" as="n" hint-placeholder-count="9">
+              <span style="{{ n.style }}"><i class="{{ n.icon }}" style="{{ n.iconStyle }}"></i>{{ n.label }}</span>
+            </sc-for>
+            <span style="margin-top: auto; display: flex; flex-direction: column; gap: 2px; padding: 10px 8px; font-size: var(--t-body-xs); color: var(--muted)"><span style="font-weight: var(--w-bold); color: var(--text)">Jane Pemberton</span>Ashcombe Rugby Club · sport scientist</span>
+          </div>
+          <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+            <div style="flex: 0 0 auto; border-bottom: 1px solid var(--border); background: var(--surf); padding: 10px 40px; display: flex; align-items: center; gap: 8px">
+              <sc-for list="{{ groupChipsAcademy }}" as="c" hint-placeholder-count="5">
+                <span style="{{ c.style }}">{{ c.label }}</span>
+              </sc-for>
+              <span style="margin-left: auto; font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--muted)">5 athletes in Academy</span>
+            </div>
+            <div style="flex: 1 1 auto; min-height: 0; padding: 30px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px">
+              <div>
+                <p style="margin: 0 0 4px; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">SQUAD OVERVIEW · ACADEMY · LAST 7 DAYS</p>
+                <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Morning check-ins</p>
+              </div>
+              <div style="max-width: 680px; background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 26px; display: flex; flex-direction: column; gap: 10px">
+                <p style="margin: 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--on-tint-value)">No check-ins from Academy in the last 7 days.</p>
+                <p style="margin: 0; max-width: 60ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">Five athletes are in Academy and none of them has submitted a morning check-in in this window. A row appears here on the morning an athlete submits one. Academy has 23 check-ins on record, the most recent on Fri 22 Aug.</p>
+                <p style="margin: 0; max-width: 60ch; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">Nothing is missing from the record. The window is 7 days, and Academy trains on Tuesdays.</p>
+                <div style="margin-top: 10px; display: flex; align-items: center; gap: 12px">
+                  <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Button" dc-props="{{ btnDesk }}" hint-size="auto,46px">Widen to last 28 days</x-import>
+                  <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: var(--r); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Whole squad instead</span>
+                </div>
+              </div>
+              <div style="max-width: 680px; display: flex; flex-direction: column; gap: 6px">
+                <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">The grammar, in order</p>
+                <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">What is empty, with its denominator and its window. Why it is empty, in the athletes' terms. What would fill it. The one action that changes the window or the filter — never a zero, never a bare illustration, and never "never" when the truth is "not in this period".</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p style="max-width: 1440px; margin: 0 auto 14px; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">Staff, phone</p>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 36px; align-items: flex-start; margin-bottom: 48px">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">12 · Offline pitch-side, mid-entry <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 375 × 812</span></p>
+      <div data-screen-label="12 Staff phone offline" style="display: flex; flex-direction: column; width: 375px; height: 812px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="flex: 0 0 auto; padding: 16px 16px 0">
+          <p style="margin: 0 0 6px; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--accent)">&lsaquo; Squad</p>
+          <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Raise a flag</p>
+          <p style="margin: 4px 0 0; font-size: var(--t-body-sm); color: var(--muted)">Nash, Elliot · Forwards · Thu 10 Sept, 12:04</p>
+        </div>
+        <div style="flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 12px">
+          <div role="status" style="display: flex; align-items: flex-start; gap: 10px; background: var(--pill-good); border-radius: var(--r); padding: 12px 14px; box-sizing: border-box">
+            <i class="ph ph-cloud-arrow-up" style="font-size: 18px; color: var(--on-good); line-height: 1.1"></i>
+            <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+              <span style="font-size: var(--t-body-sm); font-weight: var(--w-bold); line-height: var(--lh-base); color: var(--on-good); text-wrap: pretty">Saved on this phone · sends when you have signal</span>
+              <span style="font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-good); text-wrap: pretty">Nobody else can see this until you have signal. A flag is time-critical, so it goes first, ahead of anything else waiting on this phone.</span>
+            </span>
+          </div>
+          <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 10px">
+            <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">What happened?</p>
+            <div style="display: flex; flex-wrap: wrap; gap: var(--gap-chip)">
+              <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 1px solid var(--accent); border-radius: var(--r); background: var(--wash-accent); color: var(--accent); font-size: var(--t-body-sm); font-weight: var(--w-bold); box-sizing: border-box">&check; Soft tissue</span>
+              <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 1px solid var(--border); border-radius: var(--r); color: var(--text); font-size: var(--t-body-sm); font-weight: var(--w-semi); box-sizing: border-box">Knock</span>
+              <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 1px solid var(--border); border-radius: var(--r); color: var(--text); font-size: var(--t-body-sm); font-weight: var(--w-semi); box-sizing: border-box">Illness</span>
+              <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 1px solid var(--border); border-radius: var(--r); color: var(--text); font-size: var(--t-body-sm); font-weight: var(--w-semi); box-sizing: border-box">Other</span>
+            </div>
+          </div>
+          <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 8px">
+            <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">What did you see?</p>
+            <div style="background: var(--field); border: 1px solid var(--border); border-radius: var(--r); padding: 10px 12px; min-height: 96px; box-sizing: border-box; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--text)">Pulled up in the third block of contact prep, holding right hamstring. Walked off under his own power.</div>
+            <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--muted)">126 / 1000</p>
+          </div>
+        </div>
+        <div style="flex: 0 0 auto; background: var(--surf); border-top: 1px solid var(--border); padding: 12px 16px 0">
+          <p style="margin: 0 0 10px; font-size: var(--t-body-xs); color: var(--muted); text-wrap: pretty">When it sends: Nash, Elliot reads Unavailable, he comes off Saturday's selection list, and medical staff are notified. Until then only you can see it.</p>
+          <x-import component-from-global-scope="FydrDesignSystem_7dfa05.Button" dc-props="{{ btnPhone }}" hint-size="100%,56px">Raise a flag</x-import>
+          <div aria-hidden="true" style="height: 20px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width: 920px; margin: 8px 0 0; display: flex; flex-direction: column; gap: var(--gap-card)">
+    <p style="margin: 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">What changed, and on which token</p>
+
+    <sc-for list="{{ notes }}" as="n" hint-placeholder-count="14">
+      <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <div style="display: flex; align-items: baseline; gap: 8px">
+          <span style="{{ n.tagStyle }}">{{ n.tag }}</span>
+          <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ n.title }}</p>
+        </div>
+        <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ n.body }}</p>
+        <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">{{ n.tokens }}</p>
+      </div>
+    </sc-for>
+
+    <p style="margin: 24px 0 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">Needs new token</p>
+
+    <sc-for list="{{ newTokens }}" as="a" hint-placeholder-count="3">
+      <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--ring-select), var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ a.title }}</p>
+        <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ a.body }}</p>
+        <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">{{ a.tokens }}</p>
+      </div>
+    </sc-for>
+
+    <p style="margin: 24px 0 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">Open against code</p>
+
+    <sc-for list="{{ gaps }}" as="g" hint-placeholder-count="8">
+      <div style="background: var(--surf); border: 1px solid rgba(var(--warn-rgb), 0.5); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ g.title }}</p>
+        <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ g.body }}</p>
+        <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">{{ g.source }}</p>
+      </div>
+    </sc-for>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+class Component extends DCLogic {
+  renderVals() {
+    const NAV = [
+      ['Dashboard', 'ph-fill ph-layout'],
+      ['Squad overview', 'ph-fill ph-users'],
+      ['Schedule', 'ph-fill ph-clock'],
+      ['Reports', 'ph-fill ph-briefcase'],
+      ['Nutrition', 'ph-fill ph-fork-knife'],
+      ['Gym programme', 'ph-fill ph-barbell'],
+      ['Leaderboard', 'ph-fill ph-chart-bar'],
+      ['Analytics', 'ph-fill ph-trend-up'],
+      ['Settings', 'ph-fill ph-gear']
+    ];
+    const nav = (active) => NAV.map(([label, icon]) => ({
+      label, icon,
+      style: 'display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 8px; border-radius: var(--r); font-size: 15px; box-sizing: border-box;'
+        + (label === active
+          ? ' background: var(--wash-accent); color: var(--accent); font-weight: var(--w-bold); border-left: var(--border-accent-w) solid var(--accent); padding-left: 5px;'
+          : ' color: var(--text); font-weight: var(--w-semi);'),
+      iconStyle: 'font-size: 20px; color: ' + (label === 'Gym programme' ? 'var(--highlight)' : label === active ? 'var(--accent)' : 'var(--faint)') + ';'
+    }));
+
+    const chip = (label, on) => ({
+      label,
+      style: 'display: inline-flex; align-items: center; min-height: 32px; padding: 0 12px; border-radius: var(--r); font-size: var(--t-body-sm); box-sizing: border-box;'
+        + (on ? ' background: var(--wash-accent); border: 1px solid var(--accent); color: var(--accent); font-weight: var(--w-bold);'
+              : ' background: var(--surf2); border: 1px solid var(--border); color: var(--text); font-weight: var(--w-semi);')
+    });
+
+    const tab = (label, icon, active) => ({
+      label, icon: 'ph ' + icon,
+      iconStyle: 'font-size: 24px; color: ' + (active ? 'var(--accent)' : 'var(--faint)') + ';',
+      labelStyle: 'font-size: var(--t-body-2xs); font-weight: ' + (active ? 'var(--w-bold)' : 'var(--w-semi)') + '; color: ' + (active ? 'var(--accent)' : 'var(--faint)') + ';'
+    });
+
+    const step = (n, picked) => ({
+      n,
+      style: 'display: inline-flex; align-items: center; justify-content: center; min-height: 44px; border-radius: var(--r); font-family: var(--font-num); font-size: var(--t-num-row); font-variant-numeric: tabular-nums; box-sizing: border-box;'
+        + (picked ? ' background: var(--accent); color: #fff; font-weight: var(--w-bold);' : ' background: var(--field); color: var(--text); font-weight: var(--w-semi);')
+    });
+    const scale = (picked) => [1, 2, 3, 4, 5].map((n) => step(n, n === picked));
+
+    const HOURS = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00'];
+
+    const col = (o) => ({
+      slots: HOURS,
+      style: 'position: relative; display: flex; flex-direction: column; border-right: 1px solid var(--hair);' + (o.today ? ' background: var(--wash-accent);' : ''),
+      hasBlock: !!o.name,
+      blockName: o.name || '', blockTime: o.time || '',
+      blockStyle: 'position: absolute; left: 4px; right: 4px; top: ' + (o.top || 8.33) + '%; height: ' + (o.h || 20.83) + '%; border: 1px solid var(--border); border-left: var(--border-accent-w) solid var(--accent); border-radius: var(--r); background: var(--surf); box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 2px; padding: 5px 7px; box-sizing: border-box;'
+    });
+
+    const DAYS = [
+      ['Mon', '7 Sept', 'MD-5', '75m'],
+      ['Tue', '8 Sept', 'MD-4', '90m'],
+      ['Wed', '9 Sept', 'MD-3', '75m'],
+      ['Thu', '10 Sept', 'MD-2', '80m'],
+      ['Fri', '11 Sept', 'MD-1', '45m'],
+      ['Sat', '12 Sept', 'MD', '80m'],
+      ['Sun', '13 Sept', '—', '0m']
+    ];
+
+    const COLS = [
+      col({ name: 'Unit skills', time: '09:30 – 10:45', top: 8.33, h: 20.83 }),
+      col({ name: 'Conditioning', time: '09:30 – 11:00', top: 8.33, h: 25 }),
+      col({ name: 'Team run', time: '09:30 – 10:45', top: 8.33, h: 20.83 }),
+      col({ name: 'Contact prep', time: '09:30 – 10:50', top: 8.33, h: 22.22, today: true }),
+      col({ name: "Captain's run", time: '10:00 – 10:45', top: 16.67, h: 12.5 }),
+      col({ name: 'v Colthorne RFC', time: '14:00 – 15:20', top: 83.33, h: 16.67 }),
+      col({})
+    ];
+
+    const tagStyle = (kind) => kind === 'pattern'
+      ? 'font-size: var(--t-num-nano); font-weight: var(--w-bold); letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); background: var(--pill-accent); border-radius: var(--r); padding: 3px 7px; white-space: nowrap;'
+      : 'font-size: var(--t-num-nano); font-weight: var(--w-bold); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: var(--surf2); border-radius: var(--r); padding: 3px 7px; white-space: nowrap;';
+    const note = (kind, title, body, tokens) => ({ tag: kind === 'pattern' ? 'Pattern' : 'Screen-specific', tagStyle: tagStyle(kind), title, body, tokens });
+
+    return {
+      btnPhone: { variant: 'primary', full: true, style: { minHeight: '56px' } },
+      btnDesk: { variant: 'primary', style: { minHeight: '46px' } },
+      navSchedule: nav('Schedule'),
+      navSquad: nav('Squad overview'),
+      navDash: nav('Dashboard'),
+      groupChips: [chip('✓ Whole squad', true), chip('Backs'), chip('Forwards'), chip('Rehab'), chip('Academy')],
+      groupChipsAcademy: [chip('Whole squad'), chip('Backs'), chip('Forwards'), chip('Rehab'), chip('✓ Academy', true)],
+      tabsToday: [tab('Today', 'ph-clock', true), tab('My data', 'ph-chart-bar'), tab('Gym', 'ph-barbell'), tab('Me', 'ph-user')],
+
+      queue: [
+        { what: 'Morning check-in · Thu 10 Sept', meta: 'six answers of six', saved: '07:12' },
+        { what: 'Rate team run · 11:30', meta: 'session RPE 7 of 10', saved: '11:48' },
+        { what: 'Gym · Lower A', meta: '2 sets of 12 logged', saved: '11:52' },
+        { what: 'Nutrition check-in · week of 24 Aug', meta: 'two answers of two · conflict below', saved: 'Mon 07:40' }
+      ],
+
+      wellnessAnswered: [
+        { label: 'Sleep quality', scale: scale(4) },
+        { label: 'Soreness', scale: scale(3) },
+        { label: 'Fatigue', scale: scale(5) },
+        { label: 'Mood', scale: scale(4) }
+      ],
+
+      hours: HOURS,
+      weekDays: DAYS.map(([name, date, md, mins], i) => ({
+        name, date, md, mins,
+        style: 'padding: 8px 10px; font-size: var(--t-body-xs); color: var(--muted); border-right: 1px solid var(--hair); box-sizing: border-box;'
+          + (i === 3 ? ' background: var(--wash-accent);' : i === 5 ? ' background: var(--pill-bad);' : '')
+      })),
+      gridCols: COLS,
+      gridColsTail: COLS.slice(1),
+
+      notes: [
+        note('pattern', 'One waiting count, on Today, in the same status region the code already has', 'The existing role="status" line from OutboxFlusher stays where it is and keeps its sentence: "3 entries are saved on this phone and will send when you have signal." What is added is the second line under it, "See what is waiting", which is the only route to the queue screen. With nothing waiting, the count and the route are both absent — the screen does not offer an empty list.', '--pill-good fill with --on-good ink · --t-body-sm at --w-bold, route line --t-body-xs in --accent · 44px minimum row · no new colour'),
+        note('pattern', 'The queue names each item, what is in it, and when it was saved', 'Oldest first. Each row is what the athlete did, its own denominator ("2 sets of 12", "six answers"), and the local time it was saved. The card header carries the count and its unit split, "3 entries · 4 writes", because a gym entry can hold several sets. No progress bars, no spinners, and no per-item retry button: the send is not the athlete\'s job.', '--surf card, --shadow, rows on 1px --border · values in --font-num with tabular-nums · --t-body-xs meta in --muted'),
+        note('pattern', 'Discard exists only for a genuine conflict, and only inside the notice', 'The conflict copy is carried in verbatim from code: "One saved entry could not be sent: you already have your check-in for the week of Mon 24 Aug from another tab or device, and that one is what is showing." "Discard this one" is a ghost control inside the notice and nowhere else. Nothing else in the queue can be edited or deleted, because the athlete has no second answer to prefer.', 'role="alert" on --pill-bad with --on-bad ink · ghost button in --accent at 44px · matches ATH-ADULT-30'),
+        note('pattern', 'Success changes the count, in place, and then goes', 'The waiting line becomes "3 entries sent at 12:04. Nothing is waiting." in the same region, as a --surf card rather than a tone: this is information, not a state. It is announced once, it is not a toast, it cannot be dismissed, and it is absent on the next load. Where a screen already shows the result — the gym list saying "all sent", the entry footer saying "Entry recorded" — the screen is the success and nothing else appears.', '--surf + --shadow, ph-check in --muted · --t-body-sm at --w-semi · no --good fill, nothing celebratory'),
+        note('pattern', 'The success rule, written out', 'A toast never. The screen changing is the default: a list gains a row, a footer pill changes word, a count drops. A line in the status region only when the change happened while the athlete was not looking at the thing that changed — which is exactly the reconnect case. Nothing at all when the athlete pressed the button and the screen already answered.', 'no toast component in the kit · footer pill --pill-accent / --accent as approved on ATH-ADULT-03'),
+        note('pattern', 'A session that expires mid-form keeps the answers and says why', 'The failure grammar is the approved one with its cause added: "You have been signed out, so that did not send. Your six answers are still here." The primary becomes "Sign in and send" — one control, a verb, and the thing it will do. Answers are held on the phone through the sign-in, and the footer says so: "Your answers stay on this phone while you sign in."', 'role="alert" --pill-bad / --on-bad · primary --accent with --ring-action · same 56px footer button as ATH-ADULT-03'),
+        note('pattern', 'Coming back is a confirmation, not a fresh form', 'After signing in, the athlete lands on the same sheet, at the same scroll position, with every answer set and the accent status line: "Signed in as Conor. Your six answers are as you left them — nothing was retyped." The footer returns to "Submit entry". No re-entry, no "start again", and no summary screen in between.', 'role="status" --pill-accent / --accent · footer reverts to the approved "All six answered" pill and Submit entry'),
+        note('pattern', 'Staff writes queue too, and say who cannot see them yet', 'The same held-on-this-device promise as the athlete app, with the difference stated rather than hidden: "Saved on this phone · sends when you have signal. Nobody else can see this until you have signal." A staff write normally reaches 30 phones as it is made, so the athlete-facing consequence is what is withheld, and the copy names that. The banner also gives the time the read data was last current: "current as of 11:58."', '--pill-good / --on-good for a held write on both surfaces · --pill-warn / --on-warn reserved for the capability that is genuinely lost'),
+        note('pattern', 'Time-critical writes sort first and say what they will change', 'The staff queue is not chronological. Availability and injury go to the top and carry a "When it sends" line naming the consequence in people: "he comes off Saturday\'s selection list, the squad count reads 29 of 30 available, and medical staff are notified." A new session names its athletes and its RPE task. Everything else follows in the order it was made.', 'time-critical row carries --border-accent-w 3px on --accent, the dense-row urgency device · consequence line --t-body-xs in --muted'),
+        note('pattern', 'A drag on the grid stays disabled offline, and says why', 'A typed change can be held; a drag cannot, because it saves the moment it is dropped and the block has already moved on screen. So + Session and + Fixture stay live and queue, Week templates is disabled at 45% because it reads the server, and the grid footer replaces the drag hint with "read-only while offline · a block cannot be moved". The banner states the distinction in one sentence.', 'disabled at 45% opacity with the halo dropped and cursor: not-allowed · no new colour'),
+        note('pattern', 'A failed live write undoes itself and says where', 'The block returns to the time the athletes still have, keeps its accent bar, and the attempted position stays as a dashed ghost reading "Did not save" until the staff member acts. The notice names both times and the count it affects: "It is at Monday 09:30 – 10:45, which is what the 27 athletes in Backs and Forwards still have. Nothing was changed on their phones." Try again is the one control.', 'card on 1px --bad with --shadow, ink in --text and --muted, never --bad as text · ghost --line-dashed at 1px for the attempted slot'),
+        note('pattern', 'Permission denied says what is true without saying what exists', 'Same deliberately vague spirit as "session not found": "This is not available to you. It may not exist, or your role may not include it. Nothing more can be said about it here." Then two things that help without leaking: who they are signed in as with what their role covers, and a reference code to quote to an admin. One primary, back to the dashboard.', '--surf card on --border, no tone fill — this is not an error the staff member caused · --font-mono only for the reference code'),
+        note('pattern', 'One empty-state grammar: what, why, what would fill it, one action', 'In order: what is empty with its denominator and window ("No check-ins from Academy in the last 7 days", "Five athletes are in Academy and none of them has submitted"), why, what would fill it ("A row appears here on the morning an athlete submits one"), and where the data actually is ("23 check-ins on record, the most recent on Fri 22 Aug"). The action changes the window or the filter. Never a zero, never an illustration.', 'emphasised card: --blue-100 fill, --blue-200 border, --on-tint-value / --on-tint-meta ink · one per screen'),
+        note('pattern', '"Not in this period" is never written as "never"', 'Approved on ATH-ADULT-12-13 and generalised here. If there is data outside the window, the empty state names the most recent one and its date, and the action widens the window. Only when nothing exists on record at all does the copy say so, and then it says the record is not broken: "Nothing is missing."', 'carried from ATH-ADULT-12-13 · no token change'),
+        note('screen', 'Missing values stay words on every state here', '"Not submitted", "Not rated", "Did not save", "all sent". No zero, no dash standing in for a count the athlete could read as a score. A count that exists carries its denominator — "6 of 12 sets · 2 waiting to send" on Today, "2 sets of 12" in the queue.', '--faint for an absent value, --font-num with tabular-nums for present ones'),
+        note('screen', 'Raising a flag offline is allowed, and the primary stays live', 'Raise a flag holds the flag on the phone and sends it first. The footer states the consequence and its limit together: "When it sends: Nash, Elliot reads Unavailable, he comes off Saturday\'s selection list, and medical staff are notified. Until then only you can see it." Nothing is disabled, because nothing is lost.', '--pill-good / --on-good status · primary --accent at full opacity, 56px, one per view'),
+        note('pattern', 'Every state change is announced once', 'One aria-live region per surface, not one per banner: the athlete app has a single role="status" region under the page title and a single role="alert" region above the form. Announcements are written on transition only, keyed by state, so a re-render of the same state announces nothing. Counts are announced with their denominator, as they are printed.', 'role="status" polite for waiting / sent / signed-in; role="alert" assertive for failed / conflict / permission · one region per surface'),
+        note('pattern', 'Reduced motion is already the default here', 'Nothing in these states animates: no spinner, no shimmer, no slide-in banner, no tick. A state change is a repaint. The product\'s one keyframe is the dial ring-in, which none of these screens carries, so prefers-reduced-motion has nothing to suppress on this pattern.', '--dur-150 on colour only · @media (prefers-reduced-motion: reduce) already stops all of it in tokens/motion.css')
+      ],
+
+      newTokens: [
+        { title: 'An offline tone that is not warn', body: 'Offline is borrowed from --warn on the staff frames, which the system also uses for "above normal" magnitude. It reads as a problem rather than a condition. If the system wants offline to be its own state, it needs a fill and an ink pair; until then warn with a worded label is the honest choice and the label carries the meaning.', tokens: '--pill-offline / --on-offline — not added; frames use --pill-warn / --on-warn' },
+        { title: 'A dashed ghost for a write that did not land', body: 'The attempted-but-failed slot on the schedule uses --line-dashed at 1px, which is the same value as the add-session ghost from PATTERN-S4. The two mean different things — one is "not yet", one is "did not". A second dashed value, or a token naming the failed case, would separate them.', tokens: '--line-dashed reused · candidate --line-dashed-failed' },
+        { title: 'A queue row does not exist in the kit', body: 'The waiting list is TableRow-like but is neither a table nor a list card from components/patterns. It is built here from a --surf card with 1px --border dividers. If the queue ships, it is one component with three slots: what, its denominator, and the time it was saved.', tokens: 'candidate components/patterns/QueueRow · no new colour or radius' }
+      ],
+
+      gaps: [
+        { title: 'Retry timing and limits are not designed', body: 'The flusher retries silently, which is right, but nothing here states how often, with what backoff, or what happens after many failures. The queue screen deliberately has no Send now button because the answer is unknown. Needed before build: the retry schedule, whether a failed item is ever abandoned, and what the athlete is told if it is.', source: 'OutboxFlusher.tsx · not observable from the UI' },
+        { title: 'Queue size and age limits', body: 'No cap on entries, no expiry, and nothing on what happens if an athlete is offline for a week and the window for a check-in closes. A morning check-in that arrives four days late is a data question, not a UI one, and it decides whether the queue needs an "too late to send" state.', source: 'unspecified' },
+        { title: 'Gym duplicates are still dequeued silently', body: 'Carried from the ATH-ADULT-30 review. The gym branch assumes every duplicate is the athlete\'s own replay and drops it without the targeted lookup wellness, RPE and nutrition get, so a genuine two-answers conflict on a set never surfaces. The code comment calls the proper check a reasonable follow-up. This board shows the gym item as queued, never as conflicted, to match what is built.', source: 'ATH-ADULT-30 review §0aa · OutboxFlusher.tsx' },
+        { title: 'Session length, and whether sign-in returns to the form', body: 'No session length is documented, and nothing in code has been read that preserves a part-filled form across a re-authentication. Frames 5 and 6 describe the behaviour the pattern requires; whether the app can hold the answers through sign-in is open.', source: 'unspecified' },
+        { title: 'Whether a queued availability change is re-checked before it lands', body: 'Frames 8 and 12 hold a staff write and send it later. Nothing is known about whether the server state is read again at that moment. An availability change written at 11:59 and sent at 13:20 may be landing on a row somebody else has since edited, and a blind write would overwrite a decision made with more information.', source: 'unspecified' },
+        { title: 'What happens if medical has changed the same availability in the meantime', body: 'The athlete conflict grammar names the other answer and offers one discard, because the athlete owns both. Two staff members do not: a coach\'s held "Unavailable" meeting a medic\'s later "Available, restricted" is a clinical decision, not a preference. Whether the medic\'s value simply wins, or the coach is shown both and asked, is not designed here and should not be guessed.', source: 'unspecified' },
+        { title: 'What a staff queue is visible as to other staff', body: 'Nothing is drawn for a second staff member who has the same week open while a change is held on someone else\'s computer. If a held change should be visible as pending to colleagues, it needs a state on the grid and a rule for who sees it.', source: 'unspecified' },
+        { title: 'What a failed live write does to other people looking at the same week', body: 'Two staff can have the schedule open. Nothing is known about whether the grid is live for a second viewer, so nothing is drawn for it. The failed-move notice speaks only to the person who made the move.', source: 'unspecified' },
+        { title: 'Permission-denied reference codes', body: 'The reference code on frame 10 assumes something exists to quote. Whether a denial is logged, and whether an admin can look one up, is unknown. If it is not logged, the code comes off the design.', source: 'unspecified' },
+        { title: 'The announcement region is not verified in code', body: 'The pending count is a role="status" line in OutboxFlusher. Whether the app has one live region per surface, or one per banner, has not been read. The once-per-transition rule is a requirement from this board, not an observation.', source: 'OutboxFlusher.tsx partially read' },
+        { title: 'Reconnect detection', body: 'What counts as back online — a navigator event, a successful request, a poll — decides whether "3 entries sent at 12:04" can ever appear twice or appear late. Not designed here.', source: 'unspecified' }
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>

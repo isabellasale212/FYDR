@@ -40,6 +40,13 @@ they are expected back, and where injuries are happening, over the period and gr
 chosen." — a `--surf` card under the scope line; it prints with the page and is the
 first line of the CSV and the line under the PDF's title.
 
+**One emphasised figure leads the Current page** (PATTERN-S7 C1, 13 September 2026;
+`components/ReportFigure`, `lib/reportFigureCards.ts`): "Available now", the count
+before the percentage ("20 of 30" then "67%"), the sample ("30 athletes on today's
+roster · last 28 days for the days lost beneath"), then the availability exclusions
+in a full sentence. The board's other two figures — days lost and new injuries —
+stay in the strip beneath it; the PDF leads with the same figure.
+
 **The header is one template shared by all five reports** (and specified in
 `CHANGELOG-headers-spec.md`). Five rows, always in this order:
 

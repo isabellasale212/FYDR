@@ -5,7 +5,7 @@
  * system's is the wash family (.pp-hero's surface) at --fs-48. One report a
  * commit; §2 grows with each. */
 import { readFileSync } from 'node:fs';
-import { complianceFigure } from '@/lib/reportFigureCards';
+import { availabilityFigure, complianceFigure } from '@/lib/reportFigureCards';
 
 let failed = 0;
 function assert(cond: boolean, msg: string) {
@@ -59,6 +59,21 @@ console.log('\n2. compliance: submitted of expected across the domains');
   const pdf = strip(read('src/app/(staff)/reports/compliance/pdf/route.tsx'));
   assert(/<PdfFigure\s[\s\S]{0,40}\{\.\.\.complianceFigure\(/.test(pdf), 'and the PDF carries the same figure');
   assert(/one emphasised figure/i.test(read('docs/screens/20-compliance-report.md')), 'the spec says so');
+}
+
+console.log('\n3. injury and availability: available now of the roster');
+{
+  const f = availabilityFigure({ availableNow: 20, athleteCount: 30, rangeLabel: 'Last 28 days', notRecorded: 3, joinedInPeriod: 1 });
+  assert(f.label === 'Available now' && f.count === '20 of 30' && f.value === '67%', 'the count before the percentage');
+  assert(f.sample === "30 athletes on today's roster · last 28 days for the days lost beneath", 'the sample says what the roster is and what the period is for');
+  assert(/^Nobody is excluded\. 3 /.test(f.exclusions) && /1 joined part-way through/.test(f.exclusions), 'C2\'s availability exclusions, in words');
+  const nobody = availabilityFigure({ availableNow: 0, athleteCount: 0, rangeLabel: 'Last 28 days', notRecorded: 0, joinedInPeriod: 0 });
+  assert(nobody.count === 'Nobody in this filter' && nobody.value === 'Not measured', 'an empty filter: words, never 0 of 0');
+  const page = strip(read('src/app/(staff)/reports/injuries/page.tsx'));
+  assert(/<ReportFigure\s[\s\S]{0,40}\{\.\.\.availabilityFigure\(\{/.test(page) && page.indexOf('<ReportFigure') < page.indexOf('className="card cmpl-stats"'), 'the card leads the Current page, above the strip');
+  const pdf = strip(read('src/app/(staff)/reports/injuries/pdf/route.tsx'));
+  assert(/<PdfFigure\s[\s\S]{0,40}\{\.\.\.availabilityFigure\(/.test(pdf), 'and the PDF leads with it');
+  assert(/one emphasised figure/i.test(read('docs/screens/24-injury-report.md')), 'the spec says so');
 }
 
 console.log(`\n${failed === 0 ? 'all passed' : `${failed} failed`}`);

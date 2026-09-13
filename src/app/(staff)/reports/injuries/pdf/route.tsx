@@ -5,8 +5,9 @@ import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { enumLabel, formatDate } from '@/lib/format';
-import { PdfHeader, PdfMedicalBanner, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
+import { PdfFigure, PdfHeader, PdfMedicalBanner, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
 import { reportDefinition } from '@/lib/reportCatalogue';
+import { availabilityFigure } from '@/lib/reportFigureCards';
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 import { periodCaveat, periodParamsFromUrl, resolveInjuryPeriod } from '../period';
@@ -58,6 +59,16 @@ export async function GET(request: Request) {
         meta={`${period.label} · ${formatDate(fromDate, timezone)} to ${formatDate(today, timezone)} · Scope: ${scopeLabel} (${report.summary.athleteCount} athletes)${caveat ? ` · ${caveat}` : ''}`}
       />
 
+      {/* PATTERN-S7 C1: the same figure the screen leads with. */}
+      <PdfFigure
+        {...availabilityFigure({
+          availableNow: Math.max(0, report.summary.athleteCount - report.current.length),
+          athleteCount: report.summary.athleteCount,
+          rangeLabel: period.label,
+          notRecorded: report.summary.notRecorded,
+          joinedInPeriod: report.summary.joinedInPeriod,
+        })}
+      />
       <PdfTileRow>
         <PdfTile label="New injuries" value={String(report.summary.newInjuries)} />
         <PdfTile label="Athlete-days lost" value={String(report.summary.daysLost)} />

@@ -9,6 +9,8 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { enumLabel, formatDate } from '@/lib/format';
 import { reportDefinition } from '@/lib/reportCatalogue';
+import { availabilityFigure } from '@/lib/reportFigureCards';
+import { ReportFigure } from '@/components/ReportFigure/ReportFigure';
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 import {
@@ -189,6 +191,19 @@ export default async function InjuryAvailabilityReportPage({
             label: 'Current',
             content: (
               <>
+                {/* PATTERN-S7 C1: the one emphasised figure — available now of
+                    the roster, the count before the percentage, the
+                    exclusions in words. The strip beneath keeps days lost,
+                    unavailable, modified and unknown. */}
+                <ReportFigure
+                  {...availabilityFigure({
+                    availableNow,
+                    athleteCount: report.summary.athleteCount,
+                    rangeLabel: period.label,
+                    notRecorded: report.summary.notRecorded,
+                    joinedInPeriod: report.summary.joinedInPeriod,
+                  })}
+                />
                 <div className="card cmpl-stats" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
                   <div className="cmpl-stat">
                     <span className="cmpl-stat-label">Available now</span>

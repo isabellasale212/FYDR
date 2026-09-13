@@ -6,7 +6,7 @@
  *
  * Pure; exercised by scripts/test-report-figure.ts. */
 
-import { NOT_EXPECTED, exclusionsLine } from '@/lib/reportFigures';
+import { NOT_EXPECTED, availabilityExclusionsLine, exclusionsLine } from '@/lib/reportFigures';
 
 export type ReportFigureCopy = {
   label: string;
@@ -40,5 +40,27 @@ export function complianceFigure(o: {
         ? `Nobody in this filter · ${o.rangeLabel.toLowerCase()}`
         : `${o.athleteCount} athlete${o.athleteCount === 1 ? '' : 's'} · ${o.rangeLabel.toLowerCase()} · ${counting.length} of ${o.summary.length} domains expected`,
     exclusions: exclusionsLine({ waivedAthletes: o.waivedAthletes, waivedDays: o.waivedDays, floored: o.floored }),
+  };
+}
+
+/** Injury and availability: available now of the squad in scope — the
+ *  report's headline by the board's own account ("Who is unavailable…"),
+ *  the count before the percentage, today's roster as the sample, C2's
+ *  availability exclusions as the sentence. Days lost and new injuries stay
+ *  in the strip beneath. */
+export function availabilityFigure(o: {
+  availableNow: number;
+  athleteCount: number;
+  rangeLabel: string;
+  notRecorded: number;
+  joinedInPeriod: number;
+}): ReportFigureCopy {
+  const pct = o.athleteCount > 0 ? Math.round((100 * o.availableNow) / o.athleteCount) : null;
+  return {
+    label: 'Available now',
+    count: o.athleteCount > 0 ? `${o.availableNow} of ${o.athleteCount}` : 'Nobody in this filter',
+    value: pct === null ? 'Not measured' : `${pct}%`,
+    sample: o.athleteCount > 0 ? `${o.athleteCount} athlete${o.athleteCount === 1 ? '' : 's'} on today's roster · ${o.rangeLabel.toLowerCase()} for the days lost beneath` : `${o.rangeLabel.toLowerCase()}`,
+    exclusions: availabilityExclusionsLine({ notRecorded: o.notRecorded, joinedInPeriod: o.joinedInPeriod }),
   };
 }

@@ -32,7 +32,12 @@ value — no disabled input on the row. The row says which numbers this screen o
 
 A header with the programme's name. Its blocks, each a time bounded phase. Within
 each block, the sessions, and within each session the exercises with sets, reps,
-load basis, tempo and rest. Then the athletes assigned.
+load basis, tempo and rest. Then the athletes assigned — the Assigned card's
+headline is the **distinct** athlete count against the squad, "15 of 30
+athletes", with its arithmetic beneath: "14 in Backs and Forwards + 2 named − 1
+counted twice" (PATTERN-S5 C4, 13 September 2026). Never assignment rows or
+group sizes added: an athlete in two assigned groups counts once. "Nobody
+assigned yet" when there is none.
 
 **Where an exercise is prescribed as a percentage**, the basis is shown rather
 than a single weight, because the real weight differs per athlete.

@@ -13752,6 +13752,20 @@ a.hist-row:active { background: var(--surf-sunken); }
 }
 /* A value the programme builder reads rather than writes (PATTERN-S5 A1):
    sits where a field would, at the field's height, with no frame. */
+/* PATTERN-S5 C4 (2026-09-13): the Assigned card's headline — distinct
+   athletes against the squad — at the stat size, the arithmetic beneath. */
+.pb-assign-headline {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-22);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.pb-assign-arith {
+  margin: 0 0 var(--sp-10);
+  color: var(--muted);
+}
+
 .pb-reads-only {
   display: inline-flex;
   align-items: center;

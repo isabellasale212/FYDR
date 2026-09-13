@@ -2,7 +2,9 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ProgrammeBuilder } from '@/components/ProgrammeBuilder/ProgrammeBuilder';
 import { ProgrammeStatusControl } from '@/components/ProgrammeStatusControl/ProgrammeStatusControl';
-import { fetchGroups } from '@/lib/queries/groups';
+import { fetchGroups, fetchSquadSize } from '@/lib/queries/groups';
+import { fetchGroupMembership } from '@/lib/queries/schedule';
+import { assignmentArithmetic } from '@/lib/assignmentCount';
 import { fetchAssignedAthletes, fetchAssignments, fetchExercises, fetchProgrammeDetail } from '@/lib/queries/programmes';
 import { fetchSquadList } from '@/lib/queries/squad';
 import { fetchOpenInjuryIdsByAthlete } from '@/lib/queries/injuryTimeline';
@@ -62,7 +64,7 @@ export default async function ProgrammeBuilderPage({
   const proposesAgainstInjury =
     hasAnyRole(claims.roles, INJURY_PROGRAMME_PROPOSER) && !isMedical;
 
-  const [exercises, assignees, assignedAthletes, athletes, groups, openInjuryByAthlete] =
+  const [exercises, assignees, assignedAthletes, athletes, groups, openInjuryByAthlete, groupMembership, squadSize] =
     await Promise.all([
       fetchExercises(db, orgId),
       fetchAssignments(db, orgId, programmeId),
@@ -70,7 +72,20 @@ export default async function ProgrammeBuilderPage({
       fetchSquadList(db, orgId, []),
       fetchGroups(db, orgId),
       proposesAgainstInjury ? fetchOpenInjuryIdsByAthlete(db, orgId) : Promise.resolve({}),
+      /* PATTERN-S5 C4: the Assigned card's headline is the DISTINCT athlete
+         count with its arithmetic — group members, named athletes, those
+         counted twice — against the squad. */
+      fetchGroupMembership(db, orgId),
+      fetchSquadSize(db, orgId),
     ]);
+
+  const assignment = assignmentArithmetic({
+    groups: assignees
+      .filter((a) => a.group_id !== null)
+      .map((a) => ({ name: a.group_name ?? 'Unnamed group', memberIds: groupMembership[a.group_id as string] ?? [] })),
+    namedIds: assignees.map((a) => a.athlete_id).filter((id): id is string => id !== null),
+    squad: squadSize,
+  });
 
   return (
     <>
@@ -127,6 +142,7 @@ export default async function ProgrammeBuilderPage({
         blocks={detail.blocks}
         exercises={exercises}
         assignees={assignees}
+        assignment={assignment}
         athletes={athletes}
         groups={groups}
         programmeName={detail.programme.name}

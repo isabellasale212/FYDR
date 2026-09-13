@@ -16,6 +16,7 @@ import {
 } from '@/lib/queries/programmes';
 import type { LoadBasis, ProgrammeType } from '@/lib/types/database';
 import { enumLabel, mdLabel } from '@/lib/format';
+import type { AssignmentArithmetic } from '@/lib/assignmentCount';
 
 type Athlete = { id: string; first_name: string; last_name: string };
 type Group = { id: string; name: string };
@@ -29,6 +30,9 @@ type Props = {
   blocks: readonly BlockWithSessions[];
   exercises: readonly Exercise[];
   assignees: readonly Assignee[];
+  /** PATTERN-S5 C4 (2026-09-13): the distinct athlete count and its
+   *  arithmetic — lib/assignmentCount.ts — the Assigned card's headline. */
+  assignment: AssignmentArithmetic;
   athletes: readonly Athlete[];
   groups: readonly Group[];
   programmeName: string;
@@ -57,6 +61,7 @@ export function ProgrammeBuilder({
   blocks,
   exercises,
   assignees,
+  assignment,
   athletes,
   groups,
   programmeName,
@@ -431,8 +436,15 @@ export function ProgrammeBuilder({
 
       <section className="card" aria-labelledby="assign-title">
         <h2 className="card-title" id="assign-title">
-          Assigned <span className="tiny num">{assignees.length}</span>
+          Assigned
         </h2>
+        {/* PATTERN-S5 C4: the headline is distinct athletes against the
+            squad, never assignment rows or group sizes added; the arithmetic
+            beneath it says how the number was reached. */}
+        <p className="pb-assign-headline num">{assignment.headline}</p>
+        {assignment.arithmetic ? (
+          <p className="tiny pb-assign-arith num">{assignment.arithmetic}</p>
+        ) : null}
         {assignees.length === 0 ? (
           <p className="tiny">Nobody assigned yet.</p>
         ) : (

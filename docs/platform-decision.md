@@ -101,8 +101,29 @@ because no sender existed; it returns now that one is required.
 ## Rules for all notifications
 
 - **Quiet hours per person.** The `notificationPreferences` columns already
-  exist and no screen sets them. A notification falling inside quiet hours is
-  DROPPED, not queued: a stale reminder is worse than none.
+  exist and no screen sets them. **Corrected 13 Sept 2026, replacing an earlier
+  wrong rule that said such notifications are dropped:**
+  - A SCHEDULED reminder (wellness, nutrition, unfinished gym session) shifts
+    to the first minute after quiet hours end. Late, not absent.
+  - A reminder whose WINDOW HAS CLOSED is not sent at all (session RPE past its
+    close, a check-in past its week). Late is worse than nothing there, because
+    it prompts an action the database will refuse.
+  - The settings screen states the consequence as it is set: "Quiet hours from
+    07:00 to 09:00. Your morning check-in reminder will arrive at 09:00."
+  - Dropping silently must not ship. An athlete whose quiet hours cover 08:00
+    would be permanently un-prompted, and their compliance would read as a
+    behaviour problem when it is a settings problem.
+
+- **Push is opt-in behind a manual gesture, so it can never be the mechanism.**
+  iOS cannot request notification permission before add-to-home-screen, and the
+  install cannot be triggered in code. Two requirements follow:
+  - **The athlete's Today screen carries the outstanding thing prominently**
+    whether or not a push was ever permitted. The notification accelerates; it
+    does not deliver.
+  - **Staff see, at squad level, who can actually be reached**, with its
+    denominator: "18 of 30 athletes can receive reminders". Without it, an
+    install-rate problem reads as a compliance problem and a club blames its
+    players for something the product did to them.
 - **One per thing per day.** No escalation, no repeat chasing.
 - **Every notification opens the exact screen that clears it.**
 - **All times are club local**, from the club's timezone, the same boundary the

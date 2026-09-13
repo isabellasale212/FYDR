@@ -1,7 +1,10 @@
-/* Children's Code default 2 (Isabella, 2026-09-13): reminders default off,
- * for everybody. Every disableable notification defaults off; the
- * undisableable P1 notices keep their channels on; stored rows are
- * untouched because null means inherit. */
+/* Children's Code default 2 (Isabella, 2026-09-13, ruled again the same
+ * day): ATHLETE reminders default off; STAFF alerts stay on — the
+ * reasoning is the Children's Code, about children, and a medic missing an
+ * injury alert is a safety problem. Every disableable athlete notification
+ * defaults off; the undisableable P1 notices keep their channels on; every
+ * staff notification defaults on; stored rows are untouched because null
+ * means inherit. */
 import { readFileSync } from 'node:fs';
 import { ATHLETE_CATALOGUE, STAFF_CATALOGUE } from '@/lib/notifications/catalogue';
 
@@ -16,8 +19,10 @@ const strip = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\
 console.log('1. the catalogue');
 {
   const all = [...ATHLETE_CATALOGUE, ...STAFF_CATALOGUE];
-  const disableableOn = all.filter((e) => e.canDisable && (e.defaultOn.push === true || e.defaultOn.email === true));
-  assert(disableableOn.length === 0, `no disableable notification defaults on (${disableableOn.map((e) => e.id).join(', ') || 'none'})`);
+  const athleteOn = ATHLETE_CATALOGUE.filter((e) => e.canDisable && (e.defaultOn.push === true || e.defaultOn.email === true));
+  assert(athleteOn.length === 0, `no disableable athlete notification defaults on (${athleteOn.map((e) => e.id).join(', ') || 'none'})`);
+  const staffOff = STAFF_CATALOGUE.filter((e) => e.channels.some((c) => e.defaultOn[c] !== true));
+  assert(staffOff.length === 0, `every staff alert defaults on, on every channel it has (${staffOff.map((e) => e.id).join(', ') || 'none'}) — ruling three`);
   const undisableable = all.filter((e) => !e.canDisable);
   assert(undisableable.map((e) => e.id).sort().join(',') === 'athlete.availability.changed,athlete.consent.required,staff.consent.declined,staff.flag.escalation,staff.injury.reported', 'the five undisableable notices are exactly the P1 set');
   assert(undisableable.every((e) => e.channels.every((c) => e.defaultOn[c] === true)), 'and each keeps every channel on — notices, not reminders');
@@ -32,7 +37,7 @@ console.log('\n2. stored rows are untouched');
   assert(/if \(stored !== null && stored !== undefined\) return stored;\s*return entry\.defaultOn\[channel\] \?\? false;/.test(form), 'an explicit stored choice wins; null inherits the catalogue default');
   const mig = read('supabase/migrations/0008_notification_preferences_and_push_tokens.sql');
   assert(/push_enabled\s+boolean/.test(mig) && !/push_enabled\s+boolean\s+not null default/.test(mig), 'push_enabled is nullable with no column default — no migration was needed');
-  assert(/CHILDREN'S CODE DEFAULT 2/.test(read('src/lib/notifications/catalogue.ts')) && /default 2/.test(read('docs/08-notifications.md')), 'the catalogue and the doc record the rule');
+  assert(/STAFF ALERTS STAY ON/.test(read('src/lib/notifications/catalogue.ts')) && /Staff alerts stay on/.test(read('docs/08-notifications.md')), 'the catalogue and the doc record the rule, staff side included');
 }
 
 console.log(`\n${failed === 0 ? 'all passed' : `${failed} failed`}`);

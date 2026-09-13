@@ -86,18 +86,21 @@ notification on, and can turn any notification off for the whole org.
 
 ### Athlete
 
-**Defaults, corrected 13 September 2026 (Children's Code default 2, Isabella):
-every notification a person may disable defaults to OFF — the prompts and
-reminders, the programme and session notices, test results, and the staff
-alerts and digests. The two P1 notices nobody may disable (availability changed,
-new privacy notice; for staff, flag escalation and injury reported) keep push
-and email on: they are notices, not reminders. Push on iOS already needs an
-install and a permission grant, so nobody received anything unasked regardless;
-the stored default now matches that. A `notification_preferences` row already
-holding an explicit choice is untouched — null means inherit, so only the
-inherited default moved. The "default on" cells in the tables below are the
-timing defaults as written in August; the on/off default is the rule above,
-held in `src/lib/notifications/catalogue.ts`.**
+**Defaults, corrected 13 September 2026 (Children's Code default 2, Isabella;
+ruled again the same day): every ATHLETE notification a person may disable
+defaults to OFF — the prompts and reminders, the programme and session notices,
+test results. The two athlete P1 notices nobody may disable (availability
+changed, new privacy notice) keep push and email on: they are notices, not
+reminders. Staff alerts stay on: the high-privacy-by-default reasoning is the
+Children's Code, which is about children; staff are adults receiving work
+notifications, and a medic missing an injury alert is a safety problem, not a
+privacy win. Push on iOS already needs an install and a permission grant, so no
+athlete received anything unasked regardless; the stored default now matches
+that. A `notification_preferences` row already holding an explicit choice is
+untouched — null means inherit, so only the inherited athlete default moved.
+The "default on" cells in the tables below are the timing defaults as written
+in August; the on/off default is the rule above, held in
+`src/lib/notifications/catalogue.ts`.**
 
 | id | Trigger | Channel | Default timing | Can disable | Priority |
 |---|---|---|---|---|---|

@@ -24,7 +24,7 @@ GPS.
 | **Coach** | The squad, the schedule, reports and testing. Sees injury information in limited form. |
 | **Medic** | Everything the coach sees, plus the full clinical record, which nobody else sees. |
 | **S&C** | Gym programmes and physical development. Sees injury information in limited form. |
-| **Nutritionist** | Nutrition. **Sees no injury or medical information anywhere.** |
+| **Nutritionist** | Nutrition. Since migration 0074 (decided 6 September 2026) reads the same **limited** injury and availability view as the coach — status, body area, restrictions, expected return — and **never a diagnosis**; cannot open the injury screens (§3.2). This row used to say "sees no injury or medical information anywhere"; corrected 13 September 2026 against the live policies. |
 | *Athlete* | Not a staff role. Cannot open any staff page at all. Listed only to be explicit. |
 
 ---
@@ -226,7 +226,13 @@ notes and treatment plan**
 So a coach cannot tell what the diagnosis is, and that is the entire point of
 splitting the two tables.
 
-**What the nutritionist sees. Nothing from either.**
+**What the nutritionist sees.** The same limited view as the coach, since
+migration `0074_nutritionist_reads_the_censored_injury_view.sql` (decided 6
+September 2026, reversing D-01): `injuries_staff_select` and
+`availability_staff_select` admit all five staff roles, `clinical_medical_only`
+is untouched, and the nutritionist gains no write anywhere. This paragraph
+read "Nothing from either" until 13 September 2026 — stale against the
+policies, corrected from the database.
 
 **How the clinical boundary is enforced, and why it is stronger than the rest of
 this document.** It is a database rule, not an app rule: only the medical role
@@ -245,23 +251,25 @@ column no athlete ever sees through any path
 ### 4.2 Nutritionist, on shared screens
 
 On the **Dashboard**, **Squad overview**, **Flags**, **Reports hub** and **Squad
-weekly report**, a nutritionist sees the page but not the injury derived parts of
-it. Specifically withheld:
-
-- The availability split and its named lists, MET-013, wherever it appears
-- The reason and restriction text beside any athlete's name
-- Any flag whose domain is injury or availability
-- The injury column on the squad weekly report
+weekly report**, a nutritionist sees the page with the limited injury and
+availability view of §4.1 — status, restrictions, expected return — and never a
+diagnosis or any clinical field. **Corrected 13 September 2026:** this section
+used to withhold "the availability split and its named lists, MET-013, wherever
+it appears" and "the reason and restriction text beside any athlete's name";
+migration 0074 (6 September 2026) admitted the nutritionist to both tables'
+censored reads, and the running screens have shown them since. What stays
+withheld is what the policies still withhold: anything from `injury_clinical`,
+and the injury screens themselves (§3.2, `requireInjuryAccess`).
 
 They keep everything else: compliance, wellness, body mass, testing and GPS.
 
-**On the Dashboard this is built** (STAFF-SS-01 C2 role versions, 13 September
-2026): a nutritionist-only account reads the nutritionist version — the
-Available tile and the whole Ready-for card (the ring, the split, the named
-rows) are absent, not reduced, and the attention card counts the nutrition
-domain. `lib/dashboardVersion.ts`, resolved from the server-side claims;
-`docs/screens/01-dashboard.md` §4. The S&C's version narrows what is counted
-(load readings) without withholding anything this matrix grants.
+**On the Dashboard** (STAFF-SS-01 C2 role versions, 13 September 2026) a
+nutritionist-only account reads the nutritionist version — the matchday lead
+card with its three availability counts and no named lists (the board's own
+choice: "a nutritionist does not pick a team"), no Available tile, the attention
+card counting the nutrition domain. `lib/dashboardVersion.ts`, resolved from the
+server-side claims; `docs/screens/01-dashboard.md` §4. The S&C's version narrows
+what is counted (load readings) without withholding anything this matrix grants.
 
 ### 4.3 S&C, on the athlete profile and reports
 

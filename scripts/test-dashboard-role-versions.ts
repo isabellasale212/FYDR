@@ -13,7 +13,7 @@ import {
   dashboardTiles,
   dashboardVersion,
   LOAD_FLAG_DOMAINS,
-  showsAvailability,
+  leadCardNames,
   showsWeekStrip,
 } from '@/lib/dashboardVersion';
 import { NUTRITIONIST_FLAG_DOMAIN } from '@/lib/access';
@@ -42,8 +42,8 @@ console.log('\n2. what each version draws');
   assert(JSON.stringify(dashboardTiles('sc')) === JSON.stringify(['needYou', 'gymToday', 'weighIns', 'available']), 'S&C: attention, Gym today, Weigh-ins, Availability — four across');
   assert(JSON.stringify(dashboardTiles('nutritionist')) === JSON.stringify(['needYou', 'weighIns']), 'nutritionist: attention and Weigh-ins — two');
   assert(showsWeekStrip('full') && !showsWeekStrip('sc') && !showsWeekStrip('nutritionist'), 'the week strip gives way for the S&C and the nutritionist');
-  assert(showsAvailability('full') && showsAvailability('sc') && !showsAvailability('nutritionist'), 'availability-derived regions are withheld from the nutritionist (access-matrix §4.2)');
-  assert(!dashboardTiles('nutritionist').includes('available'), 'so no Available tile for them either');
+  assert(leadCardNames('full') && leadCardNames('sc') && !leadCardNames('nutritionist'), 'the lead card names nobody for the nutritionist — the three counts only (board frame 7; the censored view of migration 0074 is theirs to read)');
+  assert(!dashboardTiles('nutritionist').includes('available'), 'and no Available tile for them (the board\'s two cards)');
 }
 
 console.log('\n3. the attention domains — "load and weigh-ins only" for the S&C, their own domain for the nutritionist');
@@ -75,7 +75,7 @@ console.log('\n5. the page resolves the version from the claims and hands it dow
   assert(/attentionDomains\(version\)/.test(page), 'the attention domains follow it');
   assert(/version === 'sc' \? fetchGymToday\(/.test(page) && /version !== 'full' \? fetchWeighInsToday\(/.test(page), 'the two new reads run only for the versions that draw them');
   assert(/\{showsWeekStrip\(version\) && !weekStripYields\(/.test(page), 'the week strip gives way (and, since the lead card, on a heavy morning — test-dashboard-lead-card.ts §8)');
-  assert(/matchday && showsAvailability\(version\) \? \(\s*<DashboardLeadCard/.test(page), 'the matchday lead card (the readiness card since 2026-09-13) is withheld from the nutritionist');
+  assert(/\{matchday \? \(\s*<DashboardLeadCard[\s\S]{0,120}names=\{leadCardNames\(version\)\}/.test(page), 'the matchday lead card draws for every version; the names follow the rule');
   const layout = strip(read('src/app/(staff)/layout.tsx'));
   assert(/fetchOpenFlagAthleteCount\(db, orgId, groupIds, attentionDomains\(dashboardVersion\(claims\.roles\)\)\)/.test(layout), 'the Flags badge in the shell counts the version\'s domains');
   const tiles = strip(read('src/components/DashboardHeadlineStats/DashboardHeadlineStats.tsx'));
@@ -89,7 +89,7 @@ console.log('\n6. the spec');
   const spec = read('docs/screens/01-dashboard.md');
   assert(/S&C/.test(spec) && /Weigh-ins/.test(spec) && /Gym today/.test(spec) && /nutritionist/.test(spec), '01-dashboard.md describes the role versions');
   const matrix = read('docs/access-matrix.md');
-  assert(/On the Dashboard this is built/.test(matrix) && /lib\/dashboardVersion\.ts/.test(matrix), 'access-matrix §4.2 records that the dashboard now enforces it');
+  assert(/migration 0074/.test(matrix) && /lib\/dashboardVersion\.ts/.test(matrix), 'access-matrix §4 records 0074 — the nutritionist reads the censored view — and the dashboard\'s version rule');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

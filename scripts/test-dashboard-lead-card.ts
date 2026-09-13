@@ -19,6 +19,7 @@ const assert = (cond: boolean, label: string): void => {
 const read = (p: string): string => readFileSync(p, 'utf8');
 const strip = (s: string): string => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\{\/\*[\s\S]*?\*\/\}/g, '').replace(/^\s*\/\/.*$/gm, '');
 const css = strip(read('src/styles/base.css'));
+const card_ = (): string => strip(read('src/components/DashboardLeadCard/DashboardLeadCard.tsx'));
 const rule = (sel: string): string => {
   const esc = sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return new RegExp(`(?:^|[}\\n])\\s*${esc}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? '';
@@ -74,12 +75,13 @@ console.log('\n5. the page: the lead card first, the week card taking the emphas
   const tiles = page.indexOf('<DashboardHeadlineStats');
   const strip_ = page.indexOf('className="dash-week" data-lead');
   assert(lead > 0 && lead < strip_ && strip_ < tiles && tiles < panel, 'the order is the board\'s ten-second read: lead, week, the cards, then the attention panel');
-  assert(/matchday && showsAvailability\(version\) \? \(\s*<DashboardLeadCard/.test(page), 'the matchday card is absent, not empty, with no fixture inside 14 days — and absent for the nutritionist');
+  assert(/\{matchday \? \(\s*<DashboardLeadCard/.test(page), 'the matchday card is absent, not empty, with no fixture inside 14 days');
+  assert(/names=\{leadCardNames\(version\)\}/.test(page) && /\{names \? \(\s*<div className="dash-lead-lists">/.test(card_()), 'the nutritionist reads the three counts and no names (board frame 7; the censored view of 0074)');
   assert(/className="dash-week"\s+data-lead=\{!matchday\}/.test(page), 'the week strip takes the emphasis only when the matchday card is gone');
   assert(/No match in the next \{FIXTURE_RANGE_DAYS\} days/.test(page), 'and says why: "No match in the next 14 days"');
   assert(/Next fixture \$\{formatDate\(stats\.nextKickoffAt, timezone\)\} v \$\{stats\.opponent\} · \$\{stats\.toMatchdayDays\} days/.test(page), 'the next fixture and its distance are stated so the absence is legible');
   assert(!/dash-ready-card/.test(page) && !/<Dial /.test(page), 'the old readiness card and its ring are gone from the page');
-  const card = strip(read('src/components/DashboardLeadCard/DashboardLeadCard.tsx'));
+  const card = card_();
   assert(/Ready for \{matchday\}/.test(card) && /Doubtful · \{doubtful\.length\}/.test(card) && /Ruled out · \{out\.length\}/.test(card), 'eyebrow "Ready for Saturday"; "Doubtful · 4" / "Ruled out · 3"');
   assert(/, with reason/.test(card) && /Medical · visible to medical staff/.test(card), 'the medic\'s lists say "with reason" and the clinical lines sit under the Medical eyebrow');
   assert(/Full<\/|>Full</.test(card) || /label: 'Full'/.test(card), 'the three stats: Full, Doubtful, Ruled out');

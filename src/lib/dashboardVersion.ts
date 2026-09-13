@@ -3,9 +3,9 @@
  * and the medic read the full dashboard; an S&C reads four summary cards
  * (attention on load readings, Gym today, Weigh-ins, Availability) and the
  * week strip gives way; a nutritionist reads two (attention on their own
- * domain, Weigh-ins) and — docs/access-matrix.md §4.2, which outranks the
- * board — nothing derived from availability, so the Available card and the
- * matchday readiness card are absent for them, not reduced.
+ * domain, Weigh-ins) and the matchday lead card with its three counts and no
+ * names — the censored availability view migration 0074 gives them, at the
+ * board's own level of detail.
  *
  * Roles add up (access.ts's rule): anyone holding a full-dashboard role reads
  * the full dashboard, whatever else they hold. Pure — the page resolves the
@@ -65,9 +65,15 @@ export function showsWeekStrip(version: DashboardVersion): boolean {
   return version === 'full';
 }
 
-/** Availability-derived regions — the Available card, the matchday
- *  readiness card's ring, split and named rows — are withheld from the
- *  nutritionist (access-matrix §4.2: MET-013 "wherever it appears"). */
-export function showsAvailability(version: DashboardVersion): boolean {
+/** Whether the matchday lead card names the doubtful and ruled-out athletes.
+ *  The board's frame 7: for the nutritionist "the lead card keeps the three
+ *  availability counts with no names, because a nutritionist does not pick a
+ *  team". A design rule, not a permission: since migration 0074 (decided
+ *  2026-09-06) the nutritionist reads the same censored availability view
+ *  as the coach — status, restrictions, expected return, never a diagnosis
+ *  — so the counts are theirs to see; the names are what the board leaves
+ *  off. (Built on 2026-09-13 first as "withheld", from an access-matrix
+ *  paragraph 0074 had superseded; corrected the same day.) */
+export function leadCardNames(version: DashboardVersion): boolean {
   return version !== 'nutritionist';
 }

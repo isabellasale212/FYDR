@@ -28,6 +28,11 @@ export type ReasonLine = { text: string; clinical: boolean };
 
 type Props = {
   readiness: SaturdayReadiness;
+  /** Whether the two named lists are drawn. False for the nutritionist
+   *  (board frame 7: "the three availability counts with no names, because
+   *  a nutritionist does not pick a team") — the counts, the tail and the
+   *  denominator line stay. */
+  names: boolean;
   /** The fixture's weekday — the card is only drawn when there is one. */
   matchday: string;
   timezone: string;
@@ -55,7 +60,7 @@ function AthleteRow({ entry, reason, squadHref }: { entry: SquadStateEntry; reas
   );
 }
 
-export function DashboardLeadCard({ readiness, matchday, timezone, scopeLabel, reasons, squadHref, flagsHref, scheduleHref }: Props) {
+export function DashboardLeadCard({ readiness, names, matchday, timezone, scopeLabel, reasons, squadHref, flagsHref, scheduleHref }: Props) {
   const doubtful = readiness.modifiedNames;
   const out = readiness.unavailableNames;
   const flagsRow = readiness.rows.find((r) => r.key === 'flags');
@@ -92,6 +97,7 @@ export function DashboardLeadCard({ readiness, matchday, timezone, scopeLabel, r
         </div>
       </div>
 
+      {names ? (
       <div className="dash-lead-lists">
         <div className="dash-lead-list" data-tone="warn">
           <h3 className="dash-lead-list-title">
@@ -116,6 +122,7 @@ export function DashboardLeadCard({ readiness, matchday, timezone, scopeLabel, r
           )}
         </div>
       </div>
+      ) : null}
 
       <div className="dash-lead-tail">
         {readiness.weekLoad ? (

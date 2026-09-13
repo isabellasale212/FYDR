@@ -89,7 +89,7 @@ console.log('\nD3. "Ready for {matchday}" only when the fixture is within 14 day
     'the readiness card treats a fixture further out as no fixture');
   const page = strip(read('src/app/(staff)/dashboard/page.tsx'));
   assert(/No match in the next \{FIXTURE_RANGE_DAYS\} days/.test(page), 'and says so on the week card, which leads instead: "No match in the next 14 days" (C2 lead card, 2026-09-13)');
-  assert(/Ready for \{matchday\}/.test(strip(read('src/components/DashboardLeadCard/DashboardLeadCard.tsx'))) && /matchday && showsAvailability\(version\) \? \(/.test(page), '"Ready for {matchday}" inside the range; the card absent outside it');
+  assert(/Ready for \{matchday\}/.test(strip(read('src/components/DashboardLeadCard/DashboardLeadCard.tsx'))) && /\{matchday \? \(\s*<DashboardLeadCard/.test(page), '"Ready for {matchday}" inside the range; the card absent outside it');
   assert(/FIXTURE_RANGE_DAYS|14 days/.test(read('docs/screens/01-dashboard.md')), '01-dashboard.md records the range');
 }
 

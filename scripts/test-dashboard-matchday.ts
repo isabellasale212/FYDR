@@ -106,7 +106,7 @@ console.log('\na club with no fixture is told nothing rather than something wron
      instead and says why, naming the range (D3, 2026-09-12: the card's
      fixture is the next one only within FIXTURE_RANGE_DAYS). */
   assert(
-    /matchday && showsAvailability\(version\) \? \( <DashboardLeadCard/.test(p),
+    /\{matchday \? \( <DashboardLeadCard/.test(p),
     'and the card is absent rather than naming a day it does not have',
   );
   assert(

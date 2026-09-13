@@ -5,7 +5,7 @@ import { DashboardLeadCard } from '@/components/DashboardLeadCard/DashboardLeadC
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { PrintButton } from '@/components/PrintButton/PrintButton';
 import { FIXTURE_RANGE_DAYS, fetchEffectiveToday, fetchGymToday, fetchHeadlineStats, fetchOutstandingTracks, fetchSaturdayReadiness, fetchSelectionReasons, fetchTimeline, fetchWeekStrip, fetchWeighInsToday, type SessionPip } from '@/lib/queries/dashboard';
-import { attentionDomains, dashboardTiles, dashboardVersion, needYouFoot, showsAvailability, showsWeekStrip } from '@/lib/dashboardVersion';
+import { attentionDomains, dashboardTiles, dashboardVersion, leadCardNames, needYouFoot, showsWeekStrip } from '@/lib/dashboardVersion';
 import { weekStripYields } from '@/lib/dashboardLead';
 import { fetchGroups } from '@/lib/queries/groups';
 import { mondayOf } from '@/lib/queries/schedule';
@@ -129,8 +129,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
   /* STAFF-SS-01 C2, the role versions (2026-09-13): resolved from the
      server-side claims, never the client. The sport scientist, the coach and
      the medic read everything below; the S&C reads four summary cards and no
-     week strip; the nutritionist two cards and — access-matrix §4.2 — nothing
-     derived from availability. lib/dashboardVersion.ts is the rule. */
+     week strip; the nutritionist two cards and the lead card's counts without
+     names (the censored availability view of migration 0074, at the board's
+     level of detail). lib/dashboardVersion.ts is the rule. */
   const version = dashboardVersion(claims.roles);
 
   const wallClockToday = todayIso(timezone);
@@ -275,11 +276,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
        * on the page, first: the board's ten-second read is the matchday
        * question, the week, the summary cards, then the attention panel.
        * Absent, not empty, with no fixture inside FIXTURE_RANGE_DAYS (the
-       * week card takes the emphasis below), and absent for the nutritionist
-       * (access-matrix §4.2 — every number on it is availability). */}
-      {matchday && showsAvailability(version) ? (
+       * week card takes the emphasis below). The nutritionist reads its three
+       * counts and no names — the board's frame 7. */}
+      {matchday ? (
         <DashboardLeadCard
           readiness={readiness}
+          names={leadCardNames(version)}
           matchday={matchday}
           timezone={timezone}
           scopeLabel={groupScopeLabel(groups, groupIds)}

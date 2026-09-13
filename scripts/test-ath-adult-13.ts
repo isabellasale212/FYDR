@@ -94,7 +94,7 @@ console.log('\nA5. the footer note');
 console.log('\nwhat this flow did NOT change');
 {
   assert(/What you reported/.test(page), "§0v's card stays (D1)");
-  assert(/>\s*Correct\s*<\/button>/.test(list), 'the per-row Correct button stays until the row-tap panel (C2)');
+  assert(/Correct ›/.test(list) && /correctHref\(s\.id\)/.test(list), 'each row links to the logger\'s correction for that set (C2, 2026-09-13) — the per-row form is gone');
   assert(/Corrected/.test(page), 'the Corrected pill stays');
 }
 

@@ -89,6 +89,7 @@ there is also no GPS for an athlete on any package.
 | See all N | List footer | Expands the list in place | `/my-data?tab=…&all=1` | nothing | no | the list is already whole |
 | Leaderboards | Footer card | The board list | `/my-data/boards` | nothing | no | never |
 | A logged gym session | Gym region | Opens the session | `/my-data/gym/[id]` | nothing | no | none logged |
+| Correct › on a set row of a session's detail | `/my-data/gym/[id]`'s set table | Opens the logger on that session's log with that set's correction already open — the one correction component (ATH-ADULT-13 C2, 13 September 2026; the detail's own inline form is gone) | `/gym/[sessionId]?log=[logId]&correct=[setId]` | nothing until Save correction | no | the log has no programme session to open the logger on |
 | A past day | Wellness region | Opens that day's entry, read only | `/check-in?date=...` | nothing | no | no entry |
 
 ## 7. Offline and sync

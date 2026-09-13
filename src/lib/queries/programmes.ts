@@ -930,14 +930,36 @@ export async function startOrGetSessionLog(
   athleteId: string,
   programmeSessionId: string,
   timezone: string,
+  /** ATH-ADULT-13 C2 (2026-09-13): a named log — the history's way in.
+   *  Read by id (own rows only, RLS), for this programme session, never
+   *  created: the logger opens a past session to correct a set in the one
+   *  correction component, and a session that is not on record is an error,
+   *  not a new row. */
+  opts: { logId?: string } = {},
 ): Promise<{
   id: string | null;
   status: GymLogStatus | null;
   startedAt: string | null;
   /** Set once the session is finished — the summary's duration (09 C6). */
   completedAt: string | null;
+  /** The log's own day — "best before" reads before it, not before today. */
+  entryDate: string | null;
   error: string | null;
 }> {
+  if (opts.logId) {
+    const { data: named, error: namedErr } = await db
+      .from('gym_session_logs')
+      .select('id, status, started_at, completed_at, entry_date')
+      .eq('org_id', orgId)
+      .eq('athlete_id', athleteId)
+      .eq('id', opts.logId)
+      .eq('programme_session_id', programmeSessionId)
+      .maybeSingle();
+    if (namedErr) return { id: null, status: null, startedAt: null, completedAt: null, entryDate: null, error: humanizeDbError(namedErr.message, 'athlete') };
+    if (!named) return { id: null, status: null, startedAt: null, completedAt: null, entryDate: null, error: 'That session is not on your record.' };
+    return { id: named.id, status: named.status, startedAt: named.started_at, completedAt: named.completed_at, entryDate: named.entry_date, error: null };
+  }
+
   // The org's local today, not the server's UTC one — every sibling write
   // path (submitWellnessEntry, submitTrainingEntry, submitCheckin) takes
   // entry_date from todayIso(timezone) via its caller; this was the one
@@ -957,9 +979,9 @@ export async function startOrGetSessionLog(
     .eq('entry_date', today)
     .neq('status', 'abandoned')
     .maybeSingle();
-  if (findErr) return { id: null, status: null, startedAt: null, completedAt: null, error: humanizeDbError(findErr.message, 'athlete') };
+  if (findErr) return { id: null, status: null, startedAt: null, completedAt: null, entryDate: null, error: humanizeDbError(findErr.message, 'athlete') };
   if (existing) {
-    return { id: existing.id, status: existing.status, startedAt: existing.started_at, completedAt: existing.completed_at, error: null };
+    return { id: existing.id, status: existing.status, startedAt: existing.started_at, completedAt: existing.completed_at, entryDate: today, error: null };
   }
 
   const startedAt = new Date().toISOString();
@@ -976,8 +998,8 @@ export async function startOrGetSessionLog(
     })
     .select('id, status')
     .single();
-  if (error) return { id: null, status: null, startedAt: null, completedAt: null, error: humanizeDbError(error.message, 'athlete') };
-  return { id: data.id, status: data.status, startedAt, completedAt: null, error: null };
+  if (error) return { id: null, status: null, startedAt: null, completedAt: null, entryDate: null, error: humanizeDbError(error.message, 'athlete') };
+  return { id: data.id, status: data.status, startedAt, completedAt: null, entryDate: today, error: null };
 }
 
 export type LoggedSet = {

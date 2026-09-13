@@ -119,7 +119,14 @@ export default async function GymSessionHistoryPage({
             Sets
           </h2>
           <div style={{ padding: 'var(--sp-16)' }}>
-            <GymSessionSetsList sets={sets} />
+            <GymSessionSetsList
+            sets={sets}
+            /* ATH-ADULT-13 C2: each row opens the logger's correction for
+               that set, on this log — one correction component. */
+            correctHref={(setId) =>
+              session.programme_session_id ? `/gym/${session.programme_session_id}?log=${gymSessionLogId}&correct=${setId}` : null
+            }
+          />
           </div>
         </section>
       </div>

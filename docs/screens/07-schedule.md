@@ -246,7 +246,23 @@ removals and a half-filled new draft — are kept in the browser's
 a successful publish or by Discard. If the connection drops at **Publish to
 athletes**, nothing is written, the banner reads *"Not published: …"*, and the
 grid and its pending changes stay exactly as they were; the page does not
-reload itself. Publish again when the signal is back. A failure part-way
+reload itself. Publish again when the signal is back.
+
+**A write the publish refused undoes itself and says where** (PATTERN-S6 C6, 13
+September 2026). When the server refuses one session's change — an
+optimistic-lock conflict, a policy refusal, a missing season — that change stays
+held (nothing is dropped): the grid draws the session where the athletes still
+have it, with its accent bar, and the attempted position as a dashed ghost
+reading "Did not save"; the banner names both — "Gym A did not save — This
+session changed since you opened it. The athletes still have Mon 7 Sept · 07:00;
+you tried 07:15 · 30 athletes affected." — one sentence per refused write, and
+**Try again** is the one control (it publishes again). A refused removal returns
+the block solid ("The athletes still have Wed 9 Sept · 09:30"); a refused new
+session ghosts where it was tried ("The athletes have nothing at … yet").
+Cancel changes on that session or Discard clears its ghost. A dropped connection
+is not a refused write: the paragraph above applies and nothing is ghosted. The
+ghost is the removal ghost's own dashed treatment; the words say which (no new
+token). A failure part-way
 through a publish that did reach the server still reloads the week so the
 grid agrees with what was written. The "did the request reach the server?"
 test (`isNetworkFailure`, `pending.ts`) recognises both the raw engine

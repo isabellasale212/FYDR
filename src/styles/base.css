@@ -8729,6 +8729,36 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
  * session is still legible to somebody deciding whether to restore it.
  * check-contrast.ts compares token pairs and cannot see an opacity, which is
  * why the numbers are written down here. */
+/* PATTERN-S6 C6 (2026-09-13): a write the publish refused — the attempted
+   position as a dashed ghost reading "Did not save", the same dashed
+   treatment the removal ghost uses (D2: the words carry the difference, no
+   new token); its time line in the bad ink. */
+.sg-block[data-failed='true'] {
+  background: transparent;
+  box-shadow: none;
+  border-style: dashed;
+  border-color: rgb(var(--bad-rgb) / 0.5);
+  border-left-style: solid;
+}
+.sg-block[data-failed='true'] .sg-block-time {
+  color: var(--bad-pill-text);
+}
+.sg-block[data-failed='true'] .sg-block-removed-pill {
+  color: var(--bad-pill-text);
+}
+.sg-failed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  align-items: flex-start;
+  color: var(--bad-text);
+}
+.sg-failed-line {
+  margin: 0;
+}
+.sg-failed-retry {
+  min-height: 44px;
+}
 .sg-block[data-removed='true'] {
   opacity: 0.65;
   background: transparent;

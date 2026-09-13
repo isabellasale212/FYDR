@@ -134,7 +134,7 @@ console.log('\n3. the workspace is wired to both halves');
   const fn = body.slice(0, body.indexOf('\n  }\n') + 4);
   assert(/let networkFailed = false;/.test(fn), 'handlePublish tracks whether the failure was the network');
   assert(/catch \(error\) \{[\s\S]*?networkFailed = isNetworkFailure\(error\);/.test(fn), 'set from the thrown value in catch');
-  assert(/failures\.some\(\(f\) => isNetworkFailure\(f\)\)/.test(fn), 'and from a returned "Failed to fetch" message, which also means nothing was written');
+  assert(/failures\.some\(\(f\) => isNetworkFailure\(f\.error\)\)/.test(fn), 'and from a returned "Failed to fetch" message, which also means nothing was written (failures are per session since PATTERN-S6 C6)');
   const fin = fn.slice(fn.search(/\bfinally\s*\{/));
   assert(/setPublishing\(false\);/.test(fin), 'the button is re-enabled whatever happened (test-schedule-publish-reset.ts)');
   assert(/if \(!networkFailed\) router\.refresh\(\);/.test(fin), 'and router.refresh() runs only when the failure was NOT the network — offline it is the reload that wiped the week');

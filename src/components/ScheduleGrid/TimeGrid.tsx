@@ -23,6 +23,9 @@ export type RenderedBlock = {
   clashed: boolean;
   stagger: boolean;
   tied: boolean;
+  /** Ghosts only (PATTERN-S6 C6, 2026-09-13): a removal still published, or
+   *  a write the publish refused — "Did not save" at the attempted position. */
+  kind?: 'removed' | 'failed';
 };
 
 /** A fixture as the grid draws it: a top edge and two short lines. No height —
@@ -272,10 +275,15 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
                   key={`ghost-${g.id}`}
                   type="button"
                   className="sg-block"
-                  data-removed="true"
+                  data-removed={g.kind === 'failed' ? undefined : 'true'}
+                  data-failed={g.kind === 'failed' ? 'true' : undefined}
                   data-selected={selectedId === g.id}
                   data-stagger={g.stagger}
-                  aria-label={`${g.title}, ${enumLabel(g.type)}, ${g.timeText}, removed — still published until you publish the week`}
+                  aria-label={`${g.title}, ${enumLabel(g.type)}, ${g.timeText}, ${
+                    g.kind === 'failed'
+                      ? 'did not save — the athletes still have it where it was'
+                      : 'removed — still published until you publish the week'
+                  }`}
                   style={
                     {
                       top: g.top,
@@ -300,7 +308,7 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
                       leaving. */}
                   <div className="sg-block-row">
                     <span className="sg-block-time num">{g.timeText}</span>
-                    <span className="pill pill-neutral sg-block-removed-pill">Removed</span>
+                    <span className="pill pill-neutral sg-block-removed-pill">{g.kind === 'failed' ? 'Did not save' : 'Removed'}</span>
                   </div>
                   <div className="sg-block-name">{g.title}</div>
                 </button>

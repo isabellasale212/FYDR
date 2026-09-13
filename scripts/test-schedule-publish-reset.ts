@@ -257,9 +257,12 @@ console.log('\na removed session is drawn as a ghost, and counts toward nothing'
   const css = readFileSync('src/styles/base.css', 'utf8');
 
   assert(/const ghostSessions = useMemo/.test(raw), 'the workspace builds a ghostSessions list');
+  /* Since PATTERN-S6 C6 (2026-09-13) a removal the publish REFUSED is not
+     ghosted as leaving — its block returns solid — so the filter also asks
+     `failed`. */
   assert(
-    /base\s*\n?\s*\.filter\(\(s\) => removed\[s\.id\]\)/.test(raw),
-    'from `base` filtered by `removed` — the published rows, not the effective ones',
+    /base\s*\n?[\s\S]{0,260}\.filter\(\(s\) => removed\[s\.id\] && failed\[s\.id\]\?\.kind !== 'remove'\)/.test(raw),
+    'from `base` filtered by `removed` — the published rows, not the effective ones (and not a refused removal, C6)',
   );
 
   /* THE INVARIANT THE WHOLE DESIGN RESTS ON. Five things read `effective`:

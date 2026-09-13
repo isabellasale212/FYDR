@@ -29,6 +29,7 @@ import {
 import { TimeGrid, type DayColumn, type RenderedBlock } from './TimeGrid';
 import { SelectedSessionPanel, type PanelSession } from './SelectedSessionPanel';
 import { SchedulePhoneDay } from './SchedulePhoneDay';
+import { failedWriteLine, type FailedWrite } from '@/lib/scheduleFailedWrite';
 import { WeekStatsPanel } from './WeekStatsPanel';
 import { toBaseSession, type BaseSession, type DraftSession, type EditOverlay, type GridFixture, type GroupOption, type TemplateOption } from './types';
 import { clearPending, isNetworkFailure, pendingKey, readPending, writePending } from './pending';
@@ -137,6 +138,12 @@ export function ScheduleWorkspace({
   const [removed, setRemoved] = useState<Record<string, true>>({});
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
+  /* PATTERN-S6 C6 (2026-09-13): a write the publish refused, by session id.
+     The change stays HELD (nothing is dropped); the grid draws the session
+     where the athletes still have it and the attempted position as a "Did
+     not save" ghost; the notice names both and the count affected; Try
+     again is the one control. Cleared as the next publish starts. */
+  const [failed, setFailed] = useState<Record<string, FailedWrite>>({});
   const [confirmingDiscard, setConfirmingDiscard] = useState(false);
 
   /* THE PENDING WEEK SURVIVES A RELOAD — §0al, Isabella 2026-09-11. The four
@@ -254,6 +261,34 @@ export function ScheduleWorkspace({
 
   const effectiveById = useMemo(() => new Map(effective.map((s) => [s.id, s])), [effective]);
 
+  /* PATTERN-S6 C6: what the GRID draws. A failed edit is drawn from its base
+     — the time the athletes still have, with its accent bar — and a failed
+     draft is not drawn as a block at all; their attempted positions are the
+     failed ghosts below. Everything that COUNTS (MD anchoring, the hour
+     range, clashes, the stats) still reads `effective`: the change is held
+     and will be published, so the week's arithmetic is the intended week. */
+  const displaySessions: EffectiveSession[] = useMemo(
+    () =>
+      effective
+        .filter((s) => failed[s.id]?.kind !== 'add')
+        .map((s) => {
+          const f = failed[s.id];
+          if (f && f.kind === 'edit') {
+            const b = baseById.get(s.id);
+            return b ? { ...s, dow: b.dow, start: b.start, mins: b.mins, title: b.title, type: b.type, edited: true } : s;
+          }
+          return s;
+        }),
+    [effective, failed, baseById],
+  );
+  const failedGhosts = useMemo(
+    () =>
+      effective
+        .filter((s) => failed[s.id] !== undefined && failed[s.id]?.kind !== 'remove')
+        .map((s) => ({ ...s, kind: 'failed' as const })),
+    [effective, failed],
+  );
+
   /* Fixtures the grid has to draw itself: the ones no 'match' session already
      represents. See fixturesToDraw for why the session wins when both exist. */
   const drawnFixtures = useMemo(() => fixturesToDraw(fixtures, effective), [fixtures, effective]);
@@ -274,12 +309,22 @@ export function ScheduleWorkspace({
   const ghostSessions = useMemo(
     () =>
       base
-        .filter((s) => removed[s.id])
+        /* A removal the publish refused (C6) is not ghosted as leaving: the
+           block returns solid below (displayRemovedReturned) and the notice
+           says the athletes still have it. */
+        .filter((s) => removed[s.id] && failed[s.id]?.kind !== 'remove')
         .map((s) => {
           const e = edits[s.id];
-          return e ? { ...s, dow: e.dow ?? s.dow, start: e.start ?? s.start, mins: e.mins ?? s.mins } : s;
+          return { ...(e ? { ...s, dow: e.dow ?? s.dow, start: e.start ?? s.start, mins: e.mins ?? s.mins } : s), kind: 'removed' as const };
         }),
-    [base, removed, edits],
+    [base, removed, edits, failed],
+  );
+  const displayRemovedReturned: EffectiveSession[] = useMemo(
+    () =>
+      base
+        .filter((s) => removed[s.id] && failed[s.id]?.kind === 'remove')
+        .map((s) => ({ ...s, edited: false, isNew: false })),
+    [base, removed, failed],
   );
   const fixtureDays = useMemo(() => new Set(drawnFixtures.map((f) => f.dow)), [drawnFixtures]);
 
@@ -329,6 +374,7 @@ export function ScheduleWorkspace({
      read `effective`, which still filters removals out. */
   const { h0, h1 } = computeHourRange([
     ...effective.map((s) => ({ start: s.start, mins: s.mins })),
+    ...displaySessions.map((s) => ({ start: s.start, mins: s.mins })),
     ...ghostSessions.map((s) => ({ start: s.start, mins: s.mins })),
     ...drawnFixtures.map((f) => ({ start: f.start, mins: FIXTURE_NOMINAL_MINS })),
   ]);
@@ -340,15 +386,21 @@ export function ScheduleWorkspace({
 
   for (const date of days) {
     const daySessions = effective.filter((s) => s.dow === date);
+    /* Drawn from displaySessions (C6): a failed edit at its base position, a
+       failed removal returned; clashes are still judged on the intended week. */
+    const dayDrawn = [...displaySessions, ...displayRemovedReturned].filter((s) => s.dow === date);
+    const dayDrawnById = new Map(dayDrawn.map((s) => [s.id, s]));
     const placed = placeBlocks(
-      daySessions.map((s) => ({ id: s.id, start: s.start, mins: s.mins, name: s.title, athleteIds: s.athleteIds })),
+      dayDrawn.map((s) => ({ id: s.id, start: s.start, mins: s.mins, name: s.title, athleteIds: s.athleteIds })),
     );
-    const clash = detectClashes(placed);
+    const clash = detectClashes(
+      placeBlocks(daySessions.map((s) => ({ id: s.id, start: s.start, mins: s.mins, name: s.title, athleteIds: s.athleteIds }))),
+    );
     clashPairLabels = [...clashPairLabels, ...clash.pairLabels];
     clash.clashedIds.forEach((id) => clashedIds.add(id));
 
     const blocks: RenderedBlock[] = placed.map((p) => {
-      const s = effectiveById.get(p.x.id)!;
+      const s = dayDrawnById.get(p.x.id)!;
       const display = computeBlockDisplay(p, placed, s.edited);
       // The grid's hour range (h0/h1, above) is computed from this week's
       // own sessions, so every block's real start time already falls inside
@@ -382,7 +434,7 @@ export function ScheduleWorkspace({
        session that is leaving, which is a visible change to a signed-off grid
        for no gain. Two removals at the same hour still stagger relative to each
        other, so neither hides the other. */
-    const dayGhosts = ghostSessions.filter((g) => g.dow === date);
+    const dayGhosts = [...ghostSessions, ...failedGhosts].filter((g) => g.dow === date);
     const ghostPlaced = placeBlocks(
       dayGhosts.map((g) => ({ id: g.id, start: g.start, mins: g.mins, name: g.title, athleteIds: g.athleteIds })),
     );
@@ -409,6 +461,7 @@ export function ScheduleWorkspace({
         clashed: false,
         stagger: display.stagger,
         tied: display.tied,
+        kind: g.kind,
       };
     });
 
@@ -724,7 +777,11 @@ export function ScheduleWorkspace({
   async function handlePublish() {
     setPublishing(true);
     setPublishError(null);
-    const failures: string[] = [];
+    setFailed({});
+    /* PATTERN-S6 C6: each refusal is recorded against its session, so the
+       grid can draw what the athletes still have beside what was tried, and
+       the notice can say both. */
+    const failures: { id: string; title: string; error: string }[] = [];
     /* §0al: a dropped connection means nothing reached the server. The
        pending state is intact and must stay on screen; a refresh offline is
        the full-page reload that used to wipe it. Every other failure keeps
@@ -737,7 +794,7 @@ export function ScheduleWorkspace({
         const b = baseById.get(id);
         if (!b) continue;
         const res = await deleteSession(client, orgId, id);
-        if (res.error) failures.push(`${b.title}: ${res.error}`);
+        if (res.error) failures.push({ id, title: b.title, error: res.error });
         else
           setRemoved((cur) => {
             const next = { ...cur };
@@ -770,7 +827,7 @@ export function ScheduleWorkspace({
           // mdOffset over whatever changed. See that function's comment.
           expectedUpdatedAt: b.updatedAt,
         });
-        if (res.error) failures.push(`${b.title}: ${res.error}`);
+        if (res.error) failures.push({ id, title: b.title, error: res.error });
         else
           setEdits((cur) => {
             const next = { ...cur };
@@ -789,14 +846,34 @@ export function ScheduleWorkspace({
           mdOffset: draft.mdOffset,
           groupIds: draft.groupIds,
         });
-        if (res.error) failures.push(`${draft.title || 'New session'}: ${res.error}`);
+        if (res.error) failures.push({ id: draft.id, title: draft.title || 'New session', error: res.error });
         else setAdded((cur) => cur.filter((d) => d.id !== draft.id));
       }
 
       /* A query helper that returned "Failed to fetch" rather than throwing
          it is the same case: the request never left the device. */
-      if (failures.some((f) => isNetworkFailure(f))) networkFailed = true;
-      setPublishError(failures.length > 0 ? `Not published: ${failures.join('; ')}` : null);
+      if (failures.some((f) => isNetworkFailure(f.error))) networkFailed = true;
+      /* C6: the per-session record — what the athletes still have (base),
+         what was tried (the held change), and how many it reaches. */
+      const record: Record<string, FailedWrite> = {};
+      for (const f of failures) {
+        const b = baseById.get(f.id);
+        const eff = effectiveById.get(f.id);
+        const isRemoval = Boolean(removed[f.id]);
+        record[f.id] = {
+          kind: b ? (isRemoval ? 'remove' : 'edit') : 'add',
+          title: f.title,
+          was: b ? { dow: b.dow, start: b.start } : null,
+          tried: isRemoval ? null : eff ? { dow: eff.dow, start: eff.start } : null,
+          athletes: (eff ?? b)?.athleteIds.length ?? 0,
+          error: f.error,
+        };
+      }
+      /* A dropped connection is not a refused write: nothing reached the
+         server and the whole week is as it was, so §0al's one line stands
+         and no session is ghosted. */
+      setFailed(networkFailed ? {} : record);
+      setPublishError(failures.length > 0 ? `Not published: ${failures.map((f) => `${f.title}: ${f.error}`).join('; ')}` : null);
     } catch (error) {
       networkFailed = isNetworkFailure(error);
       /* A rejection in any of the three loops above used to land here as an
@@ -875,6 +952,12 @@ export function ScheduleWorkspace({
   }
 
   function handleRevertSession(id: string) {
+    setFailed((cur) => {
+      if (!cur[id]) return cur;
+      const next = { ...cur };
+      delete next[id];
+      return next;
+    });
     setEdits((cur) => {
       if (!cur[id]) return cur;
       const next = { ...cur };
@@ -897,6 +980,7 @@ export function ScheduleWorkspace({
     setNewDraft(null);
     setSel(null);
     setPublishError(null);
+    setFailed({});
     setConfirmingDiscard(false);
     /* Emptying the state removes the key through the write effect too; this
        is explicit so a Discard can never be undone by a reload. */
@@ -1091,7 +1175,22 @@ export function ScheduleWorkspace({
               phone until you publish.
             </div>
           ) : null}
-          {publishError ? (
+          {Object.keys(failed).length > 0 ? (
+            /* PATTERN-S6 C6: one sentence per refused write — both times and
+               the count affected — and Try again as the one control. */
+            <div className="sg-banner-sub sg-failed" role="alert">
+              {Object.values(failed).map((f, i) => (
+                <p key={i} className="sg-failed-line">
+                  {failedWriteLine(f, timezone)}
+                </p>
+              ))}
+              {canEdit ? (
+                <button type="button" className="btn-ghost sg-failed-retry" onClick={() => void handlePublish()} disabled={publishing}>
+                  {publishing ? 'Publishing…' : 'Try again'}
+                </button>
+              ) : null}
+            </div>
+          ) : publishError ? (
             <div className="sg-banner-sub" style={{ color: 'var(--bad-text)' }}>
               {publishError}
             </div>

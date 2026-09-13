@@ -41,7 +41,7 @@ assert(/<span className="sg-readonly-well">Read only\. The schedule is authored 
 assert(/\.sg-readonly-well\s*\{[^}]*border:\s*1px solid var\(--border\)[^}]*background:\s*var\(--surf2\)/.test(css), 'a --surf2 well in --border');
 
 console.log('\nA8. a removed block carries a Removed pill');
-assert(/<span className="pill pill-neutral sg-block-removed-pill">Removed<\/span>/.test(grid), 'the pill on the ghost');
+assert(/<span className="pill pill-neutral sg-block-removed-pill">\{g\.kind === 'failed' \? 'Did not save' : 'Removed'\}<\/span>/.test(grid), 'the pill on the ghost ("Did not save" on a refused write since PATTERN-S6 C6)');
 assert(/\.sg-block-removed-pill\s*\{[^}]*text-decoration:\s*none/.test(css), 'exempt from the strike');
 
 console.log('\nC8. a group with no session reads a dash, not 0m (2026-09-13)');

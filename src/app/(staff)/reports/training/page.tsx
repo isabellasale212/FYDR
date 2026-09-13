@@ -419,7 +419,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
           <EmptyState
             title={matchFilterEmpty.title}
             body={matchFilterEmpty.body}
-            action={groupIds.length > 0 ? { href: `/reports/training${qs({ mode: 'match', session: sessionParam })}`, label: matchFilterEmpty.action!.label } : null}
+            action={groupIds.length > 0 ? { href: `/reports/training${qs({ mode: 'match', session: sessionParam })}`, label: matchFilterEmpty.action!.label, clearsGroupFilter: true } : null}
           />
         ) : (
           <>
@@ -682,7 +682,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
         <EmptyState
           title={trainingFilterEmpty.title}
           body={trainingFilterEmpty.body}
-          action={groupIds.length > 0 ? { href: `/reports/training${q({ mode: 'training', session: sessionParam })}`, label: trainingFilterEmpty.action!.label } : null}
+          action={groupIds.length > 0 ? { href: `/reports/training${q({ mode: 'training', session: sessionParam })}`, label: trainingFilterEmpty.action!.label, clearsGroupFilter: true } : null}
         />
       ) : (
         <>

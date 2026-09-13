@@ -72,7 +72,8 @@ export function staffEmptyCopy(input: {
 /** A filter that leaves nothing: what is empty with its denominator and the
  *  filter's name, why, and the one action — widen the filter to the whole
  *  squad. The scope label is the chip's own words ("Academy"). */
-export function filterEmptyCopy(o: { what: string; inScope: number; scopeLabel: string; why: string }): StaffEmptyCopy & { clearsFilter: true } {
+export type FilterEmptyCopy = StaffEmptyCopy & { clearsFilter: true };
+export function filterEmptyCopy(o: { what: string; inScope: number; scopeLabel: string; why: string }): FilterEmptyCopy {
   return {
     title: `No ${o.what} for ${o.scopeLabel}.`,
     body: `None of the ${o.inScope} athlete${o.inScope === 1 ? '' : 's'} in ${o.scopeLabel} ${o.why}. Nothing is missing — the filter is what is empty.`,

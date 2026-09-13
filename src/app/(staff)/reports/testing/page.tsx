@@ -58,24 +58,47 @@ export default async function TestingReportPage({ searchParams }: { searchParams
         fetchTestByTest(db, orgId, groupIds, selectedTestId, reportWindow),
         fetchTestLongitudinal(db, orgId, groupIds, selectedTestId, reportWindow),
         /* PATTERN-S6 C8: the most recent result on record for this test, any
-           period, so an empty window names it rather than "never". */
+           period, so an empty window names it rather than "never". It sits in
+           the Promise.all deliberately, so it runs on populated loads too and
+           re-resolves the group scope this page already holds — one indexed
+           read in parallel with the two the tab needs anyway, which is cheaper
+           than a second round trip on the empty path. Not an empty-only read. */
         fetchLatestTestResultDate(db, orgId, groupIds, selectedTestId),
       ])
     : [null, [], null];
   const scopeWords = groupIds.length === 0 ? 'the squad' : groupScopeLabel(groups, groupIds);
+  /* byAthlete carries one row per athlete in scope whether or not they have a
+     result, so no rows under a filter means the filter matches no athletes. */
+  const scopeIsEmpty = groupIds.length > 0 && byAthlete.rows.length === 0;
   const athletesFilterEmpty = filterEmptyCopy({ what: 'athlete', inScope: 0, scopeLabel: scopeWords, why: 'is on the roster' });
-  const byTestEmpty = selectedDefinition
-    ? staffEmptyCopy({
-        domain: 'testing',
-        firstName: scopeWords,
-        periodKey: period.key,
-        rangeLabel: period.range.label,
-        latest: latestResultOnRecord,
-        latestLabel: latestResultOnRecord ? formatDate(latestResultOnRecord, timezone) : null,
-        seasonStart: period.season?.starts_on ?? null,
-        today: reportWindow.to,
-      })
-    : null;
+  /* fetchLatestTestResultDate returns null for an empty scope as well as for a
+     test never run, so the by-test tab tells the two apart here: an empty
+     scope gets the filter sentence (the same grammar as the Athletes tab's),
+     never "no result on record", which would send a coach looking for a
+     data-entry problem the club does not have. */
+  const byTestEmpty = !selectedDefinition
+    ? null
+    : scopeIsEmpty
+      ? filterEmptyCopy({ what: 'test result', inScope: 0, scopeLabel: scopeWords, why: 'is on the roster' })
+      : staffEmptyCopy({
+          domain: 'testing',
+          firstName: scopeWords,
+          periodKey: period.key,
+          rangeLabel: period.range.label,
+          latest: latestResultOnRecord,
+          latestLabel: latestResultOnRecord ? formatDate(latestResultOnRecord, timezone) : null,
+          seasonStart: period.season?.starts_on ?? null,
+          today: reportWindow.to,
+        });
+  /* Where the by-test empty's one action goes: an empty scope drops the filter
+     (and clears the shared cookie — see EmptyState's clearsGroupFilter) and
+     keeps the period and the test; an empty window widens the period and keeps
+     the test and the filter. */
+  const byTestEmptyHref = !byTestEmpty?.action
+    ? null
+    : scopeIsEmpty
+      ? `/reports/testing?period=${period.key}${selectedTestId ? `&test=${selectedTestId}` : ''}`
+      : `/reports/testing?period=${byTestEmpty.action.period}${selectedTestId ? `&test=${selectedTestId}` : ''}${groupIds.length > 0 ? `&groups=${groupIds.join(',')}` : ''}`;
 
   const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   await recordReportView(db, orgId, claims.userId, actorRole, 'testing', {
@@ -202,7 +225,7 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                           headingLevel={3}
                           title={athletesFilterEmpty.title}
                           body={athletesFilterEmpty.body}
-                          action={{ href: `/reports/testing?period=${period.key}${selectedTestId ? `&test=${selectedTestId}` : ''}`, label: athletesFilterEmpty.action!.label }}
+                          action={{ href: `/reports/testing?period=${period.key}${selectedTestId ? `&test=${selectedTestId}` : ''}`, label: athletesFilterEmpty.action!.label, clearsGroupFilter: true }}
                         />
                       ) : (
                         <EmptyState headingLevel={3} title="No athletes in this squad yet." body="Nothing is missing — the roster is empty. Athletes appear here once they are added to the squad." />
@@ -328,15 +351,15 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                              the smallest one holding it; nothing on record
                              says so ("Nothing is missing"). */
                           <div style={{ padding: 'var(--sp-16)' }}>
+                            {/* The `!` is sound: this branch renders only under
+                                selectedDefinition, and byTestEmpty is null only
+                                when it is — selectedTestId derives from
+                                selectedDefinition. */}
                             <EmptyState
                               headingLevel={3}
                               title={byTestEmpty!.title}
                               body={byTestEmpty!.body}
-                              action={
-                                byTestEmpty!.action
-                                  ? { href: `/reports/testing?period=${byTestEmpty!.action.period}${selectedTestId ? `&test=${selectedTestId}` : ''}${groupIds.length > 0 ? `&groups=${groupIds.join(',')}` : ''}`, label: byTestEmpty!.action.label }
-                                  : null
-                              }
+                              action={byTestEmptyHref ? { href: byTestEmptyHref, label: byTestEmpty!.action!.label, clearsGroupFilter: scopeIsEmpty } : null}
                             />
                           </div>
                         ) : (

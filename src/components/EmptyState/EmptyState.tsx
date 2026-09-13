@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ClearGroupFilterAction } from './ClearGroupFilterAction';
 
 type Props = {
   title: string;
@@ -6,8 +7,10 @@ type Props = {
   headingLevel?: 2 | 3;
   /** PATTERN-S6 C8 (2026-09-13): the one action an empty state may carry —
    *  it widens the window or the filter, never anything else. Null draws
-   *  nothing. */
-  action?: { href: string; label: string } | null;
+   *  nothing. `clearsGroupFilter` is for the filter kind: the href carries no
+   *  `groups`, and the action clears the shared cookie before it navigates
+   *  (§0ak) — a plain link would fall straight back to the same filter. */
+  action?: { href: string; label: string; clearsGroupFilter?: boolean } | null;
 };
 
 /** A named absence. An empty panel with no explanation reads as a broken panel,
@@ -18,11 +21,13 @@ export function EmptyState({ title, body, headingLevel = 2, action = null }: Pro
     <div className="empty">
       <Heading>{title}</Heading>
       <p>{body}</p>
-      {action ? (
+      {!action ? null : action.clearsGroupFilter ? (
+        <ClearGroupFilterAction href={action.href} label={action.label} />
+      ) : (
         <Link href={action.href} className="btn-ghost empty-action">
           {action.label}
         </Link>
-      ) : null}
+      )}
     </div>
   );
 }

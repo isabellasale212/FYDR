@@ -72,9 +72,14 @@ chosen. A test result appears here once a member of staff enters one." — with
 one action, "Show this season" / "Show all on record", that widens the period
 and keeps the test and the filter; with none on record at all, "No test result
 on record for the squad. Nothing is missing…". A filter with no athletes reads
-the filter grammar; a club with no test defined reads "No test defined for the
-club yet. Nothing is missing — no test has been defined…" with "Define a test".
-Never "never".
+the filter grammar on both tabs — "No test result for Leadership. None of the 0
+athletes in Leadership is on the roster. Nothing is missing — the filter is what
+is empty." — never the nothing-on-record sentence, which would send a coach
+looking for a data-entry problem the club does not have; its one action, "Show
+the whole squad", clears the filter — the cookie as well as the URL, the way the
+chip row's "Clear filter" does (§0ak) — and keeps the period and the test. A
+club with no test defined reads "No test defined for the club yet. Nothing is
+missing — no test has been defined…" with "Define a test". Never "never".
 
 **Every figure carries its denominator, an exclusions sentence, and words for a
 missing value** (PATTERN-S7 C2, 13 September 2026; `lib/reportFigures.ts`). Under

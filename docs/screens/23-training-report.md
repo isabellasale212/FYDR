@@ -75,7 +75,9 @@ than leaving a coach to compare five dials.
 `lib/staffEmpty.ts`). A group filter that leaves nobody on the board reads "No
 GPS record for Academy. None of the 5 athletes in Academy has a GPS record for
 this session. Nothing is missing — the filter is what is empty." with one action,
-"Show the whole squad", that clears the filter and keeps the session. A club with
+"Show the whole squad", that clears the filter — the cookie as well as the URL,
+the way the chip row's "Clear filter" does (§0ak), since a link to a bare URL
+would resolve back to the same cookie — and keeps the session. A club with
 no GPS file imported at all reads "No GPS record on record for the club. Nothing
 is missing — no GPS file has been imported yet. A session appears here once its
 GPS file is imported from Settings › Imports." (the match board's version adds

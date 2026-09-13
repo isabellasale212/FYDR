@@ -34,6 +34,12 @@ injuries are happening.
 
 ## 4. What you see
 
+**The definition sentence sits above the numbers** (PATTERN-S7 C1, 13 September
+2026; `docs/reports-catalogue.md`): "Who is unavailable, why in limited terms, when
+they are expected back, and where injuries are happening, over the period and group
+chosen." — a `--surf` card under the scope line; it prints with the page and is the
+first line of the CSV and the line under the PDF's title.
+
 **The header is one template shared by all five reports** (and specified in
 `CHANGELOG-headers-spec.md`). Five rows, always in this order:
 

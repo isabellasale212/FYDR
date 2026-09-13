@@ -6,6 +6,7 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { enumLabel, formatDate } from '@/lib/format';
 import { PdfHeader, PdfMedicalBanner, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
+import { reportDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 import { periodCaveat, periodParamsFromUrl, resolveInjuryPeriod } from '../period';
@@ -53,6 +54,7 @@ export async function GET(request: Request) {
       <PdfHeader
         eyebrow={isMedical ? `MEDICAL IN CONFIDENCE · Injury & availability · ${orgName}` : `Injury & availability · ${orgName}`}
         title="Injury & availability report"
+        definition={reportDefinition('injuries')}
         meta={`${period.label} · ${formatDate(fromDate, timezone)} to ${formatDate(today, timezone)} · Scope: ${scopeLabel} (${report.summary.athleteCount} athletes)${caveat ? ` · ${caveat}` : ''}`}
       />
 

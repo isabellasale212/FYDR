@@ -4,6 +4,7 @@ import { fetchInjuryAvailabilityReport, recordReportView } from '@/lib/queries/r
 import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
+import { reportDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 import { periodParamsFromUrl, resolveInjuryPeriod } from '../period';
@@ -89,6 +90,7 @@ export async function GET(request: Request) {
    * page and the PDF state it: these rows are availability as of today, not a
    * historical snapshot of the period. */
   const caption =
+    `# ${reportDefinition('injuries')}\r\n` +
     `# Injury & availability report, ${period.label} (${fromDate} to ${today}). ` +
     `Scope: ${groupScopeLabel(groups, groupIds)} (${report.summary.athleteCount} athletes). ` +
     `Rows are availability as of ${today}, not a snapshot of the period.\r\n`;

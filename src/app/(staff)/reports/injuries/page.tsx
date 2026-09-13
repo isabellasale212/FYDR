@@ -8,6 +8,7 @@ import { fetchInjuryAvailabilityReport, recordReportView } from '@/lib/queries/r
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { enumLabel, formatDate } from '@/lib/format';
+import { reportDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 import {
@@ -132,6 +133,8 @@ export default async function InjuryAvailabilityReportPage({
           groupIds,
           eyebrow: 'Reports · Injury & availability',
           title: 'Injury & availability',
+          /* PATTERN-S7 C1: the catalogue's sentence, above the numbers. */
+          definition: reportDefinition('injuries'),
           sub: (
             <div className="rhead-sub">
               {isMedical ? (

@@ -54,5 +54,22 @@ console.log('\n3. compliance, the full shell');
   assert(/definition sentence/i.test(read('docs/screens/20-compliance-report.md')), 'the spec says so');
 }
 
+/* One report a commit after compliance. Each: the definition on screen
+   (ReportPager header props or a direct ReportHeader), first line of the CSV,
+   under the PDF's title, and a line in its spec. */
+const DONE: { key: string; dir: string; spec: string; csv?: string; pdf?: string }[] = [
+  { key: 'injuries', dir: 'injuries', spec: 'docs/screens/24-injury-report.md' },
+];
+console.log('\n4. the reports that carry it so far');
+for (const r of DONE) {
+  const page = strip(read(`src/app/(staff)/reports/${r.dir}/page.tsx`));
+  assert(new RegExp(`definition(: |=\\{)reportDefinition\\('${r.key}'\\)`).test(page), `${r.key}: on screen`);
+  const csv = strip(read(r.csv ?? `src/app/(staff)/reports/${r.dir}/export/route.ts`));
+  assert(new RegExp("`# \\$\\{reportDefinition\\('" + r.key + "'\\)\\}\\\\r\\\\n` \\+").test(csv), `${r.key}: first line of the CSV`);
+  const pdf = strip(read(r.pdf ?? `src/app/(staff)/reports/${r.dir}/pdf/route.tsx`));
+  assert(new RegExp(`definition=\\{reportDefinition\\('${r.key}'\\)\\}`).test(pdf), `${r.key}: under the PDF's title`);
+  assert(/definition sentence/i.test(read(r.spec)), `${r.key}: the spec says so`);
+}
+
 console.log(`\n${failed === 0 ? 'all passed' : `${failed} failed`}`);
 if (failed > 0) process.exit(1);

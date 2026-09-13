@@ -44,6 +44,14 @@ console.log('\nA8. a removed block carries a Removed pill');
 assert(/<span className="pill pill-neutral sg-block-removed-pill">Removed<\/span>/.test(grid), 'the pill on the ghost');
 assert(/\.sg-block-removed-pill\s*\{[^}]*text-decoration:\s*none/.test(css), 'exempt from the strike');
 
+console.log('\nC8. a group with no session reads a dash, not 0m (2026-09-13)');
+{
+  assert(/g\.mins > 0 \? `\$\{g\.mins\}m` : '—'/.test(stats), 'the minutes read "—" when nothing is scheduled');
+  assert(/\$\{g\.memberCount\} athletes\$\{g\.mins > 0 \? '' : ' · nothing scheduled'\}/.test(stats), 'and the foot says "5 athletes · nothing scheduled"');
+  assert(/\.filter\(\(g\) => g\.memberCount > 0\)/.test(stats), 'every group with members is listed, sessions or not (the rows were already read; the words were the gap)');
+  assert(/nothing scheduled/.test(read('docs/screens/07-schedule.md')), 'the spec says so');
+}
+
 console.log('\nthe spec');
 assert(/session minutes/.test(read('docs/screens/07-schedule.md')) && /Removed/.test(read('docs/screens/07-schedule.md')), '07-schedule.md records the words');
 

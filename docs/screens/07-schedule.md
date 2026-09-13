@@ -80,7 +80,10 @@ existed neither creation screen was linked from anywhere.
 
 **Apply a template.** Puts a saved week shape onto this week.
 
-**A week statistics panel**, summarising what the week contains.
+**A week statistics panel**, summarising what the week contains. In its
+per-group card a group with no session this week reads a dash and "5 athletes ·
+nothing scheduled", never 0m (PATTERN-S4 C8, 13 September 2026) — a day still
+reads 0m, because a day is a real container that is genuinely empty.
 
 ---
 

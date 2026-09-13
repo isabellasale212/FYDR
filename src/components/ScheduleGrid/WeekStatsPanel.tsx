@@ -151,7 +151,10 @@ export function WeekStatsPanel({ sessions, typical, groups }: Props) {
               <div key={g.id}>
                 <div className="sg-group-row-head">
                   <span className="sg-group-name">{g.name}</span>
-                  <span className="sg-group-mins num">{g.mins}m</span>
+                  {/* PATTERN-S4 C8 (2026-09-13): nothing scheduled is a dash,
+                      not 0m — a day is a real container that can be empty; a
+                      group with no session has no minutes to count. */}
+                  <span className="sg-group-mins num">{g.mins > 0 ? `${g.mins}m` : '—'}</span>
                 </div>
                 <div className="sg-group-track">
                   <div
@@ -162,7 +165,7 @@ export function WeekStatsPanel({ sessions, typical, groups }: Props) {
                     }}
                   />
                 </div>
-                <p className="sg-group-foot">{g.memberCount} athletes</p>
+                <p className="sg-group-foot">{`${g.memberCount} athletes${g.mins > 0 ? '' : ' · nothing scheduled'}`}</p>
               </div>
             ))
           )}

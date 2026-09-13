@@ -13242,6 +13242,47 @@ main:has(.rhead) > .back-btn > :first-child {
   font-size: var(--fs-14);
   color: var(--text);
 }
+/* PATTERN-S7 C1 (2026-09-13): the one emphasised figure a report leads with.
+   The surface is .pp-hero's (the wash family — the system's --blue-100/200),
+   the value at --fs-48 semi with tabular figures (.num). Label, count with
+   denominator, value, sample, exclusions, in the board's order. */
+.rfig {
+  background: var(--wash-accent);
+  border: 1px solid var(--border-accent-soft);
+  margin-bottom: var(--sp-14);
+}
+.rfig-label {
+  margin: 0;
+  font-size: var(--fs-11);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+.rfig-count {
+  margin: var(--sp-6) 0 0;
+  font-size: var(--fs-16);
+  font-weight: 600;
+  color: var(--text);
+}
+.rfig-value {
+  margin: 0;
+  font-size: var(--fs-48);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.rfig-sample {
+  margin: var(--sp-6) 0 0;
+  font-size: var(--fs-13);
+  color: var(--text);
+}
+.rfig-exclusions {
+  margin: var(--sp-4) 0 0;
+  font-size: var(--fs-13);
+  color: var(--muted);
+}
 .rhead-sub > :first-child {
   margin-top: 0;
 }

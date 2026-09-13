@@ -13,6 +13,8 @@ import { mondayOf } from '@/lib/queries/schedule';
 import { complianceAnchor, complianceQuery, resolveCompliancePeriod } from './period';
 import { periodCaveat, periodParamsFrom, periodSticky } from '@/lib/reportPeriod.server';
 import { reportDefinition } from '@/lib/reportCatalogue';
+import { complianceFigure } from '@/lib/reportFigureCards';
+import { ReportFigure } from '@/components/ReportFigure/ReportFigure';
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
@@ -268,6 +270,12 @@ export default async function ComplianceReportPage({
           {
             label: 'Summary',
             content: (
+              <>
+              {/* PATTERN-S7 C1: the one emphasised figure the report leads
+                  with — submitted of expected across the domains that expect
+                  anything, the count before the percentage, the sample, the
+                  exclusions. The per-domain breakdown follows it. */}
+              <ReportFigure {...complianceFigure({ summary: report.summary, athleteCount: report.athleteCount, rangeLabel: period.range.label, waivedAthletes, waivedDays, floored: belowSquadFloor(measured.length) })} />
               <div className="card">
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 'var(--sp-16)' }}>
                   {report.summary.map((s) => (
@@ -302,6 +310,7 @@ export default async function ComplianceReportPage({
                   not asked&rdquo;.
                 </p>
               </div>
+              </>
             ),
           },
           {

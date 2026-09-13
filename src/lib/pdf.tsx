@@ -124,6 +124,35 @@ export const pdfStyles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Helvetica-Bold',
   },
+  /* PATTERN-S7 C1: the one emphasised figure the report leads with — the
+     same order as the screen's card: label, count with denominator, value,
+     sample, exclusions. */
+  figure: {
+    borderWidth: 1,
+    borderColor: PDF_COLOR.border,
+    borderRadius: 4,
+    padding: 10,
+    marginBottom: 12,
+  },
+  figureCount: {
+    fontSize: 10,
+    fontFamily: 'Helvetica-Bold',
+    marginBottom: 2,
+  },
+  figureValue: {
+    fontSize: 24,
+    fontFamily: 'Helvetica-Bold',
+    marginBottom: 4,
+  },
+  figureSample: {
+    fontSize: 8.5,
+    color: PDF_COLOR.text,
+    marginBottom: 2,
+  },
+  figureExclusions: {
+    fontSize: 8.5,
+    color: PDF_COLOR.muted,
+  },
   table: {
     width: '100%',
   },
@@ -213,6 +242,19 @@ export function PdfMedicalBanner() {
     <Text style={pdfStyles.medicalBanner} fixed>
       MEDICAL IN CONFIDENCE
     </Text>
+  );
+}
+
+/** PATTERN-S7 C1 (2026-09-13): the one emphasised figure, as on the screen. */
+export function PdfFigure({ label, count, value, sample, exclusions }: { label: string; count: string; value: string; sample: string; exclusions: string }) {
+  return (
+    <View style={pdfStyles.figure}>
+      <Text style={pdfStyles.tileLabel}>{label}</Text>
+      <Text style={pdfStyles.figureCount}>{count}</Text>
+      <Text style={pdfStyles.figureValue}>{value}</Text>
+      <Text style={pdfStyles.figureSample}>{sample}</Text>
+      <Text style={pdfStyles.figureExclusions}>{exclusions}</Text>
+    </View>
   );
 }
 

@@ -6,8 +6,9 @@ import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { enumLabel, formatDate, todayIso } from '@/lib/format';
 import { complianceAnchor, resolveCompliancePeriod } from '../period';
 import { periodParamsFromUrl } from '@/lib/reportPeriod.server';
-import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
+import { PdfFigure, PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
 import { reportDefinition } from '@/lib/reportCatalogue';
+import { complianceFigure } from '@/lib/reportFigureCards';
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
@@ -49,6 +50,17 @@ export async function GET(request: Request) {
         meta={`${period.range.label} · ${formatDate(fromDate, timezone)} to ${formatDate(today, timezone)} · Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes)`}
       />
 
+      {/* PATTERN-S7 C1: the same figure the screen leads with. */}
+      <PdfFigure
+        {...complianceFigure({
+          summary: report.summary,
+          athleteCount: report.athleteCount,
+          rangeLabel: period.range.label,
+          waivedAthletes: report.byAthlete.filter((a) => a.waivedCount > 0).length,
+          waivedDays: report.byAthlete.reduce((n, a) => n + a.waivedCount, 0),
+          floored: false,
+        })}
+      />
       <PdfTileRow>
         {report.summary.map((s) => (
           <PdfTile key={s.domain} label={enumLabel(s.domain)} value={s.pct === null ? '—' : `${s.pct}%`} />

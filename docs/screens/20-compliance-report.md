@@ -93,6 +93,14 @@ actually has, over the period and group chosen." — a `--surf` card under the s
 line, capped at 100ch; it prints with the page and is the first line of the CSV
 and the line under the PDF's title.
 
+**One emphasised figure leads the Summary** (PATTERN-S7 C1, 13 September 2026;
+`components/ReportFigure`, `lib/reportFigureCards.ts`): "Submitted of expected", the
+count with its denominator before the percentage ("8 of 380" then "2%"), summed over
+the domains that expect anything, then the sample ("30 athletes · last 28 days · 2 of
+3 domains expected"), then the exclusions in a full sentence — "Nobody is excluded."
+when nothing is. The per-domain breakdown follows it; the PDF leads with the same
+figure.
+
 **Every figure carries its denominator, an exclusions sentence, and words for
 a missing value** (PATTERN-S7 C2, 13 September 2026; `lib/reportFigures.ts`).
 The summary reads "24 of 30 submitted · 2 waived" or "No expectations

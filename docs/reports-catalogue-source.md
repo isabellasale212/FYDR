@@ -137,3 +137,67 @@ All five use the approved report shell from PATTERN-S7: title, definition senten
 2. Which reports does the pilot club actually need in week one? My guess: squad weekly, training, and athlete. Match and testing can follow.
 3. Can an athlete export their own athlete report? If yes, it doubles as the subject access route.
 4. Who receives the squad weekly report, and does it go out automatically on a Monday?
+
+---
+
+# Addendum, 13 September 2026: the seventh report, naming, and four sentences
+
+**Approved by Isabella. These sentences are confirmed, not drafts, and carry the
+same authority as the five above.**
+
+## The training report was two reports
+
+What is built as "the training report" is a per-session GPS board. The catalogue
+above describes an RPE-times-minutes load report that was never built. Both are
+wanted, they sit on opposite sides of the tier line, and **neither keeps the
+name "Training report", because that name is the ambiguity.**
+
+| Report | Tier | Name |
+|---|---|---|
+| The per-session GPS board that exists today | Premium | **GPS report** |
+| The RPE-times-minutes load report, to be built | All clubs | **Training load report** |
+
+## Definition sentences, confirmed
+
+**GPS report** (premium)
+
+> Per-session GPS totals for each athlete, from the files imported for that
+> session. An athlete with no GPS file for a session shows as no record, never
+> as zero.
+
+**Training load report** (all clubs)
+
+> Session load is RPE multiplied by session minutes, summed over the period.
+> Only sessions an athlete was expected at are counted, and a session with no
+> rating is not counted as zero.
+
+Its off state, since RPE is now a club setting:
+
+> This club does not collect session RPE, so there is no load to report. A sport
+> scientist can switch it on in Settings.
+
+**Compliance report**
+
+> The share of expected entries that were submitted, over the period. An entry
+> counts as expected only where the schedule or the club's settings asked for
+> one, so a day nobody was asked about is not counted against anybody.
+
+**Injury and availability report**
+
+> Every injury open at any point in the period, with each athlete's availability
+> as it stands today. Diagnosis, mechanism and clinical notes appear only in the
+> medic's copy.
+
+## One rule that comes with the compliance sentence
+
+Compliance now spans wellness, RPE and nutrition, and RPE can be switched off,
+so one club's denominator is not another's. **The report must state which entry
+types it counted**, or two clubs will compare figures that are not the same
+measurement.
+
+## Absence
+
+Which of the seven a club can see, and how absence reads, follows
+`docs/decisions/absence-rule.md`: premium absence is silent, setting-driven
+absence keeps the destination and shows an off state, and an empty report says
+so with its denominator.

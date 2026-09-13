@@ -223,7 +223,7 @@ export function Sidebar({ roles, fullName, orgName, premium, previewingTier = fa
       <div className="nav-foot">
         {previewingTier ? (
           <Link
-            href="/settings#plan"
+            href="/settings/club#plan"
             className="pill"
             style={{
               background: 'var(--wash-warn)',

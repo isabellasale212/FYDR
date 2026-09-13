@@ -72,7 +72,9 @@ console.log('\nA6. the reorder arrows');
 
 console.log('\nA7. Catapult');
 {
-  assert(/Import files/.test(hub) && !/data-variant="connected">\s*Connected/.test(hub), '"Import files", not "Connected"');
+  // Repointed 2026-09-13 (PATTERN-S8 C2): the Integrations card moved one level down to /settings/club with the hub's other big cards.
+  const club = strip(read('src/app/(staff)/settings/club/page.tsx'));
+  assert(/Import files/.test(club) && !/data-variant="connected">\s*Connected/.test(club), '"Import files", not "Connected"');
 }
 
 console.log('\nthe record and the sheet');

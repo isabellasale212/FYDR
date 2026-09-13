@@ -109,6 +109,72 @@ the exact failure the clinical boundary exists to prevent. This is the open
 decision inside PATTERN-S6 C4 and C5, which the platform decision moved into
 scope.
 
+## From the builder's report of 13 September
+
+**Match participation is recorded. Scope: exactly three things.** Who started,
+who came on, and minutes each. No positions, no events, no score. Today the app
+records attendance and a published allocation and nothing about game time, so
+the match report cannot be written and nothing in the product can say who
+played. Decide alongside the fixture-to-match-session question, which is the
+same root: a fixture today creates no session, names no squad and expects
+nobody.
+
+**The tier gate moves to the database.** "Keep and hide" is currently enforced
+only in the app: every tier check is app-side and the one database rule lives
+inside `compute_leaderboard`, so a base club's GPS data is reachable through a
+direct API call. This is the same shape as the leaderboard gate already fixed
+once, and as the default-privilege gap: a rule that looks enforced and is not.
+**The subject access read path stays open as a written, tested exception**,
+because `gps_records` is deliberately readable on Basic so a SAR can be answered.
+
+**RPE stays, with three changes.** Removal was considered and rejected: session
+RPE times session minutes is the only load measure the base tier has, GPS being
+premium, and a base club with no load monitoring is a different product rather
+than a smaller one.
+
+1. **RPE becomes a club setting.** A club that will not chase it switches it
+   off. Every surface that depends on it then SAYS SO rather than showing an
+   empty column or a zero: the training report, the compliance figure, the
+   dashboard's attention card, effort leaderboards and analytics. Missing is not
+   zero applies to a switched-off feature as much as to a missing value.
+2. **The prompt is one tap, not a form.** A row on Today carrying the scale
+   itself, no sheet. It is one number and the sheet is why compliance is hard.
+3. **The scale becomes 0 to 10**, matching standard session-RPE (CR-10).
+
+**On the scale change.** All production data is synthetic, so there is no
+back-conversion problem: widen the constraint to allow 0, change the control and
+the labels, and note in the migration that rows written before it were entered
+on a 1-to-10 scale. A rating of 0 is a real value in CR-10, meaning rest, and it
+must not be treated as missing anywhere. Check every place that tests an RPE for
+truthiness rather than for null, because `0` is falsy and that is exactly how a
+rested session becomes an unrated one.
+
+## Group C: the order of the big briefs
+
+Each is a day or more and needs its own brief. Agreed order, 13 September 2026:
+
+1. **The injury and rehab cluster** (PATTERN-S3 C1, C2, C3, C6). The athlete
+   status screen, the read flag, stages as real data, rehab proposal states.
+   Migrations. First because it is the largest hole in the product, the one a
+   medic notices in the first ten minutes, and the only brief here where the gap
+   is a missing capability rather than a weaker version of something that exists.
+2. **Match participation.** Starters, who came on, minutes each, and the
+   fixture-to-match-session decision underneath it. Second because the match
+   report cannot exist without it, and "who played" is a question a rugby coach
+   asks before any analytics panel.
+3. **Analytics as four panels** (PATTERN-S7 C6). The thing a sport scientist
+   opens to justify the subscription.
+4. **Premium contents.** The mechanism is already with the design manager; this
+   adds what is premium and what a free club sees in its place. Cannot be
+   finished before the code inventory lands.
+5. **My data hero cards** (ATH-ADULT-12 C2, C3). Last: polish on a screen that
+   already works, and blocked until `metrics.md` states what "steady" means and
+   what the minimum sample is.
+
+Running in parallel, not competing with this order: **S11 installability and
+offline**, with the design manager, because it is what makes the platform
+decision real.
+
 ## Related decisions made the same day
 
 - Scope is v1: `scope.md`.

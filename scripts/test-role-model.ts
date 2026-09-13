@@ -646,9 +646,11 @@ console.log('\n-- G-42, the two held back for a decision --');
 
 /* Both were found while fixing G-40 and deliberately left alone until approved,
  * because neither is an obvious artefact. */
+// Repointed 2026-09-13 (PATTERN-S8 C2): the hub's rows are data in lib/settingsHub.ts; the page passes canExport = hasAnyRole(REPORT_ACCESS).
 const settingsSrc = readFileSync('src/app/(staff)/settings/page.tsx', 'utf8');
+const hubRows = readFileSync('src/lib/settingsHub.ts', 'utf8');
 assert(
-  /REPORT_ACCESS[\s\S]{0,200}\/settings\/exports/.test(settingsSrc),
+  /canExport: hasAnyRole\(claims\.roles, REPORT_ACCESS\)/.test(settingsSrc) && /href: o\.canExport \? '\/settings\/exports' : null/.test(hubRows),
   'the Exports link is offered to REPORT_ACCESS, matching the page behind it',
 );
 

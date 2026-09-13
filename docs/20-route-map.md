@@ -143,7 +143,10 @@ doc of its own yet — LEADERBOARD-SPEC.md is the only spec for it today.
 | 27 | One preset | `/analytics/:presetId` | `screens/analytics.md` | staff web, staff phone | coach, medical | `/analytics` |
 | 27 | Query builder | `/analytics/builder` | `screens/analytics.md` | staff web | coach, medical | `/analytics` |
 | 29 | Settings | `/settings` | `screens/settings.md` | staff web, staff phone | coach, medical, admin | none |
-| 29 | Profile | `/settings/profile` | `screens/settings.md` | staff web, staff phone | coach, medical, admin | `/settings` |
+| 29 | Profile | `/settings/profile` | `screens/47-settings.md` | staff web, staff phone | every staff role | `/settings` |
+
+  *Built 13 September 2026 (PATTERN-S8 C2): profile, avatar, password and two-factor enrolment, moved off the hub; `#password` anchors the password and two-factor cards.*
+
 | 29 | Notifications | `/settings/notifications` | `screens/settings.md` | staff web, staff phone | coach, medical, admin | `/settings` |
 | 30 | Thresholds | `/settings/thresholds` | `screens/thresholds.md` | staff web, staff phone | coach | `/settings` |
 | 34 | Import GPS | `/settings/imports` | `screens/imports.md` | staff web, staff phone | coach, medical | `/settings` |
@@ -153,7 +156,10 @@ doc of its own yet — LEADERBOARD-SPEC.md is the only spec for it today.
 | 21 | Group detail | `/settings/groups/:groupId` | `screens/groups.md` | staff web, staff phone | coach, medical, admin | `/settings/groups` |
 | 32 | User management | `/settings/users` | `screens/user-management.md` | staff web | admin | `/settings` |
 | 32 | One user | `/settings/users/:userId` | `screens/user-management.md` | staff web | admin | `/settings/users` |
-| 29 | Club details | `/settings/club` | `screens/settings.md` | staff web | admin | `/settings` |
+| 29 | Club | `/settings/club` | `screens/47-settings.md` | staff web, staff phone | every staff role; the club details form is sport scientist only | `/settings` |
+
+  *Built 13 September 2026 (PATTERN-S8 C2): the Plan card (`#plan`, the preview switch for Fydr's own staff) and the Integrations card moved here from the hub, above the club details form. The hub at `/settings` is now four groups of destination rows — Club, People, Data, You — and holds no form.*
+
 | 29 | Billing | `/settings/billing` | `screens/settings.md` | staff web | admin | `/settings` |
 | 29 | Retention and erasure | `/settings/retention` | `screens/settings.md` | staff web | admin | `/settings` |
 
@@ -1197,8 +1203,8 @@ bound in §4.
       "panels": ["query-builder", "correlation"] },
     { "id": "staff.settings", "screen": 29, "name": "Settings", "path": "/settings", "spec": "docs/screens/settings.md", "shells": ["staff web", "staff phone"], "roles": ["coach", "medical", "admin"], "parent": null,
       "panels": ["settings-list-staff"] },
-    { "id": "staff.settings.profile", "screen": 29, "name": "Profile", "path": "/settings/profile", "spec": "docs/screens/settings.md", "shells": ["staff web", "staff phone"], "roles": ["coach", "medical", "admin"], "parent": "staff.settings",
-      "panels": ["profile-form"] },
+    { "id": "staff.settings.profile", "screen": 29, "name": "Profile", "path": "/settings/profile", "spec": "docs/screens/47-settings.md", "shells": ["staff web", "staff phone"], "roles": ["sport_scientist", "coach", "strength_conditioning", "medic", "nutritionist"], "parent": "staff.settings",
+      "panels": ["profile-form", "avatar-upload", "change-password", "mfa-enrolment"] },
     { "id": "staff.settings.notifications", "screen": 29, "name": "Notifications", "path": "/settings/notifications", "spec": "docs/screens/settings.md", "shells": ["staff web", "staff phone"], "roles": ["coach", "medical", "admin"], "parent": "staff.settings",
       "panels": ["notification-preferences"] },
     { "id": "staff.settings.thresholds", "screen": 30, "name": "Thresholds", "path": "/settings/thresholds", "spec": "docs/screens/thresholds.md", "shells": ["staff web", "staff phone"], "roles": ["coach"], "parent": "staff.settings",
@@ -1217,10 +1223,10 @@ bound in §4.
       "panels": ["user-table"] },
     { "id": "staff.settings.user", "screen": 32, "name": "One user", "path": "/settings/users/:userId", "spec": "docs/screens/user-management.md", "shells": ["staff web"], "roles": ["admin"], "parent": "staff.settings.users",
       "panels": ["roles-checkboxes", "athlete-link", "permission-preview", "deactivate"] },
-    { "id": "staff.settings.club", "screen": 29, "name": "Club details", "path": "/settings/club", "spec": "docs/screens/settings.md", "shells": ["staff web"], "roles": ["admin"], "parent": "staff.settings",
-      "panels": ["org-settings-form"] },
+    { "id": "staff.settings.club", "screen": 29, "name": "Club", "path": "/settings/club", "spec": "docs/screens/47-settings.md", "shells": ["staff web", "staff phone"], "roles": ["sport_scientist", "coach", "strength_conditioning", "medic", "nutritionist"], "parent": "staff.settings",
+      "panels": ["plan-card", "integrations", "org-settings-form"] },
     { "id": "staff.settings.billing", "screen": 29, "name": "Billing", "path": "/settings/billing", "spec": "docs/screens/settings.md", "shells": ["staff web"], "roles": ["admin"], "parent": "staff.settings",
-      "panels": ["org-settings-form"] },
+      "panels": ["plan-card", "integrations", "org-settings-form"] },
     { "id": "staff.settings.retention", "screen": 29, "name": "Retention and erasure", "path": "/settings/retention", "spec": "docs/screens/settings.md", "shells": ["staff web"], "roles": ["admin"], "parent": "staff.settings",
       "panels": ["org-settings-form", "audit-log"] }
   ]

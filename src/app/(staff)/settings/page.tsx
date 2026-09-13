@@ -1,74 +1,74 @@
 import Link from 'next/link';
-import { AvatarUploadForm } from '@/components/AvatarUploadForm/AvatarUploadForm';
-import { ChangePasswordForm } from '@/components/ChangePasswordForm/ChangePasswordForm';
-import { ClubDetailsEditForm } from '@/components/ClubDetailsEditForm/ClubDetailsEditForm';
-import { MfaEnrollment } from '@/components/MfaEnrollment/MfaEnrollment';
-import { StaffProfileEditForm } from '@/components/StaffProfileEditForm/StaffProfileEditForm';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchThresholds } from '@/lib/queries/thresholds';
+import { fetchGroups } from '@/lib/queries/groups';
 import { mfaRequiredForRoles } from '@/lib/mfa';
 import { requireStaff } from '@/lib/session';
-import { isPremium } from '@/lib/tier';
-import { PlanPreviewSwitch } from '@/components/PlanPreviewSwitch/PlanPreviewSwitch';
-import { isPlatformStaff } from '@/lib/platformStaff';
+import { isPremium, tierLabel } from '@/lib/tier';
 import { GPS_IMPORT, REPORT_ACCESS, SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
+import { settingsGroups } from '@/lib/settingsHub';
 
 export const metadata = { title: 'Settings · Fydr' };
 
-/** SETTINGS-SPEC.md, rebuilt from the ground up: the Plan card (real
- * organisations.tier, read-only — see lib/tier.ts's own header for why
- * this doesn't self-serve), the Integrations card (Catapult and CSV import
- * are real, linking to the GPS import screen this app already has; Apple
- * Health has no integration to connect to and says so), and the row list
- * (Thresholds and Log out are real; Passwords jumps to the real password
- * form below, which now sits beside a real "Two-factor authentication" card
- * (MfaEnrollment) rather than the "2FA policy screen this build doesn't
- * have" this comment used to say — login-security checklist item 3;
- * Exports now links to a real builder at /settings/exports — job 1 of
- * docs/screens/exports.md, see that route's own header for scope. Coach or
- * medical only, same gate as every report page: an admin-only row shows the
- * reason rather than a dead link).
+/** PATTERN-S8 C2 (2026-09-13): the hub in four groups on one screen —
+ *  Club, People, Data, You — each a card of destination rows carrying a
+ *  count, four across at desktop and stacked at 375; the long forms (this
+ *  person's profile, password and two-factor; the plan, the integrations and
+ *  the club details) sit one level down at /settings/profile and
+ *  /settings/club. The hub measured 3,772px at desktop and 5,089 at phone
+ *  before, eight sections in a column with the list at the bottom.
  *
- * The previous version of this page (screens/settings.md, screen 29) had
- * roughly ten real, working features this new design's three cards don't
- * show at all: Groups, GPS imports, Notifications, Users, Subject access
- * requests, Data retention, Club details, and this person's own profile
- * and password. None of that is speculative or a mockup — every one of
- * those links goes to a real screen with real data behind it, some with
- * their own hard-won bug fixes earlier this build. Deleting them to match
- * a 3-card mockup would be a real regression dressed up as a redesign, so
- * they're preserved: appended to the row list as more real rows (the same
- * "navigate to a sub-screen" shape the spec's own four rows already use),
- * or kept as their own real edit-in-place cards below, for the two things
- * that are forms rather than navigation (profile/avatar, club details). */
+ *  What is preserved from the version this replaces, and where it went:
+ *  every real destination the old row list carried (Groups, GPS imports,
+ *  Notifications, Users, Subject access, Data retention, Audit log,
+ *  Thresholds, Exports) is a row here, with the same gates; the Plan card,
+ *  the Integrations card and the club details form are /settings/club; the
+ *  profile, avatar, password and two-factor cards are /settings/profile. Log
+ *  out stays on the hub as the bordered button (PATTERN-S8 A1), in the You
+ *  card. lib/settingsHub.ts holds the four groups as data so the phone shell
+ *  and a guard can read the same list. */
 export default async function SettingsPage() {
-  const { db, orgId, orgName, timezone, fullName, claims, tier, realTier, previewingTier } = await requireStaff();
+  const { db, orgId, orgName, claims, tier, previewingTier } = await requireStaff();
   const isAdmin = hasAnyRole(claims.roles, SETTINGS_ADMIN);
   const onPremium = isPremium(tier);
-  /* Not `isAdmin`: a club's own administrator does not get to try the other
-     plan on. lib/platformStaff.ts has the reasoning; requireStaff() enforces
-     the same rule on the cookie, so this only decides whether the control is
-     drawn. Premium-only because the preview is downgrade-only — offering it to
-     a Basic club would be a switch that provably cannot do anything. */
-  const canPreviewTier = isPlatformStaff(claims.email) && isPremium(realTier);
+  const roleRequiresMfa = mfaRequiredForRoles(claims.roles);
 
-  const [userRow, orgRow, athleteCount, activeThresholds, mfaFactors] = await Promise.all([
-    db.from('users').select('phone, avatar_url, avatar_colour').eq('id', claims.userId).maybeSingle(),
-    isAdmin
-      ? db.from('organisations').select('name, sport, timezone, country_code, logo_url').eq('id', orgId).maybeSingle()
-      : Promise.resolve({ data: null }),
-    db
-      .from('athletes')
-      .select('id', { count: 'exact', head: true })
-      .eq('org_id', orgId)
-      .is('deleted_at', null)
-      .neq('status', 'left_club'),
+  const [athleteCount, activeThresholds, mfaFactors, groups, staffCount, sarOpen, importBatches, auditRecent] = await Promise.all([
+    db.from('athletes').select('id', { count: 'exact', head: true }).eq('org_id', orgId).is('deleted_at', null).neq('status', 'left_club'),
     fetchThresholds(db, orgId, false),
     db.auth.mfa.listFactors(),
+    fetchGroups(db, orgId),
+    isAdmin ? db.from('users').select('id', { count: 'exact', head: true }).eq('org_id', orgId).is('deleted_at', null).eq('status', 'active') : Promise.resolve({ count: null }),
+    isAdmin || claims.roles.includes('medic')
+      ? db.from('sar_requests').select('id', { count: 'exact', head: true }).eq('org_id', orgId).neq('status', 'released')
+      : Promise.resolve({ count: null }),
+    hasAnyRole(claims.roles, GPS_IMPORT) && onPremium ? db.from('import_batches').select('id', { count: 'exact', head: true }).eq('org_id', orgId) : Promise.resolve({ count: null }),
+    isAdmin
+      ? db.from('audit_log').select('id', { count: 'exact', head: true }).eq('org_id', orgId).gte('occurred_at', new Date(Date.now() - 90 * 86400000).toISOString())
+      : Promise.resolve({ count: null }),
   ]);
 
   const squadSize = athleteCount.count ?? 0;
-  const roleRequiresMfa = mfaRequiredForRoles(claims.roles);
+  const mfaOn = (mfaFactors.data?.totp.length ?? 0) > 0;
+
+  const cards = settingsGroups({
+    roles: claims.roles,
+    isAdmin,
+    canExport: hasAnyRole(claims.roles, REPORT_ACCESS),
+    canImport: hasAnyRole(claims.roles, GPS_IMPORT),
+    onPremium,
+    previewingTier,
+    tierWord: tierLabel(tier),
+    counts: {
+      groups: groups.length,
+      thresholds: activeThresholds.length,
+      users: staffCount.count ?? null,
+      sarOpen: sarOpen.count ?? null,
+      importBatches: importBatches.count ?? null,
+      auditRecent: auditRecent.count ?? null,
+    },
+    mfa: mfaOn ? 'on' : roleRequiresMfa ? 'required' : 'off',
+  });
 
   return (
     <>
@@ -82,372 +82,76 @@ export default async function SettingsPage() {
         <ThemeToggle />
       </div>
 
-      {/* A notice used to sit here telling an admin-only user their sidebar had
-          three rows on purpose. Removed 2026-09-05: the sport scientist that role
-          became has every row, so the notice was telling the least restricted
-          role in the product that it was the most restricted. */}
+      {/* The one required-action notice on the hub: a role that must enrol
+          two-factor and has not. Stated as a fact, not a block — the recorded
+          boundary pending the RLS follow-up (the S8 record). */}
+      {roleRequiresMfa && !mfaOn ? (
+        <p className="banner" role="alert" style={{ marginTop: 'var(--sp-14)' }}>
+          <span className="g g-bad" aria-hidden="true">
+            !
+          </span>
+          <span>
+            Your role requires two-factor authentication · not enrolled.{' '}
+            <Link href="/settings/profile#password">Set it up under Profile and password</Link>.
+          </span>
+        </p>
+      ) : null}
 
-      <div className="set-body">
-        {/* -------- §3 Plan card -------- */}
-        <section className="card set-card" aria-labelledby="plan-title" id="plan">
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 'var(--sp-16)', alignItems: 'center' }}>
-            <div style={{ minWidth: 0 }}>
-              <h2 className="card-title" id="plan-title" style={{ margin: 0 }}>
-                Plan
-              </h2>
-              <p style={{ fontSize: 'var(--fs-13)', color: 'var(--muted)', margin: '2px 0 0' }}>
-                {onPremium
-                  ? 'Premium · GPS, the training report and the analytics bar chart are on.'
-                  : 'Basic · wellness, gym, nutrition, schedule, reports and exports.'}
-              </p>
-              {/* Never let a preview be mistaken for the real plan. Without
-                  this, an admin who forgot the switch was on would find GPS
-                  and the training report gone and reasonably report it as a
-                  fault. Says what is happening and how to undo it. */}
-              {previewingTier ? (
-                <p className="pill" style={{ background: 'var(--wash-warn)', color: 'var(--warn-pill-text)', marginTop: 'var(--sp-8)' }}>
-                  Previewing Basic · this club’s real plan is still Premium
-                </p>
-              ) : null}
-            </div>
-            {/* Live for an admin whose club is really on Premium — it previews
-                the product on Basic, it does not change the plan. Everyone
-                else gets the same painted indicator as before, because there
-                is nothing they could preview: a coach has no business
-                downgrading their own view, and a Basic club can only preview
-                upward, which lib/tierPreview.ts refuses on entitlement
-                grounds. */}
-            <PlanPreviewSwitch onPremium={onPremium} canPreview={canPreviewTier} />
-          </div>
-
-          <div className="plan-compare">
-            <div className="plan-compare-card" data-active={!onPremium}>
-              <p style={{ fontSize: 'var(--fs-13)', fontWeight: 700, margin: 0 }}>Basic</p>
-              <div className="plan-compare-list">
-                <span>Gym programme</span>
-                <span>Nutrition</span>
-                <span>Schedule and fixtures</span>
-                <span>Wellness</span>
-                <span>Reports · gym, wellness, testing, nutrition</span>
-                {/* This line used to read "Analytics · bar charts". The BAR
-                    CHART moved to the Premium column below, on the coach's own
-                    instruction ("move the analytics bar chart ... onto the
-                    premium plan side") — the screen did not. This is not a
-                    copy change: /analytics renders a locked panel in place of
-                    the bar view for a Basic club and leaves the rest of the
-                    screen live, so this list and the real gate agree line for
-                    line. The narrow scope, and what it does and does not
-                    contradict in 12-product-tiers.md §3.3 and
-                    screens/analytics.md, is argued in full in the analytics
-                    page component's own header. */}
-                <span>Analytics · metric builder, trends and table</span>
-                <span>Settings and exports</span>
-              </div>
-            </div>
-            <div className="plan-compare-card" data-active={onPremium}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-8)' }}>
-                <p style={{ fontSize: 'var(--fs-13)', fontWeight: 700, margin: 0 }}>Premium</p>
-                {/* The design gives this badge the WARN pill, not the highlight
-                    gold the gated-row "Premium" markers use. Two different jobs:
-                    those mark a row as out of reach, this labels what the
-                    adjacent column contains. Following the design for the one it
-                    specifies and leaving the gate badges on gold. */}
-                <span className="pill pill-warn">everything in Basic, plus</span>
-              </div>
-              <div className="plan-compare-list">
-                <span>GPS exports</span>
-                <span>Training report</span>
-                {/* Was "Analytics · heatmaps", which promised a visualisation
-                    /analytics has never rendered. Named for the one analytics
-                    capability that is actually Premium — the bar chart, which
-                    is what the instruction names. Heatmaps stay unbuilt in
-                    both tiers, so neither column may claim them; see
-                    screens/analytics.md. */}
-                <span>Analytics · bar chart, by athlete</span>
-                {/* "Apple Health connection" was the fourth line until
-                    2026-09-13: Apple Health is removed from the product
-                    (docs/platform-decision.md) — there is no native app and
-                    none is planned, and it was the one thing that needed
-                    one. Not a Premium feature, not deferred: gone. */}
-              </div>
-            </div>
-          </div>
-
-        </section>
-
-        {/* -------- §4 Integrations card -------- */}
-        <section className="card set-card" aria-labelledby="integrations-title">
-          <h2 className="card-title" id="integrations-title" style={{ margin: 0 }}>
-            Integrations
-          </h2>
-          <p style={{ fontSize: 'var(--fs-13)', color: 'var(--muted)', margin: '2px 0 0' }}>
-            Devices and files that write into Fydr.
-          </p>
-
-          <div style={{ marginTop: 'var(--sp-12)' }}>
-            <div className="set-row">
-              <div style={{ minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)' }}>
-                  <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600 }}>Catapult Openfield</span>
-                  {!onPremium ? <span className="gold-badge">Premium</span> : null}
-                </div>
-                <p style={{ fontSize: 'var(--fs-12)', color: 'var(--muted)', margin: '2px 0 0' }}>
-                  GPS session files, CSV import
-                </p>
-              </div>
-              {onPremium ? (
-                /* PATTERN-S8 A7 (2026-09-13): what it is — a CSV file drop —
-                   not "Connected", which claims a live connection nobody has
-                   (the board's own open question about Catapult). */
-                <Link href="/settings/imports" className="set-row-btn" data-variant="connected">
-                  Import files
-                </Link>
-              ) : (
-                <Link href="/settings/imports" className="set-row-btn" data-variant="locked">
-                  Locked
-                </Link>
+      <div className="set-groups">
+        {cards.map((card) => (
+          <section key={card.key} className="card set-card set-group" aria-labelledby={`set-group-${card.key}`}>
+            <h2 className="card-title set-group-title" id={`set-group-${card.key}`}>
+              {card.title}
+            </h2>
+            <div className="set-group-rows">
+              {card.rows.map((row) =>
+                row.href ? (
+                  <Link key={row.key} href={row.href} className="set-list-row">
+                    <span>
+                      <span className="set-row-label">{row.label}</span>
+                      <span className="set-row-sub">{row.sub}</span>
+                    </span>
+                    {row.count ? (
+                      <span className={`num set-row-count${row.countTone ? ` pill pill-${row.countTone}` : ''}`}>{row.count}</span>
+                    ) : (
+                      <span aria-hidden="true" />
+                    )}
+                    <span aria-hidden="true" className="set-row-chev">
+                      ›
+                    </span>
+                  </Link>
+                ) : (
+                  /* A row this role cannot open: the reason printed in the
+                     row, no dead link, no title (test-blocked-controls). */
+                  <div key={row.key} className="set-list-row" data-disabled="true" aria-disabled="true">
+                    <span>
+                      <span className="set-row-label" style={{ color: 'var(--faint)' }}>
+                        {row.label}
+                      </span>
+                      <span className="set-row-sub">{row.sub}</span>
+                    </span>
+                    <span className="num set-row-count" style={{ color: 'var(--faint)' }}>
+                      —
+                    </span>
+                    <span aria-hidden="true" />
+                  </div>
+                ),
               )}
             </div>
-
-            {/* The Apple Health row stood here until 2026-09-13 ("Sleep,
-                resting heart rate and body mass from the athlete's phone",
-                Premium, "Not available yet · needs the Fydr iOS app" — S8
-                A3). Apple Health is removed from the product
-                (docs/platform-decision.md): no native app, none planned, and
-                it was the only capability that required one. The consent
-                purpose and the device_metrics table stay in the database,
-                dormant; nothing reads or writes them. */}
-
-            {/* This row was the only link to /settings/imports with no badge
-                and no tier condition, and it described a feature that page
-                does not offer — /settings/imports is the GPS vendor importer,
-                not a roster or wellness importer, and there is no such screen
-                to point at. Relabelled to what it actually opens, and given
-                the same Premium treatment as the two GPS rows beside it. */}
-            <div className="set-row">
-              <div style={{ minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-8)' }}>
-                  <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600 }}>Vendor CSV import</span>
-                  {!onPremium ? <span className="gold-badge">Premium</span> : null}
-                </div>
-                <p style={{ fontSize: 'var(--fs-12)', color: 'var(--muted)', margin: '2px 0 0' }}>
-                  Catapult, STATSports and Polar GPS session files
-                </p>
-              </div>
-              <Link
-                href="/settings/imports"
-                className="set-row-btn"
-                data-variant={onPremium ? undefined : 'locked'}
-              >
-                {onPremium ? 'Open' : 'Locked'}
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* -------- §5 Row list card, extended with the real settings the
-             new design doesn't show a place for — see this file's own
-             header for why they're kept rather than dropped. -------- */}
-        <section className="card set-card" style={{ padding: '6px 18px 6px' }} aria-label="More settings">
-          <Link href="/settings/thresholds" className="set-list-row">
-            <span>
-              <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600, display: 'block' }}>Thresholds</span>
-              <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>The rules that raise a flag</span>
-            </span>
-            {/* An amber pill, not faint text. "Fydr Settings.dc.html" gives this
-                count the warn pill (fill 0.28, text #6b4708) — which is what
-                .pill-warn already resolves to — because the number of live
-                thresholds is a standing state a coach should be able to read
-                without hunting for it, and at --faint it read as a caption. */}
-            <span className="pill pill-warn num">{activeThresholds.length} active</span>
-            <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
-              ›
-            </span>
-          </Link>
-
-          <a href="#password" className="set-list-row">
-            <span>
-              <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600, display: 'block' }}>Password and two-factor</span>
-              <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>Staff sign in</span>
-            </span>
-            <span className="num" style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>
-              {(mfaFactors.data?.totp.length ?? 0) > 0 ? 'On' : roleRequiresMfa ? 'Required' : '—'}
-            </span>
-            <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
-              ›
-            </span>
-          </a>
-
-          {/* §3.6 Exports is V for four roles and X for the nutritionist, and the
-              page behind this gates on requireReportAccess(). This link was
-              coach-or-medic, so the sport scientist and the S&C were shown no way
-              in to a page that would have let them straight through. */}
-          {hasAnyRole(claims.roles, REPORT_ACCESS) ? (
-            <Link href="/settings/exports" className="set-list-row">
-              <span>
-                <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600, display: 'block' }}>Exports</span>
-                <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>Pick what, pick who, pick when, get a CSV</span>
-              </span>
-              <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
-                ›
-              </span>
-            </Link>
-          ) : (
-            <div className="set-list-row" data-disabled="true" aria-disabled="true">
-              <span>
-                <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600, display: 'block', color: 'var(--faint)' }}>Exports</span>
-                <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>Coach or medical role required</span>
-              </span>
-              <span className="num" style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>
-                —
-              </span>
-              <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }} />
-            </div>
-          )}
-
-          <Link href="/settings/groups" className="set-list-row">
-            <span>
-              <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600, display: 'block' }}>Groups</span>
-              <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>The named subsets every filter uses</span>
-            </span>
-            <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
-              ›
-            </span>
-          </Link>
-
-          {/* §3.6 Import GPS is VC for the sport scientist alone. This link was
-              shown to the coach and the medic, whom the route refuses, and hidden
-              from the role that owns it. Approved 2026-09-05. */}
-          {hasAnyRole(claims.roles, GPS_IMPORT) ? (
-            <Link href="/settings/imports" className="set-list-row">
-              <span>
-                <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600, display: 'block' }}>GPS imports</span>
-                <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>Upload a vendor CSV export</span>
-              </span>
-              {!onPremium ? <span className="gold-badge">Premium</span> : null}
-              <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
-                ›
-              </span>
-            </Link>
-          ) : null}
-
-          <Link href="/settings/notifications" className="set-list-row">
-            <span>
-              <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600, display: 'block' }}>Notifications</span>
-              <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>What pushes and emails you get</span>
-            </span>
-            <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
-              ›
-            </span>
-          </Link>
-
-          {isAdmin ? (
-            <Link href="/settings/users" className="set-list-row">
-              <span>
-                <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600, display: 'block' }}>Users</span>
-                <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>Who can sign in, and what roles they hold</span>
-              </span>
-              <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
-                ›
-              </span>
-            </Link>
-          ) : null}
-
-          {isAdmin || claims.roles.includes('medic') ? (
-            <Link href="/settings/subject-access" className="set-list-row">
-              <span>
-                <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600, display: 'block' }}>Subject access requests</span>
-                <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>Article 15 requests and their deadline</span>
-              </span>
-              <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
-                ›
-              </span>
-            </Link>
-          ) : null}
-
-          {isAdmin ? (
-            <Link href="/settings/retention" className="set-list-row">
-              <span>
-                <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600, display: 'block' }}>Data retention</span>
-                <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>The club&apos;s retention schedule</span>
-              </span>
-              <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
-                ›
-              </span>
-            </Link>
-          ) : null}
-
-          {isAdmin ? (
-            <Link href="/settings/audit" className="set-list-row">
-              <span>
-                <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600, display: 'block' }}>Audit log</span>
-                <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>Who did what, and to what, across the club</span>
-              </span>
-              <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
-                ›
-              </span>
-            </Link>
-          ) : null}
-
-          {/* PATTERN-S8 A1 (2026-09-13): Log out is a button, not a row whose
-              only submitting element is a 4.8px chevron — bordered, 44px (48
-              on a phone), its own label, set apart from the lists, with the
-              session it ends named beside it. */}
-          <form action="/auth/sign-out" method="post" className="set-logout-form">
-            <button type="submit" className="btn-ghost set-logout">
-              Log out
-            </button>
-            <span className="tiny set-logout-note">Ends this session on this browser only</span>
-          </form>
-        </section>
-
-        {/* -------- Real, preserved: profile, avatar, club details, password.
-             Edit-in-place forms, not navigation targets, so they stay as
-             their own cards rather than row-list entries. -------- */}
-        <section className="card" aria-labelledby="profile-title">
-          <h2 className="card-title" id="profile-title">
-            Profile
-          </h2>
-          <div className="kv">
-            <span className="sub">Name</span>
-            <span className="sub">{fullName || '—'}</span>
-          </div>
-          <div className="kv">
-            <span className="sub">Club</span>
-            <span className="sub">{orgName}</span>
-          </div>
-          <div className="kv">
-            <span className="sub">Role</span>
-            <span className="sub">{claims.roles.join(', ') || '—'}</span>
-          </div>
-          <div className="kv">
-            <span className="sub">Timezone</span>
-            <span className="sub">{timezone}</span>
-          </div>
-        </section>
-
-        {/* initialAvatarColour is not optional in practice: pickColour writes
-            users.avatar_colour immediately, so omitting it left the picker
-            reopening on "Default" — aria-pressed on the wrong chip — while the
-            database held a real colour. Same read the athlete /me page does. */}
-        <AvatarUploadForm orgId={orgId} userId={claims.userId} fullName={fullName} initialAvatarUrl={userRow.data?.avatar_url ?? null} initialAvatarColour={userRow.data?.avatar_colour ?? null} />
-        <StaffProfileEditForm userId={claims.userId} initialFullName={fullName} initialPhone={userRow.data?.phone ?? ''} />
-
-        {isAdmin && orgRow.data ? (
-          <ClubDetailsEditForm
-            orgId={orgId}
-            initialName={orgRow.data.name}
-            initialSport={orgRow.data.sport}
-            initialTimezone={orgRow.data.timezone}
-            initialCountryCode={orgRow.data.country_code}
-            initialLogoUrl={orgRow.data.logo_url}
-          />
-        ) : null}
-
-        <div id="password" className="stack">
-          <ChangePasswordForm />
-          <MfaEnrollment timezone={timezone} roleRequiresMfa={roleRequiresMfa} initialFactors={mfaFactors.data?.totp ?? []} />
-        </div>
+            {card.key === 'you' ? (
+              /* PATTERN-S8 A1 (2026-09-13): Log out is a button, not a row whose
+                  only submitting element is a 4.8px chevron — bordered, 44px (48
+                  on a phone), its own label, set apart from the lists, with the
+                  session it ends named beside it. */
+              <form action="/auth/sign-out" method="post" className="set-logout-form">
+                <button type="submit" className="btn-ghost set-logout">
+                  Log out
+                </button>
+                <span className="tiny set-logout-note">Ends this session on this browser only</span>
+              </form>
+            ) : null}
+          </section>
+        ))}
       </div>
     </>
   );

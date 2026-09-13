@@ -187,7 +187,7 @@ export function StaffPhoneShell({ roles, fullName, orgName, premium, previewingT
         })}
         <div className="hair" />
         {previewingTier ? (
-          <Link href="/settings#plan" className="ph-sheet-row ph-sheet-preview">
+          <Link href="/settings/club#plan" className="ph-sheet-row ph-sheet-preview">
             Previewing Basic
           </Link>
         ) : null}

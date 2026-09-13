@@ -609,6 +609,8 @@ My data marks that day corrected and shows what was first reported.
 
 ## ATH-ADULT-12 — Browse My data
 
+**Built 2026-09-13 (`7ebfce0`, `2d2f846`), measured as Dan Okonkwo at 375.** The Gym tab opens on a "Best lift" card — the best load in the period, the lift and date beneath, and how it moved against the best before the period ("no earlier best to compare — the first Weighted pull-up logged"); an empty period reads "Nothing logged · in this period" in words. In the weeks chart, prior completed weeks sit in the wash and the latest completed week alone carries the accent.
+
 **Built 2026-09-12 (`ada5db5`, `029ab76`, `ca69a4b`), measured as Conor at 375.** Five segments — Wellness · Gym · Sessions · Nutrition · Tests — on one row at 11px (the footer card keeps only Leaderboards); a delta states the change and never judges it ("↓ 12 on last week", muted ink, the figure bold, ↑↓); the readiness chart's day markers are accent and neutrals only (`accentOnly`).
 
 **Built in part 2026-09-12 (`e581211`), measured live at 375.** An absent value is a word — "Not submitted" / "Not logged" — never 0; the hero figure is 48px (`--fs-48`); history rows are 73px with the value column right-aligned. **Filed from the measurement, §0at:** the Gym history row reads a stored `total_volume_kg` that only a correction ever writes, so it says "Not logged" for a session whose detail sums 4762 kg. The five-segment period control and the rest of the board are recorded, not built.
@@ -652,6 +654,8 @@ My data marks that day corrected and shows what was first reported.
 ---
 
 ## ATH-ADULT-13 — Open one gym session from history
+
+**Built 2026-09-13 (`4d86119`), measured as Dan Okonkwo at 375.** The session detail's set rows carry one control each — "Correct set N of Back squat ›" — which opens the logger's own correction for that set (`/gym/{sessionId}?log=…&correct=…`); the table's separate inline form is gone, so there is one way to correct a set.
 
 **Built in part 2026-09-12 (`98cfeec`), measured live on Conor's 11 Aug session.** The summary is a two-up hero (session RPE "6.8" at 48px beside total volume), there is **one** way back — "Back to gym history" as a full-width `.btn-ghost` (335×57) — and the shell Back stands down here, which closes §0w's third item. "Recomputed after a correction", "Not logged" and "Not rated" are the absent-value words. The eyebrow, tap-a-row correction and per-row "Corrected · was" marker are recorded, not built.
 

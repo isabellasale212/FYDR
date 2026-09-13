@@ -42,7 +42,7 @@ const ATHLETE_COMPONENTS = [
   'AvailabilityBanner', 'InjuryClinical', 'CheckInForm', 'GymSessionLogger', 'ThemeToggle',
   'AvatarUploadForm', 'AthleteProfileEditForm', 'ChangePasswordForm', 'WellnessChart',
   'AthleteTabBar', 'EmptyState', 'FlagNotice', 'PeriodSelector', 'TestSparkline',
-  'NotificationPreferencesForm', 'LeaderboardConsentToggle', 'HideLeaderboardsToggle',
+  'NotificationPreferencesForm', 'HideLeaderboardsToggle',
   'GlobalOptOutToggle', 'NutritionCheckinForm', 'OutboxFlusher', 'Toast', 'FydrLockup',
 ];
 const files: string[] = [];

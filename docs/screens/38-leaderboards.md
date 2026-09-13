@@ -44,20 +44,19 @@ time and a distance sort opposite ways.
 appear, and neither the fact nor the reason is shown to anyone reading the board.
 A board cannot be configured to refuse opt outs.
 
-**Athletes under 18 appear only with recorded consent.** Silence means absent.
-**Since 13 September 2026 this holds on the staff wall too** (Children's Code
-default 1, Isabella): `fetchLeaderboardWall` ranks an under-18 — or an athlete
-with no date of birth, which counts as a minor exactly as `athlete_is_minor`
-decides — only where a live `leaderboard_visibility` consent exists, on every
-board including the wellness streak and compliance; nothing is read or computed
-for an excluded athlete. Before this the wall ranked every live athlete in
-scope, while the published boards had held the rule at the database since
-migration 0016. The wall says what it left out, counted and never named: "1
-under-18 athlete is not ranked. An athlete under 18 appears on a ranked board
-only with a recorded consent; silence means absent." and its Boards stat reads
-"club wide · 1 under-18 not ranked". The rule is `src/lib/rankedBoardEligibility.ts`.
-Whether "academy" (membership of an `age`-type group) excludes by itself is on
-the sheet as a question; today the rule is by age.
+**Athletes under 18 are never on a ranked board.** Isabella's ruling, 13 September
+2026 (Children's Code; migration 0116): the self-granted `leaderboard_visibility`
+consent that lifted the exclusion from 0016 to 0115 no longer counts — until S9's
+guardian route exists there is no opt-in path for an under-18 at all. "Academy"
+is not a rule: age by date of birth is the legal trigger (an athlete with no date
+of birth counts as a minor, `athlete_is_minor`); a group name is a club
+convention. The published boards hold this at the database; **the staff wall**
+(`fetchLeaderboardWall`) holds the same rule in the app on every board including
+the wellness streak and compliance, computes nothing for an excluded athlete, and
+says what it left out, counted and never named: "1 under-18 athlete is not ranked.
+An athlete under 18 is never named on a ranked board; nothing on this screen
+changes that." Its Boards stat reads "club wide · 1 under-18 not ranked". The rule
+is `src/lib/rankedBoardEligibility.ts`.
 
 ## 6. Every thing you can act on
 

@@ -123,16 +123,15 @@ find themselves ranked last while they are out.
 `check (allow_opt_out)` in the database, on GDPR article 7(3) grounds: consent
 that cannot be withdrawn was never consent. A club cannot switch a player back on.
 
-**The under 18 rule is opt in, not opt out**, which is Children's Code standard 7:
+**The under 18 rule is: never named, no opt-in** — Children's Code, ruled by
+Isabella 13 September 2026 (migration 0116), replacing 0016's self opt-in:
 
-    and (
-      not athlete_is_minor(a.id)
-      or exists (select 1 from athlete_consents c
-                 where c.athlete_id = a.id
-                   and c.purpose = 'leaderboard_visibility'
-                   and c.granted_at is not null
-                   and c.withdrawn_at is null)
-    )
+    and not athlete_is_minor(a.id)
+
+A minor's own `leaderboard_visibility` consent row no longer lifts this; the
+rows stay as history. Until S9's guardian route records a consent there is no
+opt-in path for an under-18 at all, on the published boards and on the staff
+wall (`src/lib/rankedBoardEligibility.ts`, the same definition of a minor).
 
 `athlete_is_minor()` **fails safe**: an athlete with no date of birth is treated
 as a minor. Its own comment gives the reason, "the other failure puts a fifteen
@@ -153,7 +152,7 @@ else's board.
 | A screen can ask "is this a child" without receiving a date of birth | Yes | `athlete_age_view`, exposes `is_minor` and `is_under_13` only |
 | No date of birth is treated as a child | Yes | `athlete_is_minor()` |
 | The helper cannot be called by an anonymous caller | Yes, revoked twice | migrations 0035 and 0036 |
-| Leaderboards are opt in for minors | Yes | `0016_leaderboards.sql:370` |
+| Minors are never on a ranked board (no opt-in until the guardian route) | Yes | `0116_minors_off_ranked_boards.sql`, `rankedBoardEligibility.ts` |
 | Parental consent is recorded | Yes, as data | `athletes.parental_consent_recorded_at`, `_by`, `_method` |
 | An athlete cannot be activated without a date of birth | Yes | `athletes_dob_required_when_linked` |
 | **Tighter notification limits for minors** | **NOT BUILT** | specified at `docs/09-security-and-compliance.md:507` |

@@ -97,12 +97,12 @@ console.log('\nthe values are read, not written into the markup');
 {
   assert(/fetchMyNotificationPreferences|notificationPref/.test(page),
     'the notification state comes from notification_preferences');
-  /* Both halves, because the age rule splits them: opt-outs decide it for an
-     adult, the consent row decides it for a minor, and a page that read only
-     one would state the wrong regime for half the squad. */
-  assert(/fetchMyOptOuts/.test(page) && /fetchLeaderboardConsent/.test(page),
-    'the leaderboard state is read from opt-outs AND from consent');
-  assert(/isMinor\s*\?/.test(page), 'and the two are chosen between by age, as /me/leaderboards does');
+  /* Repointed 2026-09-13 (0116, Isabella's ruling): the opt-outs decide it for
+     an adult; a minor is never named and reads no consent — the self opt-in is
+     gone. The page still splits by age so it never states the wrong regime. */
+  assert(/fetchMyOptOuts/.test(page) && !/fetchLeaderboardConsent/.test(page),
+    'the leaderboard state is read from opt-outs; no consent read for a minor');
+  assert(/isMinor\s*\?/.test(page) && /isMinor \? 'Not named'/.test(page), 'and the two regimes are chosen between by age, as /me/leaderboards does');
   /* Units is the one static value on the card, and that is the honest rendering:
      there is no units preference in the schema, the app is kg and metres
      everywhere, and inventing a column to display a constant would be worse

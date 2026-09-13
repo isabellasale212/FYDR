@@ -293,9 +293,9 @@ select is(
 select is(
   (select count(distinct athlete_id) from compute_leaderboard(
      tests.uid('orga', 'lb_best_gps.player_load'))),
-  6::bigint,
-  'six athletes rank on a GPS board: the two fixture adults, three added adults and '
-  'the consented minor');
+  5::bigint,
+  'five athletes rank on a GPS board (0116): the two fixture adults and three added adults — '
+  'no minor, consented or not (six before 0116)');
 
 
 -- ===========================================================================
@@ -391,11 +391,12 @@ select is(
   'and absent from a second GPS metric too: the gate is on the population, not on one '
   'metric''s dispatcher branch');
 
+-- Rewritten 2026-09-13 (migration 0116): a minor's own consent lifts nothing.
 select is(
   (select count(*) from compute_leaderboard(tests.uid('orga', 'lb_best_gps.total_distance_m'))
     where athlete_id = tests.uid('orga', 'gps_minor_granted')),
-  1::bigint,
-  'the minor who granted leaderboard_visibility does appear on a GPS board');
+  0::bigint,
+  'the minor who granted leaderboard_visibility themselves is STILL absent from a GPS board (0116)');
 
 
 -- ===========================================================================
@@ -422,10 +423,10 @@ select is(
 
 select tests.set_jwt(tests.uid('orga', 'user_athlete_1'));
 select ok(
-  (select count(*) from compute_leaderboard(tests.uid('orga', 'lb_best_gps.total_distance_m'))) = 6
+  (select count(*) from compute_leaderboard(tests.uid('orga', 'lb_best_gps.total_distance_m'))) = 5
   and exists (select 1 from compute_leaderboard(tests.uid('orga', 'lb_best_gps.total_distance_m'))
                where athlete_id = tests.uid('orga', 'athlete_1')),
-  'a ranked athlete calling a published GPS board themselves gets the full six-row '
+  'a ranked athlete calling a published GPS board themselves gets the full five-row '
   'ranking, their own row on it — their RLS on gps_records, which shows them only '
   'their own records, does not shrink the board');
 

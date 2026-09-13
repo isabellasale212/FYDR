@@ -133,8 +133,9 @@ const NOT_CONVERTED: [string, string, string][] = [
   // healthkit.ts's withdrawHealthkitSync was listed here until 2026-09-13:
   // Apple Health is removed from the product (docs/platform-decision.md) and
   // the file with it.
-  ['src/lib/queries/leaderboards.ts', 'withdrawLeaderboardVisibility',
-   'NOTHING TO DO: withdrawing a visibility never granted matches nothing, correctly'],
+  // leaderboards.ts's withdrawLeaderboardVisibility was listed here until
+  // 2026-09-13: the under-18 self opt-in is removed (Isabella's ruling,
+  // migration 0116) and the function with it.
 
   /* RESOLVED 2026-09-06, and still correctly absent from mustAffect. The
      ambiguity was real: .is(user_id, null) means zero rows is EITHER already

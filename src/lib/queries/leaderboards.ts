@@ -400,52 +400,9 @@ export async function fetchMyOptOuts(
   return data ?? [];
 }
 
-/** Whether this athlete has granted leaderboard_visibility — the under-18 opt-in.
- *  Meaningless for an adult (they are on by default), read regardless so the Me
- *  screen can show the toggle's true state either way. */
-export async function fetchLeaderboardConsent(
-  db: Db,
-  athleteId: string,
-): Promise<{ granted: boolean } > {
-  const { data, error } = await db
-    .from('athlete_consents')
-    .select('granted_at, withdrawn_at')
-    .eq('athlete_id', athleteId)
-    .eq('purpose', 'leaderboard_visibility')
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-  return { granted: !!data && data.granted_at !== null && data.withdrawn_at === null };
-}
-
-const NOTICE_VERSION = '2026.1';
-
-export async function grantLeaderboardVisibility(
-  db: Db,
-  orgId: string,
-  athleteId: string,
-): Promise<{ error: string | null }> {
-  const { error } = await db.from('athlete_consents').upsert(
-    {
-      org_id: orgId,
-      athlete_id: athleteId,
-      purpose: 'leaderboard_visibility',
-      granted_at: new Date().toISOString(),
-      withdrawn_at: null,
-      notice_version: NOTICE_VERSION,
-    },
-    { onConflict: 'athlete_id,purpose' },
-  );
-  return { error: error?.message ?? null };
-}
-
-export async function withdrawLeaderboardVisibility(
-  db: Db,
-  athleteId: string,
-): Promise<{ error: string | null }> {
-  const { error } = await db
-    .from('athlete_consents')
-    .update({ withdrawn_at: new Date().toISOString() })
-    .eq('athlete_id', athleteId)
-    .eq('purpose', 'leaderboard_visibility');
-  return { error: error?.message ?? null };
-}
+/* fetchLeaderboardConsent / grantLeaderboardVisibility / withdrawLeaderboardVisibility
+ * were removed 2026-09-13 (Isabella's ruling, migration 0116): the under-18
+ * self opt-in no longer exists. A minor is never on a ranked board until the
+ * guardian route (S9) records a consent, and what that consent is — a row here
+ * recorded by staff, or athletes.parental_consent_* — is S9's to decide.
+ * athlete_consents keeps its rows as history. */

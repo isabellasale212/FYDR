@@ -17,18 +17,30 @@ Whether they appear on boards, and the control to change it.
 
 | Field | As worded | Type | Validation | On invalid | Stored | Editable | Who sees it |
 |---|---|---|---|---|---|---|---|
-| Appear on leaderboards | UNVERIFIED exact wording | on or off | see below | n/a | `leaderboard_opt_outs` (adult) or `athlete_consents.leaderboard_visibility` (minor) | yes, always | affects every board |
+| Appear on leaderboards (adult) | "Every leaderboard at once" | on or off | see below | n/a | `leaderboard_opt_outs` | yes, always | affects every board |
+| — (under 18) | No control | — | — | — | nothing | no | — |
 
-**Two different mechanisms behind one control, and the difference is legal.**
+**Two regimes, and the difference is legal.**
 
 - **An adult is on by default and opts OUT.** The opt out is written to
   `leaderboard_opt_outs` with `opt_out_source = 'athlete'`, and the database
   carries `check (allow_opt_out)` so **a club cannot take the exit away**. The
   reasoning is GDPR article 7(3): consent that cannot be withdrawn was never
   consent.
-- **An under 18 is off by default and opts IN.** Children's Code standard 7. The
-  board query itself enforces it (`supabase/migrations/0016_leaderboards.sql:370`),
-  not the client.
+- **An under 18 is never named, and has no opt-in.** Isabella's ruling, 13
+  September 2026 (migration 0116): the self-consent toggle this screen carried
+  until then is removed — a sixteen-year-old tapping themselves onto a ranked
+  board while `athletes.parental_consent_*` is written by nothing was consent
+  that is not consent. Until S9's guardian route exists there is no opt-in path
+  for an under-18 at all: excluded by default, no way to leave it. The board
+  query enforces it (`supabase/migrations/0116_minors_off_ranked_boards.sql`,
+  `not athlete_is_minor(a.id)`), the staff wall applies the same rule, and the
+  card on this screen says so and offers no control: "Because you're under 18,
+  you are not named on any leaderboard, and nothing here can change that. Your
+  results are still recorded and still yours to see in My data. When a parent or
+  guardian can record their consent, that will be the only way to be named, and
+  it will not be a switch on this screen." Existing `leaderboard_visibility`
+  consent rows stay as history and have no effect.
 
 `athlete_is_minor()` **fails safe**: no date of birth means treated as a minor.
 
@@ -44,7 +56,7 @@ None.
 
 | Element | Where | What happens | Takes you to | Writes | Confirm | Hidden when |
 |---|---|---|---|---|---|---|
-| The toggle | Body | Opts in or out | stays | a consent or opt out row | UNVERIFIED | never |
+| Every leaderboard at once (adult) | Body | Opts out of, or back into, every board | stays | an opt-out row | no | for an under 18 — nothing replaces it |
 | Hide on this device | Body | Local only | stays | `localStorage` | no | never |
 
 ## 7. Offline and sync

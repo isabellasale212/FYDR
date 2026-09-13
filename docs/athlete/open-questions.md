@@ -261,7 +261,7 @@ The same 500-against-1000 gap exists on the session rating note: training_entrie
 
 **ANSWERED by Claude Code, 8 September 2026** against the live repository. The recommendation that preceded it, and Isabella's decision where there was one, are in `archive/2026-09-08-athlete-spec-review-record.docx`.
 
-Answered by Claude Code, 8 September 2026, from src/app/(athlete)/me/leaderboards/page.tsx and src/components/LeaderboardConsentToggle/LeaderboardConsentToggle.tsx.
+Answered by Claude Code, 8 September 2026, from src/app/(athlete)/me/leaderboards/page.tsx and src/components/LeaderboardConsentToggle/LeaderboardConsentToggle.tsx. **Superseded 13 September 2026 (migration 0116, Isabella's ruling): the control below no longer exists — an under-18 has no opt-in until the guardian route.**
 
 The under-18 branch is chosen by isMinor at page.tsx:23, computed as age === null || age < 18 — an unknown date of birth counts as a minor, matching athlete_is_minor() in the database.
 

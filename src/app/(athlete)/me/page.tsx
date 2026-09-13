@@ -6,7 +6,7 @@ import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchAthlete } from '@/lib/queries/squad';
 import { fetchWellnessByAthlete } from '@/lib/queries/wellness';
 import { mondayOf } from '@/lib/queries/schedule';
-import { fetchLeaderboardConsent, fetchMyOptOuts } from '@/lib/queries/leaderboards';
+import { fetchMyOptOuts } from '@/lib/queries/leaderboards';
 import { fetchMyNotificationPreferences } from '@/lib/queries/notificationPreferences';
 import { addDays, ageFrom, BLANK, formatNumber, initials, todayIso } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
@@ -65,7 +65,7 @@ export default async function MePage() {
      latest". */
   const today = todayIso(timezone);
   const weekStart = mondayOf(today);
-  const [athlete, userRow, notificationPrefs, optOuts, leaderboardConsent, recentWellness] =
+  const [athlete, userRow, notificationPrefs, optOuts, recentWellness] =
     await Promise.all([
       fetchAthlete(db, orgId, athleteId),
       /* full_name is read but never shown: updateMyContactDetails writes
@@ -79,7 +79,6 @@ export default async function MePage() {
         .maybeSingle(),
       fetchMyNotificationPreferences(db, claims.userId),
       fetchMyOptOuts(db, orgId, athleteId),
-      fetchLeaderboardConsent(db, athleteId),
       fetchWellnessByAthlete(db, athleteId, { from: addDays(today, -90), to: today }),
     ]);
 
@@ -109,9 +108,10 @@ export default async function MePage() {
      and the screen it opens can never disagree. */
   const age = ageFrom(athlete?.date_of_birth ?? null, timezone);
   const isMinor = age === null || age < 18;
-  const named = isMinor
-    ? leaderboardConsent.granted
-    : !optOuts.some((o) => o.leaderboard_id === null);
+  /* Isabella, 2026-09-13 (migration 0116): an under-18 is never named on a
+     ranked board and has no opt-in until the guardian route (S9) exists —
+     the self-consent toggle is gone. */
+  const named = isMinor ? false : !optOuts.some((o) => o.leaderboard_id === null);
 
   return (
     <>
@@ -264,11 +264,11 @@ export default async function MePage() {
             <span className="k">
               Leaderboard
               <span className="s">
-                {isMinor ? 'you choose to appear' : 'you appear unless you leave'}
+                {isMinor ? 'not named while under 18' : 'you appear unless you leave'}
               </span>
             </span>
             <span className="v" data-off={named ? undefined : ''}>
-              {named ? 'Opted in' : 'Opted out'}
+              {isMinor ? 'Not named' : named ? 'Opted in' : 'Opted out'}
             </span>
             <span className="chev" aria-hidden="true">
               ›

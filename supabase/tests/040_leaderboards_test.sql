@@ -183,29 +183,32 @@ select is(
 
 
 -- ===========================================================================
--- 5. The minor default: off unless they opt themselves in
+-- 5. The minor default: off, and (since 0116) no self opt-in
 -- ===========================================================================
 
 select is(
   (select count(*) from compute_leaderboard(tests.uid('orga','lb_published'))
      where athlete_id = tests.uid('orga','athlete_4_minor')),
   0::bigint,
-  'a minor with qualifying data is still excluded: no leaderboard_visibility consent yet'
+  'a minor with qualifying data is excluded'
 );
 
--- The minor grants their own consent, as themselves — the only party who can.
+-- Rewritten 2026-09-13 (migration 0116, Isabella's ruling): the minor's own
+-- consent row can still be written (the guardian route, S9, decides what a
+-- valid consent is) but it lifts NOTHING — there is no opt-in path for an
+-- under-18 until then.
 select tests.set_jwt(tests.uid('orga', 'user_athlete_4_minor'));
 select lives_ok(
   format($q$insert into athlete_consents (org_id, athlete_id, purpose, granted_at, notice_version)
             values (%L, %L, 'leaderboard_visibility', now(), '2026.1')$q$,
          tests.uid('orga','org'), tests.uid('orga','athlete_4_minor')),
-  'a minor grants their own leaderboard_visibility consent'
+  'a minor can still write a leaderboard_visibility row (history; no effect)'
 );
 
 select tests.set_jwt(tests.uid('orga', 'user_coach'));
 select is(
-  (select count(*) from compute_leaderboard(tests.uid('orga','lb_published'))), 4::bigint,
-  'once consent is granted, the same minor appears and the ranking grows to four'
+  (select count(*) from compute_leaderboard(tests.uid('orga','lb_published'))), 3::bigint,
+  'the ranking stays at three: a self-granted consent does not put a minor on a board (0116)'
 );
 
 
@@ -241,10 +244,14 @@ select lives_ok(
   'an athlete opts themselves out, correctly'
 );
 
+-- Rewritten 2026-09-13 (0116): with no minor on the board the population was
+-- three adults, and one opting out leaves two — below this metric's minimum of
+-- three, so the guard from section 3 empties the whole board rather than
+-- ranking two identifiable people (the same behaviour section 7 shows).
 select tests.set_jwt(tests.uid('orga', 'user_coach'));
 select is(
-  (select count(*) from compute_leaderboard(tests.uid('orga','lb_published'))), 3::bigint,
-  'the opted-out athlete drops the ranking from four to three, positions close up'
+  (select count(*) from compute_leaderboard(tests.uid('orga','lb_published'))), 0::bigint,
+  'the opted-out athlete drops the qualifying population from three to two, below the minimum, so the guard empties the board'
 );
 
 select tests.set_jwt(tests.uid('orga', 'user_athlete_2'));
@@ -281,8 +288,9 @@ select lives_ok(
   'medical suppresses an athlete on clinical grounds'
 );
 
--- Suppressing athlete_3 leaves only two qualifying athletes (athlete_1, athlete_4), which
--- is below this metric's own minimum population of three. The guard from section 3 fires
+-- Suppressing athlete_3 leaves only one qualifying athlete (athlete_1), which
+-- is below this metric's own minimum population of three (athlete_4, the minor, is
+-- off the board since 0116; athlete_2 opted out in section 6). The guard from section 3 fires
 -- again here, on its own, from ordinary exclusions compounding rather than a small
 -- population by construction: the whole board disappears rather than showing a ranking
 -- of two identifiable people. This is the correct behaviour, not a bug in the guard —

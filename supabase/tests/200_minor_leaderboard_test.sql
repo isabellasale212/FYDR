@@ -3,19 +3,18 @@
 -- The under-18 leaderboard protection, demonstrated end to end on its own — audit
 -- finding S6 ("minors' opt-in must be real, not a client toggle") and gameplan 2.1.
 --
--- The enforcement under test is migration 0016's compute_leaderboard population
+-- The enforcement under test WAS migration 0016's compute_leaderboard population
 -- clause: `not athlete_is_minor(a.id) or exists (consent … leaderboard_visibility
--- … granted_at is not null and withdrawn_at is null)`. 040_leaderboards_test.sql §5
--- already proves the basic default (minor off, on after self-granted consent) inside
--- its larger board lifecycle; this file is the dedicated, self-contained statement of
--- the rule, and covers the states 040 does not:
+-- …)`. Since migration 0116 (Isabella's ruling, 2026-09-13) it is
+-- `not athlete_is_minor(a.id)` alone: a minor's own consent row lifts nothing,
+-- because until the guardian route (S9) exists there is no opt-in path for an
+-- under-18 at all. This file states the rule athlete by athlete:
 --
 --   A minor with no leaderboard_visibility consent never appears, however good
 --     their qualifying results are.
 --   An adult appears by default, with no consent row at all.
---   A minor WITH granted consent appears.
---   A minor whose consent was granted and then WITHDRAWN disappears again:
---     withdrawal has immediate effect, Article 7(3).
+--   A minor WITH a self-granted consent is STILL absent (0116).
+--   A minor whose consent was granted and then WITHDRAWN is absent too.
 --   An adult with a withdrawn consent row still appears — adults are default-in;
 --     their exit is the opt-out, not this consent. The withdrawn row an adult may
 --     carry (seed.sql §12 creates some) must not accidentally hide them.
@@ -142,9 +141,9 @@ select tests.set_jwt(tests.uid('orga', 'user_coach'));
 
 select is(
   (select count(*) from compute_leaderboard(tests.uid('orga', 'lb_minor_demo'))),
-  5::bigint,
-  'five athletes rank: the fixture adult, both boundary-or-older adults, the '
-  'withdrawn-consent adult, and the one consented minor');
+  4::bigint,
+  'four athletes rank (0116): the fixture adult, both boundary-or-older adults and the '
+  'withdrawn-consent adult — no minor, consented or not (five before 0116)');
 
 -- ===========================================================================
 -- 2. The rule itself, athlete by athlete
@@ -163,18 +162,21 @@ select is(
   1::bigint,
   'an adult appears by default, with no consent row anywhere');
 
+-- Rewritten 2026-09-13 (migration 0116, Isabella's ruling): a minor's own
+-- consent row no longer lifts the exclusion. Until the guardian route (S9)
+-- exists there is no opt-in path for an under-18 at all.
 select is(
   (select count(*) from compute_leaderboard(tests.uid('orga', 'lb_minor_demo'))
     where athlete_id = tests.uid('orga', 'athlete_minor_granted')),
-  1::bigint,
-  'a minor with granted leaderboard_visibility consent appears');
+  0::bigint,
+  'a minor with a live self-granted leaderboard_visibility consent is STILL absent (0116): '
+  'consent a child taps for themselves is not consent');
 
 select is(
   (select count(*) from compute_leaderboard(tests.uid('orga', 'lb_minor_demo'))
     where athlete_id = tests.uid('orga', 'athlete_minor_withdrawn')),
   0::bigint,
-  'a minor who granted and then withdrew consent disappears again: withdrawal is '
-  'immediate, Article 7(3)');
+  'a minor who granted and then withdrew consent is absent, as every minor is (0116)');
 
 select is(
   (select count(*) from compute_leaderboard(tests.uid('orga', 'lb_minor_demo'))
@@ -197,7 +199,7 @@ select is(
   (select count(*) from compute_leaderboard(tests.uid('orga', 'lb_minor_demo'))
     where athlete_id = tests.uid('orga', 'athlete_17_364')),
   0::bigint,
-  'one day short of 18 is still a minor and still excluded without consent');
+  'one day short of 18 is still a minor and still excluded');
 
 -- ===========================================================================
 -- 4. Unknown age fails safe
@@ -221,13 +223,14 @@ select is(
   'the unconsented minor calling compute_leaderboard themselves gets zero rows: '
   'the own-row gate keeps a board they are not on entirely out of their client');
 
+-- Rewritten 2026-09-13 (0116): the self-consented minor is not on the board, so
+-- the own-row gate keeps the whole board out of their client too.
 select tests.set_jwt(tests.uid('orga', 'user_minor_granted'));
-select ok(
-  (select count(*) from compute_leaderboard(tests.uid('orga', 'lb_minor_demo'))) = 5
-  and exists (select 1 from compute_leaderboard(tests.uid('orga', 'lb_minor_demo'))
-               where athlete_id = tests.uid('orga', 'athlete_minor_granted')),
-  'the consented minor sees the full five-row ranking, themselves on it — and the '
-  'unconsented minor is not in what they see either');
+select is(
+  (select count(*) from compute_leaderboard(tests.uid('orga', 'lb_minor_demo'))),
+  0::bigint,
+  'the self-consented minor calling compute_leaderboard themselves gets zero rows: '
+  'they are not on it, so the own-row gate hides it entirely');
 
 select * from finish();
 rollback;

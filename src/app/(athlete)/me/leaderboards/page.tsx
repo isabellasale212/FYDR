@@ -1,21 +1,25 @@
 import Link from 'next/link';
-import { LeaderboardConsentToggle } from '@/components/LeaderboardConsentToggle/LeaderboardConsentToggle';
 import { GlobalOptOutToggle } from '@/components/GlobalOptOutToggle/GlobalOptOutToggle';
 import { HideLeaderboardsToggle } from '@/components/HideLeaderboardsToggle/HideLeaderboardsToggle';
-import { fetchLeaderboardConsent, fetchMyOptOuts } from '@/lib/queries/leaderboards';
+import { fetchMyOptOuts } from '@/lib/queries/leaderboards';
 import { ageFrom } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
 
 export const metadata = { title: 'Leaderboards · Me · Fydr' };
 
-/** screens/leaderboards.md "Athletes under 18: opt-in, not opt-out" and the global
- *  opt-out in "Me → Privacy". Route per 20-route-map.md line 83, /me/leaderboards. */
+/** screens/leaderboards.md "Athletes under 18" and the global opt-out in "Me →
+ *  Privacy". Route per 20-route-map.md line 83, /me/leaderboards.
+ *
+ *  Isabella, 2026-09-13 (migration 0116): the under-18 self-consent toggle is
+ *  removed. A minor is never named on a ranked board and has no opt-in path
+ *  until the guardian route (S9) exists — a sixteen-year-old tapping
+ *  themselves onto a board while parental_consent_* is written by nothing was
+ *  consent that is not consent. The card says the rule; it offers no control. */
 export default async function MyLeaderboardsSettingsPage() {
   const { db, orgId, athleteId, claims, timezone } = await requireAthlete();
 
-  const [dob, consent, optOuts] = await Promise.all([
+  const [dob, optOuts] = await Promise.all([
     db.from('athletes').select('date_of_birth').eq('id', athleteId).maybeSingle(),
-    fetchLeaderboardConsent(db, athleteId),
     fetchMyOptOuts(db, orgId, athleteId),
   ]);
 
@@ -38,12 +42,12 @@ export default async function MyLeaderboardsSettingsPage() {
           <h2 className="card-title" id="minor-title">
             Being named on a leaderboard
           </h2>
-          <p className="import-sub">
-            Because you&rsquo;re under 18, you are never named on a leaderboard unless
-            you choose to be &mdash; that choice is yours alone, and nobody at your club
-            can turn it on for you. Turning it off again is just as easy, any time.
+          <p className="import-sub" style={{ marginBottom: 0 }}>
+            Because you&rsquo;re under 18, you are not named on any leaderboard, and nothing
+            here can change that. Your results are still recorded and still yours to see
+            in My data. When a parent or guardian can record their consent, that will be
+            the only way to be named, and it will not be a switch on this screen.
           </p>
-          <LeaderboardConsentToggle orgId={orgId} athleteId={athleteId} initialGranted={consent.granted} />
         </section>
       ) : (
         <section className="card">
@@ -74,25 +78,32 @@ export default async function MyLeaderboardsSettingsPage() {
         <HideLeaderboardsToggle />
       </section>
 
-      <section className="card" aria-labelledby="global-title">
-        <h2 className="card-title" id="global-title">
-          Every leaderboard at once
-        </h2>
-        <p className="import-sub">
-          Do not include me on any leaderboard, including ones published later.
-        </p>
-        <GlobalOptOutToggle
-          orgId={orgId}
-          athleteId={athleteId}
-          userId={claims.userId}
-          initialOptedOut={globallyOptedOut}
-        />
-      </section>
+      {/* The opt-out is the adult's exit. A minor is never on a board (0116), so
+          there is nothing to leave and the control is absent rather than
+          offered as a dead switch. */}
+      {isMinor ? null : (
+        <>
+          <section className="card" aria-labelledby="global-title">
+            <h2 className="card-title" id="global-title">
+              Every leaderboard at once
+            </h2>
+            <p className="import-sub">
+              Do not include me on any leaderboard, including ones published later.
+            </p>
+            <GlobalOptOutToggle
+              orgId={orgId}
+              athleteId={athleteId}
+              userId={claims.userId}
+              initialOptedOut={globallyOptedOut}
+            />
+          </section>
 
-      <p className="cap">
-        Leaving a leaderboard removes your name and value from what other athletes see.
-        It does not remove your own measurements from your own data.
-      </p>
+          <p className="cap">
+            Leaving a leaderboard removes your name and value from what other athletes see.
+            It does not remove your own measurements from your own data.
+          </p>
+        </>
+      )}
     </>
   );
 }

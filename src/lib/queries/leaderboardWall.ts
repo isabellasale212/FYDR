@@ -215,20 +215,12 @@ export async function fetchLeaderboardWall(
   const { data: athleteRows, error: athleteErr } = await athleteQuery;
   if (athleteErr) throw new Error(athleteErr.message);
 
-  /* Children's Code default 1 (2026-09-13): the same rule compute_leaderboard
-     has held since 0016, applied here. An under-18 (or an athlete with no date
-     of birth) is ranked only with a live leaderboard_visibility consent; the
-     rest are counted, not named. Applied BEFORE anything is read for them, so
-     no value of theirs is computed at all. */
-  const allIds = (athleteRows ?? []).map((a) => a.id);
-  const consented = new Set(
-    (
-      await inOrEmpty(allIds, (chunk) =>
-        db.from('athlete_consents').select('athlete_id').eq('org_id', orgId).eq('purpose', 'leaderboard_visibility').not('granted_at', 'is', null).is('withdrawn_at', null).in('athlete_id', [...chunk]),
-      )
-    ).map((c) => c.athlete_id),
-  );
-  const eligibleRows = (athleteRows ?? []).filter((a) => rankedBoardEligible({ age: ageOn(a.date_of_birth, asOf), consented: consented.has(a.id) }));
+  /* Children's Code (Isabella, 2026-09-13; migration 0116 for the published
+     boards): an under-18, or an athlete with no date of birth, is never ranked
+     — no consent lifts it until the guardian route exists. Applied BEFORE
+     anything is read for them, so no value of theirs is computed at all; the
+     rest are counted, not named. */
+  const eligibleRows = (athleteRows ?? []).filter((a) => rankedBoardEligible({ age: ageOn(a.date_of_birth, asOf) }));
   const excludedMinors = (athleteRows ?? []).length - eligibleRows.length;
   const athleteIds = eligibleRows.map((a) => a.id);
 

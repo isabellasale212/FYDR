@@ -99,7 +99,7 @@ if (pxSizes.length - offenders.length !== 1) {
 /* The container half. A fixed height on a control that carries text clips it
    the moment the text grows. */
 const CONTROLS = [
-  '.sheet-x', '.step .btnc', '.gym-set-key', '.gym-stepper button',
+  '.sheet-x', '.step .btnc', '.gym-set-key', '.gl-step',
   '.nutr-stepper-btn', '.sg-stepper-btn', '.sg-stepper-value', '.sg-field-ro',
   '.dots .opt > span', '.nutr-checkin-cell', '.reorder-btn',
 ];

@@ -36,7 +36,7 @@ const LOGGER  = read('src/components/GymSessionLogger/GymSessionLogger.tsx');
 
 console.log('\nthe promise that started this is still in the product');
 assert(
-  /My data marks the day corrected and shows what you\s*\n?\s*first reported/.test(LOGGER),
+  /My data marks the (day|session) corrected and shows what you\s*\n?\s*first (reported|logged)/.test(LOGGER),
   'the logger panel still makes the promise (if this fails, check the display is not now orphaned)',
 );
 

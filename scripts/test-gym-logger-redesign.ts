@@ -1,29 +1,25 @@
-/* The gym session logger, rebuilt from the redesign reference (screens 09/10).
+/* The gym session logger — rebuilt set by set on 2026-09-12 (ATH-ADULT-09 C1,
+ * approved by Isabella with the two target-size tokens --hit-lg 56px and
+ * --hit-md 52px; 10 C1 and 11 C1 with it). This file was the 8 September
+ * redesign's guard and pinned that build's shape: the exercise-card LIST, its
+ * "1 more · Nordic curl" disclosure, the "Recommended / Your weight" row, the
+ * amber part-done pill, the inline finish button. The rebuild supersedes all
+ * of it on purpose, so this file now pins the rebuilt shape instead — the
+ * things a future edit could quietly undo:
  *
- * MOST OF WHAT THE CHANGELOG CALLS NEW HERE ALREADY EXISTED, and checking that
- * before rebuilding it is the point of this file's first section. The amber is
- * the whole list: the progress fill was already --gym rather than the accent,
- * completed set keys already rendered a checkmark in a gym-tinted box with
- * gym-on-tint ink, the active exercise card already carried a gym-tinted head,
- * the part-done badge was already pill-warn, and the weight row already
- * relabelled itself to "Your weight" with an amber "recommended 142 kg"
- * sub-line the moment an athlete moved off the prescription. Those are asserted
- * as REGRESSION guards, not as new work.
+ *   1. one exercise at a time, what is next stated beneath, no disclosure
+ *   2. the two numbers at --fs-48 between --hit-md steppers, the unit beside
+ *   3. the one primary at --hit-lg, labelled with what it writes
+ *   4. the set chips as the state display — one accent, no disabled control
+ *   5. the deviation as information: "Prescribed 100 kg · +2.5", a real minus
+ *   6. Finish early in the header, dashed and neutral; Finish session in the
+ *      footer once every set is logged; Save correction / Cancel while a
+ *      correction is open
+ *   7. completeMutation is still reachable — the one control that closes a
+ *      session (the 8 Sept file's own warning, still the one that matters)
  *
- * THREE THINGS ACTUALLY CHANGE, and one of them is a functional collision:
- *
- *   1. The header loses its Close/timer utility line.
- *   2. Exercises past the next one collapse into a "1 more - Nordic curl" row.
- *   3. The floating "Finish early" bar goes.
- *
- * (3) IS THE ONE TO BE CAREFUL WITH. That bar holds the only control that
- * completes a session — `completeMutation`. Delete it as drawn and an athlete
- * can start a session and never finish one; every session they open stays open
- * for ever, and `alreadyComplete` never becomes true for any of them. So the
- * bar stops FLOATING, which is what the changelog actually objects to, and the
- * same button is rendered inline at the end of the list. Asserted below,
- * because "the reference does not draw it" is a reason to move a control, never
- * a reason to leave a workflow with no exit.
+ * What the 8 Sept file guarded against and still holds: no Close/timer row,
+ * no floating finish bar, the elapsed clock on the progress row.
  */
 import { readFileSync } from 'node:fs';
 
@@ -37,6 +33,7 @@ const strip = (src: string): string =>
 
 const src = strip(readFileSync('src/components/GymSessionLogger/GymSessionLogger.tsx', 'utf8'));
 const css = readFileSync('src/styles/base.css', 'utf8');
+const tokens = readFileSync('src/styles/tokens.css', 'utf8');
 /* Escape the whole selector. The first version wrote `\\${sel}` and left the
    brackets raw, so `.gym-set-key[data-logged]` compiled to a character class
    and matched nothing — four rules that ARE correct were reported missing. A
@@ -44,84 +41,106 @@ const css = readFileSync('src/styles/base.css', 'utf8');
    exactly like a real absence does. */
 const rule = (sel: string): string => {
   const escaped = sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`${escaped}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? '';
+  return new RegExp(`(?:^|[}\\n])\\s*${escaped}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? '';
 };
 
-console.log('one accent inside the logger — ATH-ADULT-09 D4, REVERSED by Isabella 2026-09-12');
+console.log('the two tokens — 12 Sept 2026, Isabella\'s decision, dated beside their values');
 {
-  /* The 2026-09-08 gold (progress fill, gym-tinted logged keys, the amber
-     "recommended" line) was pinned here so it would not be rebuilt by
-     accident. It has now been reversed on purpose: inside the logger the
-     logged keys, the progress fill and the deviation line move to the accent
-     family; the gold stays on the tab bar and the domain chips (12 D4 / SS-01
-     D2 declined). */
-  assert(/background:\s*var\(--accent\)/.test(rule('.gym-progress-fill')),
-    'the progress fill is the accent');
-  const logged = rule(".gym-set-key[data-logged]");
-  assert(/background:\s*var\(--accent\)/.test(logged) && /color:\s*var\(--on-accent\)/.test(logged), 'a logged set key is the accent with --on-accent ink');
-  assert(!/--gym/.test(logged), 'and no longer gym-tinted');
-  assert(/'\\u2713'/.test(src) || /\u2713/.test(src), 'a logged set draws a checkmark, not its number');
-  const next = rule(".gym-set-key[data-next]");
-  assert(/background:\s*var\(--wash-accent\)/.test(next) && /box-shadow:\s*var\(--ring-accent\)/.test(next), 'the current key is --wash-accent with --ring-accent');
-  const notReached = rule('.gym-set-key:disabled');
-  assert(/background:\s*var\(--surf2\)/.test(notReached) && /color:\s*var\(--faint\)/.test(notReached) && !/opacity/.test(notReached), 'a not-reached key is --faint on --surf2, undimmed');
-  assert(/background:\s*var\(--wash-accent\)/.test(rule(".gym-ex-card[data-active] .gym-ex-head")) && !/--gym-tint/.test(rule(".gym-ex-card[data-active] .gym-ex-head")),
-    'the live exercise carries the accent wash');
-  assert(/pill-warn/.test(src), 'the part-done badge is still the amber pill — a status, not the logger\'s hue');
-  assert(/overridden \? 'Your weight' : 'Recommended'/.test(src),
-    'the weight row relabels to "Your weight" when the athlete moves off the prescription');
-  assert(/prescribed <span className="num">\{rec\}<\/span> kg · \{deviation\}/.test(src),
-    'with the coach\'s number and the signed difference as the sub-line — "prescribed 100 kg · +2.5"');
-  assert(/color:\s*var\(--muted\)/.test(rule('.gym-weight-label .n[data-warn]')) && !/--warn/.test(rule('.gym-weight-label .n[data-warn]')), 'in --muted, never amber: a deviation is a fact, not a warning');
-  assert(/\\u2212/.test(src) || /−/.test(src), 'a negative difference uses a real minus sign');
+  assert(/--hit-lg: 56px;/.test(tokens) && /--hit-md: 52px;/.test(tokens), '--hit-lg 56px and --hit-md 52px exist');
+  const block = tokens.slice(tokens.indexOf('THE GYM LOGGER\'S TWO TARGET SIZES'), tokens.indexOf('--hit-md: 52px;'));
+  assert(/12 Sept 2026, Isabella/.test(block) && /decisions log/.test(block), 'dated, named, and pointed at the decisions log');
+  const readers = [...css.matchAll(/var\(--hit-(lg|md)\)/g)].length;
+  assert(readers >= 3, `read by the logger's primary and steppers (${readers} reads)`);
+  assert(!/44px floor.*changed/.test(block), 'the 44px floor is unchanged (nothing else reads them)');
 }
 
-console.log('\nthe header loses its utility line');
+console.log('\n1. one exercise at a time, what is next beneath');
 {
-  assert(!/gym-head-row/.test(src), 'no Close/timer row');
-  assert(!/gym-close/.test(src), 'no Close link — the athlete tab bar is on this screen and is the way out');
-  assert(!/gym-clock/.test(src), 'no running clock');
-  /* Dropping the clock must drop what fed it, or the component keeps a
-     setInterval running once a second to update nothing. */
-  /* THE CLOCK IS BACK, on the progress row rather than on a utility line of
-     its own — so the reference's simplified header survives and the fact does
-     too. The eyebrow's "55 MIN" is what the session is MEANT to take; an
-     athlete forty minutes in cannot get that from the plan. */
-  assert(/setInterval/.test(src), 'the elapsed clock ticks again');
-  assert(/elapsed\(startedAt, now\)/.test(src), 'and is rendered from the session start');
-  assert(!/gym-head-row|gym-close/.test(src),
-    'without bringing back the Close/timer line the reference removed');
-  /* THE CSS HAS TO GO TOO, and this assertion exists because it did not.
-     The first pass removed the markup, this file asserted the markup was gone,
-     it passed — and .gym-head-row, .gym-close and .gym-clock shipped to
-     production as three rules styling nothing, found by grepping the deployed
-     stylesheet rather than by any test here. Asserting a class is unused in the
-     component says nothing about whether its rule is still in the bundle. */
-  for (const dead of ['.gym-head-row', '.gym-close', '.gym-clock']) {
-    assert(!new RegExp(`\\${dead}\\s*\\{`).test(css), `${dead} is gone from the stylesheet, not just the markup`);
+  assert(/const card = correctingExercise \?\? active;/.test(src), 'the card is the active exercise — or the one being corrected');
+  assert(/\(alreadyComplete && showSets \? exercises : card \? \[card\] : \[\]\)\.map/.test(src), 'one card while the session is open; every exercise only once it is closed and "Correct a set" is pressed');
+  assert(/className="gl-then-line"/.test(src) && /className="gl-then-row"/.test(src), 'THEN — one line when one exercise remains, rows otherwise');
+  assert(!/gym-more/.test(src) && !/showAllExercises/.test(src) && !/hiddenExercises/.test(src), 'no disclosure, no "1 more" row — what is next is always visible');
+  for (const dead of ['.gym-more', '.gym-ex-card', '.gym-weight', '.gym-stepper', '.gym-correct']) {
+    assert(!new RegExp(`\\n${dead.replace('.', '\\.')}\\s*\\{`).test(css), `${dead} is gone from the stylesheet, not just the markup`);
   }
-  assert(/gym-head-eyebrow/.test(src) && /gym-head-title/.test(src),
-    'leaving one eyebrow line and the title');
 }
 
-console.log('\nexercises past the next one collapse into one row');
+console.log('\n2. the two numbers are the screen');
 {
-  assert(/gym-more/.test(src), 'the disclosure row exists');
-  assert(/more\b.*Nordic|moreLabel|hiddenExercises|collapsed/.test(src),
-    'it names what it is hiding rather than just counting');
-  assert(/useState/.test(src) && /showAllExercises|expanded/.test(src),
-    'and it opens — a disclosure that cannot be opened is a truncation');
+  const v = rule('.gl-num-v');
+  assert(/font-size:\s*var\(--fs-48\)/.test(v) && /font-weight:\s*800/.test(v) && /letter-spacing:\s*-0\.025em/.test(v), 'the value at --fs-48, 800, -0.025em');
+  assert(/font-size:\s*var\(--fs-15\)/.test(rule('.gl-num-v small')) && /color:\s*var\(--muted\)/.test(rule('.gl-num-v small')), 'the unit beside it at --fs-15 in --muted, not inside the figure');
+  const grid = rule('.gl-num');
+  assert(/grid-template-columns:\s*var\(--hit-md\) minmax\(0, 1fr\) var\(--hit-md\)/.test(grid), 'between two --hit-md columns');
+  const step = rule('.gl-step');
+  assert(/width:\s*var\(--hit-md\)/.test(step) && /min-height:\s*var\(--hit-md\)/.test(step) && /border:\s*none/.test(step) && /background:\s*var\(--surf2\)/.test(step), 'the stepper is a --hit-md square (min-height, so the glyph scales with the text setting), no border, the surf2 fill');
+  assert(/numberBlock\('weight'\)/.test(src) && /numberBlock\('reps'\)/.test(src), 'weight and reps, each a block');
+  assert(/showWeight \? numberBlock\('weight'\) : null/.test(src) && /Bodyweight · reps only/.test(src), 'a bodyweight exercise logs reps only');
+  assert(/stepValue\(kind, -step\)/.test(src) && /stepValue\(kind, step\)/.test(src) && /const step = kind === 'weight' \? card\.weight_step_kg : 1;/.test(src), 'the weight steps by the exercise\'s own increment, reps by one');
+  assert(/data-words=\{value === null \? '' : undefined\}/.test(src) && /'Not set'/.test(src), 'an absent value is words, at the words\' size');
+  assert(!/<input[^>]*inputMode="decimal"/.test(src) && !/<input[^>]*type="number"[^>]*load/i.test(src), 'no keypad for the numbers — steppers only');
 }
 
-console.log('\nthe finish control survives the floating bar');
+console.log('\n3. the one primary, labelled with what it writes');
 {
-  assert(!/gym-footer/.test(src), 'the floating bar is gone, as drawn');
-  /* THE ASSERTION THAT MATTERS. Not "a button exists" — the specific mutation
-     that marks the session complete must still be reachable from this screen. */
-  assert(/completeMutation\.mutate\(\)/.test(src),
-    'but completeMutation is still wired to something an athlete can press');
-  assert(/Finish session/.test(src), 'and reads "Finish session" once every set is logged');
-  assert(/Finish early/.test(src), 'and still offers finishing early, which is a real thing athletes do');
+  assert(/min-height:\s*var\(--hit-lg\)/.test(rule('.gl-primary')), '.gl-primary at --hit-lg');
+  assert(/`Log set \$\{nextSetNumber\}\$\{setWords\(weightFor\(card\), repsFor\(card\)\)/.test(src), '"Log set 2 · 100 kg × 8" — the label is the write');
+  assert(/Sets save as you log them\./.test(src), 'the footer note');
+  assert(!/can’t change|cannot change|can't change/.test(src), 'no "can\'t change" line');
+  assert(/return `\$\{formatKg\(weight\)\} kg × \$\{reps\}`/.test(src), 'setWords: "102.5 kg × 8"');
+}
+
+console.log('\n4. the set chips are the state display, one accent, no disabled control');
+{
+  const chip = rule('.gym-set-key');
+  assert(/min-height:\s*48px/.test(chip) && /background:\s*var\(--surf2\)/.test(chip) && /color:\s*var\(--faint\)/.test(chip) && /border:\s*none/.test(chip), 'a chip is 48px, --faint on --surf2, no border');
+  const next = rule('.gym-set-key[data-next]');
+  assert(/background:\s*var\(--wash-accent\)/.test(next) && /box-shadow:\s*var\(--ring-accent\)/.test(next), 'the current chip is the accent tint with the ring');
+  const logged = rule('.gym-set-key[data-logged]');
+  assert(/background:\s*var\(--accent\)/.test(logged) && /color:\s*var\(--on-accent\)/.test(logged) && !/--gym/.test(logged), 'a logged chip is the accent with --on-accent ink, never gym-tinted');
+  assert(/'✓'/.test(src), 'and draws a tick');
+  assert(!/\.gym-set-key:disabled/.test(css) && !/disabled=\{!loggedRow/.test(src), 'no disabled chip: not-reached and current are spans, not controls');
+  assert(/<span[\s\S]{0,200}className="gym-set-key"[\s\S]{0,120}data-next=/.test(src) && /<button[\s\S]{0,200}className="gym-set-key"[\s\S]{0,60}data-logged=""/.test(src), 'logged is a button (the correction target); the others are spans');
+  assert(!/pill-warn/.test(src.slice(0, src.indexOf('alreadyComplete && !finishedEarly'))), 'no amber part-done pill on the logger');
+  assert(!/--warn/.test(rule('.gl-num-ref')) && !/--gym/.test(css.slice(css.indexOf('.gl-card {'), css.indexOf('.gym-head-row2 {'))), 'one accent and no second hue inside the logger');
+  assert(/background:\s*var\(--accent\)/.test(rule('.gym-progress-fill')), 'the progress fill is the accent');
+}
+
+console.log('\n5. the deviation is information, not an error');
+{
+  assert(/Prescribed \{formatKg\(rec\)\} kg · <b>\{signed\(value - rec\)\}<\/b>/.test(src), '"Prescribed 100 kg · +2.5", the difference in bold');
+  assert(/return `\$\{delta >= 0 \? '\+' : '−'\}/.test(src), 'a real minus sign, never a hyphen');
+  assert(/color:\s*var\(--muted\)/.test(rule('.gl-num-ref')) && /color:\s*var\(--text\)/.test(rule('.gl-num-ref b')), 'in --muted, the figure in --text; no warn colour');
+  assert(!/Your weight/.test(src) && !/Recommended/.test(src), 'the old "Recommended / Your weight" relabelling is gone');
+}
+
+console.log('\n6. the header, the footer, and the correction');
+{
+  assert(/className="gym-head-row2"/.test(src) && /className="btn-ghost gym-finish-early"/.test(src), 'Finish early sits in the header (10 C1)');
+  const early = rule('.gym-finish-early');
+  assert(/border:\s*1px dashed var\(--border-strong\)/.test(early) && /color:\s*var\(--muted\)/.test(early) && /min-height:\s*44px/.test(early), 'dashed, --muted, 44px');
+  assert(/aria-label=\{`Finish early · \$\{doneCount\} of \$\{totalSets\} sets`\}/.test(src), 'and says the count');
+  assert(/\{!alreadyComplete && !allLogged \? \(/.test(src), 'only while sets remain');
+  assert(/allLogged \? \(\s*<div className="subm">[\s\S]{0,400}Finish session/.test(src), '"Finish session" takes the footer once every set is logged');
+  assert(/Set \$\{done\.length \+ 1\} of \$\{ex\.sets\}\$\{ex\.rest_seconds \? ` · Rest \$\{ex\.rest_seconds\}s` : ''\}/.test(src), '"Set 2 of 3 · Rest 90s" — rest is reference text');
+  assert(!/setInterval\([^)]*rest/i.test(src) && !/countdown/i.test(src), 'no rest timer, no countdown');
+  assert(/correcting && correctingRow \? \(\s*<div className="subm">[\s\S]{0,700}Save correction · \$\{setWords\(corr\.weight, corr\.reps\)[\s\S]{0,400}Cancel/.test(src), 'while a correction is open the footer reads Save correction / Cancel (11 C1)');
+  assert(/onClick=\{\(\) => openCorrection\(loggedRow\)\}/.test(src), 'a correction is reached from a logged chip');
+  assert(/className="gl-strip"/.test(src) && /Correct it/.test(src), 'the set that just landed is stated above the card with its way back');
+  assert(/Correcting set \$\{correctingRow\.set_number\} · was \$\{wasLine/.test(src), 'and the card says which set is being corrected and what it was');
+  assert(/c\.weight === null && delta < 0\s*\? c/.test(src), 'a minus on "Not set" stays "Not set"');
+}
+
+console.log('\n7. what the 8 Sept guard protected still holds');
+{
+  assert(/completeMutation\.mutate\(\)/.test(src), 'completeMutation is still wired to something an athlete can press');
+  assert(/Finish session/.test(src) && /Finish early/.test(src), 'both labels');
+  assert(!/gym-head-row\b/.test(src) && !/gym-close/.test(src) && !/gym-clock/.test(src) && !/gym-footer/.test(src), 'no Close/timer row, no floating bar');
+  for (const dead of ['.gym-head-row', '.gym-close', '.gym-clock', '.gym-footer']) {
+    assert(!new RegExp(`\\n${dead.replace('.', '\\.')}\\s*\\{`).test(css), `${dead} is gone from the stylesheet`);
+  }
+  assert(/setInterval/.test(src) && /elapsed\(startedAt, now\)/.test(src), 'the elapsed clock ticks on the progress row');
+  assert(/gym-head-eyebrow/.test(src) && /gym-head-title/.test(src), 'one eyebrow line and the title');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

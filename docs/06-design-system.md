@@ -2384,6 +2384,13 @@ text, roughly 24 px tall; `.signout-btn` is roughly 26 px tall.
 - Minimum 8 pt of separation between adjacent targets. The source's 4 px `.ds-nav` gap is
   below this and is raised to 8.
 - Dense web tables keep 44 px targets through row padding, even where the visual row is 36 px.
+- **Two larger targets exist, for the gym logger only** (12 September 2026, Isabella's
+  decision, dated beside the values in `tokens.css`): `--hit-lg` 56px for the one primary
+  that logs a set ("Log set 2 · 100 kg × 8" — the thumb's target under a bar with cold hands)
+  and `--hit-md` 52px for the stepper squares flanking each 48px value. New steps, not
+  aliases; read by `.gl-primary` and `.gl-step` and nothing else. The 44px floor stands for
+  every other control, and the 48px set chip stays a literal: it is a state display, not a
+  target size.
 - An automated check in the component test suite asserts the measured target of every pressable
   in the library.
 

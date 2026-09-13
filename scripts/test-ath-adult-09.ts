@@ -34,10 +34,10 @@ console.log('D4 — reversed 2026-09-12 (the logger is one accent; pinned in tes
   assert(!/background:\s*var\(--gym\)/.test(rule('.gym-progress-fill')), 'the progress fill is no longer gold');
 }
 
-console.log('B4 — the set keys stand on the 44px floor (decision sheet group (a), 2026-09-12)');
+console.log('B4 — the set chips stand above the 44px floor (44px on 2026-09-12 for B4; 48px with the C1 rebuild the same day)');
 {
   const key = rule('.gym-set-key');
-  assert(/min-height:\s*44px/.test(key), 'a set key is at least 44px tall');
+  assert(/min-height:\s*48px/.test(key), 'a set chip is 48px tall — the board\'s literal, above the floor');
   assert(!/42px/.test(key), 'the 42px height is gone');
 }
 
@@ -45,8 +45,8 @@ console.log('\nC3 — the stepper moves by the exercise\'s own step (migration 0
 {
   const logger = strip(read('src/components/GymSessionLogger/GymSessionLogger.tsx'));
   assert(!/WEIGHT_STEP_KG/.test(logger), 'the constant 2.5 is gone from the logger');
-  assert(/bumpWeight\(ex, -ex\.weight_step_kg\)/.test(logger) && /bumpWeight\(ex, ex\.weight_step_kg\)/.test(logger), '− and + move by ex.weight_step_kg');
-  assert(/by \$\{ex\.weight_step_kg\} kg/.test(logger), 'and the buttons say the step');
+  assert(/const step = kind === 'weight' \? card\.weight_step_kg : 1;/.test(logger) && /stepValue\(kind, -step\)/.test(logger) && /stepValue\(kind, step\)/.test(logger), '− and + move by the exercise\'s weight_step_kg (the C1 rebuild\'s steppers)');
+  assert(/by \$\{kind === 'weight' \? `\$\{step\} kg` : '1'\}/.test(logger), 'and the buttons say the step');
   const q = strip(read('src/lib/queries/programmes.ts'));
   assert(/weight_step_kg: number;/.test(q) && /from\('exercises'\)\.select\('id, weight_step_kg'\)/.test(q) && /weight_step_kg: steps\.get\(r\.exercise_id\) \?\? 2\.5/.test(q), 'fetchSessionExercises reads the step for the resolved exercise ids, 2.5 when unknown');
   const mig = read('supabase/migrations/0108_exercise_weight_step.sql');
@@ -58,8 +58,10 @@ console.log('\nC3 — the stepper moves by the exercise\'s own step (migration 0
 
 console.log('\nA3/A4. spacing, and a pinned header');
 {
-  const card = rule('.gym-ex-card');
-  assert(/border:\s*none/.test(card) && /background:\s*var\(--surf\)/.test(card), 'the exercise card is a white surface with no border');
+  /* .gym-ex-card became .gl-card with the C1 rebuild (2026-09-12); the rule
+     is the same — a white surface on the tinted page, no border. */
+  const card = rule('.gl-card');
+  assert(!/border:/.test(card) && /background:\s*var\(--surf\)/.test(card), 'the exercise card is a white surface with no border');
   assert(/border-radius:\s*var\(--r-toggle\)/.test(card), 'on the athlete card radius');
   const head = rule('.gym-head');
   assert(/position:\s*sticky/.test(head) && /top:\s*0/.test(head) && /background:\s*var\(--phone-bg\)/.test(head) && /z-index/.test(head), 'the header is sticky on the shell ground');

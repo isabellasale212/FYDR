@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { ordinal } from '@/lib/format';
 import { UNITS, BANDS, type WallAthlete, type WallBoard, type WallData } from '@/lib/queries/leaderboardWall';
+import { excludedMinorsLine } from '@/lib/rankedBoardEligibility';
 import {
   computeWallDerived,
   fmt,
@@ -173,11 +174,20 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
   const gridTemplateColumns = `minmax(190px, 1.4fr) repeat(${cols}, minmax(112px, 1fr))`;
   const wallMinWidth = 210 + cols * 122;
 
+  /* Children's Code default 1 (2026-09-13): the under-18s the wall did not
+     rank are counted in a sentence, never named, so the denominator is
+     honest and nobody reads "every athlete" as true. */
+  const excludedLine = excludedMinorsLine(data.excludedMinors);
+
   if (data.athletes.length === 0) {
     return (
       <EmptyState
         title="No athletes in this filter"
-        body="No athletes fall inside the selected group. Clear the filter to see the whole squad."
+        body={
+          data.excludedMinors > 0
+            ? `${excludedLine} Nobody else falls inside the selected group. Clear the filter to see the whole squad.`
+            : 'No athletes fall inside the selected group. Clear the filter to see the whole squad.'
+        }
       />
     );
   }
@@ -189,7 +199,7 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
           <p className="dash-stat-label">Boards</p>
           <p className="dash-stat-value">{derived.stats.boards}</p>
           <p className="dash-stat-sub">across {derived.stats.familyCount} families</p>
-          <p className="dash-stat-foot">club wide, every athlete included</p>
+          <p className="dash-stat-foot">{data.excludedMinors > 0 ? `club wide · ${data.excludedMinors} under-18 not ranked` : 'club wide, every eligible athlete included'}</p>
         </div>
         <div className="dash-stat">
           <p className="dash-stat-label">Athletes</p>
@@ -221,6 +231,11 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
           <p className="dash-stat-foot">beyond the typical error · {derived.stats.measurableBoards} measurable boards</p>
         </div>
       </div>
+      {excludedLine ? (
+        <p className="tiny lbw-excluded" role="note">
+          {excludedLine}
+        </p>
+      ) : null}
 
       <div className="lbw-movers-head">
         <p className="lbw-movers-title">Moved the most</p>

@@ -6508,6 +6508,12 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
    screen's headline and run at 34px/500; these sit under a page title and above
    a dense table, and "Fydr Leaderboard.dc.html" sets them at 28px/700. Scoped
    rather than changed globally — the two strips share markup, not a size. */
+/* Children's Code default 1 (2026-09-13): the wall's sentence for the
+   under-18s it did not rank. */
+.lbw-excluded {
+  margin: var(--sp-8) 0 var(--sp-12);
+  color: var(--muted);
+}
 .lbw-stats-card .dash-stat-value {
   font-size: var(--fs-28);
   font-weight: 700;

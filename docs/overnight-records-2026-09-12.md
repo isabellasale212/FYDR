@@ -501,6 +501,95 @@ accounts on scratch hold one role each (Jane sport scientist, the medic and coac
 exist), but a per-role, per-panel, per-write inventory is a review, not a build, and it is
 what decides most of the C rows below. Recommended as the first morning step.
 
+**Step 1, answered 2026-09-13** — from the running profile of James Barnes (a71e…0002,
+Modified, one open injury) rendered as five single-role accounts on scratch (Jane Pemberton
+sport scientist, Peter Ackland coach, Ruth Callaghan medic, Owen Hartnell S&C, Sana Mirza
+nutritionist; `docs/screens/03-athlete-profile.md` is the spec), and from the live policies
+read off `pg_policies` on scratch — not from the matrix, which turned out stale in one place
+(below).
+
+1. **Panels and writes, per role.** Every role renders, in this order: the development-plan
+   bar; the header (name, availability pill, restriction line and note, the Nutrition /
+   Wellness / Gym domain chips, Edit, the wellness dial); Athleticism; S&C history log
+   (empty state); Injury (the limited view — status, area, side, expected return, the
+   restriction list); Flags; ACWR and wellness rating; Goals; Nutrition plan; Entries and
+   corrections. Then by role:
+   - *Sport scientist*: + Availability panel (`SetAvailabilityFormCoach`: the reason chips
+     Illness / Personal / Academic / Representative / Other, Modified / Unavailable, Record
+     absence), Body weight (+ Log weigh-in, Set target range, Edit entries), Subject access
+     request (Generate subject access pack). Writes: bio Edit; Record absence; Acknowledge /
+     + Add note on any flag; Edit this programme; Nutrition plan Edit; the three weigh-in
+     controls; Correct check-in; + Log injury; the SAR pack. Everything.
+   - *Coach*: + Availability panel. **No Body weight card** (C9, 2026-09-12). Writes: bio
+     Edit; Record absence; Acknowledge / + Add note; Nutrition plan **View** only; Correct
+     check-in; + Log injury. Goals reads "View full detail ›".
+   - *Medic*: + Availability panel (the same non-injury form — the injury-linked
+     availability is set from the injury record), Body weight. The Injury card gains
+     **Edit** and **Manage injury & programme →** (the clinical fields, `InjuryMedicalForm`),
+     the diagnosis and the programme line. Writes: bio Edit; Record absence; Acknowledge /
+     + Add note; Edit this programme (PROGRAMME_AUTHOR — rehab); Nutrition plan View;
+     weigh-ins; Correct check-in; + Log injury; the clinical record.
+   - *S&C*: no Availability panel, Body weight present. Writes: weigh-ins; Acknowledge /
+     + Add note; Edit this programme; + Log injury. **Blocked with a reason**
+     (`BlockedButton`, aria-disabled): bio Edit, Correct check-in ×4. Nutrition plan View.
+   - *Nutritionist*: no Availability panel, Body weight present. Writes: weigh-ins;
+     Nutrition plan **Edit**. Flags: **no Acknowledge or + Add note** on the wellness /
+     compliance / GPS flags shown — "Read-only for your role — you can act on nutrition
+     flags." Blocked with a reason: bio Edit, Correct check-in. Goals "View full detail ›".
+     No + Log injury, no SAR. **The Injury card and the availability pill, restriction line
+     and note render** — this is right: migration 0074 (decided 2026-09-06, reversing D-01)
+     admits the nutritionist to `injuries_staff_select` and `availability_staff_select`
+     (all five roles; `clinical_medical_only` untouched), so they read the same censored
+     view as the coach. The access matrix's §2 row, §4.1 and §4.2 still said "nothing from
+     either" — corrected from the policies in `adf6748`, with the dashboard's
+     over-withholding.
+2. **Body mass.** Hidden from the coach since 2026-09-12 (`BODY_MASS_VIEW` = the four roles
+   that may log a weigh-in; the card is absent, not locked; the bio Weight cell and the
+   export columns go with it). Not a club setting: Isabella's Q27 decision was "the coach
+   does not see body mass at all", so the smallest change was the role set, no setting.
+3. **Availability.** A coach can set it, non-injury reasons only, and it is enforced at
+   the database: `availability_coach_insert_noninjury` / `_update_noninjury` (0042, the
+   sport scientist added in 0068) require `injury_id is null` and `reason_category is
+   distinct from 'injury'`; the injury-linked row is `availability_medical_insert/update`,
+   the medic alone. The profile's Availability panel is exactly that non-injury form, for
+   `AVAILABILITY_EDIT` (sport scientist, coach, medic).
+4. **Clinical record.** `injury_clinical`: diagnosis, mechanism, severity, tissue_type,
+   imaging, referral, clinical_notes, treatment_plan (0005). RLS `clinical_medical_only`
+   (0012) admits the medic for every operation and nobody else; the athlete reads
+   `injury_clinical_athlete_view` minus clinical_notes, age-gated (0093). The page fetches
+   it for the medic only, so no other role's render can even show an empty clinical panel.
+5. **Flags.** Acknowledge and note: `flags_staff_update` and `flag_actions_staff_insert`
+   (0075) — sport scientist, coach, medic, S&C on any domain; the nutritionist on
+   `domain = 'nutrition'` only (`NUTRITIONIST_FLAG_DOMAIN`, `editableFlagDomains`).
+6. **Subject access request panel.** The sport scientist alone: the panel renders on
+   `claims.roles.includes('sport_scientist')`, the route redirects anyone outside
+   `SETTINGS_ADMIN` (`?e=no-sar-access`), and `sar_requests_admin_insert` (0032) holds it at
+   the database.
+7. **The ACWR and wellness-rating card** (`aria-label="ACWR and wellness rating"`, the two
+   dials — ACWR against the club's flag rule with n sessions, and the wellness rating band):
+   the on-page summary of `/squad/[id]/wellness`, kept when that page was built because a
+   coach scanning the profile wants ACWR and readiness without a second navigation. It
+   stays; the board's ten panels were drawn from the review, which did not list it.
+   **Recommend** C4's library names it "Load and wellness" and orders it after Flags for
+   every role, as today.
+8. **Period control.** Per user, not per role: a `?period=` in the address, else the
+   account-wide sticky `fydr-period` cookie any staff screen writes, else this screen's
+   own default — `season` when the current season has at least `MIN_USEFUL_DEFAULT_DAYS`
+   behind it, otherwise `month` (`PROFILE_DEFAULT_PERIOD`, `clampPeriod` to
+   `PROFILE_PERIODS`).
+9. **"Log injury".** `/injuries/new?athlete=…` → `NewInjuryForm` → `createInjury`: the
+   coach-safe row only — body area, side, onset date, occurred in, expected return
+   (`injuries_staff_insert`: sport scientist, coach, medic, S&C — the four in
+   `INJURY_ACCESS`). The clinical record and the injury-linked availability are the
+   medic's next step on the injury page; the sport scientist writes neither.
+
+**What Step 1 settles for the C rows.** C1 (the status header): no per-role render beyond
+the coach's missing Weight cell, already true (C9). C4 (panels by role from one library):
+the inventory above IS the library's first draft — the only per-role absences are the
+Availability panel (AVAILABILITY_EDIT), Body weight (BODY_MASS_VIEW), SAR (sport
+scientist) and, inside the Injury card, the medic's clinical block; every other panel is
+common, differing only in which controls are live or blocked.
+
 ### A. Buildable now — existing tokens, copy, no behaviour change
 
 | # | Change | Before | After |

@@ -1170,6 +1170,8 @@ what renders, not who gets in.
 
 ## STAFF-SS-30 — Settings sub-screens
 
+**Built 2026-09-13 (`ac11b0d`), measured as Jane.** On the settings hub Log out is a 44px button with "Ends this session on this browser only" (48px on a phone); each settings row is one target of at least 52px; Apple Health reads "Not available yet · needs the Fydr iOS app"; Catapult's control reads "Import files" (it is a CSV drop, not a connection); the exports intro names the signed-in role; the audit log says what it cannot show.
+
 Each is its own route with its own gate.
 
 | ID | Screen | Route | Gate |

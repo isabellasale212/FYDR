@@ -120,24 +120,16 @@ export type AuditLogPage = {
   pageSize: number;
 };
 
-export async function fetchAuditLog(
-  db: Db,
-  orgId: string,
-  filters: AuditLogFilters,
-  page: number,
-  pageSize: number,
-  /** Resolves an athlete name for rows where the only reference is
-   *  metadata->>'athlete_id' (report views) rather than the joined
-   *  `athletes` relation (which only follows the real FK column). Pass the
-   *  same roster fetchAthleteOptions already returned — no extra query. */
-  athleteNameById: ReadonlyMap<string, string>,
-  timezone: string,
-): Promise<AuditLogPage> {
+/** The filtered query both the page and the count share — PATTERN-S8 C7
+ *  (2026-09-13): the phone sheet's button reads back the count it will
+ *  show, so the count must be the same filter the page applies, built once.
+ *  `head` asks for the count alone. */
+async function auditQuery(db: Db, orgId: string, filters: AuditLogFilters, timezone: string, head: boolean) {
   let query = db
     .from('audit_log')
     .select(
       'id, action, entity_type, entity_id, metadata, occurred_at, actor_role, athlete_id, users(full_name), athletes(first_name, last_name)',
-      { count: 'exact' },
+      { count: 'exact', head },
     )
     .eq('org_id', orgId)
     .order('occurred_at', { ascending: false });
@@ -178,6 +170,34 @@ export async function fetchAuditLog(
       query = query.or(parts.join(','));
     }
   }
+  /* Boxed: a PostgREST builder is thenable, so returning it bare from an
+     async function would run it here. */
+  return { query };
+}
+
+/** How many rows the filter matches — what the phone sheet's button reads
+ *  back ("Show 128 entries") before the page is asked for them. */
+export async function countAuditLog(db: Db, orgId: string, filters: AuditLogFilters, timezone: string): Promise<number> {
+  const { query } = await auditQuery(db, orgId, filters, timezone, true);
+  const { count, error } = await query;
+  if (error) throw new Error(error.message);
+  return count ?? 0;
+}
+
+export async function fetchAuditLog(
+  db: Db,
+  orgId: string,
+  filters: AuditLogFilters,
+  page: number,
+  pageSize: number,
+  /** Resolves an athlete name for rows where the only reference is
+   *  metadata->>'athlete_id' (report views) rather than the joined
+   *  `athletes` relation (which only follows the real FK column). Pass the
+   *  same roster fetchAthleteOptions already returned — no extra query. */
+  athleteNameById: ReadonlyMap<string, string>,
+  timezone: string,
+): Promise<AuditLogPage> {
+  const { query } = await auditQuery(db, orgId, filters, timezone, false);
 
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;

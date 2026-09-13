@@ -5402,6 +5402,56 @@ img.me-avatar {
   font-size: var(--fs-13);
   line-height: 1.45;
 }
+/* PATTERN-S8 C7 (2026-09-13): the audit log's filters — the card at desktop;
+   on a phone a 44px "Filters · 3" button and a sheet (the staff shell's
+   .ph-sheet rules, which exist only below 768px) whose button reads back the
+   count it will show. The header's active-filter pill sits beside the h1. */
+.audit-active-pill {
+  margin-left: var(--sp-10);
+  vertical-align: middle;
+  font-size: var(--fs-12);
+}
+.audit-filters-phone {
+  display: none;
+}
+.audit-filters-open {
+  min-height: 44px;
+}
+.audit-sheet-fields {
+  display: grid;
+  gap: var(--sp-12);
+}
+.audit-sheet-alltime {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  min-height: 44px;
+  font-size: var(--fs-13);
+}
+.audit-sheet-alltime input {
+  width: 20px;
+  height: 20px;
+}
+.audit-sheet-actions {
+  display: flex;
+  gap: var(--sp-10);
+  margin-top: var(--sp-14);
+}
+.audit-sheet-actions .btn-primary {
+  flex: 1 1 auto;
+}
+@media (max-width: 767px) {
+  .audit-filters-desktop,
+  .audit-type-chips {
+    display: none;
+  }
+  .audit-filters-phone {
+    display: flex;
+    gap: var(--sp-10);
+    align-items: center;
+    margin-bottom: var(--sp-14);
+  }
+}
 /* PATTERN-S8 A1 (2026-09-13): Log out is a button, set apart from the lists,
    with the session it ends named beside it. */
 .set-logout-form {

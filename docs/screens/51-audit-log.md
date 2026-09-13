@@ -36,6 +36,22 @@ search box finds a row by the reference. Append-only like every row here.
 Entries in time order, each naming the person who acted, their role at the time,
 the action, the kind of record, the athlete affected where relevant, and when.
 
+**The filters** (PATTERN-S8 C7, 13 September 2026). At desktop: the kind chips
+(whatever kinds the club's log holds), then a card with From, To, Staff member (the
+person filter — every staff account, so "did Coach X ever touch this record" can be
+answered with a confirmed no), Athlete, Search (an action, a staff name or a D-
+reference), Apply filters, Show all time, Clear filters. **On a phone the same
+controls are a sheet**: a 44px **Filters** button that carries the applied count
+("Filters · 3") opens the staff shell's sheet pattern (scrim, dialog, 80dvh) holding
+Kind as a select, the two dates, Staff member, Athlete, Search and an "All time, not
+just the last 30 days" switch. **The sheet's button reads back the count it will
+show** — "Show 128 entries", "Show 1 entry", "Show — nothing matches", "Counting…"
+while it asks — from `/settings/audit/count`, the same query the page runs with the
+same 30-day default, re-asked as the controls change, so nobody applies a filter
+blind. Escape and Cancel close it without applying. **The header carries the active
+filter count**: "Audit log" with a pill reading "3 filters" — the filters a person
+chose; the 30-day default is not counted.
+
 ## 5. Every number on this page
 
 None. The log is a record, not a measurement.
@@ -44,7 +60,9 @@ None. The log is a record, not a measurement.
 
 | Element and label | Where it sits | What happens | Where it goes | What it writes | Permission | Confirmation | Hidden when |
 |---|---|---|---|---|---|---|---|
-| Filters | Header | Narrow the entries by action, person or athlete | Stays here | Nothing | Sport scientist | None | Absent for everyone else |
+| Filters | The card (desktop) or the sheet (phone) | Narrow the entries by kind, date, person, athlete or search | Stays here, `?type=&from=&to=&range=&actor=&athlete=&q=` | Nothing | Sport scientist | None | Absent for everyone else |
+| Filters · N (phone) | Above the entries | Opens the sheet; the label carries the applied count | Stays here | Nothing | Sport scientist | None | At 768px and above, where the card shows instead |
+| Show N entries (phone sheet) | The sheet's foot | Applies the sheet's filters; reads back the count it will show before it is pressed | Stays here | Nothing | Sport scientist | The count is the confirmation | — |
 | An athlete's name | An entry | Opens that athlete | `/squad/[athleteId]` | Nothing | Sport scientist | None | Absent |
 
 **Nothing on this page writes anything.**

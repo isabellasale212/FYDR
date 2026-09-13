@@ -4,6 +4,7 @@ import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { AuditLogFilters } from '@/components/AuditLogFilters/AuditLogFilters';
 import { fetchAuditLog, fetchEntityTypes, fetchActors, fetchAthleteOptions, type AuditLogFilters as Filters } from '@/lib/queries/auditLog';
 import { formatDateTime, todayIso, addDays } from '@/lib/format';
+import { activeFilterCount } from '@/lib/auditFilterWords';
 import { requireStaff } from '@/lib/session';
 import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 
@@ -79,6 +80,10 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Sea
 
   const otherParams = { type: entityType ?? undefined, from: explicitFrom ?? undefined, to: explicitTo ?? undefined, range: isAllTime ? 'all' : undefined, actor: actorId ?? undefined, athlete: athleteId ?? undefined, q: q ?? undefined };
 
+  /* PATTERN-S8 C7: the header carries the active filter count — the
+     filters a person chose, not the 30-day default. */
+  const active = activeFilterCount({ type: entityType ?? '', from: explicitFrom ?? '', to: explicitTo ?? '', actor: actorId ?? '', athlete: athleteId ?? '', q: q ?? '', allTime: isAllTime, usingDefaultWindow });
+
   const totalPages = Math.max(1, Math.ceil(result.total / PAGE_SIZE));
   const rangeStart = result.total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const rangeEnd = Math.min(result.total, page * PAGE_SIZE);
@@ -90,7 +95,14 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Sea
           <p className="eyebrow">
             <Link href="/settings">Settings</Link> · Compliance
           </p>
-          <h1>Audit log</h1>
+          <h1>
+            Audit log
+            {active > 0 ? (
+              <span className="pill pill-accent audit-active-pill num" aria-label={`${active} filter${active === 1 ? '' : 's'} active`}>
+                {active} filter{active === 1 ? '' : 's'}
+              </span>
+            ) : null}
+          </h1>
         </div>
       </div>
 
@@ -99,7 +111,9 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Sea
         what. Append-only: nothing here can be edited or deleted, by any role.
       </p>
 
-      <div className="chiprow" style={{ marginBottom: 'var(--sp-14)' }}>
+      {/* PATTERN-S8 C7: the kind chips stay on desktop; on a phone the kind is
+          a select inside the filter sheet. */}
+      <div className="chiprow audit-type-chips" style={{ marginBottom: 'var(--sp-14)' }}>
         <Link href={`/settings/audit${qs({ ...otherParams, type: undefined })}`} className="squad-chip" aria-pressed={!entityType}>
           All
         </Link>
@@ -113,12 +127,15 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Sea
       <AuditLogFilters
         actors={actors}
         athletes={athleteOptions}
+        entityTypes={entityTypes}
+        entityType={entityType ?? ''}
         from={explicitFrom ?? (usingDefaultWindow ? (from ?? '') : '')}
         to={explicitTo ?? (usingDefaultWindow ? (to ?? '') : '')}
         actorId={actorId ?? ''}
         athleteId={athleteId ?? ''}
         q={q ?? ''}
         isAllTime={isAllTime}
+        usingDefaultWindow={usingDefaultWindow}
       />
 
       <p className="cap" style={{ marginTop: -6, marginBottom: 'var(--sp-14)' }}>

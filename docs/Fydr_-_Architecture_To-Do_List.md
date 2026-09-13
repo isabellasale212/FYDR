@@ -1550,6 +1550,18 @@ Reviewed as Jane Pemberton at 1280×800 and 375×812, read-only — no board, ex
 
   **Also seen, same step, not a gate:** the three refusals on the Users screen (self-medic, last-admin, self-deactivate) are `disabled` + `title`, not `BlockedButton` — on a phone the reason never shows, and self-deactivate has no reason at all (F-11 in `docs/test-club-run-2026-09-13.md`).
 
+## 0be. An athlete record cannot be removed from any screen — found 2026-09-13 on the test club (F-16), filed on Isabella's instruction, before pilot
+
+- [ ] **There is no way to remove an athlete record at all, and a real club will hit it in week one.** Found when the test-club run added "Transfer Probe" (an Add athlete with an email already registered at another club — the transfer outcome, working as designed) and then could not take the row off Harlow Vale's roster: the profile offers no leave / remove / archive control, the squad list none, Settings › Data retention none (it runs two categories, import files and closed-injury clinical detail, and previews the rest). The row is on the roster, in every group picker, in the nutrition "Needs a word" list and in the programme's assignment list.
+
+  **What the schema already has, and nothing writes.** `athlete_status` is `active | injured_long_term | left_club` (0001:81); `left_club` is **read** — Settings' athlete count excludes it (`settings/page.tsx:65`) and `playerProfile.ts:362` allows for it — but no screen and no query sets it, and no screen writes `athletes.deleted_at` (CLAUDE.md rule 4's soft delete). Ashcombe never surfaced this because the seed never needed it.
+
+  **Two cases, one action.** (a) A player leaves — the record must stay (rule 4, and the retention schedule keeps injury detail for eight years) but stop counting: off the roster and the group pickers, out of the compliance denominators and the dashboard's "of N", out of "Needs a word", out of leaderboards; her app access ends (the linked user deactivated — and §0bd's fix must let the sport scientist, not the athlete, do that). (b) A record added by mistake, with nothing recorded against it — the same action; the row is not deleted either, because "nothing recorded" is hard to prove and rule 4 does not make exceptions.
+
+  **Proposed, for the builder — tests first, the spec files in the same commit:** a "Left the club" action on the athlete profile for `SETTINGS_ADMIN` (the sport scientist), with a date and a confirmation that names what stops and what is kept; it sets `status = 'left_club'`, records the date, and deactivates the linked `users` row; audited (`athletes` and `users` both carry triggers). Every multi-athlete read that already excludes `deleted_at` gains `status <> 'left_club'`; a "Left" section on the squad screen (or a filter) so the record is still findable; the retention screen's erasure path is the separate, later step and is unchanged. Wrong side to probe when built: the coach, the medic and the athlete herself at the database.
+
+  **Not proposed:** a hard delete for the mistaken-record case.
+
 ## 0f. Low priority, filed 2026-09-08 so it does not resurface as a surprise
 - [ ] **`seed.sql` authors dates as offsets from `current_date`, so seeded data goes stale as a database ages.** Not urgent and not a bug — the seed is correct at the moment it runs. It is a property of any long-lived database seeded from it.
 

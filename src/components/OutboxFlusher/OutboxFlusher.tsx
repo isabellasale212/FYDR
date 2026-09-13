@@ -375,66 +375,77 @@ export function OutboxFlusher({ orgId, athleteId, userId, timezone }: Props) {
     <>
       {/* PATTERN-S6 B2: a conflict is a lost answer, not a caution — the bad
           tone, not warn. "Discard this one" / "Keep what is showing" stay
-          ghost controls inside the notice and nowhere else. */}
-      {conflicts.map((c) => (
-        <p
-          key={`${c.domain}-${c.id}`}
-          className="banner outbox-conflict"
-          role="alert"
-          style={{ marginBottom: 'var(--sp-12)' }}
-        >
-          <span className="g g-bad" aria-hidden="true">
-            !
-          </span>
-          <span>
-            {c.gym?.closedLog ? (
-              /* §0bc (0110): the session was complete when the set arrived.
-                 No live row to correct with these numbers, so no "Use my
-                 numbers" — the numbers are said, the way out is named, and
-                 the only control is the discard. */
-              <>
-                One saved set could not be sent: the session was finished before this set was sent, so
-                the database refused {c.label}. Your queued numbers were {c.gym.queued} — correct a logged
-                set from My data if they belong there.
-                <span style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-8)', marginTop: 'var(--sp-8)' }}>
+          ghost controls inside the notice and nowhere else.
+
+          PATTERN-S6 C9 (2026-09-13): ONE alert region for all of them, not one
+          per conflict. Two conflicts landing in one flush used to mount two
+          role="alert" nodes at once and announce twice; the region now wraps
+          the list and announces once per transition (a discard changes its
+          content and is announced once; the last discard removes it). The
+          per-conflict banners keep their look and lose their role. Absent
+          entirely with nothing in conflict — no empty region. */}
+      {conflicts.length > 0 ? (
+        <div role="alert">
+        {conflicts.map((c) => (
+          <p
+            key={`${c.domain}-${c.id}`}
+            className="banner outbox-conflict"
+            style={{ marginBottom: 'var(--sp-12)' }}
+          >
+            <span className="g g-bad" aria-hidden="true">
+              !
+            </span>
+            <span>
+              {c.gym?.closedLog ? (
+                /* §0bc (0110): the session was complete when the set arrived.
+                   No live row to correct with these numbers, so no "Use my
+                   numbers" — the numbers are said, the way out is named, and
+                   the only control is the discard. */
+                <>
+                  One saved set could not be sent: the session was finished before this set was sent, so
+                  the database refused {c.label}. Your queued numbers were {c.gym.queued} — correct a logged
+                  set from My data if they belong there.
+                  <span style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-8)', marginTop: 'var(--sp-8)' }}>
+                    <button type="button" className="btn-ghost" onClick={() => handleDiscard(c.domain, c.id)}>
+                      Discard this one
+                    </button>
+                  </span>
+                </>
+              ) : c.gym ? (
+                <>
+                  One saved set could not be sent: {c.label} is already logged
+                  {c.gym.live ? ` as ${c.gym.live}` : ''} from another tab or device, and that one
+                  is what is showing. Your queued numbers were {c.gym.queued}.
+                  <span style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-8)', marginTop: 'var(--sp-8)' }}>
+                    {c.gym.liveId ? (
+                      <button
+                        type="button"
+                        className="btn-ghost"
+                        disabled={correcting === c.id}
+                        onClick={() => void handleUseMine(c.id)}
+                      >
+                        {correcting === c.id ? 'Saving…' : 'Use my numbers'}
+                      </button>
+                    ) : null}
+                    <button type="button" className="btn-ghost" onClick={() => handleDiscard(c.domain, c.id)}>
+                      Keep what is showing
+                    </button>
+                  </span>
+                </>
+              ) : (
+                <>
+                  One saved entry could not be sent: you already have {c.label} from
+                  another tab or device, and that one is what is showing.{' '}
                   <button type="button" className="btn-ghost" onClick={() => handleDiscard(c.domain, c.id)}>
                     Discard this one
                   </button>
-                </span>
-              </>
-            ) : c.gym ? (
-              <>
-                One saved set could not be sent: {c.label} is already logged
-                {c.gym.live ? ` as ${c.gym.live}` : ''} from another tab or device, and that one
-                is what is showing. Your queued numbers were {c.gym.queued}.
-                <span style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-8)', marginTop: 'var(--sp-8)' }}>
-                  {c.gym.liveId ? (
-                    <button
-                      type="button"
-                      className="btn-ghost"
-                      disabled={correcting === c.id}
-                      onClick={() => void handleUseMine(c.id)}
-                    >
-                      {correcting === c.id ? 'Saving…' : 'Use my numbers'}
-                    </button>
-                  ) : null}
-                  <button type="button" className="btn-ghost" onClick={() => handleDiscard(c.domain, c.id)}>
-                    Keep what is showing
-                  </button>
-                </span>
-              </>
-            ) : (
-              <>
-                One saved entry could not be sent: you already have {c.label} from
-                another tab or device, and that one is what is showing.{' '}
-                <button type="button" className="btn-ghost" onClick={() => handleDiscard(c.domain, c.id)}>
-                  Discard this one
-                </button>
-              </>
-            )}
-          </span>
-        </p>
-      ))}
+                </>
+              )}
+            </span>
+          </p>
+        ))}
+        </div>
+      ) : null}
       {/* ONE status region, whichever line it carries: the waiting count
           (B1, the good-tone card — held is a promise kept, not a warning;
           the sentence is unchanged) or, after a flush that sent, the sent

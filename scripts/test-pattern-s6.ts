@@ -69,5 +69,16 @@ console.log('\nthe record and the sheet');
   assert(/Nothing is waiting/.test(spec), '01-today.md describes the sent line');
 }
 
+console.log('\nC9 — one alert region per surface (audit 2026-09-13; the one violation fixed)');
+{
+  const f = strip(read('src/components/OutboxFlusher/OutboxFlusher.tsx'));
+  const rendered = f.slice(f.indexOf('return (\n    <>'));
+  const alertRegions = rendered.match(/role="alert"/g) ?? [];
+  assert(alertRegions.length === 1 && /<div role="alert">\s*\{conflicts\.map\(/.test(rendered), 'one alert region wrapping every conflict — N conflicts in one flush announce once, not N times');
+  assert(!/className="banner outbox-conflict"\s*role="alert"/.test(rendered), 'the per-conflict banner carries no role of its own');
+  assert(/\{conflicts\.length > 0 \? \(\s*<div role="alert">/.test(rendered), 'the region exists only while there is a conflict — no empty region');
+  assert(/a conflict is shown\s*inside one `role="alert"` region/.test(read('docs/athlete/screens/01-today.md')), '01-today.md says so');
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

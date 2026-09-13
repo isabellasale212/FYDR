@@ -177,7 +177,9 @@ still return here, and the to-do list losing its row is the success — the
 gone.
 
 **The same day submitted twice from two devices** (§0aa): a conflict is shown
-as a `role="alert"` notice in the bad tone — "One saved entry could not be sent:
+inside one `role="alert"` region — one region for every conflict on the screen,
+so two arriving in one flush are announced once, not twice (PATTERN-S6 C9,
+13 September 2026) — each as a notice in the bad tone — "One saved entry could not be sent:
 you already have your check-in for the week of Mon 24 Aug from another tab or
 device, and that one is what is showing." — with "Discard this one" (or, for a
 gym set, "Use my numbers" / "Keep what is showing") as ghost controls inside

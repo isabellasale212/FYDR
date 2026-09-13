@@ -859,6 +859,59 @@ the code, so the record and the sheet carry the facts; nothing that needs a deci
 
 **Built:** A1–A3, B1–B2 (B3 with A1). **Recorded:** C1–C10, D1–D5 — appended to the decision sheet.
 
+### C9 audit — live regions per surface (2026-09-13)
+
+The board's rule: one `role="status"` under the page title and one
+`role="alert"` above the form per surface, written on transition only, keyed by
+state, so a re-render of the same state announces nothing.
+
+**Source count.** 118 live-region attributes across 90 files under `src/app`
+and `src/components`: 23 `role="status"`, 93 `role="alert"`, 2 `aria-live`
+(both on a stepper's readout, paired with a `status`). Of the 116 roles, 108 are
+inside a condition — they mount when a state becomes true and unmount when it
+stops — and 8 are always rendered while their component is: the check-in and
+RPE steppers' value readouts (`status`, the right thing for a value that changes
+under a control), the reset-request confirmation, the MFA challenge's failed-load
+message, the reset link's expired message (each a terminal phase of its form,
+so a transition in effect), the Toast (unused on the surfaces measured), and the
+analytics builder's scope line.
+
+**Runtime count, default state, signed in.** 24 staff surfaces as the sport
+scientist: 22 carry no live region at all, `/nutrition` carries one (the
+"Outside ±5%" plan warning, a persistent state of the plan being edited) and
+`/settings` one (the role-requires-MFA notice). 13 athlete surfaces as Dan at
+375px: 12 carry none, `/check-in` carries the sleep-hours readout. Pressing
+submit on an unanswered check-in mounts nothing (the button is not live until
+the form is answerable — no silent failure, and no announcement of nothing).
+
+**What that means.** React mounts a conditional region once when its state
+turns true and leaves the node alone on a re-render of the same state, so
+"written on transition only" already holds for the 108, and no surface carries
+two regions on load. The board's persistent-region model (one always-present
+node whose text is replaced) and the app's mount-on-transition model both
+announce once per transition; they differ in architecture, not in what a
+screen-reader user hears — with one exception found and fixed below.
+
+**The one violation.** `OutboxFlusher` rendered one `role="alert"` per conflict,
+so two conflicts landing in one flush mounted two alert nodes at once and
+announced twice (the record's Step 1 Q8 had named this). Fixed 2026-09-13: one
+`<div role="alert">` wraps the conflict list; the per-conflict banners keep
+their look and lose their role; a discard changes the region's content and is
+announced once; the last discard removes it; nothing renders with nothing in
+conflict. Verified as Dan with two staged conflicts: 1 region, 2 banners → 1
+region, 1 banner → 0.
+
+**Not restructured, and why.** Moving the other 107 regions onto a
+persistent-region-per-surface architecture means a shell-level region pair and
+a write channel (context) for ~85 form components to announce through, for no
+change in what is announced. That is a large cross-cutting refactor of frozen
+components outside this board's flows, with its yield in screen-reader
+consistency (VoiceOver is known to miss some dynamically inserted `alert`
+nodes; a persistent region is more reliable) rather than in behaviour the app
+lacks. Recommended on the sheet: not now; revisit if screen-reader testing on
+the pilot devices shows a mounted alert being missed, and then do it per shell
+(athlete first — one layout, 13 surfaces), not per file.
+
 ---
 
 ## PATTERN-S7 — Reports and analytics

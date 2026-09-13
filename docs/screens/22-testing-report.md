@@ -32,6 +32,12 @@ middle looks like.
 
 ## 4. What you see
 
+**The definition sentence sits above the numbers** (PATTERN-S7 C1, 13 September
+2026; `docs/reports-catalogue.md`): "Test results across the group chosen: where
+each athlete sits on one test, and what the group's middle looks like over time."
+— a `--surf` card under the scope line; it prints with the page and is the first
+line of the CSV and the line under the PDF's title.
+
 **The header is one template shared by all five reports** (and specified in
 `CHANGELOG-headers-spec.md`). Five rows, always in this order:
 

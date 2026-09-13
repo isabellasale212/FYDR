@@ -64,7 +64,9 @@ const DONE: { key: string; dir: string; spec: string; csv?: string; pdf?: string
      the card is composed in the page with the shared header's classes. */
   { key: 'athlete', dir: 'athlete/[athleteId]', spec: 'docs/screens/19-athlete-report.md', screen: /<div className="card rhead-definition"[^>]*>\s*<p>\{reportDefinition\('athlete'\)\}<\/p>\s*<\/div>/ },
   { key: 'squad', dir: 'squad', spec: 'docs/screens/21-squad-weekly-report.md' },
+  { key: 'testing', dir: 'testing', spec: 'docs/screens/22-testing-report.md' },
 ];
+assert(DONE.length === 5, 'with compliance in §3, all six reports carry the sentence');
 console.log('\n4. the reports that carry it so far');
 for (const r of DONE) {
   const page = strip(read(`src/app/(staff)/reports/${r.dir}/page.tsx`));

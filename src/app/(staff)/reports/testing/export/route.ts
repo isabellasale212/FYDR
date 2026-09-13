@@ -7,6 +7,7 @@ import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatNumber } from '@/lib/format';
 import { resolveTestingPeriod, testingWindow } from '../period';
 import { periodParamsFromUrl } from '@/lib/reportPeriod.server';
+import { reportDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
@@ -92,6 +93,7 @@ export async function GET(request: Request) {
   // "personal bests" over a season-bounded read is a file someone will paste
   // into a spreadsheet next year and read as all-time.
   const caption =
+    `# ${reportDefinition('testing')}\r\n` +
     `# Testing report, ${period.range.label.toLowerCase()}: ${reportWindow.from} to ${reportWindow.to}. ` +
     `Scope: ${groupScopeLabel(groups, groupIds)} ` +
     `(${byAthlete.rows.length} athletes), ${byAthlete.definitions.length} tests.\r\n\r\n# By athlete — best in period\r\n`;

@@ -14,6 +14,7 @@ import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, formatNumber } from '@/lib/format';
 import { resolveTestingPeriod, testingQuery, testingWindow } from './period';
 import { periodCaveat, periodParamsFrom, periodSticky } from '@/lib/reportPeriod.server';
+import { reportDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
@@ -151,6 +152,8 @@ export default async function TestingReportPage({ searchParams }: { searchParams
             groupIds,
             eyebrow: 'Reports · Testing',
             title: 'Testing report',
+            /* PATTERN-S7 C1: the catalogue's sentence, above the numbers. */
+            definition: reportDefinition('testing'),
             sub: (
               <>
                 <p className="eyebrow rhead-sub">

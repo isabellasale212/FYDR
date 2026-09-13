@@ -8,6 +8,7 @@ import { formatDate, formatNumber, todayIso } from '@/lib/format';
 import { resolveTestingPeriod, testingWindow } from '../period';
 import { periodParamsFromUrl } from '@/lib/reportPeriod.server';
 import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
+import { reportDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
@@ -45,6 +46,7 @@ export async function GET(request: Request) {
       <PdfHeader
         eyebrow={`Testing · ${orgName}`}
         title="Testing report"
+        definition={reportDefinition('testing')}
         meta={`${period.range.label} · ${formatDate(reportWindow.from, timezone)} to ${formatDate(reportWindow.to, timezone)} · Scope: ${scopeLabel} (${byAthlete.rows.length} athletes) · ${byAthlete.definitions.length} tests`}
       />
 

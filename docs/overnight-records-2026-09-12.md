@@ -1023,8 +1023,9 @@ most of the shell — the definition sentences are its.
 
 **Built:** A1. **Recorded:** C1–C11, D1–D4 — appended to the decision sheet.
 **C1 begun 2026-09-13**: the catalogue drafted from the specs (`docs/reports-catalogue.md`),
-the definition slot in the shared header and the PDF header, compliance first; the other
-five reports follow one a commit, then the figure card and the table shell.
+the definition slot in the shared header and the PDF header, and all six reports carrying
+the sentence on screen, in print and in both exports (six commits). Remaining: the one
+figure card per report and the table shell.
 
 ---
 

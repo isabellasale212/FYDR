@@ -110,3 +110,25 @@ export function athleteComplianceFigure(o: { met: number; expected: number; waiv
         : 'Nothing is excluded — no day was waived.',
   };
 }
+
+/** Squad weekly: the week's wellness compliance — submitted of expected, the
+ *  count before the percentage; the squad, the week and the change on last
+ *  week as the sample; C2's waiver sentence as the exclusions. */
+export function squadComplianceFigure(o: {
+  submitted: number;
+  expected: number;
+  waived: number;
+  waivedAthletes: number;
+  athleteCount: number;
+  weekLabel: string;
+  deltaText: string | null;
+}): ReportFigureCopy {
+  const pct = o.expected > 0 ? Math.round((100 * o.submitted) / o.expected) : null;
+  return {
+    label: 'Wellness compliance',
+    count: o.expected > 0 ? `${o.submitted} of ${o.expected}` : 'Nothing expected',
+    value: pct === null ? NOT_EXPECTED : `${pct}%`,
+    sample: `${o.athleteCount} athlete${o.athleteCount === 1 ? '' : 's'} · ${o.weekLabel}${o.deltaText ? ` · ${o.deltaText} on last week` : ''}`,
+    exclusions: exclusionsLine({ waivedAthletes: o.waivedAthletes, waivedDays: o.waived }),
+  };
+}

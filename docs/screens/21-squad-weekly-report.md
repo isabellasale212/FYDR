@@ -85,6 +85,15 @@ PDF so a number is never green on screen and amber on paper.
 
 ---
 
+**One emphasised figure leads the page** (PATTERN-S7 C1, 13 September 2026;
+`components/ReportFigure`, `lib/reportFigureCards.ts`): "Wellness compliance" — submitted
+of expected for the week, the count before the percentage ("8 of 380" then "2%"), the
+sample ("30 athletes · Mon 7 Sept to Sun 13 Sept · ▲ 1 pts on last week"), then the
+waivers as the exclusions in a full sentence or "Nobody is excluded." The compliance
+tile left the four-up, which keeps median readiness, available today and open flags
+(three across on desktop, two on a phone); under those three the squad-floor sentence
+appears only when the median is withheld. The PDF leads with the same figure.
+
 **Empty states follow the one grammar** (PATTERN-S6 C8, 13 September 2026): an
 all-clear on the attention list reads "No open flag on any of the 30 athletes in
 the squad. Nothing is missing."; the load table with nobody in the filter reads

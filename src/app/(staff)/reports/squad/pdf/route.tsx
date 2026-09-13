@@ -6,8 +6,9 @@ import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, formatNumber, todayIso } from '@/lib/format';
-import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
+import { PdfFigure, PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
 import { reportDefinition } from '@/lib/reportCatalogue';
+import { squadComplianceFigure } from '@/lib/reportFigureCards';
 import { requireReport } from '@/lib/session';
 import { squadWeek } from '@/lib/squadWeek';
 import type { AppRole } from '@/lib/types/database';
@@ -47,8 +48,19 @@ export async function GET(request: Request) {
         meta={`${formatDate(report.from, timezone)} to ${formatDate(report.to, timezone)} · Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes)`}
       />
 
+      {/* PATTERN-S7 C1: the same figure the screen leads with. */}
+      <PdfFigure
+        {...squadComplianceFigure({
+          submitted: report.tiles.compliance.submitted,
+          expected: report.tiles.compliance.expected,
+          waived: report.tiles.compliance.waived,
+          waivedAthletes: report.tiles.compliance.waivedAthletes,
+          athleteCount: report.athleteCount,
+          weekLabel: `${formatDate(report.from, timezone)} to ${formatDate(report.to, timezone)}`,
+          deltaText: null,
+        })}
+      />
       <PdfTileRow>
-        <PdfTile label="Compliance, this week" value={report.tiles.compliancePct === null ? '—' : `${report.tiles.compliancePct}%`} />
         <PdfTile label="Available today" value={report.tiles.availablePct === null ? '—' : `${report.tiles.availablePct}%`} />
         <PdfTile label="Open flags" value={String(report.tiles.openFlagCount)} tone={report.tiles.openFlagCount > 0 ? 'warn' : undefined} />
         <PdfTile

@@ -5,7 +5,7 @@
  * system's is the wash family (.pp-hero's surface) at --fs-48. One report a
  * commit; §2 grows with each. */
 import { readFileSync } from 'node:fs';
-import { athleteComplianceFigure, availabilityFigure, boardFigure, complianceFigure } from '@/lib/reportFigureCards';
+import { athleteComplianceFigure, availabilityFigure, boardFigure, complianceFigure, squadComplianceFigure } from '@/lib/reportFigureCards';
 
 let failed = 0;
 function assert(cond: boolean, msg: string) {
@@ -112,6 +112,23 @@ console.log('\n5. the athlete report: met of expected');
   const pdf = strip(read('src/app/(staff)/reports/athlete/[athleteId]/pdf/route.tsx'));
   assert(/<PdfFigure\s[\s\S]{0,40}\{\.\.\.athleteComplianceFigure\(/.test(pdf), 'and the PDF leads with it');
   assert(/one emphasised figure/i.test(read('docs/screens/19-athlete-report.md')), 'the spec says so');
+}
+
+console.log('\n6. squad weekly: the week\'s wellness compliance');
+{
+  const f = squadComplianceFigure({ submitted: 8, expected: 380, waived: 2, waivedAthletes: 2, athleteCount: 30, weekLabel: 'Mon 7 Sept to Sun 13 Sept', deltaText: '▲ 1 pts' });
+  assert(f.label === 'Wellness compliance' && f.count === '8 of 380' && f.value === '2%', 'the count before the percentage');
+  assert(f.sample === '30 athletes · Mon 7 Sept to Sun 13 Sept · ▲ 1 pts on last week', 'the squad, the week, the change on last week');
+  assert(/^2 athletes are excluded on 2 waived days/.test(f.exclusions), 'C2\'s waiver sentence as the exclusions');
+  const none = squadComplianceFigure({ submitted: 8, expected: 380, waived: 0, waivedAthletes: 0, athleteCount: 30, weekLabel: 'w', deltaText: null });
+  assert(none.exclusions === 'Nobody is excluded.' && none.sample === '30 athletes · w', 'nobody excluded; no delta, no clause');
+  const page = strip(read('src/app/(staff)/reports/squad/page.tsx'));
+  assert(/<ReportFigure\s[\s\S]{0,40}\{\.\.\.squadComplianceFigure\(\{/.test(page) && /className="sw-kpis sw-kpis-3"/.test(page) && !/label: 'Wellness compliance',\s*value:/.test(page), 'the card leads the page and the tile it replaced is gone — three tiles remain');
+  const css = strip(read('src/styles/base.css'));
+  assert(/\.sw-kpis-3\s*\{[^}]*repeat\(3, minmax\(0, 1fr\)\)/.test(css), 'three across on desktop, two on a phone as before');
+  const pdf = strip(read('src/app/(staff)/reports/squad/pdf/route.tsx'));
+  assert(/<PdfFigure\s[\s\S]{0,40}\{\.\.\.squadComplianceFigure\(\{/.test(pdf) && !/label="Compliance, this week"/.test(pdf), 'and the PDF leads with it in place of its compliance tile');
+  assert(/one emphasised figure/i.test(read('docs/screens/21-squad-weekly-report.md')), 'the spec says so');
 }
 
 console.log(`\n${failed === 0 ? 'all passed' : `${failed} failed`}`);

@@ -11444,8 +11444,14 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--sp-12);
 }
+/* PATTERN-S7 C1 (2026-09-13): three tiles once the compliance figure became
+   the emphasised card above them. */
+.sw-kpis-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
 @media (max-width: 999px) {
-  .sw-kpis {
+  .sw-kpis,
+  .sw-kpis-3 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

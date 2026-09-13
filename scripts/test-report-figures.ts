@@ -61,10 +61,12 @@ console.log('\n4. the squad weekly report — the third');
   assert(/compliance: \{ submitted: number; expected: number; waived: number; waivedAthletes: number \};\s*readinessAthletes: number;/.test(q), 'the tiles carry the compliance counts and how many athletes the median is over');
   assert(/const medianReadiness = belowSquadFloor\(readinessAthletes\) \? null : median\(readinessValues\);/.test(q), 'the median is off below the squad floor (C8)');
   const page = strip(read('src/app/(staff)/reports/squad/page.tsx'));
-  assert(/sub: submittedLine\(report\.tiles\.compliance\)/.test(page), 'the compliance tile carries "24 of 30 submitted · 2 waived"');
+  // Repointed 2026-09-13 (PATTERN-S7 C1): the compliance tile became the emphasised figure card above the three remaining tiles.
+  assert(/squadComplianceFigure\(\{\s*submitted: report\.tiles\.compliance\.submitted,\s*expected: report\.tiles\.compliance\.expected,\s*waived: report\.tiles\.compliance\.waived,/.test(page), 'the compliance tile carries "24 of 30 submitted · 2 waived"');
   assert(/over \$\{report\.tiles\.readinessAthletes\} of \$\{report\.athleteCount\} athletes with an entry/.test(page), 'the readiness tile says how many athletes it is over');
   assert(/sub: `\$\{report\.availability\.length\} not fully available`/.test(page) && /sub: `across \$\{report\.athleteCount\} athletes`/.test(page), 'availability and flags carry their denominators');
-  assert(/exclusionsLine\(\{\s*waivedAthletes: report\.tiles\.compliance\.waivedAthletes,/.test(page), 'the exclusions sentence under the four figures');
+  // Repointed 2026-09-13 (PATTERN-S7 C1): the waivers are the figure card's exclusions; under the tiles only the squad floor remains, when it applies.
+  assert(/waivedAthletes: report\.tiles\.compliance\.waivedAthletes,/.test(page) && /exclusionsLine\(\{ waivedAthletes: 0, waivedDays: 0, floored: true \}\)/.test(page), 'the exclusions sentence under the four figures');
   assert(!/\bBLANK\b/.test(page), 'no BLANK stands in for a value on this report — "No entries", "Not shown", "No data", "Not expected", "No athletes"');
   assert(/'No entries'/.test(page) && /'Not shown'/.test(page) && /'No data'/.test(page) && /NOT_EXPECTED/.test(page), 'the words');
   assert(/Nobody is excluded/.test(read('docs/screens/21-squad-weekly-report.md')), 'the spec says so');

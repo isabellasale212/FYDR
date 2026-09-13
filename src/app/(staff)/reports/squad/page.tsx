@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { NOT_EXPECTED, exclusionsLine, submittedLine } from '@/lib/reportFigures';
+import { squadComplianceFigure } from '@/lib/reportFigureCards';
+import { ReportFigure } from '@/components/ReportFigure/ReportFigure';
 import { belowSquadFloor } from '@/lib/smallSample';
 import { AttentionRow } from '@/components/AttentionRow/AttentionRow';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
@@ -155,16 +157,26 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
       />
 
       <div className="stack">
-        <div className="sw-kpis">
+        {/* PATTERN-S7 C1: the one emphasised figure — the week's wellness
+            compliance, submitted of expected, the count before the
+            percentage, the change on last week in the sample, the waivers
+            as the exclusions. It left the four-up below (C2), which keeps
+            the other three tiles. */}
+        <ReportFigure
+          {...squadComplianceFigure({
+            submitted: report.tiles.compliance.submitted,
+            expected: report.tiles.compliance.expected,
+            waived: report.tiles.compliance.waived,
+            waivedAthletes: report.tiles.compliance.waivedAthletes,
+            athleteCount: report.athleteCount,
+            weekLabel: `${formatDate(report.from, timezone)} to ${formatDate(report.to, timezone)}`,
+            deltaText: delta(report.tiles.compliancePct, prior.tiles.compliancePct, true, ' pts')?.text ?? null,
+          })}
+        />
+        <div className="sw-kpis sw-kpis-3">
           {[
             /* PATTERN-S7 C2 (2026-09-13): every figure with its denominator
                beneath it, and words for a missing value — lib/reportFigures.ts. */
-            {
-              label: 'Wellness compliance',
-              value: report.tiles.compliancePct === null ? NOT_EXPECTED : `${report.tiles.compliancePct}%`,
-              trend: delta(report.tiles.compliancePct, prior.tiles.compliancePct, true, ' pts'),
-              sub: submittedLine(report.tiles.compliance),
-            },
             {
               label: 'Median readiness',
               value:
@@ -214,15 +226,14 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
             </div>
           ))}
         </div>
-        {/* The exclusions sentence under the four figures (C2): waivers and,
-            when it applies, the squad floor. */}
-        <p className="tiny" style={{ margin: 'calc(-1 * var(--sp-6)) 0 0', color: 'var(--muted)' }}>
-          {exclusionsLine({
-            waivedAthletes: report.tiles.compliance.waivedAthletes,
-            waivedDays: report.tiles.compliance.waived,
-            floored: report.tiles.readinessAthletes > 0 && belowSquadFloor(report.tiles.readinessAthletes),
-          })}
-        </p>
+        {/* The squad-floor sentence under the three tiles (C2/C8) when the
+            median is withheld; the waivers are the figure card's exclusions
+            above, said once. */}
+        {report.tiles.readinessAthletes > 0 && belowSquadFloor(report.tiles.readinessAthletes) ? (
+          <p className="tiny" style={{ margin: 'calc(-1 * var(--sp-6)) 0 0', color: 'var(--muted)' }}>
+            {exclusionsLine({ waivedAthletes: 0, waivedDays: 0, floored: true })}
+          </p>
+        ) : null}
 
         <div className="sw-body">
         <section className="card" aria-labelledby="attention-title">

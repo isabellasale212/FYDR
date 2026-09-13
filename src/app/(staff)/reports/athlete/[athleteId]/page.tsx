@@ -102,7 +102,32 @@ export default async function AthleteReportPage({
   /* PATTERN-S6 C8: the wellness card's empty state names the most recent
      check-in on record, any period — the same read the athlete's own My data
      makes for its empty period (12 C6). */
-  const latestWellnessOnRecord = await fetchMyLatestRecord(db, athleteId, 'wellness');
+  const [latestWellnessOnRecord, latestGpsOnRecord] = await Promise.all([
+    fetchMyLatestRecord(db, athleteId, 'wellness'),
+    fetchMyLatestRecord(db, athleteId, 'gps'),
+  ]);
+  const gpsEmpty = staffEmptyCopy({
+    domain: 'gps',
+    firstName: athlete.first_name,
+    periodKey: period.key,
+    rangeLabel: period.label,
+    latest: latestGpsOnRecord,
+    latestLabel: latestGpsOnRecord ? formatDate(latestGpsOnRecord, timezone) : null,
+    seasonStart: period.season?.starts_on ?? null,
+    today: report.to,
+  });
+  /* The tests summary is all-time, so an empty one is "nothing on record":
+     the grammar's second state, no action. */
+  const testsEmpty = staffEmptyCopy({
+    domain: 'testing',
+    firstName: athlete.first_name,
+    periodKey: 'all',
+    rangeLabel: 'All on record',
+    latest: null,
+    latestLabel: null,
+    seasonStart: null,
+    today: report.to,
+  });
   const wellnessEmpty = staffEmptyCopy({
     domain: 'wellness',
     firstName: athlete.first_name,
@@ -410,9 +435,7 @@ export default async function AthleteReportPage({
                     ) : null}
                   </div>
                   {report.gymAndTesting.tests.length === 0 ? (
-                    <p className="tiny" style={{ padding: '12px 0 14px' }}>
-                      No test result recorded for this athlete.
-                    </p>
+                    <EmptyState headingLevel={3} title={testsEmpty.title} body={testsEmpty.body} />
                   ) : (
                     <>
                       <div className="ath-tests-head">
@@ -557,7 +580,18 @@ export default async function AthleteReportPage({
                     GPS, this period
                   </h2>
                   {report.load.gps.sessionsWithData === 0 ? (
-                    <p className="cap">No GPS data for this athlete in this period.</p>
+                    /* PATTERN-S6 C8: the grammar — the most recent GPS record
+                       on file, and the one action that widens the period. */
+                    <EmptyState
+                      headingLevel={3}
+                      title={gpsEmpty.title}
+                      body={gpsEmpty.body}
+                      action={
+                        gpsEmpty.action
+                          ? { href: `/reports/athlete/${athleteId}?period=${gpsEmpty.action.period}`, label: gpsEmpty.action.label }
+                          : null
+                      }
+                    />
                   ) : (
                     <div className="grid3">
                       <div>
@@ -630,9 +664,9 @@ export default async function AthleteReportPage({
                     Testing
                   </h2>
                   {report.gymAndTesting.tests.length === 0 ? (
-                    <p className="tiny" style={{ padding: 'var(--sp-16)' }}>
-                      No test result recorded for this athlete.
-                    </p>
+                    <div style={{ padding: 'var(--sp-16)' }}>
+                      <EmptyState headingLevel={3} title={testsEmpty.title} body={testsEmpty.body} />
+                    </div>
                   ) : (
                     <table className="tbl" style={{ margin: '0 16px', width: 'calc(100% - 32px)' }}>
                       <thead>

@@ -39,5 +39,17 @@ console.log('\n2. the first screen: the athlete report\'s wellness card');
   assert(/one grammar/.test(read('docs/screens/19-athlete-report.md')), 'the spec says so');
 }
 
+console.log('\n3. the athlete report\'s other cards (2026-09-13)');
+{
+  const page = strip(read('src/app/(staff)/reports/athlete/[athleteId]/page.tsx'));
+  assert(/fetchMyLatestRecord\(db, athleteId, 'gps'\)/.test(page) && /domain: 'gps',/.test(page), 'the GPS card reads the most recent GPS record on file');
+  assert(/title=\{gpsEmpty\.title\}/.test(page) && /gpsEmpty\.action\.period/.test(page), 'and its empty state carries the widen action');
+  assert(!/No GPS data for this athlete in this period\./.test(page), 'the old GPS line is gone');
+  assert(/periodKey: 'all',\s*rangeLabel: 'All on record',\s*latest: null,/.test(page) && (page.match(/title=\{testsEmpty\.title\}/g) ?? []).length === 2, 'the two Testing empties are the all-time "nothing on record" state — no action, "Nothing is missing"');
+  assert(!/No test result recorded for this athlete\./.test(page), 'the old tests line is gone');
+  const q = strip(read('src/lib/queries/myLatestRecord.ts'));
+  assert(/domain === 'gps'/.test(q) && /\.from\('gps_records'\)/.test(q), 'the latest-record read knows GPS');
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

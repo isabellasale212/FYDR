@@ -11,7 +11,7 @@
 import type { RangeKey } from '@/lib/period';
 import { agoLabel, daysAgo, emptyTitle, widenTo } from '@/lib/myDataEmpty';
 
-export type StaffEmptyDomain = 'wellness' | 'gym' | 'training' | 'nutrition' | 'testing';
+export type StaffEmptyDomain = 'wellness' | 'gym' | 'training' | 'nutrition' | 'testing' | 'gps';
 
 const NOUN: Record<StaffEmptyDomain, string> = {
   wellness: 'morning check-in',
@@ -19,6 +19,7 @@ const NOUN: Record<StaffEmptyDomain, string> = {
   training: 'rated session',
   nutrition: 'weekly check-in',
   testing: 'test result',
+  gps: 'GPS record',
 };
 
 /** What would fill it, in the staff reader's terms. */
@@ -28,6 +29,7 @@ const FILLS: Record<StaffEmptyDomain, string> = {
   training: 'A rated session appears here once the athlete is named in one and rates it.',
   nutrition: 'A weekly check-in appears here the week it is answered.',
   testing: 'A test result appears here once a member of staff enters one.',
+  gps: 'A GPS record appears here once a session file is imported for them.',
 };
 
 export type StaffEmptyCopy = {

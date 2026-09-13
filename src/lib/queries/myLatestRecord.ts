@@ -14,9 +14,23 @@
  */
 import type { Db } from './groups';
 
-export type LatestRecordDomain = 'wellness' | 'gym' | 'training' | 'nutrition';
+export type LatestRecordDomain = 'wellness' | 'gym' | 'training' | 'nutrition' | 'gps';
 
 export async function fetchMyLatestRecord(db: Db, athleteId: string, domain: LatestRecordDomain): Promise<string | null> {
+  if (domain === 'gps') {
+    /* PATTERN-S6 C8 (2026-09-13): the staff athlete report's GPS card names
+       the most recent record on file when the window holds none. */
+    const { data, error } = await db
+      .from('gps_records')
+      .select('record_date')
+      .eq('athlete_id', athleteId)
+      .not('record_date', 'is', null)
+      .order('record_date', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return data?.record_date ?? null;
+  }
   if (domain === 'nutrition') {
     const { data, error } = await db
       .from('nutrition_checkins_current')

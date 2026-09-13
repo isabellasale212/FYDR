@@ -61,8 +61,11 @@ period chosen. A morning check-in appears here the day it is submitted." — wit
 one action, "Show this season" or "Show all on record", that widens the report's
 period to the smallest one holding it; with nothing on record at all, "No morning
 check-in on record for Dan. Nothing is missing — none has been recorded yet…"
-and no action. Never "never" when the truth is "not in this period". The other
-cards follow, one screen a commit.
+and no action. Never "never" when the truth is "not in this period". The GPS
+card follows the same grammar with the most recent GPS record on file; the two
+Testing panels, whose summary is all-time, use the nothing-on-record state
+("No test result on record for Kai. Nothing is missing — none has been
+recorded yet…"). Other screens follow, one a commit.
 
 **Every figure carries its denominator, and a missing value is words**
 (PATTERN-S7 C2, 13 September 2026; `lib/reportFigures.ts`). The Compliance figure

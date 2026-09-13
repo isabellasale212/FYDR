@@ -8,7 +8,8 @@ import { WellnessChart } from '@/components/WellnessChart/WellnessChart';
 import { acwrInsufficiencyNote, acwrSuppressedLabel } from '@/lib/acwr';
 import { fetchAthleteReport } from '@/lib/queries/athleteReport';
 import { recordReportView } from '@/lib/queries/reports';
-import { BLANK, ageFrom, enumLabel, formatDate, formatNumber } from '@/lib/format';
+import { ageFrom, enumLabel, formatDate, formatNumber } from '@/lib/format';
+import { NOT_EXPECTED, NO_RESULT, submittedLine } from '@/lib/reportFigures';
 import { availabilityStatus, SEVERITY_STATUS } from '@/lib/status';
 import { requireReport } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
@@ -192,10 +193,12 @@ export default async function AthleteReportPage({
         <span style={{ marginLeft: 'auto', textAlign: 'right' }}>
           <span className="ath-stat-label">Compliance</span>
           <span className="ath-stat-value" style={{ fontSize: 'var(--fs-20)' }}>
-            {compliancePct === null ? BLANK : `${compliancePct}%`}
+            {compliancePct === null ? NOT_EXPECTED : `${compliancePct}%`}
           </span>
+          {/* PATTERN-S7 C2 (2026-09-13): the figure's denominator and its
+              exclusions — "24 of 30 submitted · 2 waived", then the period. */}
           <span className="tiny" style={{ display: 'block', color: 'var(--faint)' }}>
-            {period.label.toLowerCase()}
+            {submittedLine({ submitted: report.summary.compliance.met, expected: report.summary.compliance.expected, waived: report.summary.compliance.waived })} · {period.label.toLowerCase()}
           </span>
         </span>
       </div>
@@ -241,7 +244,7 @@ export default async function AthleteReportPage({
                         Wellness
                       </h2>
                       <span className="ath-latest">
-                        {latestWellness === null ? '—' : latestWellness.value}
+                        {latestWellness === null ? 'Nothing submitted' : latestWellness.value}
                       </span>
                       <span className="tiny" style={{ color: 'var(--faint)' }}>
                         {latestWellness === null
@@ -305,7 +308,7 @@ export default async function AthleteReportPage({
                         <div key={tile.label} className="ath-tile">
                           <span className="ath-tile-label">{tile.label}</span>
                           <span className="ath-tile-value" data-empty={tile.value === null}>
-                            {tile.value === null ? '—' : formatNumber(tile.value, tile.dp)}
+                            {tile.value === null ? 'Building baseline' : formatNumber(tile.value, tile.dp)}
                           </span>
                           <span className="ath-tile-sub">{tile.sub}</span>
                         </div>
@@ -405,19 +408,19 @@ export default async function AthleteReportPage({
                               </span>
                             </span>
                             <span className="ath-test-num">
-                              {t.pbValue === null ? BLANK : formatNumber(t.pbValue, t.decimal_places)}
+                              {t.pbValue === null ? NO_RESULT : formatNumber(t.pbValue, t.decimal_places)}
                             </span>
                             <span className="ath-test-date">
-                              {t.pbDate ? formatDate(t.pbDate, timezone) : BLANK}
+                              {t.pbDate ? formatDate(t.pbDate, timezone) : NO_RESULT}
                             </span>
                             <span className="ath-test-num">
-                              {t.latestValue === null ? BLANK : formatNumber(t.latestValue, t.decimal_places)}
+                              {t.latestValue === null ? NO_RESULT : formatNumber(t.latestValue, t.decimal_places)}
                             </span>
                             <span className="ath-test-date">
-                              {t.latestDate ? formatDate(t.latestDate, timezone) : BLANK}
+                              {t.latestDate ? formatDate(t.latestDate, timezone) : NO_RESULT}
                             </span>
                             <span className="ath-test-delta" data-tone={delta?.tone ?? 'at'}>
-                              {delta?.label ?? BLANK}
+                              {delta?.label ?? 'No comparison'}
                             </span>
                           </div>
                         );
@@ -487,19 +490,19 @@ export default async function AthleteReportPage({
                   <div className="card">
                     <p className="tiny">Acute · trailing 7 days</p>
                     <p className="num" style={{ fontSize: 'var(--fs-22)', fontWeight: 800 }}>
-                      {report.load.acute === null ? '—' : formatNumber(report.load.acute, 0)}
+                      {report.load.acute === null ? 'Building baseline' : formatNumber(report.load.acute, 0)}
                     </p>
                   </div>
                   <div className="card">
                     <p className="tiny">Chronic · trailing 28 days, weekly</p>
                     <p className="num" style={{ fontSize: 'var(--fs-22)', fontWeight: 800 }}>
-                      {report.load.chronic === null ? '—' : formatNumber(report.load.chronic, 0)}
+                      {report.load.chronic === null ? 'Building baseline' : formatNumber(report.load.chronic, 0)}
                     </p>
                   </div>
                   <div className="card">
                     <p className="tiny">ACWR · trailing 7:28</p>
                     <p className="num" style={{ fontSize: 'var(--fs-22)', fontWeight: 800 }}>
-                      {report.load.acwr === null ? '—' : formatNumber(report.load.acwr, 2)}
+                      {report.load.acwr === null ? 'Building baseline' : formatNumber(report.load.acwr, 2)}
                     </p>
                   </div>
                 </div>
@@ -582,7 +585,7 @@ export default async function AthleteReportPage({
                   <div className="card">
                     <p className="tiny">Programme{currentProgrammes.length === 1 ? '' : 's'}</p>
                     <p style={{ fontSize: 'var(--fs-15)', fontWeight: 700 }}>
-                      {currentProgrammes.length === 0 ? BLANK : currentProgrammes.map((p) => `${p.name} (${enumLabel(p.type)})`).join(', ')}
+                      {currentProgrammes.length === 0 ? 'None assigned' : currentProgrammes.map((p) => `${p.name} (${enumLabel(p.type)})`).join(', ')}
                     </p>
                   </div>
                 </div>
@@ -616,10 +619,10 @@ export default async function AthleteReportPage({
                             <td className="nm">
                               {t.name} <span className="tiny">({t.unit})</span>
                             </td>
-                            <td className="r num">{t.pbValue === null ? BLANK : formatNumber(t.pbValue, t.decimal_places)}</td>
-                            <td className="sub num">{t.pbDate ? formatDate(t.pbDate, timezone) : BLANK}</td>
-                            <td className="r num">{t.latestValue === null ? BLANK : formatNumber(t.latestValue, t.decimal_places)}</td>
-                            <td className="sub num">{t.latestDate ? formatDate(t.latestDate, timezone) : BLANK}</td>
+                            <td className="r num">{t.pbValue === null ? NO_RESULT : formatNumber(t.pbValue, t.decimal_places)}</td>
+                            <td className="sub num">{t.pbDate ? formatDate(t.pbDate, timezone) : NO_RESULT}</td>
+                            <td className="r num">{t.latestValue === null ? NO_RESULT : formatNumber(t.latestValue, t.decimal_places)}</td>
+                            <td className="sub num">{t.latestDate ? formatDate(t.latestDate, timezone) : NO_RESULT}</td>
                           </tr>
                         ))}
                       </tbody>

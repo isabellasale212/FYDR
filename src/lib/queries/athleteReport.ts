@@ -88,6 +88,7 @@ import type { Db } from './groups';
 export type AthleteReportSummary = {
   athlete: AthleteProfile;
   compliancePct: number | null;
+  compliance: { pct: number | null; met: number; expected: number; waived: number };
   openFlags: FlagListRow[];
   currentProgrammes: { programme_id: string; name: string; type: string }[];
 };
@@ -211,7 +212,7 @@ export async function fetchAthleteReport(
     testSummary,
     programmeSessions,
     flags,
-    compliancePct,
+    compliance,
   ] = await Promise.all([
     /* NOT paged, and this is the one query on this report where that is a
      * considered answer rather than an oversight. `wellness_entries_current`
@@ -343,7 +344,10 @@ export async function fetchAthleteReport(
     to: today,
     summary: {
       athlete,
-      compliancePct,
+      compliancePct: compliance.pct,
+      /* PATTERN-S7 C2 (2026-09-13): the figure's denominator and its
+         exclusions, said on the page. */
+      compliance,
       openFlags,
       currentProgrammes: [...programmeByKey.values()],
     },
@@ -410,7 +414,7 @@ async function fetchAthleteCompliancePct(
      compliance report (Builder Q5, 2026-09-12: two figures disagreeing about
      one athlete is worse than either being wrong). */
   timezone: string,
-): Promise<number | null> {
+): Promise<{ pct: number | null; met: number; expected: number; waived: number }> {
   /* All four reads are paged and all four are one-athlete. Over the 730-day
    * cap the expectations read alone is 3 domains × 730 = ~2,190 rows, so this
    * crosses the ceiling on a real season even scoped this narrowly. Every
@@ -500,17 +504,22 @@ async function fetchAthleteCompliancePct(
 
   let expected = 0;
   let met = 0;
+  let waived = 0;
   for (const exp of expectations) {
     if (!COMPLIANCE_DOMAINS.includes(exp.domain)) continue;
     // Waived: excluded from both sides, not counted as a miss. Same branch
-    // fetchComplianceReport takes, for the same reason.
-    if (exp.waived_reason !== null) continue;
+    // fetchComplianceReport takes, for the same reason. Counted, so the
+    // figure can say so (PATTERN-S7 C2).
+    if (exp.waived_reason !== null) {
+      waived += 1;
+      continue;
+    }
     expected += 1;
     const key = exp.domain === 'training_rpe' ? rpeExpectationKey(exp) : exp.expectation_date;
     if (submitted[exp.domain].has(key)) met += 1;
   }
 
-  return expected > 0 ? Math.round((100 * met) / expected) : null;
+  return { pct: expected > 0 ? Math.round((100 * met) / expected) : null, met, expected, waived };
 }
 
 const SESSION_COLUMNS =

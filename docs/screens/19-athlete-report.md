@@ -53,6 +53,15 @@ date of the most recent record, so a coach can see how current the picture is.
 
 ---
 
+**Every figure carries its denominator, and a missing value is words**
+(PATTERN-S7 C2, 13 September 2026; `lib/reportFigures.ts`). The Compliance figure
+in the identity row carries "24 of 30 submitted · 2 waived · last 28 days" (or
+"Not expected" with nothing expected); a load tile whose baseline is not yet
+21 of 28 days reads "Building baseline" (its own one-athlete floor, not the
+squad's); the latest wellness "Nothing submitted"; a test with no result "No
+result" and no comparison "No comparison"; no programme "None assigned" — never a
+dash.
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means in plain English | Time window | What shows when data is missing |

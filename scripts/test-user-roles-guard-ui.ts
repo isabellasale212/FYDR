@@ -51,5 +51,16 @@ console.log('\nsetUserRoles says it first');
   assert(ROLE_REFUSALS.selfMedic.includes('medic'), 'and the words name the role');
 }
 
+console.log('\n§0bd (0109): the account guard\'s refusals reach the screen as sentences');
+{
+  const q = readFileSync('src/lib/queries/userManagement.ts', 'utf8');
+  assert(/export const STATUS_REFUSALS = \{/.test(q), 'STATUS_REFUSALS names the three');
+  assert(/users_self_update_profile_only/.test(q) && /own status/.test(q), 'a self status change: "you cannot change your own status"');
+  assert(/last sport scientist/.test(q) && /last active sport scientist|only active sport scientist/.test(q), 'the last-sport-scientist account: said in words');
+  assert(/users_admin_update_no_identity/.test(q), 'the identity refusal');
+  const fn = q.slice(q.indexOf('export async function setUserStatus'), q.indexOf('\nexport ', q.indexOf('export async function setUserStatus') + 10));
+  assert(/onError: statusRefusal/.test(fn) || /onError: \(m\) => statusRefusal\(m\)/.test(fn), 'setUserStatus maps the trigger\'s message through them');
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

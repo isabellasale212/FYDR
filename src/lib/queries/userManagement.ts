@@ -1,6 +1,7 @@
 import type { AppRole, Json, UserStatus } from '@/lib/types/database';
 import type { Db } from './groups';
 import { mustAffect } from '@/lib/write';
+import { humanizeDbError } from '@/lib/writeErrors';
 
 /* docs/screens/user-management.md, screen 32, admin only, cut down hard —
  * see src/app/(staff)/settings/users/create/route.ts's header for the
@@ -274,6 +275,22 @@ export async function setUserRoles(
   return { error: null, primaryOk: true };
 }
 
+/** §0bd (migration 0109): the account guard's three refusals, as the screen
+ *  says them. The trigger names them by code; a person reads a sentence. */
+export const STATUS_REFUSALS = {
+  self: 'Not saved: you cannot change your own status. Ask the sport scientist.',
+  lastAdmin: 'Not saved: this is the club\u2019s last active sport scientist. Grant sport scientist to another active user first.',
+  identity: 'Not saved: an account\u2019s email and identity are not changed here.',
+} as const;
+
+function statusRefusal(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes('users_self_update_profile_only')) return STATUS_REFUSALS.self;
+  if (m.includes('last sport scientist')) return STATUS_REFUSALS.lastAdmin;
+  if (m.includes('users_admin_update_no_identity')) return STATUS_REFUSALS.identity;
+  return humanizeDbError(message, 'staff');
+}
+
 export async function setUserStatus(
   db: Db,
   orgId: string,
@@ -286,7 +303,7 @@ export async function setUserStatus(
      no-op: the list shows the new status until the next refresh. */
   const wrote = await mustAffect(
     db.from('users').update({ status }).eq('org_id', orgId).eq('id', targetUserId).select('id'),
-    { refusal: 'Not saved: changing a user\u2019s status belongs to the sport scientist.' },
+    { refusal: 'Not saved: changing a user\u2019s status belongs to the sport scientist.', onError: statusRefusal },
   );
   if (wrote.error) return { error: wrote.error, primaryOk: false };
   const { error: auditErr } = await recordUserAudit(db, orgId, actorId, actorRole, status === 'deactivated' ? 'user.deactivated' : 'user.reactivated', targetUserId, {});

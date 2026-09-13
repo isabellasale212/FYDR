@@ -272,6 +272,18 @@ Every role opens Settings, because it holds their own profile, their password an
 their two factor login. The administration blocks, users, audit, retention, club
 details and subject access, are absent for everyone else.
 
+**What a person may change on their own `users` row, enforced at the database**
+(migration 0109, §0bd, 13 September 2026): their name, phone, avatar and avatar
+colour, and their own `last_seen_at`. Not their status, not their email, not
+`deleted_at`, `claims_version`, `org_id` or `id` — refused as
+`users_self_update_profile_only` for every role, the sport scientist included.
+The sport scientist may change another account's status (never its email or
+identity — `users_admin_update_no_identity`), and any status or deletion change
+bumps `claims_version`, so a deactivated or suspended account is signed out on
+its next request rather than at token expiry. The account of the club's only
+active sport scientist cannot be deactivated, suspended or soft-deleted by
+anyone, service role included (0101's rule, extended to the account).
+
 ---
 
 ## 5. Under 18 academy players

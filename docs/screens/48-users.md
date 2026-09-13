@@ -41,6 +41,7 @@ email, roles and status.
 | Create a user | Header | Creates an account, grants roles, and links it to an athlete record if one is chosen | Stays here | **Writes a user, their roles, and an audit entry** | Sport scientist | Form submission | Absent for everyone else |
 | Invite in bulk | Header | Opens the bulk invite screen | `/settings/users/bulk-invite` | Nothing | Sport scientist | None | Absent for everyone else |
 | A user's name | The list | Opens their record | `/settings/users/[userId]` | Nothing | Sport scientist | None | Absent |
+| Deactivate / Reactivate | The user's record | Changes the account's status. **Held at the database since 13 September 2026 (migration 0109, §0bd):** a person cannot change their own status (the screen's refusal was only in the browser before); the club's only active sport scientist cannot be deactivated by anyone; and any status change bumps `claims_version`, so the account is signed out on its next request. The screen says each refusal in words (`STATUS_REFUSALS`) | Stays | `users.status`, an audit entry | Sport scientist, on another account | The typed confirmation | — |
 
 **Granting roles is where the nutritionist rule can be lost.** Permissions add up,
 so a nutritionist granted any second role sees what that role sees, injury

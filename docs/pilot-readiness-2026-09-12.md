@@ -48,6 +48,10 @@ Visible and embarrassing; no harm.
 - **§0aq L1339** — failed sign-ins from Dublin take 1.1–1.6 s, above the 800 ms floor; profile and decide whether to raise `FAILED_SIGN_IN_MIN_MS`.
 - **§0ba (new, decided 2026-09-12)** — SAR withholding: the admin reads a category, not the medic's free text. Schema change; before pilot, not blocking.
 - **§0bb (new, decided 2026-09-12)** — the injured-athlete proposal gate applies to every role except the medic, at the database. Before pilot.
+- ~~**§0bc (new, found 2026-09-13 on the test club)** — a complete gym session accepted a new set at the database.~~ **Closed, `f492f23` + migration 0110** (scratch only; the next deploy carries it).
+- ~~**§0bd (new, found 2026-09-13 on the test club) — GATE** — `users_self_update` let any account rewrite its own status / email; the last admin deactivated herself.~~ **Closed, `6db21d1` + migration 0109** (scratch only; the next deploy carries it). Left: F-11, the Users-screen refusals as `disabled` + `title`.
+- **§0be (new, filed 2026-09-13 on Isabella's instruction)** — an athlete record cannot be removed from any screen; a real club hits it in week one. Before pilot.
+- **§0al reopened 2026-09-13** — the offline publish still navigates to the browser's offline page (the humanised error misses the network guard); the held week survives. High priority stands.
 - ~~**§0az**~~ — the reorder arrows blocked with a reason and `moveGroup` refusing out loud. **Closed, `3e7b806`.** (The dead "+ New leaderboard" and the reasonless "+ Meal" bullets of §0az stay open.)
 - ~~**STAFF-SS-01 D1**~~ — **decided 2026-09-12 (Isabella): the staff phone shell is a bottom bar with a "More" sheet**, superseding §0af's top bar. Staff phone work can proceed against the STAFF-SS-01 board.
 - **§0e L181** — "some pages, including a forgot-password page, show the wrong logo": `/login/reset` measured correct on production; needs you to say where you saw it before anyone can fix it.

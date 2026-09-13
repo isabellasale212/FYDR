@@ -81,6 +81,14 @@ export type PendingGymSetLog = {
     exercise_name: string | null;
     entry_date: string | null;
   } | null;
+  /** §0bc (migration 0110, 2026-09-13): the database refused this set because
+   *  its session was already complete — the session was finished from another
+   *  tab, or Today's retry arrived after the athlete tapped Finish. Flagged
+   *  the same way as a conflict (conflictAt is set, so it is never retried)
+   *  and shown once on Today with the numbers and a Discard; conflictLive
+   *  stays null because there is no live row to correct with these numbers.
+   *  Carries the naming so Today can say which set without a network call. */
+  closedLog?: { exercise_name: string | null; entry_date: string | null };
 };
 
 function read<T>(key: string): T[] {
@@ -241,6 +249,24 @@ export function markGymSetConflict(id: string, live: PendingGymSetLog['conflictL
     read<PendingGymSetLog>(GYM_SET_KEY).map((item) =>
       item.input.id === id
         ? { ...item, conflictAt: item.conflictAt ?? new Date().toISOString(), conflictLive: live ?? null }
+        : item,
+    ),
+  );
+}
+
+/** See PendingGymSetLog's closedLog comment (§0bc). Idempotent like the
+ *  conflict markers; the naming is kept from the first call. */
+export function markGymSetClosed(id: string, naming: NonNullable<PendingGymSetLog['closedLog']>): void {
+  write(
+    GYM_SET_KEY,
+    read<PendingGymSetLog>(GYM_SET_KEY).map((item) =>
+      item.input.id === id
+        ? {
+            ...item,
+            conflictAt: item.conflictAt ?? new Date().toISOString(),
+            conflictLive: null,
+            closedLog: item.closedLog ?? naming,
+          }
         : item,
     ),
   );

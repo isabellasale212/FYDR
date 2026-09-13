@@ -43,11 +43,13 @@ begin
   -- cascade can be observed.
   insert into gym_session_logs (id, org_id, athlete_id, entry_date, status, source,
                                 started_at, completed_at, session_rpe, comment)
-    values (tests.uid('orga','log_2'), o, a1, current_date, 'complete', 'self_report',
+    values (tests.uid('orga','log_2'), o, a1, current_date, 'in_progress', 'self_report',
             now() - interval '1 hour', now(), 8.0, 'Left knee sore on the last two sets');
   insert into gym_set_logs (id, org_id, gym_session_log_id, exercise_id, set_number, reps_completed, load_kg)
     values (tests.uid('orga','set_2a'), o, tests.uid('orga','log_2'), ex, 1, 5, 100),
            (tests.uid('orga','set_2b'), o, tests.uid('orga','log_2'), ex, 2, 5, 105);
+  -- closed after its sets are in (0110 refuses a new set on a complete log — §0bc)
+  update gym_session_logs set status = 'complete' where id = tests.uid('orga','log_2');
 end $$;
 
 -- ------------------------------------------------ 1. no app role may delete

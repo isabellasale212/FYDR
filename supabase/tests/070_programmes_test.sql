@@ -292,13 +292,24 @@ select lives_ok(
   'athlete_1 marks their session complete — updated in place, not revised, per the table''s own comment'
 );
 
+/* Since 0110 (§0bc) a complete log refuses a NEW set before RLS is reached, so
+   athlete_1's own attempt is refused by name — and athlete_2's attempt on the
+   same closed log meets the same rule first. The cross-athlete refusal (42501)
+   is asserted on an OPEN log in 231. */
+select throws_ok(
+  format($q$insert into gym_set_logs (org_id, gym_session_log_id, exercise_id, set_number)
+            values (%L, %L, %L, 2)$q$,
+         tests.uid('orga','org'), tests.uid('orga','log_1'), tests.uid('orga','exercise')),
+  'P0001', 'session_log_closed',
+  'athlete_1 cannot add a set to their own complete session (0110)'
+);
 select tests.set_jwt(tests.uid('orga', 'user_athlete_2'));
 select throws_ok(
   format($q$insert into gym_set_logs (org_id, gym_session_log_id, exercise_id, set_number)
             values (%L, %L, %L, 2)$q$,
          tests.uid('orga','org'), tests.uid('orga','log_1'), tests.uid('orga','exercise')),
-  '42501', null,
-  'athlete_2 cannot log a set onto athlete_1''s session'
+  'P0001', 'session_log_closed',
+  'athlete_2 cannot log a set onto athlete_1''s session either — the closed-log rule fires first; the cross-athlete rule is 231''s'
 );
 select is(
   (select count(*) from gym_session_logs where org_id = tests.uid('orga','org')),

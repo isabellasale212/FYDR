@@ -45,6 +45,27 @@ console.log('\nthe logger');
   assert(/athleteId=\{athleteId\}/.test(page), 'the page passes it');
 }
 
+console.log('\n§0bc (0110): a set refused because the session is complete is flagged, not retried');
+{
+  const m = strip(read('src/lib/gymOutboxFlush.ts'));
+  assert(/export function isClosedLogError\(/.test(m) && /session_log_closed/.test(m), 'isClosedLogError reads the trigger\'s name');
+  assert(/if \(isClosedLogError\(err\)\) \{\s*await flagClosedGymSet\(db, item\);\s*continue;/.test(m), 'the retry flags the item and moves on — never retried for ever');
+  assert(/export async function flagClosedGymSet\(/.test(m) && /markGymSetClosed\(item\.input\.id, naming\)/.test(m), 'the flag carries the naming so Today can say which set');
+  const ob = strip(read('src/lib/outbox.ts'));
+  assert(/closedLog\?: \{ exercise_name: string \| null; entry_date: string \| null \};/.test(ob) && /export function markGymSetClosed\(id: string, naming:/.test(ob), 'the outbox marks it with conflictAt and closedLog');
+  assert(/conflictAt: item\.conflictAt \?\? new Date\(\)\.toISOString\(\),\s*conflictLive: null,\s*closedLog: item\.closedLog \?\? naming,/.test(ob), 'conflictAt is set (so no retry) and there is no live row');
+  const lg = strip(read('src/components/GymSessionLogger/GymSessionLogger.tsx'));
+  assert(/if \(isClosedLogError\(err\)\) void flagClosedGymSet\(createClient\(\), \{ input, queuedAt:/.test(lg), 'the logger flags its own refused set too, instead of leaving it "waiting to send"');
+  const f = strip(read('src/components/OutboxFlusher/OutboxFlusher.tsx'));
+  assert(/closedLog: item\.closedLog !== undefined/.test(f) && /the session was finished before this set was sent, so\s*the database refused \{c\.label\}/.test(f), 'Today says the session was finished before the set was sent');
+  const closedBranch = f.slice(f.indexOf('c.gym?.closedLog ? ('), f.indexOf(') : c.gym ? ('));
+  assert(/Discard this one/.test(closedBranch) && !/Use my numbers/.test(closedBranch) && !/Keep what is showing/.test(closedBranch), 'with Discard as the only control — no live row to correct');
+  assert(/const naming = live \?\? item\.closedLog \?\? null;/.test(f), 'and names the set from the flag, not a network call');
+  const w = read('src/lib/writeErrors.ts');
+  assert(/session_log_closed/.test(w) && /This session was finished before this set was sent — correct a logged set instead\./.test(w), 'the logger\'s own error says the same');
+  assert(/A complete session refuses a new set at the database/.test(read('docs/athlete/screens/05-gym-session.md')), 'the spec §7 records it');
+}
+
 console.log('\nthe spec');
 {
   const spec = read('docs/athlete/screens/05-gym-session.md');

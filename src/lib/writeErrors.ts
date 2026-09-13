@@ -100,6 +100,9 @@ const SENTENCES = {
   session:
     'Your session has expired, so nothing was saved. Sign in again, then re-enter it.',
   duplicate: 'This looks like it was already saved. Refresh to check before sending it again.',
+  /* §0bc (migration 0110, 2026-09-13): a complete gym session refuses a new
+     set at the database; the trigger's message is `session_log_closed`. */
+  closedSession: 'This session was finished before this set was sent — correct a logged set instead.',
   connectionStaff:
     'That didn’t save — the connection dropped or timed out. Check your connection and try again.',
   /* PATTERN-S6 A3 (2026-09-12): ATH-ADULT-03's approved words for a send
@@ -142,6 +145,10 @@ export function humanizeDbError(
 
   if (m.includes('duplicate key')) {
     return SENTENCES.duplicate;
+  }
+
+  if (m.includes('session_log_closed')) {
+    return SENTENCES.closedSession;
   }
 
   if (

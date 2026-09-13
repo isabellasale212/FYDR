@@ -13,7 +13,7 @@ import {
   type ResolvedExercise,
 } from '@/lib/queries/programmes';
 import { enqueueGymSetLog, dequeueGymSetLog } from '@/lib/outbox';
-import { flushGymSets, queuedGymSets } from '@/lib/gymOutboxFlush';
+import { flagClosedGymSet, flushGymSets, isClosedLogError, queuedGymSets } from '@/lib/gymOutboxFlush';
 import { GymSetLogInput } from '@/lib/validation/gym';
 import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { loadLabel, schemeLine } from '@/lib/gymPrescription';
@@ -337,7 +337,14 @@ export function GymSessionLogger({
       setError(null);
       router.refresh();
     },
-    onError: (err) => setError(toUserMessage(err, 'athlete')),
+    onError: (err, input) => {
+      setError(toUserMessage(err, 'athlete'));
+      /* §0bc: the session was finished — from another tab, or this one before
+         the set landed. The database will refuse this set every time, so it
+         is flagged rather than left "waiting to send": Today shows the
+         numbers once with a Discard, the same shape as §0aa's conflict. */
+      if (isClosedLogError(err)) void flagClosedGymSet(createClient(), { input, queuedAt: new Date().toISOString() });
+    },
     /* Sent or not, the waiting count is read back from the outbox: a failed
        set is now "waiting to send" on the progress row as well as an error. */
     onSettled: () => setWaiting(queuedGymSets(gymSessionLogId)),

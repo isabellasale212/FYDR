@@ -108,7 +108,7 @@ type ConflictItem = {
   label: string;
   /** Gym only: the two sets of numbers, and whether "Use my numbers" can be
    *  offered (it needs a live row to correct). */
-  gym?: { queued: string; live: string | null; liveId: string | null };
+  gym?: { queued: string; live: string | null; liveId: string | null; closedLog: boolean };
 };
 
 /** Reads every domain's queue fresh from localStorage and splits it into
@@ -151,8 +151,9 @@ function snapshot(timezone: string): { pendingCount: number; conflicts: Conflict
       .filter((item) => item.conflictAt)
       .map((item) => {
         const live = item.conflictLive ?? null;
-        const name = live?.exercise_name ?? 'this exercise';
-        const day = live?.entry_date ? ` on ${formatDate(live.entry_date, timezone)}` : '';
+        const naming = live ?? item.closedLog ?? null;
+        const name = naming?.exercise_name ?? 'this exercise';
+        const day = naming?.entry_date ? ` on ${formatDate(naming.entry_date, timezone)}` : '';
         return {
           domain: 'gym' as const,
           id: item.input.id,
@@ -161,6 +162,7 @@ function snapshot(timezone: string): { pendingCount: number; conflicts: Conflict
             queued: describeGymSet(item.input),
             live: live ? describeGymSet(live) : null,
             liveId: live?.id ?? null,
+            closedLog: item.closedLog !== undefined,
           },
         };
       }),
@@ -385,7 +387,22 @@ export function OutboxFlusher({ orgId, athleteId, userId, timezone }: Props) {
             !
           </span>
           <span>
-            {c.gym ? (
+            {c.gym?.closedLog ? (
+              /* §0bc (0110): the session was complete when the set arrived.
+                 No live row to correct with these numbers, so no "Use my
+                 numbers" — the numbers are said, the way out is named, and
+                 the only control is the discard. */
+              <>
+                One saved set could not be sent: the session was finished before this set was sent, so
+                the database refused {c.label}. Your queued numbers were {c.gym.queued} — correct a logged
+                set from My data if they belong there.
+                <span style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-8)', marginTop: 'var(--sp-8)' }}>
+                  <button type="button" className="btn-ghost" onClick={() => handleDiscard(c.domain, c.id)}>
+                    Discard this one
+                  </button>
+                </span>
+              </>
+            ) : c.gym ? (
               <>
                 One saved set could not be sent: {c.label} is already logged
                 {c.gym.live ? ` as ${c.gym.live}` : ''} from another tab or device, and that one

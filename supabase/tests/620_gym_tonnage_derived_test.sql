@@ -33,7 +33,7 @@ begin
   insert into exercises (id, org_id, name, category) values (ex, o, 'Back squat', 'squat');
   insert into gym_session_logs (id, org_id, athlete_id, entry_date, status, source)
     values (tests.uid('orga','t_log_1'), o, a1, current_date, 'in_progress', 'self_report'),
-           (tests.uid('orga','t_log_2'), o, a1, current_date - 1, 'complete', 'self_report'),
+           (tests.uid('orga','t_log_2'), o, a1, current_date - 1, 'in_progress', 'self_report'),
            (tests.uid('orga','t_log_3'), o, a1, current_date - 2, 'complete', 'self_report');
   -- t_log_3 carries a STALE stored value and no sets: the view must not report it.
   update gym_session_logs set total_volume_kg = 9999 where id = tests.uid('orga','t_log_3');
@@ -73,7 +73,9 @@ select is(
   1062.5::numeric, 'and the session reads 550 + 512.5 = 1062.5 kg — the old 500 is not counted'
 );
 
--- 4. Sets with no load.
+-- 4. Sets with no load. (t_log_2 is in_progress in the fixture: since 0110 a
+--    complete log refuses a new set — §0bc — and this test is about the derived
+--    volume, which the view reports whatever the status.)
 insert into gym_set_logs (id, org_id, gym_session_log_id, exercise_id, set_number, reps_completed, load_kg)
 values (tests.uid('orga','t_set_3'), tests.uid('orga','org'), tests.uid('orga','t_log_2'), tests.uid('orga','exercise'), 1, 10, null);
 select is(

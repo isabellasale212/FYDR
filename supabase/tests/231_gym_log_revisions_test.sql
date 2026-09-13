@@ -302,13 +302,17 @@ select throws_ok(
 );
 
 -- Give log_3 (athlete_2's own complete session) a child set, so the re-pointing behaviour
--- is actually exercised, not just asserted about an empty session.
+-- is actually exercised, not just asserted about an empty session. Since 0110 a complete
+-- log refuses a NEW set (§0bc), so the fixture opens the log, logs the set, and closes it
+-- again — the order a real session takes.
 do $$
 begin
+  update gym_session_logs set status = 'in_progress' where id = tests.uid('orga','log_3');
   insert into gym_set_logs (id, org_id, gym_session_log_id, exercise_id, set_number,
                             reps_completed, load_kg)
     values (tests.uid('orga','set_3'), tests.uid('orga','org'), tests.uid('orga','log_3'),
             tests.uid('orga','exercise'), 1, 8, 40);
+  update gym_session_logs set status = 'complete' where id = tests.uid('orga','log_3');
 end $$;
 
 select tests.set_jwt(tests.uid('orga', 'user_athlete_2'));

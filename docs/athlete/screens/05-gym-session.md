@@ -140,6 +140,24 @@ already done.
   item). Nothing is guessed: a collision the lookup cannot explain is also
   surfaced.
 
+- **A complete session refuses a new set at the database** (§0bc, migration
+  0110, 13 September 2026). `gym_set_logs_guard_insert` reads the parent log's
+  status before every insert: a set for a session already marked complete is
+  refused with `session_log_closed`; a correction (`revision_of` set — the
+  `revise_gym_set_log` path) is never refused, so a logged set in a finished
+  session stays correctable, as decided. In the logger the refusal reads
+  "This session was finished before this set was sent — correct a logged set
+  instead." A queued set the retry meets this on is **flagged, not retried**
+  (`isClosedLogError` / `flagClosedGymSet` in `lib/gymOutboxFlush.ts`;
+  `closedLog` on the outbox item) — the next flush would only be refused
+  again. Today shows it once: "One saved set could not be sent: the session
+  was finished before this set was sent, so the database refused set 3 of
+  Back squat on Wed 2 Sept. Your queued numbers were 8 reps at 100 kg —
+  correct a logged set from My data if they belong there." with **Discard
+  this one** as the only control (there is no live row these numbers can
+  correct, so no "Use my numbers"). Not silently dropped, not counted as
+  waiting.
+
 **What the athlete sees while a set is queued** (C4): the progress row reads
 "6 of 12 sets · 2 waiting to send" — the count of this session's sets that
 have not reached the server, beside the count that has. A set that fails to

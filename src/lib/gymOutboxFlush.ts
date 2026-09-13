@@ -19,7 +19,13 @@
  * through lib/outbox.ts and talks to the database through the client the
  * caller hands over.
  */
-import { dequeueGymSetLog, markGymSetConflict, pendingGymSetLogs, type PendingGymSetLog } from '@/lib/outbox';
+import {
+  dequeueGymSetLog,
+  markGymSetClosed,
+  markGymSetConflict,
+  pendingGymSetLogs,
+  type PendingGymSetLog,
+} from '@/lib/outbox';
 import { fetchGymSetForSlot, fetchGymSetNaming, submitGymSetLog } from '@/lib/queries/programmes';
 import { classifyGymSetConflict } from '@/lib/gymSetConflict';
 import type { Db } from '@/lib/queries/groups';
@@ -29,6 +35,27 @@ export type ConflictOutcome = 'delivered' | 'conflict' | 'unknown';
 /** See OutboxFlusher's note on the two causes of a duplicate-key error. */
 export function isDuplicateKeyError(err: unknown): boolean {
   return err instanceof Error && err.message.toLowerCase().includes('duplicate key');
+}
+
+/** §0bc (migration 0110, 2026-09-13): a complete session refuses a NEW set at
+ *  the database, and the trigger names itself in the message. Not a signal
+ *  failure, not a conflict with a live row — retrying can never succeed. */
+export function isClosedLogError(err: unknown): boolean {
+  return err instanceof Error && err.message.includes('session_log_closed');
+}
+
+/** §0bc: flag a refused set so Today shows it once — numbers kept, never
+ *  retried. Names it while the connection is there; a failed lookup still
+ *  flags it, with "this exercise" as the fallback on Today. Shared by the
+ *  logger's onError and the flush below. */
+export async function flagClosedGymSet(db: Db, item: PendingGymSetLog): Promise<void> {
+  let naming: NonNullable<PendingGymSetLog['closedLog']> = { exercise_name: null, entry_date: null };
+  try {
+    naming = await fetchGymSetNaming(db, item.input.exercise_id, item.input.gym_session_log_id);
+  } catch {
+    /* no signal for the lookup — the flag is what matters */
+  }
+  markGymSetClosed(item.input.id, naming);
 }
 
 /** §0aa, decided 2026-09-12. Gym is the domain where "another row is live"
@@ -62,7 +89,9 @@ export function queuedGymSets(sessionLogId: string): number {
 
 /** Retry every queued gym set — or, with `sessionLogId`, one session's.
  *  Items already flagged as a conflict are excluded: retrying would repeat
- *  the same collision every flush until the athlete discards it. Returns
+ *  the same collision every flush until the athlete discards it. A set the
+ *  database refuses because its session is complete (§0bc) is flagged the
+ *  same way on the spot — the next flush would only be refused again. Returns
  *  what was sent and what is still waiting (conflicts not counted). */
 export async function flushGymSets(
   db: Db,
@@ -80,6 +109,10 @@ export async function flushGymSets(
       dequeueGymSetLog(item.input.id);
       sent += 1;
     } catch (err) {
+      if (isClosedLogError(err)) {
+        await flagClosedGymSet(db, item);
+        continue;
+      }
       if (isDuplicateKeyError(err)) {
         const outcome = await resolveGymSetConflict(db, athleteId, item);
         if (outcome === 'delivered') {

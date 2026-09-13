@@ -1,5 +1,6 @@
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { positionToUnit } from '@/lib/nutritionRules';
+import { MIN_ATHLETES_WITH_DATA } from '@/lib/smallSample';
 import { fetchAllPaged } from './paged';
 import { fetchGroupAthleteIds, type Db, type Group } from './groups';
 import { fetchPositionalGroup, quartile } from './playerProfile';
@@ -156,7 +157,7 @@ import { fetchPositionalGroup, quartile } from './playerProfile';
  *  each. It also matches the number playerProfile.ts already chose for
  *  BAND_SHADING_MIN_N when it decided "a percentile against three team-mates
  *  shades further than it should" — the same worry, one screen earlier. */
-export const POSITIONAL_MIN_N = 5;
+export const POSITIONAL_MIN_N = MIN_ATHLETES_WITH_DATA;
 
 export type PositionalSource = 'group' | 'position';
 

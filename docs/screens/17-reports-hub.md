@@ -48,6 +48,17 @@ specification applies to product tier.
 
 **A header** naming the screen.
 
+**One floor for every squad aggregate** (PATTERN-S7 C8, 13 September 2026):
+`lib/smallSample.ts` — five athletes with data. Below it a median, a band, a
+mean or a heat ramp is not shown, and the notice says so in one form: "Shading
+is off — 3 athletes have data, fewer than 5. The individual numbers are
+unchanged." Read by the positional band and the profile's row shading (the two
+floors that existed, now one), the training report's heat ramp, the testing
+report's median and quartiles, the compliance report's squad mean and the
+analytics builder's population mean. Floors of another kind — an ACWR's 21 of
+28 days, a rolling band's 10 observations — are about one athlete's history,
+not the squad, and stay their own.
+
 **Every report's export is scoped the way the screen was** (PATTERN-S7 C5,
 confirmed 13 September 2026): the five export routes resolve the group filter
 through `resolveGroupFilter` — the address's `?groups=` first, then the sticky

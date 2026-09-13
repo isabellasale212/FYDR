@@ -1,4 +1,5 @@
 import { Fragment } from 'react';
+import { belowSquadFloor, squadFloorNote } from '@/lib/smallSample';
 import Link from 'next/link';
 import { Dial } from '@/components/Dial/Dial';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
@@ -283,11 +284,11 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
   // On is the default because the shading is the point of the board; off is for
   // reading the raw numbers, or for projecting it in a room where the tints do
   // not survive the projector.
-  const heatOn = sp.heat !== 'off';
+  const heatPref = sp.heat !== 'off';
   /** `qs` with the heat preference carried through, so following any link on
    *  this page — a date, a player, a lens — does not silently turn it back on. */
   const q = (params: Record<string, string | undefined>): string =>
-    qs({ ...params, heat: heatOn ? undefined : 'off' });
+    qs({ ...params, heat: heatPref ? undefined : 'off' });
 
   const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
 
@@ -314,10 +315,10 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
             {/* The design's own top-bar control. A link, not a checkbox: it is a
             view state, and this page keeps every view state in the URL. */}
             <Link
-            href={`/reports/training${qs({ mode, session: sessionParam, groups: groupsQs, heat: heatOn ? 'off' : undefined })}`}
+            href={`/reports/training${qs({ mode, session: sessionParam, groups: groupsQs, heat: heatPref ? 'off' : undefined })}`}
             className="tr-heat-toggle"
             role="switch"
-            aria-checked={heatOn}
+            aria-checked={heatPref}
             >
             Heat
             <span className="tr-heat-toggle-track" aria-hidden />
@@ -618,6 +619,13 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
    * rather than shading against athletes who are not shown. */
   const hsrP95 = p95Of(board.rows.map((r) => r.hsr));
   const hieP95 = p95Of(board.rows.map((r) => r.hie));
+  /* PATTERN-S7 C8 (2026-09-13): the squad floor. Shading ranks each athlete
+     inside today's squad, and a rank inside four is a rank inside almost
+     nobody — below five athletes with a GPS record the ramp is off whatever
+     the toggle says, and the board says so. The numbers are unchanged. */
+  const athletesWithData = board.rows.length;
+  const heatFloored = belowSquadFloor(athletesWithData);
+  const heatOn = heatPref && !heatFloored;
 
   const athleteOptions = [...new Map(board.rows.map((r) => [r.athlete_id, `${r.last_name}, ${r.first_name}`])).entries()]
     .sort((a, b) => a[1].localeCompare(b[1]))
@@ -692,6 +700,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
             <h2 className="card-title">Board</h2>
             <p className="tiny num" style={{ color: 'var(--faint)' }}>
               n = {board.rows.length} athletes
+              {heatFloored ? ` · ${squadFloorNote('Shading', athletesWithData)}` : ''}
             </p>
             <div className="tr-board" style={{ marginTop: 'var(--sp-10)' }}>
               <div className="tr-board-inner">

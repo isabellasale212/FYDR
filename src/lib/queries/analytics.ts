@@ -1,4 +1,5 @@
 import { ACWR_ACUTE_WINDOW_DAYS, ACWR_CHRONIC_WINDOW_DAYS, computeAcwr } from '@/lib/acwr';
+import { belowSquadFloor } from '@/lib/smallSample';
 import { readiness, rollingBand, zScore, type Band } from '@/lib/stats';
 import { addDays, todayIso } from '@/lib/format';
 import type { MetricDef, MetricSource } from '@/lib/analyticsBuilder';
@@ -791,7 +792,9 @@ export async function fetchMetricSeries(
       const v = perAthleteMetric.get(a.id)?.get(date);
       if (v !== undefined) values.push(v);
     }
-    return { date, value: values.length === 0 ? null : values.reduce((s, v) => s + v, 0) / values.length };
+    /* PATTERN-S7 C8: a day fewer than five athletes have a value is null —
+       the squad floor, the one rule every aggregate reads. */
+    return { date, value: belowSquadFloor(values.length) ? null : values.reduce((s, v) => s + v, 0) / values.length };
   });
 
   // rollingBand/zScore from lib/stats.ts — the same trailing-band maths the

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ReportPager } from '@/components/ReportPager/ReportPager';
 import { narrowWindowNote, periodNav } from '@/lib/periodNav';
+import { belowSquadFloor, squadFloorNote } from '@/lib/smallSample';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { fetchGroups } from '@/lib/queries/groups';
 import { complianceAthletePct, fetchComplianceReport, recordReportView } from '@/lib/queries/reports';
@@ -96,7 +97,9 @@ export default async function ComplianceReportPage({
    * re-queried, so a card can never disagree with the table beneath it. */
   const athletePcts = report.byAthlete.map((a) => ({ row: a, pct: complianceAthletePct(a) }));
   const measured = athletePcts.filter((x) => x.pct !== null);
-  const squadMean = measured.length > 0 ? Math.round(measured.reduce((s, x) => s + x.pct!, 0) / measured.length) : null;
+  /* PATTERN-S7 C8: the squad floor — no mean below five athletes with data. */
+  const squadMean = measured.length > 0 && !belowSquadFloor(measured.length) ? Math.round(measured.reduce((s, x) => s + x.pct!, 0) / measured.length) : null;
+  const squadMeanNote = belowSquadFloor(measured.length) ? squadFloorNote('The squad mean', measured.length) : null;
   const underHalf = measured.filter((x) => x.pct! < 50).length;
   const waivedDays = report.byAthlete.reduce((s, a) => s + a.waivedCount, 0);
   const waivedAthletes = report.byAthlete.filter((a) => a.waivedCount > 0).length;
@@ -310,7 +313,8 @@ export default async function ComplianceReportPage({
                       {squadMean === null ? null : <small>%</small>}
                     </span>
                     <span className="cmpl-stat-sub">
-                      n = {measured.length} athlete{measured.length === 1 ? '' : 's'} · {report.byDay.length > 0 ? `${new Set(report.byDay.map((d) => d.date)).size} days` : 'no days'}
+                      {squadMeanNote ??
+                        `n = ${measured.length} athlete${measured.length === 1 ? '' : 's'} · ${report.byDay.length > 0 ? `${new Set(report.byDay.map((d) => d.date)).size} days` : 'no days'}`}
                     </span>
                   </div>
                   <div className="cmpl-stat" data-tone={underHalf > 0 ? 'bad' : undefined}>

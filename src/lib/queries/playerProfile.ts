@@ -1,3 +1,4 @@
+import { MIN_ATHLETES_WITH_DATA } from '@/lib/smallSample';
 import {
   ACWR_ACUTE_WINDOW_DAYS,
   ACWR_BAND_HIGH,
@@ -170,7 +171,7 @@ export function bandTone(pct: number): Tone {
  *  bottom of a three-man group is the 0th percentile and would take the
  *  darkest red row in the list. The percentile itself is still shown, still
  *  correct, and still labelled; only the row tint is withheld. */
-export const BAND_SHADING_MIN_N = 5;
+export const BAND_SHADING_MIN_N = MIN_ATHLETES_WITH_DATA;
 
 /** §7's four percentile bands, which are NOT the three bandTone() colours: the
  *  0-19th and 20-39th bands are the same red and differ only in wash strength,

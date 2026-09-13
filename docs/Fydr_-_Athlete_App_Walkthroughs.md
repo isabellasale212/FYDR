@@ -476,6 +476,8 @@ length before and after.
 
 **Built 2026-09-12 (`7824358`, `45816c8`).** Inside the logger the fill, the set keys (logged / current / not reached), the live exercise head and the deviation line are on the accent — the gold stays on the tab bar; the set keys stand on the 44px floor (measured 44px as Conor).
 
+**Built 2026-09-13 (`52b6f82`), measured as Conor at 375.** The logger is rebuilt set by set: one exercise at a time, "Set 1 of 3 · Rest 90s", the chips as the state display (nothing disabled), Weight and Reps at 48px between 52px steppers (`--hit-md`), and one 56px primary (`--hit-lg`) labelled with what it writes — "Log set 1 · 100 kg × 8" — pinned above the fold at 375×812; "Finish early" sits beside the title while sets remain; a correction happens in place ("Correcting set 1 · was × 5"). The two target sizes are the third token decision under §0.01, dated in `tokens.css`.
+
 **Built 2026-09-12 (`84b258e`), measured read-only as Conor at 375.** A set that fails to send is retried from this screen — on open and the moment the phone comes back online — not only from Today, and the progress row says so while it waits: "N of M sets · K waiting to send · HH:MM". One shared `flushGymSets` serves both screens. The §0u item this walkthrough raised ("only retried from `/today`") is closed.
 
 **Entry point.** The "Gym" tab → `/programme` → a session row. Direct URL

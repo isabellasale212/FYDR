@@ -5508,6 +5508,18 @@ img.me-avatar {
   font-weight: 600;
   color: var(--bad-text);
 }
+/* PATTERN-S8 C9 (2026-09-13): retention's consequence in the same card as
+   Run — bad wash once there is something to run (a purge is irreversible). */
+.ret-consequence {
+  margin-top: var(--sp-12);
+  padding: var(--sp-12) var(--sp-14);
+  border: 1px solid var(--border-bad);
+  border-radius: var(--r-control);
+  background: var(--wash-bad);
+}
+.ret-armed {
+  border-color: var(--border-bad);
+}
 /* PATTERN-S8 A1 (2026-09-13): Log out is a button, set apart from the lists,
    with the session it ends named beside it. */
 .set-logout-form {

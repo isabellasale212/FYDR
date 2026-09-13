@@ -34,6 +34,23 @@ how long, and **when the clock starts**, which is the part people get wrong.
 **A preview**, showing what would be removed if retention ran now. **Preview only**
 is labelled as such.
 
+**The consequence, in the same card as the button** (PATTERN-S8 C9, 13 September
+2026). Under the preview's table, before Run: "Running now will delete 3 import
+files older than 30 days, and redact the clinical detail on 14 closed injury
+records and archive them. This cannot be undone." Then who it touches — "Those
+records belong to 11 athletes, 2 of them still on the squad: Ade Oyelaran, Ross
+Gallagher. Their availability history and everything else about them stays; only
+the diagnosis, mechanism, notes, treatment plan, imaging and referral go." — and
+what the preview-only categories hold, as visibility: "2,184 rows in the 3
+preview-only categories are past their period and untouched by this run — shown so
+the club can see what a fuller retention would remove." When nothing is eligible:
+"Nothing is eligible today: … Run has nothing to do." and Run is not offered.
+**Run now opens a dialog** (B11 — a purge is irreversible) that says the
+consequence again with one button, **Run retention**; nothing is written before it.
+**The preview is logged as its own action** (`retention.preview`, decision batch
+A6) with the counts per category and the athlete totals — never the ids or the
+names.
+
 **The nightly retention reports.**
 
 ## 5. Every number on this page
@@ -51,8 +68,9 @@ year rule alone governs (`src/lib/retention/compute.ts:88`).
 
 | Element and label | Where it sits | What happens | Where it goes | What it writes | Permission | Confirmation | Hidden when |
 |---|---|---|---|---|---|---|---|
-| **Preview** | The body | Shows what would be removed. **Changes nothing** | Stays here | Nothing | Sport scientist | None needed | Absent for everyone else |
-| **Run retention** | The body | **Permanently removes the records the preview named** | Stays here, with the result | **Deletes athlete data, and audits what was deleted** | Sport scientist | **Yes** | Absent for everyone else |
+| **Preview** | The body | Shows what would be removed and states the consequence. **Changes nothing** | Stays here | An audit row, `retention.preview`, with the counts (no rows, no names) | Sport scientist | None needed | Absent for everyone else |
+| **Run now** | The card, under the consequence | Opens the dialog | Stays here | Nothing | Sport scientist | — | When nothing is eligible ("Nothing to run.") |
+| **Run retention** (the dialog) | The dialog | **Permanently removes the records the preview named** | Stays here, with the result | **Deletes athlete data, and audits what was deleted** (`retention.run`) | Sport scientist | **The dialog is the confirmation** | — |
 
 **Preview and run are separate on purpose.** The preview is safe and can be run
 freely; the run is not reversible. Both are checked again on the server, not just

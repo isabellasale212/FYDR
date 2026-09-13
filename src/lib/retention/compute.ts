@@ -58,6 +58,11 @@ export type RetentionPreview = {
   orgId: string;
   computedAt: string;
   categories: RetentionPreviewCategory[];
+  /** PATTERN-S8 C9 (2026-09-13): who the run touches — the athletes behind
+   *  the injury records it would redact, and how many of them are still on
+   *  the squad (status not left_club). Import files are not athlete-bound
+   *  and carry no athlete here. */
+  athletes: { total: number; current: number; names: string[] };
 };
 
 /** Read-only. Every count here is a real query against the real schema —
@@ -73,7 +78,7 @@ export async function computeRetentionPreview(orgId: string): Promise<RetentionP
   const eightYearsAgo = yearsAgo(8);
   const { data: closedInjuries } = await admin
     .from('injuries')
-    .select('id, athlete_id, updated_at, athletes!inner(date_of_birth)')
+    .select('id, athlete_id, updated_at, athletes!inner(date_of_birth, first_name, last_name, status)')
     .eq('org_id', orgId)
     .eq('status', 'closed')
     .is('deleted_at', null)
@@ -94,6 +99,18 @@ export async function computeRetentionPreview(orgId: string): Promise<RetentionP
     twentyFifthBirthday.setUTCFullYear(twentyFifthBirthday.getUTCFullYear() + 25);
     return twentyFifthBirthday.getTime() < Date.now();
   });
+
+  /* C9: the athletes those records belong to, and which are current. */
+  const byAthlete = new Map<string, { name: string; current: boolean }>();
+  for (const inj of eligibleInjuries) {
+    if (!inj.athlete_id || byAthlete.has(inj.athlete_id)) continue;
+    byAthlete.set(inj.athlete_id, { name: `${inj.athletes?.first_name ?? ''} ${inj.athletes?.last_name ?? ''}`.trim(), current: inj.athletes?.status !== 'left_club' });
+  }
+  const athletes = {
+    total: byAthlete.size,
+    current: [...byAthlete.values()].filter((a) => a.current).length,
+    names: [...byAthlete.values()].filter((a) => a.current).map((a) => a.name).sort(),
+  };
 
   const currentSeasonRes = await admin.from('seasons').select('id, starts_on').eq('org_id', orgId).eq('is_current', true).is('deleted_at', null).maybeSingle();
   const completedSeasonsRes = await admin
@@ -151,6 +168,7 @@ export async function computeRetentionPreview(orgId: string): Promise<RetentionP
   return {
     orgId,
     computedAt: new Date().toISOString(),
+    athletes,
     categories: [
       {
         category: 'Import batch raw files (30 days)',

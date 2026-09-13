@@ -145,10 +145,32 @@ export async function requireStaff(): Promise<StaffContext> {
  *  admin is blocked the same way regardless of which door they try. */
 /* PATTERN-S6 C7 (2026-09-13): every refusal below lands on /denied — one
  * screen that says what is true without saying what exists. The ?e= reasons
- * these used to carry were rendered by nothing. */
+ * these used to carry were rendered by nothing.
+ *
+ * The denial log (Isabella, 2026-09-13; migration 0112): each refusal first
+ * writes one access.denied row to the club's audit log as the person
+ * refused, through log_access_denial, and carries the reference it returns
+ * ("D-<id in base 36>") to the screen, where it is shown to quote to an
+ * administrator, who finds it in Settings › Audit log. The gate is named;
+ * the path is the request's when the caller passes it (route handlers know
+ * their URL; a server component knows its route). If the log cannot be
+ * written the refusal still stands and the screen shows no reference —
+ * never a page that grants because the log failed. Never throws before the
+ * redirect: redirect() itself throws, and must be the last thing. */
+export async function refuse(db: Db, gate: string, path: string | null): Promise<never> {
+  let reference: string | null = null;
+  try {
+    const { data } = await db.rpc('log_access_denial', { p_gate: gate, p_path: path ?? '' });
+    reference = typeof data === 'string' && /^D-[0-9A-Z]{1,13}$/.test(data) ? data : null;
+  } catch {
+    reference = null;
+  }
+  redirect(reference ? `/denied?r=${reference}` : '/denied');
+}
+
 export async function requireReportAccess(): Promise<StaffContext> {
   const ctx = await requireStaff();
-  if (!hasAnyRole(ctx.claims.roles, REPORT_ACCESS)) redirect('/denied');
+  if (!hasAnyRole(ctx.claims.roles, REPORT_ACCESS)) await refuse(ctx.db, 'report_access', null);
   return ctx;
 }
 
@@ -167,7 +189,7 @@ export async function requireReportAccess(): Promise<StaffContext> {
  *  grid to consult. */
 export async function requireReport(key: ReportKey): Promise<StaffContext> {
   const ctx = await requireStaff();
-  if (!hasAnyRole(ctx.claims.roles, REPORT_VISIBILITY[key])) redirect('/denied');
+  if (!hasAnyRole(ctx.claims.roles, REPORT_VISIBILITY[key])) await refuse(ctx.db, `report:${key}`, `/reports/${key}`);
   return ctx;
 }
 
@@ -208,7 +230,7 @@ export async function requireReport(key: ReportKey): Promise<StaffContext> {
 
 export async function requireInjuryAccess(): Promise<StaffContext> {
   const ctx = await requireStaff();
-  if (!hasAnyRole(ctx.claims.roles, INJURY_ACCESS)) redirect('/denied');
+  if (!hasAnyRole(ctx.claims.roles, INJURY_ACCESS)) await refuse(ctx.db, 'injury_access', null);
   return ctx;
 }
 
@@ -245,7 +267,7 @@ export function premiumOnlyResponse(feature: string): Response {
  *  pair of roles. */
 export async function requireSubjectAccess(): Promise<StaffContext> {
   const ctx = await requireStaff();
-  if (!hasAnyRole(ctx.claims.roles, SETTINGS_ADMIN) && !hasAnyRole(ctx.claims.roles, CLINICAL_ONLY)) redirect('/denied');
+  if (!hasAnyRole(ctx.claims.roles, SETTINGS_ADMIN) && !hasAnyRole(ctx.claims.roles, CLINICAL_ONLY)) await refuse(ctx.db, 'subject_access', '/settings/subject-access');
   return ctx;
 }
 
@@ -271,7 +293,7 @@ export async function requireSubjectAccess(): Promise<StaffContext> {
  *  the variable is deliberately set. */
 export async function requirePlatformStaff(): Promise<StaffContext> {
   const ctx = await requireStaff();
-  if (!isPlatformStaff(ctx.claims.email)) redirect('/denied');
+  if (!isPlatformStaff(ctx.claims.email)) await refuse(ctx.db, 'platform_staff', null);
   return ctx;
 }
 

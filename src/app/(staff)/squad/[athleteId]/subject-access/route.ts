@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { redirect } from 'next/navigation';
 import { createSarRequest } from '@/lib/queries/sarPack';
-import { requireStaff } from '@/lib/session';
+import { requireStaff, refuse } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
 import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 
@@ -20,7 +20,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ at
      malformed id is a URL that does not name anything, not a server fault. */
   if (!isUuid(athleteId)) notFound();
 
-  if (!hasAnyRole(claims.roles, SETTINGS_ADMIN)) redirect('/denied');
+  if (!hasAnyRole(claims.roles, SETTINGS_ADMIN)) await refuse(db, 'sar:create', `/squad/${athleteId}/subject-access`);
 
   const { id, error } = await createSarRequest(db, orgId, athleteId, claims.userId);
   if (error || !id) redirect(`/squad/${athleteId}?error=${encodeURIComponent(error ?? 'Could not open the request.')}`);

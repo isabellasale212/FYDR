@@ -25,6 +25,14 @@ that can be edited is not a log.
 
 ## 4. What you see
 
+**A refusal is a row** (PATTERN-S6 C7, 13 September 2026, migration 0112). When a
+role gate refuses somebody — a report their role cannot open, Analytics on a coach, a
+subject-access route — the app writes one `access.denied` row here as the person
+refused (entity `route`; the gate, the path and the roles they held in the metadata)
+and shows them a reference, "D-" and the row's id in base 36 ("D-1Z9K"), to quote to
+an administrator. The row shows the reference and the path in its Entity cell, and the
+search box finds a row by the reference. Append-only like every row here.
+
 Entries in time order, each naming the person who acted, their role at the time,
 the action, the kind of record, the athlete affected where relevant, and when.
 

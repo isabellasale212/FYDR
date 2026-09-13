@@ -123,7 +123,8 @@ console.log('\nrequirePlatformStaff itself');
   const fn = session.slice(session.indexOf('export async function requirePlatformStaff'));
   const body = fn.slice(0, fn.indexOf('\n}'));
   assert(/isPlatformStaff\(/.test(body), 'it gates on isPlatformStaff');
-  assert(/redirect\(|notFound\(/.test(body), 'and refuses rather than returning null for a caller to forget to check');
+  // Repointed 2026-09-13 (PATTERN-S6 C7): the refusal goes through refuse(), which logs and redirects and returns never.
+  assert(/redirect\(|notFound\(|await refuse\(/.test(body), 'and refuses rather than returning null for a caller to forget to check');
 }
 
 console.log('\nthe sidebar is untouched — the design is frozen');

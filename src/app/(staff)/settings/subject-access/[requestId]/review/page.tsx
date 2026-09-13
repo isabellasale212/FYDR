@@ -1,8 +1,8 @@
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ClinicalReviewForm } from '@/components/ClinicalReviewForm/ClinicalReviewForm';
 import { fetchInjuriesForReview, fetchSarRequest } from '@/lib/queries/sarPack';
-import { requireStaff } from '@/lib/session';
+import { requireStaff, refuse } from '@/lib/session';
 import { CLINICAL_ONLY, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Clinical review · Fydr' };
@@ -17,7 +17,7 @@ export const metadata = { title: 'Clinical review · Fydr' };
 export default async function ClinicalReviewPage({ params }: { params: Promise<{ requestId: string }> }) {
   const { requestId } = await params;
   const { db, orgId, claims, timezone } = await requireStaff();
-  if (!hasAnyRole(claims.roles, CLINICAL_ONLY)) redirect('/denied');
+  if (!hasAnyRole(claims.roles, CLINICAL_ONLY)) await refuse(db, 'sar:review', `/settings/subject-access/${requestId}/review`);
 
   const request = await fetchSarRequest(db, orgId, requestId);
   if (!request) notFound();

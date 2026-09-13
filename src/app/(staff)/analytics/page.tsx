@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { ComparisonChart, type ChartSeries } from '@/components/ComparisonChart/ComparisonChart';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
@@ -9,7 +8,7 @@ import { fetchGroups } from '@/lib/queries/groups';
 import { fetchBuilderAthletes, fetchMetricSeries } from '@/lib/queries/analytics';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { requireStaff } from '@/lib/session';
+import { requireStaff, refuse } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import { PlanGate, PlanGateCard } from '@/components/PlanGate/PlanGate';
 import { ReportSelectNav } from '@/components/ReportSelectNav/ReportSelectNav';
@@ -220,7 +219,7 @@ function xLabelsFor(series: readonly Band[]): string[] {
 export default async function AnalyticsPage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, orgName, timezone, tier, claims } = await requireStaff();
   /* D-02: Analytics is the sport scientist's alone. Confirmed 2026-09-05. */
-  if (!hasAnyRole(claims.roles, ANALYTICS)) redirect('/denied');
+  if (!hasAnyRole(claims.roles, ANALYTICS)) await refuse(db, 'analytics', '/analytics');
   /* Read from requireStaff(), which has already resolved the Basic-plan
    * preview through effectiveTier() — so this screen shows a previewing admin
    * exactly what a Basic club sees, and effectiveTier() guarantees a preview

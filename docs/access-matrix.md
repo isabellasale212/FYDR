@@ -447,8 +447,13 @@ role may not include it. Nothing more can be said about it here." Then who they 
 signed in as ("Signed in as Peter Ackland · coach.") and what the role covers (the
 sidebar's own destinations for it: "Your role covers Dashboard, Squad overview, …"),
 and one primary, Back to dashboard. The screen reads no reason and echoes no path.
-The `?e=` reasons those redirects used to carry were rendered by nothing. A reference
-code an admin could look up waits for a denial log (the decision sheet, ⚠ migration).
+The `?e=` reasons those redirects used to carry were rendered by nothing. **Every refusal
+is logged** (migration 0112, Isabella's ruling 13 September 2026): the gate first writes
+one `access.denied` row to the club's audit log as the person refused — the gate, the
+path and the roles they held — and carries the row's reference ("D-" and the id in base
+36) to the screen: "Reference D-1Z9K. Quote it to your club's administrator — it is in
+Settings › Audit log.", where the sport scientist finds the row by that code. If the log
+cannot be written the refusal still stands and no reference is shown.
 Route handlers that return 403 JSON (the export routes) are unchanged. Sign-in and
 shell redirects (`/login`, `/today`, `/dashboard`) are not refusals and are untouched.
 

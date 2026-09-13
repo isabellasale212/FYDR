@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { fetchSarRequest, releaseSarRequest } from '@/lib/queries/sarPack';
 import { assembleSarPack } from '@/lib/queries/sarPackAssembly';
-import { requireStaff } from '@/lib/session';
+import { requireStaff, refuse } from '@/lib/session';
 import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 
 /** screens/exports.md: "The pack cannot be released while review is
@@ -16,7 +16,7 @@ import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 export async function POST(_request: Request, { params }: { params: Promise<{ requestId: string }> }) {
   const { requestId } = await params;
   const { db, orgId, claims } = await requireStaff();
-  if (!hasAnyRole(claims.roles, SETTINGS_ADMIN)) redirect('/denied');
+  if (!hasAnyRole(claims.roles, SETTINGS_ADMIN)) await refuse(db, 'sar:release', `/settings/subject-access/${requestId}/release`);
 
   const request = await fetchSarRequest(db, orgId, requestId);
   if (!request) redirect('/settings/subject-access?error=Request+not+found.');

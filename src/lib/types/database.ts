@@ -4590,6 +4590,13 @@ export type Database = {
       Args: Record<string, never>
       Returns: string
     }
+    log_access_denial: {
+      Args: {
+        p_gate: string
+        p_path: string
+      }
+      Returns: string
+    }
     login_attempt_gate: {
       Args: {
         p_email: string
@@ -4618,6 +4625,12 @@ export type Database = {
         p_notification_ids: string[]
       }
       Returns: number
+    }
+    reference_base36: {
+      Args: {
+        p: number
+      }
+      Returns: string
     }
     resolve_my_assigned_sessions_by_week: {
       Args: {

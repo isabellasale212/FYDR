@@ -159,6 +159,12 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Sea
                     <td className="tiny">
                       {r.entityType}
                       {r.entityId ? <span style={{ color: 'var(--faint)' }}> · {r.entityId.slice(0, 8)}</span> : null}
+                      {/* PATTERN-S6 C7 (0112): a denial row carries the
+                          reference the person was shown, and where they
+                          were refused — what a support call quotes. */}
+                      {r.action === 'access.denied' && typeof r.metadata?.reference === 'string' ? (
+                        <span className="num"> · {r.metadata.reference}{typeof r.metadata.path === 'string' && r.metadata.path ? ` · ${r.metadata.path}` : ''}</span>
+                      ) : null}
                     </td>
                     <td className="tiny">{r.athleteName ?? '—'}</td>
                   </tr>

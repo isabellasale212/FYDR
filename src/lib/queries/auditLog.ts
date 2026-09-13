@@ -171,7 +171,9 @@ export async function fetchAuditLog(
         .ilike('full_name', `%${likeTerm}%`);
       if (userErr) throw new Error(userErr.message);
       const actorIds = (matchingUsers ?? []).map((u) => u.id);
-      const parts = [`action.ilike.%${likeTerm}%`];
+      /* PATTERN-S6 C7 (0112): a denial's reference ("D-1Z9K") is what a
+         person quotes; it lives in the row's metadata. */
+      const parts = [`action.ilike.%${likeTerm}%`, `metadata->>reference.ilike.%${likeTerm}%`];
       if (actorIds.length > 0) parts.push(`actor_id.in.(${actorIds.join(',')})`);
       query = query.or(parts.join(','));
     }

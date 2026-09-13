@@ -75,7 +75,14 @@ no norm" when the truth is "we did not ask for the days that would show one".
 **Base package.** The whole destination is absent from the sidebar and the address
 refuses. **Nobody in scope.** Says so. **A preset whose data exists but which is
 not built** is named as such rather than shown empty
-(`src/lib/queries/analytics.ts:17`). **Offline.** Not handled.
+(`src/lib/queries/analytics.ts:17`). **Session RPE is off for this club**
+(`organisations.collects_rpe`, Settings › Club, migration 0118, 13 September
+2026): a board whose chosen metric rests on the rating — Session RPE, Training
+load (RPE × minutes) or ACWR — keeps its card, title and metric control, and in
+place of the plot says "This club does not collect session RPE, so {metric} on
+this board has nothing to show. A sport scientist can switch it on in Settings ›
+Club." Choosing a metric that does not rest on RPE (distance, gym volume, any
+wellness metric) draws the chart again. **Offline.** Not handled.
 
 ## 9. Open issues
 

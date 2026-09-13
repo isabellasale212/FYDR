@@ -107,6 +107,20 @@ the domains that expect anything, then the sample ("30 athletes · last 28 days 
 when nothing is. The per-domain breakdown follows it; the PDF leads with the same
 figure.
 
+**The figure states which entry types it counted** (the catalogue addendum, 13
+September 2026; `lib/rpeSetting.ts` `complianceCountedLine`): before the exclusions
+sentence, "Counted: wellness check-ins, session ratings, gym sessions." — the domains
+with an expectation in the window, by name — because one club's denominator is not
+another's. When the club has session RPE switched off (`organisations.collects_rpe`,
+Settings › Club, migration 0118) the database generates no RPE expectation, and
+RPE expectations generated while it was on are kept but not counted while it is
+off (`fetchComplianceReport`'s `collectsRpe` option — the page, the PDF and the CSV
+all pass it): the sentence lists what remains and adds "Session ratings are not
+counted: this club does not collect session RPE (Settings › Club)."; the Session RPE
+domain card reads "Not expected" with "Not collected by this club (Settings › Club)"
+under it, and the CSV's caption carries the same counted line. The figure is never
+quietly smaller for a club that asks for less.
+
 **Every figure carries its denominator, an exclusions sentence, and words for
 a missing value** (PATTERN-S7 C2, 13 September 2026; `lib/reportFigures.ts`).
 The summary reads "24 of 30 submitted · 2 waived" or "No expectations

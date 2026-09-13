@@ -7,6 +7,7 @@ import {
   populationLabel,
 } from '@/lib/queries/leaderboards';
 import { requireStaff } from '@/lib/session';
+import { isRpeMetric } from '@/lib/rpeSetting';
 
 export const metadata = { title: 'Manage leaderboards · Fydr' };
 
@@ -35,7 +36,7 @@ export const metadata = { title: 'Manage leaderboards · Fydr' };
  *  — new leaderboard already redirects a non-coach/medical visitor back
  *  here, and this list is exactly where they land. */
 export default async function ManageLeaderboardsPage() {
-  const { db, orgId } = await requireStaff();
+  const { db, orgId, collectsRpe } = await requireStaff();
   const [boards, catalogue] = await Promise.all([
     fetchStaffBoards(db, orgId),
     fetchMetricCatalogue(db),
@@ -105,6 +106,12 @@ export default async function ManageLeaderboardsPage() {
                           ? 'this season'
                           : 'all time'}
                     </p>
+                    {/* The RPE club setting (0118): an effort board says so here too. */}
+                    {isRpeMetric(board.metric_key) && !collectsRpe ? (
+                      <p className="tiny g-warn" style={{ marginTop: 'var(--sp-2)' }}>
+                        Ranks nothing while session RPE is off for this club (Settings › Club).
+                      </p>
+                    ) : null}
                   </div>
                   <span
                     className={`pill ${board.visibility === 'published' ? 'pill-good' : 'pill-neutral'}`}
@@ -121,8 +128,8 @@ export default async function ManageLeaderboardsPage() {
       <p className="cap">
         Wellness and body composition can never be ranked here, by design &mdash; see any
         ineligible metric in the builder for the reason. Boards render only once at least
-        three athletes qualify. Athletes under 18 appear only if they choose to opt in
-        themselves &mdash; nobody at the club can turn that on for them.
+        three athletes qualify. Athletes under 18 are never named on a board (migration
+        0116) &mdash; nobody at the club, and not the athlete, can turn that on.
       </p>
     </>
   );

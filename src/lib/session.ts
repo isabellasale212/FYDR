@@ -40,6 +40,10 @@ export type StaffContext = {
    *  renders a banner on this: a staff member must never be left wondering
    *  whether a missing feature is un-bought or merely hidden. */
   previewingTier: boolean;
+  /** The RPE club setting (0118): false means nobody is asked to rate a
+   *  session and every RPE surface shows its off state, naming the setting
+   *  and that the sport scientist can change it at Settings › Club. */
+  collectsRpe: boolean;
 };
 
 export type AthleteContext = {
@@ -50,6 +54,9 @@ export type AthleteContext = {
   timezone: string;
   firstName: string;
   lastName: string;
+  /** The RPE club setting (0118): false means nobody is asked to rate a
+   *  session and the RPE surfaces show their off state. */
+  collectsRpe: boolean;
   /** The club's plan. It reached the athlete surface for one thing — the
    *  Apple Health permission, a Premium feature — which is removed from the
    *  product (2026-09-13, docs/platform-decision.md); kept because the
@@ -102,7 +109,7 @@ export async function requireStaff(): Promise<StaffContext> {
      is offset here rather than added on top of a second users query. */
   const org = await supabase
     .from('organisations')
-    .select('name, timezone, tier')
+    .select('name, timezone, tier, collects_rpe')
     .eq('id', orgId)
     .maybeSingle();
 
@@ -130,6 +137,7 @@ export async function requireStaff(): Promise<StaffContext> {
     tier: effectiveTier(realTier, previewCookie),
     realTier,
     previewingTier: isPreviewingTier(realTier, previewCookie),
+    collectsRpe: org.data?.collects_rpe ?? true,
   };
 }
 
@@ -304,7 +312,7 @@ export async function requireAthlete(): Promise<AthleteContext> {
   if (!claims.athleteId) redirect('/login?e=no-roles');
 
   const [org, athlete] = await Promise.all([
-    supabase.from('organisations').select('timezone, tier').eq('id', orgId).maybeSingle(),
+    supabase.from('organisations').select('timezone, tier, collects_rpe').eq('id', orgId).maybeSingle(),
     supabase
       .from('athletes')
       .select('first_name, last_name')
@@ -321,5 +329,6 @@ export async function requireAthlete(): Promise<AthleteContext> {
     firstName: athlete.data?.first_name ?? '',
     lastName: athlete.data?.last_name ?? '',
     tier: org.data?.tier ?? 'core',
+    collectsRpe: org.data?.collects_rpe ?? true,
   };
 }

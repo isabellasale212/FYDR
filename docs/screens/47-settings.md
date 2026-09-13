@@ -72,9 +72,21 @@ only" beside it.
   **Integrations card**: Catapult reads **"Import files"** (A7) — a CSV file
   drop, never a live connection; **there is no Apple Health row**
   (`docs/platform-decision.md`, 13 September 2026: removed from the product, not
-  deferred). For the sport scientist only, the **Club details** form (name,
-  sport, timezone, country, logo). The sidebar's and the plan gate's "see the
-  plan" links point at `/settings/club#plan`.
+  deferred). The **Session RPE card** (`#rpe`, since 13 September 2026,
+  migration 0118, `organisations.collects_rpe`): a switch, on by default, that
+  decides whether this club collects a session rating at all. Both
+  consequences are printed on the card before the switch is pressed — on:
+  athletes are asked to rate each session they were expected at on the CR-10
+  scale, and session load, the compliance figure, the training load report,
+  the effort leaderboards and the analytics load presets rest on it; off:
+  nobody is asked, nothing is expected, ratings already recorded stay, and
+  each of those surfaces says "This club does not collect session RPE …" and
+  who can switch it on, rather than showing an empty column or a zero
+  (`docs/decisions/absence-rule.md`). The switch is the sport scientist's;
+  every other role reads the state as a sentence. Each flip writes an audit
+  row (`org.collects_rpe.changed`). For the sport scientist only, the **Club
+  details** form (name, sport, timezone, country, logo). The sidebar's and the
+  plan gate's "see the plan" links point at `/settings/club#plan`.
 - **`/settings/profile`** — eyebrow "Settings · You". Profile (name, club, role
   as words), avatar upload, the profile edit form, then under `#password` the
   change-password form and two-factor enrolment.
@@ -98,6 +110,7 @@ None. Settings displays configuration, not measurements.
 | Change password | `/settings/profile#password` | Sets a new password | Stays there | Changes your sign in | Any staff, for themselves | Form submission | Never |
 | Two factor login | `/settings/profile#password` | Enrols or manages a second factor | Stays there | Registers a factor | Any staff, for themselves. **Required for some roles** | Yes | Never |
 | Club details | `/settings/club` | Changes the club's name, sport, timezone, country and logo | Stays there | Updates the organisation | **Sport scientist only** in the agreed model | Form submission | Absent for everyone else |
+| Session RPE switch | `/settings/club#rpe` | Turns the session rating on or off for the whole club; the database stops generating RPE expectations while it is off | Stays there | `organisations.collects_rpe` and an audit row | **Sport scientist only**; other roles read the state | None — reversible, and both consequences are on the card | Never absent: the sentence stands in for the switch |
 | Users, Audit, Retention, Subject access | People and Data groups | Open those screens | Their own addresses | Nothing | As each screen | None | Never absent: closed rows state their reason instead of linking |
 | Groups, Thresholds, Notifications, Exports, Imports | Club and Data groups | Open those screens | Their own addresses | Nothing | As each screen | None | Never |
 | Plan preview switch | Plan card at `/settings/club` | Lets Fydr's own staff view the product on the lower package | Stays there | Sets a browser cookie | **Fydr staff only, identified by email address, not by role** | None | Absent for a club's own staff |

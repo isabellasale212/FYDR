@@ -2426,6 +2426,7 @@ export type Database = {
         updated_at: string
         deleted_at: string | null
         logo_url: string | null
+        collects_rpe: boolean
       }
       Insert: {
         id?: string
@@ -2439,6 +2440,7 @@ export type Database = {
         updated_at?: string
         deleted_at?: string | null
         logo_url?: string | null
+        collects_rpe?: boolean
       }
       Update: {
         id?: string
@@ -2452,6 +2454,7 @@ export type Database = {
         updated_at?: string
         deleted_at?: string | null
         logo_url?: string | null
+        collects_rpe?: boolean
       }
       Relationships: [
 

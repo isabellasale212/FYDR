@@ -46,6 +46,9 @@ console.log('\n2. the wall, the database, the athlete app');
   const q = read('src/lib/queries/leaderboards.ts');
   assert(!/export async function grantLeaderboardVisibility|export async function fetchLeaderboardConsent/.test(q), 'the grant and read of the self opt-in are removed from the query layer');
   assert(/never named|no opt-in|0116/.test(read('docs/screens/38-leaderboards.md')) && /0116|never named/.test(read('docs/athlete/visibility.md')), 'the specs say so');
+  for (const f of ['src/app/(staff)/leaderboards/manage/page.tsx', 'src/app/(staff)/leaderboards/[leaderboardId]/page.tsx', 'src/app/(staff)/leaderboards/new/page.tsx']) {
+    assert(!/opt in\s+themselves|opt in themselves/.test(strip(read(f))), `${f.split('/').slice(-2).join('/')}: no staff screen still says a minor can opt in`);
+  }
 }
 
 console.log(`\n${failed === 0 ? 'all passed' : `${failed} failed`}`);

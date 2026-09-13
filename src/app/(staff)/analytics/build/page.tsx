@@ -36,6 +36,7 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { BLANK, formatDate, formatNumber, todayIso } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
+import { isRpeAnalyticsMetric, rpeOffLine } from '@/lib/rpeSetting';
 import { isPremium } from '@/lib/tier';
 import type { Band } from '@/lib/stats';
 import { ANALYTICS, hasAnyRole } from '@/lib/access';
@@ -118,7 +119,7 @@ const ALL_ATHLETES = 'all';
  * and saved/shared views (there is no `saved_views` table in this schema).
  */
 export default async function AnalyticsPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, orgName, timezone, claims, tier } = await requireStaff();
+  const { db, orgId, orgName, timezone, claims, tier, collectsRpe } = await requireStaff();
 
   /* The builder is behind the same gate as the screen it belongs to — see
      analytics/page.tsx. Route-level, so a bookmarked /analytics/build refuses
@@ -393,6 +394,11 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
             metadata="Premium · bar, by athlete · the same query, drawn as a ranking"
             style={{ marginTop: 'var(--sp-14)', maxWidth: 680 }}
           />
+        ) : !collectsRpe && isRpeAnalyticsMetric(metric.key) ? (
+          /* Migration 0118: the club setting. The metric stays in the
+             catalogue and this card keeps its place (the absence rule); the
+             line says why nothing is drawn and who can change that. */
+          <p className="cap" data-rpe-off>{rpeOffLine(`${metric.label} here`)}</p>
         ) : result.athletesInScope === 0 ? (
           <p className="cap">
             No athlete matches this filter, so there is nothing to measure. Widen the group

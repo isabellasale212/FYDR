@@ -1,6 +1,7 @@
 import { csvResponse, toCsv } from '@/lib/csv';
 import { reportDefinition } from '@/lib/reportCatalogue';
 import { fetchComplianceReport, recordReportView } from '@/lib/queries/reports';
+import { complianceCountedLine } from '@/lib/rpeSetting';
 import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
@@ -20,7 +21,7 @@ import { formatDateTime } from '@/lib/format';
  *  whole of what tracks the export, the same simplification recordReportView
  *  already made for an ordinary report open. */
 export async function GET(request: Request) {
-  const { db, orgId, claims, timezone, fullName } = await requireReport('compliance');
+  const { db, orgId, claims, timezone, fullName, collectsRpe } = await requireReport('compliance');
   const url = new URL(request.url);
   // resolveGroupFilter, not parseGroupParam: the export must resolve the
   // sticky filter cookie exactly as the on-screen report does (audit S4),
@@ -50,7 +51,7 @@ export async function GET(request: Request) {
   const period = await resolveCompliancePeriod(db, orgId, today, periodParamsFromUrl(url));
   const fromDate = period.range.from;
 
-  const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchComplianceReport(db, orgId, groupIds, fromDate, today, timezone)]);
+  const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchComplianceReport(db, orgId, groupIds, fromDate, today, timezone, { collectsRpe })]);
   const groupNameById = new Map(groups.map((g) => [g.id, g.name]));
 
   // One row per athlete, not per domain·athlete — waivedCount is a
@@ -132,6 +133,7 @@ export async function GET(request: Request) {
      same words the screen shows above its numbers. */
   const caption =
     exportCaption(descriptor, reportDefinition('compliance'), { exportedBy: fullName, at: formatDateTime(new Date().toISOString(), timezone) }) +
+    `# ${complianceCountedLine({ collectsRpe, domains: report.summary.filter((d) => d.expected > 0 || d.waived > 0).map((d) => d.domain) })}\r\n` +
     `# Waived expectations are excluded from Expected/Submitted above and reported in their own column.\r\n`;
 
   return csvResponse(caption + csv, descriptor.fileName);

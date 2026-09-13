@@ -52,8 +52,12 @@ the database, so the builder cannot offer something the code cannot compute.
 
 ## 8. States
 
-**Base package.** Refuses. **Saving.** Disabled and says so. **Offline.** The
-connection sentence.
+**Base package.** Refuses. **Saving.** Disabled and says so. **Session RPE is off
+for this club** (`organisations.collects_rpe`, migration 0118, 13 September 2026):
+the RPE, Training load and ACWR metrics stay in the catalogue; with one chosen the
+result card says "This club does not collect session RPE, so {metric} here has
+nothing to show. A sport scientist can switch it on in Settings › Club." in place
+of the chart or table. **Offline.** The connection sentence.
 
 ## 9. Open issues
 

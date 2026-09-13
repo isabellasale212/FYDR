@@ -35,3 +35,30 @@ export async function updateOrgDetails(
     { refusal: 'Not saved: club details belong to the sport scientist.' },
   );
 }
+
+/** The RPE club setting (migration 0118, 2026-09-13). The sport scientist's
+ *  alone, the same organisations UPDATE policy as the details above; audited
+ *  as its own action because switching it changes what every athlete is
+ *  asked and what every load surface can show. */
+export async function setCollectsRpe(
+  db: Db,
+  orgId: string,
+  actorId: string,
+  collectsRpe: boolean,
+): Promise<{ error: string | null }> {
+  const result = await mustAffect(
+    db.from('organisations').update({ collects_rpe: collectsRpe }).eq('id', orgId).select('id'),
+    { refusal: 'Not saved: the RPE setting belongs to the sport scientist.' },
+  );
+  if (result.error) return result;
+  await db.from('audit_log').insert({
+    org_id: orgId,
+    actor_id: actorId,
+    actor_role: 'sport_scientist',
+    action: 'org.collects_rpe.changed',
+    entity_type: 'organisation',
+    entity_id: orgId,
+    metadata: { collects_rpe: collectsRpe },
+  });
+  return { error: null };
+}

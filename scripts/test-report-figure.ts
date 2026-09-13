@@ -47,9 +47,11 @@ console.log('\n2. compliance: submitted of expected across the domains');
   assert(f.count === '8 of 380', 'the count with its denominator, summed over the domains that expect anything');
   assert(f.value === '2%', 'the percentage after it');
   assert(f.sample === '30 athletes · last 28 days · 2 of 3 domains expected', 'the sample: who, over what, and which domains count');
-  assert(f.exclusions === '2 athletes are excluded on 2 waived days — a waiver is "was not asked", not "did not submit".', 'the exclusions in a full sentence');
+  /* The addendum (13 September 2026): the figure states which entry types it
+     counted, before the exclusions sentence — lib/rpeSetting.ts. */
+  assert(f.exclusions === 'Counted: wellness check-ins, session ratings. 2 athletes are excluded on 2 waived days — a waiver is "was not asked", not "did not submit".', 'the counted line, then the exclusions in a full sentence');
   const none = complianceFigure({ summary: [{ domain: 'wellness', expected: 10, submitted: 9, waived: 0, pct: 90 }], athleteCount: 5, rangeLabel: 'Last 7 days', waivedAthletes: 0, waivedDays: 0, floored: false });
-  assert(none.exclusions === 'Nobody is excluded.' && none.value === '90%' && none.sample === '5 athletes · last 7 days · 1 of 1 domains expected', '"Nobody is excluded" when nothing is');
+  assert(none.exclusions === 'Counted: wellness check-ins. Nobody is excluded.' && none.value === '90%' && none.sample === '5 athletes · last 7 days · 1 of 1 domains expected', '"Nobody is excluded" when nothing is');
   const nothing = complianceFigure({ summary: [{ domain: 'wellness', expected: 0, submitted: 0, waived: 0, pct: null }], athleteCount: 5, rangeLabel: 'Last 7 days', waivedAthletes: 0, waivedDays: 0, floored: false });
   assert(nothing.count === 'Nothing expected' && nothing.value === 'Not expected', 'nothing expected anywhere: words, never 0 of 0');
   const nobody = complianceFigure({ summary: [], athleteCount: 0, rangeLabel: 'Last 7 days', waivedAthletes: 0, waivedDays: 0, floored: true });

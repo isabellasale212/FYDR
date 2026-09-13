@@ -72,7 +72,7 @@ export default async function ComplianceReportPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, orgId, orgName, claims, timezone } = await requireReport('compliance');
+  const { db, orgId, orgName, claims, timezone, collectsRpe } = await requireReport('compliance');
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
   const realToday = todayIso(timezone);
@@ -99,7 +99,7 @@ export default async function ComplianceReportPage({
 
   const [groups, report] = await Promise.all([
     fetchGroups(db, orgId),
-    fetchComplianceReport(db, orgId, groupIds, fromDate, today, timezone),
+    fetchComplianceReport(db, orgId, groupIds, fromDate, today, timezone, { collectsRpe }),
   ]);
 
   /* The four headline numbers, all derived from report.byAthlete rather than
@@ -295,7 +295,7 @@ export default async function ComplianceReportPage({
                   with — submitted of expected across the domains that expect
                   anything, the count before the percentage, the sample, the
                   exclusions. The per-domain breakdown follows it. */}
-              <ReportFigure {...complianceFigure({ summary: report.summary, athleteCount: report.athleteCount, rangeLabel: period.range.label, waivedAthletes, waivedDays, floored: belowSquadFloor(measured.length) })} />
+              <ReportFigure {...complianceFigure({ summary: report.summary, athleteCount: report.athleteCount, rangeLabel: period.range.label, waivedAthletes, waivedDays, floored: belowSquadFloor(measured.length), collectsRpe })} />
               <div className="card">
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 'var(--sp-16)' }}>
                   {report.summary.map((s) => (
@@ -309,7 +309,9 @@ export default async function ComplianceReportPage({
                             denominator, from lib/reportFigures.ts — "0 of 0
                             submitted" reads as an accusation (audit analysis
                             finding 20), so nothing expected is said. */}
-                        {submittedLine({ submitted: s.submitted, expected: s.expected, waived: s.waived })}
+                        {s.domain === 'training_rpe' && !collectsRpe
+                          ? 'Not collected by this club (Settings › Club)'
+                          : submittedLine({ submitted: s.submitted, expected: s.expected, waived: s.waived })}
                       </div>
                     </div>
                   ))}

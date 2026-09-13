@@ -36,6 +36,7 @@ import { availabilityStatus } from '@/lib/status';
 import { headerOwnerLine, headerRestrictionLine, headerSubLine, planLine } from '@/lib/profileHeader';
 import { noWeighInLine } from '@/lib/nutritionNoWeighIn';
 import { requireStaff } from '@/lib/session';
+import { rpeOffLine } from '@/lib/rpeSetting';
 import { isUuid } from '@/lib/uuid';
 import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, BODY_MASS_VIEW, CLINICAL_ONLY, ENTRY_CORRECTION, INJURY_ACCESS, NUTRITION_EDIT, PROGRAMME_AUTHOR, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
 import { ReadOnlyOwner } from '@/components/ReadOnlyOwner/ReadOnlyOwner';
@@ -249,7 +250,7 @@ export default async function AthletePage({
   searchParams: SearchParams;
 }) {
   const { athleteId } = await params;
-  const { db, orgId, timezone, claims } = await requireStaff();
+  const { db, orgId, timezone, claims, collectsRpe } = await requireStaff();
   /* Shape-check the route param before it reaches a query. Authenticated
      first, so this never becomes a probe; then 404 rather than 500, because a
      malformed id is a URL that does not name anything, not a server fault. */
@@ -854,6 +855,10 @@ export default async function AthletePage({
                       : 'no flag rule active'}
                     {' · '}n = {acwr.sessionsN} sessions
                   </p>
+                  {/* Migration 0118: the club setting (the absence rule). */}
+                  {!collectsRpe ? (
+                    <p className="tiny" data-rpe-off>{rpeOffLine('this ratio')}</p>
+                  ) : null}
                 </div>
                 <div className="pp-dial-col">
                   <p className="pp-dial-title pp-dial-col-head">Wellness rating</p>

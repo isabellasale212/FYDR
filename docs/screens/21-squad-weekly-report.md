@@ -159,6 +159,14 @@ PDF, so the two cannot disagree.
 
 **Empty.** A group with nobody shows an empty table naming the group scope.
 
+**Session RPE is off for this club** (`organisations.collects_rpe`, Settings ›
+Club, migration 0118, 13 September 2026). Session load is RPE × minutes, so the
+Load section carries a note — "Session RPE is off for this club" with "This club does
+not collect session RPE, so the load section has nothing to show. A sport scientist can
+switch it on in Settings › Club." — above whatever ratios remain from ratings
+already recorded; a "building baseline" note is never left to pass for the
+reason (`docs/decisions/absence-rule.md`).
+
 **Ratio withheld.** Athletes without 21 days of data show a blank ratio with the
 reason, not a zero.
 

@@ -6,6 +6,7 @@
  *
  * Pure; exercised by scripts/test-report-figure.ts. */
 
+import { complianceCountedLine } from '@/lib/rpeSetting';
 import { NOT_EXPECTED, availabilityExclusionsLine, exclusionsLine, rankedCoverageLine } from '@/lib/reportFigures';
 
 export type ReportFigureCopy = {
@@ -26,11 +27,16 @@ export function complianceFigure(o: {
   waivedAthletes: number;
   waivedDays: number;
   floored: boolean;
+  /** The RPE club setting (0118). The addendum's rule: the figure states
+   *  which entry types it counted, because one club's denominator is not
+   *  another's once RPE can be off. Default true for callers that predate it. */
+  collectsRpe?: boolean;
 }): ReportFigureCopy {
   const counting = o.summary.filter((s) => s.expected > 0);
   const expected = counting.reduce((n, s) => n + s.expected, 0);
   const submitted = counting.reduce((n, s) => n + s.submitted, 0);
   const pct = expected > 0 ? Math.round((100 * submitted) / expected) : null;
+  const counted = complianceCountedLine({ collectsRpe: o.collectsRpe ?? true, domains: counting.map((s) => s.domain) });
   return {
     label: 'Submitted of expected',
     count: expected > 0 ? `${submitted} of ${expected}` : 'Nothing expected',
@@ -39,7 +45,7 @@ export function complianceFigure(o: {
       o.athleteCount === 0
         ? `Nobody in this filter · ${o.rangeLabel.toLowerCase()}`
         : `${o.athleteCount} athlete${o.athleteCount === 1 ? '' : 's'} · ${o.rangeLabel.toLowerCase()} · ${counting.length} of ${o.summary.length} domains expected`,
-    exclusions: exclusionsLine({ waivedAthletes: o.waivedAthletes, waivedDays: o.waivedDays, floored: o.floored }),
+    exclusions: `${counted} ${exclusionsLine({ waivedAthletes: o.waivedAthletes, waivedDays: o.waivedDays, floored: o.floored })}`,
   };
 }
 

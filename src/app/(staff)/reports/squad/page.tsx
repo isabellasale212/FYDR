@@ -22,6 +22,7 @@ import { addDays, enumLabel, formatDate, formatNumber, todayIso } from '@/lib/fo
 import { availabilityStatus } from '@/lib/status';
 import { reportDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
+import { rpeOffLine } from '@/lib/rpeSetting';
 import { squadWeek } from '@/lib/squadWeek';
 import type { AppRole } from '@/lib/types/database';
 
@@ -41,7 +42,7 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
  *  Added because a permanently-"today" window could never show a week that
  *  actually had data (audit B4). */
 export default async function SquadWeeklyReportPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, orgName, claims, timezone } = await requireReport('squad');
+  const { db, orgId, orgName, claims, timezone, collectsRpe } = await requireReport('squad');
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
 
@@ -296,6 +297,16 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
                 inferred from a table of dashes. An ACWR estimated from too few
                 days is worse than none, so those figures are WITHHELD, not
                 zero — the distinction the whole tile exists to protect. */}
+            {/* Migration 0118: the club setting. Session load is RPE × minutes,
+                so with RPE off every ratio below is built on ratings the club
+                is no longer collecting; say so (the absence rule) rather than
+                let "building baseline" pass for a data gap. */}
+            {!collectsRpe ? (
+              <div className="ath-note" style={{ marginTop: 'var(--sp-10)' }} data-rpe-off>
+                <span className="ath-note-title">Session RPE is off for this club</span>
+                <span className="ath-note-body">{rpeOffLine('the load section')}</span>
+              </div>
+            ) : null}
             {report.tiles.acwr.suppressed > 0 ? (
               <div className="ath-note" style={{ marginTop: 'var(--sp-10)' }}>
                 <span className="ath-note-body">

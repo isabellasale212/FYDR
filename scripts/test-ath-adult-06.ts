@@ -50,7 +50,7 @@ console.log('\nA1–A3. already rated');
 
 console.log('\nA5 and what is kept');
 {
-  assert((page.match(/aria-label="Close the session rating"/g) ?? []).length === 2 && !/aria-label="Close"/.test(page), 'both close buttons say "Close the session rating"');
+  assert((page.match(/aria-label="Close the session rating"/g) ?? []).length === 3 && !/aria-label="Close"/.test(page), 'all three close buttons (the off card, 0118, included) say "Close the session rating"');
   assert(/<h1 className="t">\{rpeRowName\(session\.title\)\}<\/h1>/.test(page), 'the h1 is still "Rate {session name}" (02, RPE 3)');
   assert(/className="sess"/.test(page), 'the session block under the head is kept (the board\'s subhead would duplicate it — C1)');
   assert(/This session can no longer be rated\./.test(page) && /Not quite yet\./.test(page), 'the closed and not-yet-due banners are untouched');

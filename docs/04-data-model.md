@@ -84,6 +84,9 @@ create table organisations (
   country_code  char(2) not null default 'GB',
   tier          subscription_tier not null default 'core',   -- core | performance
   settings      jsonb not null default '{}'::jsonb,
+  collects_rpe  boolean not null default true,      -- 0118: the RPE club setting. Off: generate_compliance_expectations
+                                                    -- writes no training_rpe row and every dependent surface says so
+                                                    -- (docs/decisions/absence-rule.md). Ratings already recorded stay.
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now(),
   deleted_at    timestamptz

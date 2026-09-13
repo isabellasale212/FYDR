@@ -23,7 +23,7 @@ import type { AppRole } from '@/lib/types/database';
  *  clicked it from, with the header meta stating the wrong window confidently.
  *  All three surfaces now resolve through resolveReportPeriod. */
 export async function GET(request: Request) {
-  const { db, orgId, orgName, claims, timezone } = await requireReport('compliance');
+  const { db, orgId, orgName, claims, timezone, collectsRpe } = await requireReport('compliance');
   const url = new URL(request.url);
   // resolveGroupFilter, not parseGroupParam: the PDF resolves the sticky
   // filter cookie exactly as the on-screen report does (audit S4), and the
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
   const period = await resolveCompliancePeriod(db, orgId, today, periodParamsFromUrl(url));
   const fromDate = period.range.from;
 
-  const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchComplianceReport(db, orgId, groupIds, fromDate, today, timezone)]);
+  const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchComplianceReport(db, orgId, groupIds, fromDate, today, timezone, { collectsRpe })]);
 
   const buffer = await renderToBuffer(
     <PdfReport footer={`${orgName} · Fydr · generated ${formatDate(today, timezone)} · not for redistribution without the club's own policy`}>
@@ -59,11 +59,12 @@ export async function GET(request: Request) {
           waivedAthletes: report.byAthlete.filter((a) => a.waivedCount > 0).length,
           waivedDays: report.byAthlete.reduce((n, a) => n + a.waivedCount, 0),
           floored: false,
+          collectsRpe,
         })}
       />
       <PdfTileRow>
         {report.summary.map((s) => (
-          <PdfTile key={s.domain} label={enumLabel(s.domain)} value={s.pct === null ? '—' : `${s.pct}%`} />
+          <PdfTile key={s.domain} label={enumLabel(s.domain)} value={s.domain === 'training_rpe' && !collectsRpe ? 'Not collected' : s.pct === null ? '—' : `${s.pct}%`} />
         ))}
       </PdfTileRow>
 

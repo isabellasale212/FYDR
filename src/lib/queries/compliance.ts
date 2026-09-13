@@ -97,6 +97,9 @@ export async function fetchMyOutstanding(
   athleteId: string,
   date: string,
   now: number = Date.now(),
+  /** The RPE club setting (0118): off, a rating already expected for today
+   *  (written before the switch was thrown) is not asked for either. */
+  opts: { collectsRpe?: boolean } = {},
 ): Promise<OutstandingItem[]> {
   const yesterday = addDays(date, -1);
   const { data: expectations, error } = await db
@@ -108,7 +111,7 @@ export async function fetchMyOutstanding(
 
   if (error) throw new Error(error.message);
 
-  const rows = (expectations ?? []).filter((e) => e.domain !== 'nutrition');
+  const rows = (expectations ?? []).filter((e) => e.domain !== 'nutrition' && (opts.collectsRpe !== false || e.domain !== 'training_rpe'));
   if (rows.length === 0) return [];
 
   const wellnessOwed = rows.some((r) => r.domain === 'wellness' && r.expectation_date === date);

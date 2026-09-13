@@ -66,6 +66,14 @@ a screen that refuses it; after the window the row is gone and the screen
 says "This session can no longer be rated." Two ratings owed are listed oldest
 first.
 
+**When the club does not collect session RPE** (`organisations.collects_rpe`,
+Settings › Club on the staff side, migration 0118, 13 September 2026): no
+rating is ever owed. The database generates no `training_rpe` expectation and
+Today's outstanding list carries no "Rate …" row, so the athlete is not asked;
+nothing on this screen says the club is missing anything. The rating screen,
+reached by an old link, says so in the athlete's own words (03-session-rating.md
+§10).
+
 **The availability card, item 7, in detail**, because it is the part of this
 screen an athlete reads when something is wrong:
 

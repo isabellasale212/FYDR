@@ -1,3 +1,4 @@
+import { rpeOffLine } from '@/lib/rpeSetting';
 import { fetchCurrentAvailability, fetchNotFullyAvailable } from './availability';
 import { fetchDashboardAttention, type AttentionRow, type DashboardAttention } from './flags';
 import { fetchGroupAthleteIds, type Db } from './groups';
@@ -1133,13 +1134,16 @@ export async function fetchUntiedFlags(db: Db, orgId: string, groupIds: readonly
 // Outstanding entries
 // ---------------------------------------------------------------------------
 
-export type OutstandingTrack = { label: string; valueLeft: number; pct: number; tone: string; foot: string };
+export type OutstandingTrack = { label: string; valueLeft: number; pct: number; tone: string; foot: string; /** The RPE club setting is off: a line, not a bar (0118). */ off?: string };
 
 export async function fetchOutstandingTracks(
   db: Db,
   orgId: string,
   groupIds: readonly string[],
   effectiveToday: string,
+  /** The RPE club setting (0118). Off: the RPE track is an off line, never
+     a bar at 0 and never absent — the absence rule. */
+  opts: { collectsRpe?: boolean } = {},
 ): Promise<OutstandingTrack[]> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
   const yesterday = addDays(effectiveToday, -1);
@@ -1180,7 +1184,9 @@ export async function fetchOutstandingTracks(
     const pct = Math.round((100 * wellness.submitted) / wellness.expected);
     tracks.push({ label: 'Wellness, today', valueLeft: left, pct, tone: pct >= 80 ? 'good' : 'accent', foot: `${wellness.submitted} of ${wellness.expected} in · today` });
   }
-  if (rpe.expected > 0) {
+  if (opts.collectsRpe === false) {
+    tracks.push({ label: 'RPE, yesterday', valueLeft: 0, pct: 0, tone: 'neutral', foot: '', off: rpeOffLine('the RPE track') });
+  } else if (rpe.expected > 0) {
     const left = rpe.expected - rpe.submitted;
     const pct = Math.round((100 * rpe.submitted) / rpe.expected);
     tracks.push({ label: 'RPE, yesterday', valueLeft: left, pct, tone: pct >= 80 ? 'good' : pct >= 50 ? 'warn' : 'bad', foot: `${rpe.submitted} of ${rpe.expected} in · due last night` });

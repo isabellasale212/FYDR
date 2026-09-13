@@ -77,7 +77,15 @@ somebody who should not appear.
 
 **No boards.** An empty state. **Below the minimum.** The board says it cannot be
 shown and why. **A GPS board on the Base package.** Refused with an explanation.
-**Offline.** Not handled.
+**Session RPE is off for this club** (`organisations.collects_rpe`, Settings › Club,
+migration 0118, 13 September 2026): a board whose measure is session load — RPE ×
+minutes — keeps its page and its place in the list; the page shows "Session RPE is
+off for this club" with "This club does not collect session RPE, so this board has
+nothing to show. A sport scientist can switch it on in Settings › Club." in place
+of standings, and the manage list's row says "Ranks nothing while session RPE is
+off for this club". Attendance boards are unaffected. Nothing is deleted or
+unpublished by the switch (`docs/decisions/absence-rule.md`). **Offline.** Not
+handled.
 
 ## 9. Open issues
 

@@ -104,7 +104,13 @@ None.
 
 Loading, not yet due (under thirty minutes since the session), closed (after the
 end of the following day), already rated,
-error, offline queued.
+error, offline queued. **Club does not collect session RPE**
+(`organisations.collects_rpe` off, migration 0118, 13 September 2026): the
+screen is a card headed "Nothing to rate" — "Your club does not collect session
+ratings, so there is nothing to rate. Your sessions still count." — with the
+Back to Today link, and no scale; nothing is fetched. Today never lists the row
+in the first place, so this state is met only through an old link or a
+notification sent before the switch was turned.
 
 ## 11. Accessibility and device
 

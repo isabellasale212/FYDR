@@ -155,8 +155,14 @@ export async function fetchComplianceReport(
      following club-local day (§0ad; lib/rpeDue.ts), and "following day" is a
      club-time fact. */
   timezone: string,
+  /* Migration 0118: a club with session RPE switched off asks nobody for a
+     rating, so its RPE expectations — the ones generated while it was on,
+     which are kept, not deleted — are not counted while it is off. The
+     domain card and the figure's counted line say so (lib/rpeSetting.ts). */
+  opts: { collectsRpe?: boolean } = {},
 ): Promise<ComplianceReport> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
+  const omitRpe = opts.collectsRpe === false;
 
   let athleteQuery = db
     .from('athletes')
@@ -189,8 +195,8 @@ export async function fetchComplianceReport(
    * tie broken differently between pages duplicates or drops a row — which,
    * for counters that are summed, is a wrong percentage with nothing to notice
    * it by. */
-  const expectations = await fetchAllPaged<ComplianceExpectationRow>((pageFrom, pageTo) =>
-    db
+  const expectations = await fetchAllPaged<ComplianceExpectationRow>((pageFrom, pageTo) => {
+    const q = db
       .from('compliance_expectations')
       .select('athlete_id, expectation_date, domain, session_id, is_required, waived_reason')
       .eq('org_id', orgId)
@@ -199,11 +205,9 @@ export async function fetchComplianceReport(
       // plain YYYY-MM-DD strings, never pushed through dateInTz (rule 5).
       .gte('expectation_date', fromDate)
       .lte('expectation_date', toDate)
-      .neq('domain', 'nutrition')
-      .order('expectation_date')
-      .order('id')
-      .range(pageFrom, pageTo),
-  );
+      .neq('domain', 'nutrition');
+    return (omitRpe ? q.neq('domain', 'training_rpe') : q).order('expectation_date').order('id').range(pageFrom, pageTo);
+  });
 
   // NOT filtered to is_required here. That used to happen — const required =
   // expectations.filter(e => e.is_required) — and it was a real, pre-existing

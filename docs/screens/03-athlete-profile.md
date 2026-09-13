@@ -237,6 +237,12 @@ athlete can be sent to a colleague.
 **Empty.** A new athlete with no history shows each region saying so rather than
 showing zeroes. A zero readiness and no readiness are different things.
 
+**Session RPE is off for this club** (`organisations.collects_rpe`, Settings ›
+Club, migration 0118, 13 September 2026). The ACWR dial rests on session load
+(RPE × minutes), so under its status line it says "This club does not collect
+session RPE, so this ratio has nothing to show. A sport scientist can switch it
+on in Settings › Club." (`docs/decisions/absence-rule.md`).
+
 **Error.** Surfaces as an error.
 
 **No permission.** A staff member who is neither coach nor medic currently sees a

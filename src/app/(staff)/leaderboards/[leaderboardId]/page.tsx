@@ -12,6 +12,7 @@ import { isUuid } from '@/lib/uuid';
 import { isPremium } from '@/lib/tier';
 import { PlanGate } from '@/components/PlanGate/PlanGate';
 import { CLINICAL_ONLY, LEADERBOARD_EDIT, hasAnyRole } from '@/lib/access';
+import { isRpeMetric, rpeOffLine } from '@/lib/rpeSetting';
 
 export const metadata = { title: 'Board · Fydr' };
 
@@ -37,7 +38,7 @@ export default async function LeaderboardDetailPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { leaderboardId } = await params;
-  const { db, orgId, claims, tier } = await requireStaff();
+  const { db, orgId, claims, tier, collectsRpe } = await requireStaff();
   /* Shape-check the route param before it reaches a query. Authenticated
      first, so this never becomes a probe; then 404 rather than 500, because a
      malformed id is a URL that does not name anything, not a server fault. */
@@ -84,6 +85,27 @@ export default async function LeaderboardDetailPage({
         body="This board ranks a GPS metric, and GPS is part of the Premium plan. The board and its results are still here — they are not shown while the club is on Basic."
         metadata="Premium · GPS metrics · board rankings and exports"
       />
+    );
+  }
+
+  /* The RPE club setting (0118): an effort board — session load, one built
+     on the athlete's rating — has nothing to rank while the club does not
+     collect it. The board stays (setting-driven absence, the absence rule),
+     names the setting and who can change it, and ranks nothing rather than
+     ranking old entries as if they were current. */
+  if (isRpeMetric(board.metric_key) && !collectsRpe) {
+    return (
+      <>
+        <div className="topbar">
+          <div className="page-head">
+            <p className="eyebrow">
+              <Link href="/leaderboards">Leaderboards</Link> · {board.name}
+            </p>
+            <h1>{board.name}</h1>
+          </div>
+        </div>
+        <EmptyState title="Session RPE is off for this club" body={rpeOffLine('this board')} />
+      </>
     );
   }
 
@@ -294,9 +316,8 @@ export default async function LeaderboardDetailPage({
           distinguished from each other here.
         </p>
         <p className="cap">
-          Athletes under 18 are never shown on a published board unless they choose to
-          opt in themselves &mdash; if one is missing here, that may be why, not a fault
-          with the board.
+          Athletes under 18 are never shown on a published board (migration 0116) &mdash;
+          if one is missing here, that is why, not a fault with the board.
         </p>
       </section>
     </>

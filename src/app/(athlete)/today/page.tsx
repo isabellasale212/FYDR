@@ -76,7 +76,7 @@ export default async function TodayPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, orgId, athleteId, claims, timezone, firstName } = await requireAthlete();
+  const { db, orgId, athleteId, claims, timezone, firstName, collectsRpe } = await requireAthlete();
   /* ?submitted= still arrives from the entry forms; nothing reads it now
      (S6 A2). Awaited so the route stays dynamic on the query, as before. */
   await searchParams;
@@ -95,7 +95,7 @@ export default async function TodayPage({
     sessions,
   ] = await Promise.all([
       fetchAthleteAvailability(db, orgId, athleteId),
-      fetchMyOutstanding(db, athleteId, today),
+      fetchMyOutstanding(db, athleteId, today, Date.now(), { collectsRpe }),
       fetchCheckinForWeek(db, athleteId, nutritionWeekStart),
       fetchMyAllocation(db, athleteId, weekStart),
       fetchWeekMdLabels(db, orgId, weekStart, timezone),

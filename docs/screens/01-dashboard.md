@@ -144,7 +144,12 @@ selection picture for the next fixture when it is within **14 days**
 card leads and the "To matchday" tile still counts to the real next fixture.
 
 **Outstanding entries.** What has not been submitted yet, by kind, with a link to
-the compliance report.
+the compliance report. When the club does not collect session RPE
+(`organisations.collects_rpe`, Settings › Club, migration 0118, 13 September 2026)
+the "RPE, yesterday" track keeps its label and carries a sentence instead of a
+bar — "This club does not collect session RPE, so the RPE track has nothing to
+show. A sport scientist can switch it on in Settings › Club." — never "0 of 0"
+(`docs/decisions/absence-rule.md`).
 
 ---
 

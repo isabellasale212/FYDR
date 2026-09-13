@@ -21,6 +21,7 @@ import { TableShell } from '@/components/TableShell/TableShell';
 import { ExportDialog } from '@/components/ExportDialog/ExportDialog';
 
 import { requireReport } from '@/lib/session';
+import { rpeOffLine } from '@/lib/rpeSetting';
 import { isUuid } from '@/lib/uuid';
 import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
@@ -92,7 +93,7 @@ export default async function AthleteReportPage({
   searchParams: SearchParams;
 }) {
   const { athleteId } = await params;
-  const { db, orgId, claims, timezone, tier } = await requireReport('athlete');
+  const { db, orgId, claims, timezone, tier, collectsRpe } = await requireReport('athlete');
   /* Shape-check the route param before it reaches a query. Authenticated
      first, so this never becomes a probe; then 404 rather than 500, because a
      malformed id is a URL that does not name anything, not a server fault. */
@@ -380,6 +381,13 @@ export default async function AthleteReportPage({
                         definition (lib/acwr.ts). When the baseline is still
                         building they show a dash and say so: an estimate from
                         too few days is worse than no estimate. */}
+                    {/* Migration 0118: the club setting (the absence rule). */}
+                    {!collectsRpe ? (
+                      <div className="ath-note" data-rpe-off>
+                        <span className="ath-note-title">Session RPE is off for this club</span>
+                        <span className="ath-note-body">{rpeOffLine('session load')}</span>
+                      </div>
+                    ) : null}
                     {report.load.suppressed ? (
                       <div className="ath-note">
                         <span className="ath-note-title">{acwrSuppressedLabel(report.load.daysWithData)}</span>

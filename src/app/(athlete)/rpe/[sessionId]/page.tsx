@@ -6,6 +6,7 @@ import { dateInTz, enumLabel, formatDate, formatTime, mdExplainer, mdLabel } fro
 import { DUE_DELAY_MIN, rpeDueAt, rpeIsClosed } from '@/lib/rpeDue';
 import { rpeRowName } from '@/lib/todayRows';
 import { requireAthlete } from '@/lib/session';
+import { RPE_OFF_ATHLETE } from '@/lib/rpeSetting';
 
 /* "Rate {session name}" since 2026-09-11 (ATH-ADULT-02, RPE decision 3). The
  * heading used to be the question itself, "How hard was it?", and so did the
@@ -29,7 +30,32 @@ export default async function RpePage({
   params: Promise<{ sessionId: string }>;
 }) {
   const { sessionId } = await params;
-  const { db, orgId, athleteId, claims, timezone } = await requireAthlete();
+  const { db, orgId, athleteId, claims, timezone, collectsRpe } = await requireAthlete();
+
+  /* The RPE club setting (0118): off, the destination stays and says so —
+     nothing to rate, nothing lost, the club's choice. */
+  if (!collectsRpe) {
+    return (
+      <>
+        <div className="sheet-head">
+          <Link href="/today" className="sheet-x" aria-label="Close the session rating">
+            <span aria-hidden="true">✕</span>
+          </Link>
+          <h1 className="t">Rate a session</h1>
+          <span style={{ width: 44 }} />
+        </div>
+        <div className="after-card">
+          <h2 className="after-heading">Nothing to rate</h2>
+          <p className="after-note">{RPE_OFF_ATHLETE}</p>
+        </div>
+        <div className="subm">
+          <Link href="/today" className="btn-primary" style={{ display: 'flex', justifyContent: 'center' }}>
+            Back to Today
+          </Link>
+        </div>
+      </>
+    );
+  }
 
   const [session, existing] = await Promise.all([
     fetchSessionForRpe(db, orgId, athleteId, sessionId),

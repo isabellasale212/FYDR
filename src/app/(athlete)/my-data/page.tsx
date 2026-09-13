@@ -50,6 +50,7 @@ import {
 import { resolvePeriod } from '@/lib/period.server';
 import { bandPosition } from '@/lib/stats';
 import { requireAthlete } from '@/lib/session';
+import { RPE_OFF_ATHLETE } from '@/lib/rpeSetting';
 
 export const metadata = { title: 'My data · Fydr' };
 
@@ -392,7 +393,7 @@ export default async function MyDataPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, orgId, athleteId, timezone } = await requireAthlete();
+  const { db, orgId, athleteId, timezone, collectsRpe } = await requireAthlete();
   const params = await searchParams;
   const tab: Tab = isTab(params.tab) ? params.tab : 'wellness';
 
@@ -592,6 +593,7 @@ export default async function MyDataPage({
           flags={flagsByDomain.get('training') ?? []}
           periodKey={periodKey}
           seasonStart={season?.starts_on ?? null}
+          collectsRpe={collectsRpe}
         />
       ) : tab === 'nutrition' ? (
         <NutritionTab
@@ -1057,6 +1059,7 @@ async function TrainingTab({
   flags,
   periodKey,
   seasonStart,
+  collectsRpe,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
   orgId: string;
@@ -1068,6 +1071,7 @@ async function TrainingTab({
   flags: VisibleFlag[];
   periodKey: RangeKey;
   seasonStart: string | null;
+  collectsRpe: boolean;
 }) {
   /* LIST_LIMIT + 1, so a full page is the signal that there is more rather than
    * a second count query. This call used to pass no limit at all and therefore
@@ -1109,6 +1113,10 @@ async function TrainingTab({
           A blank RPE means no rating was submitted, which is not the same as an
           easy session.
         </p>
+        {/* Migration 0118: the club setting, in the athlete's own words. */}
+        {collectsRpe ? null : (
+          <p className="import-sub" data-rpe-off>{RPE_OFF_ATHLETE}</p>
+        )}
 
         <FlagNotice flags={flags} heading="Noted by staff" timezone={timezone} />
 

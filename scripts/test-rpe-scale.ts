@@ -44,7 +44,7 @@ console.log('\n3. zero is never read as missing (the sweep, pinned)');
   const files = ['src/lib/acwr.ts', 'src/lib/queries/analytics.ts', 'src/lib/format.ts', 'src/components/EntryCorrectionPanel/EntryCorrectionPanel.tsx', 'src/components/RpeForm/RpeForm.tsx', 'src/components/GymSessionLogger/GymSessionLogger.tsx', 'src/lib/complianceRpe.ts', 'src/lib/queries/reports.ts', 'src/lib/queries/schedule.ts', 'src/lib/queries/athleteReport.ts', 'src/app/(athlete)/my-data/page.tsx', 'src/lib/outboxQueue.ts', 'src/lib/queries/training.ts'];
   const truthy = /(^|[^a-zA-Z_.])(!\s*)?[a-zA-Z_.]*(\brpe|_rpe|Rpe|session_load|sessionLoad)\b\s*(\?[^?.:]|&&|\|\|)|\bif \(!?[a-zA-Z_.]*(\brpe|_rpe|Rpe|session_load)\b\)|(\brpe|session_load)\s*\|\|\s*0\b|Boolean\([a-zA-Z_.]*(rpe|session_load)/;
   for (const f of files) {
-    const src = strip(read(f)).split('\n').filter((l) => !/=== null|!== null|\?\?|=== undefined|!== undefined|typeof |rpeIsDue|rpeDue|requires\.rpe|requires_rpe|\.rpe: |rpe:\s|rpeExpectations|Rpe\(|rpeRows|rpeSession|rpeWhen|rpeRowName|rpeSubmissions|isRpe|rpeState|rpe\.expected|rpe\.submitted|RpeForm|meanRpe/.test(l));
+    const src = strip(read(f)).split('\n').filter((l) => !/=== null|!== null|\?\?|=== undefined|!== undefined|typeof |rpeIsDue|rpeDue|requires\.rpe|requires_rpe|\.rpe: |rpe:\s|rpeExpectations|Rpe\(|rpeRows|rpeSession|rpeWhen|rpeRowName|rpeSubmissions|isRpe|rpeState|omitRpe|collectsRpe|rpe\.expected|rpe\.submitted|RpeForm|meanRpe/.test(l));
     const hits = src.filter((l) => truthy.test(l));
     assert(hits.length === 0, `${f.split('/').slice(-1)[0]}: no RPE or load value is tested for truthiness${hits.length ? ` — ${hits[0]!.trim().slice(0, 80)}` : ''}`);
   }

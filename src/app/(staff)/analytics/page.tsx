@@ -14,6 +14,7 @@ import { PlanGate, PlanGateCard } from '@/components/PlanGate/PlanGate';
 import { ReportSelectNav } from '@/components/ReportSelectNav/ReportSelectNav';
 import type { Band } from '@/lib/stats';
 import { ANALYTICS, hasAnyRole } from '@/lib/access';
+import { isRpeAnalyticsMetric, rpeOffLine } from '@/lib/rpeSetting';
 
 export const metadata = { title: 'Analytics · Fydr' };
 
@@ -217,7 +218,7 @@ function xLabelsFor(series: readonly Band[]): string[] {
 }
 
 export default async function AnalyticsPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, orgName, timezone, tier, claims } = await requireStaff();
+  const { db, orgId, orgName, timezone, tier, claims, collectsRpe } = await requireStaff();
   /* D-02: Analytics is the sport scientist's alone. Confirmed 2026-09-05. */
   if (!hasAnyRole(claims.roles, ANALYTICS)) await refuse(db, 'analytics', '/analytics');
   /* Read from requireStaff(), which has already resolved the Basic-plan
@@ -460,35 +461,48 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
                   </div>
                 </div>
 
-                <ComparisonChart
-                  primary={primary}
-                  secondary={secondary}
-                  bars={showBars ? weekly(seriesA) : undefined}
-                  min={scale.min}
-                  max={scale.max}
-                  ticks={scale.ticks}
-                  shaded={shaded}
-                  tintRgb={board.tintRgb}
-                  thresholds={board.acwrBand ? [ACWR_BAND_LOW, ACWR_BAND_HIGH] : undefined}
-                  decimals={metric.decimals}
-                  xLabels={xLabelsFor(seriesA)}
-                />
+                {/* Migration 0118: the club setting. A board whose chosen
+                    metric rests on the rating keeps its place and its metric
+                    control (the absence rule) and says why the plot is not
+                    drawn; picking a metric that does not rest on RPE brings
+                    the chart back. */}
+                {!collectsRpe && isRpeAnalyticsMetric(metric.key) ? (
+                  <p className="import-sub" style={{ marginBottom: 0 }} data-rpe-off>
+                    {rpeOffLine(`${metric.label} on this board`)}
+                  </p>
+                ) : (
+                  <>
+                    <ComparisonChart
+                      primary={primary}
+                      secondary={secondary}
+                      bars={showBars ? weekly(seriesA) : undefined}
+                      min={scale.min}
+                      max={scale.max}
+                      ticks={scale.ticks}
+                      shaded={shaded}
+                      tintRgb={board.tintRgb}
+                      thresholds={board.acwrBand ? [ACWR_BAND_LOW, ACWR_BAND_HIGH] : undefined}
+                      decimals={metric.decimals}
+                      xLabels={xLabelsFor(seriesA)}
+                    />
 
-                <div className="cmp-legend">
-                  <span className="cmp-legend-item">
-                    <span className="cmp-legend-key" style={{ borderTopColor: board.colour }} />
-                    {a.last_name}
-                  </span>
-                  {b ? (
-                    <span className="cmp-legend-item">
-                      <span
-                        className="cmp-legend-key"
-                        style={{ borderTopColor: 'var(--cmp-b)', borderTopStyle: 'dashed' }}
-                      />
-                      {b.last_name}
-                    </span>
-                  ) : null}
-                </div>
+                    <div className="cmp-legend">
+                      <span className="cmp-legend-item">
+                        <span className="cmp-legend-key" style={{ borderTopColor: board.colour }} />
+                        {a.last_name}
+                      </span>
+                      {b ? (
+                        <span className="cmp-legend-item">
+                          <span
+                            className="cmp-legend-key"
+                            style={{ borderTopColor: 'var(--cmp-b)', borderTopStyle: 'dashed' }}
+                          />
+                          {b.last_name}
+                        </span>
+                      ) : null}
+                    </div>
+                  </>
+                )}
               </section>
             );
           })}

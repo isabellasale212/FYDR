@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ClubDetailsEditForm } from '@/components/ClubDetailsEditForm/ClubDetailsEditForm';
+import { RpeSettingSwitch } from '@/components/RpeSettingSwitch/RpeSettingSwitch';
 import { PlanPreviewSwitch } from '@/components/PlanPreviewSwitch/PlanPreviewSwitch';
 import { requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
@@ -17,7 +18,7 @@ export const metadata = { title: 'Club · Settings · Fydr' };
  *  form for an administrator. The cards are the hub's own, moved verbatim
  *  with their reasoning. */
 export default async function SettingsClubPage() {
-  const { db, orgId, claims, tier, realTier, previewingTier } = await requireStaff();
+  const { db, orgId, claims, tier, realTier, previewingTier, collectsRpe } = await requireStaff();
   const isAdmin = hasAnyRole(claims.roles, SETTINGS_ADMIN);
   const onPremium = isPremium(tier);
   /* Not `isAdmin`: a club's own administrator does not get to try the other
@@ -196,6 +197,24 @@ export default async function SettingsClubPage() {
           </div>
         </div>
       </section>
+
+        {/* The RPE club setting (2026-09-13, migration 0118): the sport
+            scientist's switch; other staff read where it stands. */}
+        <section className="card set-card" aria-labelledby="rpe-title" id="rpe">
+          <h2 className="card-title" id="rpe-title" style={{ margin: 0 }}>
+            Session RPE
+          </h2>
+          <p style={{ fontSize: 'var(--fs-13)', color: 'var(--muted)', margin: '2px 0 var(--sp-10)' }}>
+            Whether athletes are asked to rate each session. The base tier&apos;s only load measure rests on it.
+          </p>
+          {isAdmin ? (
+            <RpeSettingSwitch orgId={orgId} userId={claims.userId} initial={collectsRpe} />
+          ) : (
+            <p className="tiny">
+              {collectsRpe ? 'On — athletes rate each session on the CR-10 scale.' : 'Off — nobody is asked to rate a session.'} The sport scientist changes it.
+            </p>
+          )}
+        </section>
 
         {isAdmin && orgRow.data ? (
           <ClubDetailsEditForm

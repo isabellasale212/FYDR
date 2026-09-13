@@ -140,6 +140,13 @@ and they are different:
   would fill it; no action, no fabricated zero. Also the wording on All on
   record.
 
+**The club does not collect session RPE** (`organisations.collects_rpe`,
+migration 0118, 13 September 2026): the Sessions tab keeps its table — sessions
+attended are still listed, with ratings already recorded — and adds one line
+under its explanation, in the athlete's own words: "Your club does not collect
+session ratings, so there is nothing to rate. Your sessions still count." A
+blank RPE on those rows is the club's choice, not a missed entry.
+
 **Tests lists the club's tests** (ATH-ADULT-12 C7, 12 September 2026): every
 live test definition, in the club's own order, whether or not this athlete has
 a result — one without reads "Not logged" in the value column, with no date

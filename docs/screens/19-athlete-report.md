@@ -158,6 +158,14 @@ The period lives in the address.
 
 **Empty.** A new athlete shows each region saying so rather than showing zeroes.
 
+**Session RPE is off for this club** (`organisations.collects_rpe`, Settings ›
+Club, migration 0118, 13 September 2026). Session load is RPE × minutes, so the
+Load card carries a note — "Session RPE is off for this club" with "This club does
+not collect session RPE, so session load has nothing to show. A sport scientist can
+switch it on in Settings › Club." — above whatever ratios remain from ratings
+already recorded; a "building baseline" note is never left to pass for the
+reason (`docs/decisions/absence-rule.md`).
+
 **Partial.** A period with gaps draws gaps, not zeroes.
 
 **Ratio withheld.** Where fewer than 21 of the trailing 28 days have data, the

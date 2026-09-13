@@ -93,7 +93,7 @@ console.log('\n3. the report reads what the rule needs');
 {
   const reports = strip(read('src/lib/queries/reports.ts'));
   const fn = reports.slice(reports.indexOf('export async function fetchComplianceReport'), reports.indexOf('export async function', reports.indexOf('export async function fetchComplianceReport') + 10));
-  assert(/timezone: string,?\s*\)/.test(fn.slice(0, 400)), 'fetchComplianceReport takes the org timezone');
+  assert(/timezone: string,/.test(fn.slice(0, 400)), 'fetchComplianceReport takes the org timezone');
   assert(/\.from\('training_entries'\)/.test(fn) && !/\.from\('training_entries_current'\)/.test(fn), 'RPE submissions come from the base table, not the _current view');
   assert(/\.is\('revision_of', null\)/.test(fn), 'originals only — the athlete\'s own submission time, never a correction\'s');
   assert(/select\('athlete_id, entry_date, session_id, submitted_at'\)/.test(fn), 'with session_id and submitted_at');
@@ -112,7 +112,7 @@ console.log('\n3. the report reads what the rule needs');
     'src/lib/queries/squadWeeklyReport.ts',
   ]) {
     const src = strip(read(p));
-    assert(/fetchComplianceReport\([^)]*timezone\)/.test(src), `${p.split('/').slice(-2).join('/')} passes the timezone`);
+    assert(/fetchComplianceReport\([^)]*timezone[,)]/.test(src), `${p.split('/').slice(-2).join('/')} passes the timezone`);
   }
 }
 

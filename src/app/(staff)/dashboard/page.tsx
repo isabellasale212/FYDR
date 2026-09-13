@@ -97,7 +97,7 @@ function dayTitle(date: string, wallClockToday: string): string {
  *  file's header before extending this page — most of the judgement calls
  *  live there, not here. */
 export default async function DashboardPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, orgName, timezone, claims } = await requireStaff();
+  const { db, orgId, orgName, timezone, claims, collectsRpe } = await requireStaff();
 
   // 01-roles-and-permissions.md (superseded) §2: admin gets `no` for "View squad
   // dashboard" — every panel below is named-athlete availability, load and
@@ -170,7 +170,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
     // clock, never against an end-of-day stand-in (audit S2).
     fetchTimeline(db, orgId, groupIds, selectedDay, new Date().toISOString(), timezone),
     fetchSaturdayReadiness(db, orgId, groupIds, effectiveToday, timezone),
-    fetchOutstandingTracks(db, orgId, groupIds, effectiveToday),
+    fetchOutstandingTracks(db, orgId, groupIds, effectiveToday, { collectsRpe }),
     /* STAFF-SS-01 C2: who set the thresholds and when, for the line that
        closes the attention panel — one stored date, read once. */
     fetchThresholdProvenance(db, orgId),
@@ -584,22 +584,33 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                 </Link>
               </div>
               <div className="dash-track">
-                {outstanding.map((t) => (
-                  <div key={t.label}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                {outstanding.map((t) =>
+                  t.off ? (
+                    /* The RPE club setting is off (0118): the track stays and
+                       says so — never a bar at zero, never quietly absent. */
+                    <div key={t.label}>
                       <span style={{ fontSize: 'var(--fs-13)', fontWeight: 600 }}>{t.label}</span>
-                      <span className="num" style={{ fontSize: 'var(--fs-13)' }}>
-                        {t.valueLeft} left
-                      </span>
+                      <p className="tiny" style={{ color: 'var(--muted)', marginTop: 'var(--sp-4)' }}>
+                        {t.off}
+                      </p>
                     </div>
-                    <div className="dash-track-bar-outer">
-                      <div className="dash-track-bar-fill" style={{ width: `${t.pct}%`, background: TONE_VAR[t.tone] ?? 'var(--accent)' }} />
+                  ) : (
+                    <div key={t.label}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                        <span style={{ fontSize: 'var(--fs-13)', fontWeight: 600 }}>{t.label}</span>
+                        <span className="num" style={{ fontSize: 'var(--fs-13)' }}>
+                          {t.valueLeft} left
+                        </span>
+                      </div>
+                      <div className="dash-track-bar-outer">
+                        <div className="dash-track-bar-fill" style={{ width: `${t.pct}%`, background: TONE_VAR[t.tone] ?? 'var(--accent)' }} />
+                      </div>
+                      <p className="tiny" style={{ color: 'var(--faint)', marginTop: 'var(--sp-4)' }}>
+                        {t.foot}
+                      </p>
                     </div>
-                    <p className="tiny" style={{ color: 'var(--faint)', marginTop: 'var(--sp-4)' }}>
-                      {t.foot}
-                    </p>
-                  </div>
-                ))}
+                  ),
+                )}
               </div>
             </div>
           ) : null}

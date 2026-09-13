@@ -10,7 +10,8 @@ import { fetchSquadWeeklyReport } from '@/lib/queries/squadWeeklyReport';
 import { recordReportView } from '@/lib/queries/reports';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { ACWR_BAND_TEXT, acwrBandTone, acwrRequirementText } from '@/lib/acwr';
+import { ACWR_BAND_TEXT, ACWR_CHRONIC_WINDOW_DAYS, acwrBandTone, acwrRequirementText } from '@/lib/acwr';
+import { filterEmptyCopy } from '@/lib/staffEmpty';
 import { addDays, enumLabel, formatDate, formatNumber, todayIso } from '@/lib/format';
 import { availabilityStatus } from '@/lib/status';
 import { requireReport } from '@/lib/session';
@@ -55,6 +56,16 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
     fetchSquadWeeklyReport(db, orgId, groupIds, timezone, endDate),
     fetchSquadWeeklyReport(db, orgId, groupIds, timezone, addDays(endDate, -7)),
   ]);
+  /* PATTERN-S6 C8: the words for the scope in an empty sentence — "the
+     squad" for no filter, the chip's own name otherwise. */
+  const scopeLabelRaw = groupScopeLabel(groups, groupIds);
+  const scopeWords = groupIds.length === 0 ? 'the squad' : scopeLabelRaw;
+  const loadFilterEmpty = filterEmptyCopy({
+    what: 'athlete with GPS load',
+    inScope: report.athleteCount,
+    scopeLabel: scopeWords,
+    why: 'has GPS load to compute a ratio from',
+  });
 
   /* A delta reads against what is GOOD for the squad, not against its sign.
    * Flags rising is bad; compliance rising is good; the arrow alone cannot
@@ -212,7 +223,14 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
             Needing attention
           </h2>
           {report.attention.length === 0 ? (
-            <EmptyState headingLevel={3} title="Nothing is asking for attention" body="No open flag on any athlete in this filter." />
+            /* PATTERN-S6 C8 (2026-09-13): an all-clear says what was checked
+               and over whom — the denominator — so it cannot read as a failed
+               load. */
+            <EmptyState
+              headingLevel={3}
+              title="Nothing is asking for attention"
+              body={`No open flag on any of the ${report.athleteCount} athlete${report.athleteCount === 1 ? '' : 's'} in ${scopeWords}. Nothing is missing.`}
+            />
           ) : (
             <>
               {/* The description line is gone; these four words say the same
@@ -264,8 +282,8 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
             {report.load.filter((r) => r.acwr !== null).length === 0 ? (
               <p className="tiny" style={{ marginTop: 'var(--sp-10)', color: 'var(--muted)' }}>
                 {report.load.length === 0
-                  ? 'No athlete in this filter.'
-                  : 'No ratio computable yet.'}
+                  ? `${loadFilterEmpty.body}${groupIds.length > 0 ? ' Clear the filter to see the whole squad.' : ''}`
+                  : `No ratio computable yet — every athlete in ${scopeWords} is still building the ${ACWR_CHRONIC_WINDOW_DAYS}-day baseline. Nothing is missing.`}
               </p>
             ) : (
               <>

@@ -65,5 +65,15 @@ console.log('\n4. the training report (2026-09-13)');
   assert(/the filter is what is empty/.test(read('docs/screens/23-training-report.md')), 'the spec says so');
 }
 
+console.log('\n5. the squad weekly report (2026-09-13)');
+{
+  const page = strip(read('src/app/(staff)/reports/squad/page.tsx'));
+  assert(/No open flag on any of the \$\{report\.athleteCount\} athlete/.test(page) && /Nothing is missing\./.test(page), 'the all-clear says what was checked, over whom, and that nothing is missing');
+  assert(/const scopeWords = groupIds\.length === 0 \? 'the squad' : scopeLabelRaw;/.test(page), '"the squad" for no filter, the chip\'s own name otherwise');
+  assert(/loadFilterEmpty = filterEmptyCopy\(\{\s*what: 'athlete with GPS load',/.test(page) && /is still building the \$\{ACWR_CHRONIC_WINDOW_DAYS\}-day baseline\. Nothing is missing\./.test(page), 'the load table\'s two empties: the filter grammar, and the baseline said with its number');
+  assert(!/'No athlete in this filter\.'/.test(page) && !/'No ratio computable yet\.'/.test(page), 'the old lines are gone');
+  assert(/Nothing is missing/.test(read('docs/screens/21-squad-weekly-report.md')), 'the spec says so');
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

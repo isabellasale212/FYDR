@@ -69,6 +69,13 @@ PDF so a number is never green on screen and amber on paper.
 
 ---
 
+**Empty states follow the one grammar** (PATTERN-S6 C8, 13 September 2026): an
+all-clear on the attention list reads "No open flag on any of the 30 athletes in
+the squad. Nothing is missing."; the load table with nobody in the filter reads
+the filter grammar (`lib/staffEmpty.ts`, "the filter is what is empty", clear the
+filter), and with nobody computable "No ratio computable yet — every athlete in
+the squad is still building the 28-day baseline. Nothing is missing."
+
 **Every figure carries its denominator, an exclusions sentence, and words for a
 missing value** (PATTERN-S7 C2, 13 September 2026; `lib/reportFigures.ts`). Under
 each of the four tiles: "24 of 30 submitted · 2 waived", "over 27 of 30 athletes

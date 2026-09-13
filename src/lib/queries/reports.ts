@@ -3,7 +3,7 @@ import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchAllPaged } from './paged';
 import { classifyRpeSubmissions, rpeExpectationKey, type RpeSubmission } from '@/lib/complianceRpe';
 import { fetchRpeSessionWindows } from './rpeSessionWindows';
-import { fetchNotFullyAvailable, type NotFullyAvailableRow } from './availability';
+import { fetchCurrentAvailability, fetchNotFullyAvailable, type NotFullyAvailableRow } from './availability';
 
 /* screens/reports.md, cut down hard, then entirely un-cut as the schema
  * caught up. Five report types are specified; this file builds the first two
@@ -415,6 +415,14 @@ export type InjuryReportSummary = {
   daysLost: number;
   availabilityPct: number | null;
   athleteCount: number;
+  /** PATTERN-S7 C2 (2026-09-13): the two facts the availability figure's
+   *  exclusions sentence says in words. Athletes with no recorded status
+   *  are counted as available by construction (the figure is built from
+   *  injuries, not statuses); athletes who joined inside the window are
+   *  counted for the whole window (the denominator is today's roster × the
+   *  period's days). Neither changes the number; both are said. */
+  notRecorded: number;
+  joinedInPeriod: number;
 };
 
 export type InjuryBurdenWeek = {
@@ -536,7 +544,7 @@ export async function fetchInjuryAvailabilityReport(
       // already coach-visible squad fields, not medical ones.
       let q = db
         .from('athletes')
-        .select('id, first_name, last_name, position')
+        .select('id, first_name, last_name, position, joined_at')
         .eq('org_id', orgId)
         .is('deleted_at', null)
         .neq('status', 'left_club');
@@ -545,6 +553,11 @@ export async function fetchInjuryAvailabilityReport(
     }),
   ]);
   const athleteIds = athletes.map((a) => a.id);
+  /* PATTERN-S7 C2: said in words under the figure — see InjuryReportSummary. */
+  const joinedInPeriod = athletes.filter((a) => a.joined_at !== null && a.joined_at > fromDate).length;
+  const currentStatuses = await fetchCurrentAvailability(db, orgId, scope);
+  const withStatus = new Set(currentStatuses.map((a) => a.athlete_id));
+  const notRecorded = athletes.filter((a) => !withStatus.has(a.id)).length;
 
   /* PAGED, and it was over the ceiling before the period control ever
    * widened: this read has no lower date bound by construction (an injury
@@ -696,7 +709,7 @@ export async function fetchInjuryAvailabilityReport(
 
   return {
     current,
-    summary: { newInjuries, daysLost, availabilityPct, athleteCount: athleteIds.length },
+    summary: { newInjuries, daysLost, availabilityPct, athleteCount: athleteIds.length, notRecorded, joinedInPeriod },
     burden,
     bySite,
     byUnit,

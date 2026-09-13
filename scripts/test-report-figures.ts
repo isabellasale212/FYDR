@@ -2,7 +2,7 @@
  * sentence; missing values as words; worst first. One report a commit; the
  * compliance report first (2026-09-13). */
 import { readFileSync } from 'node:fs';
-import { NONE_WAIVED, NOT_EXPECTED, NO_ENTRY_IN_WINDOW, exclusionsLine, submittedLine } from '@/lib/reportFigures';
+import { NONE_WAIVED, NOT_EXPECTED, NO_ENTRY_IN_WINDOW, availabilityExclusionsLine, exclusionsLine, submittedLine } from '@/lib/reportFigures';
 
 let passed = 0, failed = 0;
 const assert = (cond: boolean, label: string): void => {
@@ -40,7 +40,22 @@ console.log('\n2. the compliance report — the first of the six');
   assert(dashes === 0, `no dash stands in for a count on this report (${dashes} left)`);
 }
 
-console.log('\n3. the spec');
+console.log('\n3. the injury report — the second');
+{
+  assert(availabilityExclusionsLine({ notRecorded: 0, joinedInPeriod: 0 }) === 'Nobody is excluded, and every athlete is counted for the whole window.', 'nothing odd: said');
+  assert(availabilityExclusionsLine({ notRecorded: 3, joinedInPeriod: 0 }) === 'Nobody is excluded. 3 athletes have no recorded status and are counted as available.', 'the "Not recorded" athletes, in words');
+  assert(availabilityExclusionsLine({ notRecorded: 1, joinedInPeriod: 2 }) === 'Nobody is excluded. 1 athlete has no recorded status and is counted as available; 2 joined part-way through and are counted for the whole window.', 'and a mid-period joiner');
+  const q = strip(read('src/lib/queries/reports.ts'));
+  assert(/notRecorded: number;\s*joinedInPeriod: number;/.test(q) && /const joinedInPeriod = athletes\.filter\(\(a\) => a\.joined_at !== null && a\.joined_at > fromDate\)\.length;/.test(q) && /const notRecorded = athletes\.filter\(\(a\) => !withStatus\.has\(a\.id\)\)\.length;/.test(q), 'the report carries both counts');
+  const page = strip(read('src/app/(staff)/reports/injuries/page.tsx'));
+  assert(/availabilityExclusionsLine\(\{ notRecorded: report\.summary\.notRecorded, joinedInPeriod: report\.summary\.joinedInPeriod \}\)/.test(page), 'the page says them under the figures');
+  assert(/\{report\.summary\.availabilityPct === null \? NOT_MEASURED : report\.summary\.availabilityPct\}/.test(page), 'a missing availability figure is words');
+  assert(/\{row\.position \?\? NO_POSITION\}/.test(page) && /\{row\.expected_return \? formatDate\(row\.expected_return, timezone\) : RETURN_NOT_KNOWN\}/.test(page) && /\{a\.bodyArea \? enumLabel\(a\.bodyArea\) : SITE_NOT_RECORDED\}/.test(page), 'position, expected return and site in words');
+  assert((page.match(/'—'/g) ?? []).length === 0, 'no dash stands in for a value on this report');
+  assert(/joined part-way/.test(read('docs/screens/24-injury-report.md')), 'the spec says so');
+}
+
+console.log('\n4. the spec');
 {
   assert(/Nobody is excluded/.test(read('docs/screens/20-compliance-report.md')), '20-compliance-report.md carries the exclusions sentence');
 }

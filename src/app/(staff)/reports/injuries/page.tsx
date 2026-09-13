@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { NOT_MEASURED, NO_POSITION, RETURN_NOT_KNOWN, SITE_NOT_RECORDED, availabilityExclusionsLine } from '@/lib/reportFigures';
 import { CLINICAL_ONLY, hasAnyRole } from '@/lib/access';
 import { ReportPager } from '@/components/ReportPager/ReportPager';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
@@ -290,17 +291,17 @@ export default async function InjuryAvailabilityReportPage({
                                   <span>
                                     <span className="inj-name">{row.name}</span>
                                     <span className="inj-unit" style={{ display: 'block' }}>
-                                      {row.position ?? '—'}
+                                      {row.position ?? NO_POSITION}
                                     </span>
                                   </span>
                                   <span className="inj-site">
                                     {row.body_area
                                       ? `${enumLabel(row.body_area)}${row.side ? ` · ${enumLabel(row.side)}` : ''}`
-                                      : '—'}
+                                      : SITE_NOT_RECORDED}
                                   </span>
                                   <span className="inj-can">{canDo}</span>
                                   <span className="inj-back">
-                                    {row.expected_return ? formatDate(row.expected_return, timezone) : '—'}
+                                    {row.expected_return ? formatDate(row.expected_return, timezone) : RETURN_NOT_KNOWN}
                                     {/* An overdue date is not a failure of the
                                         athlete, it is a record that needs
                                         updating — and an unknown status with no
@@ -365,7 +366,7 @@ export default async function InjuryAvailabilityReportPage({
                   <div className="cmpl-stat">
                     <span className="cmpl-stat-label">Availability</span>
                     <span className="cmpl-stat-value">
-                      {report.summary.availabilityPct === null ? '—' : report.summary.availabilityPct}
+                      {report.summary.availabilityPct === null ? NOT_MEASURED : report.summary.availabilityPct}
                       {report.summary.availabilityPct === null ? null : <small>%</small>}
                     </span>
                     <span className="cmpl-stat-sub">
@@ -373,6 +374,12 @@ export default async function InjuryAvailabilityReportPage({
                       {athleteDaysAvailable.toLocaleString('en-GB')} athlete-days
                     </span>
                   </div>
+                  {/* PATTERN-S7 C2 (2026-09-13): the exclusions sentence under
+                      the figures — the "Not recorded" athletes and a mid-period
+                      joiner said in words, not corrected in the number. */}
+                  <p className="tiny cmpl-exclusions" style={{ gridColumn: '1 / -1', margin: 0 }}>
+                    {availabilityExclusionsLine({ notRecorded: report.summary.notRecorded, joinedInPeriod: report.summary.joinedInPeriod })}
+                  </p>
                 </div>
 
                 {/* "Where the days went" is gone — every row of the card below
@@ -396,7 +403,7 @@ export default async function InjuryAvailabilityReportPage({
                   {report.byAthlete.slice(0, 8).map((a) => (
                     <div key={a.athlete_id} className="cmpl-row" style={{ gridTemplateColumns: 'minmax(0, 1fr) 110px minmax(0, 1.4fr) 76px' }}>
                       <span className="cmpl-name">{a.name}</span>
-                      <span className="inj-site">{a.bodyArea ? enumLabel(a.bodyArea) : '—'}</span>
+                      <span className="inj-site">{a.bodyArea ? enumLabel(a.bodyArea) : SITE_NOT_RECORDED}</span>
                       <span className="cmpl-track">
                         <span
                           className="cmpl-fill"

@@ -80,6 +80,19 @@ becomes visible.
 | None | New injuries | How many were recorded in the period | The period | Zero is a real answer |
 | None | By body area | Where injuries are happening | The period | An empty chart is a good outcome |
 
+**Every figure carries its denominator, an exclusions sentence, and words for a
+missing value** (PATTERN-S7 C2, 13 September 2026; `lib/reportFigures.ts`).
+Under the four stats: "Nobody is excluded, and every athlete is counted for the
+whole window." — or, when it is not so simple, "Nobody is excluded. 3 athletes
+have no recorded status and are counted as available; 2 joined part-way through
+and are counted for the whole window." The availability figure is built from
+injuries' onset and return dates, so an athlete with no recorded status counts
+as available; the denominator is today's roster × the period's days, so a
+mid-period joiner is counted for the whole window — both said, neither
+corrected in the number (MET-013's own formula). A missing value is words: "Not
+measured" for the figure, "No position set", "Site not recorded", "Return not
+known" on a row — never a dash.
+
 **Days lost and new injuries are counts, not calculated metrics**, and have no
 registry entries.
 

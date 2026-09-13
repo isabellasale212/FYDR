@@ -185,7 +185,7 @@ Every screen in the `02-information-architecture.md` §5 inventory.
 | **GPS import, vendor CSV and XLSX** | **P** | The hook. Section 5. |
 | GPS views, GPS flags, GPS leaderboards, training report | **P** | Downstream of the import. They render nothing without it. |
 | ACWR from combined RPE and GPS load | P | Club gets ACWR computed from RPE and duration. Premium gets it from GPS load as well. The metric exists in both; the input set differs. |
-| Apple HealthKit sync | **P** | See 3.4. O-862 **re-opened**: the club reversed its own 14 Aug decision on 30 Aug 2026 and HealthKit is Premium again. |
+| ~~Apple HealthKit sync~~ **Removed from the product 13 Sept 2026** (`docs/platform-decision.md`; not a tier decision — no native app, none planned) | — | See 3.4. O-862 **re-opened**: the club reversed its own 14 Aug decision on 30 Aug 2026 and HealthKit is Premium again. |
 | Team and group allocation | Both | `CLAUDE.md` §3 makes groups global. Gating them breaks every multi-athlete screen. |
 | Admin, user management, roles, audit log | Both | Governance. |
 | Offline sync and queueing | Both | Infrastructure. A tiered offline mode is a support nightmare and an insult. |
@@ -259,6 +259,10 @@ given it. **This is the highest-regret recommendation in this document.** O-854.
 edge cases 12 and 13, and the tier row in this document's own summary. Not made here.
 
 ### 3.4 HealthKit: Premium → Club → Premium again (O-862 re-opened)
+
+> **Closed, 13 September 2026.** Apple Health is removed from the product
+> (`docs/platform-decision.md`), so the tier question is moot; O-862 is closed as
+> "removed", not resolved to a tier. The history below is retained as the record.
 
 HealthKit was Premium in the original spec, on a weak argument recorded rather than assumed:
 
@@ -1319,7 +1323,7 @@ The condensed version. `00-product-overview.md` carries a copy of this and point
 | Data export, CSV, XLSX, JSON | **Yes** | **Yes** |
 | Athlete app, offline, notifications | Yes | Yes |
 | Admin, users, roles, audit log | Yes | Yes |
-| Apple HealthKit sync | No | **Yes** |
+| ~~Apple HealthKit sync~~ | — | — *(removed from the product 13 Sept 2026, `docs/platform-decision.md`)* |
 | **GPS import** | No | **Yes** |
 | GPS views, flags, leaderboards, training report | No | Yes |
 | API export (post-v1) | No | Yes |

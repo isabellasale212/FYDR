@@ -69,10 +69,10 @@ graph TD
     PAR --> OPT
     AD --> OPT
 
-    OPT[Optional extras, each separately opt-in:<br/>HealthKit · leaderboard · photographs]
+    OPT[Optional extras, each separately opt-in:<br/>leaderboard · photographs<br/>HealthKit removed 13 Sept 2026]
     OPT --> NP[Notification permission]
-    NP --> HK{Premium tier, iOS,<br/>and HealthKit opted in?}
-    HK -->|Yes| HKP[HealthKit permission<br/>optional, skippable]
+    NP --> HK{HealthKit — REMOVED<br/>13 Sept 2026, platform-decision.md}
+    HK -->|was| HKP[HealthKit permission<br/>no longer offered]
     HK -->|No| WT
     HKP --> WT[Walkthrough:<br/>3 screens, skippable]
     WT --> FW[First wellness entry<br/>guided]
@@ -100,7 +100,7 @@ visible to their coach, and that they can export or request erasure. There is no
 that switches the account off, because there is nothing to decline at that point.
 
 **Consent applies only to the genuinely optional extras**, and each is separately opt-in and
-separately withdrawable: HealthKit and device sync, appearing on leaderboards, and
+separately withdrawable: device sync (HealthKit removed 13 September 2026, `docs/platform-decision.md`), appearing on leaderboards, and
 photographs. Declining any of them leaves a fully working account.
 
 **Age determines the flow, and date of birth is therefore captured, not confirmed.** Under-18
@@ -356,7 +356,7 @@ graph LR
         CSV[GPS vendor CSV<br/>Catapult · StatSports]
     end
     subgraph P3["Phase 3, Device"]
-        HK[Apple HealthKit<br/>sleep · HR · HRV · steps]
+        HK[Apple HealthKit — REMOVED 13 Sept 2026<br/>platform-decision.md]
     end
     subgraph P4["Phase 4, API"]
         VAPI[Vendor APIs]

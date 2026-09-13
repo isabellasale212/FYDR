@@ -130,10 +130,11 @@ const NOT_CONVERTED: [string, string, string][] = [
    'NOTHING TO DO: .is(removed_at, null) matches only a current member'],
   ['src/lib/queries/leaderboards.ts', 'optBackIn',
    'NOTHING TO DO: .is(ended_at, null) matches only a live opt-out'],
-  ['src/lib/queries/healthkit.ts', 'withdrawHealthkitSync',
-   'NOTHING TO DO: withdrawing a consent never granted matches nothing, correctly'],
+  // healthkit.ts's withdrawHealthkitSync was listed here until 2026-09-13:
+  // Apple Health is removed from the product (docs/platform-decision.md) and
+  // the file with it.
   ['src/lib/queries/leaderboards.ts', 'withdrawLeaderboardVisibility',
-   'NOTHING TO DO: same shape as the healthkit withdrawal'],
+   'NOTHING TO DO: withdrawing a visibility never granted matches nothing, correctly'],
 
   /* RESOLVED 2026-09-06, and still correctly absent from mustAffect. The
      ambiguity was real: .is(user_id, null) means zero rows is EITHER already

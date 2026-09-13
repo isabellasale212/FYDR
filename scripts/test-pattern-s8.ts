@@ -5,7 +5,7 @@
  *
  *   A1 Log out is a bordered 44px button with its own label (48 on a phone)
  *   A2 every settings row is one 52px / 64px target
- *   A3 Apple Health "Not available yet · needs the Fydr iOS app", no control
+ *   A3 Apple Health — the row is gone: removed from the product 2026-09-13
  *   A4 the exports intro names the signed-in role and that medical records
  *      are never exported
  *   A5 the audit log says what it cannot show
@@ -44,10 +44,11 @@ console.log('\nA2. rows are one 52px target');
   assert(/@media \(max-width: 767px\)[\s\S]{0,300}\.set-list-row\s*\{[^}]*min-height:\s*64px/.test(css), '64px on a phone');
 }
 
-console.log('\nA3. Apple Health');
+console.log('\nA3. Apple Health — removed from the product (2026-09-13, docs/platform-decision.md; D1 struck)');
 {
-  assert(/Not available yet · needs the Fydr iOS app/.test(hub), 'the board\'s words');
+  assert(!/Not available yet · needs the Fydr iOS app/.test(hub) && !/Apple Health<\/span>/.test(hub) && !/Apple Health connection<\/span>/.test(hub), 'no Apple Health row, no Premium-list line, no "needs the Fydr iOS app"');
   assert(!/Not connectable yet/.test(hub), 'the old line is gone');
+  assert(!/Apple Health are on/.test(hub), 'the plan sentence no longer promises it');
 }
 
 console.log('\nA4. the exports intro');

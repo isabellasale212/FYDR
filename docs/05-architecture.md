@@ -41,7 +41,7 @@ graph TB
     subgraph Ext["External services"]
         PUSH["Expo Push Service<br/>to APNs and FCM"]
         MAIL["Transactional email<br/>Resend"]
-        HK["Apple HealthKit<br/>phase 3, on device"]
+        HK["Apple HealthKit<br/>REMOVED 13 Sept 2026 (platform-decision.md)"]
         SEN["Sentry"]
     end
 

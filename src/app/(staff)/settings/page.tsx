@@ -97,7 +97,7 @@ export default async function SettingsPage() {
               </h2>
               <p style={{ fontSize: 'var(--fs-13)', color: 'var(--muted)', margin: '2px 0 0' }}>
                 {onPremium
-                  ? 'Premium · GPS, the training report, the analytics bar chart and Apple Health are on.'
+                  ? 'Premium · GPS, the training report and the analytics bar chart are on.'
                   : 'Basic · wellness, gym, nutrition, schedule, reports and exports.'}
               </p>
               {/* Never let a preview be mistaken for the real plan. Without
@@ -164,7 +164,11 @@ export default async function SettingsPage() {
                     both tiers, so neither column may claim them; see
                     screens/analytics.md. */}
                 <span>Analytics · bar chart, by athlete</span>
-                <span>Apple Health connection</span>
+                {/* "Apple Health connection" was the fourth line until
+                    2026-09-13: Apple Health is removed from the product
+                    (docs/platform-decision.md) — there is no native app and
+                    none is planned, and it was the one thing that needed
+                    one. Not a Premium feature, not deferred: gone. */}
               </div>
             </div>
           </div>
@@ -205,62 +209,14 @@ export default async function SettingsPage() {
               )}
             </div>
 
-            <div className="set-row">
-              <div style={{ minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)' }}>
-                  <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600 }}>Apple Health</span>
-                  {!onPremium ? <span className="gold-badge">Premium</span> : null}
-                </div>
-                <p style={{ fontSize: 'var(--fs-12)', color: 'var(--muted)', margin: '2px 0 0' }}>
-                  Sleep, resting heart rate and body mass from the athlete&apos;s phone
-                </p>
-              </div>
-              {/* NO BUTTON HERE, DELIBERATELY. This row used to offer "Connect",
-               *  disabled, with a title explaining that the connection needs the
-               *  athlete mobile app. That was a control a coach could never make
-               *  work: Apple Health is a connection to ONE PERSON'S PHONE, so
-               *  only that person can make it. The athlete now does it in their
-               *  own Me tab (src/app/(athlete)/me/page.tsx).
-               *
-               *  It also cannot report state. Migration 0012's athlete_consents
-               *  note is explicit — "Coach and medical get nothing: a consent
-               *  state is not performance data and knowing that an athlete
-               *  declined HealthKit sync tells a coach nothing they are entitled
-               *  to act on" — so there is no connected count here and no per
-               *  athlete indicator. RLS would refuse the read anyway; this row
-               *  does not ask for it.
-               *
-               *  The tier gate stays, because the tier is genuinely the club's:
-               *  what the plan buys is whether athletes are offered it at all. */}
-              {/* THIS SENTENCE WENT FALSE ON 2026-09-08 and is corrected here in
-               *  the same commit that made it false. It read "Each athlete turns
-               *  this on in their own Me tab" — true until Q-03 was implemented,
-               *  which removed the Apple Health card from the athlete Me screen
-               *  (src/app/(athlete)/me/page.tsx). There is now no control
-               *  anywhere that turns Apple Health on, so a coach following that
-               *  instruction would send an athlete to look for something that is
-               *  not there.
-               *
-               *  Copy only. The row, its tier gate and its layout are unchanged,
-               *  and it still reports no per-athlete state — see the note above
-               *  for why it never could. */}
-              {onPremium ? (
-                <span className="tiny" style={{ color: 'var(--faint)', textAlign: 'right', maxWidth: 260 }}>
-                  {/* PATTERN-S8 A3 (2026-09-13): the board's words — an
-                      impossibility stated, with its reason, and no control. */}
-                  Not available yet · needs the Fydr iOS app
-                </span>
-              ) : (
-                <span
-                  className="set-row-btn"
-                  data-variant="locked"
-                  style={{ cursor: 'default' }}
-                  title="Apple Health is a Premium feature. Plan changes are a sales conversation with your Fydr contact."
-                >
-                  Locked
-                </span>
-              )}
-            </div>
+            {/* The Apple Health row stood here until 2026-09-13 ("Sleep,
+                resting heart rate and body mass from the athlete's phone",
+                Premium, "Not available yet · needs the Fydr iOS app" — S8
+                A3). Apple Health is removed from the product
+                (docs/platform-decision.md): no native app, none planned, and
+                it was the only capability that required one. The consent
+                purpose and the device_metrics table stay in the database,
+                dormant; nothing reads or writes them. */}
 
             {/* This row was the only link to /settings/imports with no badge
                 and no tier condition, and it described a feature that page

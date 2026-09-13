@@ -1618,7 +1618,9 @@ history" is a claim the schema can actually support.
 
 `deleted_at` on both tables is not optional: `07-integrations.md` §3.10 supersede handling
 soft-deletes the superseded row, the duplicate-detection unique index is partial on
-`deleted_at is null`, and HealthKit sample deletion needs it. Neither table had it, and the
+`deleted_at is null`, and HealthKit sample deletion needs it (HealthKit itself was removed
+from the product on 13 September 2026, `docs/platform-decision.md`; the table stays,
+dormant). Neither table had it, and the
 index in §3.10 would not have compiled.
 
 `external_id` is populated by the Phase 4 API adapters and left null by CSV import. It exists

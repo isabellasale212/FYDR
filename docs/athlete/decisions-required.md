@@ -148,7 +148,7 @@ club held data the club may have a lawful basis to keep
 the account cannot mean deleting the injury record. **What the athlete is told
 about that distinction is the actual design work.**
 
-### DECISION 4. HealthKit is a consent record with nothing behind it. RESOLVED AND BUILT, 8 September 2026.
+### DECISION 4. HealthKit is a consent record with nothing behind it. RESOLVED AND BUILT, 8 September 2026 — and closed for good 13 September 2026: Apple Health is removed from the product (`docs/platform-decision.md`); `lib/queries/healthkit.ts` and `HealthkitConsentToggle` are deleted, the staff Settings row with them; the consent rows stay, dormant.
 
 `athlete_consents.purpose = 'healthkit_sync'` is written by
 `src/components/HealthkitConsentToggle/HealthkitConsentToggle.tsx` and read on
@@ -379,7 +379,7 @@ checks every control on every screen, and any found are added here.
 - **UNVERIFIED: whether any athlete figure is GPS derived.** DECISION 9.
 - **UNVERIFIED: whether athlete screens explain empty comparisons.** DECISION 13.
 - **NOT BUILT: athlete account deletion.** DECISION 3.
-- **NOT BUILT: HealthKit ingestion.** DECISION 4.
+- **REMOVED FROM THE PRODUCT (13 September 2026): HealthKit.** DECISION 4, `docs/platform-decision.md`.
 - **NOT BUILT: any under 18 behaviour in the athlete app.** DECISION 10.
 
 ---

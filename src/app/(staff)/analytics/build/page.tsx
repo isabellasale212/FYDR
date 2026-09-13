@@ -89,8 +89,10 @@ const ALL_ATHLETES = 'all';
  *    two things, "the analytics bar chart" and "apple health connection", and
  *    the Apple Health half was implemented narrowly: a plan-card column move
  *    plus a Locked state on ONE Settings row, with no route gated at all
- *    (`src/app/(staff)/settings/page.tsx`). Reading the two halves of one
- *    sentence at two different scopes is not an interpretation, it is a slip.
+ *    (`src/app/(staff)/settings/page.tsx`; that row and Apple Health itself
+ *    were removed from the product on 2026-09-13, docs/platform-decision.md).
+ *    Reading the two halves of one sentence at two different scopes is not an
+ *    interpretation, it is a slip.
  *  - It deleted a live screen from paying customers. /analytics is shipped and
  *    running; every existing `core` org would have opened it the next morning
  *    and found it gone. `docs/12-product-tiers.md` §3.3 is explicit that this
@@ -215,7 +217,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
    *
    *  LOCKED — the bar chart on a Basic plan. NOT coerced and NOT disabled: it
    *  stays selectable and renders a panel saying what it is and what it costs,
-   *  the same shape the Apple Health row in Settings uses. Coercing it would
+   *  the same shape the Premium-locked rows in Settings use. Coercing it would
    *  silently show a different answer than the one asked for; disabling it
    *  would make a purchasable feature look broken.
    *

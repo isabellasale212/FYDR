@@ -44,7 +44,7 @@ const ROOT = 'src/app/(staff)';
  *  a crude signal: it should over-match, because every match must then be
  *  explicitly either gated or excused below, and a new route nobody thought
  *  about lands in neither list and fails. */
-const PREMIUM_SIGNALS = /gps|trainingReport|healthkit/i;
+const PREMIUM_SIGNALS = /gps|trainingReport/i; // healthkit dropped 2026-09-13: Apple Health is removed from the product
 
 /** Routes that serve Premium data and deliberately do NOT gate on tier. Each
  *  needs a reason, because an empty reason is how a hole gets normalised. */

@@ -118,14 +118,14 @@ Do not try to answer all of these at once. Work through them in this order:
 |---|---|
 | **O-40** | Which GPS vendors get prebuilt profiles at launch? |
 | **O-41** | Fuzzy match auto-accept. |
-| **O-42** | HealthKit first-sync backfill window. |
+| **O-42** | ~~HealthKit first-sync backfill window.~~ Closed 13 Sept 2026: Apple Health removed from the product (`docs/platform-decision.md`). |
 | **O-43** | Should device-measured sleep duration feed `readiness_score`, replacing the self-reported figure, or sit alongside it? |
-| **O-44** | Health Connect reports HRV as RMSSD, HealthKit as SDNN. |
+| **O-44** | ~~Health Connect reports HRV as RMSSD, HealthKit as SDNN.~~ Closed 13 Sept 2026: Apple Health removed; Health Connect was never specified. |
 | **O-45** | Minimum device-metric coverage before squad-level device analysis is permitted. |
 | **O-46** | Do you want to open a Catapult partner conversation now, on the strength of a named pilot club, or wait until a customer asks? |
 | **O-47** | PDF report contents and branding. |
 | **O-48** | Premium tier data export: webhooks or read API first? |
-| **O-985** | Minors and HealthKit coverage. |
+| **O-985** | ~~Minors and HealthKit coverage.~~ Closed 13 Sept 2026: Apple Health removed from the product. |
 
 ### `docs/08-notifications.md`
 

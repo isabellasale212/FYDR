@@ -17,7 +17,7 @@ database archaeology exercise.
 |---|---|---|---|---|
 | 1 | Athlete self-report, staff entry | In-app forms | Club, Premium | v1 |
 | 2 | GPS vendor exports: Catapult, StatSports, GPSports, Polar | CSV or XLSX upload, staff initiated | Premium | v1 |
-| 3 | Apple HealthKit | Native iOS sync, athlete initiated | Premium | v1.1 |
+| 3 | ~~Apple HealthKit~~ | ~~Native iOS sync, athlete initiated~~ **Removed 13 Sept 2026 — `docs/platform-decision.md`** | — | — |
 | 4 | Catapult and StatSports APIs, Android Health Connect | Scheduled server-side pull | Premium | Deferred |
 
 The two tiers are the `subscription_tier` enum's **`core` and `performance`** (migration
@@ -676,7 +676,15 @@ Rules:
 
 ## 4. Apple HealthKit
 
-Phase 3, Premium tier, iOS only.
+> **Removed from the product, 13 September 2026** (`docs/platform-decision.md`). There is
+> no native iOS app and none is planned; Apple Health was the only capability that
+> required one, and it is removed — not deferred, not taken off a tier. Everything below
+> this banner is retained as the record of what was once specified and is **not to be
+> built**. The `device_metrics` table and the `healthkit_sync` consent purpose remain in
+> the database (migrations are additive), dormant; nothing reads or writes them, and
+> `src/lib/queries/healthkit.ts` and the consent toggle were deleted the same day.
+
+Phase 3, Premium tier, iOS only *(superseded — see the banner)*.
 
 ### 4.1 What is read
 

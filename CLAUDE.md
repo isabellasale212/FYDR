@@ -8,6 +8,20 @@ current conversation.
 
 ---
 
+## 0.00 Where the documentation is
+
+**Read `docs/README.md` before acting on any document in this repository.**
+It names what is authoritative, what is stale, and which document wins when
+two disagree. The two most recent standing decisions are
+`docs/decisions/scope.md` (v1, free plus premium) and
+`docs/platform-decision.md` (two installable web apps, no native, no Apple
+Health, and the notification schedule). The working task list is
+`docs/architecture/to-do.md`.
+
+A document not named in `docs/README.md` is background, not instruction.
+
+---
+
 ## 0. The design is frozen
 
 **Signed off 4 September 2026: both the staff app and the athlete app.** Do not
@@ -256,7 +270,7 @@ session, but you **must** read the relevant file before touching the correspondi
 | Database, queries, migrations | `docs/04-data-model.md` |
 | Infrastructure, auth, sync | `docs/05-architecture.md` |
 | UI, components, styling | `docs/06-design-system.md` |
-| HealthKit, CSV, vendor data | `docs/07-integrations.md` |
+| CSV, vendor data (HealthKit was removed from the product on 2026-09-13 — `docs/platform-decision.md`) | `docs/07-integrations.md` |
 | Push, reminders, emails | `docs/08-notifications.md` |
 | Medical data, GDPR, audit | `docs/09-security-and-compliance.md` |
 | What to build next | `docs/10-roadmap.md` |

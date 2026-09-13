@@ -218,7 +218,7 @@ has been reduced to two values accordingly.
 |---|---|---|---|---|
 | Injury record, clinical detail, availability decisions, rehab | 6(1)(f) legitimate interests, or 6(1)(b) contract for contracted players | 9(2)(h) preventive or occupational medicine, assessment of working capacity | Part 1 para 2, health or social care purposes | `[high]` |
 | Wellness, load, RPE, gym, testing, body composition, viewed by coaching staff | 6(1)(f) legitimate interests | See below. This is the hard one. | See below | `[medium]` |
-| HealthKit and wearable sync | 6(1)(a) consent | 9(2)(a) explicit consent | Not required | `[high]` |
+| Wearable sync (HealthKit removed from the product 13 Sept 2026, `docs/platform-decision.md`) | 6(1)(a) consent | 9(2)(a) explicit consent | Not required | `[high]` |
 | Nutrition targets and guidance assigned to an athlete | 6(1)(f) legitimate interests | Not engaged in my view: a coach-set macro target is a training instruction, not a health measurement, and nothing is collected back from the athlete. Where a target is set by medical staff during rehab it travels with the injury record and takes that row's bases. | Not required on this reading | `[low, see O-900]` |
 | Leaderboard visibility of an athlete's name and metric to teammates | 6(1)(f), with a genuine opt-out | 9(2)(a) if the metric is health data | Not required | `[medium]` |
 | Staff accounts, billing, support | 6(1)(b) and 6(1)(f) | Not applicable | Not applicable | `[high]` |
@@ -1733,6 +1733,12 @@ Run `security@fydr.app` to an inbox you actually read.
 ---
 
 ## 13. App Store and Play Store requirements
+
+> **Superseded, 13 September 2026** (`docs/platform-decision.md`): there is no native app,
+> none is planned, and Apple Health is removed from the product; there is no App Store or
+> Play Store submission. This section is the record of what those stores would have
+> required and is not a requirement on the product. The consent purposes in §4 still stand
+> for device sync and leaderboards; the HealthKit ones are dormant.
 
 Health data attracts specific rules in both stores. Several of these are rejection causes
 that will cost you a week each at exactly the wrong point in the schedule, so read this

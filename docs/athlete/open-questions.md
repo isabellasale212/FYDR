@@ -66,7 +66,7 @@ answered; they are recorded in `decisions-required.md` rather than repeated here
 
 ---
 
-### Q-03. Should the Apple Health toggle stay on screen while there is nothing behind it? DECISION
+### Q-03. Should the Apple Health toggle stay on screen while there is nothing behind it? DECISION — and closed for good 13 September 2026: Apple Health removed from the product, the toggle and its query deleted (`docs/platform-decision.md`)
 
 **The question.** An athlete on a Premium club can turn on Apple Health. It writes a consent row and nothing reads it. There is no HealthKit integration: no native code anywhere, and no table holds device sourced sleep, resting heart rate or HRV.
 
@@ -535,7 +535,7 @@ One transitive path was checked rather than assumed: the athlete page imports DA
 
 These cannot be answered by reading the code.
 
-### Q-24. The HealthKit usage description strings. NOT BUILT, and my drafts are guesses
+### Q-24. The HealthKit usage description strings. CLOSED 13 September 2026 — Apple Health removed from the product (`docs/platform-decision.md`)
 
 **The question.** If a native shell is ever built and reads Apple Health, each data type needs a usage description string. I drafted three in the App Store appendix and **labelled them as guesses**, because the justification is real but nobody has written the sentences.
 

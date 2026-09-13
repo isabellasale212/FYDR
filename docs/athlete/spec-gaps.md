@@ -169,14 +169,14 @@ incomplete or the compliance document specifies two notifications nobody built.
 
 ## Band 3: things that mislead
 
-### G-A6. The Apple Health toggle asks for a permission that leads nowhere. MEDIUM.
+### ~~G-A6. The Apple Health toggle asks for a permission that leads nowhere.~~ CLOSED 13 September 2026.
 
-An athlete on a Premium club can grant `healthkit_sync`. **There is no HealthKit
-integration and no table holds device sourced data.** The consent is recorded and
-nothing reads it to ingest anything.
-
-**Files.** `src/components/HealthkitConsentToggle/HealthkitConsentToggle.tsx`,
-`src/app/(athlete)/me/page.tsx:240`.
+Apple Health is removed from the product (`docs/platform-decision.md`): no native app,
+none planned. The toggle had already left `/me` (Q-03, 8 September); on 13 September
+`src/components/HealthkitConsentToggle/HealthkitConsentToggle.tsx` and
+`src/lib/queries/healthkit.ts` were deleted, the staff Settings row and the Premium-list
+line with them. `athlete_consents.purpose = 'healthkit_sync'` rows already granted stay
+in the database, dormant.
 
 ### G-A7. Nutrition guidance lives behind a tab called Gym. MEDIUM.
 

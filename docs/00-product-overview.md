@@ -158,7 +158,7 @@ maintained in full elsewhere. Condensed to the shape of the decision only:
 | Nutrition guidance: targets, meal ideas, matchday fuelling. Read-only, no meal or macro logging | Yes | Yes |
 | Weekly nutrition check-in: one question, one tap, three levels | Yes | Yes |
 | GPS data import | No | Yes |
-| Apple HealthKit sync | No | Yes |
+| ~~Apple HealthKit sync~~ | — | — *(removed from the product 13 Sept 2026, `docs/platform-decision.md`)* |
 | Cross-domain analytics builder | Limited presets | Full custom builder |
 | Data export | CSV | CSV and API |
 
@@ -168,8 +168,10 @@ same document and is not optional.
 > **Open question O-1**: exact price points per tier. The £1/athlete/week figure discussed
 > previously is a Club-tier anchor, not a confirmed price. See `11-open-questions.md`.
 >
-> **O-1 is now downstream of O-750.** The tier split above puts GPS import, the custom
-> analytics builder and HealthKit behind the Premium tier. HealthKit has moved twice: O-862
+> **O-1 is now downstream of O-750.** The tier split above puts GPS import and the custom
+> analytics builder behind the Premium tier. (HealthKit was removed from the product on
+> 13 September 2026, `docs/platform-decision.md`; the history that follows is retained as
+> the record.) HealthKit had moved twice: O-862
 > (`12-product-tiers.md` §3.4) moved it to Club on 14 August 2026, and the club reversed its
 > own decision on 30 August 2026, putting it back in Premium. O-862 is re-opened, not closed,
 > and a feature that has changed tier twice in three weeks must not be printed on a price list

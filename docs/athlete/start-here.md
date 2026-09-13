@@ -20,9 +20,8 @@ document as live work, and anyone reading an older copy will find them:
   its D-U-N-S number are a someday item, not a blocker.
 - **Appendix E, App Store readiness, is hypothetical.** Read it as a checklist
   for work that is not scheduled.
-- **The three HealthKit usage strings stay drafts.** See Q-24 — that answer was
-  reversed and then restored the same day, and the strings remain Claude's
-  guesses rather than written copy.
+- **The three HealthKit usage strings are moot.** Apple Health was removed from the
+  product on 13 September 2026 (`docs/platform-decision.md`); Q-24 is closed with it.
 - **The Apple guideline 5.1.1(v) account-deletion risk is dormant, not
   accepted.** See Q-02. No app is being submitted, so nothing needs flagging in
   submission notes that do not exist. Q-02's decision — no self-service deletion,

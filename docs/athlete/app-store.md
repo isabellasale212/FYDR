@@ -1,5 +1,12 @@
 # App Store readiness
 
+> **Superseded, 13 September 2026** (`docs/platform-decision.md`). There is no native iOS
+> app and none is planned: both apps are installable web apps (PWAs). Apple Health is
+> removed from the product. Nothing in this document is scheduled or required; it is
+> retained as the record of what a native shell would have needed, against the revisit
+> condition in the platform decision (a Capacitor shell only if a real club's players will
+> not install from Safari, or an App Store listing is needed as a sales asset).
+
 Generated 7 September 2026.
 
 **There is no iOS app.** Stage A0 established it and re-verified it today: no

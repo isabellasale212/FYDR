@@ -2506,7 +2506,7 @@ about is a toggle that is not doing its job.
 |---|---|---|
 | Leaderboard visibility | Off, opt-in, with the consequence stated | A pre-ticked box, or on with an opt-out |
 | Photograph | **Absent.** No control, no empty slot, no "add a photo" affordance. `AthleteCard` shows initials on `--avatar-bg` | A disabled upload control, which advertises a feature the child cannot have and invites them to ask why |
-| Device and HealthKit sync | Off, opt-in, and the connection screen states the club's parental involvement rule where one is set | A "connect for better insights" card |
+| Device sync (HealthKit removed 13 Sept 2026, `platform-decision.md`) | Off, opt-in, and the connection screen states the club's parental involvement rule where one is set | A "connect for better insights" card |
 | Any future optional sharing | Off | On |
 
 **2. No dark patterns, and no nudges towards sharing more.** Standard 13. This is a review
@@ -2529,7 +2529,7 @@ connected phone or watch both collect while the child is doing something else.
 | Condition | Indicator | Where |
 |---|---|---|
 | A session is being recorded by a GPS pod | A persistent line on the session card, in words: "This session is recorded by GPS." Present whenever the session carries a GPS expectation, whether or not data has arrived | `SessionCard`, athlete shell, and the session detail screen |
-| Device or HealthKit sync is connected | A standing statement in the Me tab privacy section naming what is read and the last sample received per metric, plus a one-tap disconnect on the same screen | Me tab. Never buried a level down |
+| Device sync is connected (HealthKit removed 13 Sept 2026) | A standing statement in the Me tab privacy section naming what is read and the last sample received per metric, plus a one-tap disconnect on the same screen | Me tab. Never buried a level down |
 | Sync is active in the background | No transient indicator. A pulsing "syncing now" badge would be theatre: collection is continuous and best-effort, so a moment-in-time indicator would misrepresent it | n/a |
 
 Rules on all three: the indicator is **not** a dialogue, is never dismissible, and is written

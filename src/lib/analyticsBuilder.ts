@@ -308,7 +308,9 @@ export function chartUnavailableReason(chart: ChartKey, range: RangeKey): string
  * strictly wider than the sentence that authorised it. The Apple Health half of
  * that same sentence was implemented narrowly — a plan-card column move plus a
  * Locked state on one Settings row, no route gated — and the two halves of one
- * instruction should not have been read at two different scopes.
+ * instruction should not have been read at two different scopes. (Apple
+ * Health itself was removed from the product on 2026-09-13,
+ * docs/platform-decision.md; the bar-chart half stands.)
  */
 export function chartIsPremium(chart: ChartKey): boolean {
   return chart === 'bar';

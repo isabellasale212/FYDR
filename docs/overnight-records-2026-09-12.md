@@ -1155,6 +1155,8 @@ when it held any) plus the one sentence in the chip row. Small. Stated on the sh
 built (S8's rows wait).
 
 **Built:** A1–A7. **Recorded:** B1–B4, C1–C13, D1–D9. **Read and answered:** D5, D9.
+**D1 struck 2026-09-13**: Apple Health is removed from the product (`docs/platform-decision.md`),
+the hub's row and the Premium-list line deleted with the toggle and its query.
 **D9 built 2026-09-13** on Isabella's ruling: an unresolvable group id clears out of the
 filter on every request (`resolveGroupFilter`), the shell rewrites the cookie and says so
 once; "1 unknown group" is gone. D5 is not touched — a security decision on auth, Isabella's.

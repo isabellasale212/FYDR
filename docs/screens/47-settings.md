@@ -35,13 +35,13 @@ roles are required to have two factor login enabled.
 
 **The Plan card**, naming the club's package, read only.
 
-**Integrations**, including the GPS vendor and the Apple Health connection, which
-is a Premium feature. Since 13 September 2026 (PATTERN-S8 A3, A7): Catapult's
-control reads **"Import files"** — it is a CSV file drop, never a live
-connection — and Apple Health reads **"Not available yet · needs the Fydr iOS
-app"** with no control at all: an impossibility stated with its reason (HealthKit
-has no web or server API and no Fydr iOS app exists), not a feature merely not
-set up.
+**Integrations**, the GPS vendor. Since 13 September 2026 (PATTERN-S8 A7):
+Catapult's control reads **"Import files"** — it is a CSV file drop, never a live
+connection. **There is no Apple Health row** (13 September 2026,
+`docs/platform-decision.md`): Apple Health is removed from the product — there is no
+native app and none is planned, and it was the one thing that needed one. It is
+gone from the Plan card's Premium list too; the plan sentence reads "Premium · GPS,
+the training report and the analytics bar chart are on.".
 
 **Log out is a button** (PATTERN-S8 A1, 13 September 2026): a bordered 44px
 `btn-ghost` (48px on a phone) with its own label, set apart from the lists, "Ends

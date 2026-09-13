@@ -127,7 +127,7 @@ below already have that baked in. Do not apply it twice.
 | **1a** | **Thin slice: the compliance loop**, now including the Children's Code workstream | 11 weeks | 9 to 16 | One real club live |
 | **1b** | Completing Phase 1 | 6 weeks | 4 to 9 | Compliance above 80% at four weeks |
 | **2** | Programmes, gym, testing, injury, reports | 13 weeks | 10 to 19 | S&C coach builds and assigns unaided |
-| **3** | GPS import, analytics, HealthKit | 9.5 weeks | 7.5 to 14.5 | A cross-domain correlation a coach acts on |
+| **3** | GPS import, analytics (HealthKit removed from the product 13 Sept 2026, `docs/platform-decision.md`) | 9.5 weeks | 7.5 to 14.5 | A cross-domain correlation a coach acts on |
 | | *(Phase 2m may run here instead, see below)* | | | |
 | **2m** | **Staff phone app**, second shell over Phase 1 and 2 surfaces | 10 weeks | 8 to 12 | A coach takes attendance pitchside without opening a laptop |
 | **4** | Vendor APIs, Health Connect, platform | 14 weeks | 10 to 22 | Demand-driven. Do not plan this. |
@@ -413,6 +413,10 @@ a form over one column and the offline machinery already exists; **low to medium
 ---
 
 ## 6. Phase 3: GPS import, analytics, HealthKit
+
+> **HealthKit is removed from the product** (13 September 2026, `docs/platform-decision.md`):
+> no native app, none planned. Its rows, its Gantt bar and its App Store entitlement below
+> are the record of what was planned and are not to be built.
 
 > **See the note at the top of this file.** Parts of this phase appear to exist already in the
 > staff web app, and the entry criterion below ("a pilot club is on the Premium tier") is

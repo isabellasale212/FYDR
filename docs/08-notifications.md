@@ -102,7 +102,7 @@ organisation cannot raise them: `athlete.flag.shared`, `athlete.compliance.weekl
 monitored and no notification gates an account on consent. What this id carries is a **new
 privacy notice version to acknowledge**. It is mandatory for the same reason a notice is:
 telling someone what is done with their data is an obligation, not a preference. Consent
-proper applies only to the three optional extras, HealthKit and device sync, leaderboard
+proper applies only to the optional extras, device sync (HealthKit removed 13 September 2026, `docs/platform-decision.md`), leaderboard
 appearance, and photographs, and **none of them has a notification**: they are asked once at
 onboarding step 6 and, for a minor, never re-asked (§5.4). The id is kept rather than renamed
 because it is referenced from `screens/onboarding.md` and `03-flows.md`; renaming it is a

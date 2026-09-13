@@ -50,10 +50,11 @@ export type AthleteContext = {
   timezone: string;
   firstName: string;
   lastName: string;
-  /** The club's plan. The athlete surface needs it for exactly one thing: the
-   *  Apple Health permission, which is a Premium feature and so must not be
-   *  offered to an athlete whose club has not bought it. Real tier, never the
-   *  preview — a club's own athletes must not see a staff member's Basic
+  /** The club's plan. It reached the athlete surface for one thing — the
+   *  Apple Health permission, a Premium feature — which is removed from the
+   *  product (2026-09-13, docs/platform-decision.md); kept because the
+   *  athlete app still reads the plan for what a club has bought. Real tier,
+   *  never the preview — a club's own athletes must not see a staff member's Basic
    *  preview change what they are allowed to switch on. */
   tier: 'core' | 'performance';
 };

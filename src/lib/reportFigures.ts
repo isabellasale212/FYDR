@@ -62,3 +62,16 @@ export const NO_GPS = 'No data';
 export const NO_BEST_YET = 'No best yet';
 export const NOT_SET = 'Not set';
 export const RESULT_NOT_ENTERED = 'Result not entered';
+
+/** The testing report's by-test ranking: who has a result for this test in
+ *  the window, over the filter. */
+export function rankedCoverageLine(o: { withResult: number; inScope: number; floored: boolean }): string {
+  const missing = Math.max(0, o.inScope - o.withResult);
+  const base =
+    missing === 0
+      ? `Every one of the ${o.inScope} athletes in this filter has a result for this test in this window — nobody is excluded.`
+      : `${o.withResult} of ${o.inScope} athletes have a result for this test in this window; ${missing} ${missing === 1 ? 'has' : 'have'} none and ${missing === 1 ? 'is' : 'are'} not ranked.`;
+  return o.floored ? `${base} Fewer than five have data, so the median and quartiles are not shown; the ranking is.` : base;
+}
+export const NO_RESULT = 'No result';
+export const NOT_SHOWN = 'Not shown';

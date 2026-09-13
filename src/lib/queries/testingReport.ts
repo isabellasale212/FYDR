@@ -355,7 +355,8 @@ export async function fetchTestLongitudinal(
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([date, values]) => ({
       date,
-      median: quartile([...values].sort((a, b) => a - b), 0.5),
+      /* PATTERN-S7 C8: the squad floor on a date's median too. */
+      median: belowSquadFloor(values.length) ? null : quartile([...values].sort((a, b) => a - b), 0.5),
       n: values.length,
     }));
 }

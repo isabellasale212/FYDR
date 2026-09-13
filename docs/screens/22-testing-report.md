@@ -64,6 +64,16 @@ one, rather than showing an empty table with no explanation.
 
 ---
 
+**Every figure carries its denominator, an exclusions sentence, and words for a
+missing value** (PATTERN-S7 C2, 13 September 2026; `lib/reportFigures.ts`). Under
+the by-test median, Q1 and Q3: "22 of 30 athletes have a result for this test in
+this window; 8 have none and are not ranked." (or "Every one of the 30 athletes
+… — nobody is excluded."), with the squad floor (C8) when fewer than five have
+data — the three figures then read "Not shown" and the ranking stays; the
+longitudinal medians are under the same floor ("n = 3 · fewer than five · Not
+shown"). A by-athlete cell with no result in the window reads "No result"; with
+no results at all the three figures read "No results" — never a dash.
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means in plain English | Time window | What shows when data is missing |

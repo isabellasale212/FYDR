@@ -2,7 +2,7 @@
  * sentence; missing values as words; worst first. One report a commit; the
  * compliance report first (2026-09-13). */
 import { readFileSync } from 'node:fs';
-import { NONE_WAIVED, NOT_EXPECTED, NO_ENTRY_IN_WINDOW, availabilityExclusionsLine, boardCoverageLine, exclusionsLine, submittedLine } from '@/lib/reportFigures';
+import { NONE_WAIVED, NOT_EXPECTED, NO_ENTRY_IN_WINDOW, availabilityExclusionsLine, boardCoverageLine, exclusionsLine, rankedCoverageLine, submittedLine } from '@/lib/reportFigures';
 
 let passed = 0, failed = 0;
 const assert = (cond: boolean, label: string): void => {
@@ -84,7 +84,21 @@ console.log('\n5. the training report — the fourth');
   assert(/No GPS record|nobody is excluded/.test(read('docs/screens/23-training-report.md')) || /not on the board/.test(read('docs/screens/23-training-report.md')), 'the spec says so');
 }
 
-console.log('\n6. the spec');
+console.log('\n6. the testing report — the fifth');
+{
+  assert(rankedCoverageLine({ withResult: 22, inScope: 30, floored: false }) === '22 of 30 athletes have a result for this test in this window; 8 have none and are not ranked.', 'who has a result, who is not ranked');
+  assert(rankedCoverageLine({ withResult: 30, inScope: 30, floored: false }) === 'Every one of the 30 athletes in this filter has a result for this test in this window — nobody is excluded.', 'everyone');
+  assert(/Fewer than five have data, so the median and quartiles are not shown; the ranking is\.$/.test(rankedCoverageLine({ withResult: 3, inScope: 5, floored: true })), 'and the floor');
+  const page = strip(read('src/app/(staff)/reports/testing/page.tsx'));
+  assert(/rankedCoverageLine\(\{ withResult: byTest\.rows\.length, inScope: byAthlete\.rows\.length, floored: /.test(page), 'the page says it under the three stats');
+  assert(/NO_RESULT : formatNumber\(cell\.value/.test(page), 'a by-athlete cell with no result reads "No result"');
+  assert(/byTest\.rows\.length === 0 \? 'No results' : NOT_SHOWN/.test(page), 'the median, Q1 and Q3 read "No results" or "Not shown"');
+  assert(!/\bBLANK\b/.test(page), 'no BLANK on the testing page');
+  assert(/median: belowSquadFloor\(values\.length\) \? null : quartile/.test(strip(read('src/lib/queries/testingReport.ts'))), 'the longitudinal medians are under the floor too (C8)');
+  assert(/not ranked/.test(read('docs/screens/22-testing-report.md')), 'the spec says so');
+}
+
+console.log('\n7. the spec');
 {
   assert(/Nobody is excluded/.test(read('docs/screens/20-compliance-report.md')), '20-compliance-report.md carries the exclusions sentence');
 }

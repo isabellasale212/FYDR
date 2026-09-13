@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { belowSquadFloor, squadFloorNote } from '@/lib/smallSample';
+import { belowSquadFloor } from '@/lib/smallSample';
+import { NOT_SHOWN, NO_RESULT, rankedCoverageLine } from '@/lib/reportFigures';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { PrintButton } from '@/components/PrintButton/PrintButton';
 import { ReportPager } from '@/components/ReportPager/ReportPager';
@@ -8,7 +9,7 @@ import { fetchTestByTest, fetchTestLongitudinal, fetchTestingByAthlete } from '@
 import { recordReportView } from '@/lib/queries/reports';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { BLANK, formatDate, formatNumber } from '@/lib/format';
+import { formatDate, formatNumber } from '@/lib/format';
 import { resolveTestingPeriod, testingQuery, testingWindow } from './period';
 import { periodCaveat, periodParamsFrom, periodSticky } from '@/lib/reportPeriod.server';
 import { requireReport } from '@/lib/session';
@@ -209,7 +210,7 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                                 const cell = row.cells.get(d.id);
                                 return (
                                   <td key={d.id} className="r num">
-                                    {cell?.value === null || cell?.value === undefined ? BLANK : formatNumber(cell.value, d.decimal_places)}
+                                    {cell?.value === null || cell?.value === undefined ? NO_RESULT : formatNumber(cell.value, d.decimal_places)}
                                   </td>
                                 );
                               })}
@@ -250,28 +251,29 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                       {/* PATTERN-S7 C8: the squad floor — the median and the
                           quartiles are not published below five athletes
                           with a result; the rows below are unchanged. */}
-                      {belowSquadFloor(byTest.rows.length) ? (
-                        <p className="tiny" style={{ marginBottom: 'var(--sp-10)' }}>
-                          {squadFloorNote('The squad median', byTest.rows.length)}
-                        </p>
-                      ) : null}
+                      {/* PATTERN-S7 C2: the denominator and the exclusions
+                          sentence — who has a result, who is not ranked, and
+                          the squad floor (C8) when it applies. */}
+                      <p className="tiny" style={{ marginBottom: 'var(--sp-10)' }}>
+                        {rankedCoverageLine({ withResult: byTest.rows.length, inScope: byAthlete.rows.length, floored: byTest.rows.length > 0 && belowSquadFloor(byTest.rows.length) })}
+                      </p>
                       <div className="grid3">
                         <div className="card">
                           <p className="tiny">Median</p>
                           <p className="num" style={{ fontSize: 'var(--fs-20)', fontWeight: 800 }}>
-                            {byTest.median === null ? BLANK : formatNumber(byTest.median, byTest.definition.decimal_places)} {byTest.definition.unit}
+                            {byTest.median === null ? (byTest.rows.length === 0 ? 'No results' : NOT_SHOWN) : `${formatNumber(byTest.median, byTest.definition.decimal_places)} ${byTest.definition.unit}`}
                           </p>
                         </div>
                         <div className="card">
                           <p className="tiny">Q1</p>
                           <p className="num" style={{ fontSize: 'var(--fs-20)', fontWeight: 800 }}>
-                            {byTest.q1 === null ? BLANK : formatNumber(byTest.q1, byTest.definition.decimal_places)}
+                            {byTest.q1 === null ? (byTest.rows.length === 0 ? 'No results' : NOT_SHOWN) : formatNumber(byTest.q1, byTest.definition.decimal_places)}
                           </p>
                         </div>
                         <div className="card">
                           <p className="tiny">Q3</p>
                           <p className="num" style={{ fontSize: 'var(--fs-20)', fontWeight: 800 }}>
-                            {byTest.q3 === null ? BLANK : formatNumber(byTest.q3, byTest.definition.decimal_places)}
+                            {byTest.q3 === null ? (byTest.rows.length === 0 ? 'No results' : NOT_SHOWN) : formatNumber(byTest.q3, byTest.definition.decimal_places)}
                           </p>
                         </div>
                       </div>
@@ -327,9 +329,9 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                               {i > 0 ? <div className="hair" /> : null}
                               <div className="load-row" style={{ gridTemplateColumns: '1fr auto auto', padding: '9px 16px' }}>
                                 <span className="sub num">{formatDate(p.date, timezone)}</span>
-                                <span className="tiny">n={p.n}</span>
+                                <span className="tiny">n = {p.n}{p.median === null ? ' · fewer than five' : ''}</span>
                                 <span className="num nm">
-                                  {p.median === null ? BLANK : formatNumber(p.median, byTest.definition.decimal_places)} {byTest.definition.unit}
+                                  {p.median === null ? NOT_SHOWN : `${formatNumber(p.median, byTest.definition.decimal_places)} ${byTest.definition.unit}`}
                                 </span>
                               </div>
                             </div>

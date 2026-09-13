@@ -37,7 +37,7 @@ console.log('\n3. the sweep: every squad aggregate asks the rule');
   assert(/squadFloorNote\('Shading', athletesWithData\)/.test(training), 'and says so');
   const testing = strip(read('src/lib/queries/testingReport.ts'));
   assert(/const floored = belowSquadFloor\(values\.length\);/.test(testing) && /const median = floored \? null : quartile\(values, 0\.5\);/.test(testing), 'the testing report\'s median and quartiles are null below the floor');
-  assert(/squadFloorNote\('The squad median', byTest\.rows\.length\)/.test(strip(read('src/app/(staff)/reports/testing/page.tsx'))), 'and the page says so');
+  assert(/rankedCoverageLine\(\{ withResult: byTest\.rows\.length, inScope: byAthlete\.rows\.length, floored: byTest\.rows\.length > 0 && belowSquadFloor\(byTest\.rows\.length\) \}\)/.test(strip(read('src/app/(staff)/reports/testing/page.tsx'))), 'and the page says so (through the coverage sentence since S7 C2)');
   const compliance = strip(read('src/app/(staff)/reports/compliance/page.tsx'));
   assert(/const squadMean = measured\.length > 0 && !belowSquadFloor\(measured\.length\)/.test(compliance) && /squadFloorNote\('The squad mean', measured\.length\)/.test(compliance), 'the compliance squad mean is off below the floor, with the note');
   const builder = strip(read('src/lib/queries/analytics.ts'));

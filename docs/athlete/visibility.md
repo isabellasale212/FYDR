@@ -208,7 +208,7 @@ Every export is written to `audit_log` with report type `my_data`.
 
 **NOT BUILT.** An athlete cannot delete their own account in either surface.
 Erasure is an audited staff process (`src/lib/retention/`). This is DECISION 3,
-and Apple guideline 5.1.1(v) makes it a blocker for any future native app.
+and Apple guideline 5.1.1(v) would make it a blocker for a native app — of which there is none and none planned (`docs/platform-decision.md`, 13 September 2026); the erasure route stands on its own merits.
 
 ### Leaving the club, or the club leaving Fydr
 

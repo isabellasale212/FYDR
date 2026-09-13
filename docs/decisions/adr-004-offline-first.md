@@ -1,8 +1,14 @@
 # ADR-004: Offline-first athlete data entry
 
+> **Storage superseded, 13 September 2026** (`docs/platform-decision.md`): the athlete app
+> is an installable web app, so the local store is IndexedDB behind a service worker, not
+> `expo-sqlite`; the principle below — local first, client-generated ids, an outbox,
+> the network never on the critical path — stands and is what PATTERN-S11 builds on.
+> What exists today (per-screen localStorage queues) is inventoried under S11.
+
 ## Status
 
-**ACCEPTED.** 2026-08.
+**ACCEPTED.** 2026-08. Storage mechanism superseded 2026-09-13 (banner).
 
 ---
 

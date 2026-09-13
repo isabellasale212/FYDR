@@ -10,10 +10,11 @@ import type { NotificationChannel } from '@/lib/notifications/catalogue';
  *
  * What this build does not do, and why it's a different gap than the usual
  * "not enough time" one: nothing in this codebase actually sends a push or
- * an email. There's no Expo push credential, no APNs/FCM key, no email
- * provider account, in .env.local or anywhere else — the same category of
- * external-dependency gap this session already names for scheduled report
- * delivery. Saving a preference here is real and will be respected the
+ * an email. There is no web-push subscription table, no VAPID key pair and
+ * no send path yet (docs/platform-decision.md, 2026-09-13: push is a service
+ * worker with VAPID keys — the S9 board; the Expo/APNs plan is abandoned, and
+ * the 43 seeded push_tokens rows encode it and are not devices). Email
+ * sending exists for invites and resets (Resend) and nothing else. Saving a preference here is real and will be respected the
  * moment a real send pipeline exists; nothing currently reads these rows to
  * decide whether to send something, because nothing sends anything yet.
  *

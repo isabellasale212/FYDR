@@ -4,7 +4,10 @@ What is missing from the specification set, why each gap matters, and what it
 would cost to close.
 
 **Status, 4 September 2026. Six of the seven are done.** Only item 6, the athlete
-app, remains, and it is a separate commission rather than an appendix. The
+app, remains, and it is a separate commission rather than an appendix. *(13 September
+2026: the athlete app exists as the installable web app in this codebase —
+`docs/platform-decision.md`; "separate commission" here means its own specification,
+never a separate codebase.)* The
 completed sections are left in place rather than deleted, because they record what
 each was expected to cost, which is worth comparing against what it actually
 turned up.
@@ -16,7 +19,7 @@ turned up.
 | 3 | State machine appendix | **Done.** `docs/state-machines.md`, 15 machines |
 | 4 | First run and empty club | **Done.** `docs/first-run.md` |
 | 5 | Journeys across screens | **Done.** `docs/journeys.md`, five journeys |
-| 6 | The athlete app | **Not started.** Separate commission |
+| 6 | The athlete app | Exists as the installable web app in this codebase (`docs/athlete/`, 13 Sept 2026); its own specification, not a separate codebase |
 | 7 | A verification standard | **Done.** `docs/verification-standard.md` |
 
 ### One loose end, deliberately left for you
@@ -464,7 +467,7 @@ they come from.
 
 **What exists.** A full experience at `src/app/(athlete)/`: sign in, a four tab
 shell, wellness and rating entry, gym logging, My Data, Programme and Me. It is
-responsive web, not the native app the older documents describe.
+the installable web app `docs/platform-decision.md` decides on, not the native app the older documents describe.
 
 **Three things that would need saying and are not said anywhere.**
 

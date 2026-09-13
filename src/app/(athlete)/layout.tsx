@@ -9,10 +9,10 @@ import { requireAthlete } from '@/lib/session';
  *  room for (§4's shell is exactly those three regions); both moved to the
  *  Me tab, where §12's own settings list already has a real "Log out" row
  *  and the theme toggle now sits beside that page's own header, the same
- *  placement my-programme and notifications already used for it. Phase 1a
- *  ships this as responsive mobile web in the same Next.js application;
- *  ADR-002 still has the phone app as Expo, and these routes are the same
- *  paths that app will use. */
+ *  placement my-programme and notifications already used for it. This is
+ *  the athlete app: an installable web app in the same Next.js application
+ *  (docs/platform-decision.md, 2026-09-13 — one web product, two installable
+ *  apps, no native app and none planned; ADR-002's Expo plan is superseded). */
 export default async function AthleteLayout({
   children,
 }: {

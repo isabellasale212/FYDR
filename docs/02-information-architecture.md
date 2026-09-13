@@ -331,9 +331,10 @@ is Dashboard, Squad, Schedule and a fourth slot by role — Flags for the sport 
 coach and medic; Gym for S&C; Nutrition for the nutritionist — so the nine sidebar rows
 and Flags are each reachable in exactly one place (`src/components/StaffPhoneShell/`,
 drawing from the same row table as the sidebar, `Sidebar/rows.ts`). This supersedes
-§0af's compact-top-bar note in the to-do list. It is a responsive layout of the web app,
-not the native phone app the paragraphs below commit to; the five-tab grouping below
-remains the native app's proposal.
+§0af's compact-top-bar note in the to-do list. It is the staff app on a phone — the
+installable web app `docs/platform-decision.md` decides on (13 September 2026); there is
+no native phone app and none is planned, so the paragraphs below that commit to one are
+the record of a superseded proposal, and their five-tab grouping is not to be built.
 
 **Status: COMMITTED, 5 August 2026.** The client confirmed staff need a phone app as well as
 the web dashboard. O-6, O-24 and O-725 are resolved: **both**. A fifteen-item flat sidebar

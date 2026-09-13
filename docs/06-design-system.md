@@ -141,7 +141,12 @@ Sora; it will synthesise.
 covers stat values, table values, hex codes, section numbers, scale metadata, and the
 `.tok-name` token names. Body prose never uses it.
 
-**Derived, React Native.** The athlete app is Expo, so `next/font/google` does not apply.
+**Derived, React Native — superseded.** *(13 September 2026, `docs/platform-decision.md`:
+there is no native app and none is planned; both apps are the one Next.js web app, so
+`next/font/google` is the rule everywhere and everything in this document that speaks of
+Expo, React Native `StyleSheet`, `expo-font`, Expo Haptics, `hitSlop` or
+`lucide-react-native` describes a delivery that does not exist. Retained as the record.)*
+The athlete app is Expo, so `next/font/google` does not apply.
 Sora and DM Mono ship as bundled assets loaded with `expo-font`, with the same four plus two
 weights, and the app does not render text until both families are resolved or a 3 second
 timeout expires, after which the platform font is used. A training ground on 2G must never

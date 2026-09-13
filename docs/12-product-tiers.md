@@ -1,5 +1,11 @@
 # 12. Product Tiers
 
+> **13 September 2026.** Apple Health is removed from the product (`docs/platform-decision.md`)
+> and is no longer a tier question; there is no native app. The scope is v1, the complete
+> product across free and premium (`docs/decisions/scope.md`). A complete statement of what
+> premium contains, what a free club sees in its place, and the downgrade boundary is
+> PATTERN-S12's inventory (`docs/overnight-records-2026-09-12.md`).
+
 The commercial packaging of Fydr: what is in each tier, why, what it costs, how the gate is
 enforced, and what the split does to the roadmap.
 

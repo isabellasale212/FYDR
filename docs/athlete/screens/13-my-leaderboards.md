@@ -53,7 +53,7 @@ Not in the outbox. Presumably needs a connection. DECISION 11.
 
 ## 8. Notifications
 
-`athlete.leaderboard.weekly`, push, **off by default, minor floor off**. **Nothing in this codebase sends a push or an email.** No Expo push credential,
+`athlete.leaderboard.weekly`, push, **off by default, minor floor off**. **Nothing in this codebase sends a push or an email yet** (push is web push, PATTERN-S9 — `docs/platform-decision.md`, 13 September 2026; there is no native app and no Expo push). No Expo push credential,
 no APNs or FCM key, no email provider account. Preferences are stored for real;
 nothing dispatches against them.
 

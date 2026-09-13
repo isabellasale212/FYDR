@@ -1,5 +1,10 @@
 # 09: Security and Compliance
 
+> **Platform, superseded 13 September 2026** (`docs/platform-decision.md`): no native app, no
+> Expo / EAS (the sub-processor row and the over-the-air supply-chain paragraphs below
+> describe a stack that does not exist), no App Store or Play Store (§13). Both apps are the
+> one web app; push is web push. Everything else here stands.
+
 This document is normative. Where it conflicts with convenience, it wins.
 
 Confidence tags are used throughout. `[high]` means I am confident and you can act on it.

@@ -94,7 +94,7 @@ and in-house sports science departments were **explicitly excluded** as an initi
 because they would demand integrations and compliance guarantees that do not exist.
 
 `10-roadmap.md`, `05-architecture.md`, `09-security-and-compliance.md`, and ADR-002 were all
-written on Position B. ADR-002 justifies React Native partly on "a semi-professional squad of 40
+written on Position B. ADR-002 (superseded 13 Sept 2026 — no native app, `docs/platform-decision.md`) justified React Native partly on "a semi-professional squad of 40
 is roughly split between the two platforms".
 
 ### What changes in each direction

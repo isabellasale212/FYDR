@@ -12,10 +12,11 @@ import type { MetadataRoute } from 'next';
  *  drift out of step with the files beside it the way a hand-written JSON copy
  *  would — which is the failure this whole audit was about.
  *
- *  `display: standalone` is deliberate and not aspirational: the athlete
- *  surface is mobile web (see CLAUDE.md §8 — the React Native shell in §4 does
- *  not exist), so an athlete adding Fydr to their home screen is a real path,
- *  and it should open without browser chrome. The colours are the icon tile's
+ *  `display: standalone` is deliberate and not aspirational: both apps are
+ *  installable web apps (docs/platform-decision.md, 2026-09-13 — no native
+ *  app, none planned), so an athlete adding Fydr to their home screen is THE
+ *  path, and it must open without browser chrome. What this manifest still
+ *  lacks against that decision is inventoried under PATTERN-S11. The colours are the icon tile's
  *  own ground, so the splash a phone generates matches the icon it generates
  *  it from rather than flashing white first. */
 export default function manifest(): MetadataRoute.Manifest {

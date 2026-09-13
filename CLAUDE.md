@@ -185,10 +185,12 @@ references, and stays where it is.
 
 ## 0.06 The athlete app has its own specification, and one shared metrics registry
 
-**The athlete app is responsive web, not iOS.** `docs/athlete/generated/00-build-state.md`
-establishes it and re-verified it on 2026-09-07. There is no Xcode project, no
-Swift, no React Native and no Expo anywhere. Do not write native code or specify
-native behaviour as though a shell exists.
+**The athlete app is an installable web app, not iOS — by decision, not by accident.**
+`docs/platform-decision.md` (Isabella, 2026-09-13): one web product, deployed once,
+two installable web apps (PWAs), each with a robust offline outbox and push
+notifications; no native app, none planned; Apple Health removed. There is no Xcode
+project, no Swift, no React Native and no Expo anywhere. Do not write native code or
+specify native behaviour as though a shell exists.
 
 | Document | What it is for |
 |---|---|
@@ -337,13 +339,18 @@ wired it to the group filter, the screen is not finished.
 
 ## 4. Stack
 
-- **Mobile app**: React Native via Expo (managed workflow), TypeScript, distributed
-  through the App Store and Google Play. **Two shells in one app**: the athlete four-tab
-  shell and the staff five-tab shell. The shell is resolved from the authenticated user's
-  roles, never from a client-side toggle. See `docs/02-information-architecture.md` §3 and §4.6.
+- **One web product, two installable web apps** (`docs/platform-decision.md`,
+  2026-09-13, superseding the React Native/Expo plan this bullet used to describe): the
+  athlete app, phone, installable to the home screen; the staff app, desktop browser and
+  installable to a phone or tablet. Both in the one Next.js application at
+  `src/app/(athlete)/` and `src/app/(staff)/`, deployed once. **Two shells in one app**:
+  the athlete four-tab shell and the staff five-tab shell, resolved from the
+  authenticated user's roles, never from a client-side toggle. See
+  `docs/02-information-architecture.md` §3 and §4.6. No native app, none planned; no App
+  Store or Play Store.
 - **Backend**: Supabase, Postgres, Auth, Storage, Edge Functions, Realtime.
-- **Staff web dashboard**: Next.js, deployed on Vercel, sharing types and query logic with
-  the mobile app via a local workspace package.
+- **Web app**: Next.js, deployed on Vercel; types and query logic shared between the two
+  shells inside the one codebase.
 - **Language**: TypeScript everywhere. No JavaScript files in new code.
 - **State/data**: TanStack Query for server state. Local component state otherwise. Do not
   introduce Redux, MobX, or Zustand without asking.
@@ -424,7 +431,7 @@ build with no legacy code (false for staff web), then said the athlete app was g
 | Surface | State |
 |---|---|
 | **Staff web app** | **Exists.** Next.js, deployed on Vercel. A left sidebar, consolidated to **nine** destinations (Groups, Timetable and Testing were their own rows and were folded into Squad overview/Schedule/Reports respectively; Flags has no row at all — see `02-information-architecture.md` §4.1, which records exactly where each went and resolves the O-723 question this file used to leave open). Covers dashboard, squad, schedule, reports, nutrition, gym programmes, leaderboards, analytics and settings, each backed by real RLS-scoped queries, not placeholders. Source of the design system (`src/styles/tokens.css`, `src/styles/base.css`). **Not greenfield, and further along than "exists and is running" suggests** — most of what `10-roadmap.md` schedules across its Phase 0–2 (and pieces of Phase 3: the training report is GPS-derived already) is real and shipped. See that file's own corrected banner.
-| **Athlete mobile app** | **Exists, is not mobile, and is not greenfield.** A full real experience — sign-in, a 4-tab shell, wellness/RPE/nutrition entry, gym logging, My Data, Programme, Me — lives at `src/app/(athlete)/`, sharing this same Next.js app and deployment with the staff surface. It is **responsive mobile web, not the React Native/Expo app §4 describes** — that native shell has not been started. Real divergence from §4, recorded here rather than silently followed: do not assume an Expo/React Native codebase exists anywhere in this repo. |
+| **Athlete app** | **Exists, and is the product.** A full real experience — sign-in, a 4-tab shell, wellness/RPE/nutrition entry, gym logging, My Data, Programme, Me — lives at `src/app/(athlete)/`, sharing this same Next.js app and deployment with the staff surface. It is the installable web app `docs/platform-decision.md` decides on (2026-09-13); there is no Expo/React Native codebase anywhere in this repo and none is planned. What it still lacks against that decision — installability, the shared offline outbox, push — is inventoried under PATTERN-S11 and S9. |
 | **Backend and schema** | **Known and real.** Supabase Postgres, real migrations, real RLS, a passing cross-tenant test suite (`npm run test:tenancy`). Broadly matches `04-data-model.md`, with real, individually-documented deviations found along the way (check the query file for the table you're touching — its own header comment usually says what's been simplified or cut against the doc, and why). |
 
 **Before assuming a greenfield build, inspect the existing code.** Specifically:

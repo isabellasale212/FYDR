@@ -50,7 +50,7 @@ DECISION 11.
 ## 8. Notifications
 
 `athlete.flag.shared` fires when staff acknowledge a flag raised about the
-athlete. Push, off by default, **forced off for minors**. **Nothing in this codebase sends a push or an email.** No Expo push credential,
+athlete. Push, off by default, **forced off for minors**. **Nothing in this codebase sends a push or an email yet** — push is web push, a service worker with VAPID keys, specified as PATTERN-S9 (`docs/platform-decision.md`, 13 September 2026); no Expo push credential (there is no native app),
 no APNs or FCM key, no email provider account. Preferences are stored for real;
 nothing dispatches against them.
 

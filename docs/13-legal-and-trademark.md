@@ -129,7 +129,7 @@ the club's use of Fydr output in a selection decision, which is the thing
 | **Child-facing privacy notice, under 18** | Copy written (`docs/screens/onboarding.md` step 5c). Review it in the same engagement as the terms | £0 if bundled |
 | Privacy notice for staff | ICO template | £0 |
 | Record of processing (ROPA) | ICO template | £0 |
-| Sub-processor list (Supabase, Vercel, Expo, email) | Write it | £0 |
+| Sub-processor list (Supabase, Vercel, Resend for email; no Expo — no native app, 13 Sept 2026) | Write it | £0 |
 | Breach response plan | `09-security-and-compliance.md` | £0 |
 | DPIA | `09-security-and-compliance.md` | £0 |
 

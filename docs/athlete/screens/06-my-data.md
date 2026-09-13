@@ -100,7 +100,7 @@ connection.**
 ## 8. Notifications
 
 None open this screen. `athlete.compliance.weekly` is a weekly personal summary
-in the catalogue, push only, **off by default**, and **minor floor off**. **Nothing in this codebase sends a push or an email.** There is no Expo push
+in the catalogue, push only, **off by default**, and **minor floor off**. **Nothing in this codebase sends a push or an email yet** (push is web push, PATTERN-S9 — `docs/platform-decision.md`, 13 September 2026; there is no native app and no Expo push). There is no Expo push
 credential, no APNs or FCM key and no email provider account, anywhere. The
 preferences are stored for real; nothing dispatches against them.
 

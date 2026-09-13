@@ -1,3 +1,7 @@
+> **SUPERSEDED 13 September 2026 by `docs/platform-decision.md`.**
+> There is no native app and none is planned. Fydr is one web product
+> delivered as two installable web apps. Kept for the reasoning only.
+
 # ADR-002: React Native with Expo for the mobile app
 
 ## Status

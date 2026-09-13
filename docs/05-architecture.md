@@ -1,5 +1,12 @@
 # 05 · Architecture
 
+> **Platform, superseded 13 September 2026** (`docs/platform-decision.md`): one web product,
+> deployed once, containing two installable web apps (PWAs) — the athlete app on a phone, the
+> staff app on desktop and installable to a phone or tablet — each with a robust offline
+> outbox (IndexedDB, a service worker) and web push (VAPID). There is no native app and none
+> is planned; no Expo, no EAS, no App Store or Play Store, no `expo-sqlite`, no Expo push. Every
+> mention of those below is the record of the superseded plan and is not to be built.
+
 How Fydr is built, deployed, and operated. This document is normative for infrastructure,
 authentication, sync, jobs, and release process. Where it conflicts with an ADR in
 `docs/decisions/`, the ADR holds the reasoning and this document holds the implementation.

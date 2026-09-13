@@ -1,0 +1,55 @@
+# Fydr documentation index
+
+**Written 13 September 2026. This file says what is authoritative and where it
+lives. When two documents disagree, the one named here wins.**
+
+The repo is the source of truth for anything anyone acts on, because the
+builder and reviewer can only read the repo. The claude.ai Project holds
+strategy and a current-state page, and points here for everything else.
+
+## Start here
+
+| Question | File |
+|---|---|
+| What are we building, and how complete must it be? | `decisions/scope.md` |
+| What platform, and how is it delivered? | `platform-decision.md` |
+| What notifications does the product send? | `platform-decision.md`, part two |
+| What is left to do? | `architecture/to-do.md` |
+| What design items are unbuilt and undecided? | `design-decisions-outstanding.md` |
+| What does each report say it is? | `reports-catalogue-source.md` |
+| How do we deploy? | `runbook-deploy-*.md` |
+| What are the binding rules for an agent session? | `../CLAUDE.md` |
+
+## The layers, and which beats which
+
+1. **`../CLAUDE.md`** is the contract. Design freeze, permissions, testing
+   rules. Nothing below it overrides it.
+2. **`decisions/` and the top-level decision documents** are standing
+   decisions. Dated, and each says what it supersedes.
+3. **The numbered specs, `00-` to `20-`** describe the product. They are
+   referenced by path in 82 source files, so **they are not moved or renamed**.
+   Where a spec disagrees with a standing decision, the decision wins and the
+   spec is stale.
+4. **The `.docx` specifications and walkthroughs** are the original inputs.
+   They are not maintained. Read them for intent, never for current truth.
+
+## Known stale, do not act on
+
+- `decisions/adr-002-react-native-expo.md` — superseded by
+  `platform-decision.md`. There is no native app.
+- `Fydr_-_Architecture_To-Do_List.md` — the archive. Full incident history and
+  reasoning, worth reading; several statements now wrong. The working list is
+  `architecture/to-do.md`.
+- `access-matrix.md` — stale on the nutritionist's report access. The standing
+  decision is narrower and has been made twice.
+- Any document naming Apple Health, a native iOS app, a separate athlete
+  codebase, or push notifications as on hold.
+
+## Rules for writing documentation here
+
+- One home per fact. A document copied into two places will drift, and has
+  twice.
+- A decision that supersedes another says so, with a date, in the new document.
+  The old document gets a one-line banner and is not deleted.
+- If the builder acts on it, it lives in the repo. Not in the Project, not in a
+  chat message, not in a `.docx`.

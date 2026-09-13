@@ -1030,8 +1030,8 @@ The athlete profile **opens on the thing you clicked**, per `19-page-flows.md` �
 | Shell | App | Root | Rows or tabs |
 |---|---|---|---|
 | staff web | `apps/web`, Next.js App Router, `app/(dashboard)/` | `/dashboard` | The nine sidebar rows in §3 |
-| staff phone | `apps/mobile`, expo-router, `app/(staff)/` | `/dashboard` | Five tabs: Dashboard, Schedule, Squad, Programmes, More, per `02-information-architecture.md` §4.6 |
-| athlete phone | `apps/mobile`, expo-router, `app/(athlete)/` | `/today` | Four tabs: Today, My data, My programme, Me |
+| staff phone | the same Next.js app, `src/app/(staff)/`, the phone shell (`StaffPhoneShell`) — installable web app, no `apps/mobile` (13 Sept 2026, `docs/platform-decision.md`) | `/dashboard` | The phone shell's four tabs plus More, per `02-information-architecture.md` §4.6 |
+| athlete phone | the same Next.js app, `src/app/(athlete)/` — installable web app, no `apps/mobile` | `/today` | Four tabs: Today, My data, Gym, Me |
 
 The five staff phone tabs are a phone affordance and not a concept in the product. They
 group the same routes: Dashboard holds `/dashboard`, `/flags`, `/injuries`, `/squad`;

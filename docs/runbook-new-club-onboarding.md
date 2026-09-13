@@ -126,7 +126,7 @@ Say these before a club discovers them.
 - **No billing surface.** Permanently out of this specification, not "not yet" —
   decided 2026-09-05, resolves D-17. Invoicing happens outside the product.
 - **No SSO.** No SAML, no OIDC anywhere in the codebase.
-- **The athlete app is mobile web, not a native app.** It is a real, complete
+- **The athlete app is an installable web app, not a native app** (`docs/platform-decision.md`, 13 Sept 2026). It is a real, complete
   experience and it is not in the App Store. `CLAUDE.md` §8.
 - **Email delivery is usually a no-op.** `lib/email/provider.ts` — with no
   provider configured the invite link is returned on screen rather than sent.

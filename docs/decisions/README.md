@@ -49,7 +49,7 @@ carries an "if per-client is adopted" branch is out of date, not cautious.
 | ADR | Title | Status | Reversibility |
 |---|---|---|---|
 | [001](adr-001-multi-tenancy.md) | Multi-tenancy model | **ACCEPTED**, 5 Aug 2026. Pooled, `org_id`, RLS. Escape hatch withdrawn. | Pooled → per-client is cheap. Per-client → pooled is expensive. |
-| [002](adr-002-react-native-expo.md) | React Native with Expo for the mobile app | ACCEPTED | Moderate. A rewrite, but a bounded one. |
+| [002](adr-002-react-native-expo.md) | React Native with Expo for the mobile app | **SUPERSEDED** 13 Sept 2026 by `../platform-decision.md` — no native app | — |
 | [003](adr-003-supabase.md) | Supabase as the backend platform | ACCEPTED | Moderate. Postgres is portable; auth and realtime are not. |
 | [004](adr-004-offline-first.md) | Offline-first athlete data entry | ACCEPTED | Low cost to remove, high cost to add later |
 | [005](adr-005-immutable-entries.md) | Immutable entries with revisions | ACCEPTED | Very hard to reverse once data exists |

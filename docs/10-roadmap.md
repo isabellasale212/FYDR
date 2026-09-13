@@ -1,5 +1,11 @@
 # 10: Roadmap
 
+> **Scope and platform, 13 September 2026.** The target is v1 — the complete product across
+> free and premium, ready to sell (`docs/decisions/scope.md`); "pilot" below is the old
+> word and no phase is gated on one. There is no native app, no Expo, no App Store or Play
+> Store, and Apple Health is removed (`docs/platform-decision.md`); the mobile and store
+> lines below are the record of a superseded plan.
+
 > **Current phase line, corrected: this document's "Phase 0, not started" banner is stale
 > and, per CLAUDE.md §8, the code is the fact here, not the doc.** A real, running,
 > deployed product exists — Next.js staff web app and a real athlete web app (both live on

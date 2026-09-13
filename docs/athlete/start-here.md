@@ -6,11 +6,14 @@ document.** That document is now archived at
 has been absorbed into the markdown, which is the single source. If the two ever
 disagree, the markdown wins.
 
-## The athlete app is the responsive web app. Native iOS is not being built.
+## The athlete app is the installable web app. Native iOS is not being built.
 
-Stage A0's original position, Option C, and it stands. The athlete app is the
-route group at `src/app/(athlete)/`, sharing one codebase, one deployment and one
-Supabase project with the staff app.
+Stage A0's original position, Option C, and it stands — and since 13 September
+2026 it is the platform decision (`docs/platform-decision.md`): one web product,
+two installable web apps, a robust offline outbox and web push on both, no native
+app and none planned, Apple Health removed. The athlete app is the route group at
+`src/app/(athlete)/`, sharing one codebase, one deployment and one Supabase
+project with the staff app.
 
 **A commitment to build native iOS was made and withdrawn on 8 September 2026.**
 It is recorded here because its consequences were briefly written into this

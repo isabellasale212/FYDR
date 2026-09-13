@@ -1,5 +1,18 @@
 # 08 - Notifications
 
+> **Superseded in two places, 13 September 2026** (`docs/platform-decision.md`, part two —
+> the S9 notification schedule). (1) **The schedule.** The product's notification set is
+> the S9 table there — four athlete reminders (wellness on expected mornings at 08:00,
+> session RPE 30 minutes after the session, the weekly nutrition check-in Sunday 10:00, an
+> unfinished gym session at 20:00), nothing scheduled for staff, one per thing per day, quiet
+> hours drop rather than queue; anything not listed there is not sent. The catalogue in §2
+> and §3–4 below is the earlier, wider proposal and is not the product. (2) **The delivery.**
+> §8 below describes Expo push (APNs/FCM via `expo-notifications`); there is no native app,
+> so push is **web push** — a service worker, VAPID keys, a subscription table, a send path —
+> and on iOS it reaches only a home-screen-installed app. `push_tokens` holds 43 seeded rows
+> encoding the abandoned Expo plan that no code has ever written; do not read them as
+> devices. "Push on hold pending sign-in data" (to-do §0e) is stale: push is required.
+
 Push, in-app, and email. Who gets told what, when, and how the product avoids becoming the
 app everyone mutes in week three.
 
@@ -755,7 +768,7 @@ because either alone is one refactor away from failing.
 
 ## 8. Technical implementation
 
-### 8.1 Expo Notifications
+### 8.1 Expo Notifications *(superseded — web push; see the banner at the top)*
 
 `expo-notifications`, with a custom development client and EAS builds. Push requires an APNs
 key for iOS and FCM v1 credentials for Android, both held in EAS, not in the repo.

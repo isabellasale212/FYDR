@@ -1362,3 +1362,90 @@ likewise (hub rows Locked, URL refuses).
    the ruling makes premium data subject to it — confirm the retention run covers
    `gps_records` and `gps_import_batches` (it is not in the `retention` schema's table
    list to be checked when S12 is designed).
+
+
+## Children's Code defaults — the report from the code, before any change (2026-09-13)
+
+Isabella's message (sent 13 September, ahead of the remaining S8 rows): two
+defaults, report first. Read `docs/decisions/lawful-basis-open.md`. Nothing
+below is changed in this record; the changes follow as their own commits.
+
+### One. Do under-18 and academy athletes appear on a ranked board today without anyone opting them in?
+
+**Yes — on the staff leaderboard wall. No — on the athlete-facing boards.**
+
+- **The athlete-facing boards** (`/my-data/boards`, `/me/leaderboards`; the
+  staff-published boards computed by `compute_leaderboard`, migration 0016
+  unchanged through 0094) already exclude a minor at the database: the
+  population clause requires `not athlete_is_minor(a.id)` or a live
+  `athlete_consents` row for `leaderboard_visibility` (granted, not
+  withdrawn). `athlete_is_minor` treats a null date of birth as a minor. This
+  covers every metric on those boards, GPS included. Correct today.
+- **The staff wall** (`/leaderboards`, `lib/queries/leaderboardWall.ts`,
+  `fetchLeaderboardWall`) ranks **every live athlete in the group scope** by
+  every eligible test, every GPS measure, and two "Habits" boards — **the
+  wellness streak** and compliance % — **with no minor gate and no consent
+  read**; `date_of_birth` is read only for the age bands. On scratch: **Kai
+  Mercer, 16, Academy, no consent, nine test results — ranked on the staff wall
+  today.** That is the detrimental-use case the message describes, and the
+  streak mechanic is on the same wall.
+- **The opt-in that exists is the minor's own tap**, not a guardian's:
+  `/me/leaderboards` (`LeaderboardConsentToggle` → `grantLeaderboardVisibility`)
+  writes `athlete_consents` for the athlete themselves; its copy says "that
+  choice is yours alone, and nobody at your club can turn it on for you". The
+  `parental_consent_recorded_at / _by / _method` columns are on **`athletes`**
+  (migration 0002, "recorded by an admin against a club process, there is no
+  parent login"), not on the consent row, and **nothing in `src/` writes them**
+  (one scratch athlete has a value, from seed). So a guardian route exists as
+  columns only.
+- **"Academy" is a group of type `age`** (`group_type` enum: positional,
+  training, rehab, age, custom). On scratch the Academy group holds Kai (16)
+  and four adults aged 21–22, all four with a live consent. "Academy athletes
+  excluded by default" therefore needs its definition stated: **by age** (the
+  rule the database already has, extended to the staff wall) or **by
+  membership of an `age`-type group** (which would take the four adults off
+  ranked boards too). Recommended: age governs, and membership of an `age`
+  group is a second reason — both excluded by default, a guardian-recorded
+  consent lifts either. Put on the sheet as a question with that
+  recommendation; the age half is unambiguous and builds first.
+- Scratch consents: 29 `leaderboard_visibility` rows, 15 live; one published
+  board.
+
+### Two. What do reminders default to today?
+
+**On, for every prompt and reminder, for everybody.**
+
+- `notification_preferences` (migration 0008): `push_enabled` and
+  `email_enabled` are nullable with **no column default** — a null row means
+  "inherit the catalogue default"; `in_app_enabled` defaults true. On scratch:
+  183 rows, 12 inheriting, 154 push on, 17 push off.
+- The catalogue (`lib/notifications/catalogue.ts`, `defaultOn`) sets **push
+  true** for: morning wellness prompt, wellness reminder (nudge), session
+  rating prompt, session rating reminder, weekly nutrition check-in, programme
+  assigned, programme changed, rehab programme assigned, availability changed
+  (+ email, cannot disable), session moved or cancelled, test results
+  published, new privacy notice (+ email, cannot disable); and for staff, the
+  high-severity flag and the flag digest. **Push false** for: matchday fuelling
+  reminder, "a flag was shared with you", weekly personal summary, weekly
+  leaderboard (the last three also floored off for minors).
+- So the stored intent today is reminders **on**. Nothing sends push yet (no
+  service worker, no VAPID, no sender — S9), so no athlete has received one; the
+  defaults are what the future sender would read.
+- The change is one file: the catalogue's `defaultOn.push` to false for the
+  reminder entries — morning wellness prompt, wellness reminder, session rating
+  prompt, session rating reminder, weekly nutrition check-in — and, if "for
+  everybody" means every push, the informational ones too (programme, rehab,
+  session change, test results). `availability changed` and `new privacy
+  notice` are `canDisable: false` with email; they are notices, not reminders.
+  Recommended: every athlete `defaultOn.push` false except those two; staff
+  flag pushes off too. Existing stored rows are untouched (an explicit choice
+  stays a choice; only the inherited default moves). On the sheet with that
+  recommendation.
+
+### Added to the sheet, not built
+
+**No field anywhere records that a medic is a registered practitioner.**
+Verified: `users`, `user_roles`, `organisations` carry no registration number,
+body or status; `grep` for HCPC/GMC/NMC/registration/practitioner across
+`supabase/migrations` and `src/lib` finds nothing. Isabella's, with a
+solicitor — it decides whether the Article 9 health-care condition is available.

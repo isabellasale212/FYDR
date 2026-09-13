@@ -78,7 +78,12 @@ gone: Full + Doubtful is the named count and the three numbers say it.
 
 **The week strip** next, then the headline tiles, then Needs attention — the
 board's ten-second read in order: the matchday question, the week, the cards,
-the panel.
+the panel. **On a heavy morning the strip yields** (13 September 2026): with
+five or more athletes needing attention (the panel's own cut) the six-day strip
+is not drawn and the panel takes the space — the only element on the page that
+gives way, because the week is one sidebar row away while the five names are
+not. It never yields while it is the lead (no match inside 14 days), and it is
+absent for the S&C and the nutritionist regardless (§4, role versions).
 
 **Five headline tiles** — for the sport scientist, the coach and
 the medic. **The S&C and the nutritionist read their own versions** (STAFF-SS-01

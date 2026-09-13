@@ -9,7 +9,7 @@
  * The sentence rules are pure (lib/dashboardLead.ts) and exercised here with
  * rows; the read, the page and the CSS are read from source. */
 import { readFileSync } from 'node:fs';
-import { leadSubLine, leadTitle, restrictionStatusLine, selectionReasonLine } from '@/lib/dashboardLead';
+import { HEAVY_MORNING_ATHLETES, leadSubLine, leadTitle, restrictionStatusLine, selectionReasonLine, weekStripYields } from '@/lib/dashboardLead';
 
 let passed = 0, failed = 0;
 const assert = (cond: boolean, label: string): void => {
@@ -100,10 +100,21 @@ console.log('\n6. the treatment is the existing wash family, and one emphasised 
   assert(!/\.dash-ready-card\s*\{/.test(css), 'the old readiness card rules are retired with it');
 }
 
+console.log('\n8. the week strip yields on a heavy morning — the only element that gives way');
+{
+  assert(HEAVY_MORNING_ATHLETES === 5, 'a heavy morning is five athletes needing attention — the panel\'s own cut');
+  assert(weekStripYields({ attentionAthletes: 5, hasMatchday: true }) && weekStripYields({ attentionAthletes: 12, hasMatchday: true }), 'five or more, with the matchday card leading: the strip is not drawn');
+  assert(!weekStripYields({ attentionAthletes: 4, hasMatchday: true }), 'four is not heavy');
+  assert(!weekStripYields({ attentionAthletes: 30, hasMatchday: false }), 'when the week IS the lead it never gives way — the lead card keeps its place');
+  const page = strip(read('src/app/(staff)/dashboard/page.tsx'));
+  assert(/\{showsWeekStrip\(version\) && !weekStripYields\(\{ attentionAthletes: stats\.attentionAthletes, hasMatchday: matchday !== null \}\) \? \(/.test(page), 'the page asks it beside the role rule');
+}
+
 console.log('\n7. the spec');
 {
   const spec = read('docs/screens/01-dashboard.md');
   assert(/have a current status/.test(spec) && /Medical · visible to medical staff/.test(spec) && /No match in the next 14 days/.test(spec), '01-dashboard.md describes the lead card, the medic\'s reasons and the week taking the emphasis');
+  assert(/heavy morning/.test(spec) && /five or more athletes/.test(spec), 'and the strip yielding on a heavy morning');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

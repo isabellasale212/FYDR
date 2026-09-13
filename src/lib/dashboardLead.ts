@@ -64,3 +64,16 @@ export function selectionReasonLine(o: {
   if (!o.reason) return { text: 'No reason recorded', clinical: false };
   return { text: `${enumLabel(o.reason)}${o.note ? ` — ${o.note}` : ''}`, clinical: false };
 }
+
+/** The board's screen-specific rule: "When five athletes need attention the
+ *  six-day strip is not rendered and the attention panel takes the space.
+ *  It is the only element on the dashboard that gives way, and it does so
+ *  because the week is one sidebar row away while the five names are not."
+ *  Five is the attention panel's own cut (top 5 of N). The strip never
+ *  yields while it IS the lead (no fixture inside 14 days): the lead card
+ *  keeps its place, whichever card that is. */
+export const HEAVY_MORNING_ATHLETES = 5;
+
+export function weekStripYields(o: { attentionAthletes: number; hasMatchday: boolean }): boolean {
+  return o.hasMatchday && o.attentionAthletes >= HEAVY_MORNING_ATHLETES;
+}

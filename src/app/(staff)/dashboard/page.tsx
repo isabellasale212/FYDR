@@ -6,6 +6,7 @@ import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { PrintButton } from '@/components/PrintButton/PrintButton';
 import { FIXTURE_RANGE_DAYS, fetchEffectiveToday, fetchGymToday, fetchHeadlineStats, fetchOutstandingTracks, fetchSaturdayReadiness, fetchSelectionReasons, fetchTimeline, fetchWeekStrip, fetchWeighInsToday, type SessionPip } from '@/lib/queries/dashboard';
 import { attentionDomains, dashboardTiles, dashboardVersion, needYouFoot, showsAvailability, showsWeekStrip } from '@/lib/dashboardVersion';
+import { weekStripYields } from '@/lib/dashboardLead';
 import { fetchGroups } from '@/lib/queries/groups';
 import { mondayOf } from '@/lib/queries/schedule';
 import { addDays, formatDate, formatLongDate, matchdayWeekday, todayIso } from '@/lib/format';
@@ -297,9 +298,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
        * arrangement changed.
        *
        * It gives way for the S&C and the nutritionist (STAFF-SS-01 C2 role
-       * versions): "the week is one sidebar row away, the five names are
-       * not". */}
-      {showsWeekStrip(version) ? (
+       * versions), and on a heavy morning — five or more athletes needing
+       * attention — for everyone (lib/dashboardLead.ts weekStripYields):
+       * "the week is one sidebar row away, the five names are not". Never
+       * while it is the lead. */}
+      {showsWeekStrip(version) && !weekStripYields({ attentionAthletes: stats.attentionAthletes, hasMatchday: matchday !== null }) ? (
       <div className="dash-week" data-lead={!matchday}>
         {/* With no fixture inside 14 days the week is the lead: it takes the
             matchday card's treatment and says why, and the real next fixture

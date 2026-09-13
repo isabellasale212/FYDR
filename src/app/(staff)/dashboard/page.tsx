@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { DashboardFlagsPanel } from '@/components/DashboardFlagsPanel/DashboardFlagsPanel';
 import { DashboardHeadlineStats } from '@/components/DashboardHeadlineStats/DashboardHeadlineStats';
-import { Dial } from '@/components/Dial/Dial';
+import { DashboardLeadCard } from '@/components/DashboardLeadCard/DashboardLeadCard';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { PrintButton } from '@/components/PrintButton/PrintButton';
-import { FIXTURE_RANGE_DAYS, fetchEffectiveToday, fetchGymToday, fetchHeadlineStats, fetchOutstandingTracks, fetchSaturdayReadiness, fetchTimeline, fetchWeekStrip, fetchWeighInsToday, type ReadinessRowKey, type SessionPip } from '@/lib/queries/dashboard';
+import { FIXTURE_RANGE_DAYS, fetchEffectiveToday, fetchGymToday, fetchHeadlineStats, fetchOutstandingTracks, fetchSaturdayReadiness, fetchSelectionReasons, fetchTimeline, fetchWeekStrip, fetchWeighInsToday, type SessionPip } from '@/lib/queries/dashboard';
 import { attentionDomains, dashboardTiles, dashboardVersion, needYouFoot, showsAvailability, showsWeekStrip } from '@/lib/dashboardVersion';
 import { fetchGroups } from '@/lib/queries/groups';
 import { mondayOf } from '@/lib/queries/schedule';
@@ -13,7 +13,7 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 import { fetchThresholdProvenance } from '@/lib/queries/thresholds';
-import { THRESHOLD_EDIT, hasAnyRole } from '@/lib/access';
+import { CLINICAL_ONLY, THRESHOLD_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Dashboard · Fydr' };
 
@@ -56,48 +56,10 @@ const WEEK_LEGEND: { type: SessionPip; label: string }[] = [
 /* FILLS. Bars and swatches — a block of colour, where the raw tone is right. */
 const TONE_VAR: Record<string, string> = { good: 'var(--accent2)', accent: 'var(--accent)', accent2: 'var(--accent2)', warn: 'var(--warn)', bad: 'var(--bad)' };
 
-/* TEXT, which is a different question and was being answered with the fill
- * map above. A tone is chosen to be seen as an area; as a 13px numeral it was
- * measuring 2:1 on white and 1.5:1 once the Ready card took its tint — the
- * count telling a coach how many players are doubtful was the least readable
- * thing in the card. These are the derived pill-text tokens, the same
- * distinction tokens.css §3.7 already draws for --accent-text against
- * --accent-pill-text. */
-const TONE_TEXT: Record<string, string> = {
-  warn: 'var(--warn-pill-text)',
-  bad: 'var(--bad-pill-text)',
-};
-
-/* The three rows that ARE segments of the availability bar directly above
- * them, and the colour that says which. The other two readiness rows are
- * selection inputs rather than slices of the squad, so they take no dot —
- * absence here is the test, not a second list. */
-/* "1 days out" — what the card read once the merge put this line under a
- * fixture one day away. 0 is matchday itself, which "0 days out" says badly. */
-function daysOutLabel(daysOut: number | null): string {
-  if (daysOut === null) return '\u2014 days out';
-  if (daysOut === 0) return 'today';
-  return daysOut === 1 ? '1 day out' : `${daysOut} days out`;
-}
-
-const ROW_DOT: Partial<Record<ReadinessRowKey, string>> = {
-  available: 'var(--accent2)',
-  modified: 'var(--warn)',
-  unavailable: 'var(--bad)',
-};
-
-/* Every readiness row already drew a chevron and a pointer cursor; none of
- * them was a link. Merging the two cards forced the issue, because the "Squad
- * ›" link on the deleted Squad state card was a real destination that would
- * otherwise have gone with it — so the three availability rows inherit it,
- * and the other two get the page they were pointing at all along. */
-const ROW_HREF: Record<ReadinessRowKey, string> = {
-  available: '/squad',
-  modified: '/squad',
-  unavailable: '/squad',
-  flags: '/flags',
-  sessions: '/schedule',
-};
+/* The readiness card's own helpers — the tone-text map, "N days out", the
+ * row dots and hrefs — left with it on 2026-09-13 (STAFF-SS-01 C2): the
+ * matchday lead card (components/DashboardLeadCard) says the same facts in
+ * the board's words, lib/dashboardLead.ts. */
 
 /* One day, and only one day. The week strip and the week list are gone: the
  * dashboard answers "what is happening now", and a six-day recap on the same
@@ -255,6 +217,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
      no fixture read it too. */
   const matchday = matchdayWeekday(readiness.kickoffAt, timezone);
 
+  /* The lead card's reason lines — the medic's only. Data rule 6 literally:
+     every other role reads the status and the restriction and nothing about
+     why; and a non-medic must never even call the clinical read (an empty
+     result from RLS rendered as a blank line looks like a broken page). */
+  const canSeeReasons = hasAnyRole(claims.roles, CLINICAL_ONLY);
+  const reasons =
+    matchday && canSeeReasons ? await fetchSelectionReasons(db, orgId, [...readiness.modifiedNames, ...readiness.unavailableNames]) : null;
+
   return (
     <>
       <div className="topbar">
@@ -300,47 +270,24 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         </div>
       ) : null}
 
-      {/* Flags has no sidebar row of its own any more — this is the
-       * replacement: closed by default, the toggle row is the "small
-       * summaries" state, and each expanded row jumps straight to the
-       * flag's real, actionable home on the athlete's own profile. */}
-      <div style={{ marginBottom: 'var(--sp-14)' }}>
-        <DashboardFlagsPanel
-          rows={stats.attentionRows}
-          openTotal={stats.openFlags}
-          athleteTotal={stats.attentionAthletes}
-          provenance={provenance}
-          changedAtLabel={provenance ? formatDate(provenance.changedAt, timezone) : null}
-          canEditThresholds={hasAnyRole(claims.roles, THRESHOLD_EDIT)}
-          awaitingAck={stats.awaitingAckFlags}
-          bySeverity={stats.flagsBySeverity}
+      {/* STAFF-SS-01 C2 — the matchday lead card, the one emphasised card
+       * on the page, first: the board's ten-second read is the matchday
+       * question, the week, the summary cards, then the attention panel.
+       * Absent, not empty, with no fixture inside FIXTURE_RANGE_DAYS (the
+       * week card takes the emphasis below), and absent for the nutritionist
+       * (access-matrix §4.2 — every number on it is availability). */}
+      {matchday && showsAvailability(version) ? (
+        <DashboardLeadCard
+          readiness={readiness}
+          matchday={matchday}
+          timezone={timezone}
+          scopeLabel={groupScopeLabel(groups, groupIds)}
+          reasons={reasons}
+          squadHref="/squad"
+          flagsHref="/flags"
+          scheduleHref="/schedule"
         />
-      </div>
-
-      {/* Used to be five static info cards — nothing here read as clickable
-       * beyond a bare CSS cursor, and Available/To matchday didn't even point
-       * anywhere useful (audit coach finding 13 only fixed Need you). Every
-       * tile now either navigates to its real destination or expands in
-       * place; DashboardHeadlineStats' own header states the reasoning for
-       * each one individually. */}
-      <DashboardHeadlineStats
-        stats={stats}
-        tiles={dashboardTiles(version)}
-        needYouFoot={needYouFoot(version)}
-        gymToday={gymToday}
-        weighIns={weighIns}
-        gymTodayHref="/schedule"
-        weighInsHref="/nutrition"
-        isAnchoredToPast={isAnchoredToPast}
-        timezone={timezone}
-        needYouHref={`/flags${qs({ groups: groupsQs, date: effectiveToday })}`}
-        wellnessReportHref="/reports/compliance"
-        squadHref="/squad"
-        flagsHref="/flags"
-        toMatchdayHref={stats.fixtureId ? `/schedule/fixtures/${stats.fixtureId}` : '/schedule'}
-        squadModified={readiness.modifiedNames}
-        squadUnavailable={readiness.unavailableNames}
-      />
+      ) : null}
 
       {/* The week strip, per the Visual Lift screenshots: one card, a header
        * with the session count and a domain legend, then a column per day.
@@ -353,7 +300,19 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
        * versions): "the week is one sidebar row away, the five names are
        * not". */}
       {showsWeekStrip(version) ? (
-      <div className="dash-week">
+      <div className="dash-week" data-lead={!matchday}>
+        {/* With no fixture inside 14 days the week is the lead: it takes the
+            matchday card's treatment and says why, and the real next fixture
+            and its distance are stated so the absence is legible. The two
+            never appear together. */}
+        {!matchday ? (
+          <p className="eyebrow dash-week-lead-eyebrow">
+            No match in the next {FIXTURE_RANGE_DAYS} days
+            {stats.opponent && stats.nextKickoffAt
+              ? ` · Next fixture ${formatDate(stats.nextKickoffAt, timezone)} v ${stats.opponent} · ${stats.toMatchdayDays} days`
+              : ' · No fixture booked'}
+          </p>
+        ) : null}
         <div className="dash-week-head">
           <span className="dash-week-head-title">This week</span>
           <span className="dash-week-head-meta">
@@ -424,6 +383,50 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         </div>
       </div>
       ) : null}
+
+      {/* The summary cards, after the week (the board's order: the matchday
+       * question, the week, the cards, then the attention panel).
+       * Used to be five static info cards — nothing here read as clickable
+       * beyond a bare CSS cursor, and Available/To matchday didn't even point
+       * anywhere useful (audit coach finding 13 only fixed Need you). Every
+       * tile now either navigates to its real destination or expands in
+       * place; DashboardHeadlineStats' own header states the reasoning for
+       * each one individually. */}
+      <DashboardHeadlineStats
+        stats={stats}
+        tiles={dashboardTiles(version)}
+        needYouFoot={needYouFoot(version)}
+        gymToday={gymToday}
+        weighIns={weighIns}
+        gymTodayHref="/schedule"
+        weighInsHref="/nutrition"
+        isAnchoredToPast={isAnchoredToPast}
+        timezone={timezone}
+        needYouHref={`/flags${qs({ groups: groupsQs, date: effectiveToday })}`}
+        wellnessReportHref="/reports/compliance"
+        squadHref="/squad"
+        flagsHref="/flags"
+        toMatchdayHref={stats.fixtureId ? `/schedule/fixtures/${stats.fixtureId}` : '/schedule'}
+        squadModified={readiness.modifiedNames}
+        squadUnavailable={readiness.unavailableNames}
+      />
+
+      {/* Flags has no sidebar row of its own any more — this is the
+       * replacement: closed by default, the toggle row is the "small
+       * summaries" state, and each expanded row jumps straight to the
+       * flag's real, actionable home on the athlete's own profile. */}
+      <div style={{ marginTop: 'var(--sp-14)' }}>
+        <DashboardFlagsPanel
+          rows={stats.attentionRows}
+          openTotal={stats.openFlags}
+          athleteTotal={stats.attentionAthletes}
+          provenance={provenance}
+          changedAtLabel={provenance ? formatDate(provenance.changedAt, timezone) : null}
+          canEditThresholds={hasAnyRole(claims.roles, THRESHOLD_EDIT)}
+          awaitingAck={stats.awaitingAckFlags}
+          bySeverity={stats.flagsBySeverity}
+        />
+      </div>
 
       <div className="dash-body" style={{ marginTop: 'var(--sp-14)' }}>
         <div>
@@ -506,105 +509,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         </div>
 
         <div className="stack">
-          {/* Withheld from the nutritionist (access-matrix §4.2: the
-              availability split and its named lists, wherever they appear —
-              the ring, the bar and the rows are all MET-013/014). The board
-              drew the counts without names for them; the matrix outranks it,
-              and the difference is on the decision sheet. */}
-          {showsAvailability(version) ? (
-          <div className="card dash-ready-card">
-            <div className="dash-ready-head">
-              <div>
-                <h2 className="card-title" style={{ margin: 0 }}>
-                  {matchday ? `Ready for ${matchday}` : 'Squad readiness'}
-                </h2>
-                <p className="tiny" style={{ marginTop: 'var(--sp-2)' }}>
-                  {readiness.opponent ? `v ${readiness.opponent} · ${readiness.homeAway ?? ''} · ${daysOutLabel(readiness.daysOut)}` : `No fixture in the next ${FIXTURE_RANGE_DAYS} days`}
-                </p>
-                {/* Squad size and the active group scope, carried over from the
-                    Squad state card's subtitle. It sits better next to the ring
-                    than it did under its own heading — it is the ring's
-                    denominator, said in words. */}
-                <p className="tiny" style={{ marginTop: 'var(--sp-2)' }}>
-                  {readiness.squad} athletes · {groupScopeLabel(groups, groupIds)}
-                </p>
-              </div>
-              {/* 76px, and the centre says what the fraction counts. "25/28"
-                  on its own is a ratio of nothing in particular; the ring is
-                  about SELECTION, and the second line is the only place that
-                  word appears. */}
-              <Dial size={76} pct={readiness.squad > 0 ? Math.round((100 * readiness.selectable) / readiness.squad) : null} tone="var(--accent)">
-                <span className="dash-ready-dial">
-                  <span className="v num">
-                    {readiness.selectable}/{readiness.squad}
-                  </span>
-                  <span className="k">Named</span>
-                </span>
-              </Dial>
-            </div>
-
-            {/* The stacked bar from the Squad state card. The ring does not
-                replace it: the ring is one number — how many you can name — and
-                the bar is the shape of the three-way split at a glance. The
-                dots on the three rows below are what ties each segment to the
-                names inside it. */}
-            <div className="dash-squad-bar">
-              <div style={{ flex: readiness.available, background: 'var(--accent2)' }} />
-              <div style={{ flex: readiness.modified, background: 'var(--warn)' }} />
-              <div style={{ flex: readiness.unavailable, background: 'var(--bad)' }} />
-            </div>
-
-            <div style={{ marginTop: 'var(--sp-4)' }}>
-              {readiness.rows.map((r) => (
-                <Link
-                  key={r.key}
-                  href={ROW_HREF[r.key]}
-                  className={ROW_DOT[r.key] ? 'dash-ready-row dash-ready-row-dot' : 'dash-ready-row'}
-                  /* STAFF-SS-01 A1 (2026-09-12): Doubtful and Ruled out are
-                     tone-family cards — the treatment ATH-ADULT-02 approved for
-                     the athlete's own availability line — not dot rows. Fit and
-                     available stays a plain row: it is the rule, not the
-                     exception. */
-                  data-tone={r.key === 'modified' ? 'warn' : r.key === 'unavailable' ? 'bad' : undefined}
-                >
-                  {ROW_DOT[r.key] ? (
-                    <span className="dash-squad-dot" style={{ background: ROW_DOT[r.key] }} aria-hidden="true" />
-                  ) : null}
-                  <div>
-                    <div style={{ fontSize: 'var(--fs-13)', fontWeight: 600 }}>{r.label}</div>
-                    <div className="tiny">
-                      {r.detail}
-                    </div>
-                  </div>
-                  <span className="num" style={{ fontSize: 'var(--fs-13)', color: TONE_TEXT[r.tone === 'bad' ? 'bad' : r.tone === 'warn' ? 'warn' : ''] }}>
-                    {r.value}
-                  </span>
-                  <span>›</span>
-                </Link>
-              ))}
-            </div>
-
-            {readiness.weekLoad ? (
-              <>
-                <hr className="hr" />
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                  <span style={{ fontSize: 'var(--fs-12)', fontWeight: 700 }}>Week load so far</span>
-                  <span className="num" style={{ fontSize: 'var(--fs-12)' }}>
-                    {readiness.weekLoad.pct !== null ? `${readiness.weekLoad.pct}%` : '—'}
-                  </span>
-                </div>
-                <div style={{ position: 'relative', height: 8, marginTop: 'var(--sp-6)' }}>
-                  <div className="dash-load-track" />
-                  <div className="dash-load-fill" style={{ width: `${readiness.weekLoad.fillPct}%`, background: TONE_VAR[readiness.weekLoad.tone] ?? 'var(--accent)' }} />
-                  <div className="dash-load-tick" style={{ left: `${readiness.weekLoad.tickPct}%` }} />
-                </div>
-                <p className="tiny num" style={{ marginTop: 'var(--sp-6)' }}>
-                  {readiness.weekLoad.foot}
-                </p>
-              </>
-            ) : null}
-          </div>
-          ) : null}
           {/* "Not tied to a session" is gone, per the design review. It listed
               wellness, compliance, nutrition and testing flags — the domains
               that never attach to a timetable row — but fetchDashboardAttention

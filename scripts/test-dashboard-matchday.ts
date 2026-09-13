@@ -101,16 +101,17 @@ console.log('\na club with no fixture is told nothing rather than something wron
     /matchday \? ` \u00b7 MD \$\{matchday\.toUpperCase\(\)\}/.test(p),
     'the MD segment is conditional on there being a matchday at all',
   );
+  /* Since STAFF-SS-01 C2's lead card (2026-09-13) the matchday card is
+     ABSENT, not retitled, when there is no matchday: the week card leads
+     instead and says why, naming the range (D3, 2026-09-12: the card's
+     fixture is the next one only within FIXTURE_RANGE_DAYS). */
   assert(
-    /'Squad readiness'/.test(p) || /Squad readiness/.test(p),
-    'and the card falls back to a neutral title rather than naming a day it does not have',
+    /matchday && showsAvailability\(version\) \? \( <DashboardLeadCard/.test(p),
+    'and the card is absent rather than naming a day it does not have',
   );
-  /* "No fixture in the next 14 days" since STAFF-SS-01 D3 (2026-09-12): the
-     card's fixture is the next one only within FIXTURE_RANGE_DAYS, so the
-     subtitle names the range rather than claiming nothing is scheduled. */
   assert(
-    /No fixture in the next \$\{FIXTURE_RANGE_DAYS\} days/.test(p),
-    'while the subtitle says there is no fixture in the range',
+    /No match in the next \{FIXTURE_RANGE_DAYS\} days/.test(p),
+    'while the week card says there is no match in the range',
   );
 }
 

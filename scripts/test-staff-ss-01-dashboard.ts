@@ -23,17 +23,16 @@ const rule = (sel: string): string => {
   return new RegExp(`(?:^|[}\\n])\\s*${esc}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? '';
 };
 
-console.log('A1. Doubtful and Ruled out as tone cards');
+console.log('A1. Doubtful and Ruled out as tone cards (since 2026-09-13 the lead card\'s two lists — test-dashboard-lead-card.ts has the card itself)');
 {
-  const page = strip(read('src/app/(staff)/dashboard/page.tsx'));
-  assert(/data-tone=\{r\.key === 'modified' \? 'warn' : r\.key === 'unavailable' \? 'bad' : undefined\}/.test(page), 'the two rows carry their tone; Fit and available carries none');
-  const block = css.slice(css.indexOf(".dash-ready-row[data-tone='warn'],"), css.indexOf('.dash-load-track {'));
-  assert(/\.dash-ready-row\[data-tone='warn'\]\s*\{[^}]*background:\s*color-mix\(in srgb, rgb\(var\(--warn-rgb\)\) 12%, var\(--surf\)\)/.test(block), 'warn: the availability line\'s own 12% fill');
-  assert(/\.dash-ready-row\[data-tone='warn'\]\s*\{[^}]*border:\s*1px solid rgb\(var\(--warn-rgb\) \/ 0\.4\)/.test(block), 'and its 0.4 border');
-  assert(/border-radius:\s*var\(--r-control\)/.test(block), 'on the control radius');
-  assert(/\.dash-ready-row\[data-tone='bad'\]\s*\{[^}]*rgb\(var\(--bad-rgb\)\) 12%[^}]*rgb\(var\(--bad-rgb\) \/ 0\.4\)/.test(block), 'bad: the same treatment in the bad family');
-  assert(/color:\s*var\(--text\)/.test(block) && !/--warn-text|--bad-text/.test(block), 'the card reads in --text, as the availability line does (the count keeps its tone ink); --warn-text is 3.6:1 on --surf and lower on the fill');
-  assert(!/ROW_DOT/.test(page) || /className=\{ROW_DOT\[r\.key\]/.test(page), 'the dot column is unchanged for the plain row');
+  const card = strip(read('src/components/DashboardLeadCard/DashboardLeadCard.tsx'));
+  assert(/className="dash-lead-list" data-tone="warn"/.test(card) && /className="dash-lead-list" data-tone="bad"/.test(card), 'the two lists carry their tone; Full is a count, not a card');
+  const block = css.slice(css.indexOf(".dash-lead-list[data-tone='warn'] {"), css.indexOf('.dash-lead-list-title {'));
+  assert(/\.dash-lead-list\[data-tone='warn'\]\s*\{[^}]*background:\s*color-mix\(in srgb, rgb\(var\(--warn-rgb\)\) 12%, var\(--surf\)\)/.test(block), 'warn: the availability line\'s own 12% fill');
+  assert(/\.dash-lead-list\[data-tone='warn'\]\s*\{[^}]*border:\s*1px solid rgb\(var\(--warn-rgb\) \/ 0\.4\)/.test(block), 'and its 0.4 border');
+  assert(/border-radius:\s*var\(--r-control\)/.test(rule('.dash-lead-list')), 'on the control radius');
+  assert(/\.dash-lead-list\[data-tone='bad'\]\s*\{[^}]*rgb\(var\(--bad-rgb\)\) 12%[^}]*rgb\(var\(--bad-rgb\) \/ 0\.4\)/.test(block), 'bad: the same treatment in the bad family');
+  assert(/color:\s*var\(--text\)/.test(rule('.dash-lead-list')) && !/--warn-text|--bad-text/.test(block), 'the card reads in --text, as the availability line does (the title and the count keep the tone\'s pill ink); --warn-text is 3.6:1 on --surf and lower on the fill');
 }
 
 console.log('\nA2. a summary card is a button and says which state it is in');
@@ -89,8 +88,8 @@ console.log('\nD3. "Ready for {matchday}" only when the fixture is within 14 day
   assert(/const fixture = nextFixture && daysBetween\(effectiveToday, dateInTz\(new Date\(nextFixture\.kickoff_at\), timezone\)\) <= FIXTURE_RANGE_DAYS \? nextFixture : null;/.test(q),
     'the readiness card treats a fixture further out as no fixture');
   const page = strip(read('src/app/(staff)/dashboard/page.tsx'));
-  assert(/No fixture in the next \$\{FIXTURE_RANGE_DAYS\} days/.test(page), 'and says so: "No fixture in the next 14 days"');
-  assert(/Ready for \$\{matchday\}/.test(page) && /'Squad readiness'/.test(page), '"Ready for {matchday}" inside the range, "Squad readiness" outside it');
+  assert(/No match in the next \{FIXTURE_RANGE_DAYS\} days/.test(page), 'and says so on the week card, which leads instead: "No match in the next 14 days" (C2 lead card, 2026-09-13)');
+  assert(/Ready for \{matchday\}/.test(strip(read('src/components/DashboardLeadCard/DashboardLeadCard.tsx'))) && /matchday && showsAvailability\(version\) \? \(/.test(page), '"Ready for {matchday}" inside the range; the card absent outside it');
   assert(/FIXTURE_RANGE_DAYS|14 days/.test(read('docs/screens/01-dashboard.md')), '01-dashboard.md records the range');
 }
 

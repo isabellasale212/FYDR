@@ -61,6 +61,10 @@ export type NotFullyAvailableRow = {
    *  role-gated /injuries/[injuryId] page for "the rest of the record"
    *  instead of a screen re-deciding what's safe to show. */
   injury_id: string | null;
+  /** The availability row's own note — the coach-visible one ("Coach
+   *  visible. Describe the restriction, not the injury."). Carried for the
+   *  dashboard lead card's non-clinical reason line (STAFF-SS-01 C2). */
+  note: string | null;
 };
 
 export async function fetchCurrentAvailability(
@@ -198,6 +202,7 @@ export async function fetchNotFullyAvailable(
         side: injury?.side ?? null,
         expected_return: injury?.expected_return ?? null,
         injury_id: injury?.id ?? null,
+        note: current?.note ?? null,
       };
     })
     .filter((r): r is NotFullyAvailableRow => r !== null)

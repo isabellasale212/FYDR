@@ -75,7 +75,7 @@ console.log('\n5. the page resolves the version from the claims and hands it dow
   assert(/attentionDomains\(version\)/.test(page), 'the attention domains follow it');
   assert(/version === 'sc' \? fetchGymToday\(/.test(page) && /version !== 'full' \? fetchWeighInsToday\(/.test(page), 'the two new reads run only for the versions that draw them');
   assert(/\{showsWeekStrip\(version\) \? \(/.test(page), 'the week strip gives way');
-  assert(/\{showsAvailability\(version\) \? \(/.test(page), 'the readiness card is withheld from the nutritionist');
+  assert(/matchday && showsAvailability\(version\) \? \(\s*<DashboardLeadCard/.test(page), 'the matchday lead card (the readiness card since 2026-09-13) is withheld from the nutritionist');
   const layout = strip(read('src/app/(staff)/layout.tsx'));
   assert(/fetchOpenFlagAthleteCount\(db, orgId, groupIds, attentionDomains\(dashboardVersion\(claims\.roles\)\)\)/.test(layout), 'the Flags badge in the shell counts the version\'s domains');
   const tiles = strip(read('src/components/DashboardHeadlineStats/DashboardHeadlineStats.tsx'));

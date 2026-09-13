@@ -6,6 +6,7 @@ import { fetchAllPaged } from './paged';
 import { fetchTimetableDay } from './timetable';
 import { anchorMdOffsetsToWeek, availabilityLabel, dateInTz, daysBetween, formatTime, matchdayWeekday, mdLabel, zonedTimeToUtcIso } from '../format';
 import { missingRuns, type MissingRun } from '@/lib/missingRuns';
+import { restrictionStatusLine, selectionReasonLine } from '@/lib/dashboardLead';
 import type { FlagDomain } from '@/lib/types/database';
 
 /* DASHBOARD-SPEC.md, the coach's 07:00 screen. Every section here composes
@@ -258,6 +259,10 @@ export type HeadlineStats = {
   attentionAthletes: number;
   toMatchdayDays: number | null;
   opponent: string | null;
+  /** The real next fixture's kick-off, however far out — the week card
+   *  names it ("Next fixture Sat 5 Sept v Marleigh · 47 days") when it
+   *  leads because no match is inside FIXTURE_RANGE_DAYS (STAFF-SS-01 C2). */
+  nextKickoffAt: string | null;
   sessionsLeft: number;
   /** The real fixture this countdown is for, so the "To matchday" tile can
    *  jump straight to it — see this file's own dashboard/page.tsx caller
@@ -404,6 +409,7 @@ export async function fetchHeadlineStats(
     toMatchdayDays,
     fixtureId: fixture?.id ?? null,
     opponent: fixture?.opponent ?? null,
+    nextKickoffAt: fixture?.kickoff_at ?? null,
     wellnessMissing,
     sessionsLeft,
   };
@@ -670,7 +676,22 @@ function describeFlag(f: Pick<FlagRow, 'metric' | 'observed_value' | 'expected_v
  *  Non-injury and injury-linked rows read identically here: this is squad
  *  state at a glance, not the injury detail — see AvailabilityList and the
  *  injuries report for where body area appears. ADR-008 / gameplan 2.6. */
-export type SquadStateEntry = { name: string; reason: string | null; restriction: string | null };
+export type SquadStateEntry = {
+  athleteId: string;
+  name: string;
+  reason: string | null;
+  restriction: string | null;
+  /** STAFF-SS-01 C2 lead card (2026-09-13): "Modified · running and gym
+   *  only, no contact" — the status word and the whole restriction line
+   *  (lib/dashboardLead.ts restrictionStatusLine), what every role reads. */
+  line: string;
+  /** What the medic's reason line is built from (fetchSelectionReasons):
+   *  the linked open injury, the coach-visible note, the injury's site. */
+  injuryId: string | null;
+  note: string | null;
+  bodyArea: string | null;
+  side: string | null;
+};
 
 export type ReadinessRow = {
   label: string;
@@ -697,6 +718,14 @@ export type SaturdayReadiness = {
   daysOut: number | null;
   selectable: number;
   squad: number;
+  /** STAFF-SS-01 C2 lead card: the denominator, said. `squad` above is the
+   *  athletes WITH a current status (the ring's old denominator);
+   *  squadTotal adds those with none, so the sub line can read "27 of 30
+   *  have a current status · 3 not recorded" — the board's own answer to
+   *  its open question 9. */
+  withStatus: number;
+  squadTotal: number;
+  notRecorded: number;
   offset: number;
   /* The availability split, folded in from what used to be a separate
      fetchSquadState and its own "Squad state" card. Both were derived from
@@ -755,6 +784,7 @@ export async function fetchSaturdayReadiness(
   const squad = availRows.length;
   const modifiedRows = notFully.filter((r) => r.status === 'modified');
   const unavailableRows = notFully.filter((r) => r.status === 'unavailable');
+  const notRecorded = notFully.filter((r) => r.status === 'unknown').length;
   const selectable = squad - unavailableRows.length;
   const offset = squad > 0 ? Math.round(CIRCUMFERENCE * (1 - selectable / squad)) : CIRCUMFERENCE;
 
@@ -773,9 +803,15 @@ export async function fetchSaturdayReadiness(
   const sessionsLeft = weekSessions.filter((s) => s.entry_date > effectiveToday && s.session_type !== 'match');
 
   const toEntry = (r: (typeof notFully)[number]): SquadStateEntry => ({
+    athleteId: r.athlete_id,
     name: r.name,
     reason: r.reason_category,
     restriction: r.restrictions[0] ?? null,
+    line: restrictionStatusLine(r.status === 'unavailable' ? 'unavailable' : 'modified', r.restrictions),
+    injuryId: r.injury_id,
+    note: r.note,
+    bodyArea: r.body_area,
+    side: r.side,
   });
   const modifiedNames = modifiedRows.map(toEntry);
   const unavailableNames = unavailableRows.map(toEntry);
@@ -834,6 +870,9 @@ export async function fetchSaturdayReadiness(
     daysOut,
     selectable,
     squad,
+    withStatus: squad,
+    squadTotal: squad + notRecorded,
+    notRecorded,
     offset,
     available,
     modified: modifiedRows.length,
@@ -844,6 +883,46 @@ export async function fetchSaturdayReadiness(
     rows,
     weekLoad,
   };
+}
+
+/** The medic's reason line per listed athlete — STAFF-SS-01 C2 lead card,
+ *  data rule 6 literally: only the medic gets a reason at all; a clinical
+ *  reason is the diagnosis (injury_clinical, medic-only under RLS —
+ *  clinical_medical_only, migration 0012), a non-clinical one is the
+ *  category and the note. THE PAGE CALLS THIS FOR THE MEDIC ONLY: a coach
+ *  calling it gets an empty read from RLS, not an error, and an empty
+ *  clinical line rendered by mistake looks like a broken page even though
+ *  no data crossed the boundary (injuries.ts's own rule). Diagnosis is the
+ *  one clinical column read; nothing else from the record reaches the
+ *  dashboard. Returns the line keyed by athlete id. */
+export async function fetchSelectionReasons(
+  db: Db,
+  orgId: string,
+  entries: readonly SquadStateEntry[],
+): Promise<Map<string, { text: string; clinical: boolean }>> {
+  const injuryIds = entries.map((e) => e.injuryId).filter((id): id is string => id !== null);
+  const diagnoses = new Map<string, string | null>();
+  if (injuryIds.length > 0) {
+    const { data, error } = await db
+      .from('injury_clinical')
+      .select('injury_id, diagnosis')
+      .eq('org_id', orgId)
+      .in('injury_id', injuryIds);
+    if (error) throw new Error(error.message);
+    for (const row of data ?? []) diagnoses.set(row.injury_id, row.diagnosis);
+  }
+  return new Map(
+    entries.map((e) => [
+      e.athleteId,
+      selectionReasonLine({
+        reason: e.reason,
+        note: e.note,
+        diagnosis: e.injuryId ? (diagnoses.get(e.injuryId) ?? null) : null,
+        bodyArea: e.bodyArea,
+        side: e.side,
+      }),
+    ]),
+  );
 }
 
 /** Bounds and date derivation here used to assume the org's local day

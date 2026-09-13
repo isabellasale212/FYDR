@@ -48,7 +48,39 @@ Top to bottom.
 every number on the page at once, and the choice follows you to every other
 screen.
 
-**Five headline tiles** across the top — for the sport scientist, the coach and
+**The matchday lead card** first — the one emphasised card on the page
+(STAFF-SS-01 C2, 13 September 2026; the readiness card that sat in the right
+column, moved to the top and restated). Eyebrow "Ready for Saturday"; the
+fixture as the title, "v Colthorne RFC · Sat 12 Sept, 15:00 · home"; then the
+denominator, said: "27 of 30 have a current status · 3 not recorded · MD in 5
+days · Whole squad" — an athlete with no status is counted in none of the three
+and named as not recorded, never folded into available. Three counts, **Full /
+Doubtful / Ruled out**, each opening the squad. Then the two named lists as
+tone-family cards (A1's treatment), one athlete a row with the status word and
+the restriction line — "Modified · running and gym only, no contact" — which is
+what a session is planned against; a ruled-out athlete with no restriction line
+reads "Unavailable · not available for selection". **The reason only for the
+medic** (data rule 6, literally): the lists read "Doubtful · 4, with reason",
+and under each name the medic sees the diagnosis from the clinical record
+(`injury_clinical`, medic-only under RLS — the page never calls that read for
+another role) beneath the eyebrow "Medical · visible to medical staff", or for a
+non-clinical absence the category and the note — "Academic — away on placement
+until Mon 14 Sept" — without the label. No other role sees any reason, clinical
+or not (the availability reason category is readable by every staff role at the
+database, access-matrix §4.1, so hiding it here is a display rule, not a
+permission). The card's tail keeps the week load so far (MET-015), the flags
+affecting selection and the sessions left to run — one line, each opening its
+page. **With no fixture inside 14 days the card is absent, not empty**: the week
+card takes the emphasis and says why — "No match in the next 14 days · Next
+fixture Sat 5 Sept v Marleigh · 47 days" — and the two never appear together.
+Absent for the nutritionist (access-matrix §4.2). The Named ring (MET-014) is
+gone: Full + Doubtful is the named count and the three numbers say it.
+
+**The week strip** next, then the headline tiles, then Needs attention — the
+board's ten-second read in order: the matchday question, the week, the cards,
+the panel.
+
+**Five headline tiles** — for the sport scientist, the coach and
 the medic. **The S&C and the nutritionist read their own versions** (STAFF-SS-01
 C2 role versions, 13 September 2026, from the board's frame 7; the rule is
 `lib/dashboardVersion.ts`, resolved from the server-side claims, and roles add
@@ -100,15 +132,10 @@ flags right now — none above a club threshold.".
 
 **Today.** What is scheduled, in time order, or a line saying nothing is.
 
-**Ready for Saturday.** The selection picture for the next fixture, on one card —
-when that fixture is within **14 days** (`FIXTURE_RANGE_DAYS`, STAFF-SS-01 D3,
-12 September 2026). Further out, the card reads "Squad readiness" with "No fixture
-in the next 14 days": the week is not about a match a fortnight away. The "To
-matchday" tile still counts to the real next fixture.
-the opponent and how many days away, a ring showing how many of the squad can be
-named, a bar showing the three way availability split, and five rows. The first
-three are that split with the players named. The last two are the other things
-that bear on selection: flags this week, and sessions still to run.
+**Ready for Saturday** is the lead card above (13 September 2026) — the
+selection picture for the next fixture when it is within **14 days**
+(`FIXTURE_RANGE_DAYS`, STAFF-SS-01 D3, 12 September 2026). Further out, the week
+card leads and the "To matchday" tile still counts to the real next fixture.
 
 **Outstanding entries.** What has not been submitted yet, by kind, with a link to
 the compliance report.
@@ -121,7 +148,7 @@ the compliance report.
 |---|---|---|---|---|
 | MET-012 | Wellness in | Share of expected check-ins received | Today | Empty, never 0 percent, when nobody was expected |
 | MET-013 | Fit and available, Doubtful, Ruled out | The three way availability split | Right now | An athlete with no availability record is counted in none of the three |
-| MET-014 | Named | How many of the squad can be picked | Right now | No percentage when the squad is empty |
+| MET-014 | ~~Named~~ Not drawn since 13 September 2026 — Full + Doubtful on the lead card is the named count; the registry entry stays (the decision to retire it is on the sheet) | Right now | — |
 | MET-015 | Week load so far | Squad running this week against a normal week | Monday to today | Empty when no earlier week has GPS data |
 | MET-016 | Open flags | Unresolved alerts | Now | Zero is a real answer here |
 | MET-001 | Readiness, inside the attention rows | How ready an athlete says they feel | The day quoted | Blank |
@@ -143,9 +170,10 @@ Formulas are in `docs/metrics.md`. They are not repeated here.
 | Gym today tile | Tile strip (S&C version only) | Opens the schedule | `/schedule` | Nothing | S&C | None | Absent for every other version |
 | Weigh-ins tile | Tile strip (S&C and nutritionist versions) | Opens the nutrition page, where body mass is logged | `/nutrition` | Nothing | S&C, nutritionist | None | Absent for the full dashboard |
 | An attention row | Needs attention | Opens that athlete | `/squad/[athleteId]` | Nothing | Any staff | None | Never |
-| Fit and available, Doubtful, Ruled out rows | Ready for Saturday | Opens the squad. Doubtful and Ruled out are tone-family cards — the warn / bad fill and border the athlete's own availability line uses — while Fit and available stays a plain row (STAFF-SS-01 A1, 12 September 2026) | `/squad` | Nothing | Any staff | None | Never |
-| Flags affecting selection row | Ready for Saturday | Opens the flags screen | `/flags` | Nothing | Any staff | None | Never |
-| Sessions left to run row | Ready for Saturday | Opens the schedule | `/schedule` | Nothing | Any staff | None | Never |
+| Full, Doubtful, Ruled out counts | The lead card | Open the squad | `/squad` | Nothing | Any staff but the nutritionist | None | The card is absent with no fixture inside 14 days |
+| An athlete row in Doubtful / Ruled out | The lead card's two tone-family lists (the warn / bad fill and border the athlete's own availability line uses — STAFF-SS-01 A1, 12 September 2026; one athlete a row since 13 September) | Opens that athlete | `/squad/[athleteId]` | Nothing | Any staff but the nutritionist | None | As above |
+| Flags affecting selection | The lead card's tail | Opens the flags screen | `/flags` | Nothing | Any staff but the nutritionist | None | As above |
+| Sessions left to run | The lead card's tail | Opens the schedule | `/schedule` | Nothing | Any staff but the nutritionist | None | As above |
 | Compliance link | Outstanding entries | Opens the compliance report | `/reports/compliance` | Nothing | Coach or medic today | None | Never |
 | Print | Top bar | Opens the browser print dialogue | Stays here | Nothing | Any staff | Browser's own | Never |
 

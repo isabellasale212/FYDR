@@ -775,8 +775,12 @@ Log every SAR generation to `audit_log`.
 
 ### Article 20, right to data portability
 
-**Feature**: an athlete-initiated "export my data" action in the Me tab, producing
-structured JSON plus CSV.
+**Feature**: ~~an athlete-initiated "export my data" action in the Me tab~~ — **removed
+13 September 2026** (Isabella, `docs/reports-catalogue-source.md`: athletes export no
+report; they ask a coach or sport scientist out of band). The portability set below still
+defines what a portability request returns; it is served through the club's subject-access
+process (`src/lib/subjectAccess/`, the SAR pack's manifests), and `docs/decisions/scope.md`
+records that a manual subject-access process needs a real answer in the product under v1.
 
 **Scope is narrower than access, and the difference matters.** Portability covers only data
 the athlete *provided*, processed by automated means, on the basis of consent or contract.

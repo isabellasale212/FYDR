@@ -44,10 +44,11 @@ export const metadata = { title: 'Me · Fydr' };
  *      the account itself". Removing the form leaves only the forgotten-password
  *      email, so an athlete who simply wants to change a password they know
  *      would have to claim to have forgotten it.
- *    - "Export my data" (Article 20, see me/export/route.ts) and "Report a
- *      problem". The reference's settings card has neither. Export is statutory;
- *      Report a problem's only other entry point was Today's "Something not
- *      right?" row, which this same redesign removed, so dropping it here would
+ *    - "Report a problem" (and, until 2026-09-13, "Export my data" — removed
+ *      by decision, see the note at its old row). The reference's settings
+ *      card has neither. Report a problem's only other entry point was
+ *      Today's "Something not right?" row, which this same redesign removed,
+ *      so dropping it here would
  *      leave /report-problem with no route in at all. Both are compliance and
  *      reachability, not visual choices.
  *
@@ -288,14 +289,12 @@ export default async function MePage() {
             <span className="v">kg · m</span>
           </div>
           <div className="hair" />
-          <a href="/me/export" className="me-row">
-            <span className="k">Export my data</span>
-            <span className="v">CSV</span>
-            <span className="chev" aria-hidden="true">
-              ›
-            </span>
-          </a>
-          <div className="hair" />
+          {/* "Export my data" (a CSV from /me/export) stood here until
+              2026-09-13. Isabella's decision (docs/reports-catalogue-source.md):
+              athletes export no report; they ask a coach or sport scientist
+              out of band, who exports through the staff routes. No request
+              button, no queue, no new entity — the row, the route and
+              lib/queries/myDataExport.ts are removed. */}
           {/* Migration 0040's problem_reports table, 03-flows.md §6. This is
            *  now the ONLY route to it — Today's "Something not right?" row was
            *  removed by the same redesign. */}

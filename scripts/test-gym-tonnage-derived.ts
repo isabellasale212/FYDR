@@ -32,7 +32,7 @@ console.log('0106: the view derives');
 
 console.log('\nevery tonnage reader goes through the view');
 {
-  for (const p of ['src/lib/queries/programmes.ts', 'src/lib/queries/exportBuilder.ts', 'src/lib/queries/athleteReport.ts', 'src/lib/queries/squadWeeklyReport.ts', 'src/lib/queries/reports.ts', 'src/lib/queries/myDataExport.ts', 'src/app/(athlete)/my-data/page.tsx']) {
+  for (const p of ['src/lib/queries/programmes.ts', 'src/lib/queries/exportBuilder.ts', 'src/lib/queries/athleteReport.ts', 'src/lib/queries/squadWeeklyReport.ts', 'src/lib/queries/reports.ts', 'src/app/(athlete)/my-data/page.tsx']) {
     const src = strip(read(p));
     assert(!/from\('gym_session_logs'\)\s*\.select\([^)]*total_volume_kg/.test(src), `${p.split('/').slice(-1)[0]} never reads total_volume_kg from the base table`);
   }

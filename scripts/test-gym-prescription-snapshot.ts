@@ -56,8 +56,7 @@ console.log('\n3. the readers');
   const list = strip(read('src/components/GymSessionSetsList/GymSessionSetsList.tsx'));
   assert(/<th scope="col" className="r">\s*Prescribed\s*<\/th>/.test(list) && /\{prescribedWords\(s\)\}/.test(list), 'the sets table carries a Prescribed column');
   assert(/Prescribed is what the set was asked for on the day, kept with\s*it — a programme changed since does not change it\./.test(list), 'and says what the column is');
-  const me = strip(read('src/app/(athlete)/me/export/route.ts'));
-  assert(/\['prescribed_reps', 'Prescribed reps'\],\s*\['prescribed_load_kg', 'Prescribed load \(kg\)'\],/.test(me), 'the athlete\'s export carries the two columns');
+  // The athlete's own CSV (/me/export) carried the two columns until 2026-09-13, when athlete self-export was removed by decision.
   const staff = strip(read('src/app/(staff)/settings/exports/generate/route.ts'));
   assert(/\['prescribed_reps', 'Prescribed reps'\],\s*\['prescribed_load_kg', 'Prescribed load \(kg\)'\],/.test(staff), 'so does the staff gym export');
 }

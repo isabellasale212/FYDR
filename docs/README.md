@@ -19,6 +19,8 @@ strategy and a current-state page, and points here for everything else.
 | What does each report say it is? | `reports-catalogue-source.md` |
 | How do we deploy? | `runbook-deploy-*.md` |
 | What are the binding rules for an agent session? | `../CLAUDE.md` |
+| What rules does every screen follow? | `decisions/design-constitution.md` |
+| What changed in the design handover? | `design-programme-corrections-2026-09-13.md` |
 
 ## The layers, and which beats which
 
@@ -44,6 +46,25 @@ strategy and a current-state page, and points here for everything else.
   decision is narrower and has been made twice.
 - Any document naming Apple Health, a native iOS app, a separate athlete
   codebase, or push notifications as on hold.
+
+## Precedence, when two documents disagree
+
+1. **The final board's `notes.md`** for anything visual or behavioural.
+2. **The Claude Code build prompt** for build behaviour and order.
+3. **The persona review** for what the app does today.
+4. **The walkthrough** for flow structure.
+5. **The spec** for original intent.
+
+A standing decision in `decisions/` beats all five. If a board and the code
+disagree about what exists, that is an "Open against code" item: report it, do
+not design around it.
+
+## Two habits that caught real problems
+
+- **Measure, do not infer.** Read the rendered DOM, not the stylesheet. At
+  least three walkthrough claims were wrong when measured.
+- **Test with single-role users.** Seed accounts holding every role hid what a
+  real coach can see, twice.
 
 ## Rules for writing documentation here
 

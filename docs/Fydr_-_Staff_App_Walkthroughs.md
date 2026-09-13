@@ -488,6 +488,8 @@ a cleared duration submits `null` (§0ah).
 
 ## STAFF-SS-09 — Create a fixture
 
+**Built 2026-09-13 (`4add291`), measured as Mark at 375.** On a phone the schedule is day-first: the week strip as seven 74px tiles (day, date, MD offset, minutes), then the selected day as 44px rows linking to each session, a 44px + for a new session on that day, "Nothing on Monday." and a Next line; the grid and the Read/Edit segment are not drawn below 768px.
+
 **Entry point.** "+ Fixture" in the schedule header chip row →
 `/schedule/fixtures/new`.
 
@@ -741,6 +743,8 @@ up to date".
 ---
 
 ## STAFF-SS-16 — Open the squad report and export it
+
+**Built 2026-09-13 (`3efddca`, `2c741b7`), measured as Jane.** The compliance report says its cutoff in words under the figures ("An RPE counts when it was sent before the end of the following day, club time… A wellness check-in has no cutoff"), and a day-length window walks — "‹ Previous 7 days" / "Next 7 days ›", never past today — with the narrow-window note ("Over 7 days one missed morning moves an athlete's rate by 14 points").
 
 **Entry point.** "Reports" in the sidebar → `/reports`, which **is a menu** —
 six cards, each a link: Compliance (`/reports/compliance`), Injury &

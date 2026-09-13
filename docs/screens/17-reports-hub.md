@@ -48,6 +48,13 @@ specification applies to product tier.
 
 **A header** naming the screen.
 
+**Every report's export is scoped the way the screen was** (PATTERN-S7 C5,
+confirmed 13 September 2026): the five export routes resolve the group filter
+through `resolveGroupFilter` — the address's `?groups=` first, then the sticky
+`fydr-group-filter` cookie every chip row writes — so a bare export URL, bookmarked or
+typed, carries the scope the page was showing; the exports hub posts the scope
+its page resolved.
+
 **Six cards in two groups** (PATTERN-S7 A1, 13 September 2026), each card with a
 title, a sentence on what the report answers, and where its numbers come from.
 The groups are what the question is about: **"About the squad over a period"**

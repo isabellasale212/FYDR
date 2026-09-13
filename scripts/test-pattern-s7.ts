@@ -27,6 +27,23 @@ console.log('A1. the index is grouped by what the question is about');
   assert(/About the squad over a period/.test(spec), '17-reports-hub.md describes the grouping');
 }
 
+console.log('\nC5. the group filter reaches every export route as the page reads it (confirmed 2026-09-13)');
+{
+  /* The sheet's "why" said the routes read ?groups= only. They resolve it
+     through resolveGroupFilter — the URL, then the sticky cookie every chip
+     row writes — so a bare export URL is scoped the way the screen was. The
+     exports hub posts the scope the page resolved. Pinned so it stays so. */
+  const routes = ['training', 'injuries', 'compliance', 'testing', 'squad'];
+  for (const r of routes) {
+    const src = read(`src/app/(staff)/reports/${r}/export/route.ts`);
+    assert(/resolveGroupFilter\(url\.searchParams\.get\('groups'\) \?\? undefined\)/.test(src), `${r}: the URL, then the sticky cookie`);
+    assert(!/parseGroupParam\(url\.searchParams/.test(src), `${r}: never the raw param alone`);
+  }
+  const hub = read('src/components/ExportBuilderForm/ExportBuilderForm.tsx');
+  assert(/body: JSON\.stringify\(\{ domains: \[\.\.\.selected\], groupIds, from: fromVal, to: toVal \}\)/.test(hub), 'the exports hub posts the scope the page resolved');
+  assert(/sticky|cookie/.test(read('docs/screens/17-reports-hub.md')) || /sticky|cookie/.test(read('docs/screens/07-schedule.md')), 'the spec says the scope is the sticky one');
+}
+
 console.log('\nthe record and the sheet');
 {
   const rec = read('docs/overnight-records-2026-09-12.md');

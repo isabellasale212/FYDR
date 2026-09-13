@@ -1784,6 +1784,17 @@ body:has(.phone) {
    This corrects a flex: 1 1 auto that shipped here: it stopped the value
    wrapping, which was the bug, but it did it by handing the meta column every
    spare pixel, which is the defect the spec is naming. */
+/* ATH-ADULT-12 C5 (2026-09-13): words in the hero's number slot — "Nothing
+   logged" — at the caption size, not the figure's; the same move the logger's
+   number block makes for "Not set". */
+.rd-value-words {
+  font-size: var(--fs-20);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  white-space: normal;
+  color: var(--text);
+}
 .rd-meta {
   text-align: right;
   min-width: 0;
@@ -1888,6 +1899,12 @@ body:has(.phone) {
    page ground, so alpha would shift the bar's colour with the card. */
 .gb-bar[data-partial] {
   background: color-mix(in srgb, var(--accent-text) 32%, var(--surf));
+}
+/* ATH-ADULT-12 B2 (2026-09-13): prior weeks in the wash — the board's
+   --blue-200 mapped to --wash-accent-strong — so the latest completed week
+   carries the accent alone. */
+.gb-bar[data-prior] {
+  background: var(--wash-accent-strong);
 }
 /* A week with nothing logged draws a baseline rule, not nothing. An absent bar
    is ambiguous — zero sessions and no data look identical — and this page's
@@ -10418,6 +10435,13 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   overflow: hidden;
   padding: 0;
   margin-bottom: var(--sp-14);
+}
+/* PATTERN-S7 C2 (2026-09-13): the exclusions sentence under the four stats,
+   the card's full width, above a hairline. */
+.cmpl-exclusions {
+  padding: var(--sp-10) var(--sp-16);
+  border-top: 1px solid var(--hair);
+  color: var(--muted);
 }
 @media (max-width: 900px) {
   .cmpl-stats {

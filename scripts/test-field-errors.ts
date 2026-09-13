@@ -46,8 +46,6 @@ const walk = (d: string, out: string[] = []): string[] => {
 export const FIELD_ATTRIBUTABLE = [
   { file: 'src/components/ProblemReportForm/ProblemReportForm.tsx',
     why: 'the body is over 1000 chars — the value itself is wrong, and the counter already said so' },
-  { file: 'src/components/GymSessionSetsList/GymSessionSetsList.tsx',
-    why: 'validateCorrection knows whether reps or load failed; it used to return a bare string and throw that away' },
   { file: 'src/components/ChangePasswordForm/ChangePasswordForm.tsx',
     why: 'length and reuse belong to the new password, mismatch to the confirmation, the wrong current password to that field' },
   { file: 'src/components/CheckInForm/CheckInForm.tsx',

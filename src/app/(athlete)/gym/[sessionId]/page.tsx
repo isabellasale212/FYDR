@@ -9,6 +9,7 @@ import {
 } from '@/lib/queries/programmes';
 import { todayIso } from '@/lib/format';
 import { fetchGymSetRevisionChains } from '@/lib/queries/entryRevisions';
+import { isUuid } from '@/lib/uuid';
 import { requireAthlete } from '@/lib/session';
 
 export const metadata = { title: 'Gym session · Fydr' };
@@ -26,10 +27,19 @@ export const metadata = { title: 'Gym session · Fydr' };
  *  task. */
 export default async function GymSessionPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ sessionId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { sessionId } = await params;
+  const sp = await searchParams;
+  /* ATH-ADULT-13 C2 (2026-09-13): the history's way into the one correction
+     component — ?log= names a past log of this session (read, never
+     created) and ?correct= the set to open. Real uuids only; anything else
+     is ignored, not an error. */
+  const logParam = typeof sp.log === 'string' && isUuid(sp.log) ? sp.log : undefined;
+  const correctParam = typeof sp.correct === 'string' && isUuid(sp.correct) ? sp.correct : null;
   const { db, orgId, athleteId, timezone } = await requireAthlete();
 
   /* The name comes from resolve_my_programme_sessions, the same RPC the
@@ -46,13 +56,17 @@ export default async function GymSessionPage({
   const mine = myProgramme.find((r) => r.session_id === sessionId) ?? null;
   if (exercises.length === 0) notFound();
 
-  const { id: gymSessionLogId, status, startedAt, completedAt, error } = await startOrGetSessionLog(
+  const { id: gymSessionLogId, status, startedAt, completedAt, entryDate, error } = await startOrGetSessionLog(
     db,
     orgId,
     athleteId,
     sessionId,
     timezone,
+    { logId: logParam },
   );
+  /* A named log that is not on the athlete's record is a missing page, not a
+     server error — the same answer a wrong id gets on My data's detail. */
+  if (logParam && !gymSessionLogId) notFound();
   if (error || !gymSessionLogId) {
     throw new Error(error ?? 'Could not start this session.');
   }
@@ -74,7 +88,7 @@ export default async function GymSessionPage({
      once the session is complete, over the sessions before today's date. */
   const priors =
     status === 'complete'
-      ? await fetchPersonalBestsBefore(db, orgId, athleteId, exercises.map((ex) => ex.exercise_id), todayIso(timezone))
+      ? await fetchPersonalBestsBefore(db, orgId, athleteId, exercises.map((ex) => ex.exercise_id), entryDate ?? todayIso(timezone))
       : new Map();
   const priorBests = [...priors.entries()].map(([exercise_id, b]) => ({ exercise_id, ...b }));
 
@@ -106,6 +120,7 @@ export default async function GymSessionPage({
       exercises={exercises}
       loggedSets={loggedSets}
       alreadyComplete={status === 'complete'}
+      openCorrectionId={correctParam}
     />
   );
 }

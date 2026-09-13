@@ -89,6 +89,7 @@ there is also no GPS for an athlete on any package.
 | See all N | List footer | Expands the list in place | `/my-data?tab=…&all=1` | nothing | no | the list is already whole |
 | Leaderboards | Footer card | The board list | `/my-data/boards` | nothing | no | never |
 | A logged gym session | Gym region | Opens the session | `/my-data/gym/[id]` | nothing | no | none logged |
+| Correct › on a set row of a session's detail | `/my-data/gym/[id]`'s set table | Opens the logger on that session's log with that set's correction already open — the one correction component (ATH-ADULT-13 C2, 13 September 2026; the detail's own inline form is gone) | `/gym/[sessionId]?log=[logId]&correct=[setId]` | nothing until Save correction | no | the log has no programme session to open the logger on |
 | A past day | Wellness region | Opens that day's entry, read only | `/check-in?date=...` | nothing | no | no entry |
 
 ## 7. Offline and sync
@@ -219,6 +220,26 @@ Built from the "ATH-ADULT-12-13 · FINAL" board, A items only — the rest is in
   no date line (the value column says it).
 - **The hero figure is 48px** (`--fs-48`, a token that exists), from 38.
 - **A history row is at least 44px.**
+
+**The gym hero is the best lift** (ATH-ADULT-12 C5, 13 September 2026): "102.5
+kg" with "Back squat best · × 5 · Sat 5 Sept" and "up 5 kg on your best before
+Mon 17 Aug" — MET-040's best working set for the lift with the most working sets
+in the chosen period, against the best before the period (the board's "this
+block" read against the screen's own window, which is the comparison the tab
+already makes; the line says which). Down is said as down, the same load with
+more reps as more reps, an equal best as equal, and a lift with no earlier best
+is "the first Back squat logged" — never called a best. Over an empty period the
+headline is words — "Nothing logged · in this period" — never "0 sets logged";
+the four-week Sessions card keeps its own stated span beneath.
+
+**Prior values in the wash, the latest in the accent** (ATH-ADULT-12 B2, 13
+September 2026, once D7 was accepted): on the gym weeks the completed prior
+weeks are `--wash-accent-strong` — the board's `--blue-200` mapped onto the
+existing wash family — the latest completed week the accent, and a partial week
+keeps its own lighter mix because "not finished" is a different fact; a week
+with nothing logged keeps its baseline rule. The readiness chart here is a line
+with dots, not the board's bars, so its prior-value colour waits for 12 C2 (the
+bar chart).
 
 Since built or decided: five segments on the track (12 September, D1 reversed —
 the footer card keeps only Leaderboards), the live segment stays the

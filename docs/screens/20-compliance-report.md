@@ -86,6 +86,16 @@ their percentage looks survivable.
 A day nobody was expected to submit on, a rest day for instance, would otherwise
 drag every percentage down.
 
+**Every figure carries its denominator, an exclusions sentence, and words for
+a missing value** (PATTERN-S7 C2, 13 September 2026; `lib/reportFigures.ts`).
+The summary reads "24 of 30 submitted · 2 waived" or "No expectations
+configured for this domain", never "0 of 0"; a figure with nothing expected
+reads "Not expected", not a dash; the by-athlete table's cells read "Not
+expected", "None" (waived days) and "No entry in this window"; under the four
+stats: "Nobody is excluded." or "2 athletes are excluded on 5 waived days — a
+waiver is 'was not asked', not 'did not submit'." (and the squad floor, C8, when
+it applies). The table is sorted worst first, and says so.
+
 **The period control walks both ways and explains the narrow choice**
 (PATTERN-S7 C9, 13 September 2026). Beside the period select, "‹ Previous 7
 days" and "Next 7 days ›" move the day anchor (`?to=`) by the window's own

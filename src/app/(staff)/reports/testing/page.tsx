@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { belowSquadFloor, squadFloorNote } from '@/lib/smallSample';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { PrintButton } from '@/components/PrintButton/PrintButton';
 import { ReportPager } from '@/components/ReportPager/ReportPager';
@@ -246,6 +247,14 @@ export default async function TestingReportPage({ searchParams }: { searchParams
 
                   {byTest ? (
                     <>
+                      {/* PATTERN-S7 C8: the squad floor — the median and the
+                          quartiles are not published below five athletes
+                          with a result; the rows below are unchanged. */}
+                      {belowSquadFloor(byTest.rows.length) ? (
+                        <p className="tiny" style={{ marginBottom: 'var(--sp-10)' }}>
+                          {squadFloorNote('The squad median', byTest.rows.length)}
+                        </p>
+                      ) : null}
                       <div className="grid3">
                         <div className="card">
                           <p className="tiny">Median</p>

@@ -1,4 +1,5 @@
 import type { Db } from './groups';
+import { belowSquadFloor } from '@/lib/smallSample';
 import { fetchGroupAthleteIds } from './groups';
 import { fetchAllPaged } from './paged';
 import { beatsBest, fetchTestDefinitions, type TestDefinition } from './testing';
@@ -292,9 +293,13 @@ export async function fetchTestByTest(
   }));
 
   const values = deduped.map((r) => r.value).sort((a, b) => a - b);
-  const median = quartile(values, 0.5);
-  const q1 = quartile(values, 0.25);
-  const q3 = quartile(values, 0.75);
+  /* PATTERN-S7 C8: the squad floor — below five athletes with a result the
+     median and quartiles are not published (a median of three IS one
+     athlete's exact value). The rows stay; the page says why. */
+  const floored = belowSquadFloor(values.length);
+  const median = floored ? null : quartile(values, 0.5);
+  const q1 = floored ? null : quartile(values, 0.25);
+  const q3 = floored ? null : quartile(values, 0.75);
 
   return { definition, rows, median, q1, q3 };
 }

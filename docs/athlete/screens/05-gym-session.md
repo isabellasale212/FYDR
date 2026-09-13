@@ -3,7 +3,14 @@
 ## 1. Where it sits
 
 Reached from a to-do item on Today, and from the Gym tab. Route
-`/gym/[sessionId]`. File `src/app/(athlete)/gym/[sessionId]/page.tsx`.
+`/gym/[sessionId]`. File `src/app/(athlete)/gym/[sessionId]/page.tsx`. Since 13
+September 2026 (ATH-ADULT-13 C2) it also opens a **past** log of the session by
+id — `?log=[logId]` — read, never created (a log not on the athlete's record is
+"That session is not on your record."), and `?correct=[setId]` opens that set's
+correction with the logged sets revealed beneath the summary; a stale set id
+opens nothing. "Best before today" on a past log reads before that log's own
+day. This is how My data's session detail corrects a set: one correction
+component.
 
 **Redrawn 8 September 2026** from the redesign reference (screens 09/10). §13
 records what changed — less than the changelog suggests, because most of the

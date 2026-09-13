@@ -38,47 +38,35 @@ const blank = (s: string): string =>
    .replace(/\{\/\*[\s\S]*?\*\/\}/g, (c) => c.replace(/[^\n]/g, ' '))
    .replace(/\/\/.*$/gm, (c) => c.replace(/[^\n]/g, ' '));
 
-/* ---------- 1. the gym set correction panel ---------- */
-const gym = blank(readFileSync('src/components/GymSessionSetsList/GymSessionSetsList.tsx', 'utf8'));
+/* ---------- 1. the gym set correction ---------- */
+/* Until 2026-09-13 this section pinned GymSessionSetsList's own inline
+   correction form: a typed reps/load pair, validated before the mutate, the
+   panel closing only on success. ATH-ADULT-13 C2 made the LOGGER's correction
+   the one correction component — the history's rows link to it — so the
+   same promises are held there: the numbers come from the steppers (no
+   free-text field, so nothing can be typed negative or blank; stepValue
+   floors at 0), the save is bounded and surfaces the RPC's own refusal as a
+   HumanError rather than swallowing it, and the panel closes only on
+   success. */
+const gym = blank(readFileSync('src/components/GymSessionLogger/GymSessionLogger.tsx', 'utf8'));
+const list = blank(readFileSync('src/components/GymSessionSetsList/GymSessionSetsList.tsx', 'utf8'));
 
-assert(/function validateCorrection|const validateCorrection/.test(gym),
-  'a named validation function exists, rather than a condition inline in the click');
-assert(/validateCorrection\([^)]*\)/.test(gym), 'and it is called');
+assert(!/reviseGymSetLog|useMutation|<input/.test(list),
+  'the history list has no correction form of its own — its rows link to the logger (ATH-ADULT-13 C2)');
+assert(/correctHref\(s\.id\)/.test(list), 'each row links to the logger\'s correction for that set');
 
-/* The mutate must be reachable only past the validation. */
-const clickHandler = /onClick=\{\(\) =>\s*\{([\s\S]*?)\n\s*\}\}/.exec(gym)?.[1] ?? gym;
-assert(/validateCorrection/.test(clickHandler) || /if \(problem\)/.test(gym),
-  'the save handler validates before mutating');
-assert(/return;/.test(gym), 'and returns early on invalid input, so mutate is not called');
+const correctionMutation = /const correctionMutation = useMutation\(\{([\s\S]*?)\n  \}\);/.exec(gym)?.[1] ?? '';
+assert(/withWriteTimeout\(/.test(correctionMutation), 'the logger\'s correction is bounded (never "Saving…" for ever)');
+assert(/if \(result\.error\) throw new HumanError\(result\.error\);/.test(correctionMutation),
+  'and a refusal from revise_gym_set_log is thrown, not swallowed');
+const onSuccess = /onSuccess:\s*\(\)\s*=>\s*\{([\s\S]*?)\},/.exec(correctionMutation)?.[1] ?? '';
+assert(/closeCorrection\(\)/.test(onSuccess), 'the correction closes only in onSuccess — a refused attempt stays open');
+assert(/onError: \(err\) => setError\(toUserMessage\(err, 'athlete'\)\)/.test(correctionMutation),
+  'and the refusal is shown in the athlete\'s words');
 
-/* The panel must stay open: setCorrecting(null) belongs to success only. */
-const onSuccess = /onSuccess:\s*\(\)\s*=>\s*\{([\s\S]*?)\},/.exec(gym)?.[1] ?? '';
-assert(/setCorrecting\(null\)/.test(onSuccess),
-  'the panel closes only in onSuccess — an invalid attempt never reaches it');
-
-/* Defence in depth at the input, since neither the schema nor the RPC will stop
-   a negative. */
-const repsInput = /aria-label=\{`Set \$\{s\.set_number\} corrected reps`\}/.test(gym);
-assert(repsInput, 'the reps input is still there');
-assert((gym.match(/min="0"/g) ?? []).length >= 2,
-  'both numeric inputs carry min="0" — the schema has no constraint and the RPC does not check');
-
-/* The coalesce semantics must be surfaced, not worked around silently. */
-assert(/unchanged/i.test(gym),
-  'the copy tells the athlete a blank field leaves the set unchanged (the RPC coalesces null to the original)');
-
-/* Cancel must not leave a validation message behind. Found by cancelling out of
-   a rejected correction and seeing the error still on screen with no panel under
-   it — an error about a form that is no longer open. */
-/* IT MUST CLEAR THE FIELD MARKER TOO, added 2026-09-09. validateCorrection now
-   returns which field it rejected so that input can carry aria-invalid, which
-   means Cancel has a second thing to undo: without it, a cancelled panel leaves
-   an input marked invalid to a screen reader with no message and no panel to
-   explain it — the same defect this assertion was written for, one layer down
-   and invisible on screen. */
-const cancelHandler =
-  /onClick=\{\(\) => \{\s*setError\(null\);\s*setInvalidField\(null\);\s*setCorrecting\(null\);/.test(gym);
-assert(cancelHandler, 'Cancel clears the error, the invalid-field marker, and the panel');
+/* No typed numeric field to go negative or blank: the two numbers are the
+   steppers', floored at zero. */
+assert(/function stepValue\(/.test(gym) && /Math\.max\(0,/.test(gym), 'the stepper floors at zero — there is no field to type a negative into');
 
 /* ---------- 2. report a problem ---------- */
 const rep = blank(readFileSync('src/components/ProblemReportForm/ProblemReportForm.tsx', 'utf8'));

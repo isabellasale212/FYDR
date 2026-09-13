@@ -17,9 +17,13 @@ import {
   type MyTestSummary,
 } from '@/lib/queries/testing';
 import {
+  fetchBestSetsInPeriod,
+  fetchExerciseNames,
   fetchMyAssignedSessionsByWeek,
+  fetchPersonalBestsBefore,
   fetchRecentGymSessions,
 } from '@/lib/queries/programmes';
+import { gymHeroLine, pickMainLift } from '@/lib/gymHero';
 import { fetchMyVisibleFlags, staffNoteLines, type VisibleFlag } from '@/lib/queries/flags';
 import {
   fetchTrainingRevisionChains,
@@ -613,6 +617,7 @@ export default async function MyDataPage({
       ) : (
         <GymTab
           db={db}
+          orgId={orgId}
           athleteId={athleteId}
           from={from}
           today={today}
@@ -1758,6 +1763,7 @@ const GYM_HEADLINE_CAP = 200;
  *  and paging is not. */
 async function GymTab({
   db,
+  orgId,
   athleteId,
   from,
   today,
@@ -1768,6 +1774,7 @@ async function GymTab({
   seasonStart,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
+  orgId: string;
   athleteId: string;
   from: string;
   today: string;
@@ -1783,11 +1790,31 @@ async function GymTab({
 
   const headlineFrom = weekStarts[0] ?? mondayOf(today);
 
-  const [fetched, recent, assignedWeeks] = await Promise.all([
+  const [fetched, recent, assignedWeeks, bestsInPeriod] = await Promise.all([
     fetchRecentGymSessions(db, athleteId, from, today, LIST_LIMIT + 1),
     fetchRecentGymSessions(db, athleteId, headlineFrom, today, GYM_HEADLINE_CAP),
     fetchMyAssignedSessionsByWeek(db, athleteId, headlineFrom, today),
+    /* ATH-ADULT-12 C5 (2026-09-13): the hero is the athlete's best lift in
+       the period and how it moved — MET-040 twice, inside the period and
+       before it. */
+    fetchBestSetsInPeriod(db, orgId, athleteId, from, today),
   ]);
+  const mainLift = pickMainLift(bestsInPeriod);
+  const [priorBests, liftNames] = mainLift
+    ? await Promise.all([fetchPersonalBestsBefore(db, orgId, athleteId, [mainLift], from), fetchExerciseNames(db, orgId, [mainLift])])
+    : [new Map(), new Map()];
+  const hero = mainLift
+    ? gymHeroLine(
+        {
+          name: liftNames.get(mainLift) ?? 'Best lift',
+          best: bestsInPeriod.get(mainLift)!.best,
+          prior: priorBests.get(mainLift) ?? null,
+          from,
+        },
+        timezone,
+      )
+    : null;
+  const periodSets = [...bestsInPeriod.values()].reduce((n, r) => n + r.sets, 0);
   const sessions = fetched.slice(0, LIST_LIMIT);
   const more = fetched.length > LIST_LIMIT;
   const shownSessions = showAll ? sessions : sessions.slice(0, LIST_PREVIEW_ROWS);
@@ -1829,6 +1856,38 @@ async function GymTab({
     <div className="stack">
       <section className="card" aria-labelledby="gym-headline">
         <h2 className="eyebrow" id="gym-headline">
+          Best lift
+        </h2>
+        {/* ATH-ADULT-12 C5: "102.5 kg · Back squat best · × 5 · Sat 5 Sept ·
+            up 5 kg on your best before Mon 17 Aug" — the period's own window
+            is the comparison, said in the line. Over an empty period the
+            headline is words, never "0 sets logged" (found building 12 C6). */}
+        <div className="rd-head">
+          {hero ? (
+            <>
+              <p className="rd-value num">{hero.value}</p>
+              <div className="rd-meta">
+                <p className="rd-delta">{hero.label}</p>
+                <p className="rd-mean">{hero.delta}</p>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="rd-value rd-value-words">Nothing logged</p>
+              <div className="rd-meta">
+                <p className="rd-delta">in this period</p>
+                <p className="rd-mean">a finished session with load and reps logged counts</p>
+              </div>
+            </>
+          )}
+        </div>
+        <p className="tiny" style={{ marginTop: 'var(--sp-8)' }}>
+          {periodSets > 0 ? `${periodSets} working set${periodSets === 1 ? '' : 's'} in this period across ${bestsInPeriod.size} exercise${bestsInPeriod.size === 1 ? '' : 's'}.` : null}
+        </p>
+      </section>
+
+      <section className="card" aria-labelledby="gym-sessions-headline">
+        <h2 className="eyebrow" id="gym-sessions-headline">
           Sessions
         </h2>
         <div className="rd-head">
@@ -1880,11 +1939,15 @@ async function GymTab({
             )
             .join('; ')}`}
         >
-          {weeks.map((w) => (
+          {weeks.map((w, i) => (
             <div className="gb-col" key={w.start}>
               <div className="gb-track">
                 <div
                   className="gb-bar"
+                  /* ATH-ADULT-12 B2 (2026-09-13): a prior week is the wash,
+                     the latest the accent; a partial week keeps its own
+                     lighter mix — it means "not finished", a different fact. */
+                  data-prior={i < weeks.length - 1 && !w.partial ? '' : undefined}
                   data-partial={w.partial ? '' : undefined}
                   data-zero={w.count === 0 ? '' : undefined}
                   style={w.count === 0 ? undefined : { height: `${Math.round((w.count / peak) * 100)}%` }}

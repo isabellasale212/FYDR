@@ -59,6 +59,10 @@ type Props = {
   exercises: readonly ResolvedExercise[];
   loggedSets: readonly LoggedSet[];
   alreadyComplete: boolean;
+  /** ATH-ADULT-13 C2 (2026-09-13): open on this set's correction — the
+   *  history's row-tap. Resolved against the logged sets; a stale id opens
+   *  nothing. */
+  openCorrectionId?: string | null;
 };
 
 /* 'kg' is only a safe assumption for absolute loads on genuinely loaded
@@ -130,6 +134,7 @@ export function GymSessionLogger({
   exercises,
   loggedSets,
   alreadyComplete,
+  openCorrectionId = null,
 }: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -231,8 +236,11 @@ export function GymSessionLogger({
   /* The set being corrected, by its live id — reached from a logged chip.
      While it is open the two numbers edit the correction and the footer
      reads Save correction / Cancel (ATH-ADULT-11 C1). */
-  const [correcting, setCorrecting] = useState<string | null>(null);
-  const [corr, setCorr] = useState<{ weight: number | null; reps: number | null }>({ weight: null, reps: null });
+  const openRow = openCorrectionId ? (loggedSets.find((r) => r.id === openCorrectionId) ?? null) : null;
+  const [correcting, setCorrecting] = useState<string | null>(openRow?.id ?? null);
+  const [corr, setCorr] = useState<{ weight: number | null; reps: number | null }>(
+    openRow ? { weight: openRow.load_kg, reps: openRow.reps_completed } : { weight: null, reps: null },
+  );
   /* The set that just landed, for the "Set 2 logged · 102.5 kg × 8 · Correct
      it" strip above the card. */
   const [lastLoggedId, setLastLoggedId] = useState<string | null>(null);
@@ -269,7 +277,7 @@ export function GymSessionLogger({
      beat and when (MET-040) so the claim is checkable; early has a different
      title, a dashed card, per-exercise rows that read "Not logged", and no
      totals block at all. No gradient, no confetti, no praise copy. */
-  const [showSets, setShowSets] = useState(false);
+  const [showSets, setShowSets] = useState(openRow !== null);
   const finishedEarly = alreadyComplete && doneCount < totalSets;
   const summarySets = loggedSets.map((r) => ({
     exercise_id: r.exercise_id,

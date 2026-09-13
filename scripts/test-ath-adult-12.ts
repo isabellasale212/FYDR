@@ -77,6 +77,12 @@ console.log('\nwhat this flow did NOT change (recorded, not built)');
   assert(rule(".rd-delta[data-dir='up']") === '', 'the delta is no longer coloured (D3 reversed 2026-09-12; pinned in test-my-data-redesign.ts)');
   assert(/BLANK/.test(page), "the training table keeps the app-wide table blank until its own rebuild (C2)");
   assert(!/--chart-h|--chart-stroke|--blue-200|--t-num-hero/.test(read('src/styles/tokens.css')), 'no new token (B1, B2)');
+  /* B2, built 2026-09-13 once D7 was accepted, where a bar chart exists:
+     the gym weeks — prior completed weeks in the wash (--wash-accent-strong),
+     the latest in the accent. The readiness chart on this screen is a line
+     with dots, not the board's bars; its mapping waits for 12 C2. */
+  assert(/data-prior=\{i < weeks\.length - 1 && !w\.partial \? '' : undefined\}/.test(read('src/app/(athlete)/my-data/page.tsx')), 'B2: the gym weeks mark prior completed weeks');
+  assert(/\.gb-bar\[data-prior\]\s*\{[^}]*background:\s*var\(--wash-accent-strong\)/.test(read('src/styles/base.css')), 'and draw them in the wash');
 }
 
 console.log('\nD7 (decided 2026-09-12): accent and neutrals only on the athlete\'s chart, as a prop');

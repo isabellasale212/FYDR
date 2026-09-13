@@ -13196,6 +13196,50 @@ main:has(.rhead) > .back-btn > :first-child {
   background: #fff;
   color: var(--accent);
 }
+/* PATTERN-S7 C9 (2026-09-13): the period control with its walk (previous /
+   next window, the same rhead-btn shape as the exports) and, under it, why
+   the narrow window is usually the wrong read. */
+.rhead-period-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--sp-6);
+  max-width: 100%;
+}
+.rhead-period-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.rhead-period-nav {
+  display: inline-flex;
+  gap: var(--sp-6);
+}
+.rhead-period-nav .rhead-btn {
+  min-height: 44px;
+}
+.rhead-period-note {
+  margin: 0;
+  font-size: var(--fs-12);
+  color: var(--muted);
+  text-align: right;
+  max-width: 44ch;
+  text-wrap: pretty;
+}
+@media (max-width: 767px) {
+  .rhead-period-stack {
+    align-items: flex-start;
+  }
+  .rhead-period-row {
+    justify-content: flex-start;
+  }
+  .rhead-period-note {
+    text-align: left;
+  }
+}
+
 /* The week nav is the schedule's period control, so it loses the boxed look it
    wore when it sat in a toolbar and takes the select's shape instead. */
 .rhead-period .sg-weeknav {

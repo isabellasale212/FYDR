@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ReportPager } from '@/components/ReportPager/ReportPager';
+import { narrowWindowNote, periodNav } from '@/lib/periodNav';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { fetchGroups } from '@/lib/queries/groups';
 import { complianceAthletePct, fetchComplianceReport, recordReportView } from '@/lib/queries/reports';
@@ -152,6 +153,11 @@ export default async function ComplianceReportPage({
   // show. Built by the colocated module so the period cannot be the param that
   // goes missing from a hand-built href.
   const query = complianceQuery(period.key, today, groupIds);
+  /* PATTERN-S7 C9 (2026-09-13): the window walks both ways — the anchor
+     moves by the window's own length, the length and the scope stay — and
+     the narrow choice says why it is usually the wrong read. */
+  const nav = periodNav({ key: period.key, from: fromDate, to: today, days: period.range.days, realToday });
+  const narrowNote = narrowWindowNote(period.range.days);
 
   const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   await recordReportView(db, orgId, claims.userId, actorRole, 'compliance', {
@@ -223,13 +229,32 @@ export default async function ComplianceReportPage({
            * deliberately not DEFAULT_RANGE) rather than something the coach
            * picked, and not sticky when their pick was clamped either — see
            * periodSticky(). */
-          <PeriodSelector
-            value={period.key}
-            allowed={period.allowed}
-            reasons={period.reasons}
-            season={period.season}
-            sticky={periodSticky(period)}
-          />
+          <div className="rhead-period-stack">
+            <div className="rhead-period-row">
+              <PeriodSelector
+                value={period.key}
+                allowed={period.allowed}
+                reasons={period.reasons}
+                season={period.season}
+                sticky={periodSticky(period)}
+              />
+              {nav.previous || nav.next ? (
+                <nav className="rhead-period-nav" aria-label="Walk the window">
+                  {nav.previous ? (
+                    <Link href={`/reports/compliance?${complianceQuery(period.key, nav.previous.to, groupIds)}`} className="rhead-btn">
+                      ‹ {nav.previous.label}
+                    </Link>
+                  ) : null}
+                  {nav.next ? (
+                    <Link href={`/reports/compliance?${complianceQuery(period.key, nav.next.to, groupIds)}`} className="rhead-btn">
+                      {nav.next.label} ›
+                    </Link>
+                  ) : null}
+                </nav>
+              ) : null}
+            </div>
+            {narrowNote ? <p className="rhead-period-note">{narrowNote}</p> : null}
+          </div>
         }
         pages={[
           {

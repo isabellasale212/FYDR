@@ -86,6 +86,16 @@ their percentage looks survivable.
 A day nobody was expected to submit on, a rest day for instance, would otherwise
 drag every percentage down.
 
+**The period control walks both ways and explains the narrow choice**
+(PATTERN-S7 C9, 13 September 2026). Beside the period select, "‹ Previous 7
+days" and "Next 7 days ›" move the day anchor (`?to=`) by the window's own
+length, keeping the length and the group scope; the next step never lands past
+real today, and a season, a year or "all" are not walked (they anchor to the
+calendar or the data, not to a day). Under the control, for a window of
+fourteen days or fewer: "Over 7 days one missed morning moves an athlete's rate
+by 14 points — read four weeks for the habit, 7 days for this week." The
+seven-day default is unchanged — widening it is the coach's call.
+
 **The report says its cutoff in words** (PATTERN-S7 C7, 13 September 2026), on
 the Summary card under the figures: "An RPE counts when it was sent before the
 end of the following day, club time — the moment the athlete app stops accepting

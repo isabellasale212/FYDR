@@ -6,12 +6,12 @@ import { createClient } from '@/lib/supabase/client';
 import {
   linkAthleteToUser,
   setUserRoles,
-  setUserStatus,
   type UnlinkedAthlete,
   type UserAuditRow,
   type UserDetail,
   roleToggleRefusal,
 } from '@/lib/queries/userManagement';
+import type { SetUserStatusResult } from '@/app/(staff)/settings/users/[userId]/status/route';
 import type { RemoveMfaFactorResult } from '@/app/(staff)/settings/users/[userId]/mfa/route';
 import { Pill } from '@/components/Pill/Pill';
 import { BlockedButton } from '@/components/BlockedButton/BlockedButton';
@@ -104,15 +104,20 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezo
     router.refresh();
   }
 
+  /* S8 D5 (batch B1): deactivate is the revoke. The route writes the status
+     and bans the sign-in itself, so an outstanding invite or magic link dies
+     with the account — a client-side RLS write could change the row and
+     never reach the token. */
   async function toggleStatus() {
-    const db = createClient();
     const nextStatus = status === 'deactivated' ? 'active' : 'deactivated';
     setBusyStatus(true);
     setError(null);
-    const { error: err, primaryOk } = await setUserStatus(db, orgId, currentUserId, currentActorRole, user.id, nextStatus);
+    const res = await fetch(`/settings/users/${user.id}/status`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ status: nextStatus }) });
+    const out = (await res.json().catch(() => null)) as SetUserStatusResult | null;
     setBusyStatus(false);
-    if (err) setError(err);
-    if (!primaryOk) return;
+    if (!out) { setError('Not saved: the request did not complete. Try again.'); return; }
+    if (out.error) setError(out.error);
+    if (!out.primaryOk) return;
     setStatus(nextStatus);
     router.refresh();
   }
@@ -296,7 +301,9 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezo
               {busyStatus ? 'Working…' : status === 'deactivated' ? 'Reactivate user' : 'Deactivate user'}
             </button>
             <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
-              {status === 'deactivated' ? 'Signs them back in.' : 'Signs them out and blocks sign in. Nothing is deleted.'}
+              {status === 'deactivated'
+                ? 'Lets them sign in again — an invite they never followed works again too, until it expires.'
+                : 'Signs them out, blocks sign in and cancels any outstanding invite or magic link at the same moment. Nothing is deleted.'}
               {isSelf ? ' You cannot deactivate your own account.' : ''}
             </p>
           </section>

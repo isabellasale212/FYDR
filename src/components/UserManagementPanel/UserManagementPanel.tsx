@@ -4,7 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { linkAthleteToUser, setUserStatus, type UnlinkedAthlete, type UserWithRoles } from '@/lib/queries/userManagement';
+import { linkAthleteToUser, type UnlinkedAthlete, type UserWithRoles } from '@/lib/queries/userManagement';
+import type { SetUserStatusResult } from '@/app/(staff)/settings/users/[userId]/status/route';
 import { ROLE_WORDS } from '@/lib/roleGrants';
 import { Pill } from '@/components/Pill/Pill';
 import { formatDate } from '@/lib/format';
@@ -400,15 +401,19 @@ function UserRow({
     setLinkChoice('');
   }
 
+  /* S8 D5 (batch B1): deactivate is the revoke — the route bans the sign-in
+     as well as changing the row, so an outstanding invite dies with the
+     account. See settings/users/[userId]/status/route.ts. */
   async function toggleStatus() {
-    const db = createClient();
     const nextStatus = user.status === 'deactivated' ? 'active' : 'deactivated';
     setBusyStatus(true);
     setError(null);
-    const { error: err, primaryOk } = await setUserStatus(db, orgId, currentUserId, currentActorRole, user.id, nextStatus);
+    const res = await fetch(`/settings/users/${user.id}/status`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ status: nextStatus }) });
+    const out = (await res.json().catch(() => null)) as SetUserStatusResult | null;
     setBusyStatus(false);
-    if (err) setError(err);
-    if (!primaryOk) return;
+    if (!out) { setError('Not saved: the request did not complete. Try again.'); return; }
+    if (out.error) setError(out.error);
+    if (!out.primaryOk) return;
     onChanged({ ...user, status: nextStatus });
   }
 

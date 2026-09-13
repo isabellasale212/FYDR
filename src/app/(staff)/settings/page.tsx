@@ -7,6 +7,8 @@ import { requireStaff } from '@/lib/session';
 import { isPremium, tierLabel } from '@/lib/tier';
 import { GPS_IMPORT, REPORT_ACCESS, SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 import { settingsGroups } from '@/lib/settingsHub';
+import { fetchSetupCounts } from '@/lib/queries/setupChecklist';
+import { setupSteps, setupSummary } from '@/lib/setupChecklist';
 
 export const metadata = { title: 'Settings · Fydr' };
 
@@ -33,7 +35,7 @@ export default async function SettingsPage() {
   const onPremium = isPremium(tier);
   const roleRequiresMfa = mfaRequiredForRoles(claims.roles);
 
-  const [athleteCount, activeThresholds, mfaFactors, groups, staffCount, sarOpen, importBatches, auditRecent] = await Promise.all([
+  const [athleteCount, activeThresholds, mfaFactors, groups, staffCount, sarOpen, importBatches, auditRecent, setupCounts] = await Promise.all([
     db.from('athletes').select('id', { count: 'exact', head: true }).eq('org_id', orgId).is('deleted_at', null).neq('status', 'left_club'),
     fetchThresholds(db, orgId, false),
     db.auth.mfa.listFactors(),
@@ -46,7 +48,10 @@ export default async function SettingsPage() {
     isAdmin
       ? db.from('audit_log').select('id', { count: 'exact', head: true }).eq('org_id', orgId).gte('occurred_at', new Date(Date.now() - 90 * 86400000).toISOString())
       : Promise.resolve({ count: null }),
+    /* PATTERN-S8 C1: the setup checklist's count for the Club group's row. */
+    isAdmin ? fetchSetupCounts(db, orgId) : Promise.resolve(null),
   ]);
+  const setup = setupCounts ? setupSummary(setupSteps(setupCounts, orgName)) : null;
 
   const squadSize = athleteCount.count ?? 0;
   const mfaOn = (mfaFactors.data?.totp.length ?? 0) > 0;
@@ -66,6 +71,7 @@ export default async function SettingsPage() {
       sarOpen: sarOpen.count ?? null,
       importBatches: importBatches.count ?? null,
       auditRecent: auditRecent.count ?? null,
+      setup: setup ? { done: setup.done, total: setup.total } : null,
     },
     mfa: mfaOn ? 'on' : roleRequiresMfa ? 'required' : 'off',
   });

@@ -16,7 +16,9 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 import { fetchThresholdProvenance } from '@/lib/queries/thresholds';
-import { CLINICAL_ONLY, THRESHOLD_EDIT, hasAnyRole } from '@/lib/access';
+import { CLINICAL_ONLY, SETTINGS_ADMIN, THRESHOLD_EDIT, hasAnyRole } from '@/lib/access';
+import { fetchSetupCounts } from '@/lib/queries/setupChecklist';
+import { setupDashboardLine, setupSteps, setupSummary } from '@/lib/setupChecklist';
 
 export const metadata = { title: 'Dashboard · Fydr' };
 
@@ -95,7 +97,7 @@ function dayTitle(date: string, wallClockToday: string): string {
  *  file's header before extending this page — most of the judgement calls
  *  live there, not here. */
 export default async function DashboardPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, timezone, claims } = await requireStaff();
+  const { db, orgId, orgName, timezone, claims } = await requireStaff();
 
   // 01-roles-and-permissions.md (superseded) §2: admin gets `no` for "View squad
   // dashboard" — every panel below is named-athlete availability, load and
@@ -160,7 +162,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
    * it seeded the whole account with a key no report accepts. Longer windows
    * live on Analytics, which has its own per-board controls. */
 
-  const [groups, stats, week, timeline, readiness, outstanding, provenance, gymToday, weighIns, scopeIds, squadSize] = await Promise.all([
+  const [groups, stats, week, timeline, readiness, outstanding, provenance, gymToday, weighIns, scopeIds, squadSize, setupCounts] = await Promise.all([
     fetchGroups(db, orgId),
     fetchHeadlineStats(db, orgId, groupIds, effectiveToday, wallClockToday, timezone, attentionDomains(version)),
     fetchWeekStrip(db, orgId, groupIds, weekStart, effectiveToday, timezone),
@@ -180,7 +182,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
        Two count reads, in the same batch. */
     fetchGroupAthleteIds(db, orgId, groupIds),
     fetchSquadSize(db, orgId),
+    /* PATTERN-S8 C1: the setup checklist's one line, for the sport
+       scientist, while any step is outstanding. */
+    hasAnyRole(claims.roles, SETTINGS_ADMIN) ? fetchSetupCounts(db, orgId) : Promise.resolve(null),
   ]);
+  const setupLine = setupCounts ? setupDashboardLine(setupSummary(setupSteps(setupCounts, orgName)), orgName) : null;
   const scopeWords = groupIds.length === 0 ? 'the squad' : groupScopeLabel(groups, groupIds);
   const scopeSize = scopeIds ? scopeIds.length : squadSize;
 
@@ -290,6 +296,18 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
             Nothing has been recorded for today ({formatDate(wallClockToday, timezone)}) yet. Schedule, Flags and Reports run
             on the real date.
           </span>
+        </div>
+      ) : null}
+
+      {/* PATTERN-S8 C1: one line while the club is still on a default — a
+          status, not the emphasised card (that is the lead card below), and
+          not a gate: it names the step that costs most and links the list. */}
+      {setupLine ? (
+        <div className="card setup-line" role="status">
+          <span className="tiny">{setupLine}</span>
+          <Link href="/settings/setup" className="btn-ghost">
+            Continue setup
+          </Link>
         </div>
       ) : null}
 

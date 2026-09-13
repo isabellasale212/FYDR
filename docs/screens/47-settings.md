@@ -40,7 +40,7 @@ rows.
 
 | Group | Rows, in order | Count shown on the row |
 |---|---|---|
-| **Club** | Plan · Club details (sport scientist only) · Groups · Thresholds · Notifications | Plan: the package word, "Previewing Basic — the real plan is Premium" while a preview is on. Groups: "N groups". Thresholds: "N active" |
+| **Club** | Setup checklist (sport scientist only, since C1) · Plan · Club details (sport scientist only) · Groups · Thresholds · Notifications | Setup checklist: "2 of 5 done" (warn until 5 of 5). Plan: the package word, "Previewing Basic — the real plan is Premium" while a preview is on. Groups: "N groups". Thresholds: "N active" |
 | **People** | Users · Subject access requests · Data retention | Users: "N active accounts". Subject access: "N open" (requests not yet released) |
 | **Data** | Vendor imports · Exports · Audit log | Imports: "N files", or the word "Premium" on a Basic club. Audit: "N in 90 days" |
 | **You** | Profile and password, then the **Log out** button | "Two-factor on", "Two-factor required" (warn tone) or "Two-factor off" |

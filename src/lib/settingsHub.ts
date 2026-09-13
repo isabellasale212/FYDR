@@ -26,7 +26,7 @@ export function settingsGroups(o: {
   onPremium: boolean;
   previewingTier: boolean;
   tierWord: 'Basic' | 'Premium';
-  counts: { groups: number; thresholds: number; users: number | null; sarOpen: number | null; importBatches: number | null; auditRecent: number | null };
+  counts: { groups: number; thresholds: number; users: number | null; sarOpen: number | null; importBatches: number | null; auditRecent: number | null; setup?: { done: number; total: number } | null };
   mfa: 'on' | 'required' | 'off';
 }): HubCard[] {
   const medic = o.roles.includes('medic');
@@ -37,6 +37,11 @@ export function settingsGroups(o: {
       key: 'club',
       title: 'Club',
       rows: [
+        /* PATTERN-S8 C1: the setup checklist lives in Settings for good, its
+           count carrying the denominator; warn while a step is outstanding. */
+        ...(o.isAdmin && o.counts.setup
+          ? [{ key: 'setup', label: 'Setup checklist', sub: 'Athletes, groups, thresholds, staff, roles — what is still on a default', href: '/settings/setup', count: `${o.counts.setup.done} of ${o.counts.setup.total} done`, countTone: (o.counts.setup.done < o.counts.setup.total ? 'warn' : 'good') as 'warn' | 'good' }]
+          : []),
         { key: 'plan', label: 'Plan', sub: o.previewingTier ? 'Previewing Basic — the real plan is Premium' : 'What the club has bought', href: '/settings/club#plan', count: o.tierWord, countTone: o.previewingTier ? 'warn' : undefined },
         { key: 'club-details', label: 'Club details', sub: o.isAdmin ? 'Name, sport, timezone and badge' : 'Read by the sport scientist', href: o.isAdmin ? '/settings/club' : null, count: null },
         { key: 'groups', label: 'Groups', sub: 'Squad groups and who is in them', href: '/settings/groups', count: n(o.counts.groups, 'group') },

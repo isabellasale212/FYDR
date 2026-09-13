@@ -159,6 +159,10 @@ doc of its own yet — LEADERBOARD-SPEC.md is the only spec for it today.
 | 21 | Group detail | `/settings/groups/:groupId` | `screens/groups.md` | staff web, staff phone | coach, medical, admin | `/settings/groups` |
 | 32 | User management | `/settings/users` | `screens/user-management.md` | staff web | admin | `/settings` |
 | 32 | One user | `/settings/users/:userId` | `screens/user-management.md` | staff web | admin | `/settings/users` |
+| 64 | Club setup | `/settings/setup` | `screens/64-club-setup.md` | staff web, staff phone | sport scientist | `/settings` |
+
+  *Built 13 September 2026 (PATTERN-S8 C1): the setup checklist — five steps with counts, a list of remaining defaults, not a gate.*
+
 | 29 | Club | `/settings/club` | `screens/47-settings.md` | staff web, staff phone | every staff role; the club details form is sport scientist only | `/settings` |
 
   *Built 13 September 2026 (PATTERN-S8 C2): the Plan card (`#plan`, the preview switch for Fydr's own staff) and the Integrations card moved here from the hub, above the club details form. The hub at `/settings` is now four groups of destination rows — Club, People, Data, You — and holds no form.*

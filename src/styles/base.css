@@ -5673,6 +5673,108 @@ img.me-avatar {
     width: 100%;
   }
 }
+/* PATTERN-S8 C1 (2026-09-13): the setup checklist — five numbered steps,
+   outstanding rows on the warn wash, the progress bar in five segments, and
+   the dashboard's one status line while anything is outstanding. */
+.setup-bar {
+  display: flex;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-14);
+}
+.setup-bar-seg {
+  flex: 1 1 0;
+  height: 6px;
+  border-radius: var(--r-band);
+  background: var(--hair);
+}
+.setup-bar-done {
+  background: var(--accent);
+}
+.setup-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.setup-step {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  gap: var(--sp-14);
+  align-items: center;
+  padding: var(--sp-14) var(--sp-16);
+  border-top: 1px solid var(--hair);
+}
+.setup-step:first-child {
+  border-top: 0;
+}
+.setup-step-open {
+  background: var(--wash-warn);
+}
+.setup-n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--border);
+  background: var(--surf);
+  color: var(--muted);
+  font-weight: 600;
+  font-size: var(--fs-13);
+}
+.setup-n-done {
+  border-color: var(--border-good);
+  background: var(--wash-good);
+  color: var(--good-pill-text);
+}
+.setup-body {
+  min-width: 0;
+}
+.setup-title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-2);
+}
+.setup-state {
+  font-size: var(--fs-11);
+}
+.setup-count {
+  margin-top: var(--sp-4);
+  color: var(--muted);
+}
+.setup-cta {
+  min-height: 44px;
+  white-space: nowrap;
+}
+.setup-matters {
+  margin-top: var(--sp-14);
+  border-color: var(--border-warn);
+  background: var(--wash-warn);
+}
+.setup-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-12);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-14);
+  padding: var(--sp-10) var(--sp-16);
+  border-inline-start: 3px solid var(--warn);
+}
+.setup-line .btn-ghost {
+  min-height: 44px;
+}
+@media (max-width: 767px) {
+  .setup-step {
+    grid-template-columns: 30px minmax(0, 1fr);
+  }
+  .setup-cta {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
 /* PATTERN-S8 A1 (2026-09-13): Log out is a button, set apart from the lists,
    with the session it ends named beside it. */
 .set-logout-form {

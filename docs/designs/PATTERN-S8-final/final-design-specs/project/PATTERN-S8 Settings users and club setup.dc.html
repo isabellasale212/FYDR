@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/fonts.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/icons.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/colors.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/typography.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/spacing.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/shape.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/motion.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/base.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/styles.css" />
+<script src="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/_ds_bundle.js"></script>
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-core); color: var(--text); }
+  a { color: var(--accent); text-decoration: none; pointer-events: none; }
+  a:hover { color: var(--blue-600); }
+  * { transition: none !important; animation: none !important; }
+</style>
+</helmet>
+
+<div style="padding: 40px; background: var(--bg); box-sizing: border-box">
+
+  <div style="max-width: 1440px; margin: 0 auto 36px; display: flex; flex-direction: column; gap: 8px">
+    <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">PATTERN-S8 · FINAL · REVIEW BOARD · STATIC</p>
+    <p style="margin: 0; font-size: var(--t-hero); font-weight: var(--w-black); letter-spacing: var(--t-hero-tracking); line-height: var(--lh-tight); color: var(--text)">Settings, users and club setup</p>
+    <p style="margin: 0; max-width: 68ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Fourteen artboards: eleven staff desktop at 1440 &times; 900, three phone at 375 &times; 812. Artboard 0 is the setup checklist a club lands on the first time it signs in; 1 to 10 are the settings a running club uses. Settings is not one long page. It is four groups &mdash; the club, the people, the data, your own account &mdash; and every destination inside them uses the same shell: a title, one sentence saying what the screen governs and who it affects, the controls, and the consequence stated before the button that causes it. Destructive and irreversible work (retention, subject access, exports, roles) states scope, count and reversibility in the same sentence as the action. Nothing is clickable and no transitions are active. Signed in as Jane Pemberton (sport scientist, club admin) except artboard 10, which is Ruth Callaghan (medical). Ashcombe Rugby Club, 30 athletes, 7 staff. Board instant: Friday 11 September 2026, 09:12 Europe/London.</p>
+  </div>
+
+  <div style="max-width: 1440px; margin: 0 auto 40px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap-card)">
+    <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--on-tint-label)">THE GAP THIS CLOSES</p>
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">A row that looks pressable is pressable across all of it</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">Log out on the running hub is a 742px row whose only live target is a 4.8px chevron. Every row on this board is one control for its full width and height, and anything that ends a session or deletes data is a labelled button, not a row in a list.</p>
+    </div>
+    <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">SCOPE BEFORE ACTION</p>
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Who it touches, how many, and whether it can be undone</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Retention names the rows it will delete and the date they fall out. A role change names what the person gains and loses. An export reads its own filters back. The count is computed before the button, never after.</p>
+    </div>
+    <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">WHAT THIS BOARD REFUSES</p>
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">No table that scrolls sideways on a phone, no 5,000px hub</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">At 375 a table becomes a stack of cards carrying the same fields. The hub becomes four groups with counts, not forty rows in sequence. The audit log's filters live in a sheet rather than 6,287px above the entries.</p>
+    </div>
+  </div>
+
+  <p style="max-width: 1440px; margin: 0 auto 14px; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">Setting a club up, the hub, and the people who use it</p>
+  <p style="max-width: 68ch; margin: 0 0 18px; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Four groups, each a column, each row saying what it governs rather than repeating its own title. Destinations a role cannot open are not drawn. Roles and invitations follow: the club's seven staff, what each role can see, and the invitation that has not been accepted.</p>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 36px; align-items: flex-start; margin-bottom: 48px">
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">0 · Club setup · the first screen a new club sees <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 1440 × 900</span></p>
+      <div data-screen-label="00 Club setup" style="display: flex; width: 1440px; height: 900px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="flex: 0 0 214px; background: var(--surf); border-right: 1px solid var(--border); padding: 18px 12px; display: flex; flex-direction: column; gap: 4px; box-sizing: border-box">
+          <p style="margin: 0 0 14px; padding: 0 8px; font-family: var(--font-brand); font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--text)">Fydr.</p>
+          <sc-for list="{{ navSettings }}" as="n" hint-placeholder-count="9">
+            <span style="{{ n.style }}"><i class="{{ n.icon }}" style="{{ n.iconStyle }}"></i>{{ n.label }}</span>
+          </sc-for>
+          <span style="margin-top: auto; display: flex; flex-direction: column; gap: 2px; padding: 10px 8px; font-size: var(--t-body-xs); color: var(--muted)"><span style="font-weight: var(--w-bold); color: var(--text)">Jane Pemberton</span>Ashcombe Rugby Club · sport scientist</span>
+        </div>
+        <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+          <div style="flex: 1 1 auto; min-height: 0; padding: 30px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px">
+            <div>
+              <p style="margin: 0 0 4px; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">ASHCOMBE RUGBY CLUB · SET UP 03 SEPT 2026</p>
+              <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Getting Ashcombe set up</p>
+              <p style="margin: 6px 0 0; max-width: 80ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Five steps, in this order, because each one needs the one above it. You can use Fydr from the first step onwards &mdash; this is a list of what is still on a default, not a gate. It stops appearing once all five are done and lives in Settings after that.</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 16px">
+              <span style="flex: 0 0 auto; font-family: var(--font-num); font-size: 34px; font-weight: var(--w-semi); font-variant-numeric: tabular-nums; line-height: 1; color: var(--text)">2 <span style="font-size: 17px; font-weight: var(--w-regular); color: var(--muted)">of 5 done</span></span>
+              <span style="flex: 1 1 auto; display: flex; gap: 4px; height: 10px">
+                <sc-for list="{{ setupBars }}" as="b" hint-placeholder-count="5">
+                  <span style="{{ b.style }}"></span>
+                </sc-for>
+              </span>
+            </div>
+            <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden">
+              <div style="display: grid; grid-template-columns: 44px 2.2fr 3fr 1.4fr 170px; gap: 16px; align-items: center; padding: 10px 18px; background: var(--surf2)">
+                <sc-for list="{{ setupHead }}" as="h" hint-placeholder-count="5"><span style="{{ h.style }}">{{ h.label }}</span></sc-for>
+              </div>
+              <sc-for list="{{ setupSteps }}" as="s" hint-placeholder-count="5">
+                <div style="{{ s.rowStyle }}">
+                  <span style="{{ s.numStyle }}">{{ s.n }}</span>
+                  <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                    <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">{{ s.title }}</span>
+                    <span style="{{ s.stateStyle }}">{{ s.state }}</span>
+                  </span>
+                  <span style="font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ s.why }}</span>
+                  <span style="font-family: var(--font-num); font-size: var(--t-num-row); font-variant-numeric: tabular-nums; color: var(--text)">{{ s.count }}</span>
+                  <span style="{{ s.ctaStyle }}">{{ s.cta }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--gap-card)">
+              <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
+                <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--on-tint-label)">THE ONE THAT MATTERS MOST</p>
+                <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">Thresholds, because every colour in the app is currently a Fydr default</p>
+                <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">Ashcombe&rsquo;s dashboard is already flagging athletes against lines nobody at the club chose. The defaults are reasonable, not right, and the squad screen does not say which they are.</p>
+              </div>
+              <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
+                <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Nothing here is a prerequisite for anything else</p>
+                <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Athletes can submit from the day they are added, whether or not they are in a group, and a coach can run a session before any role has been reviewed. The order is the order that saves the most rework, not a sequence the software enforces.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">1 · Settings hub · four groups, one screen <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 1440 × 900</span></p>
+      <div data-screen-label="01 Settings hub" style="display: flex; width: 1440px; height: 900px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="flex: 0 0 214px; background: var(--surf); border-right: 1px solid var(--border); padding: 18px 12px; display: flex; flex-direction: column; gap: 4px; box-sizing: border-box">
+          <p style="margin: 0 0 14px; padding: 0 8px; font-family: var(--font-brand); font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--text)">Fydr.</p>
+          <sc-for list="{{ navSettings }}" as="n" hint-placeholder-count="9">
+            <span style="{{ n.style }}"><i class="{{ n.icon }}" style="{{ n.iconStyle }}"></i>{{ n.label }}</span>
+          </sc-for>
+          <span style="margin-top: auto; display: flex; flex-direction: column; gap: 2px; padding: 10px 8px; font-size: var(--t-body-xs); color: var(--muted)"><span style="font-weight: var(--w-bold); color: var(--text)">Jane Pemberton</span>Ashcombe Rugby Club · sport scientist</span>
+        </div>
+        <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+          <div style="flex: 1 1 auto; min-height: 0; padding: 30px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+            <div>
+              <p style="margin: 0 0 4px; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">ASHCOMBE RUGBY CLUB · 30 ATHLETES · 7 STAFF</p>
+              <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Settings</p>
+              <p style="margin: 6px 0 0; max-width: 76ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Four groups. Club settings change what everyone sees; account settings change only what you see. You are a club admin, so both are open to you &mdash; a coach sees the last group alone.</p>
+            </div>
+            <div style="flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gap-card); align-content: start">
+              <sc-for list="{{ hubGroups }}" as="g" hint-placeholder-count="4">
+                <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px; display: flex; flex-direction: column; gap: 10px">
+                  <div style="display: flex; align-items: baseline; gap: 8px">
+                    <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-black); line-height: var(--lh-tight); color: var(--text)">{{ g.title }}</p>
+                    <span style="margin-left: auto; font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--faint)">{{ g.count }}</span>
+                  </div>
+                  <p style="margin: 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ g.note }}</p>
+                  <div style="display: flex; flex-direction: column; gap: 2px">
+                    <sc-for list="{{ g.items }}" as="i" hint-placeholder-count="5">
+                      <span style="{{ i.rowStyle }}">
+                        <i class="{{ i.icon }}" style="font-size: 18px; color: var(--accent); flex: 0 0 auto"></i>
+                        <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px">
+                          <span style="font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">{{ i.label }}</span>
+                          <span style="font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ i.desc }}</span>
+                        </span>
+                        <span style="flex: 0 0 auto; color: var(--faint); font-size: 18px">&rsaquo;</span>
+                      </span>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="flex: 0 0 auto; display: flex; align-items: center; gap: 14px; flex-wrap: wrap">
+              <span style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border: 1px solid var(--accent); border-radius: var(--r); background: var(--surf); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box"><i class="ph ph-sign-out" style="font-size: 18px"></i>Log out of Fydr</span>
+              <span style="font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted)">Signed in on this browser since Monday 07 September. Logging out here does not sign you out on the phone.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">2 · Users and roles · seven staff, one invitation outstanding <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 1440 × 900</span></p>
+      <div data-screen-label="02 Users and roles" style="display: flex; width: 1440px; height: 900px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="flex: 0 0 214px; background: var(--surf); border-right: 1px solid var(--border); padding: 18px 12px; display: flex; flex-direction: column; gap: 4px; box-sizing: border-box">
+          <p style="margin: 0 0 14px; padding: 0 8px; font-family: var(--font-brand); font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--text)">Fydr.</p>
+          <sc-for list="{{ navSettings }}" as="n" hint-placeholder-count="9">
+            <span style="{{ n.style }}"><i class="{{ n.icon }}" style="{{ n.iconStyle }}"></i>{{ n.label }}</span>
+          </sc-for>
+          <span style="margin-top: auto; display: flex; flex-direction: column; gap: 2px; padding: 10px 8px; font-size: var(--t-body-xs); color: var(--muted)"><span style="font-weight: var(--w-bold); color: var(--text)">Jane Pemberton</span>Ashcombe Rugby Club · sport scientist</span>
+        </div>
+        <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+          <div style="flex: 1 1 auto; min-height: 0; padding: 26px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+            <div style="display: flex; align-items: flex-start; gap: 20px">
+              <div style="flex: 1 1 auto; min-width: 0">
+                <p style="margin: 0 0 4px; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">SETTINGS · PEOPLE · USERS AND ROLES</p>
+                <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Users and roles</p>
+                <p style="margin: 6px 0 0; max-width: 84ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Staff accounts only. Athlete accounts are managed from the squad. A role decides which screens open and which data is readable &mdash; medical notes are visible to the medical role alone, whatever else a person is.</p>
+              </div>
+              <span style="flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: var(--r); background: var(--accent); color: #fff; font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box"><i class="ph ph-user-plus" style="font-size: 18px"></i>Invite someone</span>
+            </div>
+            <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden">
+              <div style="display: grid; grid-template-columns: 2fr 1.3fr 1.5fr 1.1fr 150px; gap: 14px; align-items: center; padding: 10px 18px; background: var(--surf2)">
+                <sc-for list="{{ usersHead }}" as="h" hint-placeholder-count="5"><span style="{{ h.style }}">{{ h.label }}</span></sc-for>
+              </div>
+              <sc-for list="{{ usersRows }}" as="r" hint-placeholder-count="7">
+                <div style="{{ r.rowStyle }}">
+                  <span style="display: flex; align-items: center; gap: 10px; min-width: 0">
+                    <span style="{{ r.avStyle }}">{{ r.initials }}</span>
+                    <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                      <span style="font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">{{ r.name }}</span>
+                      <span style="font-size: var(--t-body-xs); color: var(--muted)">{{ r.email }}</span>
+                    </span>
+                  </span>
+                  <span style="{{ r.roleStyle }}">{{ r.role }}</span>
+                  <span style="font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ r.sees }}</span>
+                  <span style="font-family: var(--font-num); font-size: var(--t-body-sm); font-variant-numeric: tabular-nums; color: var(--muted)">{{ r.active }}</span>
+                  <span style="display: flex; justify-content: flex-end; gap: 8px">
+                    <span style="{{ r.actionStyle }}">{{ r.action }}</span>
+                  </span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--gap-card)">
+              <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: flex; flex-direction: column; gap: 8px">
+                <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">THE THREE RULES OF ROLES</p>
+                <sc-for list="{{ roleRules }}" as="x" hint-placeholder-count="3">
+                  <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--text); text-wrap: pretty">{{ x }}</p>
+                </sc-for>
+              </div>
+              <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
+                <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--on-tint-label)">OUTSTANDING INVITATION</p>
+                <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">Marcus Hale · coach · sent Tue 08 Sept, expires Tue 15 Sept</p>
+                <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">He has not signed in yet, so nothing has been shared with him. Resending replaces the old link; revoking makes it dead immediately.</p>
+                <div style="display: flex; gap: 10px; margin-top: 4px">
+                  <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid var(--accent); border-radius: var(--r); background: var(--surf); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Resend invitation</span>
+                  <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid var(--bad); border-radius: var(--r); background: var(--surf); color: var(--on-bad); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Revoke</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">3 · Change a role · what it grants, what it removes <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 1440 × 900</span></p>
+      <div data-screen-label="03 Change a role" style="display: flex; width: 1440px; height: 900px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="flex: 0 0 214px; background: var(--surf); border-right: 1px solid var(--border); padding: 18px 12px; display: flex; flex-direction: column; gap: 4px; box-sizing: border-box">
+          <p style="margin: 0 0 14px; padding: 0 8px; font-family: var(--font-brand); font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--text)">Fydr.</p>
+          <sc-for list="{{ navSettings }}" as="n" hint-placeholder-count="9">
+            <span style="{{ n.style }}"><i class="{{ n.icon }}" style="{{ n.iconStyle }}"></i>{{ n.label }}</span>
+          </sc-for>
+          <span style="margin-top: auto; display: flex; flex-direction: column; gap: 2px; padding: 10px 8px; font-size: var(--t-body-xs); color: var(--muted)"><span style="font-weight: var(--w-bold); color: var(--text)">Jane Pemberton</span>Ashcombe Rugby Club · sport scientist</span>
+        </div>
+        <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+          <div style="flex: 1 1 auto; min-height: 0; padding: 26px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+            <div>
+              <p style="margin: 0 0 4px; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">SETTINGS · PEOPLE · USERS · TOM BECKETT</p>
+              <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Change Tom Beckett&rsquo;s role</p>
+              <p style="margin: 6px 0 0; max-width: 84ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">One role per person. Pick the one that describes the job; the screens follow from it. A change takes effect the next time he loads a page, and it is written to the audit log with your name against it.</p>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap-card)">
+              <sc-for list="{{ roleCards }}" as="c" hint-placeholder-count="6">
+                <div style="{{ c.cardStyle }}">
+                  <div style="display: flex; align-items: center; gap: 8px">
+                    <span style="{{ c.radioStyle }}"></span>
+                    <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-black); line-height: var(--lh-tight); color: var(--text)">{{ c.name }}</p>
+                    <span style="{{ c.tagStyle }}">{{ c.tag }}</span>
+                  </div>
+                  <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ c.who }}</p>
+                  <div style="display: flex; flex-direction: column; gap: 3px; margin-top: 2px">
+                    <sc-for list="{{ c.can }}" as="l" hint-placeholder-count="4">
+                      <span style="{{ l.style }}"><i class="{{ l.icon }}" style="font-size: 15px; flex: 0 0 auto"></i>{{ l.text }}</span>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="background: var(--surf); border: 1px solid rgba(var(--warn-rgb), 0.5); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: flex; align-items: flex-start; gap: 16px">
+              <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+                <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Analyst &rarr; S&amp;C coach: he gains four screens and loses none</p>
+                <p style="margin: 0; max-width: 92ch; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Gains gym programme authoring, session creation, the schedule editor and athlete notes. Keeps reports, analytics and exports. Medical notes and injury detail stay closed &mdash; only the medical role reads those, and no other role can be given them. He is in two groups (Forwards, Academy); group membership is unchanged.</p>
+              </div>
+              <div style="flex: 0 0 auto; display: flex; flex-direction: column; gap: 8px; align-items: stretch">
+                <span style="display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 20px; border-radius: var(--r); background: var(--accent); color: #fff; font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Save role</span>
+                <span style="display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 20px; border: 1px solid var(--border); border-radius: var(--r); background: var(--surf); color: var(--text); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Cancel</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <p style="max-width: 1440px; margin: 0 auto 14px; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">Club setup: groups, thresholds, imports</p>
+  <p style="max-width: 68ch; margin: 0 0 18px; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">The three screens that change what every other screen shows. Groups are the filter on the whole app, so a group screen says how many athletes and which screens use it. A threshold is the line under the colour on a dashboard, so the screen says who it applies to and how many athletes are above it today.</p>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 36px; align-items: flex-start; margin-bottom: 48px">
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">4 · Groups · five groups, thirty athletes <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 1440 × 900</span></p>
+      <div data-screen-label="04 Groups" style="display: flex; width: 1440px; height: 900px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="flex: 0 0 214px; background: var(--surf); border-right: 1px solid var(--border); padding: 18px 12px; display: flex; flex-direction: column; gap: 4px; box-sizing: border-box">
+          <p style="margin: 0 0 14px; padding: 0 8px; font-family: var(--font-brand); font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--text)">Fydr.</p>
+          <sc-for list="{{ navSettings }}" as="n" hint-placeholder-count="9">
+            <span style="{{ n.style }}"><i class="{{ n.icon }}" style="{{ n.iconStyle }}"></i>{{ n.label }}</span>
+          </sc-for>
+          <span style="margin-top: auto; display: flex; flex-direction: column; gap: 2px; padding: 10px 8px; font-size: var(--t-body-xs); color: var(--muted)"><span style="font-weight: var(--w-bold); color: var(--text)">Jane Pemberton</span>Ashcombe Rugby Club · sport scientist</span>
+        </div>
+        <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+          <div style="flex: 1 1 auto; min-height: 0; padding: 26px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+            <div style="display: flex; align-items: flex-start; gap: 20px">
+              <div style="flex: 1 1 auto; min-width: 0">
+                <p style="margin: 0 0 4px; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">SETTINGS · CLUB · GROUPS</p>
+                <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Groups</p>
+                <p style="margin: 6px 0 0; max-width: 84ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">A group is the filter that appears above every squad screen, report and export, in the order set here. An athlete can be in several. Everyone stays in the squad whether or not they are in a group.</p>
+              </div>
+              <span style="flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: var(--r); background: var(--accent); color: #fff; font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box"><i class="ph ph-plus" style="font-size: 18px"></i>New group</span>
+            </div>
+            <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden">
+              <div style="display: grid; grid-template-columns: 88px 2fr 2.6fr 1.2fr 210px; gap: 14px; align-items: center; padding: 10px 18px; background: var(--surf2)">
+                <sc-for list="{{ groupsHead }}" as="h" hint-placeholder-count="5"><span style="{{ h.style }}">{{ h.label }}</span></sc-for>
+              </div>
+              <sc-for list="{{ groupsRows }}" as="r" hint-placeholder-count="5">
+                <div style="display: grid; grid-template-columns: 88px 2fr 2.6fr 1.2fr 210px; gap: 14px; align-items: center; padding: 12px 18px; border-top: 1px solid var(--hair)">
+                  <span style="display: flex; gap: 4px">
+                    <span style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid var(--border); border-radius: var(--r); background: var(--surf); color: var(--accent); font-size: 16px">&uarr;</span>
+                    <span style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid var(--border); border-radius: var(--r); background: var(--surf); color: var(--accent); font-size: 16px">&darr;</span>
+                  </span>
+                  <span style="display: flex; align-items: center; gap: 10px; min-width: 0">
+                    <span style="{{ r.dotStyle }}"></span>
+                    <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">{{ r.name }}</span>
+                  </span>
+                  <span style="font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ r.use }}</span>
+                  <span style="font-family: var(--font-num); font-size: var(--t-num-row); font-variant-numeric: tabular-nums; color: var(--text)">{{ r.count }}</span>
+                  <span style="display: flex; justify-content: flex-end; gap: 8px">
+                    <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 1px solid var(--border); border-radius: var(--r); background: var(--surf); color: var(--accent); font-size: var(--t-body-sm); font-weight: var(--w-bold); box-sizing: border-box">Members</span>
+                    <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 1px solid var(--border); border-radius: var(--r); background: var(--surf); color: var(--accent); font-size: var(--t-body-sm); font-weight: var(--w-bold); box-sizing: border-box">Rename</span>
+                  </span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--gap-card)">
+              <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
+                <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Deleting a group deletes no athlete and no data</p>
+                <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">It removes the filter and drops the group from any saved report or scheduled export that used it &mdash; those revert to the whole squad and say so in their heading. Rehab is the one exception: it is set by the medical role from an injury record, so it cannot be deleted here.</p>
+              </div>
+              <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
+                <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Three athletes are in no group</p>
+                <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Ben Ashworth, Kofi Mensah and Louis Traore. They appear under &ldquo;Whole squad&rdquo; and in every squad report, and they are invisible to anyone filtering by group. Not an error, but usually an oversight after an intake.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">5 · Thresholds · the lines under every colour <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 1440 × 900</span></p>
+      <div data-screen-label="05 Thresholds" style="display: flex; width: 1440px; height: 900px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="flex: 0 0 214px; background: var(--surf); border-right: 1px solid var(--border); padding: 18px 12px; display: flex; flex-direction: column; gap: 4px; box-sizing: border-box">
+          <p style="margin: 0 0 14px; padding: 0 8px; font-family: var(--font-brand); font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--text)">Fydr.</p>
+          <sc-for list="{{ navSettings }}" as="n" hint-placeholder-count="9">
+            <span style="{{ n.style }}"><i class="{{ n.icon }}" style="{{ n.iconStyle }}"></i>{{ n.label }}</span>
+          </sc-for>
+          <span style="margin-top: auto; display: flex; flex-direction: column; gap: 2px; padding: 10px 8px; font-size: var(--t-body-xs); color: var(--muted)"><span style="font-weight: var(--w-bold); color: var(--text)">Jane Pemberton</span>Ashcombe Rugby Club · sport scientist</span>
+        </div>
+        <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+          <div style="flex: 1 1 auto; min-height: 0; padding: 26px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+            <div>
+              <p style="margin: 0 0 4px; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">SETTINGS · CLUB · THRESHOLDS</p>
+              <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Thresholds</p>
+              <p style="margin: 6px 0 0; max-width: 84ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Every colour and every flag on a dashboard comes from a line set here. Changing a line changes what the squad screen shows immediately and does not alter a single recorded value. The count on the right is how many athletes cross the line on today&rsquo;s data.</p>
+            </div>
+            <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden">
+              <div style="display: grid; grid-template-columns: 2.1fr 1.5fr 150px 150px 1.5fr; gap: 14px; align-items: center; padding: 10px 18px; background: var(--surf2)">
+                <sc-for list="{{ thrHead }}" as="h" hint-placeholder-count="5"><span style="{{ h.style }}">{{ h.label }}</span></sc-for>
+              </div>
+              <sc-for list="{{ thrRows }}" as="r" hint-placeholder-count="6">
+                <div style="display: grid; grid-template-columns: 2.1fr 1.5fr 150px 150px 1.5fr; gap: 14px; align-items: center; padding: 10px 18px; border-top: 1px solid var(--hair)">
+                  <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                    <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">{{ r.metric }}</span>
+                    <span style="font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ r.rule }}</span>
+                  </span>
+                  <span style="font-size: var(--t-body-sm); font-weight: var(--w-regular); color: var(--muted)">{{ r.applies }}</span>
+                  <span style="display: inline-flex; align-items: center; justify-content: flex-end; min-height: 44px; padding: 0 12px; background: var(--field); border: 1px solid var(--border); border-radius: var(--r); font-family: var(--font-num); font-size: var(--t-num-row); font-variant-numeric: tabular-nums; color: var(--text); box-sizing: border-box">{{ r.warn }}</span>
+                  <span style="display: inline-flex; align-items: center; justify-content: flex-end; min-height: 44px; padding: 0 12px; background: var(--field); border: 1px solid var(--border); border-radius: var(--r); font-family: var(--font-num); font-size: var(--t-num-row); font-variant-numeric: tabular-nums; color: var(--text); box-sizing: border-box">{{ r.flag }}</span>
+                  <span style="{{ r.effectStyle }}">{{ r.effect }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap">
+              <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border-radius: var(--r); background: var(--accent); color: #fff; font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Save thresholds</span>
+              <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border: 1px solid var(--border); border-radius: var(--r); background: var(--surf); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Reset to Fydr defaults</span>
+              <span style="font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted)">Two lines edited and not yet saved. Saving is written to the audit log; nothing is applied until you save.</span>
+            </div>
+            <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
+              <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--on-tint-label)">IF YOU SAVE THESE TWO CHANGES</p>
+              <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">Four more athletes carry a flag tomorrow morning, eleven instead of seven</p>
+              <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">Sleep flags at 5 rather than 4 adds Ross Gallagher, Ade Oyelaran and two academy athletes. Acute:chronic flagging above 1.3 rather than 1.5 adds Ollie Hartnell. No alert is sent from a threshold change and no athlete is told.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">6 · Integrations and GPS imports · one connected, one file waiting <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 1440 × 900</span></p>
+      <div data-screen-label="06 Integrations and imports" style="display: flex; width: 1440px; height: 900px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="flex: 0 0 214px; background: var(--surf); border-right: 1px solid var(--border); padding: 18px 12px; display: flex; flex-direction: column; gap: 4px; box-sizing: border-box">
+          <p style="margin: 0 0 14px; padding: 0 8px; font-family: var(--font-brand); font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--text)">Fydr.</p>
+          <sc-for list="{{ navSettings }}" as="n" hint-placeholder-count="9">
+            <span style="{{ n.style }}"><i class="{{ n.icon }}" style="{{ n.iconStyle }}"></i>{{ n.label }}</span>
+          </sc-for>
+          <span style="margin-top: auto; display: flex; flex-direction: column; gap: 2px; padding: 10px 8px; font-size: var(--t-body-xs); color: var(--muted)"><span style="font-weight: var(--w-bold); color: var(--text)">Jane Pemberton</span>Ashcombe Rugby Club · sport scientist</span>
+        </div>
+        <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+          <div style="flex: 1 1 auto; min-height: 0; padding: 26px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+            <div>
+              <p style="margin: 0 0 4px; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">SETTINGS · CLUB · INTEGRATIONS AND IMPORTS</p>
+              <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Integrations and imports</p>
+              <p style="margin: 6px 0 0; max-width: 84ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Data that arrives from somewhere else. An import is matched to athletes by name, and anything that does not match is held rather than guessed &mdash; nothing enters the squad&rsquo;s record until every row has a person against it.</p>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap-card)">
+              <sc-for list="{{ integrations }}" as="i" hint-placeholder-count="3">
+                <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
+                  <div style="display: flex; align-items: center; gap: 8px">
+                    <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-black); line-height: var(--lh-tight); color: var(--text)">{{ i.name }}</p>
+                    <span style="{{ i.stateStyle }}">{{ i.state }}</span>
+                  </div>
+                  <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ i.desc }}</p>
+                  <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--faint)">{{ i.meta }}</p>
+                  <span style="{{ i.btnStyle }}">{{ i.btn }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <p style="margin: 4px 0 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">LAST IMPORT · CATAPULT · WEDNESDAY 09 SEPT 2026, 18:42</p>
+            <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden">
+              <div style="display: grid; grid-template-columns: 2fr 1.4fr 1.4fr 1.4fr 190px; gap: 14px; align-items: center; padding: 10px 18px; background: var(--surf2)">
+                <sc-for list="{{ importHead }}" as="h" hint-placeholder-count="5"><span style="{{ h.style }}">{{ h.label }}</span></sc-for>
+              </div>
+              <sc-for list="{{ importRows }}" as="r" hint-placeholder-count="3">
+                <div style="{{ r.rowStyle }}">
+                  <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                    <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">{{ r.file }}</span>
+                    <span style="font-size: var(--t-body-xs); color: var(--muted)">{{ r.session }}</span>
+                  </span>
+                  <span style="font-family: var(--font-num); font-size: var(--t-body-sm); font-variant-numeric: tabular-nums; color: var(--muted)">{{ r.rows }}</span>
+                  <span style="font-family: var(--font-num); font-size: var(--t-body-sm); font-variant-numeric: tabular-nums; color: var(--muted)">{{ r.matched }}</span>
+                  <span style="{{ r.stateStyle }}">{{ r.state }}</span>
+                  <span style="display: flex; justify-content: flex-end"><span style="{{ r.actionStyle }}">{{ r.action }}</span></span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="background: var(--surf); border: 1px solid rgba(var(--warn-rgb), 0.5); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
+              <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Two rows in Wednesday&rsquo;s file have no athlete: &ldquo;J. Traore&rdquo; and &ldquo;Hartnell O&rdquo;</p>
+              <p style="margin: 0; max-width: 96ch; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Fydr will not guess between Louis Traore and Jerome Traore, and &ldquo;Hartnell O&rdquo; is a format the squad list does not use. Match them once and the vendor&rsquo;s spelling is remembered for every future file. Until they are matched the other 26 rows are already in; these two are held, not lost.</p>
+              <div style="display: flex; gap: 10px; margin-top: 4px">
+                <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: var(--r); background: var(--accent); color: #fff; font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Match 2 rows</span>
+                <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border: 1px solid var(--border); border-radius: var(--r); background: var(--surf); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Discard the two rows</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <p style="max-width: 1440px; margin: 0 auto 14px; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">Data and privacy: the log, the export, the deletion, the request</p>
+  <p style="max-width: 68ch; margin: 0 0 18px; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Four screens a club is judged on. Each one states what it covers and what it cannot cover, because a log with a gap in it is worse than no log if the gap is not named. Subject access is the medical role&rsquo;s screen; the other three are the admin&rsquo;s.</p>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 36px; align-items: flex-start; margin-bottom: 48px">
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">7 · Audit log · filters on one line, entries below <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 1440 × 900</span></p>
+      <div data-screen-label="07 Audit log" style="display: flex; width: 1440px; height: 900px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="flex: 0 0 214px; background: var(--surf); border-right: 1px solid var(--border); padding: 18px 12px; display: flex; flex-direction: column; gap: 4px; box-sizing: border-box">
+          <p style="margin: 0 0 14px; padding: 0 8px; font-family: var(--font-brand); font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--text)">Fydr.</p>
+          <sc-for list="{{ navSettings }}" as="n" hint-placeholder-count="9">
+            <span style="{{ n.style }}"><i class="{{ n.icon }}" style="{{ n.iconStyle }}"></i>{{ n.label }}</span>
+          </sc-for>
+          <span style="margin-top: auto; display: flex; flex-direction: column; gap: 2px; padding: 10px 8px; font-size: var(--t-body-xs); color: var(--muted)"><span style="font-weight: var(--w-bold); color: var(--text)">Jane Pemberton</span>Ashcombe Rugby Club · sport scientist</span>
+        </div>
+        <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+          <div style="flex: 1 1 auto; min-height: 0; padding: 26px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px">
+            <div style="display: flex; align-items: flex-start; gap: 20px">
+              <div style="flex: 1 1 auto; min-width: 0">
+                <p style="margin: 0 0 4px; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">SETTINGS · DATA AND PRIVACY · AUDIT LOG</p>
+                <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Audit log</p>
+                <p style="margin: 6px 0 0; max-width: 84ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Who changed what, and when. Entries cannot be edited or deleted by anyone, including you. Reading a screen is not logged; changing a record, a role, a threshold or an export is.</p>
+              </div>
+              <span style="flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border: 1px solid var(--accent); border-radius: var(--r); background: var(--surf); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box"><i class="ph ph-download-simple" style="font-size: 18px"></i>Export this view</span>
+            </div>
+            <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px 18px; display: flex; flex-direction: column; gap: 10px">
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+                <span style="font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint); margin-right: 4px">WHAT CHANGED</span>
+                <sc-for list="{{ auditChips }}" as="c" hint-placeholder-count="8">
+                  <span style="{{ c.style }}">{{ c.label }}</span>
+                </sc-for>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+                <span style="display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 14px; background: var(--field); border: 1px solid var(--border); border-radius: var(--r); font-size: var(--t-card-sm); font-weight: var(--w-semi); color: var(--text); box-sizing: border-box">Last 30 days<span style="color: var(--faint)">&#9662;</span></span>
+                <span style="display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 14px; background: var(--field); border: 1px solid var(--border); border-radius: var(--r); font-size: var(--t-card-sm); font-weight: var(--w-semi); color: var(--text); box-sizing: border-box">Any staff member<span style="color: var(--faint)">&#9662;</span></span>
+                <span style="display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 14px; background: var(--field); border: 1px solid var(--border); border-radius: var(--r); font-size: var(--t-card-sm); font-weight: var(--w-semi); color: var(--text); box-sizing: border-box">Any athlete<span style="color: var(--faint)">&#9662;</span></span>
+                <span style="display: inline-flex; align-items: center; gap: 8px; flex: 1 1 240px; min-height: 44px; padding: 0 14px; background: var(--field); border: 1px solid var(--border); border-radius: var(--r); font-size: var(--t-card-sm); color: var(--faint); box-sizing: border-box"><i class="ph ph-magnifying-glass" style="font-size: 17px"></i>Search the detail of an entry</span>
+                <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: var(--r); background: var(--accent); color: #fff; font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Apply</span>
+                <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 1px solid var(--border); border-radius: var(--r); background: var(--surf); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Clear</span>
+              </div>
+              <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-body-sm); font-variant-numeric: tabular-nums; color: var(--muted)">418 entries · Thu 13 Aug to Fri 11 Sept 2026 · showing 1&ndash;8</p>
+            </div>
+            <div style="flex: 1 1 auto; min-height: 0; background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column">
+              <div style="flex: 0 0 auto; display: grid; grid-template-columns: 165px 150px 1.2fr 2.6fr; gap: 14px; align-items: center; padding: 10px 18px; background: var(--surf2)">
+                <sc-for list="{{ auditHead }}" as="h" hint-placeholder-count="4"><span style="{{ h.style }}">{{ h.label }}</span></sc-for>
+              </div>
+              <div style="flex: 1 1 auto; min-height: 0; overflow: hidden">
+                <sc-for list="{{ auditRows }}" as="r" hint-placeholder-count="8">
+                  <div style="display: grid; grid-template-columns: 165px 150px 1.2fr 2.6fr; gap: 14px; align-items: baseline; padding: 11px 18px; border-top: 1px solid var(--hair)">
+                    <span style="font-family: var(--font-num); font-size: var(--t-body-sm); font-variant-numeric: tabular-nums; color: var(--muted)">{{ r.when }}</span>
+                    <span style="{{ r.typeStyle }}">{{ r.type }}</span>
+                    <span style="font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">{{ r.who }}</span>
+                    <span style="font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ r.what }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">The chips are the kinds of change present in this log, not a fixed list &mdash; a kind appears once something of it has been written. Sessions and schedule changes are not written yet, so there is no chip for them and filtering cannot find them.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">8 · Exports · the file reads its own filters back <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 1440 × 900</span></p>
+      <div data-screen-label="08 Exports" style="display: flex; width: 1440px; height: 900px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="flex: 0 0 214px; background: var(--surf); border-right: 1px solid var(--border); padding: 18px 12px; display: flex; flex-direction: column; gap: 4px; box-sizing: border-box">
+          <p style="margin: 0 0 14px; padding: 0 8px; font-family: var(--font-brand); font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--text)">Fydr.</p>
+          <sc-for list="{{ navSettings }}" as="n" hint-placeholder-count="9">
+            <span style="{{ n.style }}"><i class="{{ n.icon }}" style="{{ n.iconStyle }}"></i>{{ n.label }}</span>
+          </sc-for>
+          <span style="margin-top: auto; display: flex; flex-direction: column; gap: 2px; padding: 10px 8px; font-size: var(--t-body-xs); color: var(--muted)"><span style="font-weight: var(--w-bold); color: var(--text)">Jane Pemberton</span>Ashcombe Rugby Club · sport scientist</span>
+        </div>
+        <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+          <div style="flex: 1 1 auto; min-height: 0; padding: 26px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+            <div>
+              <p style="margin: 0 0 4px; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">SETTINGS · DATA AND PRIVACY · EXPORTS</p>
+              <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Generate an export</p>
+              <p style="margin: 6px 0 0; max-width: 84ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Your role can export training, wellness, gym, testing, attendance and squad data. Medical records are never included in an export from this screen, whatever is ticked &mdash; they leave only through a subject access request.</p>
+            </div>
+            <div style="display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: var(--gap-card)">
+              <div style="display: flex; flex-direction: column; gap: var(--gap-card)">
+                <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: flex; flex-direction: column; gap: 10px">
+                  <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">WHAT TO INCLUDE</p>
+                  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+                    <sc-for list="{{ exportDomains }}" as="d" hint-placeholder-count="6">
+                      <span style="{{ d.rowStyle }}">
+                        <span style="{{ d.boxStyle }}">{{ d.mark }}</span>
+                        <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                          <span style="font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">{{ d.name }}</span>
+                          <span style="font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--muted)">{{ d.rows }}</span>
+                        </span>
+                      </span>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: flex; flex-direction: column; gap: 10px">
+                  <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">WHO, AND OVER WHAT PERIOD</p>
+                  <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+                    <span style="display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 14px; background: var(--field); border: 1px solid var(--border); border-radius: var(--r); font-size: var(--t-card-sm); font-weight: var(--w-semi); color: var(--text); box-sizing: border-box">Whole squad · 30 athletes<span style="color: var(--faint)">&#9662;</span></span>
+                    <span style="display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 14px; background: var(--field); border: 1px solid var(--border); border-radius: var(--r); font-family: var(--font-num); font-size: var(--t-card-sm); font-variant-numeric: tabular-nums; color: var(--text); box-sizing: border-box">13 Aug 2026<span style="color: var(--faint)">&#9662;</span></span>
+                    <span style="font-size: var(--t-body-sm); color: var(--muted)">to</span>
+                    <span style="display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 14px; background: var(--field); border: 1px solid var(--border); border-radius: var(--r); font-family: var(--font-num); font-size: var(--t-card-sm); font-variant-numeric: tabular-nums; color: var(--text); box-sizing: border-box">11 Sept 2026<span style="color: var(--faint)">&#9662;</span></span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+                    <sc-for list="{{ rangeChips }}" as="c" hint-placeholder-count="4">
+                      <span style="{{ c.style }}">{{ c.label }}</span>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+              <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 8px">
+                <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--on-tint-label)">WHAT YOU WILL GET</p>
+                <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">One .zip, five .csv files, 9,214 rows</p>
+                <div style="display: flex; flex-direction: column; gap: 2px">
+                  <sc-for list="{{ exportFiles }}" as="f" hint-placeholder-count="5">
+                    <span style="display: flex; align-items: baseline; gap: 10px; padding: 3px 0; border-bottom: 1px solid var(--blue-200)">
+                      <span style="flex: 1 1 auto; font-family: var(--font-mono); font-size: var(--t-num-meta); color: var(--on-tint-value)">{{ f.name }}</span>
+                      <span style="flex: 0 0 auto; font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--on-tint-meta)">{{ f.rows }}</span>
+                    </span>
+                  </sc-for>
+                </div>
+                <p style="margin: 2px 0 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">Every file&rsquo;s first line names the club, the scope, the period, your name and the instant it was generated. Athlete names are included because you are exporting for your own club; a file leaving the club should be pseudonymised first.</p>
+                <span style="display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 20px; border-radius: var(--r); background: var(--accent); color: #fff; font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box; margin-top: 4px">Generate export</span>
+                <p style="margin: 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">Generating is written to the audit log against your name. The link expires after seven days.</p>
+              </div>
+            </div>
+            <div>
+              <p style="margin: 0 0 8px; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">EXPORTS IN THE LAST 30 DAYS</p>
+              <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden">
+                <sc-for list="{{ exportRecent }}" as="r" hint-placeholder-count="3">
+                  <div style="{{ r.rowStyle }}">
+                    <span style="font-family: var(--font-num); font-size: var(--t-body-sm); font-variant-numeric: tabular-nums; color: var(--muted)">{{ r.when }}</span>
+                    <span style="font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">{{ r.who }}</span>
+                    <span style="font-size: var(--t-body-sm); font-weight: var(--w-regular); color: var(--muted)">{{ r.what }}</span>
+                    <span style="{{ r.stateStyle }}">{{ r.state }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">9 · Data retention · what falls out, and when <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 1440 × 900</span></p>
+      <div data-screen-label="09 Data retention" style="display: flex; width: 1440px; height: 900px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="flex: 0 0 214px; background: var(--surf); border-right: 1px solid var(--border); padding: 18px 12px; display: flex; flex-direction: column; gap: 4px; box-sizing: border-box">
+          <p style="margin: 0 0 14px; padding: 0 8px; font-family: var(--font-brand); font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--text)">Fydr.</p>
+          <sc-for list="{{ navSettings }}" as="n" hint-placeholder-count="9">
+            <span style="{{ n.style }}"><i class="{{ n.icon }}" style="{{ n.iconStyle }}"></i>{{ n.label }}</span>
+          </sc-for>
+          <span style="margin-top: auto; display: flex; flex-direction: column; gap: 2px; padding: 10px 8px; font-size: var(--t-body-xs); color: var(--muted)"><span style="font-weight: var(--w-bold); color: var(--text)">Jane Pemberton</span>Ashcombe Rugby Club · sport scientist</span>
+        </div>
+        <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+          <div style="flex: 1 1 auto; min-height: 0; padding: 26px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+            <div>
+              <p style="margin: 0 0 4px; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">SETTINGS · DATA AND PRIVACY · RETENTION</p>
+              <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Data retention</p>
+              <p style="margin: 6px 0 0; max-width: 84ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">How long Ashcombe keeps each kind of record before it is deleted for good. Nothing is deleted automatically without a preview: you see the exact rows first, and the run is written to the audit log. Deletion is permanent and there is no restore.</p>
+            </div>
+            <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden">
+              <div style="display: grid; grid-template-columns: 2fr 1.5fr 1.3fr 1.5fr 1.3fr; gap: 14px; align-items: center; padding: 10px 18px; background: var(--surf2)">
+                <sc-for list="{{ retHead }}" as="h" hint-placeholder-count="5"><span style="{{ h.style }}">{{ h.label }}</span></sc-for>
+              </div>
+              <sc-for list="{{ retRows }}" as="r" hint-placeholder-count="6">
+                <div style="display: grid; grid-template-columns: 2fr 1.5fr 1.3fr 1.5fr 1.3fr; gap: 14px; align-items: center; padding: 10px 18px; border-top: 1px solid var(--hair)">
+                  <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                    <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">{{ r.kind }}</span>
+                    <span style="font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ r.note }}</span>
+                  </span>
+                  <span style="{{ r.keepStyle }}">{{ r.keep }}</span>
+                  <span style="font-family: var(--font-num); font-size: var(--t-num-row); font-variant-numeric: tabular-nums; color: var(--text)">{{ r.held }}</span>
+                  <span style="font-family: var(--font-num); font-size: var(--t-body-sm); font-variant-numeric: tabular-nums; color: var(--muted)">{{ r.oldest }}</span>
+                  <span style="{{ r.dueStyle }}">{{ r.due }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: var(--gap-card)">
+              <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: flex; flex-direction: column; gap: 8px">
+                <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Two rules a retention period cannot break</p>
+                <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">A medical record for an athlete who was under 18 when it was written is kept until their 25th birthday, whatever is set here. The audit log itself is never deleted &mdash; shortening it would remove the evidence that anything was deleted at all.</p>
+              </div>
+              <div style="background: var(--surf); border: 1px solid rgba(var(--bad-rgb), 0.5); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: flex; flex-direction: column; gap: 8px">
+                <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--on-bad-meta)">PREVIEW OF THE NEXT RUN</p>
+                <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">2,184 rows across 11 athletes would be deleted for good</p>
+                <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">1,902 wellness entries dated before 11 Sept 2024, 244 GPS session rows and 38 gym sessions. Nine of the eleven athletes have left the club. Two are current: Ade Oyelaran and Sam Ridley, whose oldest entries fall outside the window. No medical record is in this run.</p>
+                <div style="display: flex; gap: 10px; margin-top: 2px; flex-wrap: wrap">
+                  <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border: 1px solid var(--accent); border-radius: var(--r); background: var(--surf); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Download the row list</span>
+                  <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: var(--r); background: var(--bad); color: #fff; font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Delete 2,184 rows</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">10 · Subject access · medical role, Ruth Callaghan <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 1440 × 900</span></p>
+      <div data-screen-label="10 Subject access" style="display: flex; width: 1440px; height: 900px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="flex: 0 0 214px; background: var(--surf); border-right: 1px solid var(--border); padding: 18px 12px; display: flex; flex-direction: column; gap: 4px; box-sizing: border-box">
+          <p style="margin: 0 0 14px; padding: 0 8px; font-family: var(--font-brand); font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--text)">Fydr.</p>
+          <sc-for list="{{ navMedical }}" as="n" hint-placeholder-count="8">
+            <span style="{{ n.style }}"><i class="{{ n.icon }}" style="{{ n.iconStyle }}"></i>{{ n.label }}</span>
+          </sc-for>
+          <span style="margin-top: auto; display: flex; flex-direction: column; gap: 2px; padding: 10px 8px; font-size: var(--t-body-xs); color: var(--muted)"><span style="font-weight: var(--w-bold); color: var(--text)">Ruth Callaghan</span>Ashcombe Rugby Club · medical</span>
+        </div>
+        <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+          <div style="flex: 1 1 auto; min-height: 0; padding: 26px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+            <div>
+              <p style="margin: 0 0 4px; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">SETTINGS · DATA AND PRIVACY · SUBJECT ACCESS</p>
+              <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Subject access requests</p>
+              <p style="margin: 6px 0 0; max-width: 84ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">An athlete asking for everything Ashcombe holds about them. The club has one calendar month to answer. A pack includes medical records, so it is assembled by the medical role &mdash; a club admin can see that a request exists and its deadline, and nothing inside it.</p>
+            </div>
+            <div style="display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: var(--gap-card); align-items: start">
+              <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden">
+                <div style="display: grid; grid-template-columns: 1.6fr 1.3fr 1.2fr 1.1fr; gap: 14px; align-items: center; padding: 10px 18px; background: var(--surf2)">
+                  <sc-for list="{{ sarHead }}" as="h" hint-placeholder-count="4"><span style="{{ h.style }}">{{ h.label }}</span></sc-for>
+                </div>
+                <sc-for list="{{ sarRows }}" as="r" hint-placeholder-count="4">
+                  <div style="{{ r.rowStyle }}">
+                    <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                      <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">{{ r.who }}</span>
+                      <span style="font-size: var(--t-body-xs); color: var(--muted)">{{ r.by }}</span>
+                    </span>
+                    <span style="font-family: var(--font-num); font-size: var(--t-body-sm); font-variant-numeric: tabular-nums; color: var(--muted)">{{ r.made }}</span>
+                    <span style="{{ r.dueStyle }}">{{ r.due }}</span>
+                    <span style="{{ r.stateStyle }}">{{ r.state }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 8px">
+                <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--on-tint-label)">JOSH ABIOLA · DUE WED 30 SEPT · 19 DAYS LEFT</p>
+                <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">Everything Ashcombe holds about him, in one pack</p>
+                <div style="display: flex; flex-direction: column; gap: 2px">
+                  <sc-for list="{{ sarPack }}" as="p" hint-placeholder-count="7">
+                    <span style="display: flex; align-items: baseline; gap: 10px; padding: 4px 0; border-bottom: 1px solid var(--blue-200)">
+                      <span style="flex: 1 1 auto; font-size: var(--t-body-sm); font-weight: var(--w-semi); color: var(--on-tint-value)">{{ p.name }}</span>
+                      <span style="flex: 0 0 auto; font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--on-tint-meta)">{{ p.count }}</span>
+                    </span>
+                  </sc-for>
+                </div>
+                <p style="margin: 2px 0 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">Coach notes naming another athlete are redacted before the pack is built; the redaction is listed so he can see something was withheld and why. Building the pack is itself a logged event.</p>
+                <span style="display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 20px; border-radius: var(--r); background: var(--accent); color: #fff; font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box; margin-top: 4px">Build the pack</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <p style="max-width: 1440px; margin: 0 auto 14px; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">The same three ideas at 375</p>
+  <p style="max-width: 68ch; margin: 0 0 18px; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">The hub becomes four groups with counts instead of forty rows. The audit log keeps its filters in a sheet and its entries as cards. And the athlete&rsquo;s own notification screen &mdash; the one settings screen most people in the club will ever open &mdash; puts the single switch that turns everything off at the top, where it is being looked for.</p>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 36px; align-items: flex-start; margin-bottom: 48px">
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">11 · Settings hub, phone <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 375 × 812</span></p>
+      <div data-screen-label="11 Settings hub phone" style="display: flex; flex-direction: column; width: 375px; height: 812px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: 26px; box-sizing: border-box">
+        <div style="flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 10px 20px 4px; font-family: var(--font-num); font-size: 13px; font-weight: var(--w-semi); color: var(--text)"><span>09:12</span><span style="display: flex; gap: 5px"><i class="ph-fill ph-cell-signal-full"></i><i class="ph-fill ph-wifi-high"></i><i class="ph-fill ph-battery-high"></i></span></div>
+        <div style="flex: 0 0 auto; padding: 8px 18px 12px; border-bottom: 1px solid var(--border); background: var(--surf)">
+          <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">ASHCOMBE RUGBY CLUB</p>
+          <p style="margin: 2px 0 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Settings</p>
+        </div>
+        <div style="flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 14px 18px; display: flex; flex-direction: column; gap: 10px">
+          <sc-for list="{{ hubPhone }}" as="g" hint-placeholder-count="4">
+            <span style="display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 12px 14px; background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); box-sizing: border-box">
+              <i class="{{ g.icon }}" style="font-size: 22px; color: var(--accent); flex: 0 0 auto"></i>
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">{{ g.title }}</span>
+                <span style="font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ g.note }}</span>
+              </span>
+              <span style="flex: 0 0 auto; color: var(--faint); font-size: 20px">&rsaquo;</span>
+            </span>
+          </sc-for>
+          <span style="display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; margin-top: 4px; border: 1px solid var(--accent); border-radius: var(--r); background: var(--surf); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box"><i class="ph ph-sign-out" style="font-size: 18px"></i>Log out of Fydr</span>
+          <p style="margin: 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Fydr 2.4.1 · signed in as Jane Pemberton · sport scientist, club admin</p>
+        </div>
+        <div style="flex: 0 0 auto; background: var(--surf); border-top: 1px solid var(--border); padding: 8px 8px 0">
+          <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr))">
+            <sc-for list="{{ tabsStaff }}" as="b" hint-placeholder-count="5">
+              <span style="display: flex; flex-direction: column; align-items: center; gap: 3px; min-height: 44px; padding: 4px 0">
+                <i class="{{ b.icon }}" style="{{ b.iconStyle }}"></i>
+                <span style="{{ b.labelStyle }}">{{ b.label }}</span>
+              </span>
+            </sc-for>
+          </div>
+          <div aria-hidden="true" style="height: 20px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">12 · Audit log, phone · filters in a sheet, entries as cards <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 375 × 812</span></p>
+      <div data-screen-label="12 Audit log phone" style="position: relative; display: flex; flex-direction: column; width: 375px; height: 812px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: 26px; box-sizing: border-box">
+        <div style="flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 10px 20px 4px; font-family: var(--font-num); font-size: 13px; font-weight: var(--w-semi); color: var(--text)"><span>09:12</span><span style="display: flex; gap: 5px"><i class="ph-fill ph-cell-signal-full"></i><i class="ph-fill ph-wifi-high"></i><i class="ph-fill ph-battery-high"></i></span></div>
+        <div style="flex: 0 0 auto; padding: 8px 18px 12px; border-bottom: 1px solid var(--border); background: var(--surf); display: flex; align-items: flex-end; gap: 10px">
+          <div style="flex: 1 1 auto; min-width: 0">
+            <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">DATA AND PRIVACY</p>
+            <p style="margin: 2px 0 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Audit log</p>
+          </div>
+          <span style="flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid var(--accent); border-radius: var(--r); background: var(--surf); color: var(--accent); font-size: var(--t-body-sm); font-weight: var(--w-bold); box-sizing: border-box"><i class="ph ph-funnel" style="font-size: 16px"></i>Filters · 2</span>
+        </div>
+        <div style="flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 12px 18px; display: flex; flex-direction: column; gap: 8px">
+          <p style="margin: 0; font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--muted)">Thresholds and roles · last 30 days · 24 entries</p>
+          <sc-for list="{{ auditPhone }}" as="r" hint-placeholder-count="5">
+            <span style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); box-sizing: border-box">
+              <span style="display: flex; align-items: center; gap: 8px">
+                <span style="{{ r.typeStyle }}">{{ r.type }}</span>
+                <span style="margin-left: auto; font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--faint)">{{ r.when }}</span>
+              </span>
+              <span style="font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">{{ r.who }}</span>
+              <span style="font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ r.what }}</span>
+            </span>
+          </sc-for>
+          <span style="display: inline-flex; align-items: center; justify-content: center; min-height: 48px; border: 1px solid var(--accent); border-radius: var(--r); background: var(--surf); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Load 19 more</span>
+        </div>
+        <div style="position: absolute; left: 0; right: 0; bottom: 0; background: var(--surf); border-top: 1px solid var(--border); border-radius: 22px 22px 26px 26px; box-shadow: 0 -10px 30px var(--scrim); padding: 10px 18px 0; display: flex; flex-direction: column; gap: 10px">
+          <span aria-hidden="true" style="width: 44px; height: 4px; border-radius: 2px; background: var(--track-off); align-self: center"></span>
+          <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-black); line-height: var(--lh-tight); color: var(--text)">Filter the log</p>
+          <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">WHAT CHANGED</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px">
+            <sc-for list="{{ auditChipsPhone }}" as="c" hint-placeholder-count="8">
+              <span style="{{ c.style }}">{{ c.label }}</span>
+            </sc-for>
+          </div>
+          <div style="display: flex; gap: 8px">
+            <span style="flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 12px; background: var(--field); border: 1px solid var(--border); border-radius: var(--r); font-family: var(--font-num); font-size: var(--t-body-sm); font-variant-numeric: tabular-nums; color: var(--text); box-sizing: border-box">13 Aug 2026</span>
+            <span style="flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 12px; background: var(--field); border: 1px solid var(--border); border-radius: var(--r); font-family: var(--font-num); font-size: var(--t-body-sm); font-variant-numeric: tabular-nums; color: var(--text); box-sizing: border-box">11 Sept 2026</span>
+          </div>
+          <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; background: var(--field); border: 1px solid var(--border); border-radius: var(--r); font-size: var(--t-card-sm); font-weight: var(--w-semi); color: var(--text); box-sizing: border-box">Any staff member<span style="margin-left: auto; color: var(--faint)">&#9662;</span></span>
+          <div style="display: flex; gap: 8px; padding-bottom: 8px">
+            <span style="flex: 0 0 auto; display: inline-flex; align-items: center; min-height: 48px; padding: 0 16px; border: 1px solid var(--border); border-radius: var(--r); background: var(--surf); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Clear</span>
+            <span style="flex: 1 1 auto; display: inline-flex; align-items: center; justify-content: center; min-height: 48px; border-radius: var(--r); background: var(--accent); color: #fff; font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Show 24 entries</span>
+          </div>
+          <div aria-hidden="true" style="height: 16px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">13 · Athlete notifications · mute everything at the top <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">· 375 × 812</span></p>
+      <div data-screen-label="13 Athlete notifications" style="display: flex; flex-direction: column; width: 375px; height: 812px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: 26px; box-sizing: border-box">
+        <div style="flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 10px 20px 4px; font-family: var(--font-num); font-size: 13px; font-weight: var(--w-semi); color: var(--text)"><span>09:12</span><span style="display: flex; gap: 5px"><i class="ph-fill ph-cell-signal-full"></i><i class="ph-fill ph-wifi-high"></i><i class="ph-fill ph-battery-high"></i></span></div>
+        <div style="flex: 0 0 auto; padding: 8px 18px 12px; border-bottom: 1px solid var(--border); background: var(--surf)">
+          <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">SETTINGS · JOSH ABIOLA</p>
+          <p style="margin: 2px 0 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Notifications</p>
+        </div>
+        <div style="flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 14px 18px; display: flex; flex-direction: column; gap: 12px">
+          <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); padding: 14px; display: flex; align-items: center; gap: 12px">
+            <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: var(--t-card-sm); font-weight: var(--w-black); color: var(--on-tint-value)">Mute everything</span>
+              <span style="font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">One switch, no confirmation. Your coach is not told, and nothing stops being recorded.</span>
+            </span>
+            <span style="flex: 0 0 auto; display: inline-flex; align-items: center; width: 56px; height: 32px; padding: 3px; border-radius: 16px; background: var(--track-off); box-sizing: border-box">
+              <span style="width: 26px; height: 26px; border-radius: 13px; background: var(--surf); box-shadow: var(--shadow)"></span>
+            </span>
+          </div>
+          <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">WHAT FYDR TELLS YOU</p>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <sc-for list="{{ notifRows }}" as="n" hint-placeholder-count="5">
+              <span style="display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 10px 14px; background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); box-sizing: border-box">
+                <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                  <span style="font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">{{ n.label }}</span>
+                  <span style="font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ n.desc }}</span>
+                </span>
+                <span style="{{ n.trackStyle }}"><span style="{{ n.knobStyle }}"></span></span>
+              </span>
+            </sc-for>
+          </div>
+          <p style="margin: 0; font-size: var(--t-body-xs); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Two of these cannot be turned off: a message from a coach addressed to you, and a change to your own account. Everything else is yours to silence.</p>
+        </div>
+        <div style="flex: 0 0 auto; background: var(--surf); border-top: 1px solid var(--border); padding: 8px 8px 0">
+          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr))">
+            <sc-for list="{{ tabsAthlete }}" as="b" hint-placeholder-count="4">
+              <span style="display: flex; flex-direction: column; align-items: center; gap: 3px; min-height: 44px; padding: 4px 0">
+                <i class="{{ b.icon }}" style="{{ b.iconStyle }}"></i>
+                <span style="{{ b.labelStyle }}">{{ b.label }}</span>
+              </span>
+            </sc-for>
+          </div>
+          <div aria-hidden="true" style="height: 20px"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="max-width: 920px; margin: 8px 0 0; display: flex; flex-direction: column; gap: var(--gap-card)">
+    <p style="margin: 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">What changed, and on which token</p>
+
+    <sc-for list="{{ notes }}" as="n" hint-placeholder-count="14">
+      <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <div style="display: flex; align-items: baseline; gap: 8px">
+          <span style="{{ n.tagStyle }}">{{ n.tag }}</span>
+          <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ n.title }}</p>
+        </div>
+        <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ n.body }}</p>
+        <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">{{ n.tokens }}</p>
+      </div>
+    </sc-for>
+
+    <p style="margin: 24px 0 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">Open against code</p>
+
+    <sc-for list="{{ gaps }}" as="g" hint-placeholder-count="9">
+      <div style="background: var(--surf); border: 1px solid rgba(var(--warn-rgb), 0.5); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">{{ g.title }}</p>
+        <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">{{ g.body }}</p>
+        <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">{{ g.source }}</p>
+      </div>
+    </sc-for>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+class Component extends DCLogic {
+  renderVals() {
+    const NAV = [
+      ['Dashboard', 'ph-fill ph-layout'],
+      ['Squad overview', 'ph-fill ph-users'],
+      ['Schedule', 'ph-fill ph-clock'],
+      ['Reports', 'ph-fill ph-briefcase'],
+      ['Nutrition', 'ph-fill ph-fork-knife'],
+      ['Gym programme', 'ph-fill ph-barbell'],
+      ['Leaderboard', 'ph-fill ph-chart-bar'],
+      ['Analytics', 'ph-fill ph-trend-up'],
+      ['Settings', 'ph-fill ph-gear']
+    ];
+    const nav = (active, omit) => NAV.filter(([l]) => !(omit || []).includes(l)).map(([label, icon]) => ({
+      label, icon,
+      style: 'display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 8px; border-radius: var(--r); font-size: 15px; box-sizing: border-box;'
+        + (label === active
+          ? ' background: var(--wash-accent); color: var(--accent); font-weight: var(--w-bold); border-left: var(--border-accent-w) solid var(--accent); padding-left: 5px;'
+          : ' color: var(--text); font-weight: var(--w-semi);'),
+      iconStyle: 'font-size: 20px; color: ' + (label === 'Gym programme' ? 'var(--highlight)' : label === active ? 'var(--accent)' : 'var(--faint)') + ';'
+    }));
+
+    const head = (label, align) => ({
+      label,
+      style: 'font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint); text-align: ' + (align || 'left') + ';'
+    });
+
+    const pill = (text, kind) => {
+      const map = {
+        accent: 'background: var(--pill-accent); color: var(--accent);',
+        good: 'background: var(--pill-good); color: var(--on-good);',
+        warn: 'background: var(--pill-warn); color: var(--on-warn);',
+        bad: 'background: var(--pill-bad); color: var(--on-bad);',
+        quiet: 'background: var(--surf2); color: var(--muted);'
+      };
+      return {
+        text,
+        style: 'display: inline-flex; align-items: center; align-self: flex-start; padding: 3px 10px; border-radius: 999px; font-size: var(--t-body-xs); font-weight: var(--w-bold); white-space: nowrap; ' + map[kind]
+      };
+    };
+    const pillStyle = (kind) => pill('', kind).style;
+
+    const chip = (label, on) => ({
+      label,
+      style: 'display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border-radius: var(--r); font-size: var(--t-body-sm); box-sizing: border-box;'
+        + (on ? ' background: var(--wash-accent); border: 1px solid var(--accent); color: var(--accent); font-weight: var(--w-bold);'
+              : ' background: var(--surf2); border: 1px solid var(--border); color: var(--text); font-weight: var(--w-semi);')
+    });
+
+    const tab = (label, icon, active) => ({
+      label, icon: 'ph ' + icon,
+      iconStyle: 'font-size: 24px; color: ' + (active ? 'var(--accent)' : 'var(--faint)') + ';',
+      labelStyle: 'font-size: var(--t-body-2xs); font-weight: ' + (active ? 'var(--w-bold)' : 'var(--w-semi)') + '; color: ' + (active ? 'var(--accent)' : 'var(--faint)') + ';'
+    });
+
+    const btnGhost = 'display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 1px solid var(--border); border-radius: var(--r); background: var(--surf); color: var(--accent); font-size: var(--t-body-sm); font-weight: var(--w-bold); box-sizing: border-box;';
+    const hubRow = 'display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 8px; margin: 0 -8px; border-radius: var(--r); box-sizing: border-box;';
+
+    const hubGroups = [
+      { title: 'Club', count: '5', note: 'Changes what every member of staff sees.', items: [
+        { icon: 'ph ph-buildings', label: 'Club details', desc: 'Name, crest, season dates, time zone' },
+        { icon: 'ph ph-users-three', label: 'Groups', desc: 'Five groups, the filter on every screen' },
+        { icon: 'ph ph-sliders-horizontal', label: 'Thresholds', desc: 'The lines under every colour and flag' },
+        { icon: 'ph ph-plugs', label: 'Integrations and imports', desc: 'Catapult connected · 2 rows waiting' },
+        { icon: 'ph ph-receipt', label: 'Plan and billing', desc: 'Premium · renews 01 Jan 2027' }
+      ] },
+      { title: 'People', count: '3', note: 'Who can sign in, and what each of them reads.', items: [
+        { icon: 'ph ph-identification-badge', label: 'Users and roles', desc: '7 staff · 1 invitation outstanding' },
+        { icon: 'ph ph-user-plus', label: 'Invite someone', desc: 'By email, with a role chosen first' },
+        { icon: 'ph ph-student', label: 'Athlete accounts', desc: '30 athletes · 4 not yet signed in' }
+      ] },
+      { title: 'Data and privacy', count: '4', note: 'What is kept, what leaves, and the record of both.', items: [
+        { icon: 'ph ph-download-simple', label: 'Exports', desc: 'Six kinds of data, as .csv' },
+        { icon: 'ph ph-trash', label: 'Data retention', desc: 'Next run would delete 2,184 rows' },
+        { icon: 'ph ph-folder-user', label: 'Subject access', desc: '1 open request · due 30 Sept' },
+        { icon: 'ph ph-scroll', label: 'Audit log', desc: '418 entries in the last 30 days' }
+      ] },
+      { title: 'Your account', count: '5', note: 'Changes only what you see and how you sign in.', items: [
+        { icon: 'ph ph-user-circle', label: 'Profile and photo', desc: 'Name, photo, initials colour' },
+        { icon: 'ph ph-bell', label: 'Notifications', desc: 'Email on · push on · digest at 07:30' },
+        { icon: 'ph ph-sun', label: 'Appearance', desc: 'Light · follows the system on phone' },
+        { icon: 'ph ph-key', label: 'Password', desc: 'Changed 14 Mar 2026' },
+        { icon: 'ph ph-shield-check', label: 'Two-factor authentication', desc: 'Required for your role · not enrolled' }
+      ] }
+    ].map((g) => ({ ...g, items: g.items.map((i) => ({ ...i, rowStyle: hubRow })) }));
+
+    const av = (initials) => ({
+      initials,
+      avStyle: 'display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 34px; height: 34px; border-radius: 17px; background: var(--avatar-bg); color: var(--avatar-text); font-family: var(--font-num); font-size: 13px; font-weight: var(--w-semi);'
+    });
+
+    const usersRaw = [
+      ['Jane Pemberton', 'jane.pemberton@ashcomberfc.uk', 'JP', 'Sport scientist', 'accent', 'Everything except medical notes', 'Now', 'Edit', false],
+      ['Dan Whitlow', 'd.whitlow@ashcomberfc.uk', 'DW', 'Head coach', 'accent', 'Everything except medical notes', '2h ago', 'Edit', false],
+      ['Ruth Callaghan', 'r.callaghan@ashcombemed.uk', 'RC', 'Medical', 'bad', 'Medical notes, injuries, subject access', 'Yesterday', 'Edit', false],
+      ['Priya Raman', 'p.raman@ashcomberfc.uk', 'PR', 'S&C coach', 'quiet', 'Gym, schedule, squad, reports', '3h ago', 'Edit', false],
+      ['Tom Beckett', 't.beckett@ashcomberfc.uk', 'TB', 'Analyst', 'quiet', 'Reports, analytics, exports', '4 days ago', 'Edit', true],
+      ['Sally Okonkwo', 's.okonkwo@ashcomberfc.uk', 'SO', 'Coach', 'quiet', 'Squad, schedule, sessions', '1h ago', 'Edit', false],
+      ['Marcus Hale', 'm.hale@ashcomberfc.uk', 'MH', 'Coach · invited', 'warn', 'Nothing until he accepts', 'Never', 'Resend', false]
+    ];
+    const usersRows = usersRaw.map(([name, email, ini, role, kind, sees, active, action, sel]) => ({
+      name, email, role, sees, active, action,
+      ...av(ini),
+      rowStyle: 'display: grid; grid-template-columns: 2fr 1.3fr 1.5fr 1.1fr 150px; gap: 14px; align-items: center; padding: 10px 18px; border-top: 1px solid var(--hair);' + (sel ? ' background: var(--wash-accent);' : ''),
+      roleStyle: pillStyle(kind),
+      actionStyle: btnGhost
+    }));
+
+    const can = (yes, text) => ({
+      text, icon: yes ? 'ph ph-check' : 'ph ph-minus',
+      style: 'display: flex; align-items: flex-start; gap: 6px; font-size: var(--t-body-xs); line-height: var(--lh-base); color: ' + (yes ? 'var(--text)' : 'var(--faint)') + ';'
+    });
+    const roleCards = [
+      ['Club admin', 'Runs the club in Fydr. Usually one or two people.', [[1, 'Settings, users, roles, thresholds'], [1, 'Exports, retention, the audit log'], [1, 'Every squad and report screen'], [0, 'Medical notes and injury detail']], false, 'Jane'],
+      ['Head coach', 'Owns the programme and the week.', [[1, 'Schedule, sessions, gym, squad'], [1, 'Reports, analytics, leaderboards'], [0, 'Settings, users, retention'], [0, 'Medical notes and injury detail']], false, 'Dan'],
+      ['Coach', 'Runs sessions with a group.', [[1, 'Squad, schedule, sessions'], [1, 'Their own groups&rsquo; athletes'], [0, 'Exports and analytics'], [0, 'Medical notes and injury detail']], false, 'Sally'],
+      ['S&C coach', 'Writes and runs gym programmes.', [[1, 'Gym programme authoring'], [1, 'Sessions, schedule, athlete notes'], [1, 'Reports, analytics, exports'], [0, 'Medical notes and injury detail']], true, 'Priya'],
+      ['Analyst', 'Reads and reports. Changes nothing.', [[1, 'Reports, analytics, exports'], [1, 'Squad, read-only'], [0, 'Sessions, schedule, gym'], [0, 'Medical notes and injury detail']], false, 'Tom, now'],
+      ['Medical', 'The only role that reads medical data.', [[1, 'Medical notes and injury records'], [1, 'Subject access packs'], [1, 'Squad, schedule, read-only'], [0, 'Settings, users, retention']], false, 'Ruth']
+    ].map(([name, who, list, on, holder]) => ({
+      name, who,
+      cardStyle: 'background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px; display: flex; flex-direction: column; gap: 8px; box-sizing: border-box;'
+        + (on ? ' border: var(--border-accent-w) solid var(--accent);' : ' border: 1px solid var(--border);'),
+      radioStyle: 'display: inline-flex; flex: 0 0 auto; width: 18px; height: 18px; border-radius: 9px; box-sizing: border-box;'
+        + (on ? ' border: 6px solid var(--accent); background: var(--surf);' : ' border: 2px solid var(--line-strong); background: var(--surf);'),
+      tag: on ? 'Chosen' : holder,
+      tagStyle: 'margin-left: auto; display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px; font-size: var(--t-body-xs); font-weight: var(--w-bold); white-space: nowrap; '
+        + (on ? 'background: var(--pill-accent); color: var(--accent);' : 'background: var(--surf2); color: var(--muted);'),
+      can: list.map(([y, t]) => can(!!y, t))
+    }));
+
+    const dot = (c) => 'display: inline-block; flex: 0 0 auto; width: 10px; height: 10px; border-radius: 5px; background: ' + c + ';';
+    const groupsRows = [
+      ['Forwards', 'Squad, schedule, reports, exports, leaderboards', '16', 'var(--accent)'],
+      ['Backs', 'Squad, schedule, reports, exports, leaderboards', '11', 'var(--accent2)'],
+      ['Academy', 'Squad, reports, retention (under-18 rules)', '9', 'var(--blue-300)'],
+      ['Rehab', 'Set by the medical role from an injury record', '4', 'var(--bad)'],
+      ['Leadership', 'Schedule only', '5', 'var(--blue-700)']
+    ].map(([name, use, count, c]) => ({ name, use, count, dotStyle: dot(c) }));
+
+    const thrRows = [
+      ['Wellness · sleep quality', 'Flag when the score is at or below this, two days running', 'Whole squad', '5', '3', 'warn', '4 athletes today · edited'],
+      ['Wellness · soreness', 'Flag when the score is at or above this', 'Whole squad', '7', '9', 'quiet', '2 athletes today'],
+      ['Acute:chronic workload', 'Flag when the seven-day to 28-day ratio is above this', 'Whole squad', '1.3', '1.5', 'warn', '1 athlete today · edited'],
+      ['Session RPE · weekly load', 'Flag when the weekly total rises by more than this over the previous week', 'Whole squad', '30%', '50%', 'quiet', '3 athletes today'],
+      ['Check-in compliance', 'Flag an athlete below this over the last 14 days', 'Whole squad', '80%', '60%', 'quiet', '5 athletes today'],
+      ['Days since last entry', 'Flag an athlete who has not submitted in this many days', 'Whole squad', '3', '7', 'quiet', '2 athletes today']
+    ].map(([metric, rule, applies, warn, flag, kind, effect]) => ({
+      metric, rule, applies, warn, flag, effect,
+      effectStyle: 'font-size: var(--t-body-sm); font-weight: ' + (kind === 'warn' ? 'var(--w-bold)' : 'var(--w-regular)') + '; color: ' + (kind === 'warn' ? 'var(--on-warn-meta)' : 'var(--muted)') + ';'
+    }));
+
+    const integrations = [
+      ['Catapult', 'good', 'Connected', 'GPS session files, pulled from your Catapult account after a session.', 'Last file Wed 09 Sept, 18:42 · 28 rows', 'Sync now'],
+      ['Apple Health', 'quiet', 'Not available yet · needs the Fydr iOS app', 'Sleep and resting heart rate would come from an athlete\u2019s own phone. Apple releases that data only to an installed iOS app, so there is nothing a club can connect from here.', 'Blocked until the Fydr iOS app ships · no date', ''],
+      ['GPS imports', 'good', 'Open', 'Any .csv with one athlete per row, from a system Fydr does not connect to. You map the columns once and the mapping is kept.', '3 mappings saved', 'Import a file']
+    ].map(([name, kind, state, desc, meta, btn]) => ({
+      name, state, desc, meta, btn,
+      stateStyle: pillStyle(kind),
+      btnStyle: btn
+        ? btnGhost + ' align-self: flex-start; margin-top: 4px;'
+        : 'display: none;'
+    }));
+
+    const setupSteps = [
+      ['1', 'Add athletes', 'Every other step needs people to apply to. Added by hand, or from a .csv of the squad list.', 'good', 'Done', '30 athletes', 'Squad overview'],
+      ['2', 'Make groups', 'The filter that appears above every squad screen, report and export.', 'good', 'Done', '5 groups \u00b7 3 athletes in none', 'Groups'],
+      ['3', 'Set thresholds', 'Until these are set, every colour and flag in the app is a Fydr default rather than Ashcombe\u2019s.', 'warn', 'Outstanding', '0 of 6 lines changed', 'Set thresholds'],
+      ['4', 'Invite staff', 'Nobody sees a thing until they accept and sign in.', 'warn', '1 outstanding', '6 of 7 signed in', 'Users and roles'],
+      ['5', 'Assign roles', 'A role decides which screens open. One person is still on the role their invitation carried.', 'warn', 'Outstanding', '6 of 7 assigned', 'Users and roles']
+    ].map(([n, title, why, kind, state, count, cta]) => ({
+      n, title, why, state, count, cta,
+      rowStyle: 'display: grid; grid-template-columns: 44px 2.2fr 3fr 1.4fr 170px; gap: 16px; align-items: center; padding: 14px 18px; border-top: 1px solid var(--hair);'
+        + (kind === 'good' ? '' : ' background: var(--wash-warn);'),
+      numStyle: 'display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 15px; font-family: var(--font-num); font-size: var(--t-body-sm); font-weight: var(--w-semi); box-sizing: border-box;'
+        + (kind === 'good' ? ' background: var(--pill-good); color: var(--on-good);' : ' background: var(--surf); border: 1px solid var(--line-strong); color: var(--muted);'),
+      stateStyle: pillStyle(kind),
+      ctaStyle: kind === 'good'
+        ? btnGhost + ' justify-content: center;'
+        : 'display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border-radius: var(--r); background: var(--accent); color: #fff; font-size: var(--t-body-sm); font-weight: var(--w-bold); box-sizing: border-box;'
+    }));
+
+    const importRows = [
+      ['ashcombe_gps_0909.csv', 'Wed 09 Sept · main field session', '28 rows', '26 matched', 'warn', '2 unmatched', 'Match rows', true],
+      ['ashcombe_gps_0607.csv', 'Sun 06 Sept · conditioning', '24 rows', '24 matched', 'good', 'Complete', 'View', false],
+      ['ashcombe_gps_0304.csv', 'Wed 03 Sept · main field session', '27 rows', '27 matched', 'good', 'Complete', 'View', false]
+    ].map(([file, session, rows, matched, kind, state, action, hot]) => ({
+      file, session, rows, matched, state, action,
+      rowStyle: 'display: grid; grid-template-columns: 2fr 1.4fr 1.4fr 1.4fr 190px; gap: 14px; align-items: center; padding: 10px 18px; border-top: 1px solid var(--hair);' + (hot ? ' background: var(--wash-warn);' : ''),
+      stateStyle: pillStyle(kind),
+      actionStyle: hot
+        ? 'display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: var(--r); background: var(--accent); color: #fff; font-size: var(--t-body-sm); font-weight: var(--w-bold); box-sizing: border-box;'
+        : btnGhost
+    }));
+
+    const auditTypes = [
+      ['All', true], ['Threshold', true], ['Role', true], ['Athlete', false], ['Group', false],
+      ['Export', false], ['Retention', false], ['Injury', false], ['Programme', false], ['Invitation', false],
+      ['Sign-in', false], ['Club', false]
+    ];
+    const auditChips = auditTypes.map(([l, on]) => chip(on ? '\u2713 ' + l : l, on));
+    const auditChipsPhone = auditTypes.map(([l, on]) => ({
+      label: on ? '\u2713 ' + l : l,
+      style: 'display: inline-flex; align-items: center; min-height: 40px; padding: 0 12px; border-radius: var(--r); font-size: var(--t-body-sm); box-sizing: border-box;'
+        + (on ? ' background: var(--wash-accent); border: 1px solid var(--accent); color: var(--accent); font-weight: var(--w-bold);'
+              : ' background: var(--surf2); border: 1px solid var(--border); color: var(--text); font-weight: var(--w-semi);')
+    }));
+
+    const auditRaw = [
+      ['11 Sept · 08:54', 'Threshold', 'accent', 'Jane Pemberton', 'Sleep quality flag moved from 4 to 5. Not yet saved at the time of this entry; saved 08:55.'],
+      ['11 Sept · 08:31', 'Role', 'accent', 'Jane Pemberton', 'Tom Beckett changed from Analyst to S&C coach.'],
+      ['10 Sept · 17:20', 'Export', 'quiet', 'Tom Beckett', 'Training, wellness and gym for the whole squad, 13 Aug to 10 Sept. 7,410 rows.'],
+      ['10 Sept · 16:02', 'Injury', 'bad', 'Ruth Callaghan', 'Ollie Hartnell moved to modified training. Detail is visible to the medical role only.'],
+      ['10 Sept · 11:47', 'Athlete', 'quiet', 'Sally Okonkwo', 'Kofi Mensah added to the Academy group.'],
+      ['09 Sept · 18:44', 'Import', 'quiet', 'Jane Pemberton', 'Catapult file ashcombe_gps_0909.csv. 26 of 28 rows matched; 2 held.'],
+      ['09 Sept · 09:15', 'Invitation', 'warn', 'Jane Pemberton', 'Coach invitation sent to m.hale@ashcomberfc.uk, expiring 15 Sept.'],
+      ['08 Sept · 14:31', 'Retention', 'bad', 'Jane Pemberton', 'Retention preview run. No rows deleted.']
+    ];
+    const auditRows = auditRaw.map(([when, type, kind, who, what]) => ({
+      when, type, who, what, typeStyle: pillStyle(kind)
+    }));
+    const auditPhone = auditRaw.slice(0, 5).map(([when, type, kind, who, what]) => ({
+      when: when.replace(' · ', '\u2002'), type, who, what, typeStyle: pillStyle(kind)
+    }));
+
+    const exportDomains = [
+      ['Training load', '3,118 rows', true],
+      ['Wellness check-ins', '2,984 rows', true],
+      ['Gym sessions', '1,642 rows', true],
+      ['Testing results', '486 rows', true],
+      ['Attendance', '984 rows', true],
+      ['Squad and groups', '30 rows', false]
+    ].map(([name, rows, on]) => ({
+      name, rows, mark: on ? '\u2713' : '',
+      rowStyle: 'display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 10px; border-radius: var(--r); box-sizing: border-box;' + (on ? ' background: var(--wash-accent);' : ' background: var(--surf2);'),
+      boxStyle: 'display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 22px; height: 22px; border-radius: 6px; font-size: 14px; font-weight: var(--w-bold); box-sizing: border-box;'
+        + (on ? ' background: var(--accent); color: #fff; border: 1px solid var(--accent);' : ' background: var(--surf); color: var(--surf); border: 1px solid var(--line-strong);')
+    }));
+
+    const rangeChips = [['Last 7 days', false], ['Last 30 days', true], ['Last 90 days', false], ['This season', false]]
+      .map(([l, on]) => chip(on ? '\u2713 ' + l : l, on));
+
+    const exportFiles = [
+      ['training_load.csv', '3,118'],
+      ['wellness.csv', '2,984'],
+      ['gym_sessions.csv', '1,642'],
+      ['testing.csv', '486'],
+      ['attendance.csv', '984']
+    ].map(([name, rows]) => ({ name, rows }));
+
+    const exportRecent = [
+      ['10 Sept · 17:20', 'Tom Beckett', 'Training, wellness, gym · whole squad · 13 Aug to 10 Sept', 'good', 'Downloaded'],
+      ['02 Sept · 09:40', 'Jane Pemberton', 'Testing · Academy · this season', 'warn', 'Expired'],
+      ['21 Aug · 15:12', 'Dan Whitlow', 'Attendance · whole squad · last 90 days', 'good', 'Downloaded']
+    ].map(([when, who, what, kind, state]) => ({
+      when, who, what, state,
+      rowStyle: 'display: grid; grid-template-columns: 165px 1.1fr 3fr 130px; gap: 14px; align-items: center; padding: 11px 18px; border-top: 1px solid var(--hair);',
+      stateStyle: pillStyle(kind)
+    }));
+
+    const retRows = [
+      ['Wellness check-ins', 'Daily morning entries and their scores', '2 years', 'quiet', '2,984', 'from 14 Sept 2024', '1,902 rows', 'bad'],
+      ['Training and GPS', 'Session load, distance, heart rate', '3 years', 'quiet', '3,118', 'from 02 Mar 2024', '244 rows', 'bad'],
+      ['Gym sessions', 'Sets, reps, load, notes', '3 years', 'quiet', '1,642', 'from 19 Jan 2024', '38 rows', 'bad'],
+      ['Testing results', 'Standing measures and test days', '5 years', 'quiet', '486', 'from 04 Nov 2022', 'None due', 'quiet'],
+      ['Medical and injury', 'Set by law, not by the club', 'Until 25th birthday', 'bad', '212', 'from 08 Aug 2021', 'Never in a run', 'quiet'],
+      ['Audit log', 'The record of every change', 'Kept indefinitely', 'bad', '9,140', 'from 11 Jun 2021', 'Never deleted', 'quiet']
+    ].map(([kind, note, keep, keepKind, held, oldest, due, dueKind]) => ({
+      kind, note, keep, held, oldest, due,
+      keepStyle: pillStyle(keepKind === 'bad' ? 'accent' : 'quiet'),
+      dueStyle: 'font-family: var(--font-num); font-size: var(--t-body-sm); font-variant-numeric: tabular-nums; font-weight: ' + (dueKind === 'bad' ? 'var(--w-bold)' : 'var(--w-regular)') + '; color: ' + (dueKind === 'bad' ? 'var(--on-bad-meta)' : 'var(--faint)') + ';'
+    }));
+
+    const sarRows = [
+      ['Josh Abiola', 'Asked by email, 31 Aug 2026', '31 Aug', '30 Sept · 19 days', 'warn', 'accent', 'Being assembled', true],
+      ['Elena Marchetti', 'Asked in person, 12 Aug 2026', '12 Aug', '11 Sept · today', 'bad', 'bad', 'Sent, awaiting confirmation', false],
+      ['Ryan Docherty', 'Asked by a parent, 04 Jul 2026', '04 Jul', 'Closed 29 Jul', 'quiet', 'good', 'Answered', false],
+      ['Nadia Fischer', 'Asked by email, 02 Jun 2026', '02 Jun', 'Closed 18 Jun', 'quiet', 'good', 'Answered', false]
+    ].map(([who, by, made, due, dueKind, stateKind, state, sel]) => ({
+      who, by, made, due, state,
+      rowStyle: 'display: grid; grid-template-columns: 1.6fr 1.3fr 1.2fr 1.1fr; gap: 14px; align-items: center; padding: 11px 18px; border-top: 1px solid var(--hair);' + (sel ? ' background: var(--wash-accent);' : ''),
+      dueStyle: 'font-family: var(--font-num); font-size: var(--t-body-sm); font-variant-numeric: tabular-nums; font-weight: ' + (dueKind === 'quiet' ? 'var(--w-regular)' : 'var(--w-bold)') + '; color: ' + (dueKind === 'bad' ? 'var(--on-bad-meta)' : dueKind === 'warn' ? 'var(--on-warn-meta)' : 'var(--muted)') + ';',
+      stateStyle: pillStyle(stateKind)
+    }));
+
+    const sarPack = [
+      ['Profile and account', '1 record'],
+      ['Wellness check-ins', '412 entries'],
+      ['Training and GPS', '286 sessions'],
+      ['Gym sessions', '134 sessions'],
+      ['Testing results', '19 results'],
+      ['Medical and injury records', '7 records'],
+      ['Coach notes naming him', '11 notes · 2 redacted']
+    ].map(([name, count]) => ({ name, count }));
+
+    const hubPhone = [
+      ['ph ph-buildings', 'Club', 'Details, groups, thresholds, integrations, plan'],
+      ['ph ph-identification-badge', 'People', '7 staff · 1 invitation outstanding'],
+      ['ph ph-lock-key', 'Data and privacy', 'Exports, retention, subject access, audit log'],
+      ['ph ph-user-circle', 'Your account', 'Profile, notifications, appearance, password']
+    ].map(([icon, title, note]) => ({ icon, title, note }));
+
+    const toggle = (on) => ({
+      trackStyle: 'flex: 0 0 auto; display: inline-flex; align-items: center; width: 52px; height: 30px; padding: 3px; border-radius: 15px; box-sizing: border-box; background: ' + (on ? 'var(--accent)' : 'var(--track-off)') + '; justify-content: ' + (on ? 'flex-end' : 'flex-start') + ';',
+      knobStyle: 'width: 24px; height: 24px; border-radius: 12px; background: var(--surf); box-shadow: var(--shadow);'
+    });
+    const notifRows = [
+      ['Morning check-in reminder', 'At 07:30, only if you have not submitted', true],
+      ['A message from a coach', 'Cannot be turned off when it names you', true],
+      ['Session or schedule change', 'When something you are assigned to moves', true],
+      ['Your gym programme changes', 'A new block, or a change to this week', false],
+      ['Leaderboard published', 'When a board you are on goes up', false]
+    ].map(([label, desc, on]) => ({ label, desc, ...toggle(on) }));
+
+    const notes = [
+      ['FIXED', 'Log out is a button, not a row with a 5px target', 'On the running hub, Log out is a 742\u00d771px .set-list-row whose only submitting element is a 4.8px chevron. Here it is a bordered 44px button with its own label, set apart from the lists, with the session it ends named beside it. The phone board uses the same button at 48px.', 'component: button.ghost \u00b7 min-height 44px (48 on phone) \u00b7 --accent border \u00b7 not a list row'],
+      ['FIXED', 'Eight sequential sections become four groups', 'The hub measured 3,772px at desktop and 5,089 at phone, with the list at the bottom of both. Four columns of related destinations fit one 900px screen; at 375 the same four are cards with counts, and the long lists sit one level down.', 'layout: 4\u00d7 grid at 1440 \u00b7 stacked cards at 375 \u00b7 --gap-card'],
+      ['FIXED', 'Every settings row is one target for its whole width', 'Rows are 52px on desktop and 64px on phone, with the icon, both lines of text and the chevron inside the same control. Nothing on this board relies on a chevron to be the hit area.', 'row: min-height 52px / 64px \u00b7 negative margin so the wash reaches the card edge'],
+      ['FIXED', 'No table scrolls sideways at 375', 'Subject access (433px) and Retention (491px) overflow a 375 viewport on the running app. At phone width a row becomes a card carrying the same fields stacked, which is what artboard 12 shows for the audit log.', 'pattern: table at \u2265900px \u00b7 card stack below \u00b7 no horizontal scroll container'],
+      ['FIXED', 'The audit log\u2019s filters are a sheet, not 6,287px of page', 'Twelve chips, two dates, two selects and a search field pushed the entries below the fold at phone. The sheet holds the same controls, the button reads back the count it will show, and the header carries the active filter count.', 'component: sheet \u00b7 --scrim \u00b7 chips at 40px \u00b7 apply button reads the result count'],
+      ['FIXED', '\u201cCoach access\u201d no longer greets a sport scientist', 'The exports intro names the role that is actually signed in and what that role may export, and states the one thing it may never export \u2014 medical records \u2014 rather than leaving it to be discovered.', 'copy: role-derived string \u00b7 no hardcoded role name in an intro'],
+      ['NEW', 'Consequence before the button, on every destructive screen', 'Retention names 2,184 rows across 11 athletes and which two are current athletes. A role change names what is gained and lost. Thresholds name the four extra athletes who would be flagged. The count is computed before the action, in the same card as the button.', 'pattern: preview card \u00b7 --bad border for permanent, --warn for reversible'],
+      ['NEW', 'The log says what it cannot show', 'The type chips are derived from what is in the log, so an absent kind is invisible. A line under the table names sessions and schedule changes as not yet written, so nobody concludes from an empty filter that nothing happened.', 'copy: coverage sentence under the table \u00b7 --muted at --t-body-sm'],
+      ['NEW', 'An import holds what it cannot match rather than guessing', 'Two rows with ambiguous names are held and named on screen; the other 26 are already in. Matching once teaches the vendor\u2019s spelling. Nothing silently drops.', 'row state: --wash-warn \u00b7 pill --pill-warn / --on-warn'],
+      ['KEPT', 'Mute everything sits at the top of the athlete\u2019s notification screen', 'It is the reason most athletes open the screen. One switch, no confirmation, and the sentence that matters: nothing stops being recorded and no coach is told.', 'card: --blue-100 / --blue-200 \u00b7 toggle 52\u00d730 \u00b7 --track-off when off'],
+      ['KEPT', 'Two-factor stays prompted, not enforced', 'The hub row states \u201crequired for your role \u00b7 not enrolled\u201d as a fact rather than a block. This is the recorded boundary pending the RLS follow-up and is not re-raised here.', 'status row \u00b7 O-323 \u00b7 no blocking interstitial'],
+      ['NEW', 'A setup checklist that is a list of defaults, not a gate', 'Artboard 0 orders the five steps by what saves the most rework and states outright that none of them blocks the app. The step most likely to be skipped \u2014 thresholds \u2014 carries the consequence of skipping it: the club is flagging athletes against lines nobody there chose.', 'card: --wash-warn row for outstanding \u00b7 --pill-good for done \u00b7 progress bar --accent / --track-off'],
+      ['NEW', 'Apple Health states an impossibility rather than offering a button', 'It reads \u201cnot available yet \u00b7 needs the Fydr iOS app\u201d with the reason on the card and no control at all. An integration that cannot be built is worse dressed as one that merely has not been set up.', 'card: state pill --surf2 / --muted \u00b7 action removed, not disabled'],
+      ['KEPT', 'Every control on this board is at least 44px', 'Including the reorder arrows on Groups (44\u00d744, previously 22), the row actions, the chips (36 desktop / 40 phone) and the date fields.', 'sweep: STAFF-SHELL \u00b7 min-height 44px \u00b7 no .tiny links as sole actions']
+    ].map(([tag, title, body, tokens]) => ({
+      tag, title, body, tokens,
+      tagStyle: 'display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px; font-size: var(--t-body-xs); font-weight: var(--w-bold); white-space: nowrap; '
+        + (tag === 'FIXED' ? 'background: var(--pill-good); color: var(--on-good);'
+          : tag === 'NEW' ? 'background: var(--pill-accent); color: var(--accent);'
+          : 'background: var(--surf2); color: var(--muted);')
+    }));
+
+    const gaps = [
+      ['Session and schedule changes are not written to the audit log', 'Nothing writes an entry when a session is created, moved or deleted, so the log cannot answer \u201cwho moved Thursday\u201d. The board names the gap on screen, which is a mitigation, not a fix.', 'source: audit write sites \u00b7 no session/schedule emitters \u00b7 \u00a70al'],
+      ['Retention has a preview but no record of a preview having been run', 'The design shows a preview count and a downloadable row list. Whether a preview run is itself logged, and whether the downloaded list is retained, are open.', 'source: retention run \u00b7 preview path \u00b7 audit emitter unknown'],
+      ['A revoked invitation\u2019s link lifetime is unverified', 'The board states that revoking kills the link immediately. Whether the token is invalidated server-side or only hidden from the list needs confirming.', 'source: invitation revoke \u00b7 token invalidation'],
+      ['Export link expiry is stated as seven days and not confirmed', 'The generate card promises a seven-day expiry. If the file is served from storage with a longer-lived URL, the sentence is wrong and should be removed rather than softened.', 'source: export storage \u00b7 signed URL TTL'],
+      ['Role change timing is stated as \u201cnext page load\u201d', 'If permissions are cached in a session, a demoted user may keep a screen open. The board claims the next page load; the real boundary needs measuring.', 'source: role cache \u00b7 session claims refresh'],
+      ['Apple Health cannot be built at all until there is a native iOS app', 'HealthKit releases sleep and resting heart-rate data only to an app installed on the athlete\u2019s device; there is no web or server API, and no Fydr iOS app exists. The integration card therefore states \u201cnot available yet \u00b7 needs the Fydr iOS app\u201d with no control on it. The design-system guide lists Apple Health as a Premium feature, which is currently a promise the product cannot keep.', 'source: HealthKit \u00b7 iOS-only framework \u00b7 no Fydr native client'],
+      ['Catapult is shown as a live connection and is currently a file drop', 'The card says \u201cConnected \u00b7 Sync now\u201d, implying Fydr pulls from a Catapult account. Whether an API credential exists, or whether every file is uploaded by hand, needs confirming before this copy ships.', 'source: integration credential store \u00b7 import trigger'],
+      ['The setup checklist\u2019s completion rules are designed, not observed', 'Artboard 0 marks a step done from a count (30 athletes, 5 groups) and thresholds outstanding while all six lines are on Fydr defaults. Whether the app records \u201cdefault\u201d against a threshold, or only its value, decides whether that third step can be computed at all.', 'source: threshold rows \u00b7 no is_default column seen'],
+      ['Group deletion\u2019s effect on saved reports is designed, not observed', 'The board says a saved report reverts to the whole squad and says so in its heading. No such reversion was seen on the running app.', 'source: group delete \u00b7 saved report scope fallback']
+    ].map(([title, body, source]) => ({ title, body, source }));
+
+    return {
+      setupHead: [head(''), head('Step'), head('Why it comes here'), head('Where it stands'), head('', 'right')],
+      setupSteps,
+      setupBars: [true, true, false, false, false].map((done) => ({
+        style: 'flex: 1 1 0; border-radius: 5px; background: ' + (done ? 'var(--accent)' : 'var(--track-off)') + ';'
+      })),
+      navSettings: nav('Settings'),
+      navMedical: nav('Settings', ['Gym programme', 'Leaderboard']),
+      hubGroups, hubPhone,
+      usersHead: [head('Person'), head('Role'), head('What they can read'), head('Last active'), head('', 'right')],
+      usersRows,
+      roleRules: [
+        'One role per person. A role is the whole of what they can do; there are no extra permissions on top.',
+        'Medical is the only role that reads medical notes and injury detail, and no other role can be granted them.',
+        'Removing someone keeps everything they recorded, with their name against it, and ends their access immediately.'
+      ],
+      roleCards,
+      groupsHead: [head('Order'), head('Group'), head('Where it appears'), head('Athletes'), head('', 'right')],
+      groupsRows,
+      thrHead: [head('What is measured'), head('Applies to'), head('Watch', 'right'), head('Flag', 'right'), head('On today\u2019s data')],
+      thrRows,
+      integrations,
+      importHead: [head('File'), head('Rows'), head('Matched'), head('State'), head('', 'right')],
+      importRows,
+      auditChips, auditChipsPhone,
+      auditHead: [head('When'), head('What changed'), head('Who'), head('Detail')],
+      auditRows, auditPhone,
+      exportDomains, rangeChips, exportFiles, exportRecent,
+      retHead: [head('Kind of record'), head('Kept for'), head('Held now', 'left'), head('Oldest'), head('Due in the next run')],
+      retRows,
+      sarHead: [head('Athlete'), head('Asked'), head('Due'), head('State')],
+      sarRows, sarPack,
+      notifRows,
+      tabsStaff: [tab('Today', 'ph-house', false), tab('Squad', 'ph-users', false), tab('Schedule', 'ph-clock', false), tab('Reports', 'ph-briefcase', false), tab('Settings', 'ph-gear', true)],
+      tabsAthlete: [tab('Today', 'ph-house', false), tab('My data', 'ph-chart-line', false), tab('Schedule', 'ph-clock', false), tab('Settings', 'ph-gear', true)],
+      notes, gaps
+    };
+  }
+}
+</script>
+</body>
+</html>

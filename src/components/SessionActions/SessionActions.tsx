@@ -24,7 +24,7 @@ type Props = {
 
 /** Cancel, reinstate, delete. screens/schedule.md: "Cancelling requires no
  *  confirmation text, deleting does" — so cancel fires straight away, like
- *  `GroupArchiveButton`, and delete needs a second tap on an inline
+ *  the group archive did before PATTERN-S8 C5, and delete needs a second tap on an inline
  *  confirmation rather than a browser `confirm()` dialog, matching this
  *  app's existing tone elsewhere. The server is the real gate on delete
  *  (recorded data, or a past session): this only surfaces what it says. */

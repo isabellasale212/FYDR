@@ -2,12 +2,13 @@ import { notFound } from 'next/navigation';
 import { CLINICAL_ONLY, GROUP_EDIT, hasAnyRole } from '@/lib/access';
 import Link from 'next/link';
 import { GroupMemberManager } from '@/components/GroupMemberManager/GroupMemberManager';
-import { GroupArchiveButton } from '@/components/GroupArchiveButton/GroupArchiveButton';
+import { GroupArchiveCard } from '@/components/GroupArchiveCard/GroupArchiveCard';
 import { GroupEditForm } from '@/components/GroupEditForm/GroupEditForm';
 import { GroupSwatch } from '@/components/GroupSwatch/GroupSwatch';
 import {
   fetchGroupDetail,
   fetchGroupMembers,
+  fetchGroupUsage,
 } from '@/lib/queries/groups';
 import { fetchSquadList } from '@/lib/queries/squad';
 import { enumLabel, formatDate, initials } from '@/lib/format';
@@ -42,9 +43,13 @@ export default async function GroupDetailPage({
   const group = await fetchGroupDetail(db, orgId, groupId);
   if (!group) notFound();
 
-  const [{ current, past }, squad] = await Promise.all([
+  /* PATTERN-S8 C5: what uses this group, read once and handed to both the
+     rename form and the archive card, which say the consequence before
+     their buttons. */
+  const [{ current, past }, squad, usage] = await Promise.all([
     fetchGroupMembers(db, orgId, groupId),
     fetchSquadList(db, orgId, []),
+    fetchGroupUsage(db, orgId, groupId),
   ]);
 
   const memberIds = new Set(current.map((m) => m.athlete_id));
@@ -77,8 +82,8 @@ export default async function GroupDetailPage({
               initialName={group.name}
               initialDescription={group.description}
               initialColour={group.colour}
+              usage={usage}
             />
-            <GroupArchiveButton orgId={orgId} groupId={group.id} archived={group.archived} />
           </div>
         ) : (
           /* Named, not blank. A row where controls used to be reads as a
@@ -155,6 +160,10 @@ export default async function GroupDetailPage({
             ))
           )}
         </section>
+
+        {canEditGroup ? (
+          <GroupArchiveCard orgId={orgId} groupId={group.id} name={group.name} groupType={group.group_type} archived={group.archived} usage={usage} />
+        ) : null}
       </div>
     </>
   );

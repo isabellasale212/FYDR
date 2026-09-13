@@ -72,6 +72,7 @@ import type { Database, GroupRow } from '@/lib/types/database';
 import { humanizeDbError } from '@/lib/writeErrors';
 import { fetchAllPaged, type PagedResponse } from './paged';
 import { mustAffect, mustAffectOrThrow } from '@/lib/write';
+import type { GroupUsage } from '@/lib/groupUsage';
 
 export type Db = SupabaseClient<Database>;
 
@@ -512,6 +513,36 @@ export async function restoreGroup(db: Db, id: string, orgId: string): Promise<v
     db.from('groups').update({ deleted_at: null }).eq('id', id).eq('org_id', orgId).select('id'),
     'Not saved: creating and changing squad groups belongs to the coach and the sport scientist.',
   );
+}
+
+/** PATTERN-S8 C5 (2026-09-13): everything that references this group right
+ *  now, so a rename or an archive can say what it touches before the
+ *  button. Seven tables carry a group id (the screen-57 spec's "seven other
+ *  tables … none of them cascade"); rehab_assignments is the eighth and is
+ *  the rehab board's own, keyed by rehab_group_id — not counted here because
+ *  a rehab group is not archived from this screen at all (the card says so).
+ *  Head counts only, so nothing pages. */
+export async function fetchGroupUsage(db: Db, orgId: string, groupId: string): Promise<GroupUsage> {
+  const nowIso = new Date().toISOString();
+  const today = nowIso.slice(0, 10);
+  const count = async (q: PromiseLike<{ count: number | null; error: { message: string } | null }>) => {
+    const { count: n, error } = await q;
+    if (error) throw new Error(error.message);
+    return n ?? 0;
+  };
+  const [members, sessionsUpcoming, sessionsPast, programmesActive, nutritionTargets, nutritionRules, leaderboards, thresholds] = await Promise.all([
+    count(db.from('group_memberships').select('athlete_id', { count: 'exact', head: true }).eq('org_id', orgId).eq('group_id', groupId).is('removed_at', null)),
+    /* Sessions through their participant rows: one row per (session, group),
+       and the session itself must be live and still ahead. */
+    count(db.from('session_participants').select('session_id, sessions!inner(id)', { count: 'exact', head: true }).eq('org_id', orgId).eq('group_id', groupId).is('sessions.deleted_at', null).gte('sessions.starts_at', nowIso)),
+    count(db.from('session_participants').select('session_id, sessions!inner(id)', { count: 'exact', head: true }).eq('org_id', orgId).eq('group_id', groupId).is('sessions.deleted_at', null).lt('sessions.starts_at', nowIso)),
+    count(db.from('programme_assignments').select('id', { count: 'exact', head: true }).eq('org_id', orgId).eq('group_id', groupId).eq('status', 'active')),
+    count(db.from('nutrition_targets').select('id', { count: 'exact', head: true }).eq('org_id', orgId).eq('group_id', groupId).is('deleted_at', null).or(`effective_to.is.null,effective_to.gte.${today}`)),
+    count(db.from('nutrition_rules').select('id', { count: 'exact', head: true }).eq('org_id', orgId).eq('group_id', groupId).is('deleted_at', null)),
+    count(db.from('leaderboards').select('id', { count: 'exact', head: true }).eq('org_id', orgId).eq('group_id', groupId).is('deleted_at', null)),
+    count(db.from('thresholds').select('id', { count: 'exact', head: true }).eq('org_id', orgId).eq('applies_to_group_id', groupId).is('deleted_at', null).eq('is_active', true)),
+  ]);
+  return { members, sessionsUpcoming, sessionsPast, programmesActive, nutritionTargets, nutritionRules, leaderboards, thresholds };
 }
 
 export type GroupDetail = {

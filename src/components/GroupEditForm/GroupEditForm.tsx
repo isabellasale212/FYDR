@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { updateGroup, GROUP_COLOURS } from '@/lib/queries/groups';
 import { GroupSwatch } from '@/components/GroupSwatch/GroupSwatch';
+import { renameConsequence, type GroupUsage } from '@/lib/groupUsage';
 
 type Props = {
   orgId: string;
@@ -14,6 +15,9 @@ type Props = {
   initialName: string;
   initialDescription: string | null;
   initialColour: string | null;
+  /** PATTERN-S8 C5: what the group is used by, so a rename says what it
+   *  touches before Save. */
+  usage: GroupUsage;
 };
 
 /** The rename/recolour/redescribe form screens/groups.md's role table
@@ -23,7 +27,7 @@ type Props = {
  *  "reveal in place, no separate route" pattern BodyWeightPanel uses for
  *  the player profile's log-weigh-in form, rather than a full navigation
  *  to an /edit URL for a two-field change. */
-export function GroupEditForm({ orgId, groupId, initialName, initialDescription, initialColour }: Props) {
+export function GroupEditForm({ orgId, groupId, initialName, initialDescription, initialColour, usage }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(initialName);
@@ -131,6 +135,14 @@ export function GroupEditForm({ orgId, groupId, initialName, initialDescription,
               ))}
             </div>
           </fieldset>
+
+          {/* PATTERN-S8 C5: once the name differs, what renaming touches —
+              in the same card as Save, before it is pressed. */}
+          {name.trim() && name.trim() !== initialName ? (
+            <p className="tiny grp-consequence" role="status">
+              {renameConsequence(initialName, usage)}
+            </p>
+          ) : null}
 
           {error ? (
             <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-14)' }}>

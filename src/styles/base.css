@@ -5360,6 +5360,31 @@ img.me-avatar {
 .um-change {
   min-height: 44px;
 }
+/* PATTERN-S8 C5 (2026-09-13): a group's rename and archive say what they
+   touch before the button — the rename line inside the edit popover, the
+   archive card at the foot of the group page; warn wash once Archive is
+   armed (reversible: Restore exists). */
+.grp-consequence {
+  margin-top: var(--sp-14);
+  color: var(--text);
+}
+.grp-keeps-title {
+  margin-top: var(--sp-10);
+  margin-bottom: var(--sp-4);
+}
+.grp-keeps {
+  margin: 0;
+  padding-left: var(--sp-18);
+  font-size: var(--fs-13);
+  line-height: 1.45;
+}
+.grp-keeps li + li {
+  margin-top: var(--sp-4);
+}
+.grp-archive-armed {
+  border-color: var(--border-warn);
+  background: var(--wash-warn);
+}
 /* PATTERN-S8 A1 (2026-09-13): Log out is a button, set apart from the lists,
    with the session it ends named beside it. */
 .set-logout-form {

@@ -80,6 +80,22 @@ existed neither creation screen was linked from anywhere.
 
 **Apply a template.** Puts a saved week shape onto this week.
 
+**On a phone (below 768px) the schedule is day-first** (PATTERN-S4 C6 / B4, 13
+September 2026): no grid at 375. The dashboard's week strip carries the week at
+74px a tile — day, date, MD offset, minutes; five fit, seven scroll; today is the
+selected tile, or Monday on another week. Under it the selected day as a list:
+the heading "Thursday 10 Sept · MD-2 · 1 session · 80 minutes" (an empty day
+"Nothing scheduled") with a 44px **+** that opens the new-session page for that
+day (forms stay pages), then one row per fixture and session at 44px or more —
+"09:30 – 10:50 · Contact prep · Main pitch · 80 min · Backs and Forwards · 27
+expected ›" — each a link to its page; an unpublished edit or draft made on a
+desktop is listed as held, not linked, because the phone has no editor. "Nothing
+on Thursday." when the day is empty; "Next · Fri 11 Sept · Captain's run ·
+10:00 ›" for the first session on a later day of the week. There is no Read/Edit
+control on the phone; the week nav, the publish banner and the toolbar stay.
+Both views are drawn from the same day columns and the same effective sessions,
+so they cannot disagree.
+
 **A week statistics panel**, summarising what the week contains. In its
 per-group card a group with no session this week reads a dash and "5 athletes ·
 nothing scheduled", never 0m (PATTERN-S4 C8, 13 September 2026) — a day still

@@ -28,6 +28,7 @@ import {
 } from '@/lib/scheduleGeometry';
 import { TimeGrid, type DayColumn, type RenderedBlock } from './TimeGrid';
 import { SelectedSessionPanel, type PanelSession } from './SelectedSessionPanel';
+import { SchedulePhoneDay } from './SchedulePhoneDay';
 import { WeekStatsPanel } from './WeekStatsPanel';
 import { toBaseSession, type BaseSession, type DraftSession, type EditOverlay, type GridFixture, type GroupOption, type TemplateOption } from './types';
 import { clearPending, isNetworkFailure, pendingKey, readPending, writePending } from './pending';
@@ -1190,6 +1191,12 @@ export function ScheduleWorkspace({
         </div>
       ) : null}
 
+      {/* PATTERN-S4 C6 / B4 (2026-09-13): below 768px the grid is not
+          attempted — the day view draws from the same day columns and
+          effective sessions, and CSS decides which half is on screen. */}
+      <SchedulePhoneDay days={dayColumns} sessions={effective} today={today} timezone={timezone} canEdit={canEdit} />
+
+      <div className="sg-desktop">
       <TimeGrid
         days={dayColumns}
         mode={mode}
@@ -1207,6 +1214,7 @@ export function ScheduleWorkspace({
       <div className="sg-panels">
         {draftOverlay ? null : panelNode}
         <WeekStatsPanel sessions={effective} typical={typical} groups={groups} />
+      </div>
       </div>
     </div>
   );

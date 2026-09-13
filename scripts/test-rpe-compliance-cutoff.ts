@@ -166,5 +166,14 @@ console.log('\n6. the outbox sends when the athlete rated, and the database deci
   assert(/queued/.test(read('docs/screens/20-compliance-report.md')), '20-compliance-report.md says an offline rating is judged by when it was made');
 }
 
+console.log('\n7. the report SAYS its cutoff in words (PATTERN-S7 C7, 2026-09-13)');
+{
+  const page = strip(read('src/app/(staff)/reports/compliance/page.tsx')).replace(/\s+/g, ' ');
+  assert(/An RPE counts when it was sent before the end of the following day, club time — the moment the athlete app stops accepting one\./.test(page), 'the RPE sentence, from the one rule');
+  assert(/A wellness check-in has no cutoff: it counts on the day it was expected, whenever it was sent\./.test(page), 'and the wellness sentence — no cutoff');
+  assert(/className="tiny cmpl-cutoff"/.test(page), 'on the summary card, under the figures');
+  assert(/cutoff in words/.test(read('docs/screens/20-compliance-report.md')), 'the spec records it');
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

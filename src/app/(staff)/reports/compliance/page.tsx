@@ -255,7 +255,17 @@ export default async function ComplianceReportPage({
                     </div>
                   ))}
                 </div>
-                <p className="tiny" style={{ marginTop: 'var(--sp-14)' }}>
+                {/* PATTERN-S7 C7 (2026-09-13): the report says its cutoff in
+                    words — §0ad's rule (lib/rpeDue.ts rpeClosesAt, the one rule
+                    Today's row, the RPE screen and this count all read), and
+                    that wellness has none. A reader of the percentage should
+                    not have to open the spec to know what "submitted" means. */}
+                <p className="tiny cmpl-cutoff" style={{ marginTop: 'var(--sp-14)' }}>
+                  An RPE counts when it was sent before the end of the following day, club time — the moment the athlete
+                  app stops accepting one. A wellness check-in has no cutoff: it counts on the day it was expected,
+                  whenever it was sent.
+                </p>
+                <p className="tiny" style={{ marginTop: 'var(--sp-8)' }}>
                   Waivers are excluded from both the numerator and the denominator, and reported
                   separately — the difference between &ldquo;did not submit&rdquo; and &ldquo;was
                   not asked&rdquo;.

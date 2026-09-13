@@ -86,6 +86,12 @@ their percentage looks survivable.
 A day nobody was expected to submit on, a rest day for instance, would otherwise
 drag every percentage down.
 
+**The report says its cutoff in words** (PATTERN-S7 C7, 13 September 2026), on
+the Summary card under the figures: "An RPE counts when it was sent before the
+end of the following day, club time — the moment the athlete app stops accepting
+one. A wellness check-in has no cutoff: it counts on the day it was expected,
+whenever it was sent."
+
 **An RPE counts only if it was submitted in time** — §0ad, decided 2026-09-12.
 "In time" is before the end of the following club-local day: the instant the
 RPE screen stops accepting a rating and Today's row disappears, `rpeClosesAt` in

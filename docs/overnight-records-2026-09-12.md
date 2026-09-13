@@ -1449,3 +1449,85 @@ Verified: `users`, `user_roles`, `organisations` carry no registration number,
 body or status; `grep` for HCPC/GMC/NMC/registration/practitioner across
 `supabase/migrations` and `src/lib` finds nothing. Isabella's, with a
 solicitor — it decides whether the Article 9 health-care condition is available.
+
+
+## RPE zero — the truthiness sweep, before any change (2026-09-13)
+
+Isabella's instruction with the RPE package: "Before touching any of it,
+sweep for every place an RPE value is tested for truthiness rather than for
+null, and report what you find before changing it. Zero is falsy and zero is
+now a real rating meaning rest."
+
+Swept: every `rpe`, `session_rpe`, `planned_rpe`, `sessionRpe`, `rpe*` and
+`session_load` read in `src/` and every `rpe` in `supabase/migrations` and
+`supabase/tests`, looking for `if (x)`, `x ? :`, `x &&`, `!x`, `x || 0`,
+`Boolean(x)`, `> 0`, `>= 1`, `min(1)`, `between 1 and 10`, `coalesce(x, 0)`,
+`nullif(x, 0)`.
+
+### Truthiness tests on an RPE value — none found
+
+Every read that decides presence tests `=== null` / `!== null` / `??`:
+`loadByDateFrom` (`e.session_load === null` → skip), `analytics.ts:131`
+(`e.session_load === null` → skip), `dash()` (null / undefined / '' → the
+blank; 0 prints "0"), `formatNumber(0, 1)` → "0.0", `changedNumber` (compares
+`value === original`, 0 survives), `RpeForm` (`blocked = rpe === null`),
+`GymSessionLogger` (`sessionRpe.trim() === '' ? null : Number(sessionRpe)`,
+so '0' → 0), the my-data and gym pages (`session_rpe !== null ? … : 'Not
+rated'`), the compliance classifier (`classifyRpeSubmissions` decides by the
+entry's existence and `submitted_at`, never its value), the dashboard's RPE
+track (expected vs submitted counts), the leaderboards' load metric
+(`session_load is not null`, sums), ACWR (`daysWithData = loadByDate.size`:
+a rated-0 day is a day with data at 0, correct), the SQL correction functions
+(`coalesce((p_payload ->> 'rpe')::numeric, v_original.rpe)` — coalesce replaces
+null only, so a payload 0 is kept), the load trigger (`round(new.rpe *
+new.duration_min, 1)` — 0 × minutes = 0, a real load of nothing). **The
+codebase already treats missing as null and never as zero on this value.**
+
+### Range checks that REFUSE zero — these are the change
+
+1. `supabase/migrations/0004_athlete_entries.sql:117` —
+   `check (rpe between 1 and 10)` on `training_entries`. The migration widens
+   it to 0–10 and records that earlier rows were written on 1–10.
+2. `src/lib/validation/training.ts:13` — `rpe: z.number().int().min(1).max(10)`
+   (the athlete's submission) → min(0).
+3. `src/lib/validation/entryCorrection.ts:70` —
+   `rpe: z.number().min(1).max(10).multipleOf(0.5)` (a coach's correction) →
+   min(0).
+4. `src/lib/validation/training.ts` — `CR10_SCALE = [1..10]` and
+   `CR10_ANCHORS` (no 0); `CR10List`'s legend "Session rating, 1 to 10";
+   `docs/athlete/screens/03-session-rating.md` §4 ("1 to 10 · CHECK 1 to
+   10"); `docs/metrics.md` MET-007 gives no scale, so nothing to change there
+   beyond a note.
+5. `src/lib/outboxQueue.ts:80` — "rated N of 10" reads correctly at 0.
+
+### Zero-adjacent controls that are NOT the session rating — left, and said
+
+- `gym_session_logs.session_rpe` (the gym session's overall rating,
+  `GymSessionLogger` input `min="1" max="10"`, `completeSessionLog`): a session
+  rating on the same construct. **Question:** does the gym session's RPE follow
+  to 0–10? Recommended yes, in the same migration — one scale for "how hard
+  was the session". Not done until answered; the column has no check
+  constraint, so only the input's min changes.
+- Per-set gym RPE (`gym_set_logs.rpe`, `validation/gym.ts:18` min(1), half
+  steps): a per-set effort rating, not the session scale; stays 1–10.
+- `sessions.planned_rpe` (`0003_schedule.sql:97` check 1–10;
+  `weekTemplates.ts:74` min(1)): a coach's planned intensity for a session; a
+  planned 0 is not a session. Stays 1–10.
+
+### Aggregates over a rated-0 session — correct as they stand
+
+`sum(session_load)`, the ACWR windows and the analytics load presets all
+include a 0 as a real data point (a session done, rated rest) — which is what
+"a session with no rating is not counted as zero" wants: the unrated session
+is null and absent; the rated-0 session is present at 0. Leaderboard "total
+session load" and the training load report will read it the same way.
+
+### Where "off" has to be said (for change one, the club setting)
+
+The dependent surfaces, each of which must carry the off state rather than an
+empty column or a zero: the compliance report and figure (and the rule that it
+names the entry types counted), the dashboard's attention card / RPE track,
+the effort leaderboards (`training.total_session_load` and the wall's Habits
+boards read wellness, not RPE — checked), the analytics load presets, the
+schedule's session RPE column and the athlete's Today RPE row, and the
+Training load report once built.

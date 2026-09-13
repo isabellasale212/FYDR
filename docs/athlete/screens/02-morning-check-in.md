@@ -125,6 +125,18 @@ if the same day is submitted twice from two devices. Looked in
 
 None.
 
+**The first one** (PATTERN-S9 artboard 5, 14 September 2026). The first run
+ends on this form, not on a confirmation: agreeing on the decision screen lands
+on `/check-in?first=1`, and the form carries one emphasised card above the
+scales — "Your first one — There is no score and no streak. Answer it as it is
+— the numbers are only useful if they are true." "First" is a fact about the
+record (no check-in ever, any date), not the query flag, so the card goes the
+moment one is submitted and never returns. Everything else is ATH-ADULT-03
+unchanged: sleep starts empty and counts, both anchors carry their numeral,
+"0 of 6 answered · 6 to go", the action blocked rather than dimmed. The
+submit stays at its ATH-ADULT-03 height (measured 53px; the board's 56px
+`--tap-commit` is reported under the accessibility sweep, not changed here).
+
 ## 10. States
 
 Loading, already submitted, error, offline queued, first run. **The already

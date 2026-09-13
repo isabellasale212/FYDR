@@ -35,6 +35,7 @@ import { recordReportView } from '@/lib/queries/reports';
 import { addDays, formatDate, mdLabel } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
+import { reportDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
@@ -299,6 +300,10 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
       groups={groups}
       groupIds={groupIds}
       title={mode === 'training' ? 'Training report' : 'Match day GPS report'}
+      /* PATTERN-S7 C1: the catalogue's sentence, above the numbers; the same
+         words head both exports. The match board is the same report on a
+         fixture, so it carries the same sentence. */
+      definition={reportDefinition('training')}
       sub={
         <p className="eyebrow rhead-sub">
           {`${orgName} · ${mode === 'training' ? 'Training' : 'Match day'} · ${groupScopeLabel(groups, groupIds)}`}

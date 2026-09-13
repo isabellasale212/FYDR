@@ -38,6 +38,13 @@ while this screen was correctly gated, because the buttons were simply never dra
 
 ## 4. What you see
 
+**The definition sentence sits above the numbers** (PATTERN-S7 C1, 13 September
+2026; `docs/reports-catalogue.md`): "How hard each session was for each athlete,
+judged against a typical session of the same kind for that athlete, from the GPS
+file for the session chosen." — a `--surf` card under the scope line on both the
+training and the match board; it prints with the page and is the first line of
+either CSV and the line under either PDF's title.
+
 **The header is one template shared by all five reports** (and specified in
 `CHANGELOG-headers-spec.md`). Five rows, always in this order:
 

@@ -59,6 +59,7 @@ console.log('\n3. compliance, the full shell');
    under the PDF's title, and a line in its spec. */
 const DONE: { key: string; dir: string; spec: string; csv?: string; pdf?: string }[] = [
   { key: 'injuries', dir: 'injuries', spec: 'docs/screens/24-injury-report.md' },
+  { key: 'training', dir: 'training', spec: 'docs/screens/23-training-report.md' },
 ];
 console.log('\n4. the reports that carry it so far');
 for (const r of DONE) {
@@ -69,6 +70,12 @@ for (const r of DONE) {
   const pdf = strip(read(r.pdf ?? `src/app/(staff)/reports/${r.dir}/pdf/route.tsx`));
   assert(new RegExp(`definition=\\{reportDefinition\\('${r.key}'\\)\\}`).test(pdf), `${r.key}: under the PDF's title`);
   assert(/definition sentence/i.test(read(r.spec)), `${r.key}: the spec says so`);
+}
+{
+  const csv = strip(read('src/app/(staff)/reports/training/export/route.ts'));
+  assert((csv.match(/reportDefinition\('training'\)/g) ?? []).length === 2, 'training: both the training and the match CSV carry it');
+  const pdf = strip(read('src/app/(staff)/reports/training/pdf/route.tsx'));
+  assert((pdf.match(/definition=\{reportDefinition\('training'\)\}/g) ?? []).length === 2, 'training: both PDFs carry it (the two no-data headers do not — nothing to define over)');
 }
 
 console.log(`\n${failed === 0 ? 'all passed' : `${failed} failed`}`);

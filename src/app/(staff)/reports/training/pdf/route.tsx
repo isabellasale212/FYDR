@@ -14,6 +14,7 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, todayIso } from '@/lib/format';
 import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
+import { reportDefinition } from '@/lib/reportCatalogue';
 import { premiumOnlyResponse, requireReport } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
@@ -80,6 +81,7 @@ export async function GET(request: Request) {
         <PdfHeader
           eyebrow={`Match day GPS · v ${selected.opponent} · ${orgName}`}
           title="Match day GPS report"
+          definition={reportDefinition('training')}
           meta={`${formatDate(selected.date, timezone)}${selected.result ? ` · ${selected.result}` : ''} · Scope: ${scopeLabel}${overview ? ` (${overview.athleteCount} athletes)` : ''}`}
         />
 
@@ -136,6 +138,7 @@ export async function GET(request: Request) {
       <PdfHeader
         eyebrow={`Training · ${selected.title} · ${orgName}`}
         title="Training report"
+        definition={reportDefinition('training')}
         meta={`${formatDate(selected.date, timezone)} · Scope: ${scopeLabel}${overview ? ` (${overview.athleteCount} athletes)` : ''}`}
       />
 

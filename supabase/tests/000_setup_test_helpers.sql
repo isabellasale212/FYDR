@@ -367,10 +367,15 @@ begin
     (o, udul, 'coach'), (o, udul, 'strength_conditioning'),
     (o, ua1, 'athlete'), (o, ua2, 'athlete');
 
+  /* 0120 (PATTERN-S9): an athlete enters data only while in it — the
+     performance decision given, not declined, not withdrawn. The fixture
+     athletes have agreed (version 'fixture'); 750 is the test that takes it
+     away and puts it back. */
   insert into athletes (id, org_id, user_id, first_name, last_name, date_of_birth,
-                        position, squad_number, height_cm) values
-    (a1, o, ua1, 'James', 'Barnes',  date '2002-01-27', 'Hooker', 2, 181.0),
-    (a2, o, ua2, 'Max',   'Chapman', date '1999-06-09', 'Lock',   4, 200.0);
+                        position, squad_number, height_cm, consent_given_at, consent_version,
+                        health_consent_given_at, health_consent_version) values
+    (a1, o, ua1, 'James', 'Barnes',  date '2002-01-27', 'Hooker', 2, 181.0, now(), 'fixture', now(), 'fixture'),
+    (a2, o, ua2, 'Max',   'Chapman', date '1999-06-09', 'Lock',   4, 200.0, now(), 'fixture', now(), 'fixture');
 
   insert into athlete_consents (org_id, athlete_id, purpose, granted_at, notice_version)
     values (o, a1, 'healthkit_sync', now(), '2026.1');

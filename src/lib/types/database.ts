@@ -145,6 +145,15 @@ export type Database = {
         updated_at: string
         deleted_at: string | null
         default_team_id: string | null
+        consent_declined_at: string | null
+        consent_withdrawn_at: string | null
+        health_consent_given_at: string | null
+        health_consent_version: string | null
+        health_consent_declined_at: string | null
+        health_consent_withdrawn_at: string | null
+        guardian_name: string | null
+        guardian_email: string | null
+        in_data: boolean | null
       }
       Insert: {
         id?: string
@@ -173,6 +182,15 @@ export type Database = {
         updated_at?: string
         deleted_at?: string | null
         default_team_id?: string | null
+        consent_declined_at?: string | null
+        consent_withdrawn_at?: string | null
+        health_consent_given_at?: string | null
+        health_consent_version?: string | null
+        health_consent_declined_at?: string | null
+        health_consent_withdrawn_at?: string | null
+        guardian_name?: string | null
+        guardian_email?: string | null
+        in_data?: boolean | null
       }
       Update: {
         id?: string
@@ -201,6 +219,15 @@ export type Database = {
         updated_at?: string
         deleted_at?: string | null
         default_team_id?: string | null
+        consent_declined_at?: string | null
+        consent_withdrawn_at?: string | null
+        health_consent_given_at?: string | null
+        health_consent_version?: string | null
+        health_consent_declined_at?: string | null
+        health_consent_withdrawn_at?: string | null
+        guardian_name?: string | null
+        guardian_email?: string | null
+        in_data?: boolean | null
       }
       Relationships: [
         {
@@ -1149,6 +1176,76 @@ export type Database = {
           columns: ["org_id"]
           isOneToOne: false
           referencedRelation: "organisations"
+          referencedColumns: ["id"]
+        }
+      ]
+    }
+    guardian_consent_requests: {
+      Row: {
+        id: string
+        org_id: string
+        athlete_id: string
+        guardian_name: string
+        guardian_email: string
+        token_hash: string
+        version: string
+        sent_at: string
+        sent_by: string | null
+        expires_at: string
+        decided_at: string | null
+        decision: string | null
+        created_at: string
+      }
+      Insert: {
+        id?: string
+        org_id: string
+        athlete_id: string
+        guardian_name: string
+        guardian_email: string
+        token_hash: string
+        version: string
+        sent_at?: string
+        sent_by?: string | null
+        expires_at: string
+        decided_at?: string | null
+        decision?: string | null
+        created_at?: string
+      }
+      Update: {
+        id?: string
+        org_id?: string
+        athlete_id?: string
+        guardian_name?: string
+        guardian_email?: string
+        token_hash?: string
+        version?: string
+        sent_at?: string
+        sent_by?: string | null
+        expires_at?: string
+        decided_at?: string | null
+        decision?: string | null
+        created_at?: string
+      }
+      Relationships: [
+        {
+          foreignKeyName: "guardian_consent_requests_athlete_id_fkey"
+          columns: ["athlete_id"]
+          isOneToOne: false
+          referencedRelation: "athletes"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "guardian_consent_requests_org_id_fkey"
+          columns: ["org_id"]
+          isOneToOne: false
+          referencedRelation: "organisations"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "guardian_consent_requests_sent_by_fkey"
+          columns: ["sent_by"]
+          isOneToOne: false
+          referencedRelation: "users"
           referencedColumns: ["id"]
         }
       ]
@@ -4596,6 +4693,18 @@ export type Database = {
           free_text: string
         }[]
     }
+    athlete_health_consent_open: {
+      Args: {
+        p_athlete_id: string
+      }
+      Returns: boolean
+    }
+    athlete_in_data: {
+      Args: {
+        p_athlete_id: string
+      }
+      Returns: boolean
+    }
     athlete_is_minor: {
       Args: {
         p_athlete_id: string
@@ -4718,6 +4827,28 @@ export type Database = {
       Args: Record<string, never>
       Returns: unknown
     }
+    guardian_decide: {
+      Args: {
+        p_token: string
+        p_decision: string
+      }
+      Returns: string
+    }
+    guardian_request_by_token: {
+      Args: {
+        p_token: string
+      }
+      Returns: {
+          state: string
+          athlete_first_name: string
+          club_name: string
+          guardian_name: string
+          expires_at: string
+          decided_at: string
+          decision: string
+          version: string
+        }[]
+    }
     gym_body_side_label: {
       Args: Record<string, never>
       Returns: string
@@ -4793,11 +4924,31 @@ export type Database = {
           window_days: number
         }[]
     }
+    record_data_consent: {
+      Args: {
+        p_decision: string
+        p_version: string
+      }
+      Returns: unknown
+    }
     reference_base36: {
       Args: {
         p: number
       }
       Returns: string
+    }
+    request_guardian_consent: {
+      Args: {
+        p_athlete_id: string
+        p_version: string
+      }
+      Returns: {
+          request_id: string
+          token: string
+          expires_at: string
+          guardian_name: string
+          guardian_email: string
+        }[]
     }
     resolve_my_assigned_sessions_by_week: {
       Args: {
@@ -4947,6 +5098,10 @@ export type Database = {
           email_enabled: boolean
         }[]
     }
+    withdraw_data_consent: {
+      Args: Record<string, never>
+      Returns: unknown
+    }
     write_audit_event: {
       Args: {
         p_action: string
@@ -4991,7 +5146,7 @@ export type Database = {
     occurrence_context: "training" | "match" | "gym" | "other" | "unknown"
     org_sport: "rugby_union" | "rugby_league" | "football" | "netball" | "hockey" | "cricket" | "basketball" | "athletics" | "other"
     override_type: "exempt" | "substitute" | "volume" | "load_cap" | "note"
-    parental_consent_method: "club_registration_form" | "written_confirmation" | "in_person" | "not_required"
+    parental_consent_method: "club_registration_form" | "written_confirmation" | "in_person" | "not_required" | "guardian_link"
     problem_report_category: "injury_or_pain" | "wellbeing" | "other"
     problem_report_status: "open" | "acknowledged" | "closed"
     programme_status: "draft" | "active" | "archived"

@@ -360,6 +360,16 @@
   --sp-40: 40px;  /* 1 declaration */
   --sp-48: 48px;  /* 1 declaration */
 
+  /* PATTERN-S9 (Isabella, 2026-09-13): two heights that are two different
+     jobs, which the scale named neither of. --tap-min is the floor every
+     control already stands on; --tap-commit is a committing action — set
+     password, agree, decline, submit, not now — so a footer action cannot
+     drift back to 44 by being written by hand. Values already in use; this
+     names them. ATH-ADULT-03's submit stays at 44 for now (the restyle pass
+     was cancelled; reported under the accessibility sweep). */
+  --tap-min: 44px;
+  --tap-commit: 56px;
+
   /* THE DIALOG'S WIDTH. Approved by Isabella 2026-09-13 (decision batch,
      group A / B11; PATTERN-S7 D3) and dated here at its value when the
      export dialog (S7 C3 / S8 C8) was built. One dialog pattern, built once
@@ -507,6 +517,15 @@
   --border: #d4dff5;
   --border-strong: rgba(16, 18, 23, 0.52);
   --hair: rgba(16, 18, 23, 0.05);
+  /* PATTERN-S9 (2026-09-13): wording that is not written yet — the seven
+     LEGAL- placeholders — is one named pattern: a dashed line on the well
+     fill. Two aliases, no new values, so the pattern is distinct from the
+     nutrition board's club-default dashed treatment (which writes
+     --border-strong directly) and can be found and removed in one search
+     when the wording lands. The board's --line-dashed is this app's
+     --border-strong by role. */
+  --border-pending: var(--border-strong);
+  --pending-fill: var(--surf2);
   /* Handoff §3 raises the unfilled track from 0.07 to 0.10 so a bar reads as
      an empty measure rather than as nothing, and adds --tick for a reference
      marker ON that track (the median mark), which has to out-read it. */

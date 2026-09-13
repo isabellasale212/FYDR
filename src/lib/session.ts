@@ -2,6 +2,8 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { TIER_PREVIEW_COOKIE, effectiveTier, isPreviewingTier } from '@/lib/tierPreview';
+import { ageFrom } from '@/lib/format';
+import { consentState, consentStateAt, maskEmail, type ConsentState } from '@/lib/consentState';
 import { getClaims, isAthlete, isStaff, type FydrClaims, claimsStale } from '@/lib/supabase/claims';
 import { isPlatformStaff } from '@/lib/platformStaff';
 import { INJURY_ACCESS, REPORT_ACCESS, REPORT_VISIBILITY, SETTINGS_ADMIN, CLINICAL_ONLY, hasAnyRole } from '@/lib/access';
@@ -64,6 +66,18 @@ export type AthleteContext = {
    *  never the preview — a club's own athletes must not see a staff member's Basic
    *  preview change what they are allowed to switch on. */
   tier: 'core' | 'performance';
+  /** PATTERN-S9 (0120): the data-consent state and what the flow needs. */
+  consent: {
+    state: ConsentState;
+    isMinor: boolean;
+    /** The decline or withdrawal date, or null for a not-yet state. */
+    at: string | null;
+    givenAt: string | null;
+    version: string | null;
+    health: { givenAt: string | null; declinedAt: string | null; withdrawnAt: string | null };
+    guardianName: string | null;
+    guardianEmailMasked: string | null;
+  };
 };
 
 async function base() {
@@ -315,20 +329,39 @@ export async function requireAthlete(): Promise<AthleteContext> {
     supabase.from('organisations').select('timezone, tier, collects_rpe').eq('id', orgId).maybeSingle(),
     supabase
       .from('athletes')
-      .select('first_name, last_name')
+      .select('first_name, last_name, date_of_birth, in_data, consent_given_at, consent_declined_at, consent_withdrawn_at, health_consent_given_at, health_consent_declined_at, health_consent_withdrawn_at, guardian_name, guardian_email, consent_version')
       .eq('id', claims.athleteId)
       .maybeSingle(),
   ]);
+
+  const timezone = org.data?.timezone ?? 'Europe/London';
+  /* PATTERN-S9 (0120): the consent state travels with the context so the
+     shell can send an undecided athlete to the flow and every entry form can
+     lock itself. A null date of birth counts as a minor (athlete_is_minor). */
+  const age = ageFrom(athlete.data?.date_of_birth ?? null, timezone);
+  const isMinor = age === null || age < 18;
+  const row = athlete.data;
+  const state = row ? consentState(row, isMinor) : 'undecided';
 
   return {
     db: supabase,
     claims,
     orgId,
     athleteId: claims.athleteId,
-    timezone: org.data?.timezone ?? 'Europe/London',
-    firstName: athlete.data?.first_name ?? '',
-    lastName: athlete.data?.last_name ?? '',
+    timezone,
+    firstName: row?.first_name ?? '',
+    lastName: row?.last_name ?? '',
     tier: org.data?.tier ?? 'core',
     collectsRpe: org.data?.collects_rpe ?? true,
+    consent: {
+      state,
+      isMinor,
+      at: row ? consentStateAt(row, state) : null,
+      givenAt: row?.consent_given_at ?? null,
+      version: row?.consent_version ?? null,
+      health: { givenAt: row?.health_consent_given_at ?? null, declinedAt: row?.health_consent_declined_at ?? null, withdrawnAt: row?.health_consent_withdrawn_at ?? null },
+      guardianName: row?.guardian_name ?? null,
+      guardianEmailMasked: row?.guardian_email ? maskEmail(row.guardian_email) : null,
+    },
   };
 }

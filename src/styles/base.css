@@ -14705,3 +14705,242 @@ a.hist-row:active { background: var(--surf-sunken); }
   color: var(--muted);
   font-weight: 500;
 }
+
+/* ---------- PATTERN-S9: consent, first run, install teaching (2026-09-13) ----------
+   Composed from existing tokens under CLAUDE.md §0.01; the four tokens the
+   board names (--tap-min, --tap-commit, --border-pending, --pending-fill) are
+   aliases or names for values already in the scale, added in tokens.css. */
+
+/* Wording that is not written yet: the seven LEGAL- placeholders. A dashed
+   line on the well fill, the reference in tabular figures at the nano size
+   (the board draws a mono face; this app removed its mono token on 2 Sept
+   2026, so the reference takes .num instead — flagged in the build report),
+   and one caption naming who supplies it. Sized for the expected length on
+   purpose: min-height is the point, not decoration. */
+.legal-pending {
+  border: 1px dashed var(--border-pending);
+  background: var(--pending-fill);
+  border-radius: var(--r-control);
+  padding: var(--sp-10) var(--sp-12);
+  margin-top: var(--sp-10);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.legal-pending[data-lines='2'] { min-height: 64px; }
+.legal-pending[data-lines='4'] { min-height: 104px; }
+.legal-pending[data-lines='6'] { min-height: 144px; }
+.legal-pending-ref {
+  font-size: var(--fs-10);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--faint);
+  text-transform: uppercase;
+}
+.legal-pending-cap {
+  font-size: var(--fs-11);
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+/* The two equal choices on a decision frame (3A, 4B, the withdrawal blocks):
+   both --tap-commit, both full width, both --surf with the accent line and
+   the accent label, in source order agree then decline. No --ring-action, no
+   halo: the one-primary rule is a ceiling, not a quota. */
+.consent-choices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-10);
+}
+.consent-choice {
+  min-height: var(--tap-commit);
+  width: 100%;
+  background: var(--surf);
+  color: var(--accent-text);
+  border: 1px solid var(--accent);
+  border-radius: var(--r-control);
+  padding: var(--sp-14) var(--sp-20);
+  font-size: var(--fs-15);
+  font-weight: 700;
+  font-family: inherit;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: background var(--t-press), border-color var(--t-press);
+}
+.consent-choice:active {
+  background: var(--surf2);
+}
+.consent-choice:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* A committing action anywhere else on the flow (set password, read the
+   choice, go to Today, send again, not now): the primary or ghost button at
+   the commit height. */
+.btn-commit {
+  min-height: var(--tap-commit);
+  width: 100%;
+}
+
+/* One of the two blocks: a card with a labelled list (What · Who · Why) and
+   its placeholder under it. */
+.consent-block-list {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: var(--sp-6) var(--sp-10);
+  margin: var(--sp-10) 0 0;
+}
+.consent-block-list dt {
+  font-size: var(--fs-11);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--faint);
+  padding-top: var(--sp-2);
+}
+.consent-block-list dd {
+  margin: 0;
+  font-size: var(--fs-14);
+  color: var(--text);
+  line-height: 1.4;
+}
+
+/* The password rules: a neutral list before typing (an en dash at --faint,
+   the words at --muted), a met rule's tick at --accent2, the one unmet rule's
+   bad glyph and --on-bad ink. Never three red rows for a password being typed. */
+.pw-rules {
+  list-style: none;
+  margin: var(--sp-10) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+.pw-rule {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-10);
+  font-size: var(--fs-14);
+  color: var(--muted);
+  line-height: 1.35;
+}
+.pw-rule-mark {
+  flex: 0 0 18px;
+  width: 18px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--faint);
+}
+.pw-rule[data-state='met'] .pw-rule-mark { color: var(--accent2-text); }
+.pw-rule[data-state='met'] { color: var(--text); }
+.pw-rule[data-state='unmet'] .pw-rule-mark {
+  /* The board's --on-bad on --pill-bad is this app's --bad-pill-text on the
+     bad pill fill (rgb(var(--bad-rgb) / 0.24), the report card's own). */
+  color: var(--bad-pill-text);
+  background: rgb(var(--bad-rgb) / 0.24);
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  font-size: var(--fs-11);
+}
+.pw-rule[data-state='unmet'] { color: var(--text); }
+.field[data-invalid='true'] {
+  border-color: var(--bad);
+  box-shadow: 0 0 0 3px rgb(var(--bad-rgb) / 0.18);
+}
+
+/* Artboard 6: the install card is Fydr's, marked three ways — the eyebrow, the
+   card treatment, a 44px close and a worded dismissal. The schematic Safari
+   bar is a landmark, not a specimen: the system's sticky-bar fill, an address
+   pill, five controls, the share control ringed. */
+.install-card {
+  position: relative;
+}
+.install-close {
+  position: absolute;
+  top: var(--sp-8);
+  right: var(--sp-8);
+  width: var(--tap-min);
+  height: var(--tap-min);
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: var(--fs-20);
+  border-radius: var(--r-control);
+  cursor: pointer;
+}
+.install-steps {
+  list-style: none;
+  margin: var(--sp-12) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-10);
+  counter-reset: step;
+}
+.install-step {
+  display: flex;
+  gap: var(--sp-10);
+  align-items: flex-start;
+  font-size: var(--fs-14);
+  line-height: 1.4;
+}
+.install-step-n {
+  flex: 0 0 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 700;
+  font-size: var(--fs-12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.safari-bar {
+  margin-top: var(--sp-12);
+  border-radius: var(--r-control);
+  background: rgb(234 237 241 / 0.94);
+  color: #101217;
+  padding: var(--sp-8) var(--sp-10);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+.safari-address {
+  background: #ffffff;
+  /* Safari's own address pill, drawn schematically; --r-pill is reserved for
+     bars (check:control-radius), and a landmark of another vendor's UI is
+     not a Fydr control, so its rounding is written plainly. */
+  border-radius: 10px;
+  padding: var(--sp-6) var(--sp-12);
+  font-size: var(--fs-13);
+  text-align: center;
+  color: #484e57;
+}
+.safari-controls {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: center;
+  justify-items: center;
+  font-size: var(--fs-16);
+  /* Safari's control blue, by role, is this app's accent. */
+  color: var(--accent);
+}
+.safari-share {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--ring-accent);
+  border: 2px solid var(--accent);
+}
+.safari-share-label {
+  font-size: var(--fs-11);
+  color: #484e57;
+  text-align: center;
+}

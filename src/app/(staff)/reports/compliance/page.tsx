@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ReportPager } from '@/components/ReportPager/ReportPager';
 import { narrowWindowNote, periodNav } from '@/lib/periodNav';
 import { belowSquadFloor, squadFloorNote } from '@/lib/smallSample';
+import { NONE_WAIVED, NOT_EXPECTED, NO_ENTRY_IN_WINDOW, exclusionsLine, submittedLine } from '@/lib/reportFigures';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { fetchGroups } from '@/lib/queries/groups';
 import { complianceAthletePct, fetchComplianceReport, recordReportView } from '@/lib/queries/reports';
@@ -136,7 +137,7 @@ export default async function ComplianceReportPage({
       cells: DAY_DOMAINS.map((d) => {
         const cell = domains.get(d);
         const pct = cell && cell.expected > 0 ? Math.round((100 * cell.submitted) / cell.expected) : null;
-        return { domain: d, pct, count: pct === null ? '—' : `${cell!.submitted} of ${cell!.expected}` };
+        return { domain: d, pct, count: pct === null ? NOT_EXPECTED : `${cell!.submitted} of ${cell!.expected}` };
       }),
     }));
   // Grouped by the week each day falls in, which is how a coach reads a run of
@@ -268,17 +269,15 @@ export default async function ComplianceReportPage({
                   {report.summary.map((s) => (
                     <div key={s.domain}>
                       <div className="num" style={{ fontSize: 'var(--fs-24)', fontWeight: 800 }}>
-                        {s.pct === null ? '—' : `${s.pct}%`}
+                        {s.pct === null ? NOT_EXPECTED : `${s.pct}%`}
                       </div>
                       <div className="tiny">{enumLabel(s.domain)}</div>
                       <div className="tiny" style={{ color: 'var(--faint)' }}>
-                        {/* expected === 0 with no waivers either means nothing was ever
-                            expected — a permanent gap for this domain, not a compliance
-                            failure. "0 of 0 submitted" reads as an accusation; say what's
-                            actually true instead (audit analysis finding 20). */}
-                        {s.expected === 0 && s.waived === 0
-                          ? 'No expectations configured for this domain'
-                          : `${s.submitted} of ${s.expected} submitted${s.waived > 0 ? ` · ${s.waived} waived` : ''}`}
+                        {/* PATTERN-S7 C2 (2026-09-13): the count with its
+                            denominator, from lib/reportFigures.ts — "0 of 0
+                            submitted" reads as an accusation (audit analysis
+                            finding 20), so nothing expected is said. */}
+                        {submittedLine({ submitted: s.submitted, expected: s.expected, waived: s.waived })}
                       </div>
                     </div>
                   ))}
@@ -309,7 +308,7 @@ export default async function ComplianceReportPage({
                   <div className="cmpl-stat">
                     <span className="cmpl-stat-label">Squad mean</span>
                     <span className="cmpl-stat-value">
-                      {squadMean === null ? '—' : squadMean}
+                      {squadMean === null ? (belowSquadFloor(measured.length) ? 'Not shown' : NOT_EXPECTED) : squadMean}
                       {squadMean === null ? null : <small>%</small>}
                     </span>
                     <span className="cmpl-stat-sub">
@@ -329,6 +328,12 @@ export default async function ComplianceReportPage({
                       {waivedAthletes} athlete{waivedAthletes === 1 ? '' : 's'} · left out of their denominators
                     </span>
                   </div>
+                  {/* PATTERN-S7 C2: the exclusions sentence under the figures —
+                      who was left out of the denominators and why, or that
+                      nobody was; the squad floor (C8) is an exclusion too. */}
+                  <p className="tiny cmpl-exclusions" style={{ gridColumn: '1 / -1', margin: 0 }}>
+                    {exclusionsLine({ waivedAthletes, waivedDays, floored: belowSquadFloor(measured.length) })}
+                  </p>
                 </div>
 
                 <div className="card cmpl-table">
@@ -367,13 +372,13 @@ export default async function ComplianceReportPage({
                                     {row.first_name} {row.last_name}
                                   </span>
                                   <span className="cmpl-num">
-                                    {expected === 0 ? '—' : `${submitted} of ${expected}`}
+                                    {expected === 0 ? NOT_EXPECTED : `${submitted} of ${expected}`}
                                   </span>
                                   <span className="cmpl-num" data-quiet={row.waivedCount === 0}>
-                                    {row.waivedCount === 0 ? '—' : row.waivedCount}
+                                    {row.waivedCount === 0 ? NONE_WAIVED : row.waivedCount}
                                   </span>
                                   <span className="cmpl-last">
-                                    {row.lastSubmission ? formatDate(row.lastSubmission, timezone) : '—'}
+                                    {row.lastSubmission ? formatDate(row.lastSubmission, timezone) : NO_ENTRY_IN_WINDOW}
                                   </span>
                                   <span className="cmpl-meter">
                                     <span className="cmpl-track">
@@ -385,7 +390,7 @@ export default async function ComplianceReportPage({
                                     <span className="cmpl-meter-pct cmpl-tone" data-tone={pct === null ? 'none' : band.tone}>
                                       {/* A fully waived athlete is not 0% and not
                                           100% — nothing was asked of them. */}
-                                      {pct === null ? (row.waivedCount > 0 ? 'Waived' : '—') : `${pct}%`}
+                                      {pct === null ? (row.waivedCount > 0 ? 'Waived' : NOT_EXPECTED) : `${pct}%`}
                                     </span>
                                   </span>
                                 </div>

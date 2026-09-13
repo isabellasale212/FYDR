@@ -1889,6 +1889,12 @@ body:has(.phone) {
 .gb-bar[data-partial] {
   background: color-mix(in srgb, var(--accent-text) 32%, var(--surf));
 }
+/* ATH-ADULT-12 B2 (2026-09-13): prior weeks in the wash — the board's
+   --blue-200 mapped to --wash-accent-strong — so the latest completed week
+   carries the accent alone. */
+.gb-bar[data-prior] {
+  background: var(--wash-accent-strong);
+}
 /* A week with nothing logged draws a baseline rule, not nothing. An absent bar
    is ambiguous — zero sessions and no data look identical — and this page's
    whole argument is that a blank is not a zero. */

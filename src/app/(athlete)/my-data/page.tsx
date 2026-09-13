@@ -1880,11 +1880,15 @@ async function GymTab({
             )
             .join('; ')}`}
         >
-          {weeks.map((w) => (
+          {weeks.map((w, i) => (
             <div className="gb-col" key={w.start}>
               <div className="gb-track">
                 <div
                   className="gb-bar"
+                  /* ATH-ADULT-12 B2 (2026-09-13): a prior week is the wash,
+                     the latest the accent; a partial week keeps its own
+                     lighter mix — it means "not finished", a different fact. */
+                  data-prior={i < weeks.length - 1 && !w.partial ? '' : undefined}
                   data-partial={w.partial ? '' : undefined}
                   data-zero={w.count === 0 ? '' : undefined}
                   style={w.count === 0 ? undefined : { height: `${Math.round((w.count / peak) * 100)}%` }}

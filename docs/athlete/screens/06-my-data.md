@@ -220,6 +220,15 @@ Built from the "ATH-ADULT-12-13 · FINAL" board, A items only — the rest is in
 - **The hero figure is 48px** (`--fs-48`, a token that exists), from 38.
 - **A history row is at least 44px.**
 
+**Prior values in the wash, the latest in the accent** (ATH-ADULT-12 B2, 13
+September 2026, once D7 was accepted): on the gym weeks the completed prior
+weeks are `--wash-accent-strong` — the board's `--blue-200` mapped onto the
+existing wash family — the latest completed week the accent, and a partial week
+keeps its own lighter mix because "not finished" is a different fact; a week
+with nothing logged keeps its baseline rule. The readiness chart here is a line
+with dots, not the board's bars, so its prior-value colour waits for 12 C2 (the
+bar chart).
+
 Since built or decided: five segments on the track (12 September, D1 reversed —
 the footer card keeps only Leaderboards), the live segment stays the
 accent-filled pill (D2 declined), and further recorded, not built:

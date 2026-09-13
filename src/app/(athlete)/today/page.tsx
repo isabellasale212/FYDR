@@ -4,6 +4,7 @@ import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { InjuryClinical } from '@/components/InjuryClinical/InjuryClinical';
 import { OutboxFlusher } from '@/components/OutboxFlusher/OutboxFlusher';
 import { TodayRpeRow } from '@/components/TodayRpeRow/TodayRpeRow';
+import { InstallCard } from '@/components/InstallCard/InstallCard';
 import { fetchAthleteAvailability } from '@/lib/queries/availability';
 import { fetchAthleteInjuryClinical } from '@/lib/queries/athleteInjuryClinical';
 import { fetchMyOutstanding } from '@/lib/queries/compliance';
@@ -86,9 +87,12 @@ export default async function TodayPage({
      refuse. The generator writes them no expectation from now; any already
      written before the decision are not listed either. */
   const formsOpen = entryFormsOpen(consent.state);
-  /* ?submitted= still arrives from the entry forms; nothing reads it now
-     (S6 A2). Awaited so the route stays dynamic on the query, as before. */
-  await searchParams;
+  /* ?submitted= still arrives from the entry forms; nothing read it after S6
+     A2 until PATTERN-S9 artboard 6: the install card is shown ONCE, on the
+     Today that follows the first check-in ever — not on every open and not on
+     a timer. The card's own "Not now" is remembered on the phone. */
+  const sp = await searchParams;
+  const firstCheckInJustSent = sp.submitted === '1' && (await db.from('wellness_entries').select('id', { count: 'exact', head: true }).eq('athlete_id', athleteId).then((r) => r.count ?? 0)) === 1;
   const today = todayIso(timezone);
   const weekStart = mondayOf(today);
   const nutritionWeekStart = addDays(weekStart, -7);
@@ -309,6 +313,8 @@ export default async function TodayPage({
           })}
         </div>
       </section>
+
+      {firstCheckInJustSent ? <InstallCard /> : null}
 
       {/* THE TO-DO LIST, always rendered, and its own status: the count reads
           off the same array the rows render from, and with nothing outstanding

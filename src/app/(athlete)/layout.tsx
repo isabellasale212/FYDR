@@ -1,6 +1,7 @@
 import { BackButton } from '@/components/BackButton/BackButton';
 import { AthleteTabBar } from '@/components/AthleteTabBar/AthleteTabBar';
 import { requireAthlete } from '@/lib/session';
+import { DeviceBeacon } from '@/components/DeviceBeacon/DeviceBeacon';
 
 /** The athlete shell, ATHLETE-APP-SPEC.md §2/§4: a fixed header (rendered
  *  per page, since the title and status pill are per-tab), a scrolling
@@ -24,6 +25,8 @@ export default async function AthleteLayout({
 
   return (
     <div className="phone">
+      {/* PATTERN-S9: how this app is running, once per session (0121). */}
+      <DeviceBeacon />
       <main className="phone-body" id="main">
         <BackButton />
         {children}

@@ -12,6 +12,41 @@ Every athlete.
 
 The athlete notifications from the catalogue, each with a channel toggle.
 
+**Add to Home Screen** (PATTERN-S9 artboard 6, 14 September 2026): the first
+row on this screen, above the preferences — "Add to Home Screen · reminders
+reach you only from there" — opens `/me/reminders/install`, the permanent,
+canonical route to install teaching, reachable by name so a coach can say
+where it is. The card there is Fydr's own, marked three ways: the eyebrow
+"From Fydr, not from iPhone" (or Android / your phone), the product card
+treatment, and — where it is dismissable, on Today — a 44px close plus a
+worded "Not now". Three steps naming the exact menu items ("Tap **Share** in
+Safari's bar at the bottom of the screen — the square with an arrow coming
+out of the top"; "**Add to Home Screen**, then **Add**"; "Open Fydr from the
+Home Screen. It asks about reminders once, and you can say no."), a
+schematic Safari bar with the share control ringed and labelled "Share — step
+1", and what changes once added (an icon, no browser bars, reminders become
+possible; login, entries and staff visibility unchanged). On Android the
+browser can offer the install itself, so the card carries a real "Install
+Fydr" button when the browser fires `beforeinstallprompt`, with the menu route
+("Add to Home screen", some browsers "Install app") as the fallback; on a
+desktop it says to open fydr.app on the phone. Already added: the card says so
+and offers nothing. It never imitates a system dialog.
+
+**Where else it appears — three routes only** (the notes): this row, always;
+once on Today, on the open that follows the first check-in ever, with "Not
+now" remembered on the phone; and, once a sender exists (S11), returned once
+if a reminder could not be delivered. Not on every Today open and not on a
+timer. iOS 15 (September 2021) onward puts Safari's bar at the bottom with the
+share control in it, which is what the schematic draws; earlier versions had
+it at the top — the caption names "the share control", true of both.
+
+**What the club can see of it.** Once per session start the app records how
+it is running — platform, standalone or browser, push-capable — in
+`athlete_devices` (migration 0121; no identifier of the phone is stored). The
+staff squad view reads "N of M athletes can receive reminders" from it, with
+a caption naming the cause; it is the phone's readiness, not a reminder
+delivered, and the caption says so.
+
 ## 4. What the athlete enters here
 
 Per notification, per channel, on or off. Stored in `notification_preferences`

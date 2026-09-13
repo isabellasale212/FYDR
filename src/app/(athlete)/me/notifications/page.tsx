@@ -36,6 +36,22 @@ export default async function AthleteNotificationsPage() {
         <Link href="/me">← Me</Link>
       </p>
 
+      {/* PATTERN-S9 artboard 6: the permanent, canonical route to install
+          teaching — Settings › Reminders › Add to Home Screen. A reminder
+          reaches a phone only from the Home Screen, so the row lives with
+          the reminders it makes possible. */}
+      <div className="card flush me-set">
+        <Link href="/me/reminders/install" className="me-row" data-install-row>
+          <span className="k">
+            Add to Home Screen
+            <span className="s">reminders reach you only from there</span>
+          </span>
+          <span className="chev" aria-hidden="true">
+            ›
+          </span>
+        </Link>
+      </div>
+
       <NotificationPreferencesForm
         orgId={orgId}
         userId={claims.userId}

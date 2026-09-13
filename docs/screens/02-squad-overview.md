@@ -73,6 +73,21 @@ Desktop keeps the columns above.
 
 ---
 
+**Two things PATTERN-S9 added (14 September 2026).** Under an athlete's name,
+their data-consent state and its date when it is not "in data" — "no data
+consent · Mon 14 Sept", "guardian consent outstanding", "not yet decided",
+"data consent withdrawn · date" — the one staff surface that keeps showing an
+athlete out of data (`21-consent-first-run.md`). And, above the roster, the
+**reachability figure**: "Can receive reminders · 18 of 30 · 60%", the sample
+("30 athletes · whole squad · Fydr on a Home Screen, on a phone that can hold
+a reminder") and a caption naming the cause ("12 have not added Fydr to a Home
+Screen, of whom 9 are on iPhone; 3 have not opened the app yet.") plus what it
+measures — the phone's readiness from how the app is opened
+(`athlete_devices`, 0121), not a reminder delivered, since reminders are not
+built. It sits near the roster and is **never merged with any compliance
+figure**: an install problem is a property of a phone, a missed check-in of a
+person.
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means in plain English | Time window | What shows when data is missing |

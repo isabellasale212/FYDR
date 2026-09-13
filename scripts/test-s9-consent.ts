@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import { CONSENT_VERSION, LEGAL_PLACEHOLDERS } from '@/lib/legalPlaceholders';
 import { consentState, consentStateLabel, entryFormsOpen, maskEmail } from '@/lib/consentState';
 import { passwordRules, rulesMet, unmetLine } from '@/lib/passwordRules';
+import { displayModeFrom, platformFrom } from '@/lib/installState';
 
 let failed = 0;
 function assert(cond: boolean, msg: string) {
@@ -184,6 +185,38 @@ console.log('\n8. artboard 5 — the first check-in');
   assert(!/first=1/.test(page.replace(/\/\*[\s\S]*?\*\//g, '')), 'the ?first=1 flag is a landing, not a condition');
   const form = strip(read('src/components/CheckInForm/CheckInForm.tsx'));
   assert(!/tap-commit|56px|minHeight: 56/.test(form), 'ATH-ADULT-03 unchanged: the submit is not raised here (finding 5, for the accessibility sweep)');
+}
+
+console.log('\n9. artboard 6 — install teaching, and the two named rows');
+{
+  assert(platformFrom('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)') === 'ios' && platformFrom('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', 5) === 'ios' && platformFrom('Mozilla/5.0 (Linux; Android 14)') === 'android' && platformFrom('Mozilla/5.0 (Windows NT 10.0)') === 'desktop', 'the platform rule: iPhone, iPad-as-Mac, Android, desktop');
+  assert(displayModeFrom({ matchesStandalone: true, navigatorStandalone: undefined }) === 'standalone' && displayModeFrom({ matchesStandalone: false, navigatorStandalone: true }) === 'standalone' && displayModeFrom({ matchesStandalone: false, navigatorStandalone: false }) === 'browser', 'standalone from the manifest or Safari\'s own flag');
+  const card = strip(read('src/components/InstallCard/InstallCard.tsx'));
+  assert(/From Fydr, not from/.test(card) && /className="install-close"/.test(card) && /Not now/.test(card), 'marked as Fydr\'s three ways: the eyebrow, the close, the worded dismissal');
+  assert(/<b>Add to Home Screen<\/b>, then <b>Add<\/b>/.test(card) && /the square with an arrow coming out of the top/.test(card) && /className="safari-share"/.test(card) && /Share — step 1/.test(card), 'the exact menu items, the share control ringed and labelled');
+  assert(/An icon on your Home Screen, no browser bars, and reminders become possible/.test(card) && /do not change/.test(card), 'what changes once added, and what does not');
+  assert(/beforeinstallprompt/.test(card) && /Install Fydr/.test(card), 'Android: the browser\'s own install, with the menu route as the fallback');
+  assert(!/role="dialog"|role="alertdialog"|<dialog/.test(card), 'it does not imitate a system dialog');
+  assert(/Settings › Reminders › Add to Home Screen/.test(card), 'the permanent route is named on the card');
+  const today = strip(read('src/app/(athlete)/today/page.tsx'));
+  assert(/firstCheckInJustSent = sp\.submitted === '1' &&/.test(today) && /=== 1;/.test(today) && /\{firstCheckInJustSent \? <InstallCard \/> : null\}/.test(today), 'Today shows the card once, after the first check-in — not every open, not a timer');
+  assert(!/setInterval|setTimeout/.test(card), 'no timer');
+  assert(/data-install-row/.test(strip(read('src/app/(athlete)/me/notifications/page.tsx'))) && /InstallCard canonical/.test(strip(read('src/app/(athlete)/me/reminders/install/page.tsx'))), 'Settings › Reminders › Add to Home Screen is the canonical route');
+  const mig = sql(read('supabase/migrations/0121_athlete_devices.sql'));
+  assert(/create table public\.athlete_devices/.test(mig) && /revoke all on public\.athlete_devices from public, anon, authenticated/.test(mig) && /platform in \('ios', 'android', 'desktop', 'other'\)/.test(mig) && !/user_agent|device_id/.test(mig), 'athlete_devices: platform and mode only, no device identifier, 0090\'s discipline');
+  assert(/rpc\('record_athlete_device'/.test(strip(read('src/components/DeviceBeacon/DeviceBeacon.tsx'))) && /<DeviceBeacon \/>/.test(strip(read('src/app/(athlete)/layout.tsx'))), 'the beacon records how the app is running, once per session, from the shell');
+  const reach = strip(read('src/lib/queries/reachability.ts'));
+  assert(/display_mode === 'standalone' && d\.push_supported/.test(reach) && /not from a reminder sent/.test(reach) && /of whom/.test(reach) && /not opened the app yet/.test(reach), 'the figure measures the phone\'s readiness and its caption names the cause');
+  const squad = strip(read('src/app/(staff)/squad/page.tsx'));
+  assert(/label="Can receive reminders"/.test(squad) && /fetchReachability\(/.test(squad) && !/complianceFigure|Submitted of expected/.test(squad), 'on the squad view, in the figure shape, and never merged with a compliance figure');
+  // the withdrawal row and LEGAL-3F
+  const dc = strip(read('src/app/(athlete)/me/data-consent/page.tsx'));
+  assert(/agreeLabel=\{inData \? 'Keep my consent as it is' : 'I agree to both blocks'\}/.test(dc) && /declineLabel=\{inData \? 'Withdraw my consent' : 'I do not agree'\}/.test(dc), 'the withdrawal screen opens the same two blocks with the opposite pair');
+  assert(/id="LEGAL-3F"/.test(dc) && /cannot refuse/.test(dc) && !/\/me\/export|download/i.test(dc), 'the subject access row beside it, with LEGAL-3F and no export');
+  assert(/rpc\('withdraw_data_consent'\)/.test(strip(read('src/app/(athlete)/me/data-consent/withdraw/route.ts'))), 'withdrawal writes through the function');
+  const me = strip(read('src/app/(athlete)/me/page.tsx'));
+  assert(/href="\/me\/data-consent" className="me-row"/.test(me) && /consentStateLabel\(consent\.state\)/.test(me), 'the Me row shows the current state and its date');
+  assert(!/recompute|retrospective/i.test(strip(read('src/app/(athlete)/me/data-consent/withdraw/route.ts'))), 'nothing recomputes a published mean either way (finding 4, LEGAL-3E)');
 }
 
 console.log(`\n${failed === 0 ? 'all passed' : `${failed} failed`}`);

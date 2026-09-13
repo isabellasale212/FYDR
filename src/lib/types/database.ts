@@ -65,6 +65,54 @@ export type Database = {
         }
       ]
     }
+    athlete_devices: {
+      Row: {
+        id: string
+        org_id: string
+        athlete_id: string
+        platform: string
+        display_mode: string
+        push_supported: boolean
+        first_seen_at: string
+        last_seen_at: string
+      }
+      Insert: {
+        id?: string
+        org_id: string
+        athlete_id: string
+        platform: string
+        display_mode: string
+        push_supported?: boolean
+        first_seen_at?: string
+        last_seen_at?: string
+      }
+      Update: {
+        id?: string
+        org_id?: string
+        athlete_id?: string
+        platform?: string
+        display_mode?: string
+        push_supported?: boolean
+        first_seen_at?: string
+        last_seen_at?: string
+      }
+      Relationships: [
+        {
+          foreignKeyName: "athlete_devices_athlete_id_fkey"
+          columns: ["athlete_id"]
+          isOneToOne: false
+          referencedRelation: "athletes"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "athlete_devices_org_id_fkey"
+          columns: ["org_id"]
+          isOneToOne: false
+          referencedRelation: "organisations"
+          referencedColumns: ["id"]
+        }
+      ]
+    }
     athlete_import_aliases: {
       Row: {
         id: string
@@ -4923,6 +4971,14 @@ export type Database = {
           in_scope: number
           window_days: number
         }[]
+    }
+    record_athlete_device: {
+      Args: {
+        p_platform: string
+        p_display_mode: string
+        p_push_supported: boolean
+      }
+      Returns: unknown
     }
     record_data_consent: {
       Args: {

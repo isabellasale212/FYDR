@@ -8,7 +8,8 @@ import { fetchWellnessByAthlete } from '@/lib/queries/wellness';
 import { mondayOf } from '@/lib/queries/schedule';
 import { fetchMyOptOuts } from '@/lib/queries/leaderboards';
 import { fetchMyNotificationPreferences } from '@/lib/queries/notificationPreferences';
-import { addDays, ageFrom, BLANK, formatNumber, initials, todayIso } from '@/lib/format';
+import { addDays, ageFrom, BLANK, formatDate, formatNumber, initials, todayIso } from '@/lib/format';
+import { consentStateLabel } from '@/lib/consentState';
 import { requireAthlete } from '@/lib/session';
 
 export const metadata = { title: 'Me · Fydr' };
@@ -55,7 +56,7 @@ export const metadata = { title: 'Me · Fydr' };
  *  Every value on the settings card is READ, not written into the markup —
  *  a settings row that always says "On" is a picture of a setting. */
 export default async function MePage() {
-  const { db, orgId, athleteId, claims, firstName, lastName, timezone } = await requireAthlete();
+  const { db, orgId, athleteId, claims, firstName, lastName, timezone, consent } = await requireAthlete();
 
   /* Ninety days, one query, two cards. The week count only needs this week,
      but the latest body mass can be much older than that — an athlete who
@@ -298,6 +299,29 @@ export default async function MePage() {
               same day: the row that stands here instead says what the club
               holds, who sees what, and how to ask — and where a request
               for your data stands. */}
+          {/* PATTERN-S9, named not drawn: Settings › Your data › Data consent.
+              The current state and its date; opens the same two blocks with
+              the opposite pair of actions. A consent that cannot be withdrawn
+              is not consent. */}
+          <Link href="/me/data-consent" className="me-row" data-consent-row={consent.state}>
+            <span className="k">
+              Data consent
+              <span className="s">
+                {consent.state === 'in_data'
+                  ? `agreed${consent.givenAt ? ` · ${formatDate(consent.givenAt, timezone)}` : ''}`
+                  : consent.state === 'guardian_pending'
+                    ? 'a guardian answers this one'
+                    : `${consentStateLabel(consent.state).toLowerCase()}${consent.at ? ` · ${formatDate(consent.at, timezone)}` : ''}`}
+              </span>
+            </span>
+            <span className="v" data-off={consent.state === 'in_data' ? undefined : ''}>
+              {consent.state === 'in_data' ? 'On' : consent.state === 'guardian_pending' ? 'Waiting' : 'Off'}
+            </span>
+            <span className="chev" aria-hidden="true">
+              ›
+            </span>
+          </Link>
+          <div className="hair" />
           <Link href="/me/privacy" className="me-row">
             <span className="k">
               Privacy and my data

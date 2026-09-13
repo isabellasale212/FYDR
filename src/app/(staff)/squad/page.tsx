@@ -6,6 +6,8 @@ import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchSquadList } from '@/lib/queries/squad';
 import { requireStaff } from '@/lib/session';
+import { ReportFigure } from '@/components/ReportFigure/ReportFigure';
+import { fetchReachability, reachabilityCaption } from '@/lib/queries/reachability';
 import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Squad overview · Fydr' };
@@ -49,6 +51,9 @@ export default async function SquadPage({
     fetchGroups(db, orgId),
     fetchSquadList(db, orgId, groupIds),
   ]);
+  /* PATTERN-S9: reachability, near the roster and never inside a compliance
+     figure (lib/queries/reachability.ts). */
+  const reach = await fetchReachability(db, orgId, rows.map((r) => r.id));
 
   return (
     <>
@@ -78,6 +83,14 @@ export default async function SquadPage({
       <div style={{ marginBottom: 'var(--sp-14)' }}>
         <GroupFilter groups={groups} selected={groupIds} />
       </div>
+
+      <ReportFigure
+        label="Can receive reminders"
+        count={reach.athletes > 0 ? `${reach.reachable} of ${reach.athletes}` : 'Nobody in this filter'}
+        value={reach.athletes > 0 ? `${Math.round((100 * reach.reachable) / reach.athletes)}%` : 'Not measured'}
+        sample={`${reach.athletes} athlete${reach.athletes === 1 ? '' : 's'} · ${groupScopeLabel(groups, groupIds).toLowerCase()} · Fydr on a Home Screen, on a phone that can hold a reminder`}
+        exclusions={reachabilityCaption(reach)}
+      />
 
       <section className="card">
         <h2 className="card-title">

@@ -2,12 +2,25 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import type { HeadlineStats, SquadStateEntry } from '@/lib/queries/dashboard';
+import type { GymToday, HeadlineStats, SquadStateEntry, WeighInsToday } from '@/lib/queries/dashboard';
+import type { DashboardTile } from '@/lib/dashboardVersion';
 import { availabilityLabel, formatDate } from '@/lib/format';
 import { runLabel } from '@/lib/missingRuns';
 
 type Props = {
   stats: HeadlineStats;
+  /** STAFF-SS-01 C2 role versions (2026-09-13): which tiles this viewer's
+   *  dashboard draws, in order — lib/dashboardVersion.ts's dashboardTiles.
+   *  The five below are the full set; the S&C's four and the nutritionist's
+   *  two are subsets plus the two tiles that follow. */
+  tiles: readonly DashboardTile[];
+  needYouFoot: string;
+  /** Read only for the S&C (null otherwise). */
+  gymToday: GymToday | null;
+  /** Read for the S&C and the nutritionist (null for the full dashboard). */
+  weighIns: WeighInsToday | null;
+  gymTodayHref: string;
+  weighInsHref: string;
   isAnchoredToPast: boolean;
   timezone: string;
   needYouHref: string;
@@ -78,6 +91,12 @@ function StatState({ open }: { open: boolean }) {
 
 export function DashboardHeadlineStats({
   stats,
+  tiles,
+  needYouFoot,
+  gymToday,
+  weighIns,
+  gymTodayHref,
+  weighInsHref,
   isAnchoredToPast,
   timezone,
   needYouHref,
@@ -96,6 +115,7 @@ export function DashboardHeadlineStats({
   return (
     <>
       <div className="card dash-stats">
+        {tiles.includes('needYou') ? (
         <Link href={needYouHref} className="dash-stat">
           <div className="dash-stat-label">
             <span className="dash-stat-dot" style={{ background: 'var(--good)' }} aria-hidden="true" />
@@ -105,9 +125,75 @@ export function DashboardHeadlineStats({
             {stats.needYouCount}
           </div>
           <div className="dash-stat-sub">athletes today</div>
-          <div className="dash-stat-foot">across wellness and GPS ›</div>
+          <div className="dash-stat-foot">{needYouFoot}</div>
         </Link>
+        ) : null}
 
+        {/* STAFF-SS-01 C2 role versions: the S&C's second card. "9 of 24
+            logged · Lower A · 16:00" — athletes in scope with a gym log dated
+            today, over those expected at today's scheduled gym session. With
+            no gym session on the schedule the tile says so; anyone who logged
+            regardless is still counted, never "0 of 0". */}
+        {tiles.includes('gymToday') && gymToday ? (
+        <Link href={gymTodayHref} className="dash-stat">
+          <div className="dash-stat-label">
+            <span className="dash-stat-dot" style={{ background: 'var(--domain-gym)' }} aria-hidden="true" />
+            Gym today
+          </div>
+          {gymToday.title ? (
+            <>
+              <div className="dash-stat-value">
+                {gymToday.logged}
+                {gymToday.expected !== null ? <span className="unit"> of {gymToday.expected}</span> : null}
+              </div>
+              <div className="dash-stat-sub">
+                {gymToday.expected !== null ? 'logged' : `${gymToday.logged === 1 ? 'athlete has' : 'athletes have'} logged`}
+              </div>
+              <div className="dash-stat-foot">
+                {gymToday.title}{gymToday.time ? ` · ${gymToday.time}` : ''}
+                {gymToday.sessions > 1 ? ` · ${gymToday.sessions} gym sessions` : ''} ›
+              </div>
+            </>
+          ) : (
+            /* The To matchday tile's own idiom for "nothing to count": a dash
+               in the number slot and the words beneath it. */
+            <>
+              <div className="dash-stat-value">—</div>
+              <div className="dash-stat-sub">No gym session today</div>
+              <div className="dash-stat-foot">
+                {gymToday.logged > 0 ? `${gymToday.logged} logged a session anyway ›` : 'Schedule ›'}
+              </div>
+            </>
+          )}
+        </Link>
+        ) : null}
+
+        {/* The S&C's and the nutritionist's Weigh-ins card: body_composition
+            rows measured today over the squad in scope. The missing count is
+            said as "not submitted", never 0 or 0% (data rule 1). */}
+        {tiles.includes('weighIns') && weighIns ? (
+        <Link href={weighInsHref} className="dash-stat">
+          <div className="dash-stat-label">
+            {/* No nutrition domain token exists; the accent is the product's
+                own data colour and claims no domain. */}
+            <span className="dash-stat-dot" style={{ background: 'var(--accent)' }} aria-hidden="true" />
+            Weigh-ins
+          </div>
+          <div className="dash-stat-value">
+            {weighIns.submitted} <span className="unit">of {weighIns.total}</span>
+          </div>
+          <div className="dash-stat-sub">
+            {weighIns.total === 0
+              ? 'no athletes in this filter'
+              : weighIns.submitted === weighIns.total
+                ? `everyone weighed in${isAnchoredToPast ? ' that day' : ' this morning'}`
+                : `${weighIns.total - weighIns.submitted} not submitted${isAnchoredToPast ? ' that day' : ' this morning'}`}
+          </div>
+          <div className="dash-stat-foot">Body mass on Nutrition ›</div>
+        </Link>
+        ) : null}
+
+        {tiles.includes('wellness') ? (
         <button
           type="button"
           className="dash-stat"
@@ -144,7 +230,9 @@ export function DashboardHeadlineStats({
           </div>
           <StatState open={expanded === 'wellness'} />
         </button>
+        ) : null}
 
+        {tiles.includes('available') ? (
         <button
           type="button"
           className="dash-stat"
@@ -178,7 +266,9 @@ export function DashboardHeadlineStats({
           </div>
           <StatState open={expanded === 'available'} />
         </button>
+        ) : null}
 
+        {tiles.includes('openFlags') ? (
         <Link href={flagsHref} className="dash-stat" data-urgent={stats.openFlags > 0}>
           <div className="dash-stat-label">
             <span className="dash-stat-dot" style={{ background: 'var(--bad)' }} aria-hidden="true" />
@@ -213,7 +303,9 @@ export function DashboardHeadlineStats({
           </div>
           <div className="dash-stat-foot">wellness, gym, GPS ›</div>
         </Link>
+        ) : null}
 
+        {tiles.includes('toMatchday') ? (
         <Link href={toMatchdayHref} className="dash-stat">
           <div className="dash-stat-label">
             <span className="dash-stat-dot" style={{ background: 'var(--domain-pitch)' }} aria-hidden="true" />
@@ -227,6 +319,7 @@ export function DashboardHeadlineStats({
             {stats.sessionsLeft} session{stats.sessionsLeft === 1 ? '' : 's'} left to run ›
           </div>
         </Link>
+        ) : null}
       </div>
 
       {expanded === 'wellness' ? (

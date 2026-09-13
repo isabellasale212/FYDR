@@ -16,8 +16,8 @@ nutritionist role. It answers one question: who needs me this morning.
 | Sport scientist | Yes | Everything on the page | Nothing. This page only links onward | None | Base. The week load card needs Premium, see section 8 | Route guard, `src/lib/session.ts:69` |
 | Coach | Yes | Everything | Nothing | Clinical detail is not on this page at all | Base | Same guard |
 | Medic | Yes | Everything | Nothing | None | Base | Same guard |
-| S&C | Yes | Everything | Nothing | None | Base | Same guard |
-| Nutritionist | Yes | The page **without** its injury derived parts | Nothing | The availability split and its named lists, the reason and restriction text, and any flag whose domain is injury or availability | Base | **NOT BUILT.** Today the page is gated to coach or medical at `src/app/(staff)/dashboard/page.tsx:151`, which a nutritionist passes because they hold the coach role |
+| S&C | Yes | The S&C version (§4, STAFF-SS-01 C2 role versions, 13 September 2026): the attention card and "Need you" counting load readings only, Gym today, Weigh-ins, Available; no week strip | Nothing | Wellness and compliance flags are not counted on this page (they are on `/flags`) | Base | Same guard; the version from the server-side claims, `lib/dashboardVersion.ts` |
+| Nutritionist | Yes | The nutritionist version (§4, 13 September 2026): the attention card and "Need you" counting the nutrition domain, Weigh-ins; the Today timeline and Outstanding entries. No week strip | Nothing | Everything derived from availability — the Available tile and the whole Ready-for card (ring, split, named rows) — is absent, not reduced (access-matrix §4.2) | Base | Same guard; `lib/dashboardVersion.ts` — a nutritionist who also holds a wider role reads that role's version |
 | Athlete | **No** | Nothing | Nothing | The whole page | n/a | Middleware, `src/lib/supabase/middleware.ts:84`, then the page guard, then the database |
 
 **A user with the right role but the wrong tier** sees the page in full except
@@ -48,7 +48,30 @@ Top to bottom.
 every number on the page at once, and the choice follows you to every other
 screen.
 
-**Five headline tiles** across the top.
+**Five headline tiles** across the top — for the sport scientist, the coach and
+the medic. **The S&C and the nutritionist read their own versions** (STAFF-SS-01
+C2 role versions, 13 September 2026, from the board's frame 7; the rule is
+`lib/dashboardVersion.ts`, resolved from the server-side claims, and roles add
+up — an S&C who is also a coach reads the full dashboard):
+
+- **S&C — four tiles**: Need you (counting load readings only: GPS, session
+  RPE, gym and testing flags — "load readings only ›"), **Gym today** ("9 of 24
+  logged · Lower A · 16:00": athletes in scope with a gym session log dated
+  today, over those expected at today's scheduled gym session; with several the
+  first by time is named; with none, "— · No gym session today" and anyone who
+  logged regardless is still counted, never 0 of 0), **Weigh-ins** ("24 of 30 ·
+  6 not submitted this morning": `body_composition` rows measured today over
+  the squad in scope), Available. The attention panel counts the same load
+  domains, and so does the phone bar's Flags badge. The week strip gives way —
+  "the week is one sidebar row away, the five names are not".
+- **Nutritionist — two tiles**: Need you (the nutrition domain, the one they
+  may act on) and Weigh-ins. No week strip. **Nothing derived from
+  availability**: the Available tile and the whole Ready-for card are absent,
+  per `docs/access-matrix.md` §4.2 (MET-013 "wherever it appears"). The board
+  drew the card's three counts without names for them; the matrix outranks the
+  board and the difference is on the decision sheet. At v1 no threshold raises
+  a nutrition or body-mass flag, so their attention card reads "No open flags
+  right now" until one exists — also on the sheet.
 
 - **Need you.** How many athletes have something that wants attention today.
   Clicking it goes to the flags for that day.
@@ -117,6 +140,8 @@ Formulas are in `docs/metrics.md`. They are not repeated here.
 | Available tile | Tile strip | Expands in place to name who is modified or out, each with a reason | Stays here | Nothing | Any staff | None | Never |
 | Open flags tile | Tile strip | Opens the flags screen | `/flags` | Nothing | Any staff | None | Never |
 | To matchday tile | Tile strip | Opens the next fixture | `/schedule/fixtures/[id]` | Nothing | Any staff | None | Falls back to `/schedule` when no fixture is booked |
+| Gym today tile | Tile strip (S&C version only) | Opens the schedule | `/schedule` | Nothing | S&C | None | Absent for every other version |
+| Weigh-ins tile | Tile strip (S&C and nutritionist versions) | Opens the nutrition page, where body mass is logged | `/nutrition` | Nothing | S&C, nutritionist | None | Absent for the full dashboard |
 | An attention row | Needs attention | Opens that athlete | `/squad/[athleteId]` | Nothing | Any staff | None | Never |
 | Fit and available, Doubtful, Ruled out rows | Ready for Saturday | Opens the squad. Doubtful and Ruled out are tone-family cards — the warn / bad fill and border the athlete's own availability line uses — while Fit and available stays a plain row (STAFF-SS-01 A1, 12 September 2026) | `/squad` | Nothing | Any staff | None | Never |
 | Flags affecting selection row | Ready for Saturday | Opens the flags screen | `/flags` | Nothing | Any staff | None | Never |
@@ -172,9 +197,11 @@ all without a connection.
 
 ## 9. Open issues
 
-- **The nutritionist restriction is not built.** Every injury derived region on
-  this page is currently visible to whoever holds the coach role, which today
-  includes nutritionists. Decision D-01.
+- ~~**The nutritionist restriction is not built.**~~ Built 13 September 2026 with
+  the role versions (§4): a nutritionist-only account reads no availability-derived
+  region. A nutritionist who also holds another role reads that role's version —
+  the additive rule `docs/access-matrix.md` §2 records. Decision D-01 stays open
+  for that second case.
 - **Where a nutritionist-only user lands is undefined.** The landing rule sends a
   staff member without squad access to Settings. With five roles that rule needs
   rewriting. Decision D-07.

@@ -4,7 +4,8 @@ import { DashboardHeadlineStats } from '@/components/DashboardHeadlineStats/Dash
 import { Dial } from '@/components/Dial/Dial';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { PrintButton } from '@/components/PrintButton/PrintButton';
-import { FIXTURE_RANGE_DAYS, fetchEffectiveToday, fetchHeadlineStats, fetchOutstandingTracks, fetchSaturdayReadiness, fetchTimeline, fetchWeekStrip, type ReadinessRowKey, type SessionPip } from '@/lib/queries/dashboard';
+import { FIXTURE_RANGE_DAYS, fetchEffectiveToday, fetchGymToday, fetchHeadlineStats, fetchOutstandingTracks, fetchSaturdayReadiness, fetchTimeline, fetchWeekStrip, fetchWeighInsToday, type ReadinessRowKey, type SessionPip } from '@/lib/queries/dashboard';
+import { attentionDomains, dashboardTiles, dashboardVersion, needYouFoot, showsAvailability, showsWeekStrip } from '@/lib/dashboardVersion';
 import { fetchGroups } from '@/lib/queries/groups';
 import { mondayOf } from '@/lib/queries/schedule';
 import { addDays, formatDate, formatLongDate, matchdayWeekday, todayIso } from '@/lib/format';
@@ -162,6 +163,13 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
   const sp = await searchParams;
   const groupIds = await resolveGroupFilter(sp.groups);
 
+  /* STAFF-SS-01 C2, the role versions (2026-09-13): resolved from the
+     server-side claims, never the client. The sport scientist, the coach and
+     the medic read everything below; the S&C reads four summary cards and no
+     week strip; the nutritionist two cards and — access-matrix §4.2 — nothing
+     derived from availability. lib/dashboardVersion.ts is the rule. */
+  const version = dashboardVersion(claims.roles);
+
   const wallClockToday = todayIso(timezone);
   const effectiveToday = await fetchEffectiveToday(db, orgId, wallClockToday);
   const weekStart = mondayOf(effectiveToday);
@@ -186,9 +194,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
    * it seeded the whole account with a key no report accepts. Longer windows
    * live on Analytics, which has its own per-board controls. */
 
-  const [groups, stats, week, timeline, readiness, outstanding, provenance] = await Promise.all([
+  const [groups, stats, week, timeline, readiness, outstanding, provenance, gymToday, weighIns] = await Promise.all([
     fetchGroups(db, orgId),
-    fetchHeadlineStats(db, orgId, groupIds, effectiveToday, wallClockToday, timezone),
+    fetchHeadlineStats(db, orgId, groupIds, effectiveToday, wallClockToday, timezone, attentionDomains(version)),
     fetchWeekStrip(db, orgId, groupIds, weekStart, effectiveToday, timezone),
     // "now" is the real instant — a session is "passed" against the real
     // clock, never against an end-of-day stand-in (audit S2).
@@ -198,6 +206,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
     /* STAFF-SS-01 C2: who set the thresholds and when, for the line that
        closes the attention panel — one stored date, read once. */
     fetchThresholdProvenance(db, orgId),
+    /* The two tiles only the role versions draw — read only for them. */
+    version === 'sc' ? fetchGymToday(db, orgId, groupIds, effectiveToday, timezone) : Promise.resolve(null),
+    version !== 'full' ? fetchWeighInsToday(db, orgId, groupIds, effectiveToday) : Promise.resolve(null),
   ]);
 
   /* The week strip's header line, derived from the strip's own days rather
@@ -314,6 +325,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
        * each one individually. */}
       <DashboardHeadlineStats
         stats={stats}
+        tiles={dashboardTiles(version)}
+        needYouFoot={needYouFoot(version)}
+        gymToday={gymToday}
+        weighIns={weighIns}
+        gymTodayHref="/schedule"
+        weighInsHref="/nutrition"
         isAnchoredToPast={isAnchoredToPast}
         timezone={timezone}
         needYouHref={`/flags${qs({ groups: groupsQs, date: effectiveToday })}`}
@@ -330,7 +347,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
        * Each day lists its own activities with a domain dot each, rather than
        * one joined summary line, so a coach reads the week as a shape.
        * Still six real links that set ?day= on this same page — only the
-       * arrangement changed. */}
+       * arrangement changed.
+       *
+       * It gives way for the S&C and the nutritionist (STAFF-SS-01 C2 role
+       * versions): "the week is one sidebar row away, the five names are
+       * not". */}
+      {showsWeekStrip(version) ? (
       <div className="dash-week">
         <div className="dash-week-head">
           <span className="dash-week-head-title">This week</span>
@@ -401,6 +423,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           ))}
         </div>
       </div>
+      ) : null}
 
       <div className="dash-body" style={{ marginTop: 'var(--sp-14)' }}>
         <div>
@@ -483,6 +506,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         </div>
 
         <div className="stack">
+          {/* Withheld from the nutritionist (access-matrix §4.2: the
+              availability split and its named lists, wherever they appear —
+              the ring, the bar and the rows are all MET-013/014). The board
+              drew the counts without names for them; the matrix outranks it,
+              and the difference is on the decision sheet. */}
+          {showsAvailability(version) ? (
           <div className="card dash-ready-card">
             <div className="dash-ready-head">
               <div>
@@ -575,6 +604,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
               </>
             ) : null}
           </div>
+          ) : null}
           {/* "Not tied to a session" is gone, per the design review. It listed
               wellness, compliance, nutrition and testing flags — the domains
               that never attach to a timetable row — but fetchDashboardAttention

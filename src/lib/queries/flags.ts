@@ -231,12 +231,20 @@ export type DashboardAttention = {
  *  panel headlines, read lean (one paged column) for every staff page load.
  *  Paged for the reason fetchDashboardAttention gives: the open set grows
  *  without bound in a club that is not triaging. */
-export async function fetchOpenFlagAthleteCount(db: Db, orgId: string, groupIds: readonly string[]): Promise<number> {
+export async function fetchOpenFlagAthleteCount(
+  db: Db,
+  orgId: string,
+  groupIds: readonly string[],
+  /** STAFF-SS-01 C2 role versions (2026-09-13): the badge counts what the
+   *  viewer's dashboard attention card counts — lib/dashboardVersion.ts. */
+  domains: 'all' | readonly FlagDomain[] = 'all',
+): Promise<number> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
   if (scope && scope.length === 0) return 0;
   const rows = await fetchAllPaged<{ athlete_id: string }>((pageFrom, pageTo) => {
     let q = db.from('flags').select('athlete_id').eq('org_id', orgId).in('status', [...OPEN_FLAG_STATUSES]).order('id');
     if (scope) q = q.in('athlete_id', scope);
+    if (domains !== 'all') q = q.in('domain', [...domains]);
     return q.range(pageFrom, pageTo);
   });
   return new Set(rows.map((r) => r.athlete_id)).size;
@@ -248,6 +256,10 @@ export async function fetchDashboardAttention(
   wallClockToday: string,
   groupIds: readonly string[],
   limit = 5,
+  /** STAFF-SS-01 C2 role versions (2026-09-13): the S&C's card counts load
+   *  readings only, the nutritionist's their own domain — the filter sits
+   *  in the query so openTotal, athleteTotal and bySeverity all agree. */
+  domains: 'all' | readonly FlagDomain[] = 'all',
 ): Promise<DashboardAttention> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
 
@@ -285,6 +297,7 @@ export async function fetchDashboardAttention(
       .order('raised_at', { ascending: false })
       .order('id');
     if (scope) q = q.in('athlete_id', scope);
+    if (domains !== 'all') q = q.in('domain', [...domains]);
     return q.range(pageFrom, pageTo);
   });
 

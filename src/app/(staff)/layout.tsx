@@ -5,6 +5,7 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchOpenFlagAthleteCount } from '@/lib/queries/flags';
+import { attentionDomains, dashboardVersion } from '@/lib/dashboardVersion';
 import { requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 
@@ -25,8 +26,11 @@ export default async function StaffLayout({
   const groupLabel = groupScopeLabel(groups, groupIds);
   /* STAFF-SS-01 C3: the Flags tab badge — distinct athletes with an open
      flag in the active group scope, the number the dashboard's attention
-     panel headlines. One lean read per staff page load. */
-  const flagsBadge = await fetchOpenFlagAthleteCount(db, orgId, groupIds);
+     panel headlines. One lean read per staff page load. The role versions
+     (C2, 2026-09-13): the badge counts the domains the viewer's attention
+     card counts — load only for the S&C, their own domain for the
+     nutritionist — so the two numbers never disagree. */
+  const flagsBadge = await fetchOpenFlagAthleteCount(db, orgId, groupIds, attentionDomains(dashboardVersion(claims.roles)));
 
   return (
     <div className="app">

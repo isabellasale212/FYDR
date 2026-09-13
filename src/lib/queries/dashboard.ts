@@ -6,6 +6,7 @@ import { fetchAllPaged } from './paged';
 import { fetchTimetableDay } from './timetable';
 import { anchorMdOffsetsToWeek, availabilityLabel, dateInTz, daysBetween, formatTime, matchdayWeekday, mdLabel, zonedTimeToUtcIso } from '../format';
 import { missingRuns, type MissingRun } from '@/lib/missingRuns';
+import type { FlagDomain } from '@/lib/types/database';
 
 /* DASHBOARD-SPEC.md, the coach's 07:00 screen. Every section here composes
  * real, already-shipped query functions (schedule, availability,
@@ -286,6 +287,10 @@ export async function fetchHeadlineStats(
    *  the rest of the screen is anchored to the latest day with data. */
   wallClockToday: string,
   timezone: string,
+  /** STAFF-SS-01 C2 role versions (2026-09-13): which flag domains "Need
+   *  you" and the attention card count for this viewer —
+   *  lib/dashboardVersion.ts's attentionDomains. 'all' is the full dashboard. */
+  attentionDomains: 'all' | readonly FlagDomain[] = 'all',
 ): Promise<HeadlineStats> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
 
@@ -313,7 +318,7 @@ export async function fetchHeadlineStats(
         return { expected: expected.length, submitted: entries.length, missingIds: ids.filter((id) => !submittedIds.has(id)) };
       }),
     fetchFlagsByDateRange(db, orgId, groupIds, effectiveToday, effectiveToday),
-    fetchDashboardAttention(db, orgId, wallClockToday, groupIds),
+    fetchDashboardAttention(db, orgId, wallClockToday, groupIds, 5, attentionDomains),
     // Real local midnight, not a literal UTC one — `${effectiveToday}T00:00:00Z`
     // is up to an hour after this org's real local midnight in BST, which
     // could wrongly miss a fixture kicking off in that gap (same bug class
@@ -330,7 +335,9 @@ export async function fetchHeadlineStats(
   // wellness and GPS. Real: an athlete with an open flag dated today.
   // Wellness non-submission is already its own headline cell ("Wellness
   // in") — not folded in here too, or the same gap would be counted twice.
-  const flaggedTodayIds = new Set(flagsToday.map((f) => f.athlete_id));
+  const flaggedTodayIds = new Set(
+    flagsToday.filter((f) => attentionDomains === 'all' || attentionDomains.includes(f.domain as FlagDomain)).map((f) => f.athlete_id),
+  );
 
   // Whole calendar days between two real local dates, not a millisecond
   // division off a literal UTC midnight (which drifted by up to an hour in
@@ -400,6 +407,115 @@ export async function fetchHeadlineStats(
     wellnessMissing,
     sessionsLeft,
   };
+}
+
+// ---------------------------------------------------------------------------
+// The S&C's and the nutritionist's own tiles — STAFF-SS-01 C2 role versions
+// (2026-09-13). Both are counts of ATHLETES over the squad in scope, said in
+// the board's words; neither ever reads 0 of 0 (data rule 1).
+// ---------------------------------------------------------------------------
+
+export type GymToday = {
+  /** Today's scheduled gym session, if there is one: its title and start
+   *  time, and how many athletes in scope are expected at it. With several
+   *  the first by start time is named and `sessions` says how many. */
+  title: string | null;
+  time: string | null;
+  sessions: number;
+  expected: number | null;
+  /** Distinct athletes in scope with a gym session log dated today, started
+   *  or complete — "logged" means they have opened their session and put a
+   *  set in, not that they have finished. */
+  logged: number;
+};
+
+/** "Gym today · 9 of 24 logged · Lower A · 16:00". The session comes from the
+ *  schedule (session_type gym, today, the group scope's headcount as
+ *  fetchWeekSessions counts it); the logged count from gym_session_logs —
+ *  the athlete's own programme session, which the schedule row does not
+ *  name, so the two are joined on the day, not on an id. With no gym session
+ *  scheduled the tile says so and still counts anyone who logged. */
+export async function fetchGymToday(
+  db: Db,
+  orgId: string,
+  groupIds: readonly string[],
+  effectiveToday: string,
+  timezone: string,
+): Promise<GymToday> {
+  const [scope, weekSessions] = await Promise.all([
+    fetchGroupAthleteIds(db, orgId, groupIds),
+    fetchWeekSessions(db, orgId, mondayOf(effectiveToday), groupIds, timezone),
+  ]);
+  const gymSessions = weekSessions
+    .filter((s) => s.entry_date === effectiveToday && s.session_type === 'gym')
+    .sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+  const first = gymSessions[0] ?? null;
+
+  type LogRow = { athlete_id: string | null };
+  const logs = await fetchAllPaged<LogRow>((pageFrom, pageTo) => {
+    let q = db
+      .from('gym_session_logs_current')
+      .select('athlete_id')
+      .eq('org_id', orgId)
+      .eq('entry_date', effectiveToday)
+      .order('id')
+      .range(pageFrom, pageTo);
+    if (scope) q = q.in('athlete_id', scope);
+    return q;
+  });
+  const logged = new Set(logs.map((r) => r.athlete_id).filter((id): id is string => id !== null)).size;
+
+  return {
+    title: first?.title ?? null,
+    time: first ? formatTime(first.starts_at, timezone) : null,
+    sessions: gymSessions.length,
+    expected: first?.expected ?? null,
+    logged,
+  };
+}
+
+export type WeighInsToday = {
+  /** Distinct athletes in scope with a body_composition row measured today. */
+  submitted: number;
+  /** Athletes in scope — active, not left the club (the squad list's own
+   *  filter). The tile's denominator. */
+  total: number;
+};
+
+/** "Weigh-ins · 24 of 30 · 6 not submitted this morning". A weigh-in is a
+ *  body_composition row (lib/queries/bodyComposition.ts) measured today;
+ *  wellness_entries.body_mass_kg is the athlete's own optional figure on the
+ *  check-in and is not a weigh-in. */
+export async function fetchWeighInsToday(
+  db: Db,
+  orgId: string,
+  groupIds: readonly string[],
+  effectiveToday: string,
+): Promise<WeighInsToday> {
+  const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
+  if (scope && scope.length === 0) return { submitted: 0, total: 0 };
+
+  let athletesQ = db
+    .from('athletes')
+    .select('id')
+    .eq('org_id', orgId)
+    .is('deleted_at', null)
+    .neq('status', 'left_club');
+  if (scope) athletesQ = athletesQ.in('id', scope);
+
+  let weighQ = db
+    .from('body_composition')
+    .select('athlete_id')
+    .eq('org_id', orgId)
+    .eq('measured_on', effectiveToday);
+  if (scope) weighQ = weighQ.in('athlete_id', scope);
+
+  const [athletes, weighIns] = await Promise.all([athletesQ, weighQ]);
+  if (athletes.error) throw new Error(athletes.error.message);
+  if (weighIns.error) throw new Error(weighIns.error.message);
+  const squad = new Set((athletes.data ?? []).map((a) => a.id));
+  const submitted = new Set((weighIns.data ?? []).map((w) => w.athlete_id).filter((id) => squad.has(id))).size;
+  return { submitted, total: squad.size };
 }
 
 // ---------------------------------------------------------------------------

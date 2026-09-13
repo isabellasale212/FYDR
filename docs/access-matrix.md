@@ -255,6 +255,14 @@ it. Specifically withheld:
 
 They keep everything else: compliance, wellness, body mass, testing and GPS.
 
+**On the Dashboard this is built** (STAFF-SS-01 C2 role versions, 13 September
+2026): a nutritionist-only account reads the nutritionist version — the
+Available tile and the whole Ready-for card (the ring, the split, the named
+rows) are absent, not reduced, and the attention card counts the nutrition
+domain. `lib/dashboardVersion.ts`, resolved from the server-side claims;
+`docs/screens/01-dashboard.md` §4. The S&C's version narrows what is counted
+(load readings) without withholding anything this matrix grants.
+
 ### 4.3 S&C, on the athlete profile and reports
 
 An S&C sees the athlete profile and the athlete report with the limited injury

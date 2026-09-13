@@ -104,7 +104,7 @@ console.log('\nA3 / C3. the attention panel counts athletes, and the Flags tab b
   assert(/top \{rows\.length\} of \{athleteTotal\} athletes/.test(panel) && /dash-flags-scope-inline/.test(panel), 'the scope says "top 5 of 8 athletes" — in the header on desktop, on the meta line on a phone');
   assert(/\.dash-flags-pills\s*\{[^}]*flex-wrap:\s*wrap/.test(read('src/styles/base.css')), 'the priority pills wrap on a phone');
   const layout = strip(read('src/app/(staff)/layout.tsx'));
-  assert(/fetchOpenFlagAthleteCount\(db, orgId, groupIds\)/.test(layout) && /flagsBadge=\{flagsBadge\}/.test(layout), 'the layout reads the count for the active group filter and hands it to the phone shell');
+  assert(/fetchOpenFlagAthleteCount\(db, orgId, groupIds, attentionDomains\(dashboardVersion\(claims\.roles\)\)\)/.test(layout) && /flagsBadge=\{flagsBadge\}/.test(layout), 'the layout reads the count for the active group filter — and the viewer\'s domains (C2 role versions) — and hands it to the phone shell');
   const shell = strip(read('src/components/StaffPhoneShell/StaffPhoneShell.tsx'));
   assert(/row\.route === '\/flags' && flagsBadge > 0/.test(shell) && /className="ph-count-mark num"/.test(shell), 'the Flags tab carries the badge when the count is above zero');
   assert(/`Flags, \$\{flagsBadge\} athlete\$\{flagsBadge === 1 \? '' : 's'\} need\$\{flagsBadge === 1 \? 's' : ''\} attention`/.test(shell), 'and says what the number is');

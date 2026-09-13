@@ -5,6 +5,7 @@ import { fetchUnlinkedAthletes, fetchUsersWithRoles } from '@/lib/queries/userMa
 import { requireStaff } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
+import { parseUserFilter } from '@/lib/userFilters';
 
 export const metadata = { title: 'Users · Fydr' };
 
@@ -17,11 +18,14 @@ export const metadata = { title: 'Users · Fydr' };
  *  enforced here (redirect) and at every RLS policy the writes go through
  *  — a coach or medical staffer who guesses the URL gets bounced, the same
  *  two-layer pattern GPS import's coach/medical gate already uses. */
-export default async function UsersPage() {
+export default async function UsersPage({ searchParams }: { searchParams: Promise<{ q?: string; role?: string; status?: string }> }) {
   const { db, orgId, claims, timezone } = await requireStaff();
   if (!hasAnyRole(claims.roles, SETTINGS_ADMIN)) redirect('/settings');
 
-  const [users, unlinked] = await Promise.all([fetchUsersWithRoles(db, orgId), fetchUnlinkedAthletes(db, orgId)]);
+  const [users, unlinked, params] = await Promise.all([fetchUsersWithRoles(db, orgId), fetchUnlinkedAthletes(db, orgId), searchParams]);
+  /* PATTERN-S8 C3: ?q=&role=&status= land the list filtered (unknown
+     values fall back to "all"). */
+  const initialFilter = parseUserFilter(params);
 
   return (
     <>
@@ -40,6 +44,7 @@ export default async function UsersPage() {
         currentActorRole={'sport_scientist' as AppRole}
         initialUsers={users}
         initialUnlinked={unlinked}
+        initialFilter={initialFilter}
         timezone={timezone}
       />
     </>

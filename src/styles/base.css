@@ -5257,6 +5257,67 @@ img.me-avatar {
   text-decoration: none;
   color: inherit;
 }
+/* PATTERN-S8 C3 (2026-09-13): the users list — search, role chips and
+   status chips above the list, the count line with its denominator; each
+   account a row of name, role toggles and status at desktop, and a stacked
+   card at a phone so nothing scrolls sideways at 375. */
+.um-filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-10);
+}
+.um-search {
+  display: block;
+  max-width: 360px;
+}
+.um-filters .field {
+  min-height: 44px;
+}
+.um-summary {
+  margin: 0;
+}
+.um-empty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-12);
+  padding: var(--sp-16);
+}
+.um-row-wrap {
+  padding: var(--sp-12) var(--sp-16);
+}
+.um-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: var(--sp-12);
+  align-items: center;
+}
+.um-who {
+  min-width: 0;
+}
+.um-who .tiny {
+  overflow-wrap: anywhere;
+}
+.um-status {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+}
+@media (max-width: 767px) {
+  .um-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-10);
+  }
+  .um-row-wrap {
+    padding: var(--sp-14) var(--sp-16);
+  }
+  .um-search {
+    max-width: none;
+  }
+  .um-status {
+    justify-content: space-between;
+  }
+}
 /* PATTERN-S8 A1 (2026-09-13): Log out is a button, set apart from the lists,
    with the session it ends named beside it. */
 .set-logout-form {

@@ -8,6 +8,7 @@ import { linkAthleteToUser, setUserRoles, setUserStatus, type UnlinkedAthlete, t
 import { Pill } from '@/components/Pill/Pill';
 import { enumLabel, formatDate } from '@/lib/format';
 import { USER_STATUS } from '@/lib/status';
+import { EMPTY_FILTER, ROLE_FILTERS, STATUS_FILTERS, filterUsers, isFiltered, userFilterSummary, type UserFilter } from '@/lib/userFilters';
 import type { AppRole } from '@/lib/types/database';
 import type { CreateUserResult } from '@/app/(staff)/settings/users/create/route';
 
@@ -22,17 +23,25 @@ type Props = {
   timezone: string;
   initialUsers: UserWithRoles[];
   initialUnlinked: UnlinkedAthlete[];
+  /** PATTERN-S8 C3: read off ?q=&role=&status= by the page, so a link
+   *  (the setup checklist, a hub row) can land on the list already
+   *  filtered. The panel owns it from there; the URL is not rewritten. */
+  initialFilter?: UserFilter;
 };
 
-export function UserManagementPanel({ orgId, currentUserId, currentActorRole, timezone, initialUsers, initialUnlinked }: Props) {
+export function UserManagementPanel({ orgId, currentUserId, currentActorRole, timezone, initialUsers, initialUnlinked, initialFilter }: Props) {
   const router = useRouter();
   const [users, setUsers] = useState(initialUsers);
   const [unlinked, setUnlinked] = useState(initialUnlinked);
   const [showCreate, setShowCreate] = useState(false);
   const [prefillAthlete, setPrefillAthlete] = useState<UnlinkedAthlete | null>(null);
-  const [search, setSearch] = useState('');
+  /* PATTERN-S8 C3: search by name or email, one role, one status. The
+     list reads the count back with its denominator, and an empty result
+     says which filters emptied it and how to clear them. */
+  const [filter, setFilter] = useState<UserFilter>(initialFilter ?? EMPTY_FILTER);
 
-  const filtered = users.filter((u) => `${u.full_name} ${u.email}`.toLowerCase().includes(search.trim().toLowerCase()));
+  const filtered = filterUsers(users, filter);
+  const summary = userFilterSummary({ shown: filtered.length, total: users.length, filter });
   /* The count the last-admin rule is about (§0ae): sport_scientist rows in
      the org — one per user here, since roles is a set per user. Read off the
      same list the rows render from, so it moves when a grant does. */
@@ -46,7 +55,9 @@ export function UserManagementPanel({ orgId, currentUserId, currentActorRole, ti
     <div className="stack">
       <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--sp-12)', flexWrap: 'wrap' }}>
         <div>
-          <p className="nm">{users.length} users</p>
+          <p className="nm">
+            {users.length} account{users.length === 1 ? '' : 's'}
+          </p>
           <p className="tiny">
             {users.reduce((n, u) => n + (u.roles.some((r) => r !== 'athlete') ? 1 : 0), 0)} staff ·{' '}
             {users.reduce((n, u) => n + (u.roles.includes('athlete') ? 1 : 0), 0)} athlete accounts
@@ -85,15 +96,44 @@ export function UserManagementPanel({ orgId, currentUserId, currentActorRole, ti
         />
       ) : null}
 
-      <div className="form-row" style={{ maxWidth: 360 }}>
-        <input className="field" type="search" placeholder="Search name or email" value={search} onChange={(e) => setSearch(e.target.value)} />
+      <div className="um-filters">
+        <label className="um-search">
+          <span className="visually-hidden">Search by name or email</span>
+          <input className="field" type="search" placeholder="Search by name or email" value={filter.q} onChange={(e) => setFilter((f) => ({ ...f, q: e.target.value }))} />
+        </label>
+        <div className="chiprow" role="group" aria-label="Filter by role">
+          {ROLE_FILTERS.map((r) => (
+            <button key={r.value} type="button" className="squad-chip" aria-pressed={filter.role === r.value} onClick={() => setFilter((f) => ({ ...f, role: r.value }))}>
+              {r.chip}
+            </button>
+          ))}
+        </div>
+        <div className="chiprow" role="group" aria-label="Filter by status">
+          {STATUS_FILTERS.map((s) => (
+            <button key={s.value} type="button" className="squad-chip" aria-pressed={filter.status === s.value} onClick={() => setFilter((f) => ({ ...f, status: s.value }))}>
+              {s.chip}
+            </button>
+          ))}
+        </div>
+        {/* The empty card below carries the sentence when nothing matches;
+            it is not said twice. */}
+        {filtered.length > 0 ? (
+          <p className="tiny um-summary" role="status">
+            {summary}
+          </p>
+        ) : null}
       </div>
 
       <section className="card flush">
         {filtered.length === 0 ? (
-          <p className="tiny" style={{ padding: 'var(--sp-16)' }}>
-            No matching user.
-          </p>
+          <div className="um-empty">
+            <p className="tiny">{summary}</p>
+            {isFiltered(filter) ? (
+              <button type="button" className="btn-ghost" onClick={() => setFilter(EMPTY_FILTER)}>
+                Clear filters
+              </button>
+            ) : null}
+          </div>
         ) : (
           filtered.map((u, index) => (
             <UserRow
@@ -394,9 +434,9 @@ function UserRow({
   return (
     <div>
       {divider ? <div className="hair" /> : null}
-      <div style={{ padding: '12px 16px' }}>
-        <div className="load-row" style={{ gridTemplateColumns: '1fr auto auto' }}>
-          <div>
+      <div className="um-row-wrap">
+        <div className="um-row">
+          <div className="um-who">
             <p className="nm">
               <Link href={`/settings/users/${user.id}`}>{user.full_name}</Link> {isSelf ? <span className="tiny">(you)</span> : null}
             </p>
@@ -406,7 +446,7 @@ function UserRow({
               {user.last_seen_at ? ` · last seen ${formatDate(user.last_seen_at, timezone)}` : ''}
             </p>
           </div>
-          <div className="chiprow">
+          <div className="chiprow um-roles">
             {ALL_ROLES.map((role) => {
               /* §0ae: the database refuses a self-grant of medic and the
                  removal of the last sport scientist; the chip stops people
@@ -427,7 +467,7 @@ function UserRow({
               );
             })}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-8)' }}>
+          <div className="um-status">
             <Pill status={USER_STATUS[user.status]} />
             <button type="button" className="btn-ghost" disabled={busyStatus || isSelf} onClick={toggleStatus}>
               {busyStatus ? 'Working…' : user.status === 'deactivated' ? 'Reactivate' : 'Deactivate'}

@@ -66,3 +66,25 @@ export function staffEmptyCopy(input: {
     action: widenTo(periodKey, latest, seasonStart),
   };
 }
+
+/** A filter that leaves nothing: what is empty with its denominator and the
+ *  filter's name, why, and the one action — widen the filter to the whole
+ *  squad. The scope label is the chip's own words ("Academy"). */
+export function filterEmptyCopy(o: { what: string; inScope: number; scopeLabel: string; why: string }): StaffEmptyCopy & { clearsFilter: true } {
+  return {
+    title: `No ${o.what} for ${o.scopeLabel}.`,
+    body: `None of the ${o.inScope} athlete${o.inScope === 1 ? '' : 's'} in ${o.scopeLabel} ${o.why}. Nothing is missing — the filter is what is empty.`,
+    action: { label: 'Show the whole squad', period: 'all' },
+    clearsFilter: true,
+  };
+}
+
+/** Nothing on record for the club at all: said as such, with what would fill
+ *  it and where the data enters. No action — there is no window to widen. */
+export function clubEmptyCopy(o: { what: string; fills: string }): StaffEmptyCopy {
+  return {
+    title: `No ${o.what} on record for the club.`,
+    body: `Nothing is missing — none has been recorded yet. ${o.fills}`,
+    action: null,
+  };
+}

@@ -1,4 +1,5 @@
 import { Fragment } from 'react';
+import { clubEmptyCopy, filterEmptyCopy } from '@/lib/staffEmpty';
 import { NO_BEST_YET, NO_GPS, NOT_SET, RESULT_NOT_ENTERED, boardCoverageLine } from '@/lib/reportFigures';
 import { belowSquadFloor, squadFloorNote } from '@/lib/smallSample';
 import Link from 'next/link';
@@ -346,9 +347,11 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
       return (
         <>
             {header()}
+          {/* PATTERN-S6 C8 (2026-09-13): the one grammar — nothing on record
+              is said as such, with what would fill it. */}
           <EmptyState
-            title="No match GPS data yet"
-            body="No completed match has a GPS record on file. This week's fixture is upcoming and has no record yet, by design — an unplayed session is never rendered as measured data."
+            title={clubEmptyCopy({ what: 'match GPS record', fills: '' }).title}
+            body="Nothing is missing — no completed match has a GPS file imported yet. A match appears here once its GPS file is imported from Settings › Imports; an upcoming fixture has no record by design, because an unplayed session is never rendered as measured data."
           />
         </>
       );
@@ -362,6 +365,12 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
       fetchSquadSize(db, orgId),
     ]);
     const scopeSize = scopeIds ? scopeIds.length : squadSize;
+    const matchFilterEmpty = filterEmptyCopy({
+      what: 'match GPS record',
+      inScope: scopeSize,
+      scopeLabel: groupScopeLabel(groups, groupIds),
+      why: 'played in this match with a GPS record',
+    });
 
     await recordReportView(db, orgId, claims.userId, actorRole, 'training', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, mode });
 
@@ -405,7 +414,13 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
 
 
         {!overview ? (
-          <EmptyState title="No athletes in this filter" body="No one in the current group filter played in this match." />
+          /* PATTERN-S6 C8: a filter that leaves nothing — the denominator,
+             the why, and the one action that widens the filter. */
+          <EmptyState
+            title={matchFilterEmpty.title}
+            body={matchFilterEmpty.body}
+            action={groupIds.length > 0 ? { href: `/reports/training${qs({ mode: 'match', session: sessionParam })}`, label: matchFilterEmpty.action!.label } : null}
+          />
         ) : (
           <>
             <div className="card tr-overview">
@@ -524,7 +539,13 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
     return (
       <>
         {header()}
-        <EmptyState title="No GPS data yet" body="No GPS records have been imported. This build has no import pipeline yet — a direct insert is the only path in." />
+        {/* PATTERN-S6 C8 (2026-09-13): nothing on record, said as such, with
+            where the data enters — the old line claimed "no import pipeline
+            yet", which stopped being true when Settings › Imports was built. */}
+        <EmptyState
+          title={clubEmptyCopy({ what: 'GPS record', fills: '' }).title}
+          body="Nothing is missing — no GPS file has been imported yet. A session appears here once its GPS file is imported from Settings › Imports."
+        />
       </>
     );
   }
@@ -603,6 +624,12 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
     fetchSquadSize(db, orgId),
   ]);
   const scopeSize = scopeIds ? scopeIds.length : squadSize;
+  const trainingFilterEmpty = filterEmptyCopy({
+    what: 'GPS record',
+    inScope: scopeSize,
+    scopeLabel: groupScopeLabel(groups, groupIds),
+    why: 'has a GPS record for this session',
+  });
 
   const comparison =
     scope === 'restOfWeek'
@@ -650,7 +677,13 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
       {header(trainingTabs('day'), trainingPeriod)}
 
       {!overview ? (
-        <EmptyState title="No athletes in this filter" body="No one in the current group filter has a GPS record for this session." />
+        /* PATTERN-S6 C8: a filter that leaves nothing — the denominator, the
+           why, and the one action that widens the filter. */
+        <EmptyState
+          title={trainingFilterEmpty.title}
+          body={trainingFilterEmpty.body}
+          action={groupIds.length > 0 ? { href: `/reports/training${q({ mode: 'training', session: sessionParam })}`, label: trainingFilterEmpty.action!.label } : null}
+        />
       ) : (
         <>
           <div className="card tr-overview">

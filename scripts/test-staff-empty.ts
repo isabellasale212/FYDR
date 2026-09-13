@@ -2,7 +2,7 @@
  * screen a commit. The copy is pure and exercised with rows; the first
  * screen — the athlete report's wellness card — is read from source. */
 import { readFileSync } from 'node:fs';
-import { staffEmptyCopy } from '@/lib/staffEmpty';
+import { clubEmptyCopy, filterEmptyCopy, staffEmptyCopy } from '@/lib/staffEmpty';
 
 let passed = 0, failed = 0;
 const assert = (cond: boolean, label: string): void => {
@@ -49,6 +49,20 @@ console.log('\n3. the athlete report\'s other cards (2026-09-13)');
   assert(!/No test result recorded for this athlete\./.test(page), 'the old tests line is gone');
   const q = strip(read('src/lib/queries/myLatestRecord.ts'));
   assert(/domain === 'gps'/.test(q) && /\.from\('gps_records'\)/.test(q), 'the latest-record read knows GPS');
+}
+
+console.log('\n4. the training report (2026-09-13)');
+{
+  const f = filterEmptyCopy({ what: 'GPS record', inScope: 5, scopeLabel: 'Academy', why: 'has a GPS record for this session' });
+  assert(f.title === 'No GPS record for Academy.' && f.body === 'None of the 5 athletes in Academy has a GPS record for this session. Nothing is missing — the filter is what is empty.' && f.action?.label === 'Show the whole squad', 'a filter that leaves nothing: the denominator, the why, the one action that widens the filter');
+  const c = clubEmptyCopy({ what: 'GPS record', fills: 'x' });
+  assert(c.title === 'No GPS record on record for the club.' && c.action === null, 'nothing on record for the club: no action');
+  const page = strip(read('src/app/(staff)/reports/training/page.tsx'));
+  assert(/trainingFilterEmpty = filterEmptyCopy\(\{\s*what: 'GPS record',\s*inScope: scopeSize,/.test(page) && /matchFilterEmpty = filterEmptyCopy\(\{\s*what: 'match GPS record',/.test(page), 'both boards\' filter empties come from the rule, with the filter\'s own size');
+  assert(/action=\{groupIds\.length > 0 \? \{ href: `\/reports\/training\$\{q\(\{ mode: 'training', session: sessionParam \}\)\}`, label: trainingFilterEmpty\.action!\.label \} : null\}/.test(page), 'the action clears the group filter and keeps the session — only when a filter is on');
+  assert(/no GPS file has been imported yet\. A session appears here once its GPS file is imported from Settings › Imports\./.test(page), 'nothing on record says where the data enters — the "no import pipeline yet" claim is gone');
+  assert(!/No athletes in this filter/.test(page) && !/no import pipeline/.test(page), 'the old lines are gone');
+  assert(/the filter is what is empty/.test(read('docs/screens/23-training-report.md')), 'the spec says so');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

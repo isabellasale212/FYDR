@@ -71,6 +71,16 @@ than leaving a coach to compare five dials.
 
 ---
 
+**Empty states follow the one grammar** (PATTERN-S6 C8, 13 September 2026;
+`lib/staffEmpty.ts`). A group filter that leaves nobody on the board reads "No
+GPS record for Academy. None of the 5 athletes in Academy has a GPS record for
+this session. Nothing is missing — the filter is what is empty." with one action,
+"Show the whole squad", that clears the filter and keeps the session. A club with
+no GPS file imported at all reads "No GPS record on record for the club. Nothing
+is missing — no GPS file has been imported yet. A session appears here once its
+GPS file is imported from Settings › Imports." (the match board's version adds
+that an upcoming fixture has no record by design). Never "never".
+
 **Every figure carries its denominator, an exclusions sentence, and words for a
 missing value** (PATTERN-S7 C2, 13 September 2026; `lib/reportFigures.ts`). The
 board's line reads "n = 21 athletes · 9 of 30 in this filter have no GPS record

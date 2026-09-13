@@ -8,6 +8,8 @@ import { athleteDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
 import type { AppRole } from '@/lib/types/database';
+import { exportAuditMetadata, exportCaption, type ExportDescriptor } from '@/lib/exportDescriptor';
+import { formatDateTime } from '@/lib/format';
 import { ACWR_WINDOW_CAPTION, periodCaveat, periodParamsFromUrl, resolveAthletePeriod } from '../period';
 
 /** CSV only, see lib/csv.ts's header. One row per day in the period —
@@ -19,7 +21,7 @@ import { ACWR_WINDOW_CAPTION, periodCaveat, periodParamsFromUrl, resolveAthleteP
  *  per day, are a second table appended below the daily grid. */
 export async function GET(request: Request, { params }: { params: Promise<{ athleteId: string }> }) {
   const { athleteId } = await params;
-  const { db, orgId, claims, timezone } = await requireReport('athlete');
+  const { db, orgId, claims, timezone, fullName } = await requireReport('athlete');
   /* Shape-check the route param before it reaches a query. Authenticated
      first, so this never becomes a probe; then 404 rather than 500, because a
      malformed id is a URL that does not name anything, not a server fault. */
@@ -76,10 +78,21 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
    * carry it and lands in an inbox with no control to check it against. Same
    * sentence the page prints under the load tiles, from the same constant. */
   const caveat = periodCaveat(period);
+  /* PATTERN-S7 C3 / S8 C8: one descriptor for the dialog, the header and
+     the audit row — two sections, the daily rows and the tests. */
+  const descriptor: ExportDescriptor = {
+    fileName: `athlete-report-${athlete.last_name.toLowerCase()}-${report.from}-to-${report.to}.csv`,
+    report: `Athlete report, ${athlete.first_name} ${athlete.last_name}`,
+    window: `${period.label} (${report.from} to ${report.to})`,
+    scope: `One athlete, ${athlete.first_name} ${athlete.last_name}`,
+    rows: dayRows.length + testRows.length,
+    rowNoun: 'day (readiness and session load), then one per test',
+    filters: [],
+    medical: false,
+  };
   const caption =
-    `# ${athleteDefinition({ athlete: `${athlete.first_name} ${athlete.last_name}`, start: report.from, end: report.to })}\r\n` +
-    `# Athlete report, ${athlete.first_name} ${athlete.last_name}, ${period.label} (${report.from} to ${report.to}). ` +
-    `Compliance ${compliancePct === null ? 'n/a' : `${compliancePct}%`}, ` +
+    exportCaption(descriptor, athleteDefinition({ athlete: `${athlete.first_name} ${athlete.last_name}`, start: report.from, end: report.to }), { exportedBy: fullName, at: formatDateTime(new Date().toISOString(), timezone) }) +
+    `# Compliance ${compliancePct === null ? 'n/a' : `${compliancePct}%`}, ` +
     `ACWR ${report.load.acwr === null ? acwrSuppressedLabel(report.load.daysWithData) : formatNumber(report.load.acwr, 2)}, ` +
     `${openFlags.length} open flag${openFlags.length === 1 ? '' : 's'}, ` +
     `programme(s): ${currentProgrammes.length > 0 ? currentProgrammes.map((p) => p.name).join('; ') : 'none'}.\r\n` +
@@ -96,9 +109,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
     claims.userId,
     actorRole,
     'athlete',
-    { athlete_id: athleteId, from: report.from, to: report.to, period: period.key, format: 'csv' },
+    { athlete_id: athleteId, from: report.from, to: report.to, period: period.key, ...exportAuditMetadata(descriptor) },
     'export',
   );
 
-  return csvResponse(caption + dailyCsv + testHeader + testCsv, `athlete-report-${athlete.last_name.toLowerCase()}-${report.from}-to-${report.to}.csv`);
+  return csvResponse(caption + dailyCsv + testHeader + testCsv, descriptor.fileName);
 }

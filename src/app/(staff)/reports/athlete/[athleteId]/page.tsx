@@ -18,6 +18,7 @@ import { reportRoleNote } from '@/lib/reportRoleNote';
 import { athleteComplianceFigure } from '@/lib/reportFigureCards';
 import { ReportFigure } from '@/components/ReportFigure/ReportFigure';
 import { TableShell } from '@/components/TableShell/TableShell';
+import { ExportDialog } from '@/components/ExportDialog/ExportDialog';
 
 import { requireReport } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
@@ -190,9 +191,21 @@ export default async function AthleteReportPage({
           </h1>
         </div>
         <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
-          <a href={`/reports/athlete/${athleteId}/export?${exportQuery(period.key)}`} className="btn-ghost">
-            Export CSV
-          </a>
+          {/* PATTERN-S7 C3: named and described before it is written. */}
+          <ExportDialog
+            href={`/reports/athlete/${athleteId}/export?${exportQuery(period.key)}`}
+            className="btn-ghost"
+            descriptor={{
+              fileName: `athlete-report-${athlete.last_name.toLowerCase()}-${report.from}-to-${report.to}.csv`,
+              report: `Athlete report, ${athlete.first_name} ${athlete.last_name}`,
+              window: `${period.label} (${report.from} to ${report.to})`,
+              scope: `One athlete, ${athlete.first_name} ${athlete.last_name}`,
+              rows: report.load.byDay.length + report.gymAndTesting.tests.length,
+              rowNoun: 'day (readiness and session load), then one per test',
+              filters: [],
+              medical: false,
+            }}
+          />
           <a href={`/reports/athlete/${athleteId}/pdf?${exportQuery(period.key)}`} className="btn-ghost">
             Export PDF
           </a>

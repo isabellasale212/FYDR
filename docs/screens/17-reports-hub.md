@@ -105,6 +105,21 @@ None. The hub displays no figures of its own.
 
 **Nothing on this page writes anything.**
 
+**Every report's Export CSV is a dialog** (PATTERN-S7 C3 and PATTERN-S8 C8, 13
+September 2026; B11's one dialog pattern, `--w-dialog: 640px`). It names the file
+before it is written — "Export compliance-2026-08-17-to-2026-09-13.csv" — and
+states what the file holds: the report and its window, the scope with its athlete
+count, every filter applied ("Ranked test: 40m sprint", "Session: Tuesday gym, 9
+Sept", "The medic's copy") or "No filter beyond the window and the scope above.",
+the row count with its noun ("15 rows, one per athlete"), on the medic's copy of
+the injury report "Contains medical information. Handle under the club's data
+policy.", and "Written to the audit log with your name and the row count." The
+primary action is the download itself; Cancel writes nothing. **The file's own
+header reads the same sentences back** as `#` lines — the definition first, then
+who exported it and when — and **the audit row** (`report.<type>.export`) carries
+`file`, `rows`, `filters` and `medical`. One descriptor (`src/lib/exportDescriptor.ts`),
+built by the page for the dialog and by the route for the file and the audit row.
+
 ---
 
 ## 7. How this page is built, in plain English

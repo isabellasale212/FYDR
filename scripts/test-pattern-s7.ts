@@ -49,8 +49,8 @@ console.log('\nthe record and the sheet');
   const rec = read('docs/overnight-records-2026-09-12.md');
   assert(/## PATTERN-S7 — Reports and analytics/.test(rec) && /### Step 1, answered from the code/.test(rec), 'the S7 record answers Step 1');
   const sheet = read('docs/design-decisions-outstanding.md');
-  // Repointed 2026-09-13: C1 is built and struck (~~PATTERN-S7~~ | ~~C1~~); C3 stands in for the C rows.
-  assert(/\| ~~PATTERN-S7~~ \| ~~C1~~ \|/.test(sheet) && /\| PATTERN-S7 \| C3 \|/.test(sheet) && /PATTERN-S7 \| (~~)?D3/.test(sheet), 'C1–C11 and D1–D3 are on the sheet');
+  // Repointed 2026-09-13: C1 and C3 are built and struck (~~PATTERN-S7~~ | ~~C1~~ / ~~C3~~); D3 stands half done.
+  assert(/\| ~~PATTERN-S7~~ \| ~~C1~~ \|/.test(sheet) && /\| ~~PATTERN-S7~~ \| ~~C3~~ \|/.test(sheet) && /PATTERN-S7 \| (~~)?D3/.test(sheet), 'C1–C11 and D1–D3 are on the sheet');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

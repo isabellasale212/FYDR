@@ -17,6 +17,8 @@ import { reportRoleNote } from '@/lib/reportRoleNote';
 import { complianceFigure } from '@/lib/reportFigureCards';
 import { ReportFigure } from '@/components/ReportFigure/ReportFigure';
 import { TableShell } from '@/components/TableShell/TableShell';
+import { ExportDialog } from '@/components/ExportDialog/ExportDialog';
+import { exportFileName } from '@/lib/exportDescriptor';
 
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
@@ -222,9 +224,22 @@ export default async function ComplianceReportPage({
           ),
           actions: (
             <>
-              <a href={`/reports/compliance/export?${query}`} className="rhead-btn">
-                Export CSV
-              </a>
+              {/* PATTERN-S7 C3: the file is named and described before it is
+                  written; the route builds the same descriptor for the header
+                  and the audit row. */}
+              <ExportDialog
+                href={`/reports/compliance/export?${query}`}
+                descriptor={{
+                  fileName: exportFileName('compliance', fromDate, today),
+                  report: 'Compliance report',
+                  window: `${period.range.label}: ${fromDate} to ${today}`,
+                  scope: `${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athlete${report.athleteCount === 1 ? '' : 's'})`,
+                  rows: report.byAthlete.length,
+                  rowNoun: 'athlete',
+                  filters: [],
+                  medical: false,
+                }}
+              />
               <a href={`/reports/compliance/pdf?${query}`} className="rhead-btn">
                 Export PDF
               </a>

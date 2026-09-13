@@ -360,6 +360,16 @@
   --sp-40: 40px;  /* 1 declaration */
   --sp-48: 48px;  /* 1 declaration */
 
+  /* THE DIALOG'S WIDTH. Approved by Isabella 2026-09-13 (decision batch,
+     group A / B11; PATTERN-S7 D3) and dated here at its value when the
+     export dialog (S7 C3 / S8 C8) was built. One dialog pattern, built once
+     (components/Dialog), reused; B11's rule travels with it: a dialog exists
+     only where the action is destructive or irreversible — an export is a
+     disclosure that leaves the system — never for a confirmation that merely
+     slows someone down. Width, not a breakpoint: the sheet clamps to the
+     viewport below it. */
+  --w-dialog: 640px;
+
   --t-state: 0.15s ease;
   --t-press: 0.08s ease;
   /* The one entrance curve in the product. A strong ease-out: fast out of the

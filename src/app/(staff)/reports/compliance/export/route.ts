@@ -9,6 +9,8 @@ import { complianceAnchor, resolveCompliancePeriod } from '../period';
 import { periodParamsFromUrl } from '@/lib/reportPeriod.server';
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
+import { exportAuditMetadata, exportCaption, exportFileName, type ExportDescriptor } from '@/lib/exportDescriptor';
+import { formatDateTime } from '@/lib/format';
 
 /** CSV only — see lib/csv.ts's header for why PDF and XLSX are cut. Runs
  *  server-side and writes its own audit_log row on every download, per
@@ -18,7 +20,7 @@ import type { AppRole } from '@/lib/types/database';
  *  whole of what tracks the export, the same simplification recordReportView
  *  already made for an ordinary report open. */
 export async function GET(request: Request) {
-  const { db, orgId, claims, timezone } = await requireReport('compliance');
+  const { db, orgId, claims, timezone, fullName } = await requireReport('compliance');
   const url = new URL(request.url);
   // resolveGroupFilter, not parseGroupParam: the export must resolve the
   // sticky filter cookie exactly as the on-screen report does (audit S4),
@@ -94,6 +96,20 @@ export async function GET(request: Request) {
     ['last_submission', 'Last submission'],
   ]);
 
+  /* PATTERN-S7 C3 / S8 C8: the same descriptor the dialog showed — the file
+     is named before it is written, its header reads its own filters back,
+     and the audit row carries the row count. */
+  const descriptor: ExportDescriptor = {
+    fileName: exportFileName('compliance', fromDate, today),
+    report: 'Compliance report',
+    window: `${period.range.label}: ${fromDate} to ${today}`,
+    scope: `${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athlete${report.athleteCount === 1 ? '' : 's'})`,
+    rows: rows.length,
+    rowNoun: 'athlete',
+    filters: [],
+    medical: false,
+  };
+
   const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   await recordReportView(
     db,
@@ -107,7 +123,7 @@ export async function GET(request: Request) {
       period: period.key,
       group_ids: groupIds,
       group_names: groupIds.map((id) => groupNameById.get(id) ?? id),
-      format: 'csv',
+      ...exportAuditMetadata(descriptor),
     },
     'export',
   );
@@ -115,10 +131,8 @@ export async function GET(request: Request) {
   /* PATTERN-S7 C1: the definition sentence is the file's first line — the
      same words the screen shows above its numbers. */
   const caption =
-    (reportDefinition('compliance') ? `# ${reportDefinition('compliance')}\r\n` : '') +
-    `# Compliance report, ${period.range.label.toLowerCase()}: ${fromDate} to ${today}. ` +
-    `Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes). ` +
-    `Waived expectations are excluded from Expected/Submitted above and reported in their own column.\r\n`;
+    exportCaption(descriptor, reportDefinition('compliance'), { exportedBy: fullName, at: formatDateTime(new Date().toISOString(), timezone) }) +
+    `# Waived expectations are excluded from Expected/Submitted above and reported in their own column.\r\n`;
 
-  return csvResponse(caption + csv, `compliance-${fromDate}-to-${today}.csv`);
+  return csvResponse(caption + csv, descriptor.fileName);
 }

@@ -13,6 +13,8 @@ import { reportRoleNote } from '@/lib/reportRoleNote';
 import { availabilityFigure } from '@/lib/reportFigureCards';
 import { ReportFigure } from '@/components/ReportFigure/ReportFigure';
 import { TableShell } from '@/components/TableShell/TableShell';
+import { ExportDialog } from '@/components/ExportDialog/ExportDialog';
+import { exportFileName } from '@/lib/exportDescriptor';
 
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
@@ -167,9 +169,20 @@ export default async function InjuryAvailabilityReportPage({
           ),
           actions: (
             <>
-              <a href={`/reports/injuries/export?${exportQuery(period.key, groupIds)}`} className="rhead-btn">
-                Export CSV
-              </a>
+              {/* PATTERN-S7 C3: named and described before it is written. */}
+              <ExportDialog
+                href={`/reports/injuries/export?${exportQuery(period.key, groupIds)}`}
+                descriptor={{
+                  fileName: exportFileName('injury-availability', fromDate, today),
+                  report: 'Injury and availability report',
+                  window: `${period.label} (${fromDate} to ${today})`,
+                  scope: `${groupScopeLabel(groups, groupIds)} (${report.summary.athleteCount} athlete${report.summary.athleteCount === 1 ? '' : 's'})`,
+                  rows: report.current.length,
+                  rowNoun: 'athlete not fully available',
+                  filters: [isMedical ? "The medic's copy" : 'The coach view: availability, restrictions, body area — no diagnosis'],
+                  medical: isMedical,
+                }}
+              />
               <a href={`/reports/injuries/pdf?${exportQuery(period.key, groupIds)}`} className="rhead-btn">
                 Export PDF
               </a>

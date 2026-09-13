@@ -10,6 +10,8 @@ import { periodParamsFromUrl } from '@/lib/reportPeriod.server';
 import { reportDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
+import { exportAuditMetadata, exportCaption, exportFileName, type ExportDescriptor } from '@/lib/exportDescriptor';
+import { formatDateTime } from '@/lib/format';
 
 /** CSV only, see lib/csv.ts's header. Exports the "By athlete" grid always
  *  (every athlete, every test, best in the reporting period) plus the selected
@@ -22,7 +24,7 @@ import type { AppRole } from '@/lib/types/database';
  *  import, so a coach who exports "this season" gets a season — and a file that
  *  states which window it covers in its own caption. */
 export async function GET(request: Request) {
-  const { db, orgId, claims, timezone } = await requireReport('testing');
+  const { db, orgId, claims, timezone, fullName } = await requireReport('testing');
   const url = new URL(request.url);
   // resolveGroupFilter, not parseGroupParam: the export resolves the sticky
   // filter cookie exactly as the on-screen report does (audit S4), and the
@@ -68,9 +70,13 @@ export async function GET(request: Request) {
     byAthlete.definitions.find((d) => d.id === requestedTestId)?.id ?? byAthlete.definitions[0]?.id ?? null;
 
   let testSection = '';
+  let testRowCount = 0;
+  let selectedTestName: string | null = null;
   if (selectedTestId) {
     const byTest = await fetchTestByTest(db, orgId, groupIds, selectedTestId, reportWindow);
     if (byTest) {
+      testRowCount = byTest.rows.length;
+      selectedTestName = byTest.definition.name;
       const testRows = byTest.rows.map((r) => ({
         rank: r.rank,
         name: r.name,
@@ -92,11 +98,20 @@ export async function GET(request: Request) {
   // The window is stated on the file, not just applied to it. A CSV that says
   // "personal bests" over a season-bounded read is a file someone will paste
   // into a spreadsheet next year and read as all-time.
-  const caption =
-    (reportDefinition('testing') ? `# ${reportDefinition('testing')}\r\n` : '') +
-    `# Testing report, ${period.range.label.toLowerCase()}: ${reportWindow.from} to ${reportWindow.to}. ` +
-    `Scope: ${groupScopeLabel(groups, groupIds)} ` +
-    `(${byAthlete.rows.length} athletes), ${byAthlete.definitions.length} tests.\r\n\r\n# By athlete — best in period\r\n`;
+  /* PATTERN-S7 C3 / S8 C8: one descriptor for the dialog, the header and
+     the audit row. The ranked test is a filter the file reads back. */
+  const descriptor: ExportDescriptor = {
+    fileName: exportFileName('testing-report', reportWindow.from, reportWindow.to),
+    report: 'Testing report',
+    window: `${period.range.label}: ${reportWindow.from} to ${reportWindow.to}`,
+    scope: `${groupScopeLabel(groups, groupIds)} (${byAthlete.rows.length} athlete${byAthlete.rows.length === 1 ? '' : 's'}), ${byAthlete.definitions.length} test${byAthlete.definitions.length === 1 ? '' : 's'}`,
+    rows: byAthlete.rows.length + testRowCount,
+    rowNoun: 'athlete (best in period), then one per ranked result',
+    filters: selectedTestName ? [`Ranked test: ${selectedTestName}`] : [],
+    medical: false,
+  };
+
+  const caption = exportCaption(descriptor, reportDefinition('testing'), { exportedBy: fullName, at: formatDateTime(new Date().toISOString(), timezone) }) + `\r\n# By athlete — best in period\r\n`;
 
   const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   await recordReportView(
@@ -107,9 +122,9 @@ export async function GET(request: Request) {
     'testing',
     // The RESOLVED test, not the raw param — the audit row records what was
     // actually disclosed, and the page and the PDF both log it that way.
-    { group_ids: groupIds, test_definition_id: selectedTestId, period: period.key, from: reportWindow.from, to: reportWindow.to, format: 'csv' },
+    { group_ids: groupIds, test_definition_id: selectedTestId, period: period.key, from: reportWindow.from, to: reportWindow.to, ...exportAuditMetadata(descriptor) },
     'export',
   );
 
-  return csvResponse(caption + athleteCsv + testSection, `testing-report-${reportWindow.from}-to-${reportWindow.to}.csv`);
+  return csvResponse(caption + athleteCsv + testSection, descriptor.fileName);
 }

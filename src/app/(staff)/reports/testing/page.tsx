@@ -4,6 +4,8 @@ import { NOT_SHOWN, NO_RESULT } from '@/lib/reportFigures';
 import { testCoverageFigure } from '@/lib/reportFigureCards';
 import { ReportFigure } from '@/components/ReportFigure/ReportFigure';
 import { TableShell } from '@/components/TableShell/TableShell';
+import { ExportDialog } from '@/components/ExportDialog/ExportDialog';
+import { exportFileName } from '@/lib/exportDescriptor';
 
 import { filterEmptyCopy, staffEmptyCopy } from '@/lib/staffEmpty';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
@@ -179,9 +181,20 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                   + Log a result
                 </Link>
                 <PrintButton className="rhead-btn" />
-                <a href={`/reports/testing/export?${query}`} className="rhead-btn">
-                  Export CSV
-                </a>
+                {/* PATTERN-S7 C3: named and described before it is written. */}
+                <ExportDialog
+                  href={`/reports/testing/export?${query}`}
+                  descriptor={{
+                    fileName: exportFileName('testing-report', reportWindow.from, reportWindow.to),
+                    report: 'Testing report',
+                    window: `${period.range.label}: ${reportWindow.from} to ${reportWindow.to}`,
+                    scope: `${groupScopeLabel(groups, groupIds)} (${byAthlete.rows.length} athlete${byAthlete.rows.length === 1 ? '' : 's'}), ${byAthlete.definitions.length} test${byAthlete.definitions.length === 1 ? '' : 's'}`,
+                    rows: byAthlete.rows.length + (byTest?.rows.length ?? 0),
+                    rowNoun: 'athlete (best in period), then one per ranked result',
+                    filters: byTest ? [`Ranked test: ${byTest.definition.name}`] : [],
+                    medical: false,
+                  }}
+                />
                 <a href={`/reports/testing/pdf?${query}`} className="rhead-btn">
                   Export PDF
                 </a>

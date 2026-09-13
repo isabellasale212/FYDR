@@ -7,6 +7,8 @@ import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { reportDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
+import { exportAuditMetadata, exportCaption, exportFileName, type ExportDescriptor } from '@/lib/exportDescriptor';
+import { formatDateTime } from '@/lib/format';
 import { periodParamsFromUrl, resolveInjuryPeriod } from '../period';
 
 /** CSV only, see lib/csv.ts's header. The coach export and the medical
@@ -21,7 +23,7 @@ import { periodParamsFromUrl, resolveInjuryPeriod } from '../period';
  *  scoped rows and no hint either way. The export now resolves the scope
  *  exactly as the page does, and the `# Scope:` caption line states it. */
 export async function GET(request: Request) {
-  const { db, orgId, claims, timezone } = await requireReport('injuries');
+  const { db, orgId, claims, timezone, fullName } = await requireReport('injuries');
   const isMedical = hasAnyRole(claims.roles, CLINICAL_ONLY);
   const url = new URL(request.url);
   const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
@@ -65,6 +67,20 @@ export async function GET(request: Request) {
     ['expected_return', 'Expected return'],
   ]);
 
+  /* PATTERN-S7 C3 / S8 C8: the same descriptor the dialog showed. The
+     medic's copy carries the medical line; the coach's copy names itself as
+     the coach view. */
+  const descriptor: ExportDescriptor = {
+    fileName: exportFileName('injury-availability', fromDate, today),
+    report: 'Injury and availability report',
+    window: `${period.label} (${fromDate} to ${today})`,
+    scope: `${groupScopeLabel(groups, groupIds)} (${report.summary.athleteCount} athlete${report.summary.athleteCount === 1 ? '' : 's'})`,
+    rows: rows.length,
+    rowNoun: 'athlete not fully available',
+    filters: [isMedical ? "The medic's copy" : 'The coach view: availability, restrictions, body area — no diagnosis'],
+    medical: isMedical,
+  };
+
   const actorRole = (isMedical ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   await recordReportView(
     db,
@@ -77,8 +93,7 @@ export async function GET(request: Request) {
       to: today,
       period: period.key,
       group_ids: groupIds,
-      medical: isMedical,
-      format: 'csv',
+      ...exportAuditMetadata(descriptor),
     },
     'export',
   );
@@ -90,10 +105,8 @@ export async function GET(request: Request) {
    * page and the PDF state it: these rows are availability as of today, not a
    * historical snapshot of the period. */
   const caption =
-    (reportDefinition('injuries') ? `# ${reportDefinition('injuries')}\r\n` : '') +
-    `# Injury & availability report, ${period.label} (${fromDate} to ${today}). ` +
-    `Scope: ${groupScopeLabel(groups, groupIds)} (${report.summary.athleteCount} athletes). ` +
-    `Rows are availability as of ${today}, not a snapshot of the period.\r\n`;
+    exportCaption(descriptor, reportDefinition('injuries'), { exportedBy: fullName, at: formatDateTime(new Date().toISOString(), timezone) }) +
+    `# Rows are availability as of ${today}, not a snapshot of the period.\r\n`;
 
-  return csvResponse(caption + csv, `injury-availability-${fromDate}-to-${today}.csv`);
+  return csvResponse(caption + csv, descriptor.fileName);
 }

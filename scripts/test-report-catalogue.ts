@@ -75,7 +75,10 @@ console.log('\n3. the reports that carry a sentence carry it everywhere; the two
     const page = strip(read(`src/app/(staff)/reports/${r.dir}/page.tsx`));
     assert(new RegExp(r.viaPager ? `definition: reportDefinition\\('${r.key}'\\) \\?\\? undefined,` : `definition=\\{reportDefinition\\('${r.key}'\\) \\?\\? undefined\\}`).test(page), `${r.key}: on screen`);
     const csv = strip(read(`src/app/(staff)/reports/${r.dir}/export/route.ts`));
-    assert(new RegExp(`\\(reportDefinition\\('${r.key}'\\) \\? \`# \\$\\{reportDefinition\\('${r.key}'\\)\\}\\\\r\\\\n\` : ''\\) \\+`).test(csv), `${r.key}: first line of the CSV`);
+    // Repointed 2026-09-13 (PATTERN-S7 C3): the definition reaches the CSV
+    // through exportCaption(descriptor, reportDefinition(key)), which writes
+    // it as the first `#` line when the catalogue has one.
+    assert(new RegExp(`exportCaption\\(descriptor, reportDefinition\\('${r.key}'\\)`).test(csv), `${r.key}: first line of the CSV`);
     const pdf = strip(read(`src/app/(staff)/reports/${r.dir}/pdf/route.tsx`));
     assert(new RegExp(`definition=\\{reportDefinition\\('${r.key}'\\) \\?\\? undefined\\}`).test(pdf), `${r.key}: under the PDF's title`);
     assert(/definition sentence/i.test(read(r.spec)), `${r.key}: the spec says so`);
@@ -87,7 +90,8 @@ console.log('\n3. the reports that carry a sentence carry it everywhere; the two
   const training = strip(read('src/app/(staff)/reports/training/page.tsx'));
   assert(/definition=\{reportDefinition\('training'\) \?\? undefined\}/.test(training), 'training: the header is handed null and draws nothing (no drafted sentence remains)');
   const trainingCsv = strip(read('src/app/(staff)/reports/training/export/route.ts'));
-  assert(!/`# \$\{reportDefinition\('training'\)\}\\r\\n` \+/.test(trainingCsv) && (trainingCsv.match(/reportDefinition\('training'\) \? /g) ?? []).length === 2, 'training and match CSVs: the line only once there is a sentence');
+  // Repointed 2026-09-13 (PATTERN-S7 C3): both boards hand reportDefinition('training') to exportCaption, which writes no line for null.
+  assert((trainingCsv.match(/exportCaption\(descriptor, reportDefinition\('training'\)/g) ?? []).length === 2, 'training and match CSVs: the line only once there is a sentence');
   const trainingPdf = strip(read('src/app/(staff)/reports/training/pdf/route.tsx'));
   assert((trainingPdf.match(/definition=\{reportDefinition\('training'\) \?\? undefined\}/g) ?? []).length === 2, 'both PDFs likewise');
 }

@@ -51,6 +51,17 @@ None displayed. The export contains whichever metrics the chosen scope includes.
 computer, outside every protection in this document. That is why it is audited and
 why the report guard applies.
 
+**Every file reads its own filters back** (PATTERN-S8 C8, 13 September 2026). Each
+CSV opens with `#` lines stating the domain, the date range, the scope with its
+athlete count ("Forwards (15 athletes)"), any filter applied ("Body mass omitted —
+not visible to your role" on a coach's wellness file), its row count with its noun
+("312 rows, one per wellness entry"; gym files count sessions and sets), who
+exported it and when, and that it is written to the audit log with the row count.
+**The audit row** (`report.export_builder.export`) carries `files` — one entry per
+file with its domain and row count — and `rows`, the total. Generate stays the
+form's own confirmation: nothing about this screen is irreversible before the
+files exist, so no dialog (B11).
+
 **The clinical record is not in any export produced here**, because the queries
 behind it never read that table.
 

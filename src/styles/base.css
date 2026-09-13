@@ -5452,6 +5452,62 @@ img.me-avatar {
     margin-bottom: var(--sp-14);
   }
 }
+/* B11 (2026-09-13): the one dialog pattern — the native <dialog>, --w-dialog
+   wide, clamped to the viewport with the standard 16px gutter, the card's
+   surface and radius, a scrim behind. Warn edge for a consequence, bad edge
+   for the irreversible. */
+.dlg {
+  width: min(var(--w-dialog), calc(100vw - 2 * var(--sp-16)));
+  max-height: calc(100dvh - 2 * var(--sp-16));
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  background: var(--surf);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  overflow: auto;
+}
+.dlg::backdrop {
+  background: rgb(var(--ink-rgb) / 0.35);
+}
+.dlg-warn {
+  border-color: var(--border-warn);
+}
+.dlg-bad {
+  border-color: var(--border-bad);
+}
+.dlg-body {
+  padding: var(--sp-18) var(--sp-20) var(--sp-20);
+}
+.dlg-title {
+  margin: 0 0 var(--sp-12);
+  overflow-wrap: anywhere;
+}
+.dlg-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-10);
+  margin-top: var(--sp-18);
+}
+.dlg-actions .btn-primary,
+.dlg-actions .btn-ghost {
+  min-height: 44px;
+  overflow-wrap: anywhere;
+}
+.dlg-lines {
+  margin: 0;
+  padding-left: var(--sp-18);
+  font-size: var(--fs-13);
+  line-height: 1.5;
+}
+.dlg-lines li + li {
+  margin-top: var(--sp-6);
+}
+.dlg-line-medical {
+  font-weight: 600;
+  color: var(--bad-text);
+}
 /* PATTERN-S8 A1 (2026-09-13): Log out is a button, set apart from the lists,
    with the session it ends named beside it. */
 .set-logout-form {

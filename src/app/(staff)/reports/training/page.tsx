@@ -42,6 +42,8 @@ import { reportDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
+import { ExportDialog } from '@/components/ExportDialog/ExportDialog';
+import type { ExportDescriptor } from '@/lib/exportDescriptor';
 
 /** Sessions with real GPS data, for the "jump to date" dropdown — every one
  *  on record, not just the handful the chip row below has room for
@@ -298,7 +300,10 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
 
   const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
 
-  const header = (tabsNode?: React.ReactNode, period?: React.ReactNode) => (
+  /* PATTERN-S7 C3: with a board on screen the export is a dialog naming the
+     file and its rows before it is written; with nothing to export the plain
+     link stays (the route answers with an empty file and its reason). */
+  const header = (tabsNode?: React.ReactNode, period?: React.ReactNode, exportDescriptor?: ExportDescriptor) => (
     <ReportHeader
       groups={groups}
       groupIds={groupIds}
@@ -343,9 +348,13 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
             Heat
             <span className="tr-heat-toggle-track" aria-hidden />
             </Link>
-            <a href={`/reports/training/export${q({ mode, session: sessionParam, groups: groupsQs })}`} className="rhead-btn">
-            Export CSV
-            </a>
+            {exportDescriptor ? (
+              <ExportDialog href={`/reports/training/export${q({ mode, session: sessionParam, groups: groupsQs })}`} descriptor={exportDescriptor} />
+            ) : (
+              <a href={`/reports/training/export${q({ mode, session: sessionParam, groups: groupsQs })}`} className="rhead-btn">
+                Export CSV
+              </a>
+            )}
             <a href={`/reports/training/pdf${q({ mode, session: sessionParam, groups: groupsQs })}`} className="rhead-btn">
             Export PDF
             </a>
@@ -428,6 +437,16 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
           ariaLabel="Jump to a match with GPS data"
           />
           </>,
+          {
+            fileName: `match-report-${selected.date}.csv`,
+            report: 'Match day GPS report',
+            window: `v ${selected.opponent}, ${selected.date}`,
+            scope: `${groupScopeLabel(groups, groupIds)} (${board.rows.length} on the board)`,
+            rows: board.rows.length,
+            rowNoun: 'player on the board',
+            filters: [`Session: v ${selected.opponent}, ${selected.date}`, 'Whole-match totals only — GPS is not recorded as a first-half/second-half split'],
+            medical: false,
+          },
         )}
 
 
@@ -699,7 +718,16 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
 
   return (
     <>
-      {header(trainingTabs('day'), trainingPeriod)}
+      {header(trainingTabs('day'), trainingPeriod, {
+        fileName: `training-report-${selected.date}.csv`,
+        report: 'Training report',
+        window: `${selected.title}, ${selected.date}`,
+        scope: `${groupScopeLabel(groups, groupIds)} (${board.rows.length} on the board)`,
+        rows: board.rows.length,
+        rowNoun: 'player on the board',
+        filters: [`Session: ${selected.title}, ${selected.date}`],
+        medical: false,
+      })}
 
       {!overview ? (
         /* PATTERN-S6 C8: a filter that leaves nothing — the denominator, the

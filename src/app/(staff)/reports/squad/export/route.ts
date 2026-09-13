@@ -10,6 +10,8 @@ import { reportDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
 import { squadWeek } from '@/lib/squadWeek';
 import type { AppRole } from '@/lib/types/database';
+import { exportAuditMetadata, exportCaption, exportFileName, type ExportDescriptor } from '@/lib/exportDescriptor';
+import { formatDateTime } from '@/lib/format';
 
 /** CSV only, see lib/csv.ts's header. Four small tables, one per section
  *  that's naturally a row-per-athlete grid — load, gym, testing and
@@ -17,7 +19,7 @@ import type { AppRole } from '@/lib/types/database';
  *  reports/athlete/[athleteId]/export/route.ts already uses. The headline
  *  tiles and the attention list aren't tabular data and stay on the page. */
 export async function GET(request: Request) {
-  const { db, orgId, claims, timezone } = await requireReport('squad');
+  const { db, orgId, claims, timezone, fullName } = await requireReport('squad');
   const url = new URL(request.url);
   // resolveGroupFilter, not parseGroupParam: the export resolves the sticky
   // filter cookie exactly as the on-screen report does (audit S4), and the
@@ -88,11 +90,24 @@ export async function GET(request: Request) {
     ],
   );
 
+  /* PATTERN-S7 C3 / S8 C8: one descriptor for the dialog, the header and
+     the audit row. Four sections, so the row count is their sum and the
+     noun says so. */
+  const sectionRows = report.load.length + report.gymByAthlete.length + report.testsThisWeek.length + report.availability.length;
+  const descriptor: ExportDescriptor = {
+    fileName: exportFileName('squad-weekly', report.from, report.to),
+    report: 'Squad weekly report',
+    window: `Week ${report.from} to ${report.to}`,
+    scope: `${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athlete${report.athleteCount === 1 ? '' : 's'})`,
+    rows: sectionRows,
+    rowNoun: 'athlete per section (load, gym sessions, testing, availability)',
+    filters: [],
+    medical: false,
+  };
+
   const caption =
-    (reportDefinition('squad') ? `# ${reportDefinition('squad')}\r\n` : '') +
-    `# Squad weekly report, ${report.from} to ${report.to}. ` +
-    `Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes). ` +
-    `Compliance ${report.tiles.compliancePct === null ? 'n/a' : `${report.tiles.compliancePct}%`}, ` +
+    exportCaption(descriptor, reportDefinition('squad'), { exportedBy: fullName, at: formatDateTime(new Date().toISOString(), timezone) }) +
+    `# Compliance ${report.tiles.compliancePct === null ? 'n/a' : `${report.tiles.compliancePct}%`}, ` +
     `available ${report.tiles.availablePct === null ? 'n/a' : `${report.tiles.availablePct}%`}, ` +
     `${report.tiles.openFlagCount} open flags. ` +
     `ACWR: ${acwrSquadHeadline(report.tiles.acwr.outsideBand, report.tiles.acwr.computable, report.tiles.acwr.suppressed)} ` +
@@ -108,9 +123,9 @@ export async function GET(request: Request) {
     claims.userId,
     actorRole,
     'squad_weekly',
-    { from: report.from, to: report.to, group_ids: groupIds, format: 'csv' },
+    { from: report.from, to: report.to, group_ids: groupIds, ...exportAuditMetadata(descriptor) },
     'export',
   );
 
-  return csvResponse(csv, `squad-weekly-${report.from}-to-${report.to}.csv`);
+  return csvResponse(csv, descriptor.fileName);
 }

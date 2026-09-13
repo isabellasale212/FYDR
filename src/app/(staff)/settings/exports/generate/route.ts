@@ -15,6 +15,8 @@ import { fetchGroups } from '@/lib/queries/groups';
 import { recordReportView } from '@/lib/queries/reports';
 import { requireReportAccess } from '@/lib/session';
 import { BODY_MASS_VIEW, actingRole, hasAnyRole } from '@/lib/access';
+import { exportCaption, type ExportDescriptor } from '@/lib/exportDescriptor';
+import { formatDateTime } from '@/lib/format';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -65,7 +67,7 @@ function athleteLabel(athleteId: string | null, nameById: Map<string, string>): 
  *  actual disclosure a coach or medical user is making in one "Generate"
  *  click, not N separate ones. */
 export async function POST(request: Request): Promise<NextResponse<GenerateResult>> {
-  const { db, orgId, claims } = await requireReportAccess();
+  const { db, orgId, claims, timezone, fullName } = await requireReportAccess();
   /* STAFF-SS-02-05 C9 (decided 2026-09-12): the coach does not see body mass
      at all — the wellness export drops the column and the body composition
      export is refused, for a role outside BODY_MASS_VIEW. */
@@ -95,18 +97,26 @@ export async function POST(request: Request): Promise<NextResponse<GenerateResul
   const athleteIds = athletes.map((a) => a.id);
   const nameById = new Map(athletes.map((a) => [a.id, `${a.last_name}, ${a.first_name}`]));
   const groupLabel = groupScopeLabel(groups, groupIds);
-  const scopeCaption = `${groupLabel} (${athletes.length} athlete${athletes.length === 1 ? '' : 's'}) · ${from} to ${to}`;
 
   const files: { filename: string; content: string }[] = [];
+  const fileCounts: { file: string; domain: string; rows: number }[] = [];
 
   for (const key of requestedDomains) {
     const domain = EXPORT_DOMAINS.find((d) => d.key === key);
     if (!domain) continue;
 
     let csv: string;
+    /* PATTERN-S8 C8: every file reads its own filters back and carries its
+       row count; the audit row carries the counts per file. */
+    let rowCount = 0;
+    let rowNoun = 'entry';
+    const fileFilters: string[] = [];
 
     if (key === 'wellness') {
       const rows = await fetchWellnessExportRows(db, athleteIds, from, to);
+      rowCount = rows.length;
+      rowNoun = 'wellness entry';
+      if (!canSeeBodyMass) fileFilters.push('Body mass omitted — not visible to your role');
       csv = toCsv(
         rows.map((r) => ({
           athlete: athleteLabel(r.athlete_id, nameById),
@@ -139,6 +149,8 @@ export async function POST(request: Request): Promise<NextResponse<GenerateResul
       );
     } else if (key === 'training_rpe') {
       const rows = await fetchTrainingExportRows(db, athleteIds, from, to);
+      rowCount = rows.length;
+      rowNoun = 'session rating';
       csv = toCsv(
         rows.map((r) => ({
           athlete: athleteLabel(r.athlete_id, nameById),
@@ -161,6 +173,8 @@ export async function POST(request: Request): Promise<NextResponse<GenerateResul
       );
     } else if (key === 'gym') {
       const { sessions, sets } = await fetchGymExportRows(db, athleteIds, from, to);
+      rowCount = sessions.length + sets.length;
+      rowNoun = `gym session (${sessions.length}) or set (${sets.length})`;
       const sessionsCsv = toCsv(
         sessions.map((s) => ({
           athlete: nameById.get(s.athlete_id) ?? s.athlete_id,
@@ -205,6 +219,8 @@ export async function POST(request: Request): Promise<NextResponse<GenerateResul
       csv = `# Gym sessions\r\n${sessionsCsv}\r\n# Gym sets\r\n${setsCsv}`;
     } else if (key === 'test_results') {
       const rows = await fetchTestResultExportRows(db, orgId, athleteIds, from, to);
+      rowCount = rows.length;
+      rowNoun = 'test result';
       csv = toCsv(
         rows.map((r) => ({
           athlete: athleteLabel(r.athlete_id, nameById),
@@ -233,6 +249,8 @@ export async function POST(request: Request): Promise<NextResponse<GenerateResul
       return fail('Body composition is not available to your role.', 403);
     } else if (key === 'body_composition') {
       const rows = await fetchBodyCompositionExportRows(db, orgId, athleteIds, from, to);
+      rowCount = rows.length;
+      rowNoun = 'weigh-in';
       csv = toCsv(
         rows.map((r) => ({
           athlete: athleteLabel(r.athlete_id, nameById),
@@ -251,6 +269,8 @@ export async function POST(request: Request): Promise<NextResponse<GenerateResul
       );
     } else {
       const rows = await fetchNutritionCheckinExportRows(db, orgId, athleteIds, from, to);
+      rowCount = rows.length;
+      rowNoun = 'weekly check-in';
       csv = toCsv(
         rows.map((r) => ({
           athlete: athleteLabel(r.athlete_id, nameById),
@@ -269,9 +289,20 @@ export async function POST(request: Request): Promise<NextResponse<GenerateResul
       );
     }
 
-    const caption = `# ${domain.label}. Scope: ${scopeCaption}.\r\n\r\n`;
     const filename = `${key.replace(/_/g, '-')}-${from}-to-${to}.csv`;
+    const descriptor: ExportDescriptor = {
+      fileName: filename,
+      report: domain.label,
+      window: `${from} to ${to}`,
+      scope: `${groupLabel} (${athletes.length} athlete${athletes.length === 1 ? '' : 's'})`,
+      rows: rowCount,
+      rowNoun,
+      filters: fileFilters,
+      medical: false,
+    };
+    const caption = exportCaption(descriptor, null, { exportedBy: fullName, at: formatDateTime(new Date().toISOString(), timezone) }) + `\r\n`;
     files.push({ filename, content: caption + csv });
+    fileCounts.push({ file: filename, domain: key, rows: rowCount });
   }
 
   const actorRole = actingRole(claims.roles);
@@ -281,7 +312,7 @@ export async function POST(request: Request): Promise<NextResponse<GenerateResul
     claims.userId,
     actorRole,
     'export_builder',
-    { domains: requestedDomains, group_ids: groupIds, from, to, athlete_count: athletes.length, format: 'csv' },
+    { domains: requestedDomains, group_ids: groupIds, from, to, athlete_count: athletes.length, format: 'csv', files: fileCounts, rows: fileCounts.reduce((n, f) => n + f.rows, 0) },
     'export',
   );
 

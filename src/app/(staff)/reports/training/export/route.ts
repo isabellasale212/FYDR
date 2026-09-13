@@ -13,6 +13,8 @@ import { reportDefinition } from '@/lib/reportCatalogue';
 import { premiumOnlyResponse, requireReport } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
+import { exportAuditMetadata, exportCaption, type ExportDescriptor } from '@/lib/exportDescriptor';
+import { formatDateTime } from '@/lib/format';
 
 /** CSV only, see lib/csv.ts's header. Plain numbers, no colour — colour is a
  *  reading aid for the screen, and a spreadsheet has no equivalent worth
@@ -22,7 +24,7 @@ import type { AppRole } from '@/lib/types/database';
  *  lib/queries/trainingReport.ts's header for why there is no H1/H2 split
  *  to export either). */
 export async function GET(request: Request) {
-  const { db, orgId, claims, timezone, tier } = await requireReport('training');
+  const { db, orgId, claims, timezone, tier, fullName } = await requireReport('training');
   /* The page this exports refuses on Basic (reports/training/page.tsx), but a
      route handler is reachable by URL whether or not a button was drawn. */
   if (!isPremium(tier)) return premiumOnlyResponse('The training report');
@@ -65,16 +67,24 @@ export async function GET(request: Request) {
       ['hie', 'HIE'],
       ['maxv_kmh', 'MAXV (km/h)'],
     ]);
-    /* PATTERN-S7 C1 (reconciled 2026-09-13): the definition line is written
-       only once the catalogue has a sentence for this board (null today). */
-    const definitionLine = reportDefinition('training') ? `# ${reportDefinition('training')}\r\n` : '';
-    const withCaption =
-      definitionLine +
-      `# Match day GPS report, v ${selected.opponent}, ${selected.date}. Scope: ${scopeLabel}. Whole-match totals only — ` +
-      `GPS is not recorded as a first-half/second-half split.\r\n` + csv;
+    /* PATTERN-S7 C3 / S8 C8: one descriptor for the dialog, the header and
+       the audit row. PATTERN-S7 C1 (reconciled 2026-09-13): the definition
+       line is written only once the catalogue has a sentence for this
+       board (null today). */
+    const descriptor: ExportDescriptor = {
+      fileName: `match-report-${selected.date}.csv`,
+      report: 'Match day GPS report',
+      window: `v ${selected.opponent}, ${selected.date}`,
+      scope: `${scopeLabel} (${rows.length} on the board)`,
+      rows: rows.length,
+      rowNoun: 'player on the board',
+      filters: [`Session: v ${selected.opponent}, ${selected.date}`, 'Whole-match totals only — GPS is not recorded as a first-half/second-half split'],
+      medical: false,
+    };
+    const withCaption = exportCaption(descriptor, reportDefinition('training'), { exportedBy: fullName, at: formatDateTime(new Date().toISOString(), timezone) }) + csv;
 
-    await recordReportView(db, orgId, claims.userId, actorRole, 'training', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, format: 'csv', mode }, 'export');
-    return csvResponse(withCaption, `match-report-${selected.date}.csv`);
+    await recordReportView(db, orgId, claims.userId, actorRole, 'training', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, mode, ...exportAuditMetadata(descriptor) }, 'export');
+    return csvResponse(withCaption, descriptor.fileName);
   }
 
   const sessions = await fetchTrainingSessions(db, orgId, timezone);
@@ -104,9 +114,18 @@ export async function GET(request: Request) {
     ['vs_self', 'vs self'],
     ['vs_unit', 'vs unit'],
   ]);
-  const trainingDefinitionLine = reportDefinition('training') ? `# ${reportDefinition('training')}\r\n` : '';
-  const withCaption = trainingDefinitionLine + `# Training report, ${selected.title}, ${selected.date}. Scope: ${scopeLabel}.\r\n` + csv;
+  const descriptor: ExportDescriptor = {
+    fileName: `training-report-${selected.date}.csv`,
+    report: 'Training report',
+    window: `${selected.title}, ${selected.date}`,
+    scope: `${scopeLabel} (${rows.length} on the board)`,
+    rows: rows.length,
+    rowNoun: 'player on the board',
+    filters: [`Session: ${selected.title}, ${selected.date}`],
+    medical: false,
+  };
+  const withCaption = exportCaption(descriptor, reportDefinition('training'), { exportedBy: fullName, at: formatDateTime(new Date().toISOString(), timezone) }) + csv;
 
-  await recordReportView(db, orgId, claims.userId, actorRole, 'training', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, format: 'csv', mode }, 'export');
-  return csvResponse(withCaption, `training-report-${selected.date}.csv`);
+  await recordReportView(db, orgId, claims.userId, actorRole, 'training', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, mode, ...exportAuditMetadata(descriptor) }, 'export');
+  return csvResponse(withCaption, descriptor.fileName);
 }

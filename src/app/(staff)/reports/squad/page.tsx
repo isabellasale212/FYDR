@@ -3,6 +3,8 @@ import { NOT_EXPECTED, exclusionsLine, submittedLine } from '@/lib/reportFigures
 import { squadComplianceFigure } from '@/lib/reportFigureCards';
 import { ReportFigure } from '@/components/ReportFigure/ReportFigure';
 import { TableShell } from '@/components/TableShell/TableShell';
+import { ExportDialog } from '@/components/ExportDialog/ExportDialog';
+import { exportFileName } from '@/lib/exportDescriptor';
 
 import { belowSquadFloor } from '@/lib/smallSample';
 import { AttentionRow } from '@/components/AttentionRow/AttentionRow';
@@ -119,9 +121,20 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
         definition={reportDefinition('squad') ?? undefined}
         actions={
           <>
-            <a href={`/reports/squad/export?${exportQuery}`} className="rhead-btn">
-              Export CSV
-            </a>
+            {/* PATTERN-S7 C3: named and described before it is written. */}
+            <ExportDialog
+              href={`/reports/squad/export?${exportQuery}`}
+              descriptor={{
+                fileName: exportFileName('squad-weekly', report.from, report.to),
+                report: 'Squad weekly report',
+                window: `Week ${report.from} to ${report.to}`,
+                scope: `${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athlete${report.athleteCount === 1 ? '' : 's'})`,
+                rows: report.load.length + report.gymByAthlete.length + report.testsThisWeek.length + report.availability.length,
+                rowNoun: 'athlete per section (load, gym sessions, testing, availability)',
+                filters: [],
+                medical: false,
+              }}
+            />
             <a href={`/reports/squad/pdf?${exportQuery}`} className="rhead-btn">
               Export PDF
             </a>

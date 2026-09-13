@@ -26,6 +26,7 @@ export const metadata = { title: 'Reports · Fydr' };
 const REPORTS = [
   {
     key: 'compliance',
+    about: 'squad',
     tone: 'wellness',
     source: 'wellness',
     exports: 'CSV · PDF',
@@ -37,6 +38,7 @@ const REPORTS = [
   },
   {
     key: 'injuries',
+    about: 'squad',
     tone: 'medic',
     source: 'medic',
     exports: 'CSV · PDF',
@@ -48,6 +50,7 @@ const REPORTS = [
   },
   {
     key: 'training',
+    about: 'squad',
     tone: 'gps',
     source: 'GPS · premium',
     exports: 'CSV',
@@ -59,6 +62,7 @@ const REPORTS = [
   },
   {
     key: 'athlete',
+    about: 'one',
     tone: 'neutral',
     source: 'all domains',
     exports: 'CSV · PDF',
@@ -70,6 +74,7 @@ const REPORTS = [
   },
   {
     key: 'squad',
+    about: 'squad',
     tone: 'neutral',
     source: 'all domains',
     exports: 'CSV · PDF',
@@ -81,6 +86,7 @@ const REPORTS = [
   },
   {
     key: 'testing',
+    about: 'one',
     tone: 'gym',
     source: 'testing',
     exports: 'CSV · PDF',
@@ -90,6 +96,15 @@ const REPORTS = [
     available: true,
     premiumGated: false,
   },
+] as const;
+
+/* PATTERN-S7 A1 (2026-09-13): the index is grouped by what the question is
+   about — the squad over a period, or one athlete, session or test — rather
+   than six cards in a row. The board's proposal; nothing else on the cards
+   changes. */
+const GROUPS = [
+  { about: 'squad', title: 'About the squad over a period' },
+  { about: 'one', title: 'About one athlete, session or test' },
 ] as const;
 
 /** screens/reports.md, all five report types now built: Compliance and
@@ -162,8 +177,13 @@ export default async function ReportsPage() {
         </div>
       ) : null}
 
+      {GROUPS.map((g) => (
+        <section key={g.about} aria-labelledby={`rep-group-${g.about}`} style={{ marginBottom: 'var(--sp-20)' }}>
+          <h2 className="eyebrow rep-group-title" id={`rep-group-${g.about}`}>
+            {g.title}
+          </h2>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 'var(--sp-14)' }}>
-        {REPORTS.map((r) => {
+        {REPORTS.filter((r) => r.about === g.about).map((r) => {
           const locked = r.premiumGated && !onPremium;
           /* Gated is 0.62 opacity plus a badge, never hidden — light-theme
              handoff §9. This card already did exactly that with a literal
@@ -227,6 +247,8 @@ export default async function ReportsPage() {
           );
         })}
       </div>
+        </section>
+      ))}
 
       {/* Design.pdf p11 has no caption here, and the two sentences that stood
           with this one are gone for that reason: "live pages, recomputed each

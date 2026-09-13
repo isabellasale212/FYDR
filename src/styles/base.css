@@ -9713,6 +9713,10 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
    Reports index. "Fydr Reports.dc.html": each card tinted to the domain it
    reads from, with that domain's dot, its source pill and its export formats.
    --------------------------------------------------------------------------- */
+/* PATTERN-S7 A1 (13 Sept 2026): the index's two group headings. */
+.rep-group-title {
+  margin: 0 0 var(--sp-10);
+}
 .rep-card {
   display: flex;
   flex-direction: column;

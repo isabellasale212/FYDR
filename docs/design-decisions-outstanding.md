@@ -172,6 +172,19 @@ to create an injury record, and the `/injuries` board shows "+ Injury" to the co
 | PATTERN-S6 | D1 | `--pill-offline` / `--on-offline`. | A new token; staff offline is post-pilot. | Not now · — |
 | PATTERN-S6 | D2 | `--line-dashed-failed`. | A new token; with C6 — or C6 keeps the existing dashed `--border-strong` and says "Did not save" in words. | Recommend the words · — |
 | PATTERN-S6 | D3 | `QueueRow` component. | Composed from existing tokens; with C1. | With C1 · — |
+| PATTERN-S7 | C1 | The report shell for all six reports: title, the catalogue's definition sentence, period and group, the figure with denominator and exclusions, one chart, table, exports top right, print. | The "Fydr report catalogue" the prompt names is not in the repository — its definition sentences are the shell's first line. **⚠ the catalogue** | Add the catalogue to docs, then one shell, one report a commit · large |
+| PATTERN-S7 | C2 | Every figure with its denominator and an exclusions sentence ("Nobody is excluded"); missing values as words; worst first. | Per report; the injury report's "Not recorded" athletes and a mid-period joiner said in words. | One report a commit · medium |
+| PATTERN-S7 | C3 | The export dialog names the file before it is written; the audit row gains the row count; a medical export carries "Contains medical information. Handle under the club's data policy." | Exports are logged today (`report.<type>.export`) but without the row count; no dialog. Needs `--w-dialog` (D3). | Build after C1 · medium |
+| PATTERN-S7 | C4 | One renderer for print and PDF. | Seven `@react-pdf` handlers and a base.css `@media print` block — two renderers. **⚠ decision** (which survives; recommend the PDF, with Print opening it) | Decide, then build · medium |
+| PATTERN-S7 | C5 | The group filter reaches the export routes as the page reads it (the cookie), so a bare export URL is scoped the way the screen was. | The routes read `?groups=` only. | **Build** · small |
+| PATTERN-S7 | C6 | Analytics as four panels: definition line with n, zero-based bars with the axis in words, day/week grain summed or meaned by measure, the tap-persistent readout, "Not submitted" stubs, the club threshold as a named dated zone, suppression with one action, no export. | The built analytics is four boards by day with no weekly grain; the readout, the zone and the grain rules are new. | Its own brief · large |
+| PATTERN-S7 | C7 | The compliance report says its cutoff in words (§0ad's rule: an RPE counts before rpeClosesAt; wellness has none). | The rule exists (`lib/rpeDue.ts`); the page does not say it. | **Build** · small |
+| PATTERN-S7 | C8 | Suppression below five athletes with data on every report and panel — one shared rule. | The training report and the positional band each have their own. | One function, then a sweep · medium |
+| PATTERN-S7 | C9 | The period control explains why the narrow choice is usually wrong; navigation both ways. | Copy and a control. | Small |
+| PATTERN-S7 | C10 / C11 | The role note on the report; exports first under the title on a phone; the training report's phone reading is the PDF. | With C1. | With C1 · small |
+| PATTERN-S7 | D1 | Readiness plotted "out of 5" on the wellness panel. | MET-001 is 0–100 in both apps (12 D5 declined the same). | **Decline** · — |
+| PATTERN-S7 | D2 | `/analytics/build` — keep or remove. | Linked from `/analytics`, sport scientist only, "read off nothing on this board". **⚠ decision** | Recommend keep until C6 replaces the boards · — |
+| PATTERN-S7 | D3 | `--print-paper: #ffffff`, `--print-ink: #12161c` (the only theme-ignoring tokens), `--w-dialog: 640px`. | Approved by the board; a §0.01 token decision to date when C3/C4 are built. | With C3/C4 · — |
 
 ## (d) Needs a new token
 

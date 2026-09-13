@@ -48,8 +48,11 @@ specification applies to product tier.
 
 **A header** naming the screen.
 
-**Six cards**, each with a title, a sentence on what the report answers, and where
-its numbers come from.
+**Six cards in two groups** (PATTERN-S7 A1, 13 September 2026), each card with a
+title, a sentence on what the report answers, and where its numbers come from.
+The groups are what the question is about: **"About the squad over a period"**
+— Compliance, Injury & availability, Training report, Squad weekly — and
+**"About one athlete, session or test"** — Athlete report, Testing.
 
 | Card | What it answers | Package |
 |---|---|---|

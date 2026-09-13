@@ -769,3 +769,98 @@ the code, so the record and the sheet carry the facts; nothing that needs a deci
 - **D5** Reduced motion — nothing in these states animates; nothing to build.
 
 **Built:** A1–A3, B1–B2 (B3 with A1). **Recorded:** C1–C10, D1–D5 — appended to the decision sheet.
+
+---
+
+## PATTERN-S7 — Reports and analytics
+
+**Source.** `docs/designs/PATTERN-S7-final /` — board "PATTERN-S7 · FINAL" (13 artboards:
+eleven staff desktop, two staff phone), `notes.md`, the prompt. The handoff zip is
+unextracted (no `.dc.html`) and the one PNG is a 595×842 preview; the "Fydr report
+catalogue" the prompt says sits in the project is not in the repository. Screens:
+`/reports` and its six reports, `/analytics`. Landed 2026-09-13 (`5be2ebb`).
+
+**The board's own frame.** Step 1 asks ten questions "before building". Answered here from
+the code; what needs a decision is on the sheet, and the catalogue is the missing input for
+most of the shell — the definition sentences are its.
+
+### Step 1, answered from the code
+
+1. **Export audit:** every report export IS logged. The five report CSV routes
+   (compliance, injuries, training, squad, testing), the athlete report's CSV and PDF, and
+   the settings exports all call `recordReportView(…, 'export')`, which writes
+   `report.<type>.export` to `audit_log` with the scope and period in its metadata (and,
+   since S3 C7, `report.availability_history.export`). The board's "no export type was
+   found among the twelve derived types" read the audit *screen's* derived list, not the
+   table. The dialog may promise logging; the row exists. The row count is not yet in the
+   metadata for every route (C3).
+2. **PDF and print:** seven `/pdf` handlers (six reports, one leaderboard) render through
+   `@react-pdf/renderer` (`lib/pdf.tsx` — PdfHeader / PdfTable / PdfTile), and base.css
+   carries an `@media print` block that hides the chrome for the browser's print. Two
+   renderers, as the board says. Which survives is a decision (C4): the PDF is the
+   pitch-side document, the print block is free; making them one document means either
+   printing the PDF (a link to the same handler) or rendering the PDF from the page.
+3. **The group filter:** one cookie (`§0ak`, every chip row writes it) resolved per page
+   from the URL first, the cookie second (`resolveGroupFilter`). The reports read it the same
+   way the dashboard does. Where it was inconsistent — the reports' export routes take
+   `?groups=` from the URL only, so a bare export URL is unscoped unless the page put the
+   groups in the link. Recorded (C5).
+4. **Weekly bars:** analytics aggregates by day; there is no weekly grain today, so nothing
+   is summed or meaned per week. The sum/mean rule is the board's, to build with the panels
+   (C6): volume measures (distance, load, tonnage) summed, scored ones (readiness, RPE)
+   meaned.
+5. **Compliance:** there IS a cutoff since 2026-09-12 (§0ad, `9ec24c8`): an RPE counts only
+   if submitted before `rpeClosesAt`, the one rule in `lib/rpeDue.ts` /
+   `lib/complianceRpe.ts`; wellness has none. The columns are `compliance_expectations`
+   (`athlete_id`, `domain`, `expectation_date`, `is_required`, `waived_reason`) joined to
+   the entries' `submitted_at`. The report's page does not yet say the cutoff in words (C7).
+6. **Suppression below five:** `positionalContext.ts` suppresses the positional band below
+   the minimum on the athlete pages; the training report has its own. A shared rule is a
+   small function; applying it to every report and panel is a sweep (C8).
+7. **Readiness:** MET-001 is a documented 0–100 composite (`docs/metrics.md`), shown as such
+   in both apps; the board's "mean of the morning answers out of 5" would be a second
+   readiness (ATH-ADULT-12 D5 declined the same on 2026-09-12). Not built; the panel keeps
+   0–100 (D1).
+8. **Analytics roles:** `ANALYTICS = ['sport_scientist']` (access.ts); `/analytics/build`
+   is linked from `/analytics` (one link) and gated the same way. Whether the builder stays
+   is a decision (D2).
+9. **Injury report exclusions:** an athlete with no availability status is counted as "Not
+   recorded" (the neutral status since SS-02-05 A1), not omitted; the report's figures name
+   the count. The exclusion sentence is not written out (C2).
+10. **A period crossing a squad change:** the denominator is the expectations that existed
+    on each day (`compliance_expectations` is generated per day for the athletes on the
+    roster that day), so an athlete who joined mid-period is counted from their first
+    expected day. The report does not say so (C2).
+
+### A
+
+| # | Change | Before | After |
+|---|---|---|---|
+| A1 | The reports index is grouped by what the question is about | six ungrouped cards | two groups with a heading each: "About the squad over a period" (Compliance, Injury & availability, Training report, Squad weekly) and "About one athlete, session or test" (Athlete report, Testing) |
+
+### B
+
+- none by the board's account that can be built without the shell: `--blue-100/200` for the figure card maps to the wash family when the shell (C1) is built; `--heat-pct-1..5` exist.
+
+### C
+
+- **C1 The report shell** (`ReportShell`: title, definition sentence, period and group, the figure with its denominator and exclusions, one chart at most, table, exports top right, print) for all six reports — needs the **catalogue's definition sentences**, which are not in the repository. Large. ⚠ the catalogue.
+- **C2 Every figure with its denominator and an exclusions sentence** ("Nobody is excluded"), missing values as words, worst first — per report; the injury report's "Not recorded" athletes and the mid-period joiner said in words. Medium, one report a commit.
+- **C3 The export dialog** naming the file before it is written (scope, period, row count, order, columns, missing-value rule, header line, file name); the audit row gains the row count; a medical export adds "Contains medical information. Handle under the club's data policy." to the header and print footer, a compliance export states it holds none. Needs `--w-dialog` (D3). Medium.
+- **C4 One renderer for print and PDF** — decide which survives (the PDF handlers or the print block), then the other goes. ⚠ decision. Medium.
+- **C5 The group filter into the export routes** — the routes read the cookie as the page does, so a bare export URL is scoped the way the screen was. Small.
+- **C6 Analytics rebuilt as four panels** (Training load, Wellness, Gym volume, Acute to chronic; athlete picker; compare two; the group as "compare against"; the definition line with n; zero-based bars with the axis line in words; day bars to a fortnight, week bars beyond a month, summed / meaned by measure; the tap-persistent readout; "Not submitted" stubs; the club threshold as a named, dated zone, no default 1.5; suppression with one action; no export). Large — its own brief.
+- **C7 The compliance report says its cutoff** (§0ad's rule) in words. Small.
+- **C8 Suppression below five** on every report and panel — one shared rule. Medium.
+- **C9 The period control explains why the narrow choice is usually wrong**; period navigation both ways. Small.
+- **C10 The role note on the report** ("Medical: you see the diagnosis column; coaches do not"). Small, with C1.
+- **C11 Exports first under the title on the phone**; the training report stays desktop, its phone reading is the PDF. Small, with C1.
+
+### D
+
+- **D1** Readiness plotted "out of 5" — declined on the same ground as ATH-ADULT-12 D5: MET-001 is 0–100 and both apps show it so.
+- **D2** `/analytics/build` — keep or remove. ⚠ decision.
+- **D3** `--print-paper: #ffffff`, `--print-ink: #12161c` (the only theme-ignoring tokens) and `--w-dialog: 640px` — approved by the board; a §0.01 token decision when C3/C4 are built, dated then.
+- **D4** `--line-dashed-drop`, `ReportShell` as a pattern component — candidates, with C1.
+
+**Built:** A1. **Recorded:** C1–C11, D1–D4 — appended to the decision sheet.

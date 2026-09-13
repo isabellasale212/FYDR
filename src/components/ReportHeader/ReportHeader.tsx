@@ -35,6 +35,11 @@ export type ReportHeaderProps = {
    *  Under the title it answers "this report, for whom, over what window",
    *  in that order. */
   sub?: React.ReactNode;
+  /** PATTERN-S7 C1 (2026-09-13): the catalogue's definition sentence — what
+   *  the report measures, over what, who is counted — as a --surf card
+   *  under the scope line, above the numbers. The same sentence goes into
+   *  the print view (this card prints) and the exports' headers. */
+  definition?: string;
 };
 
 /** The one header the six report screens share, built to
@@ -59,6 +64,7 @@ export function ReportHeader({
   tabsNode,
   period,
   sub,
+  definition,
 }: ReportHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -118,6 +124,11 @@ export function ReportHeader({
 
       <h1 className="rhead-title">{title}</h1>
       {sub}
+      {definition ? (
+        <div className="card rhead-definition">
+          <p>{definition}</p>
+        </div>
+      ) : null}
 
       {tabs || tabsNode || period ? (
         <div className="rhead-tabrow">

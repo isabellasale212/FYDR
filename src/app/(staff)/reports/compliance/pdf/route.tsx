@@ -7,6 +7,7 @@ import { enumLabel, formatDate, todayIso } from '@/lib/format';
 import { complianceAnchor, resolveCompliancePeriod } from '../period';
 import { periodParamsFromUrl } from '@/lib/reportPeriod.server';
 import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
+import { reportDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
@@ -44,6 +45,7 @@ export async function GET(request: Request) {
       <PdfHeader
         eyebrow={`Compliance · ${orgName}`}
         title="Compliance report"
+        definition={reportDefinition('compliance')}
         meta={`${period.range.label} · ${formatDate(fromDate, timezone)} to ${formatDate(today, timezone)} · Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes)`}
       />
 

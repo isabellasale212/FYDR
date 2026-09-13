@@ -12,6 +12,7 @@ import { enumLabel, formatDate, todayIso } from '@/lib/format';
 import { mondayOf } from '@/lib/queries/schedule';
 import { complianceAnchor, complianceQuery, resolveCompliancePeriod } from './period';
 import { periodCaveat, periodParamsFrom, periodSticky } from '@/lib/reportPeriod.server';
+import { reportDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
@@ -185,6 +186,9 @@ export default async function ComplianceReportPage({
           groupIds,
           eyebrow: 'Reports · Compliance',
           title: 'Compliance',
+          /* PATTERN-S7 C1: the catalogue's sentence, above the numbers; the
+             same words go into the print view and both exports' headers. */
+          definition: reportDefinition('compliance'),
           sub: (
             <div className="rhead-sub">
               <p className="eyebrow" style={{ marginBottom: 'var(--sp-10)' }}>

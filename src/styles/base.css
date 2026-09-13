@@ -13229,6 +13229,19 @@ main:has(.rhead) > .back-btn > :first-child {
 .rhead-sub {
   margin: var(--sp-6) 0 0;
 }
+/* PATTERN-S7 C1 (2026-09-13): the definition sentence — a --surf card (the
+   .card family's own surface and shadow), body text, capped at 100ch so a
+   wide desktop does not stretch one sentence across the screen. */
+.rhead-definition {
+  max-width: 100ch;
+  margin: var(--sp-12) 0 0;
+  padding: var(--sp-12) var(--sp-16);
+}
+.rhead-definition p {
+  margin: 0;
+  font-size: var(--fs-14);
+  color: var(--text);
+}
 .rhead-sub > :first-child {
   margin-top: 0;
 }

@@ -80,6 +80,13 @@ export const pdfStyles = StyleSheet.create({
     color: PDF_COLOR.muted,
     marginBottom: 16,
   },
+  /* PATTERN-S7 C1: the catalogue's definition sentence under the title —
+     the same words the screen shows above its numbers. */
+  definition: {
+    fontSize: 10,
+    color: PDF_COLOR.text,
+    marginBottom: 12,
+  },
   hr: {
     borderBottomWidth: 1,
     borderBottomColor: PDF_COLOR.border,
@@ -168,15 +175,19 @@ export function PdfHeader({
   eyebrow,
   title,
   meta,
+  definition,
 }: {
   eyebrow: string;
   title: string;
   meta: string;
+  /** PATTERN-S7 C1 (2026-09-13): the report's definition sentence. */
+  definition?: string;
 }) {
   return (
     <View>
       <Text style={pdfStyles.eyebrow}>{eyebrow}</Text>
       <Text style={pdfStyles.title}>{title}</Text>
+      {definition ? <Text style={pdfStyles.definition}>{definition}</Text> : null}
       <Text style={pdfStyles.meta}>{meta}</Text>
       <View style={pdfStyles.hr} />
     </View>

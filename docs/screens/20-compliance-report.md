@@ -86,6 +86,13 @@ their percentage looks survivable.
 A day nobody was expected to submit on, a rest day for instance, would otherwise
 drag every percentage down.
 
+**The definition sentence sits above the numbers** (PATTERN-S7 C1, 13 September
+2026; `docs/reports-catalogue.md`, `lib/reportCatalogue.ts`): "Who has submitted
+what was expected of them, and who has not — how much of the picture the club
+actually has, over the period and group chosen." — a `--surf` card under the scope
+line, capped at 100ch; it prints with the page and is the first line of the CSV
+and the line under the PDF's title.
+
 **Every figure carries its denominator, an exclusions sentence, and words for
 a missing value** (PATTERN-S7 C2, 13 September 2026; `lib/reportFigures.ts`).
 The summary reads "24 of 30 submitted · 2 waived" or "No expectations

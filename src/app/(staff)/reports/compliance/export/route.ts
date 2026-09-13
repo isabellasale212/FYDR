@@ -1,4 +1,5 @@
 import { csvResponse, toCsv } from '@/lib/csv';
+import { reportDefinition } from '@/lib/reportCatalogue';
 import { fetchComplianceReport, recordReportView } from '@/lib/queries/reports';
 import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
@@ -111,7 +112,10 @@ export async function GET(request: Request) {
     'export',
   );
 
+  /* PATTERN-S7 C1: the definition sentence is the file's first line — the
+     same words the screen shows above its numbers. */
   const caption =
+    `# ${reportDefinition('compliance')}\r\n` +
     `# Compliance report, ${period.range.label.toLowerCase()}: ${fromDate} to ${today}. ` +
     `Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes). ` +
     `Waived expectations are excluded from Expected/Submitted above and reported in their own column.\r\n`;

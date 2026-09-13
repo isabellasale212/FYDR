@@ -953,3 +953,103 @@ most of the shell — the definition sentences are its.
 - **D4** `--line-dashed-drop`, `ReportShell` as a pattern component — candidates, with C1.
 
 **Built:** A1. **Recorded:** C1–C11, D1–D4 — appended to the decision sheet.
+
+---
+
+## PATTERN-S8 — Settings, users and club setup (staff)
+
+**Source.** `docs/designs/PATTERN-S8-final/` — board "PATTERN-S8 · FINAL" (14 artboards: 0 the
+setup checklist, 1–10 the settings a running club uses at 1440×900, 11–13 phone at 375×812),
+`notes.md`, the Claude Code prompt, the PDF. Screens: `src/app/(staff)/settings/page.tsx`
+(the hub), `settings/users`, `settings/groups`, `settings/thresholds`, `settings/imports`,
+`settings/audit`, `settings/exports`, `settings/retention`, `settings/subject-access`, and the
+athlete's `me/notifications`. Landed on `athlete-spec-builder` 2026-09-13 (`94143d4`),
+recorded the same day under the standing rule (record; build A and B; append C and D to
+`docs/design-decisions-outstanding.md`).
+
+**Step 1 of the prompt, from the code.**
+1. *§0ae.* In place at every layer: migration 0101 refuses removing the last sport
+   scientist's role (0102 the self-grant), 0109 (§0bd, 2026-09-13) refuses deactivating,
+   suspending or soft-deleting that account too; `UserDetailPanel` says why the chip is
+   unavailable (`ROLE_REFUSALS.lastAdmin`, `STATUS_REFUSALS.lastAdmin`) — not a silent failure.
+2. *Permission names.* The role sets in `src/lib/access.ts`, each gating what its comment
+   says: SETTINGS_ADMIN, CLINICAL_ONLY, SESSION_EDIT, PROGRAMME_EDIT, REHAB_PROGRAMME,
+   PROGRAMME_AUTHOR, NUTRITION_EDIT, THRESHOLD_EDIT, GPS_IMPORT, LEADERBOARD_EDIT, INJURY_ACCESS,
+   INJURY_PROGRAMME_PROPOSER, WEIGH_IN_EDIT, BODY_MASS_VIEW, AVAILABILITY_EDIT, REHAB_ALLOCATION,
+   REPORT_ACCESS, REPORT_VISIBILITY, ANALYTICS, ATHLETE_BIO_EDIT, GROUP_EDIT, MEAL_LIBRARY_EDIT,
+   ENTRY_CORRECTION, FLAG_EDIT_ANY_DOMAIN (+ NUTRITIONIST_FLAG_DOMAIN), ALL_STAFF, ATHLETE_GYM.
+   The database holds the same rule per table (0066/0068/0075 single-role policies).
+3. *Thresholds.* `thresholds` (0006), per org per metric, with `created_by` and `updated_at`;
+   the dashboard quotes the most recently changed one with its owner and date (STAFF-SS-01
+   C2, `fetchThresholdProvenance`). A preview against the last 28 days that writes nothing
+   does not exist — C6.
+4. *Groups.* Rename is `updateGroup`; delete is `archiveGroup` (soft, `deleted_at`) with
+   `restoreGroup`. Sessions keep their `session_participants` group rows and programme
+   assignments keep their `group_id`, so an archived group's members still resolve; nothing
+   warns before archiving a group a session or programme uses — C5.
+5. *Audit log.* Entity types are whatever the club's log holds (`fetchEntityTypes`);
+   exports ARE written (`recordReportView(…, 'export')` → `report.<type>.export`, and the
+   exports hub's one row per Generate) — the prompt's "PATTERN-S7 found they were not" is
+   overtaken. Sessions and schedule changes are not written (§0al's "next audit-trigger
+   batch") — A5 says so on the page.
+6. *Subject access.* Exists: `/settings/subject-access` (the sport scientist's list of
+   requests, `sar_requests`, the pack via `/squad/[id]/subject-access`, the medic's clinical
+   review `sar_clinical_reviews`); the athlete's own export is `/me/export`.
+7. *Retention.* `/settings/retention` with a preview route and a run route (audited);
+   deactivating a staff account is a `users.status` change (0109); an athlete is `left_club`,
+   never deleted (CLAUDE.md §2.4); the only deletion is the audited erasure process.
+8. *Integrations.* Catapult is a CSV file drop (`/settings/imports`, `gpsImport.ts`); a failed
+   row lands in the batch's error list (`imports/[batchId]`), nothing silently drops; there is
+   no connection record or credential. Apple Health: no native iOS app exists, HealthKit has
+   no web or server API — the hub already offers no control and says so; A3 uses the board's
+   words.
+
+### A. Composable from existing tokens, copy — BUILT (this commit)
+
+| # | Board | Before | After |
+|---|---|---|---|
+| A1 | Log out is a bordered 44px button with its own label, set apart from the lists (48 on phone) | a 71px `.set-list-row` form whose only submitting element was a 4.8px chevron | `button.btn-ghost.set-logout` — the whole control submits, "Ends this session on this browser only" beside it, min-height 44px / 48px below 768px |
+| A2 | Every settings row is one target for its whole width, 52px / 64px | the row was already the link; its height was the padding's | `.set-list-row` min-height 52px, 64px below 768px |
+| A3 | Apple Health "Not available yet · needs the Fydr iOS app", no control | "Not connectable yet — needs the Fydr phone app" | the board's words |
+| A4 | The exports intro names the signed-in role, what it may export, and that medical records never are | one sentence with no role word (§0ap) | "Signed in as sport scientist. Every domain below, squad-wide. Medical records are never exported here." — the role from the claims, never hardcoded |
+| A5 | The log says what it cannot show | nothing under the table | "Sessions and schedule changes are not written to the log yet, so an empty filter there does not mean nothing happened." |
+| A6 | Every control ≥ 44px — the Groups reorder arrows | `.reorder-btn` 28×22 | 44×44 |
+| A7 | Catapult shown as a live connection is a claim the board itself questions (Open against code) | the hub's control read "Connected" for a file drop | "Import files" — what it is |
+
+### B — nearest existing token (recorded; they ride with their C rows)
+
+| # | Board | Ours |
+|---|---|---|
+| B1 | `--blue-100` / `--blue-200` for the mute card and the checklist | `--wash-accent` / `--border-accent-soft` (the mapping every board since ATH-ADULT-04 has used) |
+| B2 | `--track-off` for a toggle's off state | `--track` |
+| B3 | `--gap-card`, `--t-body-sm` | `--sp-14`, `--fs-13` |
+| B4 | `--scrim`, `--r-sheet` for the phone filter sheet | the athlete sheet's own values (SS-01's More sheet) |
+
+### C. Behaviour, data, layout — appended to the sheet
+
+C1 the setup checklist (artboard 0) · C2 the hub in four groups, cards with counts on a
+phone · C3 the users list's search and role/status filters, no sideways table at 375 · C4 a
+role change previews what it grants and removes · C5 groups: in-use warning on rename and
+archive · C6 thresholds in plain English with owner and date, and a 28-day preview that
+writes nothing · C7 the audit log's filters as a sheet on a phone, the person filter, the
+apply button reading back its count · C8 the export dialog reading its filters back and the
+audit row's count (with PATTERN-S7 C3) · C9 retention states its consequence before the
+button (rows, athletes, which are current) · C10 subject access, staff and athlete sides
+on one pattern · C11 an import holds what it cannot match, named on screen · C12 tables
+become cards below 900px (audit, retention, subject access) · C13 the athlete's
+notifications screen with "Mute everything" at the top as the one switch.
+
+### D. Spec conflicts, collisions, open questions — appended to the sheet
+
+D1 Apple Health is listed as a Premium feature the product cannot deliver without a native
+app · D2 the board's "Connected · Sync now" for Catapult claims a connection that is a file
+drop · D3 session and schedule audit emitters (§0al's batch) · D4 whether a retention
+preview is itself logged and its row list retained · D5 whether revoking an invitation
+invalidates the token server-side · D6 the stated seven-day export link expiry · D7 role
+change timing — answered: 0010 bumps `claims_version` on a role change and 0109 on a status
+change, so the next request, not the next page load · D8 the checklist's "thresholds still
+default" needs a marker the rows do not carry · D9 what a saved report does when its group is
+archived.
+
+**Built:** A1–A7. **Recorded:** B1–B4, C1–C13, D1–D9.
+

@@ -36,7 +36,18 @@ roles are required to have two factor login enabled.
 **The Plan card**, naming the club's package, read only.
 
 **Integrations**, including the GPS vendor and the Apple Health connection, which
-is a Premium feature.
+is a Premium feature. Since 13 September 2026 (PATTERN-S8 A3, A7): Catapult's
+control reads **"Import files"** — it is a CSV file drop, never a live
+connection — and Apple Health reads **"Not available yet · needs the Fydr iOS
+app"** with no control at all: an impossibility stated with its reason (HealthKit
+has no web or server API and no Fydr iOS app exists), not a feature merely not
+set up.
+
+**Log out is a button** (PATTERN-S8 A1, 13 September 2026): a bordered 44px
+`btn-ghost` (48px on a phone) with its own label, set apart from the lists, "Ends
+this session on this browser only" beside it — it used to be a row whose only
+submitting element was a 4.8px chevron. Every settings row is one target for its
+whole width, 52px on desktop and 64px on a phone (A2).
 
 **Exports and imports**, as links.
 

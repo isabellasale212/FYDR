@@ -166,6 +166,15 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Sea
               </tbody>
             </table>
           </div>
+          {/* PATTERN-S8 A5 (2026-09-13): the log says what it cannot show. The
+              type chips are whatever the club's log holds, so an absent kind is
+              invisible — and sessions and schedule changes are not written yet
+              (§0al's batch), so nobody should read an empty filter as "nothing
+              happened". */}
+          <p className="tiny" style={{ marginTop: 'var(--sp-10)', color: 'var(--muted)' }}>
+            Sessions and schedule changes are not written to the log yet, so an empty filter there does not mean
+            nothing happened.
+          </p>
 
           <div className="chiprow" style={{ marginTop: 'var(--sp-14)', justifyContent: 'space-between' }}>
             <p className="cap" style={{ margin: 0 }}>

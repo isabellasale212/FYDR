@@ -192,8 +192,11 @@ export default async function SettingsPage() {
                 </p>
               </div>
               {onPremium ? (
+                /* PATTERN-S8 A7 (2026-09-13): what it is — a CSV file drop —
+                   not "Connected", which claims a live connection nobody has
+                   (the board's own open question about Catapult). */
                 <Link href="/settings/imports" className="set-row-btn" data-variant="connected">
-                  Connected
+                  Import files
                 </Link>
               ) : (
                 <Link href="/settings/imports" className="set-row-btn" data-variant="locked">
@@ -243,7 +246,9 @@ export default async function SettingsPage() {
                *  for why it never could. */}
               {onPremium ? (
                 <span className="tiny" style={{ color: 'var(--faint)', textAlign: 'right', maxWidth: 260 }}>
-                  Not connectable yet &mdash; needs the Fydr phone app
+                  {/* PATTERN-S8 A3 (2026-09-13): the board's words — an
+                      impossibility stated, with its reason, and no control. */}
+                  Not available yet · needs the Fydr iOS app
                 </span>
               ) : (
                 <span
@@ -428,20 +433,15 @@ export default async function SettingsPage() {
             </Link>
           ) : null}
 
-          <form action="/auth/sign-out" method="post" className="set-list-row" style={{ width: '100%' }}>
-            <span>
-              <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600, display: 'block', color: 'var(--bad-text)' }}>Log out</span>
-              <span style={{ fontSize: 'var(--fs-12)', color: 'var(--faint)' }}>Ends this session on this browser only</span>
-            </span>
-            <button
-              type="submit"
-              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit' }}
-              aria-label="Log out"
-            >
-              <span aria-hidden="true" style={{ fontSize: 'var(--fs-16)', color: 'var(--faint)' }}>
-                ›
-              </span>
+          {/* PATTERN-S8 A1 (2026-09-13): Log out is a button, not a row whose
+              only submitting element is a 4.8px chevron — bordered, 44px (48
+              on a phone), its own label, set apart from the lists, with the
+              session it ends named beside it. */}
+          <form action="/auth/sign-out" method="post" className="set-logout-form">
+            <button type="submit" className="btn-ghost set-logout">
+              Log out
             </button>
+            <span className="tiny set-logout-note">Ends this session on this browser only</span>
           </form>
         </section>
 

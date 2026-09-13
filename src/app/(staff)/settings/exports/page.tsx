@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { staffRoleLabel } from '@/lib/access';
 import { ExportBuilderForm } from '@/components/ExportBuilderForm/ExportBuilderForm';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { EXPORT_DOMAINS } from '@/lib/exportDomains';
@@ -32,7 +33,8 @@ const DEFAULT_WINDOW_DAYS = 30;
  *  here also narrows every other filtered screen, by design (the filter is
  *  genuinely global, not scoped to this page). */
 export default async function ExportsPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, timezone } = await requireReportAccess();
+  const { db, orgId, timezone, claims } = await requireReportAccess();
+  const roleWord = staffRoleLabel(claims.roles);
   const sp = await searchParams;
   const groupIds = await resolveGroupFilter(sp.groups);
 
@@ -54,11 +56,12 @@ export default async function ExportsPage({ searchParams }: { searchParams: Sear
       </div>
 
       <p className="sub" style={{ marginBottom: 'var(--sp-14)', maxWidth: '70ch' }}>
-        {/* No role word (§0ap, 2026-09-12): the medic/other ternary read
-            "Coach access" to the sport scientist, the S&C and the
-            nutritionist. The domains listed below are already this role's own. */}
-        A CSV per domain, straight to your downloads — no queue to check back on.{' '}
-        Every domain below, squad-wide.
+        {/* PATTERN-S8 A4 (2026-09-13): the role that is actually signed in,
+            from the claims (§0ap's "Coach access" greeted a sport scientist);
+            what it may export is the list below, already this role's own; and
+            the one thing it may never export, said. */}
+        Signed in as {roleWord}. A CSV per domain, straight to your downloads — no queue to check back on.{' '}
+        Every domain below, squad-wide. Medical records are never exported here.
       </p>
 
       <div style={{ margin: '0 0 16px' }}>

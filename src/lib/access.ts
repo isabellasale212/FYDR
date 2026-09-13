@@ -477,3 +477,24 @@ const AUDIT_PRECEDENCE = [
 export function actingRole(roles: readonly AppRole[]): AppRole | null {
   return AUDIT_PRECEDENCE.find((r) => roles.includes(r)) ?? null;
 }
+
+/** The signed-in staff role in words — "sport scientist", "coach and S&C" —
+ *  for a sentence that names who is signed in (PATTERN-S8 A4, 2026-09-13:
+ *  the exports intro names the role from the claims, never a hardcoded
+ *  role word — the "Coach access" that greeted a sport scientist, §0ap).
+ *  The athlete role never reaches a staff sentence and is left out. */
+const STAFF_ROLE_WORDS: Record<string, string> = {
+  sport_scientist: 'sport scientist',
+  coach: 'coach',
+  medic: 'medic',
+  strength_conditioning: 'S&C',
+  nutritionist: 'nutritionist',
+};
+
+export function staffRoleLabel(roles: readonly AppRole[]): string {
+  const words = roles.map((r) => STAFF_ROLE_WORDS[r]).filter((w): w is string => Boolean(w));
+  if (words.length === 0) return 'staff';
+  if (words.length === 1) return words[0]!;
+  return `${words.slice(0, -1).join(', ')} and ${words[words.length - 1]}`;
+}
+

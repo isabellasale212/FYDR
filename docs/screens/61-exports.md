@@ -29,9 +29,12 @@ cannot reach it. That is deliberate: an export is named athlete data.
 ## 4. What you see
 
 What can be exported, and the controls to choose scope and period. The intro reads
-"A CSV per domain, straight to your downloads — no queue to check back on. Every domain
-below, squad-wide." — no role word: it used to say "Coach access" to every non-medic,
-the sport scientist included (§0ap, 12 September 2026).
+"Signed in as sport scientist. A CSV per domain, straight to your downloads — no
+queue to check back on. Every domain below, squad-wide. Medical records are never
+exported here." — the role from the signed-in claims (`staffRoleLabel`,
+"coach and S&C" for two), never a hardcoded word (it used to say "Coach access" to
+every non-medic, the sport scientist included — §0ap, 12 September 2026), and the
+one thing the page may never export, said (PATTERN-S8 A4, 13 September 2026).
 
 ## 5. Every number on this page
 

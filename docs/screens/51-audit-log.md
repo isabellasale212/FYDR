@@ -54,6 +54,11 @@ personal data.
 **The role is recorded as it was at the time**, not looked up when the log is
 read, so a later role change does not rewrite history.
 
+**The log says what it cannot show** (PATTERN-S8 A5, 13 September 2026). The type
+chips are whatever the club's log holds, so an absent kind is invisible; under the
+table: "Sessions and schedule changes are not written to the log yet, so an empty
+filter there does not mean nothing happened." (§0al's audit-trigger batch).
+
 ## 8. States
 
 **Empty.** Only possible in a brand new club. **Error.** Surfaces as an error.

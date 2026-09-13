@@ -5002,8 +5002,10 @@ img.me-avatar {
 
 /* ---------- group reorder, GroupReorderButtons.tsx ---------- */
 .reorder-btn {
-  width: 28px;
-  min-height: 22px;
+  /* PATTERN-S8 A6 (2026-09-13): 44×44, from 28×22 — every control on the
+     board is at least 44px, the reorder arrows included. */
+  width: 44px;
+  min-height: 44px;
   padding: 0;
   border: 1px solid var(--border);
   border-radius: var(--r-control);
@@ -5198,10 +5200,36 @@ img.me-avatar {
   gap: var(--sp-12);
   align-items: center;
   padding: var(--sp-14) 0;
+  /* PATTERN-S8 A2 (2026-09-13): one target for its whole width, 52px on
+     desktop and 64px on a phone — the row IS the link, never its chevron. */
+  min-height: 52px;
   border-top: 1px solid var(--hair);
   cursor: pointer;
   text-decoration: none;
   color: inherit;
+}
+/* PATTERN-S8 A1 (2026-09-13): Log out is a button, set apart from the lists,
+   with the session it ends named beside it. */
+.set-logout-form {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  flex-wrap: wrap;
+  margin-top: var(--sp-14);
+  padding-top: var(--sp-14);
+  border-top: 1px solid var(--hair);
+}
+.set-logout {
+  min-height: 44px;
+  color: var(--bad-text);
+}
+.set-logout-note {
+  color: var(--faint);
+}
+@media (max-width: 767px) {
+  .set-list-row {
+    min-height: 64px;
+  }
 }
 .set-list-row:first-child {
   border-top: none;
@@ -13670,6 +13698,12 @@ a.hist-row:active { background: var(--surf-sunken); }
      so 12 + 20 + 12 clears the floor. */
   .main button:not(.sg-block) {
     min-height: 44px;
+  }
+  /* PATTERN-S8 A1: the one control the board draws taller than the floor —
+     Log out at 48px on a phone. After the floor, same specificity, so it
+     wins. */
+  .main button.set-logout {
+    min-height: 48px;
   }
   .main .sg-weeknav-btn {
     min-width: 44px;

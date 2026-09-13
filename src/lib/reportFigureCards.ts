@@ -6,7 +6,7 @@
  *
  * Pure; exercised by scripts/test-report-figure.ts. */
 
-import { NOT_EXPECTED, availabilityExclusionsLine, exclusionsLine } from '@/lib/reportFigures';
+import { NOT_EXPECTED, availabilityExclusionsLine, exclusionsLine, rankedCoverageLine } from '@/lib/reportFigures';
 
 export type ReportFigureCopy = {
   label: string;
@@ -130,5 +130,21 @@ export function squadComplianceFigure(o: {
     value: pct === null ? NOT_EXPECTED : `${pct}%`,
     sample: `${o.athleteCount} athlete${o.athleteCount === 1 ? '' : 's'} · ${o.weekLabel}${o.deltaText ? ` · ${o.deltaText} on last week` : ''}`,
     exclusions: exclusionsLine({ waivedAthletes: o.waivedAthletes, waivedDays: o.waived }),
+  };
+}
+
+/** The testing report's by-test tab: athletes with a result of those in
+ *  scope, for the test chosen, in the window. The count before the
+ *  percentage; the test and the period as the sample; C2's ranked-coverage
+ *  sentence as the exclusions (who has none and is not ranked, and the squad
+ *  floor when it applies). */
+export function testCoverageFigure(o: { withResult: number; inScope: number; testName: string; rangeLabel: string; floored: boolean }): ReportFigureCopy {
+  const pct = o.inScope > 0 ? Math.round((100 * o.withResult) / o.inScope) : null;
+  return {
+    label: 'Athletes with a result',
+    count: o.inScope > 0 ? `${o.withResult} of ${o.inScope}` : 'Nobody in this filter',
+    value: pct === null ? 'Not measured' : `${pct}%`,
+    sample: `${o.testName} · ${o.rangeLabel.toLowerCase()}`,
+    exclusions: o.inScope > 0 ? rankedCoverageLine({ withResult: o.withResult, inScope: o.inScope, floored: o.floored }) : 'Nobody in this filter.',
   };
 }

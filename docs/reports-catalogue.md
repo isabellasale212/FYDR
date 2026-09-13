@@ -10,7 +10,9 @@ confirmation**. `src/lib/reportCatalogue.ts` mirrors the sentences here verbatim
 `scripts/test-report-catalogue.ts` fails on drift.
 
 The rules that apply to all reports are the source's ("Rules that apply to all five")
-and are not repeated. The shell is PATTERN-S7's; the figure grammar is C2
+and are not repeated. **All six reports lead with one emphasised figure card**
+(PATTERN-S7 C1, 13 Sept — `components/ReportFigure`: the count before the percentage,
+the sample, the exclusions in a full sentence), on screen and in their PDFs. The shell is PATTERN-S7's; the figure grammar is C2
 (`lib/reportFigures.ts`); the empty-state grammar is PATTERN-S6 C8
 (`lib/staffEmpty.ts`).
 

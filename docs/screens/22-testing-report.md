@@ -74,6 +74,14 @@ one, rather than showing an empty table with no explanation.
 
 ---
 
+**One emphasised figure leads the By-test tab** (PATTERN-S7 C1, 13 September 2026;
+`components/ReportFigure`, `lib/reportFigureCards.ts`): "Athletes with a result" — of
+those in scope, for the test chosen, in the window; the count before the percentage
+("22 of 30" then "73%"), the test and the period as the sample, then the ranked-coverage
+sentence as the exclusions ("…8 have none and are not ranked." / "…nobody is
+excluded."), with the squad floor when it applies. It replaces the tiny line above the
+median and quartile stats; the PDF's ranked section leads with the same figure.
+
 **Empty states follow the one grammar** (PATTERN-S6 C8, 13 September 2026;
 `lib/staffEmpty.ts`). A test with no result in the window names the most recent
 one on record for the scope — "Nothing in the last 28 days. The squad's last test

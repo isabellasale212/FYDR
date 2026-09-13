@@ -93,7 +93,8 @@ console.log('\n6. the testing report — the fifth');
   assert(rankedCoverageLine({ withResult: 30, inScope: 30, floored: false }) === 'Every one of the 30 athletes in this filter has a result for this test in this window — nobody is excluded.', 'everyone');
   assert(/Fewer than five have data, so the median and quartiles are not shown; the ranking is\.$/.test(rankedCoverageLine({ withResult: 3, inScope: 5, floored: true })), 'and the floor');
   const page = strip(read('src/app/(staff)/reports/testing/page.tsx'));
-  assert(/rankedCoverageLine\(\{ withResult: byTest\.rows\.length, inScope: byAthlete\.rows\.length, floored: /.test(page), 'the page says it under the three stats');
+  // Repointed 2026-09-13 (PATTERN-S7 C1): the sentence is the emphasised figure card's exclusions (testCoverageFigure), above the three stats.
+  assert(/testCoverageFigure\(\{\s*withResult: byTest\.rows\.length,\s*inScope: byAthlete\.rows\.length,/.test(page), 'the page says it under the three stats');
   assert(/NO_RESULT : formatNumber\(cell\.value/.test(page), 'a by-athlete cell with no result reads "No result"');
   assert(/byTest\.rows\.length === 0 \? 'No results' : NOT_SHOWN/.test(page), 'the median, Q1 and Q3 read "No results" or "Not shown"');
   assert(!/\bBLANK\b/.test(page), 'no BLANK on the testing page');

@@ -5,7 +5,7 @@
  * system's is the wash family (.pp-hero's surface) at --fs-48. One report a
  * commit; §2 grows with each. */
 import { readFileSync } from 'node:fs';
-import { athleteComplianceFigure, availabilityFigure, boardFigure, complianceFigure, squadComplianceFigure } from '@/lib/reportFigureCards';
+import { athleteComplianceFigure, availabilityFigure, boardFigure, complianceFigure, squadComplianceFigure, testCoverageFigure } from '@/lib/reportFigureCards';
 
 let failed = 0;
 function assert(cond: boolean, msg: string) {
@@ -129,6 +129,23 @@ console.log('\n6. squad weekly: the week\'s wellness compliance');
   const pdf = strip(read('src/app/(staff)/reports/squad/pdf/route.tsx'));
   assert(/<PdfFigure\s[\s\S]{0,40}\{\.\.\.squadComplianceFigure\(\{/.test(pdf) && !/label="Compliance, this week"/.test(pdf), 'and the PDF leads with it in place of its compliance tile');
   assert(/one emphasised figure/i.test(read('docs/screens/21-squad-weekly-report.md')), 'the spec says so');
+}
+
+console.log('\n7. testing: athletes with a result, for the test chosen');
+{
+  const f = testCoverageFigure({ withResult: 22, inScope: 30, testName: '40m sprint', rangeLabel: 'This season', floored: false });
+  assert(f.label === 'Athletes with a result' && f.count === '22 of 30' && f.value === '73%' && f.sample === '40m sprint · this season', 'the count before the percentage, the test and the period as the sample');
+  assert(f.exclusions === '22 of 30 athletes have a result for this test in this window; 8 have none and are not ranked.', 'C2\'s ranked-coverage sentence as the exclusions');
+  const floored = testCoverageFigure({ withResult: 3, inScope: 5, testName: 'CMJ', rangeLabel: 'Last 28 days', floored: true });
+  assert(/the median and quartiles are not shown; the ranking is\.$/.test(floored.exclusions), 'the squad floor rides in it');
+  const nobody = testCoverageFigure({ withResult: 0, inScope: 0, testName: 'CMJ', rangeLabel: 'Last 28 days', floored: false });
+  assert(nobody.count === 'Nobody in this filter' && nobody.value === 'Not measured' && nobody.exclusions === 'Nobody in this filter.', 'an empty filter: words');
+  const page = strip(read('src/app/(staff)/reports/testing/page.tsx'));
+  assert(/<ReportFigure\s[\s\S]{0,40}\{\.\.\.testCoverageFigure\(\{/.test(page) && page.indexOf('testCoverageFigure({') < page.indexOf('className="grid3"'), 'the card leads the by-test tab, above the three stats');
+  const pdf = strip(read('src/app/(staff)/reports/testing/pdf/route.tsx'));
+  assert(/<PdfFigure\s[\s\S]{0,40}\{\.\.\.testCoverageFigure\(\{/.test(pdf), 'and the PDF\'s ranked section leads with it');
+  assert(/one emphasised figure/i.test(read('docs/screens/22-testing-report.md')), 'the spec says so');
+  assert(/all six reports lead with one/i.test(read('docs/reports-catalogue.md')), 'the working catalogue notes the figure card is on all six');
 }
 
 console.log(`\n${failed === 0 ? 'all passed' : `${failed} failed`}`);

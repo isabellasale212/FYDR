@@ -7,8 +7,10 @@ import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, formatNumber, todayIso } from '@/lib/format';
 import { resolveTestingPeriod, testingWindow } from '../period';
 import { periodParamsFromUrl } from '@/lib/reportPeriod.server';
-import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
+import { PdfFigure, PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
 import { reportDefinition } from '@/lib/reportCatalogue';
+import { belowSquadFloor } from '@/lib/smallSample';
+import { testCoverageFigure } from '@/lib/reportFigureCards';
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
@@ -75,6 +77,16 @@ export async function GET(request: Request) {
       {byTest ? (
         <>
           <PdfSectionTitle title={`${byTest.definition.name} — ranked`} caption={`Best attempt per athlete in ${period.range.label.toLowerCase()}.`} />
+          {/* PATTERN-S7 C1: the same figure the screen leads the tab with. */}
+          <PdfFigure
+            {...testCoverageFigure({
+              withResult: byTest.rows.length,
+              inScope: byAthlete.rows.length,
+              testName: byTest.definition.name,
+              rangeLabel: period.range.label,
+              floored: byTest.rows.length > 0 && belowSquadFloor(byTest.rows.length),
+            })}
+          />
           <PdfTileRow>
             <PdfTile label="Median" value={byTest.median === null ? '—' : `${formatNumber(byTest.median, byTest.definition.decimal_places)} ${byTest.definition.unit}`} />
             <PdfTile label="Q1" value={byTest.q1 === null ? '—' : formatNumber(byTest.q1, byTest.definition.decimal_places)} />

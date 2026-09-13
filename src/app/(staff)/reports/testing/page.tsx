@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { belowSquadFloor } from '@/lib/smallSample';
-import { NOT_SHOWN, NO_RESULT, rankedCoverageLine } from '@/lib/reportFigures';
+import { NOT_SHOWN, NO_RESULT } from '@/lib/reportFigures';
+import { testCoverageFigure } from '@/lib/reportFigureCards';
+import { ReportFigure } from '@/components/ReportFigure/ReportFigure';
 import { filterEmptyCopy, staffEmptyCopy } from '@/lib/staffEmpty';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
@@ -305,15 +307,20 @@ export default async function TestingReportPage({ searchParams }: { searchParams
 
                   {byTest ? (
                     <>
-                      {/* PATTERN-S7 C8: the squad floor — the median and the
-                          quartiles are not published below five athletes
-                          with a result; the rows below are unchanged. */}
-                      {/* PATTERN-S7 C2: the denominator and the exclusions
-                          sentence — who has a result, who is not ranked, and
-                          the squad floor (C8) when it applies. */}
-                      <p className="tiny" style={{ marginBottom: 'var(--sp-10)' }}>
-                        {rankedCoverageLine({ withResult: byTest.rows.length, inScope: byAthlete.rows.length, floored: byTest.rows.length > 0 && belowSquadFloor(byTest.rows.length) })}
-                      </p>
+                      {/* PATTERN-S7 C1: the one emphasised figure — athletes
+                          with a result of those in scope, for this test in
+                          the window; the count before the percentage; C2's
+                          ranked-coverage sentence (who is not ranked, and the
+                          C8 squad floor when it applies) as the exclusions. */}
+                      <ReportFigure
+                        {...testCoverageFigure({
+                          withResult: byTest.rows.length,
+                          inScope: byAthlete.rows.length,
+                          testName: byTest.definition.name,
+                          rangeLabel: period.range.label,
+                          floored: byTest.rows.length > 0 && belowSquadFloor(byTest.rows.length),
+                        })}
+                      />
                       <div className="grid3">
                         <div className="card">
                           <p className="tiny">Median</p>

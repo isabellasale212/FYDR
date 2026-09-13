@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { TYPE_STYLE, clockLabel, expectsLabel, type DbSessionType } from '@/lib/scheduleGeometry';
 import { enumLabel, mdLabel } from '@/lib/format';
+import { expectedAthletesLine } from '@/lib/scheduleExpected';
 import type { GroupOption } from './types';
 
 // Built per call from the org's real timezone, not a hardcoded one — see
@@ -77,6 +78,10 @@ export type PanelSession = {
 type DayOption = { date: string; weekday: string; domLabel: string };
 
 type Props = {
+  /** PATTERN-S4 C5 (2026-09-13): the squad's size, so the preview footer can
+   *  say "18 of 30 athletes are expected" — the session's athletes resolved
+   *  as one distinct set across its groups, never group sizes added. */
+  squadSize: number;
   mode: 'read' | 'edit';
   timezone: string;
   session: PanelSession | null;
@@ -123,6 +128,7 @@ export function SelectedSessionPanel({
   mode,
   timezone,
   session,
+  squadSize,
   groups,
   dayOptions,
   hourRange,
@@ -663,7 +669,7 @@ export function SelectedSessionPanel({
         <p className="sg-preview-foot">
           {isStaffOnly
             ? 'Staff only · this session is never published to the athlete app'
-            : `Publishes to ${groupLabel} · appears under Today on the morning of ${weekday} ${domFmt(timezone).format(new Date(`${session.dow}T12:00:00Z`))}`}
+            : `Publishes to ${groupLabel} · ${expectedAthletesLine({ expected: session.athleteIds.length, squad: squadSize })} · appears under Today on the morning of ${weekday} ${domFmt(timezone).format(new Date(`${session.dow}T12:00:00Z`))}`}
         </p>
       </div>
     </div>

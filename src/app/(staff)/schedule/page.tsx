@@ -1,5 +1,5 @@
 import { ScheduleWorkspace } from '@/components/ScheduleGrid/ScheduleWorkspace';
-import { fetchGroupsWithCounts } from '@/lib/queries/groups';
+import { fetchGroupsWithCounts, fetchSquadSize } from '@/lib/queries/groups';
 import {
   fetchGroupMembership,
   fetchNormalWeek,
@@ -74,12 +74,14 @@ export default async function SchedulePage({ searchParams }: { searchParams: Sea
 
   const groups = await fetchGroupsWithCounts(db, orgId);
 
-  const [sessions, groupMembership, templates, typical, weekFixtures] = await Promise.all([
+  const [sessions, groupMembership, templates, typical, weekFixtures, squadSize] = await Promise.all([
     fetchWeekSessionsDetailed(db, orgId, weekStart, groupIds, groups, timezone),
     fetchGroupMembership(db, orgId),
     fetchTemplates(db, orgId, timezone),
     fetchNormalWeek(db, orgId, groups, weekStart, groupIds, timezone),
     fetchWeekFixtures(db, orgId, weekStart, timezone),
+    /* PATTERN-S4 C5: the denominator for "18 of 30 athletes are expected". */
+    fetchSquadSize(db, orgId),
   ]);
 
   const groupQuery = groupIds.length > 0 ? `&groups=${groupIds.join(',')}` : '';
@@ -156,6 +158,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Sea
         groups={groups.map((g) => ({ id: g.id, name: g.name, group_type: g.group_type, memberCount: g.member_count }))}
         groupIds={groupIds}
         groupMembership={groupMembership}
+        squadSize={squadSize}
         templates={templates.filter((t) => !t.archived).map((t) => ({ id: t.id, name: t.name }))}
         applyTemplateHrefBase={`/schedule/planner/apply?week=${weekStart}`}
         saveTemplateHref="/schedule/planner/new"

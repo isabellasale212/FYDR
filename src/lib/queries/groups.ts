@@ -271,6 +271,19 @@ export async function fetchGroupsWithCounts(
     .sort(compareGroups);
 }
 
+/** The squad's size for a denominator — active athletes who have not left
+ *  the club, the squad list's own filter (PATTERN-S4 C5, 2026-09-13). */
+export async function fetchSquadSize(db: Db, orgId: string): Promise<number> {
+  const { count, error } = await db
+    .from('athletes')
+    .select('id', { count: 'exact', head: true })
+    .eq('org_id', orgId)
+    .is('deleted_at', null)
+    .neq('status', 'left_club');
+  if (error) throw new Error(error.message);
+  return count ?? 0;
+}
+
 export async function fetchAthletesInNoGroup(
   db: Db,
   orgId: string,

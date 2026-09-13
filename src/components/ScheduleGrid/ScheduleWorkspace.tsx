@@ -56,6 +56,8 @@ type Props = {
    *  means the whole squad. */
   groupIds: readonly string[];
   groupMembership: Record<string, string[]>;
+  /** PATTERN-S4 C5: the denominator for the panel's expected-attendee line. */
+  squadSize: number;
   templates: readonly TemplateOption[];
   applyTemplateHrefBase: string;
   saveTemplateHref: string;
@@ -105,6 +107,7 @@ export function ScheduleWorkspace({
   groups,
   groupIds,
   groupMembership,
+  squadSize,
   templates,
   applyTemplateHrefBase,
   saveTemplateHref,
@@ -932,6 +935,7 @@ export function ScheduleWorkspace({
     mode={mode}
     timezone={timezone}
     session={panelSession}
+    squadSize={squadSize}
     groups={groups}
     dayOptions={dayOptions}
     hourRange={{ h0, h1 }}

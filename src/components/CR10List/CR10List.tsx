@@ -8,8 +8,9 @@ type Props = {
 };
 
 /**
- * The ten-row CR10 rating list. screens/training-entry.md "Why not a slider":
- * ten stops across a mobile-width track give under 40px between centres, well
+ * The eleven-row CR-10 rating list, 0 (Rest) to 10 (Maximal) since migration
+ * 0117. screens/training-entry.md "Why not a slider":
+ * eleven stops across a mobile-width track give under 40px between centres, well
  * under the 48px tap target floor, so this is a vertical list tapped directly
  * instead — the classic Borg chart orientation, every anchor visible at once,
  * one tap, no drag.
@@ -22,7 +23,7 @@ type Props = {
 export function CR10List({ value, onChange }: Props) {
   return (
     <fieldset className="cr10">
-      <legend className="visually-hidden">Session rating, 1 to 10</legend>
+      <legend className="visually-hidden">Session rating, 0 to 10</legend>
       {CR10_SCALE.map((step) => {
         const anchor = CR10_ANCHORS[step];
         const selected = value === step;

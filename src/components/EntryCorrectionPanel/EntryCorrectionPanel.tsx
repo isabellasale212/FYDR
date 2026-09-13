@@ -657,7 +657,7 @@ function TrainingCorrectionForm({
         throw new Error(
           parsed.error.issues.some((i) => i.message === 'Nothing was changed.')
             ? 'Nothing was changed.'
-            : 'RPE is 1–10 in half-point steps; minutes is a whole number from 1 to 600.',
+            : 'RPE is 0–10 in half-point steps (0 is rest); minutes is a whole number from 1 to 600.',
         );
       }
       return withWriteTimeout(reviseTrainingEntry(createClient(), entry.id, parsed.data));
@@ -687,12 +687,12 @@ function TrainingCorrectionForm({
         is recalculated from whatever you save here; you never set it directly.
       </p>
       <label style={{ minWidth: 110 }}>
-        <span className="label">RPE (1–10)</span>
+        <span className="label">RPE (0–10)</span>
         <input
           className="field"
           type="number"
           step="0.5"
-          min="1"
+          min="0"
           max="10"
           inputMode="decimal"
           value={rpe}

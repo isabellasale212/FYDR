@@ -67,7 +67,8 @@ export const TrainingCorrection = z
      * 7.5 must be able to send 7.5 back; forcing the athlete screen's whole-number rule
      * onto the correction path would silently round real data every time somebody fixed
      * an unrelated duration on the same row. */
-    rpe: z.number().min(1).max(10).multipleOf(0.5),
+    /* 0 to 10 since 0117 (2026-09-13): 0 is rest, a real rating. */
+    rpe: z.number().min(0).max(10).multipleOf(0.5),
     duration_min: z.number().int().min(1).max(600),
   })
   .partial()

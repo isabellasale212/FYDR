@@ -280,7 +280,11 @@ session load = rating of perceived exertion x duration in minutes
 An athlete who rates a 60 minute session at 7 has a session load of 420.
 
 **Inputs.** `training_entries.rpe`, `training_entries.duration_min`. Both are
-entered by the athlete after the session.
+entered by the athlete after the session. **The rating is CR-10, 0 to 10, since
+13 September 2026** (migration 0117): 0 is a real rating meaning rest, and a
+session rated 0 has a session load of 0 — present, not missing. Rows before that
+date were entered on a 1-to-10 control, so no 0 exists before it. A coach's
+correction may carry a half step (`revise_training_entry`).
 
 **Time window.** One session.
 

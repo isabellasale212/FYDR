@@ -44,7 +44,7 @@ rating".
 
 | Field | As worded | Type and range | Validation | On invalid | Stored | Editable | Who sees it |
 |---|---|---|---|---|---|---|---|
-| RPE | UNVERIFIED exact wording | 1 to 10 | CHECK 1 to 10 | refused by the database | `training_entries.rpe` | **No** | staff, immediately |
+| RPE | "Session rating, 0 to 10" — the CR-10 list, 0 Rest, 1 Very easy, 2 Easy, 3 Moderate, 5 Somewhat hard, 7 Hard, 8 Very hard, 9 Extremely hard, 10 Maximal | **0 to 10 since 13 September 2026** (migration 0117; CR-10 proper, 0 is a real rating meaning rest; rows before that date were entered on 1 to 10, so no 0 exists before it) | CHECK 0 to 10; the zod schema `min(0).max(10)`, whole numbers from this screen | refused by the database | `training_entries.rpe` | **No** | staff, immediately |
 | Duration | UNVERIFIED exact wording | 1 to 600 minutes | CHECK | refused | `training_entries.duration_min` | **No** | staff, immediately |
 | Comment | UNVERIFIED whether offered | up to 1,000 characters | CHECK | refused | `training_entries.comment` | **No** | staff |
 

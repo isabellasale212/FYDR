@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import type { AppRole } from '@/lib/types/database';
+import { staffRoleLabel } from '@/lib/access';
 import { SIDEBAR } from '@/components/Sidebar/Sidebar';
 import { barRows, pageTitle, sheetRows } from './shell';
 
@@ -194,7 +195,7 @@ export function StaffPhoneShell({ roles, fullName, orgName, premium, previewingT
         <div className="ph-sheet-who">
           <b>{fullName}</b>
           <span>
-            {orgName} · {roles.join(', ')}
+            {orgName} · {staffRoleLabel(roles)}
           </span>
         </div>
         <form action="/auth/sign-out" method="post">

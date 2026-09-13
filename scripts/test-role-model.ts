@@ -671,5 +671,16 @@ assert(
   `AVAILABILITY_EDIT is exactly ${wantAvail.join(', ')} (found: ${availDeclared.join(', ') || 'nothing'})`,
 );
 
+/* The enum is a database value, not a word an athlete or a coach reads. Both
+   staff shells' footers printed `roles.join(', ')` — "sport_scientist" under
+   Jane's name on every screen — until 13 September 2026; the words come from
+   staffRoleLabel (access.ts), the one table the exports intro and the refusal
+   screen already read. */
+console.log('\n-- the role enum is never printed raw --');
+for (const shell of ['src/components/Sidebar/Sidebar.tsx', 'src/components/StaffPhoneShell/StaffPhoneShell.tsx']) {
+  const src = readFileSync(shell, 'utf8');
+  assert(!/roles\.join\(/.test(src) && /staffRoleLabel\(roles\)/.test(src), `${shell.split('/').slice(-1)[0]} prints the role in words, not the enum`);
+}
+
 console.log(`\n${passed} passed, ${failed} failed\n`);
 process.exit(failed > 0 ? 1 : 0);

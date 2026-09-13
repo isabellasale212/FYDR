@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { AppRole } from '@/lib/types/database';
+import { staffRoleLabel } from '@/lib/access';
 import { PREMIUM_ONLY, SIDEBAR_ROWS } from './rows';
 
 /* The nine rows live in rows.ts (shared with the phone shell); this file
@@ -239,7 +240,7 @@ export function Sidebar({ roles, fullName, orgName, premium, previewingTier = fa
         <div className="nav-who">
           <b>{fullName}</b>
           <span>
-            {orgName} · {roles.join(', ')}
+            {orgName} · {staffRoleLabel(roles)}
           </span>
         </div>
         <form action="/auth/sign-out" method="post">

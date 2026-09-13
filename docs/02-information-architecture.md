@@ -170,6 +170,13 @@ and the fifteen-row sidebar in the screenshot of the existing app.
 | 8 | **Analytics** | Presets and the custom builder |
 | 9 | **Settings** | Thresholds, imports, exports, account, users, groups, sign out |
 
+**The footer under the nine rows** names who is signed in: the full name, then
+the club and the role **in words** — "Ashcombe Rugby Club · sport scientist",
+"… · coach and S&C" — from `staffRoleLabel` (`lib/access.ts`), the one table the
+exports intro and the refusal screen also read. Until 13 September 2026 it
+printed the enum (`sport_scientist`); the phone shell's More sheet carries the
+same line. Then Log out.
+
 **The five rows that were removed, and where they went.** Nothing is deleted, it moves.
 
 | Was a sidebar row | Now lives in | Why that is the right home |

@@ -115,7 +115,7 @@ export async function GET(request: Request) {
   /* PATTERN-S7 C1: the definition sentence is the file's first line — the
      same words the screen shows above its numbers. */
   const caption =
-    `# ${reportDefinition('compliance')}\r\n` +
+    (reportDefinition('compliance') ? `# ${reportDefinition('compliance')}\r\n` : '') +
     `# Compliance report, ${period.range.label.toLowerCase()}: ${fromDate} to ${today}. ` +
     `Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes). ` +
     `Waived expectations are excluded from Expected/Submitted above and reported in their own column.\r\n`;

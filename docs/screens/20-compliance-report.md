@@ -87,7 +87,8 @@ A day nobody was expected to submit on, a rest day for instance, would otherwise
 drag every percentage down.
 
 **The definition sentence sits above the numbers** (PATTERN-S7 C1, 13 September
-2026; `docs/reports-catalogue.md`, `lib/reportCatalogue.ts`): "Who has submitted
+2026; `docs/reports-catalogue.md`, `lib/reportCatalogue.ts` — the builder's draft pending
+Isabella's confirmation, the source catalogue having no row for this report): "Who has submitted
 what was expected of them, and who has not — how much of the picture the club
 actually has, over the period and group chosen." — a `--surf` card under the scope
 line, capped at 100ch; it prints with the page and is the first line of the CSV

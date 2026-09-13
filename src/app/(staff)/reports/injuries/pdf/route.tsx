@@ -55,7 +55,7 @@ export async function GET(request: Request) {
       <PdfHeader
         eyebrow={isMedical ? `MEDICAL IN CONFIDENCE · Injury & availability · ${orgName}` : `Injury & availability · ${orgName}`}
         title="Injury & availability report"
-        definition={reportDefinition('injuries')}
+        definition={reportDefinition('injuries') ?? undefined}
         meta={`${period.label} · ${formatDate(fromDate, timezone)} to ${formatDate(today, timezone)} · Scope: ${scopeLabel} (${report.summary.athleteCount} athletes)${caveat ? ` · ${caveat}` : ''}`}
       />
 

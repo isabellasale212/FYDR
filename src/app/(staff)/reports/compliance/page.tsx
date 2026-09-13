@@ -190,7 +190,7 @@ export default async function ComplianceReportPage({
           title: 'Compliance',
           /* PATTERN-S7 C1: the catalogue's sentence, above the numbers; the
              same words go into the print view and both exports' headers. */
-          definition: reportDefinition('compliance'),
+          definition: reportDefinition('compliance') ?? undefined,
           sub: (
             <div className="rhead-sub">
               <p className="eyebrow" style={{ marginBottom: 'var(--sp-10)' }}>

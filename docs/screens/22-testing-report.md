@@ -33,10 +33,14 @@ middle looks like.
 ## 4. What you see
 
 **The definition sentence sits above the numbers** (PATTERN-S7 C1, 13 September
-2026; `docs/reports-catalogue.md`): "Test results across the group chosen: where
-each athlete sits on one test, and what the group's middle looks like over time."
-— a `--surf` card under the scope line; it prints with the page and is the first
-line of the CSV and the line under the PDF's title.
+2026, reconciled to Isabella's catalogue the same day; `docs/reports-catalogue.md`):
+"The most recent result for each test inside the period. A test with no result in the
+window is not shown as zero, and an athlete who has never been assigned a test does not
+appear for it." — a `--surf` card under the scope line; it prints with the page and is
+the first line of the CSV and the line under the PDF's title. Nothing in the app
+assigns a test (the sheet): the by-athlete grid shows every athlete in scope for every
+test, and the by-test ranking lists only athletes with a result and says how many have
+none.
 
 **The header is one template shared by all five reports** (and specified in
 `CHANGELOG-headers-spec.md`). Five rows, always in this order:

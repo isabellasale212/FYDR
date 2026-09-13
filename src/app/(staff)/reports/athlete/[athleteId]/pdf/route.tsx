@@ -5,7 +5,7 @@ import { fetchAthleteReport } from '@/lib/queries/athleteReport';
 import { recordReportView } from '@/lib/queries/reports';
 import { enumLabel, formatDate, formatNumber } from '@/lib/format';
 import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
-import { reportDefinition } from '@/lib/reportCatalogue';
+import { athleteDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
 import { isPremium } from '@/lib/tier';
@@ -43,7 +43,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
       <PdfHeader
         eyebrow={`Athlete report · ${orgName}`}
         title={`${athlete.first_name} ${athlete.last_name}`}
-        definition={reportDefinition('athlete')}
+        definition={athleteDefinition({ athlete: `${athlete.first_name} ${athlete.last_name}`, start: formatDate(report.from, timezone), end: formatDate(report.to, timezone) })}
         meta={`${athlete.position ?? ''} · ${period.label} · ${formatDate(report.from, timezone)} to ${formatDate(report.to, timezone)}${caveat ? ` · ${caveat}` : ''}`}
       />
 

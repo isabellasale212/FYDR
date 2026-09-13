@@ -65,8 +65,11 @@ export async function GET(request: Request) {
       ['hie', 'HIE'],
       ['maxv_kmh', 'MAXV (km/h)'],
     ]);
+    /* PATTERN-S7 C1 (reconciled 2026-09-13): the definition line is written
+       only once the catalogue has a sentence for this board (null today). */
+    const definitionLine = reportDefinition('training') ? `# ${reportDefinition('training')}\r\n` : '';
     const withCaption =
-      `# ${reportDefinition('training')}\r\n` +
+      definitionLine +
       `# Match day GPS report, v ${selected.opponent}, ${selected.date}. Scope: ${scopeLabel}. Whole-match totals only — ` +
       `GPS is not recorded as a first-half/second-half split.\r\n` + csv;
 
@@ -101,7 +104,8 @@ export async function GET(request: Request) {
     ['vs_self', 'vs self'],
     ['vs_unit', 'vs unit'],
   ]);
-  const withCaption = `# ${reportDefinition('training')}\r\n` + `# Training report, ${selected.title}, ${selected.date}. Scope: ${scopeLabel}.\r\n` + csv;
+  const trainingDefinitionLine = reportDefinition('training') ? `# ${reportDefinition('training')}\r\n` : '';
+  const withCaption = trainingDefinitionLine + `# Training report, ${selected.title}, ${selected.date}. Scope: ${scopeLabel}.\r\n` + csv;
 
   await recordReportView(db, orgId, claims.userId, actorRole, 'training', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, format: 'csv', mode }, 'export');
   return csvResponse(withCaption, `training-report-${selected.date}.csv`);

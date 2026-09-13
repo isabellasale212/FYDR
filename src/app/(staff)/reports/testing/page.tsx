@@ -153,7 +153,7 @@ export default async function TestingReportPage({ searchParams }: { searchParams
             eyebrow: 'Reports · Testing',
             title: 'Testing report',
             /* PATTERN-S7 C1: the catalogue's sentence, above the numbers. */
-            definition: reportDefinition('testing'),
+            definition: reportDefinition('testing') ?? undefined,
             sub: (
               <>
                 <p className="eyebrow rhead-sub">

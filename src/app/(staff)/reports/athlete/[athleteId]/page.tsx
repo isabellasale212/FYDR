@@ -13,7 +13,7 @@ import { recordReportView } from '@/lib/queries/reports';
 import { ageFrom, enumLabel, formatDate, formatNumber } from '@/lib/format';
 import { NOT_EXPECTED, NO_RESULT, submittedLine } from '@/lib/reportFigures';
 import { availabilityStatus, SEVERITY_STATUS } from '@/lib/status';
-import { reportDefinition } from '@/lib/reportCatalogue';
+import { athleteDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
 import { isPremium } from '@/lib/tier';
@@ -262,7 +262,7 @@ export default async function AthleteReportPage({
           here because this report's header is its own (one athlete, a
           breadcrumb, no group chips). The same words head both exports. */}
       <div className="card rhead-definition" style={{ marginBottom: 'var(--sp-14)' }}>
-        <p>{reportDefinition('athlete')}</p>
+        <p>{athleteDefinition({ athlete: `${athlete.first_name} ${athlete.last_name}`, start: formatDate(report.from, timezone), end: formatDate(report.to, timezone) })}</p>
       </div>
 
       {/* The period scopes every tab, so it rides the tab row rather than a

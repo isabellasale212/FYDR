@@ -34,11 +34,13 @@ can be printed or handed over.
 ## 4. What you see
 
 **The definition sentence sits above the numbers** (PATTERN-S7 C1, 13 September
-2026; `docs/reports-catalogue.md`): "Everything about one athlete over the period
-chosen, on one page, in a form that can be printed or handed over." — the shared
-header's `--surf` card, composed in this page under the period line because this
-report's header is its own; it prints with the page and is the first line of the
-CSV and the line under the PDF's title.
+2026, reconciled to Isabella's catalogue the same day; `docs/reports-catalogue.md`):
+"Everything recorded for {athlete} between {start} and {end}. Sections with no data
+say so rather than showing zeros." — resolved with the athlete's name and the period's
+dates ("Everything recorded for Dan Okonkwo between Mon 17 Aug and Sun 13 Sept. …");
+the shared header's `--surf` card, composed in this page under the period line
+because this report's header is its own; it prints with the page and is the first
+line of the CSV and the line under the PDF's title.
 
 **A header** with the athlete's name and the period, and a breadcrumb back.
 

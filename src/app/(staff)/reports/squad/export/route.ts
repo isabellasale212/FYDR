@@ -84,7 +84,7 @@ export async function GET(request: Request) {
   );
 
   const caption =
-    `# ${reportDefinition('squad')}\r\n` +
+    (reportDefinition('squad') ? `# ${reportDefinition('squad')}\r\n` : '') +
     `# Squad weekly report, ${report.from} to ${report.to}. ` +
     `Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes). ` +
     `Compliance ${report.tiles.compliancePct === null ? 'n/a' : `${report.tiles.compliancePct}%`}, ` +

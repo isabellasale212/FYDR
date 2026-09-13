@@ -33,10 +33,10 @@ their own normal, and who is carrying something.
 ## 4. What you see
 
 **The definition sentence sits above the numbers** (PATTERN-S7 C1, 13 September
-2026; `docs/reports-catalogue.md`): "The squad's week on one page: who has trained
-how much, how that compares with their own normal, and who is carrying something."
-— a `--surf` card under the scope line; it prints with the page and is the first
-line of the CSV and the line under the PDF's title.
+2026, reconciled to Isabella's catalogue the same day; `docs/reports-catalogue.md`):
+"The week Monday to Sunday, club local time. Each section states its own
+denominator." — a `--surf` card under the scope line; it prints with the page and is
+the first line of the CSV and the line under the PDF's title.
 
 **The header is one template shared by all five reports** (and specified in
 `CHANGELOG-headers-spec.md`). Five rows, always in this order:

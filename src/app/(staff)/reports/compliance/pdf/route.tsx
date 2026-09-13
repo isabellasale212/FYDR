@@ -46,7 +46,7 @@ export async function GET(request: Request) {
       <PdfHeader
         eyebrow={`Compliance · ${orgName}`}
         title="Compliance report"
-        definition={reportDefinition('compliance')}
+        definition={reportDefinition('compliance') ?? undefined}
         meta={`${period.range.label} · ${formatDate(fromDate, timezone)} to ${formatDate(today, timezone)} · Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes)`}
       />
 

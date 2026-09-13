@@ -38,12 +38,16 @@ while this screen was correctly gated, because the buttons were simply never dra
 
 ## 4. What you see
 
-**The definition sentence sits above the numbers** (PATTERN-S7 C1, 13 September
-2026; `docs/reports-catalogue.md`): "How hard each session was for each athlete,
-judged against a typical session of the same kind for that athlete, from the GPS
-file for the session chosen." — a `--surf` card under the scope line on both the
-training and the match board; it prints with the page and is the first line of
-either CSV and the line under either PDF's title.
+**No definition sentence yet, on either board** (PATTERN-S7 C1, reconciled to
+Isabella's catalogue 13 September 2026; `docs/reports-catalogue.md`). The catalogue's
+confirmed training sentence — "Session load is RPE multiplied by session minutes,
+summed over the period…" — describes a longitudinal RPE-load report, not this
+per-session GPS board, and is raised on the decision sheet rather than put above
+numbers it does not describe; the match sentence is on hold in the catalogue until
+the "who played, minutes" question is ruled on (the code's answer: the app records
+attendance and the team allocation, not who played or minutes). The shell's slot is
+in place and draws nothing for none; the builder's earlier drafted sentence is
+withdrawn.
 
 **The header is one template shared by all five reports** (and specified in
 `CHANGELOG-headers-spec.md`). Five rows, always in this order:

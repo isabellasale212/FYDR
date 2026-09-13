@@ -90,7 +90,7 @@ export async function GET(request: Request) {
    * page and the PDF state it: these rows are availability as of today, not a
    * historical snapshot of the period. */
   const caption =
-    `# ${reportDefinition('injuries')}\r\n` +
+    (reportDefinition('injuries') ? `# ${reportDefinition('injuries')}\r\n` : '') +
     `# Injury & availability report, ${period.label} (${fromDate} to ${today}). ` +
     `Scope: ${groupScopeLabel(groups, groupIds)} (${report.summary.athleteCount} athletes). ` +
     `Rows are availability as of ${today}, not a snapshot of the period.\r\n`;

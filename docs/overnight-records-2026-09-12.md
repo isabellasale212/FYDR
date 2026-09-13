@@ -817,7 +817,10 @@ the code, so the record and the sheet carry the facts; nothing that needs a deci
 5. **Staff writes:** not queued, none of them. **Post-pilot by Isabella's decision
    2026-09-12** ("Staff app offline… accepted as a limitation for the pilot and stated
    plainly to the club"). Which are safe to queue (typed forms) and which are not (a drag)
-   is the board's own split and is recorded with C4/C5 for then.
+   is the board's own split and is recorded with C4/C5 for then. **Re-opened 2026-09-13
+   under the v1 scope** (the source catalogue's scope note: the complete product, ready to
+   sell; "enough for a pilot" is not a ground) — C4, C5 and D1 are back on the sheet as
+   decisions on the merits.
 6. **Queued availability:** n/a today (5). The clinical-conflict question (a coach's held
    Unavailable meeting a medic's later value) goes with C4 as a decision.
 7. **Permission denials:** not logged. `audit_log` records sign-ins, writes and reads of

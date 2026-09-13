@@ -108,7 +108,7 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
         eyebrow="Reports · Squad weekly"
         title="Squad weekly"
         /* PATTERN-S7 C1: the catalogue's sentence, above the numbers. */
-        definition={reportDefinition('squad')}
+        definition={reportDefinition('squad') ?? undefined}
         actions={
           <>
             <a href={`/reports/squad/export?${exportQuery}`} className="rhead-btn">

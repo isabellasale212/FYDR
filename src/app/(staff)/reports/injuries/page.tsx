@@ -136,7 +136,7 @@ export default async function InjuryAvailabilityReportPage({
           eyebrow: 'Reports · Injury & availability',
           title: 'Injury & availability',
           /* PATTERN-S7 C1: the catalogue's sentence, above the numbers. */
-          definition: reportDefinition('injuries'),
+          definition: reportDefinition('injuries') ?? undefined,
           sub: (
             <div className="rhead-sub">
               {isMedical ? (

@@ -12,6 +12,16 @@ hardest bit."
 
 ## 2. Who reaches it and when
 
+**Since 13 September 2026 this screen is not the prompt.** The prompt is the
+row on Today, which carries the CR-10 grid and sends on one tap with the
+session's scheduled minutes (01-today.md §4; the RPE package, change two).
+This screen is reached from that row's "change or add a note" link — for an
+athlete who trained a different length than scheduled or wants to say
+something — from a notification's deep link, from an old link, and for a
+session published with no scheduled length, where it is the only way to
+rate. Its states (already rated, closed, not yet due, the club does not
+collect RPE) are the reason it stays.
+
 An athlete who took part in a session, **once the session ended more than thirty
 minutes ago, and until the end of the following day in club time**. Both
 instants come from `lib/rpeDue.ts` (`rpeDueAt`, `rpeClosesAt`), the one rule

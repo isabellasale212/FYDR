@@ -52,7 +52,12 @@ Every card on this screen — and on every athlete screen — has 9px corners
 The "Something not right?" row is not on this screen; the report route is
 reached from Me.
 
-**The to-do rows.** Each is a name, one line and a chevron — no domain tiles.
+**The to-do rows.** Each is a name, one line and a chevron — no domain tiles —
+except the rating row, which carries the CR-10 grid in place of a chevron and
+sends on one tap (§4). Its line reads "Today 20:39 · 45 min · change or add a
+note", the last part a link to the rating screen for the athlete who trained
+longer than scheduled or wants to say something; once sent, the line is the
+receipt.
 "Wellness · 45 sec" (the 45-second entry of `00-product-overview.md` §198 and
 `08-notifications.md`); "Rate {session name} · Today HH:MM" or "· Yesterday"
 (the session's end time, club-local; no duration is claimed for a rating,
@@ -109,8 +114,35 @@ withheld thing exists, which is what the age gate in migration 0093 prevents.
 
 ## 4. What the athlete enters here
 
-**Nothing.** Today is a dispatcher, not a form. Each to-do item carries its own
-destination (`today/page.tsx:123`) and the entry happens on the screen it opens.
+**One thing: the session rating** (Isabella, 13 September 2026, the RPE
+package, change two — "The prompt is one tap, not a form. A row on Today
+carrying the scale itself, no sheet."). Everything else on the list is a
+dispatcher row: wellness and the nutrition check-in open their own screens.
+
+| Field | As worded | Type and range | Validation | On invalid | Stored | Editable | Who sees it |
+|---|---|---|---|---|---|---|---|
+| RPE | The CR-10 grid on the row — 0 Rest to 10 Maximal, the same eleven 58px cells the rating screen draws | Whole number, 0 to 10 (migration 0117) | The zod schema `TrainingEntryInput`; the duration is the session's scheduled minutes, never typed here | Nothing is sent | `training_entries.rpe`, `.duration_min` (the schedule's), `.comment` null | **No** — one tap sends; a wrong tap is corrected by the coach | staff, immediately |
+
+**One tap sends** (`components/TodayRpeRow`). The cells are buttons, not
+radios: on the rating screen a selection is not yet a submission, so arrow keys
+moving a radio group are harmless; on the row a selection IS the submission, so
+only Enter, Space or a tap can send. The tapped cell stays selected, the other
+ten are disabled the moment it lands (the double-submit guard), and the row
+becomes its own receipt: "{Session} rated 7 · Hard", then "Sent. If that is
+wrong, tell your coach — they can record a correction." or, with no signal,
+"Waiting to send — saved on this phone, sends when the signal is back." The
+row does not disappear and nothing moves (no auto-advance); the To do count
+catches up on the next visit. A waiting receipt turns into "Sent" the moment
+the entry leaves the outbox, whoever sends it — the outbox announces every
+write on this window (`OUTBOX_CHANGED_EVENT`, `lib/outbox.ts`) — and when
+`OutboxFlusher` sends it on the signal's return the page refreshes as it
+always has (PATTERN-S6 A2: the list losing its row is the answer, with the
+flusher's own "1 entry sent at 22:02" line). The entry date is the session's own club-local
+day, the rule the rating screen uses, so a rating from either lands on one row.
+
+**A session with no scheduled length** (published before a duration was
+required) has nothing to multiply the rating by: its row carries "Rate on the
+next screen" and hands over to `/rpe/[id]`, which asks for the minutes.
 
 ## 5. Every number shown
 
@@ -155,7 +187,9 @@ stated here rather than left to be rediscovered:
 
 | Element | Where | What happens | Takes you to | Writes | Confirm | Hidden when |
 |---|---|---|---|---|---|---|
-| A to-do item | The list | Opens the entry screen for that item | `/check-in`, `/rpe/[id]`, `/nutrition-check-in`, `/gym/[id]` | nothing | no | the item is not owed |
+| A to-do item | The list | Opens the entry screen for that item | `/check-in`, `/nutrition-check-in`, `/gym/[id]` | nothing | no | the item is not owed |
+| A number on the rating row | The rating row's CR-10 grid | Sends the rating for that session with its scheduled minutes | stays here; the row becomes the receipt | `training_entries` (through the outbox) | **no — one tap**; the coach corrects a wrong one | the rating is not owed, or was sent |
+| "change or add a note" | The rating row's line | Opens the full rating screen | `/rpe/[id]` | nothing | no | the rating was sent, or the session has no scheduled length (then the whole row hands over: "Rate on the next screen") |
 | Report a problem | Below the list | Opens the problem form | `/report-problem` | nothing | no | never |
 | Tab bar | Fixed, bottom | Switches tab | the tab | nothing | no | never |
 

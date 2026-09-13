@@ -7,6 +7,7 @@
  */
 import { addDays, dateInTz, formatTime } from '@/lib/format';
 import { rpeIsDue, sessionEndsAt, type RpeSession } from '@/lib/rpeDue';
+import { CR10_ANCHORS } from '@/lib/validation/training';
 
 export type OutstandingRpeSession = RpeSession & {
   id: string;
@@ -49,6 +50,23 @@ export function outstandingRpe(
  *  guard hold. "Training" when the session has no title, as before. */
 export function rpeRowName(title: string | null | undefined): string {
   return `Rate ${title?.trim() || 'Training'}`;
+}
+
+/** The row's receipt once a number is tapped (the RPE package, change two):
+ *  "Team run rated 7 · Very hard" — the number and its anchor, so a mis-tap
+ *  is readable at once. Pure; the anchor table is the rating screen's. */
+export function rpeRatedLine(title: string | null | undefined, rpe: number): string {
+  const anchor = (CR10_ANCHORS as Record<number, string | null>)[rpe] ?? null;
+  return `${title?.trim() || 'Training'} rated ${rpe}${anchor ? ` · ${anchor}` : ''}`;
+}
+
+/** Under the receipt: whether it went. "Waiting" is the outbox's word on
+ *  this page (the WaitingQueue), and the correction path is the coach's,
+ *  said the same way the screen says it. */
+export function rpeSentLine(state: 'idle' | 'sending' | 'sent' | 'waiting'): string {
+  if (state === 'sent') return 'Sent. If that is wrong, tell your coach — they can record a correction.';
+  if (state === 'waiting') return 'Waiting to send — saved on this phone, sends when the signal is back.';
+  return 'Sending…';
 }
 
 /** When the session was, for the row's subtitle: "Today 11:15", "Yesterday",

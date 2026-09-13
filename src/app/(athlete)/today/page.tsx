@@ -3,6 +3,7 @@ import { AvailabilityBanner } from '@/components/AvailabilityBanner/Availability
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { InjuryClinical } from '@/components/InjuryClinical/InjuryClinical';
 import { OutboxFlusher } from '@/components/OutboxFlusher/OutboxFlusher';
+import { TodayRpeRow } from '@/components/TodayRpeRow/TodayRpeRow';
 import { fetchAthleteAvailability } from '@/lib/queries/availability';
 import { fetchAthleteInjuryClinical } from '@/lib/queries/athleteInjuryClinical';
 import { fetchMyOutstanding } from '@/lib/queries/compliance';
@@ -19,6 +20,7 @@ import { fetchCheckinForWeek } from '@/lib/queries/nutrition';
 import { fetchMyAllocation } from '@/lib/queries/teamAllocation';
 import {
   addDays,
+  dateInTz,
   enumLabel,
   formatDate,
   formatTime,
@@ -133,6 +135,11 @@ export default async function TodayPage({
       href: item.href,
       name: item.domain === 'wellness' ? 'Wellness' : item.label,
       sub: item.domain === 'wellness' ? '45 sec' : item.session ? rpeWhen(item.session, today, timezone) : '',
+      /* The RPE package, change two (2026-09-13): a rating row carries the
+         scale itself and sends on one tap (components/TodayRpeRow). The
+         entry date is the session's own club-local day — the same rule the
+         rating screen uses, so a rating from either lands on one row. */
+      session: item.domain === 'training_rpe' ? item.session : null,
     })),
     ...(!nutritionCheckin
       ? [
@@ -141,6 +148,7 @@ export default async function TodayPage({
             href: '/nutrition-check-in',
             name: 'Weekly nutrition check-in',
             sub: 'about 10 sec',
+            session: null,
           },
         ]
       : []),
@@ -305,7 +313,20 @@ export default async function TodayPage({
         </h2>
         <div className="td-list">
           {todoItems.length > 0 ? (
-            todoItems.map((item, index) => (
+            todoItems.map((item, index) => item.session ? (
+              <TodayRpeRow
+                key={`${item.domain}-${index}`}
+                orgId={orgId}
+                athleteId={athleteId}
+                userId={claims.userId}
+                sessionId={item.session.id}
+                sessionTitle={item.session.title?.trim() || 'Training'}
+                entryDate={dateInTz(new Date(item.session.starts_at), timezone)}
+                durationMin={item.session.duration_min}
+                name={item.name}
+                sub={item.sub}
+              />
+            ) : (
               <Link key={`${item.domain}-${index}`} href={item.href} className="card td-row">
                 <span style={{ minWidth: 0 }}>
                   {/* Spec §7.1: row name 17/700 — 1.0625rem IS that 17px at the

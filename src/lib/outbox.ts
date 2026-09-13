@@ -108,6 +108,12 @@ function read<T>(key: string): T[] {
   }
 }
 
+/** Fired on this window after every outbox write. The browser's own
+ *  `storage` event reaches other tabs only; a row that is its own receipt
+ *  (TodayRpeRow, "Waiting to send") needs to hear the flusher on the same
+ *  page send its entry. */
+export const OUTBOX_CHANGED_EVENT = 'fydr-outbox-changed';
+
 function write<T>(key: string, items: T[]): void {
   if (typeof window === 'undefined') return;
   try {
@@ -115,6 +121,11 @@ function write<T>(key: string, items: T[]): void {
   } catch {
     /* Storage full or blocked. The in-flight request is still the primary
        path, so losing the fallback is not worth an error the athlete sees. */
+  }
+  try {
+    window.dispatchEvent(new Event(OUTBOX_CHANGED_EVENT));
+  } catch {
+    /* Nothing listening, or no window worth the name. */
   }
 }
 

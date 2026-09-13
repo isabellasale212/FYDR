@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/fonts.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/icons.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/colors.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/typography.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/spacing.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/shape.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/motion.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/tokens/base.css" />
+<link rel="stylesheet" href="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/styles.css" />
+<script src="_ds/fydr-design-system-7dfa050b-02f8-4148-b9b7-366b38ed2e64/_ds_bundle.js"></script>
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-core); color: var(--text); }
+  a { color: var(--accent); text-decoration: none; pointer-events: none; }
+  a:hover { color: var(--blue-600); }
+  * { transition: none !important; animation: none !important; }
+</style>
+</helmet>
+
+<div style="padding: 40px; background: var(--bg); box-sizing: border-box">
+
+  <div style="max-width: 1560px; margin: 0 auto 30px; display: flex; flex-direction: column; gap: 8px">
+    <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">S9 &middot; ATHLETE CONSENT, FIRST RUN, INSTALL TEACHING &middot; STATIC REVIEW BOARD</p>
+    <p style="margin: 0; font-size: var(--t-hero); font-weight: var(--w-black); letter-spacing: var(--t-hero-tracking); line-height: var(--lh-tight); color: var(--text)">The flow that has to exist before an athlete&rsquo;s data lawfully does</p>
+    <p style="margin: 0; max-width: 68ch; font-size: var(--t-body); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Six artboards, athlete app, 375 wide. Nothing is clickable and no hovers or transitions are active. Ashcombe Rugby Club, 30 athletes, Sun 13 September 2026 09:12 Europe/London. Drawn so that either lawful basis fits without redrawing: performance data and health data are separate blocks throughout, and the decision is one control per block rather than one for the pair. Every piece of wording a solicitor must supply is a dashed placeholder carrying its own reference, and all of them are listed by frame at the foot of the board. No legal wording is drafted here.</p>
+  </div>
+
+  <div style="max-width: 1560px; margin: 0 auto 36px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap-card)">
+    <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--on-tint-label)">THE DECISION SCREEN HAS NO HALOED PRIMARY</p>
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">Equal weight is drawn by removing the halo, not by enlarging the second option</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">Artboards 3 and 4 are the only frames in the programme with zero haloed actions. Both choices are 56px, both are the accent outline, and they sit in source order agree then decline with the same width. The system&rsquo;s one-primary rule is a ceiling, not a quota, and a consent screen is the case that needs the floor.</p>
+    </div>
+    <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">TWO BLOCKS, NOT ONE AGREEMENT</p>
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Performance and health are split on every frame, so a separate health decision can attach later</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">If the basis lands on legitimate interests for performance and explicit consent for health, block one loses its control and keeps its wording, and block two keeps both. No new screen, no relayout &mdash; which is the whole reason the blocks are drawn apart while the answer is open.</p>
+    </div>
+    <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">ARTBOARD 6 IS NOT A NICETY</p>
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Without the install screen the notification specification is inert on every iPhone</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-regular); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">iOS will not let code trigger the install and will not let permission be requested before it. So the only mechanism available is teaching, and the only place to put the teaching is a screen. It names the exact menu item and shows where the control physically sits.</p>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 36px; align-items: flex-start; margin-bottom: 40px">
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">1 &middot; Invite received, setting a password <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">&middot; two states, 375 &times; 812 each</span></p>
+      <div data-screen-label="S9-01 Invite and password" style="display: flex; gap: 18px; padding: 18px; background: var(--surf2); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--muted)">A &middot; BEFORE TYPING</p>
+          <div style="position: relative; width: 375px; height: 812px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+            <div style="position: absolute; inset: 0; padding: 20px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px">
+              <span style="font-family: var(--font-brand); font-size: 22px; font-weight: 800; letter-spacing: -0.035em; color: var(--text)">Fydr.</span>
+              <div style="display: flex; flex-direction: column; gap: 5px">
+                <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">Invite &middot; expires Wed 16 Sept</p>
+                <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Set a password</p>
+              </div>
+              <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 8px">
+                <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--on-tint-label)">Who invited you</p>
+                <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">Ashcombe Rugby Club &mdash; Senior men</p>
+                <div style="display: flex; flex-direction: column; gap: 4px; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--on-tint-meta)">
+                  <span>Jane Pemberton, sport scientist, on Fri 11 Sept</span>
+                  <span style="font-family: var(--font-num); font-variant-numeric: tabular-nums">Sent to c.vale&#8202;@&#8202;&hellip;ail.com</span>
+                </div>
+                <p style="margin: 0; font-size: var(--t-caption); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">Fydr never asks for a password by email or by message. If you did not expect this, do not set one &mdash; ask Jane at the club.</p>
+              </div>
+              <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 10px">
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">Three rules, stated before you type</span>
+                <div style="display: flex; flex-direction: column; gap: 8px">
+                  <span style="display: flex; align-items: flex-start; gap: 9px; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted)"><span aria-hidden="true" style="flex: 0 0 auto; width: 18px; text-align: center; font-family: var(--font-num); color: var(--faint)">&ndash;</span><span>At least 12 characters</span></span>
+                  <span style="display: flex; align-items: flex-start; gap: 9px; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted)"><span aria-hidden="true" style="flex: 0 0 auto; width: 18px; text-align: center; font-family: var(--font-num); color: var(--faint)">&ndash;</span><span>Not a password you already use somewhere else</span></span>
+                  <span style="display: flex; align-items: flex-start; gap: 9px; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted)"><span aria-hidden="true" style="flex: 0 0 auto; width: 18px; text-align: center; font-family: var(--font-num); color: var(--faint)">&ndash;</span><span>No part of your name or the club&rsquo;s name</span></span>
+                </div>
+                <span style="font-size: var(--t-caption); line-height: var(--lh-base); color: var(--muted)">A dash means not checked yet, not failed.</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <span style="font-size: var(--t-label); font-weight: var(--w-semi); color: var(--muted)">New password</span>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--field); border: 1px solid var(--line-strong); border-radius: var(--r); padding: 12px 14px; min-height: 44px; box-sizing: border-box">
+                  <span style="font-size: var(--t-body-sm); color: var(--faint)">12 characters or more</span>
+                  <span style="font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--accent); text-decoration: underline; text-underline-offset: 2px">Show</span>
+                </div>
+              </div>
+              <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px">
+                <span style="font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">0 of 3 rules met</span>
+                <div aria-disabled="true" style="display: flex; align-items: center; justify-content: center; width: 100%; min-height: 56px; padding: 0 18px; border-radius: var(--r); background: var(--pill-accent); border: 1px solid var(--accent); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Set password</div>
+                <p style="margin: 0; font-size: var(--t-caption); line-height: var(--lh-base); color: var(--muted)">Next you will read what staff can see, then make one choice.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--muted)">B &middot; DOES NOT MEET THE RULES</p>
+          <div style="position: relative; width: 375px; height: 812px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+            <div style="position: absolute; inset: 0; padding: 20px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px">
+              <span style="font-family: var(--font-brand); font-size: 22px; font-weight: 800; letter-spacing: -0.035em; color: var(--text)">Fydr.</span>
+              <div style="display: flex; flex-direction: column; gap: 5px">
+                <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">Invite &middot; expires Wed 16 Sept</p>
+                <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Set a password</p>
+              </div>
+              <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 6px">
+                <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--on-tint-label)">Who invited you</p>
+                <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">Ashcombe Rugby Club &mdash; Senior men</p>
+                <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--on-tint-meta)">Jane Pemberton, sport scientist, on Fri 11 Sept</span>
+              </div>
+              <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 10px">
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">Three rules, stated before you type</span>
+                <div style="display: flex; flex-direction: column; gap: 8px">
+                  <span style="display: flex; align-items: flex-start; gap: 9px; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--on-bad); font-weight: var(--w-semi)"><span aria-hidden="true" style="flex: 0 0 auto; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r-round); background: var(--pill-bad); color: var(--on-bad); font-size: var(--t-num-meta); font-weight: var(--w-bold)">!</span><span>At least 12 characters &mdash; this has 9</span></span>
+                  <span style="display: flex; align-items: flex-start; gap: 9px; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted)"><span aria-hidden="true" style="flex: 0 0 auto; width: 18px; text-align: center; color: var(--accent2); font-weight: var(--w-bold)">&#10003;</span><span>Not a password you already use somewhere else</span></span>
+                  <span style="display: flex; align-items: flex-start; gap: 9px; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted)"><span aria-hidden="true" style="flex: 0 0 auto; width: 18px; text-align: center; color: var(--accent2); font-weight: var(--w-bold)">&#10003;</span><span>No part of your name or the club&rsquo;s name</span></span>
+                </div>
+                <span style="font-size: var(--t-caption); line-height: var(--lh-base); color: var(--muted)">Checked as you type. The one rule not met says what it needs.</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <span style="font-size: var(--t-label); font-weight: var(--w-semi); color: var(--muted)">New password</span>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--field); border: 1px solid var(--bad); box-shadow: 0 0 0 3px rgba(var(--bad-rgb), 0.18); border-radius: var(--r); padding: 12px 14px; min-height: 44px; box-sizing: border-box">
+                  <span style="font-family: var(--font-num); font-size: var(--t-num-body); letter-spacing: 0.12em; color: var(--text)">&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</span>
+                  <span style="font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--accent); text-decoration: underline; text-underline-offset: 2px">Show</span>
+                </div>
+                <p style="margin: 0; display: flex; gap: 6px; font-size: var(--t-body-xs); font-weight: var(--w-semi); line-height: var(--lh-base); color: var(--on-bad); text-wrap: pretty"><span aria-hidden="true" style="flex: 0 0 auto; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r-round); background: var(--pill-bad); color: var(--on-bad); font-size: var(--t-num-meta); font-weight: var(--w-bold)">!</span><span>Add three more characters. This one is 9 of the 12 needed.</span></p>
+              </div>
+              <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px">
+                <span style="font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">2 of 3 rules met</span>
+                <div aria-disabled="true" style="display: flex; align-items: center; justify-content: center; width: 100%; min-height: 56px; padding: 0 18px; border-radius: var(--r); background: var(--pill-accent); border: 1px solid var(--accent); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Set password</div>
+                <p style="margin: 0; font-size: var(--t-caption); line-height: var(--lh-base); color: var(--muted)">Nothing is sent while a rule is unmet, so no attempt is recorded against you.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div style="max-width: 810px; background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
+        <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">The club identifies itself above the field, because this message arrives as a link in an inbox</p>
+        <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Club, squad, the person who sent it, the date they sent it, and the address it went to &mdash; masked, because a phishing page can restate an address it already has, but a real invite can show the athlete the name of someone they can walk up to. The one sentence that does the work is &ldquo;Fydr never asks for a password by email&rdquo;: it is a rule the athlete can apply to the next message as well as this one. The emphasised card is this identity block, and there is no haloed primary, because the only action on the screen is blocked until a rule is met.</p>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">2 &middot; What staff can see, before any decision is asked <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">&middot; 375 &times; 812, top scroll position</span></p>
+      <div data-screen-label="S9-02 What staff can see" style="display: flex; gap: 18px; padding: 18px; background: var(--surf2); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="position: relative; width: 375px; height: 812px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+          <div style="position: absolute; left: 0; right: 0; top: 0; bottom: 108px; overflow: hidden; padding: 20px 16px 8px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px">
+            <div style="display: flex; flex-direction: column; gap: 5px">
+              <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">Step 2 of 3 &middot; nothing decided yet</p>
+              <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Who sees what you enter</p>
+              <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Five people at Ashcombe have an account. What each one sees is set by their role in the club, not by who they get on with.</p>
+            </div>
+            <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 13px 14px; display: flex; flex-direction: column; gap: 6px">
+              <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">Tom Ellery &mdash; head coach</span>
+              <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty"><span style="font-weight: var(--w-semi); color: var(--text)">Sees </span>your morning check-in answers, your session ratings, your gym and nutrition logs, and whether you are available to train.</span>
+              <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty"><span style="font-weight: var(--w-semi); color: var(--text)">Does not see </span>anything clinical. Not a diagnosis, not treatment notes, and not where on your body an injury is &mdash; neither the site nor the side. He sees one line: what you cannot do this week.</span>
+            </div>
+            <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 13px 14px; display: flex; flex-direction: column; gap: 6px">
+              <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">Priya Raman &mdash; physiotherapist</span>
+              <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty"><span style="font-weight: var(--w-semi); color: var(--text)">Sees </span>what Tom sees, and the clinical record as well: diagnosis, body site and side, treatment notes, the dates.</span>
+            </div>
+            <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 13px 14px; display: flex; flex-direction: column; gap: 6px">
+              <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">Jane Pemberton &mdash; sport scientist</span>
+              <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty"><span style="font-weight: var(--w-semi); color: var(--text)">Sees </span>training load, gym and test numbers, and the same availability line as Tom. No clinical detail.</span>
+            </div>
+            <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 13px 14px; display: flex; flex-direction: column; gap: 6px">
+              <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">Marie Dowd &mdash; club admin</span>
+              <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty"><span style="font-weight: var(--w-semi); color: var(--text)">Sees </span>your name, your squad and your contact details. No entries, no numbers, no clinical record.</span>
+            </div>
+            <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 13px 14px; display: flex; flex-direction: column; gap: 6px">
+              <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">Two things that are already true</p>
+              <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">Once you submit a morning check-in or a session rating, nobody can change it &mdash; not you, not the club. A correction is a new entry with its own time, and both are kept.</span>
+              <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">A day you do not answer stays empty. It is not counted as a bad score, and the club&rsquo;s figures say how many people answered out of how many were asked.</span>
+            </div>
+          </div>
+          <div style="position: absolute; left: 0; right: 0; bottom: 0; background: var(--surf); border-top: 1px solid var(--border); box-shadow: var(--shadow); padding: 14px 16px 0; box-sizing: border-box">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+              <span style="font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">5 of 5 roles listed</span>
+              <a href="#roles" style="font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--accent); text-decoration: underline; text-underline-offset: 2px">Who is in each role?</a>
+            </div>
+            <div style="margin-top: 10px; display: flex; align-items: center; justify-content: center; width: 100%; min-height: 56px; padding: 0 18px; border-radius: var(--r); background: var(--accent); box-shadow: var(--ring-action); color: #ffffff; font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Read the choice</div>
+            <div aria-hidden="true" style="height: 20px"></div>
+          </div>
+        </div>
+      </div>
+      <div style="max-width: 411px; background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
+        <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Named people, and what each one does not see</p>
+        <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">A policy document lists categories of recipient. This lists Tom, Priya, Jane and Marie, and for the coach it leads with the boundary rather than the permission &mdash; the withheld body site and side is the fact that makes the rest believable, and it is already enforced server side. Nothing here is a promise about the future: every line is a boundary built in the product today. The card that carries immutability and the missing-is-not-zero rule is the emphasised one, because those two are what an athlete would otherwise ask about after deciding.</p>
+        <p style="margin: 0; font-size: var(--t-caption); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">The fifth role is the athlete themselves, and it sits under &ldquo;Who is in each role?&rdquo; with the rest of the list. Drawn at the top scroll position; the cards continue below the fold.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 36px; align-items: flex-start; margin-bottom: 40px">
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">3 &middot; The decision, and what declining does <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">&middot; two states, 375 &times; 980 each</span></p>
+      <div data-screen-label="S9-03 The decision" style="display: flex; gap: 18px; padding: 18px; background: var(--surf2); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--muted)">A &middot; THE DECISION</p>
+          <div style="position: relative; width: 375px; height: 980px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+            <div style="position: absolute; left: 0; right: 0; top: 0; bottom: 292px; overflow: hidden; padding: 20px 16px 8px; box-sizing: border-box; display: flex; flex-direction: column; gap: 11px">
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">Step 3 of 3 &middot; your choice</p>
+                <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Two kinds of data</p>
+                <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Listed apart because different people see them, and because you may be asked about them separately.</p>
+              </div>
+              <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 13px 14px; display: flex; flex-direction: column; gap: 7px">
+                <span style="font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">Block 1</span>
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">Performance data</span>
+                <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty"><span style="font-weight: var(--w-semi); color: var(--text)">What </span>morning check-ins, session ratings, gym and nutrition logs, test results, GPS if recorded.</span>
+                <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty"><span style="font-weight: var(--w-semi); color: var(--text)">Who </span>Tom, Jane, Priya, and you.</span>
+                <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty"><span style="font-weight: var(--w-semi); color: var(--text)">Why </span>so training is planned around how you are coping, not around how the week looks on paper.</span>
+                <div style="border: 1px dashed var(--line-dashed); border-radius: var(--r); background: var(--surf2); padding: 8px 11px"><span style="font-family: var(--font-mono); font-size: var(--t-num-nano); line-height: var(--lh-base); color: var(--faint)">LEGAL-3A &middot; lawful basis and purpose, performance data &middot; solicitor to supply</span></div>
+              </div>
+              <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 13px 14px; display: flex; flex-direction: column; gap: 7px">
+                <span style="font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">Block 2</span>
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">Health and injury data</span>
+                <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty"><span style="font-weight: var(--w-semi); color: var(--text)">What </span>injuries you report, symptoms, diagnosis, treatment, and the dates of each.</span>
+                <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty"><span style="font-weight: var(--w-semi); color: var(--text)">Who </span>Priya and you. Tom and Jane see whether you are available and one restriction line, never the site or the side.</span>
+                <div style="border: 1px dashed var(--line-dashed); border-radius: var(--r); background: var(--surf2); padding: 8px 11px"><span style="font-family: var(--font-mono); font-size: var(--t-num-nano); line-height: var(--lh-base); color: var(--faint)">LEGAL-3B &middot; explicit consent wording, health data &middot; solicitor to supply</span></div>
+              </div>
+            </div>
+            <div style="position: absolute; left: 0; right: 0; bottom: 0; background: var(--surf); border-top: 1px solid var(--border); box-shadow: var(--shadow); padding: 13px 16px 0; box-sizing: border-box; display: flex; flex-direction: column; gap: 9px">
+              <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); padding: 10px 12px; display: flex; flex-direction: column; gap: 3px">
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">Saying no does not affect selection.</span>
+                <span style="font-size: var(--t-caption); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">Ashcombe Rugby Club states this. Fydr records your choice and cannot enforce what a coach does with it.</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <div style="display: flex; align-items: center; justify-content: center; width: 100%; min-height: 56px; padding: 0 18px; border-radius: var(--r); background: var(--surf); border: 1px solid var(--accent); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">I agree to both blocks</div>
+                <div style="display: flex; align-items: center; justify-content: center; width: 100%; min-height: 56px; padding: 0 18px; border-radius: var(--r); background: var(--surf); border: 1px solid var(--accent); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">I do not agree</div>
+              </div>
+              <p style="margin: 0; font-size: var(--t-caption); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">You can change this whenever you like, in Settings &rsaquo; Your data. Version <span style="font-family: var(--font-mono); color: var(--faint)">LEGAL-3D</span>, recorded with the date and time you choose.</p>
+              <div aria-hidden="true" style="height: 16px"></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--muted)">B &middot; AFTER DECLINING</p>
+          <div style="position: relative; width: 375px; height: 980px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+            <div style="position: absolute; inset: 0; padding: 20px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px">
+              <div style="display: flex; flex-direction: column; gap: 5px">
+                <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">Your data &middot; recorded Sun 13 Sept 09:12</p>
+                <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">You said no</p>
+                <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Your account stays. You are still in the Senior men squad, and the club can still tell you where to be.</p>
+              </div>
+              <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 13px 14px; display: flex; flex-direction: column; gap: 7px">
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">What the club sees</span>
+                <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Your name in the squad list, with &ldquo;no data consent&rdquo; beside it, and the date. No entries from you, and no readiness figure &mdash; your cells read an em dash, never a zero.</span>
+                <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Squad figures count you out of the denominator. Where the coach used to read 24 of 30 submitted, he reads 24 of 29, and the caption says one athlete is excluded.</span>
+              </div>
+              <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 13px 14px; display: flex; flex-direction: column; gap: 7px">
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">What you see</span>
+                <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Today has no morning check-in and no session rating to fill in. The schedule, your gym programme, the club&rsquo;s messages and your own profile all work as normal.</span>
+              </div>
+              <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 13px 14px; display: flex; flex-direction: column; gap: 7px">
+                <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">Nothing you entered before today is kept</p>
+                <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">You had no entries, so there is nothing to delete. If you had, this card would say how many and what happens to them.</span>
+                <div style="border: 1px dashed var(--line-dashed); border-radius: var(--r); background: var(--surf); padding: 9px 11px; display: flex; flex-direction: column; gap: 3px">
+                  <span style="font-family: var(--font-mono); font-size: var(--t-num-nano); color: var(--faint)">LEGAL-3E &middot; retention and deletion on decline</span>
+                  <span style="font-size: var(--t-caption); line-height: var(--lh-base); color: var(--muted)">Placeholder. Solicitor to supply: what is deleted, what is kept, and for how long.</span>
+                </div>
+              </div>
+              <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 0 14px; min-height: 44px">
+                  <span style="font-size: var(--t-body-sm); font-weight: var(--w-semi); color: var(--text)">Settings &rsaquo; Your data</span>
+                  <span aria-hidden="true" style="font-size: var(--t-card-lg); color: var(--faint)">&rsaquo;</span>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: center; width: 100%; min-height: 56px; padding: 0 18px; border-radius: var(--r); background: var(--accent); box-shadow: var(--ring-action); color: #ffffff; font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Go to Today</div>
+                <p style="margin: 0; font-size: var(--t-caption); line-height: var(--lh-base); color: var(--muted)">The screen changed and the choice is stated on it. No message appears and then disappears.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div style="max-width: 810px; background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
+        <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">The sentence can be written, and the caption under it is what makes it honest</p>
+        <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">&ldquo;Saying no does not affect selection&rdquo; is the club&rsquo;s statement, not the software&rsquo;s, and the product cannot verify it &mdash; so the screen says which of the two is speaking. That is the design rule about stating what cannot be verified, applied to the one sentence on the board where getting it wrong would matter most. It sits in the footer with the two choices rather than up in the reading matter, because it is a fact about the decision and not about the data.</p>
+        <p style="margin: 0; font-size: var(--t-caption); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">Decline is drawn as its own screen rather than a dialog, so the athlete reads the consequence after choosing rather than being warned out of choosing. Both frames keep the 56px action height; frame A has no haloed action at all.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 36px; align-items: flex-start; margin-bottom: 40px">
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">4 &middot; The same decision, athlete under 18 <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">&middot; two states, 375 &times; 980 each</span></p>
+      <div data-screen-label="S9-04 Under 18 guardian route" style="display: flex; gap: 18px; padding: 18px; background: var(--surf2); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--muted)">A &middot; THE ATHLETE, WHILE IT IS OUTSTANDING</p>
+          <div style="position: relative; width: 375px; height: 980px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+            <div style="position: absolute; inset: 0; padding: 20px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px">
+              <div style="display: flex; flex-direction: column; gap: 5px">
+                <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">Step 3 of 3 &middot; waiting on a guardian</p>
+                <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">A guardian answers this one</p>
+              </div>
+              <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 13px 14px; display: flex; flex-direction: column; gap: 7px">
+                <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--on-tint-label)">Sent today 09:12 &middot; no answer yet</p>
+                <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">Bernadette Rafferty</p>
+                <span style="font-family: var(--font-num); font-size: var(--t-body-sm); font-variant-numeric: tabular-nums; color: var(--on-tint-meta)">b.rafferty&#8202;@&#8202;&hellip;ail.com</span>
+                <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">The club holds her as your guardian contact. She has a link to the same two blocks you have just read &mdash; the same words, nothing extra.</span>
+              </div>
+              <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 13px 14px; display: flex; flex-direction: column; gap: 7px">
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">What you can do meanwhile</span>
+                <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">You are not locked out. The schedule, your gym programme, your nutrition plan and the club&rsquo;s messages all work.</span>
+                <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Morning check-ins and session ratings stay closed, because filling one in is the thing being agreed to. Nothing you type is held back waiting &mdash; the forms are simply not open yet.</span>
+              </div>
+              <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 13px 14px; display: flex; flex-direction: column; gap: 6px">
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">Your own say</span>
+                <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Her answer is recorded as hers. Yours is recorded as yours, and you are asked the same question in your own name when you turn 18.</span>
+                <div style="border: 1px dashed var(--line-dashed); border-radius: var(--r); background: var(--surf2); padding: 9px 11px; display: flex; flex-direction: column; gap: 3px">
+                  <span style="font-family: var(--font-mono); font-size: var(--t-num-nano); color: var(--faint)">LEGAL-4A &middot; who holds the decision for a minor, and when it transfers</span>
+                  <span style="font-size: var(--t-caption); line-height: var(--lh-base); color: var(--muted)">Placeholder. Solicitor to supply, including whether the athlete&rsquo;s own agreement is also required.</span>
+                </div>
+              </div>
+              <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px">
+                <span style="font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">1 of 1 guardian contacted</span>
+                <div style="display: flex; align-items: center; justify-content: center; width: 100%; min-height: 56px; padding: 0 18px; border-radius: var(--r); background: var(--surf); border: 1px solid var(--accent); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Send the link again</div>
+                <div style="display: flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; padding: 0 18px; border-radius: var(--r); background: var(--surf2); border: 1px solid var(--border); color: var(--text); font-size: var(--t-body-sm); font-weight: var(--w-semi); box-sizing: border-box">This is not my guardian &mdash; tell the club</div>
+                <p style="margin: 0; font-size: var(--t-caption); line-height: var(--lh-base); color: var(--muted)">Fydr does not ask you for her address, and does not ask you for your date of birth. Both come from the club&rsquo;s record.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--muted)">B &middot; THE GUARDIAN, ON THE LINK &mdash; A WEB PAGE, NOT THE APP</p>
+          <div style="position: relative; width: 375px; height: 980px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+            <div style="position: absolute; left: 0; right: 0; top: 0; bottom: 246px; overflow: hidden; padding: 20px 16px 8px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px">
+                <span style="font-family: var(--font-brand); font-size: 22px; font-weight: 800; letter-spacing: -0.035em; color: var(--text)">Fydr.</span>
+                <span style="font-size: var(--t-caption); color: var(--muted)">No account needed</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 5px">
+                <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">Ashcombe Rugby Club &middot; link expires Sun 20 Sept</p>
+                <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">For Bernadette Rafferty, about Niall</p>
+                <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Niall is under 18 on the club&rsquo;s record, so this decision is yours. He has read the same two blocks.</p>
+              </div>
+              <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 13px 14px; display: flex; flex-direction: column; gap: 6px">
+                <span style="font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">Block 1</span>
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">Performance data</span>
+                <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Morning check-ins, session ratings, gym and nutrition logs, test results. Seen by the head coach, the sport scientist, the physiotherapist, and Niall.</span>
+                <span style="font-family: var(--font-mono); font-size: var(--t-num-nano); color: var(--faint)">LEGAL-3A &mdash; same wording as the athlete screen</span>
+              </div>
+              <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 13px 14px; display: flex; flex-direction: column; gap: 6px">
+                <span style="font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--faint)">Block 2</span>
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">Health and injury data</span>
+                <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Injuries, symptoms, diagnosis, treatment. Seen by the physiotherapist and Niall. Coaching staff see availability and one restriction line, never the site or the side.</span>
+                <span style="font-family: var(--font-mono); font-size: var(--t-num-nano); color: var(--faint)">LEGAL-3B &mdash; same wording as the athlete screen</span>
+              </div>
+              <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 13px 14px; display: flex; flex-direction: column; gap: 4px">
+                <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">What Niall sees of your answer</p>
+                <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">Your name, your decision and the date. Not this page, and no note you add here.</span>
+              </div>
+            </div>
+            <div style="position: absolute; left: 0; right: 0; bottom: 0; background: var(--surf); border-top: 1px solid var(--border); box-shadow: var(--shadow); padding: 13px 16px 0; box-sizing: border-box; display: flex; flex-direction: column; gap: 9px">
+              <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Saying no does not affect selection. <span style="font-weight: var(--w-regular); color: var(--muted)">The club states this; Fydr records the answer.</span></p>
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <div style="display: flex; align-items: center; justify-content: center; width: 100%; min-height: 56px; padding: 0 18px; border-radius: var(--r); background: var(--surf); border: 1px solid var(--accent); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">I agree to both blocks</div>
+                <div style="display: flex; align-items: center; justify-content: center; width: 100%; min-height: 56px; padding: 0 18px; border-radius: var(--r); background: var(--surf); border: 1px solid var(--accent); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">I do not agree</div>
+              </div>
+              <p style="margin: 0; font-size: var(--t-caption); line-height: var(--lh-base); color: var(--muted)">Version <span style="font-family: var(--font-mono); color: var(--faint)">LEGAL-3D</span>. You can change this by replying to the club, or on this link again.</p>
+              <div aria-hidden="true" style="height: 14px"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div style="max-width: 810px; background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
+        <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Two forms of the same words, and no date of birth anywhere</p>
+        <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">The guardian gets a link to a page, not an invite to an account, because asking a parent to install an athlete app to answer one question loses most of them. The page is the athlete screen&rsquo;s two blocks condensed, the same sentence about selection, and the same two equal 56px choices &mdash; if the wording diverges, the two records are of different things. The athlete&rsquo;s frame says &ldquo;under 18&rdquo; and nothing more precise: the club already holds the birth date, the app never displays it and never asks for it, and the only thing either screen needs is which side of the line the athlete falls on.</p>
+        <p style="margin: 0; font-size: var(--t-caption); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">The athlete is not blocked from the app, only from the two entry forms, and the frame says which and why. Reporting a wrong guardian is a 44px row rather than a 56px action, because it is the rare path and it goes to a person, not a screen.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 36px; align-items: flex-start; margin-bottom: 44px">
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">5 &middot; First check-in <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">&middot; 375 &times; 812</span></p>
+      <div data-screen-label="S9-05 First check-in" style="display: flex; gap: 18px; padding: 18px; background: var(--surf2); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="position: relative; width: 375px; height: 812px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+          <div style="position: absolute; left: 0; right: 0; top: 0; bottom: 134px; overflow: hidden; padding: 20px 16px 8px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px">
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">Sun 13 Sept &middot; MD-6</p>
+              <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">This morning</p>
+              <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted)">45 seconds &middot; 5 is always the best you can feel</p>
+            </div>
+            <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 12px 14px; display: flex; flex-direction: column; gap: 3px">
+              <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">Your first one</p>
+              <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">There is no score and no streak. Answer it as it is &mdash; the numbers are only useful if they are true.</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 12px 14px">
+              <span style="font-size: var(--t-label); font-weight: var(--w-semi); color: var(--muted)">Sleep</span>
+              <div style="display: flex; align-items: center; gap: 10px">
+                <span style="width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r); background: var(--surf2); border: 1px solid var(--border); font-size: var(--t-card); font-weight: var(--w-bold); color: var(--accent)">&minus;</span>
+                <span style="min-width: 76px; text-align: center; font-family: var(--font-num); font-size: var(--t-num-body); font-weight: var(--w-num-strong); font-variant-numeric: tabular-nums; color: var(--faint)">&ndash;</span>
+                <span style="width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r); background: var(--surf2); border: 1px solid var(--border); font-size: var(--t-card); font-weight: var(--w-bold); color: var(--accent)">+</span>
+              </div>
+            </div>
+            <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 10px">
+              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">Sleep quality</span>
+                <span style="font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--muted)">Not answered</span>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px">
+                <span style="display: inline-flex; align-items: center; justify-content: center; height: 44px; border-radius: var(--r); background: var(--surf2); border: 1px solid var(--border); color: var(--muted); font-family: var(--font-num); font-size: var(--t-card); font-weight: var(--w-bold); font-variant-numeric: tabular-nums; box-sizing: border-box">1</span>
+                <span style="display: inline-flex; align-items: center; justify-content: center; height: 44px; border-radius: var(--r); background: var(--surf2); border: 1px solid var(--border); color: var(--muted); font-family: var(--font-num); font-size: var(--t-card); font-weight: var(--w-bold); font-variant-numeric: tabular-nums; box-sizing: border-box">2</span>
+                <span style="display: inline-flex; align-items: center; justify-content: center; height: 44px; border-radius: var(--r); background: var(--surf2); border: 1px solid var(--border); color: var(--muted); font-family: var(--font-num); font-size: var(--t-card); font-weight: var(--w-bold); font-variant-numeric: tabular-nums; box-sizing: border-box">3</span>
+                <span style="display: inline-flex; align-items: center; justify-content: center; height: 44px; border-radius: var(--r); background: var(--surf2); border: 1px solid var(--border); color: var(--muted); font-family: var(--font-num); font-size: var(--t-card); font-weight: var(--w-bold); font-variant-numeric: tabular-nums; box-sizing: border-box">4</span>
+                <span style="display: inline-flex; align-items: center; justify-content: center; height: 44px; border-radius: var(--r); background: var(--surf2); border: 1px solid var(--border); color: var(--muted); font-family: var(--font-num); font-size: var(--t-card); font-weight: var(--w-bold); font-variant-numeric: tabular-nums; box-sizing: border-box">5</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; gap: 8px">
+                <span style="font-size: var(--t-eyebrow); font-weight: var(--w-semi); color: var(--muted); background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 4px 9px; white-space: nowrap">1 &middot; Very poor</span>
+                <span style="font-size: var(--t-eyebrow); font-weight: var(--w-semi); color: var(--muted); background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 4px 9px; white-space: nowrap">5 &middot; Very good</span>
+              </div>
+            </div>
+            <div style="background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 10px">
+              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+                <span style="font-size: var(--t-card-sm); font-weight: var(--w-bold); color: var(--text)">Soreness</span>
+                <span style="font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--muted)">Not answered</span>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px">
+                <span style="display: inline-flex; align-items: center; justify-content: center; height: 44px; border-radius: var(--r); background: var(--surf2); border: 1px solid var(--border); color: var(--muted); font-family: var(--font-num); font-size: var(--t-card); font-weight: var(--w-bold); font-variant-numeric: tabular-nums; box-sizing: border-box">1</span>
+                <span style="display: inline-flex; align-items: center; justify-content: center; height: 44px; border-radius: var(--r); background: var(--surf2); border: 1px solid var(--border); color: var(--muted); font-family: var(--font-num); font-size: var(--t-card); font-weight: var(--w-bold); font-variant-numeric: tabular-nums; box-sizing: border-box">2</span>
+                <span style="display: inline-flex; align-items: center; justify-content: center; height: 44px; border-radius: var(--r); background: var(--surf2); border: 1px solid var(--border); color: var(--muted); font-family: var(--font-num); font-size: var(--t-card); font-weight: var(--w-bold); font-variant-numeric: tabular-nums; box-sizing: border-box">3</span>
+                <span style="display: inline-flex; align-items: center; justify-content: center; height: 44px; border-radius: var(--r); background: var(--surf2); border: 1px solid var(--border); color: var(--muted); font-family: var(--font-num); font-size: var(--t-card); font-weight: var(--w-bold); font-variant-numeric: tabular-nums; box-sizing: border-box">4</span>
+                <span style="display: inline-flex; align-items: center; justify-content: center; height: 44px; border-radius: var(--r); background: var(--surf2); border: 1px solid var(--border); color: var(--muted); font-family: var(--font-num); font-size: var(--t-card); font-weight: var(--w-bold); font-variant-numeric: tabular-nums; box-sizing: border-box">5</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; gap: 8px">
+                <span style="font-size: var(--t-eyebrow); font-weight: var(--w-semi); color: var(--muted); background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 4px 9px; white-space: nowrap">1 &middot; Very sore</span>
+                <span style="font-size: var(--t-eyebrow); font-weight: var(--w-semi); color: var(--muted); background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 4px 9px; white-space: nowrap">5 &middot; No soreness</span>
+              </div>
+            </div>
+          </div>
+          <div style="position: absolute; left: 0; right: 0; bottom: 0; background: var(--surf); border-top: 1px solid var(--border); box-shadow: var(--shadow); padding: 14px 16px 0; box-sizing: border-box">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+              <span style="font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">0 of 6 answered &middot; 6 to go</span>
+              <a href="#why" style="font-size: var(--t-body-xs); font-weight: var(--w-semi); color: var(--accent); text-decoration: underline; text-underline-offset: 2px">Why can&rsquo;t I edit it?</a>
+            </div>
+            <p style="margin: 8px 0 0; font-size: var(--t-caption); line-height: var(--lh-base); color: var(--muted)">You can&rsquo;t change this after you submit.</p>
+            <div aria-disabled="true" style="margin-top: 10px; display: flex; align-items: center; justify-content: center; width: 100%; min-height: 56px; padding: 0 18px; border-radius: var(--r); background: var(--pill-accent); border: 1px solid var(--accent); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Submit entry</div>
+            <div aria-hidden="true" style="height: 20px"></div>
+          </div>
+        </div>
+      </div>
+      <div style="max-width: 411px; background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
+        <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">The flow ends on the thing the athlete is here to do</p>
+        <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Not a confirmation screen. Agreeing lands on the wellness form itself, with one first-run card that says there is no score and no streak &mdash; the only copy on the board that exists purely to set an expectation, and it disappears after the first submission. Everything else is ATH-ADULT-03 unchanged: sleep starts empty and counts, both anchors carry their numeral, the count states its denominator, and the action is blocked rather than dimmed.</p>
+        <p style="margin: 0; font-size: var(--t-caption); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">Drawn at the top scroll position; three further scales and the optional disclosure sit below. The 56px primary height is new here &mdash; ATH-ADULT-03 draws it at 44px and should be raised to match.</p>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; font-size: var(--t-body-sm); font-weight: var(--w-bold); color: var(--text)">6 &middot; Install teaching, iOS Safari <span style="font-family: var(--font-num); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; color: var(--faint)">&middot; 375 &times; 812</span></p>
+      <div data-screen-label="S9-06 Install teaching iOS" style="display: flex; gap: 18px; padding: 18px; background: var(--surf2); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+        <div style="position: relative; width: 375px; height: 812px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+          <div style="position: absolute; left: 0; right: 0; top: 0; bottom: 528px; overflow: hidden; padding: 20px 16px 0; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px">
+            <p style="margin: 0; font-size: var(--t-eyebrow); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); color: var(--muted); text-transform: uppercase">Sun 13 Sept &middot; MD-6</p>
+            <p style="margin: 0; font-size: var(--t-page); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Morning, Conor</p>
+            <div style="display: flex; align-items: center; gap: 14px; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px 16px; min-height: 44px; box-sizing: border-box">
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+                <span style="font-size: var(--t-num-row); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Wellness</span>
+                <span style="font-family: var(--font-num); font-size: var(--t-body-xs); font-variant-numeric: tabular-nums; color: var(--muted)">Recorded 09:12</span>
+              </span>
+              <span aria-hidden="true" style="flex: 0 0 auto; font-size: var(--t-card-lg); color: var(--faint)">&rsaquo;</span>
+            </div>
+          </div>
+
+          <div style="position: absolute; left: 0; right: 0; bottom: 132px; background: var(--surf); border-top: 1px solid var(--border); border-radius: var(--r-sheet); box-shadow: var(--shadow); padding: 16px 16px 18px; box-sizing: border-box; display: flex; flex-direction: column; gap: 11px">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px">
+              <div style="display: flex; flex-direction: column; gap: 3px">
+                <p style="margin: 0; font-size: var(--t-num-nano); font-weight: var(--w-semi); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--muted)">From Fydr, not from iPhone</p>
+                <p style="margin: 0; font-size: var(--t-card-lg); font-weight: var(--w-black); letter-spacing: var(--t-page-tracking); line-height: var(--lh-tight); color: var(--text)">Add Fydr to your Home Screen</p>
+              </div>
+              <span aria-hidden="true" style="flex: 0 0 auto; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r); background: var(--surf2); border: 1px solid var(--border); color: var(--muted); font-size: 19px">&times;</span>
+            </div>
+            <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Safari cannot send you a reminder. Added to the Home Screen it can &mdash; it asks you once, the first time you open it from there.</p>
+            <div style="display: flex; flex-direction: column; gap: 9px">
+              <span style="display: flex; align-items: flex-start; gap: 10px; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--text); text-wrap: pretty"><span aria-hidden="true" style="flex: 0 0 auto; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r-round); background: var(--pill-accent); color: var(--accent); font-family: var(--font-num); font-size: var(--t-num-meta); font-weight: var(--w-bold)">1</span><span>Tap <i class="ph ph-export" style="font-size: 17px; vertical-align: -2px"></i> in Safari&rsquo;s bar at the bottom of the screen &mdash; the square with an arrow coming out of the top. It is circled below.</span></span>
+              <span style="display: flex; align-items: flex-start; gap: 10px; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--text); text-wrap: pretty"><span aria-hidden="true" style="flex: 0 0 auto; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r-round); background: var(--pill-accent); color: var(--accent); font-family: var(--font-num); font-size: var(--t-num-meta); font-weight: var(--w-bold)">2</span><span>Scroll that list down and tap <span style="font-weight: var(--w-bold)">Add to Home Screen</span>, then <span style="font-weight: var(--w-bold)">Add</span>.</span></span>
+              <span style="display: flex; align-items: flex-start; gap: 10px; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--text); text-wrap: pretty"><span aria-hidden="true" style="flex: 0 0 auto; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r-round); background: var(--pill-accent); color: var(--accent); font-family: var(--font-num); font-size: var(--t-num-meta); font-weight: var(--w-bold)">3</span><span>Open Fydr from the Home Screen. It asks about reminders once, and you can say no.</span></span>
+            </div>
+            <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); padding: 11px 13px; display: flex; flex-direction: column; gap: 3px">
+              <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">What changes once it is added</p>
+              <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">An icon on your Home Screen, no Safari bars, and reminders become possible. Your login, your entries and what staff can see do not change.</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: center; width: 100%; min-height: 56px; padding: 0 18px; border-radius: var(--r); background: var(--surf); border: 1px solid var(--accent); color: var(--accent); font-size: var(--t-card-sm); font-weight: var(--w-bold); box-sizing: border-box">Not now</div>
+            <p style="margin: 0; font-size: var(--t-caption); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">This stays in Settings &rsaquo; Reminders &rsaquo; Add to Home Screen, and comes back once if a reminder could not reach you.</p>
+          </div>
+
+          <div aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: 0; height: 132px; background: rgba(234, 237, 241, 0.94); border-top: 1px solid var(--line-strong); padding: 10px 12px 0; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 40px; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); box-sizing: border-box">
+              <i class="ph ph-lock-simple" style="font-size: 13px; color: var(--faint)"></i>
+              <span style="font-family: var(--font-num); font-size: var(--t-body-sm); color: var(--muted)">fydr.app</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 6px">
+              <i class="ph ph-caret-left" style="font-size: 22px; color: var(--accent)"></i>
+              <i class="ph ph-caret-right" style="font-size: 22px; color: var(--line-strong)"></i>
+              <span style="position: relative; width: 46px; height: 46px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r-round); border: 2px solid var(--accent); box-shadow: var(--ring-select)"><i class="ph ph-export" style="font-size: 22px; color: var(--accent)"></i></span>
+              <i class="ph ph-book-bookmark" style="font-size: 22px; color: var(--accent)"></i>
+              <i class="ph ph-copy" style="font-size: 22px; color: var(--accent)"></i>
+            </div>
+          </div>
+          <div aria-hidden="true" style="position: absolute; right: 12px; bottom: 100px; display: flex; flex-direction: column; align-items: center; gap: 2px">
+            <span style="font-size: var(--t-num-nano); font-weight: var(--w-bold); letter-spacing: var(--t-eyebrow-tracking); text-transform: uppercase; color: var(--accent); background: var(--pill-accent); border-radius: var(--r); padding: 3px 7px; white-space: nowrap">Share &mdash; step 1</span>
+          </div>
+        </div>
+      </div>
+      <div style="max-width: 411px; background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
+        <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Fydr&rsquo;s own card, pointing at Safari&rsquo;s own control</p>
+        <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">It carries the Fydr card treatment, an eyebrow that says &ldquo;From Fydr, not from iPhone&rdquo;, a 44px close and a worded dismissal &mdash; none of which a system sheet has. The glyph is named in words as well as drawn, because an athlete who has never noticed it cannot search for a shape, and the exact menu item is quoted: Add to Home Screen, then Add. The circled control sits where Safari actually puts it on a modern iPhone, in the toolbar under the address bar.</p>
+        <p style="margin: 0; font-size: var(--t-caption); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">Safari&rsquo;s bar is drawn only as far as it has to be for the athlete to find the control. It is a landmark on this board, not a specimen &mdash; and it cannot be verified from code, so iOS version differences are listed against code below.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="max-width: 920px; margin: 8px 0 0; display: flex; flex-direction: column; gap: var(--gap-card)">
+
+    <p style="margin: 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">What changed, and on which token</p>
+
+    <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">A screen may have zero haloed primaries, and the decision screen does</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Agree and decline are both the secondary treatment at 56px and full width, stacked in that order. The halo is the system&rsquo;s device for naming the action of a page, and a consent page must not have one. This is a clarification of the one-primary rule rather than an exception to it: one is the maximum.</p>
+      <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">both actions --surf + 1px --accent + --accent label at 6.88:1, min-height 56px, width 100% &middot; no --ring-action on frames 3A and 4B</p>
+    </div>
+
+    <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Primary actions are 56px on this board, and 44px is now only for secondary rows</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Every committing action here is 56px: set password, read the choice, agree, decline, send the link again, go to Today, not now, submit entry. The 44px minimum still governs steppers, scale targets, the close control and the &ldquo;not my guardian&rdquo; row. ATH-ADULT-03 draws its submit at 44px and is now out of step by 12px &mdash; a one-line change, listed here so it is not lost.</p>
+      <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">primary min-height 56px &middot; secondary and targets min-height 44px &middot; ATH-ADULT-03 footer Button to raise from 44 to 56</p>
+    </div>
+
+    <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Legal placeholders are a drawn component, not grey boxes</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">A dashed line on the well fill, a monospace reference, and one sentence saying who supplies it and roughly how long it runs. Dashed already means &ldquo;not this athlete&rsquo;s own number&rdquo; on the nutrition board; here it means &ldquo;not yet written&rdquo;, and in both cases it means do not read this as final. Sizing the box for the expected length is deliberate &mdash; when real wording lands two sentences longer, that is a layout problem found now rather than at handover.</p>
+      <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">1px dashed --line-dashed on --surf2, --r &middot; reference --font-mono / --t-num-nano / --faint &middot; caption --t-caption / --muted</p>
+    </div>
+
+    <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Password rules are a neutral list before typing, and only the unmet rule takes a tone</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Unchecked is an en dash in --faint with the words in --muted, and the frame says a dash means not checked yet. On typing, met rules take a cyan tick and the unmet one takes the bad glyph and --on-bad ink, so the screen never shows three red rows for a password being typed. The count reads 2 of 3 rules met, which is the denominator rule applied to something that is not data.</p>
+      <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">unchecked &ndash; at --faint &middot; met &#10003; at --accent2 &middot; unmet --pill-bad glyph + --on-bad at 8.95:1 &middot; field 1px --bad + 0 0 0 3px rgba(var(--bad-rgb), 0.18)</p>
+    </div>
+
+    <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Declining is a state of the screen, not a toast</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Frame 3B is the whole answer to &ldquo;what just happened&rdquo;: the title states the choice, the eyebrow carries the timestamp, and two cards say what the club sees and what the athlete sees. Nothing appears and then disappears. The decline path also demonstrates the missing-is-not-zero rule from the athlete&rsquo;s side &mdash; their cells read an em dash and the squad denominator drops to 29.</p>
+      <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">no Banner, no toast &middot; eyebrow carries recorded date and time &middot; em dash at --faint in staff cells, denominator 30 &rarr; 29</p>
+    </div>
+
+    <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">The guardian route reuses the athlete&rsquo;s wording verbatim, on a page with no account</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">One set of blocks, two presentations, and the references LEGAL-3A and LEGAL-3B are shown on the guardian page so a reviewer can see they are the same strings. The page carries the set-type Fydr wordmark in Sora and the club name, because it arrives from an email link and has to identify itself the way the invite does.</p>
+      <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">wordmark --font-brand Sora 800 at 22px, -0.035em &mdash; the only non-Roboto type on the board &middot; blocks share LEGAL-3A / LEGAL-3B</p>
+    </div>
+
+    <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">The install card is marked as Fydr&rsquo;s in three ways at once</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Eyebrow wording, the product card treatment on --surf with the sheet radius, and a 44px close plus a worded &ldquo;Not now&rdquo;. It is the one frame that draws another vendor&rsquo;s interface, and the Safari bar is deliberately schematic &mdash; address pill, five controls, the share control ringed with the selection ring and labelled. Enough to find the control, not a reproduction of it.</p>
+      <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">card --surf + --r-sheet + --shadow &middot; toolbar rgba(234,237,241,0.94), the system&rsquo;s existing sticky-bar fill &middot; ring --ring-select + 2px --accent &middot; glyph ph-export</p>
+    </div>
+
+    <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">No judgement words, and no data invented</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">There is no &ldquo;recommended&rdquo;, no &ldquo;most athletes agree&rdquo;, no &ldquo;help your coach&rdquo; and no count of how many teammates have accepted &mdash; that last one would be a real number and would also be pressure, so it is left out on both grounds. Every figure on the board is either structural (5 of 5 roles, 2 of 3 rules, 1 of 1 guardian) or already established in the programme (24 of 30 submitted, 30 athletes).</p>
+      <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">no semantic tone on either choice &middot; no social-proof figure &middot; every count states its denominator</p>
+    </div>
+
+    <p style="margin: 24px 0 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">Needs new token</p>
+
+    <div style="background: var(--surf); border: 1px solid rgba(var(--warn-rgb), 0.5); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">A height for a committing action</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">The brief&rsquo;s 44 and 56 are two different jobs and the system names neither. Proposed in the existing style: --tap-min for the floor and --tap-commit for a committing action, so a footer action cannot drift back to 44 by being written by hand. Both are spacing-scale values already in use.</p>
+      <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">proposed: --tap-min 44px, --tap-commit 56px &middot; sits beside the existing named gaps in tokens/spacing.css</p>
+    </div>
+
+    <div style="background: var(--surf); border: 1px solid rgba(var(--warn-rgb), 0.5); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">A treatment for wording that is not written yet</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Proposed --border-pending, an alias of --line-dashed, and --pending-fill, an alias of --surf2, so the placeholder block is one named pattern rather than a dashed border that could be mistaken for the nutrition board&rsquo;s club-default treatment. Two aliases, no new values, and the pattern can be found and removed in one search when the wording lands.</p>
+      <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">proposed aliases: --border-pending &rarr; --line-dashed, --pending-fill &rarr; --surf2</p>
+    </div>
+
+    <div style="background: var(--surf); border: 1px solid rgba(var(--warn-rgb), 0.5); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Still unresolved: a foreground for the accent</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Carried forward from ATH-ADULT-03 unchanged. The two haloed actions on this board write #ffffff, which is what the kit Button renders internally, at 8.62:1 on --accent. If --on-accent exists in the app&rsquo;s own globals.css it should be used; if not, it needs adding.</p>
+      <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">to confirm in code: --on-accent &middot; board writes #ffffff (8.62:1 on --accent)</p>
+    </div>
+
+    <p style="margin: 24px 0 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">Named, not drawn</p>
+
+    <div style="background: var(--blue-100); border: 1px solid var(--blue-200); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--on-tint-value)">Withdrawal &mdash; Settings &rsaquo; Your data &rsaquo; Data consent</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">A consent that cannot be withdrawn is not consent, so the row has to exist: one row on the existing athlete settings screen, reading the current state and its date, opening the same two blocks with the opposite pair of actions. Withdrawing changes the athlete&rsquo;s squad row to &ldquo;no data consent&rdquo; with today&rsquo;s date, stops new entries, and leaves submitted entries alone until the retention wording says otherwise. The club sees the change on the squad list and in the audit trail, and no staff figure is recomputed retrospectively &mdash; a mean already published does not move. It is a row, not a frame, and it will not get built unless it is named.</p>
+      <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); line-height: var(--lh-base); color: var(--on-tint-meta); text-wrap: pretty">athlete settings row, 44px, chevron &middot; state + date in --muted &middot; deletion behaviour governed by LEGAL-3E</p>
+    </div>
+
+    <div style="background: var(--surf); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">Reachability &mdash; a figure on the staff squad view, never merged with compliance</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">&ldquo;18 of 30 athletes can receive reminders&rdquo;, in the shape every other Fydr figure takes, sitting near the compliance figure and never inside it. An install problem is a property of a phone; a missed check-in is a property of a person, and one read as the other produces a coach having a conversation about attitude when the answer was a Home Screen icon. The caption names the cause: 12 have not added Fydr to a Home Screen, of whom 9 are on iPhone. Existing screen, existing figure shape, no new frame.</p>
+      <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">staff squad view &middot; figure + denominator + caption &middot; never combined with &ldquo;24 of 30 submitted&rdquo;</p>
+    </div>
+
+    <p style="margin: 24px 0 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">Open against code</p>
+
+    <div style="background: var(--surf); border: 1px solid rgba(var(--warn-rgb), 0.5); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">1 &middot; Does an invite and password flow exist today, or is account creation staff side only</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Artboard 1 assumes a tokenised link with an expiry and a password set by the athlete. If accounts are created staff side with a password handed over, the whole board&rsquo;s first frame is wrong and the consent decision is being made on an account the athlete did not open &mdash; which is a legal problem before it is a design one. Needed: whether an invite token exists, its expiry, and whether the athlete has ever set their own password.</p>
+      <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">unverified &middot; blocks artboard 1</p>
+    </div>
+
+    <div style="background: var(--surf); border: 1px solid rgba(var(--warn-rgb), 0.5); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">2 &middot; Is there any field recording a consent decision, its date, and its version</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Three values, not one: the answer, the timestamp, and the version of the wording answered. Without the version, a later change to the wording silently rewrites what every existing athlete agreed to. If the field does not exist it is a schema change, and the two blocks need two records, not one, so that a separate health decision can land without a migration.</p>
+      <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">unverified &middot; two records, one per block &middot; answer + timestamp + version</p>
+    </div>
+
+    <div style="background: var(--surf); border: 1px solid rgba(var(--warn-rgb), 0.5); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">3 &middot; Is a guardian contact held anywhere for an athlete under 18</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Artboard 4 shows a name and a masked address that the club already holds. If no such field exists, the guardian route has no starting point and the club has to be asked for it &mdash; which is a staff-side screen this board does not draw and the programme has not specified. Also needed: whether the app knows which athletes are under 18 without displaying a birth date.</p>
+      <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">unverified &middot; blocks artboard 4 &middot; may require a staff-side capture screen, not drawn</p>
+    </div>
+
+    <div style="background: var(--surf); border: 1px solid rgba(var(--warn-rgb), 0.5); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">4 &middot; Can an account exist in a declined state, or does every account assume consent</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Frame 3B needs an account that is in a squad, appears in lists, and has no entries and no readiness &mdash; and needs every staff aggregate to drop it from the denominator rather than count it as a non-submitter. If consent is assumed by the existence of a row, declining is currently indistinguishable from not having answered, and that is the single biggest thing to confirm on this board.</p>
+      <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">unverified &middot; blocks artboard 3B &middot; affects every denominator in the staff app</p>
+    </div>
+
+    <div style="background: var(--surf); border: 1px solid rgba(var(--warn-rgb), 0.5); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: var(--t-card-sm); font-weight: var(--w-bold); line-height: var(--lh-tight); color: var(--text)">5 &middot; Can the app tell whether it is running installed, and can it count that per athlete</p>
+      <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">The reachability figure needs both: a display-mode check on the client, and a stored per-athlete state for the staff view, refreshed on each open. Without the second, &ldquo;18 of 30 can receive reminders&rdquo; cannot be drawn honestly and artboard 6 has no measurable effect. Also open: how far back the iOS Safari toolbar layout in artboard 6 holds, and what the card should say on Android, where the browser can offer the install itself.</p>
+      <p style="margin: 2px 0 0; font-family: var(--font-mono); font-size: var(--t-num-meta); line-height: var(--lh-base); color: var(--faint); text-wrap: pretty">unverified &middot; display-mode standalone check &middot; per-athlete stored state &middot; Android path not drawn</p>
+    </div>
+
+    <p style="margin: 24px 0 0; font-size: var(--t-section); font-weight: var(--w-black); letter-spacing: var(--t-section-tracking); line-height: var(--lh-tight); color: var(--text)">Legal placeholders, by frame</p>
+
+    <div style="background: var(--surf); border: 1px dashed var(--line-dashed); border-radius: var(--r); padding: 18px; display: flex; flex-direction: column; gap: 8px">
+      <p style="margin: 0; font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty">Six placeholders. None is drafted, and no wording anywhere on the board is intended as legal text &mdash; including the plain-language lines, which describe the product and will need reading against whatever the solicitor supplies.</p>
+      <div style="display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 8px 0; border-top: 1px solid var(--hair)">
+        <span style="font-family: var(--font-mono); font-size: var(--t-num-meta); color: var(--text)">LEGAL-1A</span>
+        <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty"><span style="font-weight: var(--w-bold); color: var(--text)">Artboard 1. </span>The address an athlete forwards a suspicious invite to, and any wording about reporting it. Currently drawn as club-contact copy with no address.</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 8px 0; border-top: 1px solid var(--hair)">
+        <span style="font-family: var(--font-mono); font-size: var(--t-num-meta); color: var(--text)">LEGAL-3A</span>
+        <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty"><span style="font-weight: var(--w-bold); color: var(--text)">Artboards 3A and 4B. </span>Lawful basis and purpose for performance data. Two sentences, same position whichever basis applies.</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 8px 0; border-top: 1px solid var(--hair)">
+        <span style="font-family: var(--font-mono); font-size: var(--t-num-meta); color: var(--text)">LEGAL-3B</span>
+        <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty"><span style="font-weight: var(--w-bold); color: var(--text)">Artboards 3A and 4B. </span>Explicit consent wording for health and injury data, including special-category handling.</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 8px 0; border-top: 1px solid var(--hair)">
+        <span style="font-family: var(--font-mono); font-size: var(--t-num-meta); color: var(--text)">LEGAL-3C</span>
+        <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty"><span style="font-weight: var(--w-bold); color: var(--text)">Artboards 3A and 4B. </span>The club&rsquo;s attestation that declining does not affect selection, and what Fydr may say on its behalf. The plain sentence and its caption are drawn; the attestation behind them is not written.</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 8px 0; border-top: 1px solid var(--hair)">
+        <span style="font-family: var(--font-mono); font-size: var(--t-num-meta); color: var(--text)">LEGAL-3D</span>
+        <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty"><span style="font-weight: var(--w-bold); color: var(--text)">Artboards 3A and 4B. </span>The version identifier shown to the athlete and stored with the decision, and the rule for when a change of wording requires re-asking.</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 8px 0; border-top: 1px solid var(--hair)">
+        <span style="font-family: var(--font-mono); font-size: var(--t-num-meta); color: var(--text)">LEGAL-3E</span>
+        <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty"><span style="font-weight: var(--w-bold); color: var(--text)">Artboard 3B, and the withdrawal row. </span>Retention and deletion on decline or withdrawal: what is deleted, what is kept, for how long, and what the club keeps in its audit trail.</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 8px 0; border-top: 1px solid var(--hair)">
+        <span style="font-family: var(--font-mono); font-size: var(--t-num-meta); color: var(--text)">LEGAL-4A</span>
+        <span style="font-size: var(--t-body-sm); line-height: var(--lh-base); color: var(--muted); text-wrap: pretty"><span style="font-weight: var(--w-bold); color: var(--text)">Artboard 4A. </span>Who holds the decision for an athlete under 18, whether the athlete&rsquo;s own agreement is also required, and when it transfers to them.</span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

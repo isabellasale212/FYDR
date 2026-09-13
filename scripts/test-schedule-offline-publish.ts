@@ -26,6 +26,7 @@ import {
   type PendingStore,
   type PendingWeek,
 } from '@/components/ScheduleGrid/pending';
+import { humanizeDbError, saysConnectionFailed } from '@/lib/writeErrors';
 
 let passed = 0, failed = 0;
 const assert = (cond: boolean, label: string): void => {
@@ -93,6 +94,28 @@ console.log('\n2. a network failure is told apart from a server refusal');
   assert(!isNetworkFailure('duplicate key value violates unique constraint'), 'nor a constraint');
   assert(!isNetworkFailure('This session changed since you opened it.'), 'nor an optimistic-lock conflict');
   assert(!isNetworkFailure(undefined) && !isNetworkFailure(42), 'nor nothing');
+}
+
+console.log('\n2b. REOPENED 2026-09-12 (test-club run step 11): the helpers return the HUMANISED sentence, and the guard must recognise that too');
+{
+  /* createSession / updateSession / deleteSession pass every driver error
+     through humanizeDbError before returning it, so "Failed to fetch" reaches
+     handlePublish as "That didn't save — the connection dropped or timed
+     out…" — the raw-engine regexes above never saw it, networkFailed stayed
+     false, router.refresh() ran offline and the tab landed on Chrome's
+     ERR_INTERNET_DISCONNECTED page before the "Not published:" line was read. */
+  const staff = humanizeDbError('TypeError: Failed to fetch', 'staff');
+  const athlete = humanizeDbError('TypeError: Load failed', 'athlete');
+  assert(/connection dropped/.test(staff), 'the staff sentence is what the helpers actually return');
+  assert(isNetworkFailure(staff), 'the humanised staff sentence is a network failure');
+  assert(isNetworkFailure(athlete), 'and the athlete one');
+  assert(isNetworkFailure(`Gym A: ${staff}`), 'and the "<title>: <sentence>" line handlePublish builds from it');
+  assert(!isNetworkFailure(humanizeDbError('permission denied for table sessions', 'staff')), 'a humanised permission refusal is not');
+  assert(!isNetworkFailure(humanizeDbError('some unknown driver string', 'staff')), 'nor the generic default');
+  assert(!isNetworkFailure(humanizeDbError('duplicate key value violates unique constraint', 'staff')), 'nor a humanised duplicate');
+  assert(saysConnectionFailed(staff) && saysConnectionFailed(`Gym A: ${staff}`) && !saysConnectionFailed('That didn’t save. Try again in a moment.'), 'writeErrors.ts owns the recognition of its own sentence, so a reworded sentence cannot silently break the guard');
+  const pending = readFileSync('src/components/ScheduleGrid/pending.ts', 'utf8');
+  assert(/saysConnectionFailed\(message\)/.test(pending) && /from '@\/lib\/writeErrors'/.test(pending), 'and isNetworkFailure asks it');
 }
 
 console.log('\n3. the workspace is wired to both halves');

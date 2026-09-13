@@ -167,6 +167,19 @@ export function humanizeDbError(
   return staff ? SENTENCES.defaultStaff : SENTENCES.defaultAthlete;
 }
 
+/** §0al (reopened 2026-09-12, test-club run step 11): the schedule helpers
+ *  hand back the SENTENCE, not the raw engine string, so a caller deciding
+ *  "did this request ever reach the server?" must recognise the sentence —
+ *  the raw-engine regexes alone let a humanised "Failed to fetch" through,
+ *  `router.refresh()` ran offline and the tab landed on Chrome's offline
+ *  page before the "Not published:" line was read. True when `message` is,
+ *  or contains, the connection sentence for either audience (handlePublish
+ *  prefixes it with the session's title). Lives here so a reworded sentence
+ *  cannot silently break the guard. */
+export function saysConnectionFailed(message: string): boolean {
+  return message.includes(SENTENCES.connectionStaff) || message.includes(SENTENCES.connectionAthlete);
+}
+
 /** The one-liner for `onError` handlers: bespoke messages pass through,
  *  everything else is humanized. Never returns a raw driver string. */
 export function toUserMessage(err: unknown, audience: WriteAudience = 'athlete'): string {

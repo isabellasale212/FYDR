@@ -1,4 +1,5 @@
 import type { DraftSession, EditOverlay } from './types';
+import { saysConnectionFailed } from '@/lib/writeErrors';
 
 /* THE WEEK'S PENDING CHANGES SURVIVE A RELOAD — §0al, decided by Isabella
  * 2026-09-11, built 2026-09-12.
@@ -107,13 +108,21 @@ export function clearPending(store: PendingStore, key: string): void {
      Safari   TypeError: Load failed
      Firefox  TypeError: NetworkError when attempting to fetch resource.
    A server-side refusal ("No current season is set up…", a unique violation,
-   a conflict) is never one of these, and those keep the refresh. */
+   a conflict) is never one of these, and those keep the refresh.
+
+   REOPENED 2026-09-12 (test-club run step 11): createSession, updateSession
+   and deleteSession return their errors already humanised — "Failed to
+   fetch" arrives here as "That didn't save — the connection dropped or timed
+   out…" — so the raw shapes alone never matched the path the helpers
+   actually take, networkFailed stayed false, and the refresh ran offline.
+   writeErrors.ts now owns the recognition of its own sentence. */
 const NETWORK_MESSAGES = [/failed to fetch/i, /load failed/i, /networkerror/i, /network request failed/i];
 
 /** True when a publish error means the request never reached the server —
  *  nothing was written, so the grid must NOT be refreshed away. Accepts the
- *  thrown value or the message string a query helper returned. */
+ *  thrown value (raw) or the message string a query helper returned
+ *  (humanised, prefixed with the session's title by handlePublish). */
 export function isNetworkFailure(error: unknown): boolean {
   const message = typeof error === 'string' ? error : error instanceof Error ? error.message : '';
-  return NETWORK_MESSAGES.some((re) => re.test(message));
+  return NETWORK_MESSAGES.some((re) => re.test(message)) || saysConnectionFailed(message);
 }

@@ -228,7 +228,13 @@ athletes**, nothing is written, the banner reads *"Not published: …"*, and the
 grid and its pending changes stay exactly as they were; the page does not
 reload itself. Publish again when the signal is back. A failure part-way
 through a publish that did reach the server still reloads the week so the
-grid agrees with what was written.
+grid agrees with what was written. The "did the request reach the server?"
+test (`isNetworkFailure`, `pending.ts`) recognises both the raw engine
+strings a thrown fetch carries and the humanised sentence the session
+helpers return ("That didn't save — the connection dropped or timed out…",
+`saysConnectionFailed` in `writeErrors.ts`) — reopened and fixed 13
+September 2026 after the test-club run found the humanised path took the
+reload to Chrome's offline page.
 
 ---
 

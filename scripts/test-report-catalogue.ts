@@ -57,14 +57,17 @@ console.log('\n3. compliance, the full shell');
 /* One report a commit after compliance. Each: the definition on screen
    (ReportPager header props or a direct ReportHeader), first line of the CSV,
    under the PDF's title, and a line in its spec. */
-const DONE: { key: string; dir: string; spec: string; csv?: string; pdf?: string }[] = [
+const DONE: { key: string; dir: string; spec: string; csv?: string; pdf?: string; screen?: RegExp }[] = [
   { key: 'injuries', dir: 'injuries', spec: 'docs/screens/24-injury-report.md' },
   { key: 'training', dir: 'training', spec: 'docs/screens/23-training-report.md' },
+  /* The athlete report's header is its own (one athlete, a breadcrumb), so
+     the card is composed in the page with the shared header's classes. */
+  { key: 'athlete', dir: 'athlete/[athleteId]', spec: 'docs/screens/19-athlete-report.md', screen: /<div className="card rhead-definition"[^>]*>\s*<p>\{reportDefinition\('athlete'\)\}<\/p>\s*<\/div>/ },
 ];
 console.log('\n4. the reports that carry it so far');
 for (const r of DONE) {
   const page = strip(read(`src/app/(staff)/reports/${r.dir}/page.tsx`));
-  assert(new RegExp(`definition(: |=\\{)reportDefinition\\('${r.key}'\\)`).test(page), `${r.key}: on screen`);
+  assert((r.screen ?? new RegExp(`definition(: |=\\{)reportDefinition\\('${r.key}'\\)`)).test(page), `${r.key}: on screen`);
   const csv = strip(read(r.csv ?? `src/app/(staff)/reports/${r.dir}/export/route.ts`));
   assert(new RegExp("`# \\$\\{reportDefinition\\('" + r.key + "'\\)\\}\\\\r\\\\n` \\+").test(csv), `${r.key}: first line of the CSV`);
   const pdf = strip(read(r.pdf ?? `src/app/(staff)/reports/${r.dir}/pdf/route.tsx`));

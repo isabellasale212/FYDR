@@ -4,6 +4,7 @@ import { csvResponse, toCsv } from '@/lib/csv';
 import { fetchAthleteReport } from '@/lib/queries/athleteReport';
 import { recordReportView } from '@/lib/queries/reports';
 import { formatNumber } from '@/lib/format';
+import { reportDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
 import type { AppRole } from '@/lib/types/database';
@@ -76,6 +77,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
    * sentence the page prints under the load tiles, from the same constant. */
   const caveat = periodCaveat(period);
   const caption =
+    `# ${reportDefinition('athlete')}\r\n` +
     `# Athlete report, ${athlete.first_name} ${athlete.last_name}, ${period.label} (${report.from} to ${report.to}). ` +
     `Compliance ${compliancePct === null ? 'n/a' : `${compliancePct}%`}, ` +
     `ACWR ${report.load.acwr === null ? acwrSuppressedLabel(report.load.daysWithData) : formatNumber(report.load.acwr, 2)}, ` +

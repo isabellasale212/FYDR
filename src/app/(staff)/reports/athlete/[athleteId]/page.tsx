@@ -13,6 +13,7 @@ import { recordReportView } from '@/lib/queries/reports';
 import { ageFrom, enumLabel, formatDate, formatNumber } from '@/lib/format';
 import { NOT_EXPECTED, NO_RESULT, submittedLine } from '@/lib/reportFigures';
 import { availabilityStatus, SEVERITY_STATUS } from '@/lib/status';
+import { reportDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
 import { isPremium } from '@/lib/tier';
@@ -255,6 +256,14 @@ export default async function AthleteReportPage({
           {caveat}
         </p>
       ) : null}
+
+      {/* PATTERN-S7 C1: the catalogue's sentence, above the numbers — the
+          same card the shared header draws (.rhead-definition), composed
+          here because this report's header is its own (one athlete, a
+          breadcrumb, no group chips). The same words head both exports. */}
+      <div className="card rhead-definition" style={{ marginBottom: 'var(--sp-14)' }}>
+        <p>{reportDefinition('athlete')}</p>
+      </div>
 
       {/* The period scopes every tab, so it rides the tab row rather than a
           row of its own above it. */}

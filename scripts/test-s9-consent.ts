@@ -4,6 +4,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { CONSENT_VERSION, LEGAL_PLACEHOLDERS } from '@/lib/legalPlaceholders';
 import { consentState, consentStateLabel, entryFormsOpen, maskEmail } from '@/lib/consentState';
+import { passwordRules, rulesMet, unmetLine } from '@/lib/passwordRules';
 
 let failed = 0;
 function assert(cond: boolean, msg: string) {
@@ -69,9 +70,29 @@ console.log('\n3. the state, pure');
   assert(maskEmail('b.rafferty@gmail.com') === 'b***@***.com', 'the masked address');
 }
 
-if (existsSync('src/app/(athlete)/consent/decide/page.tsx')) {
-  console.log('\n4. the screens (as they land)');
-  // filled in by the artboard commits
+console.log('\n4. artboard 1 — invite received, setting a password');
+{
+  const rules = passwordRules({ password: '', confirmedUnique: false, firstName: 'Niall', lastName: 'Rafferty', clubName: 'Ashcombe Rugby Club' });
+  assert(rules.length === 3 && rules.every((r) => r.state === 'unchecked'), 'three rules, all unchecked before typing — a dash means not checked yet, not failed');
+  const nine = passwordRules({ password: 'raffert1x', confirmedUnique: false, firstName: 'Niall', lastName: 'Rafferty', clubName: 'Ashcombe Rugby Club' });
+  assert(nine[0]!.state === 'unmet' && nine[0]!.detail === ' — this has 9' && unmetLine(nine, 'raffert1x') === 'Add 3 more characters. This one is 9 of the 12 needed.', '9 characters: the one rule not met says what it needs');
+  assert(rulesMet(passwordRules({ password: 'orchard-sparrow-99', confirmedUnique: true, firstName: 'Niall', lastName: 'Rafferty', clubName: 'Ashcombe Rugby Club' })) === 3, 'a long password with no name in it, confirmed unique: 3 of 3');
+  assert(passwordRules({ password: 'ashcombe-orchard-99', confirmedUnique: true, firstName: 'Niall', lastName: 'Rafferty', clubName: 'Ashcombe Rugby Club' })[2]!.state === 'unmet', 'the club’s name in it: rule three unmet');
+  const form = strip(read('src/components/ResetConfirmForm/ResetConfirmForm.tsx'));
+  assert(/Fydr never asks for a password by email or by message/.test(form), 'the one sentence that does the work');
+  assert(/<LegalPlaceholder id="LEGAL-1A" \/>/.test(form), 'LEGAL-1A drawn, undrafted');
+  assert(/\{met\} of \{rules\.length\} rules met/.test(form), 'the count with its denominator');
+  assert(/aria-disabled=\{blocked \|\| undefined\}/.test(form) && /if \(blocked\) return;/.test(form), 'the action is blocked, not dimmed, and nothing is sent while a rule is unmet');
+  assert(/Next you will read what staff can see, then make one choice\./.test(form), 'the athlete is told what comes next');
+  assert(/data-emphasis/.test(form) && /Sent to \{invite\.recipientMasked\}/.test(form), 'the identity block is the emphasised card and the address is masked');
+  const ctx = strip(read('src/lib/inviteContext.ts'));
+  assert(/createAdminClient\(\)/.test(ctx) && /\.eq\('org_id', o\.orgId\)\.eq\('entity_type', 'users'\)\.eq\('entity_id', o\.userId\)/.test(ctx), 'the inviter is read from the account’s own creation audit row, scoped to the verified session');
+  const add = strip(read('src/components/AddAthleteForm/AddAthleteForm.tsx'));
+  assert(/isUnder18\(dateOfBirth\)/.test(add) && /data-guardian/.test(add) && /guardian-email/.test(add), 'the Add athlete form captures the guardian once the date of birth makes the athlete under 18');
+  const route = strip(read('src/app/(staff)/squad/new/create/route.ts'));
+  assert(/if \(minor && email\)/.test(route) && /needs a guardian’s name before they can be invited/.test(route) && /guardianEmail === email/.test(route), 'and the route requires it the moment an under-18 is invited, and refuses the athlete’s own address');
+  const bulk = strip(read('src/app/(staff)/settings/users/bulk-invite/send/route.ts'));
+  assert(/is under 18 and no guardian is recorded/.test(bulk) && /is under 18: add them with the Add athlete form/.test(bulk), 'the bulk invite refuses an under-18 with no guardian, by name');
 }
 
 console.log(`\n${failed === 0 ? 'all passed' : `${failed} failed`}`);

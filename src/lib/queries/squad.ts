@@ -265,6 +265,11 @@ export type NewAthleteInput = {
   dateOfBirth: string;
   position: string | null;
   squadNumber: number | null;
+  /** PATTERN-S9 (0120): for an athlete under 18, the guardian the club holds —
+   *  captured here, at invite, shown to the athlete masked and never asked of
+   *  them. Required by the route whenever an under-18 is invited. */
+  guardianName?: string | null;
+  guardianEmail?: string | null;
 };
 
 export type SquadNumberHolder = { squad_number: number; name: string };
@@ -324,6 +329,8 @@ export async function createAthlete(
       position: input.position,
       squad_number: input.squadNumber,
       status: 'active',
+      guardian_name: input.guardianName ?? null,
+      guardian_email: input.guardianEmail ?? null,
     })
     .select('id');
 

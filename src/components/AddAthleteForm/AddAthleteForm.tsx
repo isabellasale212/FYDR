@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { POSITIONS } from '@/lib/positions';
+import { isUnder18 } from '@/lib/format';
 import type { SquadNumberHolder } from '@/lib/queries/squad';
 
 type Props = {
@@ -22,6 +23,12 @@ export function AddAthleteForm({ takenNumbers }: Props) {
   const [position, setPosition] = useState('');
   const [squadNumber, setSquadNumber] = useState('');
   const [email, setEmail] = useState('');
+  /* PATTERN-S9 (0120): the guardian, captured where the date of birth is
+     asserted. Shown once the date makes the athlete under 18; required the
+     moment an under-18 is being invited. */
+  const [guardianName, setGuardianName] = useState('');
+  const [guardianEmail, setGuardianEmail] = useState('');
+  const minor = /^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth) && isUnder18(dateOfBirth);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [invite, setInvite] = useState<string | null>(null);
@@ -51,6 +58,8 @@ export function AddAthleteForm({ takenNumbers }: Props) {
           position: position || null,
           squadNumber: squadNumber === '' ? null : Number(squadNumber),
           email: email || null,
+          guardianName: guardianName || null,
+          guardianEmail: guardianEmail || null,
         }),
       });
       const json = await res.json();
@@ -226,6 +235,27 @@ export function AddAthleteForm({ takenNumbers }: Props) {
       <p className="tiny" style={{ marginTop: 'var(--sp-6)' }}>
         Leave blank to add them to the roster with no app access. You can invite them later from their profile.
       </p>
+
+      {minor ? (
+        <fieldset className="card" style={{ marginTop: 'var(--sp-14)', border: '1px solid var(--border)' }} data-guardian>
+          <legend className="card-title" style={{ padding: '0 var(--sp-4)' }}>
+            Guardian
+          </legend>
+          <p className="import-sub">
+            Under 18 on this date of birth. The data question goes to a guardian, on a link emailed to them — not to the
+            athlete. Fydr shows the athlete the name and a masked address and never asks them for either.
+            {email ? ' Needed before this invite can be sent.' : ' Optional until they are invited.'}
+          </p>
+          <label className="label" htmlFor="guardian-name">
+            Guardian&rsquo;s name{email ? '' : ' (optional)'}
+          </label>
+          <input id="guardian-name" className="field" type="text" value={guardianName} onChange={(e) => setGuardianName(e.target.value)} autoComplete="off" required={!!email} />
+          <label className="label" htmlFor="guardian-email" style={{ marginTop: 'var(--sp-12)' }}>
+            Guardian&rsquo;s email{email ? '' : ' (optional)'}
+          </label>
+          <input id="guardian-email" className="field" type="email" value={guardianEmail} onChange={(e) => setGuardianEmail(e.target.value)} autoComplete="off" required={!!email} />
+        </fieldset>
+      ) : null}
 
       <div className="flag-actions" style={{ marginTop: 'var(--sp-16)' }}>
         <button type="submit" className="btn-primary" disabled={saving || clash !== null}>

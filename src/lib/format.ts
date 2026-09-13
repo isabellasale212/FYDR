@@ -506,6 +506,15 @@ export function ageFrom(dob: string | null | undefined, timeZone: string = DATE_
   return age;
 }
 
+/** PATTERN-S9 (0120): the one age question the product asks — under 18 by
+ *  date of birth, the rule athlete_is_minor() holds in the database (a
+ *  missing date counts as under 18 there; here a caller with no date passes
+ *  null and decides). Never prints an age. */
+export function isUnder18(dob: string | null | undefined, timeZone: string = DATE_TZ): boolean {
+  const age = ageFrom(dob, timeZone);
+  return age === null || age < 18;
+}
+
 /** The weekday a fixture is played on, in the organisation's timezone.
  *
  *  Exists because the dashboard used to write "SATURDAY" as a literal, in both

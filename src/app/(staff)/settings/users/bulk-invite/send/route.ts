@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { deleteInvitedUser, issueInvite } from '@/lib/invite';
+import { isUnder18 } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 import { MAX_BULK_INVITE_ROWS, type BulkInviteResult, type BulkInviteSendRow } from '@/lib/queries/bulkInvite';
 import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
@@ -65,7 +66,24 @@ export async function POST(request: Request) {
     // this route, see bulkInvite.ts's own header) needs one or the other
     // either way, but a real existing value is never overwritten by a
     // bulk-invite row that was only ever meant to unblock activation.
+    /* PATTERN-S9 (0120): an athlete under 18 is invited only once the club
+       holds a guardian, because the consent link goes to the guardian, not
+       the athlete. A pasted list carries no guardian, so an under-18 row is
+       refused here by name with the way through — a new record via the Add
+       athlete form, a matched one via its profile — rather than invited into
+       a flow that stops at "waiting on a guardian" with nobody to wait for. */
     let athleteId = linkAthleteId;
+    if (athleteId) {
+      const { data: g } = await db.from('athletes').select('date_of_birth, guardian_email').eq('org_id', orgId).eq('id', athleteId).maybeSingle();
+      const dob = g?.date_of_birth ?? dateOfBirth;
+      if (isUnder18(dob) && !g?.guardian_email) {
+        results.push({ email, ok: false, error: `${firstName} ${lastName} is under 18 and no guardian is recorded. Add the guardian on their profile, then invite from there.`, inviteUrl: null });
+        continue;
+      }
+    } else if (isUnder18(dateOfBirth)) {
+      results.push({ email, ok: false, error: `${firstName} ${lastName} is under 18: add them with the Add athlete form, which takes the guardian’s name and email the consent link goes to.`, inviteUrl: null });
+      continue;
+    }
     if (!athleteId) {
       const { data: newAthlete, error: athleteErr } = await db
         .from('athletes')

@@ -4,6 +4,7 @@ import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 import { createAthlete } from '@/lib/queries/squad';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { issueInvite, deleteInvitedUser } from '@/lib/invite';
+import { isUnder18 } from '@/lib/format';
 
 /** Screen 63's write. The only place this app creates an athlete.
  *
@@ -69,12 +70,29 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
   if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return bad('Enter a valid email address, or leave it blank.');
 
+  /* PATTERN-S9 (0120): an athlete under 18 does not decide about their own
+     data — a guardian does, on a tokenised page emailed to the address the
+     club holds. So the guardian is captured HERE, where the date of birth is
+     asserted, and is required the moment an under-18 is invited. A roster row
+     with no invite can wait for it; the profile takes it later. */
+  const guardianName = typeof body.guardianName === 'string' ? body.guardianName.trim() : '';
+  const guardianEmail = typeof body.guardianEmail === 'string' ? body.guardianEmail.trim().toLowerCase() : '';
+  const minor = isUnder18(dateOfBirth);
+  if (minor && email) {
+    if (!guardianName) return bad('An athlete under 18 needs a guardian’s name before they can be invited — the guardian answers the data question, not the athlete.');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(guardianEmail)) return bad('Enter the guardian’s email address. The consent link goes there, not to the athlete.');
+    if (guardianEmail === email) return bad('The guardian’s address must be different from the athlete’s.');
+  }
+  if (guardianEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(guardianEmail)) return bad('Enter a valid guardian email address, or leave it blank.');
+
   const created = await createAthlete(db, orgId, {
     firstName,
     lastName,
     dateOfBirth,
     position,
     squadNumber,
+    guardianName: guardianName || null,
+    guardianEmail: guardianEmail || null,
   });
   if (!created.ok) return bad(created.error);
 

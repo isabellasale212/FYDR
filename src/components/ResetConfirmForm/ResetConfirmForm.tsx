@@ -6,10 +6,15 @@ import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { PasswordField } from '@/components/PasswordField/PasswordField';
 import { reportSignIn } from '@/lib/signInAudit';
+import { passwordRules, rulesMet, unmetLine } from '@/lib/passwordRules';
+import type { InviteContext } from '@/lib/inviteContext';
+import { LegalPlaceholder } from '@/components/LegalPlaceholder/LegalPlaceholder';
+import { formatDate } from '@/lib/format';
 
 /** Same rule and copy as ChangePasswordForm — the app's one password standard.
  *  12, matching docs/09-security-and-compliance.md §8 (audit: was 10). */
 const MIN_LENGTH = 12;
+const PASSWORD_MIN = MIN_LENGTH;
 
 type LinkPhase = 'checking' | 'ready' | 'no-link' | 'expired' | 'failed';
 
@@ -66,14 +71,23 @@ async function establishRecoverySession(): Promise<LinkPhase> {
   return 'ready';
 }
 
-export function ResetConfirmForm() {
+/** `invite` is PATTERN-S9 artboard 1 (2026-09-13): the identity block above
+ *  the field, the three rules stated before typing, the count with its
+ *  denominator, the action blocked rather than dimmed while a rule is unmet,
+ *  and nothing sent while one is — so no attempt is recorded against the
+ *  athlete. The reset arrival keeps its frozen two-field shape. */
+export function ResetConfirmForm({ invite = null, timezone = 'Europe/London' }: { invite?: InviteContext | null; timezone?: string }) {
   const router = useRouter();
   const [phase, setPhase] = useState<LinkPhase>('checking');
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [uniqueConfirmed, setUniqueConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const establishRef = useRef<Promise<LinkPhase> | null>(null);
+  const rules = invite ? passwordRules({ password: next, confirmedUnique: uniqueConfirmed, firstName: invite.firstName, lastName: invite.lastName, clubName: invite.clubName }) : null;
+  const met = rules ? rulesMet(rules) : 0;
+  const blocked = rules ? met < rules.length : false;
 
   useEffect(() => {
     let cancelled = false;
@@ -100,13 +114,19 @@ export function ResetConfirmForm() {
     event.preventDefault();
     setError(null);
 
-    if (next.length < MIN_LENGTH) {
-      setError(`Use at least ${MIN_LENGTH} characters.`);
-      return;
-    }
-    if (next !== confirm) {
-      setError('The new password and its confirmation do not match.');
-      return;
+    if (invite) {
+      /* Blocked, not dimmed: the button stays a real control and the rules
+         say what they need. Nothing is sent while one is unmet. */
+      if (blocked) return;
+    } else {
+      if (next.length < MIN_LENGTH) {
+        setError(`Use at least ${MIN_LENGTH} characters.`);
+        return;
+      }
+      if (next !== confirm) {
+        setError('The new password and its confirmation do not match.');
+        return;
+      }
     }
 
     setBusy(true);
@@ -157,6 +177,117 @@ export function ResetConfirmForm() {
           </Link>
         </div>
       </div>
+    );
+  }
+
+  if (invite && rules) {
+    const line = unmetLine(rules, next);
+    const typed = next.length > 0;
+    return (
+      <form onSubmit={onSubmit} method="post" noValidate className="signin-form" data-invite>
+        {/* The emphasised card: who invited you. Club, squad, the person, the
+            date, and the address it went to — masked. */}
+        <section className="card" aria-labelledby="who-invited" data-emphasis>
+          <h2 className="card-title" id="who-invited">Who invited you</h2>
+          <p className="import-sub" style={{ marginBottom: 'var(--sp-4)' }}>
+            <b>{invite.clubName}</b>
+            {invite.squad ? ` — ${invite.squad}` : ''}
+          </p>
+          <p className="import-sub" style={{ marginBottom: 'var(--sp-4)' }}>
+            {invite.inviterName ? `${invite.inviterName}${invite.inviterRole ? `, ${invite.inviterRole}` : ''}` : 'Somebody at the club'}
+            {invite.sentAt ? `, on ${formatDate(invite.sentAt, timezone)}` : ''}
+          </p>
+          {invite.recipientMasked ? (
+            <p className="import-sub num" style={{ marginBottom: 0 }}>
+              Sent to {invite.recipientMasked}
+            </p>
+          ) : null}
+          <p className="tiny" style={{ marginTop: 'var(--sp-10)' }}>
+            Fydr never asks for a password by email or by message. If you did not expect this, do not set one
+            {invite.inviterName ? ` — ask ${invite.inviterName.split(' ')[0]} at the club.` : ' — ask at the club.'}
+          </p>
+          <LegalPlaceholder id="LEGAL-1A" />
+        </section>
+
+        <section className="card" aria-labelledby="rules-title">
+          <h2 className="card-title" id="rules-title">Three rules, stated before you type</h2>
+          <ul className="pw-rules" aria-live="polite">
+            {rules.map((r) => (
+              <li key={r.id} className="pw-rule" data-state={r.state}>
+                {r.id === 'unique' ? (
+                  <input
+                    type="checkbox"
+                    className="pw-rule-mark"
+                    style={{ width: 18, height: 18, margin: 0, flex: '0 0 18px' }}
+                    checked={uniqueConfirmed}
+                    onChange={(e) => setUniqueConfirmed(e.target.checked)}
+                    aria-label="I do not use this password anywhere else"
+                  />
+                ) : (
+                  <span className="pw-rule-mark" aria-hidden="true">
+                    {r.state === 'met' ? '✓' : r.state === 'unmet' ? '!' : '–'}
+                  </span>
+                )}
+                <span>
+                  {r.label}
+                  {r.detail ? <span className="num">{r.detail}</span> : null}
+                  <span className="visually-hidden">{r.state === 'met' ? ', met' : r.state === 'unmet' ? ', not met' : ', not checked yet'}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="tiny" style={{ marginTop: 'var(--sp-8)' }}>
+            {typed ? 'Checked as you type. A rule not met says what it needs.' : 'A dash means not checked yet, not failed.'}
+          </p>
+        </section>
+
+        <div className="signin-fields">
+          {error ? (
+            <p className="form-error" role="alert" style={{ margin: 0 }}>
+              {error}
+            </p>
+          ) : null}
+          <div className="form-row" style={{ margin: 0 }}>
+            <label className="label" htmlFor="new-password">
+              New password
+            </label>
+            <div data-invalid={typed && line ? 'true' : undefined} className="pw-field-wrap">
+              <PasswordField id="new-password" autoComplete="new-password" required value={next} onChange={setNext} enterKeyHint="go" />
+            </div>
+            {typed && line ? (
+              <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-6)' }}>
+                {line}
+              </p>
+            ) : (
+              <p className="cap" style={{ marginTop: 'var(--sp-4)' }}>
+                {PASSWORD_MIN} characters or more.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <p className="subm-count num" data-complete={blocked ? undefined : ''} style={{ marginTop: 'var(--sp-14)' }}>
+          {met} of {rules.length} rules met
+        </p>
+        <button
+          className={`${blocked ? 'btn-ghost' : 'btn-primary'} btn-commit`}
+          type="submit"
+          disabled={busy}
+          aria-disabled={blocked || undefined}
+          onClick={(event) => {
+            if (blocked) event.preventDefault();
+          }}
+        >
+          {busy ? 'Saving' : 'Set password'}
+        </button>
+        <p className="tiny" style={{ textAlign: 'center', marginTop: 'var(--sp-8)' }}>
+          {typed && blocked
+            ? 'Nothing is sent while a rule is unmet, so no attempt is recorded against you.'
+            : invite.isAthlete
+              ? 'Next you will read what staff can see, then make one choice.'
+              : 'You will be signed in as soon as it is set.'}
+        </p>
+      </form>
     );
   }
 

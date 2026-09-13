@@ -14743,6 +14743,15 @@ a.hist-row:active { background: var(--surf-sunken); }
   line-height: 1.35;
 }
 
+/* The one emphasised card per screen, on the S9 frames: the identity block
+   on the invite, the two facts on "what staff can see", the first-run card.
+   The same accent wash and soft accent line the report figure (.rfig)
+   wears — one emphasis treatment, not a second. */
+.card[data-emphasis] {
+  background: var(--wash-accent);
+  border-color: var(--border-accent-soft);
+}
+
 /* The two equal choices on a decision frame (3A, 4B, the withdrawal blocks):
    both --tap-commit, both full width, both --surf with the accent line and
    the accent label, in source order agree then decline. No --ring-action, no

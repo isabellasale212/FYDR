@@ -79,6 +79,36 @@ do. It also gives the offline queue a visible home, which matters now the outbox
 is a real feature rather than a hidden mechanism. Accepted cost: a genuinely new
 query, as the page's own comment notes. Closes PATTERN-S6 C2.
 
+**B9. A part-filled form survives session expiry in localStorage, per form.**
+The same mechanism the gym drafts already use, so no new pattern. Sign in, return
+to the same sheet at the same scroll position, every answer still set. It moves
+into the shared IndexedDB outbox when S11 builds it. Closes PATTERN-S6 C3.
+
+**B10. One renderer: the PDF survives and Print opens it.** Seven `@react-pdf`
+handlers and a `@media print` block are two documents pretending to be one, and
+they will drift. The first time a club prints a report and emails the PDF of the
+same report and the two disagree, that is a credibility problem rather than a
+tidiness one. Accepted cost: printing becomes a two-step action. Closes
+PATTERN-S7 C4.
+
+**B11. One dialog pattern is approved**, built once and reused. It unblocks the
+finish-early confirmation (ATH-ADULT-10 C2), the export dialog (PATTERN-S7 C3)
+and the template-replace warning (B7). It uses `--w-dialog: 640px`, approved in
+group A. **The rule that comes with it: a dialog exists only where the action is
+destructive or irreversible** — replacing a week, deleting a board, running a
+retention purge. Never for a confirmation that merely slows someone down.
+
+**B12. A held availability write that lands after a newer value exists is never
+applied.** It is refused and shown to the coach as a conflict, naming both
+values with their times and who set each, with one action: discard, or open the
+athlete and set it again now. The medic's value stands while the coach decides,
+because availability after an injury is medic-owned. Accepted cost: the coach
+did real work offline and loses it. The alternative is a player marked
+unavailable by a four-hour-old phone after a clinician cleared them, which is
+the exact failure the clinical boundary exists to prevent. This is the open
+decision inside PATTERN-S6 C4 and C5, which the platform decision moved into
+scope.
+
 ## Related decisions made the same day
 
 - Scope is v1: `scope.md`.

@@ -190,6 +190,8 @@ Unless a flow says otherwise, all of these are on screen throughout:
 
 ## STAFF-SS-01 — Read the dashboard
 
+**Built 2026-09-13 (`6d3b3f0`, `d4fee2d`), measured on Harlow Vale at 1280.** The matchday card leads the page — "Ready for Saturday · v Wexcombe Ladies · Sat 19 Sept, 14:00 · home · 0 of 13 have a current status · 13 not recorded · MD in 6 days", Full / Doubtful / Ruled out, one athlete a row, the reason beneath for the medic only; absent with no fixture inside 14 days. The dashboard has role versions: the S&C reads four tiles (Need you on the load domains, Gym today, Weigh-ins, Available), the nutritionist two (Need you on nutrition, Weigh-ins) with no week strip and no matchday card.
+
 **Built 2026-09-12 (`59eee8d`, `58f0aca`, `a458c8e`, `ecb9c59`), measured as Jane at 1280.** Doubtful and Ruled out are tone-family cards on the readiness card (`data-tone` warn / bad); the two summary cards say their state ("▸ Closed · opens a list" / "▾ Open · showing the list"); the missing-check-in list is ordered by mornings in a row ("Not submitted · 28 mornings in a row · last entry Sat 15 Aug"); "Ready for {matchday}" only when the fixture is within 14 days, else "Squad readiness · No fixture in the next 14 days".
 
 **Entry point.** Sign-in lands here. "Dashboard" in the sidebar.

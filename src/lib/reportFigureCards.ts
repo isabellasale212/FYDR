@@ -64,3 +64,32 @@ export function availabilityFigure(o: {
     exclusions: availabilityExclusionsLine({ notRecorded: o.notRecorded, joinedInPeriod: o.joinedInPeriod }),
   };
 }
+
+/** The training and match boards: athletes on the board of those in scope —
+ *  who has a GPS record for this session. The count before the percentage;
+ *  the session as the sample; C2's coverage clause as the exclusions, with
+ *  the squad floor when shading is off. */
+export function boardFigure(o: {
+  onBoard: number;
+  inScope: number;
+  session: string;
+  dateLabel: string;
+  noun: 'athletes' | 'played';
+  floored: boolean;
+}): ReportFigureCopy {
+  const missing = Math.max(0, o.inScope - o.onBoard);
+  const pct = o.inScope > 0 ? Math.round((100 * o.onBoard) / o.inScope) : null;
+  const exclusions =
+    o.inScope === 0
+      ? 'Nobody in this filter.'
+      : missing === 0
+        ? 'Every athlete in this filter has a GPS record for this session — nobody is excluded.'
+        : `${missing} of ${o.inScope} in this filter ${missing === 1 ? 'has' : 'have'} no GPS record for this session and ${missing === 1 ? 'is' : 'are'} not on the board.`;
+  return {
+    label: o.noun === 'played' ? 'Played, on the board' : 'On the board',
+    count: o.inScope > 0 ? `${o.onBoard} of ${o.inScope}` : 'Nobody in this filter',
+    value: pct === null ? 'Not measured' : `${pct}%`,
+    sample: `${o.session} · ${o.dateLabel}`,
+    exclusions: o.floored ? `${exclusions} Fewer than five have data, so shading is off; the numbers are unchanged.` : exclusions,
+  };
+}

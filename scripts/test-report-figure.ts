@@ -5,7 +5,7 @@
  * system's is the wash family (.pp-hero's surface) at --fs-48. One report a
  * commit; §2 grows with each. */
 import { readFileSync } from 'node:fs';
-import { availabilityFigure, complianceFigure } from '@/lib/reportFigureCards';
+import { availabilityFigure, boardFigure, complianceFigure } from '@/lib/reportFigureCards';
 
 let failed = 0;
 function assert(cond: boolean, msg: string) {
@@ -74,6 +74,26 @@ console.log('\n3. injury and availability: available now of the roster');
   const pdf = strip(read('src/app/(staff)/reports/injuries/pdf/route.tsx'));
   assert(/<PdfFigure\s[\s\S]{0,40}\{\.\.\.availabilityFigure\(/.test(pdf), 'and the PDF leads with it');
   assert(/one emphasised figure/i.test(read('docs/screens/24-injury-report.md')), 'the spec says so');
+}
+
+console.log('\n4. training and match: on the board of those in scope');
+{
+  const f = boardFigure({ onBoard: 21, inScope: 30, session: 'Conditioning', dateLabel: 'Tue 8 Sept', noun: 'athletes', floored: false });
+  assert(f.label === 'On the board' && f.count === '21 of 30' && f.value === '70%' && f.sample === 'Conditioning · Tue 8 Sept', 'the count before the percentage, the session as the sample');
+  assert(f.exclusions === '9 of 30 in this filter have no GPS record for this session and are not on the board.', 'C2\'s coverage clause as the exclusions');
+  const all = boardFigure({ onBoard: 30, inScope: 30, session: 'Conditioning', dateLabel: 'Tue 8 Sept', noun: 'athletes', floored: false });
+  assert(all.exclusions === 'Every athlete in this filter has a GPS record for this session — nobody is excluded.', 'nobody excluded, said');
+  const floored = boardFigure({ onBoard: 3, inScope: 30, session: 'Conditioning', dateLabel: 'Tue 8 Sept', noun: 'athletes', floored: true });
+  assert(/Fewer than five have data, so shading is off; the numbers are unchanged\.$/.test(floored.exclusions), 'the squad floor rides in the exclusions');
+  const match = boardFigure({ onBoard: 14, inScope: 15, session: 'v Bath', dateLabel: 'Sat 1 Aug', noun: 'played', floored: false });
+  assert(match.label === 'Played, on the board' && match.count === '14 of 15' && /1 of 15 in this filter has no GPS record/.test(match.exclusions), 'the match board: played');
+  const nobody = boardFigure({ onBoard: 0, inScope: 0, session: 'x', dateLabel: 'y', noun: 'athletes', floored: false });
+  assert(nobody.count === 'Nobody in this filter' && nobody.value === 'Not measured' && nobody.exclusions === 'Nobody in this filter.', 'an empty filter: words');
+  const page = strip(read('src/app/(staff)/reports/training/page.tsx'));
+  assert((page.match(/<ReportFigure\s[\s\S]{0,40}\{\.\.\.boardFigure\(\{/g) ?? []).length === 2, 'both boards lead their Board card with it');
+  const pdf = strip(read('src/app/(staff)/reports/training/pdf/route.tsx'));
+  assert((pdf.match(/<PdfFigure \{\.\.\.boardFigure\(\{/g) ?? []).length === 2, 'and both PDFs');
+  assert(/one emphasised figure/i.test(read('docs/screens/23-training-report.md')), 'the spec says so');
 }
 
 console.log(`\n${failed === 0 ? 'all passed' : `${failed} failed`}`);

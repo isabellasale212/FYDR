@@ -1,5 +1,5 @@
 import { renderToBuffer } from '@react-pdf/renderer';
-import { fetchGroups } from '@/lib/queries/groups';
+import { fetchGroupAthleteIds, fetchGroups, fetchSquadSize } from '@/lib/queries/groups';
 import { recordReportView } from '@/lib/queries/reports';
 import {
   fetchMatchBoard,
@@ -13,8 +13,9 @@ import {
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, todayIso } from '@/lib/format';
-import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
+import { PdfFigure, PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
 import { reportDefinition } from '@/lib/reportCatalogue';
+import { boardFigure } from '@/lib/reportFigureCards';
 import { premiumOnlyResponse, requireReport } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
@@ -74,7 +75,13 @@ export async function GET(request: Request) {
       return pdfResponse(buffer, 'match-report.pdf');
     }
 
-    const [overview, board] = await Promise.all([fetchMatchOverview(db, orgId, groupIds, selected), fetchMatchBoard(db, orgId, groupIds, selected)]);
+    const [overview, board, scopeIds, squadSize] = await Promise.all([
+      fetchMatchOverview(db, orgId, groupIds, selected),
+      fetchMatchBoard(db, orgId, groupIds, selected),
+      fetchGroupAthleteIds(db, orgId, groupIds),
+      fetchSquadSize(db, orgId),
+    ]);
+    const scopeSize = scopeIds ? scopeIds.length : squadSize;
 
     const buffer = await renderToBuffer(
       <PdfReport footer={`${orgName} · Fydr · generated ${formatDate(selected.date, timezone)} · not for redistribution without the club's own policy`}>
@@ -96,6 +103,7 @@ export async function GET(request: Request) {
           </>
         ) : null}
 
+        <PdfFigure {...boardFigure({ onBoard: board.rows.length, inScope: scopeSize, session: `v ${selected.opponent}`, dateLabel: formatDate(selected.date, timezone), noun: 'played', floored: false })} />
         <PdfSectionTitle
           title="Board"
           caption={`Whole-match totals only, real per-athlete GPS · no H1/H2 split — this schema has nothing to split from · n = ${board.rows.length} played`}
@@ -131,7 +139,13 @@ export async function GET(request: Request) {
     return pdfResponse(buffer, 'training-report.pdf');
   }
 
-  const [overview, board] = await Promise.all([fetchTrainingOverview(db, orgId, groupIds, selected), fetchTrainingBoard(db, orgId, groupIds, selected)]);
+  const [overview, board, scopeIds, squadSize] = await Promise.all([
+    fetchTrainingOverview(db, orgId, groupIds, selected),
+    fetchTrainingBoard(db, orgId, groupIds, selected),
+    fetchGroupAthleteIds(db, orgId, groupIds),
+    fetchSquadSize(db, orgId),
+  ]);
+  const scopeSize = scopeIds ? scopeIds.length : squadSize;
 
   const buffer = await renderToBuffer(
     <PdfReport footer={`${orgName} · Fydr · generated ${formatDate(selected.date, timezone)} · not for redistribution without the club's own policy`}>
@@ -153,6 +167,8 @@ export async function GET(request: Request) {
         </>
       ) : null}
 
+      {/* PATTERN-S7 C1: the same figure the screen leads the board with. */}
+      <PdfFigure {...boardFigure({ onBoard: board.rows.length, inScope: scopeSize, session: selected.title, dateLabel: formatDate(selected.date, timezone), noun: 'athletes', floored: false })} />
       <PdfSectionTitle
         title="Board"
         caption={`Raw session values · vs self is the athlete's own mean for this session type, vs unit is their positional unit's · n = ${board.rows.length} athletes`}

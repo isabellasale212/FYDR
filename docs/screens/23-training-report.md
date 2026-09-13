@@ -82,6 +82,16 @@ than leaving a coach to compare five dials.
 
 ---
 
+**One emphasised figure leads the Board** (PATTERN-S7 C1, 13 September 2026;
+`components/ReportFigure`, `lib/reportFigureCards.ts`): "On the board" ("Played, on the
+board" on the match board) — the count before the percentage ("21 of 30" then "70%"),
+the session and its date as the sample, then the exclusions in a full sentence: "9 of 30
+in this filter have no GPS record for this session and are not on the board." or "Every
+athlete in this filter has a GPS record for this session — nobody is excluded.", with
+"Fewer than five have data, so shading is off; the numbers are unchanged." when the squad
+floor applies. It replaces the tiny coverage line above the board; both PDFs lead their
+Board section with the same figure.
+
 **Empty states follow the one grammar** (PATTERN-S6 C8, 13 September 2026;
 `lib/staffEmpty.ts`). A group filter that leaves nobody on the board reads "No
 GPS record for Academy. None of the 5 athletes in Academy has a GPS record for

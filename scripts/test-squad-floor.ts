@@ -34,7 +34,8 @@ console.log('\n3. the sweep: every squad aggregate asks the rule');
 {
   const training = strip(read('src/app/(staff)/reports/training/page.tsx'));
   assert(/const heatFloored = belowSquadFloor\(athletesWithData\)/.test(training) && /const heatOn = heatPref && !heatFloored/.test(training), 'the training report\'s heat shading is off below the floor');
-  assert(/squadFloorNote\('Shading', athletesWithData\)/.test(training), 'and says so');
+  // Repointed 2026-09-13 (PATTERN-S7 C1): the floor is said inside the figure card's exclusions (boardFigure's `floored`).
+  assert(/floored: heatFloored/.test(training) && /Fewer than five have data, so shading is off; the numbers are unchanged\./.test(read('src/lib/reportFigureCards.ts')), 'and says so');
   const testing = strip(read('src/lib/queries/testingReport.ts'));
   assert(/const floored = belowSquadFloor\(values\.length\);/.test(testing) && /const median = floored \? null : quartile\(values, 0\.5\);/.test(testing), 'the testing report\'s median and quartiles are null below the floor');
   assert(/rankedCoverageLine\(\{ withResult: byTest\.rows\.length, inScope: byAthlete\.rows\.length, floored: byTest\.rows\.length > 0 && belowSquadFloor\(byTest\.rows\.length\) \}\)/.test(strip(read('src/app/(staff)/reports/testing/page.tsx'))), 'and the page says so (through the coverage sentence since S7 C2)');

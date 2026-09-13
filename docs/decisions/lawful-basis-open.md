@@ -88,6 +88,63 @@ high-privacy-by-default at no cost.
 thresholds work is in the build queue now and retrofitting a default costs a
 migration.
 
+## Two more decisions, 13 September 2026 (Isabella)
+
+**Both guardian consent methods are built, not one.** `parental_consent_method`
+is an enum, and an enum exists because more than one method was always
+anticipated. So the question was never web page or offline: it is which methods
+a club may use and what each one records.
+
+- Build a **guardian contact field captured at invite**, and a **tokenised
+  guardian page with no account** (S9 artboard 4B, structurally close to
+  artboard 1).
+- **Keep admin-recorded offline consent as one value of the enum.** A club that
+  can reach guardians by email gets the stronger evidence; a club that cannot
+  still has a lawful route.
+- **The record says which method was used.** That distinction is precisely what
+  a regulator asks about, and redrawing 4B as offline-only would throw away a
+  capability the model was built to carry.
+
+Note the schema comment currently reads "There is no parent login." That stays
+true: the guardian page is tokenised and accountless, not a login. Update the
+comment when the field lands so it does not read as a contradiction.
+
+**The consent record splits in two now, and only the certain half is named.**
+O-951 proposes renaming `consent_given_at` and `consent_version` to
+`notice_acknowledged_at` and `notice_version`, on the view that the basis is
+legitimate interests. Renaming after a club has signed does not just cost a
+migration: it changes what the stored records claim an athlete did. But the
+right name depends on an answer that does not exist yet, and guessing it means
+renaming twice.
+
+- **Split into two records, one for performance data and one for health data**,
+  as the S9 board's two blocks require.
+- **Name the health record now.** Health and injury data needs explicit consent
+  under Article 9 whatever the performance basis turns out to be, so a health
+  consent field can be named truthfully today.
+- **Hold the performance record's name** until the solicitor answers.
+- **Hard rule, enforceable and free today: no real athlete account is created
+  until that name is settled.** There are no real accounts yet, so this costs
+  nothing now and cannot be complied with later.
+
+## Two not-active states that must never render the same
+
+Folded into S9 open question 4, which already touches every figure in the staff
+app. An athlete with **no asserted date of birth**, who cannot be activated, and
+an athlete who has **declined**, both sit in a squad and both drop out of every
+denominator. They mean opposite things: one is a club administrative gap, the
+other is an exercised right. If they render alike, a coach chases the wrong
+person.
+
+## Why the under-18 defaults matter more than they looked
+
+`activation_blocked_reason` has one value, `under_13`. The Children's Code
+applies to everyone under 18. Between 13 and 18 the only protection in the model
+today is the parental consent record, so the exclusion of under-18s from ranked
+boards and streak mechanics is what fills that gap. It now has
+`athletes.date_of_birth` and `dob_asserted_at` to key off. Already with the
+builder.
+
 ## What to take to a solicitor
 
 1. Lawful basis for performance data, given the coach-player power imbalance.

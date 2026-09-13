@@ -71,6 +71,17 @@ than leaving a coach to compare five dials.
 
 ---
 
+**Every figure carries its denominator, an exclusions sentence, and words for a
+missing value** (PATTERN-S7 C2, 13 September 2026; `lib/reportFigures.ts`). The
+board's line reads "n = 21 athletes · 9 of 30 in this filter have no GPS record
+for this session and are not on the board" (or "… every athlete in this filter
+has a GPS record for this session — nobody is excluded"; a match board counts
+"played"): a row exists only for an athlete with a record, and the rest of the
+filter is absent, not zero — so it is counted. A missing value is words: "No
+data" on a board cell and in every comparison table, "No best yet" where an
+athlete has no maximum to be a percentage of, "Not set" for a venue, location or
+duration, "Result not entered" — never a dash.
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means in plain English | Time window | What shows when data is missing |

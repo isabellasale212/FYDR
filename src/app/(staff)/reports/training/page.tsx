@@ -1,4 +1,5 @@
 import { Fragment } from 'react';
+import { NO_BEST_YET, NO_GPS, NOT_SET, RESULT_NOT_ENTERED, boardCoverageLine } from '@/lib/reportFigures';
 import { belowSquadFloor, squadFloorNote } from '@/lib/smallSample';
 import Link from 'next/link';
 import { Dial } from '@/components/Dial/Dial';
@@ -8,7 +9,7 @@ import { PlanGate } from '@/components/PlanGate/PlanGate';
 import { ReportSelectNav } from '@/components/ReportSelectNav/ReportSelectNav';
 import { TrainingScatter } from '@/components/TrainingScatter/TrainingScatter';
 import { TrainingSparkline } from '@/components/TrainingSparkline/TrainingSparkline';
-import { fetchGroups } from '@/lib/queries/groups';
+import { fetchGroupAthleteIds, fetchGroups, fetchSquadSize } from '@/lib/queries/groups';
 import { mondayOf } from '@/lib/queries/schedule';
 import {
   fetchAthleteComparison,
@@ -128,7 +129,7 @@ function DialView({ dial }: { dial: DialScore }) {
         {statusLabel}
       </div>
       <div className="tiny num" style={{ color: 'var(--faint)' }}>
-        {dial.raw === null ? '—' : dial.raw < 100 ? dial.raw.toFixed(2) : Math.round(dial.raw).toLocaleString()}
+        {dial.raw === null ? NO_GPS : dial.raw < 100 ? dial.raw.toFixed(2) : Math.round(dial.raw).toLocaleString()}
         {dial.raw === null ? '' : dial.unit}
       </div>
     </div>
@@ -173,7 +174,7 @@ function ComparisonTableView({ table }: { table: ComparisonTable }) {
                 const pill = table.columns[i + 1]?.pill;
                 return (
                   <div key={i} className="tr-table-cell">
-                    {pill && cell.value !== '—' ? (
+                    {pill && cell.value !== 'No data' ? (
                       <span className={`pill ${pill === 'good' ? 'pill-good' : 'pill-accent'} num`}>{cell.value}</span>
                     ) : (
                     <span className="num" style={{ fontSize: 'var(--fs-13)', color: tone ? TONE[tone] : undefined }}>
@@ -353,11 +354,14 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
       );
     }
 
-    const [overview, board, comparison] = await Promise.all([
+    const [overview, board, comparison, scopeIds, squadSize] = await Promise.all([
       fetchMatchOverview(db, orgId, groupIds, selected),
       fetchMatchBoard(db, orgId, groupIds, selected),
       fetchComparableSessionsComparison(db, orgId, groupIds, 'match', selected.sessionId, null),
+      fetchGroupAthleteIds(db, orgId, groupIds),
+      fetchSquadSize(db, orgId),
     ]);
+    const scopeSize = scopeIds ? scopeIds.length : squadSize;
 
     await recordReportView(db, orgId, claims.userId, actorRole, 'training', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, mode });
 
@@ -383,7 +387,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
           aria-current={selected.sessionId === s.sessionId}
           >
           v {s.opponent}
-          <span className="suffix">{s.result ?? '—'}</span>
+          <span className="suffix">{s.result ?? RESULT_NOT_ENTERED}</span>
           </Link>
           ))}
           </div>
@@ -419,11 +423,11 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                   </div>
                   <div>
                     <div className="tr-fact-label">Venue</div>
-                    <div className="tr-fact-value">{selected.venue ?? (selected.homeAway === 'home' ? 'Home' : selected.homeAway === 'away' ? 'Away' : '—')}</div>
+                    <div className="tr-fact-value">{selected.venue ?? (selected.homeAway === 'home' ? 'Home' : selected.homeAway === 'away' ? 'Away' : NOT_SET)}</div>
                   </div>
                   <div>
                     <div className="tr-fact-label">Competition</div>
-                    <div className="tr-fact-value">{selected.competition ?? '—'}</div>
+                    <div className="tr-fact-value">{selected.competition ?? NOT_SET}</div>
                   </div>
                   <div>
                     <div className="tr-fact-label">Squad</div>
@@ -468,7 +472,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
             <div className="card" style={{ marginTop: 'var(--sp-14)' }}>
               <h2 className="card-title">Board</h2>
               <p className="tiny num" style={{ color: 'var(--faint)' }}>
-                n = {board.rows.length} played
+                {boardCoverageLine({ onBoard: board.rows.length, inScope: scopeSize, noun: 'played' })}
               </p>
               <div className="tr-board" style={{ marginTop: 'var(--sp-10)' }}>
                 <div className="tr-board-inner match">
@@ -493,11 +497,11 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                             <Link href={`/reports/athlete/${row.athlete_id}`} className="nm" style={{ fontSize: 'var(--fs-13)' }} title="Open this player's full report">
                               {row.last_name}, {row.first_name}
                             </Link>
-                            <span className="r num">{row.mins ?? '—'}</span>
-                            <span className="r num">{row.td !== null ? Math.round(row.td).toLocaleString() : '—'}</span>
-                            <span className="r num">{row.hsr !== null ? Math.round(row.hsr).toLocaleString() : '—'}</span>
-                            <span className="r num">{row.hsr_per_min ?? '—'}</span>
-                            <span className="r num">{row.hie ?? '—'}</span>
+                            <span className="r num">{row.mins ?? NO_GPS}</span>
+                            <span className="r num">{row.td !== null ? Math.round(row.td).toLocaleString() : NO_GPS}</span>
+                            <span className="r num">{row.hsr !== null ? Math.round(row.hsr).toLocaleString() : NO_GPS}</span>
+                            <span className="r num">{row.hsr_per_min ?? NO_GPS}</span>
+                            <span className="r num">{row.hie ?? NO_GPS}</span>
                           </div>
                         ))}
                     </div>
@@ -588,11 +592,17 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
     : 'restOfWeek';
   const lens = sp.lens === 'position' ? 'position' : 'self';
 
-  const [overview, board, scatter] = await Promise.all([
+  const [overview, board, scatter, scopeIds, squadSize] = await Promise.all([
     fetchTrainingOverview(db, orgId, groupIds, selected),
     fetchTrainingBoard(db, orgId, groupIds, selected),
     fetchScatterData(db, orgId, groupIds, selected, lens),
+    /* PATTERN-S7 C2: the board's denominator — who is in the filter, so the
+       athletes with no GPS record for this session can be counted, not
+       silently absent. */
+    fetchGroupAthleteIds(db, orgId, groupIds),
+    fetchSquadSize(db, orgId),
   ]);
+  const scopeSize = scopeIds ? scopeIds.length : squadSize;
 
   const comparison =
     scope === 'restOfWeek'
@@ -656,11 +666,11 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                 </div>
                 <div>
                   <div className="tr-fact-label">Duration</div>
-                  <div className="tr-fact-value">{selected.durationMin ? `${selected.durationMin} min` : '—'}</div>
+                  <div className="tr-fact-value">{selected.durationMin ? `${selected.durationMin} min` : NOT_SET}</div>
                 </div>
                 <div>
                   <div className="tr-fact-label">Where</div>
-                  <div className="tr-fact-value">{selected.location ?? '—'}</div>
+                  <div className="tr-fact-value">{selected.location ?? NOT_SET}</div>
                 </div>
                 <div>
                   <div className="tr-fact-label">Athletes</div>
@@ -699,7 +709,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
 <div className="card" style={{ marginTop: 'var(--sp-14)' }}>
             <h2 className="card-title">Board</h2>
             <p className="tiny num" style={{ color: 'var(--faint)' }}>
-              n = {board.rows.length} athletes
+              {boardCoverageLine({ onBoard: board.rows.length, inScope: scopeSize, noun: 'athletes' })}
               {heatFloored ? ` · ${squadFloorNote('Shading', athletesWithData)}` : ''}
             </p>
             <div className="tr-board" style={{ marginTop: 'var(--sp-10)' }}>
@@ -761,16 +771,16 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                           <span className="nm" style={{ fontSize: 'var(--fs-13)' }}>
                             {row.last_name}, {row.first_name}
                           </span>
-                          <span className="r num">{row.td !== null ? Math.round(row.td).toLocaleString() : '—'}</span>
+                          <span className="r num">{row.td !== null ? Math.round(row.td).toLocaleString() : NO_GPS}</span>
                           <span className="r num tr-heat" data-band={heatOn ? heatBand(row.hsr, hsrP95) : null} data-ramp="hsr">
-                            {row.hsr !== null ? Math.round(row.hsr).toLocaleString() : '—'}
+                            {row.hsr !== null ? Math.round(row.hsr).toLocaleString() : NO_GPS}
                           </span>
                           <span className="r num tr-heat" data-band={heatOn ? heatBand(row.hie, hieP95) : null} data-ramp="hie">
-                            {row.hie ?? '—'}
+                            {row.hie ?? NO_GPS}
                           </span>
-                          <span className="r num">{row.maxv_kmh ?? '—'}</span>
+                          <span className="r num">{row.maxv_kmh ?? NO_GPS}</span>
                           <span className="r num tr-heat" data-band={heatOn ? pctMaxBand(row.pct_max) : null} data-ramp="pct">
-                            {row.pct_max !== null ? `${row.pct_max}%` : '—'}
+                            {row.pct_max !== null ? `${row.pct_max}%` : NO_BEST_YET}
                           </span>
                         </Link>
                       ))}

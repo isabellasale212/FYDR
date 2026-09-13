@@ -329,7 +329,7 @@ export async function fetchTrainingOverview(
   const n = priorSessionIds.size;
   const referenceLine =
     n > 0
-      ? `${refTd !== null ? Math.round(refTd).toLocaleString() : '—'} m, ${refHsr !== null ? Math.round(refHsr).toLocaleString() : '—'} m HSR, ${refHiePerMin !== null ? refHiePerMin.toFixed(2) : '—'} HIE/min · n = ${n}`
+      ? `${refTd !== null ? Math.round(refTd).toLocaleString() : NO_VALUE} m, ${refHsr !== null ? Math.round(refHsr).toLocaleString() : NO_VALUE} m HSR, ${refHiePerMin !== null ? refHiePerMin.toFixed(2) : NO_VALUE} HIE/min · n = ${n}`
       : `No other ${session.title} session yet — this is the first on record.`;
 
   return {
@@ -408,7 +408,7 @@ export async function fetchMatchOverview(
   const n = priorSessionIds.size;
   const referenceLine =
     n > 0
-      ? `${refTdPerMin !== null ? refTdPerMin.toFixed(1) : '—'} m/min, ${refHsrPerMin !== null ? refHsrPerMin.toFixed(1) : '—'} m/min HSR, ${refHiePerMin !== null ? refHiePerMin.toFixed(2) : '—'} HIE/min · n = ${n}`
+      ? `${refTdPerMin !== null ? refTdPerMin.toFixed(1) : NO_VALUE} m/min, ${refHsrPerMin !== null ? refHsrPerMin.toFixed(1) : NO_VALUE} m/min HSR, ${refHiePerMin !== null ? refHiePerMin.toFixed(2) : NO_VALUE} HIE/min · n = ${n}`
       : 'No other completed match on record yet.';
 
   return {
@@ -436,11 +436,15 @@ export type ComparisonCell = { value: string; pct: number | null; isScore: boole
 export type ComparisonRow = { id: string; label: string; sublabel: string | null; cells: ComparisonCell[]; highlighted: boolean; href: string | null };
 export type ComparisonTable = { columns: ComparisonColumn[]; rows: ComparisonRow[]; caption: string };
 
+/* PATTERN-S7 C2 (2026-09-13): a missing value is words, never a dash — the
+   comparison tables read "No data" where a session, an athlete or a
+   reference has nothing to show. */
+const NO_VALUE = 'No data';
 function fmtInt(n: number | null): string {
-  return n === null ? '—' : Math.round(n).toLocaleString();
+  return n === null ? NO_VALUE : Math.round(n).toLocaleString();
 }
 function fmtRate(n: number | null, decimals = 2): string {
-  return n === null ? '—' : n.toFixed(decimals);
+  return n === null ? NO_VALUE : n.toFixed(decimals);
 }
 
 export async function fetchRestOfWeekComparison(
@@ -580,7 +584,7 @@ export async function fetchRestOfWeekComparison(
     const td = mean((bySession.get(s.id) ?? []).map((rr) => rr.total_distance_m));
     const share = td !== null && weekTd > 0 ? Math.round((100 * td) / weekTd) : null;
     const cells = [...r.cells];
-    cells[3] = { value: share !== null ? `${share}%` : '—', pct: null, isScore: false };
+    cells[3] = { value: share !== null ? `${share}%` : NO_VALUE, pct: null, isScore: false };
     return { ...r, cells };
   });
 
@@ -593,7 +597,7 @@ export async function fetchRestOfWeekComparison(
       { value: fmtInt(weekTd) + ' m', pct: null, isScore: false },
       { value: '', pct: null, isScore: false },
       { value: '', pct: null, isScore: false },
-      { value: weekVsTypical !== null ? `${weekVsTypical}%` : '—', pct: weekVsTypical, isScore: true },
+      { value: weekVsTypical !== null ? `${weekVsTypical}%` : NO_VALUE, pct: weekVsTypical, isScore: true },
     ],
     highlighted: false,
     href: null,
@@ -698,16 +702,16 @@ export async function fetchComparableSessionsComparison(
     const sEnd = curTd !== null && refTd !== null && refTd > 0 ? Math.round((curTd / refTd) * 100) : null;
 
     const label = mode === 'match' ? `v ${s.fixtures?.opponent ?? 'opponent'}` : s.title;
-    const sub = mode === 'match' ? (s.fixtures?.result ?? '—') : new Date(s.starts_at).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+    const sub = mode === 'match' ? (s.fixtures?.result ?? 'Result not entered') : new Date(s.starts_at).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 
     return {
       id: s.id,
       label,
       sublabel: sub,
       cells: [
-        { value: sInt !== null ? `${sInt}%` : '—', pct: sInt, isScore: true },
-        { value: sHsr !== null ? `${sHsr}%` : '—', pct: sHsr, isScore: true },
-        { value: sEnd !== null ? `${sEnd}%` : '—', pct: sEnd, isScore: true },
+        { value: sInt !== null ? `${sInt}%` : NO_VALUE, pct: sInt, isScore: true },
+        { value: sHsr !== null ? `${sHsr}%` : NO_VALUE, pct: sHsr, isScore: true },
+        { value: sEnd !== null ? `${sEnd}%` : NO_VALUE, pct: sEnd, isScore: true },
       ],
       highlighted: s.id === currentSessionId,
       href: `?session=${s.id}`,
@@ -792,10 +796,10 @@ export async function fetchPositionComparison(
       label: g.name,
       sublabel: null,
       cells: [
-        { value: sInt !== null ? `${sInt}%` : '—', pct: sInt, isScore: true },
-        { value: sHsr !== null ? `${sHsr}%` : '—', pct: sHsr, isScore: true },
-        { value: sEnd !== null ? `${sEnd}%` : '—', pct: sEnd, isScore: true },
-        { value: vsSquad !== null ? `${vsSquad}%` : '—', pct: vsSquad, isScore: true },
+        { value: sInt !== null ? `${sInt}%` : NO_VALUE, pct: sInt, isScore: true },
+        { value: sHsr !== null ? `${sHsr}%` : NO_VALUE, pct: sHsr, isScore: true },
+        { value: sEnd !== null ? `${sEnd}%` : NO_VALUE, pct: sEnd, isScore: true },
+        { value: vsSquad !== null ? `${vsSquad}%` : NO_VALUE, pct: vsSquad, isScore: true },
       ],
       highlighted: false,
       href: null,
@@ -900,8 +904,8 @@ export async function fetchAthleteComparison(
         label: `${athlete.last_name}, ${athlete.first_name}`,
         sublabel: groupById.get(unitId ?? '') ?? null,
         cells: [
-          { value: vsSelf !== null ? `${vsSelf}%` : '—', pct: vsSelf, isScore: true },
-          { value: vsUnit !== null ? `${vsUnit}%` : '—', pct: vsUnit, isScore: true },
+          { value: vsSelf !== null ? `${vsSelf}%` : NO_VALUE, pct: vsSelf, isScore: true },
+          { value: vsUnit !== null ? `${vsUnit}%` : NO_VALUE, pct: vsUnit, isScore: true },
         ],
         highlighted: false,
         href: `/squad/${cur.athlete_id}`,
@@ -1132,13 +1136,13 @@ export async function fetchSelectedAthletePanel(
     unitHie = mean((unitRecs ?? []).map((r) => r.high_intensity_efforts));
   }
 
-  const pctOf = (v: number | null, ref: number | null) => (v !== null && ref !== null && ref > 0 ? `${Math.round((v / ref) * 100)}%` : '—');
+  const pctOf = (v: number | null, ref: number | null) => (v !== null && ref !== null && ref > 0 ? `${Math.round((v / ref) * 100)}%` : NO_VALUE);
 
   const cur = curRes.data;
   const rows = [
     { metric: 'Total distance', today: fmtInt(cur.total_distance_m) + ' m', vsSelf: pctOf(cur.total_distance_m, selfTd), vsUnit: pctOf(cur.total_distance_m, unitTd) },
     { metric: 'High speed running', today: fmtInt(cur.high_speed_distance_m) + ' m', vsSelf: pctOf(cur.high_speed_distance_m, selfHsr), vsUnit: pctOf(cur.high_speed_distance_m, unitHsr) },
-    { metric: 'High intensity efforts', today: cur.high_intensity_efforts !== null ? String(cur.high_intensity_efforts) : '—', vsSelf: pctOf(cur.high_intensity_efforts, selfHie), vsUnit: pctOf(cur.high_intensity_efforts, unitHie) },
+    { metric: 'High intensity efforts', today: cur.high_intensity_efforts !== null ? String(cur.high_intensity_efforts) : NO_VALUE, vsSelf: pctOf(cur.high_intensity_efforts, selfHie), vsUnit: pctOf(cur.high_intensity_efforts, unitHie) },
   ];
 
   // 14-point sparkline: this athlete's last 14 real training sessions
@@ -1172,7 +1176,7 @@ export async function fetchSelectedAthletePanel(
     sparkline,
     footnote:
       sparkMean !== null && todayHsr !== null
-        ? `Mean ${Math.round(sparkMean).toLocaleString()} m · today ${Math.round(todayHsr).toLocaleString()} m · ${delta !== null ? (delta >= 0 ? `+${delta}` : delta) + '%' : '—'}`
+        ? `Mean ${Math.round(sparkMean).toLocaleString()} m · today ${Math.round(todayHsr).toLocaleString()} m · ${delta !== null ? (delta >= 0 ? `+${delta}` : delta) + '%' : NO_VALUE}`
         : 'Not enough history yet.',
   };
 }

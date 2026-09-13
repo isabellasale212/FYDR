@@ -2,7 +2,7 @@
  * sentence; missing values as words; worst first. One report a commit; the
  * compliance report first (2026-09-13). */
 import { readFileSync } from 'node:fs';
-import { NONE_WAIVED, NOT_EXPECTED, NO_ENTRY_IN_WINDOW, availabilityExclusionsLine, exclusionsLine, submittedLine } from '@/lib/reportFigures';
+import { NONE_WAIVED, NOT_EXPECTED, NO_ENTRY_IN_WINDOW, availabilityExclusionsLine, boardCoverageLine, exclusionsLine, submittedLine } from '@/lib/reportFigures';
 
 let passed = 0, failed = 0;
 const assert = (cond: boolean, label: string): void => {
@@ -70,7 +70,21 @@ console.log('\n4. the squad weekly report — the third');
   assert(/Nobody is excluded/.test(read('docs/screens/21-squad-weekly-report.md')), 'the spec says so');
 }
 
-console.log('\n5. the spec');
+console.log('\n5. the training report — the fourth');
+{
+  assert(boardCoverageLine({ onBoard: 21, inScope: 30, noun: 'athletes' }) === 'n = 21 athletes · 9 of 30 in this filter have no GPS record for this session and are not on the board', 'the board says who is not on it, with the denominator');
+  assert(boardCoverageLine({ onBoard: 30, inScope: 30, noun: 'athletes' }) === 'n = 30 athletes · every athlete in this filter has a GPS record for this session — nobody is excluded', 'and when everyone is');
+  assert(boardCoverageLine({ onBoard: 14, inScope: 15, noun: 'played' }) === 'n = 14 played · 1 of 15 in this filter has no GPS record for this session and is not on the board', 'a match: played');
+  const page = strip(read('src/app/(staff)/reports/training/page.tsx'));
+  assert(/boardCoverageLine\(\{ onBoard: board\.rows\.length, inScope: scopeSize, noun: 'athletes' \}\)/.test(page) && /boardCoverageLine\(\{ onBoard: board\.rows\.length, inScope: scopeSize, noun: 'played' \}\)/.test(page), 'both boards carry it');
+  assert(/const scopeSize = scopeIds \? scopeIds\.length : squadSize;/.test(page), 'the denominator is the filter\'s size, or the squad');
+  assert((page.match(/'—'/g) ?? []).length === 0, 'no dash on the training page — "No data", "No best yet", "Not set", "Result not entered"');
+  const q = strip(read('src/lib/queries/trainingReport.ts'));
+  assert((q.match(/'—'/g) ?? []).length === 0 && /const NO_VALUE = 'No data';/.test(q), 'nor in its comparison tables');
+  assert(/No GPS record|nobody is excluded/.test(read('docs/screens/23-training-report.md')) || /not on the board/.test(read('docs/screens/23-training-report.md')), 'the spec says so');
+}
+
+console.log('\n6. the spec');
 {
   assert(/Nobody is excluded/.test(read('docs/screens/20-compliance-report.md')), '20-compliance-report.md carries the exclusions sentence');
 }

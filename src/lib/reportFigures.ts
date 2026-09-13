@@ -46,3 +46,19 @@ export function availabilityExclusionsLine(o: { notRecorded: number; joinedInPer
   if (parts.length === 0) return 'Nobody is excluded, and every athlete is counted for the whole window.';
   return `Nobody is excluded. ${parts.join('; ')}.`;
 }
+
+/** The training and match boards: who is on the board and who is not. A row
+ *  exists only for an athlete with a GPS record for the session; the rest of
+ *  the scope is not "zero", it is absent — said with its count. */
+export function boardCoverageLine(o: { onBoard: number; inScope: number; noun: 'athletes' | 'played' }): string {
+  const missing = Math.max(0, o.inScope - o.onBoard);
+  const n = `n = ${o.onBoard} ${o.noun}`;
+  if (o.inScope === 0) return n;
+  if (missing === 0) return `${n} · every athlete in this filter has a GPS record for this session — nobody is excluded`;
+  return `${n} · ${missing} of ${o.inScope} in this filter ${missing === 1 ? 'has' : 'have'} no GPS record for this session and ${missing === 1 ? 'is' : 'are'} not on the board`;
+}
+
+export const NO_GPS = 'No data';
+export const NO_BEST_YET = 'No best yet';
+export const NOT_SET = 'Not set';
+export const RESULT_NOT_ENTERED = 'Result not entered';
